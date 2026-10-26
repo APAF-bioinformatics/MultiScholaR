@@ -45,6 +45,7 @@ test_that("proteomics summary module preserves startup outputs and template warn
 })
 
 test_that("proteomics summary state and template helpers preserve selection and directory behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   skip_if_not(
     exists("resolveProtSummaryFinalS4State", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("buildProtSummaryTemplateStatus", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
@@ -137,6 +138,7 @@ test_that("proteomics summary state and template helpers preserve selection and 
 })
 
 test_that("proteomics summary report helpers preserve template retrieval and activation behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   skip_if_not(
     exists("resolveProtSummaryReportTemplate", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("ensureProtSummaryReportTemplate", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&

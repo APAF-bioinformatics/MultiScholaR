@@ -73,253 +73,27 @@ runProteinIqRollupApplyStep <- function(workflowData,
                                         sleepFn = Sys.sleep,
                                         maxWait = 30) {
   shiny::req(workflowData$state_manager)
-
-  currentState <- workflowData$state_manager$current_state
-  reference_mode <- usesDIAReferenceStates(workflowData$state_manager)
-  if (reference_mode) {
-    pending <- resumeDIAProteinAction(workflowData, "protein_s4_created")
-    if (!is.null(pending)) return(pending)
-    assertDIAExportReady(workflowData$state_manager)
-    science_request <- workflowExportPaths(experimentPaths$source_dir, basename(tempfile("iq-science-")))
-    experimentPaths$peptide_qc_dir <- file.path(science_request$request_dir, "peptide")
-    experimentPaths$protein_qc_dir <- file.path(science_request$request_dir, "protein")
-    dir.create(experimentPaths$peptide_qc_dir)
-    dir.create(experimentPaths$protein_qc_dir)
-    # KIT-015: an unmanaged launch runs the registered declaration in process (the IQ files under the science
-    # request directories, published by the finishing step as before).
-    entry <- workflowActionSpec("protein_iq_rollup")
-    value <- computeDIAReferenceIQRollup(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
-      list(peptide_qc_dir = experimentPaths$peptide_qc_dir, protein_qc_dir = experimentPaths$protein_qc_dir),
-      variant = entry$default_variant, process_long_format = processLongFormatFn, write_fn = writeTsvFn, read_fn = readTsvFn)
-    if (length(value$dropped_samples)) {
-      droppedList <- paste(value$dropped_samples, collapse = ", ")
-      logWarnFn(paste0("Protein Processing: ", length(value$dropped_samples), " samples dropped during IQ rollup: ", droppedList))
-      showNotificationFn(paste("Warning: The following samples were dropped during protein rollup due to low peptide quality:",
-        droppedList), type = "warning", duration = 10)
-    }
-    return(finishDIAReferenceProteinStep(workflowData, value))
+  pending <- resumeDIAProteinAction(workflowData, "protein_s4_created")
+  if (!is.null(pending)) return(pending)
+  assertDIAExportReady(workflowData$state_manager)
+  science_request <- workflowExportPaths(experimentPaths$source_dir, basename(tempfile("iq-science-")))
+  experimentPaths$peptide_qc_dir <- file.path(science_request$request_dir, "peptide")
+  experimentPaths$protein_qc_dir <- file.path(science_request$request_dir, "protein")
+  dir.create(experimentPaths$peptide_qc_dir)
+  dir.create(experimentPaths$protein_qc_dir)
+  # KIT-015: an unmanaged launch runs the registered declaration in process (the IQ files under the science
+  # request directories, published by the finishing step as before).
+  entry <- workflowActionSpec("protein_iq_rollup")
+  value <- computeDIAReferenceIQRollup(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+    list(peptide_qc_dir = experimentPaths$peptide_qc_dir, protein_qc_dir = experimentPaths$protein_qc_dir),
+    variant = entry$default_variant, process_long_format = processLongFormatFn, write_fn = writeTsvFn, read_fn = readTsvFn)
+  if (length(value$dropped_samples)) {
+    droppedList <- paste(value$dropped_samples, collapse = ", ")
+    logWarnFn(paste0("Protein Processing: ", length(value$dropped_samples), " samples dropped during IQ rollup: ", droppedList))
+    showNotificationFn(paste("Warning: The following samples were dropped during protein rollup due to low peptide quality:",
+      droppedList), type = "warning", duration = 10)
   }
-  peptideS4 <- if (reference_mode) readDIAExecutionComponents(workflowData$state_manager,
-    fields = "design_matrix") else workflowData$state_manager$getState(currentState)
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(peptideS4)
-
-  logInfoFn("Protein Processing: Starting IQ rollup from peptide state")
-
-  proteinColumn <- peptideS4@protein_id_column
-  peptideColumn <- peptideS4@peptide_sequence_column
-  sampleColumn <- peptideS4@sample_id
-  groupColumn <- peptideS4@group_id
-  replicateColumn <- peptideS4@technical_replicate_id
-  intensityColumn <- "Peptide.Imputed"
-  requiredPeptideColumns <- c(
-    proteinColumn,
-    peptideColumn,
-    sampleColumn,
-    intensityColumn
-  )
-  missingPeptideColumns <- setdiff(
-    requiredPeptideColumns,
-    names(peptideS4@peptide_data)
-  )
-  if (length(missingPeptideColumns) > 0L) {
-    stop(
-      "IQ rollup input is missing required column(s): ",
-      paste(missingPeptideColumns, collapse = ", "),
-      call. = FALSE
-    )
-  }
-  if (!sampleColumn %in% names(peptideS4@design_matrix)) {
-    stop("The declared sample column is absent from the design matrix.", call. = FALSE)
-  }
-
-  peptideValuesImputedFile <- file.path(
-    experimentPaths$peptide_qc_dir,
-    "peptide_values_imputed.tsv"
-  )
-
-  originalSamples <- unique(as.character(peptideS4@design_matrix[[sampleColumn]]))
-  sampleMapping <- tibble::tibble(
-    Original = originalSamples,
-    Alias = paste0("S_", sprintf("%03d", seq_along(originalSamples)))
-  )
-
-  if (reference_mode) {
-    peptideReference <- readDIAStateMetadata(workflowData$state_manager)$data$components$peptide_data
-    writeDIAIQInput(workflowData$state_manager, peptideReference, peptideValuesImputedFile,
-      sampleMapping, sampleColumn, intensityColumn, writeTsvFn)
-    peptideLineageForIq <- readDIAProteinLineage(
-      workflowData$state_manager, peptideReference, proteinColumn)
-  } else {
-  peptideDataForIq <- peptideS4@peptide_data
-  peptideDataForIq$Q.Value <- 0.0009
-  peptideDataForIq$PG.Q.Value <- 0.009
-  peptideDataForIq[[intensityColumn]][is.na(peptideDataForIq[[intensityColumn]])] <- 0
-  sampleIndex <- match(as.character(peptideDataForIq[[sampleColumn]]), sampleMapping$Original)
-  if (anyNA(sampleIndex)) {
-    stop("Peptide data contains runs absent from the design matrix.", call. = FALSE)
-  }
-  peptideDataForIq[[sampleColumn]] <- sampleMapping$Alias[sampleIndex]
-
-  writeTsvFn(peptideDataForIq, peptideValuesImputedFile)
-  peptideDataForIq <- sampleIndex <- NULL
-
-  }
-
-  iqOutputFile <- file.path(experimentPaths$protein_qc_dir, "iq_output_file.txt")
-
-  processLongFormatFn(
-    peptideValuesImputedFile,
-    output_filename = iqOutputFile,
-    sample_id = sampleColumn,
-    primary_id = proteinColumn,
-    secondary_id = peptideColumn,
-    intensity_col = intensityColumn,
-    filter_double_less = c("Q.Value" = "0.01", "PG.Q.Value" = "0.01"),
-    normalization = "none"
-  )
-
-  waitCount <- 0
-  while (!file.exists(iqOutputFile) && waitCount < maxWait) {
-    sleepFn(1)
-    waitCount <- waitCount + 1
-  }
-
-  if (!file.exists(iqOutputFile)) {
-    stop("IQ output file not created within timeout period")
-  }
-
-  proteinLog2QuantAliased <- readTsvFn(iqOutputFile, .name_repair = "minimal")
-  currentCols <- colnames(proteinLog2QuantAliased)
-  restoredCols <- purrr::map_chr(currentCols, function(col) {
-    if (col == proteinColumn) {
-      return(col)
-    }
-
-    match <- sampleMapping$Original[sampleMapping$Alias == col]
-    if (length(match) > 0) {
-      return(match[[1]])
-    }
-
-    col
-  })
-  colnames(proteinLog2QuantAliased) <- restoredCols
-  proteinLog2Quant <- proteinLog2QuantAliased
-  proteinLog2QuantAliased <- NULL
-
-  if (!proteinColumn %in% names(proteinLog2Quant)) {
-    stop(
-      sprintf("IQ output is missing the active protein key `%s`.", proteinColumn),
-      call. = FALSE
-    )
-  }
-
-  survivingSamples <- intersect(
-    originalSamples,
-    setdiff(colnames(proteinLog2Quant), proteinColumn)
-  )
-  finalDesignMatrix <- peptideS4@design_matrix |>
-    dplyr::filter(!!rlang::sym(sampleColumn) %in% survivingSamples)
-
-  droppedSamples <- setdiff(originalSamples, survivingSamples)
-  if (length(droppedSamples) > 0) {
-    droppedList <- paste(droppedSamples, collapse = ", ")
-    logWarnFn(
-      paste0(
-        "Protein Processing: ",
-        length(droppedSamples),
-        " samples dropped during IQ rollup: ",
-        droppedList
-      )
-    )
-    showNotificationFn(
-      paste(
-        "Warning: The following samples were dropped during protein rollup due to low peptide quality:",
-        droppedList
-      ),
-      type = "warning",
-      duration = 10
-    )
-  }
-
-  logInfoFn("Protein Processing: Creating ProteinQuantitativeData S4 object")
-
-  proteinObj <- createProteinDataFn(
-    protein_quant_table = proteinLog2Quant,
-    protein_id_column = proteinColumn,
-    protein_id_table = if (reference_mode) {
-      lineage_view <- peptideS4
-      lineage_view@args$protein_accession_provenance <- peptideLineageForIq
-      .proteinIdTableFromPeptideLineage(lineage_view, proteinLog2Quant[[proteinColumn]])
-    } else .proteinIdTableFromPeptideLineage(peptideS4, proteinLog2Quant[[proteinColumn]]),
-    design_matrix = finalDesignMatrix,
-    sample_id = sampleColumn,
-    group_id = groupColumn,
-    technical_replicate_id = replicateColumn,
-    args = peptideS4@args
-  )
-
-  if (reference_mode) {
-    attr(proteinObj, "dia_component_source") <- attr(peptideS4, "dia_component_source")
-    attr(proteinObj, "dia_execution_fields") <- c("protein_quant_table", "protein_id_table", "design_matrix")
-  }
-
-  iqStateConfig <- list(
-      iq_output_file = iqOutputFile,
-      peptide_input_file = peptideValuesImputedFile,
-      s4_class = "ProteinQuantitativeData",
-      protein_id_column = proteinColumn
-  )
-  proteinObj <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = peptideS4,
-    after = proteinObj,
-    stage_id = "protein_rollup",
-    state_name = "protein_s4_created",
-    config_object = iqStateConfig,
-    audit_parameters = list(
-      rollup_method = "iq_maxlfq",
-      primary_id = proteinColumn,
-      secondary_id = peptideColumn,
-      sample_id = sampleColumn,
-      intensity_column = intensityColumn,
-      q_value_compatibility_value = 0.0009,
-      pg_q_value_compatibility_value = 0.009,
-      missing_intensity_compatibility_value = 0,
-      filter_double_less = c(Q.Value = 0.01, PG.Q.Value = 0.01),
-      normalization = "none",
-      dropped_samples = droppedSamples
-    ),
-    description = "IQ protein rollup completed and ProteinQuantitativeData S4 object created",
-    transformation_type = "aggregation"
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  peptideS4 <- proteinLog2Quant <- NULL
-  captureCheckpointFn(proteinObj, "cp03", "rolled_up_protein")
-
-  proteinCount <- proteinObj@protein_quant_table |>
-    dplyr::distinct(!!rlang::sym(proteinColumn)) |>
-    nrow()
-
-  resultText <- paste(
-    "IQ Protein Rollup & S4 Object Creation Completed Successfully\n",
-    "============================================================\n",
-    sprintf("Proteins quantified: %d\n", proteinCount),
-    sprintf("Samples: %d\n", ncol(proteinObj@protein_quant_table) - 1),
-    sprintf("Active protein key: %s\n", proteinColumn),
-    "Algorithm: MaxLFQ (via IQ tool)\n",
-    sprintf("S4 Class: %s\n", class(proteinObj)[1]),
-    sprintf("Design matrix: %s\n", paste(colnames(proteinObj@design_matrix), collapse = ", ")),
-    sprintf("Output file: %s\n", basename(iqOutputFile)),
-    "State saved as: 'protein_s4_created'\n",
-    "\nReady for protein accession cleanup."
-  )
-
-  finishDIAProteinAction(workflowData, list(
-    proteinObj = proteinObj,
-    resultText = resultText
-  ), "proteinObj")
+  return(finishDIAReferenceProteinStep(workflowData, value))
 }
 
 updateProteinIqRollupOutputs <- function(output,
@@ -399,7 +173,7 @@ runProteinIqRollupApplyObserver <- function(workflowData,
 
 runProteinIqRollupRevertStep <- function(workflowData) {
   shiny::req(workflowData$state_manager)
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   peptideStates <- c(
     "imputed",
     "replicate_filtered",
@@ -485,8 +259,7 @@ mod_prot_qc_protein_rollup_server <- function(id, workflow_data, experiment_path
     # Step 1: Protein Rollup (chunk 17). KIT-046: the DIA route rolls up with IQ only; limpa is its own workflow type.
     shiny::observeEvent(input$apply_iq_rollup, {
       applyStepFn <- runProteinIqRollupApplyStep
-      if (!is.null(workflowSessionApplication(session)) &&
-          usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list())
         return(invisible(NULL))
       }

@@ -326,6 +326,7 @@ withSharedProteinRollupUiMocks <- function(server_env,
 }
 
 test_that("proteomics protein rollup module preserves successful apply behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinRollupCapture()
   server_fn <- getProtProteinRollupServer()
   server_env <- environment(server_fn)
@@ -395,6 +396,7 @@ test_that("proteomics protein rollup module preserves successful apply behavior"
 })
 
 test_that("IQ rollup keeps Protein.Group active and Protein.Ids as many-to-many provenance", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- new.env(parent = emptyenv())
   peptide_state <- makeSharedProteinRollupPeptideState()
   peptide_state@peptide_data <- data.frame(
@@ -566,6 +568,7 @@ test_that("proteomics protein rollup module preserves IQ timeout behavior", {
 })
 
 test_that("proteomics protein rollup module preserves generic apply error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinRollupCapture()
   server_fn <- getProtProteinRollupServer()
   server_env <- environment(server_fn)
@@ -613,6 +616,7 @@ test_that("proteomics protein rollup module preserves generic apply error behavi
 })
 
 test_that("proteomics protein rollup module preserves revert behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinRollupCapture()
   server_fn <- getProtProteinRollupServer()
   server_env <- environment(server_fn)

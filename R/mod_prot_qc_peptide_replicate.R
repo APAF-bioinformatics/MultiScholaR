@@ -72,7 +72,7 @@ mod_prot_qc_peptide_replicate_ui <- function(id) {
 #' @importFrom grid grid.draw
 runPeptideReplicateRevertStep <- function(workflowData,
                                           logInfoFn = logger::log_info) {
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
   }
@@ -129,81 +129,8 @@ runPeptideReplicateApplyStep <- function(workflowData,
                                          removePeptidesWithOnlyOneReplicateFn = removePeptidesWithOnlyOneReplicate,
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    return(runDIAReferencePeptideGroups(workflowData, "removePeptidesWithOnlyOneReplicate",
-      list(replicate_group_column = replicateGroupColumn), "replicate_filtered", "Applied distinct-run replicate support filter (supported in any group)"))
-  }
-
-  shiny::req(workflowData$state_manager)
-  currentS4 <- getDIAExecutionState(workflowData$state_manager, "removePeptidesWithOnlyOneReplicate")
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf(
-    "QC Step: Applying replicate filter (column: %s)",
-    replicateGroupColumn
-  ))
-
-  filteredS4 <- removePeptidesWithOnlyOneReplicateFn(
-    currentS4,
-    replicate_group_column = replicateGroupColumn
-  )
-  filterSummary <- .peptideReplicateSummaryFromObject(filteredS4)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$peptide_qc)) {
-    workflowData$qc_params$peptide_qc <- list()
-  }
-
-  workflowData$qc_params$peptide_qc$replicate_filter <- list(
-    replicate_group_column = replicateGroupColumn,
-    minimum_distinct_runs = 2L,
-    retention_policy = "supported_in_any_group",
-    filter_summary = filterSummary,
-    timestamp = nowFn()
-  )
-
-  filteredS4 <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = currentS4,
-    after = filteredS4,
-    stage_id = "replicate_filter",
-    state_name = "replicate_filtered",
-    config_object = list(
-      replicate_group_column = replicateGroupColumn,
-      minimum_distinct_runs = 2L,
-      retention_policy = "supported_in_any_group",
-      filter_summary = filterSummary
-    ),
-    description = "Applied distinct-run replicate support filter (supported in any group)",
-    now = nowFn()
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(filteredS4)
-
-  resultText <- paste(
-    "Replicate Filter Applied Successfully\n",
-    "====================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Replicate group column: %s\n", replicateGroupColumn),
-    "Rule: >= 2 distinct runs in any replicate group\n",
-    "Retention: globally keep supported features, including singleton observations in other groups\n",
-    if (is.null(filterSummary)) "" else sprintf(
-      "Peptide identities retained/removed: %d / %d\n",
-      filterSummary$retained_feature_count,
-      filterSummary$removed_feature_count
-    ),
-    "State saved as: 'replicate_filtered'\n"
-  )
-
-  list(
-    filteredS4 = filteredS4,
-    resultText = resultText
-  )
+  runDIAReferencePeptideGroups(workflowData, "removePeptidesWithOnlyOneReplicate",
+    list(replicate_group_column = replicateGroupColumn), "replicate_filtered", "Applied distinct-run replicate support filter (supported in any group)")
 }
 
 updatePeptideReplicateOutputs <- function(output,
@@ -315,7 +242,7 @@ mod_prot_qc_peptide_replicate_server <- function(id, workflow_data, omic_type, e
     
     # Step 6: Replicate Filter (chunk 15)
     shiny::observeEvent(input$apply_replicate_filter, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(replicate_group_column = input$replicate_group_column))
         return(invisible(NULL))
       }

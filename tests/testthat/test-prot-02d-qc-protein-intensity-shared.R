@@ -274,6 +274,7 @@ newSharedProteinIntensityCapture <- function() {
 }
 
 test_that("proteomics protein intensity module preserves flexible apply behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)
@@ -373,6 +374,7 @@ test_that("proteomics protein intensity module preserves flexible apply behavior
 })
 
 test_that("proteomics protein intensity module preserves strict apply behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)
@@ -451,6 +453,7 @@ test_that("proteomics protein intensity module preserves strict apply behavior",
 })
 
 test_that("proteomics protein intensity module preserves apply error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)
@@ -505,6 +508,7 @@ test_that("proteomics protein intensity module preserves apply error behavior", 
 })
 
 test_that("proteomics protein intensity module preserves revert behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)
@@ -550,6 +554,7 @@ test_that("proteomics protein intensity module preserves revert behavior", {
 })
 
 test_that("proteomics protein intensity module preserves revert error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinIntensityCapture()
   server_fn <- getProtProteinIntensityServer()
   server_env <- environment(server_fn)

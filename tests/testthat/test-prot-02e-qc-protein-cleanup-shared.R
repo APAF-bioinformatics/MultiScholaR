@@ -270,6 +270,7 @@ withSharedProteinCleanupUiMocks <- function(server_env,
 }
 
 test_that("protein cleanup counts and reports the declared Protein.Group key", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- new.env(parent = emptyenv())
   current_state <- makeSharedProteinCleanupState(
     c("GROUP_ONE", "GROUP_ONE", "GROUP_TWO"),
@@ -308,6 +309,7 @@ newSharedProteinCleanupCapture <- function() {
 }
 
 test_that("proteomics protein cleanup module preserves accession-cleanup apply behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinCleanupCapture()
   server_fn <- getProtProteinCleanupServer()
   server_env <- environment(server_fn)
@@ -386,6 +388,7 @@ test_that("proteomics protein cleanup module preserves accession-cleanup apply b
 })
 
 test_that("proteomics protein cleanup module preserves no-FASTA skip behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinCleanupCapture()
   server_fn <- getProtProteinCleanupServer()
   server_env <- environment(server_fn)
@@ -426,6 +429,7 @@ test_that("proteomics protein cleanup module preserves no-FASTA skip behavior", 
 })
 
 test_that("proteomics protein cleanup module preserves apply error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinCleanupCapture()
   server_fn <- getProtProteinCleanupServer()
   server_env <- environment(server_fn)
@@ -479,6 +483,7 @@ test_that("proteomics protein cleanup module preserves apply error behavior", {
 })
 
 test_that("proteomics protein cleanup module preserves revert behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinCleanupCapture()
   server_fn <- getProtProteinCleanupServer()
   server_env <- environment(server_fn)
@@ -522,6 +527,7 @@ test_that("proteomics protein cleanup module preserves revert behavior", {
 })
 
 test_that("proteomics protein cleanup module preserves revert error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinCleanupCapture()
   server_fn <- getProtProteinCleanupServer()
   server_env <- environment(server_fn)

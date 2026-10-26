@@ -102,62 +102,7 @@ runPeptideRollupApplyStep <- function(workflowData,
                                       rollupFn = rollUpPrecursorToPeptide,
                                       logInfoFn = logger::log_info,
                                       nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) return(runDIAReferencePrecursorRollup(workflowData))
-
-  shiny::req(workflowData$state_manager)
-  manager <- workflowData$state_manager
-  predecessor <- getDIACurrentReference(manager)
-  # The in-memory manager runs the R kernel in process; the adapter took the reference path above
-  # (the non-exact capacity rollup arm of the PERF era was removed in KIT-011).
-  currentS4 <- getDIAExecutionState(manager, "rollUpPrecursorToPeptide")
-  shiny::req(currentS4)
-
-  logInfoFn("QC Step: Applying precursor rollup")
-
-  rolledUpS4 <- rollupFn(currentS4)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$peptide_qc)) {
-    workflowData$qc_params$peptide_qc <- list()
-  }
-
-  rollupSummary <- .peptideRollupSummaryFromObject(rolledUpS4)
-  workflowData$qc_params$peptide_qc$precursor_rollup <- list(
-    applied = TRUE,
-    timestamp = nowFn(),
-    summary = rollupSummary
-  )
-
-  rolledUpS4 <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = currentS4,
-    after = rolledUpS4,
-    stage_id = "precursor_rollup",
-    state_name = "precursor_rollup",
-    config_object = list(rollup_summary = rollupSummary),
-    description = "Applied precursor to peptide rollup",
-    now = nowFn(),
-    transformation_type = "aggregation"
-  )
-
-  releaseDIAWorkingReference(manager, predecessor)
-  currentS4 <- rollup_result <- NULL
-  proteinCount <- .countPeptideProteinGroups(rolledUpS4)
-
-  resultText <- paste(
-    "Precursor Rollup Applied Successfully\n",
-    "====================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    paste0(.formatPeptideRollupSummary(rollupSummary), "\n"),
-    "State saved as: 'precursor_rollup'\n"
-  )
-
-  list(
-    rolledUpS4 = rolledUpS4,
-    resultText = resultText
-  )
+  runDIAReferencePrecursorRollup(workflowData)
 }
 
 updatePeptideRollupOutputs <- function(output,
@@ -246,7 +191,7 @@ runPeptideRollupApplyObserver <- function(workflowData,
 
 runPeptideRollupRevertStep <- function(workflowData,
                                        logInfoFn = logger::log_info) {
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
   }
@@ -313,7 +258,7 @@ mod_prot_qc_peptide_rollup_server <- function(id, workflow_data, omic_type, expe
 
     # Step 2: Precursor Rollup (chunk 11)
     shiny::observeEvent(input$apply_rollup, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list())
         return(invisible(NULL))
       }

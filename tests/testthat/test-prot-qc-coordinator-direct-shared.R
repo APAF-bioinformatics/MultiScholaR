@@ -14,6 +14,8 @@ makeQcStateManager <- function(workflow_type, s4_obj = NULL, final_state = TRUE)
     list(
       workflow_type = workflow_type,
       states = list(protein_replicate_filtered = final_state),
+      # KIT-048: the QC tab reads the head's history for the protein S4 state
+      getHistory = function() if (!is.null(s4_obj)) list("initial", "protein_s4_initial") else list("initial"),
       getState = function(name) {
         if (identical(name, "protein_s4_initial")) {
           return(s4_obj)
@@ -114,7 +116,6 @@ test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path"
   localQcServerMocks(captured)
   testthat::local_mocked_bindings(
     mod_prot_qc_protein_ui = function(id, workflow_type) paste("protein-ui", id, workflow_type, sep = "::"),
-    mod_prot_qc_protein_s4_ui = function(id) paste("protein-s4-ui", id, sep = "::"),
     mod_prot_qc_peptide_ui = function(id, workflowType = "DIA") paste("peptide-ui", id, sep = "::"),
     mod_prot_qc_protein_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
       captured$calls[[length(captured$calls) + 1L]] <<- list(
@@ -125,10 +126,6 @@ test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path"
         omic_type = omic_type,
         experiment_label = experiment_label
       )
-      invisible(NULL)
-    },
-    mod_prot_qc_protein_s4_server = function(...) {
-      captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_s4_server")
       invisible(NULL)
     },
     mod_prot_qc_peptide_server = function(...) {
@@ -204,14 +201,9 @@ test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path"
   localQcServerMocks(captured)
   testthat::local_mocked_bindings(
     mod_prot_qc_protein_ui = function(id, workflow_type) paste("protein-ui", id, workflow_type, sep = "::"),
-    mod_prot_qc_protein_s4_ui = function(id) paste("protein-s4-ui", id, sep = "::"),
     mod_prot_qc_peptide_ui = function(id, workflowType = "DIA") paste("peptide-ui", id, sep = "::"),
     mod_prot_qc_protein_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
       captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_server", id = id)
-      invisible(NULL)
-    },
-    mod_prot_qc_protein_s4_server = function(id, workflow_data, omic_type, experiment_label) {
-      captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_s4_server", id = id)
       invisible(NULL)
     },
     mod_prot_qc_peptide_server = function(...) {
@@ -245,12 +237,10 @@ test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path"
 
   tabs <- captured$output$dynamic_qc_tabs
   expect_identical(tabs$id, "qc-qc_tabs_tmt")
-  expect_identical(vapply(tabs$tabs, `[[`, character(1), "title"), c("Initial Protein Processing", "Protein QC"))
-  expect_identical(
-    vapply(captured$calls, `[[`, character(1), "fn"),
-    c("protein_s4_server", "protein_server")
-  )
-  expect_true(any(grepl("S4 object not found", captured$logs, fixed = TRUE)))
+  # KIT-048: no fallback creation tab; the Protein QC tab alone, with a warning that the design step must run first.
+  expect_identical(vapply(tabs$tabs, `[[`, character(1), "title"), "Protein QC")
+  expect_identical(vapply(captured$calls, `[[`, character(1), "fn"), "protein_server")
+  expect_true(any(grepl("protein_s4_initial not found", captured$logs, fixed = TRUE)))
 })
 
 test_that("proteomics QC coordinator preserves the DIA peptide-plus-protein routing path", {
@@ -261,14 +251,9 @@ test_that("proteomics QC coordinator preserves the DIA peptide-plus-protein rout
   localQcServerMocks(captured)
   testthat::local_mocked_bindings(
     mod_prot_qc_protein_ui = function(id, workflow_type) paste("protein-ui", id, workflow_type, sep = "::"),
-    mod_prot_qc_protein_s4_ui = function(id) paste("protein-s4-ui", id, sep = "::"),
     mod_prot_qc_peptide_ui = function(id, workflowType = "DIA") paste("peptide-ui", id, sep = "::"),
     mod_prot_qc_protein_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
       captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_server", id = id)
-      invisible(NULL)
-    },
-    mod_prot_qc_protein_s4_server = function(...) {
-      captured$calls[[length(captured$calls) + 1L]] <<- list(fn = "protein_s4_server")
       invisible(NULL)
     },
     mod_prot_qc_peptide_server = function(id, workflow_data, experiment_paths, omic_type, experiment_label) {

@@ -848,10 +848,76 @@ workflowDiaRouteType <- function(method) {
 #' @param data_type The reader's `data_type` when known before the read (the Spectronaut quantity choice).
 #' @return Current or newly attached state manager, invisibly.
 #' @noRd
+#' KIT-048: the proteomics session's state owner from session start. The store is created under the project's
+#' source directory with a pending identity (`PROTEOMICS-pending` / `PENDING`) and the placeholder `initial` state;
+#' the import binds the format and the workflow type to it (`bindDIASessionOwnerType`). Every proteomics module then
+#' runs on the owner: there is no in-memory path. The in-memory `WorkflowState` lives on inside the adapter only.
+#' @param workflow_data,session The proteomics bus and the Shiny session.
+#' @param experiment_paths Project paths with `source_dir`.
+#' @return The attached owner (a `DIAStateAdapter`).
+#' @noRd
+createDIASessionOwner <- function(workflow_data, experiment_paths, session) {
+    if (!is.list(experiment_paths) || !is.character(experiment_paths$source_dir) || length(experiment_paths$source_dir) != 1L ||
+        !dir.exists(experiment_paths$source_dir)) {
+        cli::cli_abort("the proteomics session needs a project source directory for its state owner", class = "saved_entity_scope")
+    }
+    if (!workflowOwnerCapable()) {
+        cli::cli_abort("proteomics needs the qs2, DuckDB and Arrow packages for its state owner", class = "saved_entity_unsupported")
+    }
+    root <- normalizePath(experiment_paths$source_dir, mustWork = TRUE)
+    state_root <- tempfile(".dia-native-", tmpdir = root)
+    if (!dir.create(state_root, mode = "0700")) {
+        cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
+    }
+    store <- newWorkflowEntityStore(state_root, "PROTEOMICS-pending", "PENDING", max_cache_bytes = 0)
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$sql_rollup <- TRUE
+    manager$.context$session_format <- "native_v1"
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- experiment_paths
+    attachDIAStateSession(manager, session, workflow_data)
+}
+
+#' Whether an owner still carries the pending identity of `createDIASessionOwner` (no import has bound it).
+#' @noRd
+isDIASessionOwnerPending <- function(manager) {
+    inherits(manager, "DIAStateAdapter") && identical(manager$.context$store$identity$workflow_id, "PENDING")
+}
+
+#' KIT-048: bind an import's format and workflow type to a pending owner: the store marker is rewritten with the
+#' identity the import-time creation used to give (`workflowNativeStoreLabel(format, type)` / the type), the
+#' store's and the head's identity follow, and the manager's type is set. The `initial` state stays.
+#' @noRd
+bindDIASessionOwnerType <- function(manager, format, workflow_type) {
+    if (!isDIASessionOwnerPending(manager)) cli::cli_abort("the owner is already bound to a route", class = "saved_entity_scope")
+    if (!identical(manager$current_state, "initial") || length(manager$getHistory()) != 1L) {
+        cli::cli_abort("reset the project before activating an on-disk session", class = "saved_entity_scope")
+    }
+    store <- manager$.context$store
+    identity <- store$identity
+    identity$project_id <- workflowNativeStoreLabel(format, workflow_type)
+    identity$workflow_id <- workflow_type
+    marker <- file.path(store$directory, "store.json")
+    jsonlite::write_json(identity, marker, auto_unbox = TRUE)
+    store$identity <- readSavedStoreIdentity(marker)
+    manager$.context$snapshot$identity <- store$identity
+    manager$setWorkflowType(workflow_type)
+    invisible(manager)
+}
+
 initializeDIANativeImport <- function(workflow_data, paths, session, format, method = "iq", data_type = NULL) {
     manager <- workflow_data$state_manager
     route <- workflowDiaRouteType(method)
     workflow_type <- workflowTypeForImportFormat(format, data_type, route)
+    # KIT-048: the session's owner exists from session start with a pending identity; the import binds it.
+    if (isDIASessionOwnerPending(manager)) {
+        if (is.na(workflow_type)) return(invisible(manager))
+        if (identical(workflow_type, "DIA_LIMPA") && !requireNamespace("limpa", quietly = TRUE))
+            cli::cli_abort("DIA with limpa needs the limpa package; fastlimpadpc is the default engine when installed",
+                class = "workflow_engine_unavailable")
+        manager$.context$experiment_paths <- paths
+        return(invisible(bindDIASessionOwnerType(manager, format, workflow_type)))
+    }
     # KIT-046: a DIA-NN import's type is the chosen route, set on the manager before the import on every platform
     # (the in-memory manager too), so the import applies the type the user chose.
     if (identical(format, "diann") && !is.na(workflow_type) && !inherits(manager, "DIAStateAdapter"))

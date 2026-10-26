@@ -210,7 +210,6 @@ runProtNormModuleServerShell <- function(
 
   shiny::observeEvent(workflowData$native_session_restored, {
     manager <- workflowData$state_manager
-    if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
     withDIAStateScope(manager, function() {
       context <- manager$.context
       extra <- context$native_extra_references %||% list()
@@ -222,7 +221,7 @@ runProtNormModuleServerShell <- function(
       normData$ruv_normalized_obj <- extra$ruv_normalized_obj %||%
         getDIAStateReference(manager, "ruv_corrected") %||% getDIAStateReference(manager, "normalized")
       normData$correlation_filtered_obj <- getDIAStateReference(manager, "correlation_filtered")
-      active_history <- manager$getHistory()
+      active_history <- diaStateHistory(manager)
       normalized_active <- any(c("normalized", "ruv_corrected", "correlation_filtered") %in% active_history)
       normData$normalization_complete <- normalized_active && !is.null(normData$normalized_protein_obj)
       normData$ruv_complete <- normalized_active && !is.null(normData$ruv_normalized_obj)

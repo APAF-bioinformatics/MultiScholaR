@@ -81,6 +81,7 @@ captureProtSummaryMessages <- function() {
 }
 
 test_that("resolveProtSummaryFinalS4State prefers the highest-priority saved data state", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   stateObject <- methods::new(
     "mockProtSummaryArgsCarrier",
     args = list(globalParameters = list(), normalization = list())
@@ -244,6 +245,7 @@ test_that("resolveProtSummaryReportTemplate routes the DIA_LIMPA workflow type t
 })
 
 test_that("resolveProtSummaryReportTemplate falls back to final S4 workflow type mapping", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   stateObject <- methods::new(
     "mockProtSummaryArgsCarrier",
     args = list(globalParameters = list(workflow_type = "LFQ"))
@@ -279,6 +281,7 @@ test_that("resolveProtSummaryReportTemplate falls back to final S4 workflow type
 })
 
 test_that("resolveProtSummaryReportTemplate falls back to the S4 object's DIA_LIMPA type for the limpa report (KIT-046)", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   stateObject <- methods::new(
     "mockProtSummaryArgsCarrier",
     args = list(

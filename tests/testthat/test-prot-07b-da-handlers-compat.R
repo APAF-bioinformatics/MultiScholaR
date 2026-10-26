@@ -474,6 +474,7 @@ test_that("writeInteractiveVolcanoPlotProteomicsMain errors clearly for missing 
 })
 
 test_that("da_server_run_analysis_handler processes full-format contrasts and qvalue warnings", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   obj <- make_mock_protein_da_object()
   da_data <- shiny::reactiveValues(
     da_results_list = NULL,
@@ -605,6 +606,7 @@ test_that("da_server_run_analysis_handler processes full-format contrasts and qv
 })
 
 test_that("da_server_run_analysis_handler auto-generates contrast format and tolerates output write failure", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   obj <- make_mock_protein_da_object()
   da_data <- shiny::reactiveValues(
     da_results_list = NULL,

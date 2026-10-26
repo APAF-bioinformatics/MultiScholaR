@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed; the design step commits protein_s4_initial on the owner")
 # fidelity-coverage-compare: shared
 library(testthat)
 

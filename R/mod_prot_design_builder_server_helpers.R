@@ -208,7 +208,7 @@ buildDIAReferenceDesignState <- function(manager, reference, config_list, column
     metadata <- getDIAImportMetadata(manager)
     if (!identical(metadata$reference_id, reference$entity_id) ||
         !identical(metadata$column_mapping, column_mapping)) {
-        if (usesDIAReferenceStates(manager) && isWorkflowTableReference(reference)) {
+        if (isWorkflowTableReference(reference)) {
             cli::cli_abort("saved import metadata is missing or mismatched", class = "saved_entity_corrupt")
         }
         # Older validated native sessions have no import summary. Derive it once,
@@ -223,15 +223,8 @@ buildDIAReferenceDesignState <- function(manager, reference, config_list, column
         !identical(initial$column_mapping, column_mapping)) {
         cleaned_reference <- reference
         if (length(metadata$needs_numeric)) {
-            if (usesDIAReferenceStates(manager)) {
-                cleaned_reference <- transformDIADesignTable(manager, reference,
-                    numeric_columns = metadata$needs_numeric, strip_parser = TRUE)
-            } else {
-                converted <- buildProtDesignInitialState(resolveDIAOwnedValue(reference, manager),
-                    config_list, column_mapping)
-                cleaned_reference <- saveDIAOwnedValue(converted$data_cln, "design-numeric", manager)
-                converted <- NULL
-            }
+            cleaned_reference <- transformDIADesignTable(manager, reference,
+                numeric_columns = metadata$needs_numeric, strip_parser = TRUE)
         }
         initial <- list(source_reference = reference, column_mapping = column_mapping,
             data_reference = cleaned_reference)

@@ -8,7 +8,7 @@ buildProtDesignStateCheckpoint <- function(
     dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
   logger::log_info("Created tech_rep_group column for proper technical replicate identification")
 
-  if (workflowType %in% c("DIA", "DIA_LIMPA") && usesDIAReferenceStates(workflowData$state_manager)) { # KIT-046: both DIA-NN routes are peptide-level
+  if (workflowType %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level; KIT-048: the owner is the one path
     checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
       workflowData$design_matrix, workflowData$config_list)
     # KIT-025; KIT-038: the design step declares the three design roles it binds, with their values.
@@ -21,16 +21,7 @@ buildProtDesignStateCheckpoint <- function(
     return("raw_data_s4")
   }
 
-  if (workflowType %in% c("DIA", "DIA_LIMPA")) {
-    s4Object <- PeptideQuantitativeDataDiann(
-      peptide_data = getDIAOwnedPayload(workflowData, "data_cln"),
-      design_matrix = workflowData$design_matrix,
-      technical_replicate_id = "tech_rep_group",
-      args = workflowData$config_list
-    )
-    stateName <- "raw_data_s4"
-    description <- "Initial Peptide S4 object created after design matrix."
-  } else if (workflowType %in% c("TMT", "LFQ")) {
+  if (workflowType %in% c("TMT", "LFQ")) {
     logger::log_info(sprintf("%s workflow: Reshaping protein data from long to wide format for S4 creation.", workflowType))
 
     if (validateColumnMapping) {
@@ -106,7 +97,7 @@ buildProtDesignStateCheckpoint <- function(
   # KIT-038: on an owner (KIT-020) the protein-level design step records its fixed transform.
   setDIAStepProvenance(workflowData$state_manager, "design_builder",
     fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
-  workflowData$state_manager$saveState(
+  saveDIAOwnerState(workflowData$state_manager, 
     state_name = stateName,
     s4_data_object = s4Object,
     config_object = workflowData$config_list,
@@ -176,9 +167,7 @@ completeProtDesignPostCheckpoint <- function(
     }
 
     uniprotDatCln <- getUniprotAnnotationsFull(
-      data_tbl = if (usesDIAReferenceStates(workflowData$state_manager))
-        readDIAAnnotationIdentifiers(workflowData$state_manager, workflowData$data_cln, proteinColumn) else
-        getDIAOwnedPayload(workflowData, "data_cln"),
+      data_tbl = readDIAAnnotationIdentifiers(workflowData$state_manager, workflowData$data_cln, proteinColumn),
       protein_id_column = proteinColumn,
       cache_dir = uniprotCacheDir,
       taxon_id = workflowData$taxon_id,

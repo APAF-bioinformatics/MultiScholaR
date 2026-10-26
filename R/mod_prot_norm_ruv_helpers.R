@@ -430,7 +430,7 @@ finalizeProtNormRuvCleanupStep <- function(
   messageFn("*** STEP 5: Saving state to R6 state manager ***")
 
   tryCatch({
-    workflowData$state_manager$saveState(
+    saveDIAOwnerState(workflowData$state_manager, 
       state_name = "ruv_corrected",
       s4_data_object = ruv_corrected_s4_clean,
       config_object = list(

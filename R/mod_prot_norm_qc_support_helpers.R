@@ -409,7 +409,7 @@ saveProtNormQcPlotArtifact <- function(
   artifactPath <- file.path(qcDir, filename)
   manager <- getDIAActiveManager()
   product_reference <- attr(plotObject, "dia_product_reference", exact = TRUE)
-  if (usesDIAReferenceStates(manager) && isSavedWorkflowReference(product_reference)) {
+  if (isSavedWorkflowReference(product_reference)) {
     dimensions <- as.integer(c(width, height) * dpi)
     aesthetics <- attr(plotObject, "dia_render_aesthetics", exact = TRUE)
     aesthetics <- aesthetics[!vapply(aesthetics, is.null, logical(1))]

@@ -65,39 +65,7 @@ runProteinPeptideCountStep <- function(workflowData, minPeptides, minPeptidoform
                                        filterMinNumPeptidesPerProteinFn = filterMinNumPeptidesPerProtein,
                                        logInfoFn = logger::log_info,
                                        nowFn = Sys.time) {
-  parameters <- list(num_peptides_per_protein_thresh = as.numeric(minPeptides), num_peptidoforms_per_protein_thresh = as.numeric(minPeptidoforms))
-  if (usesDIAReferenceStates(workflowData$state_manager)) return(runDIAReferenceProteinPeptideCountFilter(workflowData, parameters))
-
-  shiny::req(workflowData$state_manager)
-  manager <- workflowData$state_manager
-  predecessor <- getDIACurrentReference(manager)
-  currentS4 <- getDIAExecutionState(manager, "filterMinNumPeptidesPerProtein")
-  shiny::req(currentS4)
-  logInfoFn(sprintf("Protein Processing: peptide count filter (%s peptides, %s peptidoforms)", minPeptides, minPeptidoforms))
-  proteinsBefore <- nrow(currentS4@protein_quant_table)
-  filteredS4 <- suppressMessages(filterMinNumPeptidesPerProteinFn(currentS4,
-    num_peptides_per_protein_thresh = parameters$num_peptides_per_protein_thresh,
-    num_peptidoforms_per_protein_thresh = parameters$num_peptidoforms_per_protein_thresh, verbose = FALSE))
-  proteinsAfter <- nrow(filteredS4@protein_quant_table)
-  config <- list(num_peptides_per_protein_thresh = parameters$num_peptides_per_protein_thresh,
-    num_peptidoforms_per_protein_thresh = parameters$num_peptidoforms_per_protein_thresh,
-    proteins_before = proteinsBefore, proteins_after = proteinsAfter)
-  if (is.null(workflowData$qc_params)) workflowData$qc_params <- list()
-  if (is.null(workflowData$qc_params$protein_qc)) workflowData$qc_params$protein_qc <- list()
-  workflowData$qc_params$protein_qc$peptide_count_filter <- c(config, list(timestamp = nowFn()))
-  filteredS4 <- inheritDIAExecutionSource(filteredS4, manager, predecessor)
-  manager$saveState(state_name = "peptide_count_filtered", s4_data_object = filteredS4, config_object = config,
-    description = "Applied minimum peptide evidence filter on the quantified protein object")
-  releaseDIAWorkingReference(manager, predecessor)
-  currentS4 <- NULL
-  resultText <- paste(
-    "Peptide Count Filter Applied Successfully\n",
-    "=========================================\n",
-    sprintf("Proteins remaining: %d (removed %d)\n", proteinsAfter, proteinsBefore - proteinsAfter),
-    sprintf("Min unique peptides per protein: %d\n", as.integer(minPeptides)),
-    sprintf("Min peptidoforms per protein: %d\n", as.integer(minPeptidoforms)),
-    "State saved as: 'peptide_count_filtered'\n")
-  finishDIAProteinAction(workflowData, list(filteredS4 = filteredS4, resultText = resultText), "filteredS4")
+  runDIAReferenceProteinPeptideCountFilter(workflowData, parameters)
 }
 
 updateProteinPeptideCountOutputs <- function(output, peptideCountPlot, filterResult, omicType, experimentLabel,
@@ -143,7 +111,7 @@ runProteinPeptideCountRevertObserver <- function(workflowData, output,
                                                  logErrorFn = logger::log_error) {
   withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
-    history <- workflowData$state_manager$getHistory()
+    history <- diaStateHistory(workflowData$state_manager)
     if (length(history) <= 1) stop("No previous state to revert to.")
     previousState <- history[length(history) - 1]
     selectDIAStateReference(workflowData$state_manager, previousState)
@@ -178,7 +146,7 @@ mod_prot_qc_protein_peptide_count_server <- function(id, workflow_data, experime
     shiny::observeEvent(input$apply_peptide_count, {
       parameters <- list(num_peptides_per_protein_thresh = as.numeric(input$num_peptides_per_protein_thresh),
         num_peptidoforms_per_protein_thresh = as.numeric(input$num_peptidoforms_per_protein_thresh))
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(parameters)
         return(invisible(NULL))
       }

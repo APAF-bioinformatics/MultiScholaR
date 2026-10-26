@@ -213,8 +213,9 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
       data_cln = NULL,
       contrasts_tbl = NULL,
 
-      # Keep checkpoints; the additional whole-table provenance audit is opt-in.
-      state_manager = WorkflowState$new(audit_enabled = FALSE),
+      # KIT-048: the state owner is created on the project's store once the experiment paths are known (below);
+      # proteomics has no in-memory path.
+      state_manager = NULL,
 
       # Legacy S4 object slots (can be deprecated later)
       peptide_data = NULL,
@@ -261,6 +262,8 @@ mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label,
     }
 
     experiment_paths <- project_dirs[[paths_key]]
+    # KIT-048: the session's state owner from the start, bound to the route at import.
+    workflow_data$state_manager <- createDIASessionOwner(workflow_data, experiment_paths, session)
     checkpoint_status <- shiny::reactiveVal("")
     output$peptide_checkpoint_status <- shiny::renderText(checkpoint_status())
     checkpoint_volumes <- NULL

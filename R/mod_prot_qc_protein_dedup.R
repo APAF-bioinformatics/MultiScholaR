@@ -75,96 +75,16 @@ runProteinDuplicateRemovalStep <- function(workflowData,
                                           aggregationMethod,
                                           aggregationResolverFn = base::get,
                                           logInfoFn = logger::log_info) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    pending <- if (identical(workflowData$state_manager$current_state, "duplicates_removed"))
-      resumeDIAProteinAction(workflowData, "duplicates_removed") else NULL
-    if (!is.null(pending)) return(pending)
-    # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
-    entry <- workflowActionSpec("protein_duplicate_removal")
-    parameters <- list(aggregation_method = aggregationMethod)
-    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceProteinDuplicateRemoval(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
-      parameters, variant = entry$default_variant, aggregation_resolver = aggregationResolverFn)
-    return(finishDIAReferenceProteinStep(workflowData, value))
-  }
-
-  shiny::req(workflowData$state_manager)
-
-  currentS4 <- readDIAProteinScience(workflowData$state_manager)
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf(
-    "Protein Processing: Removing duplicate proteins using %s",
-    aggregationMethod
-  ))
-
-  duplicates <- currentS4@protein_quant_table |>
-    dplyr::group_by(.data[[currentS4@protein_id_column]]) |>
-    dplyr::filter(dplyr::n() > 1) |>
-    dplyr::select(dplyr::all_of(currentS4@protein_id_column)) |>
-    dplyr::distinct() |>
-    dplyr::pull(dplyr::all_of(currentS4@protein_id_column))
-
-  aggregationFn <- aggregationResolverFn(aggregationMethod)
-  proteinIdColumn <- if (isS4(currentS4) &&
-                         "protein_id_column" %in% methods::slotNames(currentS4)) {
-    currentS4@protein_id_column
-  } else {
-    "Protein.Ids"
-  }
-  if (is.null(proteinIdColumn) || !nzchar(proteinIdColumn)) {
-    proteinIdColumn <- "Protein.Ids"
-  }
-  quantColumns <- setdiff(colnames(currentS4@protein_quant_table), proteinIdColumn)
-  numericQuantColumns <- quantColumns[vapply(
-    currentS4@protein_quant_table[quantColumns],
-    is.numeric,
-    logical(1)
-  )]
-  if (length(numericQuantColumns) == 0L) {
-    stop("No numeric protein intensity columns available for duplicate removal.")
-  }
-
-  currentS4@protein_quant_table <- currentS4@protein_quant_table |>
-    dplyr::group_by(!!rlang::sym(proteinIdColumn)) |>
-    dplyr::summarise(
-      dplyr::across(dplyr::all_of(numericQuantColumns), ~ aggregationFn(.x, na.rm = TRUE)),
-      .groups = "drop"
-    ) |>
-    dplyr::ungroup()
-
-  currentS4 <- inheritDIAExecutionSource(currentS4, workflowData$state_manager, predecessor)
-  workflowData$state_manager$saveState(
-    state_name = "duplicates_removed",
-    s4_data_object = currentS4,
-    config_object = list(
-      aggregation_method = aggregationMethod,
-      duplicates_found = duplicates,
-      num_duplicates = length(duplicates)
-    ),
-    description = "Removed duplicate proteins by aggregation"
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  proteinCount <- currentS4@protein_quant_table |>
-    dplyr::distinct(.data[[currentS4@protein_id_column]]) |>
-    nrow()
-
-  resultText <- paste(
-    "Duplicate Protein Removal Completed Successfully\n",
-    "===============================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Duplicates found: %d\n", length(duplicates)),
-    sprintf("Aggregation method: %s\n", aggregationMethod),
-    "State saved as: 'duplicates_removed'\n"
-  )
-
-  finishDIAProteinAction(workflowData, list(
-    deduplicatedS4 = currentS4,
-    duplicates = duplicates,
-    resultText = resultText
-  ), "deduplicatedS4")
+  pending <- if (identical(workflowData$state_manager$current_state, "duplicates_removed"))
+    resumeDIAProteinAction(workflowData, "duplicates_removed") else NULL
+  if (!is.null(pending)) return(pending)
+  # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
+  entry <- workflowActionSpec("protein_duplicate_removal")
+  parameters <- list(aggregation_method = aggregationMethod)
+  validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+  value <- computeDIAReferenceProteinDuplicateRemoval(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+    parameters, variant = entry$default_variant, aggregation_resolver = aggregationResolverFn)
+  return(finishDIAReferenceProteinStep(workflowData, value))
 }
 
 updateProteinDuplicateRemovalOutputs <- function(output,
@@ -244,7 +164,7 @@ runProteinDuplicateRemovalApplyObserver <- function(workflowData,
 
 runProteinDuplicateRemovalRevertStep <- function(workflowData) {
   shiny::req(workflowData$state_manager)
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
 
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
@@ -320,7 +240,7 @@ mod_prot_qc_protein_dedup_server <- function(id, workflow_data, experiment_paths
     
     # Step 4: Duplicate Protein Removal (chunk 22)
     shiny::observeEvent(input$apply_duplicate_removal, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(aggregation_method = input$duplicate_aggregation_method))
         return(invisible(NULL))
       }

@@ -496,7 +496,7 @@ encodePeptideQcKeyColumn <- function(column) {
 .peptideQcCurrentStateName <- function(state_manager) {
   current <- tryCatch(state_manager$current_state, error = function(e) NULL)
   if (!is.null(current) && length(current) == 1L && nzchar(current)) return(current)
-  history <- tryCatch(state_manager$getHistory(), error = function(e) character(0))
+  history <- tryCatch(diaStateHistory(state_manager), error = function(e) character(0))
   if (length(history) > 0L) tail(history, 1L) else "legacy_untracked_state"
 }
 
@@ -624,7 +624,7 @@ encodePeptideQcKeyColumn <- function(column) {
     )
     config_object$audit_record_id <- after@args$peptide_qc_audit$current_record_id
   }
-  state_manager$saveState(
+  saveDIAOwnerState(state_manager, 
     state_name = state_name,
     s4_data_object = after,
     config_object = config_object,

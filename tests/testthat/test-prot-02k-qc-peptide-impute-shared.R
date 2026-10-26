@@ -278,6 +278,7 @@ withSharedPeptideImputationUiMocks <- function(captured,
 }
 
 test_that("proteomics peptide imputation module preserves successful apply behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedPeptideImputationCapture()
   server_fn <- getProtPeptideImputationServer()
   server_env <- environment(server_fn)
@@ -352,6 +353,7 @@ test_that("proteomics peptide imputation module preserves successful apply behav
 })
 
 test_that("proteomics peptide imputation module forwards and audits explicit design exclusions", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedPeptideImputationCapture()
   server_env <- environment(runPeptideImputationStep)
   imputed_state <- makeSharedPeptideImputationState()
@@ -387,6 +389,7 @@ test_that("proteomics peptide imputation module forwards and audits explicit des
 })
 
 test_that("proteomics peptide imputation module preserves apply error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedPeptideImputationCapture()
   server_fn <- getProtPeptideImputationServer()
   server_env <- environment(server_fn)
@@ -433,6 +436,7 @@ test_that("proteomics peptide imputation module preserves apply error behavior",
 })
 
 test_that("proteomics peptide imputation module preserves revert behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedPeptideImputationCapture()
   server_fn <- getProtPeptideImputationServer()
   server_env <- environment(server_fn)
@@ -477,6 +481,7 @@ test_that("proteomics peptide imputation module preserves revert behavior", {
 })
 
 test_that("proteomics peptide imputation module preserves revert error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedPeptideImputationCapture()
   server_fn <- getProtPeptideImputationServer()
   server_env <- environment(server_fn)

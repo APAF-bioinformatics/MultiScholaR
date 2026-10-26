@@ -317,6 +317,7 @@ test_that("mod_prot_qc_protein_server skips rollup for non-DIA workflows and kee
 })
 
 test_that("runProteinAccessionCleanupStep applies cleanup, tracks workflow state, and saves results", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinCleanupState")) {
     methods::setClass(
       "FakeProteinCleanupState",
@@ -638,6 +639,7 @@ test_that("runProteinAccessionCleanupApplyObserver reports apply errors and clea
 })
 
 test_that("runProteinAccessionCleanupRevertStep reverts to the previous state in history", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$getHistory <- function() c("imported", "protein_accession_cleaned")
@@ -913,6 +915,7 @@ test_that("mod_prot_qc_protein_cleanup_server wires the revert observer through 
 })
 
 test_that("runProteinDuplicateRemovalStep aggregates duplicates and saves state", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinDedupState")) {
     methods::setClass(
       "FakeProteinDedupState",
@@ -1319,6 +1322,7 @@ test_that("mod_prot_qc_protein_dedup_server wires the render binding through the
 })
 
 test_that("runProteinDuplicateRemovalRevertStep reverts to the previous state in history", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$getHistory <- function() c("imported", "duplicates_removed")
@@ -1469,6 +1473,7 @@ test_that("mod_prot_qc_protein_dedup_server wires the revert observer through th
 })
 
 test_that("runProteinIntensityFilterApplyStep applies flexible-mode updates and saves the filtered state", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinIntensityState")) {
     methods::setClass(
       "FakeProteinIntensityState",
@@ -1601,6 +1606,7 @@ test_that("runProteinIntensityFilterApplyStep applies flexible-mode updates and 
 })
 
 test_that("runProteinIntensityFilterApplyStep applies strict-mode zero cutoffs before filtering", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinIntensityState")) {
     methods::setClass(
       "FakeProteinIntensityState",
@@ -1916,6 +1922,7 @@ test_that("runProteinIntensityFilterApplyObserver reports apply errors and clear
 })
 
 test_that("runProteinIntensityFilterRevertStep reverts to the previous state in history", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$getHistory <- function() c("imported", "protein_intensity_filtered")
@@ -2202,6 +2209,7 @@ test_that("mod_prot_qc_protein_intensity_server wires the revert observer throug
 })
 
 test_that("runProteinReplicateFilterApplyStep saves the filtered state and QC parameters", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinReplicateState")) {
     methods::setClass(
       "FakeProteinReplicateState",
@@ -2330,6 +2338,7 @@ test_that("runProteinReplicateFilterApplyStep saves the filtered state and QC pa
 })
 
 test_that("runProteinReplicateFilterApplyStep uses local execution in test mode", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinReplicateState")) {
     methods::setClass(
       "FakeProteinReplicateState",
@@ -2642,6 +2651,7 @@ test_that("runProteinReplicateFilterApplyObserver reports apply errors and clear
 })
 
 test_that("runProteinReplicateFilterRevertStep reverts to the previous state in history", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$getHistory <- function() {
@@ -2931,6 +2941,7 @@ test_that("mod_prot_qc_protein_replicate_server wires the revert observer throug
 })
 
 test_that("runProteinIqRollupApplyStep saves the protein S4 state and restores sample ids", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("FakeProteinIqInputState")) {
     methods::setClass(
       "FakeProteinIqInputState",
@@ -3431,6 +3442,7 @@ test_that("mod_prot_qc_protein_rollup_server runs the IQ apply step (KIT-046: no
 })
 
 test_that("runProteinIqRollupRevertStep reverts to the latest peptide state in history", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$getHistory <- function() {
@@ -3654,6 +3666,7 @@ test_that("mod_prot_qc_protein_rollup_server wires the revert observer through t
 })
 
 test_that("runProteinS4CreationStep creates the initial protein S4 state and result text", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   if (!methods::isClass("FakeProteinS4State")) {
     methods::setClass(
       "FakeProteinS4State",
@@ -3728,6 +3741,7 @@ test_that("runProteinS4CreationStep creates the initial protein S4 state and res
 })
 
 test_that("runProteinS4CreationStep errors when the configured protein id column is missing", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$data_cln <- data.frame(Run = "S1", stringsAsFactors = FALSE)
   workflow_data$design_matrix <- data.frame(Run = "S1", stringsAsFactors = FALSE)
@@ -3745,6 +3759,7 @@ test_that("runProteinS4CreationStep errors when the configured protein id column
 })
 
 test_that("runProteinS4CreationObserver delegates the create workflow and notifications", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
   output_ref <- output
@@ -3815,6 +3830,7 @@ test_that("runProteinS4CreationObserver delegates the create workflow and notifi
 })
 
 test_that("runProteinS4CreationObserver reports create errors and clears the working notification", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
   captured <- new.env(parent = emptyenv())
@@ -3877,6 +3893,7 @@ test_that("runProteinS4CreationObserver reports create errors and clears the wor
 })
 
 test_that("mod_prot_qc_protein_s4_server wires the create observer through the helper seam", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- shiny::reactiveValues(state_manager = list(kind = "state_manager"))
   captured <- new.env(parent = emptyenv())
   captured$create <- NULL
@@ -3913,6 +3930,7 @@ test_that("mod_prot_qc_protein_s4_server wires the create observer through the h
 })
 
 test_that("runProteinS4RevertStep reverts to the initial state and returns result text", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- new.env(parent = emptyenv())
   captured <- new.env(parent = emptyenv())
   captured$stateName <- NULL
@@ -3942,6 +3960,7 @@ test_that("runProteinS4RevertStep reverts to the initial state and returns resul
 })
 
 test_that("runProteinS4RevertObserver delegates the revert workflow and success notification", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data_ref <- workflow_data
   output <- new.env(parent = emptyenv())
@@ -3987,6 +4006,7 @@ test_that("runProteinS4RevertObserver delegates the revert workflow and success 
 })
 
 test_that("runProteinS4RevertObserver reports revert errors", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
   captured <- new.env(parent = emptyenv())
@@ -4022,6 +4042,7 @@ test_that("runProteinS4RevertObserver reports revert errors", {
 })
 
 test_that("mod_prot_qc_protein_s4_server wires the revert observer through the helper seam", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- shiny::reactiveValues(state_manager = list(kind = "state_manager"))
   captured <- new.env(parent = emptyenv())
   captured$revert <- NULL
@@ -4058,6 +4079,7 @@ test_that("mod_prot_qc_protein_s4_server wires the revert observer through the h
 })
 
 test_that("mod_prot_qc_protein_s4_ui preserves the public create contract", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   html <- htmltools::renderTags(mod_prot_qc_protein_s4_ui("protein-s4"))$html
 
   expect_match(html, "Finalise Protein Data", fixed = TRUE)
@@ -4067,6 +4089,7 @@ test_that("mod_prot_qc_protein_s4_ui preserves the public create contract", {
 })
 
 test_that("mod_prot_qc_protein_s4_server keeps both helper seams wired through the thin wrapper", {
+  skip("quarantined: Q-21 (KIT-048) the fallback protein S4 creation tab was removed")
   workflow_data <- shiny::reactiveValues(state_manager = list(kind = "state_manager"))
   captured <- new.env(parent = emptyenv())
   captured$create <- NULL

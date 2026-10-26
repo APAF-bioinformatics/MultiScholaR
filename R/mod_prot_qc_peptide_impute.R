@@ -133,150 +133,15 @@ runPeptideImputationStep <- function(workflow_data,
                                      exclusionColumn = NULL,
                                      updateConfigParameterFn = updateConfigParameter,
                                      skipImputation = FALSE) {
-  if (usesDIAReferenceStates(workflow_data$state_manager)) {
-    parameters <- list(proportion_missing_values = proportionMissingValues, exclusion_column = exclusionColumn)
-    if (isTRUE(skipImputation)) parameters$skip <- TRUE
-    return(runDIAReferencePeptideGroups(workflow_data, "peptideMissingValueImputation", parameters, "imputed",
-      if (isTRUE(skipImputation)) "Missing value imputation skipped by user (missing values kept for IQ)" else
-        "Applied missing value imputation using technical replicates"))
-  }
-
-  current_s4 <- getDIAExecutionState(workflow_data$state_manager, "peptideMissingValueImputation")
-  predecessor <- getDIACurrentReference(workflow_data$state_manager)
-  shiny::req(current_s4)
-
-  if (length(exclusionColumn) == 0L || is.na(exclusionColumn[[1L]]) ||
-      !nzchar(trimws(as.character(exclusionColumn[[1L]])))) {
-    exclusionColumn <- NULL
-  } else {
-    exclusionColumn <- trimws(as.character(exclusionColumn[[1L]]))
-  }
-
-  logger::log_info(sprintf(
-    "QC Step: Applying missing value imputation (proportion: %s)",
-    proportionMissingValues
-  ))
-
-  current_s4 <- updateConfigParameterFn(
-    theObject = current_s4,
-    function_name = "peptideMissingValueImputation",
-    parameter_name = "proportion_missing_values",
-    new_value = proportionMissingValues
-  )
-  if (!is.null(exclusionColumn)) {
-    current_s4 <- updateConfigParameterFn(
-      theObject = current_s4,
-      function_name = "peptideMissingValueImputation",
-      parameter_name = "exclusion_column",
-      new_value = exclusionColumn
-    )
-  }
-
-  imputed_s4 <- if (isTRUE(skipImputation)) {
-    peptideMissingValueImputationSkipped(current_s4, proportionMissingValues, exclusionColumn)
-  } else {
-    peptideMissingValueImputation(
-      theObject = current_s4,
-      proportion_missing_values = proportionMissingValues,
-      exclusion_column = exclusionColumn
-    )
-  }
-  imputation_audit <- .peptideImputationAuditSummary(
-    imputed_s4,
-    proportion_missing_values = proportionMissingValues,
-    exclusion_column = exclusionColumn
-  )
-
-  if (is.null(workflow_data$qc_params)) {
-    workflow_data$qc_params <- list()
-  }
-  if (is.null(workflow_data$qc_params$peptide_qc)) {
-    workflow_data$qc_params$peptide_qc <- list()
-  }
-
-  workflow_data$qc_params$peptide_qc$imputation <- list(
-    proportion_missing_values = proportionMissingValues,
-    exclusion_column = exclusionColumn,
-    imputation_summary = imputation_audit,
-    timestamp = Sys.time()
-  )
-
-  tryCatch({
-    if (exists("experiment_paths") && !is.null(experiment_paths$source_dir)) {
-      qc_params_file <- file.path(experiment_paths$source_dir, "qc_params.RDS")
-      saveRDS(workflow_data$qc_params, qc_params_file)
-      logger::log_info(sprintf("Saved QC parameters to: %s", qc_params_file))
-    }
-  }, error = function(e) {
-    logger::log_warn(sprintf("Could not save QC parameters file: %s", e$message))
-  })
-
-  imputationConfig <- list(
-    proportion_missing_values = proportionMissingValues,
-    exclusion_column = exclusionColumn,
-    imputation_summary = imputation_audit
-  )
-  imputed_s4 <- .savePeptideQcState(
-    state_manager = workflow_data$state_manager,
-    before = current_s4,
-    after = imputed_s4,
-    stage_id = "imputation",
-    state_name = "imputed",
-    config_object = imputationConfig,
-    description = if (identical(imputation_audit$status, "skipped")) {
-      paste("Skipped technical-replicate imputation:", imputation_audit$skip_reason)
-    } else {
-      "Applied missing value imputation using technical replicates"
-    },
-    status = if (identical(imputation_audit$status, "skipped")) "skipped" else "applied",
-    decision_reason = imputation_audit$skip_reason %||% NA_character_,
-    transformation_type = "imputation"
-  )
-
-  # --- TESTTHAT CHECKPOINT CP02 (see test-prot-02-qc-filtering.R) ---
-  releaseDIAWorkingReference(workflow_data$state_manager, predecessor)
-  current_s4 <- NULL
-  .capture_checkpoint(imputed_s4, "cp02", "qc_filtered_peptide")
-  # --- END CP02 ---
-
-  protein_count <- .countPeptideProteinGroups(imputed_s4)
-
-  status_heading <- if (identical(imputation_audit$status, "skipped")) {
-    "Missing Value Imputation Skipped\n"
-  } else {
-    "Missing Value Imputation Applied Successfully\n"
-  }
-  audit_lines <- c(
-    sprintf("Eligibility: missing fraction %s %.1f\n", imputation_audit$eligibility_operator, proportionMissingValues),
-    sprintf("Denominator: %s\n", imputation_audit$eligibility_denominator),
-    sprintf("Quantity column: %s\n", imputation_audit$quantity_column),
-    sprintf("Exclusion source: %s\n", imputation_audit$exclusion_source)
-  )
-  if (!is.na(imputation_audit$imputed_rows)) {
-    audit_lines <- c(audit_lines, sprintf("Rows imputed: %d\n", imputation_audit$imputed_rows))
-  }
-  if (identical(imputation_audit$status, "skipped")) {
-    audit_lines <- c(audit_lines, sprintf("Skip reason: %s\n", imputation_audit$skip_reason))
-  }
-
-  result_text <- paste(
-    status_heading,
-    "============================================\n",
-    sprintf("Proteins remaining: %d\n", protein_count),
-    sprintf("Max proportion missing: %.1f\n", proportionMissingValues),
-    paste(audit_lines, collapse = ""),
-    "State saved as: 'imputed'\n",
-    "\nReady for peptide-to-protein rollup step."
-  )
-
-  list(
-    imputedS4 = imputed_s4,
-    resultText = result_text
-  )
+  parameters <- list(proportion_missing_values = proportionMissingValues, exclusion_column = exclusionColumn)
+  if (isTRUE(skipImputation)) parameters$skip <- TRUE
+  return(runDIAReferencePeptideGroups(workflow_data, "peptideMissingValueImputation", parameters, "imputed",
+    if (isTRUE(skipImputation)) "Missing value imputation skipped by user (missing values kept for IQ)" else
+      "Applied missing value imputation using technical replicates"))
 }
 
 runPeptideImputationRevertStep <- function(workflow_data) {
-  history <- workflow_data$state_manager$getHistory()
+  history <- diaStateHistory(workflow_data$state_manager)
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
   }
@@ -446,7 +311,7 @@ mod_prot_qc_peptide_impute_server <- function(id, workflow_data, omic_type, expe
     # Step 7: Missing Value Imputation (chunk 16)
     shiny::observeEvent(input$apply_imputation, {
       shiny::req(workflow_data$state_manager)
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         parameters <- list(proportion_missing_values = input$proportion_missing_values)
         exclusion <- input$exclusion_column
         if (!is.null(exclusion) && length(exclusion) > 0L && !is.na(exclusion[[1L]]) &&

@@ -283,7 +283,7 @@ da_server_load_session_handler <- function(input, output, session, da_data, work
 
           # Trigger state update for other modules
           manager <- workflow_data$state_manager
-          if (usesDIAReferenceStates(manager) && !is.null(manager$.context$snapshot$da_results)) {
+          if (!is.null(manager$.context$snapshot$da_results)) {
             results <- resolveDIAStateValue(manager$.context, manager$.context$snapshot$da_results)
             if (!isDIAResultManifest(results)) stop("Native DA result metadata is invalid")
             current_components <- readDIAStateMetadata(manager)$data$components

@@ -83,115 +83,8 @@ runPeptideSampleApplyStep <- function(workflowData,
                                       filterMinNumPeptidesPerSampleFn = filterMinNumPeptidesPerSample,
                                       logInfoFn = logger::log_info,
                                       nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    # KIT-008: unmanaged launches run the same declaration the worker runs, in process.
-    return(runDIAReferenceSampleFilter(workflowData, list(peptides_per_sample_cutoff = minPeptidesPerSample)))
-  }
-
-  shiny::req(workflowData$state_manager)
-  currentS4 <- getDIAExecutionState(workflowData$state_manager, "filterMinNumPeptidesPerSample")
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf(
-    "QC Step: Applying sample quality filter (min: %s)",
-    minPeptidesPerSample
-  ))
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "filterMinNumPeptidesPerSample",
-    parameter_name = "peptides_per_sample_cutoff",
-    new_value = minPeptidesPerSample
-  )
-
-  samplesBefore <- currentS4@peptide_data |>
-    dplyr::distinct(!!rlang::sym(currentS4@sample_id)) |>
-    dplyr::pull(!!rlang::sym(currentS4@sample_id))
-
-  filteredS4 <- filterMinNumPeptidesPerSampleFn(
-    theObject = currentS4,
-    peptides_per_sample_cutoff = minPeptidesPerSample
-  )
-  filterSummary <- filteredS4@args$filterMinNumPeptidesPerSample$filter_summary
-
-  samplesAfter <- filteredS4@peptide_data |>
-    dplyr::distinct(!!rlang::sym(filteredS4@sample_id)) |>
-    dplyr::pull(!!rlang::sym(filteredS4@sample_id))
-
-  samplesRemoved <- setdiff(samplesBefore, samplesAfter)
-  samplesRemovedCount <- length(samplesRemoved)
-
-  if (is.null(filteredS4@args$filterMinNumPeptidesPerSample)) {
-    filteredS4@args$filterMinNumPeptidesPerSample <- list()
-  }
-  filteredS4@args$filterMinNumPeptidesPerSample$samples_removed <- samplesRemoved
-  filteredS4@args$filterMinNumPeptidesPerSample$samples_removed_count <- samplesRemovedCount
-  filteredS4@args$filterMinNumPeptidesPerSample$samples_before_count <- length(samplesBefore)
-  filteredS4@args$filterMinNumPeptidesPerSample$samples_after_count <- length(samplesAfter)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$peptide_qc)) {
-    workflowData$qc_params$peptide_qc <- list()
-  }
-
-  workflowData$qc_params$peptide_qc$sample_filter <- list(
-    min_peptides_per_sample = minPeptidesPerSample,
-    samples_removed = samplesRemoved,
-    samples_removed_count = samplesRemovedCount,
-    samples_before_count = length(samplesBefore),
-    samples_after_count = length(samplesAfter),
-    filter_summary = filterSummary,
-    timestamp = nowFn()
-  )
-
-  filteredS4 <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = currentS4,
-    after = filteredS4,
-    stage_id = "sample_filter",
-    state_name = "sample_filtered",
-    config_object = list(
-      min_peptides_per_sample = minPeptidesPerSample,
-      samples_removed = samplesRemoved,
-      samples_removed_count = samplesRemovedCount,
-      filter_summary = filterSummary
-    ),
-    description = "Applied minimum peptides per sample filter",
-    now = nowFn()
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(filteredS4)
-  runCount <- filteredS4@peptide_data |>
-    dplyr::distinct(.data[[filteredS4@sample_id]]) |>
-    nrow()
-
-  resultText <- paste(
-    "Sample Quality Filter Applied Successfully\n",
-    "=========================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Samples remaining: %d\n", runCount),
-    sprintf("Samples removed: %d\n", samplesRemovedCount),
-    sprintf("Min distinct protein-group/stripped-peptide identities per sample: %d\n", minPeptidesPerSample),
-    "State saved as: 'sample_filtered'\n"
-  )
-
-  if (samplesRemovedCount > 0) {
-    resultText <- paste0(
-      resultText,
-      "\nRemoved samples:\n",
-      paste(samplesRemoved, collapse = ", ")
-    )
-  }
-
-  list(
-    filteredS4 = filteredS4,
-    resultText = resultText
-  )
+  # KIT-008: unmanaged launches run the same declaration the worker runs, in process.
+  return(runDIAReferenceSampleFilter(workflowData, list(peptides_per_sample_cutoff = minPeptidesPerSample)))
 }
 
 updatePeptideSampleOutputs <- function(output,
@@ -284,7 +177,7 @@ runPeptideSampleApplyObserver <- function(workflowData,
 
 runPeptideSampleRevertStep <- function(workflowData,
                                        logInfoFn = logger::log_info) {
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
   }
@@ -389,7 +282,7 @@ mod_prot_qc_peptide_sample_server <- function(id, workflow_data, omic_type, expe
 
     # Step 5: Sample Quality Filter (chunk 14)
     shiny::observeEvent(input$apply_sample_filter, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(peptides_per_sample_cutoff = input$min_peptides_per_sample))
         return(invisible(NULL))
       }

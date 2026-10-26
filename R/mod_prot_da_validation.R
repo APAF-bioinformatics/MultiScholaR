@@ -78,7 +78,8 @@ validateProtDaFilteredSession <- function(session_data, source_dir = NULL, manag
   }
 
   object <- session_data$current_s4_object
-  if (isSavedWorkflowReference(object) && usesDIAReferenceStates(manager)) {
+  # A saved reference on the owner, or the S4 object a legacy RDS session carries into the KIT-042 ingest.
+  if (isSavedWorkflowReference(object)) {
     metadata <- readDIAStateMetadata(manager, object)$data
     if (!identical(metadata$class, "ProteinQuantitativeData")) stop("Filtered session is not a protein state.")
   } else if (is.null(object) || !isS4(object) || !methods::is(object, "ProteinQuantitativeData")) {

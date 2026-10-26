@@ -124,164 +124,17 @@ runProteinAccessionCleanupStep <- function(workflowData,
                                            saveRdsFn = saveRDS,
                                            existsFn = exists,
                                            getFn = get) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    pending <- if (identical(workflowData$state_manager$current_state, "protein_accession_cleaned"))
-      resumeDIAProteinAction(workflowData, "protein_accession_cleaned") else NULL
-    if (!is.null(pending)) return(pending)
-    # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
-    entry <- workflowActionSpec("protein_accession_cleanup")
-    parameters <- list(delimiter = delimiter, aggregation_method = aggregationMethod)
-    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceAccessionCleanup(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
-      parameters, variant = entry$default_variant, seqinr = shiny::isolate(workflowData$aa_seq_tbl_final),
-      fasta_metadata = shiny::isolate(workflowData$fasta_metadata), now_fn = nowFn)
-    return(finishDIAReferenceProteinStep(workflowData, value))
-  }
-
-  shiny::req(workflowData$state_manager)
-  currentS4 <- readDIAProteinScience(workflowData$state_manager)
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf(
-    "Protein Processing: Applying accession cleanup with delimiter: %s",
-    delimiter
-  ))
-
-  proteinKeyBefore <- .proteinCleanupActiveKey(currentS4)
-
-  proteinsBefore <- currentS4@protein_quant_table |>
-    dplyr::distinct(!!rlang::sym(proteinKeyBefore)) |>
-    nrow()
-
-  aaSeqTblFinal <- shiny::isolate(workflowData$aa_seq_tbl_final)
-  if (!is.null(aaSeqTblFinal)) {
-    aaSeqTblFinal <- aaSeqTblFinal |>
-      dplyr::rename(uniprot_acc = database_id)
-
-    cleanedS4 <- chooseBestProteinAccessionFn(
-      theObject = currentS4,
-      delim = delimiter,
-      seqinr_obj = aaSeqTblFinal,
-      seqinr_accession_column = "uniprot_acc",
-      replace_zero_with_na = TRUE,
-      aggregation_method = aggregationMethod
-    )
-    cleanupApplied <- TRUE
-  } else {
-    cleanedS4 <- currentS4
-    cleanupApplied <- FALSE
-  }
-
-  proteinKeyAfter <- .proteinCleanupActiveKey(cleanedS4)
-  proteinsAfter <- cleanedS4@protein_quant_table |>
-    dplyr::distinct(!!rlang::sym(proteinKeyAfter)) |>
-    nrow()
-
-  workflowData$accession_cleanup_results <- list(
-    cleanup_applied = cleanupApplied,
-    delimiter_used = delimiter,
-    aggregation_method = aggregationMethod,
-    active_protein_key_before = proteinKeyBefore,
-    active_protein_key_after = proteinKeyAfter,
-    proteins_before = proteinsBefore,
-    proteins_after = proteinsAfter,
-    had_full_metadata = if (!is.null(workflowData$fasta_metadata)) {
-      workflowData$fasta_metadata$has_protein_evidence &&
-        workflowData$fasta_metadata$has_gene_names
-    } else {
-      FALSE
-    },
-    timestamp = nowFn()
-  )
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$protein_qc)) {
-    workflowData$qc_params$protein_qc <- list()
-  }
-  workflowData$qc_params$protein_qc$accession_cleanup <-
-    workflowData$accession_cleanup_results
-
-  tryCatch({
-    if (!usesDIAReferenceStates(workflowData$state_manager) &&
-        existsFn("experiment_paths", envir = .GlobalEnv, inherits = FALSE)) {
-      experimentPaths <- getFn("experiment_paths", envir = .GlobalEnv)
-      if (!is.null(experimentPaths$source_dir)) {
-        accessionCleanupFile <- file.path(
-          experimentPaths$source_dir,
-          "accession_cleanup_results.RDS"
-        )
-        saveRdsFn(workflowData$accession_cleanup_results, accessionCleanupFile)
-        logInfoFn(sprintf(
-          "Saved accession cleanup results to: %s",
-          accessionCleanupFile
-        ))
-      }
-    }
-  }, error = function(e) {
-    logWarnFn(sprintf(
-      "Could not save accession cleanup results file: %s",
-      e$message
-    ))
-  })
-
-  logInfoFn(sprintf(
-    "Accession cleanup results tracked: %d -> %d proteins",
-    proteinsBefore,
-    proteinsAfter
-  ))
-
-  cleanedS4 <- inheritDIAExecutionSource(cleanedS4, workflowData$state_manager, predecessor)
-  workflowData$state_manager$saveState(
-    state_name = "protein_accession_cleaned",
-    s4_data_object = cleanedS4,
-    config_object = list(
-      delimiter = delimiter,
-      aggregation_method = aggregationMethod,
-      cleanup_applied = cleanupApplied,
-      active_protein_key = proteinKeyAfter
-    ),
-    description = if (cleanupApplied) {
-      "Applied protein accession cleanup"
-    } else {
-      "Skipped accession cleanup (no FASTA data)"
-    }
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- cleanedS4@protein_quant_table |>
-    dplyr::distinct(!!rlang::sym(proteinKeyAfter)) |>
-    nrow()
-
-  resultText <- if (cleanupApplied) {
-    paste(
-      "Protein Accession Cleanup Applied Successfully\n",
-      "==============================================\n",
-      sprintf("Proteins remaining: %d\n", proteinCount),
-      sprintf("Active protein key: %s\n", proteinKeyAfter),
-      sprintf("Delimiter: %s\n", delimiter),
-      sprintf("Aggregation method: %s\n", aggregationMethod),
-      "State saved as: 'protein_accession_cleaned'\n"
-    )
-  } else {
-    paste(
-      "Protein Accession Cleanup Skipped\n",
-      "=================================\n",
-      sprintf("Proteins remaining: %d\n", proteinCount),
-      sprintf("Active protein key: %s\n", proteinKeyAfter),
-      "Reason: No FASTA data available for cleanup\n",
-      "State saved as: 'protein_accession_cleaned'\n"
-    )
-  }
-
-  finishDIAProteinAction(workflowData, list(
-    cleanedS4 = cleanedS4,
-    cleanupApplied = cleanupApplied,
-    resultText = resultText
-  ), "cleanedS4")
+  pending <- if (identical(workflowData$state_manager$current_state, "protein_accession_cleaned"))
+    resumeDIAProteinAction(workflowData, "protein_accession_cleaned") else NULL
+  if (!is.null(pending)) return(pending)
+  # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
+  entry <- workflowActionSpec("protein_accession_cleanup")
+  parameters <- list(delimiter = delimiter, aggregation_method = aggregationMethod)
+  validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+  value <- computeDIAReferenceAccessionCleanup(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+    parameters, variant = entry$default_variant, seqinr = shiny::isolate(workflowData$aa_seq_tbl_final),
+    fasta_metadata = shiny::isolate(workflowData$fasta_metadata), now_fn = nowFn)
+  return(finishDIAReferenceProteinStep(workflowData, value))
 }
 
 updateProteinAccessionCleanupOutputs <- function(output,
@@ -360,7 +213,7 @@ runProteinAccessionCleanupApplyObserver <- function(workflowData,
 
 runProteinAccessionCleanupRevertStep <- function(workflowData) {
   shiny::req(workflowData$state_manager)
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
 
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
@@ -436,7 +289,7 @@ mod_prot_qc_protein_cleanup_server <- function(id, workflow_data, experiment_pat
     
     # Step 2: Protein Accession Cleanup (chunk 19)
     shiny::observeEvent(input$apply_accession_cleanup, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(delimiter = input$delimiter, aggregation_method = input$aggregation_method))
         return(invisible(NULL))
       }

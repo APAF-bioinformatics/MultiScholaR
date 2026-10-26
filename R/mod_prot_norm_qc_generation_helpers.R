@@ -4,14 +4,12 @@ resolveProtNormQcStateObject <- function(stateManager, reqFn = shiny::req, messa
   current_state <- stateManager$current_state
   messageFn(sprintf("Current state: '%s'", current_state))
 
-  current_s4 <- if (usesDIAReferenceStates(stateManager)) {
-    snapshot <- stateManager$.context$snapshot
-    if (current_state == "protein_replicate_filtered" || is.null(snapshot$qc_sources$pre_normalization)) {
-      snapshot$qc_sources$pre_normalization <- getDIAStateReference(stateManager, current_state)
-      publishDIAStateHead(stateManager$.context, snapshot)
-    }
-    snapshot$qc_sources$pre_normalization
-  } else stateManager$getState(current_state)
+  snapshot <- stateManager$.context$snapshot
+  if (current_state == "protein_replicate_filtered" || is.null(snapshot$qc_sources$pre_normalization)) {
+    snapshot$qc_sources$pre_normalization <- getDIAStateReference(stateManager, current_state)
+    publishDIAStateHead(stateManager$.context, snapshot)
+  }
+  current_s4 <- snapshot$qc_sources$pre_normalization
   messageFn(sprintf("S4 object is NULL: %s", is.null(current_s4)))
 
   if (!is.null(current_s4)) {

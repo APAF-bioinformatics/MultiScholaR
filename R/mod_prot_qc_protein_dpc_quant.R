@@ -77,48 +77,7 @@ runProteinDpcQuantStep <- function(workflowData, engine, dpcSlope, chunk,
                                    proteinMissingValueImputationLimpaFn = proteinMissingValueImputationLimpa,
                                    logInfoFn = logger::log_info,
                                    nowFn = Sys.time) {
-  parameters <- list(engine = engine, dpc_slope = as.numeric(dpcSlope), chunk = as.numeric(chunk))
-  if (usesDIAReferenceStates(workflowData$state_manager)) return(runDIAReferenceProteinDpcQuant(workflowData, parameters))
-
-  shiny::req(workflowData$state_manager)
-  manager <- workflowData$state_manager
-  predecessor <- getDIACurrentReference(manager)
-  currentS4 <- getDIAExecutionState(manager, "proteinMissingValueImputationLimpa")
-  shiny::req(currentS4)
-  if (!length(currentS4@peptide_matrix)) stop("DPC quantification needs the log2 peptide matrix state.", call. = FALSE)
-
-  logInfoFn(sprintf("Protein Processing: Limpa DPC quantification on engine %s", engine))
-  quantifiedS4 <- proteinMissingValueImputationLimpaFn(currentS4, dpc_slope = parameters$dpc_slope, verbose = FALSE,
-    chunk = parameters$chunk, engine = engine)
-  results <- quantifiedS4@args$limpa_dpc_quant_results
-  dpc <- unname(as.numeric(results$dpc_parameters_used))
-  config <- list(engine = results$engine, engine_version = results$engine_version, dpc_slope = parameters$dpc_slope,
-    chunk = parameters$chunk, dpc_intercept = dpc[[1L]], dpc_slope_realised = dpc[[2L]],
-    slope_interpretation = results$slope_interpretation, proteins_quantified = results$total_proteins_quantified,
-    peptides_used = results$total_peptides_used, missing_percentage_peptides = results$missing_percentage_peptides,
-    protein_id_column = quantifiedS4@protein_id_column)
-  quantifiedS4@args$limpaDpcQuant <- config[c("engine", "engine_version", "dpc_slope", "chunk")]
-  if (is.null(workflowData$qc_params)) workflowData$qc_params <- list()
-  if (is.null(workflowData$qc_params$protein_qc)) workflowData$qc_params$protein_qc <- list()
-  workflowData$qc_params$protein_qc$dpc_quant <- c(config, list(timestamp = nowFn()))
-
-  quantifiedS4 <- inheritDIAExecutionSource(quantifiedS4, manager, predecessor)
-  manager$saveState(state_name = "protein_dpc_quant", s4_data_object = quantifiedS4, config_object = config,
-    description = "Limpa DPC imputation and protein quantification completed (ProteinQuantitativeData created)")
-  releaseDIAWorkingReference(manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- length(unique(quantifiedS4@protein_quant_table[[quantifiedS4@protein_id_column]]))
-  resultText <- paste(
-    "Limpa DPC Quantification Completed Successfully\n",
-    "===============================================\n",
-    sprintf("Proteins quantified: %d\n", proteinCount),
-    sprintf("Samples: %d\n", nrow(quantifiedS4@design_matrix)),
-    sprintf("Engine: %s %s\n", config$engine, config$engine_version),
-    sprintf("DPC intercept / slope: %.4f / %.4f (%s)\n", config$dpc_intercept, config$dpc_slope_realised, config$slope_interpretation),
-    "S4 Class: ProteinQuantitativeData\n",
-    "State saved as: 'protein_dpc_quant'\n")
-
-  finishDIAProteinAction(workflowData, list(quantifiedS4 = quantifiedS4, resultText = resultText), "quantifiedS4")
+  runDIAReferenceProteinDpcQuant(workflowData, parameters)
 }
 
 updateProteinDpcQuantOutputs <- function(output, dpcQuantPlot, dpcResult, omicType, experimentLabel,
@@ -165,7 +124,7 @@ runProteinDpcQuantRevertObserver <- function(workflowData, output,
                                              logErrorFn = logger::log_error) {
   withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
-    history <- workflowData$state_manager$getHistory()
+    history <- diaStateHistory(workflowData$state_manager)
     if (length(history) <= 1) stop("No previous state to revert to.")
     previousState <- history[length(history) - 1]
     selectDIAStateReference(workflowData$state_manager, previousState)
@@ -198,7 +157,7 @@ mod_prot_qc_protein_dpc_quant_server <- function(id, workflow_data, experiment_p
 
     shiny::observeEvent(input$apply_dpc_quant, {
       parameters <- list(engine = input$engine, dpc_slope = as.numeric(input$dpc_slope), chunk = as.numeric(input$chunk))
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(parameters)
         return(invisible(NULL))
       }

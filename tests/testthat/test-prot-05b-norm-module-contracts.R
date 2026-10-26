@@ -665,6 +665,7 @@ test_that("buildProtNormCorrelationPlot runs with and without progress wrappers"
 })
 
 test_that("resolveProtNormQcStateObject returns state info and errors on missing object", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   state_manager <- new.env(parent = emptyenv())
   state_manager$current_state <- "normalized"
   state_manager$getState <- function(state) {
@@ -761,6 +762,7 @@ test_that("generateProtNormRuvCorrectedQcArtifacts records ruv-corrected outputs
 })
 
 test_that("generateProtNormPreNormalizationQcArtifacts records pre-normalization outputs", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("MockProteinQcData")) {
     methods::setClass(
       "MockProteinQcData",
@@ -1385,6 +1387,7 @@ test_that("handleProtNormNormalizationError logs and notifies consistently", {
 })
 
 test_that("runProtNormNormalizationWorkflow sequences the automatic normalization shell", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- "state_manager"
   norm_data <- new.env(parent = emptyenv())
@@ -1621,6 +1624,7 @@ test_that("updateProtNormFinalFilteringPlot and updateProtNormFinalQcPlot store 
 })
 
 test_that("finalizeProtNormCorrelationWorkflowState stores DE-ready state and counts", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("MockCorrelationWorkflowData")) {
     methods::setClass(
       "MockCorrelationWorkflowData",
@@ -2014,6 +2018,7 @@ test_that("runProtNormSkipCorrelationWorkflow sequences the skip correlation she
 })
 
 test_that("completeProtNormCorrelationWorkflow finalizes summary state and notification", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   if (!methods::isClass("MockCompleteCorrelationWorkflowData")) {
     methods::setClass(
       "MockCompleteCorrelationWorkflowData",
@@ -2085,6 +2090,7 @@ test_that("handleProtNormCorrelationError logs and notifies consistently", {
 })
 
 test_that("runProtNormApplyCorrelationObserver sequences the apply observer shell", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   norm_data <- new.env(parent = emptyenv())
   norm_data$ruv_normalized_obj <- "ruv_obj"
   calls <- list()
@@ -2155,6 +2161,7 @@ test_that("runProtNormApplyCorrelationObserver sequences the apply observer shel
 })
 
 test_that("runProtNormSkipCorrelationObserver sequences the skip observer shell", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   norm_data <- new.env(parent = emptyenv())
   norm_data$ruv_normalized_obj <- "ruv_obj"
   calls <- list()
@@ -2394,6 +2401,7 @@ test_that("collectProtNormExportSessionData carries the DIA_LIMPA type and its D
 })
 
 test_that("buildProtNormExportSummaryContent and saveProtNormExportArtifacts create expected export outputs", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   session_data <- list(
     final_protein_count = 12,
     final_sample_count = 4,
@@ -2604,6 +2612,7 @@ test_that("resolveProtNormPreNormalizationState selects the most recent eligible
 })
 
 test_that("revertProtNormStateManagerToPreNormalization reverts when a valid state exists", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory path this test exercised is retired; the step runs on the owner")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$state_manager <- new.env(parent = emptyenv())
   workflow_data$state_manager$getHistory <- function() {

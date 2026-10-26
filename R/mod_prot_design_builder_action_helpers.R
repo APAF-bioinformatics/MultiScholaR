@@ -72,13 +72,9 @@ applyProtDesignBulkRenameUpdates <- function(
         originalName <- selectedSamples[[i]]
         newName <- newNames[[i]]
         updatedDesignMatrix$Run[updatedDesignMatrix$Run == originalName] <- newName
-        if (!usesDIAReferenceStates(getDIAActiveManager())) {
-            updatedDataCln$Run[updatedDataCln$Run == originalName] <- newName
-        }
     }
-    if (usesDIAReferenceStates(getDIAActiveManager())) updatedDataCln <-
-        transformDIADesignTable(getDIAActiveManager(), dataCln,
-            rename = stats::setNames(newNames, selectedSamples))
+    updatedDataCln <- transformDIADesignTable(getDIAActiveManager(), dataCln,
+        rename = stats::setNames(newNames, selectedSamples))
 
     list(
         designMatrix = updatedDesignMatrix,
@@ -96,10 +92,8 @@ applyProtDesignSingleRenameUpdate <- function(
     updatedDataCln <- dataCln
 
     updatedDesignMatrix$Run[updatedDesignMatrix$Run == originalName] <- newName
-    if (usesDIAReferenceStates(getDIAActiveManager())) {
-        updatedDataCln <- transformDIADesignTable(getDIAActiveManager(), dataCln,
-            rename = stats::setNames(newName, originalName))
-    } else updatedDataCln$Run[updatedDataCln$Run == originalName] <- newName
+    updatedDataCln <- transformDIADesignTable(getDIAActiveManager(), dataCln,
+        rename = stats::setNames(newName, originalName))
 
     list(
         designMatrix = updatedDesignMatrix,
@@ -123,8 +117,7 @@ registerProtDesignRenameSampleObserver <- function(
 
         renameUpdate <- applySingleRenameUpdateFn(
             designMatrix = designMatrix(),
-            dataCln = if (usesDIAReferenceStates(getDIAActiveManager()))
-                getDIAReactiveReference(dataCln) else dataCln(),
+            dataCln = getDIAReactiveReference(dataCln),
             originalName = input$sample_to_rename,
             newName = input$new_sample_name
         )
@@ -151,8 +144,7 @@ registerProtDesignBulkRenameObserver <- function(
 
         renameUpdates <- applyBulkRenameUpdatesFn(
             designMatrix = designMatrix(),
-            dataCln = if (usesDIAReferenceStates(getDIAActiveManager()))
-                getDIAReactiveReference(dataCln) else dataCln(),
+            dataCln = getDIAReactiveReference(dataCln),
             selectedSamples = input$samples_to_transform,
             newNames = transformSampleNamesFn(
                 selectedSamples = input$samples_to_transform,

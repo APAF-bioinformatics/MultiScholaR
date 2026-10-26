@@ -99,10 +99,8 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
         # Check if S4 object already exists from design matrix step
         # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
         s4_exists <- tryCatch({
-          s4_obj <- if (inherits(workflow_data$state_manager, "DIAStateAdapter"))
-            getDIAStateReference(workflow_data$state_manager, "protein_s4_initial") else # KIT-020: no hydration on an owner
-            workflow_data$state_manager$getState("protein_s4_initial")
-          exists <- !is.null(s4_obj)
+          exists <- "protein_s4_initial" %in% diaStateHistory(workflow_data$state_manager) # KIT-020/048: the head's history, no hydration
+          s4_obj <- if (exists) "protein_s4_initial" else NULL
           message(sprintf("   DEBUG66: %s - Checking for protein_s4_initial: exists = %s", workflow_type, exists))
           if (exists) {
             message(sprintf("   DEBUG66: %s - S4 object class = %s", workflow_type, class(s4_obj)))
@@ -125,13 +123,11 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
             shiny::tabPanel("Protein QC", mod_prot_qc_protein_ui(ns("protein_qc"), workflow_type = workflow_type))
           )
         } else {
-          # Fallback: show S4 creation UI if somehow not created
-          logger::log_info("QC UI: S4 object not found. Showing S4 creation UI.")
-          message(sprintf("   DEBUG66: %s - Rendering S4 creation + Protein QC tabs", workflow_type))
+          # KIT-048: the protein-level design step commits protein_s4_initial on the owner; there is no in-GUI
+          # fallback creation any more. The Protein QC tab is shown and its steps wait for the state.
+          logger::log_warn("QC UI: protein_s4_initial not found; complete the design step first.")
           shiny::tabsetPanel(
             id = ns("qc_tabs_tmt"),
-            # Using mod_prot_qc_protein_s4_ui and mod_prot_qc_protein_ui
-            shiny::tabPanel("Initial Protein Processing", mod_prot_qc_protein_s4_ui(ns("create_s4_tmt"))),
             shiny::tabPanel("Protein QC", mod_prot_qc_protein_ui(ns("protein_qc"), workflow_type = workflow_type))
           )
         }
@@ -179,10 +175,8 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
         # Check if S4 object already exists from design matrix step
         # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
         s4_exists <- tryCatch({
-          s4_obj <- if (inherits(workflow_data$state_manager, "DIAStateAdapter"))
-            getDIAStateReference(workflow_data$state_manager, "protein_s4_initial") else # KIT-020: no hydration on an owner
-            workflow_data$state_manager$getState("protein_s4_initial")
-          exists <- !is.null(s4_obj)
+          exists <- "protein_s4_initial" %in% diaStateHistory(workflow_data$state_manager) # KIT-020/048: the head's history, no hydration
+          s4_obj <- if (exists) "protein_s4_initial" else NULL
           message(sprintf("   DEBUG66: %s observeEvent - S4 exists = %s", workflow_type, exists))
           exists
         }, error = function(e) {
@@ -197,12 +191,8 @@ mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, e
           mod_prot_qc_protein_server("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
           message(sprintf("   DEBUG66: %s - mod_prot_qc_protein_server called", workflow_type))
         } else {
-          # S4 doesn't exist (shouldn't happen in normal flow), use the creation module
-          logger::log_warn(sprintf("%s: S4 object not found. Using S4 creation module.", workflow_type))
-          message(sprintf("   DEBUG66: %s - S4 MISSING, calling create_s4 + protein servers", workflow_type))
-          # Using mod_prot_qc_protein_s4_server
-          mod_prot_qc_protein_s4_server("create_s4_tmt", workflow_data, omic_type, experiment_label)
-          message(sprintf("   DEBUG66: %s - mod_prot_qc_protein_s4_server called", workflow_type))
+          # KIT-048: no in-GUI S4 creation; the design step commits protein_s4_initial on the owner.
+          logger::log_warn(sprintf("%s: protein_s4_initial not found; complete the design step first.", workflow_type))
           mod_prot_qc_protein_server("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
           message(sprintf("   DEBUG66: %s - mod_prot_qc_protein_server called", workflow_type))
         }

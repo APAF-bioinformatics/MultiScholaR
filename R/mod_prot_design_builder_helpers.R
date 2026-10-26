@@ -5,12 +5,7 @@ persistProtDesignBuilderArtifacts <- function(results, workflowData, sourceDir) 
 
   dataClnPath <- file.path(sourceDir, "data_cln.tab")
   logger::log_info(paste("Writing cleaned data to:", dataClnPath))
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    writeDIADesignTable(workflowData$state_manager, results$data_reference, dataClnPath)
-  } else {
-    utils::write.table(resolveDIAOwnedValue(results$data_reference %||% results$data_cln),
-      file = dataClnPath, sep = "\t", row.names = FALSE, quote = FALSE)
-  }
+  writeDIADesignTable(workflowData$state_manager, results$data_reference, dataClnPath)
 
   if (!is.null(results$contrasts_tbl) && nrow(results$contrasts_tbl) > 0) {
     contrastPath <- file.path(sourceDir, "contrast_strings.tab")
@@ -93,10 +88,8 @@ runProtDesignBuilderSaveFlow <- function(
     )
 
     manager <- workflowData$state_manager
-    if (usesDIAReferenceStates(manager)) {
-      reference <- getDIAStateReference(manager)
-      requestDIAReclamation(manager, reference, paste0("design-", reference$entity_id), "design")
-    }
+    reference <- getDIAStateReference(manager)
+    requestDIAReclamation(manager, reference, paste0("design-", reference$entity_id), "design")
     TRUE
   }, error = function(e) {
     msg <- paste("Error saving design matrix results:", e$message)

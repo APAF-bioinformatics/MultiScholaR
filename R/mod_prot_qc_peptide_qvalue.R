@@ -87,174 +87,8 @@ runPeptideQvalueApplyStep <- function(workflowData,
                                       globalPGQvalueThreshold = .diaNnIdentificationQvalueCutoff,
                                       confidenceProvenanceMode = "diann_main_report") {
   shiny::req(workflowData$state_manager)
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    return(runDIAReferenceQvalue(workflowData, qvalueThreshold, globalQvalueThreshold,
-      proteotypicOnly, globalPGQvalueThreshold, confidenceProvenanceMode, nowFn))
-  }
-  predecessor <- if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
-    workflowData$state_manager$.context$snapshot$states[[workflowData$state_manager$current_state]]
-  } else NULL
-  currentS4 <- getDIAExecutionState(workflowData$state_manager, "srlQvalueProteotypicPeptideClean")
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf("Q-value filter: S4 class = %s", class(currentS4)[1]))
-  logInfoFn(sprintf(
-    "Q-value filter: S4 @peptide_data has %d rows, %d columns",
-    nrow(currentS4@peptide_data),
-    ncol(currentS4@peptide_data)
-  ))
-
-  idsVector <- currentS4@args$srlQvalueProteotypicPeptideClean$input_matrix_column_ids
-  if (!is.null(idsVector)) {
-    logInfoFn(sprintf(
-      "Q-value filter: input_matrix_column_ids length = %d",
-      length(idsVector)
-    ))
-    logInfoFn(sprintf(
-      "Q-value filter: input_matrix_column_ids values: [%s]",
-      paste(sapply(idsVector, function(x) paste0("'", x, "'")), collapse = ", ")
-    ))
-
-    hasWhitespace <- any(grepl("^\\s|\\s$", idsVector))
-    hasEmpty <- any(idsVector == "")
-    if (hasWhitespace) {
-      logWarnFn("Q-value filter: input_matrix_column_ids contains values with leading/trailing whitespace!")
-    }
-    if (hasEmpty) {
-      logWarnFn("Q-value filter: input_matrix_column_ids contains empty strings!")
-    }
-  }
-
-  proteotypicOnly <- isTRUE(proteotypicOnly)
-  .validateDiaNnIdentificationContract(
-    qvalue_threshold = qvalueThreshold,
-    global_qvalue_threshold = globalQvalueThreshold,
-    global_pg_qvalue_threshold = globalPGQvalueThreshold,
-    choose_only_proteotypic_peptide = as.numeric(proteotypicOnly)
-  )
-  confidenceProvenanceMode <- match.arg(
-    confidenceProvenanceMode,
-    c("diann_main_report", "upstream_prefiltered")
-  )
-  qvalueThreshold <- .diaNnIdentificationQvalueCutoff
-  globalQvalueThreshold <- .diaNnIdentificationQvalueCutoff
-  globalPGQvalueThreshold <- .diaNnIdentificationQvalueCutoff
-  logInfoFn(sprintf(
-    paste0(
-      "QC Step: Applying DIA-NN confidence filter at 0.01 for ",
-      "Q.Value, Global.Q.Value, and Global.PG.Q.Value"
-    )
-  ))
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "srlQvalueProteotypicPeptideClean",
-    parameter_name = "qvalue_threshold",
-    new_value = qvalueThreshold
-  )
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "srlQvalueProteotypicPeptideClean",
-    parameter_name = "global_qvalue_threshold",
-    new_value = globalQvalueThreshold
-  )
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "srlQvalueProteotypicPeptideClean",
-    parameter_name = "global_pg_qvalue_threshold",
-    new_value = globalPGQvalueThreshold
-  )
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "srlQvalueProteotypicPeptideClean",
-    parameter_name = "choose_only_proteotypic_peptide",
-    new_value = as.numeric(proteotypicOnly)
-  )
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "srlQvalueProteotypicPeptideClean",
-    parameter_name = "confidence_provenance_mode",
-    new_value = confidenceProvenanceMode
-  )
-
-  filteredS4 <- qvalueFilterFn(theObject = currentS4)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$peptide_qc)) {
-    workflowData$qc_params$peptide_qc <- list()
-  }
-
-  workflowData$qc_params$peptide_qc$qvalue_filter <- list(
-    qvalue_threshold = qvalueThreshold,
-    global_qvalue_threshold = globalQvalueThreshold,
-    global_pg_qvalue_threshold = globalPGQvalueThreshold,
-    confidence_provenance_mode = confidenceProvenanceMode,
-    proteotypic_only = proteotypicOnly,
-    timestamp = nowFn()
-  )
-
-  qvalueConfig <- list(
-    qvalue_threshold = qvalueThreshold,
-    global_qvalue_threshold = globalQvalueThreshold,
-    global_pg_qvalue_threshold = globalPGQvalueThreshold,
-    confidence_provenance_mode = confidenceProvenanceMode,
-    proteotypic_only = proteotypicOnly,
-    exclude_decoys = filteredS4@args$srlQvalueProteotypicPeptideClean$exclude_decoys,
-    exclude_contaminants = filteredS4@args$srlQvalueProteotypicPeptideClean$exclude_contaminants,
-    contaminant_manifest_digest = filteredS4@args$srlQvalueProteotypicPeptideClean$contaminant_manifest_provenance$checksum %||% NA_character_
-  )
-  filteredS4 <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = currentS4,
-    after = filteredS4,
-    stage_id = "qvalue_filter",
-    state_name = "qvalue_filtered",
-    config_object = qvalueConfig,
-    description = "Applied Q-value and proteotypic peptide filter",
-    now = nowFn()
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(filteredS4)
-  exclusionSummary <- filteredS4@args$srlQvalueProteotypicPeptideClean$biological_exclusion_summary
-  excludedRows <- if (is.data.frame(exclusionSummary) &&
-      "excluded_rows" %in% names(exclusionSummary)) {
-    exclusionSummary$excluded_rows[[1]]
-  } else {
-    0L
-  }
-  classificationStatus <- if (is.data.frame(exclusionSummary) &&
-      "classification_status" %in% names(exclusionSummary)) {
-    exclusionSummary$classification_status[[1]]
-  } else {
-    "unavailable"
-  }
-
-  resultText <- paste(
-    "Q-Value Filter Applied Successfully\n",
-    "================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Run-specific precursor Q.Value threshold: %g\n", qvalueThreshold),
-    sprintf("Global precursor Global.Q.Value threshold: %g\n", globalQvalueThreshold),
-    sprintf("Global protein-group Global.PG.Q.Value threshold: %g\n", globalPGQvalueThreshold),
-    sprintf("Proteotypic == 1: %s\n", proteotypicOnly),
-    sprintf("Confidence provenance mode: %s\n", confidenceProvenanceMode),
-    sprintf("Decoy/contaminant rows excluded: %d\n", excludedRows),
-    sprintf("Contaminant classification status: %s\n", classificationStatus),
-    "State saved as: 'qvalue_filtered'\n"
-  )
-
-  list(
-    filteredS4 = filteredS4,
-    resultText = resultText
-  )
+  runDIAReferenceQvalue(workflowData, qvalueThreshold, globalQvalueThreshold,
+    proteotypicOnly, globalPGQvalueThreshold, confidenceProvenanceMode, nowFn)
 }
 
 updatePeptideQvalueOutputs <- function(output,
@@ -352,7 +186,7 @@ runPeptideQvalueApplyObserver <- function(workflowData,
 runPeptideQvalueRevertStep <- function(workflowData,
                                        revertStateName = "raw_data_s4",
                                        logInfoFn = logger::log_info) {
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   if (!(revertStateName %in% history)) {
     stop(sprintf("Cannot revert: '%s' state not found in history.", revertStateName))
   }
@@ -417,7 +251,7 @@ mod_prot_qc_peptide_qvalue_server <- function(id, workflow_data, omic_type, expe
     
     # Step 1: Q-Value Filter (chunk 10)
     shiny::observeEvent(input$apply_qvalue_filter, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(qvalue_threshold = .diaNnIdentificationQvalueCutoff,
           global_qvalue_threshold = .diaNnIdentificationQvalueCutoff,
           global_pg_qvalue_threshold = .diaNnIdentificationQvalueCutoff,

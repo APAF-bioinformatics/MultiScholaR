@@ -66,34 +66,7 @@ runProteinNormalisationStep <- function(workflowData, normMethod,
                                         normaliseBetweenSamplesFn = normaliseBetweenSamples,
                                         logInfoFn = logger::log_info,
                                         nowFn = Sys.time) {
-  parameters <- list(norm_method = normMethod)
-  if (usesDIAReferenceStates(workflowData$state_manager)) return(runDIAReferenceProteinNormalisation(workflowData, parameters))
-
-  shiny::req(workflowData$state_manager)
-  manager <- workflowData$state_manager
-  predecessor <- getDIACurrentReference(manager)
-  currentS4 <- getDIAExecutionState(manager, "normaliseBetweenSamples")
-  shiny::req(currentS4)
-  logInfoFn(sprintf("Protein Processing: between-sample normalisation (%s)", normMethod))
-  normalisedS4 <- normaliseBetweenSamplesFn(currentS4, normalisation_method = normMethod)
-  skipped <- identical(normMethod, "none")
-  config <- list(norm_method = normMethod, normalisation_method = normMethod, skipped = skipped,
-    proteins = nrow(normalisedS4@protein_quant_table), samples = nrow(normalisedS4@design_matrix))
-  if (is.null(workflowData$qc_params)) workflowData$qc_params <- list()
-  if (is.null(workflowData$qc_params$protein_qc)) workflowData$qc_params$protein_qc <- list()
-  workflowData$qc_params$protein_qc$protein_normalisation <- c(config, list(timestamp = nowFn()))
-  normalisedS4 <- inheritDIAExecutionSource(normalisedS4, manager, predecessor)
-  manager$saveState(state_name = "protein_normalised", s4_data_object = normalisedS4, config_object = config,
-    description = if (skipped) "Between-sample normalisation skipped (none): the quantified matrix carried unchanged" else
-      sprintf("Between-sample normalisation applied (%s)", normMethod))
-  releaseDIAWorkingReference(manager, predecessor)
-  currentS4 <- NULL
-  resultText <- paste(
-    if (skipped) "Between-Sample Normalisation Skipped (none)\n" else "Between-Sample Normalisation Applied Successfully\n",
-    "================================================\n",
-    sprintf("Proteins remaining: %d\n", config$proteins), sprintf("Samples: %d\n", config$samples),
-    sprintf("Method: %s\n", normMethod), "State saved as: 'protein_normalised'\n")
-  finishDIAProteinAction(workflowData, list(normalisedS4 = normalisedS4, resultText = resultText), "normalisedS4")
+  runDIAReferenceProteinNormalisation(workflowData, parameters)
 }
 
 updateProteinNormalisationOutputs <- function(output, normalisationPlot, normalisationResult, omicType, experimentLabel,
@@ -139,7 +112,7 @@ runProteinNormalisationRevertObserver <- function(workflowData, output,
                                                   logErrorFn = logger::log_error) {
   withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
-    history <- workflowData$state_manager$getHistory()
+    history <- diaStateHistory(workflowData$state_manager)
     if (length(history) <= 1) stop("No previous state to revert to.")
     previousState <- history[length(history) - 1]
     selectDIAStateReference(workflowData$state_manager, previousState)
@@ -172,7 +145,7 @@ mod_prot_qc_protein_normalisation_server <- function(id, workflow_data, experime
       read_result = readManagedProteinResult)
 
     shiny::observeEvent(input$apply_protein_normalisation, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(norm_method = input$norm_method))
         return(invisible(NULL))
       }

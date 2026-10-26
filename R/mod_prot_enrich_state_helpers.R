@@ -184,7 +184,7 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
   warningMessage <- NULL
 
   tryCatch({
-    availableStates <- workflowData$state_manager$getHistory()
+    availableStates <- diaStateHistory(workflowData$state_manager)
     currentDataState <- detectFn(currentDataStates, ~ .x %in% availableStates)
 
     if (!is.null(currentDataState)) {
@@ -223,7 +223,7 @@ saveProtEnrichCompletedState <- function(workflowData,
   saved <- FALSE
 
   tryCatch({
-    workflowData$state_manager$saveState(
+    saveDIAOwnerState(workflowData$state_manager, 
       state_name = "enrichment_completed",
       s4_data_object = enrichmentResults,
       config_object = list(
@@ -384,7 +384,7 @@ captureProtEnrichPostProcessResults <- function(selectedContrast,
     )
     # KIT-018: on the on-disk default each contrast's result table is also a saved display table the
     # results tables page from the store (content-addressed; the in-memory frames stay for plots and downloads).
-    if (!is.null(workflowData) && usesDIAReferenceStates(workflowData$state_manager)) {
+    if (!is.null(workflowData)) {
       for (contrastName in names(allContrastResults)) {
         allContrastResults[[contrastName]]$gprofiler_results_table <- saveDIADisplayTable(
           workflowData$state_manager, allContrastResults[[contrastName]]$gprofiler_results)
@@ -589,18 +589,16 @@ restoreProtEnrichResultsFromState <- function(enrichmentData, workflowData,
                                               buildAllContrastResultsFn = buildProtEnrichAllContrastResults) {
   if (!is.null(shiny::isolate(enrichmentData$all_enrichment_results))) return(FALSE)
   manager <- if (is.null(workflowData)) NULL else shiny::isolate(workflowData$state_manager)
-  if (is.null(manager) || !"enrichment_completed" %in% unlist(manager$getHistory())) return(FALSE)
-  results <- manager$getState("enrichment_completed")
+  if (is.null(manager) || !"enrichment_completed" %in% unlist(diaStateHistory(manager))) return(FALSE)
+  results <- readDIAStateObject(manager, "enrichment_completed")
   if (!methods::is(results, "EnrichmentResults")) return(FALSE)
   methodInfo <- list(method = diaEnrichmentMethodOf(results))
   allContrastResults <- buildAllContrastResultsFn(enrichmentResults = results, methodInfo = methodInfo)
-  if (usesDIAReferenceStates(manager)) {
-    for (contrastName in names(allContrastResults)) {
-      allContrastResults[[contrastName]]$gprofiler_results_table <- saveDIADisplayTable(manager,
-        allContrastResults[[contrastName]]$gprofiler_results)
-      allContrastResults[[contrastName]]$clusterprofiler_results_table <- saveDIADisplayTable(manager,
-        allContrastResults[[contrastName]]$clusterprofiler_results)
-    }
+  for (contrastName in names(allContrastResults)) {
+    allContrastResults[[contrastName]]$gprofiler_results_table <- saveDIADisplayTable(manager,
+      allContrastResults[[contrastName]]$gprofiler_results)
+    allContrastResults[[contrastName]]$clusterprofiler_results_table <- saveDIADisplayTable(manager,
+      allContrastResults[[contrastName]]$clusterprofiler_results)
   }
   enrichmentData$all_enrichment_results <- allContrastResults
   enrichmentData$enrichment_results_full <- results

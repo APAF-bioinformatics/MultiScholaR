@@ -153,7 +153,7 @@ buildPeptideIntensityThresholdPreview <- function(workflowData,
 }
 
 runPeptideIntensityRevertStep <- function(workflowData) {
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
   }
@@ -208,118 +208,8 @@ runPeptideIntensityApplyStep <- function(workflowData,
                                          peptideIntensityFilteringFn = peptideIntensityFiltering,
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    return(runDIAReferencePeptideGroups(workflowData, "peptideIntensityFiltering",
-      list(strict_mode = useStrictMode, min_reps_per_group = minRepsPerGroup, min_groups = minGroups, peptides_intensity_cutoff_percentile = intensityCutoffPercentile, grouping_variable = "group"), "intensity_filtered", "Applied peptide intensity filter"))
-  }
-
-  shiny::req(workflowData$state_manager)
-  currentS4 <- getDIAExecutionState(workflowData$state_manager, "peptideIntensityFiltering")
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  if (useStrictMode) {
-    logInfoFn("Peptide Processing: Using STRICT MODE")
-  } else {
-    logInfoFn("Peptide Processing: Using FLEXIBLE MODE")
-  }
-
-  parameter_values <- list(
-    strict_mode = useStrictMode,
-    min_reps_per_group = minRepsPerGroup,
-    min_groups = minGroups,
-    peptides_intensity_cutoff_percentile = intensityCutoffPercentile
-  )
-  for (parameter_name in names(parameter_values)) {
-    currentS4 <- updateConfigParameterFn(
-      theObject = currentS4,
-      function_name = "peptideIntensityFiltering",
-      parameter_name = parameter_name,
-      new_value = parameter_values[[parameter_name]]
-    )
-  }
-
-  filteredS4 <- peptideIntensityFilteringFn(
-    theObject = currentS4,
-    grouping_variable = "group",
-    min_reps_per_group = minRepsPerGroup,
-    min_groups = minGroups,
-    strict_mode = useStrictMode,
-    peptides_intensity_cutoff_percentile = intensityCutoffPercentile
-  )
-  filterSummary <- .peptideIntensitySummaryFromObject(filteredS4)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$peptide_qc)) {
-    workflowData$qc_params$peptide_qc <- list()
-  }
-
-  workflowData$qc_params$peptide_qc$intensity_filter <- list(
-    strict_mode = useStrictMode,
-    min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
-    min_groups = if (!useStrictMode) minGroups else NA,
-    intensity_cutoff_percentile = intensityCutoffPercentile,
-    filter_summary = filterSummary,
-    timestamp = nowFn()
-  )
-
-  intensityConfig <- list(
-    strict_mode = useStrictMode,
-    min_reps_per_group = minRepsPerGroup,
-    min_groups = minGroups,
-    intensity_cutoff_percentile = intensityCutoffPercentile,
-    filter_summary = filterSummary
-  )
-  filteredS4 <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = currentS4,
-    after = filteredS4,
-    stage_id = "intensity_filter",
-    state_name = "intensity_filtered",
-    config_object = intensityConfig,
-    description = if (useStrictMode) {
-      "Applied STRICT peptide intensity filter"
-    } else {
-      "Applied FLEXIBLE peptide intensity filter"
-    },
-    now = nowFn()
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(filteredS4)
-
-  resultText <- paste(
-    "Intensity Filter Applied Successfully\n",
-    "====================================\n",
-    sprintf("Mode: %s\n", if (useStrictMode) "STRICT" else "FLEXIBLE"),
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Intensity cutoff percentile: %.1f%%\n", intensityCutoffPercentile),
-    if (useStrictMode) {
-      "Rule: every design run must be finite and at/above threshold\n"
-    } else {
-      sprintf("Group rule: >= %d distinct observed runs\n", minRepsPerGroup)
-    },
-    if (useStrictMode) "" else sprintf("Peptide rule: >= %d passing groups\n", minGroups),
-    if (is.null(filterSummary)) "" else sprintf(
-      "Executed threshold: %g from %s\n",
-      filterSummary$intensity_threshold,
-      filterSummary$intensity_quantity_column
-    ),
-    if (is.null(filterSummary)) "" else sprintf(
-      "Peptide identities retained/removed: %d / %d\n",
-      filterSummary$retained_feature_count,
-      filterSummary$removed_feature_count
-    ),
-    "State saved as: 'intensity_filtered'\n"
-  )
-
-  list(
-    filteredS4 = filteredS4,
-    resultText = resultText
-  )
+  runDIAReferencePeptideGroups(workflowData, "peptideIntensityFiltering",
+    list(strict_mode = useStrictMode, min_reps_per_group = minRepsPerGroup, min_groups = minGroups, peptides_intensity_cutoff_percentile = intensityCutoffPercentile, grouping_variable = "group"), "intensity_filtered", "Applied peptide intensity filter")
 }
 
 updatePeptideIntensityOutputs <- function(output,
@@ -510,7 +400,7 @@ mod_prot_qc_peptide_intensity_server <- function(id, workflow_data, omic_type, e
       omicType = omic_type,
       experimentLabel = experiment_label,
       runApplyObserverFn = function(...) {
-        if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+        if (!is.null(workflowSessionApplication(session))) {
           managed_step$apply(list(strict_mode = isTRUE(input$use_strict_mode), min_reps_per_group = input$min_reps_per_group,
             min_groups = input$min_groups, peptides_intensity_cutoff_percentile = input$intensity_cutoff_percentile,
             grouping_variable = "group"))

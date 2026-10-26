@@ -127,139 +127,17 @@ runProteinIntensityFilterApplyStep <- function(workflowData,
                                                removeRowsWithMissingValuesPercentFn = removeRowsWithMissingValuesPercent,
                                                logInfoFn = logger::log_info,
                                                nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    pending <- if (identical(workflowData$state_manager$current_state, "protein_intensity_filtered"))
-      resumeDIAProteinAction(workflowData, "protein_intensity_filtered") else NULL
-    if (!is.null(pending)) return(pending)
-    # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
-    entry <- workflowActionSpec("protein_intensity_filter")
-    parameters <- list(strict_mode = isTRUE(useStrictMode), min_reps_per_group = minRepsPerGroup, min_groups = minGroups,
-      proteins_intensity_cutoff_percentile = intensityCutoffPercentile)
-    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceProteinIntensityFilter(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
-      parameters, variant = entry$default_variant, now_fn = nowFn)
-    return(finishDIAReferenceProteinStep(workflowData, value))
-  }
-
-  shiny::req(workflowData$state_manager)
-  currentS4 <- readDIAProteinScience(workflowData$state_manager)
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  if (useStrictMode) {
-    logInfoFn("Protein Processing: Using STRICT MODE (no missing values allowed)")
-
-    currentS4 <- updateConfigParameterFn(
-      theObject = currentS4,
-      function_name = "removeRowsWithMissingValuesPercent",
-      parameter_name = "groupwise_percentage_cutoff",
-      new_value = 0
-    )
-    currentS4 <- updateConfigParameterFn(
-      theObject = currentS4,
-      function_name = "removeRowsWithMissingValuesPercent",
-      parameter_name = "max_groups_percentage_cutoff",
-      new_value = 0
-    )
-  } else {
-    logInfoFn("Protein Processing: Using FLEXIBLE MODE (adaptive thresholds)")
-
-    currentS4 <- updateMissingValueParametersFn(
-      theObject = currentS4,
-      min_reps_per_group = minRepsPerGroup,
-      min_groups = minGroups
-    )
-  }
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "removeRowsWithMissingValuesPercent",
-    parameter_name = "proteins_intensity_cutoff_percentile",
-    new_value = intensityCutoffPercentile
-  )
-
-  filteredS4 <- removeRowsWithMissingValuesPercentFn(currentS4)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$protein_qc)) {
-    workflowData$qc_params$protein_qc <- list()
-  }
-
-  workflowData$qc_params$protein_qc$intensity_filter <- list(
-    strict_mode = useStrictMode,
-    min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
-    min_groups = if (!useStrictMode) minGroups else NA,
-    groupwise_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
-    max_groups_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
-    proteins_intensity_cutoff_percentile = intensityCutoffPercentile,
-    timestamp = nowFn()
-  )
-
-  filteredS4 <- inheritDIAExecutionSource(filteredS4, workflowData$state_manager, predecessor)
-  workflowData$state_manager$saveState(
-    state_name = "protein_intensity_filtered",
-    s4_data_object = filteredS4,
-    config_object = list(
-      strict_mode = useStrictMode,
-      min_reps_per_group = if (!useStrictMode) minRepsPerGroup else NA,
-      min_groups = if (!useStrictMode) minGroups else NA,
-      groupwise_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff,
-      max_groups_percentage_cutoff = currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff,
-      proteins_intensity_cutoff_percentile = intensityCutoffPercentile
-    ),
-    description = if (useStrictMode) {
-      "Applied STRICT protein intensity filter (no missing values)"
-    } else {
-      "Applied FLEXIBLE protein intensity filter (adaptive thresholds)"
-    }
-  )
-
-  groupwise_cutoff <- currentS4@args$removeRowsWithMissingValuesPercent$groupwise_percentage_cutoff
-  max_groups_cutoff <- currentS4@args$removeRowsWithMissingValuesPercent$max_groups_percentage_cutoff
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- filteredS4@protein_quant_table |>
-    dplyr::distinct(.data[[filteredS4@protein_id_column]]) |>
-    nrow()
-
-  resultText <- if (useStrictMode) {
-    paste(
-      "Protein Intensity Filter Applied Successfully\n",
-      "============================================\n",
-      "Mode: STRICT (No Missing Values)\n",
-      sprintf("Proteins remaining: %d\n", proteinCount),
-      "Groupwise % cutoff: 0.000% (strict - no missing allowed)\n",
-      "Max groups % cutoff: 0.000% (strict - all groups must pass)\n",
-      sprintf("Intensity cutoff percentile: %.1f%%\n", intensityCutoffPercentile),
-      "State saved as: 'protein_intensity_filtered'\n"
-    )
-  } else {
-    paste(
-      "Protein Intensity Filter Applied Successfully\n",
-      "============================================\n",
-      "Mode: FLEXIBLE (Adaptive Thresholds)\n",
-      sprintf("Proteins remaining: %d\n", proteinCount),
-      sprintf("Min replicates per group: %d\n", minRepsPerGroup),
-      sprintf("Min groups required: %d\n", minGroups),
-      sprintf(
-        "Groupwise %% cutoff: %.3f%% (calculated)\n",
-        groupwise_cutoff
-      ),
-      sprintf(
-        "Max groups %% cutoff: %.3f%% (calculated)\n",
-        max_groups_cutoff
-      ),
-      sprintf("Intensity cutoff percentile: %.1f%%\n", intensityCutoffPercentile),
-      "State saved as: 'protein_intensity_filtered'\n"
-    )
-  }
-
-  finishDIAProteinAction(workflowData, list(
-    filteredS4 = filteredS4,
-    resultText = resultText
-  ), "filteredS4")
+  pending <- if (identical(workflowData$state_manager$current_state, "protein_intensity_filtered"))
+    resumeDIAProteinAction(workflowData, "protein_intensity_filtered") else NULL
+  if (!is.null(pending)) return(pending)
+  # KIT-015: an unmanaged launch runs the registered declaration in process with its production variant.
+  entry <- workflowActionSpec("protein_intensity_filter")
+  parameters <- list(strict_mode = isTRUE(useStrictMode), min_reps_per_group = minRepsPerGroup, min_groups = minGroups,
+    proteins_intensity_cutoff_percentile = intensityCutoffPercentile)
+  validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+  value <- computeDIAReferenceProteinIntensityFilter(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+    parameters, variant = entry$default_variant, now_fn = nowFn)
+  return(finishDIAReferenceProteinStep(workflowData, value))
 }
 
 updateProteinIntensityFilterOutputs <- function(output,
@@ -342,7 +220,7 @@ runProteinIntensityFilterApplyObserver <- function(workflowData,
 
 runProteinIntensityFilterRevertStep <- function(workflowData) {
   shiny::req(workflowData$state_manager)
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
 
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
@@ -418,7 +296,7 @@ mod_prot_qc_protein_intensity_server <- function(id, workflow_data, experiment_p
     
     # Step 3: Protein Intensity Filter (chunks 20+21 combined)
     shiny::observeEvent(input$apply_protein_intensity_filter, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(strict_mode = isTRUE(input$use_strict_mode), min_reps_per_group = input$min_reps_per_group,
           min_groups = input$min_groups, proteins_intensity_cutoff_percentile = input$proteins_intensity_cutoff_percentile))
         return(invisible(NULL))

@@ -59,11 +59,8 @@ buildProtDesignSaveResultsPayload <- function(
     }
 
     assignedRuns <- designMatrixFinal$Run
-    dataClnFinal <- if (usesDIAReferenceStates(getDIAActiveManager())) {
-        transformDIADesignTable(getDIAActiveManager(), dataCln, samples = assignedRuns,
-            strip_parser = length(getDIAImportMetadata(getDIAActiveManager())$numeric_columns) > 0L)
-    } else dataCln |>
-        dplyr::filter(Run %in% assignedRuns)
+    dataClnFinal <- transformDIADesignTable(getDIAActiveManager(), dataCln, samples = assignedRuns,
+        strip_parser = length(getDIAImportMetadata(getDIAActiveManager())$numeric_columns) > 0L)
 
     configListFinal <- configList
     configListFinal[["deAnalysisParameters"]][["formula_string"]] <- formulaString
@@ -146,8 +143,7 @@ registerProtDesignSaveResultsObserver <- function(
         runSaveResultsObserverShell(
             designMatrix = designMatrix(),
             currentRemovedSamples = removedSamples(),
-            dataCln = if (usesDIAReferenceStates(getDIAActiveManager()))
-                getDIAReactiveReference(dataCln) else dataCln(),
+            dataCln = getDIAReactiveReference(dataCln),
             contrastData = contrastData(),
             configList = configList(),
             formulaString = input$formula_string,

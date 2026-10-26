@@ -135,101 +135,25 @@ finalizeProtNormCorrelationWorkflowState <- function(
   messageFn = message,
   catFn = cat
 ) {
-  if (isSavedWorkflowReference(finalS4ForDe) && usesDIAReferenceStates(workflowData$state_manager)) {
-    manager <- workflowData$state_manager
-    checkpoint <- readDIAStateMetadata(manager, finalS4ForDe)$data
-    config <- if (skipped) list(min_pearson_correlation_threshold = 0, skipped = TRUE) else
-      list(min_pearson_correlation_threshold = correlationThreshold)
-    accepted <- if (manager$current_state == "correlation_filtered") readDIAStateMetadata(manager) else NULL
-    if (is.null(accepted) || !identical(accepted$data$components, checkpoint$components) ||
-        !identical(accepted$config, config)) {
-      commitDIAReferenceState(manager, "correlation_filtered", checkpoint, config,
-        if (skipped) "Skipped final sample correlation filter" else "Applied final sample correlation filter (chunk 28)")
-    }
-    workflowData$ruv_normalised_for_da_analysis_obj <- getDIAStateReference(manager)
-    workflowData$state_update_trigger <- timeFn()
-    status <- workflowData$tab_status
-    status$normalization <- "complete"
-    status$differential_expression <- "pending"
-    workflowData$tab_status <- status
-    workflowData$protein_counts$final_for_de <- checkpoint$metadata$proteins
-    return(list(finalProteinCount = checkpoint$metadata$proteins,
-      finalSampleCount = length(setdiff(checkpoint$dimensions$columns, checkpoint$slots$protein_id_column))))
-  }
-  workflowData$ruv_normalised_for_da_analysis_obj <- saveDIAOwnedValue(finalS4ForDe,
-    "final-correlation", workflowData$state_manager)
-
-  config_object <- if (skipped) {
-    list(min_pearson_correlation_threshold = 0, skipped = TRUE)
-  } else {
+  manager <- workflowData$state_manager
+  checkpoint <- readDIAStateMetadata(manager, finalS4ForDe)$data
+  config <- if (skipped) list(min_pearson_correlation_threshold = 0, skipped = TRUE) else
     list(min_pearson_correlation_threshold = correlationThreshold)
+  accepted <- if (manager$current_state == "correlation_filtered") readDIAStateMetadata(manager) else NULL
+  if (is.null(accepted) || !identical(accepted$data$components, checkpoint$components) ||
+      !identical(accepted$config, config)) {
+    commitDIAReferenceState(manager, "correlation_filtered", checkpoint, config,
+      if (skipped) "Skipped final sample correlation filter" else "Applied final sample correlation filter (chunk 28)")
   }
-
-  description <- if (skipped) {
-    "Skipped final sample correlation filter"
-  } else {
-    "Applied final sample correlation filter (chunk 28)"
-  }
-
-  workflowData$state_manager$saveState(
-    state_name = "correlation_filtered",
-    s4_data_object = finalS4ForDe,
-    config_object = config_object,
-    description = description
-  )
-
-  trigger_label <- if (skipped) {
-    "--- Entering STATE UPDATE TRIGGER setting (SKIP MODE) ---\n"
-  } else {
-    "--- Entering STATE UPDATE TRIGGER setting ---\n"
-  }
-  exit_label <- if (skipped) {
-    "--- Exiting STATE UPDATE TRIGGER setting (SKIP MODE) ---\n"
-  } else {
-    "--- Exiting STATE UPDATE TRIGGER setting ---\n"
-  }
-
-  catFn(trigger_label)
-  catFn("   STATE UPDATE Step: Setting workflow_data$state_update_trigger...\n")
-  old_trigger_value <- workflowData$state_update_trigger
-  new_trigger_value <- timeFn()
-  workflowData$state_update_trigger <- new_trigger_value
-  if (!skipped) {
-    catFn(sprintf("   STATE UPDATE Step: Old trigger value = %s\n", old_trigger_value))
-    catFn(sprintf("   STATE UPDATE Step: New trigger value = %s\n", new_trigger_value))
-  }
-  catFn("   STATE UPDATE Step: state_update_trigger SET SUCCESSFULLY\n")
-
-  catFn("   STATE UPDATE Step: Setting tab status...\n")
-  updated_status <- workflowData$tab_status
-  updated_status$normalization <- "complete"
-  updated_status$differential_expression <- "pending"
-  workflowData$tab_status <- updated_status
-  catFn(sprintf("   STATE UPDATE Step: normalization status = %s\n", workflowData$tab_status$normalization))
-  if (!skipped) {
-    catFn(sprintf("   STATE UPDATE Step: differential_expression status = %s\n", workflowData$tab_status$differential_expression))
-  }
-  catFn(exit_label)
-
-  final_protein_count <- length(unique(
-    finalS4ForDe@protein_quant_table[[finalS4ForDe@protein_id_column]]
-  ))
-  final_sample_count <- length(setdiff(
-    colnames(finalS4ForDe@protein_quant_table),
-    finalS4ForDe@protein_id_column
-  ))
-
-  if (is.null(workflowData$protein_counts)) {
-    workflowData$protein_counts <- list()
-  }
-  workflowData$protein_counts$final_for_de <- final_protein_count
-
-  messageFn(sprintf("%s: Tracked final protein count for DE: %d ***", messagePrefix, final_protein_count))
-
-  list(
-    finalProteinCount = final_protein_count,
-    finalSampleCount = final_sample_count
-  )
+  workflowData$ruv_normalised_for_da_analysis_obj <- getDIAStateReference(manager)
+  workflowData$state_update_trigger <- timeFn()
+  status <- workflowData$tab_status
+  status$normalization <- "complete"
+  status$differential_expression <- "pending"
+  workflowData$tab_status <- status
+  workflowData$protein_counts$final_for_de <- checkpoint$metadata$proteins
+  return(list(finalProteinCount = checkpoint$metadata$proteins,
+    finalSampleCount = length(setdiff(checkpoint$dimensions$columns, checkpoint$slots$protein_id_column))))
 }
 
 buildProtNormCorrelationSummaryText <- function(

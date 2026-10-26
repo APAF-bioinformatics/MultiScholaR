@@ -158,7 +158,7 @@ test_that("proteomics workflow server wires modules and advances workflow state"
   localNamespaceBindings(
     package_ns,
     list(
-      WorkflowState = makeWorkflowStateStub("DIA"),
+      createDIASessionOwner = function(workflow_data, experiment_paths, session) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
       mod_prot_import_server = makeRecordingServerStub(captured, "import"),
       mod_prot_design_server = makeRecordingServerStub(captured, "design"),
       mod_prot_qc_server = makeRecordingServerStub(captured, "qc"),
@@ -264,7 +264,7 @@ test_that("proteomics workflow server bypasses QC for TMT workflows", {
   localNamespaceBindings(
     package_ns,
     list(
-      WorkflowState = makeWorkflowStateStub("TMT"),
+      createDIASessionOwner = function(workflow_data, experiment_paths, session) makeWorkflowStateStub("TMT")$new(FALSE), # KIT-048: the owner is created at session start
       mod_prot_import_server = makeRecordingServerStub(captured, "import"),
       mod_prot_design_server = makeRecordingServerStub(captured, "design"),
       mod_prot_qc_server = makeRecordingServerStub(captured, "qc"),
@@ -316,7 +316,7 @@ test_that("lipidomics workflow server wires modules, status progression, and lau
   localNamespaceBindings(
     package_ns,
     list(
-      WorkflowState = makeWorkflowStateStub("DIA"),
+      createDIASessionOwner = function(workflow_data, experiment_paths, session) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
       mod_lipid_import_server = makeRecordingServerStub(captured, "import"),
       mod_lipid_design_server = makeRecordingServerStub(captured, "design"),
       mod_lipid_qc_server = makeRecordingServerStub(captured, "qc"),
@@ -449,7 +449,7 @@ test_that("metabolomics workflow server wires modules, status progression, and l
   localNamespaceBindings(
     package_ns,
     list(
-      WorkflowState = makeWorkflowStateStub("DIA"),
+      createDIASessionOwner = function(workflow_data, experiment_paths, session) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
       mod_metab_import_server = makeRecordingServerStub(captured, "import"),
       mod_metab_design_server = makeRecordingServerStub(captured, "design"),
       mod_metab_qc_server = makeRecordingServerStub(captured, "qc"),

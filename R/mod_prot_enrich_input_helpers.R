@@ -302,7 +302,7 @@ resolveProtEnrichCurrentS4Object <- function(workflowData, daResultsList) {
 
   if (!is.null(workflowData$state_manager)) {
     currentState <- workflowData$state_manager$current_state
-    currentS4 <- workflowData$state_manager$getState(currentState)
+    currentS4 <- readDIAStateObject(workflowData$state_manager, currentState)
     if (!is.null(currentS4)) {
       sourceLabel <- "state_manager"
     }
@@ -511,7 +511,7 @@ resolveProtEnrichRunDependencies <- function(currentS4Object,
 
   if (is.null(resolvedCurrentS4) && !is.null(workflowData$state_manager)) {
     currentState <- workflowData$state_manager$current_state
-    stateObject <- workflowData$state_manager$getState(currentState)
+    stateObject <- readDIAStateObject(workflowData$state_manager, currentState)
     if (!is.null(stateObject)) {
       resolvedCurrentS4 <- stateObject
       s4Source <- "state_manager"

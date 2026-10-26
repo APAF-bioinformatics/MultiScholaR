@@ -351,7 +351,6 @@ resolveProtNormRuvOptimizationTable <- function(normData) {
   reference <- normData$ruv_optimization_table
   if (isWorkflowTableReference(reference)) return(reference)
   manager <- getDIAActiveManager()
-  if (!usesDIAReferenceStates(manager)) return(NULL)
   result <- resolveDIARuvOptimizationResult(manager)
   if (is.null(result$optimization_results)) return(NULL)
   reference <- saveDIADisplayTable(manager, result$optimization_results)

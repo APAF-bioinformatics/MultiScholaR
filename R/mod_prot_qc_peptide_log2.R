@@ -62,46 +62,7 @@ runPeptideLog2ApplyStep <- function(workflowData,
                                     log2TransformPeptideMatrixFn = log2TransformPeptideMatrix,
                                     logInfoFn = logger::log_info,
                                     nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) return(runDIAReferencePeptideLog2Matrix(workflowData))
-
-  shiny::req(workflowData$state_manager)
-  manager <- workflowData$state_manager
-  predecessor <- getDIACurrentReference(manager)
-  currentS4 <- getDIAExecutionState(manager, "log2TransformPeptideMatrix")
-  shiny::req(currentS4)
-
-  logInfoFn("QC Step: Calculating the log2 peptide matrix")
-  withMatrix <- calcPeptideMatrixFn(currentS4)
-  nonpositive <- sum(withMatrix@peptide_matrix <= 0, na.rm = TRUE)
-  transformedS4 <- log2TransformPeptideMatrixFn(withMatrix)
-  withMatrix <- NULL
-
-  if (is.null(workflowData$qc_params)) workflowData$qc_params <- list()
-  if (is.null(workflowData$qc_params$peptide_qc)) workflowData$qc_params$peptide_qc <- list()
-  config <- list(peptides = nrow(transformedS4@peptide_matrix), samples = ncol(transformedS4@peptide_matrix),
-    quantity_column = transformedS4@norm_quantity_column, nonpositive_set_to_na = nonpositive,
-    missing_after = sum(is.na(transformedS4@peptide_matrix)))
-  workflowData$qc_params$peptide_qc$log2_matrix <- c(config, list(timestamp = nowFn()))
-
-  transformedS4 <- .savePeptideQcState(
-    state_manager = manager, before = currentS4, after = transformedS4, stage_id = "log2_matrix",
-    state_name = "log2_matrix", config_object = config,
-    description = "Peptide matrix calculated and log2 transformed (values <= 0 set to NA)",
-    now = nowFn(), transformation_type = "transformation")
-
-  releaseDIAWorkingReference(manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(transformedS4)
-  resultText <- paste(
-    "Log2 Peptide Matrix Calculated Successfully\n",
-    "===========================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Peptides (matrix rows): %d\n", config$peptides),
-    sprintf("Samples (matrix columns): %d\n", config$samples),
-    sprintf("Values <= 0 set to NA: %d\n", config$nonpositive_set_to_na),
-    "State saved as: 'log2_matrix'\n")
-
-  list(transformedS4 = transformedS4, resultText = resultText)
+runDIAReferencePeptideLog2Matrix(workflowData)
 }
 
 updatePeptideLog2Outputs <- function(output, log2Plot, log2Result, omicType, experimentLabel,
@@ -157,7 +118,7 @@ runPeptideLog2RevertObserver <- function(workflowData, output,
                                          logErrorFn = logger::log_error) {
   withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
-    history <- workflowData$state_manager$getHistory()
+    history <- diaStateHistory(workflowData$state_manager)
     if (length(history) <= 1) stop("No previous state to revert to.")
     previousState <- history[length(history) - 1]
     selectDIAStateReference(workflowData$state_manager, previousState)
@@ -193,7 +154,7 @@ mod_prot_qc_peptide_log2_server <- function(id, workflow_data, omic_type, experi
       })
 
     shiny::observeEvent(input$apply_log2_matrix, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list())
         return(invisible(NULL))
       }

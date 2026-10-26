@@ -25,7 +25,7 @@ collectProtNormExportSessionData <- function(
   messageFn = message
 ) {
   current_state_name <- workflowData$state_manager$current_state
-  current_s4_object <- workflowData$state_manager$getState(current_state_name)
+  current_s4_object <- readDIAStateObject(workflowData$state_manager, current_state_name)
   r6_complete_states <- tryCatch(
     if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
       materializeDIAStates(workflowData$state_manager$.context, share_immutable = TRUE)
@@ -256,14 +256,10 @@ saveProtNormExportArtifacts <- function(
 
   latest_filename <- "filtered_session_data_latest.rds"
   latest_filepath <- file.path(sourceDir, latest_filename)
-  publication <- NULL
-  if (is.null(publicationRequest)) {
-    saveRdsFn(sessionData, session_filepath)
-    saveRdsFn(sessionData, latest_filepath)
-  } else {
-    publication <- runWorkflowLegacyExport(sessionData, sourceDir,
-      publicationRequest$request_id, timestamp_str, serializeFn = saveRdsFn)
-  }
+  # KIT-048: the in-memory session's RDS write is retired; every export runs through the owner's publication request.
+  if (is.null(publicationRequest)) cli::cli_abort("the session export needs the owner's publication request", class = "saved_entity_scope")
+  publication <- runWorkflowLegacyExport(sessionData, sourceDir,
+    publicationRequest$request_id, timestamp_str, serializeFn = saveRdsFn)
   messageFn(sprintf("*** EXPORT: Session data saved to: %s ***", session_filepath))
   messageFn(sprintf("*** EXPORT: Latest version saved to: %s ***", latest_filepath))
 
@@ -434,7 +430,7 @@ revertProtNormStateManagerToPreNormalization <- function(
   reverted_s4 <- NULL
 
   if (!is.null(workflowData$state_manager)) {
-    history <- workflowData$state_manager$getHistory()
+    history <- diaStateHistory(workflowData$state_manager)
     previous_state <- resolveProtNormPreNormalizationState(
       history = history,
       preNormalizationStates = preNormalizationStates
@@ -495,10 +491,8 @@ resetProtNormReactiveState <- function(
   )
 
   workflowData$ruv_normalised_for_da_analysis_obj <- NULL
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    workflowData$da_analysis_results_list <- NULL
-    workflowData$state_update_trigger <- Sys.time()
-  }
+  workflowData$da_analysis_results_list <- NULL
+  workflowData$state_update_trigger <- Sys.time()
   updated_status <- workflowData$tab_status
   updated_status$normalization <- "pending"
   updated_status$differential_expression <- "disabled"

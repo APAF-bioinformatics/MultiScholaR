@@ -84,98 +84,8 @@ runProteinPeptideApplyStep <- function(workflowData,
                                        filterMinNumPeptidesPerProteinFn = filterMinNumPeptidesPerProtein,
                                        logInfoFn = logger::log_info,
                                        nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    return(runDIAReferencePeptideGroups(workflowData, "filterMinNumPeptidesPerProtein",
-      list(num_peptides_per_protein_thresh = minPeptidesPerProtein, num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein), "protein_peptide_filtered", "Applied minimum peptides per protein filter"))
-  }
-
-  shiny::req(workflowData$state_manager)
-  predecessor <- if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
-    workflowData$state_manager$.context$snapshot$states[[workflowData$state_manager$current_state]]
-  } else NULL
-  currentS4 <- getDIAExecutionState(workflowData$state_manager, "filterMinNumPeptidesPerProtein")
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf(
-    "QC Step: Applying protein peptide count filter (min: %s)",
-    minPeptidesPerProtein
-  ))
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "filterMinNumPeptidesPerProtein",
-    parameter_name = "peptides_per_protein_cutoff",
-    new_value = minPeptidesPerProtein
-  )
-
-  currentS4 <- updateConfigParameterFn(
-    theObject = currentS4,
-    function_name = "filterMinNumPeptidesPerProtein",
-    parameter_name = "peptidoforms_per_protein_cutoff",
-    new_value = minPeptidoformsPerProtein
-  )
-
-  filteredS4 <- filterMinNumPeptidesPerProteinFn(
-    theObject = currentS4,
-    num_peptides_per_protein_thresh = minPeptidesPerProtein,
-    num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein
-  )
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$peptide_qc)) {
-    workflowData$qc_params$peptide_qc <- list()
-  }
-
-  workflowData$qc_params$peptide_qc$protein_peptide_filter <- list(
-    min_peptides_per_protein = minPeptidesPerProtein,
-    min_peptidoforms_per_protein = minPeptidoformsPerProtein,
-    timestamp = nowFn()
-  )
-
-  proteinEvidenceConfig <- list(
-    min_peptides_per_protein = minPeptidesPerProtein,
-    min_peptidoforms_per_protein = minPeptidoformsPerProtein,
-    peptides_per_protein_cutoff = minPeptidesPerProtein,
-    peptidoforms_per_protein_cutoff = minPeptidoformsPerProtein,
-    num_peptides_per_protein_thresh = minPeptidesPerProtein,
-    num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein,
-    parameter_alias_resolution = list(
-      displayed = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein),
-      configured = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein),
-      resolved = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein),
-      executed = c(peptides = minPeptidesPerProtein, peptidoforms = minPeptidoformsPerProtein)
-    )
-  )
-  filteredS4 <- .savePeptideQcState(
-    state_manager = workflowData$state_manager,
-    before = currentS4,
-    after = filteredS4,
-    stage_id = "protein_evidence_filter",
-    state_name = "protein_peptide_filtered",
-    config_object = proteinEvidenceConfig,
-    description = "Applied minimum peptides per protein filter",
-    now = nowFn()
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(filteredS4)
-
-  resultText <- paste(
-    "Protein Identification Evidence Filter Applied Successfully\n",
-    "========================================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Min distinct peptides per protein: %d\n", minPeptidesPerProtein),
-    sprintf("Min distinct peptidoforms per protein: %d\n", minPeptidoformsPerProtein),
-    "State saved as: 'protein_peptide_filtered'\n"
-  )
-
-  list(
-    filteredS4 = filteredS4,
-    resultText = resultText
-  )
+  runDIAReferencePeptideGroups(workflowData, "filterMinNumPeptidesPerProtein",
+    list(num_peptides_per_protein_thresh = minPeptidesPerProtein, num_peptidoforms_per_protein_thresh = minPeptidoformsPerProtein), "protein_peptide_filtered", "Applied minimum peptides per protein filter")
 }
 
 updateProteinPeptideOutputs <- function(output,
@@ -273,7 +183,7 @@ runProteinPeptideApplyObserver <- function(workflowData,
 
 runProteinPeptideRevertStep <- function(workflowData,
                                         logInfoFn = logger::log_info) {
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
   }
@@ -339,7 +249,7 @@ mod_prot_qc_peptide_protein_server <- function(id, workflow_data, omic_type, exp
     
     # Step 4: Protein Peptide Count Filter (chunk 13)
     shiny::observeEvent(input$apply_protein_peptide_filter, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(num_peptides_per_protein_thresh = input$min_peptides_per_protein,
           num_peptidoforms_per_protein_thresh = input$min_peptidoforms_per_protein))
         return(invisible(NULL))

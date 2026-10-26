@@ -68,57 +68,7 @@ runPeptideAccessionApplyStep <- function(workflowData, delimiter, aggregationMet
                                          logInfoFn = logger::log_info,
                                          nowFn = Sys.time) {
   parameters <- list(delimiter = delimiter, aggregation_method = aggregationMethod)
-  if (usesDIAReferenceStates(workflowData$state_manager))
-    return(runDIAReferencePeptideAccessionCleanup(workflowData, parameters))
-
-  shiny::req(workflowData$state_manager)
-  manager <- workflowData$state_manager
-  predecessor <- getDIACurrentReference(manager)
-  currentS4 <- getDIAExecutionState(manager, "chooseBestProteinAccession")
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf("QC Step: Applying peptide-level accession cleanup with delimiter: %s", delimiter))
-  key <- currentS4@protein_id_column
-  groupsBefore <- length(unique(currentS4@peptide_data[[key]]))
-  aaSeqTblFinal <- shiny::isolate(workflowData$aa_seq_tbl_final)
-  if (!is.null(aaSeqTblFinal)) {
-    aaSeqTblFinal <- dplyr::rename(aaSeqTblFinal, uniprot_acc = "database_id")
-    cleanedS4 <- chooseBestProteinAccessionFn(theObject = currentS4, delim = delimiter, seqinr_obj = aaSeqTblFinal,
-      seqinr_accession_column = "uniprot_acc", aggregation_method = aggregationMethod)
-    applied <- TRUE
-  } else {
-    cleanedS4 <- currentS4
-    applied <- FALSE
-  }
-  groupsAfter <- length(unique(cleanedS4@peptide_data[[key]]))
-  config <- list(delimiter = delimiter, aggregation_method = aggregationMethod, seqinr_accession_column = "uniprot_acc",
-    cleanup_applied = applied, active_protein_key = key, protein_groups_before = groupsBefore,
-    protein_groups_after = groupsAfter)
-  if (is.null(workflowData$qc_params)) workflowData$qc_params <- list()
-  if (is.null(workflowData$qc_params$peptide_qc)) workflowData$qc_params$peptide_qc <- list()
-  workflowData$qc_params$peptide_qc$peptide_accession_cleanup <- c(config, list(timestamp = nowFn()))
-  workflowData$accession_cleanup_results <- c(config, list(delimiter_used = delimiter, timestamp = nowFn()))
-
-  cleanedS4 <- .savePeptideQcState(
-    state_manager = manager, before = currentS4, after = cleanedS4, stage_id = "peptide_accession_cleanup",
-    state_name = "peptide_accession_cleaned", config_object = config,
-    description = if (applied) "Applied peptide-level protein accession cleanup" else
-      "Skipped peptide-level accession cleanup (no FASTA data)",
-    now = nowFn(), transformation_type = "aggregation")
-
-  releaseDIAWorkingReference(manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- .countPeptideProteinGroups(cleanedS4)
-  resultText <- paste(
-    if (applied) "Peptide Accession Cleanup Applied Successfully\n" else "Peptide Accession Cleanup Skipped\n",
-    "==============================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Protein groups before / after: %d / %d\n", groupsBefore, groupsAfter),
-    if (applied) sprintf("Delimiter: %s\nAggregation method: %s\n", delimiter, aggregationMethod) else
-      "Reason: No FASTA data available for cleanup\n",
-    "State saved as: 'peptide_accession_cleaned'\n")
-
-  list(cleanedS4 = cleanedS4, resultText = resultText, cleanupApplied = applied)
+  runDIAReferencePeptideAccessionCleanup(workflowData, parameters)
 }
 
 updatePeptideAccessionOutputs <- function(output, accessionPlot, accessionResult, omicType, experimentLabel,
@@ -175,7 +125,7 @@ runPeptideAccessionRevertObserver <- function(workflowData, output,
                                               logErrorFn = logger::log_error) {
   withDIAStateScope(getDIAActiveManager(), function() {
   tryCatch({
-    history <- workflowData$state_manager$getHistory()
+    history <- diaStateHistory(workflowData$state_manager)
     if (length(history) <= 1) stop("No previous state to revert to.")
     previousState <- history[length(history) - 1]
     selectDIAStateReference(workflowData$state_manager, previousState)
@@ -212,7 +162,7 @@ mod_prot_qc_peptide_accession_server <- function(id, workflow_data, omic_type, e
       })
 
     shiny::observeEvent(input$apply_peptide_accession, {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(delimiter = input$delimiter, aggregation_method = input$aggregation_method))
         return(invisible(NULL))
       }

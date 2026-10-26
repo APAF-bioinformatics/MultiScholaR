@@ -847,11 +847,16 @@ test_that("a native archive supports real IQ reapply after its source project is
     peptide@peptide_data <- peptide@peptide_data[!duplicated(peptide@peptide_data[keys]), ]
     peptide@peptide_data$Peptide.Imputed <- 1000 + seq_len(nrow(peptide@peptide_data))
     manager$saveState("imputed", peptide, list(), "synthetic post-imputation IQ input")
-    workflow <- list2env(list(state_manager = manager), parent = emptyenv())
+    # KIT-048: every owner runs on reference states and carries its experiment paths (as the session owner does);
+    # the fixture's legacy checkpoints convert first.
+    convertDIANativeLegacyCheckpoints(manager)
+    manager$.context$experiment_paths <- paths
+    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list())), parent = emptyenv())
     apply_iq <- function(workflow, paths) withDIAStateScope(workflow$state_manager,
         function() runProteinIqRollupApplyStep(workflow, paths,
             captureCheckpointFn = function(...) NULL, showNotificationFn = function(...) NULL))
-    original <- apply_iq(workflow, paths)$proteinObj
+    apply_iq(workflow, paths)
+    original <- readDIAStateObject(workflow$state_manager)
     metadata <- fixture$metadata
     metadata$design_matrix <- original@design_matrix
     metadata$final_protein_count <- nrow(original@protein_quant_table)
@@ -872,8 +877,9 @@ test_that("a native archive supports real IQ reapply after its source project is
     expect_identical(workflow$state_manager$getState(), original)
     expect_identical(workflow$state_manager$revertToState("imputed"), peptide)
     expect_true(all(file.exists(vapply(imported$dependencies, `[[`, character(1), "path"))))
-    result <- apply_iq(workflow, fresh_paths)
-    expect_true(isSavedWorkflowReference(result$stateReference))
+    apply_iq(workflow, fresh_paths)
+    expect_true(isSavedWorkflowReference(getDIAStateReference(workflow$state_manager)))
+    expect_identical(workflow$state_manager$current_state, "protein_s4_created")
     actual <- workflow$state_manager$getState()
     expect_identical(actual@protein_quant_table, original@protein_quant_table)
     expect_identical(actual@protein_id_table, original@protein_id_table)
@@ -1314,4 +1320,43 @@ test_that("KIT-044: native archives round-trip between the GNU tar path and the 
     expect_gt(round_trip(character(), no_tools), 2L)   # written by GNU tar, read by the fallback
     expect_gt(round_trip(no_tools, character()), 2L)   # written by the fallback, read by GNU tar
     expect_gt(withr::with_envvar(no_tools, round_trip(character(), character())), 2L) # the fallback alone
+})
+
+test_that("KIT-048: the proteomics session's owner exists from session start with a pending identity and the import binds it", {
+    skip_if_not(workflowOwnerCapable())
+    root <- withr::local_tempdir()
+    source_dir <- file.path(root, "source"); dir.create(source_dir)
+    session <- new.env(parent = emptyenv()); session$userData <- new.env(parent = emptyenv())
+    session$onFlush <- session$onFlushed <- session$onSessionEnded <- function(...) function() invisible(NULL)
+    workflow <- list2env(list(state_update_trigger = NULL))
+    manager <- createDIASessionOwner(workflow, list(source_dir = source_dir), session)
+    withr::defer(closeDIAStateAdapter(manager))
+    expect_s3_class(manager, "DIAStateAdapter")
+    expect_true(isDIASessionOwnerPending(manager))
+    expect_identical(manager$.context$store$identity$project_id, "PROTEOMICS-pending")
+    expect_identical(manager$current_state, "initial")
+    expect_true(usesDIAReferenceStates(manager))
+    expect_identical(manager$.context$experiment_paths$source_dir, source_dir)
+    expect_identical(session$userData$dia_capacity_manager, manager)
+    workflow$state_manager <- manager
+    # The import binds the format and type: the store marker, the store, the head and the manager agree.
+    bound <- initializeDIANativeImport(workflow, list(source_dir = source_dir), session, "maxquant", data_type = "protein")
+    expect_identical(bound, manager)
+    expect_false(isDIASessionOwnerPending(manager))
+    expect_identical(manager$.context$store$identity$workflow_id, "LFQ")
+    expect_identical(manager$.context$store$identity$project_id, workflowNativeStoreLabel("maxquant", "LFQ"))
+    expect_identical(jsonlite::read_json(file.path(manager$.context$store$directory, "store.json"))$workflow_id, "LFQ")
+    expect_identical(manager$.context$snapshot$identity, manager$.context$store$identity)
+    expect_identical(manager$workflow_type, "LFQ")
+    expect_identical(unlist(manager$getHistory()), "initial")
+    # A second import of another route is refused, as it was for an import-created owner.
+    expect_error(initializeDIANativeImport(workflow, list(source_dir = source_dir), session, "diann", method = "iq"), class = "saved_entity_scope")
+    # The same route again is accepted (the owner serves it).
+    expect_identical(initializeDIANativeImport(workflow, list(source_dir = source_dir), session, "maxquant", data_type = "protein"), manager)
+    # The store reopens under the bound identity.
+    identity <- manager$.context$store$identity
+    reopened <- newWorkflowEntityStore(dirname(manager$.context$store$directory), identity$project_id, identity$workflow_id)
+    expect_identical(reopened$identity, identity)
+    # Without a source directory or the packages there is no owner and no in-memory fallback.
+    expect_error(createDIASessionOwner(workflow, list(), session), class = "saved_entity_scope")
 })

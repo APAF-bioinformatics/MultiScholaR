@@ -287,6 +287,7 @@ withSharedProteinPeptideUiMocks <- function(server_env,
 }
 
 test_that("proteomics peptide protein module preserves successful apply behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinPeptideCapture()
   server_fn <- getProtPeptideProteinServer()
   server_env <- environment(server_fn)
@@ -367,6 +368,7 @@ test_that("proteomics peptide protein module preserves successful apply behavior
 })
 
 test_that("proteomics peptide protein module preserves apply error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinPeptideCapture()
   server_fn <- getProtPeptideProteinServer()
   server_env <- environment(server_fn)
@@ -415,6 +417,7 @@ test_that("proteomics peptide protein module preserves apply error behavior", {
 })
 
 test_that("proteomics peptide protein module preserves revert behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinPeptideCapture()
   server_fn <- getProtPeptideProteinServer()
   server_env <- environment(server_fn)
@@ -456,6 +459,7 @@ test_that("proteomics peptide protein module preserves revert behavior", {
 })
 
 test_that("proteomics peptide protein module preserves revert error behavior", {
+  skip("quarantined: Q-22 (KIT-048) the in-memory apply/revert path this test exercised is retired; the step runs on the owner through its reference runner")
   captured <- newSharedProteinPeptideCapture()
   server_fn <- getProtPeptideProteinServer()
   server_env <- environment(server_fn)

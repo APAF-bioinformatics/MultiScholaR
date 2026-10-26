@@ -139,6 +139,35 @@ getDIACurrentReference <- function(manager) {
 usesDIAReferenceStates <- function(manager) {
     inherits(manager, "DIAStateAdapter") && isTRUE(manager$.context$reference_states)
 }
+# KIT-048: no proteomics module calls `usesDIAReferenceStates` any more (the in-memory path is retired; the owner is
+# attached from session start); the harness and the stage-3 code read it.
+
+#' KIT-048: the three named entry points through which the proteomics modules reach a state manager's commit
+#' surface, in place of the `$saveState` / `$getState` / `$getHistory` calls they made on the in-memory manager. In
+#' the application the manager is the owner (a `DIAStateAdapter`, from session start); the KIT-042 legacy ingest
+#' passes the `WorkflowState` it stages a legacy RDS session on before adopting it into an owner, and the module
+#' contract tests pass fakes that expose the same three methods. The entry points forward to that surface; the
+#' owner's head is read directly where it can be.
+#' @noRd
+diaStateHistory <- function(manager) {
+    if (is.null(manager)) cli::cli_abort("the proteomics state manager is required", class = "saved_entity_scope")
+    if (inherits(manager, "DIAStateAdapter")) return(as.character(unlist(manager$.context$snapshot$state_history)))
+    if (is.function(manager$getHistory)) return(as.character(unlist(manager$getHistory())))
+    cli::cli_abort("the proteomics state manager is required", class = "saved_entity_scope")
+}
+
+#' @param ... `state_name`, `s4_data_object`, `config_object`, `description`, as the adapter's `saveState` takes them.
+#' @noRd
+saveDIAOwnerState <- function(manager, ...) {
+    if (is.null(manager) || !is.function(manager$saveState)) cli::cli_abort("the proteomics state manager is required", class = "saved_entity_scope")
+    manager$saveState(...)
+}
+
+#' @noRd
+readDIAStateObject <- function(manager, state_name = NULL) {
+    if (is.null(manager) || !is.function(manager$getState)) cli::cli_abort("the proteomics state manager is required", class = "saved_entity_scope")
+    manager$getState(state_name)
+}
 
 #' Obtain a checkpoint reference without loading its record or assay.
 #' @param manager Session owner.
@@ -1032,7 +1061,7 @@ newDIAPeptideCheckpoint <- function(manager, reference, design, args) {
 #' @return Selected descriptor, or the ordinary legacy result on other routes.
 #' @noRd
 selectDIAStateReference <- function(manager, state_name) {
-    if (!usesDIAReferenceStates(manager)) return(manager$revertToState(state_name))
+    if (!usesDIAReferenceStates(manager)) cli::cli_abort("the proteomics state owner is required", class = "saved_entity_scope") # KIT-048
     reference <- getDIAStateReference(manager, state_name)
     if (is.null(reference)) cli::cli_abort("state does not exist", class = "saved_entity_missing")
     snapshot <- manager$.context$snapshot

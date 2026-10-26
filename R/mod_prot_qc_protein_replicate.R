@@ -89,134 +89,21 @@ runProteinReplicateFilterApplyStep <- function(workflowData,
                                                newClusterFn = if (exists("new_cluster")) get("new_cluster") else NULL,
                                                isTestModeFn = is_test_mode,
                                                nowFn = Sys.time) {
-  if (usesDIAReferenceStates(workflowData$state_manager)) {
-    pending <- if (identical(workflowData$state_manager$current_state, "protein_replicate_filtered"))
-      resumeDIAProteinAction(workflowData, "protein_replicate_filtered") else NULL
-    if (!is.null(pending)) return(pending)
-    # KIT-015: an unmanaged launch runs the KIT-010 declaration in process with its production variant (`rows`).
-    entry <- workflowActionSpec("protein_replicate_filter")
-    parameters <- list(grouping_variable = groupingVariable, parallel_cores = parallelCores)
-    validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
-    value <- computeDIAReferenceProteinReplicateFilter(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
-      parameters, variant = entry$default_variant)
-    qc_params <- shiny::isolate(workflowData$qc_params) %||% list()
-    if (is.null(qc_params$protein_qc)) qc_params$protein_qc <- list()
-    qc_params$protein_qc$replicate_filter <- list(grouping_variable = groupingVariable, parallel_cores = parallelCores,
-      timestamp = nowFn(), effective_parallel_cores = 1L)
-    workflowData$qc_params <- qc_params
-    return(completeDIAProteinAction(workflowData, value, publish = TRUE))
-  }
-
-  shiny::req(workflowData$state_manager)
-  currentS4 <- readDIAProteinScience(workflowData$state_manager)
-  predecessor <- getDIACurrentReference(workflowData$state_manager)
-  shiny::req(currentS4)
-
-  logInfoFn(sprintf(
-    "Protein Processing: Applying protein replicate filter with %d cores",
-    parallelCores
-  ))
-
-  saved_execution <- inherits(workflowData$state_manager, "DIAStateAdapter")
-  useLocalExecution <- saved_execution || isTRUE(isTestModeFn()) || parallelCores <= 1L
-  coreUtilisation <- if (!useLocalExecution && is.function(newClusterFn)) {
-    newClusterFn(parallelCores)
-  } else {
-    NA
-  }
-  # This action created the pool; saved results must not keep it alive.
-  owned_workers <- inherits(coreUtilisation, "multidplyr_cluster")
-  if (owned_workers) on.exit(stopDIAWorkerCluster(coreUtilisation), add = TRUE)
-
-  filteredS4 <- removeProteinsWithOnlyOneReplicateFn(
-    currentS4,
-    coreUtilisation,
-    grouping_variable = groupingVariable
-  )
-  if (owned_workers) {
-    args <- methods::slot(filteredS4, "args")
-    args$removeProteinsWithOnlyOneReplicate$core_utilisation <-
-      newDIAWorkerSpec(length(coreUtilisation))
-    methods::slot(filteredS4, "args") <- args
-  }
-
-  outputFile <- if (!is.null(experimentPaths$protein_qc_dir)) {
-    file.path(
-      experimentPaths$protein_qc_dir,
-      "remove_proteins_with_only_one_rep.tsv"
-    )
-  } else {
-    "remove_proteins_with_only_one_rep.tsv"
-  }
-  if (!usesDIAReferenceStates(workflowData$state_manager)) writeTsvFn(filteredS4@protein_quant_table, outputFile)
-
-  if (is.null(workflowData$qc_params)) {
-    workflowData$qc_params <- list()
-  }
-  if (is.null(workflowData$qc_params$protein_qc)) {
-    workflowData$qc_params$protein_qc <- list()
-  }
-
-  workflowData$qc_params$protein_qc$replicate_filter <- list(
-    grouping_variable = groupingVariable,
-    parallel_cores = parallelCores,
-    timestamp = nowFn()
-  )
-  if (saved_execution) {
-    workflowData$qc_params$protein_qc$replicate_filter$effective_parallel_cores <- 1L
-  }
-
-  tryCatch({
-    if (!usesDIAReferenceStates(workflowData$state_manager) && !is.null(experimentPaths$source_dir)) {
-      qcParamsFile <- file.path(experimentPaths$source_dir, "qc_params.RDS")
-      saveRdsFn(workflowData$qc_params, qcParamsFile)
-      logInfoFn(sprintf("Saved QC parameters to: %s", qcParamsFile))
-    }
-  }, error = function(e) {
-    logWarnFn(sprintf("Could not save QC parameters file: %s", e$message))
-  })
-
-  filteredS4 <- inheritDIAExecutionSource(filteredS4, workflowData$state_manager, predecessor)
-  workflowData$state_manager$saveState(
-    state_name = "protein_replicate_filtered",
-    s4_data_object = filteredS4,
-    config_object = list(
-      grouping_variable = groupingVariable,
-      parallel_cores = parallelCores,
-      output_file = outputFile
-    ),
-    description = "Applied protein replicate filter (removed single-replicate proteins)"
-  )
-
-  releaseDIAWorkingReference(workflowData$state_manager, predecessor)
-  currentS4 <- NULL
-  proteinCount <- filteredS4@protein_quant_table |>
-    dplyr::distinct(.data[[filteredS4@protein_id_column]]) |>
-    nrow()
-
-  if (is.null(workflowData$protein_counts)) {
-    workflowData$protein_counts <- list()
-  }
-  workflowData$protein_counts$after_qc_filtering <- proteinCount
-  logInfoFn(sprintf("Tracked protein count after QC filtering: %d", proteinCount))
-
-  resultText <- paste(
-    "Protein Replicate Filter Applied Successfully\n",
-    "============================================\n",
-    sprintf("Proteins remaining: %d\n", proteinCount),
-    sprintf("Grouping variable: %s\n", groupingVariable),
-    sprintf("Parallel cores used: %d\n", if (saved_execution) 1L else parallelCores),
-    sprintf("Output file: %s\n", basename(outputFile)),
-    "State saved as: 'protein_replicate_filtered'\n",
-    "\nProtein filtering pipeline complete!"
-  )
-
-  finishDIAProteinAction(workflowData, list(
-    filteredS4 = filteredS4,
-    outputFile = outputFile,
-    proteinCount = proteinCount,
-    resultText = resultText
-  ), "filteredS4")
+  pending <- if (identical(workflowData$state_manager$current_state, "protein_replicate_filtered"))
+    resumeDIAProteinAction(workflowData, "protein_replicate_filtered") else NULL
+  if (!is.null(pending)) return(pending)
+  # KIT-015: an unmanaged launch runs the KIT-010 declaration in process with its production variant (`rows`).
+  entry <- workflowActionSpec("protein_replicate_filter")
+  parameters <- list(grouping_variable = groupingVariable, parallel_cores = parallelCores)
+  validateWorkflowActionParameters(entry$name, parameters, workflowExecutionPolicy(FALSE), resolved = FALSE)
+  value <- computeDIAReferenceProteinReplicateFilter(workflowData$state_manager, getDIAStateReference(workflowData$state_manager),
+    parameters, variant = entry$default_variant)
+  qc_params <- shiny::isolate(workflowData$qc_params) %||% list()
+  if (is.null(qc_params$protein_qc)) qc_params$protein_qc <- list()
+  qc_params$protein_qc$replicate_filter <- list(grouping_variable = groupingVariable, parallel_cores = parallelCores,
+    timestamp = nowFn(), effective_parallel_cores = 1L)
+  workflowData$qc_params <- qc_params
+  return(completeDIAProteinAction(workflowData, value, publish = TRUE))
 }
 
 updateProteinReplicateFilterOutputs <- function(output,
@@ -316,7 +203,7 @@ runProteinReplicateFilterApplyObserver <- function(workflowData,
 
 runProteinReplicateFilterRevertStep <- function(workflowData) {
   shiny::req(workflowData$state_manager)
-  history <- workflowData$state_manager$getHistory()
+  history <- diaStateHistory(workflowData$state_manager)
 
   if (length(history) <= 1) {
     stop("No previous state to revert to.")
@@ -394,7 +281,7 @@ mod_prot_qc_protein_replicate_server <- function(id, workflow_data, experiment_p
         omicType = omic_type, experimentLabel = experiment_label),
       read_result = readManagedProteinResult)
     runApplyObserver <- function(groupingVariable, parallelCores) {
-      if (!is.null(workflowSessionApplication(session)) && usesDIAReferenceStates(workflow_data$state_manager)) {
+      if (!is.null(workflowSessionApplication(session))) {
         managed_step$apply(list(grouping_variable = groupingVariable %||% "group", parallel_cores = parallelCores %||% 4))
         return(invisible(NULL))
       }

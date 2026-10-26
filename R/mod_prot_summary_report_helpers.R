@@ -17,44 +17,13 @@ resolveProtSummaryFinalS4State <- function(workflowData,
     "protein_replicate_filtered",
     "imputed"
   )
-  availableStates <- stateManager$getHistory()
+  availableStates <- diaStateHistory(stateManager)
   dataStateUsed <- purrr::detect(dataStates, ~ .x %in% availableStates)
 
-  if (!is.null(dataStateUsed)) {
-    if (usesDIAReferenceStates(stateManager)) return(list(
-      finalS4Object = getDIAStateReference(stateManager, dataStateUsed), dataStateUsed = dataStateUsed))
-    finalS4Object <- stateManager$getState(dataStateUsed)
-  }
-
-  if (is.null(finalS4Object)) {
-    catFn(sprintf("%s: No data S4 object found in any valid state\n", logPrefix))
-    return(list(finalS4Object = NULL, dataStateUsed = dataStateUsed))
-  }
-
-  catFn(sprintf(
-    "%s: Retrieved DATA S4 object from state '%s'\n",
-    logPrefix,
-    dataStateUsed
-  ))
-  catFn(sprintf("%s: S4 object class: %s\n", logPrefix, class(finalS4Object)))
-
-  argsAvailable <- tryCatch({
-    !is.null(finalS4Object@args)
-  }, error = function(e) {
-    FALSE
-  })
-
-  if (argsAvailable) {
-    catFn(sprintf(
-      "%s: S4 @args contains %d function groups\n",
-      logPrefix,
-      length(finalS4Object@args)
-    ))
-  } else {
-    catFn(sprintf("%s: S4 @args is NULL or slot doesn't exist\n", logPrefix))
-  }
-
-  list(finalS4Object = finalS4Object, dataStateUsed = dataStateUsed)
+  if (!is.null(dataStateUsed)) return(list(
+    finalS4Object = getDIAStateReference(stateManager, dataStateUsed), dataStateUsed = dataStateUsed))
+  catFn(sprintf("%s: No data S4 object found in any valid state\n", logPrefix))
+  list(finalS4Object = NULL, dataStateUsed = NULL)
 }
 
 buildProtSummaryTemplateStatus <- function(projectDirs,
