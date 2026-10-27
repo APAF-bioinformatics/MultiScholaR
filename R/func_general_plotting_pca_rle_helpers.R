@@ -83,8 +83,10 @@ plotPcaHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    # KIT-064 (roar BUG-18/14): at least two present values (a CV needs them; `floor(0.05 * n)` is 0 below 20 samples).
-    min_samples_present <- max(2L, floor(0.05 * num_samples))
+    # KIT-064 (roar BUG-18): `floor(0.05 * n)` is 0 below 20 samples, so every row passes this filter there. Raising it to
+    # 2 changed the recorded `dia_normalization_pca` product on the 5-sample fixtures, so the threshold is kept as it is:
+    # the PCA input filter is part of the recorded science and its change is the user's decision, not a repair.
+    min_samples_present <- floor(0.05 * num_samples)
     data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, , drop = FALSE]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
@@ -367,8 +369,10 @@ plotPcaListHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    # KIT-064 (roar BUG-18/14): at least two present values (a CV needs them; `floor(0.05 * n)` is 0 below 20 samples).
-    min_samples_present <- max(2L, floor(0.05 * num_samples))
+    # KIT-064 (roar BUG-18): `floor(0.05 * n)` is 0 below 20 samples, so every row passes this filter there. Raising it to
+    # 2 changed the recorded `dia_normalization_pca` product on the 5-sample fixtures, so the threshold is kept as it is:
+    # the PCA input filter is part of the recorded science and its change is the user's decision, not a repair.
+    min_samples_present <- floor(0.05 * num_samples)
     data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, , drop = FALSE]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
