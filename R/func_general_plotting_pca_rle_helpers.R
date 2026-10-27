@@ -361,6 +361,7 @@ plotPcaListHelper <- function(data,
                               title, geom.text.size = 11, ncomp = 2,
                               cv_percentile = 0.90,
                               ...) {
+  requireOptionalPackage("mixOmics", "the mixOmics PCA") # KIT-064 (roar BUG-24)
   # --- START of modification ---
   if (nrow(data) > 1) {
     # 1. Filter by presence in samples
@@ -456,6 +457,7 @@ plotPcaGgpairs <- function(
   sample_id_column,
   ncomp = 2
 ) {
+  requireOptionalPackage("mixOmics", "the mixOmics PCA") # KIT-064 (roar BUG-24)
   requireOptionalPackage("GGally", "PCA pair plots")
   pca.res <- mixOmics::pca(t(as.matrix(data_matrix)), ncomp = ncomp)
 

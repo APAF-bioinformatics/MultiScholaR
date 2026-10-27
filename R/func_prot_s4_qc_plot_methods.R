@@ -242,6 +242,7 @@ setMethod(
 
 #' @export
 savePlotPcaList <- function(input_list, prefix = "PCA", suffix = c("png", "pdf"), output_dir) {
+  requireOptionalPackage("mixOmics", "the mixOmics PCA") # KIT-064 (roar BUG-24)
   list_of_filenames <- expand_grid(column = names(input_list), suffix = suffix) |>
     mutate(filename = paste0("RLE", "_", column, ".", suffix)) |>
     left_join(

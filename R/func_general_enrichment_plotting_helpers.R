@@ -147,6 +147,7 @@ enrichedGoTermBarPlot <- function( input_table, output_dir,
 #'@export
 #'@param text_list, a vector of text (e.g. a list of GO terms name)
 createWordCloudDataFrame <- function( text_list) {
+  requireOptionalPackage("tm", "the enrichment word cloud") # KIT-064 (roar BUG-24)
 
   docs <- tm::Corpus(tm::VectorSource(text_list))
 
@@ -723,6 +724,7 @@ update_n <- function(x, showCategory) {
 # ----------------------------------------------------------------------------
 #' @export
 extract_geneSets <- function(x, n) {
+  requireOptionalPackage("clusterProfiler", "the enrichment network plot") # KIT-064 (roar BUG-24)
   n <- update_n(x, n)
 
   if (inherits(x, 'list')) {

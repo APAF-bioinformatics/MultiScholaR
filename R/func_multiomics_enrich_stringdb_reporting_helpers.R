@@ -2,6 +2,7 @@
 # ----------------------------------------------------------------------------
 printStringDbFunctionalEnrichmentBarGraph <- function (input_table, word_limit = 10)
 {
+  requireOptionalPackage("tidytext", "the STRING-DB bar graph") # KIT-064 (roar BUG-24)
   plot_data <- input_table |>
     group_by(comparison, category, termDescription) |>
     arrange( desc( enrichmentScore), falseDiscoveryRate ) |>

@@ -17,6 +17,7 @@ runKeggEnrichment <- function(ranked_list,
                              experiment_label,
                              assay_name,
                              kegg_species_code = "kpn") {
+  requireOptionalPackage("KEGGREST", "KEGG enrichment") # KIT-064 (roar BUG-24)
   
   message(sprintf("--- Entering runKeggEnrichment ---"))
   message(sprintf("   runKeggEnrichment Args: assay_name = %s", assay_name))

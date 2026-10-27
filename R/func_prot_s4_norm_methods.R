@@ -157,6 +157,7 @@ setMethod(
 #' compute the same matrix.
 #' @noRd
 prepareRuvCancorInput <- function(theObject, num_components_to_impute) {
+  requireOptionalPackage("mixOmics", "the RUV canonical-correlation imputation") # KIT-064 (roar BUG-24)
   design_matrix <- theObject@design_matrix
   sample_columns <- design_matrix |> dplyr::pull(!!sym(theObject@sample_id))
   normalised_frozen_protein_matrix_filt <- theObject@protein_quant_table |>

@@ -69,6 +69,7 @@ oneGoEnrichment <- function( go_annot
                              , min_gene_set_size
                              , max_gene_set_size
                              , get_cluster_profiler_object = FALSE) {
+  requireOptionalPackage("clusterProfiler", "GO enrichment") # KIT-064 (roar BUG-24)
 
   join_condition <- rlang::set_names( c( colnames(background_list)[1]),
                                       c( as_name(enquo( protein_id)) ) )
@@ -192,6 +193,7 @@ runOneGoEnrichmentInOutFunction <- function(significant_proteins,
                                             min_gene_set_size = 4,
                                             max_gene_set_size = 200,
                                             min_sig_gene_set_size = 2) {
+  requireOptionalPackage("clusterProfiler", "GO enrichment") # KIT-064 (roar BUG-24)
 
   # Debug information
   print("Starting enrichment analysis")
@@ -449,6 +451,8 @@ listifyTableByColumn  <- function(input_table, column_name) {
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene_sets, min_set_size = 4, max_set_size = 300) {
+  requireOptionalPackage("clusterProfiler", "gene-set enrichment") # KIT-064 (roar BUG-24)
+  requireOptionalPackage("GSEABase", "gene-set enrichment") # KIT-064 (roar BUG-24)
 
   gene_list <- list_of_de_proteins[[contrast_name]]
 
@@ -492,6 +496,8 @@ runGsea <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene
 ## -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 runEnricher <- function(index_name, contrast_name, list_of_de_proteins, list_of_gene_sets, min_set_size = 4, max_set_size = 300) {
+  requireOptionalPackage("clusterProfiler", "gene-set enrichment") # KIT-064 (roar BUG-24)
+  requireOptionalPackage("GSEABase", "gene-set enrichment") # KIT-064 (roar BUG-24)
 
   gene_list <- list_of_de_proteins[[contrast_name]]
 

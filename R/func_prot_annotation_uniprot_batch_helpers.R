@@ -4,6 +4,7 @@
 # Filter for a batch and run analysis on that batch of uniprot accession keys only.
 subsetQuery <- function(data, subset, accessions_col_name, uniprot_handle, uniprot_columns = c("EXISTENCE", "SCORE", "REVIEWED", "GENENAME", "PROTEIN-NAMES", "LENGTH"),
                         uniprot_keytype = "UniProtKB") {
+  requireOptionalPackage("UniProt.ws", "UniProt batch queries") # KIT-064 (roar BUG-24)
 
 
   # print(subset)

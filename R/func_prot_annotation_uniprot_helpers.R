@@ -393,6 +393,9 @@ createEmptyUniprotTable <- function() {
 #----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #'@export
 getUniProtAnnotation <- function(   input_table, taxonomy_id  =9606, protein_id_column = "Protein.Ids",  protein_id_delim=":", output_dir = "." ) {
+  requireOptionalPackage("UniProt.ws", "UniProt annotation") # KIT-064 (roar BUG-24)
+  requireOptionalPackage("AnnotationDbi", "UniProt annotation") # KIT-064 (roar BUG-24)
+  requireOptionalPackage("GO.db", "UniProt annotation") # KIT-064 (roar BUG-24)
 
 
   uniprot_dat <- NA

@@ -42,6 +42,9 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
                                   protein_id_delimiter = ":",
                                   protein_id_column = "Protein.Ids"
                                   ) {
+  requireOptionalPackage("UniProt.ws", "pathway enrichment") # KIT-064 (roar BUG-24)
+  requireOptionalPackage("AnnotationDbi", "pathway enrichment") # KIT-064 (roar BUG-24)
+  requireOptionalPackage("GO.db", "pathway enrichment") # KIT-064 (roar BUG-24)
 
   # Create directories if they don't exist
   dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
