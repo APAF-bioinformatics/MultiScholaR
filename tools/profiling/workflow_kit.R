@@ -32,7 +32,8 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
         step("ruv_covariates", "RUV-III Covariates", limpa_ruv_state, "normalisation", "mod_prot_norm", "apply_ruv_covariates"),
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
-        step("da", "Differential abundance", limpa_ruv_state, "da", "mod_prot_da", "run_da_analysis")))
+        step("da", "Differential abundance", limpa_ruv_state, "da", "mod_prot_da", "run_da_analysis"),
+        step("report", "Report", NULL, "store", "mod_prot_summary", "generate_report")))
     # KIT-021: the protein-level route (LFQ and TMT imports, KIT-020): no peptide stage and no IQ rollup; the design
     # commits `protein_s4_initial`; the protein QC, normalisation, export and DA steps are the DIA route's.
     if (identical(route, "protein")) return(list(
@@ -45,7 +46,8 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         step("normalisation_ruv", "Normalisation and RUV", "ruv_corrected", "normalisation", "mod_prot_norm", "run_normalization"),
         step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
-        step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis")))
+        step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis"),
+        step("report", "Report", NULL, "store", "mod_prot_summary", "generate_report")))
     list(
         step("import", "Import", "initial", "store", "mod_prot_import", "prot-import-process"),
         step("design", "Design", "raw_data_s4", "store", "mod_prot_design", "builder save_results"),
@@ -64,7 +66,10 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         step("normalisation_ruv", "Normalisation and RUV", "ruv_corrected", "normalisation", "mod_prot_norm", "run_normalization"),
         step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
-        step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis"))
+        step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis"),
+        # KIT-065: the summary tab's publication copy and report render close every route's journey (completion-checked;
+        # the report is a rendered file recorded by path and size, not a state).
+        step("report", "Report", NULL, "store", "mod_prot_summary", "generate_report"))
 }
 
 #' Journey step identifiers in order.
@@ -775,7 +780,7 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
     step_ratios <- vapply(completed, function(step) candidate$phase_peak_anon_bytes[[step]] / control$phase_peak_anon_bytes[[step]], numeric(1))
     # The per-step guard applies from the first saved state (q-value) onward (user decision 2026-10-11, KIT-011
     # audit PX-01): import and design run the same code on both paths and are reported, not judged.
-    reported_only <- c("import", "design")
+    reported_only <- c("import", "design", "report") # KIT-065: the report render is a completion step, not a guarded one
     guarded <- setdiff(completed, reported_only)
     control_complete <- identical(control$outcome, "complete")
     whole_ratio <- candidate$peak_anon_bytes / control$peak_anon_bytes

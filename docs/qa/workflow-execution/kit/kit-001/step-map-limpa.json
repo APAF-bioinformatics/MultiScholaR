@@ -526,6 +526,32 @@
       "notes": [
         "KIT-053: unit recorded under the afk authorisation (decision record 2026-10-21)."
       ]
+    },
+    {
+      "id": "report",
+      "label": "Report",
+      "route": null,
+      "unit": "store",
+      "in_journey": true,
+      "module": "R/mod_prot_summary_server_helpers.R (copy_to_publication, generate_report); R/mod_prot_summary_report_helpers.R (runProtSummaryReportProgress)",
+      "kernel": "none (copyToResultsSummary copies the published files; RenderReport renders the route's shipped template with rmarkdown)",
+      "evidence": [
+        "KIT-065: the journey's last step on every route; the rendered file is recorded by path and size, the head is unchanged"
+      ],
+      "reads_outside_assay": [
+        "the published DA and QC files under results/"
+      ],
+      "writes": [
+        "the rendered report under the project's results summary"
+      ],
+      "global_statistics": [],
+      "merge": null,
+      "holders": [],
+      "mode": "in_process",
+      "flag": null,
+      "notes": [
+        "Completion-checked, never judged against an oracle: the rendered document carries dates and widget ids."
+      ]
     }
   ]
 }

@@ -66,7 +66,7 @@ test_that("the journey step map lists every DIA step in production order", {
     ids <- h$kitStepIds()
     expect_identical(ids, c("import", "design", "qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate",
         "imputation", "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv",
-        "correlation", "session_export", "da"))
+        "correlation", "session_export", "da", "report")) # KIT-065: the report closes every route
     steps <- h$kitJourneySteps()
     expect_identical(steps[[1]]$state, "initial")
     expect_identical(steps[[2]]$state, "raw_data_s4")
@@ -80,7 +80,7 @@ test_that("KIT-021: the protein route's step list, a whole-journey single member
     expect_identical(h$kitStepIds("DIA"), h$kitStepIds())
     protein <- h$kitStepIds("protein")
     expect_identical(protein, c("import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate",
-        "normalisation_ruv", "correlation", "session_export", "da"))
+        "normalisation_ruv", "correlation", "session_export", "da", "report"))
     expect_identical(h$kitJourneySteps("protein")[[2]]$state, "protein_s4_initial")
     expect_error(h$kitStepIds("limpa"), "route")
     b <- kitSyntheticBindings()
@@ -1125,7 +1125,7 @@ test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member w
     h <- kitHarness()
     limpa <- h$kitStepIds("DIA_LIMPA")
     expect_identical(limpa, c("import", "design", "qvalue", "rollup", "peptide_log2", "peptide_accession", "dpc_quant",
-        "protein_normalisation_limpa", "peptide_count", "correlation", "ruv_covariates", "session_export", "da"))
+        "protein_normalisation_limpa", "peptide_count", "correlation", "ruv_covariates", "session_export", "da", "report"))
     steps <- h$kitJourneySteps("DIA_LIMPA")
     expect_identical(steps[[7]]$state, "protein_dpc_quant")
     expect_identical(steps[[11]]$state, "ruv_covariates")

@@ -159,6 +159,25 @@ run("da", withDIAStateScope(manager, function() {
     invisible(runDIAReferenceDaAnalysis(list(formula_string = journey$da$formula, da_q_val_thresh = journey$da$q_value, treat_lfc_cutoff = journey$da$treat_lfc),
         da_data, workflow, paths, contrasts = workflow$contrasts_tbl, annotations = workflow$uniprot_dat_cln, publish = TRUE))
 }))
+# KIT-065: the journey's last step, the summary tab's publication copy and report render, in process: the study
+# parameters the tab bootstraps, the route's shipped template placed under scripts/, the copy, the render. The report is
+# a rendered file (path and size recorded); the head is unchanged.
+report_file <- NULL
+run("report", {
+    report_template <- resolveProtSummaryExpectedTemplate(manager$workflow_type)
+    summary_dirs <- stats::setNames(list(paths), "proteomics") # the summary tab's projectDirs are keyed by omic type
+    bootstrapProtSummaryCopyFallbackStudyParams(values = new.env(parent = emptyenv()), projectDirs = summary_dirs,
+        omicType = "proteomics", experimentLabel = label, description = "kit record", catFn = function(...) NULL)
+    ensureProtSummaryReportTemplate(projectDirs = summary_dirs, templateFilename = report_template, omicType = "proteomics",
+        showNotificationFn = function(...) NULL)
+    copyToResultsSummary(omic_type = "proteomics", experiment_label = label, contrasts_tbl = workflow$contrasts_tbl,
+        design_matrix = workflow$design_matrix, force = TRUE)
+    rendered <- RenderReport(omic_type = "proteomics", experiment_label = label, rmd_filename = report_template)
+    stopifnot(is.character(rendered), length(rendered) == 1L, file.exists(rendered))
+    report_file <<- list(template = report_template, path = sub(paste0("^", normalizePath(paths$base_dir), "/"), "", normalizePath(rendered)),
+        bytes = file.size(rendered))
+    cat(sprintf("  %-20s %-28s %s bytes\n", "report", report_template, format(report_file$bytes)))
+})
 store_dir <- harness$kitFindStore(file.path(work, label))
 head <- harness$kitReadHead(store_dir, api)
 # The fingerprint pass as the driver runs it after the journey: each step's state fingerprint from the immutable
@@ -192,7 +211,7 @@ if (isTRUE(corpus$sensitive)) populations <- redact_columns(populations)
 recorded <- list(schema = "kit.oracle_record.v1", corpus = corpus_key, corpus_sha256 = corpus$files[[1L]]$sha256, route = "protein",
     build = utils::packageDescription("MultiScholaR")$`Config/MultiScholaR/SourceCommit` %||% NA_character_, library = find.package("MultiScholaR"),
     store = store_dir, head_sha256 = head$head_sha256, history = head$history, populations = populations,
-    settings = list(normalisation = norm, da = journey$da), recorded_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    settings = list(normalisation = norm, da = journey$da), report = report_file, recorded_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     seconds = as.numeric(difftime(Sys.time(), started, units = "secs")))
 closeDIAStateAdapter(manager)
 saveRDS(recorded, output, compress = FALSE, version = 3)

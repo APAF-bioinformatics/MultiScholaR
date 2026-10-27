@@ -269,6 +269,17 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
                 h$checkpointSetInput(driver, paste0(prefix, "treat_lfc_cutoff"), journey$da$treat_lfc)
                 h$checkpointClickAndWaitText(driver, paste0(prefix, "run_da_analysis"),
                     paste0("#", prefix, "da_status"), "[OK] Analysis Complete")
+            },
+            report = {
+                # KIT-065: the summary tab: the publication copy (which bootstraps the workflow arguments when they were
+                # not saved), then the report render with the route's shipped template.
+                prefix <- "proteomics_workflow-session_summary-"
+                h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "session_summary")
+                h$checkpointSetInput(driver, paste0(prefix, "experiment_label"), journey$experiment_label)
+                h$checkpointClickAndWaitText(driver, paste0(prefix, "copy_to_publication"),
+                    paste0("#", prefix, "copy_status"), "Files copied to publication directory successfully")
+                kitClickAndWaitText(h, driver, paste0(prefix, "generate_report"), ".shiny-notification",
+                    "Report generated successfully!")
             })
         invisible(NULL)
     }

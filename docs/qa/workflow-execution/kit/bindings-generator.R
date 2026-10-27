@@ -489,6 +489,37 @@ if (!is.null(b$builds$kit_048)) {
         }
     }
 }
+# KIT-065 (2026-10-28): the proteomics closure runner. The journeys end at the report step on every route; the three
+# screen members verify against the records made on the kit_065 build (kit-065/, bound under limpa65_screen, lfq65_fixture,
+# tmt65_fixture); the lifecycle member (`KIT_065_LIFECYCLE=1`) and the counted member (`kit-journey-065`, the DIA route's
+# whole journey on the 300-sample corpus) verify the 18 recorded steps against the KIT-005 oracles, the report step
+# completion-checked. Enrichment is not in these journeys (user decision 2026-10-28; KIT-066 on real data).
+if (!is.null(b$builds$kit_065)) {
+    if (identical(Sys.getenv("KIT_065_LIFECYCLE"), "1")) b$lifecycle <- utils::modifyList(b$lifecycle %||% list(), list(build = "kit_065"))
+    b$tickets[["065"]] <- list(kind = "single_journey", build = "kit_065", corpus = "full", route = "DIA", whole_journey = TRUE,
+        ceiling_seconds = 14400L, purpose = "counted")
+    b$tickets[["065m"]] <- list(kind = "single_journey", build = "kit_065", corpus = "screen", route = "DIA_LIMPA", whole_journey = TRUE,
+        oracles = "limpa65_screen", ceiling_seconds = 1800L, purpose = "lifecycle",
+        normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
+    if (!is.null(b$corpora$lfq_fixture)) b$tickets[["065l"]] <- list(kind = "single_journey", build = "kit_065", corpus = "lfq_fixture", route = "protein",
+        whole_journey = TRUE, oracles = "lfq65_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+    if (!is.null(b$corpora$tmt_fixture)) b$tickets[["065t"]] <- list(kind = "single_journey", build = "kit_065", corpus = "tmt_fixture", route = "protein",
+        whole_journey = TRUE, oracles = "tmt65_fixture", ceiling_seconds = 1800L, purpose = "lifecycle")
+    for (key in c("lfq_fixture", "tmt_fixture")) {
+        oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-065", paste0("oracles-", key, ".rds"))
+        if (is.null(b$corpora[[key]]) || !file.exists(oracle_file)) next
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, key), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))
+        prefix <- sub("_fixture$", "65_fixture", key)
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0(prefix, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at)
+            b$oracles[[paste0(prefix, "_", step)]] <- population$fingerprint
+        }
+    }
+}
 # KIT-056: the RUV correction mode on the DIA_LIMPA route (user decisions 2026-10-22: no counted member; the screen
 # lifecycle member through the driver with `ruv_mode = correction`, judged against the route's oracles recorded in
 # process with that mode on the same build, `limpa_corr_screen_<step>`).
@@ -523,7 +554,8 @@ if (!is.null(b$builds$kit_057)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ti
 # decision of 2026-10-24) into kit-057/oracles-limpa_<corpus>.rds, bound under limpa57_<corpus>_<step> (the pair's
 # candidate oracles; the control keeps KIT-053's).
 limpa_oracle_dirs <- c(`limpa` = "kit-053", `limpa57` = "kit-057", `limpa_corr` = "kit-056", # KIT-056: the correction-mode record
-    `limpa48` = "kit-048") # KIT-048: the covariates-mode screen record on the kit_048 build (KIT-057's predates KIT-056's ruv_mode fields)
+    `limpa48` = "kit-048", # KIT-048: the covariates-mode screen record on the kit_048 build (KIT-057's predates KIT-056's ruv_mode fields)
+    `limpa65` = "kit-065") # KIT-065: the screen record with the report step on the KIT-065 build
 for (ticket_dir in limpa_oracle_dirs) for (key in c("screen", "full")) {
     prefix <- names(which(limpa_oracle_dirs == ticket_dir))
     if (is.null(b$corpora[[key]])) next
