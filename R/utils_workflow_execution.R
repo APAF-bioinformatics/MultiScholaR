@@ -1178,6 +1178,7 @@ workflowManagedMain <- function(arguments) {
         env$workflow_test_mode <- config$mode
         env$workflow_test_root <- config$test_root
         sys.source(file.path(config$test_root, "tests/testthat/helper-workflow-checkpoint-fixtures.R"), env)
+        # KIT-064 (roar BUG-24): testthat is a Suggests package; this is the kit's test-only fixture mode, never a production path.
         results <- testthat::test_file(file.path(config$test_root, "tests/testthat",
             config$test_file %||% "test-workflow-execution.R"),
             env = env, load_helpers = FALSE, reporter = "summary", stop_on_failure = FALSE)
@@ -1425,6 +1426,9 @@ computeWorkflowFixture <- function(request) {
     if (mode == "fail") stop("intentional bounded worker failure")
     if (mode == "sleep") Sys.sleep(request$parameters$seconds)
     if (mode == "allocate") {
+        # KIT-064 (roar BUG-01): the forked child is the kit's bounded-worker fixture, a test-only mode on POSIX R; it is not a
+        # production path and claims no Windows support (KIT-051/052 are the portability gates).
+        if (!identical(.Platform$OS.type, "unix")) stop("the allocation fixture needs a forking (POSIX) R; it is a test-only mode")
         # A real child/native allocation inside W, not an RSS estimate or mocked guard.
         child <- parallel::mcparallel({
             writeWorkflowExecutionMessage(file.path(request$directory, "allocation-started.rds"),
@@ -2011,6 +2015,7 @@ workflowControllerFaultMain <- function(application) {
     manager <- newWorkflowStateOwner(store, reopen = TRUE)
     owner <- newWorkflowExecutionController(manager, application)
     on.exit(closeWorkflowStateOwner(manager))
+    # KIT-064 (roar BUG-24): testthat is a Suggests package; this fault-injection mode runs only under the test fixtures.
     testthat::local_mocked_bindings(diaStateBoundary = function(stage) {
         if (identical(stage, config$fault_stage)) {
             writeWorkflowExecutionMessage(config$fault_marker, list(stage = stage,

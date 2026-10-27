@@ -336,6 +336,7 @@ setMethod(
     engine_fn <- function(name) get(name, envir = asNamespace(engine), mode = "function")
     # KIT-057: fastlimpadpc's fit is bit-identical across runs on one Rayon thread only; the pool is built on the
     # engine's first call in this process, so the pin must precede it. An explicit setting is respected and recorded.
+    # KIT-064 (roar BUG-22): the pin is process-wide on purpose and is not restored; the value is recorded in the state.
     if (identical(engine, "fastlimpadpc") && !nzchar(Sys.getenv("RAYON_NUM_THREADS"))) Sys.setenv(RAYON_NUM_THREADS = "1")
     engine_threads <- if (identical(engine, "fastlimpadpc")) Sys.getenv("RAYON_NUM_THREADS") else NA_character_
 
