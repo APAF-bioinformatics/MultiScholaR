@@ -35,7 +35,7 @@ run_app <- function(
   ...
 ) {
   if (isTRUE(test_mode)) {
-    options(multischolar.test_mode = TRUE)
+    options(multischolar.test_mode = TRUE) # KIT-064 (roar BUG-22): intentional for the process's lifetime; the harness's test mode
   }
   # Set up resource path for static files in inst/shiny/www before UI renders
   # Handle both development (pkgload) and installed package scenarios

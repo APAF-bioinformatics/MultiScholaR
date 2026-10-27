@@ -153,7 +153,7 @@ runReactomeEnrichment <- function(ranked_list,
     
     # Add small random noise to break ties in the ranked list
     message("   runReactomeEnrichment Step: Adding small random noise to break ties in ranked list...")
-    set.seed(42) # For reproducibility
+    set.seed(42) # For reproducibility (KIT-064, roar BUG-22: intentional; the tie-break noise must be identical across runs)
     original_reactome_ranked_list <- reactome_ranked_list # Store original for reference
     reactome_ranked_list <- reactome_ranked_list + runif(length(reactome_ranked_list), min=-0.0001, max=0.0001)
     # Re-sort to ensure order is preserved with the new values
