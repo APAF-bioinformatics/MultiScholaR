@@ -74,7 +74,7 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
   # print(design_m)
   # print( paste( "nrow(weights)", nrow(weights), "nrow(design_m)", nrow(design_m)))
 
-  if (!is.na(weights)) {
+  if (!is.null(weights) && !(length(weights) == 1L && is.na(weights))) { # KIT-064 (roar BUG-05): a matrix has no scalar NA
     if (nrow(weights) == nrow(design_m)) {
       design_m <- cbind(design_m, weights)
     } else {
@@ -144,15 +144,17 @@ runTest <- function(ID, A, B, group_A, group_B, design_matrix, formula_string,
 #' @export
 runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA, type_of_grouping, design_matrix, formula_string, contrast_variable = "group", weights = NA) {
   r <- list()
-  for (i in 1:nrow(test_pairs)) {
+  for (i in seq_len(nrow(test_pairs))) { # KIT-064 (roar BUG-16)
     rows_to_keep <- rownames(data)
 
 
     if (length(sample_rows_list) > 0) {
-      if (!is.na(sample_rows_list) &
+      # KIT-064 (roar BUG-04/05): a scalar guard (the former `!is.na(list)` had the list's length) and the union of the two
+      # groups' rows (the former `unique(a, b)` passed the second group as `incomparables`).
+      if (!(is.atomic(sample_rows_list) && length(sample_rows_list) == 1L && is.na(sample_rows_list)) &&
         #  Check that sample group exists as names inside sample_rows_list
         length(which(c(test_pairs[i, "A"], test_pairs[i, "B"]) %in% names(sample_rows_list))) > 0) {
-        rows_to_keep <- unique(
+        rows_to_keep <- union(
           sample_rows_list[[test_pairs[[i, "A"]]]],
           sample_rows_list[[test_pairs[[i, "B"]]]]
         )
@@ -163,12 +165,12 @@ runTests <- function(ID, data, test_pairs, sample_columns, sample_rows_list = NA
     rep <- colnames(tmp)
 
     # print( paste( test_pairs[i,]$A, test_pairs[i,]$B) )
-    A <- tmp[, type_of_grouping[test_pairs[i, ]$A][[1]]]
-    B <- tmp[, type_of_grouping[test_pairs[i, ]$B][[1]]]
+    A <- tmp[, type_of_grouping[test_pairs[i, ]$A][[1]], drop = FALSE] # KIT-064 (roar BUG-14)
+    B <- tmp[, type_of_grouping[test_pairs[i, ]$B][[1]], drop = FALSE]
 
     subset_weights <- NA
 
-    if (!is.na(weights)) {
+    if (!is.null(weights) && !(length(weights) == 1L && is.na(weights))) { # KIT-064 (roar BUG-05)
       subset_weights <- weights[c(colnames(A), colnames(B)), ]
     }
 
@@ -439,7 +441,7 @@ runTestsContrasts <- function(data,
   message(sprintf("   runTestsContrasts: design_m dims = %d x %d", nrow(design_m), ncol(design_m)))
 
   # Subset data to match design matrix
-  data_subset <- data[, rownames(design_m)]
+  data_subset <- data[, rownames(design_m), drop = FALSE] # KIT-064 (roar BUG-14)
   message(sprintf("   runTestsContrasts: data_subset dims = %d x %d", nrow(data_subset), ncol(data_subset)))
 
   # Create contrast matrix
@@ -451,7 +453,7 @@ runTestsContrasts <- function(data,
   message(sprintf("   runTestsContrasts: contr.matrix dims = %d x %d", nrow(contr.matrix), ncol(contr.matrix)))
 
   # Check weights
-  if (!is.na(weights)) {
+  if (!is.null(weights) && !(length(weights) == 1L && is.na(weights))) { # KIT-064 (roar BUG-05): a matrix has no scalar NA
     message("   runTestsContrasts: Attaching weights...")
     if (nrow(weights) == nrow(design_m)) {
       design_m <- cbind(design_m, weights)

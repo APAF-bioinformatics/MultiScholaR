@@ -569,7 +569,7 @@ cnetplotEdited <- function(
   size <- sapply(geneSets, length)
   V(g)$size <- min(size)/2
   n <- length(geneSets)
-  V(g)$size[1:n] <- size
+  V(g)$size[seq_len(n)] <- size # KIT-064 (roar BUG-16): seq_len throughout this helper
   node_scales <- c(rep(cex_category, n), rep(cex_gene, (length(V(g)) - n)))
 
   # add edge alpha
@@ -598,14 +598,14 @@ cnetplotEdited <- function(
   }
 
   if (!is.null(foldChange)) {
-    fc <- foldChange[V(g)$name[(n+1):length(V(g))]]
+    fc <- foldChange[V(g)$name[seq.int(n + 1L, length.out = length(V(g)) - n)]]
     V(g)$color <- NA
     # V(g)$color[1:n] <- color_category
-    V(g)$color[(n+1):length(V(g))] <- fc
+    V(g)$color[seq.int(n + 1L, length.out = length(V(g)) - n)] <- fc
     show_legend <- c(TRUE, FALSE)
     names(show_legend) <- c("color", "size")
     p <- ggraph::ggraph(g, layout=layout, circular = circular)
-    p$data[-(1:n), "size"] <- 3 * cex_gene
+    p$data[-seq_len(n), "size"] <- 3 * cex_gene
 
     p <- node_add_alpha(p, hilight_category, hilight_gene, alpha_nohilight, alpha_hilight)
 
@@ -633,9 +633,9 @@ cnetplotEdited <- function(
 
   } else {
     V(g)$color <- color_gene
-    V(g)$color[1:n] <- color_category
+    V(g)$color[seq_len(n)] <- color_category
     p <- ggraph::ggraph(g, layout=layout, circular=circular)
-    p$data[-(1:n), "size"] <- 3 * cex_gene
+    p$data[-seq_len(n), "size"] <- 3 * cex_gene
     p <- node_add_alpha(p, hilight_category, hilight_gene, alpha_nohilight, alpha_hilight)
     p <- p + edge_layer +
       ggraph::geom_node_point(aes_(color=~I(color), size=~size, alpha=~I(alpha)))+
@@ -646,11 +646,11 @@ cnetplotEdited <- function(
   p <- p + theme_void()
 
   if (node_label == "category") {
-    p$data[-c(1:n), "name"] <- NA
+    p$data[-seq_len(n), "name"] <- NA
     p <- add_node_label(p = p, data = NULL, label_size_node = label_size_category,
                         cex_label_node = cex_label_category, shadowtext = shadowtext_category)
   } else if (node_label == "gene") {
-    p$data[1:n, "name"] <- NA
+    p$data[seq_len(n), "name"] <- NA
     p <- add_node_label(p = p, data = NULL, label_size_node = label_size_gene,
                         cex_label_node = cex_label_gene, shadowtext = shadowtext_gene)
   } else if (node_label == "all") {

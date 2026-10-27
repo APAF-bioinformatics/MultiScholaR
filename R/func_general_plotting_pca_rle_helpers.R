@@ -83,8 +83,9 @@ plotPcaHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    min_samples_present <- floor(0.05 * num_samples)
-    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
+    # KIT-064 (roar BUG-18/14): at least two present values (a CV needs them; `floor(0.05 * n)` is 0 below 20 samples).
+    min_samples_present <- max(2L, floor(0.05 * num_samples))
+    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, , drop = FALSE]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
     if (nrow(data_abundant) > 1) {
@@ -104,7 +105,7 @@ plotPcaHelper <- function(data,
       cv_threshold <- quantile(cvs, cv_percentile, na.rm = TRUE)
 
       if (!is.na(cv_threshold) && cv_threshold > 0) {
-        data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
+        data_filtered <- data_abundant[which(cvs >= cv_threshold), , drop = FALSE]
         message(sprintf("   [plotPcaHelper] Filtering by CV. Rows before: %d, Rows after: %d", nrow(data), nrow(data_filtered)))
       } else {
         data_filtered <- data_abundant
@@ -145,6 +146,9 @@ plotPcaHelper <- function(data,
       ))
       explained_variance <- stats::setNames(rep(0, length(component_names)), component_names)
     } else {
+      # KIT-064 (roar BUG-19): a constant column cannot be scaled to unit variance.
+      fallback_variance <- apply(pca_input_complete, 2, stats::var, na.rm = TRUE)
+      pca_input_complete <- pca_input_complete[, !is.na(fallback_variance) & fallback_variance > 0, drop = FALSE]
       pca_fallback <- stats::prcomp(pca_input_complete, center = TRUE, scale. = TRUE)
       available_components <- min(requested_components, ncol(pca_fallback$x))
       pca_scores <- as.data.frame(matrix(
@@ -362,8 +366,9 @@ plotPcaListHelper <- function(data,
     # 1. Filter by presence in samples
     # Keep features that have values in at least 5% of the samples.
     num_samples <- ncol(data)
-    min_samples_present <- floor(0.05 * num_samples)
-    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, ]
+    # KIT-064 (roar BUG-18/14): at least two present values (a CV needs them; `floor(0.05 * n)` is 0 below 20 samples).
+    min_samples_present <- max(2L, floor(0.05 * num_samples))
+    data_abundant <- data[rowSums(!is.na(data)) >= min_samples_present, , drop = FALSE]
 
     # 2. Filter by Coefficient of Variation (CV) on the already filtered data
     if (nrow(data_abundant) > 1) {
@@ -383,7 +388,7 @@ plotPcaListHelper <- function(data,
       cv_threshold <- quantile(cvs, cv_percentile, na.rm = TRUE)
 
       if (!is.na(cv_threshold) && cv_threshold > 0) {
-        data_filtered <- data_abundant[which(cvs >= cv_threshold), ]
+        data_filtered <- data_abundant[which(cvs >= cv_threshold), , drop = FALSE]
         message(sprintf("   [plotPcaHelper] Filtering by CV. Rows before: %d, Rows after: %d", nrow(data), nrow(data_filtered)))
       } else {
         data_filtered <- data_abundant

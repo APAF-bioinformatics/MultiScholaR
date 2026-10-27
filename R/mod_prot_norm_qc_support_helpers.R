@@ -261,8 +261,8 @@ generateProtNormCompositeFromFiles <- function(
     n_plot_types <- n_files / ncol
 
     if (is.null(rowLabels)) {
-      all_labels <- letters[1:n_files]
-      rowLabels <- split(paste0(all_labels, ")"), rep(1:n_plot_types, each = ncol))
+      all_labels <- letters[seq_len(n_files)] # KIT-064 (roar BUG-16): as the lipid copy already does
+      rowLabels <- split(paste0(all_labels, ")"), rep(seq_len(n_plot_types), each = ncol))
       names(rowLabels) <- paste0("row", seq_len(n_plot_types))
     }
 
