@@ -687,7 +687,10 @@ test_that("RenderReport resolves template paths and forwards render parameters",
   expect_identical(render_call$params$experiment_label, "Project42")
   expect_identical(render_call$params$workflow_name, "Demo Workflow")
   expect_identical(render_call$params$timestamp, "2026-04-23 21:00:00")
-  expect_identical(render_call$envir_parent, globalenv())
+  # KIT-065: the render environment's parent is the package namespace, so the templates' setup chunk resolves
+  # getProjectPaths() without the package attached, and project_dirs stays reachable through the chain.
+  expect_identical(render_call$envir_parent, asNamespace("MultiScholaR"))
+  expect_true(exists("getProjectPaths", envir = new.env(parent = render_call$envir_parent), mode = "function"))
   expect_true(file.exists(output_path))
 })
 

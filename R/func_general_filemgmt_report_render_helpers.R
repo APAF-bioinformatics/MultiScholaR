@@ -219,7 +219,11 @@ RenderReport <- function(omic_type,
                 ),
                 output_file = output_file_path,
                 output_format = output_format, # Pass this along; if NULL, Rmd default is used
-                envir = new.env(parent = globalenv()) # Render in a clean environment
+                # KIT-065: a clean environment whose parent is the package namespace, so the templates' setup chunk finds
+                # getProjectPaths() whether or not the package is attached (the kit launches the app unattached; the GUI
+                # report step failed with "getProjectPaths function not found"); global objects such as project_dirs
+                # remain visible through the namespace's parent chain.
+                envir = new.env(parent = asNamespace("MultiScholaR"))
             )
         },
         error = function(e) {
