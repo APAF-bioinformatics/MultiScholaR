@@ -353,12 +353,6 @@ setGeneric( name="removePeptidesWithOnlyOneReplicate"
             }
             , signature=c("theObject", "replicate_group_column", "core_utilisation" ))
 
-setGeneric( name="plotPeptidesProteinsCountsPerSample"
-            , def=function( theObject ) {
-              standardGeneric("plotPeptidesProteinsCountsPerSample")
-            }
-            , signature=c("theObject" ))
-
 setGeneric( name="peptideMissingValueImputation"
             , def=function( theObject, imputed_value_column = NULL, proportion_missing_values = NULL,
                             core_utilisation = NULL, exclusion_column = NULL, hek_string = NULL) {
@@ -456,15 +450,8 @@ setGeneric(name = "getNegCtrlMetabAnova",
 ###### Metabolomics
 
 
-setGeneric(name="plotVolcano",
-           def=function(objectsList,
-                        da_q_val_thresh = 0.05,
-                        qvalue_column = "q_value",
-                        log2fc_column = "logFC") {
-             standardGeneric("plotVolcano")
-           },
-           signature=c("objectsList"))
-
+# KIT-064 (roar BUG-12): the `plotVolcano` S4 generic that stood here was overwritten in Collate order by the plain
+# `plotVolcano()` of func_general_plotting_volcano_glimma_helpers.R, which every caller uses; the S4 path is `plotVolcanoS4`.
 
 setGeneric(name="plotVolcanoS4",
            def=function(objectsList,
@@ -544,17 +531,6 @@ setGeneric(name="lipidIntensityFiltering"
              standardGeneric("lipidIntensityFiltering")
            }
            , signature=c("theObject"))
-
-setGeneric(name = "getNegCtrlLipidAnova",
-           def = function(theObject,
-                          ruv_grouping_variable = NULL,
-                          percentage_as_neg_ctrl = NULL,
-                          num_neg_ctrl = NULL,
-                          ruv_qval_cutoff = NULL,
-                          ruv_fdr_method = NULL) {
-             standardGeneric("getNegCtrlLipidAnova")
-           },
-           signature = c("theObject"))
 
 setGeneric(name = "filterSamplesByLipidCorrelationThreshold"
            , def = function(theObject
