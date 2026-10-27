@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-26",
+  "created": "2026-10-28",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -358,6 +358,15 @@
       "install_member": "browser-smoke.JGgjxW",
       "source_commit": "78a73347e0f548f2400f9c03d963f1adbf05f59c",
       "runtime_patch_bytes": 0
+    },
+    "kit_064": {
+      "ticket": "KIT-064",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.tdDG9e/library",
+      "build": "7622dcb15433fa0df8ce516599012bbd2415c54819a9ce2150620e1718c26b02",
+      "exact_sum": "8a9eeca3d4cdb3b27e711ed6fb91abf10b42e7b46057ad08f20850f1b597aa9a",
+      "install_member": "browser-smoke.tdDG9e",
+      "source_commit": "1ab2318bc001e1c9951774f878144dae253ab881",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -414,6 +423,12 @@
       "outcome": "control",
       "build": "kit_018",
       "note": "design default verified, reports from the accepted normalisation product, RUV and enrichment tables as paged display tables, legacy adoption verified; accepted as one single journey member (stage kit-journey-018, 2026-10-14): import and design exact, 225 s, 3.16 GiB anonymous peak; the control for KIT-019 onward"
+    },
+    {
+      "ticket": "KIT-064",
+      "outcome": "recorded",
+      "build": "kit_064",
+      "note": "item A: the enrichment render helpers read reactive sources through accessors (the outputs froze on memoised promises), the STRING-DB q_cutoff, the design import's workflow type without the config key, savePlot's base_path, plotVolcano's facet condition; item B: drop = FALSE, seq_len, vapply, &&, all_of, devices closed on error, optional-package guards, the dead generics; item C: the intentional decisions documented. DIA replay exact after each item; DIA_LIMPA screen record identical to KIT-048's; the LFQ/TMT fixture PCA product changes from a degenerate 1-row NaN plot to a PCA (a one-feature subset no longer collapses), kept by the user's decision"
     },
     {
       "ticket": "KIT-045",
@@ -13674,7 +13689,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-26",
+        "date": "2026-10-28",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
