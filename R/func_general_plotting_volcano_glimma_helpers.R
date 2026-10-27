@@ -232,7 +232,7 @@ getGlimmaVolcanoProteomics <- function(
     ) |>
     distinct()
 
-  if (!is.null(additional_annotations) &
+  if (!is.null(additional_annotations) &&
     !is.null(additional_annotations_join_column)) {
     volcano_plot_tab_cln <- volcano_plot_tab_cln |>
       left_join(additional_annotations,
@@ -413,7 +413,7 @@ getGlimmaVolcanoProteomicsWidget <- function(
       ) |>
       distinct()
 
-    if (!is.null(additional_annotations) &
+    if (!is.null(additional_annotations) &&
       !is.null(additional_annotations_join_column)) {
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join(additional_annotations,
@@ -560,7 +560,7 @@ getGlimmaVolcanoPhosphoproteomics <- function(
         any_of(display_columns)
       )
 
-    if (!is.null(additional_annotations) &
+    if (!is.null(additional_annotations) &&
       !is.null(additional_annotations_join_column)) {
       volcano_plot_tab_cln <- volcano_plot_tab_cln |>
         left_join(additional_annotations,

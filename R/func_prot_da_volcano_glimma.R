@@ -104,9 +104,9 @@ generateProtDAVolcanoPlotGlimma <- function(
     # 1. Try removing characters like '=', '-', ' '
     clean_target <- gsub("[^A-Za-z0-9]", "", selected_contrast)
 
-    match_idx <- which(sapply(available_contrasts, function(x) {
+    match_idx <- which(vapply(available_contrasts, function(x) { # KIT-064 (roar BUG-23): type-stable on an empty list
       gsub("[^A-Za-z0-9]", "", x) == clean_target
-    }))
+    }, logical(1)))
 
     if (length(match_idx) > 0) {
       comparison_to_search <- available_contrasts[match_idx[1]]

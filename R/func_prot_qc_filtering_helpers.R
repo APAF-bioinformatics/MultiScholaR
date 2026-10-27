@@ -20,7 +20,7 @@ removeEmptyRows <- function(input_table, col_pattern, row_id) {
     dplyr::filter(!if_all(matches(col_pattern, perl = TRUE), \(x){
       x == TRUE
     })) |>
-    dplyr::select({{ temp_col_name }})
+    dplyr::select(dplyr::all_of(temp_col_name)) # KIT-064 (roar BUG-13): a character scalar, not an embrace
 
   ## Removing entries where all the "Reporter intensity corrected" rows are zero
   filtered_table <- temp_input_table |>

@@ -36,8 +36,7 @@ queryRevigo <- function( input_list,
 
   dat <- stringi::stri_replace_all_fixed(dat, "\r", "")
 
-  if(is.na( temp_file) |
-     is.null(temp_file)) {
+  if (is.null(temp_file) || is.na(temp_file)) { # KIT-064 (roar BUG-15): NULL first, short-circuit
     temp_file <- tempfile(pattern = "temp_revigo",
                           tmpdir = tempdir(),
                           fileext = "html")
@@ -82,7 +81,7 @@ clusterPathways <- function ( input_table, added_columns, remove_duplicted_entri
     ungroup() %>%
     dplyr::filter( counts > 1)
 
-  if( remove_duplicted_entries == TRUE |
+  if( remove_duplicted_entries == TRUE ||
       remove_duplicted_entries == "delete" ) {
     input_table <- input_table  %>%
       anti_join( duplicated_entries

@@ -106,7 +106,7 @@ enrichProteinsPathwaysHelper <- function(da_analysis_results,
 
     # Create GO annotation data frame from UniProt data
     uniprot_data_updated <- uniprot_data
-    if( "Entry" %in% colnames(uniprot_data) & !("uniprot_acc" %in%  colnames(uniprot_data)) ) {
+    if( "Entry" %in% colnames(uniprot_data) && !("uniprot_acc" %in%  colnames(uniprot_data)) ) {
       uniprot_data_updated <- uniprot_data|>
         dplyr::rename( uniprot_acc = "Entry")
     }

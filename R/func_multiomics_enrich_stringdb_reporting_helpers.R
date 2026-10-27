@@ -175,7 +175,7 @@ getStringDbSpecies <- function(search_term = NULL, api_key = NULL) {
     search_pattern <- paste0("(?i)", search_term)
     
     # Search across all text columns
-    text_cols <- colnames(result_df)[sapply(result_df, is.character)]
+    text_cols <- colnames(result_df)[vapply(result_df, is.character, logical(1))] # KIT-064 (roar BUG-23)
     
     # Create a combined search field
     if (length(text_cols) > 0) {

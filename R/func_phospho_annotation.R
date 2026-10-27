@@ -501,7 +501,7 @@ allPhosphositesPivotLonger <- function(get_15_mer_tbl,
   }
 
   all_sites_long <- get_15_mer_tbl %>%
-    dplyr::select( {{cols_to_use}},
+    dplyr::select( dplyr::all_of(cols_to_use), # KIT-064 (roar BUG-13): a character vector, not an embrace
                    matches( paste0(tolower(col_pattern), pattern_suffix ), perl = TRUE) ) %>%
     pivot_longer( cols = matches(c( paste0(tolower(col_pattern), pattern_suffix )), perl = TRUE) ,
                   names_to = "replicate",
@@ -555,7 +555,7 @@ groupParalogPeptides <- function(all_sites_long,
 
   ## Group homolog gene names, uniprot_acc, site posiitons
   paralog_sites_long <- all_sites_long %>%
-    group_by( across({{ grouping_variables }}) ) %>%
+    group_by( across(dplyr::all_of(grouping_variables)) ) %>% # KIT-064 (roar BUG-13)
     summarise( gene_names = paste(gene_name, collapse = ":"),
                uniprot_acc = paste(uniprot_acc, collapse=":"),
                protein_site_positions = paste( protein_site_positions, collapse=":"),
@@ -623,7 +623,7 @@ uniquePhosphositesSummariseLongList <- function(all_phos_sites_long_tbl,
     }
 
     temp_tbl <- input_tbl %>%
-      group_by( across({{ cols_to_use }}) ) %>%
+      group_by( across(dplyr::all_of(cols_to_use)) ) %>% # KIT-064 (roar BUG-13)
       # uniprot_acc, gene_names, protein_site_positions, phos_15mer_seq, experiment, replicate
       summarise( value =  method( value) ,
                  maxquant_row_ids= paste0(evidence_id, collapse=";") ) %>%

@@ -16,7 +16,7 @@ enrichedPathwayBarPlot <- function( input_table, input_go_type = NA, remove_dupl
     ungroup() %>%
     dplyr::filter( counts > 1)
 
-  if( remove_duplicted_entries == TRUE |
+  if( remove_duplicted_entries == TRUE ||
       remove_duplicted_entries == "delete" ) {
     input_table <- input_table  %>%
       anti_join( duplicated_entries, by =c("comparison" = "comparison",
