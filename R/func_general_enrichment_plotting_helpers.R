@@ -248,7 +248,8 @@ plotEnrichmentBarplot <- function( input_table
     xlab ( xlab_string) +
     ylab ( ylab_string) +
     theme_bw() +
-    scale_x_continuous(limits = c(0,-log10( min ( proteomics_go_helper|> dplyr::pull({{fdr_column}}) ) )*1.05), expand = c(0, 0))
+    # KIT-064 (roar BUG-17): a zero q-value would put the limit at Inf.
+    scale_x_continuous(limits = c(0,-log10( max( min ( proteomics_go_helper|> dplyr::pull({{fdr_column}}), na.rm = TRUE ), .Machine$double.xmin) )*1.05), expand = c(0, 0))
   #+
     #facet_grid( rows = vars({{gene_set_column}})  , scales="free_y", space = "free_y")
 
