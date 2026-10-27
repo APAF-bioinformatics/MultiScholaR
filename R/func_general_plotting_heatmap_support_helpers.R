@@ -241,15 +241,13 @@ save_heatmap_products <- function(heatmap_obj, row_clusters, params_list, output
       # PNG
       png_path <- file.path(target_dir, paste0(file_prefix, "_heatmap.png"))
       grDevices::png(png_path, width = 10, height = 8, units = "in", res = 300)
-      ComplexHeatmap::draw(heatmap_obj)
-      grDevices::dev.off()
+      tryCatch(ComplexHeatmap::draw(heatmap_obj), finally = grDevices::dev.off()) # KIT-064 (roar BUG-22)
       logger::log_info(sprintf("   Saved heatmap PNG: %s", basename(png_path)))
 
       # PDF
       pdf_path <- file.path(target_dir, paste0(file_prefix, "_heatmap.pdf"))
       grDevices::pdf(pdf_path, width = 10, height = 8)
-      ComplexHeatmap::draw(heatmap_obj)
-      grDevices::dev.off()
+      tryCatch(ComplexHeatmap::draw(heatmap_obj), finally = grDevices::dev.off()) # KIT-064 (roar BUG-22)
       logger::log_info(sprintf("   Saved heatmap PDF: %s", basename(pdf_path)))
     },
     error = function(e) {

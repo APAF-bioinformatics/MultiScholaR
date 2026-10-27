@@ -422,8 +422,7 @@ outputDeAnalysisResults <- function(
       } else {
         png(file_name)
       }
-      plotSA(contrasts_results$fit.eb)
-      dev.off()
+      tryCatch(plotSA(contrasts_results$fit.eb), finally = dev.off()) # KIT-064 (roar BUG-22)
     }
 
     saveRDS(

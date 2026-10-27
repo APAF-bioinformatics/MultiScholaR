@@ -288,9 +288,10 @@ generateLimpaQCPlots <- function(after_object,
             png(temp_file, width = 800, height = 600, res = 150)
 
             message("        Calling plotDPC to temp file")
-            graphics::par(mar = c(6, 4.5, 2, 1.5))
-            limpa::plotDPC(stored_dpc, main = "")
-            dev.off()
+            tryCatch({ # KIT-064 (roar BUG-22): the device is closed on error too
+              graphics::par(mar = c(6, 4.5, 2, 1.5))
+              limpa::plotDPC(stored_dpc, main = "")
+            }, finally = dev.off())
 
             message("        Reading temp file back as ggplot")
             if (!requireNamespace("magick", quietly = TRUE)) {

@@ -100,13 +100,12 @@ outputDaAnalysisResults <- function(
 
   ## Contrasts results
   ## This plot is used to check the mean-variance relationship of the expression data, after fitting a linear model.
+  # KIT-064 (roar BUG-22): the device is closed on error as well as on success.
   pdf(file.path(da_output_dir, "plotSA_after_ruvIII.pdf"))
-  plotSA(da_analysis_results_list$contrasts_results$fit.eb)
-  dev.off()
+  tryCatch(plotSA(da_analysis_results_list$contrasts_results$fit.eb), finally = dev.off())
 
   png(file.path(da_output_dir, "plotSA_after_ruvIII.png"))
-  plotSA(da_analysis_results_list$contrasts_results$fit.eb)
-  dev.off()
+  tryCatch(plotSA(da_analysis_results_list$contrasts_results$fit.eb), finally = dev.off())
 
   saveRDS(
     da_analysis_results_list$contrasts_results$fit.eb,
@@ -155,8 +154,7 @@ outputDaAnalysisResults <- function(
       png(file_name)
     }
 
-    plotSA(contrasts_results$fit.eb)
-    dev.off()
+    tryCatch(plotSA(contrasts_results$fit.eb), finally = dev.off()) # KIT-064 (roar BUG-22)
   }
 
   saveRDS(
@@ -404,8 +402,7 @@ outputDaAnalysisResults <- function(
   # Generate combined PDF with all plots, one per page
   pdf_file <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots.pdf")
   pdf(file = pdf_file, width = 7, height = 7, onefile = TRUE)
-  purrr::walk(volcano_plots_list, print)
-  invisible(dev.off())
+  tryCatch(purrr::walk(volcano_plots_list, print), finally = invisible(dev.off())) # KIT-064 (roar BUG-22)
 
   # Verify the PDF was created with the right number of pages
   message(sprintf("Created multi-page PDF at %s", pdf_file))
@@ -433,8 +430,7 @@ outputDaAnalysisResults <- function(
   # Generate combined PDF with all labeled plots, one per page
   pdf_file_with_genes <- file.path(publication_graphs_dir, "Volcano_Plots", "list_of_volcano_plots_with_gene_names.pdf")
   pdf(file = pdf_file_with_genes, width = 7, height = 7, onefile = TRUE)
-  purrr::walk(volcano_plots_with_genes_list, print)
-  invisible(dev.off())
+  tryCatch(purrr::walk(volcano_plots_with_genes_list, print), finally = invisible(dev.off())) # KIT-064 (roar BUG-22)
 
   # Verify the labeled PDF was created with the right number of pages
   message(sprintf("Created multi-page labeled PDF at %s", pdf_file_with_genes))

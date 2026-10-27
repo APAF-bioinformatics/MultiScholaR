@@ -260,8 +260,7 @@
         # Generate multi-page PDF
         if (length(all_volcano_plots) > 0) {
           pdf(file = combined_pdf_path, width = 7, height = 7, onefile = TRUE)
-          purrr::walk(all_volcano_plots, print)
-          invisible(dev.off())
+          tryCatch(purrr::walk(all_volcano_plots, print), finally = invisible(dev.off())) # KIT-064 (roar BUG-22)
           message(sprintf(
             "   outputDaResultsAllContrasts: Created combined PDF with %d volcano plots: %s",
             length(all_volcano_plots), basename(combined_pdf_path)

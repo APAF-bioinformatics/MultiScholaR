@@ -221,5 +221,5 @@ calcHtSize = function(ht, unit = "inch") {
   grDevices::pdf(NULL)
   on.exit(grDevices::dev.off(), add = TRUE)
   ComplexHeatmap::draw(ht)
-  grDevices::dev.size(unit = unit)
+  grDevices::dev.size(units = unit) # KIT-064 (roar BUG-06): the formal is `units`
 }

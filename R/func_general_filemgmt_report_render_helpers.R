@@ -258,15 +258,13 @@ RenderReport <- function(omic_type,
 saveListOfPdfs <- function(list, filename) {
     # start pdf
     cairo_pdf(filename)
+    on.exit(dev.off(), add = TRUE) # KIT-064 (roar BUG-22): closed on error too
 
     # loop
     # purrr::walk( list, print)
     for (p in list) {
         print(p)
     }
-
-    # end pdf
-    dev.off()
 
     invisible(NULL)
 }
