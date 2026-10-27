@@ -33,7 +33,7 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         step("ruv_covariates", "RUV-III Covariates", limpa_ruv_state, "normalisation", "mod_prot_norm", "apply_ruv_covariates"),
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
         step("da", "Differential abundance", limpa_ruv_state, "da", "mod_prot_da", "run_da_analysis"),
-        step("report", "Report", NULL, "store", "mod_prot_summary", "generate_report")))
+        step("report", "Report", NULL, "report", "mod_prot_summary", "generate_report")))
     # KIT-021: the protein-level route (LFQ and TMT imports, KIT-020): no peptide stage and no IQ rollup; the design
     # commits `protein_s4_initial`; the protein QC, normalisation, export and DA steps are the DIA route's.
     if (identical(route, "protein")) return(list(
@@ -47,7 +47,7 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         step("correlation", "Correlation Filtering", "correlation_filtered", "normalisation", "mod_prot_norm", "apply_correlation_filter"),
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
         step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis"),
-        step("report", "Report", NULL, "store", "mod_prot_summary", "generate_report")))
+        step("report", "Report", NULL, "report", "mod_prot_summary", "generate_report")))
     list(
         step("import", "Import", "initial", "store", "mod_prot_import", "prot-import-process"),
         step("design", "Design", "raw_data_s4", "store", "mod_prot_design", "builder save_results"),
@@ -68,8 +68,8 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
         step("session_export", "Filtered session export", NULL, "store", "mod_prot_norm", "export_filtered_session"),
         step("da", "Differential abundance", "correlation_filtered", "da", "mod_prot_da", "run_da_analysis"),
         # KIT-065: the summary tab's publication copy and report render close every route's journey (completion-checked;
-        # the report is a rendered file recorded by path and size, not a state).
-        step("report", "Report", NULL, "store", "mod_prot_summary", "generate_report"))
+        # the report is a rendered file recorded by path and size, not a state). The driver dispatches on the kind.
+        step("report", "Report", NULL, "report", "mod_prot_summary", "generate_report"))
 }
 
 #' Journey step identifiers in order.
