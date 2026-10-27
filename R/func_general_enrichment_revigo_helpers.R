@@ -660,10 +660,10 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
                                                    plot_height = 10 ) {
 
   if ( length(list_of_heatmaps) == length( plot_width)
-       & length(list_of_heatmaps) == length( plot_height) ) {
+       && length(list_of_heatmaps) == length( plot_height) ) {
 
   } else if( length( plot_width) == 1
-             & length( plot_height) == 1) {
+             && length( plot_height) == 1) {
     plot_width <- rep(plot_width,  length(list_of_heatmaps))
     plot_height <- rep(plot_height,  length(list_of_heatmaps))
 
@@ -677,8 +677,9 @@ saveListOfFunctionalEnrichmentHeatmaps <- function(list_of_heatmaps,
                       plot_width = plot_width,
                       plot_height = plot_height),
                 function(output_name, plot, plot_width, plot_height){
+                  # KIT-064 (roar BUG-02): savePlot's directory argument is `base_path`; `base_dir` fell into `...`.
                   savePlot( plot=plot,
-                            base_dir=results_dir,
+                            base_path=results_dir,
                             plot_name = paste0( file_name, "_", output_name),
                             width = plot_width,
                             height=plot_height,

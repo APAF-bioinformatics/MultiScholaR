@@ -52,6 +52,15 @@ test_that("general volcano plotting helpers preserve current ggplot assembly", {
     ),
     "ggplot"
   )
+  # KIT-064 (roar BUG-15): an empty or NA formula means no facets; the former `|` condition sent them to as.formula().
+  for (no_facet in list("", NA_character_)) {
+    unfaceted <- plotVolcano(
+      selected_data = transform(volcano_data, colour = factor(colour, levels = c("red", "blue", "grey"))),
+      formula_string = no_facet
+    )
+    expect_s3_class(unfaceted, "ggplot")
+    expect_false(inherits(unfaceted$facet, "FacetGrid"))
+  }
 })
 
 test_that("general volcano helpers preserve protein labeling and Glimma export routing", {

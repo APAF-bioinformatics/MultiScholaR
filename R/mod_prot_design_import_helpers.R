@@ -297,9 +297,10 @@ initializeProtDesignImportedWorkflowState <- function(
     taxonId
   ))
 
-  workflowType <- NULL
-  if (!is.null(workflowData$config_list$globalParameters$workflow_type)) {
-    workflowType <- workflowData$config_list$globalParameters$workflow_type
+  # KIT-064 (roar BUG-03): the type is the config's when present, else detected from the data. The former branch
+  # `else if (workflowType == "LFQ" || ...)` compared a NULL and aborted every protein-level import without the key.
+  workflowType <- workflowData$config_list$globalParameters$workflow_type
+  if (!is.null(workflowType)) {
     logger::log_info(paste("Loaded workflow_type from config.ini:", workflowType))
   } else {
     logger::log_warn("workflow_type not found in config.ini. Attempting to detect from data structure.")
@@ -310,8 +311,6 @@ initializeProtDesignImportedWorkflowState <- function(
     if (hasPrecursorCols && hasPeptideCols) {
       workflowType <- "DIA"
       logger::log_info("Detected peptide-level data. Setting workflow_type to DIA.")
-    } else if (workflowType == "LFQ" || workflowType == "TMT") {
-      logger::log_info(sprintf("Keeping workflow_type as %s (protein-level workflow).", workflowType))
     } else {
       workflowType <- "TMT"
       logger::log_info("Detected protein-level data. Setting workflow_type to TMT.")

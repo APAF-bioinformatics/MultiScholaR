@@ -4,18 +4,19 @@ registerProtEnrichPlotOutputs <- function(output,
                                           rawContrastNameFn,
                                           renderGprofilerPlotFn = renderProtEnrichGprofilerPlot,
                                           renderClusterProfilerPlotFn = renderProtEnrichClusterProfilerPlot) {
+  # KIT-064 (roar BUG-08): the reactive reads are passed as accessors and read inside the render expressions.
   gprofilerPlot <- renderGprofilerPlotFn(
-    analysisComplete = enrichmentData$analysis_complete,
-    enrichmentResultsFull = enrichmentData$enrichment_results_full,
-    rawContrast = rawContrastNameFn(),
-    directionFilter = input$gprofiler_direction_filter
+    analysisComplete = function() enrichmentData$analysis_complete,
+    enrichmentResultsFull = function() enrichmentData$enrichment_results_full,
+    rawContrast = rawContrastNameFn,
+    directionFilter = function() input$gprofiler_direction_filter
   )
 
   clusterprofilerPlot <- renderClusterProfilerPlotFn(
-    analysisComplete = enrichmentData$analysis_complete,
-    enrichmentResultsFull = enrichmentData$enrichment_results_full,
-    rawContrast = rawContrastNameFn(),
-    directionFilter = input$clusterprofiler_direction_filter
+    analysisComplete = function() enrichmentData$analysis_complete,
+    enrichmentResultsFull = function() enrichmentData$enrichment_results_full,
+    rawContrast = rawContrastNameFn,
+    directionFilter = function() input$clusterprofiler_direction_filter
   )
 
   output$gprofiler_plot <- gprofilerPlot
@@ -168,9 +169,9 @@ registerProtEnrichGprofilerResultsTableOutput <- function(output,
                                                           enrichmentData,
                                                           renderResultsTableFn = renderProtEnrichGprofilerResultsTable) {
   gprofilerResultsTable <- renderResultsTableFn(
-    gprofilerResults = enrichmentData$gprofiler_results,
-    directionFilter = input$gprofiler_direction_filter,
-    gprofilerResultsTable = enrichmentData$gprofiler_results_table
+    gprofilerResults = function() enrichmentData$gprofiler_results,
+    directionFilter = function() input$gprofiler_direction_filter,
+    gprofilerResultsTable = function() enrichmentData$gprofiler_results_table
   )
 
   output$gprofiler_results_table <- gprofilerResultsTable
@@ -198,9 +199,9 @@ registerProtEnrichClusterProfilerResultsTableOutput <- function(output,
                                                                 enrichmentData,
                                                                 renderResultsTableFn = renderProtEnrichClusterProfilerResultsTable) {
   clusterprofilerResultsTable <- renderResultsTableFn(
-    clusterprofilerResults = enrichmentData$clusterprofiler_results,
-    directionFilter = input$clusterprofiler_direction_filter,
-    clusterprofilerResultsTable = enrichmentData$clusterprofiler_results_table
+    clusterprofilerResults = function() enrichmentData$clusterprofiler_results,
+    directionFilter = function() input$clusterprofiler_direction_filter,
+    clusterprofilerResultsTable = function() enrichmentData$clusterprofiler_results_table
   )
 
   output$clusterprofiler_results_table <- clusterprofilerResultsTable
@@ -227,11 +228,13 @@ registerProtEnrichStringDbResultsTableOutput <- function(output,
                                                          input,
                                                          enrichmentData,
                                                          renderResultsTableFn = renderProtEnrichStringDbResultsTable) {
+  # KIT-064 (roar BUG-07): the threshold is the tab's declared `q_cutoff` control (default 0.05); the former
+  # `input$enrichment_p_val_thresh` was never declared and filtered against NULL.
   stringdbResultsTable <- renderResultsTableFn(
-    stringdbResults = enrichmentData$stringdb_results,
-    filterSignificant = input$stringdb_filter_significant,
-    enrichmentPValThresh = input$enrichment_p_val_thresh,
-    maxResults = input$stringdb_max_results
+    stringdbResults = function() enrichmentData$stringdb_results,
+    filterSignificant = function() input$stringdb_filter_significant,
+    enrichmentPValThresh = function() input$q_cutoff %||% 0.05,
+    maxResults = function() input$stringdb_max_results
   )
 
   output$stringdb_results_table <- stringdbResultsTable

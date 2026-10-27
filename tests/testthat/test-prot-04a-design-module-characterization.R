@@ -1688,6 +1688,25 @@ test_that("prot design import workflow helpers preserve flow, observers, and boo
     ),
     "LFQ"
   )
+  # KIT-064 (roar BUG-03): a protein-level import without `workflow_type` in the config is detected as TMT; the former
+  # branch compared a NULL and aborted.
+  undeclared_type <- NULL
+  undeclared_workflow_data <- new.env(parent = emptyenv())
+  undeclared_workflow_data$state_manager <- list(setWorkflowType = function(value) undeclared_type <<- value)
+  undeclared_workflow_data$config_list <- list()
+  undeclared_workflow_data$column_mapping <- NULL
+  expect_identical(
+    initialize_state(
+      workflowData = undeclared_workflow_data,
+      importedDesign = imported_design,
+      importedDataCln = data.frame(Protein.Ids = "P1", Run = "S1", Intensity = 42),
+      importedContrasts = NULL,
+      taxonId = 9606,
+      organismName = "Homo sapiens"
+    ),
+    "TMT"
+  )
+  expect_identical(undeclared_type, "TMT")
   expect_identical(lfq_type, "LFQ")
   expect_identical(lfq_workflow_data$column_mapping$quantity_col, "Intensity")
 

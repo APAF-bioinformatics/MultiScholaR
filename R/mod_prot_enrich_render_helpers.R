@@ -173,6 +173,14 @@ formatProtEnrichStringDbSummaryText <- function(stringdbResults) {
   )
 }
 
+#' Resolve a render-helper argument that may be a zero-argument accessor (KIT-064, roar BUG-08).
+#' @param value A value, or a function of no arguments returning it (a reactive read).
+#' @return The value.
+#' @noRd
+protEnrichRenderValue <- function(value) {
+  if (is.function(value)) value() else value
+}
+
 renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
                                                   directionFilter = "all",
                                                   renderDtFn = DT::renderDT,
@@ -182,31 +190,37 @@ renderProtEnrichGprofilerResultsTable <- function(gprofilerResults,
                                                   gprofilerResultsTable = NULL) {
   pager <- new.env(parent = emptyenv())
   renderDtFn({
+    # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
+    # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
+    # memoised by R's promise on the first render and never update).
+    gprofilerResultsNow <- protEnrichRenderValue(gprofilerResults)
+    directionFilterNow <- protEnrichRenderValue(directionFilter)
+    gprofilerResultsTableNow <- protEnrichRenderValue(gprofilerResultsTable)
     pager$read <- NULL
-    if (is.null(gprofilerResults) || nrow(gprofilerResults) == 0) {
+    if (is.null(gprofilerResultsNow) || nrow(gprofilerResultsNow) == 0) {
       return(datatableFn(data.frame(
         Message = "No gprofiler2 results available. Run analysis first."
       )))
     }
 
     tryCatch({
-      if (isWorkflowTableReference(gprofilerResultsTable)) {
+      if (isWorkflowTableReference(gprofilerResultsTableNow)) {
         # KIT-024: the saved display table is paged server-side from the store (the direction filter applied in
         # the store read); the widget shows the row count.
-        filter <- if (identical(directionFilter, "all")) NULL else
-          list(column = "directionality", value = if (identical(directionFilter, "up")) "positive" else "negative")
+        filter <- if (identical(directionFilterNow, "all")) NULL else
+          list(column = "directionality", value = if (identical(directionFilterNow, "up")) "positive" else "negative")
         manager <- getDIAActiveManager()
-        first <- readDIADisplayTablePage(gprofilerResultsTable, filter = filter, limit = 25L, manager = manager)
+        first <- readDIADisplayTablePage(gprofilerResultsTableNow, filter = filter, limit = 25L, manager = manager)
         pager$rows <- first$rows
-        pager$read <- function(offset, limit) readDIADisplayTablePage(gprofilerResultsTable, filter = filter,
+        pager$read <- function(offset, limit) readDIADisplayTablePage(gprofilerResultsTableNow, filter = filter,
           offset = offset, limit = limit, manager = manager)$data
         currentResults <- first$data
       } else {
-      currentResults <- gprofilerResults
+      currentResults <- gprofilerResultsNow
 
-      if (!identical(directionFilter, "all") &&
+      if (!identical(directionFilterNow, "all") &&
           "directionality" %in% names(currentResults)) {
-        directionValue <- if (identical(directionFilter, "up")) "positive" else "negative"
+        directionValue <- if (identical(directionFilterNow, "up")) "positive" else "negative"
         currentResults <- currentResults |>
           dplyr::filter(directionality == directionValue)
       }
@@ -242,6 +256,13 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
                                           plotLyFn = plotly::plot_ly,
                                           addTextFn = plotly::add_text) {
   renderPlotlyFn({
+    # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
+    # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
+    # memoised by R's promise on the first render and never update).
+    analysisCompleteNow <- protEnrichRenderValue(analysisComplete)
+    enrichmentResultsFullNow <- protEnrichRenderValue(enrichmentResultsFull)
+    rawContrastNow <- protEnrichRenderValue(rawContrast)
+    directionFilterNow <- protEnrichRenderValue(directionFilter)
     buildPlaceholderPlot <- function(messageText) {
       plotLyFn() |>
         addTextFn(
@@ -252,26 +273,26 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
         )
     }
 
-    if (!analysisComplete) {
+    if (!analysisCompleteNow) {
       return(buildPlaceholderPlot("Run enrichment analysis first"))
     }
 
-    if (is.null(enrichmentResultsFull)) {
+    if (is.null(enrichmentResultsFullNow)) {
       return(buildPlaceholderPlot("No enrichment results"))
     }
 
     tryCatch({
-      plots <- enrichmentResultsFull@enrichment_plotly[[rawContrast]]
+      plots <- enrichmentResultsFullNow@enrichment_plotly[[rawContrastNow]]
 
-      if (identical(directionFilter, "up") && !is.null(plots$up)) {
+      if (identical(directionFilterNow, "up") && !is.null(plots$up)) {
         return(plots$up)
       }
 
-      if (identical(directionFilter, "down") && !is.null(plots$down)) {
+      if (identical(directionFilterNow, "down") && !is.null(plots$down)) {
         return(plots$down)
       }
 
-      if (identical(directionFilter, "all")) {
+      if (identical(directionFilterNow, "all")) {
         if (!is.null(plots$up)) {
           return(plots$up)
         }
@@ -281,11 +302,11 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
         }
       }
 
-      if (identical(directionFilter, "up")) {
+      if (identical(directionFilterNow, "up")) {
         return(buildPlaceholderPlot("No up-regulated enrichment data"))
       }
 
-      if (identical(directionFilter, "down")) {
+      if (identical(directionFilterNow, "down")) {
         return(buildPlaceholderPlot("No down-regulated enrichment data"))
       }
 
@@ -304,6 +325,13 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
                                                 plotLyFn = plotly::plot_ly,
                                                 addTextFn = plotly::add_text) {
   renderPlotlyFn({
+    # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
+    # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
+    # memoised by R's promise on the first render and never update).
+    analysisCompleteNow <- protEnrichRenderValue(analysisComplete)
+    enrichmentResultsFullNow <- protEnrichRenderValue(enrichmentResultsFull)
+    rawContrastNow <- protEnrichRenderValue(rawContrast)
+    directionFilterNow <- protEnrichRenderValue(directionFilter)
     buildPlaceholderPlot <- function(messageText) {
       plotLyFn() |>
         addTextFn(
@@ -314,26 +342,26 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
         )
     }
 
-    if (!analysisComplete) {
+    if (!analysisCompleteNow) {
       return(buildPlaceholderPlot("Run enrichment analysis first"))
     }
 
-    if (is.null(enrichmentResultsFull)) {
+    if (is.null(enrichmentResultsFullNow)) {
       return(buildPlaceholderPlot("No enrichment results"))
     }
 
     tryCatch({
-      plots <- enrichmentResultsFull@enrichment_plotly[[rawContrast]]
+      plots <- enrichmentResultsFullNow@enrichment_plotly[[rawContrastNow]]
 
-      if (identical(directionFilter, "up") && !is.null(plots$up)) {
+      if (identical(directionFilterNow, "up") && !is.null(plots$up)) {
         return(plots$up)
       }
 
-      if (identical(directionFilter, "down") && !is.null(plots$down)) {
+      if (identical(directionFilterNow, "down") && !is.null(plots$down)) {
         return(plots$down)
       }
 
-      if (identical(directionFilter, "all")) {
+      if (identical(directionFilterNow, "all")) {
         if (!is.null(plots$up)) {
           return(plots$up)
         }
@@ -343,11 +371,11 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
         }
       }
 
-      if (identical(directionFilter, "up")) {
+      if (identical(directionFilterNow, "up")) {
         return(buildPlaceholderPlot("No up-regulated enrichment data"))
       }
 
-      if (identical(directionFilter, "down")) {
+      if (identical(directionFilterNow, "down")) {
         return(buildPlaceholderPlot("No down-regulated enrichment data"))
       }
 
@@ -367,30 +395,36 @@ renderProtEnrichClusterProfilerResultsTable <- function(clusterprofilerResults,
                                                         clusterprofilerResultsTable = NULL) {
   pager <- new.env(parent = emptyenv())
   renderDtFn({
+    # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
+    # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
+    # memoised by R's promise on the first render and never update).
+    clusterprofilerResultsNow <- protEnrichRenderValue(clusterprofilerResults)
+    directionFilterNow <- protEnrichRenderValue(directionFilter)
+    clusterprofilerResultsTableNow <- protEnrichRenderValue(clusterprofilerResultsTable)
     pager$read <- NULL
-    if (is.null(clusterprofilerResults) || nrow(clusterprofilerResults) == 0) {
+    if (is.null(clusterprofilerResultsNow) || nrow(clusterprofilerResultsNow) == 0) {
       return(datatableFn(data.frame(
         Message = "No clusterProfileR results available. Run analysis first."
       )))
     }
 
     tryCatch({
-      if (isWorkflowTableReference(clusterprofilerResultsTable)) {
+      if (isWorkflowTableReference(clusterprofilerResultsTableNow)) {
         # KIT-024: server-side pages from the store, the direction filter applied in the read.
-        filter <- if (identical(directionFilter, "all")) NULL else list(column = "directionality", value = directionFilter)
+        filter <- if (identical(directionFilterNow, "all")) NULL else list(column = "directionality", value = directionFilterNow)
         manager <- getDIAActiveManager()
-        first <- readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter, limit = 25L, manager = manager)
+        first <- readDIADisplayTablePage(clusterprofilerResultsTableNow, filter = filter, limit = 25L, manager = manager)
         pager$rows <- first$rows
-        pager$read <- function(offset, limit) readDIADisplayTablePage(clusterprofilerResultsTable, filter = filter,
+        pager$read <- function(offset, limit) readDIADisplayTablePage(clusterprofilerResultsTableNow, filter = filter,
           offset = offset, limit = limit, manager = manager)$data
         currentResults <- first$data
       } else {
-      currentResults <- clusterprofilerResults
+      currentResults <- clusterprofilerResultsNow
 
-      if (!identical(directionFilter, "all") &&
+      if (!identical(directionFilterNow, "all") &&
           "directionality" %in% names(currentResults)) {
         currentResults <- currentResults |>
-          dplyr::filter(directionality == directionFilter)
+          dplyr::filter(directionality == directionFilterNow)
       }
       }
 
@@ -423,7 +457,14 @@ renderProtEnrichStringDbResultsTable <- function(stringdbResults,
                                                  renderDtFn = DT::renderDT,
                                                  datatableFn = DT::datatable) {
   renderDtFn({
-    if (is.null(stringdbResults) || nrow(stringdbResults) == 0) {
+    # KIT-064 (roar BUG-08): the arguments may be zero-argument accessors of reactive values; they are read here,
+    # inside the render expression, so every render re-evaluates them (a value read in the enclosing frame would be
+    # memoised by R's promise on the first render and never update).
+    stringdbResultsNow <- protEnrichRenderValue(stringdbResults)
+    filterSignificantNow <- protEnrichRenderValue(filterSignificant)
+    enrichmentPValThreshNow <- protEnrichRenderValue(enrichmentPValThresh)
+    maxResultsNow <- protEnrichRenderValue(maxResults)
+    if (is.null(stringdbResultsNow) || nrow(stringdbResultsNow) == 0) {
       return(datatableFn(data.frame(
         Message = "STRING-DB analysis not yet implemented.",
         Note = "This tab will show protein-protein interaction network enrichment results.",
@@ -432,16 +473,16 @@ renderProtEnrichStringDbResultsTable <- function(stringdbResults,
     }
 
     tryCatch({
-      currentResults <- stringdbResults
+      currentResults <- stringdbResultsNow
 
-      if (isTRUE(filterSignificant)) {
+      if (isTRUE(filterSignificantNow)) {
         currentResults <- currentResults |>
-          dplyr::filter(p_value < enrichmentPValThresh)
+          dplyr::filter(p_value < enrichmentPValThreshNow)
       }
 
-      if (nrow(currentResults) > maxResults) {
+      if (nrow(currentResults) > maxResultsNow) {
         currentResults <- currentResults |>
-          dplyr::slice_head(n = maxResults)
+          dplyr::slice_head(n = maxResultsNow)
       }
 
       datatableFn(

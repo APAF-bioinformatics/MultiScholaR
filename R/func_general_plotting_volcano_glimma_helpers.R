@@ -649,7 +649,8 @@ plotVolcano <- function(
     theme(legend.position = "none")
 
   volplot_gg.plot <- volplot_gg.all
-  if (!is.na(formula_string) | formula_string != "") {
+  # KIT-064 (roar BUG-15): facet only on a usable formula; the former `|` sent "" and NA into as.formula().
+  if (!is.null(formula_string) && !is.na(formula_string) && nzchar(formula_string)) {
     volplot_gg.plot <- volplot_gg.all +
       facet_grid(as.formula(formula_string),
         labeller = labeller(facet_category = label_wrap_gen(width = 10))

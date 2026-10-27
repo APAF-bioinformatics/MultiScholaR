@@ -1341,9 +1341,9 @@ test_that("general enrichment scholar plotting helpers preserve export and edge 
   save_heatmaps <- makeFunctionWithOverrides(
     saveListOfFunctionalEnrichmentHeatmaps,
     list(
-      savePlot = function(plot, base_dir, plot_name, width, height, limitsize) {
+      savePlot = function(plot, base_path, plot_name, width, height, limitsize) { # KIT-064 (roar BUG-02): the real formal
         saved_calls$items[[length(saved_calls$items) + 1L]] <<- list(
-          base_dir = base_dir,
+          base_path = base_path,
           plot_name = plot_name,
           width = width,
           height = height,
@@ -1367,6 +1367,7 @@ test_that("general enrichment scholar plotting helpers preserve export and edge 
     plot_height = 8
   )
   expect_length(saved_calls$items, 2L)
+  expect_identical(saved_calls$items[[1L]]$base_path, tempdir())
   expect_error(
     save_heatmaps(
       list_of_heatmaps = plot_list,

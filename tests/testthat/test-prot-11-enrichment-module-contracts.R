@@ -5750,9 +5750,9 @@ test_that("registerProtEnrichGprofilerResultsTableOutput wires rendering through
     input = input,
     enrichmentData = enrichment_data,
     renderResultsTableFn = function(gprofilerResults, directionFilter, gprofilerResultsTable = NULL) {
-      recorded$args <- list(
-        gprofilerResults = gprofilerResults,
-        directionFilter = directionFilter
+      recorded$args <- list( # KIT-064: the seam receives accessors
+        gprofilerResults = gprofilerResults(),
+        directionFilter = directionFilter()
       )
       "formatted gprofiler table"
     }
@@ -5812,9 +5812,9 @@ test_that("registerProtEnrichClusterProfilerResultsTableOutput wires rendering t
     input = input,
     enrichmentData = enrichment_data,
     renderResultsTableFn = function(clusterprofilerResults, directionFilter, clusterprofilerResultsTable = NULL) {
-      recorded$args <- list(
-        clusterprofilerResults = clusterprofilerResults,
-        directionFilter = directionFilter
+      recorded$args <- list( # KIT-064: the seam receives accessors
+        clusterprofilerResults = clusterprofilerResults(),
+        directionFilter = directionFilter()
       )
       "formatted clusterprofiler table"
     }
@@ -5830,7 +5830,7 @@ test_that("registerProtEnrichStringDbResultsTableOutput wires rendering through 
   output <- new.env(parent = emptyenv())
   input <- list(
     stringdb_filter_significant = TRUE,
-    enrichment_p_val_thresh = 0.05,
+    q_cutoff = 0.05, # KIT-064 (roar BUG-07): the declared control
     stringdb_max_results = 10
   )
   enrichment_data <- new.env(parent = emptyenv())
@@ -5850,11 +5850,11 @@ test_that("registerProtEnrichStringDbResultsTableOutput wires rendering through 
                                     filterSignificant,
                                     enrichmentPValThresh,
                                     maxResults) {
-      recorded$args <- list(
-        stringdbResults = stringdbResults,
-        filterSignificant = filterSignificant,
-        enrichmentPValThresh = enrichmentPValThresh,
-        maxResults = maxResults
+      recorded$args <- list( # KIT-064: the seam receives accessors
+        stringdbResults = stringdbResults(),
+        filterSignificant = filterSignificant(),
+        enrichmentPValThresh = enrichmentPValThresh(),
+        maxResults = maxResults()
       )
       "formatted stringdb table"
     }
@@ -5866,6 +5866,61 @@ test_that("registerProtEnrichStringDbResultsTableOutput wires rendering through 
   expect_identical(recorded$args$maxResults, 10)
   expect_identical(stringdb_table, "formatted stringdb table")
   expect_identical(output$stringdb_results_table, "formatted stringdb table")
+})
+
+test_that("KIT-064 (roar BUG-08): registered enrichment outputs re-read their reactive sources on every render", {
+  output <- new.env(parent = emptyenv())
+  input <- new.env(parent = emptyenv())
+  input$gprofiler_direction_filter <- "all"
+  enrichment_data <- new.env(parent = emptyenv())
+  enrichment_data$gprofiler_results <- NULL
+  enrichment_data$gprofiler_results_table <- NULL
+  renders <- 0L
+  captured <- function(data, options = NULL, extensions = NULL, ...) list(data = data)
+  registerProtEnrichGprofilerResultsTableOutput(
+    output = output,
+    input = input,
+    enrichmentData = enrichment_data,
+    renderResultsTableFn = function(gprofilerResults, directionFilter, gprofilerResultsTable = NULL) {
+      renderProtEnrichGprofilerResultsTable(
+        gprofilerResults = gprofilerResults, directionFilter = directionFilter,
+        gprofilerResultsTable = gprofilerResultsTable,
+        renderDtFn = function(expr, ...) { # a renderer that re-evaluates its expression on every call, as Shiny does
+          quoted <- substitute(expr); frame <- parent.frame()
+          function() { renders <<- renders + 1L; eval(quoted, frame) }
+        },
+        datatableFn = captured, formatRoundFn = function(x, columns, digits) x, catFn = function(...) NULL)
+    }
+  )
+  # The first render sees no results (the placeholder); the source then changes and the second render sees it,
+  # which a value captured at registration time could not.
+  first <- output$gprofiler_results_table()
+  expect_identical(first$data$Message, "No gprofiler2 results available. Run analysis first.")
+  enrichment_data$gprofiler_results <- data.frame(term = c("go:1", "go:2"), directionality = c("positive", "negative"),
+    stringsAsFactors = FALSE)
+  input$gprofiler_direction_filter <- "up"
+  second <- output$gprofiler_results_table()
+  expect_identical(second$data$term, "go:1")
+  expect_identical(renders, 2L)
+})
+
+test_that("KIT-064 (roar BUG-07): the STRING-DB table filters on the declared q_cutoff and defaults to 0.05", {
+  output <- new.env(parent = emptyenv())
+  enrichment_data <- new.env(parent = emptyenv())
+  enrichment_data$stringdb_results <- data.frame(network = c("a", "b", "c"), p_value = c(0.01, 0.04, 0.2),
+    stringsAsFactors = FALSE)
+  render <- function(stringdbResults, filterSignificant, enrichmentPValThresh, maxResults) {
+    renderProtEnrichStringDbResultsTable(stringdbResults, filterSignificant, enrichmentPValThresh, maxResults,
+      renderDtFn = function(expr, ...) force(expr), datatableFn = function(data, ...) list(data = data))
+  }
+  explicit <- registerProtEnrichStringDbResultsTableOutput(output = output,
+    input = list(stringdb_filter_significant = TRUE, q_cutoff = 0.02, stringdb_max_results = 10),
+    enrichmentData = enrichment_data, renderResultsTableFn = render)
+  expect_identical(explicit$data$network, "a")
+  default <- registerProtEnrichStringDbResultsTableOutput(output = output,
+    input = list(stringdb_filter_significant = TRUE, stringdb_max_results = 10),
+    enrichmentData = enrichment_data, renderResultsTableFn = render)
+  expect_identical(default$data$network, c("a", "b"))
 })
 
 test_that("registerProtEnrichStringDbSummaryOutput wires renderText through the formatter seam", {
@@ -5914,20 +5969,20 @@ test_that("registerProtEnrichPlotOutputs preserves the paired plot-output shape 
     enrichmentData = enrichment_data,
     rawContrastNameFn = function() "contrast_raw",
     renderGprofilerPlotFn = function(analysisComplete, enrichmentResultsFull, rawContrast, directionFilter) {
-      recorded$gprofiler <- list(
-        analysisComplete = analysisComplete,
-        enrichmentResultsFull = enrichmentResultsFull,
-        rawContrast = rawContrast,
-        directionFilter = directionFilter
+      recorded$gprofiler <- list( # KIT-064: the seam receives accessors
+        analysisComplete = analysisComplete(),
+        enrichmentResultsFull = enrichmentResultsFull(),
+        rawContrast = rawContrast(),
+        directionFilter = directionFilter()
       )
       list(kind = "gprofiler_plot")
     },
     renderClusterProfilerPlotFn = function(analysisComplete, enrichmentResultsFull, rawContrast, directionFilter) {
-      recorded$clusterprofiler <- list(
-        analysisComplete = analysisComplete,
-        enrichmentResultsFull = enrichmentResultsFull,
-        rawContrast = rawContrast,
-        directionFilter = directionFilter
+      recorded$clusterprofiler <- list( # KIT-064: the seam receives accessors
+        analysisComplete = analysisComplete(),
+        enrichmentResultsFull = enrichmentResultsFull(),
+        rawContrast = rawContrast(),
+        directionFilter = directionFilter()
       )
       list(kind = "clusterprofiler_plot")
     }
