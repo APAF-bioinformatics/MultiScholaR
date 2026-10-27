@@ -788,7 +788,7 @@ test_that("RenderReport validates inputs and preserves alternate output branches
   expect_true(grepl("^\\d{4}-\\d{2}-\\d{2} ", render_calls[[1]]$params$timestamp))
   expect_identical(render_calls[[1]]$output_format, "word_document")
   expect_identical(render_calls[[2]]$output_format, "pdf_document")
-  expect_identical(render_calls[[2]]$envir_parent, globalenv())
+  expect_identical(render_calls[[2]]$envir_parent, asNamespace("MultiScholaR")) # KIT-065
   expect_true(file.exists(pdf_output))
   expect_false(file.exists(word_output))
 })
