@@ -30,8 +30,8 @@ Summaries: [lifecycle-complete.json](lifecycle-complete.json), [kit-journey-065m
 - KIT-028 DIA replay: the package code of 9497cd26 is 1ab2318b's plus `RenderReport`'s environment; the replay on 1ab2318b was exact (16 states, 174 s, KIT-064); the no-tools replay below runs on this code.
 - DIA_LIMPA replay against the KIT-065 record (`KIT_LIMPA_TICKET_DIR=kit-065`, the q23r8g library, the record of tdDG9e): **exact, 11 states, DA replayed, 145 s** ([replay-check-screen-kit065.json](replay-check-screen-kit065.json), [analysis_record-limpa-screen-kit065.json](analysis_record-limpa-screen-kit065.json)).
 - Legacy RDS adoption and recovery (`test-workflow-native-session.R` 725/2, `test-workflow-saved-recovery.R` 57/2) at 6b8d2581; `test-workflow-kit-harness.R` 435/0 with the report step; `test-general-filemgmt-report-helpers-shared.R` 85/1 with the render-environment assertions.
-- `R CMD check --no-tests --no-manual` at 9497cd26: CHECK.
-- The closure full suite on a clean worktree of 9497cd26 (the InuLC5 library): SUITE.
+- `R CMD check --no-tests --no-manual` at 9497cd26 (git-archive export, `_R_CHECK_FORCE_SUGGESTS_=false`, the InuLC5 library): 3 WARNINGs, 3 NOTEs, the baseline.
+- The closure full suite on a clean worktree of 9497cd26 (the InuLC5 library): **29,084 pass, 0 fail, 2 errors (the two known diagnostic files), 307 skips, 346 files**: green by the rule recorded since KIT-017.
 - Capability fallbacks (`MULTISCHOLAR_DISABLE_TOOLS=bash,dd,sha256sum,sync,tar,cp`, KIT-044's recipe, in process on this build): the three recorders without the tools (LFQ 11 states, TMT 11, DIA_LIMPA 14, each through the report) are **identical state for state** to the tool-enabled records (class, rows, components, support, summary, products); the KIT-028 DIA replay without the tools **exact, 16 states, 144 s** on this code ([replay-check-kit065-notools.json](replay-check-kit065-notools.json), [analysis_record-origin-kit065-notools.json](analysis_record-origin-kit065-notools.json)).
 
 ### The counted member
