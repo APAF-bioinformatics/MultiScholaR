@@ -1,6 +1,6 @@
 # KIT-065: proteomics closure runner
 
-Status 2026-10-28: **in progress**. Code 9497cd26 (the package code f55bef1b: `RenderReport`'s environment; the harness 6b8d2581 + 6f65c571: the report step). Install `kit_065` = `core/browser-smoke.InuLC5` (earlier candidate q23r8g, before the render fix). No counted member yet: `kit:journey-065:candidate:1` is declared below and awaits the user's go.
+Status 2026-10-28: **completed** (proteomics closed on the kit). Code 9497cd26 (package code f55bef1b; harness 6b8d2581 + 6f65c571). Install `kit_065` = `core/browser-smoke.InuLC5`. Counted member run on the user's go of 2026-10-28.
 
 ## Mechanism (one): the journey ends at the report
 
@@ -36,8 +36,26 @@ Summaries: [lifecycle-complete.json](lifecycle-complete.json), [kit-journey-065m
 
 ### The counted member
 
-Declared: `kit:journey-065:candidate:1`, stage `kit-journey-065`: the DIA route's whole journey on the 300-sample DIA-NN corpus on `kit_065` (InuLC5), the 18 recorded steps judged against the KIT-005 oracles and the report step completion-checked; ceiling 14,400 s; one attempt; memory decides, time is reported; the harness decision reported verbatim (the state-summary rule carried to KIT-050 applies, as it did to KIT-048's member). COUNTED.
+Declared: `kit:journey-065:candidate:1`, stage `kit-journey-065`: the DIA route's whole journey on the 300-sample DIA-NN corpus on `kit_065` (InuLC5), the 18 recorded steps judged against the KIT-005 oracles and the report step completion-checked; ceiling 14,400 s; one attempt; memory decides, time is reported; the harness decision reported verbatim (the state-summary rule carried to KIT-050 applies, as it did to KIT-048's member).
+
+Run 2026-10-28 11:22, stage archive `kit-journey-065.kit065-counted`, summary [kit-journey-065-stage.json](kit-journey-065-stage.json):
+
+| Measure | KIT-065 (InuLC5) | KIT-048 (2GA8g6) | KIT-036 candidate |
+|---|---|---|---|
+| Journey | **complete, 19 of 19 steps** (the report rendered in 27 s) | complete, 18 of 18 | complete |
+| Elapsed | 3,334 s | 2,927 s | 4,740 s |
+| Peak anonymous | 5.94 GiB (cgroup 7.36 GiB) | 5.96 GiB | 5.69 GiB |
+| Resident at end | 2.85 GiB | 2.91 GiB | |
+| Harness decision | **`invalid`**, rule `verifier_accepted` | `invalid`, the same rule | accepted |
+
+The verifier's 18 mismatches are every state's `summary` and the normalisation step's identity product, the same set as KIT-048's member; the member's store against the bound KIT-005 oracles, field by field: 17 states differ in `summary_sha256` only, the `initial` placeholder in its recorded class as well, **no state differs in class, rows, components or support**. The cause is the one recorded in KIT-048 and carried to KIT-050: the summary hashes the state's whole `config`/`args`, which have gained shipped default keys since the KIT-005 control's build. The elapsed time is longer than KIT-048's by about 400 s, inside the step-level variance seen between members (imputation 550 s against 384 s, normalisation 1,155 s against 1,048 s; the GUI process's own variance, recorded in KIT-057); time is reported, not judged. The ticket's criterion, completion with the decision, peaks and times recorded verbatim, is met.
 
 ## Closure statement
 
-CLOSURE.
+Scope: the proteomics work of the KIT series on the kit host (x86_64 Linux, 32 GiB, the P14 engine), the synthetic DIA-NN corpora (8-sample screen, 300-sample full), the MaxQuant and Proteome Discoverer fixtures, and the KC real LFQ corpus through KIT-054's lane only.
+
+- **Four routes, end to end through the GUI, on one build (`kit_065` = InuLC5, source f55bef1b):** DIA (19 steps), DIA_LIMPA (14), LFQ (11) and TMT (11), each from import through design, QC, normalisation, correlation, session export, differential abundance and the rendered report. Every state the journeys commit verifies against an in-process record or the KIT-005 oracles; the DIA route's 300-sample member completes with every component identical to KIT-005's.
+- **The architecture the manuscript describes holds:** the state owner attached from session start (KIT-048), every step a declared operation on saved entities, the managed workers for the memory-heavy steps, the records and replays (KIT-028 exact on this code, the DIA_LIMPA replay exact against its record), the capability fallbacks without the GNU tools identical state for state (KIT-044, re-proven here), and the omic-agnostic names stage 3 builds on (KIT-045).
+- **Memory, the series' first claim:** the 300-sample DIA journey runs in 5.94 GiB anonymous peak with 2.85 GiB resident at the end (KIT-001's pre-kit lifecycle exceeded 15 GiB on the same corpus; KIT-011's accepted candidate 5.51 GiB; KIT-036 5.69 GiB; KIT-048 5.96 GiB). DIA_LIMPA on the same corpus 5.35 GiB (KIT-057). Time is reported: 3,334 s here.
+- **What is not claimed:** enrichment (synthetic corpora, network engines; KIT-066 on real data after stage 3); the kit's state-summary rule as a cross-build exactness test (KIT-050 carries it; every counted member since the shipped defaults grew reads `invalid` on summaries with exact components); Windows (KIT-051/052); the lipidomics and metabolomics routes (stage 3, with the audit findings carried there); the report templates' shared logic (KIT-067).
+- **Open for the user:** the PCA input threshold (BUG-18, left as recorded), the `qvalue()` fallback and `pivot_wider` kernels (scientific decisions), the step-map unit confirmations still pending from KIT-047/041/053, the replicate rule.
