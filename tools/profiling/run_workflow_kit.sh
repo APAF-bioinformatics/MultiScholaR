@@ -30,6 +30,10 @@ if [[ "${1:-}" == "--sample" ]]; then
             END{printf "%s %s %s %s %s %s %s %.0f\n", u, (c==""?"NA":c), (p==""?"NA":p), (s==""?"NA":s), (a==""?"NA":a), (f==""?"NA":f), (k==""?"NA":k), m}' \
             /proc/uptime "$group/memory.current" "$group/memory.peak" "$group/memory.swap.peak" "$group/memory.stat" /proc/meminfo 2>/dev/null || echo "NA NA NA NA NA NA NA NA")
         printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$uptime" "$current" "$peak" "$anon" "$file" "$kernel" "$swap" >> "$trace"
+        # KIT-068: a sample taken as the cgroup vanishes (the application's own guard stop) reads no uptime; the guards
+        # below compare numbers only (attempt 2 of kit-lifecycle-lipid-fail: "NA" >= the deadline as a string ended the
+        # member as time_guard 46 s in).
+        [[ "$uptime" =~ ^[0-9]+([.][0-9]+)?$ ]] || { sleep 0.05; continue; }
         reason=""
         if [[ "$peak" =~ ^[0-9]+$ ]] && (( peak >= 16642998272 )); then reason="memory_guard"; fi
         if [[ "$available" =~ ^[0-9]+$ ]] && (( available < 2147483648 )); then reason="host_guard"; fi
