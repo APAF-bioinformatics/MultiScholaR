@@ -490,11 +490,8 @@ setGeneric(name="plotInteractiveVolcano"
 
 
 
-setGeneric(name = "createGridQCMetabolomics",
-           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
-             standardGeneric("createGridQCMetabolomics")
-           },
-           signature = c("theObject"))
+# KIT-064 addendum (roar BUG-12, the reviewer's correction): the `createGridQCMetabolomics` generic stood here with its only
+# setMethod commented out (func_metab_s4_objects.R, "GridPlotData class does not exist"); no caller, not exported; removed.
 
 
 setGeneric(name="plotNumSigDiffExpBarPlot",
@@ -540,8 +537,5 @@ setGeneric(name = "filterSamplesByLipidCorrelationThreshold"
            }
            , signature = c("theObject"))
 
-setGeneric(name = "createGridQCLipidomics",
-           def = function(theObject, pca_titles, density_titles, rle_titles, pearson_titles, save_path = NULL, file_name = "pca_density_rle_pearson_corr_plots_merged") {
-             standardGeneric("createGridQCLipidomics")
-           },
-           signature = c("theObject"))
+# KIT-064 addendum (roar BUG-12): the `createGridQCLipidomics` generic stood here with its only setMethod commented out
+# (func_lipid_s4_objects.R); no caller, not exported; removed.

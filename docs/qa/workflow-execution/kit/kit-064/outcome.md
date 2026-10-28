@@ -44,3 +44,12 @@ Status 2026-10-28: **completed** (user decision 2026-10-28, "keep the repair": t
 - Item C landed in two commits: the first stopped at the kegg helper's duplicated `set.seed` line (an edit-ordering slip), the second completed the notes.
 - The replay was run after item A and after items B and C together, not after each of the six B commits; each B commit is a separate revert unit all the same.
 - BUG-20 (zero-denominator guards at message sites) and the phospho `&` sites were not changed, with the reasons in the table.
+
+## Addendum (2026-10-28, after closure): two verdicts corrected by the roar author's review
+
+The reviewer of the alignment (the roar author, reading the same tree) found two places where my verification was fooled; both checked and both right:
+
+- **BUG-21.** `qvalue_failed <- FALSE` is declared inside `function(contrast)`; the `else` branch's `qvalue_failed <<- TRUE` (lines 572, 692) runs in that frame, skips the local and writes a global, so on the edge path (fewer than three usable p-values, all zeros or all ones) the contrast's q-value warning was never recorded. Repaired with `<-`; a test on the edge path asserts the warning and the absence of the global. The DA tables are unchanged (the branch sets a flag beside the BH adjustment it already applied).
+- **BUG-12.** The `createGridQCLipidomics` and `createGridQCMetabolomics` methods are commented out, which a grep for `setMethod(` read as live. The two generics, unexported and uncalled, are removed with the other two.
+
+Gates on the addendum commit: the test file, the KIT-028 replay (ADDENDUM_REPLAY), `R CMD check` (ADDENDUM_CHECK). `NAMESPACE` unchanged. The repaired code enters the next install; `kit_065` (InuLC5) predates it and the KIT-065 evidence stands on that build.

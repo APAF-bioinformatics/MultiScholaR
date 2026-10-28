@@ -568,8 +568,10 @@ runTestsContrasts <- function(data,
                   }
                 )
               } else {
-                # Use p.adjust directly for edge cases
-                qvalue_failed <<- TRUE
+                # Use p.adjust directly for edge cases. KIT-064 addendum (roar BUG-21, the reviewer's correction): this
+                # branch runs in the contrast function's own frame, where `qvalue_failed` is declared, so a `<<-` here
+                # skipped it (the contrast's q-value warning was never recorded and a global leaked); `<-` it is.
+                qvalue_failed <- TRUE
                 q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                 message("      Using p.adjust() due to edge case detection")
                 message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))
@@ -688,8 +690,10 @@ runTestsContrasts <- function(data,
                   }
                 )
               } else {
-                # Use p.adjust directly for edge cases
-                qvalue_failed <<- TRUE
+                # Use p.adjust directly for edge cases. KIT-064 addendum (roar BUG-21, the reviewer's correction): this
+                # branch runs in the contrast function's own frame, where `qvalue_failed` is declared, so a `<<-` here
+                # skipped it (the contrast's q-value warning was never recorded and a global leaked); `<-` it is.
+                qvalue_failed <- TRUE
                 q_values_all[valid_p_idx] <- p.adjust(valid_p_values, method = "BH")
                 message("      Using p.adjust() due to edge case detection")
                 message(sprintf("      Diagnostic: Assigned %d p.adjust() values to q-value column", length(valid_p_idx)))

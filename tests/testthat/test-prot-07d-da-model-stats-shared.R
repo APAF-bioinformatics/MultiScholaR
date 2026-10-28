@@ -304,6 +304,20 @@ test_that("proteomics DA model stats helpers execute limma-style analysis paths"
     expect_true(all(c("raw_pvalue", "fdr_qvalue", "fdr_value_bh_adjustment") %in% names(contrast_result$results[[1]])))
     expect_length(contrast_result$qvalue_warnings, 0)
 
+    # KIT-064 addendum (roar BUG-21): on the edge path (fewer than three p-values, so qvalue() is not attempted) the
+    # contrast's q-value warning is recorded and nothing leaks into the global environment; the former `<<-` in the
+    # contrast function's own frame did neither.
+    if (exists("qvalue_failed", envir = globalenv(), inherits = FALSE)) rm("qvalue_failed", envir = globalenv())
+    edge_result <- run_tests_contrasts(
+      data = data[1:2, , drop = FALSE],
+      contrast_strings = "A_vs_B=groupB-groupA",
+      design_matrix = design,
+      formula_string = "~ 0 + group",
+      treat_lfc_cutoff = NA
+    )
+    expect_true(isTRUE(edge_result$qvalue_warnings[["A_vs_B=groupB-groupA"]]))
+    expect_false(exists("qvalue_failed", envir = globalenv(), inherits = FALSE))
+
     replicate_result <- run_tests_contrasts(
       data = data,
       contrast_strings = "A_vs_B=groupB-groupA",
