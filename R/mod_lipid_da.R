@@ -39,7 +39,7 @@ initializeLipidDaServerState <- function(
         contrasts_available = NULL,
         assays_available = NULL,
         analysis_complete = FALSE,
-        current_s4_object = NULL,
+        current_state_name = NULL,
         formula_from_s4 = NULL,
         current_row_clusters = NULL,
         current_col_clusters = NULL,
@@ -64,7 +64,7 @@ registerLipidDaPrimaryTextOutputs <- function(
         catFn(buildStatusTextFn(
             analysisComplete = daData$analysis_complete,
             daResultsList = daData$da_results_list,
-            currentS4Object = daData$current_s4_object
+            currentS4Object = lipidDaCurrentS4(daData, workflowData)
         ))
     })
 

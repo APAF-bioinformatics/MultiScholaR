@@ -10,13 +10,16 @@
 #' @keywords internal
 #' @noRd
 #' @export
-getFilteringProgressMetabolomics <- function() {
-    if (!exists("filtering_progress_metabolomics", envir = .GlobalEnv)) {
-        filtering_progress_metabolomics <- new("FilteringProgressMetabolomics")
-        assign("filtering_progress_metabolomics", filtering_progress_metabolomics, envir = .GlobalEnv)
+getFilteringProgressMetabolomics <- function(owner = workflowOmicsProgressOwner("metabolomics")) {
+    # KIT-030: the owner is the metabolomics bus registered on the Shiny session, else the global
+    # environment (scripts and workbooks unchanged).
+    value <- shiny::isolate(owner$filtering_progress_metabolomics)
+    if (is.null(value)) {
+        value <- new("FilteringProgressMetabolomics")
+        owner$filtering_progress_metabolomics <- value
         message("Initialized global 'filtering_progress_metabolomics' object.") # Optional message
     }
-    get("filtering_progress_metabolomics", envir = .GlobalEnv)
+    value
 }
 
 # ----------------------------------------------------------------------------
@@ -44,7 +47,8 @@ updateFilteringProgressMetabolomics <- function(prog_met,
                                                 current_assay_names,
                                                 metrics_list,
                                                 total_metabolites,
-                                                overwrite = FALSE) {
+                                                overwrite = FALSE,
+                                                owner = workflowOmicsProgressOwner("metabolomics")) {
     if (step_name %in% prog_met@steps) {
         if (!overwrite) {
             stop("Step name '", step_name, "' already exists in filtering_progress_metabolomics. Use overwrite = TRUE to replace it.")
@@ -73,8 +77,8 @@ updateFilteringProgressMetabolomics <- function(prog_met,
         prog_met@is_metrics_per_assay <- c(prog_met@is_metrics_per_assay, list(lapply(metrics_list, `[[`, "is_metrics")))
     }
 
-    # Update the global object
-    assign("filtering_progress_metabolomics", prog_met, envir = .GlobalEnv)
+    # Update the owner's object (the session bus, or the global environment in scripts; KIT-030)
+    owner$filtering_progress_metabolomics <- prog_met
     invisible(prog_met)
 }
 

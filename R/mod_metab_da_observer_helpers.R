@@ -279,6 +279,17 @@ buildMetabDaResultsDownloadHandler <- function(
     )
 }
 
+#' The DA tab's current object: the state the loaded session was committed under, read through
+#' the state manager (KIT-030: the holder keeps the state name, not the object).
+#' @noRd
+metabDaCurrentS4 <- function(daData, workflowData) {
+    stateName <- daData$current_state_name
+    if (is.null(stateName) || is.null(workflowData) || is.null(workflowData$state_manager)) {
+        return(NULL)
+    }
+    workflowData$state_manager$getState(stateName)
+}
+
 resolveMetabDaAnalysisInputs <- function(
     currentS4Object = NULL,
     workflowData,
@@ -726,8 +737,7 @@ restoreMetabDaLoadedSessionState <- function(
                 )
             }
         }
-        debugLog("  STEP 6b: Assigning to da_data$current_s4_object...")
-        daData$current_s4_object <- sessionData$current_s4_object
+        debugLog("  STEP 6b: Recording the state name on da_data (the object lives in the state manager)...")
 
         debugLog("  STEP 6c: Getting state_name...")
         stateName <- sessionData$r6_current_state_name
@@ -751,6 +761,7 @@ restoreMetabDaLoadedSessionState <- function(
             config_object = list(loaded_from = sessionFile),
             description = "Loaded from filtered session for DA analysis"
         )
+        daData$current_state_name <- stateName
         debugLog("  STEP 6f: saveState completed")
         logInfo("   Restored S4 object to state manager")
     }

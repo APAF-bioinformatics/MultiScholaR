@@ -632,7 +632,11 @@ test_that("metabolomics DA overview-output seam preserves contrasts and status r
   da_state <- new.env(parent = emptyenv())
   da_state$da_results_list <- "results-state"
   da_state$analysis_complete <- TRUE
-  da_state$current_s4_object <- "current-s4"
+  # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+  da_state$current_state_name <- "loaded_for_de"
+  workflow_state$state_manager <- list(getState = function(state_name = NULL) {
+    if (identical(state_name, "loaded_for_de")) "current-s4" else NULL
+  })
 
   captured_contrasts <- NULL
   captured_status <- NULL
@@ -1306,7 +1310,11 @@ test_that("metabolomics DA run-analysis observer registration seam preserves eve
   )
 
   da_state <- new.env(parent = emptyenv())
-  da_state$current_s4_object <- "current-s4"
+  # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+  da_state$current_state_name <- "loaded_for_de"
+  workflow_state$state_manager <- list(getState = function(state_name = NULL) {
+    if (identical(state_name, "loaded_for_de")) "current-s4" else NULL
+  })
 
   registration <- registerMetabDaRunAnalysisObserver(
     input = list(
@@ -1447,7 +1455,7 @@ test_that("metabolomics DA server-body seam preserves state defaults and registr
       "contrasts_available",
       "assays_available",
       "analysis_complete",
-      "current_s4_object",
+      "current_state_name",
       "formula_from_s4",
       "current_row_clusters",
       "current_col_clusters",
@@ -1458,7 +1466,7 @@ test_that("metabolomics DA server-body seam preserves state defaults and registr
     "da_results_list",
     "contrasts_available",
     "assays_available",
-    "current_s4_object",
+    "current_state_name",
     "formula_from_s4",
     "current_row_clusters",
     "current_col_clusters",
@@ -2606,7 +2614,9 @@ test_that("metabolomics DA load-session restore seam preserves state, selectors,
   expect_identical(restore_state$contrastChoices, c("B vs A", "C vs A"))
   expect_identical(restore_state$assayChoices, c("Combined", "LCMS_Pos", "LCMS_Neg"))
   expect_identical(restore_state$formulaValue, "~ 0 + group")
-  expect_identical(da_state$current_s4_object, s4_object)
+  # KIT-030: the holder keeps the state name; the object lives in the state manager only.
+  expect_identical(da_state$current_state_name, "filtered_ready")
+  expect_false(exists("current_s4_object", envir = da_state, inherits = FALSE))
   expect_identical(da_state$contrasts_available, session_data$contrasts_tbl)
   expect_identical(da_state$assays_available, c("LCMS_Pos", "LCMS_Neg"))
   expect_identical(da_state$formula_from_s4, "~ 0 + group")
@@ -2693,7 +2703,8 @@ test_that("metabolomics DA load-session restore seam preserves fallback state an
   expect_identical(restore_state$contrastChoices, character())
   expect_identical(restore_state$assayChoices, character())
   expect_null(restore_state$formulaValue)
-  expect_identical(da_state$current_s4_object, session_data$current_s4_object)
+  expect_identical(da_state$current_state_name, "loaded_for_de")
+  expect_false(exists("current_s4_object", envir = da_state, inherits = FALSE))
   expect_identical(captured_save_state$state_name, "loaded_for_de")
   expect_identical(captured_save_state$s4_data_object, session_data$current_s4_object)
   expect_length(captured_warn_logs, 1)

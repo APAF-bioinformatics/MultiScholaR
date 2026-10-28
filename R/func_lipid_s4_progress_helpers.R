@@ -28,12 +28,15 @@ setClass("FilteringProgressLipidomics",
 #' @keywords internal
 #' @noRd
 #' @export
-getFilteringProgressLipidomics <- function() {
-    if (!exists("filtering_progress_lipidomics", envir = .GlobalEnv)) {
-        filtering_progress_lipidomics <- new("FilteringProgressLipidomics")
-        assign("filtering_progress_lipidomics", filtering_progress_lipidomics, envir = .GlobalEnv)
+getFilteringProgressLipidomics <- function(owner = workflowOmicsProgressOwner("lipidomics")) {
+    # KIT-030: the owner is the lipidomics bus registered on the Shiny session, else the global
+    # environment (scripts and workbooks unchanged).
+    value <- shiny::isolate(owner$filtering_progress_lipidomics)
+    if (is.null(value)) {
+        value <- new("FilteringProgressLipidomics")
+        owner$filtering_progress_lipidomics <- value
         message("Initialized global 'filtering_progress_lipidomics' object.")
     }
-    get("filtering_progress_lipidomics", envir = .GlobalEnv)
+    value
 }
 

@@ -175,6 +175,10 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
             , processing_log = list()
         )
 
+        # The lipidomics bus owns the filtering-progress tracker that used to live in the global
+        # environment (KIT-030); the kernels find it through the session.
+        registerWorkflowOmicsBus(session, omic_type, workflow_data)
+
         # Get paths for this lipidomics experiment
         paths_key <- omic_type
 

@@ -15,7 +15,9 @@ updateMetaboliteFiltering(
   group_id_col = NULL,
   sample_id_col = NULL,
   metabolite_id_col = NULL,
-  is_pattern = NULL
+  is_pattern = NULL,
+  project_dirs = NULL,
+  experiment_label = NULL
 )
 }
 \arguments{
@@ -48,6 +50,12 @@ other methods of finding the time directory.}
 
 \item{is_pattern}{Character, regex for identifying internal standards. If not provided,
 attempts to get from \code{theObject@internal_standard_regex} if slot exists.}
+
+\item{project_dirs}{Optional \code{setupDirectories()} list; with \code{omics_type} and \code{experiment_label}
+it derives the plot directory. Outside a Shiny session a workbook's global
+\code{project_dirs}, \code{omic_type} and \code{experiment_label} are used when these are NULL.}
+
+\item{experiment_label}{Optional experiment label paired with \code{project_dirs}.}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, a \code{grob} object. Otherwise, an invisible list

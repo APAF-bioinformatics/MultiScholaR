@@ -469,7 +469,8 @@ test_that("MCI-015.6 DA reload consumes every accepted metabolomics export varia
     )
 
     expect_identical(result$status, "success")
-    expect_s4_class(da_data$current_s4_object, "MetaboliteAssayData")
+    # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+    expect_s4_class(workflow$state_manager$getState(da_data$current_state_name), "MetaboliteAssayData")
     expect_identical(da_data$assays_available, c("LCMS_Pos", "GCMS"))
     expect_identical(da_data$formula_from_s4, "~ 0 + group + batch")
     expect_identical(capture$text$formula_string, "~ 0 + group + batch")

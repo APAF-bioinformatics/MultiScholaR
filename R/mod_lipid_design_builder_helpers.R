@@ -77,14 +77,8 @@ runLipidDesignBuilderObserverShell <- function(
     workflowData$data_cln <- results$data_cln
     workflowData$contrasts_tbl <- results$contrasts_tbl
     workflowData$config_list <- results$config_list
-
-    if (!is.null(results$contrasts_tbl)) {
-        assign("contrasts_tbl", results$contrasts_tbl, envir = .GlobalEnv)
-        logger::log_info("Updated contrasts_tbl in global environment.")
-    }
-
-    assign("config_list", workflowData$config_list, envir = .GlobalEnv)
-    logger::log_info("Updated global config_list.")
+    # KIT-030: contrasts_tbl and config_list live on workflow_data only (no global copies).
+    logger::log_info("Updated contrasts_tbl and config_list on workflow_data.")
 
     tryCatch({
         design_matrix_path <- file.path(source_dir, "design_matrix.tab")

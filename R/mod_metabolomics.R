@@ -175,6 +175,10 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
             , processing_log = list()
         )
 
+        # The metabolomics bus owns the filtering-progress tracker that used to live in the global
+        # environment (KIT-030); the kernels find it through the session.
+        registerWorkflowOmicsBus(session, omic_type, workflow_data)
+
         # Get paths for this metabolomics experiment
         paths_key <- omic_type
 

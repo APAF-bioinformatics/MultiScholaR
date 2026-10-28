@@ -149,14 +149,11 @@ hydrateMetabDesignImportArtifacts <- function(
         workflowData$config_list <- readConfigFn(file = configFile)
         messageFn("DEBUG66: readConfigFile() completed successfully")
         messageFn(sprintf("DEBUG66: config_list names: %s", paste(names(workflowData$config_list), collapse = ", ")))
-        assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
-        messageFn("DEBUG66: config assigned to global env")
-        logInfo("Loaded config.ini and assigned to global environment.")
+        logInfo("Loaded config.ini onto workflow_data.")
     } else {
         defaultConfig <- file.path(experimentPaths$source_dir, "config.ini")
         if (fileExistsFn(defaultConfig)) {
             workflowData$config_list <- readConfigFn(file = defaultConfig)
-            assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
             logInfo("Loaded config.ini from source_dir.")
         } else {
             logWarn("No config.ini found. Using empty config.")
@@ -336,11 +333,7 @@ hydrateMetabDesignImportWorkflowState <- function(
     workflowData$contrasts_tbl <- importedContrasts
     workflowData$data_tbl <- assayList
     workflowData$data_cln <- assayList
-
-    if (!is.null(importedContrasts)) {
-        assignFn("contrasts_tbl", importedContrasts, envir = .GlobalEnv)
-        logInfo("Saved contrasts_tbl to global environment.")
-    }
+    # KIT-030: the imported contrasts live on workflow_data only (no global copy).
 
     workflowData$design_matrix <- mutateFn(
         workflowData$design_matrix,

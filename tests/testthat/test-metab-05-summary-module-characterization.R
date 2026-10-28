@@ -533,14 +533,8 @@ test_that("metabolomics summary save-workflow observer shell preserves S4 export
   expect_false(visible$visible)
   expect_identical(captured$req, list("Metab Session"))
   expect_identical(captured$state_lookup, "metab_normalized")
-  expect_identical(
-    captured$assigned,
-    list(
-      name = "config_list",
-      value = config_list,
-      envir = global_env
-    )
-  )
+  # KIT-030: the configuration stays on workflow_data; nothing is copied into the environment seam.
+  expect_null(captured$assigned)
   expect_identical(
     captured$create_call,
     list(
@@ -593,7 +587,7 @@ test_that("metabolomics summary save-workflow observer shell preserves S4 export
           "\nIntegration Object:", "metabolomics_Metab Session_final_s4.RDS",
           "\nStatus: Parameters saved [OK]")
   )
-  expect_identical(global_env$config_list, config_list)
+  expect_false(exists("config_list", envir = global_env, inherits = FALSE))
   expect_identical(
     visible$value,
     list(
@@ -601,7 +595,7 @@ test_that("metabolomics summary save-workflow observer shell preserves S4 export
       studyParamsFile = "/tmp/metab-summary-source/study_parameters.txt",
       s4Filepath = "/tmp/metab-summary-base/integration/metabolomics_Metab Session_final_s4.RDS",
       dataStateUsed = "metab_normalized",
-      configListAssigned = TRUE
+      configListAssigned = FALSE
     )
   )
 })

@@ -643,9 +643,8 @@ test_that("metabolomics design import hydration seam preserves config and artifa
   )
   expect_identical(captured$config_read, "/tmp/imported-design/config.ini")
   expect_identical(captured$manifest_read, "/tmp/imported-design/assay_manifest.txt")
-  expect_identical(captured$assign$name, "config_list")
-  expect_identical(captured$assign$value, workflow_state$config_list)
-  expect_identical(captured$assign$envir, .GlobalEnv)
+  # KIT-030: the imported config lives on workflow_data only; nothing is assigned globally.
+  expect_null(captured$assign)
   expect_identical(result$importedDesign, imported_design)
   expect_identical(result$assayNames, c("LCMS_Pos", "GCMS"))
   expect_identical(names(result$assayList), c("LCMS_Pos", "GCMS"))
@@ -891,11 +890,9 @@ test_that("metabolomics design import workflow-state seam hydrates workflow fiel
   expect_identical(result$designMatrix, workflow_state$design_matrix)
   expect_identical(result$assayList, assay_list)
   expect_identical(result$importedContrasts, imported_contrasts)
-  expect_identical(
-    captured$assigned,
-    list(name = "contrasts_tbl", value = imported_contrasts, envir = .GlobalEnv)
-  )
-  expect_identical(captured$log_info, "Saved contrasts_tbl to global environment.")
+  # KIT-030: the imported contrasts live on workflow_data only; nothing is assigned globally.
+  expect_null(captured$assigned)
+  expect_length(captured$log_info, 0L)
 })
 
 test_that("metabolomics design import S4 seam preserves argument assembly and invocation", {

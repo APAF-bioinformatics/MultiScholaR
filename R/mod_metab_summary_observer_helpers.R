@@ -304,8 +304,7 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
 
         config_list_assigned <- FALSE
         if (!is.null(workflow_data) && !is.null(workflow_data$config_list)) {
-            assignFn("config_list", workflow_data$config_list, envir = globalEnv)
-            config_list_assigned <- TRUE
+            # KIT-030: the configuration is read from workflow_data (createWorkflowArgsFromConfig takes it); no global copy.
             catFn(
                 "SESSION SUMMARY: Config list available with",
                 length(workflow_data$config_list),

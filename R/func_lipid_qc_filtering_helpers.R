@@ -252,22 +252,33 @@ finalizeLipidFilteringStep <- function(prog_met,
 
 resolveLipidFilteringPlotSaveDir <- function(publication_graphs_dir = NULL,
                                              omics_type = NULL,
-                                             time_dir = NULL) {
+                                             time_dir = NULL,
+                                             project_dirs = NULL,
+                                             experiment_label = NULL) {
     actual_save_dir <- NULL
 
     message("--- Plot Saving Diagnostics ---")
     message(sprintf("Value of publication_graphs_dir argument in function call: %s", ifelse(is.null(publication_graphs_dir), "NULL", publication_graphs_dir)))
     message(sprintf("Value of omics_type argument in function call: %s", ifelse(is.null(omics_type), "NULL", omics_type)))
     message(sprintf("Value of time_dir argument in function call: %s", ifelse(is.null(time_dir), "NULL", time_dir)))
-    message("Attempting to determine save directory using global project_dirs, omic_type, and experiment_label...")
+    message("Attempting to determine save directory from project_dirs, omic_type, and experiment_label...")
 
-    if (exists("project_dirs", envir = .GlobalEnv) &&
-        exists("omic_type", envir = .GlobalEnv) &&
-        exists("experiment_label", envir = .GlobalEnv)) {
-        message("Global variables project_dirs, omic_type, and experiment_label found.")
-        local_project_dirs <- get("project_dirs", envir = .GlobalEnv)
-        local_omic_type <- get("omic_type", envir = .GlobalEnv)
-        local_experiment_label <- get("experiment_label", envir = .GlobalEnv)
+    # KIT-030: inside the application the directories, omic type and label come from the arguments
+    # (the modules pass the omic type only, so no figure is written, as before); outside a Shiny
+    # session a workbook's global `project_dirs`, `omic_type` and `experiment_label` keep the
+    # documented script contract (workflowScriptGlobal). The application never reads the global
+    # environment here.
+    if (is.null(shiny::getDefaultReactiveDomain())) {
+        local_project_dirs <- workflowScriptGlobal("project_dirs")
+        local_omic_type <- workflowScriptGlobal("omic_type")
+        local_experiment_label <- workflowScriptGlobal("experiment_label")
+    } else {
+        local_project_dirs <- project_dirs
+        local_omic_type <- omics_type
+        local_experiment_label <- experiment_label
+    }
+    if (!is.null(local_project_dirs) && !is.null(local_omic_type) && !is.null(local_experiment_label)) {
+        message("project_dirs, omic_type, and experiment_label available.")
         message(sprintf("Global omic_type value: '%s', Global experiment_label value: '%s'", local_omic_type, local_experiment_label))
 
         omics_key <- paste0(local_omic_type, "_", local_experiment_label)
@@ -301,9 +312,9 @@ resolveLipidFilteringPlotSaveDir <- function(publication_graphs_dir = NULL,
         warning("One or more global variables ('project_dirs', 'omic_type', 'experiment_label') not found. Plots will not be saved.")
         message(sprintf(
             "Exists project_dirs: %s, Exists omic_type: %s, Exists experiment_label: %s",
-            exists("project_dirs", envir = .GlobalEnv),
-            exists("omic_type", envir = .GlobalEnv),
-            exists("experiment_label", envir = .GlobalEnv)
+            !is.null(local_project_dirs),
+            !is.null(local_omic_type),
+            !is.null(local_experiment_label)
         ))
     }
 

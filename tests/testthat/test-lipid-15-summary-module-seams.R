@@ -206,7 +206,8 @@ test_that("collectLipidSummaryWorkflowArgsContext keeps state resolution stable"
 
     expect_identical(result$finalS4Object, final_s4_object)
     expect_identical(result$contrastsTbl, workflow_data$contrasts_tbl)
-    expect_identical(get("config_list", envir = assigned_env), workflow_data$config_list)
+    # KIT-030: the configuration stays on workflow_data; nothing is copied into the environment seam.
+    expect_false(exists("config_list", envir = assigned_env, inherits = FALSE))
     expect_true(any(grepl("Retrieved DATA S4 object from state 'lipid_normalized'", log_messages, fixed = TRUE)))
     expect_true(any(grepl("Using contrasts_tbl from workflow_data", log_messages, fixed = TRUE)))
 })

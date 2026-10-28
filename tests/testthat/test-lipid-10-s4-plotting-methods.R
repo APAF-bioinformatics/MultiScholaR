@@ -50,19 +50,17 @@ test_that("plotPca returns one titled ggplot per assay with PCA coordinates", {
     )
     split_plotting_methods <- lipidS4PlottingMethodsAreSplit()
 
-    had_plot_helper <- exists("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)
-    old_plot_helper <- if (had_plot_helper) {
-        get("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
+    # KIT-030: the method calls the package helper by namespace (no global-environment override),
+    # so the helper is mocked in the namespace; a global binding of the same name must not be reached.
+    ns <- asNamespace("MultiScholaR")
+    old_plot_helper <- get("plotPcaHelper", envir = ns, inherits = FALSE)
+    unlockBinding("plotPcaHelper", ns)
     on.exit({
-        if (had_plot_helper) {
-            assign("plotPcaHelper", old_plot_helper, envir = .GlobalEnv)
-        } else if (exists("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("plotPcaHelper", envir = .GlobalEnv)
-        }
+        assign("plotPcaHelper", old_plot_helper, envir = ns)
+        lockBinding("plotPcaHelper", ns)
+        if (exists("plotPcaHelper", envir = .GlobalEnv, inherits = FALSE)) rm("plotPcaHelper", envir = .GlobalEnv)
     }, add = TRUE)
+    assign("plotPcaHelper", function(...) stop("the global binding must not be consulted"), envir = .GlobalEnv)
 
     captured_call <- NULL
     assign(
@@ -98,7 +96,7 @@ test_that("plotPca returns one titled ggplot per assay with PCA coordinates", {
             ) +
                 ggplot2::labs(title = title)
         },
-        envir = .GlobalEnv
+        envir = asNamespace("MultiScholaR")
     )
 
     if (split_plotting_methods) {
@@ -177,19 +175,17 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
     )
     split_plotting_methods <- lipidS4PlottingMethodsAreSplit()
 
-    had_plot_helper <- exists("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)
-    old_plot_helper <- if (had_plot_helper) {
-        get("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
+    # KIT-030: the method calls the package helper by namespace (no global-environment override),
+    # so the helper is mocked in the namespace; a global binding of the same name must not be reached.
+    ns <- asNamespace("MultiScholaR")
+    old_plot_helper <- get("plotRleHelper", envir = ns, inherits = FALSE)
+    unlockBinding("plotRleHelper", ns)
     on.exit({
-        if (had_plot_helper) {
-            assign("plotRleHelper", old_plot_helper, envir = .GlobalEnv)
-        } else if (exists("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("plotRleHelper", envir = .GlobalEnv)
-        }
+        assign("plotRleHelper", old_plot_helper, envir = ns)
+        lockBinding("plotRleHelper", ns)
+        if (exists("plotRleHelper", envir = .GlobalEnv, inherits = FALSE)) rm("plotRleHelper", envir = .GlobalEnv)
     }, add = TRUE)
+    assign("plotRleHelper", function(...) stop("the global binding must not be consulted"), envir = .GlobalEnv)
 
     captured_call <- NULL
     assign(
@@ -209,7 +205,7 @@ test_that("plotRle passes labeled assay matrices and grouping info to the helper
                 ggplot2::aes(sample, value)
             )
         },
-        envir = .GlobalEnv
+        envir = asNamespace("MultiScholaR")
     )
 
     rle_plots <- plotRle(

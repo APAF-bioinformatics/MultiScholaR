@@ -107,7 +107,9 @@ updateLipidFiltering <- function(theObject,
                                  group_id_col = NULL,
                                  sample_id_col = NULL,
                                  lipid_id_col = NULL,
-                                 is_pattern = NULL) {
+                                 is_pattern = NULL,
+                                 project_dirs = NULL,
+                                 experiment_label = NULL) {
     prog_met <- getFilteringProgressLipidomics()
     filtering_context <- prepareLipidFilteringContext(
         theObject = theObject,
@@ -160,7 +162,9 @@ updateLipidFiltering <- function(theObject,
     actual_save_dir <- resolveLipidFilteringPlotSaveDir(
         publication_graphs_dir = publication_graphs_dir,
         omics_type = omics_type,
-        time_dir = time_dir
+        time_dir = time_dir,
+        project_dirs = project_dirs,
+        experiment_label = experiment_label
     )
     saveLipidFilteringPlots(
         plot_list = plot_list,

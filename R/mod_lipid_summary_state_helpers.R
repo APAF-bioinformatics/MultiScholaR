@@ -349,7 +349,7 @@ collectLipidSummaryWorkflowArgsContext <- function(
     }
 
     if (!is.null(workflowData) && !is.null(workflowData$config_list)) {
-        assignFn("config_list", workflowData$config_list, envir = globalEnv)
+        # KIT-030: the configuration is read from workflow_data (createWorkflowArgsFromConfig takes it); no global copy.
         catFn("SESSION SUMMARY: Config list available with", length(workflowData$config_list), "items\n")
     }
 

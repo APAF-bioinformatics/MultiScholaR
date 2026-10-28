@@ -44,8 +44,10 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
     )
 
     expect_identical(load_state$status, "success")
-    expect_s4_class(da_data$current_s4_object, "MetaboliteAssayData")
-    expect_identical(names(da_data$current_s4_object@metabolite_data), session_data$assay_names)
+    # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+    loaded_object <- workflow$state_manager$getState(da_data$current_state_name)
+    expect_s4_class(loaded_object, "MetaboliteAssayData")
+    expect_identical(names(loaded_object@metabolite_data), session_data$assay_names)
     expect_identical(da_data$assays_available, session_data$assay_names)
     expect_identical(workflow$contrasts_tbl$contrasts, session_data$contrasts_tbl$contrasts)
     expect_identical(da_data$formula_from_s4, "~ 0 + group")

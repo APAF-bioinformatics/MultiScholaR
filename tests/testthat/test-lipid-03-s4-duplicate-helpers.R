@@ -180,33 +180,27 @@ test_that("resolveDuplicateFeatures routes the S4 method through the duplicate h
         group_id = "group"
     )
 
-    had_helper <- exists("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)
-    old_helper <- if (had_helper) {
-        get("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)
-    } else {
-        NULL
-    }
-    on.exit({
-        if (had_helper) {
-            assign("resolveDuplicateFeaturesForLipidObject", old_helper, envir = .GlobalEnv)
-        } else if (exists("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv, inherits = FALSE)) {
-            rm("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv)
-        }
-    }, add = TRUE)
-
+    # KIT-030: the method calls the package helper by namespace (a global-environment binding of the
+    # same name is no longer consulted), so the delegate is mocked in the namespace.
+    ns <- asNamespace("MultiScholaR")
+    old_helper <- get("resolveDuplicateFeaturesForLipidObject", envir = ns, inherits = FALSE)
     captured_call <- NULL
-    assign(
-        "resolveDuplicateFeaturesForLipidObject",
-        function(theObject, itsd_pattern_columns = NULL) {
-            captured_call <<- list(
-                lipid_id_column = theObject@lipid_id_column,
-                itsd_pattern_columns = itsd_pattern_columns
-            )
-            theObject@args$delegated_duplicate_helper <- TRUE
-            theObject
-        },
-        envir = .GlobalEnv
-    )
+    mock_helper <- function(theObject, itsd_pattern_columns = NULL) {
+        captured_call <<- list(
+            lipid_id_column = theObject@lipid_id_column,
+            itsd_pattern_columns = itsd_pattern_columns
+        )
+        theObject@args$delegated_duplicate_helper <- TRUE
+        theObject
+    }
+    unlockBinding("resolveDuplicateFeaturesForLipidObject", ns)
+    assign("resolveDuplicateFeaturesForLipidObject", mock_helper, envir = ns)
+    on.exit({
+        assign("resolveDuplicateFeaturesForLipidObject", old_helper, envir = ns)
+        lockBinding("resolveDuplicateFeaturesForLipidObject", ns)
+    }, add = TRUE)
+    assign("resolveDuplicateFeaturesForLipidObject", function(...) stop("the global binding must not be consulted"), envir = .GlobalEnv)
+    on.exit(rm("resolveDuplicateFeaturesForLipidObject", envir = .GlobalEnv), add = TRUE)
 
     resolved_object <- resolveDuplicateFeatures(
         lipid_object,

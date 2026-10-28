@@ -126,6 +126,51 @@ workflowConfigEnvironment <- function() {
 }
 
 # ----------------------------------------------------------------------------
+# The lipidomics and metabolomics buses on the session (KIT-030)
+# ----------------------------------------------------------------------------
+#' Register an omics module's workflow bus on the Shiny session.
+#' @description The lipidomics and metabolomics servers register `workflow_data` under
+#'   `session$userData$omics_workflow_data[[omic_type]]` (one slot per omic, so several omics in
+#'   one session do not overwrite each other); the kernels' owner lookups find it there.
+#' @param session Shiny session.
+#' @param omic_type `"lipidomics"` or `"metabolomics"`.
+#' @param workflow_data The module's `reactiveValues` bus.
+#' @return `workflow_data`, invisibly.
+#' @noRd
+registerWorkflowOmicsBus <- function(session, omic_type, workflow_data) {
+    buses <- session$userData$omics_workflow_data
+    if (is.null(buses)) buses <- list()
+    buses[[omic_type]] <- workflow_data
+    session$userData$omics_workflow_data <- buses
+    invisible(workflow_data)
+}
+
+#' Resolve who owns an omics module's filtering-progress object.
+#' @param omic_type `"lipidomics"` or `"metabolomics"`.
+#' @return The bus the omic's server registered on the current Shiny session; outside a session,
+#'   or before registration, the global environment so scripts and workbooks keep their behaviour
+#'   (the KIT-013 rule for the proteomics `filtering_progress`).
+#' @noRd
+workflowOmicsProgressOwner <- function(omic_type) {
+    session <- shiny::getDefaultReactiveDomain()
+    buses <- if (is.null(session)) NULL else session$userData$omics_workflow_data
+    owner <- if (is.null(buses)) NULL else buses[[omic_type]]
+    if (is.null(owner)) globalenv() else owner
+}
+
+#' A script's global binding, read only outside a Shiny session.
+#' @description The lipid and metab figure writers derive their save directory from the
+#'   `project_dirs`, `omic_type` and `experiment_label` a workbook defines globally. Inside the
+#'   application those come as arguments (or not at all); the global environment is never read.
+#' @param name Binding name.
+#' @return The value, or NULL.
+#' @noRd
+workflowScriptGlobal <- function(name) {
+    if (!is.null(shiny::getDefaultReactiveDomain())) return(NULL)
+    get0(name, envir = globalenv(), inherits = FALSE)
+}
+
+# ----------------------------------------------------------------------------
 # updateMissingValueParameters
 # ----------------------------------------------------------------------------
 #' Update Missing Value Parameters in Configuration List and S4 Object

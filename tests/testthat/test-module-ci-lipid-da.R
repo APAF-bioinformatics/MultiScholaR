@@ -31,8 +31,10 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
     )
 
     expect_identical(load_state$status, "success")
-    expect_s4_class(da_data$current_s4_object, "LipidomicsAssayData")
-    expect_identical(names(da_data$current_s4_object@lipid_data), session_data$assay_names)
+    # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+    loaded_object <- workflow$state_manager$getState(da_data$current_state_name)
+    expect_s4_class(loaded_object, "LipidomicsAssayData")
+    expect_identical(names(loaded_object@lipid_data), session_data$assay_names)
     expect_identical(da_data$assays_available, session_data$assay_names)
     expect_identical(workflow$contrasts_tbl$contrasts, session_data$contrasts_tbl$contrasts)
     expect_identical(da_data$formula_from_s4, "~ 0 + group")
@@ -155,7 +157,7 @@ test_that("MCI-022.2 formula and contrast preflight rejects invalid DA inputs be
   expect_true(any(grepl("cannot produce a model matrix", invalid_formula$errors, fixed = TRUE)))
 
   no_contrasts_context <- prepareLipidDaRunAnalysisContext(
-    daData = list2env(list(current_s4_object = object), parent = emptyenv()),
+    daData = list2env(list(current_state_name = "lipid_correlation_filtered"), parent = emptyenv()),
     workflowData = module_ci_lipid_da_workflow(object, contrasts = module_ci_lipid_da_contrasts("no_contrasts")),
     notify = function(...) invisible(NULL),
     logInfo = function(...) invisible(NULL)

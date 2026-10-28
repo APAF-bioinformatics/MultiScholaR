@@ -277,8 +277,9 @@ test_that("lipid design import confirmation helper preserves failure and success
   expect_identical(saved_states[[1L]]$s4_data_object, s4_token)
   expect_true(qc_value)
   expect_identical(workflow_data$tab_status$design_matrix, "complete")
-  expect_true("config_list" %in% assigned_names)
-  expect_true("contrasts_tbl" %in% assigned_names)
+  # KIT-030: the imported config and contrasts live on workflow_data only; no global copies.
+  expect_false("config_list" %in% assigned_names)
+  expect_false("contrasts_tbl" %in% assigned_names)
   expect_true("importing_design" %in% removed_notifications)
   expect_identical(update_calls[[1L]]$step_name, "1_Raw_Data")
 

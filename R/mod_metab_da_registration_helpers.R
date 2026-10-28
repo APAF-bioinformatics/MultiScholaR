@@ -16,7 +16,7 @@ registerMetabDaOverviewOutputs <- function(
         buildStatusOutput(
             daResultsList = daData$da_results_list,
             analysisComplete = daData$analysis_complete,
-            currentS4Object = daData$current_s4_object
+            currentS4Object = metabDaCurrentS4(daData, workflowData)
         )
     })
 
@@ -205,7 +205,7 @@ registerMetabDaRunAnalysisObserver <- function(
         logInfo("=== RUN DA ANALYSIS BUTTON CLICKED ===")
 
         runAnalysisObserverEntry(
-            currentS4Object = daData$current_s4_object,
+            currentS4Object = metabDaCurrentS4(daData, workflowData),
             workflowData = workflowData,
             formulaString = input$formula_string,
             daQValThresh = input$da_q_val_thresh,

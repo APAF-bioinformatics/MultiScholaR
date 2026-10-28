@@ -35,7 +35,7 @@ prepareLipidDaRunAnalysisContext <- function(
 ) {
     logInfo("=== RUN DA ANALYSIS BUTTON CLICKED ===")
 
-    currentS4 <- daData$current_s4_object
+    currentS4 <- lipidDaCurrentS4(daData, workflowData)
     if (is.null(currentS4)) {
         currentS4 <- resolveCurrentStateFn(workflowData)
     }

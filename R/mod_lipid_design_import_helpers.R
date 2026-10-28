@@ -317,15 +317,8 @@ runLipidDesignImportConfirmationShell <- function(
         workflowData$contrasts_tbl <- imported_contrasts
         workflowData$data_tbl <- assay_list
         workflowData$data_cln <- assay_list
-
-        assignFn("config_list", workflowData$config_list, envir = .GlobalEnv)
-        message("DEBUG66: config assigned to global env")
-        logger::log_info("Assigned imported config to global environment.")
-
-        if (!is.null(imported_contrasts)) {
-            assignFn("contrasts_tbl", imported_contrasts, envir = .GlobalEnv)
-            logger::log_info("Saved contrasts_tbl to global environment.")
-        }
+        # KIT-030: the imported config and contrasts live on workflow_data only (no global copies).
+        logger::log_info("Imported config and contrasts held on workflow_data.")
 
         workflowData$design_matrix <- workflowData$design_matrix |>
             dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))

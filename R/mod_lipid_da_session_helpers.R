@@ -282,6 +282,17 @@ readLipidDaSessionData <- function(
     )
 }
 
+#' The DA tab's current object: the state the loaded session was committed under, read through
+#' the state manager (KIT-030: the holder keeps the state name, not the object).
+#' @noRd
+lipidDaCurrentS4 <- function(daData, workflowData) {
+    stateName <- daData$current_state_name
+    if (is.null(stateName) || is.null(workflowData) || is.null(workflowData$state_manager)) {
+        return(NULL)
+    }
+    workflowData$state_manager$getState(stateName)
+}
+
 restoreLipidDaCurrentS4FromSession <- function(
     sessionData,
     daData,
@@ -297,9 +308,8 @@ restoreLipidDaCurrentS4FromSession <- function(
 
     if (!is.null(debugLog)) {
         debugLog("  STEP 6a: S4 object class: ", class(currentS4Object)[1])
-        debugLog("  STEP 6b: Assigning to da_data$current_s4_object...")
+        debugLog("  STEP 6b: Recording the state name on da_data (the object lives in the state manager)...")
     }
-    daData$current_s4_object <- currentS4Object
 
     if (!is.null(debugLog)) {
         debugLog("  STEP 6c: Getting state_name...")
@@ -329,6 +339,8 @@ restoreLipidDaCurrentS4FromSession <- function(
         config_object = list(loaded_from = sessionFile),
         description = "Loaded from filtered session for DA analysis"
     )
+
+    daData$current_state_name <- stateName
 
     if (!is.null(debugLog)) {
         debugLog("  STEP 6f: saveState completed")

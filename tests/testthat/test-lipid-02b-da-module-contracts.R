@@ -33,7 +33,7 @@ test_that("initializeLipidDaServerState keeps the reactive-value defaults stable
         "contrasts_available",
         "assays_available",
         "analysis_complete",
-        "current_s4_object",
+        "current_state_name",
         "formula_from_s4",
         "current_row_clusters",
         "current_col_clusters",
@@ -43,7 +43,7 @@ test_that("initializeLipidDaServerState keeps the reactive-value defaults stable
     expect_null(factory_call$contrasts_available)
     expect_null(factory_call$assays_available)
     expect_false(factory_call$analysis_complete)
-    expect_null(factory_call$current_s4_object)
+    expect_null(factory_call$current_state_name)
     expect_null(factory_call$formula_from_s4)
     expect_null(factory_call$current_row_clusters)
     expect_null(factory_call$current_col_clusters)
@@ -63,7 +63,12 @@ test_that("registerLipidDaPrimaryTextOutputs keeps the paired render registratio
     )
     da_data$analysis_complete <- TRUE
     da_data$da_results_list <- list(marker = "results")
-    da_data$current_s4_object <- structure(list(marker = "s4"), class = "mock_s4")
+    # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+    mock_s4 <- structure(list(marker = "s4"), class = "mock_s4")
+    da_data$current_state_name <- "loaded_for_de"
+    workflow_data$state_manager <- list(getState = function(state_name = NULL) {
+        if (identical(state_name, "loaded_for_de")) mock_s4 else NULL
+    })
 
     result <- registerLipidDaPrimaryTextOutputs(
         output = output,
@@ -93,7 +98,7 @@ test_that("registerLipidDaPrimaryTextOutputs keeps the paired render registratio
     expect_identical(captured$contrastsTbl, workflow_data$contrasts_tbl)
     expect_true(captured$statusArgs$analysisComplete)
     expect_identical(captured$statusArgs$daResultsList, da_data$da_results_list)
-    expect_identical(captured$statusArgs$currentS4Object, da_data$current_s4_object)
+    expect_identical(captured$statusArgs$currentS4Object, mock_s4)
     expect_s3_class(output$contrasts_display, "mock_render")
     expect_s3_class(output$da_status, "mock_render")
 })
@@ -1457,7 +1462,9 @@ test_that("restoreLipidDaCurrentS4FromSession keeps the S4/state-manager restore
     expect_identical(result$stateName, "loaded_for_de")
     expect_identical(result$sessionFile, "/tmp/lipid_filtered_session_data_latest.rds")
     expect_identical(result$description, "Loaded from filtered session for DA analysis")
-    expect_identical(da_data$current_s4_object, current_s4_object)
+    # KIT-030: the holder keeps the state name; the object lives in the state manager only.
+    expect_identical(da_data$current_state_name, "loaded_for_de")
+    expect_false(exists("current_s4_object", envir = da_data, inherits = FALSE))
     expect_identical(save_state_call$state_name, "loaded_for_de")
     expect_identical(save_state_call$s4_data_object, current_s4_object)
     expect_identical(
@@ -1470,7 +1477,7 @@ test_that("restoreLipidDaCurrentS4FromSession keeps the S4/state-manager restore
     )
     expect_identical(debug_messages, c(
         "  STEP 6a: S4 object class: mock_s4",
-        "  STEP 6b: Assigning to da_data$current_s4_object...",
+        "  STEP 6b: Recording the state name on da_data (the object lives in the state manager)...",
         "  STEP 6c: Getting state_name...",
         "    r6_current_state_name: NULL",
         "  STEP 6d: Checking workflow_data$state_manager...",
@@ -2006,8 +2013,12 @@ test_that("prepareLipidDaRunAnalysisContext keeps the missing-data notification 
 
 test_that("prepareLipidDaRunAnalysisContext keeps the missing-contrasts notification contract stable", {
     da_data <- new.env(parent = emptyenv())
-    da_data$current_s4_object <- structure(list(marker = TRUE), class = "LipidomicsAssayData")
+    # KIT-030: the DA tab holds the state name; the object is read through the state manager.
+    da_data$current_state_name <- "loaded_for_de"
     workflow_data <- new.env(parent = emptyenv())
+    workflow_data$state_manager <- list(getState = function(state_name = NULL) {
+        if (identical(state_name, "loaded_for_de")) structure(list(marker = TRUE), class = "LipidomicsAssayData") else NULL
+    })
     workflow_data$contrasts_tbl <- data.frame()
     notifications <- list()
     resolve_calls <- 0L

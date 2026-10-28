@@ -278,7 +278,8 @@ test_that("lipid summary workflow context preserves state, contrasts, and config
 
   expect_identical(context$finalS4Object, final_s4)
   expect_identical(context$contrastsTbl, workflow_data$contrasts_tbl)
-  expect_identical(get("config_list", envir = assigned_env), workflow_data$config_list)
+  # KIT-030: the configuration stays on workflow_data; nothing is copied into the environment seam.
+  expect_false(exists("config_list", envir = assigned_env, inherits = FALSE))
   expect_true(any(grepl("Retrieved DATA S4 object from state 'lipid_normalized'", messages, fixed = TRUE)))
   expect_true(any(grepl("Using contrasts_tbl from workflow_data", messages, fixed = TRUE)))
 

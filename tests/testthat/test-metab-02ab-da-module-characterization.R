@@ -161,11 +161,19 @@ makeMetabDaHarness <- function(session_file_mode = c("valid", "corrupt", "missin
     writeLines("not an rds payload", session_file)
   }
 
+  # The mock serves a saved state back by name (the WorkflowState contract): since KIT-030 the DA
+  # tab holds the loaded session's state name and reads the object through the state manager.
   state_manager <- new.env(parent = emptyenv())
-  state_manager$getState <- function(...) NULL
+  state_manager$states <- list()
+  state_manager$getState <- function(state_name = NULL, ...) {
+    if (is.null(state_name)) return(NULL)
+    state_manager$states[[state_name]]
+  }
   state_manager$saveState <- function(...) {
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- list(...)
+    args <- list(...)
+    capture$saved_states[[length(capture$saved_states) + 1L]] <<- args
     invisible(NULL)
+    if (!is.null(args$state_name)) state_manager$states[[args$state_name]] <- args$s4_data_object
   }
 
   workflow_data <- new.env(parent = emptyenv())

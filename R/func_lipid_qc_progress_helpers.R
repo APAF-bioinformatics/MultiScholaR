@@ -26,7 +26,8 @@ updateFilteringProgressLipidomics <- function(prog_met,
                                               current_assay_names,
                                               metrics_list,
                                               total_lipids,
-                                              overwrite = FALSE) {
+                                              overwrite = FALSE,
+                                              owner = workflowOmicsProgressOwner("lipidomics")) {
     if (step_name %in% prog_met@steps) {
         if (!overwrite) {
             stop("Step name '", step_name, "' already exists in filtering_progress_lipidomics. Use overwrite = TRUE to replace it.")
@@ -55,8 +56,8 @@ updateFilteringProgressLipidomics <- function(prog_met,
         prog_met@is_metrics_per_assay <- c(prog_met@is_metrics_per_assay, list(lapply(metrics_list, `[[`, "is_metrics")))
     }
 
-    # Update the global object
-    assign("filtering_progress_lipidomics", prog_met, envir = .GlobalEnv)
+    # Update the owner's object (the session bus, or the global environment in scripts; KIT-030)
+    owner$filtering_progress_lipidomics <- prog_met
     invisible(prog_met)
 }
 

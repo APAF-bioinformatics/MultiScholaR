@@ -146,7 +146,8 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
   expect_identical(workflow$contrasts_tbl$contrasts, payload$contrasts_tbl$contrasts)
   expect_identical(workflow$contrasts_tbl$friendly_names, payload$contrasts_tbl$friendly_names)
   expect_true(qc_value)
-  expect_true(all(c("config_list", "contrasts_tbl") %in% assigned_names))
+  # KIT-030: the imported config and contrasts live on workflow_data only; no global copies.
+  expect_false(any(c("config_list", "contrasts_tbl") %in% assigned_names))
 
   captured <- new.env(parent = emptyenv())
   modal <- buildLipidDesignImportModal(
