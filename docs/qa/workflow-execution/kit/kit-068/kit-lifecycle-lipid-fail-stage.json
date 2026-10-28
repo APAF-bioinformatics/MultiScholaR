@@ -1,0 +1,97 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-068",
+  "stage": "kit-lifecycle-lipid-fail",
+  "date": "2026-10-29",
+  "decision": {
+    "status": "lifecycle_failure_observed",
+    "rule": null,
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "guard_injected", "normalisation"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": true,
+    "route": "lipidomics",
+    "in_memory": true,
+    "head_rule": "not applicable: in-memory member, no store"
+  },
+  "member": {
+    "id": "member",
+    "corpus": "lipid_screen",
+    "build": "d457f2ad961312078a8d80bd1b63f184029c5d231df8c0b35f9fe24eb30a3230",
+    "status": "journey_failed",
+    "exact": null,
+    "elapsed_seconds": 43.3700000000026,
+    "peak_bytes": 949133312,
+    "peak_anon_bytes": 942923776,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 5.33000000000175,
+      "design": 13.6199999999953,
+      "intensity": 3.62999999999738,
+      "duplicates": 3.10000000000582,
+      "qc_finalize": 2.83999999999651,
+      "guard_injected": 0.0500000000029104,
+      "normalisation": 0.270000000004075
+    },
+    "phase_peak_anon_bytes": {
+      "import": 739725312,
+      "design": 739762176,
+      "intensity": 919265280,
+      "duplicates": 933326848,
+      "qc_finalize": 942669824,
+      "guard_injected": 942923776,
+      "normalisation": 942923776
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "guard_injected": "open",
+      "normalisation": "failed"
+    },
+    "max_sample_interval": 0.0600000000049477,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": {
+      "schema": 1,
+      "scope": "application",
+      "max_anon": 942669824,
+      "max_file": 262144,
+      "max_observation_interval": 0.0520000000000032,
+      "reason": "injected_guard_stop",
+      "current": 947675136,
+      "host_available": 42060398592
+    },
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": {
+      "failed_step": "normalisation",
+      "guard": {
+        "schema": 1,
+        "scope": "application",
+        "max_anon": 942669824,
+        "max_file": 262144,
+        "max_observation_interval": 0.0520000000000032,
+        "reason": "injected_guard_stop",
+        "current": 947675136,
+        "host_available": 42060398592
+      },
+      "in_memory": true,
+      "head_rule": "not applicable: in-memory member, no store"
+    }
+  }
+}
