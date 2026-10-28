@@ -114,6 +114,38 @@ for (key in names(protein_corpora)) {
     if (grepl("_fixture$", key)) b$corpora[[key]]$normalisation <- list(ruv_mode = "skip")
     b$corpora[[key]]$fasta_file <- "proteins.fasta"; b$corpora[[key]]$design_file <- "design.tsv"
 }
+# KIT-068: the lipidomics and metabolomics screen corpora (tools/profiling/kit_omics_corpus.R): two LipidSearch exports
+# (LCMS_Pos, LCMS_Neg) and two MS-DIAL exports (LCMS_Pos, GCMS), 24 samples (12 biological x 2 technical replicates,
+# 3 batches, 2 groups) with internal-standard rows, generated once under the proof root if absent. The route's import
+# tab reads the vendor layout through the module's own readers; the corpus names its assay files by assay name.
+omics_corpora <- list(
+    lipid_screen = list(dir = "lipid-screen", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics",
+        assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
+    metab_screen = list(dir = "metab-screen", kind = "metab_screen", vendor = "msdial", route = "metabolomics",
+        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")))
+for (key in names(omics_corpora)) {
+    spec <- omics_corpora[[key]]
+    directory <- file.path(proof, "kit/corpus", spec$dir)
+    if (!file.exists(file.path(directory, "manifest.json"))) {
+        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_omics_corpus.R")), spec$kind, shQuote(directory)))
+        stopifnot(identical(status, 0L))
+    }
+    manifest <- jsonlite::read_json(file.path(directory, "manifest.json"))
+    b$corpora[[key]] <- bind_corpus(directory, manifest, files = c(unname(spec$assay_files), "design.tsv"), format = spec$vendor, route = spec$route)
+    b$corpora[[key]]$generator <- "tools/profiling/kit_omics_corpus.R"
+    b$corpora[[key]]$vendor <- spec$vendor
+    b$corpora[[key]]$assay_files <- as.list(spec$assay_files)
+    b$corpora[[key]]$design_file <- "design.tsv"
+}
+# KIT-068: the omics lifecycle members (stages kit-lifecycle-lipid, kit-lifecycle-lipid-fail, kit-lifecycle-metab,
+# kit-lifecycle-metab-fail): one screen member per route through the GUI to the report on the in-memory modules
+# (no owner, no store, `exact = NA`; not counted; ceiling 1,800 s), the normalisation tab bound to ITSD, cyclic loess
+# and the automatic RUV sweep so every kernel of the route runs; the failure member injects the application's own
+# guard after the QC finalise so the normalisation step fails (the KIT-001 pattern; no head rule without a store).
+b$lifecycle_omics <- list(ceiling_seconds = 1800L, build = if (!is.null(b$builds$kit_065)) "kit_065" else b$control,
+    fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation",
+        mechanism = "application-guard-inject.rds written after the QC finalise completes; the application monitor stops the slice (injected_guard_stop); the normalisation step fails on disconnection; the in-memory modules hold no store, so the head rule is recorded as not applicable"),
+    normalisation = list(apply_itsd = TRUE, norm_method = "cyclicloess", ruv_mode = "automatic", correlation_threshold = 0.5))
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root
@@ -717,6 +749,12 @@ b$harness <- list(root = file.path(proof, "kit/runtime"),
     # KIT-053: the DIA_LIMPA route's step map (the route's rows and the shared steps), part of the route's case binding.
     step_map_limpa = "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json",
     step_map_limpa_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json")),
+    # KIT-068: the lipidomics and metabolomics step maps (authored by reading the kernels; their flags are the user's
+    # unit confirmations that gate KIT-031/032), part of each route's case binding.
+    step_map_lipid = "docs/qa/workflow-execution/kit/kit-001/step-map-lipid.json",
+    step_map_lipid_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-lipid.json")),
+    step_map_metab = "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json",
+    step_map_metab_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json")),
     core_pinned_unchanged = TRUE,
     files = as.list(stats::setNames(vapply(file.path(repo, files), hash, character(1), USE.NAMES = FALSE), files)))
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)

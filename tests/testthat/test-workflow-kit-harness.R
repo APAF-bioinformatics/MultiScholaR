@@ -276,6 +276,117 @@ test_that("lifecycle decisions never relabel a failure as success", {
     expect_identical(h$kitLifecycleDecision(wrong_step, fail, b)$failing_rule, "phase_timing")
 })
 
+test_that("KIT-068: the lipidomics and metabolomics routes, their in-memory lifecycle members and decisions", {
+    h <- kitHarness()
+    ids <- c("import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report")
+    expect_identical(h$kitStepIds("lipidomics"), ids)
+    expect_identical(h$kitStepIds("metabolomics"), ids)
+    lipid <- h$kitJourneySteps("lipidomics")
+    expect_null(lipid[[1]]$state)
+    expect_identical(lipid[[2]]$state, "lipid_raw_data_s4")
+    expect_identical(lipid[[5]]$state, "lipid_qc_complete")
+    expect_identical(lipid[[6]]$state, "lipid_ruv_corrected")
+    expect_identical(h$kitJourneySteps("lipidomics", "skip")[[6]]$state, "lipid_normalized")
+    expect_identical(lipid[[9]]$state, "lipid_correlation_filtered")
+    expect_identical(vapply(lipid, `[[`, "", "kind"), c("store", "store", "omics_qc", "omics_qc", "omics_qc", "omics_norm", "omics_norm", "store", "da", "report"))
+    metab <- h$kitJourneySteps("metabolomics")
+    expect_identical(metab[[2]]$state, "metab_raw_data_s4")
+    expect_identical(metab[[7]]$state, "metab_correlation_filtered")
+    expect_identical(h$kitStepIds("DIA"), h$kitStepIds())
+    expect_error(h$kitStepIds("lipid"), "route")
+    # The omics lifecycle stages: one in-memory member per route on the bound build, the route's screen corpus, the
+    # route's step map in the binding, the fault carried on the case.
+    b <- kitSyntheticBindings()
+    file <- function(name) list(path = paste0("/corpus/", name), bytes = 1, sha256 = strrep("a", 64))
+    b$corpora$lipid_screen <- list(profile = "lipid_screen", samples = 24L, route = "lipidomics", format = "lipidsearch", vendor = "lipidsearch",
+        report_file = "lipidsearch_lcms_pos.txt", assay_files = list(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt"),
+        files = list(`lipidsearch_lcms_pos.txt` = file("lipidsearch_lcms_pos.txt"), `lipidsearch_lcms_neg.txt` = file("lipidsearch_lcms_neg.txt"), `design.tsv` = file("design.tsv")))
+    b$corpora$metab_screen <- list(profile = "metab_screen", samples = 24L, route = "metabolomics", format = "msdial", vendor = "msdial",
+        report_file = "msdial_lcms_pos.txt", assay_files = list(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt"),
+        files = list(`msdial_lcms_pos.txt` = file("msdial_lcms_pos.txt"), `msdial_gcms.txt` = file("msdial_gcms.txt"), `design.tsv` = file("design.tsv")))
+    b$harness <- list(step_map_lipid_sha256 = strrep("l", 64), step_map_metab_sha256 = strrep("m", 64))
+    b$lifecycle_omics <- list(ceiling_seconds = 1800L, build = "kit_006",
+        fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation"),
+        normalisation = list(apply_itsd = TRUE, norm_method = "cyclicloess", ruv_mode = "automatic", correlation_threshold = 0.5))
+    complete <- h$kitCases(b, "kit-lifecycle-lipid")
+    expect_length(complete, 1L)
+    case <- complete[[1L]]
+    expect_identical(case$id, "member")
+    expect_identical(case$route, "lipidomics")
+    expect_identical(case$corpus, "lipid_screen")
+    expect_identical(case$library, "/lib/k")
+    expect_false(case$expect_failure)
+    expect_false(case$record)
+    expect_null(case$oracles)
+    expect_identical(case$fault_spec$failed_step, "normalisation")
+    expect_identical(case$normalisation$ruv_mode, "automatic")
+    expect_identical(case$selector, "kit:lifecycle:lipid:complete")
+    expect_identical(h$kitSelectorStage("kit:lifecycle:lipid:complete"), list(stage = "kit-lifecycle-lipid", id = "member"))
+    expect_identical(h$kitSelectorStage("kit:lifecycle:metab:fail"), list(stage = "kit-lifecycle-metab-fail", id = "member"))
+    expect_identical(h$kitMemberSeconds("kit-lifecycle-lipid", b), 1800L)
+    expect_identical(h$kitMemberSeconds("kit-lifecycle-metab-fail", b), 1800L)
+    expect_identical(h$kitMemberSeconds("kit-lifecycle-complete", b), 300L)
+    fail <- h$kitCases(b, "kit-lifecycle-metab-fail")[[1L]]
+    expect_true(fail$expect_failure)
+    expect_identical(fail$fault, "guard_after_qc_finalize")
+    expect_identical(fail$route, "metabolomics")
+    expect_identical(fail$selector, "kit:lifecycle:metab:fail")
+    # The step map is part of the binding; a route without its map refuses.
+    other <- b; other$harness$step_map_lipid_sha256 <- strrep("n", 64)
+    expect_false(identical(h$kitCases(other, "kit-lifecycle-lipid")[[1L]]$binding, case$binding))
+    none <- b; none$harness$step_map_metab_sha256 <- NULL
+    expect_error(h$kitCases(none, "kit-lifecycle-metab"), "metab step map")
+    unbound <- b; unbound$lifecycle_omics <- NULL
+    expect_error(h$kitCases(unbound, "kit-lifecycle-lipid"), "omics lifecycle")
+    # The DIA lifecycle member is unchanged in shape.
+    expect_identical(h$kitCases(b, "kit-lifecycle-complete")[[1L]]$selector, "kit:lifecycle:complete")
+    # Decisions on the in-memory member: the route's steps, no populations rule, the ceiling of the omics stage; the
+    # failure member's head rule is not applicable without a store and is recorded, never a pass by default elsewhere.
+    receipt_for <- function(cases, edit = NULL) {
+        receipt <- list(cases = list())
+        for (case in cases) {
+            operation <- list(status = "complete", swap_bytes = 0, peak_bytes = 4e9, elapsed_seconds = 900,
+                max_sample_interval = 0.06, cleanup = list(slice_stopped = TRUE), resident_end_bytes = 1e9,
+                populations_complete = FALSE, head_unchanged = NA,
+                phase_status = as.list(stats::setNames(rep("complete", length(ids)), ids)),
+                phase_peak_anon_bytes = as.list(stats::setNames(rep(2e9, length(ids)), ids)))
+            receipt$cases[[case$id]] <- list(passed = TRUE, operation = operation, verifier_completion = list(accepted = TRUE))
+        }
+        if (is.function(edit)) receipt <- edit(receipt)
+        receipt
+    }
+    decision <- h$kitLifecycleDecision(receipt_for(complete), complete, b)
+    expect_identical(decision$status, "lifecycle_complete_observed")
+    expect_true(decision$in_memory)
+    expect_identical(decision$route, "lipidomics")
+    slow <- receipt_for(complete, edit = function(r) { r$cases$member$operation$elapsed_seconds <- 1801; r })
+    expect_identical(h$kitLifecycleDecision(slow, complete, b)$failing_rule, "elapsed_within_ceiling")
+    missing_step <- receipt_for(complete, edit = function(r) { r$cases$member$operation$phase_status$report <- NULL; r })
+    expect_identical(h$kitLifecycleDecision(missing_step, complete, b)$failing_rule, "phase_timing")
+    fail_cases <- list(fail)
+    failed <- receipt_for(fail_cases, edit = function(r) {
+        r$cases$member$operation$status <- "journey_failed"
+        r$cases$member$operation$phase_status$normalisation <- "failed"
+        r$cases$member$operation$guard <- list(reason = "injected_guard_stop")
+        r
+    })
+    failure <- h$kitLifecycleDecision(failed, fail_cases, b)
+    expect_identical(failure$status, "lifecycle_failure_observed")
+    expect_match(failure$head_rule, "not applicable")
+    expect_identical(h$kitLifecycleDecision(receipt_for(fail_cases), fail_cases, b)$failing_rule, "failure_recorded")
+    wrong_step <- failed; wrong_step$cases$member$operation$phase_status$normalisation <- "complete"
+    expect_identical(h$kitLifecycleDecision(wrong_step, fail_cases, b)$failing_rule, "phase_timing")
+    # The DIA failure member still needs the head rule.
+    dia_fail <- h$kitCases(b, "kit-lifecycle-fail")
+    dia_failed <- kitSyntheticReceipt(dia_fail, h, edit = function(r) {
+        r$cases$member$operation$status <- "journey_failed"
+        r$cases$member$operation$phase_status$sample <- "failed"
+        r$cases$member$operation$guard <- list(reason = "injected_guard_stop")
+        r
+    })
+    expect_identical(h$kitLifecycleDecision(dia_failed, dia_fail, b)$failing_rule, "head_unchanged")
+})
+
 test_that("a counted member is refused below 12 GiB or with another managed unit active", {
     h <- kitHarness()
     quiet <- function(...) utils::modifyList(list(available = 13 * 1024^3, units = character(), profile = "balanced", cpu_busy = 0.1), list(...))

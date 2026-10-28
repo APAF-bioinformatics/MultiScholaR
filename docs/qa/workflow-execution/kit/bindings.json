@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-28",
+  "created": "2026-10-29",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -15730,6 +15730,134 @@
       "fasta_file": "proteins.fasta",
       "design_file": "design.tsv"
     },
+    "lipid_screen": {
+      "profile": "lipid_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 432,
+      "recipe": {
+        "kind": "lipid_screen",
+        "synthetic": true,
+        "seed": 20261029,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 200,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0.05,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "LCMS_Neg"
+        ]
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen",
+      "expected_retained_samples": 24,
+      "report_file": "lipidsearch_lcms_pos.txt",
+      "format": "lipidsearch",
+      "route": "lipidomics",
+      "notes": "200 lipids per assay in two LipidSearch exports (LCMS_Pos, LCMS_Neg), 10 duplicate LipidName rows under a second adduct at 0.6 x intensity, 6 internal-standard rows per assay (LipidClass ISTD, LipidName IS_*), dense (no missing values); 12 biological samples x 2 technical replicates in 3 batches; 15% of lipids differential (KO vs WT)",
+      "files": {
+        "lipidsearch_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen/lipidsearch_lcms_pos.txt",
+          "bytes": 51583,
+          "sha256": "bcb66d135670737527b264d6726538a2f73b8d0583f32c60d2721c2e34279d9c"
+        },
+        "lipidsearch_lcms_neg.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen/lipidsearch_lcms_neg.txt",
+          "bytes": 51572,
+          "sha256": "e486e086afcfeb30ce17fec62ade31ef3b746616112e439a79d73d55adecd4f7"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen/design.tsv",
+          "bytes": 597,
+          "sha256": "74da6561134abf93a867de23632988d1fd77dc8744b29308a6e6aa15af19a782"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "lipidsearch",
+      "assay_files": {
+        "LCMS_Pos": "lipidsearch_lcms_pos.txt",
+        "LCMS_Neg": "lipidsearch_lcms_neg.txt"
+      },
+      "design_file": "design.tsv"
+    },
+    "metab_screen": {
+      "profile": "metab_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 612,
+      "recipe": {
+        "kind": "metab_screen",
+        "synthetic": true,
+        "seed": 20261030,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 300,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "GCMS"
+        ]
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen",
+      "expected_retained_samples": 24,
+      "report_file": "msdial_lcms_pos.txt",
+      "format": "msdial",
+      "route": "metabolomics",
+      "notes": "300 features per assay in two MS-DIAL exports (LCMS_Pos, GCMS; the GC export without m/z and adduct columns), 6 internal-standard rows per assay (Metabolite name IS_*_d<k>), unique Alignment IDs (the duplicate step resolves nothing), dense (no missing values); 12 biological samples x 2 technical replicates in 3 batches; 15% of features differential (KO vs WT)",
+      "files": {
+        "msdial_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen/msdial_lcms_pos.txt",
+          "bytes": 71492,
+          "sha256": "4eb202921c46fe2c2f4bbd01a86f49ce920f951ea7e33925ccf06e0a914c495a"
+        },
+        "msdial_gcms.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen/msdial_gcms.txt",
+          "bytes": 65900,
+          "sha256": "937b061c19a0396a26c344637f90b885cc798055c87e16112c5a9faed3e98c8b"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen/design.tsv",
+          "bytes": 597,
+          "sha256": "74da6561134abf93a867de23632988d1fd77dc8744b29308a6e6aa15af19a782"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "msdial",
+      "assay_files": {
+        "LCMS_Pos": "msdial_lcms_pos.txt",
+        "GCMS": "msdial_gcms.txt"
+      },
+      "design_file": "design.tsv"
+    },
     "kc_lfq": {
       "profile": null,
       "synthetic": false,
@@ -15801,6 +15929,22 @@
       "design_groups": 2
     }
   },
+  "lifecycle_omics": {
+    "ceiling_seconds": 1800,
+    "build": "kit_065",
+    "fault": {
+      "name": "guard_after_qc_finalize",
+      "after_step": "qc_finalize",
+      "failed_step": "normalisation",
+      "mechanism": "application-guard-inject.rds written after the QC finalise completes; the application monitor stops the slice (injected_guard_stop); the normalisation step fails on disconnection; the in-memory modules hold no store, so the head rule is recorded as not applicable"
+    },
+    "normalisation": {
+      "apply_itsd": true,
+      "norm_method": "cyclicloess",
+      "ruv_mode": "automatic",
+      "correlation_threshold": 0.5
+    }
+  },
   "journey": {
     "experiment_label": "dia_baseline_smoke",
     "state_manager_mode": "dia_native_sessions",
@@ -15853,7 +15997,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-28",
+        "date": "2026-10-29",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -16292,15 +16436,19 @@
     "step_map_protein_sha256": "9b58ddbfca35454c28a12c79f81651029ee9484384919d1f7d416b63f6953498",
     "step_map_limpa": "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json",
     "step_map_limpa_sha256": "69fd5654958e69329818f959725f1ad52cde14f5bc3f8a917835889fcb34a0b3",
+    "step_map_lipid": "docs/qa/workflow-execution/kit/kit-001/step-map-lipid.json",
+    "step_map_lipid_sha256": "0f65aa9c9d6317d8e54745bd65121755cb0ae71524f911ea466656b0fc9f23be",
+    "step_map_metab": "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json",
+    "step_map_metab_sha256": "a534aa529135391cbb39aad44119bab2bef5bee26e7ce2d4e702fb90028b06a6",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "9af96818464fdb7bd6cf59d33e534bec16f6cf5fbeec8d5d629044845320d715",
-      "tools/profiling/workflow_kit_driver.R": "4918cc2372bc78fda4b017e951eead2678e6b44f36374c491a28dd016ae9d584",
-      "tools/profiling/workflow_kit_coordinator.R": "d594d8568ee3efbeea98cace1669841a12627290bd49a90c959142ad71cf43b8",
+      "tools/profiling/workflow_kit.R": "9285d146d0973bb1bab023ea93aa3ef3d50b14cbd60d69c3d9c26811bc153c88",
+      "tools/profiling/workflow_kit_driver.R": "a6508228244c93735a910f92de884db67f1a0ea65fed869ceefd5dd7ed8b9a1f",
+      "tools/profiling/workflow_kit_coordinator.R": "9abb115bad3db47aaea998d078a5e3f3f04a28bbcffbfc9b5a081317602dbcc7",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
-      "tools/profiling/run_workflow_kit.sh": "d9ff636fc681e9f1a3dc910e09bcedd157b754901e0f2798038f15b6fb47cb37",
+      "tools/profiling/run_workflow_kit.sh": "4a139b245608f943d416420f9bc0479acee9d071d039b61b13df2be885248be7",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "da69aad67d0fd7d6197f4c1eb7e3e2cfd504694e5683c1788b4b96855b9330d4",
+      "tests/testthat/test-workflow-kit-harness.R": "e3855f877bb154bb022a650258656ca50f76068c6bc022df33e3304481c2f8a7",
       "tests/testthat/test-workflow-execution-adapters.R": "d315a2847fd76dfb0733b286e4ca3aca1724bfff12400c2e99182320917a6548",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

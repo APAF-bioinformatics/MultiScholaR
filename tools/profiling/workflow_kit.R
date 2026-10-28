@@ -12,7 +12,30 @@
 kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
-    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA"))
+    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA", "lipidomics", "metabolomics"))
+    # KIT-068: the lipidomics and metabolomics routes (the twin modules: import, design, QC, normalisation, DE, summary).
+    # The import writes files only (no state); the design commits the assay object; the QC tab's intensity filter,
+    # duplicate resolution and finalise; the normalisation tab's one action runs ITSD, log2, between-sample
+    # normalisation and RUV-III (the state it leaves depends on the bound RUV mode: `skip` leaves `<omic>_normalized`),
+    # then the correlation filter and the session export; the DE tab's Open re-commits the session's current state
+    # (the state name the export carried) before the DA run; the summary tab's report closes the journey.
+    if (route %in% c("lipidomics", "metabolomics")) {
+        omic <- if (identical(route, "lipidomics")) "lipid" else "metab"
+        state_of <- function(name) paste0(omic, "_", name)
+        module <- function(tab) paste0("mod_", omic, "_", tab)
+        norm_state <- if (identical(ruv_mode, "skip")) state_of("normalized") else state_of("ruv_corrected")
+        return(list(
+            step("import", "Import", NULL, "store", module("import"), "process_import"),
+            step("design", "Design", state_of("raw_data_s4"), "store", module("design"), "builder save_results"),
+            step("intensity", "Intensity Filter", state_of("intensity_filtered"), "omics_qc", module("qc_intensity"), "intensity-apply_filter"),
+            step("duplicates", "Duplicate Resolution", state_of("duplicates_resolved"), "omics_qc", module("qc_duplicates"), "duplicates-detect_duplicates, duplicates-resolve_duplicates"),
+            step("qc_finalize", "Finalize QC", state_of("qc_complete"), "omics_qc", module("qc_s4"), "s4_finalize-finalize_qc"),
+            step("normalisation", "Normalisation (ITSD, log2, between-sample, RUV-III)", norm_state, "omics_norm", module("norm"), "run_normalization"),
+            step("correlation", "Correlation Filtering", state_of("correlation_filtered"), "omics_norm", module("norm"), "apply_correlation_filter"),
+            step("session_export", "Filtered session export", NULL, "store", module("norm"), "export_session"),
+            step("da", "Differential abundance", state_of("correlation_filtered"), "da", module("da"), "load_filtered_session, run_da_analysis"),
+            step("report", "Report", NULL, "report", module("summary"), "generate_report")))
+    }
     # KIT-056: on the DIA_LIMPA route the RUV step's state follows the bound mode (`ruv_corrected` for correction).
     limpa_ruv_state <- if (identical(route, "DIA_LIMPA") && identical(ruv_mode, "correction")) "ruv_corrected" else "ruv_covariates"
     # KIT-053: the DIA with limpa route (KIT-046/047/041): the shared import, design, Q-value filter and precursor
@@ -84,6 +107,8 @@ kitRouteOf <- function(x) x$route %||% "DIA"
 #' @noRd
 kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-lifecycle-operation-", stage)) return(as.integer(bindings$operation_lifecycle$ceiling_seconds %||% 300L))
+    # KIT-068: the lipidomics and metabolomics lifecycle members (in-memory modules through the report) bind their own ceiling.
+    if (grepl("^kit-lifecycle-(lipid|metab)(-fail)?$", stage)) return(as.integer(bindings$lifecycle_omics$ceiling_seconds %||% 1800L))
     if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
     if (grepl("^kit-gui-0[0-9]{2}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
@@ -122,7 +147,7 @@ kitBindings <- function(path) {
         step_map_sha256 = raw$harness$step_map_sha256, files = raw$harness$files, harness = raw$harness,
         builds = raw$builds, outcomes = raw$outcomes, control = raw$control,
         corpora = raw$corpora, journey = raw$journey, lifecycle = raw$lifecycle,
-        operation_lifecycle = raw$operation_lifecycle, tickets = raw$tickets,
+        operation_lifecycle = raw$operation_lifecycle, lifecycle_omics = raw$lifecycle_omics, tickets = raw$tickets,
         populations = raw$populations, oracles = raw$oracles)
 }
 
@@ -143,7 +168,7 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -161,6 +186,9 @@ kitCases <- function(bindings, stage) {
         # recorded in the route's step map; the DIA route keeps the KIT-005 oracles and the DIA step map.
         if (identical(route, "protein") && is.null(bindings$harness$step_map_protein_sha256)) stop("the protein step map is not bound")
         if (identical(route, "DIA_LIMPA") && is.null(bindings$harness$step_map_limpa_sha256)) stop("the limpa step map is not bound")
+        # KIT-068: the lipidomics and metabolomics routes bind their own step maps (authored by reading the kernels).
+        if (identical(route, "lipidomics") && is.null(bindings$harness$step_map_lipid_sha256)) stop("the lipid step map is not bound")
+        if (identical(route, "metabolomics") && is.null(bindings$harness$step_map_metab_sha256)) stop("the metab step map is not bound")
         list(id = id, kind = "journey", role = role, control = role == "control", rep = rep, fault = fault,
             corpus = corpus_key, record = record, stop_after = stop_after, route = route, oracles = oracles,
             library = build$library, expected_build = build$build,
@@ -168,7 +196,8 @@ kitCases <- function(bindings, stage) {
             binding = digest::digest(c(list(corpus = corpus$files, build = build, stage = stage, rep = rep, record = record,
                 journey = bindings$journey[setdiff(names(bindings$journey), "pair")], protocol = bindings$protocol_sha256,
                 step_map = switch(route, protein = bindings$harness$step_map_protein_sha256,
-                    DIA_LIMPA = bindings$harness$step_map_limpa_sha256, bindings$step_map_sha256)),
+                    DIA_LIMPA = bindings$harness$step_map_limpa_sha256, lipidomics = bindings$harness$step_map_lipid_sha256,
+                    metabolomics = bindings$harness$step_map_metab_sha256, bindings$step_map_sha256)),
                 if (!is.null(stop_after)) list(stop_after = stop_after),
                 if (!identical(route, "DIA")) list(route = route, oracles = oracles),
                 if (!is.null(normalisation)) list(normalisation = normalisation)), algo = "sha256"),
@@ -210,6 +239,21 @@ kitCases <- function(bindings, stage) {
         return(list(operation_case("member", "candidate", 1L, bindings$operation_lifecycle$build %||% kitControl(bindings),
             fault$operation, fault$population,
             fault = if (kind == "fail") fault$name else "none", selector = paste0("kit:lifecycle:operation:", kind))))
+    }
+    if (grepl("^kit-lifecycle-(lipid|metab)(-fail)?$", stage)) {
+        # KIT-068: one lifecycle member per omics route on the in-memory modules (no owner, no store, no oracles:
+        # `exact = NA` by the KIT-054 rule), the screen corpus of the route, the fault bound under `lifecycle_omics`
+        # (the application's own guard, injected after `after_step`, fails `failed_step`; the head rule does not
+        # apply without a store and is recorded as such).
+        omic <- sub("^kit-lifecycle-(lipid|metab).*$", "\\1", stage)
+        kind <- if (endsWith(stage, "-fail")) "fail" else "complete"
+        spec <- bindings$lifecycle_omics
+        if (is.null(spec) || is.null(spec$fault)) stop("the omics lifecycle is not bound")
+        case <- journey_case("member", "candidate", 1L, spec$build %||% kitControl(bindings), paste0(omic, "_screen"),
+            fault = if (kind == "fail") spec$fault$name else "none", selector = paste0("kit:lifecycle:", omic, ":", kind),
+            record = FALSE, route = if (omic == "lipid") "lipidomics" else "metabolomics", normalisation = spec$normalisation)
+        case$fault_spec <- spec$fault
+        return(list(case))
     }
     if (startsWith(stage, "kit-lifecycle-")) {
         kind <- sub("kit-lifecycle-", "", stage, fixed = TRUE)
@@ -422,8 +466,11 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|0[0-9]{2}:((control|candidate):[12]|single:[1-5]))$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab):(complete|fail)|0[0-9]{2}:((control|candidate):[12]|single:[1-5]))$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
+    # KIT-068: `kit:lifecycle:lipid:complete` is stage `kit-lifecycle-lipid`; `:fail` the `-fail` stage.
+    if (parts[[1L]] == "lifecycle" && parts[[2L]] %in% c("lipid", "metab"))
+        return(list(stage = paste0("kit-lifecycle-", parts[[2L]], if (parts[[3L]] == "fail") "-fail" else ""), id = "member"))
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     # A ticket's gui member is the single case `member` (KIT-008 correction 1: the verifier looked for `candidate-1`).
     if (startsWith(parts[[1L]], "gui-")) return(list(stage = paste0("kit-", parts[[1L]]), id = "member"))
@@ -548,19 +595,26 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
     result <- list(status = "invalid", failing_rule = NULL, promotion_authorized = FALSE,
         expect_failure = case$expect_failure)
     status <- op$phase_status
-    steps <- kitStepIds()
+    # KIT-068: the route's steps; an omics member runs the in-memory modules (no store: no populations, no head), so
+    # the populations and head rules are not applicable and are recorded as such (the KIT-054 in-memory rule).
+    route <- kitRouteOf(case)
+    steps <- kitStepIds(route)
+    in_memory <- !identical(route, "DIA") && is.null(case$oracles)
+    result$route <- route
+    result$in_memory <- in_memory
+    stage <- if (route %in% c("lipidomics", "metabolomics")) paste0("kit-lifecycle-", if (route == "lipidomics") "lipid" else "metab") else "kit-lifecycle-complete"
     if (!case$expect_failure) {
-        result$failing_rule <- kitIneligible(item, kitMemberSeconds("kit-lifecycle-complete", bindings), "journey")
+        result$failing_rule <- kitIneligible(item, kitMemberSeconds(stage, bindings), "journey")
         if (is.null(result$failing_rule) && !(all(steps %in% names(status)) &&
             all(unlist(status[steps]) == "complete") && all(is.finite(unlist(op$phase_peak_anon_bytes[steps])))))
             result$failing_rule <- "phase_timing"
         if (is.null(result$failing_rule) && !(is.numeric(op$resident_end_bytes) && is.finite(op$resident_end_bytes)))
             result$failing_rule <- "resident_end_unobserved"
-        if (is.null(result$failing_rule) && !isTRUE(op$populations_complete)) result$failing_rule <- "populations_incomplete"
+        if (is.null(result$failing_rule) && !in_memory && !isTRUE(op$populations_complete)) result$failing_rule <- "populations_incomplete"
         if (is.null(result$failing_rule)) result$status <- "lifecycle_complete_observed"
         return(result)
     }
-    fault <- bindings$lifecycle$fault
+    fault <- case$fault_spec %||% bindings$lifecycle$fault
     rules <- list(verifier_accepted = isTRUE(item$verifier_completion$accepted),
         failure_recorded = identical(op$status, "journey_failed"),
         zero_swap = identical(op$swap_bytes, 0),
@@ -568,7 +622,8 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
         guard_observed = identical(op$guard$reason, "injected_guard_stop"),
         phase_timing = identical(status[[fault$failed_step]], "failed") &&
             identical(status[[fault$after_step]], "complete"),
-        head_unchanged = isTRUE(op$head_unchanged))
+        head_unchanged = if (in_memory) TRUE else isTRUE(op$head_unchanged))
+    if (in_memory) result$head_rule <- "not applicable: in-memory member, no store"
     failing <- names(rules)[!vapply(rules, isTRUE, logical(1))]
     if (length(failing)) result$failing_rule <- failing[[1L]] else result$status <- "lifecycle_failure_observed"
     result
@@ -1297,9 +1352,17 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
     # KIT-018: a single journey member runs import through `stop_after` only; the later steps are not expected.
     if (!is.null(case$stop_after)) steps <- steps[seq_len(match(case$stop_after, steps))]
     if (case$expect_failure) {
-        fault <- bindings$lifecycle$fault
+        fault <- case$fault_spec %||% bindings$lifecycle$fault
         stopifnot(identical(operation$status, "journey_failed"), identical(operation$guard$reason, "injected_guard_stop"),
             identical(status[[fault$failed_step]], "failed"), identical(status[[fault$after_step]], "complete"))
+        if (is.null(journey$store) && !identical(kitRouteOf(case), "DIA") && is.null(case$oracles)) {
+            # KIT-068: an in-memory member (the lipidomics and metabolomics modules before the owner) has no store, so
+            # the head rule cannot be checked; the failure is verified on the guard and the step marks alone.
+            receipt$failure <- list(failed_step = fault$failed_step, guard = operation$guard, in_memory = TRUE,
+                head_rule = "not applicable: in-memory member, no store")
+            receipt$status <- "complete"
+            return(receipt)
+        }
         store_dir <- journey$store
         stopifnot(!is.null(store_dir), dir.exists(store_dir))
         head <- kitReadHead(store_dir, api)

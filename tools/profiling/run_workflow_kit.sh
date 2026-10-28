@@ -4,7 +4,8 @@
 #   run_workflow_kit.sh validate <stage> <library>
 #   run_workflow_kit.sh run <stage> <library>
 # Stages: kit-lifecycle-(complete|fail) (journey shape), kit-lifecycle-operation-(complete|fail)
-# (operation shape, KIT-005), kit-journey (baseline pair + production default), kit-0NN (operation members).
+# (operation shape, KIT-005), kit-lifecycle-(lipid|metab)[-fail] (the omics routes' in-memory lifecycle, KIT-068),
+# kit-journey (baseline pair + production default), kit-0NN (operation members).
 #   run_workflow_kit.sh --sample <cgroup> <trace> <deadline_uptime> <slice> <stop_file> <guard_file>
 # The proof root comes from docs/qa/workflow-execution/kit/bindings.json (harness.root).
 set -euo pipefail
@@ -74,7 +75,7 @@ if [[ "${1:-}" == "install" ]]; then
 fi
 
 mode="${1:-}"; stage="${2:-}"; library="${3:-}"; rerun="${4:-}"
-[[ ( "$mode" == validate || "$mode" == run || ( "$mode" == rerun && "$rerun" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ ) ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$ && -d "$library" ]] || {
+[[ ( "$mode" == validate || "$mode" == run || ( "$mode" == rerun && "$rerun" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ ) ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$ && -d "$library" ]] || {
     echo "Usage: run_workflow_kit.sh validate|run <stage> <library> | rerun <stage> <library> <member,member>" >&2; exit 2; }
 root="$(jq -r '.harness.root' "$repo/docs/qa/workflow-execution/kit/bindings.json")"
 # The browser driver runs in the coordinator (outside the slice); chromote needs the executable (as the pinned runner does).

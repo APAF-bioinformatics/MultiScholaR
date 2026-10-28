@@ -15,7 +15,7 @@ if (length(args) == 4L && grepl("^--rerun=", args[[4L]])) {
     rerun_cases <- strsplit(sub("^--rerun=", "", args[[4L]]), ",", fixed = TRUE)[[1L]]
     args <- args[1:3]
 }
-stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", args[[1L]]))
+stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", args[[1L]]))
 stage <- args[[1L]]
 library_path <- normalizePath(args[[2L]])
 root <- args[[3L]]
@@ -297,7 +297,10 @@ tryCatch({
                 # KIT-054: a real corpus names its FASTA and design in the binding (the synthetic ones use the defaults).
                 fasta = corpus_spec$files[[corpus_spec$fasta_file %||% "proteins.fasta"]]$path,
                 design = corpus_spec$files[[corpus_spec$design_file %||% "design.tsv"]]$path,
-                format = corpus_spec$format %||% "diann")
+                format = corpus_spec$format %||% "diann",
+                # KIT-068: an omics corpus names its assay files (by assay name) and the vendor the import tab selects.
+                assays = lapply(corpus_spec$assay_files, function(name) corpus_spec$files[[name]]$path),
+                vendor = corpus_spec$vendor)
             journey <- bindings$journey
             journey$corpus_key <- case$corpus
             journey$stop_after <- case$stop_after
@@ -306,7 +309,8 @@ tryCatch({
             if (!is.null(corpus_spec$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, corpus_spec$normalisation)
             # KIT-053: a ticket may bind its route's normalisation settings (the limpa route's RUV mode); part of the case binding.
             if (!is.null(case$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, case$normalisation)
-            fault <- if (case$expect_failure) bindings$lifecycle$fault else NULL
+            # KIT-068: an omics lifecycle case carries its route's fault; the DIA lifecycle keeps the bound one.
+            fault <- if (case$expect_failure) case$fault_spec %||% bindings$lifecycle$fault else NULL
             # The browser driver runs in its own process per member (correction 3), outside the slice.
             saveRDS(list(schema = 1L, application_root = application_root, corpus = corpus, journey = journey, fault = fault,
                 deadline_uptime = deadline_uptime), file.path(owned, "driver-request.rds"), compress = FALSE, version = 3)

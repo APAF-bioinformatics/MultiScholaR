@@ -32,13 +32,16 @@ kitMark <- function(events, step, event) {
 #' Factors, metadata assignment and technical replicates follow runCheckpointDesignActions;
 #' one contrast is added: `groups[2]` minus `groups[1]`.
 #' @noRd
-runKitDesignActions <- function(h, driver, design_path) {
+runKitDesignActions <- function(h, driver, design_path, prefix = "proteomics_workflow-design_matrix-builder-",
+    tab_input = "proteomics_workflow-workflow_tabs", tab_value = "design", save = NULL) {
+    # KIT-068: the lipidomics and metabolomics design builders share the proteomics builder's input ids under their own
+    # prefix and tab input; `save` clicks the save button and waits on the module's own completion text (the DIA
+    # builder's completion is the workflow progress widget, the default below).
     design <- utils::read.delim(design_path, stringsAsFactors = FALSE, check.names = FALSE)
     stopifnot(all(c("sample", "group") %in% names(design)), !anyNA(design[c("sample", "group")]),
         !anyDuplicated(design$sample))
     groups <- unique(design$group)
     stopifnot(length(groups) >= 2L)
-    prefix <- "proteomics_workflow-design_matrix-builder-"
     set <- function(id, value) h$checkpointSetInput(driver, paste0(prefix, id), value)
     click <- function(id) {
         encoded <- jsonlite::toJSON(paste0(prefix, id), auto_unbox = TRUE)
@@ -47,7 +50,7 @@ runKitDesignActions <- function(h, driver, design_path) {
         driver$get_js(sprintf("document.getElementById(%s).click();true", encoded))
         h$checkpointWaitForIdle(driver, timeout = h$checkpointWaitBudget())
     }
-    h$checkpointSetInput(driver, "proteomics_workflow-workflow_tabs", "design")
+    h$checkpointSetInput(driver, tab_input, tab_value)
     set("main_tabs", "Factors")
     for (group in groups) {
         set("new_factor", group)
@@ -84,8 +87,10 @@ runKitDesignActions <- function(h, driver, design_path) {
     h$checkpointChooseExisting(driver, paste0(prefix, "contrast_group1"), groups[[2L]])
     h$checkpointChooseExisting(driver, paste0(prefix, "contrast_group2"), groups[[1L]])
     click("add_contrast")
-    click("save_results")
-    h$waitCheckpointStepComplete(driver, "Design", timeout = h$checkpointWaitBudget())
+    if (is.null(save)) {
+        click("save_results")
+        h$waitCheckpointStepComplete(driver, "Design", timeout = h$checkpointWaitBudget())
+    } else save(paste0(prefix, "save_results"))
     list(groups = groups, contrast = paste(groups[[2L]], "vs", groups[[1L]]))
 }
 
@@ -187,6 +192,9 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
             result = "replicate_filter-protein_replicate_filter_results", state = "protein_replicate_filtered"))
     run_step <- function(step) {
         id <- step$id
+        # KIT-068: the lipidomics and metabolomics routes run their own modules' tab actions.
+        if (kitRouteOf(journey) %in% c("lipidomics", "metabolomics"))
+            return(runKitOmicsStep(h, driver, project_parent, corpus, journey, step))
         switch(step$kind,
             store = switch(id,
                 # KIT-053: the limpa route is chosen at the entry point before the import (the pinned import action
@@ -485,5 +493,111 @@ runKitLimpaImportActions <- function(h, driver, run_dir, inputs) {
     h$checkpointSetInput(driver, "proteomics_workflow-setup_import-dia_route", "DIA_LIMPA")
     h$checkpointClickControl(driver, "prot-import-process")
     h$waitCheckpointStepComplete(driver, "Import", timeout = h$checkpointWaitBudget())
+    invisible(NULL)
+}
+
+#' KIT-068: the lipidomics or metabolomics import: the omic's tile, the project setup, the import tab's vendor radio,
+#' the assay names and files (the module's own shinyFiles buttons, selected as the pinned helpers select the DIA report),
+#' sanitised names off (the corpus names are already clean and the design names them as written), then the process
+#' button, waiting on the module's own completion notification.
+#' @param corpus `list(assays = <named list of paths by assay name>, vendor, design)` from the coordinator.
+#' @noRd
+runKitOmicsImportActions <- function(h, driver, run_dir, corpus, route) {
+    short <- if (identical(route, "lipidomics")) "lipid" else "metab"
+    prefix <- paste0(route, "_workflow-import-")
+    stopifnot(length(corpus$assays) >= 1L, length(corpus$assays) <= 2L, !is.null(names(corpus$assays)))
+    h$checkpointClickControl(driver, paste0("tile-", route))
+    h$checkpointClickControl(driver, "btn-start-analysis")
+    driver$set_inputs(experiment_label = "kit_omics_lifecycle", project_dir = run_dir)
+    h$checkpointClickControl(driver, "btn-confirm-setup")
+    h$checkpointWaitForJs(driver, sprintf("document.querySelector('[data-testid=\"%s-tab-import\"]') !== null", short),
+        timeout = h$checkpointWaitBudget())
+    h$checkpointSetInput(driver, paste0(prefix, "vendor_format"), corpus$vendor)
+    roots <- shinyFiles::getVolumes()()
+    for (i in seq_along(corpus$assays)) {
+        h$checkpointSetInput(driver, paste0(prefix, "assay", i, "_name"), names(corpus$assays)[[i]])
+        id <- paste0(prefix, "assay", i, "_file")
+        selection <- h$checkpointFileSelection(corpus$assays[[i]], roots)
+        h$checkpointWaitForJs(driver, sprintf("document.getElementById(%s) !== null",
+            jsonlite::toJSON(id, auto_unbox = TRUE)), timeout = h$checkpointWaitBudget(control = TRUE))
+        driver$get_js(sprintf("Shiny.setInputValue(%s,%s,{priority:'event'});true",
+            jsonlite::toJSON(id, auto_unbox = TRUE), jsonlite::toJSON(selection, auto_unbox = TRUE)))
+        h$checkpointWaitForIdle(driver, timeout = h$checkpointWaitBudget())
+    }
+    h$checkpointSetInput(driver, paste0(prefix, "sanitize_names"), FALSE)
+    kitClickAndWaitText(h, driver, paste0(prefix, "process_import"), ".shiny-notification", "Data imported successfully!")
+    invisible(NULL)
+}
+
+#' KIT-068: one step of the lipidomics or metabolomics route through the module's own tab actions (the twin modules
+#' share their input ids under `<route>_workflow-<tab>-`). Every action waits on the module's own completion text (a
+#' notification or a status output) or an error notification, as `runKitQcAction` does for the proteomics tabs.
+#' @noRd
+runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
+    route <- kitRouteOf(journey)
+    short <- if (identical(route, "lipidomics")) "lipid" else "metab"
+    tabs <- paste0(route, "_workflow-", route, "_tabs")
+    prefix <- function(tab) paste0(route, "_workflow-", tab, "-")
+    qc_tabs <- paste0(prefix("qc"), short, "_qc_tabs")
+    notify <- function(input_id, text) kitClickAndWaitText(h, driver, input_id, ".shiny-notification", text)
+    open_tab <- function(value) h$checkpointSetInput(driver, tabs, value)
+    settings <- journey$normalisation
+    switch(step$id,
+        import = runKitOmicsImportActions(h, driver, project_parent, corpus, route),
+        design = runKitDesignActions(h, driver, corpus$design, prefix = prefix("design-builder"), tab_input = tabs,
+            tab_value = "design", save = function(id) notify(id, "Design matrix and contrasts saved successfully!")),
+        intensity = {
+            open_tab("qc")
+            h$checkpointSetInput(driver, qc_tabs, "Intensity Filter")
+            notify(paste0(prefix("qc"), "intensity-apply_filter"), "Intensity filter applied")
+        },
+        duplicates = {
+            h$checkpointSetInput(driver, qc_tabs, "Duplicate Resolution")
+            notify(paste0(prefix("qc"), "duplicates-detect_duplicates"), "Detection complete")
+            notify(paste0(prefix("qc"), "duplicates-resolve_duplicates"), "Duplicates resolved")
+        },
+        qc_finalize = {
+            h$checkpointSetInput(driver, qc_tabs, "Finalize QC")
+            notify(paste0(prefix("qc"), "s4_finalize-finalize_qc"), "QC complete!")
+        },
+        normalisation = {
+            # The one tab action: ITSD (when bound), log2, between-sample normalisation and RUV-III in the bound mode;
+            # the RUV sweep settings are the journey's (the same input ids as the proteomics tab).
+            open_tab("norm")
+            norm <- prefix("norm")
+            h$checkpointSetInput(driver, paste0(norm, "apply_itsd"), isTRUE(settings$apply_itsd))
+            h$checkpointSetInput(driver, paste0(norm, "norm_method"), settings$norm_method %||% "cyclicloess")
+            h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode %||% "automatic")
+            for (name in names(settings$ruv)) h$checkpointSetInput(driver, paste0(norm, name), settings$ruv[[name]])
+            notify(paste0(norm, "run_normalization"), "Normalization pipeline complete!")
+        },
+        correlation = {
+            norm <- prefix("norm")
+            h$checkpointSetInput(driver, paste0(norm, "norm_qc_tabs"), "Correlation Filtering")
+            h$checkpointSetInput(driver, paste0(norm, "min_pearson_correlation_threshold"), settings$correlation_threshold)
+            notify(paste0(norm, "apply_correlation_filter"), "Correlation filtering complete!")
+        },
+        session_export = notify(paste0(prefix("norm"), "export_session"), "Session data exported successfully!"),
+        da = {
+            open_tab("de")
+            de <- prefix("de")
+            notify(paste0(de, "load_filtered_session"), "Session loaded successfully!")
+            h$checkpointSetInput(driver, paste0(de, "formula_string"), journey$da$formula)
+            h$checkpointSetInput(driver, paste0(de, "da_q_val_thresh"), journey$da$q_value)
+            h$checkpointSetInput(driver, paste0(de, "treat_lfc_cutoff"), journey$da$treat_lfc)
+            h$checkpointClickAndWaitText(driver, paste0(de, "run_da_analysis"), paste0("#", de, "da_status"), "Analysis Complete")
+        },
+        report = {
+            # The summary tab: the publication copy (which writes the study parameters when they were not saved), then
+            # the report render with the omic's shipped template (KIT-065's step on the proteomics routes).
+            open_tab("summary")
+            summary <- prefix("summary")
+            h$checkpointSetInput(driver, paste0(summary, "experiment_label"), journey$experiment_label)
+            h$checkpointSetInput(driver, paste0(summary, "description"), "KIT-068 lifecycle member")
+            h$checkpointClickAndWaitText(driver, paste0(summary, "copy_to_publication"), paste0("#", summary, "copy_status"),
+                "Files copied to publication directory")
+            notify(paste0(summary, "generate_report"), "Report generated successfully!")
+        },
+        stop("unknown omics step ", step$id))
     invisible(NULL)
 }
