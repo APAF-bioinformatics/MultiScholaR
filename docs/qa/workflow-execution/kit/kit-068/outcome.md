@@ -1,6 +1,6 @@
 # KIT-068: the lipidomics and metabolomics routes on the kit (tooling only)
 
-Date 2026-10-29. Authority: the series plan, the stage-3 re-cut review (`../REVIEW-20261028-stage3-recut.md`). Control and build under test: `kit_065` (`core/browser-smoke.InuLC5`, f55bef1b). No package code changed; no install; no counted member.
+Status 2026-10-29: **completed**; the three step-map flags await the user's answers before KIT-031 is authored (KIT-030 is next and does not depend on them). Date 2026-10-29. Authority: the series plan, the stage-3 re-cut review (`../REVIEW-20261028-stage3-recut.md`). Control and build under test: `kit_065` (`core/browser-smoke.InuLC5`, f55bef1b). No package code changed; no install; no counted member.
 
 ## What was built
 
@@ -23,10 +23,10 @@ The generator's invocation for the regenerations: every bound build as `kit_NNN=
 |---|---|---|---|---|---|
 | `kit-lifecycle-lipid` | **lifecycle_complete_observed** | 10 of 10 through the report | 226 s | 2.22 GiB | first attempt; verifier passed; `exact = NA` (in-memory) |
 | `kit-lifecycle-lipid-fail` | **lifecycle_failure_observed** (attempt 3) | 5 complete, `normalisation` failed under the injected guard | 43 s | | attempts 1 and 2 were harness defects (below) |
-| `kit-lifecycle-metab` | **invalid: `measurement_valid`** | 10 of 10 through the report; verifier passed | 212 s | 2.21 GiB | the journey completed; the sampler recorded 10 gaps above 250 ms (max 1.05 s), all inside the normalisation step's RUV sweep; the measure is invalid, the completion is not |
+| `kit-lifecycle-metab` | **lifecycle_complete_observed** (attempt 2, the user's single rerun) | 10 of 10 through the report; verifier passed | 210 s | 2.19 GiB | attempt 1 completed every step and verified but its sampler measure was invalid (10 gaps above 250 ms, max 1.05 s, inside the RUV sweep; archived); the rerun's max interval 0.07 s, no gaps |
 | `kit-lifecycle-metab-fail` | **lifecycle_failure_observed** | 5 complete, `normalisation` failed under the injected guard | 41 s | | first attempt |
 
-Summaries: [kit-lifecycle-lipid-stage.json](kit-lifecycle-lipid-stage.json), [kit-lifecycle-lipid-fail-stage.json](kit-lifecycle-lipid-fail-stage.json), [kit-lifecycle-metab-stage.json](kit-lifecycle-metab-stage.json), [kit-lifecycle-metab-fail-stage.json](kit-lifecycle-metab-fail-stage.json); the archived attempts [kit-lifecycle-lipid-fail.attempt1-no-launch-record-stage.json](kit-lifecycle-lipid-fail.attempt1-no-launch-record-stage.json) and [kit-lifecycle-lipid-fail.attempt2-sampler-na-uptime-stage.json](kit-lifecycle-lipid-fail.attempt2-sampler-na-uptime-stage.json). The stage directories (and the two renamed attempts) stay under `<proof>/kit/runtime/`.
+Summaries: [kit-lifecycle-lipid-stage.json](kit-lifecycle-lipid-stage.json), [kit-lifecycle-lipid-fail-stage.json](kit-lifecycle-lipid-fail-stage.json), [kit-lifecycle-metab-stage.json](kit-lifecycle-metab-stage.json), [kit-lifecycle-metab-fail-stage.json](kit-lifecycle-metab-fail-stage.json); the archived attempts [kit-lifecycle-lipid-fail.attempt1-no-launch-record-stage.json](kit-lifecycle-lipid-fail.attempt1-no-launch-record-stage.json), [kit-lifecycle-lipid-fail.attempt2-sampler-na-uptime-stage.json](kit-lifecycle-lipid-fail.attempt2-sampler-na-uptime-stage.json) and [kit-lifecycle-metab.attempt1-sampler-gaps-stage.json](kit-lifecycle-metab.attempt1-sampler-gaps-stage.json). The stage directories (and the two renamed attempts) stay under `<proof>/kit/runtime/`.
 
 What the complete members produced (checked in the member projects, synthetic data): the design's cleaned tables carry only the id, annotation and sample columns; ITSD applied (median aggregation), log2 offset 1, cyclic loess, the automatic RUV sweep (lipid: best k 2 at 4 % and 7 %; metab: best k 1 at 3 % and 7 %), the correlation filter kept all 24 samples; retained features lipid 183 / 182, metab 281 / 283; the DA long tables per assay (`de_posmode_*`, `de_negmode_*` / `de_gcms_*`), the publication workbook and the rendered `.docx` report under `results_summary/<omic>/`.
 
@@ -37,9 +37,9 @@ What the complete members produced (checked in the member projects, synthetic da
 
 Both are harness defects repaired within the ticket's correction rule (a driver or instrumentation defect, repaired and rerun; a module failure is a finding). No module failed in any of the four members.
 
-### The metabolomics complete member's measure
+### The metabolomics complete member's measure (attempt 1) and the single rerun
 
-The decision rule `measurement_valid` requires every sampler interval at or below 500 ms. The metab member's trace has 10 intervals above 250 ms, two above 500 ms (0.52, 0.60) and one of 1.05 s, all between uptime 47689 and 47731, inside the 105 s normalisation step (the RUV sweep). The lipid member on the same host minutes earlier had none (max 0.13 s). The metabolomics code runs no parallel workers (no `mclapply`, `future` or `BiocParallel` in the route's normalisation), so the cause is host contention during that window, not the member's own design; it is unexplained by this run. The member's completion and verification stand; the stage summary records the invalid measure. **Not rerun:** the ticket's correction rule names driver failures, and this is an instrumentation-validity failure of a member that makes no memory claim. The decision whether to rerun once (about four minutes) or to accept the completion with the measure marked invalid is the user's (stage 3 records no memory, so the measure is bookkeeping for the lifecycle decision only).
+Attempt 1's decision was `invalid: measurement_valid`: the rule requires every sampler interval at or below 500 ms, and the trace had 10 intervals above 250 ms, two above 500 ms and one of 1.05 s, all inside the 105 s normalisation step (the RUV sweep); the lipid member minutes earlier had none, and the metabolomics code runs no parallel workers, so the cause was host contention during that window. The member's completion and verification stood. Under the ticket's correction rule (driver failures only) it was not rerun by default; the user authorised a single rerun (2026-10-29). The rerun completed every step through the report in 210 s with a maximum sampler interval of 0.07 s and no gaps: `lifecycle_complete_observed`. Attempt 1 is archived (`kit-lifecycle-metab.attempt1-sampler-gaps`), a valid instrumentation failure preserved, not a module finding.
 
 ## The step maps' flags (the user's answers gate KIT-031/032)
 
@@ -55,7 +55,7 @@ Observations recorded in the maps for KIT-031/032 (not flags): the RUV-III repli
 
 ## Claim limits
 
-Synthetic corpora; no result on them is a scientific claim. The members prove the instrumentation observes the two routes through completion and failure on the in-memory modules (`exact = NA`, no store, no populations, no head rule). No memory claim. The metab complete member's measure is invalid as recorded above.
+Synthetic corpora; no result on them is a scientific claim. The members prove the instrumentation observes the two routes through completion and failure on the in-memory modules (`exact = NA`, no store, no populations, no head rule). No memory claim.
 
 ## Hand-off
 
