@@ -1,6 +1,6 @@
 # KIT-068: the lipidomics and metabolomics routes on the kit (tooling only)
 
-Status 2026-10-29: **completed**; the three step-map flags await the user's answers before KIT-031 is authored (KIT-030 is next and does not depend on them). Date 2026-10-29. Authority: the series plan, the stage-3 re-cut review (`../REVIEW-20261028-stage3-recut.md`). Control and build under test: `kit_065` (`core/browser-smoke.InuLC5`, f55bef1b). No package code changed; no install; no counted member.
+Status 2026-10-29: **completed**; the three step-map flags were answered by the user on 2026-10-29 as the determinations read (recorded in the maps' rows as `decision`, `open_flags = 0`; bindings regenerated for the maps' hashes). Date 2026-10-29. Authority: the series plan, the stage-3 re-cut review (`../REVIEW-20261028-stage3-recut.md`). Control and build under test: `kit_065` (`core/browser-smoke.InuLC5`, f55bef1b). No package code changed; no install; no counted member.
 
 ## What was built
 
@@ -41,9 +41,9 @@ Both are harness defects repaired within the ticket's correction rule (a driver 
 
 Attempt 1's decision was `invalid: measurement_valid`: the rule requires every sampler interval at or below 500 ms, and the trace had 10 intervals above 250 ms, two above 500 ms and one of 1.05 s, all inside the 105 s normalisation step (the RUV sweep); the lipid member minutes earlier had none, and the metabolomics code runs no parallel workers, so the cause was host contention during that window. The member's completion and verification stood. Under the ticket's correction rule (driver failures only) it was not rerun by default; the user authorised a single rerun (2026-10-29). The rerun completed every step through the report in 210 s with a maximum sampler interval of 0.07 s and no gaps: `lifecycle_complete_observed`. Attempt 1 is archived (`kit-lifecycle-metab.attempt1-sampler-gaps`), a valid instrumentation failure preserved, not a module finding.
 
-## The step maps' flags (the user's answers gate KIT-031/032)
+## The step maps' flags (answered 2026-10-29)
 
-Three flags, the same on both maps (one answer covers both omics):
+Three flags, the same on both maps; the user accepted each as read ("recommended" on all three, 2026-10-29). KIT-031/032 declare these units:
 
 1. **Intensity filter**: row unit after a per-assay quantile pre-pass (one global statistic per assay), with `ceiling()` removed in the declaration (user decision 2026-10-28). The second half of the flag as written, whether the design's cleaned tables carry only the id, annotation and sample columns, is answered by the members' projects: they do (`LipidName, LipidClass, <samples>`; `Alignment ID, Metabolite name, <samples>`), so the quantile sees intensities only.
 2. **Internal-standard normalisation**: complete sample with the mean-factor pre-pass (one aggregate per sample, the mean over samples), the standards' row removal in the same operation.

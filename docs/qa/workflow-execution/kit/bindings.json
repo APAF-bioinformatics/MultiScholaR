@@ -16437,9 +16437,9 @@
     "step_map_limpa": "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json",
     "step_map_limpa_sha256": "69fd5654958e69329818f959725f1ad52cde14f5bc3f8a917835889fcb34a0b3",
     "step_map_lipid": "docs/qa/workflow-execution/kit/kit-001/step-map-lipid.json",
-    "step_map_lipid_sha256": "0f65aa9c9d6317d8e54745bd65121755cb0ae71524f911ea466656b0fc9f23be",
+    "step_map_lipid_sha256": "54f8a91f078944f8c41ecdd3dafbc0a3e7848be444137b9200c543bf83d2715b",
     "step_map_metab": "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json",
-    "step_map_metab_sha256": "a534aa529135391cbb39aad44119bab2bef5bee26e7ce2d4e702fb90028b06a6",
+    "step_map_metab_sha256": "7a1640ad98ddafb350b21fd67a9d88da714e9237b49442f25b8ee5cc32256f41",
     "core_pinned_unchanged": true,
     "files": {
       "tools/profiling/workflow_kit.R": "50732801c6a06d882b946c484f2abd95e3653824ebe1cc42c701e38d1d8a286d",

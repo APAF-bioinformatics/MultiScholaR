@@ -3,7 +3,7 @@
   "owner": "KIT-068",
   "date": "2026-10-29",
   "route": "lipidomics",
-  "rule": "The lipidomics route runs the in-memory lipid module (R/mod_lipidomics.R: import, design, qc, norm, de, summary) as shipped on kit_065; this map is KIT-068's reading of each step's kernel with line evidence. The units are determinations for KIT-031's declarations, not declarations: a row with a flag is a question the user answers before KIT-031 is authored; the ceiling() on the intensity filter's quantile is removed in KIT-031's declaration (user decision 2026-10-28) before any oracle is recorded. The normalisation tab's one action commits four states (ITSD, log2, between-sample, RUV-III), listed as sub-rows of the journey step `normalisation`. Every kernel loops over the assays (a list of wide tables, one per assay); a partitioned unit applies within one assay table and the declaration runs it projected (the `whole` variant) at these sizes. The DA output is the manifest lipid.da_results.v1 on the dia.da_results.v1 pattern (user confirmed 2026-10-29).",
+  "rule": "The lipidomics route runs the in-memory lipid module (R/mod_lipidomics.R: import, design, qc, norm, de, summary) as shipped on kit_065; this map is KIT-068's reading of each step's kernel with line evidence. The units are determinations for KIT-031's declarations, not declarations: a row with a flag is a question the user answers before KIT-031 is authored; the ceiling() on the intensity filter's quantile is removed in KIT-031's declaration (user decision 2026-10-28) before any oracle is recorded. The normalisation tab's one action commits four states (ITSD, log2, between-sample, RUV-III), listed as sub-rows of the journey step `normalisation`. Every kernel loops over the assays (a list of wide tables, one per assay); a partitioned unit applies within one assay table and the declaration runs it projected (the `whole` variant) at these sizes. The DA output is the manifest lipid.da_results.v1 on the dia.da_results.v1 pattern (user confirmed 2026-10-29). The three flags (intensity, ITSD normalisation, correlation) were answered by the user on 2026-10-29 as the determinations read: each row carries its decision.",
   "units": {
     "row": "each row's result depends on that row only (given the design and any declared global statistics)",
     "complete_sample": "each sample column's result depends on that column only (given any declared global statistics)",
@@ -16,7 +16,7 @@
     "Every numeric column of an assay table is taken as a sample column by the intensity filter and its quantile (R/func_lipid_s4_normalization_methods.R:931, R/func_lipid_qc.R:47): the design step must leave only the id, annotation and sample columns in each assay table for the quantile to be the intensities' quantile.",
     "The internal-standard normalisation computes one aggregate standard signal per sample, then the mean of those aggregates over all samples, and scales each sample by mean / own aggregate (R/func_lipid_s4_normalization_methods.R:13-19 and the method body from :61): a complete-sample kernel with one dataset-wide statistic, not a per-standard-class model."
   ],
-  "open_flags": 3,
+  "open_flags": 0,
   "steps": [
     {
       "id": "import",
@@ -66,7 +66,8 @@
       "holders": ["filterStatsVal, filterPlotVal (plots)"],
       "reads_outside_assay": ["filtering_progress_lipidomics in .GlobalEnv (R/func_lipid_qc_progress_helpers.R:59; KIT-030)", "project_dirs / omic_type / experiment_label read by the plot writer (R/func_lipid_qc_filtering_helpers.R:264-306; KIT-030)"],
       "mode": "in_process",
-      "flag": "confirm: row unit after the per-assay quantile pre-pass (one global statistic per assay), with ceiling() removed in the declaration; and confirm that the design's data_cln tables carry only the id, annotation and sample columns (every numeric column is a sample to this kernel: kernel_observations[1]), else the declaration must name the sample columns explicitly",
+      "flag": null,
+      "decision": "user decision 2026-10-29: row unit after the per-assay quantile pre-pass (one global statistic per assay), ceiling() removed in the declaration; the cleaned tables carry only the id, annotation and sample columns (KIT-068 members' projects), so the declaration need not name the sample columns",
       "notes": ["the NA handling is na.rm on the below-threshold count (R/func_lipid_qc.R:65): an NA is not below", "the proportion rule is strict (<), as the DIA intensity filter's is"]
     },
     {
@@ -152,7 +153,8 @@
       "holders": ["normData$itsd_selections (manual rows)"],
       "reads_outside_assay": [],
       "mode": "in_process",
-      "flag": "confirm: complete sample with the mean-factor pre-pass (kernel_observations[2]); the standards' row removal belongs to the same operation",
+      "flag": null,
+      "decision": "user decision 2026-10-29: complete sample with the mean-factor pre-pass; the standards' row removal belongs to the same operation",
       "notes": ["resolves KIT-031's pre-recorded 'per sample and per standard class' gap by reading: the existing units cover it", "skipped when apply_itsd is off (the e2e lanes); the kit's lifecycle members run it"]
     },
     {
@@ -223,7 +225,8 @@
       "holders": ["normData$correlation_filtered_obj"],
       "reads_outside_assay": [],
       "mode": "in_process",
-      "flag": "confirm: whole matrix, the DIA step map's determination for the same statistic (a sample's fate depends on every pair's correlation within its group)",
+      "flag": null,
+      "decision": "user decision 2026-10-29: whole matrix, the DIA step map's determination for the same statistic",
       "notes": ["skip_correlation_filter commits lipid_norm_complete instead (R/mod_lipid_norm_workflow_helpers.R:588); the journey applies the filter"]
     },
     {

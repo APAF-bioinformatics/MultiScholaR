@@ -3,7 +3,7 @@
   "owner": "KIT-068",
   "date": "2026-10-29",
   "route": "metabolomics",
-  "rule": "The metabolomics route runs the in-memory metab module (R/mod_metabolomics.R: import, design, qc, norm, de, summary), the lipid module's twin, as shipped on kit_065; this map is KIT-068's reading of each step's kernel with line evidence and mirrors step-map-lipid.json row for row on MetaboliteAssayData (the per-assay plural format: metabolite_data, a list of wide tables). The units are determinations for KIT-032's declarations, not declarations: a row with a flag is a question the user answers before KIT-032 is authored (the same three flags as the lipid map; one answer covers both omics); the ceiling() on the intensity filter's quantile is removed in KIT-032's declaration (user decision 2026-10-28) before any oracle is recorded. The DA output is the manifest metab.da_results.v1 on the dia.da_results.v1 pattern (user confirmed 2026-10-29).",
+  "rule": "The metabolomics route runs the in-memory metab module (R/mod_metabolomics.R: import, design, qc, norm, de, summary), the lipid module's twin, as shipped on kit_065; this map is KIT-068's reading of each step's kernel with line evidence and mirrors step-map-lipid.json row for row on MetaboliteAssayData (the per-assay plural format: metabolite_data, a list of wide tables). The units are determinations for KIT-032's declarations, not declarations: a row with a flag is a question the user answers before KIT-032 is authored (the same three flags as the lipid map; one answer covers both omics); the ceiling() on the intensity filter's quantile is removed in KIT-032's declaration (user decision 2026-10-28) before any oracle is recorded. The DA output is the manifest metab.da_results.v1 on the dia.da_results.v1 pattern (user confirmed 2026-10-29). The three flags (intensity, ITSD normalisation, correlation) were answered by the user on 2026-10-29 as the determinations read: each row carries its decision.",
   "units": {
     "row": "each row's result depends on that row only (given the design and any declared global statistics)",
     "complete_sample": "each sample column's result depends on that column only (given any declared global statistics)",
@@ -17,7 +17,7 @@
     "The internal-standard normalisation (R/func_metab_s4_transformation_methods.R:216) is the lipid method's twin: one aggregate standard signal per sample, the mean of the aggregates over all samples, each sample scaled by mean / own aggregate.",
     "MS-DIAL alignment ids are unique by construction, so the duplicate step is the identity on the MS-DIAL layout unless the id column is set to the annotation; the kit corpus records this."
   ],
-  "open_flags": 3,
+  "open_flags": 0,
   "steps": [
     {
       "id": "import",
@@ -67,7 +67,8 @@
       "holders": ["filter stats and plot values"],
       "reads_outside_assay": ["filtering_progress_metabolomics in .GlobalEnv (R/func_metab_qc_progress_helpers.R:14-77; KIT-030)", "project_dirs / omic_type / experiment_label read by the plot writer (R/func_metab_qc.R:298-340; KIT-030)"],
       "mode": "in_process",
-      "flag": "confirm: row unit after the per-assay quantile pre-pass, with ceiling() removed in the declaration; and confirm that the design's data_cln tables carry only the id, annotation and sample columns (kernel_observations[1])",
+      "flag": null,
+      "decision": "user decision 2026-10-29: row unit after the per-assay quantile pre-pass (one global statistic per assay), ceiling() removed in the declaration; the cleaned tables carry only the id, annotation and sample columns (KIT-068 members' projects), so the declaration need not name the sample columns",
       "notes": ["the lipid row's twin; one answer covers both omics"]
     },
     {
@@ -153,7 +154,8 @@
       "holders": ["normData$itsd_selections"],
       "reads_outside_assay": [],
       "mode": "in_process",
-      "flag": "confirm: complete sample with the mean-factor pre-pass (kernel_observations[2])",
+      "flag": null,
+      "decision": "user decision 2026-10-29: complete sample with the mean-factor pre-pass; the standards' row removal belongs to the same operation",
       "notes": ["skipped when apply_itsd is off (the e2e lanes); the kit's lifecycle members run it"]
     },
     {
@@ -224,7 +226,8 @@
       "holders": ["normData$correlation_filtered_obj"],
       "reads_outside_assay": [],
       "mode": "in_process",
-      "flag": "confirm: whole matrix, the DIA step map's determination for the same statistic",
+      "flag": null,
+      "decision": "user decision 2026-10-29: whole matrix, the DIA step map's determination for the same statistic",
       "notes": ["skip_correlation_filter commits metab_norm_complete instead (:358); the journey applies the filter"]
     },
     {
