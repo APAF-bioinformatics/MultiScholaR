@@ -1,0 +1,83 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-068",
+  "stage": "kit-lifecycle-lipid",
+  "date": "2026-10-29",
+  "decision": {
+    "status": "lifecycle_complete_observed",
+    "rule": null,
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": false,
+    "route": "lipidomics",
+    "in_memory": true,
+    "head_rule": null
+  },
+  "member": {
+    "id": "member",
+    "corpus": "lipid_screen",
+    "build": "d457f2ad961312078a8d80bd1b63f184029c5d231df8c0b35f9fe24eb30a3230",
+    "status": "complete",
+    "exact": null,
+    "elapsed_seconds": 226,
+    "peak_bytes": 2462126080,
+    "peak_anon_bytes": 2379005952,
+    "resident_end_bytes": 1719013376,
+    "phase_seconds": {
+      "import": 5.15000000000146,
+      "design": 14.0200000000041,
+      "intensity": 4.22000000000116,
+      "duplicates": 4.16999999999825,
+      "qc_finalize": 2.86000000000058,
+      "normalisation": 115.129999999997,
+      "correlation": 3.59999999999854,
+      "session_export": 1.54000000000087,
+      "da": 6.43999999999505,
+      "report": 2.90000000000146
+    },
+    "phase_peak_anon_bytes": {
+      "import": 739782656,
+      "design": 739770368,
+      "intensity": 916590592,
+      "duplicates": 930557952,
+      "qc_finalize": 941879296,
+      "normalisation": 2379005952,
+      "correlation": 2328686592,
+      "session_export": 2328698880,
+      "da": 2328756224,
+      "report": 1753186304
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.129999999997381,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": 95,
+    "failure": null
+  }
+}
