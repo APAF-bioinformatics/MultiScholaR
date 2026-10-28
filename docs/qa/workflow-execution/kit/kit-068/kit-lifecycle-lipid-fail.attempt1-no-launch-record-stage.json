@@ -1,0 +1,83 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-068",
+  "stage": "kit-lifecycle-lipid-fail.attempt1-no-launch-record",
+  "date": "2026-10-29",
+  "decision": {
+    "status": "invalid",
+    "rule": null,
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "guard_injected", "normalisation"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": true,
+    "route": "lipidomics",
+    "in_memory": true,
+    "head_rule": "not applicable: in-memory member, no store"
+  },
+  "member": {
+    "id": "member",
+    "corpus": "lipid_screen",
+    "build": "d457f2ad961312078a8d80bd1b63f184029c5d231df8c0b35f9fe24eb30a3230",
+    "status": "journey_failed",
+    "exact": null,
+    "elapsed_seconds": 47.1399999999994,
+    "peak_bytes": 953909248,
+    "peak_anon_bytes": 946331648,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 5.23999999999796,
+      "design": 13.5599999999977,
+      "intensity": 5,
+      "duplicates": 3.65999999999622,
+      "qc_finalize": 3.62000000000262,
+      "guard_injected": 0.0799999999944703,
+      "normalisation": 0.269999999996799
+    },
+    "phase_peak_anon_bytes": {
+      "import": 740356096,
+      "design": 740384768,
+      "intensity": 919285760,
+      "duplicates": 936067072,
+      "qc_finalize": 946331648,
+      "guard_injected": 946331648,
+      "normalisation": 946331648
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "guard_injected": "open",
+      "normalisation": "failed"
+    },
+    "max_sample_interval": 0.0900000000037835,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": {
+      "schema": 1,
+      "scope": "application",
+      "max_anon": 946331648,
+      "max_file": 262144,
+      "max_observation_interval": 0.0530000000000008,
+      "reason": "invalid_guard_injection",
+      "current": 951508992,
+      "host_available": 42147950592
+    },
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}

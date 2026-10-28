@@ -328,6 +328,7 @@ test_that("KIT-068: the lipidomics and metabolomics routes, their in-memory life
     expect_identical(h$kitMemberSeconds("kit-lifecycle-complete", b), 300L)
     fail <- h$kitCases(b, "kit-lifecycle-metab-fail")[[1L]]
     expect_true(fail$expect_failure)
+    expect_true(fail$record) # the launch record permits the guard injection (attempt 1 of the lipid failure member)
     expect_identical(fail$fault, "guard_after_qc_finalize")
     expect_identical(fail$route, "metabolomics")
     expect_identical(fail$selector, "kit:lifecycle:metab:fail")

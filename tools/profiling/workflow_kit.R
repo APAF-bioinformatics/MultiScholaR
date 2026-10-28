@@ -249,9 +249,13 @@ kitCases <- function(bindings, stage) {
         kind <- if (endsWith(stage, "-fail")) "fail" else "complete"
         spec <- bindings$lifecycle_omics
         if (is.null(spec) || is.null(spec$fault)) stop("the omics lifecycle is not bound")
+        # The failure member carries the journey launch record: the application permits the guard injection only under
+        # a launch record with guard_stop_test (workflowGuiLaunchRecord; attempt 1 of kit-lifecycle-lipid-fail ended
+        # invalid_guard_injection without it). The complete member runs the production default (no record), as the
+        # in-memory modules need nothing from it.
         case <- journey_case("member", "candidate", 1L, spec$build %||% kitControl(bindings), paste0(omic, "_screen"),
             fault = if (kind == "fail") spec$fault$name else "none", selector = paste0("kit:lifecycle:", omic, ":", kind),
-            record = FALSE, route = if (omic == "lipid") "lipidomics" else "metabolomics", normalisation = spec$normalisation)
+            record = kind == "fail", route = if (omic == "lipid") "lipidomics" else "metabolomics", normalisation = spec$normalisation)
         case$fault_spec <- spec$fault
         return(list(case))
     }
