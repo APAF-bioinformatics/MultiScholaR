@@ -1,6 +1,6 @@
 # KIT-030: globals onto the workflow bus and holders to references (lipidomics and metabolomics)
 
-Status 2026-10-29: **in progress** (results below are filled as the checks complete). Authority: the series plan, the stage-3 re-cut review (`../REVIEW-20261028-stage3-recut.md`), ticket revision 2.0. Control: `kit_065` (`core/browser-smoke.InuLC5`). One mechanism: no lipid or metab module or kernel reads or writes the global environment for what the modules share; the values travel on `workflow_data`, the figure writers take their directories as arguments, package helpers resolve by namespace, the DA holders keep a state name. Kernels unchanged except by optional arguments with the old default.
+Status 2026-10-29: **completed**. Code 189f49fb + the one correction b4d1eea5; install `kit_030` = `core/browser-smoke.U9nsh0` (b4d1eea5; the first install `3VPMfn` from 189f49fb is the one the correction was found on). Authority: the series plan, the stage-3 re-cut review (`../REVIEW-20261028-stage3-recut.md`), ticket revision 2.0. Control: `kit_065` (`core/browser-smoke.InuLC5`). One mechanism: no lipid or metab module or kernel reads or writes the global environment for what the modules share; the values travel on `workflow_data`, the figure writers take their directories as arguments, package helpers resolve by namespace, the DA holders keep a state name. Kernels unchanged except by optional arguments with the old default.
 
 ## What changed
 
@@ -27,7 +27,7 @@ The characterisation tests that pinned the old seams were updated to the new con
 
 ## Results
 
-Code 189f49fb; bindings 74721201; install `kit_030` = `core/browser-smoke.3VPMfn` (189f49fb, exact-sum artefacts carried from kit_065). The "before" side is a clean worktree of 97ac4767 (`<proof>/kit/scratch-030-pre`; its `R/` equals kit_065's f55bef1b plus the KIT-064 addendum 15796146), the "after" side the working tree at 189f49fb, both on the kit_065 dependency library.
+Code 189f49fb, correction b4d1eea5; bindings 74721201 then 984a4d99; installs `core/browser-smoke.3VPMfn` (189f49fb) and `kit_030` = `core/browser-smoke.U9nsh0` (b4d1eea5), exact-sum artefacts carried from kit_065. The "before" side is a clean worktree of 97ac4767 (`<proof>/kit/scratch-030-pre`; its `R/` equals kit_065's f55bef1b plus the KIT-064 addendum 15796146), the "after" side the working tree at 189f49fb, both on the kit_065 dependency library.
 
 | Check | Evidence | Result |
 |---|---|---|
@@ -37,7 +37,7 @@ Code 189f49fb; bindings 74721201; install `kit_030` = `core/browser-smoke.3VPMfn
 | e2e lanes, before and after | `test-e2e-lipidomics-canonical.R`, `test-e2e-metabolomics-lc-gc.R` with the browser | lipid 88 pass / 88 pass; metab 190 pass / 190 pass |
 | Module-CI outputs by hash (the Simulation Setup) | every file under each test process's `tempdir()` hashed in-process before exit, before and after, paths paired with random suffixes masked ([compare-mci.py](compare-mci.py)); the four files with differing entries rerun with their temp trees kept and compared at content level ([compare-content.R](compare-content.R)) | 230 paired paths: 195 byte-identical; the 35 others are the `pkgload` shared object (built per run), the exported session RDS (identical once the `timestamp` fields inside `@args` and the export time are masked; data, design, contrasts, state name identical), the DA and publication workbooks (every before workbook matches an after workbook cell for cell; `xlsx` carries a creation time), `session_state_*.RDS` (identical with timestamps masked) and `study_parameters.txt`, whose only difference is the provenance block (`Source: Installed Package` in the detached before worktree against `Local Git Repository, performance-v2` in the working tree), not the parameters |
 | `R CMD check --no-tests --no-manual --no-build-vignettes` on the built tarball of 189f49fb (`_R_CHECK_FORCE_SUGGESTS_=false`, the InuLC5 library) | `<proof>/kit/scratch-030-check/check.log` | 3 WARNINGs, 3 NOTEs: the baseline |
-| Lifecycle members on `kit_030` | (below) | |
+| Lifecycle members on `kit_030` | the table below | both `lifecycle_complete_observed`; projects identical to the kit_065 members' in every data product |
 
 ## The one correction (the Study_report contrasts table)
 
@@ -46,3 +46,25 @@ The first `kit_030` install (`core/browser-smoke.3VPMfn`, 189f49fb) ran both lif
 Repair (the ticket's own wording: the values "reach `copyToResultsSummary`/`RenderReport` through their existing argument path"): the object copy now uses the function's already-resolved `contrasts_tbl`/`design_matrix` first and keeps the by-name lookups as the fallback for other objects and scripts (`R/func_general_filemgmt_results_summary_helpers.R`, one block). Side effect recorded: the proteomics Study_report `contrasts_tbl.tab` gains its header and friendly names on the next proteomics install. One bounded correction: the helper fix committed, a second `kit_030` install, the two members rerun on it; the first install's members archived as `kit-lifecycle-(lipid|metab).kit030-attempt1-contrasts-fallback`.
 
 The ticket's Simulation Setup names the e2e lanes' project files too. Those projects live in the app process's temp directory and are removed when the lane's app stops, so they cannot be hashed from outside; the lanes' own assertions on those files (design, contrasts, cleaned assays, DA tables) pass identically on both sides, and the GUI-path exactness is taken from the lifecycle members' projects below instead, the same journey on the same corpora on the two builds.
+
+## The lifecycle members
+
+| Stage | Build | Decision | Steps | Elapsed | Anonymous peak | Sampler | Summary |
+|---|---|---|---|---|---|---|---|
+| `kit-lifecycle-lipid` attempt 1 | 3VPMfn (189f49fb) | lifecycle_complete_observed (verifier passed, 95 files) | 10 of 10 | 221 s | | | [archived](kit-lifecycle-lipid.kit030-attempt1-contrasts-fallback-stage.json); the Study_report contrasts fallback found here |
+| `kit-lifecycle-metab` attempt 1 | 3VPMfn | lifecycle_complete_observed (91 files) | 10 of 10 | 220 s | | | [archived](kit-lifecycle-metab.kit030-attempt1-contrasts-fallback-stage.json) |
+| `kit-lifecycle-lipid` | **kit_030** U9nsh0 (b4d1eea5) | **lifecycle_complete_observed** (verifier passed, 95 files) | 10 of 10 through the report | 208 s | 2.21 GiB (normalisation) | max interval 0.07 s, no gaps | [kit-lifecycle-lipid-stage.json](kit-lifecycle-lipid-stage.json) |
+| `kit-lifecycle-metab` | **kit_030** U9nsh0 | **lifecycle_complete_observed** (verifier passed, 91 files) | 10 of 10 through the report | 209 s | 2.20 GiB (normalisation) | max interval 0.06 s, no gaps | [kit-lifecycle-metab-stage.json](kit-lifecycle-metab-stage.json) |
+
+For reference the KIT-068 members on kit_065 ran 226 s (lipid) and 210 s (metab) with peaks 2.22 / 2.19 GiB: no memory or time claim is made (an in-memory member, `exact = NA`, no store); the numbers only say nothing moved. The stage directories: the kit_030 members under `<proof>/kit/runtime/kit-lifecycle-(lipid|metab)`, the first-install attempts under `...kit030-attempt1-contrasts-fallback`, the kit_065 members (the KIT-068 evidence, the before side here) renamed to `...kit065-kit068`.
+
+**Project comparison, kit_065 members against the kit_030 members** ([compare-content.R](compare-content.R)): lipid 95 paired files, metab 91; every DA long table, the publication DA and enrichment workbooks and the NumSigDeMolecules tables identical cell for cell; the exported session RDS identical once the `timestamp` fields inside `@args` and the export time are masked (data, design, contrasts, state name, QC parameters, RUV results identical); `study_parameters.txt` identical with timestamps masked; the session summary text differs by the session file's timestamped name only; the PDFs, the `.docx` reports and the debug log differ by embedded times and paths; the volcano PNGs by `ggrepel`'s unseeded label placement (the same points, inspected on both lipid plots). After the correction the lipid `Study_report/contrasts_tbl.tab` is the full table again (identical to kit_065's), and its `Study_report/design_matrix.tab` is now written from the resolved design object rather than re-read from `design_matrix.tab` (empty factor columns appear as empty cells instead of `NA`), which is the form the metab member has always produced; the same rows otherwise.
+
+## Claim limits
+
+Synthetic corpora, in-memory modules; behaviour preservation is claimed from the identical data products above, the identical test counts before and after, and the two members' completion; no memory or time claim. The script contract of the figure writers (a workbook's global `project_dirs`, `omic_type`, `experiment_label`) is unchanged and tested; inside the application no figure is written by them, as before.
+
+## Hand-off
+
+KIT-069 (the audit carry-overs) and KIT-070 (the owner) take modules whose shared values are on `workflow_data` and whose progress trackers sit on the omic's bus, so the owner can be attached without global state; the DA holders already read through the state manager and become a reference on the owner without further change. Left as found and recorded: the summaries' guarded `project_dirs` global write and the templates' `.GlobalEnv` read of it (KIT-067 with the proteomics site); the summaries' `globalEnv` seam parameter; the by-name fallbacks inside `copyToResultsSummary` for scripts.
+
