@@ -1,0 +1,83 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-053",
+  "stage": "kit-lifecycle-metab",
+  "date": "2026-10-29",
+  "decision": {
+    "status": "lifecycle_complete_observed",
+    "rule": null,
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": false,
+    "route": "metabolomics",
+    "in_memory": true,
+    "head_rule": null
+  },
+  "member": {
+    "id": "member",
+    "corpus": "metab_screen",
+    "build": "c8fc08b83f5ca0c42f4f8a79ee4936e2f0e3663fcf952bdb562a462aa4adc400",
+    "status": "complete",
+    "exact": null,
+    "elapsed_seconds": 220.37,
+    "peak_bytes": 2447831040,
+    "peak_anon_bytes": 2395340800,
+    "resident_end_bytes": 1808855040,
+    "phase_seconds": {
+      "import": 5.73999999999978,
+      "design": 13.8700000000003,
+      "intensity": 4.5,
+      "duplicates": 2.88999999999987,
+      "qc_finalize": 2.34000000000015,
+      "normalisation": 107.06,
+      "correlation": 3.86000000000013,
+      "session_export": 1.53999999999996,
+      "da": 7.20000000000027,
+      "report": 3.34000000000015
+    },
+    "phase_peak_anon_bytes": {
+      "import": 740360192,
+      "design": 740384768,
+      "intensity": 905523200,
+      "duplicates": 910794752,
+      "qc_finalize": 920604672,
+      "normalisation": 2395340800,
+      "correlation": 2313396224,
+      "session_export": 2313396224,
+      "da": 2313498624,
+      "report": 1836318720
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0700000000001637,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": 91,
+    "failure": null
+  }
+}
