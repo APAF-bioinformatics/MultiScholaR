@@ -715,8 +715,15 @@ copyToResultsSummary <- function(omic_type,
                 obj <- NULL
                 source_exists <- FALSE
 
-                # Try to get object from environments first
-                if (!is.null(get0(file_spec$source, envir = parent.frame()))) {
+                # KIT-030: the contrasts table and design matrix this function resolved above (its arguments,
+                # else the caller's or a script's binding, else the files) are the objects to copy; the
+                # by-name lookups below remain for other object sources and for scripts.
+                own_object <- switch(file_spec$source, contrasts_tbl = contrasts_tbl, design_matrix = design_matrix, NULL)
+                if (!is.null(own_object)) {
+                    obj <- own_object
+                    source_exists <- TRUE
+                    cat(sprintf("    [OK] Using resolved '%s'\n", file_spec$source))
+                } else if (!is.null(get0(file_spec$source, envir = parent.frame()))) {
                     obj <- get(file_spec$source, envir = parent.frame())
                     source_exists <- TRUE
                     cat(sprintf("    [OK] Found '%s' in calling environment\n", file_spec$source))
