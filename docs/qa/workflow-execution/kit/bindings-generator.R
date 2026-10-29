@@ -146,6 +146,9 @@ b$lifecycle_omics <- list(ceiling_seconds = 1800L, build = if (!is.null(b$builds
     fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation",
         mechanism = "application-guard-inject.rds written after the QC finalise completes; the application monitor stops the slice (injected_guard_stop); the normalisation step fails on disconnection; the in-memory modules hold no store, so the head rule is recorded as not applicable"),
     normalisation = list(apply_itsd = TRUE, norm_method = "cyclicloess", ruv_mode = "automatic", correlation_threshold = 0.5))
+# KIT-030 (2026-10-29): `KIT_030_LIFECYCLE=1` points the two omics lifecycle members at the kit_030 install (the globals
+# off the lipid and metab modules), the KIT-068 members on kit_065 being the before side of the comparison.
+if (!is.null(b$builds$kit_030) && identical(Sys.getenv("KIT_030_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_030"
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root
