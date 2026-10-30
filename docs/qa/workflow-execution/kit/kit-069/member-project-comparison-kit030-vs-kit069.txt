@@ -42,3 +42,38 @@ paired 91; byte-identical 74; content-identical after masking 7; differing 10; o
   kit_omics_lifecycle/scripts/metabolomics/study_parameters.txt                                   identical (timestamps/paths masked)
   ONLY-BEFORE kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_data_20261029_163237.rds 
   ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_data_20261030_151657.rds 
+=== lipid attempt 2 (kit_030 member vs kit_069 member), compare-content.R
+paired 95; byte-identical 76; content-identical after masking 8; differing 11; only-before 1; only-after 1
+  kit_omics_lifecycle/results_summary/lipidomics/lipidomics_report_lipidomics_dia_baseline_smoke.docx DIFFERS (bytes)
+  kit_omics_lifecycle/results_summary/lipidomics/Publication_figures/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx identical (cell contents)
+  kit_omics_lifecycle/results_summary/lipidomics/Publication_tables/DA_results_lipidomics.xlsx    identical (cell contents)
+  kit_omics_lifecycle/results_summary/lipidomics/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx identical (cell contents)
+  kit_omics_lifecycle/results_summary/lipidomics/QC_figures/lipidomics_composite_QC_figure.pdf    DIFFERS (bytes)
+  kit_omics_lifecycle/results_summary/lipidomics/Study_report/study_parameters.txt                identical (timestamps/paths masked)
+  kit_omics_lifecycle/results/lipidomics/da_lipids/de_negmode_lipids_groupWT-groupKO_long_annot.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/lipidomics/da_lipids/de_posmode_lipids_groupWT-groupKO_long_annot.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/lipidomics/lipid_qc/lipidomics_composite_QC_figure.pdf              DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.png DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.png DIFFERS (bytes)
+  kit_omics_lifecycle/scripts/lipidomics/D66_debug.log                                            DIFFERS (bytes)
+  kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_latest.rds                   DIFFERS: Component “current_s4_object”: Attributes: < Component “args”: Component “ITSDNormalization”: Component “timestamp”: Mean absolute difference: 85162.36 >
+  kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_summary.txt                       DIFFERS
+  kit_omics_lifecycle/scripts/lipidomics/study_parameters.txt                                     identical (timestamps/paths masked)
+  ONLY-BEFORE kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_20261029_162756.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_20261030_160720.rds 
+=== lipid attempt 2, compare-groups.R (timestamp fields removed)
+before files 96: byte-matched 76, content-matched (timestamps/paths/ids masked) 10, unmatched 10; after-only groups 1
+  UNMATCHED kit_omics_lifecycle/results_summary/lipidomics/lipidomics_report_lipidomics_dia_baseline_smoke.docx 
+  UNMATCHED kit_omics_lifecycle/results_summary/lipidomics/QC_figures/lipidomics_composite_QC_figure.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/lipid_qc/lipidomics_composite_QC_figure.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.png 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.png 
+  UNMATCHED kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_20261029_162756.rds 
+  UNMATCHED kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_summary.txt 
