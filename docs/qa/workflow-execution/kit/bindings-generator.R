@@ -149,6 +149,8 @@ b$lifecycle_omics <- list(ceiling_seconds = 1800L, build = if (!is.null(b$builds
 # KIT-030 (2026-10-29): `KIT_030_LIFECYCLE=1` points the two omics lifecycle members at the kit_030 install (the globals
 # off the lipid and metab modules), the KIT-068 members on kit_065 being the before side of the comparison.
 if (!is.null(b$builds$kit_030) && identical(Sys.getenv("KIT_030_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_030"
+# KIT-069 (2026-10-30, post-hoc audit A-01): `KIT_069_LIFECYCLE=1` points them at the kit_069 install (the audit carry-overs).
+if (!is.null(b$builds$kit_069) && identical(Sys.getenv("KIT_069_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_069"
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root

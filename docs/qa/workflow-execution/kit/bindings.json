@@ -15949,7 +15949,7 @@
   },
   "lifecycle_omics": {
     "ceiling_seconds": 1800,
-    "build": "kit_030",
+    "build": "kit_069",
     "fault": {
       "name": "guard_after_qc_finalize",
       "after_step": "qc_finalize",
