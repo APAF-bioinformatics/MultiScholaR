@@ -1,0 +1,12 @@
+test-workflow-omics-owner.R: pass 74 fail 0 error 0 skip 0
+test-metab-04-design-module-characterization.R: pass 186 fail 0 error 0 skip 9
+test-lipid-13a-design-module-characterization.R: pass 146 fail 0 error 0 skip 0
+test-module-ci-lipid-design.R: pass 107 fail 0 error 0 skip 0
+test-module-ci-metab-design.R: pass 96 fail 0 error 0 skip 0
+── 1. Failure ('test-lipid-00b-import-module-seams.R:2757:3'): applyLipidImportR
+── 2. Failure ('test-lipid-00b-import-module-seams.R:2758:3'): applyLipidImportR
+test-lipid-00b-import-module-seams.R: pass 545 fail 2 error 0 skip 0
+test-lipid-00c-import-module-characterization.R: pass 96 fail 0 error 0 skip 0
+test-metab-00b-import-module-helper-characterization.R: pass 337 fail 0 error 0 skip 0
+test-metab-00d-import-module-characterization.R: pass 24 fail 0 error 0 skip 0
+test-workflow-server-shared.R: pass 70 fail 0 error 0 skip 0

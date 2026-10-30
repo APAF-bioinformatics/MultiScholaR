@@ -1,0 +1,98 @@
+# module-CI counts before (12367700) / after (a2c40f2a + the lipid-import type assertion)
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 148 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0
+
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 172 fail 1 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 148 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0
+
+# hash comparison (kit-030/compare-mci.py)
+test-module-ci-lipid-da: same 2 differing 1 only-before 9 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/DESCRIPTION
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/LICENSE
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/features.rds
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/package.rds
+test-module-ci-lipid-design: same 15 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-import: same 36 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-norm: same 11 differing 7 only-before 0 only-after 0
+   DIFF mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_20260505_120000.rds
+   DIFF mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_latest.rds
+   DIFF mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_data_20260505_120000.rds
+   DIFF mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_data_latest.rds
+   DIFF mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_data_20260505_120000.rds
+   DIFF mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_data_latest.rds
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-qc: same 0 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-summary: same 41 differing 8 only-before 0 only-after 0
+   DIFF module-ci-lipid-summary-ID/da_output/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-lipid-summary-ID/da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-lipid-summary-ID/results_summary/Publication_tables/DA_results_lipidomics.xlsx
+   DIFF module-ci-lipid-summary-ID/results_summary/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx
+   DIFF module-ci-lipid-summary-ID/source/session_state_2026-05-06.RDS
+   DIFF module-ci-lipid-summary-ID/source/session_state_2026-10-30.RDS
+   DIFF module-ci-lipid-summary-ID/source/study_parameters.txt
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-da: same 2 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-design: same 14 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-import: same 27 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-norm: same 4 differing 6 only-before 0 only-after 0
+   DIFF mci-015-da-reload-automatic-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-da-reload-manual-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-da-reload-skip-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-metab-norm-export-ID/metab_filtered_session_data_20260505_123456.rds
+   DIFF mci-015-metab-norm-export-ID/metab_filtered_session_data_latest.rds
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-qc: same 0 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-summary: same 41 differing 8 only-before 0 only-after 0
+   DIFF module-ci-metab-summary-ID/da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-metab-summary-ID/da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-metab-summary-ID/results_summary/Publication_tables/DA_results_metabolomics.xlsx
+   DIFF module-ci-metab-summary-ID/results_summary/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx
+   DIFF module-ci-metab-summary-ID/source/session_state_2026-05-06.RDS
+   DIFF module-ci-metab-summary-ID/source/session_state_2026-10-30.RDS
+   DIFF module-ci-metab-summary-ID/source/study_parameters.txt
+   DIFF pkgloID/MultiScholaR.so
+TOTAL {'same': 193, 'diff': 37, 'only_before': 9, 'only_after': 0}
+
+# content comparison of the four norm/summary tests (kit-069/compare-groups.R)
+== test-module-ci-lipid-norm
+before files 23: byte-matched 15, content-matched (timestamps/paths/ids masked) 8, unmatched 0; after-only groups 0
+== test-module-ci-lipid-summary
+before files 109: byte-matched 103, content-matched (timestamps/paths/ids masked) 3, unmatched 3; after-only groups 0
+  UNMATCHED module-ci-lipid-summary-da2772eaaa098/source/study_parameters.txt 
+  UNMATCHED module-ci-lipid-summary-da2773cdcdaec/source/study_parameters.txt 
+  UNMATCHED module-ci-lipid-summary-da277427f7de4/source/study_parameters.txt 
+== test-module-ci-metab-norm
+before files 9: byte-matched 4, content-matched (timestamps/paths/ids masked) 5, unmatched 0; after-only groups 0
+== test-module-ci-metab-summary
+before files 113: byte-matched 106, content-matched (timestamps/paths/ids masked) 4, unmatched 3; after-only groups 0
+  UNMATCHED module-ci-metab-summary-da54d36cbb76f/source/study_parameters.txt 
+  UNMATCHED module-ci-metab-summary-da54d3b5d960/source/study_parameters.txt 
+  UNMATCHED module-ci-metab-summary-da54d5a89ebf/source/study_parameters.txt 

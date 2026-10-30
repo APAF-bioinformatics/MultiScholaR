@@ -305,7 +305,7 @@ test_that("MCI-018.6 artifact and state digest matrix preserves downstream desig
   digest <- module_ci_lipid_import_state_digest(run$workflow)
   expect_identical(digest$setup_import, "complete")
   expect_identical(digest$design_matrix, "pending")
-  expect_identical(digest$workflow_types, "lipidomics_standard")
+  expect_identical(digest$workflow_types, "LIPIDOMICS")
   expect_true(digest$processing_log$artifacts$written)
   expect_true(length(digest$processing_log$artifacts$source_copies) >= 2L)
   expect_true(all(file.exists(digest$processing_log$artifacts$source_copies)))
