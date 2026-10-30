@@ -254,7 +254,7 @@ applyLipidImportResultToWorkflow <- function(
   annotationCol,
   sampleColumns,
   isPattern,
-  workflowType = "lipidomics_standard",
+  workflowType = "LIPIDOMICS", # KIT-070: the owner's type name
   logInfo = logger::log_info
 ) {
   workflowData$data_tbl <- assayList

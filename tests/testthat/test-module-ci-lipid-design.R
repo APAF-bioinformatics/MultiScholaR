@@ -135,7 +135,6 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
     },
     assignFn = function(name, value, envir) assigned_names <<- c(assigned_names, name),
     createLipidomicsAssayDataFn = function(...) s4_token,
-    workflowStateClass = list(new = function(type) stop("existing state manager should be reused")),
     updateLipidFilteringFn = function(...) invisible(NULL)
   )
 

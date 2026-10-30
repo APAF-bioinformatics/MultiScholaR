@@ -967,26 +967,32 @@ test_that("metabolomics design imported state-manager seam preserves initializat
   workflow_state$config_list <- list(normalization = "none")
   workflow_state$state_manager <- NULL
 
+  # KIT-070: no in-memory fallback; a session without its owner is refused before anything is saved.
+  expect_error(
+    saveMetabDesignImportedS4State(
+      workflowData = workflow_state,
+      s4Object = structure(list(ok = TRUE), class = "MetaboliteAssayData"),
+      messageFn = function(...) invisible(NULL)
+    ),
+    class = "saved_entity_scope"
+  )
+
   fake_manager <- new.env(parent = emptyenv())
   fake_manager$saveState <- function(...) {
     captured$save_args <- list(...)
     invisible(NULL)
   }
+  workflow_state$state_manager <- fake_manager
 
   result <- saveMetabDesignImportedS4State(
     workflowData = workflow_state,
     s4Object = structure(list(ok = TRUE), class = "MetaboliteAssayData"),
-    stateManagerFactory = function(omicsType) {
-      captured$factory_arg <- omicsType
-      fake_manager
-    },
     messageFn = function(...) {
       captured$messages <- c(captured$messages, paste(..., collapse = " "))
       invisible(NULL)
     }
   )
 
-  expect_identical(captured$factory_arg, "metabolomics")
   expect_identical(workflow_state$state_manager, fake_manager)
   expect_identical(result, fake_manager)
   expect_identical(captured$save_args$state_name, "metab_raw_data_s4")
@@ -999,8 +1005,7 @@ test_that("metabolomics design imported state-manager seam preserves initializat
   expect_identical(
     captured$messages,
     c(
-      "DEBUG66: Initializing state manager...",
-      "DEBUG66: Created new WorkflowState",
+      "DEBUG66: Binding the state owner to METABOLOMICS...",
       "DEBUG66: Saving state to state_manager...",
       "DEBUG66: State saved successfully"
     )

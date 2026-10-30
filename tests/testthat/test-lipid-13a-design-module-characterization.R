@@ -265,7 +265,6 @@ test_that("lipid design import confirmation helper preserves failure and success
     },
     assignFn = function(name, value, envir) assigned_names <<- c(assigned_names, name),
     createLipidomicsAssayDataFn = function(...) s4_token,
-    workflowStateClass = list(new = function(type) stop("existing state manager should be reused")),
     updateLipidFilteringFn = function(...) update_calls[[length(update_calls) + 1L]] <<- list(...)
   )
 

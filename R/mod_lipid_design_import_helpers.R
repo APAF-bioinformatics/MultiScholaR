@@ -99,7 +99,6 @@ runLipidDesignImportConfirmationShell <- function(
     readJsonFn = jsonlite::read_json,
     assignFn = assign,
     createLipidomicsAssayDataFn = createLipidomicsAssayData,
-    workflowStateClass = WorkflowState,
     updateLipidFilteringFn = updateLipidFiltering
 ) {
     removeModalFn()
@@ -367,14 +366,9 @@ runLipidDesignImportConfirmationShell <- function(
         message("DEBUG66: createLipidomicsAssayData() completed successfully")
         message(sprintf("DEBUG66: S4 object class: %s", class(s4_obj)[1]))
 
-        # --- 8. Initialize state manager and save ---
-        message("DEBUG66: Initializing state manager...")
-        if (is.null(workflowData$state_manager)) {
-            workflowData$state_manager <- workflowStateClass$new("lipidomics")
-            message("DEBUG66: Created new WorkflowState")
-        } else {
-            message("DEBUG66: Using existing WorkflowState")
-        }
+        # --- 8. Bind the session owner to the route and save (KIT-070) ---
+        message("DEBUG66: Binding the state owner to LIPIDOMICS...")
+        bindWorkflowOwnerTypeAtDesign(workflowData, "LIPIDOMICS", workflowData$data_format)
 
         message("DEBUG66: Saving state to state_manager...")
         workflowData$state_manager$saveState(

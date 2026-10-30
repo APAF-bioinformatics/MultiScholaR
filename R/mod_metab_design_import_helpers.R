@@ -405,16 +405,11 @@ createMetabDesignImportedS4Object <- function(
 saveMetabDesignImportedS4State <- function(
     workflowData,
     s4Object,
-    stateManagerFactory = function(omicsType) WorkflowState$new(omicsType),
     messageFn = message
 ) {
-    messageFn("DEBUG66: Initializing state manager...")
-    if (is.null(workflowData$state_manager)) {
-        workflowData$state_manager <- stateManagerFactory("metabolomics")
-        messageFn("DEBUG66: Created new WorkflowState")
-    } else {
-        messageFn("DEBUG66: Using existing WorkflowState")
-    }
+    # KIT-070: the session owner is bound to the metabolomics route here (the import wrote files only).
+    messageFn("DEBUG66: Binding the state owner to METABOLOMICS...")
+    bindWorkflowOwnerTypeAtDesign(workflowData, "METABOLOMICS", workflowData$data_format)
 
     messageFn("DEBUG66: Saving state to state_manager...")
     workflowData$state_manager$saveState(

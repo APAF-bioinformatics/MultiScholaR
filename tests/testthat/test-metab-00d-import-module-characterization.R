@@ -230,7 +230,7 @@ test_that("mod_metab_import_server preserves process-import success behavior", {
   expect_identical(harness$workflow_data$column_mapping$annotation_col, "Annotation")
   expect_identical(harness$workflow_data$column_mapping$sample_columns, c("sample_a", "sample_b"))
   expect_identical(harness$workflow_data$tab_status$setup_import, "complete")
-  expect_identical(harness$capture$workflow_types, "metabolomics_standard")
+  expect_identical(harness$capture$workflow_types, "METABOLOMICS") # KIT-070: the owner's type name
   expect_identical(harness$workflow_data$processing_log$setup_import$assay_names, "LCMS_Pos")
   expect_identical(harness$workflow_data$processing_log$setup_import$n_assays, 1L)
   expect_identical(harness$workflow_data$processing_log$setup_import$n_samples, 2L)

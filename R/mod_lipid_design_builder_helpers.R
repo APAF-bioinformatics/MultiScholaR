@@ -153,9 +153,8 @@ runLipidDesignBuilderObserverShell <- function(
             , args = results$config_list
         )
 
-        if (is.null(workflowData$state_manager)) {
-            workflowData$state_manager <- WorkflowState$new("lipidomics")
-        }
+        # KIT-070: the session owner is bound to the lipidomics route here (the import wrote files only).
+        bindWorkflowOwnerTypeAtDesign(workflowData, "LIPIDOMICS", workflowData$data_format)
 
         logger::log_info("Saving LipidomicsAssayData S4 object to state manager as 'lipid_raw_data_s4'")
         workflowData$state_manager$saveState(

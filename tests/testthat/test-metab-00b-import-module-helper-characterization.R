@@ -266,7 +266,7 @@ test_that("metabolomics import workflow payload application preserves workflow c
   expect_identical(workflow_data$data_format, "custom")
   expect_identical(workflow_data$data_type, "metabolite")
   expect_identical(workflow_data$column_mapping, workflow_payload$columnMapping)
-  expect_identical(workflow_type_calls, "metabolomics_standard")
+  expect_identical(workflow_type_calls, "METABOLOMICS") # KIT-070: the owner's type name
   expect_identical(workflow_data$processing_log$setup_import, workflow_payload$processingLog)
   expect_identical(workflow_data$tab_status$setup_import, "complete")
   expect_identical(workflow_data$tab_status$downstream, "pending")
@@ -276,7 +276,7 @@ test_that("metabolomics import workflow payload application preserves workflow c
   expect_identical(
     log_messages,
     c(
-      "Workflow type set to: metabolomics_standard",
+      "Workflow type set to: METABOLOMICS",
       "Metabolomics import complete: 2 assays, 3 total metabolites"
     )
   )

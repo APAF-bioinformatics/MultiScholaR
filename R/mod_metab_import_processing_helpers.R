@@ -281,7 +281,7 @@ writeMetabImportSourceArtifacts <- function(workflowPayload,
 applyMetabImportWorkflowPayload <- function(
     workflowData,
     workflowPayload,
-    workflowType = "metabolomics_standard",
+    workflowType = "METABOLOMICS", # KIT-070: the owner's type name
     logInfo = logger::log_info
 ) {
   workflowData$data_tbl <- workflowPayload$assayList

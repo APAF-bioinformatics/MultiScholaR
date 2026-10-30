@@ -287,8 +287,8 @@ test_that("lipid import workflow helpers preserve workflow commit and setup fina
     logInfo = function(message) log_messages <<- c(log_messages, message)
   )
 
-  expect_identical(result, "lipidomics_standard")
-  expect_identical(workflow_type_calls, "lipidomics_standard")
+  expect_identical(result, "LIPIDOMICS") # KIT-070: the owner's type name
+  expect_identical(workflow_type_calls, "LIPIDOMICS")
   expect_identical(workflow_data$data_format, "msdial")
   expect_identical(workflow_data$data_type, "lipid")
   expect_identical(workflow_data$column_mapping$annotation_col, "annotation")

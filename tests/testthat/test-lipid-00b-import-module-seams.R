@@ -2741,7 +2741,7 @@ test_that("applyLipidImportResultToWorkflow stores lipid import state and initia
     logInfo = function(message) log_messages <<- c(log_messages, message)
   )
 
-  expect_identical(result, "lipidomics_standard")
+  expect_identical(result, "LIPIDOMICS") # KIT-070: the owner's type name
   expect_identical(workflow_data$data_tbl, assay_list)
   expect_identical(workflow_data$data_format, "msdial")
   expect_identical(workflow_data$data_type, "lipid")
@@ -2754,8 +2754,8 @@ test_that("applyLipidImportResultToWorkflow stores lipid import state and initia
       is_pattern = "^ISTD_"
     )
   )
-  expect_identical(workflow_type_calls, "lipidomics_standard")
-  expect_identical(log_messages, "Workflow type set to: lipidomics_standard")
+  expect_identical(workflow_type_calls, "LIPIDOMICS")
+  expect_identical(log_messages, "Workflow type set to: LIPIDOMICS")
 })
 
 test_that("applyLipidImportResultToWorkflow preserves blank option fallbacks without a state manager", {
@@ -2779,7 +2779,7 @@ test_that("applyLipidImportResultToWorkflow preserves blank option fallbacks wit
     logInfo = function(message) log_messages <<- c(log_messages, message)
   )
 
-  expect_identical(result, "lipidomics_standard")
+  expect_identical(result, "LIPIDOMICS") # KIT-070: the owner's type name
   expect_identical(workflow_data$data_tbl, assay_list)
   expect_identical(workflow_data$data_format, "custom")
   expect_identical(workflow_data$data_type, "lipid")

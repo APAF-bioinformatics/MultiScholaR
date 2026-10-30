@@ -135,3 +135,40 @@ test_that("KIT-070: a metabolomics owner commits, reads and reverts MetaboliteAs
   omicsOwnerRoundTrip("metabolomics", "METABOLOMICS", object, filtered, "metabolite_data",
     c("metab_raw_data_s4", "metab_intensity_filtered"))
 })
+
+# ---------------------------------------------------------------------------
+# Item 2: both module servers hold the session owner from session start; no in-memory manager remains.
+# ---------------------------------------------------------------------------
+test_that("KIT-070: the lipidomics and metabolomics module servers create the session owner at start", {
+  skip_if_not(workflowOwnerCapable())
+  for (omic in c("lipidomics", "metabolomics")) {
+    root <- withr::local_tempdir()
+    source_dir <- file.path(root, "source"); dir.create(source_dir)
+    dirs <- stats::setNames(list(list(source_dir = source_dir)), omic)
+    server <- get(paste0("mod_", omic, "_server"), envir = asNamespace("MultiScholaR"), inherits = FALSE)
+    shiny::testServer(server, args = list(project_dirs = dirs, omic_type = omic, experiment_label = "Owner test", volumes = NULL), {
+      owner <- shiny::isolate(workflow_data$state_manager)
+      expect_s3_class(owner, "DIAStateAdapter")
+      expect_true(isDIASessionOwnerPending(owner))
+      expect_identical(owner$.context$store$identity$project_id, paste0(toupper(omic), "-pending"))
+      expect_identical(owner$.context$omic_type, omic)
+      expect_identical(owner$.context$experiment_paths$source_dir, source_dir)
+      expect_null(session$userData$dia_capacity_manager)
+      expect_identical(session$userData$omics_workflow_data[[omic]], workflow_data)
+      closeDIAStateAdapter(owner)
+    })
+  }
+})
+
+test_that("KIT-070: no lipidomics or metabolomics module constructs an in-memory state manager", {
+  r_dir <- normalizePath(file.path(testthat::test_path(), "..", "..", "R"), mustWork = TRUE)
+  files <- list.files(r_dir, "^mod_(lipid|metab)", full.names = TRUE)
+  expect_gt(length(files), 20L)
+  hits <- unlist(lapply(files, function(f) {
+    lines <- readLines(f, warn = FALSE)
+    code <- sub("#.*$", "", lines)
+    idx <- grep("WorkflowState\\$new|workflowStateClass|stateManagerFactory", code)
+    if (length(idx)) paste0(basename(f), ":", idx) else character()
+  }))
+  expect_identical(hits, character())
+})

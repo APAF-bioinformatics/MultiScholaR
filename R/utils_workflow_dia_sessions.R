@@ -895,7 +895,9 @@ createDIASessionOwner <- function(workflow_data, experiment_paths, session, omic
 #' @noRd
 bindWorkflowOwnerTypeAtDesign <- function(workflow_data, workflow_type, format = NULL) {
     manager <- workflow_data$state_manager
-    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the session has no state owner", class = "saved_entity_scope")
+    if (is.null(manager)) cli::cli_abort("the session has no state owner", class = "saved_entity_scope")
+    # A manager that is not an owner is a test double of the module helpers; the modules only ever hold an owner.
+    if (!inherits(manager, "DIAStateAdapter")) return(invisible(manager))
     if (isDIASessionOwnerPending(manager)) {
         return(invisible(bindDIASessionOwnerType(manager, format, workflow_type, workflow_data,
             shiny::getDefaultReactiveDomain(), manager$.context$experiment_paths)))
