@@ -307,6 +307,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     step_defaults <- unique(vapply(steps, function(step) step$defaults_sha256, character(1)))
     list(schema = "multischolar.analysis_record.v1", generated_at = format(now, "%Y-%m-%dT%H:%M:%OS3%z"),
         workflow = snapshot$workflow_type %||% NA_character_,
+        omic_type = context$omic_type %||% "proteomics", # KIT-070: the owner's omic (the replay's directories)
         store_identity = list(project_id = context$store$identity$project_id %||% NA_character_,
             workflow_id = context$store$identity$workflow_id %||% NA_character_),
         software = list(package = "MultiScholaR", version = current$version %||% NA_character_,
@@ -424,7 +425,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     # Inputs first: a record whose files do not match the project is refused before any step runs.
     for (input in record$inputs) {
         if (is.null(input$sha256) || is.na(input$sha256) || !input$role %in% c("diann_report", "maxquant_report",
-            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file")) next
+            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", "lipid_assay", "metab_assay")) next
         path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
         if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
@@ -449,8 +450,9 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     workflow$state_manager <- manager
     workflow$qc_params <- list(peptide_qc = list())
     progress <- new.env(parent = emptyenv())
-    directories <- setupDirectories(file.path(scratch, "progress"), "proteomics")
-    directories$proteomics_dia_baseline_smoke <- directories$proteomics
+    omic_type <- record$omic_type %||% "proteomics" # KIT-070: a record made before the field is proteomics'
+    directories <- setupDirectories(file.path(scratch, "progress"), omic_type)
+    directories[[paste0(omic_type, "_dia_baseline_smoke")]] <- directories[[omic_type]]
     normalization_final <- NULL
     for (step in steps[-preconditions]) {
         operation <- step$operation

@@ -2572,10 +2572,10 @@ publishWorkflowDaResult <- function(owner, paths, result) {
     context_path <- file.path(paths$request_dir, "publication-context.rds")
     publication <- if (file.exists(context_path)) readRDS(context_path) else NULL
     experiment_paths <- if (is.list(publication) && is.list(publication$experiment_paths)) publication$experiment_paths else
-        if (is.list(publication) && is.list(publication$proteomics)) publication$proteomics else {
+        if (is.list(publication) && is.list(publication[[entry$omic_type]])) publication[[entry$omic_type]] else {
             root <- file.path(paths$request_dir, "required-output")
             dir.create(root, showWarnings = FALSE)
-            setupDirectories(root, entry$omic_type)$proteomics
+            setupDirectories(root, entry$omic_type)[[entry$omic_type]] # KIT-070: by the entry's omic
         }
     if (!is.list(experiment_paths) || is.null(experiment_paths$da_output_dir) || is.null(experiment_paths$publication_graphs_dir))
         cli::cli_abort("publication context is invalid", class = "workflow_execution_invalid")
@@ -2685,9 +2685,9 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
         root <- file.path(paths$request_dir, "required-output")
         dir.create(root, showWarnings = FALSE)
         directories <- setupDirectories(root, entry$omic_type)
-        directories$proteomics_dia_baseline_smoke <- directories$proteomics
+        directories[[paste0(entry$omic_type, "_dia_baseline_smoke")]] <- directories[[entry$omic_type]]
         publication <- list(directories = directories,
-            experiment_paths = directories$proteomics,
+            experiment_paths = directories[[entry$omic_type]],
             omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
         writeWorkflowExecutionMessage(context_path, publication)
     } else {
@@ -2697,9 +2697,9 @@ publishWorkflowPeptideResult <- function(owner, paths, result) {
             directories <- stats::setNames(list(publication$experiment_paths),
                 paste(publication$omic_type, publication$experiment_label, sep = "_"))
             publication$directories <- directories
-        } else if (is.list(publication) && is.list(publication$proteomics)) {
+        } else if (is.list(publication) && is.list(publication[[entry$omic_type]])) {
             publication <- list(directories = publication,
-                experiment_paths = publication$proteomics,
+                experiment_paths = publication[[entry$omic_type]],
                 omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
         }
     }
@@ -2756,8 +2756,8 @@ publishWorkflowProteinResult <- function(owner, paths, result) {
         root <- file.path(paths$request_dir, "required-output")
         dir.create(root, showWarnings = FALSE)
         directories <- setupDirectories(root, entry$omic_type)
-        directories$proteomics_dia_baseline_smoke <- directories$proteomics
-        publication <- list(directories = directories, experiment_paths = directories$proteomics,
+        directories[[paste0(entry$omic_type, "_dia_baseline_smoke")]] <- directories[[entry$omic_type]]
+        publication <- list(directories = directories, experiment_paths = directories[[entry$omic_type]],
             omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
         writeWorkflowExecutionMessage(context_path, publication)
     } else {
@@ -2765,8 +2765,8 @@ publishWorkflowProteinResult <- function(owner, paths, result) {
         if (identical(sort(names(publication)), sort(c("experiment_label", "experiment_paths", "omic_type")))) {
             publication$directories <- stats::setNames(list(publication$experiment_paths),
                 paste(publication$omic_type, publication$experiment_label, sep = "_"))
-        } else if (is.list(publication) && is.list(publication$proteomics)) {
-            publication <- list(directories = publication, experiment_paths = publication$proteomics,
+        } else if (is.list(publication) && is.list(publication[[entry$omic_type]])) {
+            publication <- list(directories = publication, experiment_paths = publication[[entry$omic_type]],
                 omic_type = entry$omic_type, experiment_label = "dia_baseline_smoke")
         }
     }

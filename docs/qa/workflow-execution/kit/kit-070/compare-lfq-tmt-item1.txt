@@ -1,0 +1,6 @@
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-lfq_fixture-item1.rds (build NA): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-tmt_fixture-item1.rds (build NA): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical

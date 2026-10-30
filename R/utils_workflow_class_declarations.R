@@ -53,6 +53,16 @@ workflowClassDeclarations <- function() {
             opaque = c("enrichment_plots", "enrichment_plotly", "enrichment_summaries"), roles = character()))
 }
 
+#' The declared class names, optionally of one kind (KIT-070: the owner's readers take their class list here).
+#' @param kind `NULL` for every declaration, else `"assay"` or `"result"`.
+#' @return Character vector of class names.
+#' @noRd
+workflowDeclaredClassNames <- function(kind = NULL) {
+    declarations <- workflowClassDeclarations()
+    if (!is.null(kind)) declarations <- Filter(function(d) identical(d$kind, kind), declarations)
+    names(declarations)
+}
+
 #' Declared non-class outputs: bounded manifests a step delivers instead of an S4 object.
 #' @return Named list by schema. The proteomics DA output is the existing `dia.da_results.v1`
 #'   manifest (audit B11): a reference-only record whose contrast products are saved entities.

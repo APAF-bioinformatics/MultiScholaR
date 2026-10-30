@@ -808,7 +808,8 @@ workflowTypeForImportFormat <- function(format, data_type = NULL, dia_route = "D
 #' The native session manifest's `route` for each workflow type (KIT-020): the DIA route is `iq`; the
 #' protein-level types have no quantification route and are `protein`.
 #' @noRd
-workflowRoutesByType <- c(DIA = "iq", DIA_LIMPA = "limpa", LFQ = "protein", TMT = "protein")
+workflowRoutesByType <- c(DIA = "iq", DIA_LIMPA = "limpa", LFQ = "protein", TMT = "protein",
+    LIPIDOMICS = "lipidomics", METABOLOMICS = "metabolomics") # KIT-070: the two omics routes of the kit
 
 #' The manifest route of a workflow type.
 #' @param type One of `names(workflowRoutesByType)`.
@@ -826,6 +827,8 @@ workflowRouteForType <- function(type) {
 #' @return The store's project id.
 #' @noRd
 workflowNativeStoreLabel <- function(format, workflow_type = NULL) {
+    # KIT-070: an owner bound without a vendor format (the lipid and metab design step) is labelled by its type.
+    if (!is.character(format) || length(format) != 1L || is.na(format) || !nzchar(format)) return(paste0(workflow_type, "-native"))
     if (identical(format, "diann")) (if (identical(workflow_type, "DIA_LIMPA")) "DIA-LIMPA-native" else "DIA-IQ-native") else
         paste0(toupper(format), "-native")
 }
@@ -852,30 +855,55 @@ workflowDiaRouteType <- function(method) {
 #' source directory with a pending identity (`PROTEOMICS-pending` / `PENDING`) and the placeholder `initial` state;
 #' the import binds the format and the workflow type to it (`bindDIASessionOwnerType`). Every proteomics module then
 #' runs on the owner: there is no in-memory path. The in-memory `WorkflowState` lives on inside the adapter only.
-#' @param workflow_data,session The proteomics bus and the Shiny session.
+#' @param workflow_data,session The module's bus and the Shiny session.
 #' @param experiment_paths Project paths with `source_dir`.
+#' @param omic_type The module's omic (KIT-070): `proteomics` (the default, the KIT-048 behaviour), `lipidomics` or
+#'   `metabolomics`. The pending identity carries it and the session registration is per omic.
 #' @return The attached owner (a `DIAStateAdapter`).
 #' @noRd
-createDIASessionOwner <- function(workflow_data, experiment_paths, session) {
+createDIASessionOwner <- function(workflow_data, experiment_paths, session, omic_type = "proteomics") {
     if (!is.list(experiment_paths) || !is.character(experiment_paths$source_dir) || length(experiment_paths$source_dir) != 1L ||
         !dir.exists(experiment_paths$source_dir)) {
-        cli::cli_abort("the proteomics session needs a project source directory for its state owner", class = "saved_entity_scope")
+        cli::cli_abort("the {omic_type} session needs a project source directory for its state owner", class = "saved_entity_scope")
     }
     if (!workflowOwnerCapable()) {
-        cli::cli_abort("proteomics needs the qs2, DuckDB and Arrow packages for its state owner", class = "saved_entity_unsupported")
+        cli::cli_abort("{omic_type} needs the qs2, DuckDB and Arrow packages for its state owner", class = "saved_entity_unsupported")
     }
     root <- normalizePath(experiment_paths$source_dir, mustWork = TRUE)
     state_root <- tempfile(".dia-native-", tmpdir = root)
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
     }
-    store <- newWorkflowEntityStore(state_root, "PROTEOMICS-pending", "PENDING", max_cache_bytes = 0)
+    store <- newWorkflowEntityStore(state_root, paste0(toupper(omic_type), "-pending"), "PENDING", max_cache_bytes = 0)
     manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
     manager$.context$sql_rollup <- TRUE
     manager$.context$session_format <- "native_v1"
     manager$.context$reference_states <- TRUE
     manager$.context$experiment_paths <- experiment_paths
-    attachDIAStateSession(manager, session, workflow_data)
+    manager$.context$omic_type <- omic_type
+    attachDIAStateSession(manager, session, workflow_data, omic_type = omic_type)
+}
+
+#' KIT-070: bind the lipidomics or metabolomics session owner to its route at the design step (the import of these
+#' omics writes files only; the first state is the design's). A pending owner is bound as `bindDIASessionOwnerType`
+#' binds the proteomics owner at import (the session from the reactive domain, the paths from the owner); an owner
+#' already bound to the same type passes, so a second design pass saves onto the same store; another type aborts.
+#' @param workflow_data The module's bus; `workflow_data$state_manager` is the owner.
+#' @param workflow_type `LIPIDOMICS` or `METABOLOMICS`.
+#' @param format The vendor format of the import when known (the store label), else `NULL`.
+#' @return The bound owner, also on `workflow_data$state_manager`.
+#' @noRd
+bindWorkflowOwnerTypeAtDesign <- function(workflow_data, workflow_type, format = NULL) {
+    manager <- workflow_data$state_manager
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the session has no state owner", class = "saved_entity_scope")
+    if (isDIASessionOwnerPending(manager)) {
+        return(invisible(bindDIASessionOwnerType(manager, format, workflow_type, workflow_data,
+            shiny::getDefaultReactiveDomain(), manager$.context$experiment_paths)))
+    }
+    if (!identical(manager$.context$store$identity$workflow_id, workflow_type)) {
+        cli::cli_abort("reset the project before changing the route of an on-disk session", class = "saved_entity_scope")
+    }
+    invisible(manager)
 }
 
 #' Whether an owner still carries the pending identity of `createDIASessionOwner` (no import has bound it).
@@ -907,9 +935,10 @@ bindDIASessionOwnerType <- function(manager, format, workflow_type, workflow_dat
     bound$.context$session_format <- "native_v1"
     bound$.context$reference_states <- TRUE
     bound$.context$experiment_paths <- paths
+    bound$.context$omic_type <- manager$.context$omic_type %||% "proteomics" # KIT-070: the omic travels with the binding
     bound$setWorkflowType(workflow_type)
     placeholder_root <- dirname(manager$.context$store$directory)
-    workflow_data$state_manager <- attachDIAStateSession(bound, session, workflow_data)
+    workflow_data$state_manager <- attachDIAStateSession(bound, session, workflow_data, omic_type = bound$.context$omic_type)
     closeDIAStateAdapter(manager)
     unlink(placeholder_root, recursive = TRUE)
     invisible(workflow_data$state_manager)

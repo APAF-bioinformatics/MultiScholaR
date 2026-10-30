@@ -1250,7 +1250,12 @@ kitCurrentInputComponentId <- function(store_dir, api) {
     store <- kitOpenStore(store_dir, api)
     on.exit(api("closeWorkflowEntityStore")(store), add = TRUE)
     record <- api("hydrateSavedWorkflowCheckpoint")(store, head$references[[head$current_state]])
-    record$data$components$peptide_data$entity_id
+    # KIT-070: the class declaration names the assay component; a `lists` assay (lipidomics, metabolomics) holds one
+    # component per named table, identified by the sorted element ids.
+    field <- api("workflowClassDeclaration")(record$data$class)$assay
+    component <- record$data$components[[field]]
+    if (is.character(component$entity_id)) return(component$entity_id)
+    sort(unname(vapply(component, function(element) element$entity_id, character(1))))
 }
 
 #' Fingerprint every state and product the head references.

@@ -219,7 +219,8 @@ isDIAComponentCheckpoint <- function(value) {
 #' @return Record containing component descriptors, never an assay.
 #' @noRd
 readWorkflowStateMetadata <- function(manager, reference = NULL) {
-    record <- readComponentMetadata(manager, reference, classes = c("PeptideQuantitativeData", "ProteinQuantitativeData"))
+    # KIT-070: every declared assay class (the two proteomics classes, LipidomicsAssayData, MetaboliteAssayData).
+    record <- readComponentMetadata(manager, reference, classes = workflowDeclaredClassNames("assay"))
     record
 }
 
@@ -1381,9 +1382,11 @@ newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
         if (is.null(entry$field)) value else value[[entry$field]]
     })
     adapter$setWorkflowType <- function(type) {
-        # KIT-020: the on-disk owner serves the DIA-NN routes (KIT-046: DIA and DIA_LIMPA) and the protein-level LFQ and TMT routes.
-        if (!is.character(type) || length(type) != 1L || !type %in% c("DIA", "DIA_LIMPA", "LFQ", "TMT")) {
-            cli::cli_abort("the on-disk session serves the DIA, DIA_LIMPA, LFQ and TMT workflow types", class = "saved_entity_scope")
+        # KIT-020: the on-disk owner serves the DIA-NN routes (KIT-046: DIA and DIA_LIMPA) and the protein-level LFQ and TMT
+        # routes; KIT-070: the lipidomics and metabolomics routes.
+        if (!is.character(type) || length(type) != 1L || !type %in% c("DIA", "DIA_LIMPA", "LFQ", "TMT", "LIPIDOMICS", "METABOLOMICS")) {
+            cli::cli_abort("the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and METABOLOMICS workflow types",
+                class = "saved_entity_scope")
         }
         adapter$workflow_type <- type
     }
@@ -1886,14 +1889,21 @@ getDIAReactiveReference <- function(value) {
 #' @param session,workflow_data Existing session and reactive data bus.
 #' @param receipt_dir Optional existing harness-only receipt destination.
 #' @param scope Existing diagnostic scope label.
+#' @param omic_type The owner's omic (KIT-070). The proteomics owner is the session's `dia_capacity_manager`, the slot
+#'   `getWorkflowActiveOwner()` and the kit readers resolve; a lipidomics or metabolomics owner lives on its own
+#'   module's bus (`workflow_data$state_manager`, registered per omic by KIT-030) and leaves that slot alone, since one
+#'   session runs one module server per selected omic.
 #' @return Attached manager.
 #' @noRd
 attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir = NULL,
-    scope = "dia-native-session") {
+    scope = "dia-native-session", omic_type = manager$.context$omic_type %||% "proteomics") {
     manager$.context$on_commit <- function() {
         workflow_data$state_update_trigger <- Sys.time()
     }
-    session$userData$dia_capacity_manager <- manager
+    manager$.context$omic_type <- omic_type
+    session_owner <- if (identical(omic_type, "proteomics")) function() session$userData$dia_capacity_manager else
+        function() shiny::isolate(workflow_data$state_manager)
+    if (identical(omic_type, "proteomics")) session$userData$dia_capacity_manager <- manager
     manager$.context$store$progress <- if (is.null(receipt_dir)) NULL else
         newWorkflowProgressObserver(receipt_dir, function() manager$.context$snapshot$current_state)
     owner_events <- 0L
@@ -1940,7 +1950,7 @@ attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir =
         observeDIAOwnerBoundary(manager$.context, "flush_begin")
     }, once = FALSE)
     callbacks$after <- session$onFlushed(function() {
-        if (!identical(session$userData$dia_capacity_manager, manager) ||
+        if (!identical(session_owner(), manager) ||
             isTRUE(manager$.context$store$closed)) return(invisible(NULL))
         context <- manager$.context
         if (context$scope_depth != 0L || context$store$open_resources != 0L ||
@@ -1953,7 +1963,7 @@ attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir =
     callbacks$end <- session$onSessionEnded(function() {
         write_receipt("session_end")
         closeDIAStateAdapter(manager)
-        session$userData$dia_capacity_manager <- NULL
+        if (identical(omic_type, "proteomics")) session$userData$dia_capacity_manager <- NULL
     })
     manager$.context$callbacks <- callbacks
     write_receipt("initialized")
