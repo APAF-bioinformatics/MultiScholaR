@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-10-29",
+  "created": "2026-10-30",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -384,6 +384,15 @@
       "exact_sum": "70fc470e990fc4b9553066a77de60a030198bb34e52a4058d8b425160bf4a6b7",
       "install_member": "browser-smoke.U9nsh0",
       "source_commit": "b4d1eea54d0734d64cf44a8ba20d9315f7ad1f3e",
+      "runtime_patch_bytes": 0
+    },
+    "kit_069": {
+      "ticket": "KIT-069",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.4nx7p3/library",
+      "build": "dcfde368c61b72cf4523138b0ab4f320a1296c015489597bea758ea1289230ed",
+      "exact_sum": "01563955ea7f5046b1aa57e38c835ce4c77ef4127b82998402d03aadcf10cf08",
+      "install_member": "browser-smoke.4nx7p3",
+      "source_commit": "b1ff60159fb19861031c042a4ff64525b5ae80dc",
       "runtime_patch_bytes": 0
     }
   },
@@ -16006,7 +16015,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-10-29",
+        "date": "2026-10-30",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {

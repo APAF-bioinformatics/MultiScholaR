@@ -1,0 +1,21 @@
+── 1. Failure ('test-omics-audit-carry-overs.R:55:3'): BUG-10: the lipidomics QC
+Expected `counts$state_reads` to be identical to 2L.
+── 2. Failure ('test-omics-audit-carry-overs.R:61:3'): BUG-10: the metabolomics 
+Expected `counts$state_reads` to be identical to 2L.
+── 3. Failure ('test-omics-audit-carry-overs.R:76:3'): BUG-16: the metabolomics 
+Expected `... <- NULL` not to throw any warnings.
+── 4. Failure ('test-omics-audit-carry-overs.R:140:3'): BUG-17: the lipidomics G
+Expected `widget` to be an S3 object.
+── 5. Failure ('test-omics-audit-carry-overs.R:141:3'): BUG-17: the lipidomics G
+Expected `glimmaRowCount(widget)` to be identical to 20L.
+── 6. Failure ('test-omics-audit-carry-overs.R:148:3'): BUG-17: the metabolomics
+Expected `widget` to be an S3 object.
+── 7. Failure ('test-omics-audit-carry-overs.R:149:3'): BUG-17: the metabolomics
+Expected `glimmaRowCount(widget)` to be identical to 20L.
+── 8. Error ('test-omics-audit-carry-overs.R:161:3'): BUG-23: the sample-column 
+Error in `names(assayData)[sapply(assayData, is.numeric)]`: invalid subscript type 'list'
+── 9. Error ('test-omics-audit-carry-overs.R:173:65'): BUG-23: the lipidomics im
+Error in `sum(sapply(assayList, nrow))`: invalid 'type' (list) of argument
+── 10. Error ('test-omics-audit-carry-overs.R:181:3'): BUG-23: the metabolomics 
+Error in `names(assayData)[sapply(assayData, is.numeric)]`: invalid subscript type 'list'
+test-omics-audit-carry-overs.R: pass 7 fail 7 error 3 skip 0
