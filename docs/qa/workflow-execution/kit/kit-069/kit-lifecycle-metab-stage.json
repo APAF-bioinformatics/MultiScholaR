@@ -1,0 +1,83 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-053",
+  "stage": "kit-lifecycle-metab",
+  "date": "2026-10-30",
+  "decision": {
+    "status": "lifecycle_complete_observed",
+    "rule": null,
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": false,
+    "route": "metabolomics",
+    "in_memory": true,
+    "head_rule": null
+  },
+  "member": {
+    "id": "member",
+    "corpus": "metab_screen",
+    "build": "dcfde368c61b72cf4523138b0ab4f320a1296c015489597bea758ea1289230ed",
+    "status": "complete",
+    "exact": null,
+    "elapsed_seconds": 213.75,
+    "peak_bytes": 2493132800,
+    "peak_anon_bytes": 2441150464,
+    "resident_end_bytes": 1893367808,
+    "phase_seconds": {
+      "import": 5.55000000000291,
+      "design": 13.3399999999965,
+      "intensity": 3.61999999999534,
+      "duplicates": 2.34000000001106,
+      "qc_finalize": 2.08000000000175,
+      "normalisation": 105.910000000003,
+      "correlation": 3.61000000000058,
+      "session_export": 1.29000000000815,
+      "da": 7.22000000000116,
+      "report": 2.92000000001281
+    },
+    "phase_peak_anon_bytes": {
+      "import": 740032512,
+      "design": 740061184,
+      "intensity": 914358272,
+      "duplicates": 922955776,
+      "qc_finalize": 922955776,
+      "normalisation": 2441150464,
+      "correlation": 2326646784,
+      "session_export": 2326646784,
+      "da": 2326794240,
+      "report": 1924984832
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.169999999998254,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": 91,
+    "failure": null
+  }
+}
