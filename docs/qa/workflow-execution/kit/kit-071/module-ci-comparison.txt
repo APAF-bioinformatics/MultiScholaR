@@ -1,0 +1,121 @@
+# KIT-071 module-CI comparison: before = scratch-071-pre (1edcb804), after = the working tree at 39d61317; hashes via kit-069/mci-hash.R, content via kit-069/compare-groups.R
+
+## counts before
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 148 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0
+
+## counts after
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0
+
+## byte-level (kit-030/compare-mci.py)
+test-module-ci-lipid-da: same 2 differing 1 only-before 9 only-after 0
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/DESCRIPTION
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/LICENSE
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/features.rds
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/package.rds
+test-module-ci-lipid-design: same 15 differing 1 only-before 0 only-after 0
+test-module-ci-lipid-import: same 36 differing 1 only-before 0 only-after 0
+test-module-ci-lipid-norm: same 8 differing 7 only-before 3 only-after 40
+   DIFF mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_latest.rds
+   DIFF mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_summary.txt
+   DIFF mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_data_latest.rds
+   DIFF mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_summary.txt
+   DIFF mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_data_latest.rds
+   DIFF mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_summary.txt
+   ONLY-BEFORE mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_20260505_120000.rds
+   ONLY-BEFORE mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_data_20260505_120000.rds
+   ONLY-BEFORE mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_data_20260505_120000.rds
+   ONLY-AFTER mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/.workflow-mutation.lock
+   ONLY-AFTER mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/dia-state-head.rds
+   ONLY-AFTER mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-state-ID/commit.json
+   ONLY-AFTER mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-state-ID/descriptor.rds
+test-module-ci-lipid-qc: same 0 differing 1 only-before 0 only-after 0
+test-module-ci-lipid-summary: same 41 differing 8 only-before 0 only-after 0
+   DIFF module-ci-lipid-summary-ID/da_output/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-lipid-summary-ID/da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-lipid-summary-ID/results_summary/Publication_tables/DA_results_lipidomics.xlsx
+   DIFF module-ci-lipid-summary-ID/results_summary/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx
+   DIFF module-ci-lipid-summary-ID/source/session_state_2026-05-06.RDS
+   DIFF module-ci-lipid-summary-ID/source/session_state_2026-10-30.RDS
+   DIFF module-ci-lipid-summary-ID/source/study_parameters.txt
+test-module-ci-metab-da: same 2 differing 1 only-before 0 only-after 0
+test-module-ci-metab-design: same 14 differing 1 only-before 0 only-after 0
+test-module-ci-metab-import: same 27 differing 1 only-before 0 only-after 0
+test-module-ci-metab-norm: same 4 differing 6 only-before 0 only-after 2
+   DIFF mci-015-da-reload-automatic-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-da-reload-manual-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-da-reload-skip-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-metab-norm-export-ID/metab_filtered_session_data_20260505_123456.rds
+   DIFF mci-015-metab-norm-export-ID/metab_filtered_session_data_latest.rds
+   ONLY-AFTER mci-015-metab-norm-export-ID/.workflow-export/mci-015-5/journal.json
+   ONLY-AFTER mci-015-metab-norm-export-ID/export_complete_mci-015-5.json
+test-module-ci-metab-qc: same 0 differing 1 only-before 0 only-after 0
+test-module-ci-metab-summary: same 41 differing 8 only-before 0 only-after 0
+   DIFF module-ci-metab-summary-ID/da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-metab-summary-ID/da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-metab-summary-ID/results_summary/Publication_tables/DA_results_metabolomics.xlsx
+   DIFF module-ci-metab-summary-ID/results_summary/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx
+   DIFF module-ci-metab-summary-ID/source/session_state_2026-05-06.RDS
+   DIFF module-ci-metab-summary-ID/source/session_state_2026-10-30.RDS
+   DIFF module-ci-metab-summary-ID/source/study_parameters.txt
+TOTAL {'same': 190, 'diff': 37, 'only_before': 12, 'only_after': 42}
+
+## content level (kit-069/compare-groups.R on the kept trees of the norm and summary lanes)
+before files 262: byte-matched 199, content-matched (timestamps/paths/ids masked) 41, unmatched 22; after-only groups 42
+  UNMATCHED test-module-ci-lipid-norm.hashes 
+  UNMATCHED test-module-ci-lipid-norm.log 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-automatic-f9a9a1c916303/lipid_filtered_session_data_20260505_120000.rds 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-automatic-f9a9a2f54ea94/lipid_filtered_session_data_20260505_120000.rds 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-automatic-f9a9a1c916303/lipid_filtered_session_summary.txt 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-automatic-f9a9a2f54ea94/lipid_filtered_session_summary.txt 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-manual-f9a9a3bdccebe/lipid_filtered_session_data_20260505_120000.rds 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-manual-f9a9a3bdccebe/lipid_filtered_session_summary.txt 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-skip-f9a9a38e444a5/lipid_filtered_session_data_20260505_120000.rds 
+  UNMATCHED test-module-ci-lipid-norm.tree/mci-021-lipid-norm-export-skip-f9a9a38e444a5/lipid_filtered_session_summary.txt 
+  UNMATCHED test-module-ci-lipid-summary.hashes 
+  UNMATCHED test-module-ci-lipid-summary.log 
+  UNMATCHED test-module-ci-lipid-summary.tree/module-ci-lipid-summary-f9c621887d90/source/study_parameters.txt 
+  UNMATCHED test-module-ci-lipid-summary.tree/module-ci-lipid-summary-f9c623e534397/source/study_parameters.txt 
+  UNMATCHED test-module-ci-lipid-summary.tree/module-ci-lipid-summary-f9c6277ab837b/source/study_parameters.txt 
+  UNMATCHED test-module-ci-metab-norm.hashes 
+  UNMATCHED test-module-ci-metab-norm.log 
+  UNMATCHED test-module-ci-metab-summary.hashes 
+  UNMATCHED test-module-ci-metab-summary.log 
+  UNMATCHED test-module-ci-metab-summary.tree/module-ci-metab-summary-fa3a511a9f1e7/source/study_parameters.txt 
+  UNMATCHED test-module-ci-metab-summary.tree/module-ci-metab-summary-fa3a5511fe52c/source/study_parameters.txt 
+  UNMATCHED test-module-ci-metab-summary.tree/module-ci-metab-summary-fa3a5708b148c/source/study_parameters.txt 
+
+## the unmatched study_parameters.txt paired by workflow name, the version block removed (the before worktree reports itself as an installed package, the after tree as the git branch)
+lipid Workflow Name: MCI023-pos_gcms: identical apart from the version block
+lipid Workflow Name: MCI023-pos_neg: identical apart from the version block
+lipid Workflow Name: MCI023-single_pos: identical apart from the version block
+metab Workflow Name: MCI017-lc: identical apart from the version block
+metab Workflow Name: MCI017-combined: identical apart from the version block
+metab Workflow Name: MCI017-gc: identical apart from the version block
+
+## the unmatched lipid timestamped session file and summary: the file name carries the owner's publication time (Sys.time at the request) where the old handler used the test's getTimeFn seam; the latest copy of the same session content-matched
+5c5
+< Session File: lipid_filtered_session_data_20260505_120000.rds
+---
+> Session File: lipid_filtered_session_data_20261030_203914.rds

@@ -153,6 +153,8 @@ if (!is.null(b$builds$kit_030) && identical(Sys.getenv("KIT_030_LIFECYCLE"), "1"
 if (!is.null(b$builds$kit_069) && identical(Sys.getenv("KIT_069_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_069"
 # KIT-070 (2026-10-30): `KIT_070_LIFECYCLE=1` points them at the kit_070 install (the modules on the on-disk owner).
 if (!is.null(b$builds$kit_070) && identical(Sys.getenv("KIT_070_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_070"
+# KIT-071 (2026-10-30): `KIT_071_LIFECYCLE=1` points them at the kit_071 install (the sessions on the owner).
+if (!is.null(b$builds$kit_071) && identical(Sys.getenv("KIT_071_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_071"
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root

@@ -403,6 +403,15 @@
       "install_member": "browser-smoke.XXcwKH",
       "source_commit": "a2c40f2a7407e2a609a283e085ab036549473620",
       "runtime_patch_bytes": 0
+    },
+    "kit_071": {
+      "ticket": "KIT-071",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.U3g1Dl/library",
+      "build": "c75e8a061edcdd1b3412910c6702d88a766ab0300f73b15840a8f2a833d9db20",
+      "exact_sum": "044b9ad4efb5b631411f2f2284f767de9564f91d919a0216d8131acff29720ce",
+      "install_member": "browser-smoke.U3g1Dl",
+      "source_commit": "39d613175bde1b7c063747351a1a6253d8435c0b",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -15958,7 +15967,7 @@
   },
   "lifecycle_omics": {
     "ceiling_seconds": 1800,
-    "build": "kit_070",
+    "build": "kit_071",
     "fault": {
       "name": "guard_after_qc_finalize",
       "after_step": "qc_finalize",

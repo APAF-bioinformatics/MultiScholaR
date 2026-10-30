@@ -1,0 +1,30 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+-------------------------------------------------------------------
+Welcome to MultiScholaR!
+
+IMPORTANT: Please run MultiScholaR::loadDependencies() 
+           to ensure all required packages are installed and loaded.
+-------------------------------------------------------------------
+
+Attaching package: ‘MultiScholaR’
+
+The following object is masked from ‘package:grDevices’:
+
+    savePlot
+
+The following object is masked from ‘package:base’:
+
+    %||%
+
+lipidomics: fixture=lipid_filtered_session_data_latest.rds sha256=d31d374e1b2125bab241925d680644eb0e56e2df28eca32ec1d351b13cb5af7c status=success owner_replaced=TRUE previous_closed=TRUE identity=LIPIDOMICS-native/LIPIDOMICS omic=lipidomics state=lipid_correlation_filtered da_state=lipid_correlation_filtered class=LipidomicsAssayData provenance=legacy adopted=TRUE head_ids_equal_fixture_checkpoint=TRUE rows_fixture=LCMS_Pos=12,GCMS=12 rows_hydrated=LCMS_Pos=12,GCMS=12 build=39d613175bde1b7c063747351a1a6253d8435c0b
+metabolomics: fixture=metab_filtered_session_data_latest.rds sha256=ed4623460aa67a37b8f48c53f5ead9314887e8b5c743877c4ed6ece9eca087d1 status=success owner_replaced=TRUE previous_closed=TRUE identity=METABOLOMICS-native/METABOLOMICS omic=metabolomics state=metab_correlation_filtered da_state=metab_correlation_filtered class=MetaboliteAssayData provenance=legacy adopted=TRUE head_ids_equal_fixture_checkpoint=TRUE rows_fixture=LCMS_Pos=12,GCMS=12 rows_hydrated=LCMS_Pos=12,GCMS=12 build=39d613175bde1b7c063747351a1a6253d8435c0b
+ADOPT-DONE installed kit071
