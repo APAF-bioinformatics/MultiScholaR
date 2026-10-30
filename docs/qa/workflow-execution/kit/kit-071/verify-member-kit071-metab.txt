@@ -1,0 +1,8 @@
+store: .dia-native-16212767fa8537 
+head current_state: metab_correlation_filtered 
+head history: initial > metab_raw_data_s4 > metab_intensity_filtered > metab_duplicates_resolved > metab_qc_complete > metab_itsd_norm > metab_log2 > metab_normalized > metab_ruv_corrected > metab_correlation_filtered 
+provenance entries: import, legacy, legacy, legacy, legacy, legacy, legacy, legacy, legacy, legacy 
+snapshot fields: identity, states, audit, current_state, state_history, workflow_type, audit_enabled, software_environments, step_provenance, component_dependencies, reference_states, sizes 
+export status: complete session: metab_filtered_session_data_20261031_063108.rds latest: metab_filtered_session_data_latest.rds 
+exported r6_current_state_name: metab_correlation_filtered  equals head: TRUE 
+exported sha256 equals journal: TRUE 

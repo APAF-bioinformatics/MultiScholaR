@@ -1,0 +1,51 @@
+# KIT-071 outcome: sessions for lipidomics and metabolomics on the owner
+
+Status 2026-10-31: **completed**. Code 39d61317 (the three items, the tests, the plan) + a7f40dcd (bindings, the closure evidence) on `performance-v2`; base 1edcb804 (KIT-070 closed). Install `kit_071` = `core/browser-smoke.U3g1Dl` (39d61317) over the kit_070 library. No counted member. Plan: [plan.md](plan.md) (the planning gate, authored from KIT-070's tree; the per-site table).
+
+## What changed
+
+| Where | Change |
+|---|---|
+| `runDIAOwnedSessionExport`, `serializeDIAOwnedSessionExport`, `stageWorkflowLegacyExport`, `publishWorkflowLegacyExport`, `runWorkflowLegacyExport` (`R/utils_workflow_saved_exports.R`) | a `prefix` argument (default `""`, proteomics unchanged): the staged session is `<prefix>filtered_session_data_<ts>.rds`, the journal carries `latest_name`, the publication writes `<prefix>filtered_session_data_latest.rds`; the proteomics history check runs for a proteomics owner only |
+| `handleLipidNormExportSession` (`R/mod_lipid_norm_workflow_helpers.R`) | split into `buildLipidNormExportSessionData` (the same fields) and `saveLipidNormExportArtifacts` (the publication under the owner's request, the three metadata RDS files, the summary text); the handler aborts `saved_entity_scope` without the owner and runs `runDIAOwnedSessionExport(..., prefix = "lipid_")` in the owner's scope |
+| `runMetabNormExportSessionWorkflow`, `saveMetabNormExportSessionRdsFiles` (`R/mod_metab_norm_session_helpers.R`) | the RDS writer publishes under the owner's request (its timestamp), `prefix = "metab_"`; the workflow aborts without the owner and runs the owned export, the metadata and summary writers inside `saveFn` |
+| `ingestWorkflowOmicsLegacySession` (new, `R/utils_workflow_dia_sessions.R`) | the `ingestDIANativeLegacySession` pattern for an omic: the session's `omic_type` and the declared assay class checked, another shape refused by name (`workflow_session_unsupported`), a saved reference refused (`saved_entity_corrupt`); a fresh owner labelled `workflowNativeStoreLabel(format, TYPE)`, the object committed under `r6_current_state_name` with config `loaded_from`/`adopted = TRUE` and a `legacy` provenance entry marked adopted, the session's metadata saved on the owner, the previous owner closed, the new one attached and on the module's bus |
+| `resolveWorkflowOmicsOwnedSession` (new) | `resolveDIAOwnedExport` in the owner's scope; the head's state must be the session's (`saved_entity_corrupt` otherwise); flags `owned_generation` on the session list |
+| `workflowSummaryFinalStateName` (new) | the head's current state when it is a data state, else the ordered scan over the head's `state_history`; a double keeps the `getHistory()` scan |
+| `loadLipidDaSessionFromFile`, `restoreLipidDaCurrentS4FromSession`; `runMetabDaLoadSessionObserverShell`, `restoreMetabDaLoadedSessionState` | the owner's export is resolved before the RDS read and reopens the owner (nothing recommitted); any other RDS on an owner adopts; a double keeps the `saveState` path |
+| the four summary scan sites (`mod_lipid_summary_state_helpers.R`, `mod_metab_summary_observer_helpers.R`) | `workflowSummaryFinalStateName(stateManager, dataStates[, detectFn])`, the `current_state` fallback kept |
+| `bindings-generator.R` | `KIT_071_LIFECYCLE=1` points the lifecycle members at `kit_071` |
+
+Recorded, not changed (the plan's list): the summary's `session_state_<date>.RDS` and `_final_s4.RDS` writers remain `saveRDS` of the head-picked object (no new manifest); the QC tabs' `getHistory()` reads are out of scope; the proteomics Open handler untouched.
+
+Divergences from the ticket's wording: an owned export's timestamped file name carries the owner's publication clock (the request's), not the module's injected time seam (the `_latest` copy's content unchanged); an export whose head later moved is no longer the owner's and adopts as a legacy session, replacing the owner (the proteomics semantics); the replaced owner's store folder is closed, not removed; the modules hydrate whole objects per read (KIT-070's recorded cost, unchanged).
+
+## Tests
+
+- New `tests/testthat/test-workflow-omics-sessions.R` (128 expectations) on real owners in temporary projects, both omics: the export is the owner's publication (the journal, `export_complete_<id>.json`, the files named as before, the exported object's component ids equal the head's); the owned reopen (same owner, same head entity, history unchanged, the DA state recorded); the legacy adoption (a new `<TYPE>-native` owner, provenance `legacy` adopted, config `loaded_from`/`adopted`, the metadata saved, ids equal); the refusals (the other omic's object, the other omic's session, a descriptor, no state name; through the tab's error message; a double returns FALSE); the summary pick equals the head, the revert fallback, the double's scan. The owner fixtures moved to `helper-workflow-omics-owner.R`.
+- Updated to the owner contract, none deleted: `test-lipid-12a` (a double is refused), `test-metab-03b`/`03d` (the writers need the request; the server export on a real owner), `helper-module-ci-lipid-norm.R` and `test-module-ci-metab-norm.R` (the export lanes on a real owner / under a request).
+- [affected-tests.txt](affected-tests.txt): the ticket's files, their dependents, and the module-CI lanes, all passing after the round-1 updates (every failure an intended contract change).
+
+## Results
+
+| Gate | Evidence | Result |
+|---|---|---|
+| Legacy fixtures (Simulation Setup) | written by a worktree at f55bef1b with the kit_065 library on the e2e lanes, kept at `<proof>/kit/kit-071-legacy/` (`lipid_filtered_session_data_latest.rds` sha256 d31d374e1b2125bab241925d680644eb0e56e2df28eca32ec1d351b13cb5af7c, `metab_…` ed4623460aa67a37b8f48c53f5ead9314887e8b5c743877c4ed6ece9eca087d1) | both adopt on the tree ([adopt-legacy-tree.txt](adopt-legacy-tree.txt)) and on the kit_071 install ([adopt-legacy-kit071.txt](adopt-legacy-kit071.txt), [adopt-legacy.R](adopt-legacy.R)): status success, the owner replaced, provenance `legacy` with `adopted = TRUE`, the head's component ids equal the fixture object's checkpoint, 12/12 rows |
+| Round trip by component hash; refusal by name | `test-workflow-omics-sessions.R` | exact ids for both omics; `workflow_session_unsupported` for the other omic's object/session, a descriptor, no state name |
+| KIT-028 proteomics replay (`utils_workflow_dia_sessions.R` and the shared export helpers changed) | [replay-check-kit071.json](replay-check-kit071.json), [analysis_record-origin-kit071.json](analysis_record-origin-kit071.json) | **exact, 16 states, 0 mismatches, 266 s** (run on the uncommitted tree with the code of 39d61317; `head_commit` recorded as 1edcb804) |
+| Module-CI exactness | [module-ci-comparison.txt](module-ci-comparison.txt) (bytes, then `kit-069/compare-groups.R` at content level) | every data product identical; the differences are the timestamp-bearing files (the lipid timestamped session RDS and summary text now named by the owner's publication clock; `study_parameters.txt` Version Information: the before worktree reports an installed package, the tree a local repository) |
+| R CMD check | [check-39d61317.log](check-39d61317.log) | baseline: 3 WARNINGs, 3 NOTEs |
+| Lipid/metab sweep per process | [sweep-lipid-metab.txt](sweep-lipid-metab.txt) | 135 files, 9,575 pass, 0 fail |
+| Install | `<proof>/kit/scratch-071-evidence/install.log` | `kit_071` = `browser-smoke.U3g1Dl` (39d61317), runtime patch 0 bytes; bindings regenerated (`bindings-kit071.log`) |
+| Lifecycle members on kit_071 (Acceptance) | [kit071-lipid-stage.json](kit071-lipid-stage.json), [kit071-metab-stage.json](kit071-metab-stage.json); logs `<proof>/kit/kit-lifecycle-(lipid|metab).log`, stage dirs `<proof>/kit/runtime/kit-lifecycle-(lipid|metab)` (the kit_070 ones renamed `.kit070`) | both `lifecycle_complete_observed` at the first attempt, 10/10 steps through the report: lipid 230 s, 2.62 GiB peak; metab 232 s, 2.47 GiB peak |
+| The members' stores (the export is the owner's; Open reopens; the final state is the head's) | [verify-member-kit071-lipid.txt](verify-member-kit071-lipid.txt), [verify-member-kit071-metab.txt](verify-member-kit071-metab.txt) ([verify-member.R](verify-member.R)); [da-open-kit071-lipid.txt](da-open-kit071-lipid.txt), [da-open-kit071-metab.txt](da-open-kit071-metab.txt) | one store per member; the head's current state `<omic>_correlation_filtered` with a 10-entry history (initial + 9 commits, as kit_070's) and no commit after the export: the DA tab's Open logged "The session is the owner's export; reopening the owner"; the export journal complete, the `_latest` file's sha256 equal to the journal's, the exported `r6_current_state_name` equal to the head's; no `adopted` provenance. The summary's final state is the head's current state (a data state) by `workflowSummaryFinalStateName`, proven by the unit test; the report rendered from it |
+| Member projects against the kit_070 members' | [member-project-comparison-kit070-vs-kit071.txt](member-project-comparison-kit070-vs-kit071.txt) (`kit-030/compare-content.R`) | lipid 105 paired, metab 101 paired: every DA long table, publication workbook, NumSigDeMolecules table and `study_parameters.txt` identical; differing only the `.docx`, PDFs/PNGs by embedded times and `ggrepel`, the debug log, the store entities (new ids), the exported session by its `ITSDNormalization` timestamp, the dated session summary |
+
+## Backward compatibility and rollback
+
+- File names unchanged (`<omic>_filtered_session_data_<ts>.rds`, `_latest.rds`, the metadata RDS files, the summary text); the exports are plain RDS files readable by the old modules; the completion JSON is additive. Older RDS sessions open through adoption (the kit_065 fixtures). Proteomics sessions unchanged (`prefix = ""`; the replay exact).
+- Rollback: `git revert` of 39d61317 and a7f40dcd; the owned exports already on disk remain plain files.
+
+## Handoff
+
+KIT-031: the `session_export` and `da` journey steps are owner steps (the export a publication with a journal, the Open a reopen of the owner at its head), so they can be declared and replayed. Carried: the summary's two RDS writers without manifests; the QC tabs' history reads.

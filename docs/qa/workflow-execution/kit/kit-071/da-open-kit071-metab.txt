@@ -1,0 +1,6 @@
+# kit_071 metab member: the DA tab's Open (application log lines 4237-4283)
+[D66]   STEP 5: The session is the owner's export; reopening the owner
+[D66]     names(session_data): r6_current_state_name, contrasts_tbl, design_matrix, config_list, itsd_selections, ruv_optimization_results, correlation_results, assay_names, export_timestamp, omic_type, experiment_label, normalization_method, ruv_mode, itsd_applied, itsd_aggregation, log_offset, correlation_threshold, ruv_grouping_variable, feature_counts, metabolite_counts, qc_params, normalization_complete, ruv_complete, correlation_filtering_complete, current_s4_object, owned_generation
+[D66]     r6_current_state_name: metab_correlation_filtered
+[D66]     state_manager class: WorkflowStateOwner
+[D66] --- EXIT load_filtered_session (0.556s) --- SUCCESS
