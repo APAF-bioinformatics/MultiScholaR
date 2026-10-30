@@ -1,0 +1,35 @@
+# KIT-070 implementation plan (authored 2026-10-30 at ticket start, the planning gate)
+
+Base: 12367700 (KIT-069 closed and audited). Pattern: the proteomics single path after KIT-048 (`createDIASessionOwner` at session start, bound at import; the owner's `saveState` is `checkpointWorkflowExecutionResult` + `commitWorkflowReferenceState` for any S4 of a declared class; `getState`/`revertToState`/`getHistory`/`current_state` on the owner). The lipid and metab classes are already declared (`LipidomicsAssayData`, `MetaboliteAssayData`: `lists` assay slot, one table component per assay). Inventory: 26 `saveState` sites (13 + 13), every object an S4 of the declared class; 4 fallback `WorkflowState$new()` constructions in the design helpers; 4 `revertToState` sites; `setWorkflowType("lipidomics_standard" | "metabolomics_standard")` at import; `getHistory`/`current_state`/`getState` reads in QC, norm, DA, summary and the session export.
+
+Two facts that shape the design:
+- The app starts one module server per selected omic in the same Shiny session (`app_server.R:589`). `attachDIAStateSession` registers the owner in the single slot `session$userData$dia_capacity_manager`, which `getWorkflowActiveOwner()` and the proteomics kit readers use. A lipid or metab owner must therefore **not** take that slot: it is attached with its omic, the slot stays the proteomics owner's, and the owner's own flush hook checks identity against `workflow_data$state_manager` instead of the slot.
+- The stores behind the kit_065 LFQ, TMT and DIA_LIMPA oracles have been overwritten by later recorder runs; the oracle RDS files hold the fingerprints. The proteomics gates are therefore: the KIT-028 replay (`kit-028/replay-check.R`, in process) and fresh records of the three routes compared fingerprint by fingerprint with `kit-065/oracles-*.rds` through the harness comparators (a small `compare-oracles.R` under kit-070/).
+
+## Item 1: the owner layer general (shared code; gated by the proteomics replay and records)
+
+| File | Change |
+|---|---|
+| `R/utils_workflow_class_declarations.R` | `workflowDeclaredClassNames(kind = NULL)`: the declared class names, optionally by kind |
+| `R/utils_workflow_dia_state.R` | owner `setWorkflowType`: `LIPIDOMICS`, `METABOLOMICS` accepted (message updated). `readWorkflowStateMetadata`: `classes = workflowDeclaredClassNames("assay")`. `attachDIAStateSession(..., omic_type = "proteomics")`: the session slot written and cleared only for proteomics; the `onFlushed` identity check against `shiny::isolate(workflow_data$state_manager)` for other omics; `manager$.context$omic_type` |
+| `R/utils_workflow_dia_sessions.R` | `workflowRoutesByType` + `LIPIDOMICS = "lipidomics"`, `METABOLOMICS = "metabolomics"`. `workflowNativeStoreLabel`: `<TYPE>-native` when the format is unknown. `createDIASessionOwner(..., omic_type = "proteomics")`: identity `<OMIC>-pending`, omic on the context and the attach. `bindDIASessionOwnerType` carries the omic. New `bindWorkflowOwnerTypeAtDesign(workflow_data, workflow_type, format)`: binds a pending owner at the lipid/metab design step (session from the reactive domain, paths from the owner's context); a bound owner of the same type passes; another type aborts |
+| `R/utils_workflow_analysis_record.R` | the record carries `omic_type` (the owner's, default `proteomics`); replay resolves `setupDirectories(..., omic)[[omic]]` and the `<omic>_dia_baseline_smoke` alias by it; input roles + `lipid_assay`, `metab_assay`. Lipid/metab steps still fall to "cannot be replayed" (KIT-031/032 add the branches) |
+| `R/utils_workflow_execution.R` | the three publish functions and `workflowRequestExperimentPaths` index the directories by `entry$omic_type` instead of the literal `$proteomics` (proteomics unchanged) |
+| `tools/profiling/workflow_kit.R` | `kitCurrentInputComponentId` names the component through the class declaration's assay (a `lists` assay gives the sorted element ids). `kitFindStore`, `kitReadHead`, `kitFingerprintState` unchanged: the `.dia-native-` prefix and `dia-state-head.rds` are kept, the schema gate is class-free (recorded) |
+| tests | `test-workflow-native-session.R`: owner with an omic (identity, no session slot, flush hook). New `test-workflow-omics-owner.R`: a real owner in a temp project with the e2e lipid and metab objects: `saveState` → component checkpoint (`readWorkflowStateMetadata` reads it; one table component per assay), `getState` round trip identical, `revertToState` by name, history; the analysis record of that owner validates with `omic_type` |
+| gates | KIT-028 replay label `kit070-item1` exact; LFQ, TMT, DIA_LIMPA records on the item-1 tree compared with `kit-065/oracles-*.rds` (0 mismatches on class, rows, components, support, summary) |
+
+## Item 2: both modules on the owner
+
+| File | Change |
+|---|---|
+| `R/mod_lipidomics.R`, `R/mod_metabolomics.R` | `state_manager = NULL` in the bus; after the paths lookup `workflow_data$state_manager <- createDIASessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)` |
+| `R/mod_lipid_import_processing_helpers.R`, `R/mod_metab_import_processing_helpers.R` | the import's workflow type `LIPIDOMICS` / `METABOLOMICS` (the owner's names; the in-memory class's `*_standard` spellings retire with it) |
+| `R/mod_lipid_design_builder_helpers.R`, `R/mod_lipid_design_import_helpers.R`, `R/mod_metab_design.R`, `R/mod_metab_design_import_helpers.R` | the `WorkflowState$new()` fallbacks removed with their `workflowStateClass`/`stateManagerFactory` seams; `bindWorkflowOwnerTypeAtDesign(workflowData, <TYPE>, workflowData$data_format)` before the `*_raw_data_s4` save |
+| the other 22 `saveState` sites, the 4 `revertToState` sites, every `getState`/`getHistory`/`current_state` read | unchanged in text: on the owner `saveState` is the reference commit of the declared class, `revertToState` reverts by the stored reference, `getState` hydrates the S4 (memory cost recorded; KIT-031's declarations move the kernels onto references) |
+| tests | module-CI design tests and `test-lipid-13a`, `test-metab-04` (the fallback constructor is gone), `test-lipid-00b/00c`, `test-metab-00b/00d` (type strings), `test-workflow-server-shared` (the owner mock for three omics); new in `test-workflow-omics-owner.R`: `shiny::testServer` of both module servers creates a `DIAStateAdapter` with the omic's pending identity and leaves `dia_capacity_manager` untouched; the assertion that no `R/mod_lipid*`, `R/mod_metab*` file constructs `WorkflowState$new` |
+| gates at closure | lipid/metab suite per process; module-CI 12 files before/after by hash (mocks: identical by construction, checked); KIT-028 replay `kit070-final` and the three records again; R CMD check; install `kit_070`; the two lifecycle members on kit_070 (a store now exists: the driver snapshots it; one bounded harness correction if the list-assay store trips it) |
+
+## Budget and order
+
+Item 1 → gates → commit; item 2 → tests → commit; closure gates; install; members; outcome. One install. No counted member. Deviations recorded in the outcome.
