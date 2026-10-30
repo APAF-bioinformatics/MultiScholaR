@@ -555,6 +555,10 @@ buildMetabNormExportSessionData <- function(workflowData, normData, inputValues,
     )
 }
 
+#' The session RDS pair under the owner's publication request (KIT-071, the KIT-042/043 pattern): published by
+#' `runWorkflowLegacyExport` with the `metab_` prefix; the journal and `export_complete_<id>.json` are the manifest.
+#' @param publicationRequest The owner's request (`request_id`, `timestamp`); required (KIT-048's single path).
+#' @noRd
 saveMetabNormExportSessionRdsFiles <- function(
     sessionData,
     sourceDir,
@@ -562,34 +566,35 @@ saveMetabNormExportSessionRdsFiles <- function(
     formatTimeFn = format,
     saveRdsFn = saveRDS,
     logInfoFn = logger::log_info,
-    incProgressFn = NULL
+    incProgressFn = NULL,
+    publicationRequest = NULL
 ) {
+    if (is.null(publicationRequest)) cli::cli_abort("the session export needs the owner's publication request", class = "saved_entity_scope")
     if (!is.null(incProgressFn)) {
         incProgressFn(0.3, detail = "Saving to file...")
     }
 
-    timestampStr <- formatTimeFn(timeFn(), "%Y%m%d_%H%M%S")
+    timestampStr <- publicationRequest$timestamp
     sessionFilename <- sprintf("metab_filtered_session_data_%s.rds", timestampStr)
     sessionFilepath <- file.path(sourceDir, sessionFilename)
+    latestFilename <- "metab_filtered_session_data_latest.rds"
+    latestFilepath <- file.path(sourceDir, latestFilename)
 
-    saveRdsFn(sessionData, sessionFilepath)
+    publication <- runWorkflowLegacyExport(sessionData, sourceDir, publicationRequest$request_id,
+        timestampStr, serializeFn = saveRdsFn, prefix = "metab_")
     logInfoFn(sprintf("*** EXPORT: Session data saved to: %s ***", sessionFilepath))
 
     if (!is.null(incProgressFn)) {
         incProgressFn(0.1, detail = "Creating latest version...")
     }
-
-    latestFilename <- "metab_filtered_session_data_latest.rds"
-    latestFilepath <- file.path(sourceDir, latestFilename)
-
-    saveRdsFn(sessionData, latestFilepath)
     logInfoFn(sprintf("*** EXPORT: Latest version saved to: %s ***", latestFilepath))
 
     invisible(list(
         sessionFilename = sessionFilename,
         sessionFilepath = sessionFilepath,
         latestFilename = latestFilename,
-        latestFilepath = latestFilepath
+        latestFilepath = latestFilepath,
+        publication = publication
     ))
 }
 
@@ -696,6 +701,10 @@ saveMetabNormExportSummaryFile <- function(
     ))
 }
 
+#' The metabolomics session export as the owner's publication (KIT-071): the session list is collected from the
+#' head's state, serialised once under a request, and the files published with a journal and a completion record the
+#' DE tab's Open verifies before reopening the owner. The modules only ever hold an owner (KIT-048's single path).
+#' @noRd
 runMetabNormExportSessionWorkflow <- function(
     workflowData,
     normData,
@@ -710,43 +719,52 @@ runMetabNormExportSessionWorkflow <- function(
     saveSummaryFileFn = saveMetabNormExportSummaryFile,
     logInfoFn = logger::log_info
 ) {
-    withProgressFn(message = "Exporting normalized session data...", value = 0, expr = {
-        incProgressFn(0.2, detail = "Gathering data...")
-
-        sessionData <- buildSessionDataFn(
-            workflowData = workflowData,
-            normData = normData,
-            inputValues = inputValues,
-            experimentLabel = experimentLabel
-        )
-
-        logInfoFn("*** EXPORT: Gathered session data successfully ***")
-        logInfoFn(sprintf("*** EXPORT: Assays: %s ***", paste(normData$assay_names, collapse = ", ")))
-        logInfoFn(sprintf(
-            "*** EXPORT: Contrasts available: %d ***",
-            ifelse(is.null(sessionData$contrasts_tbl), 0, nrow(sessionData$contrasts_tbl))
-        ))
-
-        exportFiles <- saveSessionRdsFilesFn(
-            sessionData = sessionData,
-            sourceDir = sourceDir,
-            incProgressFn = incProgressFn
-        )
-
-        incProgressFn(0.1, detail = "Saving metadata files...")
-        saveMetadataFilesFn(
-            sessionData = sessionData,
-            sourceDir = sourceDir
-        )
-
-        incProgressFn(0.2, detail = "Creating summary...")
-        saveSummaryFileFn(
-            sessionData = sessionData,
-            sourceDir = sourceDir,
-            sessionFilename = exportFiles$sessionFilename
-        )
-
-        invisible(exportFiles)
+    manager <- workflowData$state_manager
+    if (!inherits(manager, "DIAStateAdapter")) {
+        cli::cli_abort("the session export needs the session's state owner", class = "saved_entity_scope")
+    }
+    withDIAStateScope(manager, function() {
+        withProgressFn(message = "Exporting normalized session data...", value = 0, expr = {
+            incProgressFn(0.2, detail = "Gathering data...")
+            result <- runDIAOwnedSessionExport(manager, workflowData, normData, inputValues, sourceDir,
+                collectFn = function(workflowData, normData, input) {
+                    sessionData <- buildSessionDataFn(
+                        workflowData = workflowData,
+                        normData = normData,
+                        inputValues = input,
+                        experimentLabel = experimentLabel
+                    )
+                    logInfoFn("*** EXPORT: Gathered session data successfully ***")
+                    logInfoFn(sprintf("*** EXPORT: Assays: %s ***", paste(normData$assay_names, collapse = ", ")))
+                    logInfoFn(sprintf(
+                        "*** EXPORT: Contrasts available: %d ***",
+                        ifelse(is.null(sessionData$contrasts_tbl), 0, nrow(sessionData$contrasts_tbl))
+                    ))
+                    sessionData
+                },
+                saveFn = function(sessionData, sourceDir, publicationRequest) {
+                    exportFiles <- saveSessionRdsFilesFn(
+                        sessionData = sessionData,
+                        sourceDir = sourceDir,
+                        incProgressFn = incProgressFn,
+                        publicationRequest = publicationRequest
+                    )
+                    incProgressFn(0.1, detail = "Saving metadata files...")
+                    saveMetadataFilesFn(
+                        sessionData = sessionData,
+                        sourceDir = sourceDir
+                    )
+                    incProgressFn(0.2, detail = "Creating summary...")
+                    saveSummaryFileFn(
+                        sessionData = sessionData,
+                        sourceDir = sourceDir,
+                        sessionFilename = exportFiles$sessionFilename
+                    )
+                    exportFiles
+                },
+                prefix = "metab_")
+            invisible(result$exportArtifacts)
+        })
     })
 }
 

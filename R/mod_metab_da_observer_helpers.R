@@ -551,8 +551,15 @@ runMetabDaLoadSessionObserverShell <- function(
 
     tryCatch(
         {
-            debugLog("  STEP 5: Reading RDS file...")
-            sessionData <- readSessionData(sessionFile)
+            # KIT-071: the owner's own export reopens the owner (the head's state, no file read); any other file is read.
+            manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager
+            sessionData <- resolveWorkflowOmicsOwnedSession(manager, sessionFile)
+            if (is.null(sessionData)) {
+                debugLog("  STEP 5: Reading RDS file...")
+                sessionData <- readSessionData(sessionFile)
+            } else {
+                debugLog("  STEP 5: The session is the owner's export; reopening the owner")
+            }
             debugLog("  STEP 5: RDS loaded successfully")
             debugLog("    names(session_data): ", paste(names(sessionData), collapse = ", "))
 
@@ -755,15 +762,27 @@ restoreMetabDaLoadedSessionState <- function(
         }
 
         debugLog("  STEP 6e: Calling workflow_data$state_manager$saveState...")
-        workflowData$state_manager$saveState(
-            state_name = stateName,
-            s4_data_object = sessionData$current_s4_object,
-            config_object = list(loaded_from = sessionFile),
-            description = "Loaded from filtered session for DA analysis"
-        )
+        manager <- workflowData$state_manager
+        if (isTRUE(sessionData$owned_generation)) {
+            # KIT-071: the owner's own export reopens the owner; the head's state is the DA tab's and nothing is recommitted.
+            logInfo("   Reopened the session owner at its head")
+        } else if (inherits(manager, "DIAStateAdapter")) {
+            # KIT-071: a session from an older build adopts into a fresh owner on the module's bus (provenance `adopted`).
+            ingestWorkflowOmicsLegacySession(sessionData, workflowData,
+                manager$.context$experiment_paths$source_dir %||% dirname(sessionFile), "metabolomics",
+                state_name = stateName, path = sessionFile)
+            logInfo("   Adopted the legacy session into a fresh state owner")
+        } else {
+            manager$saveState(
+                state_name = stateName,
+                s4_data_object = sessionData$current_s4_object,
+                config_object = list(loaded_from = sessionFile),
+                description = "Loaded from filtered session for DA analysis"
+            )
+            logInfo("   Restored S4 object to state manager")
+        }
         daData$current_state_name <- stateName
         debugLog("  STEP 6f: saveState completed")
-        logInfo("   Restored S4 object to state manager")
     }
 
     debugLog("  STEP 7: Checking contrasts_tbl...")

@@ -747,7 +747,10 @@ test_that("lipid norm workflow helpers preserve normalization, export, reset, an
     logWarnFn = function(...) invisible(NULL),
     logErrorFn = function(...) invisible(NULL)
   )
-  expect_match(exported$session_filename, "lipid_filtered_session_data_20260422_070000.rds", fixed = TRUE)
+  # KIT-071: the export is the owner's publication (test-workflow-omics-sessions.R exercises it); the harness's
+  # in-memory double is refused by name and the handler reports the refusal through its log.
+  expect_false(exported)
+  expect_true(any(grepl("needs the session's state owner", log_messages, fixed = TRUE)))
 
   norm_data$ruv_corrected_obj <- harness$current_s4
   skip_result <- skip_correlation(

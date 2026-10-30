@@ -28,9 +28,8 @@ getMetabSummaryStateObject <- function(workflowData) {
         "metab_qc_complete"
     )
 
-    history <- tryCatch(state_manager$getHistory(), error = function(e) character())
-    matching_states <- data_states[data_states %in% history]
-    state_name <- if (length(matching_states) > 0L) matching_states[[1]] else NULL
+    # KIT-071: the final state is the head's (the owner's current state when it is a data state).
+    state_name <- workflowSummaryFinalStateName(state_manager, data_states)
     if (is.null(state_name) || is.na(state_name)) {
         state_name <- tryCatch(state_manager$current_state, error = function(e) NULL)
     }
@@ -258,8 +257,8 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
                 "loaded_for_de", "metab_qc_complete"
             )
 
-            available_states <- workflow_data$state_manager$getHistory()
-            data_state_used <- detectFn(data_states, ~ .x %in% available_states)
+            # KIT-071: the final state is the head's (the owner's current state when it is a data state).
+            data_state_used <- workflowSummaryFinalStateName(workflow_data$state_manager, data_states, detectFn = detectFn)
 
             if (!is.null(data_state_used)) {
                 final_s4_object <- workflow_data$state_manager$getState(data_state_used)

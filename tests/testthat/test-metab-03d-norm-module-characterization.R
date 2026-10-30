@@ -319,7 +319,16 @@ test_that("mod_metab_norm_server preserves skip-correlation public behavior", {
 })
 
 test_that("mod_metab_norm_server preserves export prereq and success behavior", {
+  skip_if_not(workflowOwnerCapable())
   harness <- makeMetabNormCharacterizationHarness(current_state = "metab_norm_complete")
+  # KIT-071: the export is the owner's publication, so this server test runs on a real owner bound to the route with
+  # the harness's object committed under its state; the module's later saves commit onto the same owner.
+  harness$workflow_data$state_manager <- createDIASessionOwner(harness$workflow_data, harness$experiment_paths,
+    harness$session, omic_type = "metabolomics")
+  shiny::withReactiveDomain(harness$session, bindWorkflowOwnerTypeAtDesign(harness$workflow_data, "METABOLOMICS"))
+  withr::defer(closeDIAStateAdapter(harness$workflow_data$state_manager))
+  harness$workflow_data$state_manager$saveState("metab_norm_complete", harness$current_s4, harness$workflow_data$config_list,
+    "the harness's object")
   scoped_mocked_bindings(
     generateMetabQcPlots = function(...) invisible(NULL),
     logTransformAssays = function(theObject, ...) theObject,
@@ -659,20 +668,21 @@ test_that("metab norm shared export helpers preserve session and file workflows"
   expect_identical(session_data$feature_counts$Plasma, list(features = 2L, samples = 2L))
   expect_true(isTRUE(session_data$itsd_applied))
 
-  save_capture <- list()
+  # KIT-071: the session RDS pair is the owner's publication under its request; without one the writer refuses.
+  expect_error(save_session_rds(sessionData = session_data, sourceDir = tempdir(), logInfoFn = function(...) NULL),
+    class = "saved_entity_scope")
+  export_dir <- withr::local_tempdir()
   rds_files <- save_session_rds(
     sessionData = session_data,
-    sourceDir = tempdir(),
-    timeFn = function() as.POSIXct("2026-04-17 14:15:16", tz = "UTC"),
-    formatTimeFn = function(x, fmt) format(x, fmt, tz = "UTC"),
-    saveRdsFn = function(object, path) {
-      save_capture[[length(save_capture) + 1L]] <<- path
-    },
+    sourceDir = export_dir,
+    publicationRequest = list(request_id = "metab-03d-export", timestamp = "20260417_141516"),
     logInfoFn = function(...) NULL,
     incProgressFn = function(...) NULL
   )
   expect_true(grepl("metab_filtered_session_data_20260417_141516.rds$", rds_files$sessionFilepath))
-  expect_length(save_capture, 2L)
+  expect_true(file.exists(rds_files$sessionFilepath))
+  expect_true(file.exists(rds_files$latestFilepath))
+  expect_identical(rds_files$publication$status, "complete")
 
   metadata_capture <- character()
   save_metadata(
@@ -703,7 +713,9 @@ test_that("metab norm shared export helpers preserve session and file workflows"
   expect_match(summary_capture$text, "Metabolomics Normalized Session Data Export Summary", fixed = TRUE)
   expect_match(summary_capture$text, "Plasma: 2 features, 2 samples", fixed = TRUE)
 
-  workflow_result <- run_export_workflow(
+  # KIT-071: the export workflow is the owner's publication; a manager that is not an owner is refused by name
+  # (the owner path is exercised in test-workflow-omics-sessions.R).
+  expect_error(run_export_workflow(
     workflowData = workflow_data,
     normData = norm_data,
     inputValues = input_values,
@@ -712,12 +724,8 @@ test_that("metab norm shared export helpers preserve session and file workflows"
     withProgressFn = function(message = NULL, value = NULL, expr) force(expr),
     incProgressFn = function(...) NULL,
     buildSessionDataFn = function(...) session_data,
-    saveSessionRdsFilesFn = function(...) list(sessionFilename = "session.rds", sessionFilepath = "session.rds", latestFilename = "latest.rds", latestFilepath = "latest.rds"),
-    saveMetadataFilesFn = function(...) invisible(NULL),
-    saveSummaryFileFn = function(...) invisible(NULL),
     logInfoFn = function(...) NULL
-  )
-  expect_identical(workflow_result$sessionFilename, "session.rds")
+  ), class = "saved_entity_scope")
 })
 
 test_that("metab norm shared normalization helpers preserve pipeline building blocks", {

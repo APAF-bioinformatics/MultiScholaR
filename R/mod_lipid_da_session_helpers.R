@@ -333,19 +333,31 @@ restoreLipidDaCurrentS4FromSession <- function(
         debugLog("  STEP 6e: Calling workflow_data$state_manager$saveState...")
     }
 
-    workflowData$state_manager$saveState(
-        state_name = stateName,
-        s4_data_object = currentS4Object,
-        config_object = list(loaded_from = sessionFile),
-        description = "Loaded from filtered session for DA analysis"
-    )
+    manager <- workflowData$state_manager
+    if (isTRUE(sessionData$owned_generation)) {
+        # KIT-071: the owner's own export reopens the owner; the head's state is the DA tab's and nothing is recommitted.
+        logInfo("   Reopened the session owner at its head")
+    } else if (inherits(manager, "DIAStateAdapter")) {
+        # KIT-071: a session from an older build adopts into a fresh owner on the module's bus (provenance `adopted`).
+        ingestWorkflowOmicsLegacySession(sessionData, workflowData,
+            manager$.context$experiment_paths$source_dir %||% dirname(sessionFile), "lipidomics",
+            state_name = stateName, path = sessionFile)
+        logInfo("   Adopted the legacy session into a fresh state owner")
+    } else {
+        manager$saveState(
+            state_name = stateName,
+            s4_data_object = currentS4Object,
+            config_object = list(loaded_from = sessionFile),
+            description = "Loaded from filtered session for DA analysis"
+        )
+        logInfo("   Restored S4 object to state manager")
+    }
 
     daData$current_state_name <- stateName
 
     if (!is.null(debugLog)) {
         debugLog("  STEP 6f: saveState completed")
     }
-    logInfo("   Restored S4 object to state manager")
 
     list(
         currentS4Object = currentS4Object,
@@ -460,10 +472,18 @@ loadLipidDaSessionFromFile <- function(
         {
             showLoadingContract <- showLoadingFn()
 
-            sessionLoad <- readSessionFn(
-                sessionFile = sessionFile,
-                debugLog = debugLog
-            )
+            # KIT-071: the owner's own export reopens the owner (the head's state, no file read); any other file is read.
+            manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager
+            owned <- resolveWorkflowOmicsOwnedSession(manager, sessionFile)
+            sessionLoad <- if (!is.null(owned)) {
+                if (!is.null(debugLog)) debugLog("  STEP 5: The session is the owner's export; reopening the owner")
+                list(sessionFile = sessionFile, sessionData = owned, sessionDataNames = names(owned))
+            } else {
+                readSessionFn(
+                    sessionFile = sessionFile,
+                    debugLog = debugLog
+                )
+            }
             sessionData <- sessionLoad$sessionData
 
             if (!is.null(debugLog)) {

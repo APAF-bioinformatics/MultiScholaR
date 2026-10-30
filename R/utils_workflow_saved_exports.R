@@ -4,10 +4,12 @@
 #' @param sourceDir Existing session destination.
 #' @param collectFn,saveFn Existing collection and artifact producers.
 #' @param serializeFn Writer for the complete legacy RDS, before owner release.
+#' @param prefix KIT-071: the omic's file-name prefix (`""` for proteomics, `lipid_` and `metab_` for the two
+#'   omics whose sessions are `<prefix>filtered_session_data_<timestamp>.rds` and `<prefix>filtered_session_data_latest.rds`).
 #' @return Legacy-shaped output references; no resident session history.
 #' @noRd
 runDIAOwnedSessionExport <- function(manager, workflowData, normData, input, sourceDir,
-    collectFn, saveFn, serializeFn = saveRDS) {
+    collectFn, saveFn, serializeFn = saveRDS, prefix = "") {
     context <- manager$.context
     root <- normalizePath(sourceDir, mustWork = TRUE)
     request <- context$export_pending
@@ -16,7 +18,7 @@ runDIAOwnedSessionExport <- function(manager, workflowData, normData, input, sou
         stamp <- Sys.time()
         # Keep the existing timestamp filename convention without overwriting a
         # completed same-second export. This affects filenames, not scientific time.
-        while (file.exists(file.path(root, paste0("filtered_session_data_",
+        while (file.exists(file.path(root, paste0(prefix, "filtered_session_data_",
             format(stamp, "%Y%m%d_%H%M%S"), ".rds")))) stamp <- stamp + 1
         request <- list(request_id = basename(tempfile("dia-export-")),
             timestamp = format(stamp, "%Y%m%d_%H%M%S"), root = root,
@@ -29,7 +31,7 @@ runDIAOwnedSessionExport <- function(manager, workflowData, normData, input, sou
         session_data <- resolveDIAStateValue(context, request$metadata_reference)
     } else {
         session_data <- serializeDIAOwnedSessionExport(manager, request,
-            workflowData, normData, input, collectFn, serializeFn)
+            workflowData, normData, input, collectFn, serializeFn, prefix)
         request <- context$export_pending
         # The child frame and working-map roots are gone; the full session is
         # durable on disk. Reclaim that unreachable history before file copying.
@@ -54,14 +56,18 @@ runDIAOwnedSessionExport <- function(manager, workflowData, normData, input, sou
 #' @param request Owned generation and destination metadata.
 #' @param workflowData,normData,input Existing module inputs.
 #' @param collectFn,serializeFn Existing session collector and legacy RDS writer.
+#' @param prefix The omic's file-name prefix (see `runDIAOwnedSessionExport`).
 #' @return Metadata-only legacy view; all full-history call-frame roots expire here.
 #' @noRd
 serializeDIAOwnedSessionExport <- function(manager, request, workflowData, normData,
-    input, collectFn, serializeFn) {
+    input, collectFn, serializeFn, prefix = "") {
     context <- manager$.context
     on.exit({ context$working <- new.env(parent = emptyenv()) }, add = TRUE)
     session_data <- collectFn(workflowData = workflowData, normData = normData, input = input)
-    if (!is.list(session_data) ||
+    # The proteomics session carries the whole history; a lipidomics or metabolomics session (KIT-071) carries the
+    # head's state only, so the history check applies to the proteomics owner.
+    proteomics <- identical(context$omic_type %||% "proteomics", "proteomics")
+    if (!is.list(session_data) || proteomics &&
         !identical(names(session_data$r6_complete_states), names(context$snapshot$states))) {
         cli::cli_abort("DIA export history is incomplete", class = "saved_entity_corrupt")
     }
@@ -74,7 +80,7 @@ serializeDIAOwnedSessionExport <- function(manager, request, workflowData, normD
     context$export_pending <- request
     paths <- workflowExportPaths(request$root, request$request_id)
     stageWorkflowLegacyExport(session_data, paths, request$request_id, request$timestamp,
-        serializeFn = serializeFn, serialize_only = TRUE)
+        serializeFn = serializeFn, serialize_only = TRUE, prefix = prefix)
     metadata
 }
 
@@ -482,11 +488,12 @@ completeWorkflowLegacyCopy <- function(paths, copyFn = file.copy,
 #' @param serializeFn,copyFn Injectable file operations for failure tests.
 #' @param boundaryFn Failure-injection boundary.
 #' @param serialize_only Internal DIA phase: journal serialization before any copies.
+#' @param prefix The omic's file-name prefix (KIT-071); the journal records both published names.
 #' @return Outputs-pending journal.
 #' @noRd
 stageWorkflowLegacyExport <- function(session_data, paths, request_id, timestamp,
     additional_files = list(), serializeFn = saveRDS, copyFn = file.copy,
-    boundaryFn = workflowExportBoundary, serialize_only = FALSE) {
+    boundaryFn = workflowExportBoundary, serialize_only = FALSE, prefix = "") {
     if (!is.list(session_data) || !grepl("^[0-9]{8}_[0-9]{6}$", timestamp) ||
         !is.logical(serialize_only) || length(serialize_only) != 1L || is.na(serialize_only) ||
         isTRUE(serialize_only) && length(additional_files) ||
@@ -495,7 +502,11 @@ stageWorkflowLegacyExport <- function(session_data, paths, request_id, timestamp
             anyDuplicated(names(additional_files)))) {
         cli::cli_abort("invalid staged legacy export", class = "saved_entity_invalid")
     }
-    session_name <- paste0("filtered_session_data_", timestamp, ".rds")
+    if (!is.character(prefix) || length(prefix) != 1L || !grepl("^[a-z]*_?$", prefix)) {
+        cli::cli_abort("invalid staged legacy export", class = "saved_entity_invalid")
+    }
+    session_name <- paste0(prefix, "filtered_session_data_", timestamp, ".rds")
+    latest_name <- paste0(prefix, "filtered_session_data_latest.rds")
     staged_session <- file.path(paths$request_dir, "session.rds")
     staged_latest <- file.path(paths$request_dir, "latest.rds")
     boundaryFn("before_serialization")
@@ -509,7 +520,7 @@ stageWorkflowLegacyExport <- function(session_data, paths, request_id, timestamp
     if (serialize_only) {
         journal <- list(schema = "multischolar.workflow_export.v1",
             request_id = request_id, status = "outputs_pending",
-            session_name = session_name, session_sha256 = session_hash,
+            session_name = session_name, latest_name = latest_name, session_sha256 = session_hash,
             session_bytes = file.size(staged_session), staged_session = staged_session,
             staged_latest = staged_latest, latest_sha256 = NULL,
             additional = list(), serialization_count = 1L,
@@ -558,7 +569,7 @@ stageWorkflowLegacyExport <- function(session_data, paths, request_id, timestamp
     }
     journal <- list(schema = "multischolar.workflow_export.v1",
         request_id = request_id, status = "outputs_pending",
-        session_name = session_name, session_sha256 = session_hash,
+        session_name = session_name, latest_name = latest_name, session_sha256 = session_hash,
         session_bytes = file.size(staged_session), staged_session = staged_session,
         staged_latest = staged_latest, latest_sha256 = latest_hash,
         additional = additions, serialization_count = 1L,
@@ -625,7 +636,8 @@ publishWorkflowLegacyExport <- function(paths, boundaryFn = workflowExportBounda
         }
     }
     boundaryFn("before_latest_publication")
-    latest_destination <- file.path(paths$root, "filtered_session_data_latest.rds")
+    # KIT-071: a journal written before the omics prefixes names no latest file; the proteomics name stands.
+    latest_destination <- file.path(paths$root, journal$latest_name %||% "filtered_session_data_latest.rds")
     replacement <- file.path(paths$request_dir, "latest.replacement")
     if (file.exists(journal$staged_latest) &&
         !isTRUE(renameFn(journal$staged_latest, replacement))) {
@@ -670,12 +682,13 @@ publishWorkflowLegacyExport <- function(paths, boundaryFn = workflowExportBounda
 #' @param timestamp Fixed export timestamp.
 #' @param additional_files Required owned copies.
 #' @param serializeFn,copyFn,renameFn,boundaryFn Injectable test operations.
+#' @param prefix The omic's file-name prefix (KIT-071).
 #' @return Complete publication receipt.
 #' @noRd
 runWorkflowLegacyExport <- function(session_data = NULL, output_dir, request_id,
     timestamp, additional_files = list(), serializeFn = saveRDS,
     copyFn = file.copy, renameFn = file.rename,
-    boundaryFn = workflowExportBoundary) {
+    boundaryFn = workflowExportBoundary, prefix = "") {
     paths <- workflowExportPaths(output_dir, request_id)
     journal_path <- file.path(paths$request_dir, "journal.json")
     if (!file.exists(journal_path)) {
@@ -684,7 +697,7 @@ runWorkflowLegacyExport <- function(session_data = NULL, output_dir, request_id,
                 class = "saved_entity_missing")
         }
         stageWorkflowLegacyExport(session_data, paths, request_id, timestamp,
-            additional_files, serializeFn, copyFn, boundaryFn)
+            additional_files, serializeFn, copyFn, boundaryFn, prefix = prefix)
     }
     journal <- jsonlite::read_json(journal_path)
     if (is.null(journal$latest_sha256)) completeWorkflowLegacyCopy(paths, copyFn, boundaryFn)

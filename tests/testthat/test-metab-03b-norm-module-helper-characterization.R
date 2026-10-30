@@ -4064,26 +4064,24 @@ test_that("metabolomics normalization module export-session payload helper prese
   expect_identical(session_data$correlation_filtering_complete, FALSE)
 })
 
-test_that("metabolomics normalization module export-session RDS helper preserves main/latest writes", {
+test_that("metabolomics normalization module export-session RDS helper publishes under the owner's request", {
+  # KIT-071: the session RDS pair is the owner's publication; without the request the writer refuses (KIT-048).
+  session_data <- list(export = "payload")
+  expect_error(
+    saveMetabNormExportSessionRdsFiles(sessionData = session_data, sourceDir = tempdir(), logInfoFn = function(...) NULL),
+    class = "saved_entity_scope"
+  )
+
   capture <- new.env(parent = emptyenv())
-  capture$saves <- list()
   capture$info <- character()
   capture$progress <- list()
-  session_data <- list(export = "payload")
-
+  source_dir <- withr::local_tempdir()
+  request <- list(request_id = "metab-export-characterization", timestamp = "20260417_141516")
   visible <- withVisible(
     saveMetabNormExportSessionRdsFiles(
       sessionData = session_data,
-      sourceDir = "/tmp/metab-export",
-      timeFn = function() {
-        as.POSIXct("2026-04-17 14:15:16", tz = "UTC")
-      },
-      formatTimeFn = function(x, fmt) {
-        format(x, fmt, tz = "UTC")
-      },
-      saveRdsFn = function(object, path) {
-        capture$saves <- c(capture$saves, list(list(object = object, path = path)))
-      },
+      sourceDir = source_dir,
+      publicationRequest = request,
       logInfoFn = function(message) {
         capture$info <- c(capture$info, message)
       },
@@ -4097,29 +4095,21 @@ test_that("metabolomics normalization module export-session RDS helper preserves
   )
 
   expect_false(visible$visible)
-  expect_identical(
-    visible$value,
-    list(
-      sessionFilename = "metab_filtered_session_data_20260417_141516.rds",
-      sessionFilepath = "/tmp/metab-export/metab_filtered_session_data_20260417_141516.rds",
-      latestFilename = "metab_filtered_session_data_latest.rds",
-      latestFilepath = "/tmp/metab-export/metab_filtered_session_data_latest.rds"
-    )
-  )
-  expect_length(capture$saves, 2)
-  expect_true(all(vapply(capture$saves, function(entry) identical(entry$object, session_data), logical(1))))
-  expect_identical(
-    vapply(capture$saves, `[[`, character(1), "path"),
-    c(
-      "/tmp/metab-export/metab_filtered_session_data_20260417_141516.rds",
-      "/tmp/metab-export/metab_filtered_session_data_latest.rds"
-    )
-  )
+  expect_identical(visible$value$sessionFilename, "metab_filtered_session_data_20260417_141516.rds")
+  expect_identical(visible$value$sessionFilepath, file.path(source_dir, "metab_filtered_session_data_20260417_141516.rds"))
+  expect_identical(visible$value$latestFilename, "metab_filtered_session_data_latest.rds")
+  expect_identical(visible$value$latestFilepath, file.path(source_dir, "metab_filtered_session_data_latest.rds"))
+  expect_identical(visible$value$publication$status, "complete")
+  expect_identical(visible$value$publication$latest_name, "metab_filtered_session_data_latest.rds")
+  expect_true(file.exists(visible$value$sessionFilepath))
+  expect_true(file.exists(visible$value$latestFilepath))
+  expect_true(file.exists(file.path(source_dir, "export_complete_metab-export-characterization.json")))
+  expect_identical(readRDS(visible$value$latestFilepath), session_data)
   expect_identical(
     capture$info,
     c(
-      "*** EXPORT: Session data saved to: /tmp/metab-export/metab_filtered_session_data_20260417_141516.rds ***",
-      "*** EXPORT: Latest version saved to: /tmp/metab-export/metab_filtered_session_data_latest.rds ***"
+      sprintf("*** EXPORT: Session data saved to: %s ***", visible$value$sessionFilepath),
+      sprintf("*** EXPORT: Latest version saved to: %s ***", visible$value$latestFilepath)
     )
   )
   expect_identical(
@@ -4389,135 +4379,27 @@ test_that("metabolomics normalization module export summary helper preserves emp
   )
 })
 
-test_that("metabolomics normalization module export workflow helper preserves withProgress orchestration", {
+test_that("metabolomics normalization module export workflow helper needs the session's state owner", {
+  # KIT-071: the export is the owner's publication (the owner path is exercised in test-workflow-omics-sessions.R);
+  # a manager that is not an owner is refused by name before any progress or file.
   capture <- new.env(parent = emptyenv())
-  capture$info <- character()
   capture$progress <- list()
-
-  workflow_data <- list(
-    state_manager = list(current_state = "correlation_filtered")
-  )
-  norm_data <- list(
-    assay_names = c("Plasma", "Urine")
-  )
-  input_values <- list(
-    norm_method = "TIC"
-  )
-  session_data <- list(
-    contrasts_tbl = data.frame(friendly_names = "B vs A", stringsAsFactors = FALSE),
-    export = "payload"
-  )
-
-  visible <- withVisible(
+  expect_error(
     runMetabNormExportSessionWorkflow(
-      workflowData = workflow_data,
-      normData = norm_data,
-      inputValues = input_values,
+      workflowData = list(state_manager = list(current_state = "correlation_filtered")),
+      normData = list(assay_names = c("Plasma", "Urine")),
+      inputValues = list(norm_method = "TIC"),
       experimentLabel = "Demo Study",
       sourceDir = "/tmp/metab-export",
-      withProgressFn = function(message = NULL, detail = NULL, value = NULL, expr) {
-        capture$with_progress <- list(message = message, detail = detail, value = value)
-        result <- withVisible(force(expr))
-        if (isTRUE(result$visible)) {
-          result$value
-        } else {
-          invisible(result$value)
-        }
-      },
+      withProgressFn = function(message = NULL, detail = NULL, value = NULL, expr) force(expr),
       incProgressFn = function(value, detail = NULL) {
-        capture$progress <- c(
-          capture$progress,
-          list(list(value = value, detail = detail))
-        )
+        capture$progress <- c(capture$progress, list(list(value = value, detail = detail)))
       },
-      buildSessionDataFn = function(workflowData, normData, inputValues, experimentLabel) {
-        capture$build <- list(
-          workflowData = workflowData,
-          normData = normData,
-          inputValues = inputValues,
-          experimentLabel = experimentLabel
-        )
-        session_data
-      },
-      saveSessionRdsFilesFn = function(sessionData, sourceDir, incProgressFn) {
-        capture$save_rds <- list(sessionData = sessionData, sourceDir = sourceDir)
-        incProgressFn(0.3, detail = "Saving to file...")
-        incProgressFn(0.1, detail = "Creating latest version...")
-        list(
-          sessionFilename = "metab_filtered_session_data_demo.rds",
-          sessionFilepath = "/tmp/metab-export/metab_filtered_session_data_demo.rds",
-          latestFilename = "metab_filtered_session_data_latest.rds",
-          latestFilepath = "/tmp/metab-export/metab_filtered_session_data_latest.rds"
-        )
-      },
-      saveMetadataFilesFn = function(sessionData, sourceDir) {
-        capture$save_metadata <- list(sessionData = sessionData, sourceDir = sourceDir)
-        NULL
-      },
-      saveSummaryFileFn = function(sessionData, sourceDir, sessionFilename) {
-        capture$save_summary <- list(
-          sessionData = sessionData,
-          sourceDir = sourceDir,
-          sessionFilename = sessionFilename
-        )
-        NULL
-      },
-      logInfoFn = function(message) {
-        capture$info <- c(capture$info, message)
-      }
-    )
+      logInfoFn = function(...) NULL
+    ),
+    class = "saved_entity_scope"
   )
-
-  expect_false(visible$visible)
-  expect_identical(
-    visible$value,
-    list(
-      sessionFilename = "metab_filtered_session_data_demo.rds",
-      sessionFilepath = "/tmp/metab-export/metab_filtered_session_data_demo.rds",
-      latestFilename = "metab_filtered_session_data_latest.rds",
-      latestFilepath = "/tmp/metab-export/metab_filtered_session_data_latest.rds"
-    )
-  )
-  expect_identical(
-    capture$with_progress,
-    list(
-      message = "Exporting normalized session data...",
-      detail = NULL,
-      value = 0
-    )
-  )
-  expect_identical(capture$build$workflowData, workflow_data)
-  expect_identical(capture$build$normData, norm_data)
-  expect_identical(capture$build$inputValues, input_values)
-  expect_identical(capture$build$experimentLabel, "Demo Study")
-  expect_identical(capture$save_rds, list(sessionData = session_data, sourceDir = "/tmp/metab-export"))
-  expect_identical(capture$save_metadata, list(sessionData = session_data, sourceDir = "/tmp/metab-export"))
-  expect_identical(
-    capture$save_summary,
-    list(
-      sessionData = session_data,
-      sourceDir = "/tmp/metab-export",
-      sessionFilename = "metab_filtered_session_data_demo.rds"
-    )
-  )
-  expect_identical(
-    capture$info,
-    c(
-      "*** EXPORT: Gathered session data successfully ***",
-      "*** EXPORT: Assays: Plasma, Urine ***",
-      "*** EXPORT: Contrasts available: 1 ***"
-    )
-  )
-  expect_identical(
-    capture$progress,
-    list(
-      list(value = 0.2, detail = "Gathering data..."),
-      list(value = 0.3, detail = "Saving to file..."),
-      list(value = 0.1, detail = "Creating latest version..."),
-      list(value = 0.1, detail = "Saving metadata files..."),
-      list(value = 0.2, detail = "Creating summary...")
-    )
-  )
+  expect_length(capture$progress, 0L)
 })
 
 test_that("metabolomics normalization module export ready helper preserves warning gate", {

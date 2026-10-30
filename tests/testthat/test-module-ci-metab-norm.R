@@ -389,10 +389,11 @@ test_that("MCI-015.5 session export matrix preserves metabolomics, RUV, ITSD, an
   source_dir <- tempfile("mci-015-metab-norm-export-")
   dir.create(source_dir, recursive = TRUE)
   fixed_time <- as.POSIXct("2026-05-05 12:34:56", tz = "UTC")
+  # KIT-071: the session RDS pair is published under the owner's request (the journal and completion record).
   files <- saveMetabNormExportSessionRdsFiles(
     sessionData = session_data,
     sourceDir = source_dir,
-    timeFn = function() fixed_time,
+    publicationRequest = list(request_id = "mci-015-5", timestamp = format(fixed_time, "%Y%m%d_%H%M%S")),
     logInfoFn = function(...) invisible(NULL)
   )
   saveMetabNormExportMetadataFiles(
@@ -411,6 +412,8 @@ test_that("MCI-015.5 session export matrix preserves metabolomics, RUV, ITSD, an
 
   expect_true(file.exists(files$sessionFilepath))
   expect_true(file.exists(files$latestFilepath))
+  expect_identical(files$publication$status, "complete")
+  expect_true(file.exists(file.path(source_dir, "export_complete_mci-015-5.json")))
   expect_true(file.exists(file.path(source_dir, "metab_ruv_optimization_results.RDS")))
   expect_true(file.exists(file.path(source_dir, "metab_itsd_selections.RDS")))
   expect_true(file.exists(file.path(source_dir, "metab_qc_params.RDS")))

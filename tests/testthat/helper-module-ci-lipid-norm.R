@@ -457,10 +457,19 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
   } else {
     "lipid_correlation_filtered"
   }
+  source_dir <- tempfile(paste0("mci-021-lipid-norm-export-", variant, "-"))
+  dir.create(source_dir, recursive = TRUE)
   workflow <- module_ci_lipid_norm_workflow(
     current_object = object,
     current_state_name = current_state_name
   )
+  # KIT-071: the export is the owner's publication, so the lane's bus holds a real owner bound to the route with the
+  # variant's object committed under its state (the owner is closed when the calling test ends).
+  session <- omicsOwnerSession()
+  workflow$state_manager <- createDIASessionOwner(workflow, list(source_dir = source_dir), session, omic_type = "lipidomics")
+  shiny::withReactiveDomain(session, bindWorkflowOwnerTypeAtDesign(workflow, "LIPIDOMICS"))
+  withr::defer(closeDIAStateAdapter(workflow$state_manager), envir = parent.frame())
+  workflow$state_manager$saveState(current_state_name, object, workflow$config_list, "the export variant's object")
   norm_data <- module_ci_lipid_norm_data(object)
   norm_data$normalization_complete <- TRUE
   norm_data$ruv_complete <- TRUE
@@ -475,8 +484,6 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
     module_ci_lipid_norm_ruv_results(object, mode = variant)
   }
 
-  source_dir <- tempfile(paste0("mci-021-lipid-norm-export-", variant, "-"))
-  dir.create(source_dir, recursive = TRUE)
   artifacts <- handleLipidNormExportSession(
     input = module_ci_lipid_norm_input(
       norm_method = "quantile",
@@ -496,7 +503,7 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
     getTimeFn = function() as.POSIXct("2026-05-05 12:00:00", tz = "UTC"),
     logInfoFn = function(...) invisible(NULL),
     logWarnFn = function(...) invisible(NULL),
-    logErrorFn = function(...) invisible(NULL)
+    logErrorFn = function(message) stop(message)
   )
 
   latest_file <- file.path(source_dir, "lipid_filtered_session_data_latest.rds")

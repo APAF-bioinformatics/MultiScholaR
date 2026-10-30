@@ -1301,6 +1301,140 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     TRUE
 }
 
+#' The declared assay class of each omic whose session the DE tab's Open adopts (KIT-071).
+#' @noRd
+workflowOmicsSessionClass <- c(lipidomics = "LipidomicsAssayData", metabolomics = "MetaboliteAssayData")
+
+#' KIT-071: adopt a lipidomics or metabolomics filtered-session RDS written by an older build (the in-memory
+#' modules' `current_s4_object` under `r6_current_state_name`) into a fresh typed owner: the
+#' `ingestDIANativeLegacySession` pattern for a session that carries one state. The object is committed by
+#' reference under the session's state name with provenance `legacy` marked `adopted`; the session's other fields
+#' are saved on the owner as its metadata; the previous owner is closed and the new one attached on the module's
+#' bus (the session from the reactive domain, as the design-step binding). A session of another shape (another
+#' omic, a proteomics object, no state name) is refused by name.
+#' @param value The decoded session list.
+#' @param workflow_data The module's bus; `state_manager` is the owner being replaced.
+#' @param source_dir The project source directory the owner lives under.
+#' @param omic_type `lipidomics` or `metabolomics`.
+#' @param state_name The state the object is committed under (the session's `r6_current_state_name`).
+#' @param path The session file, recorded in the state's configuration.
+#' @param session The Shiny session the owner attaches to.
+#' @return TRUE when adopted; FALSE for a manager that is not an owner (a test double keeps its `saveState`).
+#' @noRd
+ingestWorkflowOmicsLegacySession <- function(value, workflow_data, source_dir, omic_type,
+    state_name = value$r6_current_state_name, path = NULL, session = shiny::getDefaultReactiveDomain()) {
+    previous <- workflow_data$state_manager
+    if (!inherits(previous, "DIAStateAdapter")) return(FALSE)
+    if (!omic_type %in% names(workflowOmicsSessionClass)) {
+        cli::cli_abort("no session adoption for {.val {omic_type}}", class = "saved_entity_scope")
+    }
+    class_name <- workflowOmicsSessionClass[[omic_type]]
+    if (!is.list(value) || !identical(value$omic_type, omic_type)) {
+        cli::cli_abort("the session is not a {omic_type} session (its omic is {.val {value$omic_type}})",
+            class = "workflow_session_unsupported")
+    }
+    object <- value$current_s4_object
+    if (isSavedWorkflowReference(object)) {
+        cli::cli_abort("the legacy {omic_type} session is not self-contained", class = "saved_entity_corrupt")
+    }
+    if (!isS4(object) || !methods::is(object, class_name)) {
+        cli::cli_abort("the session holds a {.cls {class(object)[1]}} object; a {omic_type} session holds a {.cls {class_name}}",
+            class = "workflow_session_unsupported")
+    }
+    if (!is.character(state_name) || length(state_name) != 1L || is.na(state_name) || !nzchar(state_name)) {
+        cli::cli_abort("the {omic_type} session records no state name", class = "workflow_session_unsupported")
+    }
+    methods::validObject(object)
+    checkSavedWorkflowPayload(value)
+    if (is.null(session)) {
+        cli::cli_abort("the adopted owner needs the module's session to attach to", class = "saved_entity_scope")
+    }
+    workflow_type <- toupper(omic_type)
+    root <- normalizePath(source_dir, mustWork = TRUE)
+    state_root <- tempfile(".dia-native-legacy-", tmpdir = root)
+    if (!dir.create(state_root, mode = "0700")) cli::cli_abort("cannot stage legacy import", class = "saved_entity_write")
+    store <- newWorkflowEntityStore(state_root, workflowNativeStoreLabel(value$data_format, workflow_type), workflow_type,
+        max_cache_bytes = 0)
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    adopted <- FALSE
+    on.exit(if (!adopted) {
+        closeDIAStateAdapter(manager)
+        unlink(state_root, recursive = TRUE)
+    }, add = TRUE)
+    manager$.context$sql_rollup <- TRUE
+    manager$.context$session_format <- "native_v1"
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- previous$.context$experiment_paths
+    manager$.context$omic_type <- omic_type
+    manager$setWorkflowType(workflow_type)
+    # The owner's saveState on a declared class is the reference commit (KIT-070).
+    manager$saveState(state_name, object, list(loaded_from = path %||% NA_character_, adopted = TRUE),
+        "Loaded from filtered session for DA analysis")
+    context <- manager$.context
+    snapshot <- context$snapshot
+    # KIT-042 audit F-01: the adopted state's provenance is `legacy`, marked `adopted` (the adopting build did not run the step).
+    legacy <- diaStepProvenanceEntry(snapshot, list(operation = "legacy", variant = NA_character_,
+        parameter_names = character(), adopted = TRUE))
+    snapshot <- legacy$snapshot
+    snapshot$step_provenance[[state_name]] <- legacy$entry
+    publishDIAStateHead(context, snapshot)
+    metadata <- value
+    metadata[c("current_s4_object", "state_manager")] <- NULL
+    context$native_metadata_reference <- saveDIAStateValue(context, metadata, "legacy-import-metadata", codec = "rds")
+    context$native_extra_references <- list()
+    closeDIAStateAdapter(previous)
+    previous <- NULL
+    workflow_data$state_manager <- attachDIAStateSession(manager, session, workflow_data, omic_type = omic_type)
+    workflow_data$native_session_restored <- Sys.time()
+    adopted <- TRUE
+    TRUE
+}
+
+#' KIT-071: the DE tab's Open on an owner: the session the owner itself published (its metadata and the head's
+#' state, hydrated as the module reads every state) when `path` is that export, verified by `resolveDIAOwnedExport`
+#' (the completion record, the file's hash, the head unchanged since); NULL otherwise (a legacy RDS, or a manager
+#' that is not an owner), when the caller reads the file.
+#' @param manager The module's state manager.
+#' @param path The session file the tab resolved.
+#' @return The session list with `owned_generation = TRUE`, or NULL.
+#' @noRd
+resolveWorkflowOmicsOwnedSession <- function(manager, path) {
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    session <- withDIAStateScope(manager, function() resolveDIAOwnedExport(manager, path))
+    if (is.null(session)) return(NULL)
+    state_name <- session$r6_current_state_name
+    if (!identical(state_name, manager$current_state)) {
+        cli::cli_abort("the owner's export names state {.val {state_name}} but the head is {.val {manager$current_state}}",
+            class = "saved_entity_corrupt")
+    }
+    session$current_s4_object <- manager$getState(state_name)
+    session$owned_generation <- TRUE
+    session
+}
+
+#' KIT-071: the state a summary tab reports and exports as the workflow's final state. On an owner it is the head's
+#' current state when that is one of the tab's data states, else the first data state present in the head's
+#' history; on another manager (a test double) the ordered scan of its history, through `detectFn` where the site
+#' injects one.
+#' @param manager The module's state manager.
+#' @param data_states The tab's data states in order of preference.
+#' @param detectFn The site's scan (`purrr::detect` by default).
+#' @return A state name or NULL.
+#' @noRd
+workflowSummaryFinalStateName <- function(manager, data_states, detectFn = NULL) {
+    if (is.null(manager)) return(NULL)
+    if (inherits(manager, "DIAStateAdapter")) {
+        current <- manager$.context$snapshot$current_state
+        if (is.character(current) && length(current) == 1L && current %in% data_states) return(current)
+        history <- unlist(manager$.context$snapshot$state_history)
+    } else {
+        history <- tryCatch(manager$getHistory(), error = function(e) character())
+    }
+    if (!is.null(detectFn)) return(detectFn(data_states, ~ .x %in% history))
+    matching <- data_states[data_states %in% history]
+    if (length(matching) > 0L) matching[[1L]] else NULL
+}
+
 #' Recreate current legacy table/metadata artifacts without rerunning science.
 #' @param value Validated old envelope.
 #' @param manager Fresh native destination owner.

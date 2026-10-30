@@ -92,9 +92,8 @@ getLipidSummaryStateObject <- function(workflowData) {
         "lipid_qc_complete"
     )
 
-    history <- tryCatch(stateManager$getHistory(), error = function(e) character())
-    matchingStates <- dataStates[dataStates %in% history]
-    stateName <- if (length(matchingStates) > 0L) matchingStates[[1]] else NULL
+    # KIT-071: the final state is the head's (the owner's current state when it is a data state).
+    stateName <- workflowSummaryFinalStateName(stateManager, dataStates)
     if (is.null(stateName) || is.na(stateName)) {
         stateName <- tryCatch(stateManager$current_state, error = function(e) NULL)
     }
@@ -313,8 +312,8 @@ collectLipidSummaryWorkflowArgsContext <- function(
             "lipid_qc_complete"
         )
 
-        availableStates <- workflowData$state_manager$getHistory()
-        dataStateUsed <- detectFn(dataStates, ~ .x %in% availableStates)
+        # KIT-071: the final state is the head's (the owner's current state when it is a data state).
+        dataStateUsed <- workflowSummaryFinalStateName(workflowData$state_manager, dataStates, detectFn = detectFn)
 
         if (!is.null(dataStateUsed)) {
             finalS4Object <- workflowData$state_manager$getState(dataStateUsed)
