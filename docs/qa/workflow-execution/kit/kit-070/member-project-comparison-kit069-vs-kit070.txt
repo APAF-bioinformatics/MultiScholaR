@@ -1,0 +1,87 @@
+=== lipid: kit_069 member vs kit_070 member (compare-content.R)
+paired 95; byte-identical 76; content-identical after masking 8; differing 11; only-before 1; only-after 11
+  kit_omics_lifecycle/results_summary/lipidomics/lipidomics_report_lipidomics_dia_baseline_smoke.docx DIFFERS (bytes)
+  kit_omics_lifecycle/results_summary/lipidomics/Publication_figures/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx identical (cell contents)
+  kit_omics_lifecycle/results_summary/lipidomics/Publication_tables/DA_results_lipidomics.xlsx    identical (cell contents)
+  kit_omics_lifecycle/results_summary/lipidomics/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx identical (cell contents)
+  kit_omics_lifecycle/results_summary/lipidomics/QC_figures/lipidomics_composite_QC_figure.pdf    DIFFERS (bytes)
+  kit_omics_lifecycle/results_summary/lipidomics/Study_report/study_parameters.txt                identical (timestamps/paths masked)
+  kit_omics_lifecycle/results/lipidomics/da_lipids/de_negmode_lipids_groupWT-groupKO_long_annot.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/lipidomics/da_lipids/de_posmode_lipids_groupWT-groupKO_long_annot.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/lipidomics/lipid_qc/lipidomics_composite_QC_figure.pdf              DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.png DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.png DIFFERS (bytes)
+  kit_omics_lifecycle/scripts/lipidomics/D66_debug.log                                            DIFFERS (bytes)
+  kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_latest.rds                   DIFFERS: Component “current_s4_object”: Attributes: < Component “args”: Component “ITSDNormalization”: Component “timestamp”: Mean absolute difference: 4536.409 >
+  kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_summary.txt                       DIFFERS
+  kit_omics_lifecycle/scripts/lipidomics/study_parameters.txt                                     identical (timestamps/paths masked)
+  ONLY-BEFORE kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_20261030_160720.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/.workflow-mutation.lock 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/dia-state-head.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/commit.json 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/descriptor.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/payload.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/payload.qs2 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-table-ID/commit.json 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-table-ID/descriptor.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/entities/dia-table-ID/payload.parquet 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/.dia-native-ID/.workflow-entities/store.json 
+  ONLY-AFTER kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_20261030_172312.rds 
+=== lipid: compare-groups.R (timestamp fields removed)
+before files 96: byte-matched 76, content-matched (timestamps/paths/ids masked) 10, unmatched 10; after-only groups 11
+  UNMATCHED kit_omics_lifecycle/results_summary/lipidomics/lipidomics_report_lipidomics_dia_baseline_smoke.docx 
+  UNMATCHED kit_omics_lifecycle/results_summary/lipidomics/QC_figures/lipidomics_composite_QC_figure.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/lipid_qc/lipidomics_composite_QC_figure.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/negmode_groupWT-groupKO.png 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.pdf 
+  UNMATCHED kit_omics_lifecycle/results/lipidomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.png 
+  UNMATCHED kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_data_20261030_160720.rds 
+  UNMATCHED kit_omics_lifecycle/scripts/lipidomics/lipid_filtered_session_summary.txt 
+=== metab: kit_069 member vs kit_070 member (compare-content.R)
+paired 91; byte-identical 74; content-identical after masking 7; differing 10; only-before 1; only-after 11
+  kit_omics_lifecycle/results_summary/metabolomics/metabolomics_report_metabolomics_dia_baseline_smoke.docx DIFFERS (bytes)
+  kit_omics_lifecycle/results_summary/metabolomics/Publication_tables/DA_results_metabolomics.xlsx identical (cell contents)
+  kit_omics_lifecycle/results_summary/metabolomics/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx identical (cell contents)
+  kit_omics_lifecycle/results_summary/metabolomics/Study_report/study_parameters.txt              identical (timestamps/paths masked)
+  kit_omics_lifecycle/results/metabolomics/da_metabolites/de_gcms_metabolites_groupWT-groupKO_long_annot.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/metabolomics/da_metabolites/de_posmode_metabolites_groupWT-groupKO_long_annot.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/metabolomics/metabolite_qc/metabolomics_composite_QC_figure.pdf     DIFFERS (bytes)
+  kit_omics_lifecycle/results/metabolomics/publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx identical (cell contents)
+  kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/gcms_groupWT-groupKO.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/gcms_groupWT-groupKO.png DIFFERS (bytes)
+  kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.pdf DIFFERS (bytes)
+  kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.png DIFFERS (bytes)
+  kit_omics_lifecycle/scripts/metabolomics/D66_debug.log                                          DIFFERS (bytes)
+  kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_data_latest.rds                 DIFFERS: Component “current_s4_object”: Attributes: < Component “args”: Component “ITSDNormalization”: Component “timestamp”: Mean absolute difference: 9118.878 >
+  kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_summary.txt                     DIFFERS
+  kit_omics_lifecycle/scripts/metabolomics/study_parameters.txt                                   identical (timestamps/paths masked)
+  ONLY-BEFORE kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_data_20261030_151657.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/.workflow-mutation.lock 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/dia-state-head.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/commit.json 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/descriptor.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/payload.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-state-ID/payload.qs2 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-table-ID/commit.json 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-table-ID/descriptor.rds 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/entities/dia-table-ID/payload.parquet 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/.dia-native-ID/.workflow-entities/store.json 
+  ONLY-AFTER kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_data_20261030_174904.rds 
+=== metab: compare-groups.R (timestamp fields removed)
+before files 92: byte-matched 74, content-matched (timestamps/paths/ids masked) 9, unmatched 9; after-only groups 11
+  UNMATCHED kit_omics_lifecycle/results_summary/metabolomics/metabolomics_report_metabolomics_dia_baseline_smoke.docx 
+  UNMATCHED kit_omics_lifecycle/results/metabolomics/metabolite_qc/metabolomics_composite_QC_figure.pdf 
+  UNMATCHED kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf 
+  UNMATCHED kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/gcms_groupWT-groupKO.pdf 
+  UNMATCHED kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/gcms_groupWT-groupKO.png 
+  UNMATCHED kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.pdf 
+  UNMATCHED kit_omics_lifecycle/results/metabolomics/publication_graphs/Volcano_Plots/posmode_groupWT-groupKO.png 
+  UNMATCHED kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_data_20261030_151657.rds 
+  UNMATCHED kit_omics_lifecycle/scripts/metabolomics/metab_filtered_session_summary.txt 
