@@ -119,7 +119,7 @@ resolveLipidImportSampleColumns <- function(
   if (!is.null(assayImportResult)) {
     sample_cols <- assayImportResult$sample_columns
   } else {
-    sample_cols <- names(assayData)[sapply(assayData, is.numeric)]
+    sample_cols <- names(assayData)[vapply(assayData, is.numeric, logical(1))]
   }
 
   if (isTRUE(excludeNormalized)) {
@@ -311,7 +311,7 @@ finalizeLipidImportSetupState <- function(
   logInfo(sprintf(
     "Lipidomics import complete: %d assays, %d total lipids",
     length(assayList),
-    sum(sapply(assayList, nrow))
+    sum(vapply(assayList, nrow, integer(1)))
   ))
 
   invisible(workflowData$processing_log$setup_import)

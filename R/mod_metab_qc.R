@@ -151,7 +151,7 @@ mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
             
             if (!is.null(current_state) && 
                 inherits(current_state, "MetaboliteAssayData") && 
-                !modules_initialized()) {
+                !shiny::isolate(modules_initialized())) {
                 
                 logger::log_info("Metabolomics QC: Auto-initializing sub-modules (state detected)")
 

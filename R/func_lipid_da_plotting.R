@@ -191,12 +191,16 @@ generateLipidDAVolcanoPlotGlimma <- function(
     d66_log("  FINAL coef_index = ", coef_index, " (", coef_names[coef_index], ")")
     logger::log_info(sprintf("   Using coefficient index %d: %s", coef_index, coef_names[coef_index]))
 
-    # Prepare volcano plot annotation table with Inf/NaN protection
+    # Prepare volcano plot annotation table with Inf/NaN protection.
+    # Zero FDR values stand in at a tenth of the smallest positive FDR; when no positive FDR exists
+    # the floor is .Machine$double.xmin (KIT-069, roar BUG-17: min(numeric(0)) is Inf and dropped every row).
+    positive_fdr <- contrast_data$fdr_qvalue[is.finite(contrast_data$fdr_qvalue) & contrast_data$fdr_qvalue > 0]
+    zero_fdr_floor <- if (length(positive_fdr) > 0) min(positive_fdr) * 0.1 else .Machine$double.xmin
     volcano_tab <- contrast_data |>
         dplyr::mutate(
             # Protect against zero FDR causing Inf in -log10
-            fdr_safe = ifelse(fdr_qvalue == 0, min(fdr_qvalue[fdr_qvalue > 0], na.rm = TRUE) * 0.1, fdr_qvalue),
-            # Handle cases where all FDR might be zero (unlikely but safe)
+            fdr_safe = ifelse(fdr_qvalue == 0, zero_fdr_floor, fdr_qvalue),
+            # Handle NA FDR
             fdr_safe = ifelse(is.na(fdr_safe), 1e-10, fdr_safe),
             lqm = -log10(fdr_safe),
             # Ensure logFC is numeric and non-NA for status calculation
@@ -474,7 +478,7 @@ generateLipidDAHeatmap <- function(
     })
 
     # Combine matrices (if multiple assays)
-    expr_matrix <- do.call(rbind, expr_list[!sapply(expr_list, is.null)])
+    expr_matrix <- do.call(rbind, expr_list[!vapply(expr_list, is.null, logical(1))])
 
     if (is.null(expr_matrix) || nrow(expr_matrix) == 0) {
         logger::log_warn("   Could not build expression matrix")

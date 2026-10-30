@@ -127,7 +127,7 @@ buildItsdSelectionTable <- function(
     )
 
     # --- Identify sample columns (numeric) vs metadata columns ---
-    numeric_cols <- names(assay_data)[sapply(assay_data, is.numeric)]
+    numeric_cols <- names(assay_data)[vapply(assay_data, is.numeric, logical(1))]
     sample_cols <- setdiff(numeric_cols, metabolite_id_col)
 
     if (length(sample_cols) == 0) {

@@ -252,19 +252,19 @@ buildLipidQcS4AssayStatsTable <- function(
             }
         })
         , Samples = sapply(assay_list, function(a) {
-            sum(sapply(a, is.numeric))
+            sum(vapply(a, is.numeric, logical(1)))
         })
         , stringsAsFactors = FALSE
     )
 
     stats_df$Missingness <- sapply(assay_list, function(a) {
-        quant_cols <- names(a)[sapply(a, is.numeric)]
+        quant_cols <- names(a)[vapply(a, is.numeric, logical(1))]
         if (length(quant_cols) == 0) return(NA)
 
         total_cells <- nrow(a) * length(quant_cols)
-        missing_cells <- sum(sapply(quant_cols, function(col) {
+        missing_cells <- sum(vapply(quant_cols, function(col) {
             sum(is.na(a[[col]]) | a[[col]] == 0)
-        }))
+        }, numeric(1)))
 
         round((missing_cells / total_cells) * 100, 1)
     })

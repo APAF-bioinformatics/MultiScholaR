@@ -61,7 +61,7 @@ handleLipidNormRunNormalization <- function(
                     addLog(paste("Applying ITSD normalization (aggregation:", input$itsd_aggregation, ")"))
 
                     itsd_feature_ids <- NULL
-                    has_manual_selections <- any(sapply(normData$itsd_selections, \(x) length(x) > 0))
+                    has_manual_selections <- any(vapply(normData$itsd_selections, \(x) length(x) > 0, logical(1)))
 
                     if (has_manual_selections) {
                         lipid_id_col <- current_s4@lipid_id_column

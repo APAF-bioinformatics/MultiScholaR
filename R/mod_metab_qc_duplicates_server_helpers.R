@@ -13,7 +13,7 @@ resolveMetabDuplicateAssayData <- function(
 
         originalRows <- nrow(assayData)
 
-        sampleCols <- names(assayData)[sapply(assayData, is.numeric)]
+        sampleCols <- names(assayData)[vapply(assayData, is.numeric, logical(1))]
 
         if (length(sampleCols) == 0) {
             logWarnFn(paste("No numeric columns found in assay:", assayName))

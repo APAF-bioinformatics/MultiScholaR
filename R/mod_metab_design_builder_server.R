@@ -51,7 +51,7 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
             if (is.null(col_map)) {
                 message("DEBUG66: col_map is NULL, using all columns as sample candidates")
                 # Fallback: try to detect numeric columns as samples
-                numeric_cols <- names(first_assay)[sapply(first_assay, is.numeric)]
+                numeric_cols <- names(first_assay)[vapply(first_assay, is.numeric, logical(1))]
                 message(sprintf("DEBUG66: Found %d numeric columns", length(numeric_cols)))
                 return(numeric_cols)
             }

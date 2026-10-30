@@ -32,6 +32,6 @@ resolveMetabImportSampleColumns <- function(
     return(importResult$sample_columns)
   }
 
-  names(assayData)[sapply(assayData, is.numeric)]
+  names(assayData)[vapply(assayData, is.numeric, logical(1))]
 }
 

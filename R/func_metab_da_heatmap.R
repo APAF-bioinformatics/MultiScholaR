@@ -138,7 +138,7 @@ generateMetabDAHeatmap <- function(
     })
 
     # Combine matrices (if multiple assays)
-    expr_matrix <- do.call(rbind, expr_list[!sapply(expr_list, is.null)])
+    expr_matrix <- do.call(rbind, expr_list[!vapply(expr_list, is.null, logical(1))])
 
     if (is.null(expr_matrix) || nrow(expr_matrix) == 0) {
         logger::log_warn("   Could not build expression matrix")

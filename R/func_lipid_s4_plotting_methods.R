@@ -144,7 +144,7 @@ setMethod(
         names(pca_plots_list) <- names(assay_list)
 
         # Remove NULL elements (skipped assays)
-        pca_plots_list <- pca_plots_list[!sapply(pca_plots_list, is.null)]
+        pca_plots_list <- pca_plots_list[!vapply(pca_plots_list, is.null, logical(1))]
 
         return(pca_plots_list)
     }
@@ -305,7 +305,7 @@ setMethod(
         names(rle_plots_list) <- names(assay_list)
 
         # Remove NULL elements (skipped assays)
-        rle_plots_list <- rle_plots_list[!sapply(rle_plots_list, is.null)]
+        rle_plots_list <- rle_plots_list[!vapply(rle_plots_list, is.null, logical(1))]
 
         return(rle_plots_list)
     }
@@ -509,7 +509,7 @@ setMethod(
         names(density_plots_list) <- names(assay_list)
 
         # Remove NULL elements (skipped assays)
-        density_plots_list <- density_plots_list[!sapply(density_plots_list, is.null)]
+        density_plots_list <- density_plots_list[!vapply(density_plots_list, is.null, logical(1))]
 
         return(density_plots_list)
     }

@@ -83,8 +83,8 @@ generateMetabNormCompositeFromFiles <- function(
         n_plot_types <- n_files / ncol
 
         if (is.null(row_labels)) {
-            all_labels <- letters[1:n_files]
-            row_labels <- split(paste0(all_labels, ")"), rep(1:n_plot_types, each = ncol))
+            all_labels <- letters[seq_len(n_files)]
+            row_labels <- split(paste0(all_labels, ")"), rep(seq_len(n_plot_types), each = ncol))
             names(row_labels) <- paste0("row", seq_len(n_plot_types))
         }
 

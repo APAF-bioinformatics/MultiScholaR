@@ -143,7 +143,7 @@ mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
             
             if (!is.null(current_state) && 
                 inherits(current_state, "LipidomicsAssayData") && 
-                !modules_initialized()) {
+                !shiny::isolate(modules_initialized())) {
                 
                 logger::log_info("Lipidomics QC: Auto-initializing sub-modules (state detected)")
                 initializeLipidQcSubmodules(workflow_data, omic_type, experiment_label)
