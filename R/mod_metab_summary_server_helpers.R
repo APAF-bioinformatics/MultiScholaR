@@ -108,7 +108,8 @@ registerMetabSummaryServerObservers <- function(
                 projectDirs = projectDirs,
                 omicType = omicType,
                 values = values,
-                output = output
+                output = output,
+                workflowData = workflowData # KIT-032: the analysis record bundle beside the report
             )
         }),
         githubPushObserver = observeEventFn(input$push_to_github, {

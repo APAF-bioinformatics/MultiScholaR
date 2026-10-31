@@ -83,7 +83,13 @@ workflowOutputDeclarations <- function() {
         producer = "runLipidReferenceDaAnalysis", operation = "lipid_da_output", long_table = "da_lipids_long",
         fields = c("source", "lipid_id_column", "sample_id", "contrasts", "results", "tables", "products", "parameters", "model"),
         products = c("da_lipids_long", "da_results", "significant_counts", "qvalue_warnings"),
-        identifies = "isLipidResultManifest"))
+        identifies = "isLipidResultManifest"),
+        # KIT-032: the metabolomics DA output, the lipidomics manifest's twin.
+        `metab.da_results.v1` = list(schema = "metab.da_results.v1", version = 1L, kind = "manifest",
+        producer = "runMetabReferenceDaAnalysis", operation = "metab_da_output", long_table = "da_metabolites_long",
+        fields = c("source", "metabolite_id_column", "sample_id", "contrasts", "results", "tables", "products", "parameters", "model"),
+        products = c("da_metabolites_long", "da_results", "significant_counts", "qvalue_warnings"),
+        identifies = "isMetabResultManifest"))
 }
 
 #' Resolve one declared output manifest by schema.

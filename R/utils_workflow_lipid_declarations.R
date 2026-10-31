@@ -253,8 +253,9 @@ lipidomicsStepLabels <- c(lipid_intensity_filter = "2_Intensity_Filtered", lipid
 # The wrappers: the operation on a source, its product on the checkpoint, the commit under the module's state name.
 # ---------------------------------------------------------------------------------------------------------------
 
-#' Run one state-producing lipid declaration and commit its checkpoint.
-#' @param manager The lipid session owner (`DIAStateAdapter`).
+#' Run one state-producing omics declaration and commit its checkpoint (KIT-031; KIT-032: the metabolomics wrappers
+#' call it too, under its omic-neutral name).
+#' @param manager The session owner (`DIAStateAdapter`).
 #' @param declaration The declaration.
 #' @param parameters Every declared parameter and any extra the kernel reads.
 #' @param state_name,config,description The module's commit.
@@ -262,9 +263,9 @@ lipidomicsStepLabels <- c(lipid_intensity_filter = "2_Intensity_Filtered", lipid
 #' @return `list(run, reference, value, object)`: the operation run, the committed state's reference, the kernel's
 #'   value and the committed object hydrated for the module's display (the modules hydrate whole objects per read).
 #' @noRd
-runLipidReferenceOperation <- function(manager, declaration, parameters, state_name, config, description, source = NULL,
+runWorkflowOmicsReferenceOperation <- function(manager, declaration, parameters, state_name, config, description, source = NULL,
     dependencies = list(), hydrate = TRUE) {
-    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the lipid step needs the session's state owner", class = "saved_entity_scope")
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
         source <- source %||% getWorkflowStateReference(manager)
         run <- runSavedOperation(manager, declaration, source, parameters, dependencies)
@@ -275,6 +276,10 @@ runLipidReferenceOperation <- function(manager, declaration, parameters, state_n
             object = if (hydrate) manager$getState(state_name) else NULL)
     })
 }
+
+#' The lipid name of `runWorkflowOmicsReferenceOperation` (KIT-032; one body).
+#' @noRd
+runLipidReferenceOperation <- runWorkflowOmicsReferenceOperation
 
 #' @noRd
 runLipidReferenceIntensityFilter <- function(manager, percentile, proportion, config, description = sprintf(
@@ -345,25 +350,33 @@ runLipidReferenceCorrelation <- function(manager, group, threshold, config,
 #' Name a store step's provenance before the module's own `saveState` (the QC finalise, the correlation skip, the
 #' reset): the commit is attributed to the declaration instead of `legacy`. A non-owner manager is left alone.
 #' @noRd
-markLipidReferenceStoreStep <- function(manager, operation) {
+markWorkflowOmicsStoreStep <- function(manager, operation) {
     if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
     entry <- workflowOperationEntry(operation)
     setWorkflowStepProvenance(manager, operation, entry$default_variant %||% "whole", entry$parameters, entry$declaration$fixed)
     invisible(NULL)
 }
 
+#' The lipid name of `markWorkflowOmicsStoreStep` (KIT-032; one body).
+#' @noRd
+markLipidReferenceStoreStep <- markWorkflowOmicsStoreStep
+
 #' Commit a store step on the owner (the QC finalise, the correlation skip): the head's record under the new name
 #' with the step's provenance, the prior products kept and no component re-serialised. The module's double path
 #' keeps its `saveState`.
 #' @noRd
-commitLipidReferenceStoreStep <- function(manager, operation, state_name, config, description) {
-    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the lipid step needs the session's state owner", class = "saved_entity_scope")
+commitWorkflowOmicsStoreStep <- function(manager, operation, state_name, config, description) {
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
-        markLipidReferenceStoreStep(manager, operation)
+        markWorkflowOmicsStoreStep(manager, operation)
         commitWorkflowReferenceState(manager, state_name, readWorkflowStateMetadata(manager)$data, config, description)
         getWorkflowStateReference(manager)
     })
 }
+
+#' The lipid name of `commitWorkflowOmicsStoreStep` (KIT-032; one body).
+#' @noRd
+commitLipidReferenceStoreStep <- commitWorkflowOmicsStoreStep
 
 #' The design step on the owner (KIT-031): the `design_builder` provenance with the three design roles, and the
 #' workflow's inputs (the import's source copies under `import_sources/` as `lipid_assay_<n>`, the design file).

@@ -976,6 +976,10 @@ AnalyzeSamples <- function(design_matrix, study_params) {
     numbers <- CalculateSampleCounts(group_summary)
     numbers <- CalculatePatientMetrics(numbers, group_summary)
     params_extracted <- ExtractStudyParametersNew(study_params)
+    # KIT-032: the analysis record, when it sits beside study_parameters.txt, supplies the values it carries
+    # (the KIT-033 overlay); without one the parameters stay as parsed.
+    params_extracted <- MultiScholaR:::workflowRecordReportParameters(file.path(report_source_dir, "analysis_record.json"),
+      params_extracted, study_params)
 
     # Combine counts with extracted params
     final_numbers <- c(numbers, params_extracted)

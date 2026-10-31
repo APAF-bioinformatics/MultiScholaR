@@ -44,7 +44,14 @@ dispatchMetabNormApplyCorrelation <- function(
     logErrorFn = logger::log_error
 ) {
     tryCatch({
-        workflowState <- runWorkflowFn(
+        # KIT-032: on the session owner the pairs and the selection are the declared operations on the head (the
+        # normalisation's last commit), committed under `metab_correlation_filtered`; a double keeps the kernel calls.
+        manager <- workflowData$state_manager
+        workflowState <- if (inherits(manager, "DIAStateAdapter")) {
+            correlation <- runMetabReferenceCorrelation(manager, observerState$groupingVariable, observerState$threshold,
+                workflowData$config_list)
+            list(corrResults = correlation$correlations, filteredS4 = correlation$object, committed = TRUE)
+        } else runWorkflowFn(
             observerState = observerState
             , reqFn = reqFn
             , calculateCorrelationsFn = calculateCorrelationsFn
@@ -52,7 +59,7 @@ dispatchMetabNormApplyCorrelation <- function(
             , logInfoFn = logInfoFn
         )
 
-        handleOutcomeFn(
+        outcomeArgs <- list(
             workflowData = workflowData,
             normData = normData,
             observerState = observerState,
@@ -63,6 +70,9 @@ dispatchMetabNormApplyCorrelation <- function(
             removeNotificationFn = removeNotificationFn,
             logErrorFn = logErrorFn
         )
+        # KIT-032: only the owner path tells the outcome that the state is already committed.
+        if (isTRUE(workflowState$committed)) outcomeArgs$committed <- TRUE
+        do.call(handleOutcomeFn, outcomeArgs)
     }, error = function(e) {
         handleOutcomeFn(
             workflowData = workflowData,
@@ -84,6 +94,7 @@ handleMetabNormApplyCorrelationOutcome <- function(
     corrResults = NULL,
     filteredS4 = NULL,
     error = NULL,
+    committed = FALSE,
     addLogFn = function(entry) invisible(entry),
     showNotificationFn = shiny::showNotification,
     removeNotificationFn = shiny::removeNotification,
@@ -96,7 +107,7 @@ handleMetabNormApplyCorrelationOutcome <- function(
         normData$correlation_filtered_obj <- filteredS4
         normData$correlation_filtering_complete <- TRUE
 
-        workflowData$state_manager$saveState(
+        if (!isTRUE(committed)) workflowData$state_manager$saveState( # KIT-032: the declared operation committed on the owner
             state_name = "metab_correlation_filtered"
             , s4_data_object = filteredS4
             , config_object = workflowData$config_list
@@ -305,6 +316,7 @@ runMetabNormResetNormalizationObserverShell <- function(
 
     tryCatch({
         if (!is.null(postFilterObject)) {
+            markWorkflowOmicsStoreStep(workflowData$state_manager, "metab_reset") # KIT-032: a store step
             workflowData$state_manager$saveState(
                 state_name = "metab_reset"
                 , s4_data_object = postFilterObject
@@ -355,7 +367,12 @@ resolveMetabNormSkipCorrelationInputObject <- function(ruvCorrectedObject, postN
 }
 
 completeMetabNormSkipCorrelationState <- function(workflowData, currentS4) {
-    workflowData$state_manager$saveState(
+    # KIT-032: a store step; on the owner the head's record (the normalisation's last commit) under the new name with
+    # the provenance `metab_norm_complete`; a double keeps its `saveState`.
+    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+        commitWorkflowOmicsStoreStep(workflowData$state_manager, "metab_norm_complete", "metab_norm_complete",
+            workflowData$config_list, "Normalization complete (correlation filtering skipped)")
+    } else workflowData$state_manager$saveState(
         state_name = "metab_norm_complete"
         , s4_data_object = currentS4
         , config_object = workflowData$config_list

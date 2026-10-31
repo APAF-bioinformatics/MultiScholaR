@@ -61,7 +61,10 @@ workflowSectionOperationsByType <- list(DIA_LIMPA = c(log2TransformPeptideMatrix
     # intensity filter, the ITSD and RUV kernels' own names); the log2 and between-sample kernels write scalars, so
     # those steps' parameters come from the head's provenance values.
     LIPIDOMICS = c(lipidIntensityFilteringFn = "lipid_intensity_filter", ITSDNormalization = "lipid_itsd_normalisation",
-        ruvIII_C_Varying = "lipid_ruv"))
+        ruvIII_C_Varying = "lipid_ruv"),
+    # KIT-032: the metabolomics route's `@args` sections (the module calls its intensity filter by the method's own name).
+    METABOLOMICS = c(metaboliteIntensityFiltering = "metab_intensity_filter", ITSDNormalization = "metab_itsd_normalisation",
+        ruvIII_C_Varying = "metab_ruv"))
 
 #' @param workflow_type The owner's workflow type; a route's own map is consulted before the shared one.
 #' @noRd
@@ -340,6 +343,24 @@ workflowOperationDefaults <- local({
         lipid_pearson_selection = list(pairs = "input", min_pearson_correlation_threshold = "no_shipped_default"),
         lipid_da_output = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
+            contrasts = "input"),
+        # KIT-032: the metabolomics declarations; `config.ini` ships the intensity filter's section.
+        metab_intensity_filter = list(
+            metabolites_intensity_cutoff_percentile = key("metaboliteIntensityFiltering", "metabolites_intensity_cutoff_percentile"),
+            metabolites_proportion_of_samples_below_cutoff = key("metaboliteIntensityFiltering", "metabolites_proportion_of_samples_below_cutoff")),
+        metab_duplicate_resolution = list(),
+        metab_qc_finalize = list(), metab_norm_complete = list(), metab_reset = list(),
+        metab_itsd_normalisation = list(itsd_aggregation = "no_shipped_default", itsd_feature_ids = "input"),
+        metab_log2 = list(offset = "no_shipped_default"),
+        metab_between_sample_normalisation = list(normalisation_method = key("normaliseBetweenSamples", "method")),
+        metab_ruv = list(ruv_mode = "no_shipped_default", ruv_grouping_variable = key("ruvIII_C_Varying", "ruv_grouping_variable"),
+            percentage_min = "no_shipped_default", percentage_max = "no_shipped_default", separation_metric = "no_shipped_default",
+            k_penalty_weight = "no_shipped_default", adaptive_k_penalty = "no_shipped_default",
+            manual_k = key("ruvIII_C_Varying", "ruv_number_k"), manual_percentage = "no_shipped_default"),
+        metab_pearson_pairs = list(correlation_group = "no_shipped_default"),
+        metab_pearson_selection = list(pairs = "input", min_pearson_correlation_threshold = "no_shipped_default"),
+        metab_da_output = list(formula = key("deAnalysisParameters", "formula_string"),
+            qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
             contrasts = "input"))
 })
 
@@ -417,6 +438,25 @@ workflowParameterLabels <- local({
         lipid_pearson_selection = list(pairs = "Sample-pair correlations (input)",
             min_pearson_correlation_threshold = "Minimum Pearson correlation to keep a sample"),
         lipid_da_output = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
+            lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"),
+        # KIT-032: the metabolomics declarations.
+        metab_intensity_filter = list(metabolites_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
+            metabolites_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),
+        metab_duplicate_resolution = list(),
+        metab_qc_finalize = list(), metab_norm_complete = list(), metab_reset = list(),
+        metab_itsd_normalisation = list(itsd_aggregation = "Internal-standard aggregation (sum, mean or median)",
+            itsd_feature_ids = "Internal-standard features selected per assay (input)"),
+        metab_log2 = list(offset = "Log2 offset"),
+        metab_between_sample_normalisation = list(normalisation_method = "Between-sample normalisation method"),
+        metab_ruv = list(ruv_mode = "RUV-III mode (automatic or manual)", ruv_grouping_variable = "RUV grouping variable",
+            percentage_min = "Negative-control percentage sweep, minimum", percentage_max = "Negative-control percentage sweep, maximum",
+            separation_metric = "Separation metric for choosing k", k_penalty_weight = "Penalty weight on k",
+            adaptive_k_penalty = "Adaptive maximum k", manual_k = "Number of unwanted factors k (manual mode)",
+            manual_percentage = "Negative-control percentage (manual mode)"),
+        metab_pearson_pairs = list(correlation_group = "Correlation grouping variable"),
+        metab_pearson_selection = list(pairs = "Sample-pair correlations (input)",
+            min_pearson_correlation_threshold = "Minimum Pearson correlation to keep a sample"),
+        metab_da_output = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
             lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"))
 })
 
@@ -627,6 +667,16 @@ registerBuiltinWorkflowOperations <- function() {
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),
             completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
             omic_type = "lipidomics", variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+            inclusion_absence = FALSE, declaration = declaration))
+    }
+    # KIT-032: the metabolomics declarations, in process as the lipidomics ones.
+    for (declaration in metabolomicsWorkflowOperations()) {
+        label <- metabolomicsStepLabels[declaration$name]
+        registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
+            compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
+            parameter_limit = 65536, parameters = declaration$parameters %||% character(),
+            completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
+            omic_type = "metabolomics", variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
             inclusion_absence = FALSE, declaration = declaration))
     }
     invisible(workflowOperationNames())

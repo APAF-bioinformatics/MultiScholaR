@@ -241,10 +241,12 @@ test_that("metabolomics S4 metabolite-intensity filtering source retains comment
     target_text,
     "cleaned_intensity_percentile <- trimws\\(sub\\(\"#\\.\\*\\$\", \"\","
   )
+  # KIT-032 (user decision 2026-10-28): the threshold is the per-assay quantile itself; the ceiling() is removed.
   expect_match(
     target_text,
-    "ceiling\\(quantile\\(all_intensity_values,"
+    "min_metabolite_intensity_threshold <- quantile\\(all_intensity_values,"
   )
+  expect_no_match(target_text, "ceiling\\(quantile")
   expect_match(target_text, "metaboliteIntensityFilteringHelper\\(")
   expect_match(
     target_text,

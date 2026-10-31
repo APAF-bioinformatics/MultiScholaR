@@ -1,0 +1,79 @@
+# KIT-032 module-CI comparison (item 1 gate): before = scratch-032-pre (e4572f01), after = the working tree before the item-1 commit; hashes via kit-069/mci-hash.R on the six metab lanes, bytes via kit-030/compare-mci.py, content via kit-069/compare-groups.R on the kept trees.
+
+## counts (before | after)
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0	pass 88 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0	pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0	pass 54 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0	pass 150 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0	pass 142 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0	pass 80 fail 0 error 0 skip 0
+
+## byte level
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-design: same 14 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-import: same 27 differing 1 only-before 9 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/DESCRIPTION
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/LICENSE
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/features.rds
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/package.rds
+test-module-ci-metab-norm: same 4 differing 8 only-before 0 only-after 0
+   DIFF mci-015-da-reload-automatic-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-da-reload-manual-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-da-reload-skip-ID/metab_filtered_session_data_latest.rds
+   DIFF mci-015-metab-norm-export-ID/.workflow-export/mci-015-5/journal.json
+   DIFF mci-015-metab-norm-export-ID/export_complete_mci-015-5.json
+   DIFF mci-015-metab-norm-export-ID/metab_filtered_session_data_20260505_123456.rds
+   DIFF mci-015-metab-norm-export-ID/metab_filtered_session_data_latest.rds
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-qc: same 0 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-metab-summary: same 41 differing 8 only-before 0 only-after 0
+   DIFF module-ci-metab-summary-ID/da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-metab-summary-ID/da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-metab-summary-ID/results_summary/Publication_tables/DA_results_metabolomics.xlsx
+   DIFF module-ci-metab-summary-ID/results_summary/Publication_tables/Pathway_enrichment_results_metabolomics.xlsx
+   DIFF module-ci-metab-summary-ID/source/session_state_2026-05-06.RDS
+   DIFF module-ci-metab-summary-ID/source/session_state_2026-10-31.RDS
+   DIFF module-ci-metab-summary-ID/source/study_parameters.txt
+   DIFF pkgloID/MultiScholaR.so
+TOTAL {'same': 88, 'diff': 20, 'only_before': 9, 'only_after': 0}
+
+## content level
+=== import
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/DESCRIPTION 
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/LICENSE 
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/Meta/features.rds 
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/Meta/package.rds 
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/NAMESPACE 
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/NEWS.md 
+  UNMATCHED devtools_install_a00447be259f/MultiScholaR/README.md 
+  UNMATCHED foo.o 
+=== design
+before files 14: byte-matched 14, content-matched (timestamps/paths/ids masked) 0, unmatched 0; after-only groups 0
+=== qc
+before files 0: byte-matched 0, content-matched (timestamps/paths/ids masked) 0, unmatched 0; after-only groups 0
+=== norm
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+before files 11: byte-matched 4, content-matched (timestamps/paths/ids masked) 5, unmatched 2; after-only groups 0
+  UNMATCHED mci-015-metab-norm-export-a33d204f3bfc/.workflow-export/mci-015-5/journal.json 
+  UNMATCHED mci-015-metab-norm-export-a33d204f3bfc/export_complete_mci-015-5.json 
+=== da
+before files 2: byte-matched 2, content-matched (timestamps/paths/ids masked) 0, unmatched 0; after-only groups 0
+=== summary
+before files 113: byte-matched 94, content-matched (timestamps/paths/ids masked) 16, unmatched 3; after-only groups 0
+  UNMATCHED module-ci-metab-summary-a412266bf9fb/source/study_parameters.txt 
+  UNMATCHED module-ci-metab-summary-a41253bbe930/source/study_parameters.txt 
+  UNMATCHED module-ci-metab-summary-a4127829d9bd/source/study_parameters.txt 
+
+## reading
+- design, qc, da lanes byte-identical.
+- import: only the test process's devtools/pkgload scratch is unmatched, no product.
+- norm: every data product content-matched; the unmatched files are the owned-export journal and completion record, whose session sha256 covers the exported session's timestamp fields (the KIT-071 class).
+- summary: 94 byte-matched, 16 content-matched; the 3 unmatched study_parameters.txt differ by their date lines, the Version Information block (worktree vs local repository, as in KIT-071) and the group's pairing by label across the three summary lanes.
+- the ceiling() removal changes no module-CI product.

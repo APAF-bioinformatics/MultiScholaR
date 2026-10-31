@@ -139,8 +139,9 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
     }
     # KIT-031: the lipidomics RUV step's realised result (k and the control count per assay, their totals) and the
     # internal-standard step's application, in the words the lipid report's RUV and ITSD sentences use.
-    if (identical(operation, "lipid_ruv")) {
-        product <- record$data$products$lipid_ruv_science
+    # KIT-032: the metabolomics RUV and ITSD steps record the same outcomes under their own operation names.
+    if (operation %in% c("lipid_ruv", "metab_ruv")) {
+        product <- record$data$products[[paste0(operation, "_science")]]
         saved <- if (isSavedWorkflowReference(product)) tryCatch({
             hydrated <- hydrateSavedWorkflowEntity(context$store, product)
             if (is.list(hydrated$value)) hydrated$value else hydrated
@@ -154,7 +155,7 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
         outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
         outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
     }
-    if (identical(operation, "lipid_itsd_normalisation")) outcomes$itsd_applied <- TRUE
+    if (operation %in% c("lipid_itsd_normalisation", "metab_itsd_normalisation")) outcomes$itsd_applied <- TRUE
     outcomes
 }
 
@@ -568,6 +569,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             } else if (identical(entry$omic_type, "lipidomics")) {
                 # KIT-031: the lipidomics declarations through the wrappers the modules call, with the recorded values.
                 replayLipidomicsStep(manager, step, parameters)
+            } else if (identical(entry$omic_type, "metabolomics")) {
+                replayMetabolomicsStep(manager, step, parameters) # KIT-032
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
             }
@@ -590,6 +593,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         if (identical(da$operation, "lipid_da_output")) {
             # KIT-031: the lipidomics DA from the record's settings and contrasts on the replayed head.
             withWorkflowStateScope(manager, function() runLipidReferenceDaAnalysis(manager, getWorkflowStateReference(manager),
+                list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), contrasts))
+        } else if (identical(da$operation, "metab_da_output")) {
+            # KIT-032: the metabolomics DA, the same way.
+            withWorkflowStateScope(manager, function() runMetabReferenceDaAnalysis(manager, getWorkflowStateReference(manager),
                 list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), contrasts))
         } else {
             runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
@@ -722,16 +729,19 @@ workflowRecordReportSources <- list(
     # KIT-031: a variable both the proteomics and the lipidomics templates print lists its record sources in order; the
     # first the record carries is taken (a record holds one route's steps).
     intensity_cutoff_percentile = list(record = list(c("peptide_intensity_filter", "peptides_intensity_cutoff_percentile"),
-        c("lipid_intensity_filter", "lipids_intensity_cutoff_percentile")), file = c("peptideIntensityFiltering", "peptides_intensity_cutoff_percentile")),
-    proportion_samples_below_cutoff = list(record = c("lipid_intensity_filter", "lipids_proportion_of_samples_below_cutoff"),
+        c("lipid_intensity_filter", "lipids_intensity_cutoff_percentile"), c("metab_intensity_filter", "metabolites_intensity_cutoff_percentile")),
+        file = c("peptideIntensityFiltering", "peptides_intensity_cutoff_percentile")),
+    proportion_samples_below_cutoff = list(record = list(c("lipid_intensity_filter", "lipids_proportion_of_samples_below_cutoff"),
+        c("metab_intensity_filter", "metabolites_proportion_of_samples_below_cutoff")),
         file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
     missing_values_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
     max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
     min_peptidoforms_per_protein = list(record = c("peptide_protein_evidence_filter", "num_peptidoforms_per_protein_thresh"), file = c("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
     min_peptides_per_sample = list(record = c("minimum_peptides_per_sample", "peptides_per_sample_cutoff"), file = c("filterMinNumPeptidesPerSample", "peptides_per_sample_cutoff")),
-    normalisation_method = list(record = list(c("normalization-ruv", "norm_method"), c("lipid_between_sample_normalisation", "normalisation_method")),
-        file = c("normaliseBetweenSamples", "method")),
-    ruv_number_k = list(record = list(c("normalization-ruv", "ruv_k"), c("outcomes", "lipid_ruv", "k")), file = c("ruvIII_C_Varying", "ruv_number_k")),
+    normalisation_method = list(record = list(c("normalization-ruv", "norm_method"), c("lipid_between_sample_normalisation", "normalisation_method"),
+        c("metab_between_sample_normalisation", "normalisation_method")), file = c("normaliseBetweenSamples", "method")),
+    ruv_number_k = list(record = list(c("normalization-ruv", "ruv_k"), c("outcomes", "lipid_ruv", "k"), c("outcomes", "metab_ruv", "k")),
+        file = c("ruvIII_C_Varying", "ruv_number_k")),
     s4_de_q_val_thresh = list(record = c("DA", "qvalue"), file = c("deAnalysisParameters", "de_q_val_thresh")),
     s4_de_treat_lfc_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")),
     s4_formula_string = list(record = c("DA", "formula"), file = c("deAnalysisParameters", "formula_string")),
@@ -744,16 +754,19 @@ workflowRecordReportSources <- list(
     build = list(record = c("software", "build")),
     r_version = list(record = c("software", "r_version")),
     blas = list(record = c("software", "blas")),
-    ruv_applied = list(record = list(c("outcomes", "normalization-ruv", "ruv_applied"), c("outcomes", "lipid_ruv", "ruv_applied"))),
-    best_k = list(record = list(c("outcomes", "normalization-ruv", "k"), c("outcomes", "lipid_ruv", "k"))),
-    best_percentage = list(record = list(c("outcomes", "normalization-ruv", "negative_control_percentage"), c("outcomes", "lipid_ruv", "negative_control_percentage"))),
-    num_neg_ctrl = list(record = list(c("outcomes", "normalization-ruv", "negative_control_count"), c("outcomes", "lipid_ruv", "negative_control_count"))),
+    ruv_applied = list(record = list(c("outcomes", "normalization-ruv", "ruv_applied"), c("outcomes", "lipid_ruv", "ruv_applied"),
+        c("outcomes", "metab_ruv", "ruv_applied"))),
+    best_k = list(record = list(c("outcomes", "normalization-ruv", "k"), c("outcomes", "lipid_ruv", "k"), c("outcomes", "metab_ruv", "k"))),
+    best_percentage = list(record = list(c("outcomes", "normalization-ruv", "negative_control_percentage"), c("outcomes", "lipid_ruv", "negative_control_percentage"),
+        c("outcomes", "metab_ruv", "negative_control_percentage"))),
+    num_neg_ctrl = list(record = list(c("outcomes", "normalization-ruv", "negative_control_count"), c("outcomes", "lipid_ruv", "negative_control_count"),
+        c("outcomes", "metab_ruv", "negative_control_count"))),
     # KIT-031: the lipidomics template's variables (`ExtractLipidStudyParameters`): the internal-standard step, the log2
     # offset and the RUV grouping variable; its DA variables are the shared `s4_de_*` / `ui_de_*` entries (`DA`).
-    itsd_applied = list(record = c("outcomes", "lipid_itsd_normalisation", "itsd_applied")),
-    itsd_aggregation = list(record = c("lipid_itsd_normalisation", "itsd_aggregation")),
-    log_transform_offset = list(record = c("lipid_log2", "offset")),
-    ruv_grouping_variable = list(record = c("lipid_ruv", "ruv_grouping_variable")),
+    itsd_applied = list(record = list(c("outcomes", "lipid_itsd_normalisation", "itsd_applied"), c("outcomes", "metab_itsd_normalisation", "itsd_applied"))),
+    itsd_aggregation = list(record = list(c("lipid_itsd_normalisation", "itsd_aggregation"), c("metab_itsd_normalisation", "itsd_aggregation"))),
+    log_transform_offset = list(record = list(c("lipid_log2", "offset"), c("metab_log2", "offset"))),
+    ruv_grouping_variable = list(record = list(c("lipid_ruv", "ruv_grouping_variable"), c("metab_ruv", "ruv_grouping_variable"))),
     # KIT-043: the LFQ and TMT templates' variables: the protein intensity cutoff percentile (the registry step
     # `protein_intensity_filter`; the groupwise cutoff is derived in the state's configuration, not declared, so it
     # stays file-only; `max_groups_percentage_cutoff` is listed above) and the DA settings the templates print from

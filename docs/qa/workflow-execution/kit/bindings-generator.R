@@ -157,6 +157,8 @@ if (!is.null(b$builds$kit_070) && identical(Sys.getenv("KIT_070_LIFECYCLE"), "1"
 if (!is.null(b$builds$kit_071) && identical(Sys.getenv("KIT_071_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_071"
 # KIT-031 (2026-10-31): `KIT_031_LIFECYCLE=1` points them at the kit_031 install (the lipidomics declarations).
 if (!is.null(b$builds$kit_031) && identical(Sys.getenv("KIT_031_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_031"
+# KIT-032 (2026-10-31): `KIT_032_LIFECYCLE=1` points them at the kit_032 install (the metabolomics declarations).
+if (!is.null(b$builds$kit_032) && identical(Sys.getenv("KIT_032_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_032"
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root
@@ -586,6 +588,27 @@ if (!is.null(b$builds$kit_031)) {
                 head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
                 oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "lipidomics")
             b$oracles[[paste0("lipid31_", step)]] <- population$fingerprint
+        }
+    }
+}
+# KIT-032 (after the tickets and oracles are initialised): the metabolomics screen member judged exact, the KIT-031
+# member's twin: a single journey on the kit_032 build against the in-process record of kit-032/oracle-record.R on the
+# same build, bound as metab32_<step>.
+if (!is.null(b$builds$kit_032)) {
+    b$tickets[["032m"]] <- list(kind = "single_journey", build = "kit_032", corpus = "metab_screen", route = "metabolomics",
+        whole_journey = TRUE, oracles = "metab32", ceiling_seconds = 1800L, purpose = "exactness",
+        normalisation = b$lifecycle_omics$normalisation)
+    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-032/oracles-metab32_metab_screen.rds")
+    if (!is.null(b$corpora$metab_screen) && file.exists(oracle_file)) {
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, "metab_screen"), identical(recorded$route, "metabolomics"),
+            identical(recorded$corpus_sha256, b$corpora$metab_screen$files[[1L]]$sha256))
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0("metab32_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "metabolomics")
+            b$oracles[[paste0("metab32_", step)]] <- population$fingerprint
         }
     }
 }

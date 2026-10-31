@@ -327,6 +327,8 @@ registerMetabDesignBuilderResultsObserver <- function(
 
                 # KIT-070: the session owner is bound to the metabolomics route here (the import wrote files only).
                 bindWorkflowOwnerTypeAtDesign(workflowData, "METABOLOMICS", workflowData$data_format)
+                # KIT-032: the design step's provenance (`design_builder`) and the workflow's inputs on the bound owner.
+                recordMetabDesignProvenance(workflowData$state_manager, s4_obj, source_dir = source_dir)
 
                 logger::log_info("Saving MetaboliteAssayData S4 object to state manager as 'metab_raw_data_s4'")
                 workflowData$state_manager$saveState(

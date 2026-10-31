@@ -410,6 +410,9 @@ saveMetabDesignImportedS4State <- function(
     # KIT-070: the session owner is bound to the metabolomics route here (the import wrote files only).
     messageFn("DEBUG66: Binding the state owner to METABOLOMICS...")
     bindWorkflowOwnerTypeAtDesign(workflowData, "METABOLOMICS", workflowData$data_format)
+    # KIT-032: the design step's provenance (`design_builder`) and the workflow's inputs on the bound owner.
+    recordMetabDesignProvenance(workflowData$state_manager, s4Object,
+        source_dir = (workflowData$state_manager$.context$experiment_paths %||% list())$source_dir)
 
     messageFn("DEBUG66: Saving state to state_manager...")
     workflowData$state_manager$saveState(

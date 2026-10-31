@@ -402,8 +402,13 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , input$proportion_below_cutoff
                 ))
                 
-                # Apply S4 method for filtering
-                filtered_s4 <- metaboliteIntensityFiltering(
+                # KIT-032: on the session owner the filter is the declared operation `metab_intensity_filter`,
+                # committed under `metab_intensity_filtered` with its provenance; a test double keeps the direct call.
+                owned <- inherits(workflow_data$state_manager, "DIAStateAdapter")
+                filtered_s4 <- if (owned) {
+                    runMetabReferenceIntensityFilter(workflow_data$state_manager, input$intensity_cutoff_percentile,
+                        input$proportion_below_cutoff, workflow_data$config_list)$object
+                } else metaboliteIntensityFiltering(
                     current_s4
                     , metabolites_intensity_cutoff_percentile = input$intensity_cutoff_percentile
                     , metabolites_proportion_of_samples_below_cutoff = input$proportion_below_cutoff
@@ -421,7 +426,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , setFilterPlotFn = filter_plot
                 )
 
-                saved_state_name <- saveMetabIntensityFilterState(
+                saved_state_name <- if (owned) "metab_intensity_filtered" else saveMetabIntensityFilterState(
                     stateManager = workflow_data$state_manager
                     , filteredS4 = filtered_s4
                     , configObject = workflow_data$config_list

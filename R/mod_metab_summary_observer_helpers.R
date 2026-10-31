@@ -235,7 +235,8 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
     showNotificationFn = shiny::showNotification,
     sysTimeFn = Sys.time,
     catFn = cat,
-    globalEnv = .GlobalEnv
+    globalEnv = .GlobalEnv,
+    writeAnalysisRecordFn = writeWorkflowAnalysisRecord
 ) {
     input <- inputValues
     project_dirs <- projectDirs
@@ -326,6 +327,20 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
             study_params_file,
             "\n"
         )
+
+        # KIT-032: the analysis record, derived from the owner's head, beside study_parameters.txt (the template's
+        # overlay reads it from the source directory; the KIT-027 proteomics pattern).
+        if (!is.null(workflow_data) && inherits(workflow_data$state_manager, "DIAStateAdapter")) {
+            record_file <- file.path(project_dirs[[omic_type]]$source_dir, "analysis_record.json")
+            tryCatch({
+                writeAnalysisRecordFn(workflow_data$state_manager, record_file)
+                catFn("SESSION SUMMARY: Wrote analysis_record.json at:", record_file, "\n")
+            }, error = function(e) {
+                catFn("SESSION SUMMARY: analysis_record.json not written:", conditionMessage(e), "\n")
+                showNotificationFn(paste("The analysis record (analysis_record.json) was not written:", conditionMessage(e)),
+                    type = "warning", duration = NULL)
+            })
+        }
 
         catFn("SESSION SUMMARY: Saving Integration S4 Object...\n")
         integration_dir <- project_dirs[[omic_type]]$integration_dir
@@ -656,6 +671,8 @@ runMetabSummaryGenerateReportObserverShell <- function(
     omicType,
     values,
     output,
+    workflowData = NULL,
+    exportRecordFn = exportWorkflowAnalysisRecordBundle,
     reqFn = shiny::req,
     withProgressFn = shiny::withProgress,
     incProgressFn = shiny::incProgress,
@@ -824,6 +841,15 @@ runMetabSummaryGenerateReportObserverShell <- function(
             if (!is.null(rendered_path) && fileExistsFn(rendered_path)) {
                 values$report_generated <- TRUE
                 values$report_path <- rendered_path
+
+                # KIT-032: the analysis record bundle (JSON, Word, Excel) beside the report, for an on-disk owner; a
+                # failure is shown and leaves the report as generated (the KIT-029 pattern).
+                if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+                    incProgressFn(0.9, detail = "Exporting the analysis record...")
+                    record_dir <- project_dirs[[omic_type]]$study_report_dir %||% project_dirs[[omic_type]]$results_summary_dir
+                    tryCatch(exportRecordFn(workflowData$state_manager, record_dir), error = function(e) showNotificationFn(
+                        paste("The analysis record bundle was not exported:", conditionMessage(e)), type = "warning", duration = NULL))
+                }
 
                 output$report_ready <- reactiveFn({ TRUE })
                 outputOptionsFn(output, "report_ready", suspendWhenHidden = FALSE)

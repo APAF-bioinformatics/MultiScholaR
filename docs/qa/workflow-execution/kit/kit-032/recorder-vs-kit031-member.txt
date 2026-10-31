@@ -1,0 +1,14 @@
+# KIT-032: the in-process recorder (kit-032/oracle-record.R) on the working tree (before the item-1 commit) against the kit_031 metabolomics lifecycle member's store (the GUI on 6506af27, its intensity filter still with the ceiling()): every journey state and the three intermediate normalisation states compared by class, rows, components, support and summary (kitOracleStateMismatches). Equal at the first run: the recorder mirrors the GUI facts KIT-031 found (integer tab inputs, the preselected internal standards), and the ceiling() removal changes no retained row on the metab screen corpus.
+# recorded metab32 metab_screen -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-032-evidence/oracles-metab32-tree.rds | states 10 | history initial,metab_raw_data_s4,metab_intensity_filtered,metab_duplicates_resolved,metab_qc_complete,metab_itsd_norm,metab_log2,metab_normalized,metab_ruv_corrected,metab_correlation_filtered | record valid TRUE | legacy steps 0 | 52 s
+design          metab_raw_data_s4            rows 612/612  mismatches: none
+intensity       metab_intensity_filtered     rows 576/576  mismatches: none
+duplicates      metab_duplicates_resolved    rows 576/576  mismatches: none
+qc_finalize     metab_qc_complete            rows 576/576  mismatches: none
+normalisation   metab_ruv_corrected          rows 564/564  mismatches: none
+correlation     metab_correlation_filtered   rows 564/564  mismatches: none
+session_export  metab_correlation_filtered   rows 564/564  mismatches: none
+da              metab_correlation_filtered   rows 564/564  mismatches: none
+report          metab_correlation_filtered   rows 564/564  mismatches: none
+                metab_itsd_norm              intermediate  mismatches: none
+                metab_log2                   intermediate  mismatches: none
+                metab_normalized             intermediate  mismatches: none
