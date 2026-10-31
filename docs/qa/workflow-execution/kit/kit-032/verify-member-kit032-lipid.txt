@@ -1,0 +1,8 @@
+store: .dia-native-2ba7f634ee0c0 
+head current_state: lipid_correlation_filtered 
+head history: initial > lipid_raw_data_s4 > lipid_intensity_filtered > lipid_duplicates_resolved > lipid_qc_complete > lipid_itsd_norm > lipid_log2 > lipid_normalized > lipid_ruv_corrected > lipid_correlation_filtered 
+provenance entries: import, design_builder, lipid_intensity_filter, lipid_duplicate_resolution, lipid_qc_finalize, lipid_itsd_normalisation, lipid_log2, lipid_between_sample_normalisation, lipid_ruv, lipid_pearson_selection 
+snapshot fields: identity, states, audit, current_state, state_history, workflow_type, audit_enabled, software_environments, step_provenance, file_dependencies, component_dependencies, reference_states, sizes, owned_components, gui_references, products, product_dependencies, da_dependencies, da_results 
+export status: complete session: lipid_filtered_session_data_20261031_160945.rds latest: lipid_filtered_session_data_latest.rds 
+exported r6_current_state_name: lipid_correlation_filtered  equals head: TRUE 
+exported sha256 equals journal: TRUE 
