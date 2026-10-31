@@ -1,0 +1,96 @@
+{
+  "schema": "kit.member_record_replay.v1",
+  "ticket": "KIT-031",
+  "member": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-032m/candidate-1",
+  "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-032m/candidate-1/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-2571e39167447/.workflow-entities",
+  "record": {
+    "valid": true,
+    "errors": [],
+    "incomplete": "external resources: controller-process queries only",
+    "operations": ["import", "design_builder", "metab_intensity_filter", "metab_duplicate_resolution", "metab_qc_finalize", "metab_itsd_normalisation", "metab_log2", "metab_between_sample_normalisation", "metab_ruv", "metab_pearson_selection"],
+    "inputs": [
+      {
+        "role": "metab_assay_1",
+        "basename": "assay1_msdial_lcms_pos.txt",
+        "sha256": "4eb202921c46fe2c2f4bbd01a86f49ce920f951ea7e33925ccf06e0a914c495a"
+      },
+      {
+        "role": "metab_assay_2",
+        "basename": "assay2_msdial_gcms.txt",
+        "sha256": "937b061c19a0396a26c344637f90b885cc798055c87e16112c5a9faed3e98c8b"
+      },
+      {
+        "role": "design_file",
+        "basename": "design_matrix.tab",
+        "sha256": "e9e985845078935e1283cdf8352ba5da2a4a6ead220605f95c67c7334ec0a700"
+      }
+    ],
+    "da": {
+      "operation": "metab_da_output",
+      "source_state": "metab_correlation_filtered",
+      "model": {
+        "model": "limma",
+        "formula_used": "~ 0 + group",
+        "eBayes_trend": true,
+        "eBayes_robust": true,
+        "treat_applied": false
+      }
+    }
+  },
+  "replay": {
+    "preconditions": ["initial", "metab_raw_data_s4"],
+    "states": ["initial", "metab_raw_data_s4", "metab_intensity_filtered", "metab_duplicates_resolved", "metab_qc_complete", "metab_itsd_norm", "metab_log2", "metab_normalized", "metab_ruv_corrected", "metab_correlation_filtered"],
+    "mismatches": [],
+    "additional_products": [],
+    "per_step": [
+      {
+        "state": "metab_intensity_filtered",
+        "operation": "metab_intensity_filter",
+        "at": "2026-10-31 16:05:14"
+      },
+      {
+        "state": "metab_duplicates_resolved",
+        "operation": "metab_duplicate_resolution",
+        "at": "2026-10-31 16:05:16"
+      },
+      {
+        "state": "metab_qc_complete",
+        "operation": "metab_qc_finalize",
+        "at": "2026-10-31 16:05:16"
+      },
+      {
+        "state": "metab_itsd_norm",
+        "operation": "metab_itsd_normalisation",
+        "at": "2026-10-31 16:05:18"
+      },
+      {
+        "state": "metab_log2",
+        "operation": "metab_log2",
+        "at": "2026-10-31 16:05:20"
+      },
+      {
+        "state": "metab_normalized",
+        "operation": "metab_between_sample_normalisation",
+        "at": "2026-10-31 16:05:22"
+      },
+      {
+        "state": "metab_ruv_corrected",
+        "operation": "metab_ruv",
+        "at": "2026-10-31 16:05:30"
+      },
+      {
+        "state": "metab_correlation_filtered",
+        "operation": "metab_pearson_selection",
+        "at": "2026-10-31 16:05:35"
+      },
+      {
+        "state": "metab_correlation_filtered",
+        "operation": "metab_da_output",
+        "at": "2026-10-31 16:05:40"
+      }
+    ],
+    "exact": true
+  },
+  "inputs_refused": true,
+  "seconds": 33.9891
+}
