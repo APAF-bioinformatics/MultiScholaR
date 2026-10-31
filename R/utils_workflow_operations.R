@@ -56,7 +56,12 @@ workflowSectionOperationsByType <- list(DIA_LIMPA = c(log2TransformPeptideMatrix
     chooseBestProteinAccession = "peptide_accession_cleanup", limpaDpcQuant = "protein_dpc_quant",
     # KIT-041: the route's protein stage (the peptide-count section is the DIA peptide-level filter's on that route).
     limpaProteinNormalisation = "protein_between_sample_normalisation", filterMinNumPeptidesPerProtein = "protein_peptide_count_filter",
-    ruvCovariates = "protein_ruv_covariates"))
+    ruvCovariates = "protein_ruv_covariates"),
+    # KIT-031: the lipidomics route's sections are the `@args` keys its kernels write (the call-site alias for the
+    # intensity filter, the ITSD and RUV kernels' own names); the log2 and between-sample kernels write scalars, so
+    # those steps' parameters come from the head's provenance values.
+    LIPIDOMICS = c(lipidIntensityFilteringFn = "lipid_intensity_filter", ITSDNormalization = "lipid_itsd_normalisation",
+        ruvIII_C_Varying = "lipid_ruv"))
 
 #' @param workflow_type The owner's workflow type; a route's own map is consulted before the shared one.
 #' @noRd
@@ -317,7 +322,25 @@ workflowOperationDefaults <- local({
         da_publication = list(annotations = "input"),
         enrichment = list(taxon_id = "input", up_cutoff = "no_shipped_default", down_cutoff = "no_shipped_default", q_cutoff = "no_shipped_default",
             exclude_iea = "no_shipped_default", correction_method = "no_shipped_default", protein_id_column = "input",
-            contrast_names = "input", results = "input"))
+            contrast_names = "input", results = "input"),
+        # KIT-031: the lipidomics declarations. `config.ini` ships no lipid filter section (the module's defaults
+        # apply); the between-sample method, the RUV grouping/k and the DA settings share the proteomics keys.
+        lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "no_shipped_default",
+            lipids_proportion_of_samples_below_cutoff = "no_shipped_default"),
+        lipid_duplicate_resolution = list(),
+        lipid_qc_finalize = list(), lipid_norm_complete = list(), lipid_reset = list(),
+        lipid_itsd_normalisation = list(itsd_aggregation = "no_shipped_default", itsd_feature_ids = "input"),
+        lipid_log2 = list(offset = "no_shipped_default"),
+        lipid_between_sample_normalisation = list(normalisation_method = key("normaliseBetweenSamples", "method")),
+        lipid_ruv = list(ruv_mode = "no_shipped_default", ruv_grouping_variable = key("ruvIII_C_Varying", "ruv_grouping_variable"),
+            percentage_min = "no_shipped_default", percentage_max = "no_shipped_default", separation_metric = "no_shipped_default",
+            k_penalty_weight = "no_shipped_default", adaptive_k_penalty = "no_shipped_default",
+            manual_k = key("ruvIII_C_Varying", "ruv_number_k"), manual_percentage = "no_shipped_default"),
+        lipid_pearson_pairs = list(correlation_group = "no_shipped_default"),
+        lipid_pearson_selection = list(pairs = "input", min_pearson_correlation_threshold = "no_shipped_default"),
+        lipid_da_output = list(formula = key("deAnalysisParameters", "formula_string"),
+            qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
+            contrasts = "input"))
 })
 
 #' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
@@ -375,7 +398,26 @@ workflowParameterLabels <- local({
         enrichment = list(taxon_id = "Taxon id", up_cutoff = "Up-regulation cutoff", down_cutoff = "Down-regulation cutoff",
             q_cutoff = "Enrichment q-value threshold", exclude_iea = "Exclude electronic GO annotations",
             correction_method = "Multiple-testing correction", protein_id_column = "Protein id column (input)",
-            contrast_names = "Contrasts (input)", results = "Differential results (input)"))
+            contrast_names = "Contrasts (input)", results = "Differential results (input)"),
+        # KIT-031: the lipidomics declarations.
+        lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
+            lipids_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),
+        lipid_duplicate_resolution = list(),
+        lipid_qc_finalize = list(), lipid_norm_complete = list(), lipid_reset = list(),
+        lipid_itsd_normalisation = list(itsd_aggregation = "Internal-standard aggregation (sum, mean or median)",
+            itsd_feature_ids = "Internal-standard features selected per assay (input)"),
+        lipid_log2 = list(offset = "Log2 offset"),
+        lipid_between_sample_normalisation = list(normalisation_method = "Between-sample normalisation method"),
+        lipid_ruv = list(ruv_mode = "RUV-III mode (automatic or manual)", ruv_grouping_variable = "RUV grouping variable",
+            percentage_min = "Negative-control percentage sweep, minimum", percentage_max = "Negative-control percentage sweep, maximum",
+            separation_metric = "Separation metric for choosing k", k_penalty_weight = "Penalty weight on k",
+            adaptive_k_penalty = "Adaptive maximum k", manual_k = "Number of unwanted factors k (manual mode)",
+            manual_percentage = "Negative-control percentage (manual mode)"),
+        lipid_pearson_pairs = list(correlation_group = "Correlation grouping variable"),
+        lipid_pearson_selection = list(pairs = "Sample-pair correlations (input)",
+            min_pearson_correlation_threshold = "Minimum Pearson correlation to keep a sample"),
+        lipid_da_output = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
+            lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"))
 })
 
 #' Register one operation.
@@ -575,6 +617,17 @@ registerBuiltinWorkflowOperations <- function() {
             completion = "in_process", publication = "in_process", step_label = NULL, omic_type = "proteomics",
             variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
             declaration = declaration))
+    }
+    # KIT-031: the lipidomics declarations, every one in process (the route's kernels run projected on the `whole`
+    # variant; the kit's rule that a new workflow adds declarations, registry entries and module code only).
+    for (declaration in lipidomicsWorkflowOperations()) {
+        label <- lipidomicsStepLabels[declaration$name]
+        registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
+            compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
+            parameter_limit = 65536, parameters = declaration$parameters %||% character(),
+            completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
+            omic_type = "lipidomics", variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+            inclusion_absence = FALSE, declaration = declaration))
     }
     invisible(workflowOperationNames())
 }

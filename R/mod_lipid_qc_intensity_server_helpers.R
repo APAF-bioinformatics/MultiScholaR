@@ -155,11 +155,19 @@ registerLipidIntensityApplyFilterObserver <- function(
                 , input$proportion_below_cutoff
             ))
 
-            filtered_s4 <- lipidIntensityFilteringFn(
-                current_s4
-                , lipids_intensity_cutoff_percentile = input$intensity_cutoff_percentile
-                , lipids_proportion_of_samples_below_cutoff = input$proportion_below_cutoff
-            )
+            # KIT-031: on the session owner the filter is the declared operation `lipid_intensity_filter`, committed
+            # under `lipid_intensity_filtered` with its provenance; a test double keeps the direct kernel call.
+            owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+            filtered_s4 <- if (owned) {
+                runLipidReferenceIntensityFilter(workflowData$state_manager, input$intensity_cutoff_percentile,
+                    input$proportion_below_cutoff, workflowData$config_list)$object
+            } else {
+                lipidIntensityFilteringFn(
+                    current_s4
+                    , lipids_intensity_cutoff_percentile = input$intensity_cutoff_percentile
+                    , lipids_proportion_of_samples_below_cutoff = input$proportion_below_cutoff
+                )
+            }
 
             filtered_counts <- sapply(filtered_s4@lipid_data, function(assay) {
                 if (filtered_s4@lipid_id_column %in% names(assay)) {
@@ -198,7 +206,7 @@ registerLipidIntensityApplyFilterObserver <- function(
 
             filterPlotVal(qc_plot)
 
-            workflowData$state_manager$saveState(
+            if (!owned) workflowData$state_manager$saveState(
                 state_name = "lipid_intensity_filtered"
                 , s4_data_object = filtered_s4
                 , config_object = workflowData$config_list

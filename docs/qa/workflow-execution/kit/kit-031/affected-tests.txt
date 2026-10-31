@@ -1,0 +1,71 @@
+# KIT-031 item 1: affected tests, one process per file (load_all of the working tree, R_LIBS = the kit_071 library).
+## the lipid module, module-CI and e2e files (round 1; two files failed on intended contract changes and were updated: test-lipid-02b (the DA wrapper's bus guard) and test-lipid-15 (the report observer passes the bus); round 2 below)
+COUNTS test-e2e-lipidomics-canonical.R pass 0 fail 0 error 0 skip 2
+COUNTS test-lipid-00b-import-module-seams.R pass 547 fail 0 error 0 skip 0
+COUNTS test-lipid-00c-import-module-characterization.R pass 96 fail 0 error 0 skip 0
+COUNTS test-lipid-00-import-detection-helpers.R pass 31 fail 0 error 0 skip 0
+COUNTS test-lipid-01a-qc-update-filtering-characterization.R pass 5 fail 0 error 0 skip 0
+COUNTS test-lipid-01b-qc-module-contracts.R pass 12 fail 0 error 0 skip 0
+COUNTS test-lipid-01c-qc-duplicate-module-seams.R pass 203 fail 0 error 0 skip 0
+COUNTS test-lipid-01d-qc-intensity-module-seams.R pass 88 fail 0 error 0 skip 0
+COUNTS test-lipid-01e-qc-itsd-module-seams.R pass 38 fail 0 error 0 skip 0
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 45 fail 0 error 0 skip 0
+COUNTS test-lipid-01g-qc-duplicates-module-characterization.R pass 55 fail 0 error 0 skip 0
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 4 fail 0 error 0 skip 0
+COUNTS test-lipid-01i-qc-itsd-wrapper-characterization.R pass 8 fail 0 error 0 skip 0
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 13 fail 0 error 0 skip 0
+COUNTS test-lipid-01k-qc-intensity-shared.R pass 37 fail 0 error 0 skip 0
+COUNTS test-lipid-01-qc-filtering-helpers.R pass 88 fail 0 error 0 skip 0
+COUNTS test-lipid-02ab-da-module-characterization.R pass 33 fail 0 error 0 skip 0
+COUNTS test-lipid-02b-da-module-contracts.R pass 554 fail 2 error 1 skip 0
+COUNTS test-lipid-02-da-core-helpers.R pass 16 fail 0 error 0 skip 0
+COUNTS test-lipid-03-s4-duplicate-helpers.R pass 26 fail 0 error 0 skip 0
+COUNTS test-lipid-05-s4-correlation-helpers.R pass 21 fail 0 error 0 skip 0
+COUNTS test-lipid-09b-s4-log-transform-assays-characterization.R pass 19 fail 0 error 0 skip 0
+COUNTS test-lipid-09-s4-normalization-methods.R pass 39 fail 0 error 0 skip 0
+COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0
+COUNTS test-lipid-12b-norm-ruv-helpers-shared.R pass 77 fail 0 error 0 skip 0
+COUNTS test-lipid-12c-ruv-s4-characterization.R pass 47 fail 0 error 0 skip 0
+COUNTS test-lipid-12-norm-module-contracts.R pass 703 fail 0 error 0 skip 0
+COUNTS test-lipid-13a-design-module-characterization.R pass 146 fail 0 error 0 skip 0
+COUNTS test-lipid-13b-design-wrapper-characterization.R pass 13 fail 0 error 0 skip 0
+COUNTS test-lipid-13-design-builder-seams.R pass 202 fail 0 error 0 skip 0
+COUNTS test-lipid-14a-summary-module-characterization.R pass 129 fail 0 error 0 skip 0
+COUNTS test-lipid-14-design-module-seams.R pass 59 fail 0 error 0 skip 0
+COUNTS test-lipid-15-summary-module-seams.R pass 133 fail 1 error 0 skip 0
+COUNTS test-lipid-da-export-shared.R pass 18 fail 0 error 0 skip 0
+COUNTS test-lipid_norm_exclusion.R pass 3 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-omics-audit-carry-overs.R pass 18 fail 0 error 0 skip 0
+
+## round 2 (the files touched by the later edits, after the updates)
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 45 fail 0 error 0 skip 0
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 4 fail 0 error 0 skip 0
+COUNTS test-lipid-12-norm-module-contracts.R pass 703 fail 0 error 0 skip 0
+COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-lipid-02b-da-module-contracts.R pass 571 fail 0 error 0 skip 0
+COUNTS test-workflow-lipid-declarations.R pass 223 fail 0 error 0 skip 0
+COUNTS test-workflow-analysis-record.R pass 239 fail 0 error 0 skip 0
+
+## the dependents of the shared symbols changed (registry, record, replay, overlay, scientific identity, provenance values, harness product exclusion) and the ticket's regression files
+COUNTS test-workflow-checkpoint-dia-state.R pass 174 fail 0 error 0 skip 4
+COUNTS test-workflow-dia-products.R pass 176 fail 0 error 0 skip 0
+COUNTS test-workflow-kit-harness.R pass 483 fail 0 error 0 skip 0
+COUNTS test-workflow-operations.R pass 75 fail 0 error 0 skip 0
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2
+COUNTS test-workflow-saved-da.R pass 116 fail 0 error 0 skip 0
+COUNTS test-workflow-native-session.R pass 725 fail 0 error 0 skip 2
+COUNTS test-workflow-saved-recovery.R pass 57 fail 0 error 0 skip 2
+COUNTS test-workflow-operation-registry.R pass 546 fail 0 error 0 skip 0
+COUNTS test-workflow-class-declarations.R pass 181 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-owner.R pass 74 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-sessions.R pass 128 fail 0 error 0 skip 0
+COUNTS test-lipid-15-summary-module-seams.R pass 134 fail 0 error 0 skip 0

@@ -249,12 +249,24 @@ handleLipidDuplicateResolution <- function(
         assayNames <- paste0("Assay_", seq_along(assayList))
     }
 
-    resolvedAssayList <- vector("list", length(assayList))
-    statsList <- vector("list", length(assayList))
-    names(resolvedAssayList) <- assayNames
-    names(statsList) <- assayNames
+    # KIT-031: on the session owner the resolution is the declared operation `lipid_duplicate_resolution`, committed
+    # under `lipid_duplicates_resolved` with its provenance; a test double keeps the per-assay kernel loop below.
+    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+    if (owned) {
+        resolved <- runLipidReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
+        currentS4 <- resolved$object
+        counts <- resolved$value$counts
+        statsList <- lapply(stats::setNames(assayNames, assayNames), function(assayName) list(
+            original = unname(counts$before[[assayName]]), resolved = unname(counts$after[[assayName]]),
+            removed = unname(counts$before[[assayName]]) - unname(counts$after[[assayName]])))
+    }
 
-    for (i in seq_along(assayList)) {
+    resolvedAssayList <- vector("list", length(assayList))
+    if (!owned) statsList <- vector("list", length(assayList))
+    names(resolvedAssayList) <- assayNames
+    if (!owned) names(statsList) <- assayNames
+
+    for (i in if (owned) integer() else seq_along(assayList)) {
         assayData <- assayList[[i]]
         assayName <- assayNames[[i]]
         originalRows <- nrow(assayData)
@@ -280,14 +292,16 @@ handleLipidDuplicateResolution <- function(
         )
     }
 
-    currentS4@lipid_data <- resolvedAssayList
+    if (!owned) {
+        currentS4@lipid_data <- resolvedAssayList
 
-    workflowData$state_manager$saveState(
-        state_name = "lipid_duplicates_resolved"
-        , s4_data_object = currentS4
-        , config_object = workflowData$config_list
-        , description = "Resolved duplicate lipid features by keeping highest intensity"
-    )
+        workflowData$state_manager$saveState(
+            state_name = "lipid_duplicates_resolved"
+            , s4_data_object = currentS4
+            , config_object = workflowData$config_list
+            , description = "Resolved duplicate lipid features by keeping highest intensity"
+        )
+    }
 
     qcPlot <- tryCatch({
         updateFilteringFn(

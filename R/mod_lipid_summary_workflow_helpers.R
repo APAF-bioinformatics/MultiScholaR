@@ -16,7 +16,8 @@ handleLipidSummarySaveWorkflowArgs <- function(
     writeLinesFn = writeLines,
     filePathFn = file.path,
     timeFn = Sys.time,
-    catFn = cat
+    catFn = cat,
+    writeAnalysisRecordFn = writeWorkflowAnalysisRecord
 ) {
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
 
@@ -34,6 +35,20 @@ handleLipidSummarySaveWorkflowArgs <- function(
         )
 
         catFn("SESSION SUMMARY: Successfully created study_parameters.txt at:", studyParamsFile, "\n")
+
+        # KIT-031: the analysis record, derived from the owner's head, beside study_parameters.txt (the template's
+        # overlay reads it from the source directory; the KIT-027 proteomics pattern).
+        if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+            recordFile <- filePathFn(projectDirs[[omicType]]$source_dir, "analysis_record.json")
+            tryCatch({
+                writeAnalysisRecordFn(workflowData$state_manager, recordFile)
+                catFn("SESSION SUMMARY: Wrote analysis_record.json at:", recordFile, "\n")
+            }, error = function(e) {
+                catFn("SESSION SUMMARY: analysis_record.json not written:", conditionMessage(e), "\n")
+                showNotificationFn(paste("The analysis record (analysis_record.json) was not written:", conditionMessage(e)),
+                    type = "warning", duration = NULL)
+            })
+        }
         catFn("SESSION SUMMARY: Saving Integration S4 Object...\n")
 
         integrationDir <- projectDirs[[omicType]]$integration_dir
@@ -315,7 +330,9 @@ handleLipidSummaryGenerateReport <- function(
     output,
     projectDirs,
     omicType,
+    workflowData = NULL,
     templateFilename = "lipidomics_report.rmd",
+    exportRecordFn = exportWorkflowAnalysisRecordBundle,
     withProgressFn = shiny::withProgress,
     showNotificationFn = shiny::showNotification,
     incProgressFn = shiny::incProgress,
@@ -429,6 +446,15 @@ handleLipidSummaryGenerateReport <- function(
                 values$report_generated <- TRUE
                 values$report_path <- renderedPath
 
+                # KIT-031: the analysis record bundle (JSON, Word, Excel) beside the report, for an on-disk owner; a
+                # failure is shown and leaves the report as generated (the KIT-029 proteomics pattern).
+                if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+                    incProgressFn(0.9, detail = "Exporting the analysis record...")
+                    recordDir <- projectDirs[[omicType]]$study_report_dir %||% projectDirs[[omicType]]$results_summary_dir
+                    tryCatch(exportRecordFn(workflowData$state_manager, recordDir), error = function(e) showNotificationFn(
+                        paste("The analysis record bundle was not exported:", conditionMessage(e)), type = "warning", duration = NULL))
+                }
+
                 output$report_ready <- reactiveFn({ TRUE })
                 outputOptionsFn(output, "report_ready", suspendWhenHidden = FALSE)
 
@@ -485,6 +511,7 @@ registerLipidSummaryGenerateReportObserver <- function(
     output,
     projectDirs,
     omicType,
+    workflowData = NULL,
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
     handleGenerateReportFn = handleLipidSummaryGenerateReport
@@ -497,7 +524,8 @@ registerLipidSummaryGenerateReportObserver <- function(
             values = values,
             output = output,
             projectDirs = projectDirs,
-            omicType = omicType
+            omicType = omicType,
+            workflowData = workflowData
         )
     })
 

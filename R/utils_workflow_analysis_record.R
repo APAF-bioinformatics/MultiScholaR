@@ -137,6 +137,24 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
         outcomes$negative_control_percentage <- if (applied) config$percentage_as_neg_ctrl %||% NA_real_ else NA_real_
         outcomes$negative_control_count <- if (applied) count else NA_integer_
     }
+    # KIT-031: the lipidomics RUV step's realised result (k and the control count per assay, their totals) and the
+    # internal-standard step's application, in the words the lipid report's RUV and ITSD sentences use.
+    if (identical(operation, "lipid_ruv")) {
+        product <- record$data$products$lipid_ruv_science
+        saved <- if (isSavedWorkflowReference(product)) tryCatch({
+            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
+            if (is.list(hydrated$value)) hydrated$value else hydrated
+        }, error = function(error) NULL) else NULL
+        k <- unlist(saved$best_k); controls <- unlist(saved$control_count); percentage <- unlist(saved$percentage)
+        outcomes$ruv_applied <- TRUE
+        outcomes$k <- if (length(k)) sum(k, na.rm = TRUE) else NA_real_
+        outcomes$k_per_assay <- as.list(saved$best_k)
+        outcomes$negative_control_count <- if (length(controls)) sum(controls, na.rm = TRUE) else NA_integer_
+        outcomes$negative_control_count_per_assay <- as.list(saved$control_count)
+        outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
+        outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
+    }
+    if (identical(operation, "lipid_itsd_normalisation")) outcomes$itsd_applied <- TRUE
     outcomes
 }
 
@@ -270,10 +288,16 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     analyses <- list()
     if (isSavedWorkflowReference(snapshot$da_results)) {
         manifest <- resolveWorkflowStateValue(context, snapshot$da_results)
-        da_entry <- tryCatch(workflowOperationEntry("DA-contrast-output"), error = function(e) NULL)
+        # KIT-031: the manifest's declaration names its producing operation and its long result table (the proteomics
+        # contrast references and the lipidomics per-assay references alike); a manifest without a declared schema is
+        # the proteomics one.
+        output <- tryCatch(workflowOutputDeclaration(manifest$schema %||% "dia.da_results.v1"), error = function(e) NULL)
+        da_operation <- output$operation %||% "DA-contrast-output"
+        long_table <- output$long_table %||% "da_proteins_long"
+        da_entry <- tryCatch(workflowOperationEntry(da_operation), error = function(e) NULL)
         source_state <- names(snapshot$states)[vapply(snapshot$states, function(reference)
             identical(reference$entity_id, manifest$source$entity_id), logical(1))]
-        analyses$differential_abundance <- list(operation = "DA-contrast-output",
+        analyses$differential_abundance <- list(operation = da_operation,
             source_state = if (length(source_state)) source_state[[1L]] else NA_character_,
             source_entity_id = manifest$source$entity_id %||% NA_character_,
             parameters = lapply(names(manifest$parameters), function(name) list(name = name, source = "manifest",
@@ -282,7 +306,7 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             contrasts = lapply(seq_len(nrow(manifest$contrasts %||% data.frame())), function(j) as.list(manifest$contrasts[j, , drop = FALSE])),
             model = manifest$model,
             results = lapply(names(manifest$results), function(name) list(contrast = name,
-                entity_id = manifest$results[[name]]$tables$da_proteins_long$entity_id %||% NA_character_,
+                entity_id = manifest$results[[name]]$tables[[long_table]]$entity_id %||% NA_character_,
                 rows = manifest$results[[name]]$rows %||% NA_integer_)))
     }
     inputs <- list()
@@ -424,8 +448,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     if (!check$valid) cli::cli_abort(c("the analysis record is malformed", check$errors), class = "workflow_replay_invalid")
     # Inputs first: a record whose files do not match the project is refused before any step runs.
     for (input in record$inputs) {
-        if (is.null(input$sha256) || is.na(input$sha256) || !input$role %in% c("diann_report", "maxquant_report",
-            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", "lipid_assay", "metab_assay")) next
+        # KIT-031: an omics route records one `lipid_assay_<n>` / `metab_assay_<n>` role per imported assay file.
+        if (is.null(input$sha256) || is.na(input$sha256) || !(input$role %in% c("diann_report", "maxquant_report",
+            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", "lipid_assay", "metab_assay") ||
+            grepl("^(lipid|metab)_assay(_|$)", input$role))) next
         path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
         if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")
@@ -539,6 +565,9 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 commitWorkflowReferenceState(manager, if (correction) "ruv_corrected" else "ruv_covariates", final, config, if (correction)
                     sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
                     sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
+            } else if (identical(entry$omic_type, "lipidomics")) {
+                # KIT-031: the lipidomics declarations through the wrappers the modules call, with the recorded values.
+                replayLipidomicsStep(manager, step, parameters)
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
             }
@@ -558,9 +587,15 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         da_workflow <- new.env(parent = emptyenv())
         da_workflow$state_manager <- manager
         da_workflow$contrasts_tbl <- contrasts
-        runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
-            treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
-        if (is.function(on_step)) on_step(list(state = manager$current_state, operation = "DA-contrast-output"), manager)
+        if (identical(da$operation, "lipid_da_output")) {
+            # KIT-031: the lipidomics DA from the record's settings and contrasts on the replayed head.
+            withWorkflowStateScope(manager, function() runLipidReferenceDaAnalysis(manager, getWorkflowStateReference(manager),
+                list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), contrasts))
+        } else {
+            runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
+                treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
+        }
+        if (is.function(on_step)) on_step(list(state = manager$current_state, operation = da$operation %||% "DA-contrast-output"), manager)
     }
     list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
 }
@@ -684,14 +719,19 @@ exportWorkflowAnalysisRecordBundle <- function(manager, directory) {
 workflowRecordReportSources <- list(
     qvalue_threshold = list(record = c("peptide_qvalue_filter", "qvalue_threshold"), file = c("srlQvalueProteotypicPeptideClean", "qvalue_threshold")),
     proteotypic_peptide_only = list(record = c("peptide_qvalue_filter", "proteotypic_only"), file = c("srlQvalueProteotypicPeptideClean", "choose_only_proteotypic_peptide")),
-    intensity_cutoff_percentile = list(record = c("peptide_intensity_filter", "peptides_intensity_cutoff_percentile"), file = c("peptideIntensityFiltering", "peptides_intensity_cutoff_percentile")),
-    proportion_samples_below_cutoff = list(file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
+    # KIT-031: a variable both the proteomics and the lipidomics templates print lists its record sources in order; the
+    # first the record carries is taken (a record holds one route's steps).
+    intensity_cutoff_percentile = list(record = list(c("peptide_intensity_filter", "peptides_intensity_cutoff_percentile"),
+        c("lipid_intensity_filter", "lipids_intensity_cutoff_percentile")), file = c("peptideIntensityFiltering", "peptides_intensity_cutoff_percentile")),
+    proportion_samples_below_cutoff = list(record = c("lipid_intensity_filter", "lipids_proportion_of_samples_below_cutoff"),
+        file = c("peptideIntensityFiltering", "peptides_proportion_of_samples_below_cutoff")),
     missing_values_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "groupwise_percentage_cutoff")),
     max_groups_percentage_cutoff = list(file = c("removeRowsWithMissingValuesPercent", "max_groups_percentage_cutoff")),
     min_peptidoforms_per_protein = list(record = c("peptide_protein_evidence_filter", "num_peptidoforms_per_protein_thresh"), file = c("filterMinNumPeptidesPerProtein", "peptidoforms_per_protein_cutoff")),
     min_peptides_per_sample = list(record = c("minimum_peptides_per_sample", "peptides_per_sample_cutoff"), file = c("filterMinNumPeptidesPerSample", "peptides_per_sample_cutoff")),
-    normalisation_method = list(record = c("normalization-ruv", "norm_method"), file = c("normaliseBetweenSamples", "method")),
-    ruv_number_k = list(record = c("normalization-ruv", "ruv_k"), file = c("ruvIII_C_Varying", "ruv_number_k")),
+    normalisation_method = list(record = list(c("normalization-ruv", "norm_method"), c("lipid_between_sample_normalisation", "normalisation_method")),
+        file = c("normaliseBetweenSamples", "method")),
+    ruv_number_k = list(record = list(c("normalization-ruv", "ruv_k"), c("outcomes", "lipid_ruv", "k")), file = c("ruvIII_C_Varying", "ruv_number_k")),
     s4_de_q_val_thresh = list(record = c("DA", "qvalue"), file = c("deAnalysisParameters", "de_q_val_thresh")),
     s4_de_treat_lfc_cutoff = list(record = c("DA", "lfc"), file = c("deAnalysisParameters", "treat_lfc_cutoff")),
     s4_formula_string = list(record = c("DA", "formula"), file = c("deAnalysisParameters", "formula_string")),
@@ -704,10 +744,16 @@ workflowRecordReportSources <- list(
     build = list(record = c("software", "build")),
     r_version = list(record = c("software", "r_version")),
     blas = list(record = c("software", "blas")),
-    ruv_applied = list(record = c("outcomes", "normalization-ruv", "ruv_applied")),
-    best_k = list(record = c("outcomes", "normalization-ruv", "k")),
-    best_percentage = list(record = c("outcomes", "normalization-ruv", "negative_control_percentage")),
-    num_neg_ctrl = list(record = c("outcomes", "normalization-ruv", "negative_control_count")),
+    ruv_applied = list(record = list(c("outcomes", "normalization-ruv", "ruv_applied"), c("outcomes", "lipid_ruv", "ruv_applied"))),
+    best_k = list(record = list(c("outcomes", "normalization-ruv", "k"), c("outcomes", "lipid_ruv", "k"))),
+    best_percentage = list(record = list(c("outcomes", "normalization-ruv", "negative_control_percentage"), c("outcomes", "lipid_ruv", "negative_control_percentage"))),
+    num_neg_ctrl = list(record = list(c("outcomes", "normalization-ruv", "negative_control_count"), c("outcomes", "lipid_ruv", "negative_control_count"))),
+    # KIT-031: the lipidomics template's variables (`ExtractLipidStudyParameters`): the internal-standard step, the log2
+    # offset and the RUV grouping variable; its DA variables are the shared `s4_de_*` / `ui_de_*` entries (`DA`).
+    itsd_applied = list(record = c("outcomes", "lipid_itsd_normalisation", "itsd_applied")),
+    itsd_aggregation = list(record = c("lipid_itsd_normalisation", "itsd_aggregation")),
+    log_transform_offset = list(record = c("lipid_log2", "offset")),
+    ruv_grouping_variable = list(record = c("lipid_ruv", "ruv_grouping_variable")),
     # KIT-043: the LFQ and TMT templates' variables: the protein intensity cutoff percentile (the registry step
     # `protein_intensity_filter`; the groupwise cutoff is derived in the state's configuration, not declared, so it
     # stays file-only; `max_groups_percentage_cutoff` is listed above) and the DA settings the templates print from
@@ -766,17 +812,26 @@ workflowRecordReportParameters <- function(record_path, params, study_params = l
     }
     file_params <- study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]] %||% list()
     shown <- character()
+    source_kind <- function(record_source) if (is.null(record_source)) "file" else if (identical(record_source[[1L]], "software")) "software" else
+        if (identical(record_source[[1L]], "outcomes")) "outcomes" else
+        if (identical(record_source[[1L]], "model")) "model" else "parameter"
+    source_value <- function(record_source) switch(source_kind(record_source),
+        software = record$software[[record_source[[2L]]]],
+        outcomes = from_outcomes(record_source[[2L]], record_source[[3L]]),
+        model = record$analyses$differential_abundance$model[[record_source[[2L]]]], # KIT-053: the DA model that ran
+        parameter = from_record(record_source[[1L]], record_source[[2L]]),
+        NULL)
     for (variable in names(workflowRecordReportSources)) {
         source <- workflowRecordReportSources[[variable]]
-        kind <- if (is.null(source$record)) "file" else if (identical(source$record[[1L]], "software")) "software" else
-            if (identical(source$record[[1L]], "outcomes")) "outcomes" else
-            if (identical(source$record[[1L]], "model")) "model" else "parameter"
-        value <- switch(kind,
-            software = record$software[[source$record[[2L]]]],
-            outcomes = from_outcomes(source$record[[2L]], source$record[[3L]]),
-            model = record$analyses$differential_abundance$model[[source$record[[2L]]]], # KIT-053: the DA model that ran
-            parameter = from_record(source$record[[1L]], source$record[[2L]]),
-            NULL)
+        # KIT-031: a variable may list record sources for more than one route; the first one the record carries wins,
+        # and the variable's kind is that source's (the last listed when none resolves).
+        candidates <- if (is.list(source$record)) source$record else list(source$record)
+        value <- NULL
+        kind <- source_kind(candidates[[length(candidates)]])
+        for (candidate in candidates) {
+            value <- source_value(candidate)
+            if (!is.null(value)) { kind <- source_kind(candidate); break }
+        }
         if (!is.null(value) && is.atomic(value) && length(value) == 1L && !is.na(value)) {
             current <- params[[variable]]
             # A parameter keeps the type the report's parser gave it (KIT-033); a software field or an outcome is

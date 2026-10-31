@@ -1,0 +1,85 @@
+# KIT-031 module-CI comparison (item 1 gate): before = scratch-031-pre (843ff460), after = the working tree before the item-1 commit;
+# hashes via kit-069/mci-hash.R on the six lipid lanes (import, design, qc, norm, da, summary), bytes via kit-030/compare-mci.py, content via kit-069/compare-groups.R on the kept trees.
+
+## counts (before | after)
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0	pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 107 fail 0 error 0 skip 0	pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0	pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0	pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0	pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0	pass 106 fail 0 error 0 skip 0
+
+## byte level (kit-030/compare-mci.py)
+test-module-ci-lipid-da: same 2 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-design: same 15 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-import: same 36 differing 1 only-before 9 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/DESCRIPTION
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/LICENSE
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/features.rds
+   ONLY-BEFORE devtools_install_ID/MultiScholaR/Meta/package.rds
+test-module-ci-lipid-norm: same 14 differing 37 only-before 4 only-after 4
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/dia-state-head.rds
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-state-ID/commit.json
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-state-ID/descriptor.rds
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-state-ID/payload.qs2
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-state-ID/payload.rds
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-table-ID/commit.json
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/entities/dia-table-ID/descriptor.rds
+   DIFF mci-021-lipid-norm-export-automatic-ID/.dia-native-ID/.workflow-entities/store.json
+   ONLY-BEFORE mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_20261031_113618.rds
+   ONLY-BEFORE mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_20261031_113625.rds
+   ONLY-BEFORE mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_data_20261031_113623.rds
+   ONLY-BEFORE mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_data_20261031_113621.rds
+   ONLY-AFTER mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_20261031_114116.rds
+   ONLY-AFTER mci-021-lipid-norm-export-automatic-ID/lipid_filtered_session_data_20261031_114122.rds
+   ONLY-AFTER mci-021-lipid-norm-export-manual-ID/lipid_filtered_session_data_20261031_114120.rds
+   ONLY-AFTER mci-021-lipid-norm-export-skip-ID/lipid_filtered_session_data_20261031_114118.rds
+test-module-ci-lipid-qc: same 0 differing 1 only-before 0 only-after 0
+   DIFF pkgloID/MultiScholaR.so
+test-module-ci-lipid-summary: same 41 differing 8 only-before 0 only-after 0
+   DIFF module-ci-lipid-summary-ID/da_output/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-lipid-summary-ID/da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx
+   DIFF module-ci-lipid-summary-ID/results_summary/Publication_tables/DA_results_lipidomics.xlsx
+   DIFF module-ci-lipid-summary-ID/results_summary/Publication_tables/Pathway_enrichment_results_lipidomics.xlsx
+   DIFF module-ci-lipid-summary-ID/source/session_state_2026-05-06.RDS
+   DIFF module-ci-lipid-summary-ID/source/session_state_2026-10-31.RDS
+   DIFF module-ci-lipid-summary-ID/source/study_parameters.txt
+   DIFF pkgloID/MultiScholaR.so
+TOTAL {'same': 108, 'diff': 49, 'only_before': 13, 'only_after': 4}
+
+## content level (kit-069/compare-groups.R, per lane, summary lines then unmatched files)
+=== import
+  UNMATCHED devtools_install_1938b3182008a/MultiScholaR/Meta/features.rds 
+  UNMATCHED devtools_install_1938b3182008a/MultiScholaR/Meta/package.rds 
+  UNMATCHED devtools_install_1938b3182008a/MultiScholaR/NAMESPACE 
+  UNMATCHED devtools_install_1938b3182008a/MultiScholaR/NEWS.md 
+  UNMATCHED devtools_install_1938b3182008a/MultiScholaR/README.md 
+  UNMATCHED foo.o 
+=== design
+before files 15: byte-matched 15, content-matched (timestamps/paths/ids masked) 0, unmatched 0; after-only groups 0
+=== qc
+before files 0: byte-matched 0, content-matched (timestamps/paths/ids masked) 0, unmatched 0; after-only groups 0
+=== norm
+  UNMATCHED mci-021-lipid-norm-export-skip-199ee68e98a2f/.dia-native-199ee52f0af90/.workflow-entities/entities/dia-table-199ee45ec166c/descriptor.rds 
+  UNMATCHED mci-021-lipid-norm-export-skip-199ee68e98a2f/.dia-native-199ee52f0af90/.workflow-entities/store.json 
+  UNMATCHED mci-021-lipid-norm-export-skip-199ee68e98a2f/.workflow-export/dia-export-199ee792c759c/journal.json 
+  UNMATCHED mci-021-lipid-norm-export-skip-199ee68e98a2f/export_complete_dia-export-199ee792c759c.json 
+  UNMATCHED mci-021-lipid-norm-export-skip-199ee68e98a2f/lipid_filtered_session_data_20261031_113621.rds 
+  UNMATCHED mci-021-lipid-norm-export-skip-199ee68e98a2f/lipid_filtered_session_summary.txt 
+=== da
+before files 2: byte-matched 2, content-matched (timestamps/paths/ids masked) 0, unmatched 0; after-only groups 0
+=== summary
+before files 109: byte-matched 90, content-matched (timestamps/paths/ids masked) 16, unmatched 3; after-only groups 0
+  UNMATCHED module-ci-lipid-summary-1a8681354688a/source/study_parameters.txt 
+  UNMATCHED module-ci-lipid-summary-1a868724c1e3d/source/study_parameters.txt 
+  UNMATCHED module-ci-lipid-summary-1a8687cbe4b4a/source/study_parameters.txt 
+
+## reading
+- design, qc, da lanes: byte-identical.
+- import lane: the only unmatched files are the test process's pkgload/devtools scratch (Meta/*.rds, NAMESPACE, foo.o), not products.
+- norm lane: the unmatched files are the owner store entities and the owned-export journal/completion/timestamped RDS and summary text (new entity ids and publication times per run; the KIT-071 classes); every data product content-matched.
+- summary lane: 90 byte-matched, 16 content-matched (the DA workbooks and session_state RDS by embedded times), 3 unmatched = study_parameters.txt, which differs only in its date-bearing lines (diff after masking dates: empty).
+- the intensity filter's ceiling() removal changes no module-CI product (see ceiling-effect.txt).

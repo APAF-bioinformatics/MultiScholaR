@@ -945,11 +945,12 @@ setMethod(
                 return(assay_table)
             }
 
-            # Calculate threshold specifically for this assay
-            min_lipid_intensity_threshold <- ceiling(quantile(all_intensity_values,
+            # Calculate threshold specifically for this assay. KIT-031 (user decision 2026-10-28): the threshold is the
+            # quantile itself; the ceiling() that rounded it up to the next integer intensity is removed.
+            min_lipid_intensity_threshold <- quantile(all_intensity_values,
                 na.rm = TRUE,
                 probs = c(intensity_cutoff_percentile_final / 100)
-            ))[1]
+            )[1]
 
             message("Calculated minimum intensity threshold for assay '", assay_name_for_msg, "': ", min_lipid_intensity_threshold)
 

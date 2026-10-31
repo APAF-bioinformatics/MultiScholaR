@@ -1,0 +1,15 @@
+# KIT-031: the in-process recorder (kit-031/oracle-record.R) on the working tree (before the item-1 commit) against the kit_071 lifecycle member's store (the GUI on 39d61317): every journey step's state and the three intermediate normalisation states compared by class, rows, components, support and summary (kitOracleStateMismatches).
+# The recorder's own tree run: recorded lipid31 lipid_screen -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-031-evidence/oracles-lipid31_lipid_screen-tree.rds | states 10 | history initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_duplicates_resolved,lipid_qc_complete,lipid_itsd_norm,lipid_log2,lipid_normalized,lipid_ruv_corrected,lipid_correlation_filtered | record valid TRUE | legacy steps 0 | 58 s
+design          lipid_raw_data_s4            rows 432/432  mismatches: none
+intensity       lipid_intensity_filtered     rows 392/392  mismatches: none
+duplicates      lipid_duplicates_resolved    rows 377/377  mismatches: none
+qc_finalize     lipid_qc_complete            rows 377/377  mismatches: none
+normalisation   lipid_ruv_corrected          rows 365/365  mismatches: none
+correlation     lipid_correlation_filtered   rows 365/365  mismatches: none
+session_export  lipid_correlation_filtered   rows 365/365  mismatches: none
+da              lipid_correlation_filtered   rows 365/365  mismatches: none
+report          lipid_correlation_filtered   rows 365/365  mismatches: none
+                lipid_itsd_norm              intermediate  mismatches: none
+                lipid_log2                   intermediate  mismatches: none
+                lipid_normalized             intermediate  mismatches: none
+# Two corrections during this check, both GUI-input facts the recorder now mirrors: whole-number tab inputs arrive as integers (the state summary hashes the type); the tab preselects the candidate internal standards, so the ITSD kernel runs in manual mode with their ids.

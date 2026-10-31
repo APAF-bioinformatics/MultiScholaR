@@ -181,7 +181,15 @@ executeLipidDaRunAnalysis <- function(
 ) {
     tryCatch(
         {
-            results <- runLipidsDaFn(
+            # KIT-031: on the session owner the DA is the declared operation `lipid_da_output` on the loaded state,
+            # its manifest `lipid.da_results.v1` accepted on the head; the kernel's list drives the display and the
+            # files as before. A test double keeps the direct kernel call.
+            manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager else NULL
+            results <- if (inherits(manager, "DIAStateAdapter")) {
+                source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
+                runLipidReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
+                    da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl)$results
+            } else runLipidsDaFn(
                 theObject = currentS4,
                 contrasts_tbl = contrastsTbl,
                 formula_string = formulaString,

@@ -238,18 +238,26 @@ rootDIAProduct <- rootWorkflowProduct
 #' @noRd
 workflowComponentScientificIdentity <- function(manager, reference, operation, parameters) {
     spec <- readDIAStateMetadata(manager, reference)$data
-    assay <- spec$components$protein_quant_table %||% spec$components$peptide_data
+    # KIT-031: the class declaration names the assay component (the proteomics identities unchanged: their assay is
+    # one table); a `lists` assay (lipidomics, metabolomics) holds one component per named table and is identified by
+    # the digest of its sorted element ids (the KIT-070 harness rule), its roles the declaration's.
+    declaration <- workflowClassDeclaration(spec$class)
+    proteomics <- spec$class %in% c("PeptideQuantitativeData", "ProteinQuantitativeData")
+    assay <- if (proteomics) spec$components$protein_quant_table %||% spec$components$peptide_data else
+        spec$components[[declaration$assay]]
+    input <- if (is.character(assay$entity_id)) assay$entity_id else
+        digest::digest(sort(unname(vapply(assay, function(element) element$entity_id, character(1)))), algo = "sha256")
+    roles <- if (proteomics) c("protein_id_column", "sample_id", "group_id", "technical_replicate_id") else declaration$roles
     scientific_slots <- spec$slots
     # The DA step's argument records are not identity: the UI block and the publication settings (KIT-004), and the
     # DA defaults the step commits (`differentialAbundanceAnalysis`, its helper), which duplicate the contrast
     # operation's explicit parameters (KIT-022: the commit precedes the contrasts, so the head carries them).
     scientific_slots$args[c("daAnalysisUI", "outputDaResultsAllContrasts", "differentialAbundanceAnalysis",
         "differentialAbundanceAnalysisHelper")] <- NULL
-    newSavedWorkflowScientificIdentity(assay$entity_id,
+    newSavedWorkflowScientificIdentity(input,
         spec$components$design_matrix$entity_id,
         digest::digest(list(operation, parameters, slots = scientific_slots), algo = "sha256"),
-        digest::digest(list(columns = spec$dimensions$columns, roles = spec$slots[c(
-            "protein_id_column", "sample_id", "group_id", "technical_replicate_id")]), algo = "sha256"),
+        digest::digest(list(columns = spec$dimensions$columns, roles = spec$slots[roles]), algo = "sha256"),
         manager$.context$software)
 }
 

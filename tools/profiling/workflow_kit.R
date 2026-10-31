@@ -710,7 +710,10 @@ kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
 #' @noRd
 # KIT-057: the DIA_LIMPA route's RUV covariates product (KIT-041, `dia-ruv-covariates`) is one of them, and the state
 # also carries it under the fixed name `ruv_covariates_science`; both are reported, not judged, across builds.
-kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science)$"
+# KIT-031: the lipidomics declarations' products (`<operation>_science` on the state) are of the same kind: their value
+# is the owned checkpoint entity, whose bytes carry the ITSD kernel's `@args` timestamp and the chain of the earlier
+# products' ids; the states they reference are judged, the products reported.
+kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science|lipid_[a-z0-9_]+_science)$"
 
 kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL) {
     mismatches <- character()

@@ -641,7 +641,7 @@ test_that("registerLipidSummaryGenerateReportObserver keeps the observer shell h
     expect_identical(result, input)
     expect_identical(observer_event, 33L)
     expect_identical(req_values, list("lipid-study", TRUE))
-    expect_setequal(names(handler_args), c("input", "values", "output", "projectDirs", "omicType"))
+    expect_setequal(names(handler_args), c("input", "values", "output", "projectDirs", "omicType", "workflowData")) # KIT-031: the bus too
     expect_identical(handler_args$input, input)
     expect_identical(handler_args$values, values)
     expect_identical(handler_args$output, output)

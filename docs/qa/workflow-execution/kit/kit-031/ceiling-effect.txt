@@ -1,0 +1,17 @@
+# KIT-031: the intensity filter's retained rows before (worktree scratch-031-pre at 843ff460) and after (the tree) the ceiling() removal
+# (ceiling-effect.R; the e2e lipid lane: 10 lipids x 6 samples per assay; the KIT-031 declarations fixture: 46 rows per assay)
+--- before (843ff460)
+e2e lane percentile  1 proportion 0.5: retained 10/10
+e2e lane percentile  5 proportion 0.5: retained 10/10
+e2e lane percentile 10 proportion 0.5: retained 10/10
+e2e lane percentile 25 proportion 0.5: retained 10/10
+KIT-031 fixture percentile  1: retained 46/46
+KIT-031 fixture percentile  5: retained 44/43
+--- after (tree)
+e2e lane percentile  1 proportion 0.5: retained 10/10
+e2e lane percentile  5 proportion 0.5: retained 10/10
+e2e lane percentile 10 proportion 0.5: retained 10/10
+e2e lane percentile 25 proportion 0.5: retained 10/10
+KIT-031 fixture percentile  1: retained 46/46
+KIT-031 fixture percentile  5: retained 44/43
+# identical on both: no intensity in these lanes falls between the quantile and its ceiling; the corpus effect is read from the kit_071 -> kit_031 member comparison

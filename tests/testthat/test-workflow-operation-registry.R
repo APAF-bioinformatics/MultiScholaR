@@ -2,7 +2,10 @@
 
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
-    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "minimum_peptides_per_sample",
+    # KIT-031: the twelve lipidomics declarations (in process) beside the proteomics operations.
+    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
+        "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
+        "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "minimum_peptides_per_sample",
         "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
         "peptide_intensity_filter", "peptide_log2_matrix", "peptide_protein_evidence_filter", "peptide_qvalue_filter",
         "peptide_replicate_filter", "precursor_rollup", "protein_accession_cleanup", "protein_between_sample_normalisation",
@@ -87,6 +90,9 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readWorkflowStateMetadata = function(...) list(data = record)) # KIT-045: the execution layer calls the workflow name
     expect_identical(sort(workflowOperationNames()), sort(c("DA-contrast-output", "da_publication", "enrichment",
+        "lipid_between_sample_normalisation", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
+        "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
+        "lipid_qc_finalize", "lipid_reset", "lipid_ruv", 
         "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",
         "peptide_intensity_filter", "peptide_protein_evidence_filter", "peptide_qvalue_filter", "peptide_replicate_filter",
         "precursor_rollup", "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter",

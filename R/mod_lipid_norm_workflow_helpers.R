@@ -39,6 +39,10 @@ handleLipidNormRunNormalization <- function(
             tryCatch({
                 current_s4 <- workflowData$state_manager$getState()
                 reqFn(current_s4)
+                # KIT-031: on the session owner each kernel is its declared operation, committed with its provenance
+                # (`lipid_itsd_normalisation`, `lipid_log2`, `lipid_between_sample_normalisation`, `lipid_ruv`); a test
+                # double keeps the direct kernel calls and their `saveState`.
+                owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
 
                 aesthetics <- getPlotAestheticsFn()
                 total_steps <- 6
@@ -92,7 +96,10 @@ handleLipidNormRunNormalization <- function(
                         }
                     }
 
-                    current_s4 <- normaliseUntransformedDataFn(
+                    current_s4 <- if (owned) {
+                        runLipidReferenceItsdNormalisation(workflowData$state_manager, input$itsd_aggregation,
+                            itsd_feature_ids, workflowData$config_list)$object
+                    } else normaliseUntransformedDataFn(
                         theObject = current_s4
                         , method = "ITSD"
                         , itsd_aggregation = input$itsd_aggregation
@@ -100,7 +107,7 @@ handleLipidNormRunNormalization <- function(
                     )
                     normData$post_itsd_obj <- current_s4
 
-                    workflowData$state_manager$saveState(
+                    if (!owned) workflowData$state_manager$saveState(
                         state_name = "lipid_itsd_norm"
                         , s4_data_object = current_s4
                         , config_object = workflowData$config_list
@@ -114,13 +121,15 @@ handleLipidNormRunNormalization <- function(
                 incProgressFn(1 / total_steps, detail = "Applying log2 transformation...")
                 addLog(paste("Applying log2 transformation (offset:", input$log_offset, ")"))
 
-                current_s4 <- logTransformAssaysFn(
+                current_s4 <- if (owned) {
+                    runLipidReferenceLog2(workflowData$state_manager, input$log_offset, workflowData$config_list)$object
+                } else logTransformAssaysFn(
                     theObject = current_s4
                     , offset = input$log_offset
                 )
                 normData$post_log2_obj <- current_s4
 
-                workflowData$state_manager$saveState(
+                if (!owned) workflowData$state_manager$saveState(
                     state_name = "lipid_log2"
                     , s4_data_object = current_s4
                     , config_object = workflowData$config_list
@@ -131,7 +140,11 @@ handleLipidNormRunNormalization <- function(
                 incProgressFn(1 / total_steps, detail = "Applying between-sample normalization...")
                 if (input$norm_method != "none") {
                     addLog(paste("Applying between-sample normalization (method:", input$norm_method, ")"))
-
+                }
+                if (owned) {
+                    current_s4 <- runLipidReferenceBetweenSampleNormalisation(workflowData$state_manager, input$norm_method,
+                        workflowData$config_list)$object
+                } else if (input$norm_method != "none") {
                     current_s4 <- normaliseBetweenSamplesFn(
                         theObject = current_s4
                         , normalisation_method = input$norm_method
@@ -139,7 +152,7 @@ handleLipidNormRunNormalization <- function(
                 }
                 normData$post_norm_obj <- current_s4
 
-                workflowData$state_manager$saveState(
+                if (!owned) workflowData$state_manager$saveState(
                     state_name = "lipid_normalized"
                     , s4_data_object = current_s4
                     , config_object = workflowData$config_list
@@ -172,32 +185,45 @@ handleLipidNormRunNormalization <- function(
                         , manual_percentage = input$ruv_percentage
                     )
 
-                    ruv_results <- runLipidPerAssayRuvOptimizationFn(
-                        theObject = current_s4
-                        , ruv_mode = input$ruv_mode
-                        , params = ruv_params
-                        , experiment_paths = experimentPaths
-                    )
-                    normData$ruv_optimization_results <- ruv_results
+                    if (owned) {
+                        ruv_run <- runLipidReferenceRuv(workflowData$state_manager,
+                            c(list(ruv_mode = input$ruv_mode), ruv_params), workflowData$config_list)
+                        ruv_results <- ruv_run$optimisation
+                        normData$ruv_optimization_results <- ruv_results
+                        best_k_list <- ruv_run$value$best_k
+                        addLog(paste(
+                            "RUV optimization complete. Best k per assay:",
+                            paste(names(best_k_list), "=", unlist(best_k_list), collapse = ", ")
+                        ))
+                        current_s4 <- ruv_run$object
+                    } else {
+                        ruv_results <- runLipidPerAssayRuvOptimizationFn(
+                            theObject = current_s4
+                            , ruv_mode = input$ruv_mode
+                            , params = ruv_params
+                            , experiment_paths = experimentPaths
+                        )
+                        normData$ruv_optimization_results <- ruv_results
 
-                    best_k_list <- extractLipidBestKPerAssayFn(ruv_results)
-                    ctrl_list <- extractLipidCtrlPerAssayFn(ruv_results)
+                        best_k_list <- extractLipidBestKPerAssayFn(ruv_results)
+                        ctrl_list <- extractLipidCtrlPerAssayFn(ruv_results)
 
-                    addLog(paste(
-                        "RUV optimization complete. Best k per assay:",
-                        paste(names(best_k_list), "=", unlist(best_k_list), collapse = ", ")
-                    ))
+                        addLog(paste(
+                            "RUV optimization complete. Best k per assay:",
+                            paste(names(best_k_list), "=", unlist(best_k_list), collapse = ", ")
+                        ))
 
-                    current_s4 <- ruvIII_C_VaryingFn(
-                        theObject = current_s4
-                        , ruv_grouping_variable = input$ruv_grouping_variable
-                        , ruv_number_k = best_k_list
-                        , ctrl = ctrl_list
-                    )
+                        current_s4 <- ruvIII_C_VaryingFn(
+                            theObject = current_s4
+                            , ruv_grouping_variable = input$ruv_grouping_variable
+                            , ruv_number_k = best_k_list
+                            , ctrl = ctrl_list
+                        )
+                    }
                     normData$ruv_corrected_obj <- current_s4
                     normData$ruv_complete <- TRUE
 
-                    workflowData$state_manager$saveState(
+                    if (!owned) workflowData$state_manager$saveState(
                         state_name = "lipid_ruv_corrected"
                         , s4_data_object = current_s4
                         , config_object = workflowData$config_list
@@ -606,12 +632,19 @@ handleLipidNormSkipCorrelationFilter <- function(
     normData$correlation_filtered_obj <- current_s4
     normData$correlation_filtering_complete <- TRUE
 
-    workflowData$state_manager$saveState(
-        state_name = "lipid_norm_complete"
-        , s4_data_object = current_s4
-        , config_object = workflowData$config_list
-        , description = "Normalization complete (correlation filtering skipped)"
-    )
+    # KIT-031: a store step; on the owner the head's record (the normalisation's last commit) is committed under the
+    # new name with the provenance `lipid_norm_complete`; a double keeps its `saveState`.
+    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+        commitLipidReferenceStoreStep(workflowData$state_manager, "lipid_norm_complete", "lipid_norm_complete",
+            workflowData$config_list, "Normalization complete (correlation filtering skipped)")
+    } else {
+        workflowData$state_manager$saveState(
+            state_name = "lipid_norm_complete"
+            , s4_data_object = current_s4
+            , config_object = workflowData$config_list
+            , description = "Normalization complete (correlation filtering skipped)"
+        )
+    }
 
     updated_status <- workflowData$tab_status
     updated_status$quality_control <- "complete"
@@ -635,6 +668,7 @@ handleLipidNormResetNormalization <- function(
 
     tryCatch({
         if (!is.null(normData$post_filter_obj)) {
+            markLipidReferenceStoreStep(workflowData$state_manager, "lipid_reset") # KIT-031: a store step
             workflowData$state_manager$saveState(
                 state_name = "lipid_reset"
                 , s4_data_object = normData$post_filter_obj
@@ -692,14 +726,25 @@ handleLipidNormApplyCorrelationFilter <- function(
         reqFn(current_s4)
 
         logInfoFn("Calculating Pearson correlations per sample pair...")
-        corr_results <- pearsonCorForSamplePairsFn(
-            theObject = current_s4
-            , correlation_group = input$ruv_grouping_variable
-        )
+        # KIT-031: on the session owner the pairs and the selection are the declared operations on the head (the
+        # normalisation's last commit), committed under `lipid_correlation_filtered` with both provenances; a test
+        # double keeps the direct kernel calls on the tab's object.
+        owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+        if (owned) {
+            correlation <- runLipidReferenceCorrelation(workflowData$state_manager, input$ruv_grouping_variable, threshold,
+                workflowData$config_list)
+            corr_results <- correlation$correlations
+            filtered_s4 <- correlation$object
+        } else {
+            corr_results <- pearsonCorForSamplePairsFn(
+                theObject = current_s4
+                , correlation_group = input$ruv_grouping_variable
+            )
+        }
 
         normData$correlation_results <- corr_results
 
-        filtered_s4 <- filterSamplesByLipidCorrelationThresholdFn(
+        if (!owned) filtered_s4 <- filterSamplesByLipidCorrelationThresholdFn(
             theObject = current_s4
             , pearson_correlation_per_pair = corr_results
             , min_pearson_correlation_threshold = threshold
@@ -708,7 +753,7 @@ handleLipidNormApplyCorrelationFilter <- function(
         normData$correlation_filtered_obj <- filtered_s4
         normData$correlation_filtering_complete <- TRUE
 
-        workflowData$state_manager$saveState(
+        if (!owned) workflowData$state_manager$saveState(
             state_name = "lipid_correlation_filtered"
             , s4_data_object = filtered_s4
             , config_object = workflowData$config_list

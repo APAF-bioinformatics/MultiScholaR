@@ -390,6 +390,7 @@ Collate:
     'utils_workflow_dia_relational_rollup.R'
     'utils_workflow_dia_products.R'
     'utils_workflow_dia_da.R'
+    'utils_workflow_lipid_declarations.R'
     'utils_workflow_saved_exports.R'
     'utils_workflow_class_declarations.R'
     'utils_workflow_operations.R'

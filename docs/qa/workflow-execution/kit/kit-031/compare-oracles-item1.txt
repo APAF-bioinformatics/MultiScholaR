@@ -1,0 +1,16 @@
+5: Chunk option fig.align is not supported for docx output 
+recorded lfq_fixture -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-031-evidence/oracles-lfq_fixture-item1.rds | states 11 | history initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered,normalized,correlation_filtered | 68 s
+5: Chunk option fig.align is not supported for docx output 
+recorded tmt_fixture -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-031-evidence/oracles-tmt_fixture-item1.rds | states 11 | history initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered,normalized,correlation_filtered | 68 s
+3: Chunk option fig.align is not supported for docx output 
+recorded limpa screen -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-031-evidence/oracles-limpa_screen-item1.rds | states 14 | history initial,raw_data_s4,qvalue_filtered,precursor_rollup,log2_matrix,peptide_accession_cleaned,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered,ruv_covariates | DA model dpcDE k 1 | 320 s
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-lfq_fixture-item1.rds (build NA): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-tmt_fixture-item1.rds (build NA): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate oracles-limpa_screen-item1.rds (build NA): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+RECORDS-DONE

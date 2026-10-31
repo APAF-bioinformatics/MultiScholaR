@@ -68,12 +68,22 @@ workflowDeclaredClassNames <- function(kind = NULL) {
 #'   manifest (audit B11): a reference-only record whose contrast products are saved entities.
 #' @noRd
 workflowOutputDeclarations <- function() {
+    # KIT-031: `operation` names the registry entry that produces the manifest and `long_table` the long result table
+    # the analysis record lists per result (the record reads both from the declaration, not from the omic).
     list(`dia.da_results.v1` = list(schema = "dia.da_results.v1", version = 1L, kind = "manifest",
-        producer = "runDIAReferenceDaAnalysis",
+        producer = "runDIAReferenceDaAnalysis", operation = "DA-contrast-output", long_table = "da_proteins_long",
         fields = c("source", "protein_id_column", "sample_id", "contrasts", "results", "parameters"),
         products = c("da_proteins_long", "da_proteins_wide", "contrasts_results_table", "significant_rows",
             "norm_counts", "num_sig_da_molecules_first_go", "num_sig_da_molecules", "qvalue_warnings"),
-        identifies = "isDIAResultManifest"))
+        identifies = "isDIAResultManifest"),
+        # KIT-031: the lipidomics DA output (the GUI never builds the S4 result class): one kernel call over every
+        # contrast and assay; `results` is keyed by assay, each with its long table; `products$da_results` is the
+        # kernel's list for the module's display and files.
+        `lipid.da_results.v1` = list(schema = "lipid.da_results.v1", version = 1L, kind = "manifest",
+        producer = "runLipidReferenceDaAnalysis", operation = "lipid_da_output", long_table = "da_lipids_long",
+        fields = c("source", "lipid_id_column", "sample_id", "contrasts", "results", "tables", "products", "parameters", "model"),
+        products = c("da_lipids_long", "da_results", "significant_counts", "qvalue_warnings"),
+        identifies = "isLipidResultManifest"))
 }
 
 #' Resolve one declared output manifest by schema.

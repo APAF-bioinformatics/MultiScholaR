@@ -369,6 +369,9 @@ runLipidDesignImportConfirmationShell <- function(
         # --- 8. Bind the session owner to the route and save (KIT-070) ---
         message("DEBUG66: Binding the state owner to LIPIDOMICS...")
         bindWorkflowOwnerTypeAtDesign(workflowData, "LIPIDOMICS", workflowData$data_format)
+        # KIT-031: the design step's provenance (`design_builder`) and the workflow's inputs on the bound owner.
+        recordLipidDesignProvenance(workflowData$state_manager, s4_obj, source_dir = experimentPaths$source_dir,
+            design_file = design_file)
 
         message("DEBUG66: Saving state to state_manager...")
         workflowData$state_manager$saveState(
