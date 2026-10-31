@@ -157,29 +157,6 @@ if (!is.null(b$builds$kit_070) && identical(Sys.getenv("KIT_070_LIFECYCLE"), "1"
 if (!is.null(b$builds$kit_071) && identical(Sys.getenv("KIT_071_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_071"
 # KIT-031 (2026-10-31): `KIT_031_LIFECYCLE=1` points them at the kit_031 install (the lipidomics declarations).
 if (!is.null(b$builds$kit_031) && identical(Sys.getenv("KIT_031_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_031"
-# KIT-031: the lipidomics screen member judged exact (the ticket's acceptance): a single journey on the kit_031 build
-# through the driver with the lifecycle members' normalisation settings (the tab's other inputs at their defaults),
-# verified step by step against the in-process record of kit-031/oracle-record.R on the same build, bound as
-# lipid31_<step>. The record's steps are the route's journey steps; its session_export population is the head
-# unchanged (the owned export commits no state).
-if (!is.null(b$builds$kit_031)) {
-    b$tickets[["031l"]] <- list(kind = "single_journey", build = "kit_031", corpus = "lipid_screen", route = "lipidomics",
-        whole_journey = TRUE, oracles = "lipid31", ceiling_seconds = 1800L, purpose = "exactness",
-        normalisation = b$lifecycle_omics$normalisation)
-    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-031/oracles-lipid31_lipid_screen.rds")
-    if (!is.null(b$corpora$lipid_screen) && file.exists(oracle_file)) {
-        recorded <- readRDS(oracle_file)
-        stopifnot(identical(recorded$corpus, "lipid_screen"), identical(recorded$route, "lipidomics"),
-            identical(recorded$corpus_sha256, b$corpora$lipid_screen$files[[1L]]$sha256))
-        for (step in names(recorded$populations)) {
-            population <- recorded$populations[[step]]
-            b$populations[[paste0("lipid31_", step)]] <- list(step = step, state = population$state, store = recorded$store,
-                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
-                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "lipidomics")
-            b$oracles[[paste0("lipid31_", step)]] <- population$fingerprint
-        }
-    }
-}
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root
@@ -586,6 +563,29 @@ if (!is.null(b$builds$kit_065)) {
                 head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
                 oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at)
             b$oracles[[paste0(prefix, "_", step)]] <- population$fingerprint
+        }
+    }
+}
+# KIT-031 (after the tickets and oracles are initialised): the lipidomics screen member judged exact (the ticket's acceptance): a single journey on the kit_031 build
+# through the driver with the lifecycle members' normalisation settings (the tab's other inputs at their defaults),
+# verified step by step against the in-process record of kit-031/oracle-record.R on the same build, bound as
+# lipid31_<step>. The record's steps are the route's journey steps; its session_export population is the head
+# unchanged (the owned export commits no state).
+if (!is.null(b$builds$kit_031)) {
+    b$tickets[["031l"]] <- list(kind = "single_journey", build = "kit_031", corpus = "lipid_screen", route = "lipidomics",
+        whole_journey = TRUE, oracles = "lipid31", ceiling_seconds = 1800L, purpose = "exactness",
+        normalisation = b$lifecycle_omics$normalisation)
+    oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-031/oracles-lipid31_lipid_screen.rds")
+    if (!is.null(b$corpora$lipid_screen) && file.exists(oracle_file)) {
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, "lipid_screen"), identical(recorded$route, "lipidomics"),
+            identical(recorded$corpus_sha256, b$corpora$lipid_screen$files[[1L]]$sha256))
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0("lipid31_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "lipidomics")
+            b$oracles[[paste0("lipid31_", step)]] <- population$fingerprint
         }
     }
 }
