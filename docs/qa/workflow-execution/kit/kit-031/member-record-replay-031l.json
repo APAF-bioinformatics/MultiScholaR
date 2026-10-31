@@ -1,0 +1,96 @@
+{
+  "schema": "kit.member_record_replay.v1",
+  "ticket": "KIT-031",
+  "member": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-031l/candidate-1",
+  "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-031l/candidate-1/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-5343b6d53fcd2/.workflow-entities",
+  "record": {
+    "valid": true,
+    "errors": [],
+    "incomplete": "external resources: controller-process queries only",
+    "operations": ["import", "design_builder", "lipid_intensity_filter", "lipid_duplicate_resolution", "lipid_qc_finalize", "lipid_itsd_normalisation", "lipid_log2", "lipid_between_sample_normalisation", "lipid_ruv", "lipid_pearson_selection"],
+    "inputs": [
+      {
+        "role": "lipid_assay_1",
+        "basename": "assay1_lipidsearch_lcms_pos.txt",
+        "sha256": "bcb66d135670737527b264d6726538a2f73b8d0583f32c60d2721c2e34279d9c"
+      },
+      {
+        "role": "lipid_assay_2",
+        "basename": "assay2_lipidsearch_lcms_neg.txt",
+        "sha256": "e486e086afcfeb30ce17fec62ade31ef3b746616112e439a79d73d55adecd4f7"
+      },
+      {
+        "role": "design_file",
+        "basename": "design_matrix.tab",
+        "sha256": "e9e985845078935e1283cdf8352ba5da2a4a6ead220605f95c67c7334ec0a700"
+      }
+    ],
+    "da": {
+      "operation": "lipid_da_output",
+      "source_state": "lipid_correlation_filtered",
+      "model": {
+        "model": "limma",
+        "formula_used": "~ 0 + group",
+        "eBayes_trend": true,
+        "eBayes_robust": true,
+        "treat_applied": false
+      }
+    }
+  },
+  "replay": {
+    "preconditions": ["initial", "lipid_raw_data_s4"],
+    "states": ["initial", "lipid_raw_data_s4", "lipid_intensity_filtered", "lipid_duplicates_resolved", "lipid_qc_complete", "lipid_itsd_norm", "lipid_log2", "lipid_normalized", "lipid_ruv_corrected", "lipid_correlation_filtered"],
+    "mismatches": [],
+    "additional_products": [],
+    "per_step": [
+      {
+        "state": "lipid_intensity_filtered",
+        "operation": "lipid_intensity_filter",
+        "at": "2026-10-31 12:54:31"
+      },
+      {
+        "state": "lipid_duplicates_resolved",
+        "operation": "lipid_duplicate_resolution",
+        "at": "2026-10-31 12:54:33"
+      },
+      {
+        "state": "lipid_qc_complete",
+        "operation": "lipid_qc_finalize",
+        "at": "2026-10-31 12:54:34"
+      },
+      {
+        "state": "lipid_itsd_norm",
+        "operation": "lipid_itsd_normalisation",
+        "at": "2026-10-31 12:54:36"
+      },
+      {
+        "state": "lipid_log2",
+        "operation": "lipid_log2",
+        "at": "2026-10-31 12:54:39"
+      },
+      {
+        "state": "lipid_normalized",
+        "operation": "lipid_between_sample_normalisation",
+        "at": "2026-10-31 12:54:42"
+      },
+      {
+        "state": "lipid_ruv_corrected",
+        "operation": "lipid_ruv",
+        "at": "2026-10-31 12:54:51"
+      },
+      {
+        "state": "lipid_correlation_filtered",
+        "operation": "lipid_pearson_selection",
+        "at": "2026-10-31 12:54:56"
+      },
+      {
+        "state": "lipid_correlation_filtered",
+        "operation": "lipid_da_output",
+        "at": "2026-10-31 12:55:01"
+      }
+    ],
+    "exact": true
+  },
+  "inputs_refused": true,
+  "seconds": 40.9111
+}
