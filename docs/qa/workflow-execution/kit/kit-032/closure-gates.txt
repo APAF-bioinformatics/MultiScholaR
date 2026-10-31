@@ -1,0 +1,15 @@
+record: valid TRUE; steps 10; legacy 0; incomplete: external resources: controller-process queries only
+replay: EXACT; states 10; mismatches 0; additional products 0; tampered input refused TRUE; 35 s
+EXACT: 16 states, 0 mismatches  | 265 s
+recorded lfq_fixture -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-032-evidence/oracles-lfq_fixture-closure.rds | states 11 | history initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered,normalized,correlation_filtered | 57 s
+recorded tmt_fixture -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-032-evidence/oracles-tmt_fixture-closure.rds | states 11 | history initial,protein_s4_initial,protein_accession_cleaned,protein_intensity_filtered,duplicates_removed,protein_replicate_filtered,normalized,correlation_filtered | 58 s
+recorded limpa screen -> /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-032-evidence/oracles-limpa_screen-closure.rds | states 14 | history initial,raw_data_s4,qvalue_filtered,precursor_rollup,log2_matrix,peptide_accession_cleaned,protein_dpc_quant,protein_normalised,peptide_count_filtered,correlation_filtered,ruv_covariates | DA model dpcDE k 1 | 287 s
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-lfq_fixture-closure.rds (build 4819f030063b): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-tmt_fixture-closure.rds (build 4819f030063b): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate oracles-limpa_screen-closure.rds (build 4819f030063b): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
