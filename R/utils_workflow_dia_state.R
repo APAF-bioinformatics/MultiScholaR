@@ -43,7 +43,7 @@ prepareDIAStateRecord <- function(record) {
 #' @param codec Existing codec; scientific records use qs2.
 #' @return Accepted immutable descriptor.
 #' @noRd
-saveDIAStateValue <- function(context, value, label, codec = "qs2") {
+saveWorkflowStateValue <- function(context, value, label, codec = "qs2") {
     checkWorkflowEntityStore(context$store)
     observeDIAOwnerBoundary(context, paste0("save_begin:", label))
     reference <- saveWorkflowCheckpoint(context$store, value,
@@ -62,6 +62,12 @@ saveDIAStateValue <- function(context, value, label, codec = "qs2") {
     observeDIAOwnerBoundary(context, paste0("save_complete:", label))
     reference
 }
+
+#' DIA name of `saveWorkflowStateValue` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `saveWorkflowStateValue`.
+#' @return What `saveWorkflowStateValue` returns.
+#' @noRd
+saveDIAStateValue <- saveWorkflowStateValue
 
 #' Commit one metadata-only head after all its referenced records are durable.
 #' @param context Private adapter owner.
@@ -749,10 +755,16 @@ boundDIAProvenanceValues <- function(values, parameter_names) {
 #' Drop a pending provenance that no commit will consume: a product-only operation (the DA contrasts) sets one
 #' through `runSavedOperation` and commits no state (KIT-025 audit PH-01).
 #' @noRd
-clearDIAStepProvenance <- function(manager) {
+clearWorkflowStepProvenance <- function(manager) {
     if (inherits(manager, "DIAStateAdapter")) manager$.context$pending_provenance <- NULL
     invisible(NULL)
 }
+
+#' DIA name of `clearWorkflowStepProvenance` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `clearWorkflowStepProvenance`.
+#' @return What `clearWorkflowStepProvenance` returns.
+#' @noRd
+clearDIAStepProvenance <- clearWorkflowStepProvenance
 
 #' Name a registered step's provenance from the section its compute recorded, unless an operation already set
 #' it (the worker completion carries the request's variant): the in-process finishing steps (KIT-025 audit PH-02).
@@ -1780,7 +1792,7 @@ saveDIAOwnedValue <- saveWorkflowOwnedValue
 #' @param manager Session manager; NULL resolves the current session.
 #' @return Original scientific value, never a descriptor disguised as an S4.
 #' @noRd
-resolveDIAOwnedValue <- function(value, manager = NULL) {
+resolveWorkflowOwnedValue <- function(value, manager = NULL) {
     if (!isSavedWorkflowReference(value)) return(value)
     if (is.null(manager)) manager <- getDIAActiveManager()
     if (!inherits(manager, "DIAStateAdapter")) {
@@ -1795,20 +1807,38 @@ resolveDIAOwnedValue <- function(value, manager = NULL) {
     resolveDIAStateValue(manager$.context, value)$data
 }
 
+#' DIA name of `resolveWorkflowOwnedValue` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `resolveWorkflowOwnedValue`.
+#' @return What `resolveWorkflowOwnedValue` returns.
+#' @noRd
+resolveDIAOwnedValue <- resolveWorkflowOwnedValue
+
 #' Return a saved GUI reference before a scientific product is looked up.
 #' @param owner,name Existing GUI owner and payload field.
 #' @return Reference in component mode, original payload on legacy paths.
 #' @noRd
-getDIAOwnedInput <- function(owner, name) {
+getWorkflowOwnedInput <- function(owner, name) {
     if (usesDIAReferenceStates(getDIAActiveManager())) owner[[name]] else getDIAOwnedPayload(owner, name)
 }
+
+#' DIA name of `getWorkflowOwnedInput` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `getWorkflowOwnedInput`.
+#' @return What `getWorkflowOwnedInput` returns.
+#' @noRd
+getDIAOwnedInput <- getWorkflowOwnedInput
 
 #' Read an inventoried GUI payload holder, preserving ordinary callers.
 #' @param owner Existing reactiveValues, environment or list.
 #' @param name Existing field name.
 #' @return Original payload.
 #' @noRd
-getDIAOwnedPayload <- function(owner, name) resolveDIAOwnedValue(owner[[name]])
+getWorkflowOwnedPayload <- function(owner, name) resolveDIAOwnedValue(owner[[name]])
+
+#' DIA name of `getWorkflowOwnedPayload` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `getWorkflowOwnedPayload`.
+#' @return What `getWorkflowOwnedPayload` returns.
+#' @noRd
+getDIAOwnedPayload <- getWorkflowOwnedPayload
 
 #' Update one inventoried GUI payload holder after durable storage succeeds.
 #' @param owner Existing mutable GUI owner.
@@ -1816,7 +1846,7 @@ getDIAOwnedPayload <- function(owner, name) resolveDIAOwnedValue(owner[[name]])
 #' @param value Original payload, or NULL to clear the holder.
 #' @return Updated owner invisibly, preserving list as well as mutable-owner semantics.
 #' @noRd
-setDIAOwnedPayload <- function(owner, name, value) {
+setWorkflowOwnedPayload <- function(owner, name, value) {
     manager <- getDIAActiveManager()
     previous <- owner[[name]]
     reference <- saveDIAOwnedValue(value, name, manager)
@@ -1824,6 +1854,12 @@ setDIAOwnedPayload <- function(owner, name, value) {
     releaseDIAReplacedOwner(manager, previous, reference)
     invisible(owner)
 }
+
+#' DIA name of `setWorkflowOwnedPayload` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `setWorkflowOwnedPayload`.
+#' @return What `setWorkflowOwnedPayload` returns.
+#' @noRd
+setDIAOwnedPayload <- setWorkflowOwnedPayload
 
 #' Evict only a successfully replaced, same-project working binding.
 #' @param manager Current DIA manager or NULL on the ordinary path.
@@ -1881,10 +1917,16 @@ newDIASavedReactiveVal <- savedReactiveVal
 #' @param value Existing getter with optional private reference accessor.
 #' @return Saved descriptor or unchanged native getter result.
 #' @noRd
-getDIAReactiveReference <- function(value) {
+getWorkflowReactiveReference <- function(value) {
     reference <- attr(value, "dia_reference", exact = TRUE)
     if (is.function(reference)) reference() else value()
 }
+
+#' DIA name of `getWorkflowReactiveReference` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `getWorkflowReactiveReference`.
+#' @return What `getWorkflowReactiveReference` returns.
+#' @noRd
+getDIAReactiveReference <- getWorkflowReactiveReference
 
 #' Attach one adapter lifetime to existing Shiny flush and project boundaries.
 #' @param manager Adapter containing descriptors, never a resident history.
@@ -2443,7 +2485,7 @@ reclaimDIACompletedMemory <- function(manager) {
 #' @param entities Named list, role to an entity id.
 #' @return NULL invisibly.
 #' @noRd
-recordDIAWorkflowInputs <- function(manager, paths = character(), entities = list()) {
+recordWorkflowInputs <- function(manager, paths = character(), entities = list()) {
     if (!usesDIAReferenceStates(manager)) return(invisible(NULL))
     snapshot <- manager$.context$snapshot
     for (role in names(paths)) {
@@ -2455,6 +2497,12 @@ recordDIAWorkflowInputs <- function(manager, paths = character(), entities = lis
     publishDIAStateHead(manager$.context, snapshot)
     invisible(NULL)
 }
+
+#' DIA name of `recordWorkflowInputs` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `recordWorkflowInputs`.
+#' @return What `recordWorkflowInputs` returns.
+#' @noRd
+recordDIAWorkflowInputs <- recordWorkflowInputs
 
 #' Record one external service the analysis queried (KIT-026), appended to `snapshot$external_resources`.
 #' A worker never publishes the head, so a query made inside a worker is not recorded.

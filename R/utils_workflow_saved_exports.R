@@ -8,7 +8,7 @@
 #'   omics whose sessions are `<prefix>filtered_session_data_<timestamp>.rds` and `<prefix>filtered_session_data_latest.rds`).
 #' @return Legacy-shaped output references; no resident session history.
 #' @noRd
-runDIAOwnedSessionExport <- function(manager, workflowData, normData, input, sourceDir,
+runWorkflowOwnedSessionExport <- function(manager, workflowData, normData, input, sourceDir,
     collectFn, saveFn, serializeFn = saveRDS, prefix = "") {
     context <- manager$.context
     root <- normalizePath(sourceDir, mustWork = TRUE)
@@ -51,6 +51,12 @@ runDIAOwnedSessionExport <- function(manager, workflowData, normData, input, sou
     list(sessionData = NULL, exportArtifacts = artifacts)
 }
 
+#' DIA name of `runWorkflowOwnedSessionExport` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `runWorkflowOwnedSessionExport`.
+#' @return What `runWorkflowOwnedSessionExport` returns.
+#' @noRd
+runDIAOwnedSessionExport <- runWorkflowOwnedSessionExport
+
 #' Serialize a complete DIA history without returning it to publication callers.
 #' @param manager Active DIA adapter.
 #' @param request Owned generation and destination metadata.
@@ -88,7 +94,7 @@ serializeDIAOwnedSessionExport <- function(manager, request, workflowData, normD
 #' @param manager Existing state owner, possibly NULL or native.
 #' @return NULL invisibly, or a pending-output condition.
 #' @noRd
-assertDIAExportReady <- function(manager, allow_action = NULL) {
+assertWorkflowExportReady <- function(manager, allow_action = NULL) {
     if (usesDIAReferenceStates(manager)) {
         reference <- getDIAStateReference(manager)
         request <- manager$.context$snapshot$action_outputs[[reference$entity_id]]
@@ -118,6 +124,12 @@ assertDIAExportReady <- function(manager, allow_action = NULL) {
     invisible(NULL)
 }
 
+#' DIA name of `assertWorkflowExportReady` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `assertWorkflowExportReady`.
+#' @return What `assertWorkflowExportReady` returns.
+#' @noRd
+assertDIAExportReady <- assertWorkflowExportReady
+
 #' Publish included DIA action files separately from their accepted science.
 #' @param manager,reference Owner and accepted scientific checkpoint.
 #' @param label Existing action name used by its retry boundary.
@@ -125,7 +137,7 @@ assertDIAExportReady <- function(manager, allow_action = NULL) {
 #' @param produce Function writing only to corresponding staged directories.
 #' @return Bounded display handoff after all files have been acknowledged.
 #' @noRd
-publishDIAActionOutputs <- function(manager, reference, label, destinations, produce, identity = NULL) {
+publishWorkflowActionOutputs <- function(manager, reference, label, destinations, produce, identity = NULL) {
     context <- manager$.context
     destinations <- destinations[!vapply(destinations, is.null, logical(1))]
     root <- context$experiment_paths$source_dir %||% destinations[[1L]]
@@ -221,6 +233,12 @@ publishDIAActionOutputs <- function(manager, reference, label, destinations, pro
     if (!was_complete) requestDIAReclamation(manager, reference, request_id, label)
     readRDS(display_path)
 }
+
+#' DIA name of `publishWorkflowActionOutputs` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `publishWorkflowActionOutputs`.
+#' @return What `publishWorkflowActionOutputs` returns.
+#' @noRd
+publishDIAActionOutputs <- publishWorkflowActionOutputs
 
 #' Record portable completion independently of local publication-journal paths.
 #' @param manager,reference Accepted state owner and descriptor.

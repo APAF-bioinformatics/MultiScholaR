@@ -191,7 +191,7 @@ mod_metabolomics_server <- function(id, project_dirs, omic_type, experiment_labe
 
         # KIT-070: the session's state owner from the start (the KIT-048 proteomics pattern), bound to the route at
         # the design step; every save is a reference commit of the declared class.
-        workflow_data$state_manager <- createDIASessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)
+        workflow_data$state_manager <- createWorkflowSessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)
 
         logger::log_info(sprintf("Metabolomics module initialized with paths for: %s", paths_key))
 

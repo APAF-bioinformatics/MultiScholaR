@@ -365,7 +365,7 @@ recordWorkflowOmicsDesignProvenance <- function(binding, manager, object, source
     }
     if (is.null(design_file) && !is.null(source_dir)) design_file <- file.path(source_dir, "design_matrix.tab")
     if (!is.null(design_file) && file.exists(design_file)) paths[["design_file"]] <- design_file
-    if (length(paths)) recordDIAWorkflowInputs(manager, paths)
+    if (length(paths)) recordWorkflowInputs(manager, paths)
     invisible(NULL)
 }
 
@@ -395,20 +395,20 @@ runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settin
         run <- runSavedOperation(manager, omicsDaOperation(binding), source, parameters)
         if (identical(run$status, "computed")) {
             snapshot <- context$snapshot
-            snapshot$da_dependencies[[run$reference$entity_id]] <- collectDIANativeReferences(run$value)
-            publishDIAStateHead(context, snapshot)
+            snapshot$da_dependencies[[run$reference$entity_id]] <- collectWorkflowNativeReferences(run$value)
+            publishWorkflowStateHead(context, snapshot)
         }
-        clearDIAStepProvenance(manager)
+        clearWorkflowStepProvenance(manager)
         manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v1"), source = source),
             stats::setNames(list(spec$slots[[binding$id_slot]]), binding$id_slot),
             list(sample_id = spec$slots$sample_id, contrasts = contrasts, results = run$value$results, tables = run$value$tables,
                 products = run$value$products, parameters = parameters[c("formula", "qvalue", "lfc")],
                 qvalue_warnings = run$value$qvalue_warnings, model = run$value$model))
-        reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
+        reference <- saveWorkflowStateValue(context, manifest, "da-result-references", codec = "rds")
         snapshot <- context$snapshot
         snapshot$da_results <- reference
-        snapshot$da_dependencies[[reference$entity_id]] <- collectDIANativeReferences(list(source, run$value))
-        publishDIAStateHead(context, snapshot)
+        snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, run$value))
+        publishWorkflowStateHead(context, snapshot)
         results <- hydrateSavedWorkflowEntity(context$store, run$value$products$da_results)$value
         results$theObject <- readWorkflowExecutionComponents(manager, source, fields = binding$fields)
         list(manifest = manifest, results = results, reference = reference)

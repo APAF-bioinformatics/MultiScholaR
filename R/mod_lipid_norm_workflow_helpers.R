@@ -495,10 +495,10 @@ handleLipidNormExportSession <- function(
         if (!inherits(manager, "DIAStateAdapter")) {
             cli::cli_abort("the session export needs the session's state owner", class = "saved_entity_scope")
         }
-        export_artifacts <- withDIAStateScope(manager, function() {
+        export_artifacts <- withWorkflowStateScope(manager, function() {
             withProgressFn(message = "Exporting normalized session data...", value = 0, {
                 incProgressFn(0.2, detail = "Gathering data and publishing outputs...")
-                result <- runDIAOwnedSessionExport(manager, workflowData, normData, input, source_dir,
+                result <- runWorkflowOwnedSessionExport(manager, workflowData, normData, input, source_dir,
                     collectFn = function(workflowData, normData, input) {
                         session_data <- buildLipidNormExportSessionData(workflowData, normData, input,
                             experimentLabel, exportTimestamp = getTimeFn())

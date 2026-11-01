@@ -678,10 +678,10 @@ runMetabNormExportSessionWorkflow <- function(
     if (!inherits(manager, "DIAStateAdapter")) {
         cli::cli_abort("the session export needs the session's state owner", class = "saved_entity_scope")
     }
-    withDIAStateScope(manager, function() {
+    withWorkflowStateScope(manager, function() {
         withProgressFn(message = "Exporting normalized session data...", value = 0, expr = {
             incProgressFn(0.2, detail = "Gathering data...")
-            result <- runDIAOwnedSessionExport(manager, workflowData, normData, inputValues, sourceDir,
+            result <- runWorkflowOwnedSessionExport(manager, workflowData, normData, inputValues, sourceDir,
                 collectFn = function(workflowData, normData, input) {
                     sessionData <- buildSessionDataFn(
                         workflowData = workflowData,

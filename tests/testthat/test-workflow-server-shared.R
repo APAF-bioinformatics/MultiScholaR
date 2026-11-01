@@ -316,7 +316,7 @@ test_that("lipidomics workflow server wires modules, status progression, and lau
   localNamespaceBindings(
     package_ns,
     list(
-      createDIASessionOwner = function(workflow_data, experiment_paths, session, ...) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
+      createWorkflowSessionOwner = function(workflow_data, experiment_paths, session, ...) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
       mod_lipid_import_server = makeRecordingServerStub(captured, "import"),
       mod_lipid_design_server = makeRecordingServerStub(captured, "design"),
       mod_lipid_qc_server = makeRecordingServerStub(captured, "qc"),
@@ -449,7 +449,7 @@ test_that("metabolomics workflow server wires modules, status progression, and l
   localNamespaceBindings(
     package_ns,
     list(
-      createDIASessionOwner = function(workflow_data, experiment_paths, session, ...) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
+      createWorkflowSessionOwner = function(workflow_data, experiment_paths, session, ...) makeWorkflowStateStub("DIA")$new(FALSE), # KIT-048: the owner is created at session start
       mod_metab_import_server = makeRecordingServerStub(captured, "import"),
       mod_metab_design_server = makeRecordingServerStub(captured, "design"),
       mod_metab_qc_server = makeRecordingServerStub(captured, "qc"),

@@ -1,0 +1,20 @@
+neutral	dia_alias	rule	defined_in	lipid_dia	metab_dia	core_dia	record_omics_dia	lipid_neutral	metab_neutral	core_neutral	other_R_files_dia
+saveWorkflowStateValue	saveDIAStateValue	a	R/utils_workflow_dia_state.R (as saveDIAStateValue)	0	0	1	0	0	0	0	5
+recordWorkflowInputs	recordDIAWorkflowInputs	a	R/utils_workflow_dia_state.R (as recordDIAWorkflowInputs)	0	0	1	0	0	0	0	2
+clearWorkflowStepProvenance	clearDIAStepProvenance	a	R/utils_workflow_dia_state.R (as clearDIAStepProvenance)	0	0	1	0	0	0	0	2
+collectWorkflowNativeReferences	collectDIANativeReferences	a	R/utils_workflow_dia_sessions.R (as collectDIANativeReferences)	0	0	2	0	0	0	0	6
+runWorkflowOwnedSessionExport	runDIAOwnedSessionExport	a	R/utils_workflow_saved_exports.R (as runDIAOwnedSessionExport)	1	1	0	0	0	0	0	2
+createWorkflowSessionOwner	createDIASessionOwner	a	R/utils_workflow_dia_sessions.R (as createDIASessionOwner)	1	1	0	0	0	0	0	2
+saveWorkflowOwnedValue	saveDIAOwnedValue	kit045	R/utils_workflow_dia_state.R	0	0	0	0	0	0	0	4
+publishWorkflowStateHead	publishDIAStateHead	kit045	R/utils_workflow_dia_state.R	0	0	2	0	0	0	0	9
+withWorkflowStateScope	withDIAStateScope	kit045	R/utils_workflow_dia_state.R	1	1	0	0	0	0	4	33
+selectWorkflowStateReference	selectDIAStateReference	kit045	R/utils_workflow_dia_state.R	0	0	0	0	0	0	0	19
+closeWorkflowStateOwner	closeDIAStateAdapter	kit045	R/utils_workflow_dia_state.R	0	0	0	0	0	0	0	2
+readWorkflowStateGuiMetadata	readDIAStateGuiMetadata	b:KIT-075	R/utils_workflow_dia_da.R (as readDIAStateGuiMetadata)	0	0	0	0	0	0	0	2
+getWorkflowOwnedPayload	getDIAOwnedPayload	b:KIT-075	R/utils_workflow_dia_state.R (as getDIAOwnedPayload)	0	0	0	0	0	0	0	6
+setWorkflowOwnedPayload	setDIAOwnedPayload	b:KIT-075	R/utils_workflow_dia_state.R (as setDIAOwnedPayload)	0	0	0	0	0	0	0	9
+getWorkflowOwnedInput	getDIAOwnedInput	b:KIT-075	R/utils_workflow_dia_state.R (as getDIAOwnedInput)	0	0	0	0	0	0	0	3
+resolveWorkflowOwnedValue	resolveDIAOwnedValue	b:KIT-075	R/utils_workflow_dia_state.R (as resolveDIAOwnedValue)	0	0	0	0	0	0	0	5
+getWorkflowReactiveReference	getDIAReactiveReference	b:KIT-075	R/utils_workflow_dia_state.R (as getDIAReactiveReference)	0	0	0	0	0	0	0	5
+assertWorkflowExportReady	assertDIAExportReady	b:KIT-078	R/utils_workflow_saved_exports.R (as assertDIAExportReady)	0	0	0	0	0	0	0	11
+publishWorkflowActionOutputs	publishDIAActionOutputs	b:KIT-078	R/utils_workflow_saved_exports.R (as publishDIAActionOutputs)	0	0	0	0	0	0	0	5

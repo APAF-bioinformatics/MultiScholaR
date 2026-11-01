@@ -3,7 +3,7 @@
 #' @param state_name Optional existing state.
 #' @return Bounded slot metadata and design, plus a reference on the component path.
 #' @noRd
-readDIAStateGuiMetadata <- function(manager, state_name = NULL) {
+readWorkflowStateGuiMetadata <- function(manager, state_name = NULL) {
     if (!usesDIAReferenceStates(manager)) {
         object <- manager$getState(state_name)
         if (is.null(object)) return(NULL)
@@ -19,6 +19,12 @@ readDIAStateGuiMetadata <- function(manager, state_name = NULL) {
     c(spec$slots, list(reference = reference, dimensions = spec$dimensions,
         design_matrix = materializeDIATable(manager$.context, spec$components$design_matrix)))
 }
+
+#' DIA name of `readWorkflowStateGuiMetadata` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `readWorkflowStateGuiMetadata`.
+#' @return What `readWorkflowStateGuiMetadata` returns.
+#' @noRd
+readDIAStateGuiMetadata <- readWorkflowStateGuiMetadata
 
 #' Obtain a protein key from a GUI reference without loading quantities.
 #' @param value Existing S4 or component reference.

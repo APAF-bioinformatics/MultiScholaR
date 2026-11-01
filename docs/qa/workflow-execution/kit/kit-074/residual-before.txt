@@ -1,0 +1,16 @@
+residual DIA-named calls in the omics files (modalDialog, *Diagnostics and the MS-DIAL importers are not kit names):
+R/mod_lipid_norm_workflow_helpers.R:498:        export_artifacts <- withDIAStateScope(manager, function() {
+R/mod_lipid_norm_workflow_helpers.R:501:                result <- runDIAOwnedSessionExport(manager, workflowData, normData, input, source_dir,
+R/mod_lipidomics.R:194:        workflow_data$state_manager <- createDIASessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)
+R/mod_metab_norm_session_helpers.R:681:    withDIAStateScope(manager, function() {
+R/mod_metab_norm_session_helpers.R:684:            result <- runDIAOwnedSessionExport(manager, workflowData, normData, inputValues, sourceDir,
+R/mod_metabolomics.R:194:        workflow_data$state_manager <- createDIASessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)
+R/utils_workflow_omics_declarations.R:368:    if (length(paths)) recordDIAWorkflowInputs(manager, paths)
+R/utils_workflow_omics_declarations.R:398:            snapshot$da_dependencies[[run$reference$entity_id]] <- collectDIANativeReferences(run$value)
+R/utils_workflow_omics_declarations.R:399:            publishDIAStateHead(context, snapshot)
+R/utils_workflow_omics_declarations.R:401:        clearDIAStepProvenance(manager)
+R/utils_workflow_omics_declarations.R:407:        reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
+R/utils_workflow_omics_declarations.R:410:        snapshot$da_dependencies[[reference$entity_id]] <- collectDIANativeReferences(list(source, run$value))
+R/utils_workflow_omics_declarations.R:411:        publishDIAStateHead(context, snapshot)
+record omics branches:
+  none

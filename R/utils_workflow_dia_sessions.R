@@ -281,7 +281,7 @@ inspectDIANativeArchive <- function(path, directory) {
 #' @param references Existing identity-keyed descriptor list.
 #' @return Distinct descriptors, preserving aliases by immutable identity.
 #' @noRd
-collectDIANativeReferences <- function(value, references = list()) {
+collectWorkflowNativeReferences <- function(value, references = list()) {
     found <- new.env(hash = TRUE, parent = emptyenv())
     count <- 0L
     visit <- function(node, depth = 0L) {
@@ -308,6 +308,12 @@ collectDIANativeReferences <- function(value, references = list()) {
     }
     references
 }
+
+#' DIA name of `collectWorkflowNativeReferences` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `collectWorkflowNativeReferences`.
+#' @return What `collectWorkflowNativeReferences` returns.
+#' @noRd
+collectDIANativeReferences <- collectWorkflowNativeReferences
 
 #' Bind one regular owned file's bytes and fingerprint to an archive path.
 #' @param path Existing file.
@@ -861,7 +867,7 @@ workflowDiaRouteType <- function(method) {
 #'   `metabolomics`. The pending identity carries it and the session registration is per omic.
 #' @return The attached owner (a `DIAStateAdapter`).
 #' @noRd
-createDIASessionOwner <- function(workflow_data, experiment_paths, session, omic_type = "proteomics") {
+createWorkflowSessionOwner <- function(workflow_data, experiment_paths, session, omic_type = "proteomics") {
     if (!is.list(experiment_paths) || !is.character(experiment_paths$source_dir) || length(experiment_paths$source_dir) != 1L ||
         !dir.exists(experiment_paths$source_dir)) {
         cli::cli_abort("the {omic_type} session needs a project source directory for its state owner", class = "saved_entity_scope")
@@ -883,6 +889,12 @@ createDIASessionOwner <- function(workflow_data, experiment_paths, session, omic
     manager$.context$omic_type <- omic_type
     attachDIAStateSession(manager, session, workflow_data, omic_type = omic_type)
 }
+
+#' DIA name of `createWorkflowSessionOwner` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
+#' @param ... The arguments of `createWorkflowSessionOwner`.
+#' @return What `createWorkflowSessionOwner` returns.
+#' @noRd
+createDIASessionOwner <- createWorkflowSessionOwner
 
 #' KIT-070: bind the lipidomics or metabolomics session owner to its route at the design step (the import of these
 #' omics writes files only; the first state is the design's). A pending owner is bound as `bindDIASessionOwnerType`
