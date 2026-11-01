@@ -45,7 +45,7 @@ test_that("MCI-021.1 normalization method matrix preserves assay names, samples,
   expect_true(pipeline$result)
   expect_true(pipeline$norm_data$normalization_complete)
   expect_true(pipeline$norm_data$ruv_complete)
-  expect_true("lipid_normalized" %in% names(pipeline$workflow$state_manager$saved()))
+  expect_true("lipid_normalized" %in% pipeline$workflow$state_manager$getHistory())
   module_ci_lipid_norm_assert_alignment(pipeline$norm_data$post_norm_obj, c("LCMS_Pos", "GCMS"))
 })
 
@@ -96,7 +96,7 @@ test_that("MCI-021.2 ITSD matrix serializes regex, manual, absent, and invalid I
 
   expect_true(itsd_pipeline$result)
   expect_s4_class(norm_data$post_itsd_obj, "LipidomicsAssayData")
-  expect_true("lipid_itsd_norm" %in% names(workflow$state_manager$saved()))
+  expect_true("lipid_itsd_norm" %in% workflow$state_manager$getHistory())
   expect_identical(norm_data$post_itsd_obj@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
 
   no_itsd <- module_ci_lipid_norm_object(layout = "gc", include_itsd = FALSE, positive_only = TRUE)
@@ -136,7 +136,7 @@ test_that("MCI-021.3 RUV matrix covers skip, manual, automatic, invalid k, contr
   expect_true(skip_pipeline$result)
   expect_true(skip_pipeline$norm_data$ruv_complete)
   expect_identical(skip_pipeline$norm_data$ruv_corrected_obj, skip_pipeline$norm_data$post_norm_obj)
-  expect_false("lipid_ruv_corrected" %in% names(skip_pipeline$workflow$state_manager$saved()))
+  expect_false("lipid_ruv_corrected" %in% skip_pipeline$workflow$state_manager$getHistory())
 
   manual_pipeline <- suppressWarnings(suppressMessages(module_ci_lipid_norm_run_pipeline(
     input = module_ci_lipid_norm_input(norm_method = "none", ruv_mode = "manual"),
@@ -144,7 +144,7 @@ test_that("MCI-021.3 RUV matrix covers skip, manual, automatic, invalid k, contr
   )))
   expect_true(manual_pipeline$result)
   expect_true(manual_pipeline$norm_data$ruv_complete)
-  expect_true("lipid_ruv_corrected" %in% names(manual_pipeline$workflow$state_manager$saved()))
+  expect_true("lipid_ruv_corrected" %in% manual_pipeline$workflow$state_manager$getHistory())
   expect_identical(manual_pipeline$norm_data$ruv_corrected_obj@args$ruv_number_k$LCMS_Pos, 2L)
   expect_true(all(vapply(manual_pipeline$norm_data$ruv_corrected_obj@args$ctrl, function(x) {
     is.logical(x) && !is.null(names(x)) && sum(x) == 6L
@@ -189,7 +189,7 @@ test_that("MCI-021.3 RUV matrix covers skip, manual, automatic, invalid k, contr
   )))
   expect_false(invalid_pipeline$result)
   expect_false(invalid_norm_data$ruv_complete)
-  expect_false("lipid_ruv_corrected" %in% names(invalid_workflow$state_manager$saved()))
+  expect_false("lipid_ruv_corrected" %in% invalid_workflow$state_manager$getHistory())
 })
 
 test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, boundary, small-n, and invalid inputs", {
@@ -209,10 +209,14 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
   expect_true(skip_state)
   expect_true(norm_data$correlation_filtering_complete)
   expect_identical(norm_data$correlation_filtered_obj, object)
-  expect_true("lipid_norm_complete" %in% names(workflow$state_manager$saved()))
+  expect_true("lipid_norm_complete" %in% workflow$state_manager$getHistory())
   expect_identical(workflow$tab_status$normalization, "complete")
 
   run_apply_case <- function(case) {
+    # KIT-072: the declared pairs operation calls the namespace kernel, so the case's pairs are bound there.
+    testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(...) {
+      module_ci_lipid_norm_correlation_pairs(case, names(object@lipid_data))
+    }, .package = "MultiScholaR")
     case_workflow <- module_ci_lipid_norm_workflow(object)
     case_norm_data <- module_ci_lipid_norm_data(object)
     case_norm_data$normalization_complete <- TRUE
@@ -225,9 +229,6 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
       reqFn = function(value) value,
       showNotificationFn = function(...) invisible(NULL),
       removeNotificationFn = function(...) invisible(NULL),
-      pearsonCorForSamplePairsFn = function(...) {
-        module_ci_lipid_norm_correlation_pairs(case, names(object@lipid_data))
-      },
       logInfoFn = function(...) invisible(NULL),
       logErrorFn = function(...) invisible(NULL)
     ))) -> result
@@ -237,7 +238,7 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
   pass_all <- run_apply_case("pass_all")
   expect_true(pass_all$result)
   expect_setequal(pass_all$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2", "S3", "S4"))
-  expect_true("lipid_correlation_filtered" %in% names(pass_all$workflow$state_manager$saved()))
+  expect_true("lipid_correlation_filtered" %in% pass_all$workflow$state_manager$getHistory())
 
   boundary <- run_apply_case("boundary")
   expect_true(boundary$result)
@@ -275,6 +276,7 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
   invalid_norm_data <- module_ci_lipid_norm_data(object)
   invalid_norm_data$normalization_complete <- TRUE
   invalid_norm_data$post_norm_obj <- object
+  testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(...) 1, .package = "MultiScholaR")
   invalid_state <- handleLipidNormApplyCorrelationFilter(
     input = module_ci_lipid_norm_input(correlation_threshold = 0.75),
     workflowData = invalid_workflow,
@@ -283,13 +285,12 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
     reqFn = function(value) value,
     showNotificationFn = function(...) invisible(NULL),
     removeNotificationFn = function(...) invisible(NULL),
-    pearsonCorForSamplePairsFn = function(...) 1,
     logInfoFn = function(...) invisible(NULL),
     logErrorFn = function(...) invisible(NULL)
   )
   expect_false(invalid_state)
   expect_false(invalid_norm_data$correlation_filtering_complete)
-  expect_false("lipid_correlation_filtered" %in% names(invalid_workflow$state_manager$saved()))
+  expect_false("lipid_correlation_filtered" %in% invalid_workflow$state_manager$getHistory())
 })
 
 test_that("MCI-021.5 session export matrix preserves lipidomics, RUV, ITSD, and feature-count payloads", {
@@ -345,7 +346,8 @@ test_that("MCI-021.6 DA reload consumes every accepted lipid export variant", {
       invisible(NULL)
     }
 
-    result <- loadLipidDaSessionFromFile(
+    # KIT-072: a file from another session adopts into the owner, which attaches to the module's session.
+    result <- shiny::withReactiveDomain(session, loadLipidDaSessionFromFile(
       sessionFile = export$latest_file,
       workflowData = workflow,
       daData = da_data,
@@ -392,7 +394,7 @@ test_that("MCI-021.6 DA reload consumes every accepted lipid export variant", {
           }
         )
       }
-    )
+    ))
 
     expect_identical(result$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
@@ -402,6 +404,6 @@ test_that("MCI-021.6 DA reload consumes every accepted lipid export variant", {
     expect_identical(capture$text$formula_string, "~ 0 + group + batch")
     expect_identical(capture$select$volcano_contrast$choices, "KO_vs_WT")
     expect_identical(capture$select$table_assay$choices, c("All", "LCMS_Pos", "GCMS"))
-    expect_true(export$session_data$r6_current_state_name %in% names(workflow$state_manager$saved()))
+    expect_true(export$session_data$r6_current_state_name %in% workflow$state_manager$getHistory())
   }
 })

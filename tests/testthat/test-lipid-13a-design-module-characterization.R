@@ -227,16 +227,14 @@ test_that("lipid design import confirmation helper preserves failure and success
 
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$tab_status <- list(design_matrix = "pending")
-  saved_states <- list()
-  workflow_data$state_manager <- list(saveState = function(...) saved_states[[length(saved_states) + 1L]] <<- list(...))
+  # KIT-072: the session's pending owner (the modules' only manager), bound to the route at the design step.
+  omicsTestOwner(workflow = workflow_data, omic_type = "lipidomics", bind = FALSE)
   qc_value <- FALSE
   notification_log <- list()
   removed_notifications <- character()
   assigned_names <- character()
   update_calls <- list()
-  s4_token <- structure(list(kind = "lipid-s4"), class = "mock_lipid_s4")
-
-  run_import_shell(
+  shiny::withReactiveDomain(omicsOwnerSession(), run_import_shell(
     workflowData = workflow_data,
     experimentPaths = list(source_dir = source_dir),
     importPath = import_dir,
@@ -264,16 +262,15 @@ test_that("lipid design import confirmation helper preserves failure and success
       list(lipid_id_col = "Peak ID", annotation_col = "Lipid name", sample_columns = c("Sample_1", "Sample_2"), is_pattern = "ISTD")
     },
     assignFn = function(name, value, envir) assigned_names <<- c(assigned_names, name),
-    createLipidomicsAssayDataFn = function(...) s4_token,
     updateLipidFilteringFn = function(...) update_calls[[length(update_calls) + 1L]] <<- list(...)
-  )
+  ))
 
   expect_identical(workflow_data$design_matrix$tech_rep_group, c("Control_1", "Treatment_1"))
   expect_identical(names(workflow_data$data_tbl), "LCMS_Pos")
   expect_identical(workflow_data$column_mapping$sample_columns, c("Sample_1", "Sample_2"))
   expect_identical(workflow_data$contrasts_tbl$friendly_names, "Treatment_vs_Control")
-  expect_identical(saved_states[[1L]]$state_name, "lipid_raw_data_s4")
-  expect_identical(saved_states[[1L]]$s4_data_object, s4_token)
+  expect_true("lipid_raw_data_s4" %in% workflow_data$state_manager$getHistory())
+  expect_s4_class(workflow_data$state_manager$getState("lipid_raw_data_s4"), "LipidomicsAssayData")
   expect_true(qc_value)
   expect_identical(workflow_data$tab_status$design_matrix, "complete")
   # KIT-030: the imported config and contrasts live on workflow_data only; no global copies.
@@ -359,15 +356,9 @@ test_that("lipid design builder and observer helpers preserve outer server hando
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$column_mapping <- list(lipid_id_col = "Peak ID", annotation_col = "Lipid name", is_pattern = "ISTD")
   workflow_data$tab_status <- list(design_matrix = "pending")
-  saved_states <- list()
-  workflow_data$state_manager <- list(saveState = function(...) saved_states[[length(saved_states) + 1L]] <<- list(...))
+  # KIT-072: the session's pending owner (the modules' only manager), bound to the route at the design step.
+  omicsTestOwner(workflow = workflow_data, omic_type = "lipidomics", bind = FALSE)
   qc_value <- FALSE
-  s4_token <- structure(list(kind = "lipid-s4"), class = "mock_lipid_s4")
-
-  local_mocked_bindings(
-    createLipidomicsAssayData = function(...) s4_token,
-    .env = asNamespace("MultiScholaR")
-  )
 
   session <- shiny::MockShinySession$new()
   shiny::withReactiveDomain(session, {
@@ -386,7 +377,7 @@ test_that("lipid design builder and observer helpers preserve outer server hando
   expect_true(file.exists(file.path(source_dir, "manifest.json")))
   expect_true(file.exists(file.path(source_dir, "config.ini")))
   expect_identical(workflow_data$design_matrix$Run, c("Sample_1", "Sample_2"))
-  expect_identical(saved_states[[1L]]$state_name, "lipid_raw_data_s4")
+  expect_true("lipid_raw_data_s4" %in% workflow_data$state_manager$getHistory())
   expect_true(qc_value)
   expect_identical(workflow_data$tab_status$design_matrix, "complete")
 

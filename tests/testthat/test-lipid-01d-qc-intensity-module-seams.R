@@ -202,24 +202,14 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
     qc_plot_args <- NULL
     output_env <- new.env(parent = emptyenv())
     qc_plot <- structure(list(id = "qc-grid"), class = "grob")
+    # KIT-072: the module runs the declared operation on the session owner (its only path); the wrapper's commit is
+    # tested with the declarations, so here it is recorded and returns the filtered object.
+    workflow <- omicsTestOwner(current_s4, "lipid_raw_data_s4", config = list(cache = "cfg"))
+    wrapper <- omicsMockWrapper("runLipidReferenceIntensityFilter", list(object = filtered_s4))
 
     result <- registerLipidIntensityApplyFilterObserver(
         input = input,
-        workflowData = list(
-            state_manager = list(
-                getState = function() current_s4,
-                saveState = function(state_name, s4_data_object, config_object, description) {
-                    save_state_args <<- list(
-                        state_name = state_name,
-                        s4_data_object = s4_data_object,
-                        config_object = config_object,
-                        description = description
-                    )
-                    invisible(NULL)
-                }
-            ),
-            config_list = list(cache = "cfg")
-        ),
+        workflowData = workflow,
         output = output_env,
         filterStatsVal = function(value) {
             filter_stats_value <<- value
@@ -260,14 +250,6 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
         logErrorFn = function(...) {
             stop("logErrorFn should not be called on success")
         },
-        lipidIntensityFilteringFn = function(theObject, lipids_intensity_cutoff_percentile, lipids_proportion_of_samples_below_cutoff) {
-            filtering_args <<- list(
-                theObject = theObject,
-                percentile = lipids_intensity_cutoff_percentile,
-                proportion = lipids_proportion_of_samples_below_cutoff
-            )
-            filtered_s4
-        },
         updateLipidFilteringFn = function(theObject, step_name, omics_type, return_grid, overwrite) {
             qc_plot_args <<- list(
                 theObject = theObject,
@@ -281,9 +263,11 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
     )
 
     expect_identical(result, input)
-    expect_identical(filtering_args$theObject, current_s4)
-    expect_identical(filtering_args$percentile, 10L)
-    expect_identical(filtering_args$proportion, 0.5)
+    expect_length(wrapper$calls, 1L)
+    expect_identical(wrapper$calls[[1L]][[1L]], workflow$state_manager)
+    expect_identical(wrapper$calls[[1L]][[2L]], 10L)
+    expect_identical(wrapper$calls[[1L]][[3L]], 0.5)
+    expect_identical(wrapper$calls[[1L]][[4L]], list(cache = "cfg"))
     expect_identical(qc_plot_args$theObject, filtered_s4)
     expect_identical(qc_plot_args$step_name, "2_Intensity_Filtered")
     expect_identical(qc_plot_args$omics_type, "lipidomics")
@@ -301,13 +285,6 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
         )
     )
     expect_identical(filter_plot_value, qc_plot)
-    expect_identical(save_state_args$state_name, "lipid_intensity_filtered")
-    expect_identical(save_state_args$s4_data_object, filtered_s4)
-    expect_identical(save_state_args$config_object, list(cache = "cfg"))
-    expect_identical(
-        save_state_args$description,
-        "Applied lipid intensity filter (percentile: 10%, proportion: 0.50)"
-    )
     expect_match(output_env$filter_results, "Lipid Intensity Filter Applied Successfully", fixed = TRUE)
     expect_match(output_env$filter_results, "AssayA: 2 -> 1", fixed = TRUE)
     expect_match(output_env$filter_results, "AssayB: 2 -> 1", fixed = TRUE)

@@ -53,13 +53,13 @@ test_that("KIT-032: the metabolomics declarations are registered in process with
     expect_identical(workflowOutputDeclaration("dia.da_results.v1")$long_table, "da_proteins_long")
 })
 
-test_that("KIT-032: the wrappers refuse a manager that is not the session owner and the store steps leave a double alone", {
+test_that("KIT-032/KIT-072: the wrappers and the store steps refuse a manager that is not the session owner", {
     double <- list2env(list(getState = function() NULL, saveState = function(...) invisible(TRUE)))
     expect_error(runMetabReferenceIntensityFilter(double, 1, 0.5, list()), class = "saved_entity_scope")
     expect_error(runMetabReferenceCorrelation(double, "group", 0.5, list()), class = "saved_entity_scope")
     expect_error(runMetabReferenceDaAnalysis(double, NULL, list(), data.frame()), class = "saved_entity_scope")
-    expect_null(markWorkflowOmicsStoreStep(double, "metab_qc_finalize"))
-    expect_null(recordMetabDesignProvenance(double, NULL))
+    expect_error(markWorkflowOmicsStoreStep(double, "metab_qc_finalize"), class = "saved_entity_scope")
+    expect_error(recordMetabDesignProvenance(double, NULL), class = "saved_entity_scope")
 })
 
 test_that("KIT-032: the metabolomics journey on the owner commits every state with its declaration, records completely, resolves its DA manifest, overlays the report and replays exact", {

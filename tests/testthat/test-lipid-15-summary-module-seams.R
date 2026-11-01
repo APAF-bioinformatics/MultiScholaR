@@ -191,6 +191,9 @@ test_that("collectLipidSummaryWorkflowArgsContext keeps state resolution stable"
         config_list = list(alpha = 1, beta = 2)
     )
 
+    # KIT-072: the final state is the owner's head (workflowSummaryFinalStateName, tested with the sessions); this mock
+    # class is not a declared assay class, so the helper is recorded and the manager serves the state back.
+    omicsMockWrapper("workflowSummaryFinalStateName", "lipid_normalized")
     result <- collectLipidSummaryWorkflowArgsContext(
         workflowData = workflow_data,
         assignFn = function(x, value, envir) {
@@ -221,6 +224,9 @@ test_that("handleLipidSummarySaveWorkflowArgs keeps success side effects stable"
     create_args <- NULL
     saved <- list()
 
+    record_call <- NULL
+    record_workflow <- omicsTestOwner(omic_type = "lipidomics") # KIT-072: the owner is the only manager
+    record_workflow$marker <- "workflow-data"
     result <- handleLipidSummarySaveWorkflowArgs(
         input = list(
             experiment_label = "lipid-study",
@@ -235,7 +241,7 @@ test_that("handleLipidSummarySaveWorkflowArgs keeps success side effects stable"
             )
         ),
         omicType = "lipidomics",
-        workflowData = list(marker = "workflow-data"),
+        workflowData = record_workflow,
         collectContextFn = function(workflowData, catFn) {
             expect_identical(workflowData$marker, "workflow-data")
             list(
@@ -262,10 +268,17 @@ test_that("handleLipidSummarySaveWorkflowArgs keeps success side effects stable"
             invisible(TRUE)
         },
         timeFn = function() as.POSIXct("2026-04-16 13:00:00", tz = "UTC"),
-        catFn = function(...) invisible(NULL)
+        catFn = function(...) invisible(NULL),
+        writeAnalysisRecordFn = function(manager, file) {
+            record_call <<- list(manager = manager, file = file)
+            invisible(file)
+        }
     )
 
     expect_true(values$workflow_args_saved)
+    # KIT-072: the analysis record is written from the session owner beside study_parameters.txt.
+    expect_identical(record_call$manager, record_workflow$state_manager)
+    expect_identical(record_call$file, "/tmp/lipid-source/analysis_record.json")
     expect_identical(result$studyParamsFile, "/tmp/lipid-source/study_parameters.txt")
     expect_identical(result$s4Filename, "lipidomics_lipid-study_final_s4.RDS")
     expect_identical(result$s4Filepath, "/tmp/lipid-base/integration/lipidomics_lipid-study_final_s4.RDS")

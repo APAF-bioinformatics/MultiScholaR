@@ -1,0 +1,19 @@
+R/mod_lipid_da_session_helpers.R:470:            owned <- resolveWorkflowOmicsOwnedSession(manager, sessionFile)
+R/mod_lipid_da_session_helpers.R:471:            sessionLoad <- if (!is.null(owned)) {
+R/mod_lipid_da_session_helpers.R:473:                list(sessionFile = sessionFile, sessionData = owned, sessionDataNames = names(owned))
+R/mod_lipid_norm_workflow_helpers.R:495:        if (!inherits(manager, "DIAStateAdapter")) {
+R/mod_metab_norm_session_helpers.R:678:    if (!inherits(manager, "DIAStateAdapter")) {
+R/utils_workflow_lipid_declarations.R:268:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:338:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the lipid step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:354:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:368:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:384:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the design step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:411:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the lipid DA needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_metab_declarations.R:293:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_metab_declarations.R:309:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the design step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_metab_declarations.R:330:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the metabolomics DA needs the session's state owner", class = "saved_entity_scope")
+--- shared session helpers (omics) ---
+R/utils_workflow_dia_sessions.R:900: [bindWorkflowOwnerTypeAtDesign]     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the design step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_dia_sessions.R:1327: [ingestWorkflowOmicsLegacySession]     if (!inherits(previous, "DIAStateAdapter")) cli::cli_abort("the session needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_dia_sessions.R:1402: [resolveWorkflowOmicsOwnedSession]     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the session needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_dia_sessions.R:1425: [workflowSummaryFinalStateName]     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the summary needs the session's state owner", class = "saved_entity_scope")

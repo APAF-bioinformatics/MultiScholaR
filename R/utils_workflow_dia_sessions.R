@@ -896,8 +896,8 @@ createDIASessionOwner <- function(workflow_data, experiment_paths, session, omic
 bindWorkflowOwnerTypeAtDesign <- function(workflow_data, workflow_type, format = NULL) {
     manager <- workflow_data$state_manager
     if (is.null(manager)) cli::cli_abort("the session has no state owner", class = "saved_entity_scope")
-    # A manager that is not an owner is a test double of the module helpers; the modules only ever hold an owner.
-    if (!inherits(manager, "DIAStateAdapter")) return(invisible(manager))
+    # KIT-072: the modules only ever hold an owner; anything else is refused.
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the design step needs the session's state owner", class = "saved_entity_scope")
     if (isDIASessionOwnerPending(manager)) {
         return(invisible(bindDIASessionOwnerType(manager, format, workflow_type, workflow_data,
             shiny::getDefaultReactiveDomain(), manager$.context$experiment_paths)))
@@ -1319,12 +1319,12 @@ workflowOmicsSessionClass <- c(lipidomics = "LipidomicsAssayData", metabolomics 
 #' @param state_name The state the object is committed under (the session's `r6_current_state_name`).
 #' @param path The session file, recorded in the state's configuration.
 #' @param session The Shiny session the owner attaches to.
-#' @return TRUE when adopted; FALSE for a manager that is not an owner (a test double keeps its `saveState`).
+#' @return TRUE when adopted; a manager that is not an owner is refused (KIT-072: the modules have one path).
 #' @noRd
 ingestWorkflowOmicsLegacySession <- function(value, workflow_data, source_dir, omic_type,
     state_name = value$r6_current_state_name, path = NULL, session = shiny::getDefaultReactiveDomain()) {
     previous <- workflow_data$state_manager
-    if (!inherits(previous, "DIAStateAdapter")) return(FALSE)
+    if (!inherits(previous, "DIAStateAdapter")) cli::cli_abort("the session needs the session's state owner", class = "saved_entity_scope")
     if (!omic_type %in% names(workflowOmicsSessionClass)) {
         cli::cli_abort("no session adoption for {.val {omic_type}}", class = "saved_entity_scope")
     }
@@ -1392,14 +1392,14 @@ ingestWorkflowOmicsLegacySession <- function(value, workflow_data, source_dir, o
 
 #' KIT-071: the DE tab's Open on an owner: the session the owner itself published (its metadata and the head's
 #' state, hydrated as the module reads every state) when `path` is that export, verified by `resolveDIAOwnedExport`
-#' (the completion record, the file's hash, the head unchanged since); NULL otherwise (a legacy RDS, or a manager
-#' that is not an owner), when the caller reads the file.
+#' (the completion record, the file's hash, the head unchanged since); NULL for a legacy RDS, when the caller reads
+#' the file. A manager that is not an owner is refused (KIT-072).
 #' @param manager The module's state manager.
 #' @param path The session file the tab resolved.
 #' @return The session list with `owned_generation = TRUE`, or NULL.
 #' @noRd
 resolveWorkflowOmicsOwnedSession <- function(manager, path) {
-    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the session needs the session's state owner", class = "saved_entity_scope")
     session <- withDIAStateScope(manager, function() resolveDIAOwnedExport(manager, path))
     if (is.null(session)) return(NULL)
     state_name <- session$r6_current_state_name
@@ -1414,8 +1414,7 @@ resolveWorkflowOmicsOwnedSession <- function(manager, path) {
 
 #' KIT-071: the state a summary tab reports and exports as the workflow's final state. On an owner it is the head's
 #' current state when that is one of the tab's data states, else the first data state present in the head's
-#' history; on another manager (a test double) the ordered scan of its history, through `detectFn` where the site
-#' injects one.
+#' history, through `detectFn` where the site injects one. A manager that is not an owner is refused (KIT-072).
 #' @param manager The module's state manager.
 #' @param data_states The tab's data states in order of preference.
 #' @param detectFn The site's scan (`purrr::detect` by default).
@@ -1423,13 +1422,10 @@ resolveWorkflowOmicsOwnedSession <- function(manager, path) {
 #' @noRd
 workflowSummaryFinalStateName <- function(manager, data_states, detectFn = NULL) {
     if (is.null(manager)) return(NULL)
-    if (inherits(manager, "DIAStateAdapter")) {
-        current <- manager$.context$snapshot$current_state
-        if (is.character(current) && length(current) == 1L && current %in% data_states) return(current)
-        history <- unlist(manager$.context$snapshot$state_history)
-    } else {
-        history <- tryCatch(manager$getHistory(), error = function(e) character())
-    }
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the summary needs the session's state owner", class = "saved_entity_scope")
+    current <- manager$.context$snapshot$current_state
+    if (is.character(current) && length(current) == 1L && current %in% data_states) return(current)
+    history <- unlist(manager$.context$snapshot$state_history)
     if (!is.null(detectFn)) return(detectFn(data_states, ~ .x %in% history))
     matching <- data_states[data_states %in% history]
     if (length(matching) > 0L) matching[[1L]] else NULL

@@ -100,7 +100,7 @@ test_that("MCI-020.2 duplicate matrix covers IDs, annotations/classes, ties, con
   )
   expect_identical(names(dispatched$statsList), c("LCMS_Pos", "GCMS"))
   expect_true(all(vapply(dispatched$statsList, `[[`, numeric(1), "removed") >= 2))
-  expect_true("lipid_duplicates_resolved" %in% names(workflow$state_manager$saved()))
+  expect_true("lipid_duplicates_resolved" %in% workflow$state_manager$getHistory())
   expect_identical(names(dispatched$currentS4@lipid_data), c("LCMS_Pos", "GCMS"))
 })
 
@@ -240,12 +240,13 @@ test_that("MCI-020.5 finalization validates lipid S4 state and unlocks normaliza
   expect_identical(workflow$tab_status$normalization, "pending")
   expect_identical(captured$filter_plot, "qc-progress-plot")
   expect_identical(captured$tracking$omicType, "lipidomics")
-  expect_true("lipid_qc_complete" %in% names(workflow$state_manager$saved()))
+  expect_true("lipid_qc_complete" %in% workflow$state_manager$getHistory())
   expect_identical(output$finalize_results, "finalized")
   expect_true(any(captured$success$history == "lipid_qc_complete"))
 
   invalid_workflow <- module_ci_lipid_qc_workflow(current)
-  invalid_workflow$state_manager <- module_ci_lipid_qc_state_manager(list(not = "s4"))
+  # KIT-072: the owner's current state holds a value that is not the omic's S4.
+  invalid_workflow$state_manager$saveState("lipid_not_s4", list(not = "s4"), invalid_workflow$config_list, "not an S4")
   runLipidQcS4FinalizeWorkflow(
     workflowData = invalid_workflow,
     omicType = "lipidomics",

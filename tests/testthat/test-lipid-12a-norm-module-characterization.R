@@ -81,7 +81,8 @@ makeLipidNormCharacterizationData <- function() {
   )
 }
 
-makeLipidNormCharacterizationHarness <- function(current_s4 = makeLipidNormCharacterizationData()) {
+makeLipidNormCharacterizationHarness <- function(current_s4 = makeLipidNormCharacterizationData(), owner = FALSE,
+                                                 env = parent.frame()) {
   capture <- new.env(parent = emptyenv())
   capture$saved_states <- list()
 
@@ -112,6 +113,11 @@ makeLipidNormCharacterizationHarness <- function(current_s4 = makeLipidNormChara
   workflow_data$lipid_counts <- list(`Positive Mode` = list(features = 2, samples = 2))
   workflow_data$qc_params <- list(minimum_intensity = 1)
   workflow_data$tab_status <- list(quality_control = "pending", normalization = "pending")
+  # KIT-072: the workflow helpers run the declared operations on a real session owner (the modules' only path).
+  if (isTRUE(owner)) {
+    omicsTestOwner(current_s4, "lipid_normalized", workflow = workflow_data, experiment_paths = list(source_dir = source_dir),
+      omic_type = "lipidomics", env = env)
+  }
 
   list(
     workflow_data = workflow_data,
@@ -641,7 +647,28 @@ test_that("lipid norm workflow helpers preserve normalization, export, reset, an
   reset_normalization <- getMultiScholaRBinding("handleLipidNormResetNormalization")
   apply_correlation <- getMultiScholaRBinding("handleLipidNormApplyCorrelationFilter")
 
-  harness <- makeLipidNormCharacterizationHarness()
+  harness <- makeLipidNormCharacterizationHarness(owner = TRUE)
+  # KIT-072: the declared operations call the namespace kernels, so the test's kernels are bound there.
+  local_mocked_bindings(
+    normaliseUntransformedData = function(theObject, ...) theObject,
+    logTransformAssays = function(theObject, ...) theObject,
+    normaliseBetweenSamples = function(theObject, ...) theObject,
+    runLipidPerAssayRuvOptimization = function(...) list(
+      `Positive Mode` = list(
+        success = TRUE,
+        best_k = 1,
+        best_percentage = 5,
+        control_genes_index = c(TRUE, FALSE),
+        # The owner saves the optimisation as a product, which holds no live test frame.
+        cancor_plot = local(ggplot2::ggplot(), envir = new.env(parent = baseenv())),
+        optimization_results = data.frame(k = 1)
+      )
+    ),
+    ruvIII_C_Varying = function(theObject, ...) theObject,
+    pearsonCorForSamplePairs = function(...) list(`Positive Mode` = data.frame(pearson_correlation = c(0.8, 0.9))),
+    filterSamplesByLipidCorrelationThreshold = function(theObject, ...) theObject,
+    .package = "MultiScholaR"
+  )
   norm_data <- new.env(parent = emptyenv())
   norm_data$assay_names <- "Positive Mode"
   norm_data$itsd_selections <- list(`Positive Mode` = 1L)
@@ -726,7 +753,7 @@ test_that("lipid norm workflow helpers preserve normalization, export, reset, an
   expect_true(result)
   expect_true(norm_data$normalization_complete)
   expect_true(norm_data$ruv_complete)
-  expect_true(any(vapply(harness$capture$saved_states, \(x) identical(x$state_name, "lipid_ruv_corrected"), logical(1))))
+  expect_true("lipid_ruv_corrected" %in% harness$workflow_data$state_manager$getHistory())
   expect_true(any(grepl("Normalization pipeline complete", log_messages, fixed = TRUE)))
 
   exported <- export_session(
@@ -740,17 +767,14 @@ test_that("lipid norm workflow helpers preserve normalization, export, reset, an
     showNotificationFn = function(...) invisible(NULL),
     withProgressFn = function(message, value, expr) force(expr),
     incProgressFn = function(...) invisible(NULL),
-    saveRdsFn = function(object, file) invisible(file),
-    writeLinesFn = function(text, con) invisible(text),
     getTimeFn = function() as.POSIXct("2026-04-22 07:00:00", tz = "UTC"),
     logInfoFn = function(...) invisible(NULL),
     logWarnFn = function(...) invisible(NULL),
     logErrorFn = function(...) invisible(NULL)
   )
-  # KIT-071: the export is the owner's publication (test-workflow-omics-sessions.R exercises it); the harness's
-  # in-memory double is refused by name and the handler reports the refusal through its log.
-  expect_false(exported)
-  expect_true(any(grepl("needs the session's state owner", log_messages, fixed = TRUE)))
+  # KIT-071/072: the export is the owner's publication into the project's source directory.
+  expect_false(isFALSE(exported))
+  expect_true(any(grepl("Exported comprehensive session data to:", log_messages, fixed = TRUE)))
 
   norm_data$ruv_corrected_obj <- harness$current_s4
   skip_result <- skip_correlation(

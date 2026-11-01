@@ -306,7 +306,7 @@ runMetabReferenceCorrelation <- function(manager, group, threshold, config,
 #' source copies under `import_sources/` as `metab_assay_<n>`, the design file).
 #' @noRd
 recordMetabDesignProvenance <- function(manager, object, source_dir = NULL, design_file = NULL) {
-    if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the design step needs the session's state owner", class = "saved_entity_scope")
     setWorkflowStepProvenance(manager, "design_builder",
         parameter_names = c("sample_id", "group_id", "technical_replicate_id"),
         values = list(sample_id = object@sample_id, group_id = object@group_id,

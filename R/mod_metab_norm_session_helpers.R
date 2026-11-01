@@ -1,33 +1,3 @@
-runMetabNormApplyCorrelationWorkflow <- function(
-    observerState,
-    reqFn = shiny::req,
-    calculateCorrelationsFn = pearsonCorForSamplePairs,
-    filterSamplesFn = filterSamplesByMetaboliteCorrelationThreshold,
-    logInfoFn = logger::log_info
-) {
-    currentS4 <- observerState$currentS4
-    threshold <- observerState$threshold
-
-    reqFn(currentS4)
-
-    logInfoFn("Calculating Pearson correlations per sample pair...")
-    corrResults <- calculateCorrelationsFn(
-        theObject = currentS4
-        , correlation_group = observerState$groupingVariable
-    )
-
-    filteredS4 <- filterSamplesFn(
-        theObject = currentS4
-        , pearson_correlation_per_pair = corrResults
-        , min_pearson_correlation_threshold = threshold
-    )
-
-    invisible(list(
-        corrResults = corrResults
-        , filteredS4 = filteredS4
-    ))
-}
-
 dispatchMetabNormApplyCorrelation <- function(
     workflowData,
     normData,
@@ -36,43 +6,26 @@ dispatchMetabNormApplyCorrelation <- function(
     showNotificationFn = shiny::showNotification,
     removeNotificationFn = shiny::removeNotification,
     reqFn = shiny::req,
-    calculateCorrelationsFn = pearsonCorForSamplePairs,
-    filterSamplesFn = filterSamplesByMetaboliteCorrelationThreshold,
-    runWorkflowFn = runMetabNormApplyCorrelationWorkflow,
     handleOutcomeFn = handleMetabNormApplyCorrelationOutcome,
     logInfoFn = logger::log_info,
     logErrorFn = logger::log_error
 ) {
     tryCatch({
-        # KIT-032: on the session owner the pairs and the selection are the declared operations on the head (the
-        # normalisation's last commit), committed under `metab_correlation_filtered`; a double keeps the kernel calls.
-        manager <- workflowData$state_manager
-        workflowState <- if (inherits(manager, "DIAStateAdapter")) {
-            correlation <- runMetabReferenceCorrelation(manager, observerState$groupingVariable, observerState$threshold,
-                workflowData$config_list)
-            list(corrResults = correlation$correlations, filteredS4 = correlation$object, committed = TRUE)
-        } else runWorkflowFn(
-            observerState = observerState
-            , reqFn = reqFn
-            , calculateCorrelationsFn = calculateCorrelationsFn
-            , filterSamplesFn = filterSamplesFn
-            , logInfoFn = logInfoFn
-        )
-
-        outcomeArgs <- list(
+        # KIT-032: the pairs and the selection are the declared operations on the head (the normalisation's last
+        # commit), committed under `metab_correlation_filtered` (KIT-072: the owner's path is the only path).
+        correlation <- runMetabReferenceCorrelation(workflowData$state_manager, observerState$groupingVariable,
+            observerState$threshold, workflowData$config_list)
+        handleOutcomeFn(
             workflowData = workflowData,
             normData = normData,
             observerState = observerState,
-            corrResults = workflowState$corrResults,
-            filteredS4 = workflowState$filteredS4,
+            corrResults = correlation$correlations,
+            filteredS4 = correlation$object,
             addLogFn = addLogFn,
             showNotificationFn = showNotificationFn,
             removeNotificationFn = removeNotificationFn,
             logErrorFn = logErrorFn
         )
-        # KIT-032: only the owner path tells the outcome that the state is already committed.
-        if (isTRUE(workflowState$committed)) outcomeArgs$committed <- TRUE
-        do.call(handleOutcomeFn, outcomeArgs)
     }, error = function(e) {
         handleOutcomeFn(
             workflowData = workflowData,
@@ -94,7 +47,6 @@ handleMetabNormApplyCorrelationOutcome <- function(
     corrResults = NULL,
     filteredS4 = NULL,
     error = NULL,
-    committed = FALSE,
     addLogFn = function(entry) invisible(entry),
     showNotificationFn = shiny::showNotification,
     removeNotificationFn = shiny::removeNotification,
@@ -106,13 +58,6 @@ handleMetabNormApplyCorrelationOutcome <- function(
         normData$correlation_results <- corrResults
         normData$correlation_filtered_obj <- filteredS4
         normData$correlation_filtering_complete <- TRUE
-
-        if (!isTRUE(committed)) workflowData$state_manager$saveState( # KIT-032: the declared operation committed on the owner
-            state_name = "metab_correlation_filtered"
-            , s4_data_object = filteredS4
-            , config_object = workflowData$config_list
-            , description = paste("Correlation filtering (threshold:", threshold, ")")
-        )
 
         updatedStatus <- workflowData$tab_status
         updatedStatus$quality_control <- "complete"
@@ -367,17 +312,10 @@ resolveMetabNormSkipCorrelationInputObject <- function(ruvCorrectedObject, postN
 }
 
 completeMetabNormSkipCorrelationState <- function(workflowData, currentS4) {
-    # KIT-032: a store step; on the owner the head's record (the normalisation's last commit) under the new name with
-    # the provenance `metab_norm_complete`; a double keeps its `saveState`.
-    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
-        commitWorkflowOmicsStoreStep(workflowData$state_manager, "metab_norm_complete", "metab_norm_complete",
-            workflowData$config_list, "Normalization complete (correlation filtering skipped)")
-    } else workflowData$state_manager$saveState(
-        state_name = "metab_norm_complete"
-        , s4_data_object = currentS4
-        , config_object = workflowData$config_list
-        , description = "Normalization complete (correlation filtering skipped)"
-    )
+    # KIT-032: a store step; the head's record (the normalisation's last commit) under the new name with the
+    # provenance `metab_norm_complete` (KIT-072: the owner's path is the only path).
+    commitWorkflowOmicsStoreStep(workflowData$state_manager, "metab_norm_complete", "metab_norm_complete",
+        workflowData$config_list, "Normalization complete (correlation filtering skipped)")
 
     updated_status <- workflowData$tab_status
     updated_status$quality_control <- "complete"

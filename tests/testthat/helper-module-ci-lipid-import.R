@@ -17,14 +17,9 @@ module_ci_lipid_import_workflow <- function() {
   workflow$column_mapping <- NULL
   workflow$processing_log <- list(setup_import = NULL)
   workflow$tab_status <- list(setup_import = "incomplete", design_matrix = "disabled")
-  workflow$workflow_types <- character()
-  workflow$state_manager <- list(
-    setWorkflowType = function(type) {
-      workflow$workflow_types <- c(workflow$workflow_types, type)
-      invisible(type)
-    }
-  )
-  workflow
+  # KIT-072: the session's pending on-disk owner (the modules' only state manager) records the import's type; it is
+  # closed when the test file ends.
+  omicsTestOwner(workflow = workflow, omic_type = "lipidomics", bind = FALSE, env = testthat::teardown_env())
 }
 
 module_ci_lipid_sample_cols <- function() {
@@ -235,6 +230,6 @@ module_ci_lipid_import_state_digest <- function(workflow) {
     design_matrix = workflow$tab_status$design_matrix,
     column_mapping = workflow$column_mapping,
     processing_log = workflow$processing_log$setup_import,
-    workflow_types = workflow$workflow_types
+    workflow_types = workflow$state_manager$workflow_type
   )
 }

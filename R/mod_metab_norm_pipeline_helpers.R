@@ -334,25 +334,10 @@ runMetabNormItsdNormalizationStep <- function(
 ) {
     stateDescription <- paste("ITSD normalization (aggregation:", itsdAggregation, ")")
 
-    # KIT-032: on the session owner the declared operation `metab_itsd_normalisation`; a double keeps the kernel call.
-    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
-    currentS4 <- if (owned) {
-        runMetabReferenceItsdNormalisation(workflowData$state_manager, itsdAggregation, itsdFeatureIds,
-            workflowData$config_list, stateDescription)$object
-    } else normaliseUntransformedDataFn(
-        theObject = currentS4,
-        method = "ITSD",
-        itsd_aggregation = itsdAggregation,
-        itsd_feature_ids = itsdFeatureIds
-    )
+    # KIT-032: the declared operation `metab_itsd_normalisation` (KIT-072: the owner's path is the only path).
+    currentS4 <- runMetabReferenceItsdNormalisation(workflowData$state_manager, itsdAggregation, itsdFeatureIds,
+        workflowData$config_list, stateDescription)$object
     normData$post_itsd_obj <- currentS4
-
-    if (!owned) workflowData$state_manager$saveState(
-        state_name = "metab_itsd_norm",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
-    )
 
     logEntry <- "ITSD normalization complete"
     addLogFn(logEntry)
@@ -411,22 +396,10 @@ runMetabNormLog2TransformationStep <- function(
 ) {
     stateDescription <- paste("Log2 transformation (offset:", logOffset, ")")
 
-    # KIT-032: on the session owner the declared operation `metab_log2`; a double keeps the kernel call.
-    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
-    currentS4 <- if (owned) {
-        runMetabReferenceLog2(workflowData$state_manager, logOffset, workflowData$config_list, stateDescription)$object
-    } else logTransformAssaysFn(
-        theObject = currentS4,
-        offset = logOffset
-    )
+    # KIT-032: the declared operation `metab_log2` (KIT-072: the owner's path is the only path).
+    currentS4 <- runMetabReferenceLog2(workflowData$state_manager, logOffset, workflowData$config_list,
+        stateDescription)$object
     normData$post_log2_obj <- currentS4
-
-    if (!owned) workflowData$state_manager$saveState(
-        state_name = "metab_log2",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
-    )
 
     logEntry <- "Log2 transformation complete"
     addLogFn(logEntry)
@@ -494,26 +467,11 @@ runMetabNormBetweenSampleNormalizationStep <- function(
 ) {
     stateDescription <- paste("Between-sample normalization (method:", normMethod, ")")
 
-    # KIT-032: on the session owner the declared operation `metab_between_sample_normalisation` (`none` the identity,
-    # the state still committed); a double keeps the kernel call.
-    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
-    if (owned) {
-        currentS4 <- runMetabReferenceBetweenSampleNormalisation(workflowData$state_manager, normMethod,
-            workflowData$config_list, stateDescription)$object
-    } else if (normMethod != "none") {
-        currentS4 <- normaliseBetweenSamplesFn(
-            theObject = currentS4,
-            normalisation_method = normMethod
-        )
-    }
+    # KIT-032: the declared operation `metab_between_sample_normalisation` (`none` the identity, the state still
+    # committed; KIT-072: the owner's path is the only path).
+    currentS4 <- runMetabReferenceBetweenSampleNormalisation(workflowData$state_manager, normMethod,
+        workflowData$config_list, stateDescription)$object
     normData$post_norm_obj <- currentS4
-
-    if (!owned) workflowData$state_manager$saveState(
-        state_name = "metab_normalized",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
-    )
 
     logEntry <- "Between-sample normalization complete"
     addLogFn(logEntry)
@@ -576,8 +534,6 @@ runMetabNormRuvProgressApplyShell <- function(
     normData,
     addLogFn = function(entry) invisible(entry),
     incProgressFn = shiny::incProgress,
-    runRuvOptimizationStepFn = runMetabNormRuvOptimizationStep,
-    runRuvCorrectionStepFn = runMetabNormRuvCorrectionStep,
     runRuvQcStepFn = runMetabNormRuvQcStep
 ) {
     progressDetail <- "Running RUV-III batch correction..."
@@ -589,9 +545,9 @@ runMetabNormRuvProgressApplyShell <- function(
     correctionState <- NULL
     ruvQcState <- NULL
 
-    if (ruvMode != "skip" && inherits(workflowData$state_manager, "DIAStateAdapter")) {
-        # KIT-032: on the session owner the optimisation and the correction are the one declared operation `metab_ruv`,
-        # committed under `metab_ruv_corrected`; the QC step runs on its result as before.
+    if (ruvMode != "skip") {
+        # KIT-032: the optimisation and the correction are the one declared operation `metab_ruv`, committed under
+        # `metab_ruv_corrected`; the QC step runs on its result as before (KIT-072: the owner's path is the only path).
         applyLogEntry <- paste("Running RUV-III (mode:", ruvMode, ")")
         addLogFn(applyLogEntry)
         ruvRun <- runMetabReferenceRuv(workflowData$state_manager, list(ruv_mode = ruvMode, ruv_grouping_variable = ruvGroupingVariable,
@@ -616,46 +572,6 @@ runMetabNormRuvProgressApplyShell <- function(
             addLogFn = addLogFn
         )
         currentS4 <- ruvQcState$currentS4
-    } else if (ruvMode != "skip") {
-        applyLogEntry <- paste("Running RUV-III (mode:", ruvMode, ")")
-        addLogFn(applyLogEntry)
-
-        optimizationState <- runRuvOptimizationStepFn(
-            currentS4 = currentS4,
-            ruvMode = ruvMode,
-            autoPercentageMin = autoPercentageMin,
-            autoPercentageMax = autoPercentageMax,
-            ruvGroupingVariable = ruvGroupingVariable,
-            separationMetric = separationMetric,
-            kPenaltyWeight = kPenaltyWeight,
-            adaptiveKPenalty = adaptiveKPenalty,
-            manualK = manualK,
-            manualPercentage = manualPercentage,
-            experimentPaths = experimentPaths,
-            normData = normData,
-            addLogFn = addLogFn
-        )
-
-        correctionState <- runRuvCorrectionStepFn(
-            currentS4 = currentS4,
-            ruvGroupingVariable = ruvGroupingVariable,
-            bestKPerAssay = optimizationState$bestKPerAssay,
-            ctrlPerAssay = optimizationState$ctrlPerAssay,
-            workflowData = workflowData,
-            normData = normData,
-            addLogFn = addLogFn
-        )
-        currentS4 <- correctionState$currentS4
-
-        ruvQcState <- runRuvQcStepFn(
-            currentS4 = currentS4,
-            totalSteps = totalSteps,
-            experimentPaths = experimentPaths,
-            groupingVariable = groupingVariable,
-            shapeVariable = shapeVariable,
-            addLogFn = addLogFn
-        )
-        currentS4 <- ruvQcState$currentS4
     } else {
         skipLogEntry <- "RUV-III skipped"
         addLogFn(skipLogEntry)
@@ -671,105 +587,6 @@ runMetabNormRuvProgressApplyShell <- function(
         optimizationState = optimizationState,
         correctionState = correctionState,
         ruvQcState = ruvQcState
-    ))
-}
-
-# Keep the opening RUV optimization block top-level so later waves can move
-# this step without reopening the rest of the normalization pipeline body.
-runMetabNormRuvOptimizationStep <- function(
-    currentS4,
-    ruvMode,
-    autoPercentageMin,
-    autoPercentageMax,
-    ruvGroupingVariable,
-    separationMetric,
-    kPenaltyWeight,
-    adaptiveKPenalty,
-    manualK,
-    manualPercentage,
-    experimentPaths,
-    normData,
-    addLogFn = function(entry) invisible(entry),
-    runPerAssayRuvOptimizationFn = runPerAssayRuvOptimization,
-    extractBestKPerAssayFn = extractBestKPerAssay,
-    extractCtrlPerAssayFn = extractCtrlPerAssay
-) {
-    ruvParams <- list(
-        percentage_min = autoPercentageMin,
-        percentage_max = autoPercentageMax,
-        ruv_grouping_variable = ruvGroupingVariable,
-        separation_metric = separationMetric,
-        k_penalty_weight = kPenaltyWeight,
-        adaptive_k_penalty = adaptiveKPenalty,
-        manual_k = manualK,
-        manual_percentage = manualPercentage
-    )
-
-    ruvResults <- runPerAssayRuvOptimizationFn(
-        theObject = currentS4,
-        ruv_mode = ruvMode,
-        params = ruvParams,
-        experiment_paths = experimentPaths
-    )
-    normData$ruv_optimization_results <- ruvResults
-
-    bestKPerAssay <- extractBestKPerAssayFn(ruvResults)
-    ctrlPerAssay <- extractCtrlPerAssayFn(ruvResults)
-
-    logEntry <- paste(
-        "RUV optimization complete. Best k per assay:",
-        paste(names(bestKPerAssay), "=", unlist(bestKPerAssay), collapse = ", ")
-    )
-    addLogFn(logEntry)
-
-    invisible(list(
-        currentS4 = currentS4,
-        ruvParams = ruvParams,
-        ruvResults = ruvResults,
-        bestKPerAssay = bestKPerAssay,
-        ctrlPerAssay = ctrlPerAssay,
-        logEntry = logEntry
-    ))
-}
-
-# Keep the RUV-III apply/saveState block top-level so later waves can move
-# this step without reopening the rest of the normalization pipeline body.
-runMetabNormRuvCorrectionStep <- function(
-    currentS4,
-    ruvGroupingVariable,
-    bestKPerAssay,
-    ctrlPerAssay,
-    workflowData,
-    normData,
-    addLogFn = function(entry) invisible(entry),
-    ruvIII_C_VaryingFn = ruvIII_C_Varying
-) {
-    stateDescription <- "RUV-III batch correction complete"
-
-    currentS4 <- ruvIII_C_VaryingFn(
-        theObject = currentS4,
-        ruv_grouping_variable = ruvGroupingVariable,
-        ruv_number_k = bestKPerAssay,
-        ctrl = ctrlPerAssay
-    )
-    normData$ruv_corrected_obj <- currentS4
-    normData$ruv_complete <- TRUE
-
-    workflowData$state_manager$saveState(
-        state_name = "metab_ruv_corrected",
-        s4_data_object = currentS4,
-        config_object = workflowData$config_list,
-        description = stateDescription
-    )
-
-    logEntry <- "RUV-III correction applied"
-    addLogFn(logEntry)
-
-    invisible(list(
-        currentS4 = currentS4,
-        stateName = "metab_ruv_corrected",
-        description = stateDescription,
-        logEntry = logEntry
     ))
 }
 

@@ -249,59 +249,14 @@ handleLipidDuplicateResolution <- function(
         assayNames <- paste0("Assay_", seq_along(assayList))
     }
 
-    # KIT-031: on the session owner the resolution is the declared operation `lipid_duplicate_resolution`, committed
-    # under `lipid_duplicates_resolved` with its provenance; a test double keeps the per-assay kernel loop below.
-    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
-    if (owned) {
-        resolved <- runLipidReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
-        currentS4 <- resolved$object
-        counts <- resolved$value$counts
-        statsList <- lapply(stats::setNames(assayNames, assayNames), function(assayName) list(
-            original = unname(counts$before[[assayName]]), resolved = unname(counts$after[[assayName]]),
-            removed = unname(counts$before[[assayName]]) - unname(counts$after[[assayName]])))
-    }
-
-    resolvedAssayList <- vector("list", length(assayList))
-    if (!owned) statsList <- vector("list", length(assayList))
-    names(resolvedAssayList) <- assayNames
-    if (!owned) names(statsList) <- assayNames
-
-    for (i in if (owned) integer() else seq_along(assayList)) {
-        assayData <- assayList[[i]]
-        assayName <- assayNames[[i]]
-        originalRows <- nrow(assayData)
-        sampleCols <- names(assayData)[vapply(assayData, is.numeric, logical(1))]
-
-        if (length(sampleCols) == 0) {
-            logWarnFn(paste("No numeric columns found in assay:", assayName))
-            resolvedAssay <- assayData
-        } else {
-            resolvedAssay <- resolveDuplicatesFn(
-                assay_tibble = assayData
-                , id_col = lipidIdCol
-                , sample_cols = sampleCols
-            )
-        }
-
-        resolvedRows <- nrow(resolvedAssay)
-        resolvedAssayList[[assayName]] <- resolvedAssay
-        statsList[[assayName]] <- list(
-            original = originalRows
-            , resolved = resolvedRows
-            , removed = originalRows - resolvedRows
-        )
-    }
-
-    if (!owned) {
-        currentS4@lipid_data <- resolvedAssayList
-
-        workflowData$state_manager$saveState(
-            state_name = "lipid_duplicates_resolved"
-            , s4_data_object = currentS4
-            , config_object = workflowData$config_list
-            , description = "Resolved duplicate lipid features by keeping highest intensity"
-        )
-    }
+    # KIT-031: the resolution is the declared operation `lipid_duplicate_resolution`, committed under
+    # `lipid_duplicates_resolved` with its provenance (KIT-072: the owner's path is the only path).
+    resolved <- runLipidReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
+    currentS4 <- resolved$object
+    counts <- resolved$value$counts
+    statsList <- lapply(stats::setNames(assayNames, assayNames), function(assayName) list(
+        original = unname(counts$before[[assayName]]), resolved = unname(counts$after[[assayName]]),
+        removed = unname(counts$before[[assayName]]) - unname(counts$after[[assayName]])))
 
     qcPlot <- tryCatch({
         updateFilteringFn(

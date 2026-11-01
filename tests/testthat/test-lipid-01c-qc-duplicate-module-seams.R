@@ -566,32 +566,21 @@ test_that("handleLipidDuplicateResolution keeps the resolve-save-summary workflo
         sample_id = "Sample_ID",
         group_id = "group"
     )
-    saved_state <- NULL
     filtering_call <- NULL
     warn_messages <- character()
+    # KIT-072: the module runs the declared operation on the session owner (its only path); the declaration calls the
+    # namespace kernel, so the test's resolution is bound there.
+    workflow <- omicsTestOwner(current_s4, "lipid_intensity_filtered", config = list(config_marker = TRUE))
+    testthat::local_mocked_bindings(resolveLipidDuplicateFeaturesByIntensity = function(assay_tibble, id_col, sample_cols) {
+        expect_equal(id_col, "lipid_id")
+        expect_equal(sample_cols, c("sample_a", "sample_b"))
+        assay_tibble[c(1, 3), , drop = FALSE]
+    }, .package = "MultiScholaR")
 
     result <- handleLipidDuplicateResolution(
-        workflowData = list(
-            state_manager = list(
-                getState = function() current_s4,
-                saveState = function(state_name, s4_data_object, config_object, description) {
-                    saved_state <<- list(
-                        state_name = state_name,
-                        s4_data_object = s4_data_object,
-                        config_object = config_object,
-                        description = description
-                    )
-                }
-            ),
-            config_list = list(config_marker = TRUE)
-        ),
+        workflowData = workflow,
         omicType = "lipidomics",
         reqFn = function(...) invisible(NULL),
-        resolveDuplicatesFn = function(assay_tibble, id_col, sample_cols) {
-            expect_equal(id_col, "lipid_id")
-            expect_equal(sample_cols, c("sample_a", "sample_b"))
-            assay_tibble[c(1, 3), , drop = FALSE]
-        },
         updateFilteringFn = function(theObject, step_name, omics_type, return_grid, overwrite) {
             filtering_call <<- list(
                 rows = nrow(theObject@lipid_data[[1]]),
@@ -614,10 +603,8 @@ test_that("handleLipidDuplicateResolution keeps the resolve-save-summary workflo
     expect_equal(result$qcPlot, "plot-token")
     expect_match(result$resultText, "Assay 1: 3 -> 2 rows \\(removed 1 duplicates\\)")
     expect_match(result$resultText, "Total duplicate rows removed: 1", fixed = TRUE)
-    expect_equal(saved_state$state_name, "lipid_duplicates_resolved")
-    expect_equal(saved_state$config_object, list(config_marker = TRUE))
-    expect_equal(saved_state$description, "Resolved duplicate lipid features by keeping highest intensity")
-    expect_equal(nrow(saved_state$s4_data_object@lipid_data[[1]]), 2)
+    expect_identical(workflow$state_manager$current_state, "lipid_duplicates_resolved")
+    expect_equal(nrow(workflow$state_manager$getState("lipid_duplicates_resolved")@lipid_data[[1]]), 2)
     expect_equal(filtering_call$rows, 2)
     expect_equal(filtering_call$step_name, "3_Duplicates_Resolved")
     expect_equal(filtering_call$omics_type, "lipidomics")
@@ -632,7 +619,8 @@ test_that("handleLipidDuplicateResolution keeps the no-numeric fallback and QC-p
     current_s4 <- methods::new(
         "LipidomicsAssayData",
         lipid_data = list(
-            data.frame(
+            # KIT-072: the owner stores named assays only (the import names them).
+            Assay_1 = data.frame(
                 lipid_id = c("L1", "L1"),
                 label = c("x", "y"),
                 stringsAsFactors = FALSE
@@ -643,29 +631,17 @@ test_that("handleLipidDuplicateResolution keeps the no-numeric fallback and QC-p
         sample_id = "Sample_ID",
         group_id = "group"
     )
-    saved_state <- NULL
     warn_messages <- character()
+    # KIT-072: on the owner the declaration keeps an assay with no numeric column as it is.
+    workflow <- omicsTestOwner(current_s4, "lipid_intensity_filtered")
+    testthat::local_mocked_bindings(resolveLipidDuplicateFeaturesByIntensity = function(...) {
+        stop("the kernel should not be called")
+    }, .package = "MultiScholaR")
 
     result <- handleLipidDuplicateResolution(
-        workflowData = list(
-            state_manager = list(
-                getState = function() current_s4,
-                saveState = function(state_name, s4_data_object, config_object, description) {
-                    saved_state <<- list(
-                        state_name = state_name,
-                        s4_data_object = s4_data_object,
-                        config_object = config_object,
-                        description = description
-                    )
-                }
-            ),
-            config_list = list()
-        ),
+        workflowData = workflow,
         omicType = "lipidomics",
         reqFn = function(...) invisible(NULL),
-        resolveDuplicatesFn = function(...) {
-            stop("resolveDuplicatesFn should not be called")
-        },
         updateFilteringFn = function(...) {
             stop("plot exploded")
         },
@@ -681,8 +657,7 @@ test_that("handleLipidDuplicateResolution keeps the no-numeric fallback and QC-p
     expect_null(result$qcPlot)
     expect_equal(result$totalRemoved, 0)
     expect_match(result$resultText, "Total duplicate rows removed: 0", fixed = TRUE)
-    expect_equal(nrow(saved_state$s4_data_object@lipid_data[[1]]), 2)
-    expect_true(any(grepl("No numeric columns found in assay: Assay_1", warn_messages, fixed = TRUE)))
+    expect_equal(nrow(workflow$state_manager$getState("lipid_duplicates_resolved")@lipid_data[[1]]), 2)
     expect_true(any(grepl("Could not generate QC plot: plot exploded", warn_messages, fixed = TRUE)))
 })
 

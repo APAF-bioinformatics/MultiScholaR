@@ -140,37 +140,11 @@ module_ci_metab_da_contrasts <- function(case = c(
   )
 }
 
-module_ci_metab_da_state_manager <- function(current_state,
-                                             current_state_name = "metab_correlation_filtered") {
-  states <- list()
-  saved <- list()
-  states[[current_state_name]] <- current_state
-
-  manager <- new.env(parent = emptyenv())
-  manager$current_state <- current_state_name
-  manager$getState <- function(state = manager$current_state) {
-    states[[state]]
-  }
-  manager$saveState <- function(state_name, s4_data_object, config_object, description) {
-    states[[state_name]] <<- s4_data_object
-    saved[[state_name]] <<- list(
-      state_name = state_name,
-      s4_data_object = s4_data_object,
-      config_object = config_object,
-      description = description
-    )
-    manager$current_state <- state_name
-    invisible(TRUE)
-  }
-  manager$saved <- function() saved
-  manager$states <- function() states
-  manager
-}
-
+# KIT-072: the lane's bus holds a real metabolomics owner (the modules' only state manager) with the lane's object
+# committed under `metab_correlation_filtered`; the owner is closed when the test file ends.
 module_ci_metab_da_workflow <- function(current_object = module_ci_metab_da_object(),
                                         contrasts = module_ci_metab_da_contrasts("multi_group")) {
-  list2env(list(
-    state_manager = module_ci_metab_da_state_manager(current_object),
+  workflow <- list2env(list(
     contrasts_tbl = contrasts,
     design_matrix = current_object@design_matrix,
     config_list = list(da = list(mode = "module-ci")),
@@ -182,6 +156,8 @@ module_ci_metab_da_workflow <- function(current_object = module_ci_metab_da_obje
       differential_analysis = "pending"
     )
   ), parent = emptyenv())
+  omicsTestOwner(current_object, "metab_correlation_filtered", workflow = workflow, omic_type = "metabolomics",
+    env = testthat::teardown_env())
 }
 
 module_ci_metab_da_data_env <- function() {

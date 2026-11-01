@@ -977,31 +977,23 @@ test_that("metabolomics design imported state-manager seam preserves initializat
     class = "saved_entity_scope"
   )
 
-  fake_manager <- new.env(parent = emptyenv())
-  fake_manager$saveState <- function(...) {
-    captured$save_args <- list(...)
-    invisible(NULL)
-  }
-  workflow_state$state_manager <- fake_manager
-
-  result <- saveMetabDesignImportedS4State(
+  # KIT-072: the session's pending owner (the module's only manager) is bound to the route here and the import's
+  # object committed on the bound owner.
+  omicsTestOwner(workflow = workflow_state, omic_type = "metabolomics", bind = FALSE)
+  pending <- workflow_state$state_manager
+  result <- shiny::withReactiveDomain(omicsOwnerSession(), saveMetabDesignImportedS4State(
     workflowData = workflow_state,
-    s4Object = structure(list(ok = TRUE), class = "MetaboliteAssayData"),
+    s4Object = omicsOwnerMetabObject(),
     messageFn = function(...) {
       captured$messages <- c(captured$messages, paste(..., collapse = " "))
       invisible(NULL)
     }
-  )
+  ))
 
-  expect_identical(workflow_state$state_manager, fake_manager)
-  expect_identical(result, fake_manager)
-  expect_identical(captured$save_args$state_name, "metab_raw_data_s4")
-  expect_s3_class(captured$save_args$s4_data_object, "MetaboliteAssayData")
-  expect_identical(captured$save_args$config_object, workflow_state$config_list)
-  expect_identical(
-    captured$save_args$description,
-    "MetaboliteAssayData S4 object created from imported design"
-  )
+  expect_false(identical(workflow_state$state_manager, pending))
+  expect_identical(result, workflow_state$state_manager)
+  expect_identical(workflow_state$state_manager$current_state, "metab_raw_data_s4")
+  expect_s4_class(workflow_state$state_manager$getState("metab_raw_data_s4"), "MetaboliteAssayData")
   expect_identical(
     captured$messages,
     c(

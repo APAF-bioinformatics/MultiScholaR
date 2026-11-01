@@ -53,13 +53,13 @@ test_that("KIT-031: the lipidomics declarations are registered in process with t
     expect_identical(workflowOutputDeclaration("dia.da_results.v1")$long_table, "da_proteins_long")
 })
 
-test_that("KIT-031: the wrappers refuse a manager that is not the session owner and the store steps leave a double alone", {
+test_that("KIT-031/KIT-072: the wrappers and the store steps refuse a manager that is not the session owner", {
     double <- list2env(list(getState = function() NULL, saveState = function(...) invisible(TRUE)))
     expect_error(runLipidReferenceIntensityFilter(double, 1, 0.5, list()), class = "saved_entity_scope")
     expect_error(runLipidReferenceCorrelation(double, "group", 0.5, list()), class = "saved_entity_scope")
     expect_error(runLipidReferenceDaAnalysis(double, NULL, list(), data.frame()), class = "saved_entity_scope")
-    expect_null(markLipidReferenceStoreStep(double, "lipid_qc_finalize"))
-    expect_null(recordLipidDesignProvenance(double, NULL))
+    expect_error(markLipidReferenceStoreStep(double, "lipid_qc_finalize"), class = "saved_entity_scope")
+    expect_error(recordLipidDesignProvenance(double, NULL), class = "saved_entity_scope")
 })
 
 test_that("KIT-031: the lipid journey on the owner commits every state with its declaration, records completely, resolves its DA manifest, overlays the report and replays exact", {

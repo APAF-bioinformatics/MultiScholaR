@@ -159,6 +159,12 @@ if (!is.null(b$builds$kit_071) && identical(Sys.getenv("KIT_071_LIFECYCLE"), "1"
 if (!is.null(b$builds$kit_031) && identical(Sys.getenv("KIT_031_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_031"
 # KIT-032 (2026-10-31): `KIT_032_LIFECYCLE=1` points them at the kit_032 install (the metabolomics declarations).
 if (!is.null(b$builds$kit_032) && identical(Sys.getenv("KIT_032_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_032"
+# Stage 3b (plan 3.2): `KIT_0NN_LIFECYCLE=1` points them at the kit_0NN install of a stage-3b ticket (KIT-072 to KIT-081).
+for (nn in sprintf("%03d", 72:81)) {
+    if (!is.null(b$builds[[paste0("kit_", nn)]]) && identical(Sys.getenv(paste0("KIT_", nn, "_LIFECYCLE")), "1")) {
+        b$lifecycle_omics$build <- paste0("kit_", nn)
+    }
+}
 # KIT-054: the user's real MaxQuant export (sensitive: bound by path and sha256 from its own directory, never copied into
 # the repository; the manifest carries hashes and counts only, written by kit-054/bind-real-corpus.R) and, for the
 # legacy lane on kit_036 (whose reader knows only the dotted column names), the header-renamed copy under the proof root
@@ -609,6 +615,34 @@ if (!is.null(b$builds$kit_032)) {
                 head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
                 oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = "metabolomics")
             b$oracles[[paste0("metab32_", step)]] <- population$fingerprint
+        }
+    }
+}
+# Stage 3b (plan 3.2, "Stage-3b exactness set"): each stage-3b ticket's install kit_0NN binds two single journeys,
+# 0NNl and 0NNm, judged against the in-process records the KIT-031/032 recorders made on that same build
+# (kit-0NN/oracles-lipidNN_lipid_screen.rds, kit-0NN/oracles-metabNN_metab_screen.rds), bound as lipidNN_<step> and
+# metabNN_<step>. A ticket binds only the omics whose record exists.
+for (nn in sprintf("%03d", 72:81)) {
+    build <- paste0("kit_", nn)
+    if (is.null(b$builds[[build]])) next
+    for (omic in list(list(suffix = "l", prefix = "lipid", corpus = "lipid_screen", route = "lipidomics"),
+        list(suffix = "m", prefix = "metab", corpus = "metab_screen", route = "metabolomics"))) {
+        label <- paste0(omic$prefix, sub("^0", "", nn))
+        oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/kit-%s/oracles-%s_%s.rds", nn, label, omic$corpus))
+        if (is.null(b$corpora[[omic$corpus]]) || !file.exists(oracle_file)) next
+        b$tickets[[paste0(nn, omic$suffix)]] <- list(kind = "single_journey", build = build, corpus = omic$corpus,
+            route = omic$route, whole_journey = TRUE, oracles = label, ceiling_seconds = 1800L, purpose = "exactness",
+            normalisation = b$lifecycle_omics$normalisation)
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, omic$corpus), identical(recorded$route, omic$route),
+            identical(recorded$corpus_sha256, b$corpora[[omic$corpus]]$files[[1L]]$sha256))
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0(label, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at,
+                route = omic$route)
+            b$oracles[[paste0(label, "_", step)]] <- population$fingerprint
         }
     }
 }

@@ -659,9 +659,13 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
         }
     )
 
+    # KIT-072: the apply observer runs the declared operation on the session owner (its only path); the wrapper's
+    # commit is tested with the declarations, so here it is recorded and returns the filtered object.
+    owner_workflow <- omicsTestOwner(current_s4, "lipid_raw_data_s4", config = list(cache = "cfg"))
+    wrapper <- omicsMockWrapper("runLipidReferenceIntensityFilter", list(object = filtered_s4))
     lipidQcNamespaceBinding("registerLipidIntensityApplyFilterObserver")(
         input = input,
-        workflowData = list(state_manager = state_manager, config_list = list(cache = "cfg")),
+        workflowData = owner_workflow,
         output = output_env,
         filterStatsVal = function(value) {
             filter_stats_value <<- value
@@ -702,14 +706,6 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
         logErrorFn = function(...) {
             stop("logErrorFn should not be called on apply success")
         },
-        lipidIntensityFilteringFn = function(theObject, lipids_intensity_cutoff_percentile, lipids_proportion_of_samples_below_cutoff) {
-            filtering_args <<- list(
-                theObject = theObject,
-                percentile = lipids_intensity_cutoff_percentile,
-                proportion = lipids_proportion_of_samples_below_cutoff
-            )
-            filtered_s4
-        },
         updateLipidFilteringFn = function(theObject, step_name, omics_type, return_grid, overwrite) {
             qc_plot_args <<- list(
                 theObject = theObject,
@@ -722,9 +718,10 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
         }
     )
 
-    expect_identical(filtering_args$theObject, current_s4)
-    expect_identical(filtering_args$percentile, 10L)
-    expect_identical(filtering_args$proportion, 0.5)
+    expect_identical(wrapper$calls[[1L]][[1L]], owner_workflow$state_manager)
+    expect_identical(wrapper$calls[[1L]][[2L]], 10L)
+    expect_identical(wrapper$calls[[1L]][[3L]], 0.5)
+    expect_identical(wrapper$calls[[1L]][[4L]], list(cache = "cfg"))
     expect_identical(qc_plot_args$theObject, filtered_s4)
     expect_identical(qc_plot_args$step_name, "2_Intensity_Filtered")
     expect_identical(qc_plot_args$omics_type, "lipidomics")
@@ -742,9 +739,6 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
         )
     )
     expect_identical(filter_plot_value, qc_plot)
-    expect_identical(save_state_args$state_name, "lipid_intensity_filtered")
-    expect_identical(save_state_args$s4_data_object, filtered_s4)
-    expect_identical(save_state_args$config_object, list(cache = "cfg"))
     expect_match(output_env$filter_results, "Lipid Intensity Filter Applied Successfully", fixed = TRUE)
     expect_match(output_env$filter_results, "Total: 4 -> 2 lipids (removed 2)", fixed = TRUE)
     expect_true(any(grepl("Lipid intensity filter applied: removed 2 lipids", info_messages, fixed = TRUE)))

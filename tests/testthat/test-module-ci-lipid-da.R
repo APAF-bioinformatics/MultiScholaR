@@ -19,7 +19,7 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
     da_data <- module_ci_lipid_da_data_env()
     capture <- module_ci_lipid_da_capture_ui()
 
-    load_state <- loadLipidDaSessionFromFile(
+    load_state <- shiny::withReactiveDomain(omicsOwnerSession(), loadLipidDaSessionFromFile(
       sessionFile = session_file,
       workflowData = workflow,
       daData = da_data,
@@ -28,7 +28,7 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
       finalizeSuccessFn = function(...) list(successMessage = "Session loaded successfully!"),
       finalizeErrorFn = function(errorMessage, ...) stop(errorMessage),
       restorePostReadFn = module_ci_lipid_da_restore_post_read(capture)
-    )
+    ))
 
     expect_identical(load_state$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
@@ -68,7 +68,7 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
 
   malformed_file <- file.path(stale_export_dir, "malformed.rds")
   writeLines("not an rds", malformed_file)
-  malformed <- loadLipidDaSessionFromFile(
+  malformed <- shiny::withReactiveDomain(omicsOwnerSession(), loadLipidDaSessionFromFile(
     sessionFile = malformed_file,
     workflowData = module_ci_lipid_da_workflow(),
     daData = module_ci_lipid_da_data_env(),
@@ -76,7 +76,7 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
     showLoadingFn = function() list(notificationId = "loading_session"),
     finalizeSuccessFn = function(...) stop("malformed session should not succeed"),
     finalizeErrorFn = function(errorMessage, ...) list(errorMessage = errorMessage)
-  )
+  ))
   expect_identical(malformed$status, "error")
   expect_true(nzchar(malformed$errorMessage))
 
@@ -87,7 +87,7 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
   )
   saveRDS(mismatch_session, mismatch_file)
   mismatch_capture <- module_ci_lipid_da_capture_ui()
-  mismatch <- loadLipidDaSessionFromFile(
+  mismatch <- shiny::withReactiveDomain(omicsOwnerSession(), loadLipidDaSessionFromFile(
     sessionFile = mismatch_file,
     workflowData = module_ci_lipid_da_workflow(mismatch_session$current_s4_object),
     daData = module_ci_lipid_da_data_env(),
@@ -96,7 +96,7 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
     finalizeSuccessFn = function(...) stop("mismatched session should not succeed"),
     finalizeErrorFn = function(errorMessage, ...) list(errorMessage = errorMessage),
     restorePostReadFn = module_ci_lipid_da_restore_post_read(mismatch_capture)
-  )
+  ))
   expect_identical(mismatch$status, "error")
   expect_match(mismatch$errorMessage, "assay_names do not match", fixed = TRUE)
 })

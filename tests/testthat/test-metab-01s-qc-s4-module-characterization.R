@@ -724,13 +724,9 @@ test_that("metabolomics QC S4 completed-state seam persists the finalized state 
     ),
     metabolite_id_column = "feature_id"
   )
-  state_manager <- list(
-    saveState = function(...) {
-      captured$save_state_call <- list(...)
-      invisible(NULL)
-    }
-  )
   config_object <- list(config = "token")
+  # KIT-072: a store step on the session owner (the module's only manager): the head's record under the new name.
+  state_manager <- omicsTestOwner(current_s4, "metab_duplicates_resolved", config = config_object)$state_manager
 
   visible <- withVisible(
     saveMetabQcS4CompletedState(
@@ -742,13 +738,8 @@ test_that("metabolomics QC S4 completed-state seam persists the finalized state 
 
   expect_false(visible$visible)
   expect_identical(visible$value, "metab_qc_complete")
-  expect_identical(captured$save_state_call$state_name, "metab_qc_complete")
-  expect_identical(captured$save_state_call$s4_data_object, current_s4)
-  expect_identical(captured$save_state_call$config_object, config_object)
-  expect_identical(
-    captured$save_state_call$description,
-    "QC processing complete - ready for normalization"
-  )
+  expect_identical(state_manager$current_state, "metab_qc_complete")
+  expect_equal(state_manager$getState()@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
 })
 
 test_that("metabolomics QC S4 tab-status seam completes quality control via list replacement", {

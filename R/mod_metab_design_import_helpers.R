@@ -412,7 +412,7 @@ saveMetabDesignImportedS4State <- function(
     bindWorkflowOwnerTypeAtDesign(workflowData, "METABOLOMICS", workflowData$data_format)
     # KIT-032: the design step's provenance (`design_builder`) and the workflow's inputs on the bound owner.
     recordMetabDesignProvenance(workflowData$state_manager, s4Object,
-        source_dir = (workflowData$state_manager$.context$experiment_paths %||% list())$source_dir)
+        source_dir = workflowData$state_manager$.context$experiment_paths$source_dir)
 
     messageFn("DEBUG66: Saving state to state_manager...")
     workflowData$state_manager$saveState(

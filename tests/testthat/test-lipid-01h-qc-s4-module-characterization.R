@@ -86,35 +86,25 @@ makeLipidQcS4CharacterizationData <- function(label = "qc_s4_fixture") {
   do.call(methods::new, args)
 }
 
+# KIT-072: the harness's bus holds a real lipidomics owner (the modules' only state manager) with the data committed
+# under the import, duplicates and intensity states; the finalise commits the head's record under the QC state.
 makeLipidQcS4WorkflowHarness <- function(
   current_s4 = makeLipidQcS4CharacterizationData(),
-  history = c("import_complete", "duplicates_resolved", "intensity_filtered")
+  history = c("import_complete", "duplicates_resolved", "intensity_filtered"),
+  env = parent.frame()
 ) {
-  capture <- new.env(parent = emptyenv())
-  capture$saved_states <- list()
-
-  state_manager <- new.env(parent = emptyenv())
-  state_manager$current_state <- current_s4
-  state_manager$current_history <- history
-  state_manager$getState <- function() state_manager$current_state
-  state_manager$getHistory <- function() state_manager$current_history
-  state_manager$saveState <- function(...) {
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- list(...)
-    invisible(NULL)
-  }
-
   workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- state_manager
   workflow_data$config_list <- list(qc = "complete")
   workflow_data$tab_status <- list(
     quality_control = "pending",
     normalization = "locked"
   )
+  omicsTestOwner(current_s4, history[[1L]], workflow = workflow_data, env = env)
+  for (state in history[-1L]) workflow_data$state_manager$saveState(state, current_s4, workflow_data$config_list, state)
 
   list(
     workflow_data = workflow_data,
-    state_manager = state_manager,
-    capture = capture,
+    state_manager = workflow_data$state_manager,
     current_s4 = current_s4
   )
 }
@@ -150,7 +140,6 @@ test_that("mod_lipid_qc_s4_server preserves public finalize behavior", {
   )
 
   expect_identical(harness$workflow_data$tab_status$quality_control, "complete")
-  expect_length(harness$capture$saved_states, 1L)
-  expect_identical(harness$capture$saved_states[[1]]$state_name, "lipid_qc_complete")
-  expect_identical(harness$capture$saved_states[[1]]$s4_data_object, harness$current_s4)
+  expect_identical(harness$state_manager$current_state, "lipid_qc_complete")
+  expect_equal(harness$state_manager$getState()@lipid_data, harness$current_s4@lipid_data, ignore_attr = TRUE)
 })

@@ -2074,6 +2074,9 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
 
   workflow_state <- new.env(parent = emptyenv())
   workflow_state$tab_status <- list(differential_analysis = "pending", other = "keep")
+  # KIT-072: the DA is the declared operation on the session owner (the module's only path); the wrapper is tested
+  # with the declarations, so here it is recorded and returns the kernel's list.
+  omicsTestOwner(workflow = workflow_state, omic_type = "metabolomics")
 
   da_state <- new.env(parent = emptyenv())
   current_s4 <- makeMetabDaObserverS4()
@@ -2087,6 +2090,7 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
     significant_counts = list(LCMS_Pos = list(up = 1, down = 2, ns = 3))
   )
 
+  wrapper <- omicsMockWrapper("runMetabReferenceDaAnalysis", list(results = results))
   analysis_state <- runMetabDaAnalysisObserverShell(
     currentS4 = current_s4,
     contrastsTbl = contrasts_tbl,
@@ -2100,10 +2104,6 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
       da_output_dir = "/tmp/metab-da-output",
       publication_graphs_dir = "/tmp/metab-publication-graphs"
     ),
-    runAnalysis = function(...) {
-      captured_run <<- list(...)
-      results
-    },
     updateSelectors = function(...) {
       captured_selectors <<- list(...)
       invisible(list(updated = TRUE))
@@ -2134,13 +2134,10 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
   expect_identical(analysis_state$results, results)
   expect_identical(analysis_state$selectorState, list(updated = TRUE))
   expect_identical(analysis_state$diskState, list(status = "written"))
-  expect_identical(captured_run$theObject, current_s4)
-  expect_identical(captured_run$contrasts_tbl, contrasts_tbl)
-  expect_identical(captured_run$formula_string, "~ 0 + group")
-  expect_identical(captured_run$da_q_val_thresh, 0.01)
-  expect_identical(captured_run$treat_lfc_cutoff, 1.5)
-  expect_identical(captured_run$eBayes_trend, TRUE)
-  expect_identical(captured_run$eBayes_robust, TRUE)
+  expect_identical(wrapper$calls[[1L]][[1L]], workflow_state$state_manager)
+  expect_identical(wrapper$calls[[1L]][[3L]], list(formula_string = "~ 0 + group", da_q_val_thresh = 0.01,
+    treat_lfc_cutoff = 1.5))
+  expect_identical(wrapper$calls[[1L]][[4L]], contrasts_tbl)
   expect_identical(da_state$da_results_list, results)
   expect_true(isTRUE(da_state$analysis_complete))
   expect_identical(
@@ -2180,6 +2177,9 @@ test_that("metabolomics DA run-analysis shell preserves error-path notification 
 
   workflow_state <- new.env(parent = emptyenv())
   workflow_state$tab_status <- list(differential_analysis = "pending")
+  # KIT-072: the DA is the declared operation on the session owner (the module's only path); here it fails.
+  omicsTestOwner(workflow = workflow_state, omic_type = "metabolomics")
+  omicsMockWrapper("runMetabReferenceDaAnalysis", function(...) stop("model matrix singular"))
 
   da_state <- new.env(parent = emptyenv())
   da_state$analysis_complete <- FALSE
@@ -2200,7 +2200,6 @@ test_that("metabolomics DA run-analysis shell preserves error-path notification 
     daData = da_state,
     session = "metab-session",
     experimentPaths = list(),
-    runAnalysis = function(...) stop("model matrix singular"),
     updateSelectors = function(...) stop("should not update selectors"),
     writeArtifacts = function(...) stop("should not write artifacts"),
     showNotification = function(...) {
@@ -2397,6 +2396,7 @@ test_that("metabolomics DA load-session observer entry preserves resolution-to-s
 })
 
 test_that("metabolomics DA load-session observer shell preserves success notifications and restore handoff", {
+  workflow_state <- omicsTestOwner(omic_type = "metabolomics") # KIT-072: the owner is the only manager
   captured_notifications <- list()
   captured_removed <- character()
   captured_info_logs <- character()
@@ -2411,7 +2411,7 @@ test_that("metabolomics DA load-session observer shell preserves success notific
 
   load_state <- runMetabDaLoadSessionObserverShell(
     sessionFile = "/tmp/metab_filtered_session_data_latest.rds",
-    workflowData = "workflow-state",
+    workflowData = workflow_state,
     daData = "da-state",
     session = "metab-session",
     readSessionData = function(path) {
@@ -2458,7 +2458,7 @@ test_that("metabolomics DA load-session observer shell preserves success notific
   expect_identical(load_state$restoreState, list(restored = TRUE))
   expect_identical(captured_restore$sessionData, session_data)
   expect_identical(captured_restore$sessionFile, "/tmp/metab_filtered_session_data_latest.rds")
-  expect_identical(captured_restore$workflowData, "workflow-state")
+  expect_identical(captured_restore$workflowData, workflow_state)
   expect_identical(captured_restore$daData, "da-state")
   expect_identical(captured_restore$session, "metab-session")
   expect_true(is.function(captured_restore$debugLog))
@@ -2490,6 +2490,7 @@ test_that("metabolomics DA load-session observer shell preserves success notific
 })
 
 test_that("metabolomics DA load-session observer shell preserves error notifications and leaves restore untouched", {
+  workflow_state <- omicsTestOwner(omic_type = "metabolomics") # KIT-072: the owner is the only manager
   captured_notifications <- list()
   captured_removed <- character()
   captured_error_logs <- character()
@@ -2497,7 +2498,7 @@ test_that("metabolomics DA load-session observer shell preserves error notificat
 
   load_state <- runMetabDaLoadSessionObserverShell(
     sessionFile = "/tmp/metab_filtered_session_data_latest.rds",
-    workflowData = "workflow-state",
+    workflowData = workflow_state,
     daData = "da-state",
     session = "metab-session",
     readSessionData = function(...) stop("corrupt session"),
@@ -2555,12 +2556,10 @@ test_that("metabolomics DA load-session restore seam preserves state, selectors,
   captured_warn_logs <- character()
 
   workflow_state <- new.env(parent = emptyenv())
-  workflow_state$state_manager <- list(
-    saveState = function(...) {
-      captured_save_state <<- list(...)
-      invisible(NULL)
-    }
-  )
+  # KIT-072: a session from an older build adopts into a fresh owner (the modules' only path); the adoption is
+  # tested with the sessions (test-workflow-omics-sessions.R), so here it is recorded.
+  omicsTestOwner(workflow = workflow_state, omic_type = "metabolomics")
+  adoption <- omicsMockWrapper("ingestWorkflowOmicsLegacySession", TRUE)
 
   da_state <- new.env(parent = emptyenv())
   s4_object <- makeMetabDaObserverS4(args = list(
@@ -2621,16 +2620,9 @@ test_that("metabolomics DA load-session restore seam preserves state, selectors,
   expect_identical(da_state$assays_available, c("LCMS_Pos", "LCMS_Neg"))
   expect_identical(da_state$formula_from_s4, "~ 0 + group")
   expect_identical(workflow_state$contrasts_tbl, session_data$contrasts_tbl)
-  expect_identical(captured_save_state$state_name, "filtered_ready")
-  expect_identical(captured_save_state$s4_data_object, s4_object)
-  expect_identical(
-    captured_save_state$config_object,
-    list(loaded_from = "/tmp/metab_filtered_session_data_latest.rds")
-  )
-  expect_identical(
-    captured_save_state$description,
-    "Loaded from filtered session for DA analysis"
-  )
+  expect_identical(adoption$calls[[1L]][[1L]]$current_s4_object, s4_object)
+  expect_identical(adoption$calls[[1L]]$state_name, "filtered_ready")
+  expect_identical(adoption$calls[[1L]]$path, "/tmp/metab_filtered_session_data_latest.rds")
   expect_length(captured_updates, 6)
   expect_identical(
     vapply(captured_updates, `[[`, character(1), "inputId"),
@@ -2657,7 +2649,7 @@ test_that("metabolomics DA load-session restore seam preserves state, selectors,
   expect_identical(
     captured_info_logs,
     c(
-      "   Restored S4 object to state manager",
+      "   Adopted the legacy session into a fresh state owner",
       "   Restored 2 contrasts"
     )
   )
@@ -2669,12 +2661,10 @@ test_that("metabolomics DA load-session restore seam preserves fallback state an
   captured_warn_logs <- character()
 
   workflow_state <- new.env(parent = emptyenv())
-  workflow_state$state_manager <- list(
-    saveState = function(...) {
-      captured_save_state <<- list(...)
-      invisible(NULL)
-    }
-  )
+  # KIT-072: a session from an older build adopts into a fresh owner (the modules' only path); the adoption is
+  # tested with the sessions (test-workflow-omics-sessions.R), so here it is recorded.
+  omicsTestOwner(workflow = workflow_state, omic_type = "metabolomics")
+  adoption <- omicsMockWrapper("ingestWorkflowOmicsLegacySession", TRUE)
 
   da_state <- new.env(parent = emptyenv())
   session_data <- list(
@@ -2705,8 +2695,8 @@ test_that("metabolomics DA load-session restore seam preserves fallback state an
   expect_null(restore_state$formulaValue)
   expect_identical(da_state$current_state_name, "loaded_for_de")
   expect_false(exists("current_s4_object", envir = da_state, inherits = FALSE))
-  expect_identical(captured_save_state$state_name, "loaded_for_de")
-  expect_identical(captured_save_state$s4_data_object, session_data$current_s4_object)
+  expect_identical(adoption$calls[[1L]]$state_name, "loaded_for_de")
+  expect_identical(adoption$calls[[1L]][[1L]]$current_s4_object, session_data$current_s4_object)
   expect_length(captured_warn_logs, 1)
   expect_match(captured_warn_logs[[1]], "^Could not extract formula from S4:")
 })

@@ -78,7 +78,13 @@ newSharedLipidIntensityCapture <- function() {
 
 makeSharedLipidIntensityWorkflow <- function(current_state,
                                              captured,
-                                             history = c("raw_lipid_s4", "lipid_intensity_filtered")) {
+                                             history = c("raw_lipid_s4", "lipid_intensity_filtered"),
+                                             owner = FALSE) {
+  # KIT-072: the apply path runs the declared operation on a real session owner (its only path); the revert cases
+  # keep the recording manager.
+  if (isTRUE(owner)) {
+    return(omicsTestOwner(current_state, "lipid_raw_data_s4", config = list(cache = "cfg"), env = parent.frame()))
+  }
   state_manager <- list(
     getState = function() current_state,
     saveState = function(...) {
@@ -286,7 +292,7 @@ test_that("lipidomics intensity module preserves apply-filter success behavior",
     )
   )
 
-  workflow_data <- makeSharedLipidIntensityWorkflow(current_state, captured)
+  workflow_data <- makeSharedLipidIntensityWorkflow(current_state, captured, owner = TRUE)
   server_fn(
     id = "intensity",
     workflow_data = workflow_data,
@@ -295,7 +301,7 @@ test_that("lipidomics intensity module preserves apply-filter success behavior",
   )
 
   expect_identical(captured$module_id, "intensity")
-  expect_identical(captured$filter_args$theObject, current_state)
+  expect_equal(captured$filter_args$theObject@lipid_data, current_state@lipid_data, ignore_attr = TRUE)
   expect_identical(captured$filter_args$percentile, 10L)
   expect_identical(captured$filter_args$proportion, 0.5)
   expect_identical(captured$plot_args$theObject, filtered_state)
@@ -303,10 +309,8 @@ test_that("lipidomics intensity module preserves apply-filter success behavior",
   expect_identical(captured$plot_args$omics_type, "lipidomics")
   expect_true(captured$plot_args$return_grid)
   expect_true(captured$plot_args$overwrite)
-  expect_identical(captured$save_state$state_name, "lipid_intensity_filtered")
-  expect_identical(captured$save_state$s4_data_object, filtered_state)
-  expect_identical(captured$save_state$config_object, list(cache = "cfg"))
-  expect_match(captured$save_state$description, "percentile: 10%", fixed = TRUE)
+  expect_identical(workflow_data$state_manager$current_state, "lipid_intensity_filtered")
+  expect_equal(workflow_data$state_manager$getState()@lipid_data, filtered_state@lipid_data, ignore_attr = TRUE)
   expect_match(captured$output$filter_results, "Lipid Intensity Filter Applied Successfully", fixed = TRUE)
   expect_match(captured$output$filter_results, "Total: 4 -> 2 lipids (removed 2)", fixed = TRUE)
   expect_match(
@@ -347,7 +351,7 @@ test_that("lipidomics intensity module preserves plot warning behavior", {
     evaluate_plot = FALSE
   )
 
-  workflow_data <- makeSharedLipidIntensityWorkflow(makeSharedLipidIntensityState(), captured)
+  workflow_data <- makeSharedLipidIntensityWorkflow(makeSharedLipidIntensityState(), captured, owner = TRUE)
   server_fn(
     id = "intensity",
     workflow_data = workflow_data,
@@ -356,7 +360,7 @@ test_that("lipidomics intensity module preserves plot warning behavior", {
   )
 
   expect_true(any(grepl("Could not generate QC plot: plot failed", captured$log_warn, fixed = TRUE)))
-  expect_identical(captured$save_state$state_name, "lipid_intensity_filtered")
+  expect_identical(workflow_data$state_manager$current_state, "lipid_intensity_filtered")
   expect_identical(captured$removed_notifications, "lipid_intensity_filter_working")
 })
 
@@ -428,7 +432,7 @@ test_that("lipidomics intensity module preserves ggplot output dispatch", {
     )
   )
 
-  workflow_data <- makeSharedLipidIntensityWorkflow(makeSharedLipidIntensityState(), captured)
+  workflow_data <- makeSharedLipidIntensityWorkflow(makeSharedLipidIntensityState(), captured, owner = TRUE)
   server_fn(
     id = "intensity",
     workflow_data = workflow_data,

@@ -211,9 +211,11 @@ for (omic in c("lipidomics", "metabolomics")) {
     expect_identical(refused$status, "error")
     expect_match(refused$errorMessage, "session holds a", fixed = TRUE)
     expect_identical(workflow$state_manager, adopted)
-    # A manager that is not an owner is a test double: nothing is adopted.
+    # KIT-072: a manager that is not an owner is refused by name.
     double <- list2env(list(state_manager = list(saveState = function(...) NULL)))
-    expect_false(ingestWorkflowOmicsLegacySession(omicsSessionLegacyList(case), double, source_dir, omic))
+    expect_error(ingestWorkflowOmicsLegacySession(omicsSessionLegacyList(case), double, source_dir, omic),
+      class = "saved_entity_scope")
+    expect_error(resolveWorkflowOmicsOwnedSession(double$state_manager, wrong), class = "saved_entity_scope")
   })
 
   test_that(sprintf("KIT-071: the %s summary's final state is the head's", omic), {
@@ -234,9 +236,10 @@ for (omic in c("lipidomics", "metabolomics")) {
     expect_null(workflowSummaryFinalStateName(owner, case$data_states))
     picked <- if (identical(omic, "lipidomics")) getLipidSummaryStateObject(workflow) else getMetabSummaryStateObject(workflow)
     expect_s4_class(picked, class(case$object)[[1]])
-    # A double keeps the ordered scan of its history, through the site's detect seam.
+    # The site's detect seam scans the head's history the same way.
+    expect_null(workflowSummaryFinalStateName(owner, case$data_states, detectFn = purrr::detect))
+    # KIT-072: a manager that is not an owner is refused by name.
     double <- list(getHistory = function() c(case$states[[1]], case$data_states[[4]], case$data_states[[2]]))
-    expect_identical(workflowSummaryFinalStateName(double, case$data_states), case$data_states[[2]])
-    expect_identical(workflowSummaryFinalStateName(double, case$data_states, detectFn = purrr::detect), case$data_states[[2]])
+    expect_error(workflowSummaryFinalStateName(double, case$data_states), class = "saved_entity_scope")
   })
 }

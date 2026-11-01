@@ -57,31 +57,19 @@ module_ci_metab_summary_object <- function(config = module_ci_metab_summary_conf
   object
 }
 
-module_ci_metab_summary_state_manager <- function(object,
-                                                  state = "metab_correlation_filtered",
-                                                  state_config = list(ruv_optimization_result = list(best_k = 2L, best_percentage = 40))) {
-  manager <- new.env(parent = emptyenv())
-  manager$current_state <- state
-  manager$state_history <- c("metab_qc_complete", "metab_normalized", state)
-  manager$getHistory <- function() manager$state_history
-  manager$getState <- function(state_name) {
-    if (state_name %in% manager$state_history) {
-      return(object)
-    }
-    NULL
+# KIT-072: a real metabolomics owner on the lane's bus (the modules' only state manager), the lane's object committed
+# under the QC, normalisation and final states; the owner is closed when the test file ends.
+module_ci_metab_summary_owner <- function(workflow, object, state) {
+  omicsTestOwner(object, "metab_qc_complete", workflow = workflow, omic_type = "metabolomics", env = testthat::teardown_env())
+  for (name in setdiff(unique(c("metab_normalized", state)), "metab_qc_complete")) {
+    workflow$state_manager$saveState(name, object, workflow$config_list, "the lane's object")
   }
-  manager$getStateConfig <- function(state_name) state_config
-  manager
+  workflow
 }
 
 module_ci_metab_summary_workflow <- function(config = module_ci_metab_summary_config()) {
   object <- module_ci_metab_summary_object(config)
   workflow <- new.env(parent = emptyenv())
-  workflow$state_manager <- module_ci_metab_summary_state_manager(
-    object,
-    state = if (identical(config$ruv_mode, "skip")) "metab_normalized" else "metab_correlation_filtered",
-    state_config = list(ruv_optimization_result = module_ci_metab_summary_args(config)$ruv)
-  )
   workflow$config_list <- list(globalParameters = module_ci_metab_summary_args(config)$globalParameters)
   workflow$contrasts_tbl <- module_ci_metab_da_contrasts("multi_group")
   workflow$design_matrix <- object@design_matrix
@@ -96,7 +84,8 @@ module_ci_metab_summary_workflow <- function(config = module_ci_metab_summary_co
   )
   workflow$itsd_ui_params <- module_ci_metab_summary_args(config)$itsdNormalizationParameters
   workflow$ruv_optimization_result <- module_ci_metab_summary_args(config)$ruv
-  workflow
+  module_ci_metab_summary_owner(workflow, object,
+    if (identical(config$ruv_mode, "skip")) "metab_normalized" else "metab_correlation_filtered")
 }
 
 module_ci_metab_summary_paths <- function() {

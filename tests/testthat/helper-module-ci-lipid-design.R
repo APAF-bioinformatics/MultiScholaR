@@ -181,16 +181,9 @@ module_ci_lipid_design_workflow <- function(payload = NULL) {
   workflow$column_mapping <- if (is.null(payload)) NULL else payload$column_mapping
   workflow$config_list <- if (is.null(payload)) module_ci_lipid_design_config() else payload$config_list
   workflow$tab_status <- list(setup_import = "complete", design_matrix = "pending", quality_control = "disabled")
-  # KIT-070: the modules hold the session's on-disk owner from session start; the lane's double records the saves.
-  manager <- new.env(parent = emptyenv())
-  manager$saved <- list()
-  manager$saveState <- function(state_name, s4_data_object, config_object, description, ...) {
-    manager$saved[[state_name]] <- s4_data_object
-    invisible(NULL)
-  }
-  manager$getState <- function(state_name = NULL) if (is.null(state_name)) NULL else manager$saved[[state_name]]
-  workflow$state_manager <- manager
-  workflow
+  # KIT-070/KIT-072: the modules hold the session's on-disk owner from session start, pending until the design step
+  # binds it to the route; the owner is closed when the test file ends.
+  omicsTestOwner(workflow = workflow, omic_type = "lipidomics", bind = FALSE, env = testthat::teardown_env())
 }
 
 module_ci_lipid_design_assert_samples_once <- function(design, expected_samples) {

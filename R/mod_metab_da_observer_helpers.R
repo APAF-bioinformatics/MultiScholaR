@@ -637,23 +637,13 @@ runMetabDaAnalysisObserverShell <- function(
 
     tryCatch(
         {
-            # KIT-032: on the session owner the DA is the declared operation `metab_da_output` on the loaded state, its
-            # manifest `metab.da_results.v1` accepted on the head; the kernel's list drives the display and the files as
-            # before. A test double keeps the direct kernel call.
+            # KIT-032: the DA is the declared operation `metab_da_output` on the loaded state, its manifest
+            # `metab.da_results.v1` accepted on the head; the kernel's list drives the display and the files as before
+            # (KIT-072: the owner's path is the only path).
             manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager else NULL
-            results <- if (inherits(manager, "DIAStateAdapter")) {
-                source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
-                runMetabReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
-                    da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl)$results
-            } else runAnalysis(
-                theObject = currentS4,
-                contrasts_tbl = contrastsTbl,
-                formula_string = formulaString,
-                da_q_val_thresh = daQValThresh,
-                treat_lfc_cutoff = treatLfcCutoff,
-                eBayes_trend = TRUE,
-                eBayes_robust = TRUE
-            )
+            source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
+            results <- runMetabReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
+                da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl)$results
 
             daData$da_results_list <- results
             daData$analysis_complete <- TRUE
@@ -774,20 +764,13 @@ restoreMetabDaLoadedSessionState <- function(
         if (isTRUE(sessionData$owned_generation)) {
             # KIT-071: the owner's own export reopens the owner; the head's state is the DA tab's and nothing is recommitted.
             logInfo("   Reopened the session owner at its head")
-        } else if (inherits(manager, "DIAStateAdapter")) {
-            # KIT-071: a session from an older build adopts into a fresh owner on the module's bus (provenance `adopted`).
+        } else {
+            # KIT-071: a session from an older build adopts into a fresh owner on the module's bus (provenance `adopted`;
+            # KIT-072: a manager that is not an owner is refused).
             ingestWorkflowOmicsLegacySession(sessionData, workflowData,
                 manager$.context$experiment_paths$source_dir %||% dirname(sessionFile), "metabolomics",
                 state_name = stateName, path = sessionFile)
             logInfo("   Adopted the legacy session into a fresh state owner")
-        } else {
-            manager$saveState(
-                state_name = stateName,
-                s4_data_object = sessionData$current_s4_object,
-                config_object = list(loaded_from = sessionFile),
-                description = "Loaded from filtered session for DA analysis"
-            )
-            logInfo("   Restored S4 object to state manager")
         }
         daData$current_state_name <- stateName
         debugLog("  STEP 6f: saveState completed")

@@ -2181,18 +2181,14 @@ test_that("handleLipidNormRunNormalization keeps the skip-path contract stable",
     current_s4 <- structure(list(id = "current"), class = "mockS4")
     log2_s4 <- structure(list(id = "log2"), class = "mockS4")
     workflow_data <- new.env(parent = emptyenv())
-    workflow_data$state_manager <- list(
-        getState = function() current_s4,
-        saveState = function(state_name, s4_data_object, config_object, description) {
-            saved_states[[length(saved_states) + 1]] <<- list(
-                state_name = state_name,
-                s4_data_object = s4_data_object,
-                config_object = config_object,
-                description = description
-            )
-        }
-    )
     workflow_data$config_list <- list(mode = "test")
+    # KIT-072: each kernel is its declared operation on the session owner (the modules' only path); the wrappers'
+    # commits are tested with the declarations, so here they are recorded.
+    omicsTestOwner(current_s4, "lipid_qc_complete", workflow = workflow_data, omic_type = "lipidomics")
+    log2_wrapper <- omicsMockWrapper("runLipidReferenceLog2", list(object = log2_s4))
+    between_wrapper <- omicsMockWrapper("runLipidReferenceBetweenSampleNormalisation", list(object = log2_s4))
+    itsd_wrapper <- omicsMockWrapper("runLipidReferenceItsdNormalisation", function(...) stop("unexpected ITSD normalization"))
+    ruv_wrapper <- omicsMockWrapper("runLipidReferenceRuv", function(...) stop("unexpected RUV"))
     norm_data <- new.env(parent = emptyenv())
     norm_data$itsd_selections <- list()
     norm_data$assay_names <- "Positive Mode"
@@ -2325,26 +2321,18 @@ test_that("handleLipidNormRunNormalization keeps the skip-path contract stable",
     expect_true(norm_data$normalization_complete)
     expect_true(norm_data$ruv_complete)
     expect_identical(norm_data$plot_refresh_trigger, 1)
-    expect_identical(log_transform_call, list(theObject = current_s4, offset = 1))
+    expect_identical(log2_wrapper$calls[[1L]][[2L]], 1)
     expect_length(qc_calls, 2)
     expect_identical(qc_calls[[1]]$stage, "post_filter")
     expect_identical(qc_calls[[2]]$stage, "post_norm")
     expect_identical(qc_calls[[1]]$grouping_variable, "condition")
     expect_identical(qc_calls[[1]]$shape_variable, "batch")
-    expect_identical(saved_states, list(
-        list(
-            state_name = "lipid_log2",
-            s4_data_object = log2_s4,
-            config_object = workflow_data$config_list,
-            description = "Log2 transformation (offset: 1 )"
-        ),
-        list(
-            state_name = "lipid_normalized",
-            s4_data_object = log2_s4,
-            config_object = workflow_data$config_list,
-            description = "Between-sample normalization (method: none )"
-        )
-    ))
+    expect_identical(log2_wrapper$calls[[1L]][[1L]], workflow_data$state_manager)
+    expect_identical(log2_wrapper$calls[[1L]][[3L]], workflow_data$config_list)
+    expect_identical(between_wrapper$calls[[1L]][[2L]], "none")
+    expect_identical(between_wrapper$calls[[1L]][[3L]], workflow_data$config_list)
+    expect_length(itsd_wrapper$calls, 0L)
+    expect_length(ruv_wrapper$calls, 0L)
     expect_identical(progress_calls[[1]], list(
         message = "Running normalization pipeline...",
         value = 0
@@ -2597,17 +2585,11 @@ test_that("handleLipidNormSkipCorrelationFilter keeps the completion contract st
     log_message <- NULL
     post_norm_obj <- structure(list(id = "post-norm"), class = "mockS4")
     workflow_data <- new.env(parent = emptyenv())
-    workflow_data$state_manager <- list(
-        saveState = function(state_name, s4_data_object, config_object, description) {
-            saved_state <<- list(
-                state_name = state_name,
-                s4_data_object = s4_data_object,
-                config_object = config_object,
-                description = description
-            )
-        }
-    )
     workflow_data$config_list <- list(mode = "test")
+    # KIT-072: the store step commits the head's record on the session owner (the modules' only path); the commit is
+    # tested with the declarations, so here it is recorded.
+    omicsTestOwner(post_norm_obj, "lipid_normalized", workflow = workflow_data, omic_type = "lipidomics")
+    commit <- omicsMockWrapper("commitLipidReferenceStoreStep")
     workflow_data$tab_status <- list(quality_control = "pending", normalization = "pending")
     norm_data <- new.env(parent = emptyenv())
     norm_data$ruv_complete <- FALSE
@@ -2633,12 +2615,8 @@ test_that("handleLipidNormSkipCorrelationFilter keeps the completion contract st
     )
 
     expect_true(result)
-    expect_identical(saved_state, list(
-        state_name = "lipid_norm_complete",
-        s4_data_object = post_norm_obj,
-        config_object = workflow_data$config_list,
-        description = "Normalization complete (correlation filtering skipped)"
-    ))
+    expect_identical(commit$calls, list(list(workflow_data$state_manager, "lipid_norm_complete", "lipid_norm_complete",
+        workflow_data$config_list, "Normalization complete (correlation filtering skipped)")))
     expect_identical(workflow_data$tab_status$quality_control, "complete")
     expect_identical(workflow_data$tab_status$normalization, "complete")
     expect_identical(norm_data$correlation_filtered_obj, post_norm_obj)
@@ -2664,17 +2642,11 @@ test_that("handleLipidNormApplyCorrelationFilter keeps the completion contract s
         pos = data.frame(pearson_correlation = c(0.91, 0.84))
     )
     workflow_data <- new.env(parent = emptyenv())
-    workflow_data$state_manager <- list(
-        saveState = function(state_name, s4_data_object, config_object, description) {
-            saved_state <<- list(
-                state_name = state_name,
-                s4_data_object = s4_data_object,
-                config_object = config_object,
-                description = description
-            )
-        }
-    )
     workflow_data$config_list <- list(mode = "test")
+    # KIT-072: the pairs and the selection are the declared operations on the session owner (the modules' only path);
+    # the wrapper's commit is tested with the declarations, so here it is recorded.
+    omicsTestOwner(current_s4, "lipid_ruv_corrected", workflow = workflow_data, omic_type = "lipidomics")
+    correlation <- omicsMockWrapper("runLipidReferenceCorrelation", list(correlations = corr_results, object = filtered_s4))
     workflow_data$tab_status <- list(quality_control = "pending", normalization = "pending")
     norm_data <- new.env(parent = emptyenv())
     norm_data$ruv_complete <- TRUE
@@ -2705,21 +2677,6 @@ test_that("handleLipidNormApplyCorrelationFilter keeps the completion contract s
         removeNotificationFn = function(id) {
             removed_notification <<- id
         },
-        pearsonCorForSamplePairsFn = function(theObject, correlation_group) {
-            correlation_call <<- list(
-                theObject = theObject,
-                correlation_group = correlation_group
-            )
-            corr_results
-        },
-        filterSamplesByLipidCorrelationThresholdFn = function(theObject, pearson_correlation_per_pair, min_pearson_correlation_threshold) {
-            filter_call <<- list(
-                theObject = theObject,
-                pearson_correlation_per_pair = pearson_correlation_per_pair,
-                min_pearson_correlation_threshold = min_pearson_correlation_threshold
-            )
-            filtered_s4
-        },
         logInfoFn = function(message) {
             info_message <<- message
         },
@@ -2729,24 +2686,10 @@ test_that("handleLipidNormApplyCorrelationFilter keeps the completion contract s
     )
 
     expect_true(result)
-    expect_identical(correlation_call, list(
-        theObject = current_s4,
-        correlation_group = "group"
-    ))
-    expect_identical(filter_call, list(
-        theObject = current_s4,
-        pearson_correlation_per_pair = corr_results,
-        min_pearson_correlation_threshold = 0.65
-    ))
+    expect_identical(correlation$calls, list(list(workflow_data$state_manager, "group", 0.65, workflow_data$config_list)))
     expect_identical(norm_data$correlation_results, corr_results)
     expect_identical(norm_data$correlation_filtered_obj, filtered_s4)
     expect_true(norm_data$correlation_filtering_complete)
-    expect_identical(saved_state, list(
-        state_name = "lipid_correlation_filtered",
-        s4_data_object = filtered_s4,
-        config_object = workflow_data$config_list,
-        description = "Correlation filtering (threshold: 0.65 )"
-    ))
     expect_identical(workflow_data$tab_status$quality_control, "complete")
     expect_identical(workflow_data$tab_status$normalization, "complete")
     expect_identical(log_messages, c(
@@ -2773,17 +2716,9 @@ test_that("handleLipidNormResetNormalization keeps the reset contract stable", {
     log_message <- NULL
     post_filter_obj <- structure(list(id = "post-filter"), class = "mockS4")
     workflow_data <- new.env(parent = emptyenv())
-    workflow_data$state_manager <- list(
-        saveState = function(state_name, s4_data_object, config_object, description) {
-            saved_state <<- list(
-                state_name = state_name,
-                s4_data_object = s4_data_object,
-                config_object = config_object,
-                description = description
-            )
-        }
-    )
     workflow_data$config_list <- list(mode = "test")
+    # KIT-072: the reset is a store step on the session owner (the modules' only manager).
+    omicsTestOwner(post_filter_obj, "lipid_normalized", workflow = workflow_data, omic_type = "lipidomics")
     norm_data <- new.env(parent = emptyenv())
     norm_data$post_filter_obj <- post_filter_obj
     norm_data$normalization_complete <- TRUE
@@ -2810,12 +2745,8 @@ test_that("handleLipidNormResetNormalization keeps the reset contract stable", {
     )
 
     expect_true(result)
-    expect_identical(saved_state, list(
-        state_name = "lipid_reset",
-        s4_data_object = post_filter_obj,
-        config_object = workflow_data$config_list,
-        description = "Reset to pre-normalization state"
-    ))
+    expect_identical(workflow_data$state_manager$current_state, "lipid_reset")
+    expect_identical(workflow_data$state_manager$getState("lipid_reset"), post_filter_obj)
     expect_false(norm_data$normalization_complete)
     expect_false(norm_data$ruv_complete)
     expect_false(norm_data$correlation_filtering_complete)

@@ -38,7 +38,7 @@ handleLipidSummarySaveWorkflowArgs <- function(
 
         # KIT-031: the analysis record, derived from the owner's head, beside study_parameters.txt (the template's
         # overlay reads it from the source directory; the KIT-027 proteomics pattern).
-        if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+        if (!is.null(workflowData)) { # KIT-072: the owner is the only manager
             recordFile <- filePathFn(projectDirs[[omicType]]$source_dir, "analysis_record.json")
             tryCatch({
                 writeAnalysisRecordFn(workflowData$state_manager, recordFile)
@@ -446,9 +446,9 @@ handleLipidSummaryGenerateReport <- function(
                 values$report_generated <- TRUE
                 values$report_path <- renderedPath
 
-                # KIT-031: the analysis record bundle (JSON, Word, Excel) beside the report, for an on-disk owner; a
+                # KIT-031: the analysis record bundle (JSON, Word, Excel) beside the report; a
                 # failure is shown and leaves the report as generated (the KIT-029 proteomics pattern).
-                if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+                if (!is.null(workflowData)) { # KIT-072: the owner is the only manager
                     incProgressFn(0.9, detail = "Exporting the analysis record...")
                     recordDir <- projectDirs[[omicType]]$study_report_dir %||% projectDirs[[omicType]]$results_summary_dir
                     tryCatch(exportRecordFn(workflowData$state_manager, recordDir), error = function(e) showNotificationFn(

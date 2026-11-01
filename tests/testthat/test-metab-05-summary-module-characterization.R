@@ -443,6 +443,9 @@ test_that("metabolomics summary save-workflow observer shell preserves S4 export
   )
 
   values$workflow_args_saved <- FALSE
+  # KIT-072: the final state is the owner's head (workflowSummaryFinalStateName, tested with the sessions); this
+  # characterization class is not a declared assay class, so the helper is recorded and the manager serves it back.
+  omicsMockWrapper("workflowSummaryFinalStateName", "metab_normalized")
 
   visible <- withVisible(
     runMetabSummarySaveWorkflowArgsObserverShell(
@@ -526,9 +529,15 @@ test_that("metabolomics summary save-workflow observer shell preserves S4 export
       },
       sysTimeFn = function() fixed_time,
       catFn = function(...) invisible(NULL),
-      globalEnv = global_env
+      globalEnv = global_env,
+      writeAnalysisRecordFn = function(manager, file) {
+        captured$record <- list(manager = manager, file = file)
+        invisible(file)
+      }
     )
   )
+  # KIT-072: the analysis record is written from the session's manager beside study_parameters.txt.
+  expect_identical(captured$record$file, "/tmp/metab-summary-source/analysis_record.json")
 
   expect_false(visible$visible)
   expect_identical(captured$req, list("Metab Session"))

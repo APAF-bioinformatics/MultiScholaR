@@ -201,12 +201,13 @@ test_that("MCI-014.5 finalization validates current S4 state and unlocks normali
   expect_identical(workflow$tab_status$quality_control, "complete")
   expect_identical(captured$filter_plot, "qc-progress-plot")
   expect_identical(captured$tracking$omicType, "metabolomics")
-  expect_true("metab_qc_complete" %in% names(workflow$state_manager$saved()))
+  expect_true("metab_qc_complete" %in% workflow$state_manager$getHistory())
   expect_identical(output$finalize_results, "finalized")
   expect_true(any(captured$success$history == "metab_qc_complete"))
 
   invalid_workflow <- module_ci_metab_qc_workflow(current)
-  invalid_workflow$state_manager <- module_ci_metab_qc_state_manager(list(not = "s4"))
+  # KIT-072: the owner's current state holds a value that is not the omic's S4.
+  invalid_workflow$state_manager$saveState("metab_not_s4", list(not = "s4"), invalid_workflow$config_list, "not an S4")
   runMetabQcS4FinalizeWorkflow(
     workflowData = invalid_workflow,
     omicType = "metabolomics",

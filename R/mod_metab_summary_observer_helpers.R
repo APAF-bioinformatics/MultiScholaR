@@ -330,7 +330,7 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
 
         # KIT-032: the analysis record, derived from the owner's head, beside study_parameters.txt (the template's
         # overlay reads it from the source directory; the KIT-027 proteomics pattern).
-        if (!is.null(workflow_data) && inherits(workflow_data$state_manager, "DIAStateAdapter")) {
+        if (!is.null(workflow_data)) { # KIT-072: the owner is the only manager
             record_file <- file.path(project_dirs[[omic_type]]$source_dir, "analysis_record.json")
             tryCatch({
                 writeAnalysisRecordFn(workflow_data$state_manager, record_file)
@@ -844,7 +844,7 @@ runMetabSummaryGenerateReportObserverShell <- function(
 
                 # KIT-032: the analysis record bundle (JSON, Word, Excel) beside the report, for an on-disk owner; a
                 # failure is shown and leaves the report as generated (the KIT-029 pattern).
-                if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+                if (!is.null(workflowData)) { # KIT-072: the owner is the only manager
                     incProgressFn(0.9, detail = "Exporting the analysis record...")
                     record_dir <- project_dirs[[omic_type]]$study_report_dir %||% project_dirs[[omic_type]]$results_summary_dir
                     tryCatch(exportRecordFn(workflowData$state_manager, record_dir), error = function(e) showNotificationFn(

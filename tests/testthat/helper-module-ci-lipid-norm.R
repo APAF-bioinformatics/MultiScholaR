@@ -199,37 +199,12 @@ module_ci_lipid_norm_counts <- function(object) {
   }) |> stats::setNames(names(object@lipid_data))
 }
 
-module_ci_lipid_norm_state_manager <- function(current_state,
-                                               current_state_name = "lipid_qc_complete") {
-  states <- list()
-  saved <- list()
-  states[[current_state_name]] <- current_state
-
-  manager <- new.env(parent = emptyenv())
-  manager$current_state <- current_state_name
-  manager$getState <- function(state = manager$current_state) {
-    states[[state]]
-  }
-  manager$saveState <- function(state_name, s4_data_object, config_object, description) {
-    states[[state_name]] <<- s4_data_object
-    saved[[state_name]] <<- list(
-      state_name = state_name,
-      s4_data_object = s4_data_object,
-      config_object = config_object,
-      description = description
-    )
-    manager$current_state <- state_name
-    invisible(TRUE)
-  }
-  manager$saved <- function() saved
-  manager$states <- function() states
-  manager
-}
-
+# KIT-072: the lane's bus holds a real lipidomics owner (the modules' only state manager) with the lane's object
+# committed under `current_state_name`; the owner is closed when the test file ends.
 module_ci_lipid_norm_workflow <- function(current_object = module_ci_lipid_norm_object(),
-                                          current_state_name = "lipid_qc_complete") {
-  list2env(list(
-    state_manager = module_ci_lipid_norm_state_manager(current_object, current_state_name),
+                                          current_state_name = "lipid_qc_complete",
+                                          experiment_paths = list()) {
+  workflow <- list2env(list(
     config_list = list(normalization = list(mode = "module-ci")),
     contrasts_tbl = data.frame(
       friendly_names = "KO_vs_WT",
@@ -250,6 +225,8 @@ module_ci_lipid_norm_workflow <- function(current_object = module_ci_lipid_norm_
       differential_analysis = "locked"
     )
   ), parent = emptyenv())
+  omicsTestOwner(current_object, current_state_name, workflow = workflow, experiment_paths = experiment_paths,
+    omic_type = "lipidomics", env = testthat::teardown_env())
 }
 
 module_ci_lipid_norm_ruv_results <- function(object, mode = "manual") {
@@ -388,6 +365,17 @@ module_ci_lipid_norm_run_pipeline <- function(input = module_ci_lipid_norm_input
                                                )
                                              }) {
   logs <- character()
+  # KIT-072: the declared operations call the namespace kernels, so the lane's kernels are bound there.
+  kernels <- list(
+    runLipidPerAssayRuvOptimization = function(theObject, ruv_mode, params, experiment_paths) {
+      optimizer_fn(theObject = theObject, ruv_mode = ruv_mode, params = params, experiment_paths = experiment_paths)
+    },
+    ruvIII_C_Varying = ruv_fn
+  )
+  if (!identical(normalise_untransformed_fn, normaliseUntransformedData)) kernels$normaliseUntransformedData <- normalise_untransformed_fn
+  if (!identical(log_transform_fn, logTransformAssays)) kernels$logTransformAssays <- log_transform_fn
+  if (!identical(between_sample_fn, normaliseBetweenSamples)) kernels$normaliseBetweenSamples <- between_sample_fn
+  do.call(testthat::local_mocked_bindings, c(kernels, list(.package = "MultiScholaR", .env = environment())))
   result <- handleLipidNormRunNormalization(
     input = input,
     workflowData = workflow,
@@ -414,13 +402,6 @@ module_ci_lipid_norm_run_pipeline <- function(input = module_ci_lipid_norm_input
       names(out) <- names(.x)
       out
     },
-    normaliseUntransformedDataFn = normalise_untransformed_fn,
-    logTransformAssaysFn = log_transform_fn,
-    normaliseBetweenSamplesFn = between_sample_fn,
-    runLipidPerAssayRuvOptimizationFn = function(theObject, ruv_mode, params, experiment_paths) {
-      optimizer_fn(theObject = theObject, ruv_mode = ruv_mode, params = params, experiment_paths = experiment_paths)
-    },
-    ruvIII_C_VaryingFn = ruv_fn,
     generateCompositeFromFilesFn = function(...) NULL,
     savePlotFn = function(...) invisible(NULL),
     dirExistsFn = function(path) TRUE,
@@ -459,17 +440,12 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
   }
   source_dir <- tempfile(paste0("mci-021-lipid-norm-export-", variant, "-"))
   dir.create(source_dir, recursive = TRUE)
+  # KIT-071: the export is the owner's publication, with the variant's object committed under its state.
   workflow <- module_ci_lipid_norm_workflow(
     current_object = object,
-    current_state_name = current_state_name
+    current_state_name = current_state_name,
+    experiment_paths = list(source_dir = source_dir)
   )
-  # KIT-071: the export is the owner's publication, so the lane's bus holds a real owner bound to the route with the
-  # variant's object committed under its state (the owner is closed when the calling test ends).
-  session <- omicsOwnerSession()
-  workflow$state_manager <- createDIASessionOwner(workflow, list(source_dir = source_dir), session, omic_type = "lipidomics")
-  shiny::withReactiveDomain(session, bindWorkflowOwnerTypeAtDesign(workflow, "LIPIDOMICS"))
-  withr::defer(closeDIAStateAdapter(workflow$state_manager), envir = parent.frame())
-  workflow$state_manager$saveState(current_state_name, object, workflow$config_list, "the export variant's object")
   norm_data <- module_ci_lipid_norm_data(object)
   norm_data$normalization_complete <- TRUE
   norm_data$ruv_complete <- TRUE

@@ -89,7 +89,8 @@ skipIfMissingMultiScholaRBindings <- function(...) {
 
 makeMetabNormCharacterizationHarness <- function(
   current_state = "metab_post_norm",
-  current_s4 = makeMetabNormCharacterizationData()
+  current_s4 = makeMetabNormCharacterizationData(),
+  env = parent.frame()
 ) {
   capture <- new.env(parent = emptyenv())
   capture$saved_states <- list()
@@ -101,15 +102,7 @@ makeMetabNormCharacterizationHarness <- function(
   dir.create(metabolite_qc_dir, recursive = TRUE)
   dir.create(source_dir, recursive = TRUE)
 
-  state_manager <- new.env(parent = emptyenv())
-  state_manager$current_state <- current_state
-  state_manager$getState <- function(state = current_state) current_s4
-  state_manager$saveState <- function(...) {
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- list(...)
-  }
-
   workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- state_manager
   workflow_data$design_matrix <- data.frame(
     sample_id = c("S1", "S2"),
     group = c("A", "B"),
@@ -134,6 +127,10 @@ makeMetabNormCharacterizationHarness <- function(
     source_dir = source_dir,
     export_dir = source_dir
   )
+  # KIT-072: the bus holds a real metabolomics owner (the module's only state manager) with the data committed under
+  # `current_state`; the declared operations commit on it.
+  omicsTestOwner(current_s4, current_state, workflow = workflow_data, experiment_paths = list(source_dir = source_dir),
+    omic_type = "metabolomics", env = env)
 
   list(
     workflow_data = workflow_data,
@@ -215,7 +212,7 @@ test_that("mod_metab_norm_server preserves normalization observer success behavi
     run_normalization = 1
   )
 
-  expect_true(any(vapply(harness$capture$saved_states, \(x) identical(x$state_name, "metab_normalized"), logical(1))))
+  expect_true("metab_normalized" %in% harness$workflow_data$state_manager$getHistory())
 })
 
 test_that("mod_metab_norm_server preserves normalization observer error behavior", {
@@ -274,7 +271,7 @@ test_that("mod_metab_norm_server preserves apply-correlation public behavior", {
     apply_correlation_filter = 1
   )
 
-  expect_true(any(vapply(harness$capture$saved_states, \(x) identical(x$state_name, "metab_correlation_filtered"), logical(1))))
+  expect_true("metab_correlation_filtered" %in% harness$workflow_data$state_manager$getHistory())
   expect_identical(
     harness$workflow_data$tab_status,
     list(
@@ -307,7 +304,7 @@ test_that("mod_metab_norm_server preserves skip-correlation public behavior", {
 
   setMetabNormInputs(harness$session, skip_correlation_filter = 1)
 
-  expect_true(any(vapply(harness$capture$saved_states, \(x) identical(x$state_name, "metab_norm_complete"), logical(1))))
+  expect_true("metab_norm_complete" %in% harness$workflow_data$state_manager$getHistory())
   expect_identical(
     harness$workflow_data$tab_status,
     list(
@@ -382,7 +379,7 @@ test_that("mod_metab_norm_server preserves reset behavior", {
 
   setMetabNormInputs(harness$session, reset_normalization = 1)
 
-  expect_true(any(vapply(harness$capture$saved_states, \(x) identical(x$state_name, "metab_reset"), logical(1))))
+  expect_true("metab_reset" %in% harness$workflow_data$state_manager$getHistory())
 })
 
 test_that("mod_metab_norm_server preserves reset error behavior", {

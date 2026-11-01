@@ -123,29 +123,10 @@ module_ci_metab_qc_object <- function(layout = "lc_pair",
   )
 }
 
-module_ci_metab_qc_state_manager <- function(current_state) {
-  saved <- list()
-  history <- c("metab_raw_data_s4", "metab_intensity_filtered")
-  manager <- new.env(parent = emptyenv())
-  manager$getState <- function() current_state
-  manager$saveState <- function(state_name, s4_data_object, config_object, description) {
-    saved[[state_name]] <<- list(
-      state_name = state_name,
-      s4_data_object = s4_data_object,
-      config_object = config_object,
-      description = description
-    )
-    history <<- c(history, state_name)
-    invisible(TRUE)
-  }
-  manager$getHistory <- function() history
-  manager$saved <- function() saved
-  manager
-}
-
+# KIT-072: the lane's bus holds a real metabolomics owner (the modules' only state manager) with the lane's object
+# committed under the import and intensity states; the owner is closed when the test file ends.
 module_ci_metab_qc_workflow <- function(current_state = module_ci_metab_qc_object()) {
-  list2env(list(
-    state_manager = module_ci_metab_qc_state_manager(current_state),
+  workflow <- list2env(list(
     config_list = list(qc = list(mode = "module-ci")),
     tab_status = list(
       setup_import = "complete",
@@ -154,6 +135,9 @@ module_ci_metab_qc_workflow <- function(current_state = module_ci_metab_qc_objec
       normalization = "disabled"
     )
   ), parent = emptyenv())
+  omicsTestOwner(current_state, "metab_raw_data_s4", workflow = workflow, omic_type = "metabolomics", env = testthat::teardown_env())
+  workflow$state_manager$saveState("metab_intensity_filtered", current_state, workflow$config_list, "the lane's filtered object")
+  workflow
 }
 
 module_ci_metab_qc_feature_counts <- function(s4_object) {

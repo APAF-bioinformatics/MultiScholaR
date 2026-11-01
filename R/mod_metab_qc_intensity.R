@@ -225,29 +225,6 @@ updateMetabIntensityFilterQcPlot <- function(
     invisible(qcPlot)
 }
 
-saveMetabIntensityFilterState <- function(
-    stateManager,
-    filteredS4,
-    configObject,
-    intensityCutoffPercentile,
-    proportionBelowCutoff,
-    stateName = "metab_intensity_filtered",
-    sprintfFn = sprintf
-) {
-    stateManager$saveState(
-        state_name = stateName
-        , s4_data_object = filteredS4
-        , config_object = configObject
-        , description = sprintfFn(
-            "Applied metabolite intensity filter (percentile: %d%%, proportion: %.2f)"
-            , intensityCutoffPercentile
-            , proportionBelowCutoff
-        )
-    )
-
-    invisible(stateName)
-}
-
 buildMetabIntensityFilterSummary <- function(
     stats,
     intensityCutoffPercentile,
@@ -402,17 +379,10 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , input$proportion_below_cutoff
                 ))
                 
-                # KIT-032: on the session owner the filter is the declared operation `metab_intensity_filter`,
-                # committed under `metab_intensity_filtered` with its provenance; a test double keeps the direct call.
-                owned <- inherits(workflow_data$state_manager, "DIAStateAdapter")
-                filtered_s4 <- if (owned) {
-                    runMetabReferenceIntensityFilter(workflow_data$state_manager, input$intensity_cutoff_percentile,
-                        input$proportion_below_cutoff, workflow_data$config_list)$object
-                } else metaboliteIntensityFiltering(
-                    current_s4
-                    , metabolites_intensity_cutoff_percentile = input$intensity_cutoff_percentile
-                    , metabolites_proportion_of_samples_below_cutoff = input$proportion_below_cutoff
-                )
+                # KIT-032: the filter is the declared operation `metab_intensity_filter`, committed under
+                # `metab_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path).
+                filtered_s4 <- runMetabReferenceIntensityFilter(workflow_data$state_manager, input$intensity_cutoff_percentile,
+                    input$proportion_below_cutoff, workflow_data$config_list)$object
                 
                 stats_df <- buildMetabIntensityFilterStats(
                     currentS4 = current_s4
@@ -426,13 +396,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , setFilterPlotFn = filter_plot
                 )
 
-                saved_state_name <- if (owned) "metab_intensity_filtered" else saveMetabIntensityFilterState(
-                    stateManager = workflow_data$state_manager
-                    , filteredS4 = filtered_s4
-                    , configObject = workflow_data$config_list
-                    , intensityCutoffPercentile = input$intensity_cutoff_percentile
-                    , proportionBelowCutoff = input$proportion_below_cutoff
-                )
+                saved_state_name <- "metab_intensity_filtered"
 
                 reportMetabIntensityFilterSuccess(
                     stats = stats_df

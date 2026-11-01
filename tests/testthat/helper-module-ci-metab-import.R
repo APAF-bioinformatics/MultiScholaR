@@ -17,14 +17,9 @@ module_ci_metab_import_workflow <- function() {
   workflow$column_mapping <- NULL
   workflow$processing_log <- list(setup_import = NULL)
   workflow$tab_status <- list(setup_import = "incomplete", design_matrix = "disabled")
-  workflow$workflow_types <- character()
-  workflow$state_manager <- list(
-    setWorkflowType = function(type) {
-      workflow$workflow_types <- c(workflow$workflow_types, type)
-      invisible(type)
-    }
-  )
-  workflow
+  # KIT-072: the session's pending on-disk owner (the modules' only state manager) records the import's type; it is
+  # closed when the test file ends.
+  omicsTestOwner(workflow = workflow, omic_type = "metabolomics", bind = FALSE, env = testthat::teardown_env())
 }
 
 module_ci_metab_custom_assay <- function(annotation = TRUE,

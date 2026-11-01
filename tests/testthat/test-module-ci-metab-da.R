@@ -18,7 +18,7 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
     da_data <- module_ci_metab_da_data_env()
     capture <- module_ci_metab_da_capture_ui()
 
-    load_state <- runMetabDaLoadSessionObserverShell(
+    load_state <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabDaLoadSessionObserverShell(
       sessionFile = session_file,
       workflowData = workflow,
       daData = da_data,
@@ -41,7 +41,7 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
       removeNotification = capture$removeNotification,
       logInfo = function(...) invisible(NULL),
       logError = function(...) invisible(NULL)
-    )
+    ))
 
     expect_identical(load_state$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
@@ -79,7 +79,7 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
   malformed_file <- file.path(stale_export_dir, "malformed.rds")
   writeLines("not an rds", malformed_file)
   malformed_capture <- module_ci_metab_da_capture_ui()
-  malformed <- runMetabDaLoadSessionObserverShell(
+  malformed <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabDaLoadSessionObserverShell(
     sessionFile = malformed_file,
     workflowData = module_ci_metab_da_workflow(),
     daData = module_ci_metab_da_data_env(),
@@ -88,7 +88,7 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
     removeNotification = malformed_capture$removeNotification,
     logInfo = function(...) invisible(NULL),
     logError = function(...) invisible(NULL)
-  )
+  ))
   expect_identical(malformed$status, "error")
   expect_true(nzchar(malformed$errorMessage))
 
@@ -99,7 +99,7 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
   )
   saveRDS(mismatch_session, mismatch_file)
   mismatch_capture <- module_ci_metab_da_capture_ui()
-  mismatch <- runMetabDaLoadSessionObserverShell(
+  mismatch <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabDaLoadSessionObserverShell(
     sessionFile = mismatch_file,
     workflowData = module_ci_metab_da_workflow(mismatch_session$current_s4_object),
     daData = module_ci_metab_da_data_env(),
@@ -122,7 +122,7 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
     removeNotification = mismatch_capture$removeNotification,
     logInfo = function(...) invisible(NULL),
     logError = function(...) invisible(NULL)
-  )
+  ))
   expect_identical(mismatch$status, "error")
   expect_match(mismatch$errorMessage, "assay_names do not match", fixed = TRUE)
 })

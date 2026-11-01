@@ -1,0 +1,69 @@
+R/mod_lipid_da_analysis_helpers.R:188:            results <- if (inherits(manager, "DIAStateAdapter")) {
+R/mod_lipid_da_session_helpers.R:340:    } else if (inherits(manager, "DIAStateAdapter")) {
+R/mod_lipid_da_session_helpers.R:477:            owned <- resolveWorkflowOmicsOwnedSession(manager, sessionFile)
+R/mod_lipid_da_session_helpers.R:478:            sessionLoad <- if (!is.null(owned)) {
+R/mod_lipid_da_session_helpers.R:480:                list(sessionFile = sessionFile, sessionData = owned, sessionDataNames = names(owned))
+R/mod_lipid_norm_workflow_helpers.R:45:                owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_lipid_norm_workflow_helpers.R:99:                    current_s4 <- if (owned) {
+R/mod_lipid_norm_workflow_helpers.R:110:                    if (!owned) workflowData$state_manager$saveState(
+R/mod_lipid_norm_workflow_helpers.R:124:                current_s4 <- if (owned) {
+R/mod_lipid_norm_workflow_helpers.R:132:                if (!owned) workflowData$state_manager$saveState(
+R/mod_lipid_norm_workflow_helpers.R:144:                if (owned) {
+R/mod_lipid_norm_workflow_helpers.R:155:                if (!owned) workflowData$state_manager$saveState(
+R/mod_lipid_norm_workflow_helpers.R:188:                    if (owned) {
+R/mod_lipid_norm_workflow_helpers.R:226:                    if (!owned) workflowData$state_manager$saveState(
+R/mod_lipid_norm_workflow_helpers.R:567:        if (!inherits(manager, "DIAStateAdapter")) {
+R/mod_lipid_norm_workflow_helpers.R:637:    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/mod_lipid_norm_workflow_helpers.R:732:        owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_lipid_norm_workflow_helpers.R:733:        if (owned) {
+R/mod_lipid_norm_workflow_helpers.R:747:        if (!owned) filtered_s4 <- filterSamplesByLipidCorrelationThresholdFn(
+R/mod_lipid_norm_workflow_helpers.R:756:        if (!owned) workflowData$state_manager$saveState(
+R/mod_lipid_qc_duplicates_server_helpers.R:254:    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_lipid_qc_duplicates_server_helpers.R:255:    if (owned) {
+R/mod_lipid_qc_duplicates_server_helpers.R:265:    if (!owned) statsList <- vector("list", length(assayList))
+R/mod_lipid_qc_duplicates_server_helpers.R:267:    if (!owned) names(statsList) <- assayNames
+R/mod_lipid_qc_duplicates_server_helpers.R:269:    for (i in if (owned) integer() else seq_along(assayList)) {
+R/mod_lipid_qc_duplicates_server_helpers.R:295:    if (!owned) {
+R/mod_lipid_qc_intensity_server_helpers.R:160:            owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_lipid_qc_intensity_server_helpers.R:161:            filtered_s4 <- if (owned) {
+R/mod_lipid_qc_intensity_server_helpers.R:209:            if (!owned) workflowData$state_manager$saveState(
+R/mod_lipid_qc_s4.R:409:    if (inherits(stateManager, "DIAStateAdapter")) {
+R/mod_lipid_summary_workflow_helpers.R:41:        if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/mod_lipid_summary_workflow_helpers.R:451:                if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/mod_metab_da_observer_helpers.R:644:            results <- if (inherits(manager, "DIAStateAdapter")) {
+R/mod_metab_da_observer_helpers.R:777:        } else if (inherits(manager, "DIAStateAdapter")) {
+R/mod_metab_norm_pipeline_helpers.R:338:    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_metab_norm_pipeline_helpers.R:339:    currentS4 <- if (owned) {
+R/mod_metab_norm_pipeline_helpers.R:350:    if (!owned) workflowData$state_manager$saveState(
+R/mod_metab_norm_pipeline_helpers.R:415:    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_metab_norm_pipeline_helpers.R:416:    currentS4 <- if (owned) {
+R/mod_metab_norm_pipeline_helpers.R:424:    if (!owned) workflowData$state_manager$saveState(
+R/mod_metab_norm_pipeline_helpers.R:499:    owned <- inherits(workflowData$state_manager, "DIAStateAdapter")
+R/mod_metab_norm_pipeline_helpers.R:500:    if (owned) {
+R/mod_metab_norm_pipeline_helpers.R:511:    if (!owned) workflowData$state_manager$saveState(
+R/mod_metab_norm_pipeline_helpers.R:592:    if (ruvMode != "skip" && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/mod_metab_norm_session_helpers.R:50:        workflowState <- if (inherits(manager, "DIAStateAdapter")) {
+R/mod_metab_norm_session_helpers.R:110:        if (!isTRUE(committed)) workflowData$state_manager$saveState( # KIT-032: the declared operation committed on the owner
+R/mod_metab_norm_session_helpers.R:372:    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/mod_metab_norm_session_helpers.R:740:    if (!inherits(manager, "DIAStateAdapter")) {
+R/mod_metab_qc_duplicates_server_helpers.R:414:    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/mod_metab_qc_intensity.R:407:                owned <- inherits(workflow_data$state_manager, "DIAStateAdapter")
+R/mod_metab_qc_intensity.R:408:                filtered_s4 <- if (owned) {
+R/mod_metab_qc_intensity.R:429:                saved_state_name <- if (owned) "metab_intensity_filtered" else saveMetabIntensityFilterState(
+R/mod_metab_qc_s4_server_helpers.R:359:    if (inherits(stateManager, "DIAStateAdapter")) {
+R/mod_metab_summary_observer_helpers.R:333:        if (!is.null(workflow_data) && inherits(workflow_data$state_manager, "DIAStateAdapter")) {
+R/mod_metab_summary_observer_helpers.R:847:                if (!is.null(workflowData) && inherits(workflowData$state_manager, "DIAStateAdapter")) {
+R/utils_workflow_lipid_declarations.R:268:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:338:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the lipid step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:354:    if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+R/utils_workflow_lipid_declarations.R:369:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_lipid_declarations.R:385:    if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+R/utils_workflow_lipid_declarations.R:412:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the lipid DA needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_metab_declarations.R:293:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
+R/utils_workflow_metab_declarations.R:309:    if (!inherits(manager, "DIAStateAdapter")) return(invisible(NULL))
+R/utils_workflow_metab_declarations.R:330:    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the metabolomics DA needs the session's state owner", class = "saved_entity_scope")
+--- shared session helpers (omics) ---
+R/utils_workflow_dia_sessions.R:900: [bindWorkflowOwnerTypeAtDesign]     if (!inherits(manager, "DIAStateAdapter")) return(invisible(manager))
+R/utils_workflow_dia_sessions.R:1327: [ingestWorkflowOmicsLegacySession]     if (!inherits(previous, "DIAStateAdapter")) return(FALSE)
+R/utils_workflow_dia_sessions.R:1402: [resolveWorkflowOmicsOwnedSession]     if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+R/utils_workflow_dia_sessions.R:1426: [workflowSummaryFinalStateName]     if (inherits(manager, "DIAStateAdapter")) {

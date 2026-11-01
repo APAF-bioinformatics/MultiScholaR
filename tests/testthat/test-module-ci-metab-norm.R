@@ -48,7 +48,7 @@ test_that("MCI-015.1 normalization method matrix preserves assay names, samples,
 
   expect_s4_class(shell_state$currentS4, "MetaboliteAssayData")
   expect_true(norm_data$normalization_complete)
-  expect_true("metab_normalized" %in% names(workflow$state_manager$saved()))
+  expect_true("metab_normalized" %in% workflow$state_manager$getHistory())
   module_ci_metab_norm_assert_alignment(shell_state$currentS4, c("LCMS_Pos", "GCMS"))
 })
 
@@ -97,7 +97,7 @@ test_that("MCI-015.2 ITSD matrix serializes regex, manual, absent, and invalid I
 
   expect_true(itsd_state$applied)
   expect_s4_class(norm_data$post_itsd_obj, "MetaboliteAssayData")
-  expect_true("metab_itsd_norm" %in% names(workflow$state_manager$saved()))
+  expect_true("metab_itsd_norm" %in% workflow$state_manager$getHistory())
   expect_identical(norm_data$post_itsd_obj@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
 
   no_itsd <- module_ci_metab_norm_object(layout = "gc", include_itsd = FALSE, positive_only = TRUE)
@@ -162,46 +162,49 @@ test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, contr
     module_ci_metab_norm_ruv_results(theObject, mode = ruv_mode)
   }
 
-  manual_norm_data <- module_ci_metab_norm_data(object)
-  manual_opt <- runMetabNormRuvOptimizationStep(
-    currentS4 = object,
-    ruvMode = "manual",
-    autoPercentageMin = 5,
-    autoPercentageMax = 10,
-    ruvGroupingVariable = "tech_rep_group",
-    separationMetric = "max_difference",
-    kPenaltyWeight = 0.5,
-    adaptiveKPenalty = FALSE,
-    manualK = 2L,
-    manualPercentage = 40,
-    experimentPaths = list(metabolite_qc_dir = tempdir()),
-    normData = manual_norm_data,
-    runPerAssayRuvOptimizationFn = optimizer_stub
-  )
-  expect_named(manual_opt$bestKPerAssay, c("LCMS_Pos", "GCMS"))
-  expect_identical(unname(unlist(manual_opt$bestKPerAssay)), c(2L, 2L))
-  expect_true(all(vapply(manual_opt$ctrlPerAssay, function(x) {
+  # KIT-072: the optimisation and the correction are the one declared operation `metab_ruv` on the owner (the
+  # removed optimisation/correction step helpers were the test double's path); the lane's kernels are bound in the
+  # namespace the declaration calls.
+  identity_ruv <- function(theObject, ruv_grouping_variable, ruv_number_k, ctrl) {
+    theObject@args$ruvIII_C_Varying <- list(ruv_grouping_variable = ruv_grouping_variable,
+      ruv_number_k = ruv_number_k, ctrl = ctrl)
+    theObject
+  }
+  run_ruv <- function(mode, optimizer, ruv_fn = identity_ruv, manual_k = 2L, manual_percentage = 40,
+                      percentage_min = 5, percentage_max = 10, adaptive = FALSE) {
+    testthat::local_mocked_bindings(runPerAssayRuvOptimization = optimizer, ruvIII_C_Varying = ruv_fn,
+      .package = "MultiScholaR")
+    case_workflow <- module_ci_metab_norm_workflow(object)
+    case_norm_data <- module_ci_metab_norm_data(object)
+    state <- runMetabNormRuvProgressApplyShell(
+      currentS4 = object, totalSteps = 4, ruvMode = mode,
+      autoPercentageMin = percentage_min, autoPercentageMax = percentage_max,
+      ruvGroupingVariable = "tech_rep_group", separationMetric = "max_difference", kPenaltyWeight = 0.5,
+      adaptiveKPenalty = adaptive, manualK = manual_k, manualPercentage = manual_percentage,
+      experimentPaths = list(metabolite_qc_dir = tempdir()), groupingVariable = "group", shapeVariable = "batch",
+      workflowData = case_workflow, normData = case_norm_data, incProgressFn = function(...) invisible(NULL),
+      runRuvQcStepFn = function(currentS4, ...) list(currentS4 = currentS4)
+    )
+    list(state = state, workflow = case_workflow, norm_data = case_norm_data)
+  }
+
+  manual <- run_ruv("manual", optimizer_stub)
+  manual_k <- manual$state$optimizationState$bestKPerAssay
+  expect_named(manual_k, c("LCMS_Pos", "GCMS"))
+  expect_identical(unname(unlist(manual_k)), c(2L, 2L))
+  expect_true(all(vapply(extractCtrlPerAssay(manual$state$optimizationState$ruvResults), function(x) {
     is.logical(x) && !is.null(names(x)) && sum(x) == 6L
   }, logical(1))))
 
-  auto_opt <- runMetabNormRuvOptimizationStep(
-    currentS4 = object,
-    ruvMode = "automatic",
-    autoPercentageMin = 10,
-    autoPercentageMax = 12,
-    ruvGroupingVariable = "tech_rep_group",
-    separationMetric = "max_difference",
-    kPenaltyWeight = 0.5,
-    adaptiveKPenalty = TRUE,
-    manualK = 2L,
-    manualPercentage = 40,
-    experimentPaths = list(metabolite_qc_dir = tempdir()),
-    normData = module_ci_metab_norm_data(object),
-    runPerAssayRuvOptimizationFn = optimizer_stub
-  )
-  expect_identical(unname(unlist(auto_opt$bestKPerAssay)), c(1L, 2L))
-  expect_equal(auto_opt$ruvResults$LCMS_Pos$best_percentage, 13)
-  expect_s3_class(auto_opt$ruvResults$GCMS$optimization_results, "data.frame")
+  auto <- run_ruv("automatic", optimizer_stub, percentage_min = 10, percentage_max = 12, adaptive = TRUE)
+  expect_identical(unname(unlist(auto$state$optimizationState$bestKPerAssay)), c(1L, 2L))
+  expect_equal(auto$state$optimizationState$ruvResults$LCMS_Pos$best_percentage, 13)
+  expect_s3_class(auto$state$optimizationState$ruvResults$GCMS$optimization_results, "data.frame")
+  # The correction: committed under `metab_ruv_corrected` with the per-assay k of the optimisation.
+  expect_s4_class(auto$state$currentS4, "MetaboliteAssayData")
+  expect_true(auto$norm_data$ruv_complete)
+  expect_true("metab_ruv_corrected" %in% auto$workflow$state_manager$getHistory())
+  expect_identical(auto$state$currentS4@args$ruvIII_C_Varying$ruv_number_k$LCMS_Pos, 1L)
 
   failed_results <- module_ci_metab_norm_ruv_results(object)
   failed_results$LCMS_Pos <- list(
@@ -211,64 +214,24 @@ test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, contr
     control_genes_index = NULL,
     error = "too few controls"
   )
-  failed_opt <- runMetabNormRuvOptimizationStep(
-    currentS4 = object,
-    ruvMode = "manual",
-    autoPercentageMin = 5,
-    autoPercentageMax = 10,
-    ruvGroupingVariable = "tech_rep_group",
-    separationMetric = "max_difference",
-    kPenaltyWeight = 0.5,
-    adaptiveKPenalty = FALSE,
-    manualK = 2L,
-    manualPercentage = 1,
-    experimentPaths = list(metabolite_qc_dir = tempdir()),
-    normData = module_ci_metab_norm_data(object),
-    runPerAssayRuvOptimizationFn = function(...) failed_results
-  )
-  expect_true(is.na(failed_opt$bestKPerAssay$LCMS_Pos))
-  expect_null(failed_opt$ctrlPerAssay$LCMS_Pos)
-  expect_identical(failed_opt$bestKPerAssay$GCMS, 2L)
-
-  correction_workflow <- module_ci_metab_norm_workflow(object)
-  correction_norm_data <- module_ci_metab_norm_data(object)
-  correction <- runMetabNormRuvCorrectionStep(
-    currentS4 = object,
-    ruvGroupingVariable = "tech_rep_group",
-    bestKPerAssay = auto_opt$bestKPerAssay,
-    ctrlPerAssay = auto_opt$ctrlPerAssay,
-    workflowData = correction_workflow,
-    normData = correction_norm_data,
-    ruvIII_C_VaryingFn = function(theObject, ruv_grouping_variable, ruv_number_k, ctrl) {
-      theObject@args$ruvIII_C_Varying <- list(
-        ruv_grouping_variable = ruv_grouping_variable,
-        ruv_number_k = ruv_number_k,
-        ctrl = ctrl
-      )
-      theObject
-    }
-  )
-  expect_s4_class(correction$currentS4, "MetaboliteAssayData")
-  expect_true(correction_norm_data$ruv_complete)
-  expect_true("metab_ruv_corrected" %in% names(correction_workflow$state_manager$saved()))
-  expect_identical(correction$currentS4@args$ruvIII_C_Varying$ruv_number_k$LCMS_Pos, 1L)
+  failed <- run_ruv("manual", function(...) failed_results, manual_percentage = 1)
+  expect_true(is.na(failed$state$optimizationState$bestKPerAssay$LCMS_Pos))
+  expect_null(extractCtrlPerAssay(failed_results)$LCMS_Pos)
+  expect_identical(failed$state$optimizationState$bestKPerAssay$GCMS, 2L)
 
   invalid_workflow <- module_ci_metab_norm_workflow(object)
   invalid_norm_data <- module_ci_metab_norm_data(object)
-  expect_error(
-    runMetabNormRuvCorrectionStep(
-      currentS4 = object,
-      ruvGroupingVariable = "tech_rep_group",
-      bestKPerAssay = list(LCMS_Pos = 0L, GCMS = 2L),
-      ctrlPerAssay = module_ci_metab_norm_ctrl(object),
-      workflowData = invalid_workflow,
-      normData = invalid_norm_data,
-      ruvIII_C_VaryingFn = function(...) stop("invalid k")
-    ),
-    "invalid k"
-  )
+  testthat::local_mocked_bindings(runPerAssayRuvOptimization = optimizer_stub,
+    ruvIII_C_Varying = function(...) stop("invalid k"), .package = "MultiScholaR")
+  expect_error(runMetabNormRuvProgressApplyShell(
+    currentS4 = object, totalSteps = 4, ruvMode = "manual", autoPercentageMin = 5, autoPercentageMax = 10,
+    ruvGroupingVariable = "tech_rep_group", separationMetric = "max_difference", kPenaltyWeight = 0.5,
+    adaptiveKPenalty = FALSE, manualK = 0L, manualPercentage = 40, experimentPaths = list(metabolite_qc_dir = tempdir()),
+    groupingVariable = "group", shapeVariable = "batch", workflowData = invalid_workflow, normData = invalid_norm_data,
+    incProgressFn = function(...) invisible(NULL), runRuvQcStepFn = function(currentS4, ...) list(currentS4 = currentS4)
+  ), "invalid k")
   expect_false(invalid_norm_data$ruv_complete)
-  expect_false("metab_ruv_corrected" %in% names(invalid_workflow$state_manager$saved()))
+  expect_false("metab_ruv_corrected" %in% invalid_workflow$state_manager$getHistory())
 })
 
 test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, boundary, small-n, and invalid inputs", {
@@ -285,9 +248,13 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
   expect_identical(skip_state$status, "success")
   expect_true(norm_data$correlation_filtering_complete)
   expect_identical(norm_data$correlation_filtered_obj, object)
-  expect_true("metab_norm_complete" %in% names(workflow$state_manager$saved()))
+  expect_true("metab_norm_complete" %in% workflow$state_manager$getHistory())
 
   run_apply_case <- function(case) {
+    # KIT-072: the declared pairs operation calls the namespace kernel, so the case's pairs are bound there.
+    testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(...) {
+      module_ci_metab_norm_correlation_pairs(case, names(object@metabolite_data))
+    }, .package = "MultiScholaR")
     case_workflow <- module_ci_metab_norm_workflow(object)
     case_norm_data <- module_ci_metab_norm_data(object)
     observer_state <- list(
@@ -302,10 +269,7 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
       observerState = observer_state,
       showNotificationFn = function(...) invisible(NULL),
       removeNotificationFn = function(...) invisible(NULL),
-      reqFn = function(value) value,
-      calculateCorrelationsFn = function(...) {
-        module_ci_metab_norm_correlation_pairs(case, names(object@metabolite_data))
-      }
+      reqFn = function(value) value
     ))) -> result
     list(result = result, workflow = case_workflow, norm_data = case_norm_data)
   }
@@ -313,7 +277,7 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
   pass_all <- run_apply_case("pass_all")
   expect_identical(pass_all$result$status, "success")
   expect_setequal(pass_all$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2", "S3", "S4"))
-  expect_true("metab_correlation_filtered" %in% names(pass_all$workflow$state_manager$saved()))
+  expect_true("metab_correlation_filtered" %in% pass_all$workflow$state_manager$getHistory())
 
   boundary <- run_apply_case("boundary")
   expect_identical(boundary$result$status, "success")
@@ -349,6 +313,7 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
 
   invalid_workflow <- module_ci_metab_norm_workflow(object)
   invalid_norm_data <- module_ci_metab_norm_data(object)
+  testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(...) 1, .package = "MultiScholaR")
   invalid_state <- dispatchMetabNormApplyCorrelation(
     workflowData = invalid_workflow,
     normData = invalid_norm_data,
@@ -361,12 +326,11 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
     showNotificationFn = function(...) invisible(NULL),
     removeNotificationFn = function(...) invisible(NULL),
     reqFn = function(value) value,
-    calculateCorrelationsFn = function(...) 1,
     logErrorFn = function(...) invisible(NULL)
   )
   expect_identical(invalid_state$status, "error")
   expect_false(invalid_norm_data$correlation_filtering_complete)
-  expect_false("metab_correlation_filtered" %in% names(invalid_workflow$state_manager$saved()))
+  expect_false("metab_correlation_filtered" %in% invalid_workflow$state_manager$getHistory())
 })
 
 test_that("MCI-015.5 session export matrix preserves metabolomics, RUV, ITSD, and feature-count payloads", {
@@ -440,7 +404,8 @@ test_that("MCI-015.6 DA reload consumes every accepted metabolomics export varia
     capture$select <- list()
     capture$text <- list()
 
-    result <- runMetabDaLoadSessionObserverShell(
+    # KIT-072: a file from another session adopts into the owner, which attaches to the module's session.
+    result <- shiny::withReactiveDomain(session, runMetabDaLoadSessionObserverShell(
       sessionFile = session_file,
       workflowData = workflow,
       daData = da_data,
@@ -469,7 +434,7 @@ test_that("MCI-015.6 DA reload consumes every accepted metabolomics export varia
           debugLog = debugLog
         )
       }
-    )
+    ))
 
     expect_identical(result$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
@@ -479,6 +444,6 @@ test_that("MCI-015.6 DA reload consumes every accepted metabolomics export varia
     expect_identical(capture$text$formula_string, "~ 0 + group + batch")
     expect_identical(capture$select$volcano_contrast$choices, "KO_vs_WT")
     expect_identical(capture$select$table_assay$choices, c("All", "LCMS_Pos", "GCMS"))
-    expect_true(session_data$r6_current_state_name %in% names(workflow$state_manager$saved()))
+    expect_true(session_data$r6_current_state_name %in% workflow$state_manager$getHistory())
   }
 })

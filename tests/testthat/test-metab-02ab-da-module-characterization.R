@@ -100,6 +100,7 @@ makeMetabDaResults <- function() {
 makeMetabDaSessionData <- function(current_s4 = makeMetabDaCurrentS4()) {
   list(
     current_s4_object = current_s4,
+    omic_type = "metabolomics", # KIT-072: the owner adopts a session of its own omic only (KIT-071)
     r6_current_state_name = "filtered_ready",
     contrasts_tbl = data.frame(
       friendly_names = "B vs A",
@@ -132,7 +133,7 @@ metabDaHasAnalysisInputResolver <- function() {
   )
 }
 
-makeMetabDaHarness <- function(session_file_mode = c("valid", "corrupt", "missing")) {
+makeMetabDaHarness <- function(session_file_mode = c("valid", "corrupt", "missing"), env = parent.frame()) {
   session_file_mode <- match.arg(session_file_mode)
 
   capture <- new.env(parent = emptyenv())
@@ -161,23 +162,10 @@ makeMetabDaHarness <- function(session_file_mode = c("valid", "corrupt", "missin
     writeLines("not an rds payload", session_file)
   }
 
-  # The mock serves a saved state back by name (the WorkflowState contract): since KIT-030 the DA
-  # tab holds the loaded session's state name and reads the object through the state manager.
-  state_manager <- new.env(parent = emptyenv())
-  state_manager$states <- list()
-  state_manager$getState <- function(state_name = NULL, ...) {
-    if (is.null(state_name)) return(NULL)
-    state_manager$states[[state_name]]
-  }
-  state_manager$saveState <- function(...) {
-    args <- list(...)
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- args
-    invisible(NULL)
-    if (!is.null(args$state_name)) state_manager$states[[args$state_name]] <- args$s4_data_object
-  }
-
+  # KIT-072: the bus holds a real metabolomics owner (the modules' only state manager); the DA tab's Open adopts
+  # the session file into it and the tab reads the object back by state name.
   workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- state_manager
+  omicsTestOwner(workflow = workflow_data, omic_type = "metabolomics", env = env)
   workflow_data$contrasts_tbl <- NULL
   workflow_data$tab_status <- list(differential_analysis = "pending", other = "keep")
 
@@ -307,11 +295,9 @@ test_that("mod_metab_da_server preserves load-session public success behavior", 
   setMetabDaInputs(harness$session, load_filtered_session = 1)
 
   expect_identical(harness$workflow_data$contrasts_tbl$friendly_names, "B vs A")
-  expect_identical(harness$capture$saved_states[[1]]$state_name, "filtered_ready")
-  expect_identical(
-    harness$capture$saved_states[[1]]$description,
-    "Loaded from filtered session for DA analysis"
-  )
+  # KIT-071/072: the session file adopts into the owner under its state name.
+  expect_identical(harness$workflow_data$state_manager$current_state, "filtered_ready")
+  expect_s4_class(harness$workflow_data$state_manager$getState("filtered_ready"), "MetaboliteAssayData")
 })
 
 test_that("mod_metab_da_server preserves load-session public error behavior", {
@@ -321,7 +307,7 @@ test_that("mod_metab_da_server preserves load-session public error behavior", {
   launchMetabDaModule(harness)
   setMetabDaInputs(harness$session, load_filtered_session = 1)
 
-  expect_length(harness$capture$saved_states, 0)
+  expect_false("filtered_ready" %in% harness$workflow_data$state_manager$getHistory())
   expect_length(harness$capture$update_select_calls, 0)
   expect_identical(harness$workflow_data$contrasts_tbl, NULL)
 })

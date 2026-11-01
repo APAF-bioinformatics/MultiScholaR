@@ -84,38 +84,23 @@ makeLipidDuplicateCharacterizationData <- function(label = "lipid_dup_fixture") 
   )
 }
 
+# KIT-072: the harness's bus holds a real lipidomics owner (the modules' only state manager) with the data committed
+# under the import and QC states; the resolution commits on it and the revert moves its head back.
 makeLipidDuplicateHarness <- function(
   current_s4 = makeLipidDuplicateCharacterizationData(),
-  history = c("import_complete", "qc_ready", "lipid_duplicates_resolved")
+  env = parent.frame()
 ) {
   capture <- new.env(parent = emptyenv())
   capture$notifications <- list()
   capture$removed_notifications <- character()
-  capture$saved_states <- list()
-  capture$reverted_to <- NULL
 
-  state_manager <- new.env(parent = emptyenv())
-  state_manager$current_state <- current_s4
-  state_manager$current_history <- history
-  state_manager$getState <- function() state_manager$current_state
-  state_manager$getHistory <- function() state_manager$current_history
-  state_manager$saveState <- function(...) {
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- list(...)
-    invisible(NULL)
-  }
-  state_manager$revertToState <- function(state_name) {
-    capture$reverted_to <<- state_name
-    invisible(state_name)
-  }
-
-  workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- state_manager
-  workflow_data$config_list <- list(qc = "ready")
+  workflow_data <- omicsTestOwner(current_s4, "import_complete", config = list(qc = "ready"), env = env)
+  workflow_data$state_manager$saveState("qc_ready", current_s4, workflow_data$config_list, "QC ready")
 
   list(
     capture = capture,
     workflow_data = workflow_data,
-    state_manager = state_manager,
+    state_manager = workflow_data$state_manager,
     current_s4 = current_s4
   )
 }
@@ -189,9 +174,8 @@ test_that("mod_lipid_qc_duplicates_server preserves detect-resolve-revert public
   )
 
   notice_text <- vapply(harness$capture$notifications, notificationText, character(1))
-  expect_length(harness$capture$saved_states, 1L)
-  expect_identical(harness$capture$saved_states[[1]]$state_name, "lipid_duplicates_resolved")
-  expect_identical(harness$capture$reverted_to, "qc_ready")
+  expect_s4_class(harness$state_manager$getState("lipid_duplicates_resolved"), "LipidomicsAssayData")
+  expect_identical(harness$state_manager$current_state, "qc_ready")
   expect_true(any(grepl("Detection complete: 2 duplicate IDs found", notice_text, fixed = TRUE)))
   expect_true(any(grepl("Duplicates resolved: 1 rows removed", notice_text, fixed = TRUE)))
   expect_true(any(grepl("Reverted successfully", notice_text, fixed = TRUE)))
@@ -363,15 +347,15 @@ test_that("lipid duplicate resolution and revert helpers preserve save and fallb
   notifications <- list()
   removed_notifications <- character()
 
+  local_mocked_bindings(resolveLipidDuplicateFeaturesByIntensity = function(assay_tibble, id_col, sample_cols) {
+    expect_identical(id_col, "database_identifier")
+    expect_identical(sample_cols, c("Sample1", "Sample2"))
+    assay_tibble[c(1, 3), , drop = FALSE]
+  }, .env = multiScholaRNamespace())
   resolution_result <- handle_resolution(
     workflowData = harness$workflow_data,
     omicType = "lipidomics",
     reqFn = function(value) value,
-    resolveDuplicatesFn = function(assay_tibble, id_col, sample_cols) {
-      expect_identical(id_col, "database_identifier")
-      expect_identical(sample_cols, c("Sample1", "Sample2"))
-      assay_tibble[c(1, 3), , drop = FALSE]
-    },
     updateFilteringFn = function(...) grid::nullGrob(),
     logWarnFn = function(...) invisible(NULL)
   )
@@ -400,6 +384,7 @@ test_that("lipid duplicate resolution and revert helpers preserve save and fallb
   )
 
   expect_identical(resolution_result$totalRemoved, 1)
+  expect_identical(harness$state_manager$current_state, "lipid_duplicates_resolved")
   expect_identical(output_env$resolution_results, resolution_result$resultText)
   expect_identical(duplicate_value, NULL)
   expect_true(inherits(filter_plot_value, "grob"))
@@ -407,35 +392,8 @@ test_that("lipid duplicate resolution and revert helpers preserve save and fallb
   expect_true("lipid_dup_resolve_working" %in% removed_notifications)
   expect_identical(notifications[[1]]$message, "Duplicates resolved: 1 rows removed")
 
-  no_numeric_s4 <- makeLipidDuplicateCharacterizationData("no_numeric")
-  no_numeric_s4@lipid_data[[1]] <- data.frame(
-    database_identifier = c("L1", "L1"),
-    lipid_identification = c("Annot 1", "Annot 1"),
-    label = c("keep", "drop"),
-    stringsAsFactors = FALSE
-  )
-  warn_messages <- character()
-
-  fallback_result <- handle_resolution(
-    workflowData = list(
-      state_manager = list(
-        getState = function() no_numeric_s4,
-        saveState = function(...) invisible(NULL)
-      ),
-      config_list = list()
-    ),
-    omicType = "lipidomics",
-    reqFn = function(value) value,
-    resolveDuplicatesFn = function(...) stop("resolveDuplicatesFn should not be called"),
-    updateFilteringFn = function(...) stop("plot failed"),
-    logWarnFn = function(message) {
-      warn_messages <<- c(warn_messages, message)
-    }
-  )
-
-  expect_identical(fallback_result$totalRemoved, 0)
-  expect_true(any(grepl("No numeric columns found in assay: Positive Mode", warn_messages, fixed = TRUE)))
-  expect_true(any(grepl("Could not generate QC plot: plot failed", warn_messages, fixed = TRUE)))
+  # KIT-072: the no-numeric fallback is not reachable on the owner (an assay without sample columns is not a valid
+  # LipidomicsAssayData, so no state holds one); the plot-failure warning is covered by the seam tests (01c).
 
   revert_result <- handle_revert(
     workflowData = harness$workflow_data,
@@ -460,7 +418,7 @@ test_that("lipid duplicate resolution and revert helpers preserve save and fallb
     }
   )
 
-  expect_identical(harness$capture$reverted_to, "qc_ready")
+  expect_identical(harness$state_manager$current_state, "qc_ready")
   expect_identical(resolution_stats_value, NULL)
   expect_identical(duplicate_value, NULL)
   expect_identical(filter_plot_value, NULL)

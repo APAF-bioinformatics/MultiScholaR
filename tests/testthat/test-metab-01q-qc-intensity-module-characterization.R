@@ -62,7 +62,6 @@ loadSelectedFunctions(
     "renderMetabIntensityFilterPlot",
     "buildMetabIntensityFilterStats",
     "updateMetabIntensityFilterQcPlot",
-    "saveMetabIntensityFilterState",
     "buildMetabIntensityFilterSummary",
     "reportMetabIntensityFilterSuccess",
     "reportMetabIntensityFilterRevertSuccess",
@@ -140,7 +139,6 @@ metabIntensityHasExtractedSeams <- function() {
       "renderMetabIntensityFilterPlot",
       "buildMetabIntensityFilterStats",
       "updateMetabIntensityFilterQcPlot",
-      "saveMetabIntensityFilterState",
       "buildMetabIntensityFilterSummary",
       "reportMetabIntensityFilterSuccess",
       "reportMetabIntensityFilterRevertSuccess"
@@ -226,15 +224,9 @@ test_that("metabolomics intensity module preserves apply filter public behavior"
     .env = server_env
   )
 
-  state_manager <- list(
-    getState = function() current_s4,
-    saveState = function(...) {
-      captured$save_state_call <- list(...)
-      invisible(NULL)
-    },
-    getHistory = function() "baseline",
-    revertToState = function(state_name) invisible(state_name)
-  )
+  # KIT-072: the filter is the declared operation on a real session owner (the module's only path); the declaration
+  # calls the namespace kernel mocked above.
+  owner_workflow <- omicsTestOwner(current_s4, "metab_raw_data_s4", config = list(config = "value"))
 
   scoped_mocked_bindings(
     moduleServer = function(id, module) {
@@ -310,15 +302,12 @@ test_that("metabolomics intensity module preserves apply filter public behavior"
 
   server_fn(
     id = "intensity",
-    workflow_data = list(
-      state_manager = state_manager,
-      config_list = list(config = "value")
-    ),
+    workflow_data = owner_workflow,
     omic_type = "metabolomics",
     experiment_label = "Experiment A"
   )
 
-  expect_identical(captured$filter_call$the_object, current_s4)
+  expect_equal(captured$filter_call$the_object@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
   expect_identical(captured$filter_call$intensity_cutoff_percentile, 10)
   expect_identical(captured$filter_call$proportion_below_cutoff, 0.5)
   expect_identical(captured$qc_update$the_object, filtered_s4)
@@ -326,9 +315,8 @@ test_that("metabolomics intensity module preserves apply filter public behavior"
   expect_identical(captured$qc_update$omics_type, "metabolomics")
   expect_true(isTRUE(captured$qc_update$return_grid))
   expect_true(isTRUE(captured$qc_update$overwrite))
-  expect_identical(captured$save_state_call$state_name, "metab_intensity_filtered")
-  expect_identical(captured$save_state_call$s4_data_object, filtered_s4)
-  expect_identical(captured$save_state_call$config_object, list(config = "value"))
+  expect_identical(owner_workflow$state_manager$current_state, "metab_intensity_filtered")
+  expect_equal(owner_workflow$state_manager$getState()@metabolite_data, filtered_s4@metabolite_data, ignore_attr = TRUE)
   expect_match(captured$output$filter_results, "Metabolite Intensity Filter Applied Successfully", fixed = TRUE)
   expect_match(captured$output$filter_results, "Plasma: 2 -> 1", fixed = TRUE)
   expect_false(is.null(captured$output$assay_results_tabs))
@@ -844,6 +832,7 @@ test_that("metabolomics intensity QC plot seam falls back to a null plot on refr
 })
 
 test_that("metabolomics intensity state-save seam persists filtered state and returns the saved state name", {
+  skip("KIT-072: quarantined; saveMetabIntensityFilterState was the test double's path and is removed (the filter is the declared operation on the owner, tested in test-workflow-metab-declarations.R)")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -1183,7 +1172,6 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
   binding_names <- c(
     "buildMetabIntensityFilterStats",
     "updateMetabIntensityFilterQcPlot",
-    "saveMetabIntensityFilterState",
     "reportMetabIntensityFilterSuccess",
     "metaboliteIntensityFiltering"
   )
@@ -1281,27 +1269,6 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
       )
       setFilterPlotFn("plot-token")
       invisible("plot-token")
-    },
-    envir = server_env
-  )
-  assign(
-    "saveMetabIntensityFilterState",
-    function(
-      stateManager,
-      filteredS4,
-      configObject,
-      intensityCutoffPercentile,
-      proportionBelowCutoff,
-      ...
-    ) {
-      captured$save_state_helper_call <- list(
-        state_manager = stateManager,
-        filtered_s4 = filteredS4,
-        config_object = configObject,
-        intensity_cutoff_percentile = intensityCutoffPercentile,
-        proportion_below_cutoff = proportionBelowCutoff
-      )
-      invisible("saved-metab-state")
     },
     envir = server_env
   )
@@ -1410,17 +1377,12 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
     .env = asNamespace("logger")
   )
 
-  workflow_data <- list(
-    state_manager = list(
-      getState = function() current_s4,
-      saveState = function(...) {
-        captured$save_state_call <- list(...)
-        invisible(NULL)
-      },
-      getHistory = function() "baseline",
-      revertToState = function(state_name) invisible(state_name)
-    ),
-    config_list = list(config = "value")
+  # KIT-072: the filter is the declared operation on a real session owner (the module's only path), which commits
+  # the state the success report names; the declaration calls the package's kernel, so the mock is bound there too.
+  workflow_data <- omicsTestOwner(current_s4, "metab_raw_data_s4", config = list(config = "value"))
+  testthat::local_mocked_bindings(
+    metaboliteIntensityFiltering = get("metaboliteIntensityFiltering", envir = server_env, inherits = FALSE),
+    .package = "MultiScholaR"
   )
 
   mod_metab_qc_intensity_server(
@@ -1431,24 +1393,20 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
   )
 
   expect_identical(captured$module_id, "intensity")
-  expect_identical(captured$filter_call$the_object, current_s4)
+  expect_equal(captured$filter_call$the_object@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
   expect_identical(captured$filter_call$intensity_cutoff_percentile, 10)
   expect_identical(captured$filter_call$proportion_below_cutoff, 0.5)
-  expect_identical(captured$stats_call$current_s4, current_s4)
+  expect_equal(captured$stats_call$current_s4@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
   expect_identical(captured$stats_call$filtered_s4, filtered_s4)
   expect_identical(captured$success_report_call$stats, expected_stats)
   expect_identical(captured$success_report_call$intensity_cutoff_percentile, 10)
   expect_identical(captured$success_report_call$proportion_below_cutoff, 0.5)
-  expect_identical(captured$success_report_call$state_name, "saved-metab-state")
+  expect_identical(captured$success_report_call$state_name, "metab_intensity_filtered")
   expect_identical(captured$success_report_call$output, captured$output)
   expect_identical(captured$qc_plot_helper_call$filtered_s4, filtered_s4)
   expect_identical(captured$qc_plot_helper_call$omic_type, "metabolomics")
   expect_type(captured$qc_plot_helper_call$set_filter_plot_fn, "closure")
-  expect_identical(captured$save_state_helper_call$state_manager, workflow_data$state_manager)
-  expect_identical(captured$save_state_helper_call$filtered_s4, filtered_s4)
-  expect_identical(captured$save_state_helper_call$config_object, workflow_data$config_list)
-  expect_identical(captured$save_state_helper_call$intensity_cutoff_percentile, 10)
-  expect_identical(captured$save_state_helper_call$proportion_below_cutoff, 0.5)
+  expect_identical(workflow_data$state_manager$current_state, "metab_intensity_filtered")
   expect_identical(length(captured$reactive_values), 2L)
   expect_identical(captured$reactive_values[[1L]]$set_count, 1L)
   expect_identical(captured$reactive_values[[1L]]$last_value, "plot-token")

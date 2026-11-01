@@ -79,21 +79,14 @@ module_ci_lipid_summary_object <- function(config = module_ci_lipid_summary_conf
   object
 }
 
-module_ci_lipid_summary_state_manager <- function(object,
-                                                  state = "lipid_correlation_filtered",
-                                                  state_config = list(ruv_optimization_result = list(best_k = 2L, best_percentage = 40))) {
-  manager <- new.env(parent = emptyenv())
-  manager$current_state <- state
-  manager$state_history <- unique(c("lipid_qc_complete", "lipid_normalized", state))
-  manager$getHistory <- function() manager$state_history
-  manager$getState <- function(state_name = manager$current_state) {
-    if (state_name %in% manager$state_history) {
-      return(object)
-    }
-    NULL
+# KIT-072: a real lipidomics owner on the lane's bus (the modules' only state manager), the lane's object committed
+# under the QC, normalisation and final states; the owner is closed when the test file ends.
+module_ci_lipid_summary_owner <- function(workflow, object, state) {
+  omicsTestOwner(object, "lipid_qc_complete", workflow = workflow, omic_type = "lipidomics", env = testthat::teardown_env())
+  for (name in setdiff(unique(c("lipid_normalized", state)), "lipid_qc_complete")) {
+    workflow$state_manager$saveState(name, object, workflow$config_list, "the lane's object")
   }
-  manager$getStateConfig <- function(state_name) state_config
-  manager
+  workflow
 }
 
 module_ci_lipid_summary_workflow <- function(config = module_ci_lipid_summary_config()) {
@@ -104,11 +97,6 @@ module_ci_lipid_summary_workflow <- function(config = module_ci_lipid_summary_co
     list(mode = config$ruv_mode, best_k = 2L, best_percentage = 40)
   }
   workflow <- new.env(parent = emptyenv())
-  workflow$state_manager <- module_ci_lipid_summary_state_manager(
-    object,
-    state = if (identical(config$ruv_mode, "skip")) "lipid_normalized" else "lipid_correlation_filtered",
-    state_config = list(ruv_optimization_result = ruv_result)
-  )
   workflow$config_list <- list(globalParameters = module_ci_lipid_summary_args(config)$globalParameters)
   workflow$contrasts_tbl <- module_ci_lipid_da_contrasts("multi_group")
   workflow$design_matrix <- object@design_matrix
@@ -123,7 +111,8 @@ module_ci_lipid_summary_workflow <- function(config = module_ci_lipid_summary_co
   )
   workflow$itsd_ui_params <- module_ci_lipid_summary_args(config)$ITSDNormalization
   workflow$ruv_optimization_result <- ruv_result
-  workflow
+  module_ci_lipid_summary_owner(workflow, object,
+    if (identical(config$ruv_mode, "skip")) "lipid_normalized" else "lipid_correlation_filtered")
 }
 
 module_ci_lipid_summary_paths <- function() {

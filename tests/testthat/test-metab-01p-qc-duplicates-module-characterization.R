@@ -196,6 +196,7 @@ test_that("metabolomics duplicate resolution summary seam assembles totals and r
 })
 
 test_that("metabolomics duplicate resolution preflight seam validates state and dispatches assay resolution", {
+  skip("KIT-072: quarantined; prepareMetabDuplicateResolutionState was the test double's path and is removed (the resolution is the declared operation on the owner, tested in test-workflow-metab-declarations.R)")
   captured <- new.env(parent = emptyenv())
   captured$req_values <- list()
   initial_assay_data <- list(
@@ -330,13 +331,8 @@ test_that("metabolomics duplicate resolution apply seam updates reactive state, 
 
   expect_true(visible$visible)
   expect_identical(captured$resolution_stats_updates, list(expected_stats))
-  expect_identical(captured$save_state$state_name, "metab_duplicates_resolved")
-  expect_identical(captured$save_state$metabolite_data, resolved_assay_data)
-  expect_identical(captured$save_state$config_object, list(config = "value"))
-  expect_identical(
-    captured$save_state$description,
-    "Resolved duplicate metabolite features by keeping highest intensity"
-  )
+  # KIT-072: the declared operation committed the state on the owner; the apply step only publishes.
+  expect_null(captured$save_state)
   expect_identical(captured$qc_update$metabolite_data, resolved_assay_data)
   expect_identical(captured$qc_update$step_name, "3_Duplicates_Resolved")
   expect_identical(captured$qc_update$omics_type, "metabolomics")
@@ -412,7 +408,8 @@ test_that("metabolomics duplicate resolution apply seam falls back to a null QC 
 
   expect_true(visible$visible)
   expect_identical(captured$resolution_stats_updates, list(expected_stats))
-  expect_identical(captured$save_state$state_name, "metab_duplicates_resolved")
+  # KIT-072: the declared operation committed the state on the owner; the apply step only publishes.
+  expect_null(captured$save_state)
   expect_identical(
     captured$warnings,
     "Could not generate QC plot: plot refresh failed"
@@ -439,10 +436,11 @@ test_that("metabolomics duplicate resolution workflow seam composes preflight, a
   expected_stats <- list(
     Plasma = list(original = 2, resolved = 1, removed = 1)
   )
-  workflow_data <- list(
-    state_manager = structure(list(id = "state-manager"), class = "mock_state_manager"),
-    config_list = list(config = "value")
-  )
+  # KIT-072: the resolution is the declared operation on the session owner (its only path); the wrapper's commit is
+  # tested with the declarations, so here it is recorded and returns the resolved object and stats.
+  workflow_data <- omicsTestOwner(omic_type = "metabolomics", config = list(config = "value"))
+  resolution <- omicsMockWrapper("runMetabReferenceDuplicateResolution",
+    list(object = resolved_s4, value = list(stats = expected_stats)))
 
   visible <- withVisible(
     runMetabDuplicateResolutionWorkflow(
@@ -461,13 +459,6 @@ test_that("metabolomics duplicate resolution workflow seam composes preflight, a
           list(value)
         )
         invisible(NULL)
-      },
-      prepareResolutionStateFn = function(stateManager) {
-        captured$preflight_state_manager <- stateManager
-        list(
-          currentS4 = resolved_s4,
-          statsList = expected_stats
-        )
       },
       applyResolutionStateFn = function(currentS4, statsList, workflowData, omicType, setResolutionStatsFn, setFilterPlotFn) {
         captured$apply_call <- list(
@@ -497,7 +488,7 @@ test_that("metabolomics duplicate resolution workflow seam composes preflight, a
   )
 
   expect_true(visible$visible)
-  expect_identical(captured$preflight_state_manager, workflow_data$state_manager)
+  expect_identical(resolution$calls, list(list(workflow_data$state_manager, list(config = "value"))))
   expect_identical(captured$apply_call$metabolite_data, resolved_assay_data)
   expect_identical(captured$apply_call$stats_list, expected_stats)
   expect_identical(captured$apply_call$workflow_data, workflow_data)

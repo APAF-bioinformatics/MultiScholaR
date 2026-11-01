@@ -325,33 +325,6 @@ runMetabDuplicateRevertObserverShell <- function(
     })
 }
 
-prepareMetabDuplicateResolutionState <- function(
-    stateManager
-    , resolveDuplicateAssayDataFn = resolveMetabDuplicateAssayData
-    , reqFn = shiny::req
-    , inheritsFn = inherits
-    , expectedClass = "MetaboliteAssayData"
-) {
-    currentS4 <- stateManager$getState()
-    reqFn(currentS4)
-
-    if (!inheritsFn(currentS4, expectedClass)) {
-        stop(sprintf("Current state is not a %s object", expectedClass))
-    }
-
-    resolutionResult <- resolveDuplicateAssayDataFn(
-        assayList = currentS4@metabolite_data
-        , metaboliteIdCol = currentS4@metabolite_id_column
-    )
-
-    currentS4@metabolite_data <- resolutionResult$resolvedAssayList
-
-    list(
-        currentS4 = currentS4
-        , statsList = resolutionResult$statsList
-    )
-}
-
 applyMetabDuplicateResolutionState <- function(
     currentS4
     , statsList
@@ -364,17 +337,9 @@ applyMetabDuplicateResolutionState <- function(
     , stepName = "3_Duplicates_Resolved"
     , updateMetaboliteFilteringFn = updateMetaboliteFiltering
     , logWarnFn = logger::log_warn
-    , commit = TRUE
 ) {
     setResolutionStatsFn(statsList)
-
-    # KIT-032: `commit = FALSE` when the declared operation already committed the state on the owner.
-    if (isTRUE(commit)) workflowData$state_manager$saveState(
-        state_name = stateName
-        , s4_data_object = currentS4
-        , config_object = workflowData$config_list
-        , description = description
-    )
+    # KIT-032: the declared operation committed the state on the owner; this step publishes (KIT-072: one path).
 
     qcPlot <- tryCatch({
         updateMetaboliteFilteringFn(
@@ -404,33 +369,14 @@ runMetabDuplicateResolutionWorkflow <- function(
     , omicType
     , setResolutionStatsFn
     , setFilterPlotFn
-    , prepareResolutionStateFn = prepareMetabDuplicateResolutionState
     , applyResolutionStateFn = applyMetabDuplicateResolutionState
     , buildResolutionSummaryFn = buildMetabDuplicateResolutionSummary
 ) {
-    # KIT-032: on the session owner the resolution is the declared operation `metab_duplicate_resolution`, committed
-    # under `metab_duplicates_resolved` with its provenance (the apply step then publishes without a second commit);
-    # a test double keeps the prepare/apply path.
-    if (inherits(workflowData$state_manager, "DIAStateAdapter")) {
-        resolved <- runMetabReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
-        resolutionPreflight <- list(currentS4 = resolved$object, statsList = resolved$value$stats)
-        resolutionApply <- applyResolutionStateFn(
-            currentS4 = resolutionPreflight$currentS4
-            , statsList = resolutionPreflight$statsList
-            , workflowData = workflowData
-            , omicType = omicType
-            , setResolutionStatsFn = setResolutionStatsFn
-            , setFilterPlotFn = setFilterPlotFn
-            , commit = FALSE
-        )
-        resultSummary <- buildResolutionSummaryFn(statsList = resolutionPreflight$statsList, stateName = resolutionApply$stateName)
-        return(list(resultText = resultSummary$resultText, totalRemoved = resultSummary$totalRemoved))
-    }
-
-    resolutionPreflight <- prepareResolutionStateFn(
-        stateManager = workflowData$state_manager
-    )
-
+    # KIT-032: the resolution is the declared operation `metab_duplicate_resolution`, committed under
+    # `metab_duplicates_resolved` with its provenance; the apply step then publishes (KIT-072: the owner's path is
+    # the only path).
+    resolved <- runMetabReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
+    resolutionPreflight <- list(currentS4 = resolved$object, statsList = resolved$value$stats)
     resolutionApply <- applyResolutionStateFn(
         currentS4 = resolutionPreflight$currentS4
         , statsList = resolutionPreflight$statsList
@@ -439,16 +385,8 @@ runMetabDuplicateResolutionWorkflow <- function(
         , setResolutionStatsFn = setResolutionStatsFn
         , setFilterPlotFn = setFilterPlotFn
     )
-
-    resultSummary <- buildResolutionSummaryFn(
-        statsList = resolutionPreflight$statsList
-        , stateName = resolutionApply$stateName
-    )
-
-    list(
-        resultText = resultSummary$resultText
-        , totalRemoved = resultSummary$totalRemoved
-    )
+    resultSummary <- buildResolutionSummaryFn(statsList = resolutionPreflight$statsList, stateName = resolutionApply$stateName)
+    list(resultText = resultSummary$resultText, totalRemoved = resultSummary$totalRemoved)
 }
 
 runMetabDuplicateResolutionObserver <- function(

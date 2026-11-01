@@ -89,35 +89,25 @@ makeMetabQcS4CharacterizationData <- function(label = "qc_s4_fixture") {
   )
 }
 
+# KIT-072: the harness's bus holds a real metabolomics owner (the modules' only state manager) with the data
+# committed under the history's states; the finalise commits the head's record under the QC state.
 makeMetabQcS4WorkflowHarness <- function(
   current_s4 = makeMetabQcS4CharacterizationData(),
-  history = c("import_complete", "duplicates_resolved", "itsd_applied")
+  history = c("import_complete", "duplicates_resolved", "itsd_applied"),
+  env = parent.frame()
 ) {
-  capture <- new.env(parent = emptyenv())
-  capture$saved_states <- list()
-
-  state_manager <- new.env(parent = emptyenv())
-  state_manager$current_state <- current_s4
-  state_manager$current_history <- history
-  state_manager$getState <- function() state_manager$current_state
-  state_manager$getHistory <- function() state_manager$current_history
-  state_manager$saveState <- function(...) {
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- list(...)
-    invisible(NULL)
-  }
-
   workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- state_manager
   workflow_data$config_list <- list(qc = "complete")
   workflow_data$tab_status <- list(
     quality_control = "pending",
     normalization = "locked"
   )
+  omicsTestOwner(current_s4, history[[1L]], workflow = workflow_data, omic_type = "metabolomics", env = env)
+  for (state in history[-1L]) workflow_data$state_manager$saveState(state, current_s4, workflow_data$config_list, state)
 
   list(
     workflow_data = workflow_data,
-    state_manager = state_manager,
-    capture = capture,
+    state_manager = workflow_data$state_manager,
     current_s4 = current_s4
   )
 }
@@ -153,8 +143,7 @@ test_that("mod_metab_qc_s4_server preserves public finalize behavior", {
   )
 
   expect_identical(harness$workflow_data$tab_status$quality_control, "complete")
-  expect_length(harness$capture$saved_states, 1L)
-  expect_identical(harness$capture$saved_states[[1]]$state_name, "metab_qc_complete")
+  expect_identical(harness$state_manager$current_state, "metab_qc_complete")
 })
 
 test_that("metabolomics QC S4 helper builders preserve summary and assay statistics behavior", {
@@ -247,7 +236,7 @@ test_that("metabolomics QC S4 finalize helpers preserve persistence and completi
     configObject = harness$workflow_data$config_list
   )
   expect_identical(saved_state, "metab_qc_complete")
-  expect_length(harness$capture$saved_states, 1L)
+  expect_identical(harness$state_manager$current_state, "metab_qc_complete")
 
   completed_status <- complete_tab_status(harness$workflow_data)
   expect_identical(completed_status$quality_control, "complete")

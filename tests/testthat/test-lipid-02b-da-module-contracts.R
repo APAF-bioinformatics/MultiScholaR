@@ -1429,18 +1429,11 @@ test_that("restoreLipidDaCurrentS4FromSession keeps the S4/state-manager restore
     workflow_data <- new.env(parent = emptyenv())
     debug_messages <- character()
     info_messages <- character()
-    save_state_call <- NULL
     current_s4_object <- structure(list(kind = "mock-s4"), class = "mock_s4")
-    workflow_data$state_manager <- structure(list(
-        saveState = function(state_name, s4_data_object, config_object, description) {
-            save_state_call <<- list(
-                state_name = state_name,
-                s4_data_object = s4_data_object,
-                config_object = config_object,
-                description = description
-            )
-        }
-    ), class = "mock_state_manager")
+    # KIT-072: a session from an older build adopts into a fresh owner (the modules' only path); the adoption is tested
+    # with the sessions (test-workflow-omics-sessions.R), so here it is recorded.
+    omicsTestOwner(workflow = workflow_data, omic_type = "lipidomics")
+    adoption <- omicsMockWrapper("ingestWorkflowOmicsLegacySession", TRUE)
 
     result <- restoreLipidDaCurrentS4FromSession(
         sessionData = list(
@@ -1465,16 +1458,11 @@ test_that("restoreLipidDaCurrentS4FromSession keeps the S4/state-manager restore
     # KIT-030: the holder keeps the state name; the object lives in the state manager only.
     expect_identical(da_data$current_state_name, "loaded_for_de")
     expect_false(exists("current_s4_object", envir = da_data, inherits = FALSE))
-    expect_identical(save_state_call$state_name, "loaded_for_de")
-    expect_identical(save_state_call$s4_data_object, current_s4_object)
-    expect_identical(
-        save_state_call$config_object,
-        list(loaded_from = "/tmp/lipid_filtered_session_data_latest.rds")
-    )
-    expect_identical(
-        save_state_call$description,
-        "Loaded from filtered session for DA analysis"
-    )
+    expect_length(adoption$calls, 1L)
+    expect_identical(adoption$calls[[1L]][[1L]]$current_s4_object, current_s4_object)
+    expect_identical(adoption$calls[[1L]][[4L]], "lipidomics")
+    expect_identical(adoption$calls[[1L]]$state_name, "loaded_for_de")
+    expect_identical(adoption$calls[[1L]]$path, "/tmp/lipid_filtered_session_data_latest.rds")
     expect_identical(debug_messages, c(
         "  STEP 6a: S4 object class: mock_s4",
         "  STEP 6b: Recording the state name on da_data (the object lives in the state manager)...",
@@ -1484,11 +1472,11 @@ test_that("restoreLipidDaCurrentS4FromSession keeps the S4/state-manager restore
         "    workflow_data is NULL: FALSE",
         "    workflow_data class: environment",
         "    state_manager exists: TRUE",
-        "    state_manager class: mock_state_manager",
+        "    state_manager class: WorkflowStateOwner",
         "  STEP 6e: Calling workflow_data$state_manager$saveState...",
         "  STEP 6f: saveState completed"
     ))
-    expect_identical(info_messages, "   Restored S4 object to state manager")
+    expect_identical(info_messages, "   Adopted the legacy session into a fresh state owner")
 })
 
 test_that("restoreLipidDaPostReadSessionState keeps the empty contrast/assay orchestration contract stable", {
@@ -1625,6 +1613,7 @@ test_that("restoreLipidDaPostReadSessionState keeps the contrast/assay/formula r
 
 test_that("loadLipidDaSessionFromFile keeps the success orchestration contract stable", {
     workflow_data <- new.env(parent = emptyenv())
+    omicsTestOwner(workflow = workflow_data, omic_type = "lipidomics") # KIT-072: the owner is the only manager
     da_data <- new.env(parent = emptyenv())
     debug_messages <- character()
     call_sequence <- character()
@@ -1722,7 +1711,7 @@ test_that("loadLipidDaSessionFromFile keeps the fatal-error orchestration contra
 
     result <- loadLipidDaSessionFromFile(
         sessionFile = "/tmp/lipid_filtered_session_data_latest.rds",
-        workflowData = new.env(parent = emptyenv()),
+        workflowData = omicsTestOwner(omic_type = "lipidomics"), # KIT-072: the owner is the only manager
         daData = new.env(parent = emptyenv()),
         session = "mock-session",
         debugLog = function(...) {
@@ -2170,9 +2159,12 @@ test_that("handleLipidDaRunAnalysisPreflight keeps the execution handoff stable"
 })
 
 test_that("executeLipidDaRunAnalysis keeps the analysis-call and success-finalizer handoff stable", {
-    run_call <- NULL
     success_call <- NULL
     results <- list(da_lipids_long = data.frame(marker = "ok", stringsAsFactors = FALSE))
+    # KIT-072: the DA is the declared operation on the session owner (its only path); the wrapper is tested with the
+    # declarations, so here it is recorded and returns the kernel's list.
+    workflow_data <- omicsTestOwner(omic_type = "lipidomics")
+    wrapper <- omicsMockWrapper("runLipidReferenceDaAnalysis", list(results = results))
 
     returned <- executeLipidDaRunAnalysis(
         currentS4 = "mock-s4",
@@ -2184,16 +2176,12 @@ test_that("executeLipidDaRunAnalysis keeps the analysis-call and success-finaliz
         daQValThresh = 0.05,
         treatLfcCutoff = 1,
         daData = "mock-da-data",
-        workflowData = "mock-workflow-data",
+        workflowData = workflow_data,
         session = "mock-session",
         experimentPaths = list(
             da_output_dir = "/tmp/da-output",
             publication_graphs_dir = "/tmp/publication-graphs"
         ),
-        runLipidsDaFn = function(...) {
-            run_call <<- list(...)
-            results
-        },
         successFinalizerFn = function(...) {
             success_call <<- list(...)
             list(marker = "success-finalizer")
@@ -2203,17 +2191,14 @@ test_that("executeLipidDaRunAnalysis keeps the analysis-call and success-finaliz
         }
     )
 
-    expect_identical(run_call$theObject, "mock-s4")
-    expect_identical(run_call$contrasts_tbl$contrasts, "B_vs_A")
-    expect_identical(run_call$formula_string, "~ condition")
-    expect_identical(run_call$da_q_val_thresh, 0.05)
-    expect_identical(run_call$treat_lfc_cutoff, 1)
-    expect_true(run_call$eBayes_trend)
-    expect_true(run_call$eBayes_robust)
+    expect_identical(wrapper$calls[[1L]][[1L]], workflow_data$state_manager)
+    expect_identical(wrapper$calls[[1L]][[3L]], list(formula_string = "~ condition", da_q_val_thresh = 0.05,
+        treat_lfc_cutoff = 1))
+    expect_identical(wrapper$calls[[1L]][[4L]]$contrasts, "B_vs_A")
 
     expect_identical(success_call$results, results)
     expect_identical(success_call$daData, "mock-da-data")
-    expect_identical(success_call$workflowData, "mock-workflow-data")
+    expect_identical(success_call$workflowData, workflow_data)
     expect_identical(success_call$session, "mock-session")
     expect_identical(success_call$experimentPaths, list(
         da_output_dir = "/tmp/da-output",
@@ -2231,6 +2216,8 @@ test_that("executeLipidDaRunAnalysis keeps the analysis-call and success-finaliz
 
 test_that("executeLipidDaRunAnalysis keeps the error-finalizer handoff stable", {
     error_call <- NULL
+    workflow_data <- omicsTestOwner(omic_type = "lipidomics") # KIT-072: the owner is the only manager
+    omicsMockWrapper("runLipidReferenceDaAnalysis", function(...) stop("boom"))
 
     returned <- executeLipidDaRunAnalysis(
         currentS4 = "mock-s4",
@@ -2242,15 +2229,12 @@ test_that("executeLipidDaRunAnalysis keeps the error-finalizer handoff stable", 
         daQValThresh = 0.05,
         treatLfcCutoff = 1,
         daData = "mock-da-data",
-        workflowData = "mock-workflow-data",
+        workflowData = workflow_data,
         session = "mock-session",
         experimentPaths = list(
             da_output_dir = "/tmp/da-output",
             publication_graphs_dir = "/tmp/publication-graphs"
         ),
-        runLipidsDaFn = function(...) {
-            stop("boom")
-        },
         successFinalizerFn = function(...) {
             stop("success finalizer should not run")
         },

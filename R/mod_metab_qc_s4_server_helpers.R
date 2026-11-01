@@ -354,19 +354,9 @@ saveMetabQcS4CompletedState <- function(
     stateName = "metab_qc_complete",
     description = "QC processing complete - ready for normalization"
 ) {
-    # KIT-032: a store step; on the owner the head's record is committed under the new name with the provenance
-    # `metab_qc_finalize` (the validated object is the head's); a double keeps its `saveState`.
-    if (inherits(stateManager, "DIAStateAdapter")) {
-        commitWorkflowOmicsStoreStep(stateManager, "metab_qc_finalize", stateName, configObject, description)
-        return(invisible(stateName))
-    }
-    stateManager$saveState(
-        state_name = stateName
-        , s4_data_object = currentS4
-        , config_object = configObject
-        , description = description
-    )
-
+    # KIT-032: a store step; the head's record is committed under the new name with the provenance
+    # `metab_qc_finalize` (the validated object is the head's; KIT-072: the owner's path is the only path).
+    commitWorkflowOmicsStoreStep(stateManager, "metab_qc_finalize", stateName, configObject, description)
     invisible(stateName)
 }
 

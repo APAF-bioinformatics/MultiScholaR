@@ -106,38 +106,25 @@ makeMetabDuplicateCharacterizationData <- function(label = "metab_dup_fixture") 
   )
 }
 
+# KIT-072: the harness's bus holds a real metabolomics owner (the modules' only state manager) with the data
+# committed under the history's states; the resolution commits on it and the revert moves its head back.
 makeMetabDuplicateHarness <- function(
   current_s4 = makeMetabDuplicateCharacterizationData(),
-  history = c("import_complete", "qc_ready", "metab_duplicates_resolved")
+  history = c("import_complete", "qc_ready"),
+  env = parent.frame()
 ) {
   capture <- new.env(parent = emptyenv())
   capture$notifications <- list()
   capture$removed_notifications <- character()
-  capture$saved_states <- list()
-  capture$reverted_to <- NULL
 
-  state_manager <- new.env(parent = emptyenv())
-  state_manager$current_state <- current_s4
-  state_manager$current_history <- history
-  state_manager$getState <- function() state_manager$current_state
-  state_manager$getHistory <- function() state_manager$current_history
-  state_manager$saveState <- function(...) {
-    capture$saved_states[[length(capture$saved_states) + 1L]] <<- list(...)
-    invisible(NULL)
-  }
-  state_manager$revertToState <- function(state_name) {
-    capture$reverted_to <<- state_name
-    invisible(state_name)
-  }
-
-  workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- state_manager
-  workflow_data$config_list <- list(qc = "ready")
+  workflow_data <- omicsTestOwner(current_s4, history[[1L]], config = list(qc = "ready"), omic_type = "metabolomics",
+    env = env)
+  for (state in history[-1L]) workflow_data$state_manager$saveState(state, current_s4, workflow_data$config_list, state)
 
   list(
     capture = capture,
     workflow_data = workflow_data,
-    state_manager = state_manager,
+    state_manager = workflow_data$state_manager,
     current_s4 = current_s4
   )
 }
@@ -211,9 +198,8 @@ test_that("mod_metab_qc_duplicates_server preserves detect-resolve-revert public
   )
 
   notice_text <- vapply(harness$capture$notifications, notificationText, character(1))
-  expect_length(harness$capture$saved_states, 1L)
-  expect_identical(harness$capture$saved_states[[1]]$state_name, "metab_duplicates_resolved")
-  expect_identical(harness$capture$reverted_to, "qc_ready")
+  expect_s4_class(harness$state_manager$getState("metab_duplicates_resolved"), "MetaboliteAssayData")
+  expect_identical(harness$state_manager$current_state, "qc_ready")
   expect_true(any(grepl("Detection complete: 2 duplicate IDs found", notice_text, fixed = TRUE)))
   expect_true(any(grepl("Duplicates resolved: 1 rows removed", notice_text, fixed = TRUE)))
   expect_true(any(grepl("Reverted successfully", notice_text, fixed = TRUE)))
@@ -299,7 +285,6 @@ test_that("metabolomics duplicate misc helpers preserve resolution workflow beha
   resolve_assay_data <- getMultiScholaRBinding("resolveMetabDuplicateAssayData")
   build_resolution_summary <- getMultiScholaRBinding("buildMetabDuplicateResolutionSummary")
   detect_features <- getMultiScholaRBinding("detectMetabDuplicateFeatures")
-  prepare_resolution_state <- getMultiScholaRBinding("prepareMetabDuplicateResolutionState")
   apply_resolution_state <- getMultiScholaRBinding("applyMetabDuplicateResolutionState")
   run_resolution_workflow <- getMultiScholaRBinding("runMetabDuplicateResolutionWorkflow")
   revert_resolution <- getMultiScholaRBinding("revertMetabDuplicateResolution")
@@ -353,22 +338,11 @@ test_that("metabolomics duplicate misc helpers preserve resolution workflow beha
   resolution_stats_value <- NULL
   filter_plot_value <- "old"
 
-  preflight <- prepare_resolution_state(
-    stateManager = harness$state_manager,
-    resolveDuplicateAssayDataFn = function(assayList, metaboliteIdCol) {
-      expect_identical(metaboliteIdCol, "metabolite_id")
-      list(
-        resolvedAssayList = list(
-          Plasma = assayList$Plasma[c(1, 3), , drop = FALSE]
-        ),
-        statsList = list(Plasma = list(original = 3, resolved = 2, removed = 1))
-      )
-    },
-    reqFn = function(value) value,
-    inheritsFn = inherits,
-    expectedClass = "MetaboliteAssayData"
-  )
-  expect_identical(preflight$statsList$Plasma$removed, 1)
+  # KIT-072: the resolution is the declared operation on the owner (the removed preflight helper was the test
+  # double's path); the apply step publishes its result.
+  resolved_s4 <- harness$current_s4
+  resolved_s4@metabolite_data$Plasma <- resolved_s4@metabolite_data$Plasma[c(1, 3), , drop = FALSE]
+  preflight <- list(currentS4 = resolved_s4, statsList = list(Plasma = list(original = 3, resolved = 2, removed = 1)))
 
   apply_resolution_state(
     currentS4 = preflight$currentS4,
@@ -384,10 +358,15 @@ test_that("metabolomics duplicate misc helpers preserve resolution workflow beha
     updateMetaboliteFilteringFn = function(...) grid::nullGrob(),
     logWarnFn = function(...) invisible(NULL)
   )
-  expect_identical(harness$capture$saved_states[[1]]$state_name, "metab_duplicates_resolved")
+  expect_identical(harness$state_manager$current_state, "qc_ready")
   expect_identical(resolution_stats_value$Plasma$removed, 1)
   expect_true(inherits(filter_plot_value, "grob"))
 
+  resolution <- omicsMockWrapper("runMetabReferenceDuplicateResolution",
+    function(manager, config) {
+      manager$saveState("metab_duplicates_resolved", resolved_s4, config, "resolved")
+      list(object = resolved_s4, value = list(stats = preflight$statsList))
+    })
   workflow_result <- run_resolution_workflow(
     workflowData = harness$workflow_data,
     omicType = "metabolomics",
@@ -397,7 +376,6 @@ test_that("metabolomics duplicate misc helpers preserve resolution workflow beha
     setFilterPlotFn = function(value) {
       filter_plot_value <<- value
     },
-    prepareResolutionStateFn = function(...) preflight,
     applyResolutionStateFn = function(...) list(stateName = "workflow_state", qcPlot = NULL),
     buildResolutionSummaryFn = function(statsList, stateName) {
       list(totalRemoved = 1, resultText = paste("saved", stateName))
@@ -413,7 +391,7 @@ test_that("metabolomics duplicate misc helpers preserve resolution workflow beha
     revertStateFn = function(manager, stateName) manager$revertToState(stateName)
   )
   expect_identical(revert_result$previousStateName, "qc_ready")
-  expect_identical(harness$capture$reverted_to, "qc_ready")
+  expect_identical(harness$state_manager$current_state, "qc_ready")
 })
 
 test_that("metabolomics duplicate observer helpers preserve notification and output behavior", {

@@ -113,12 +113,11 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
   payload <- module_ci_lipid_design_payload(layout = "combined")
   import_root <- module_ci_lipid_design_write_import_pack(tempfile("module-ci-lipid-design-import-"), payload)
   workflow <- module_ci_lipid_design_workflow(payload)
-  workflow$state_manager <- list(saveState = function(...) invisible(NULL))
   qc_value <- FALSE
   assigned_names <- character()
-  s4_token <- structure(list(kind = "lipid-s4"), class = "mock_lipid_s4")
 
-  runLipidDesignImportConfirmationShell(
+  # KIT-072: the import confirms onto the session's pending owner, which the design step binds to the route.
+  shiny::withReactiveDomain(omicsOwnerSession(), runLipidDesignImportConfirmationShell(
     workflowData = workflow,
     experimentPaths = list(source_dir = import_root),
     importPath = import_root,
@@ -134,9 +133,8 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
       jsonlite::read_json(path, simplifyVector = simplifyVector)
     },
     assignFn = function(name, value, envir) assigned_names <<- c(assigned_names, name),
-    createLipidomicsAssayDataFn = function(...) s4_token,
     updateLipidFilteringFn = function(...) invisible(NULL)
-  )
+  ))
 
   expect_identical(workflow$design_matrix$Run, payload$design_matrix$Run)
   expect_identical(workflow$design_matrix$group, payload$design_matrix$group)
@@ -175,9 +173,6 @@ test_that("MCI-019.5 design artifacts preserve expected lipid filenames and seri
   payload <- module_ci_lipid_design_payload(layout = "lc_pair")
   paths <- module_ci_lipid_design_paths()
   workflow <- module_ci_lipid_design_workflow(payload)
-  saved_states <- list()
-  workflow$state_manager <- list(saveState = function(...) saved_states[[length(saved_states) + 1L]] <<- list(...))
-  s4_token <- structure(list(kind = "lipid-s4"), class = "mock_lipid_s4")
   qc_value <- FALSE
 
   shiny::withReactiveDomain(shiny::MockShinySession$new(), {
@@ -185,8 +180,7 @@ test_that("MCI-019.5 design artifacts preserve expected lipid filenames and seri
       results = payload,
       workflowData = workflow,
       experimentPaths = paths,
-      qcTrigger = function(value) qc_value <<- value,
-      createLipidomicsAssayDataFn = function(...) s4_token
+      qcTrigger = function(value) qc_value <<- value
     )
   })
 
@@ -212,7 +206,9 @@ test_that("MCI-019.5 design artifacts preserve expected lipid filenames and seri
   expect_identical(contrasts, payload$contrasts_tbl$contrasts)
   expect_identical(manifest, names(payload$data_cln))
   expect_identical(column_mapping$sample_columns, payload$column_mapping$sample_columns)
-  expect_identical(saved_states[[1L]]$state_name, "lipid_raw_data_s4")
+  # KIT-072: the design step bound the session owner and committed the import's object as its first state.
+  expect_identical(setdiff(workflow$state_manager$getHistory(), "initial")[[1L]], "lipid_raw_data_s4")
+  expect_s4_class(workflow$state_manager$getState("lipid_raw_data_s4"), "LipidomicsAssayData")
   expect_true(qc_value)
   expect_identical(workflow$tab_status$design_matrix, "complete")
 })
@@ -266,7 +262,6 @@ test_that("MCI-019.6 DA preflight catches lipid formula, contrast, and assay/des
 
   invalid_workflow <- module_ci_lipid_design_workflow(payload)
   invalid_workflow$tab_status <- list(design_matrix = "pending")
-  invalid_workflow$state_manager <- list(saveState = function(...) stop("invalid design should not be saved"))
   paths <- module_ci_lipid_design_paths()
   invalid_results <- payload
   invalid_results$data_cln <- drifted_payload$data_cln
@@ -281,5 +276,6 @@ test_that("MCI-019.6 DA preflight catches lipid formula, contrast, and assay/des
   })
   expect_null(invalid_workflow$design_matrix)
   expect_identical(invalid_workflow$tab_status$design_matrix, "pending")
+  expect_identical(invalid_workflow$state_manager$getHistory(), "initial")
   expect_false(file.exists(file.path(paths$source_dir, "design_matrix.tab")))
 })
