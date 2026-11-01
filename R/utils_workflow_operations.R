@@ -658,26 +658,19 @@ registerBuiltinWorkflowOperations <- function() {
             variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
             declaration = declaration))
     }
-    # KIT-031: the lipidomics declarations, every one in process (the route's kernels run projected on the `whole`
-    # variant; the kit's rule that a new workflow adds declarations, registry entries and module code only).
-    for (declaration in lipidomicsWorkflowOperations()) {
-        label <- lipidomicsStepLabels[declaration$name]
-        registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
-            compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
-            parameter_limit = 65536, parameters = declaration$parameters %||% character(),
-            completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
-            omic_type = "lipidomics", variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
-            inclusion_absence = FALSE, declaration = declaration))
-    }
-    # KIT-032: the metabolomics declarations, in process as the lipidomics ones.
-    for (declaration in metabolomicsWorkflowOperations()) {
-        label <- metabolomicsStepLabels[declaration$name]
-        registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
-            compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
-            parameter_limit = 65536, parameters = declaration$parameters %||% character(),
-            completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
-            omic_type = "metabolomics", variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
-            inclusion_absence = FALSE, declaration = declaration))
+    # KIT-031/032: the lipidomics and metabolomics declarations, every one in process (the route's kernels run projected
+    # on the `whole` variant; the kit's rule that a new workflow adds declarations, registry entries and module code
+    # only). KIT-073: both omics from the shared declaration core.
+    for (binding in omicsDeclarationBindings()) {
+        for (declaration in omicsWorkflowOperations(binding)) {
+            label <- binding$step_labels[declaration$name]
+            registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
+                compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
+                parameter_limit = 65536, parameters = declaration$parameters %||% character(),
+                completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
+                omic_type = binding$omic_type, variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+                inclusion_absence = FALSE, declaration = declaration))
+        }
     }
     invisible(workflowOperationNames())
 }

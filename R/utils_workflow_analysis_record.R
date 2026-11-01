@@ -566,11 +566,10 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 commitWorkflowReferenceState(manager, if (correction) "ruv_corrected" else "ruv_covariates", final, config, if (correction)
                     sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
                     sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
-            } else if (identical(entry$omic_type, "lipidomics")) {
-                # KIT-031: the lipidomics declarations through the wrappers the modules call, with the recorded values.
-                replayLipidomicsStep(manager, step, parameters)
-            } else if (identical(entry$omic_type, "metabolomics")) {
-                replayMetabolomicsStep(manager, step, parameters) # KIT-032
+            } else if (!is.null(omicsDeclarationBindings()[[entry$omic_type %||% ""]])) {
+                # KIT-031/032 (KIT-073: one branch): the omics declarations through the wrappers the modules call, with
+                # the recorded values.
+                replayWorkflowOmicsStep(omicsDeclarationBindings()[[entry$omic_type]], manager, step, parameters)
             } else {
                 cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
             }
@@ -590,13 +589,11 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         da_workflow <- new.env(parent = emptyenv())
         da_workflow$state_manager <- manager
         da_workflow$contrasts_tbl <- contrasts
-        if (identical(da$operation, "lipid_da_output")) {
-            # KIT-031: the lipidomics DA from the record's settings and contrasts on the replayed head.
-            withWorkflowStateScope(manager, function() runLipidReferenceDaAnalysis(manager, getWorkflowStateReference(manager),
-                list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), contrasts))
-        } else if (identical(da$operation, "metab_da_output")) {
-            # KIT-032: the metabolomics DA, the same way.
-            withWorkflowStateScope(manager, function() runMetabReferenceDaAnalysis(manager, getWorkflowStateReference(manager),
+        omics_binding <- Find(function(b) identical(da$operation, paste0(b$prefix, "_da_output")), omicsDeclarationBindings())
+        if (!is.null(omics_binding)) {
+            # KIT-031/032 (KIT-073: one branch): the omics DA from the record's settings and contrasts on the replayed head.
+            withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,
+                getWorkflowStateReference(manager),
                 list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), contrasts))
         } else {
             runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
