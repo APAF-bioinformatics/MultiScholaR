@@ -148,3 +148,4 @@ COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2
 COUNTS test-workflow-saved-recovery.R pass 57 fail 0 error 0 skip 2
 COUNTS test-workflow-server-shared.R pass 70 fail 0 error 0 skip 0
 TOTAL pass 12878 fail 0 error 0 skip 31
+frozen-dump test on the install (kit_073 = R4tSbp, source 52a2c179, load_package = installed): pass 40 fail 0 error 0 skip 0
