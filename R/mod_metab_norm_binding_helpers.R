@@ -60,20 +60,21 @@ initializeMetabNormAssayNames <- function(
     stateManager,
     normData,
     reqFn = shiny::req,
-    getStateFn = function(manager) manager$getState(),
+    getStateFn = function(manager) readMetabWorkflowMetadata(manager),
     logInfoFn = logger::log_info,
     logWarnFn = logger::log_warn
 ) {
     reqFn(stateManager)
 
     tryCatch({
-        currentS4 <- getStateFn(stateManager)
+        # KIT-075: the assay names come from the state's metadata.
+        current <- getStateFn(stateManager)
 
-        if (!inherits(currentS4, "MetaboliteAssayData")) {
+        if (!identical(current$class, "MetaboliteAssayData")) {
             return(invisible(NULL))
         }
 
-        detectedAssays <- names(currentS4@metabolite_data)
+        detectedAssays <- current$assay_names
         normData$assay_names <- detectedAssays
         logInfoFn(paste("Detected assays:", paste(detectedAssays, collapse = ", ")))
 
@@ -101,7 +102,7 @@ runMetabNormAutoPreNormalizationQcObserverShell <- function(
     shapeVariable = NULL,
     addLogFn = function(entry) invisible(entry),
     reqFn = shiny::req,
-    getStateFn = function(manager) manager$getState(),
+    getStateFn = function(manager) readMetabWorkflowMetadata(manager), # KIT-075: the class only
     withProgressFn = shiny::withProgress,
     generatePreNormalizationQcFn = generateMetabNormPreNormalizationQc,
     getPlotAestheticsFn = getPlotAesthetics,
@@ -123,7 +124,7 @@ runMetabNormAutoPreNormalizationQcObserverShell <- function(
     reqFn(workflowData$state_manager)
     currentS4 <- tryCatch(getStateFn(workflowData$state_manager), error = function(e) NULL)
 
-    if (is.null(currentS4) || !inherits(currentS4, "MetaboliteAssayData")) {
+    if (is.null(currentS4) || !identical(currentS4$class, "MetaboliteAssayData")) {
         return(invisible(NULL))
     }
 
@@ -213,20 +214,21 @@ renderMetabNormItsdSelectionTable <- function(
     digits = 2,
     filter = "top"
 ) {
+    # KIT-075: the candidate table is built now and the render keeps only it, not the state.
+    assayData <- currentS4@metabolite_data[[assayName]]
+    selectionTable <- if (!is.null(assayData)) {
+        buildItsdSelectionTableFn(
+            assay_data = assayData,
+            metabolite_id_col = currentS4@metabolite_id_column,
+            annotation_cols = currentS4@annotation_id_column
+        )
+    }
+    rm(currentS4, assayData)
+
     renderDataTableFn({
-        assayData <- currentS4@metabolite_data[[assayName]]
-        if (is.null(assayData)) {
+        if (is.null(selectionTable)) {
             return(NULL)
         }
-
-        metaboliteIdCol <- currentS4@metabolite_id_column
-        annotationCol <- currentS4@annotation_id_column
-
-        selectionTable <- buildItsdSelectionTableFn(
-            assay_data = assayData,
-            metabolite_id_col = metaboliteIdCol,
-            annotation_cols = annotationCol
-        )
 
         preselected <- which(selectionTable$is_candidate)
 
@@ -298,7 +300,7 @@ runMetabNormItsdSelectionTableObserverShell <- function(
     workflowData,
     output,
     reqFn = shiny::req,
-    getStateFn = function(stateManager) stateManager$getState(),
+    getStateFn = function(stateManager) readMetabWorkflowState(stateManager), # KIT-075: read for the candidate tables
     walkFn = purrr::walk,
     safeNameFn = function(assayName) gsub("[^A-Za-z0-9]", "_", tolower(assayName)),
     renderItsdSelectionTableFn = renderMetabNormItsdSelectionTable

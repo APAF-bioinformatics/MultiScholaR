@@ -176,6 +176,7 @@ test_that("mod_lipid_norm_server preserves startup log placeholder behavior", {
 })
 
 test_that("mod_lipid_norm_server preserves selected-tab pre-QC error logging behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   harness <- makeLipidNormCharacterizationHarness()
   selected_tab_value <- shiny::reactiveVal("overview")
 
@@ -422,6 +423,7 @@ test_that("lipid norm runtime helpers wire startup and server orchestration laye
 })
 
 test_that("lipid norm observer helpers preserve assay and pre-QC behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skipIfMissingMultiScholaRBindings(
     "registerLipidNormDesignDrivenChoiceObserver",
     "registerLipidNormAssayNameInitializationObserver",

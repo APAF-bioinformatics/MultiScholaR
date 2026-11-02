@@ -27,6 +27,7 @@ registerMetabDaVisualizationOutputs <- function(
     input,
     output,
     daData,
+    workflowData = NULL,
     renderUi = shiny::renderUI,
     renderPlot = shiny::renderPlot,
     renderPrint = shiny::renderPrint,
@@ -44,7 +45,7 @@ registerMetabDaVisualizationOutputs <- function(
 
     output$volcano_glimma <- renderUi({
         buildGlimmaOutput(
-            daResultsList = daData$da_results_list,
+            daResultsList = metabDaResultsWithSource(daData$da_results_list, daData, workflowData),
             selectedContrast = input$volcano_contrast,
             selectedAssay = input$volcano_assay,
             daQValThresh = input$da_q_val_thresh
@@ -63,7 +64,7 @@ registerMetabDaVisualizationOutputs <- function(
 
     output$heatmap_plot <- renderPlot({
         buildHeatmapOutput(
-            daResultsList = daData$da_results_list,
+            daResultsList = metabDaResultsWithSource(daData$da_results_list, daData, workflowData),
             selectedContrast = input$heatmap_contrast,
             selectedAssay = input$heatmap_assay,
             topN = input$heatmap_top_n,
@@ -250,7 +251,8 @@ registerMetabDaMainOutputsAndObservers <- function(
         visualizationOutputs = registerVisualizationOutputs(
             input = input,
             output = output,
-            daData = daData
+            daData = daData,
+            workflowData = workflowData
         ),
         saveHeatmapObserver = registerSaveHeatmapObserver(
             input = input,

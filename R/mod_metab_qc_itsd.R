@@ -387,12 +387,14 @@ runMetabQcItsdServerBody <- function(
         )
 
         tryCatch({
-            current_s4 <- workflowData$state_manager$getState()
+            # KIT-075: the state is read for this analysis only; it leaves the frame before the output is made.
+            current_s4 <- readMetabWorkflowState(workflowData$state_manager)
             reqFn(current_s4)
             analysis <- analyzeMetabQcItsdDataFn(
                 currentS4 = current_s4,
                 inputPattern = input$is_pattern
             )
+            rm(current_s4)
             is_metrics(analysis$metrics)
             is_data_long(analysis$longData)
             output$is_results <- renderTextFn(analysis$resultText)

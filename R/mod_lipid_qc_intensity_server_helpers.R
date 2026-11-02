@@ -84,7 +84,8 @@ registerLipidIntensityRevertObserver <- function(
             history <- workflowData$state_manager$getHistory()
             if (length(history) > 1) {
                 prev_state_name <- history[[length(history) - 1]]
-                workflowData$state_manager$revertToState(prev_state_name)
+                # KIT-075: select the saved state without materialising it (the proteomics GUI's call).
+                selectWorkflowStateReference(workflowData$state_manager, prev_state_name)
                 output$filter_results <- renderTextFn(
                     paste("Reverted to previous state:", prev_state_name)
                 )
@@ -133,20 +134,14 @@ registerLipidIntensityApplyFilterObserver <- function(
         )
 
         tryCatch({
-            current_s4 <- workflowData$state_manager$getState()
-            reqFn(current_s4)
+            # KIT-075: the counts come from the declaration's result and the QC plot from the committed state read for
+            # this action; no object outlives the observer (its outputs' closures keep this frame).
+            current <- readLipidWorkflowMetadata(workflowData$state_manager)
+            reqFn(current)
 
-            if (!inherits(current_s4, "LipidomicsAssayData")) {
+            if (!identical(current$class, "LipidomicsAssayData")) {
                 stop("Current state is not a LipidomicsAssayData object")
             }
-
-            original_counts <- sapply(current_s4@lipid_data, function(assay) {
-                if (current_s4@lipid_id_column %in% names(assay)) {
-                    length(unique(assay[[current_s4@lipid_id_column]]))
-                } else {
-                    nrow(assay)
-                }
-            })
 
             logInfoFn(paste(
                 "Applying lipid intensity filter: percentile ="
@@ -157,16 +152,10 @@ registerLipidIntensityApplyFilterObserver <- function(
 
             # KIT-031: the filter is the declared operation `lipid_intensity_filter`, committed under
             # `lipid_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path).
-            filtered_s4 <- runLipidReferenceIntensityFilter(workflowData$state_manager, input$intensity_cutoff_percentile,
-                input$proportion_below_cutoff, workflowData$config_list)$object
-
-            filtered_counts <- sapply(filtered_s4@lipid_data, function(assay) {
-                if (filtered_s4@lipid_id_column %in% names(assay)) {
-                    length(unique(assay[[filtered_s4@lipid_id_column]]))
-                } else {
-                    nrow(assay)
-                }
-            })
+            filter_run <- runLipidReferenceIntensityFilter(workflowData$state_manager, input$intensity_cutoff_percentile,
+                input$proportion_below_cutoff, workflowData$config_list)
+            original_counts <- filter_run$value$counts$before
+            filtered_counts <- filter_run$value$counts$after
 
             stats_df <- data.frame(
                 Assay = names(original_counts)
@@ -183,7 +172,7 @@ registerLipidIntensityApplyFilterObserver <- function(
 
             qc_plot <- tryCatch({
                 result <- updateLipidFilteringFn(
-                    theObject = filtered_s4
+                    theObject = readLipidWorkflowState(workflowData$state_manager, filter_run$reference)
                     , step_name = "2_Intensity_Filtered"
                     , omics_type = omicType
                     , return_grid = TRUE

@@ -1222,6 +1222,7 @@ test_that("registerLipidNormDesignDrivenChoiceObserver keeps the design-driven c
 })
 
 test_that("registerLipidNormAssayNameInitializationObserver keeps the assay-name initialization contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     if (!methods::isClass("LipidomicsAssayData")) {
         methods::setClass(
             "LipidomicsAssayData",
@@ -1769,6 +1770,7 @@ test_that("registerLipidNormCorrelationFilterSummaryOutput keeps the correlation
 })
 
 test_that("buildLipidNormCorrelationFilterSummaryRenderer keeps the summary contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     if (!methods::isClass("MockLipidNormSummaryObject")) {
         methods::setClass(
             "MockLipidNormSummaryObject",
@@ -1781,18 +1783,18 @@ test_that("buildLipidNormCorrelationFilterSummaryRenderer keeps the summary cont
     norm_data$correlation_results <- list(
         `Positive Mode` = data.frame(pearson_correlation = c(0.8, 0.6))
     )
-    norm_data$ruv_corrected_obj <- methods::new(
-        "MockLipidNormSummaryObject",
-        design_matrix = data.frame(sample = c("s1", "s2", "s3", "s4"))
+    # KIT-075: `normData` holds state references (here names the stand-in manager resolves).
+    states <- list(
+        ruv = methods::new("MockLipidNormSummaryObject", design_matrix = data.frame(sample = c("s1", "s2", "s3", "s4"))),
+        filtered = methods::new("MockLipidNormSummaryObject", design_matrix = data.frame(sample = c("s1", "s2", "s3")))
     )
+    norm_data$ruv_corrected_obj <- "ruv"
     norm_data$post_norm_obj <- NULL
-    norm_data$correlation_filtered_obj <- methods::new(
-        "MockLipidNormSummaryObject",
-        design_matrix = data.frame(sample = c("s1", "s2", "s3"))
-    )
+    norm_data$correlation_filtered_obj <- "filtered"
 
     render_summary <- buildLipidNormCorrelationFilterSummaryRenderer(
         normData = norm_data,
+        workflowData = list(state_manager = list(getState = function(state_name) states[[state_name]])),
         renderTextFn = function(expr) {
             force(expr)
         }
@@ -1810,12 +1812,16 @@ test_that("buildLipidNormCorrelationFilterSummaryRenderer keeps the summary cont
 })
 
 test_that("buildLipidNormFinalQcPlotRenderer keeps the final QC render contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     norm_data <- new.env(parent = emptyenv())
     norm_data$correlation_filtering_complete <- TRUE
     norm_data$ruv_complete <- FALSE
-    norm_data$post_norm_obj <- structure(list(id = "post-norm"), class = "mockS4")
-    norm_data$ruv_corrected_obj <- structure(list(id = "ruv"), class = "mockS4")
-    norm_data$correlation_filtered_obj <- structure(list(id = "filtered"), class = "mockS4")
+    # KIT-075: `normData` holds state references (here names the stand-in manager resolves).
+    states <- list(post_norm = structure(list(id = "post-norm"), class = "mockS4"),
+        ruv = structure(list(id = "ruv"), class = "mockS4"), filtered = structure(list(id = "filtered"), class = "mockS4"))
+    norm_data$post_norm_obj <- "post_norm"
+    norm_data$ruv_corrected_obj <- "ruv"
+    norm_data$correlation_filtered_obj <- "filtered"
 
     plot_pca_call <- NULL
     empty_plot_calls <- list()
@@ -1823,6 +1829,7 @@ test_that("buildLipidNormFinalQcPlotRenderer keeps the final QC render contract 
 
     render_final_qc <- buildLipidNormFinalQcPlotRenderer(
         normData = norm_data,
+        workflowData = list(state_manager = list(getState = function(state_name) states[[state_name]])),
         getPlotAestheticsFn = function() {
             aesthetics_calls <<- aesthetics_calls + 1
             list(color_var = "batch", shape_var = "group")
@@ -1860,7 +1867,7 @@ test_that("buildLipidNormFinalQcPlotRenderer keeps the final QC render contract 
         render_final_qc(),
         list(plots = list("plot-a", "plot-b"), ncol = 1)
     )
-    expect_identical(plot_pca_call$theObject, norm_data$correlation_filtered_obj)
+    expect_identical(plot_pca_call$theObject, states$filtered)
     expect_identical(plot_pca_call$grouping_variable, "batch")
     expect_identical(plot_pca_call$shape_variable, "group")
     expect_identical(plot_pca_call$title, "Final QC - PCA")
@@ -1982,6 +1989,7 @@ test_that("registerLipidNormRuvCancorOutputs keeps the per-assay RUV cancor bind
 })
 
 test_that("registerLipidNormItsdTableOutputs keeps the per-assay ITSD table bindings stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     if (!methods::isClass("LipidomicsAssayData")) {
         methods::setClass(
             "LipidomicsAssayData",
@@ -2178,15 +2186,16 @@ test_that("handleLipidNormRunNormalization keeps the skip-path contract stable",
     notifications <- list()
     log_messages <- character()
     log_transform_call <- NULL
-    current_s4 <- structure(list(id = "current"), class = "mockS4")
-    log2_s4 <- structure(list(id = "log2"), class = "mockS4")
+    # KIT-075: real lipid objects, since the QC plots read the committed states per action.
+    current_s4 <- omicsOwnerLipidObject()
+    log2_s4 <- omicsOwnerLipidObject(n = 5L)
     workflow_data <- new.env(parent = emptyenv())
     workflow_data$config_list <- list(mode = "test")
     # KIT-072: each kernel is its declared operation on the session owner (the modules' only path); the wrappers'
-    # commits are tested with the declarations, so here they are recorded.
+    # commits are tested with the declarations, so here they are recorded (KIT-075: committing their states).
     omicsTestOwner(current_s4, "lipid_qc_complete", workflow = workflow_data, omic_type = "lipidomics")
-    log2_wrapper <- omicsMockWrapper("runLipidReferenceLog2", list(object = log2_s4))
-    between_wrapper <- omicsMockWrapper("runLipidReferenceBetweenSampleNormalisation", list(object = log2_s4))
+    log2_wrapper <- omicsMockWrapper("runLipidReferenceLog2", omicsMockCommit(log2_s4, "lipid_log2"))
+    between_wrapper <- omicsMockWrapper("runLipidReferenceBetweenSampleNormalisation", omicsMockCommit(log2_s4, "lipid_normalized"))
     itsd_wrapper <- omicsMockWrapper("runLipidReferenceItsdNormalisation", function(...) stop("unexpected ITSD normalization"))
     ruv_wrapper <- omicsMockWrapper("runLipidReferenceRuv", function(...) stop("unexpected RUV"))
     norm_data <- new.env(parent = emptyenv())
@@ -2314,10 +2323,12 @@ test_that("handleLipidNormRunNormalization keeps the skip-path contract stable",
     )
 
     expect_true(result)
-    expect_identical(norm_data$post_filter_obj, current_s4)
-    expect_identical(norm_data$post_log2_obj, log2_s4)
-    expect_identical(norm_data$post_norm_obj, log2_s4)
-    expect_identical(norm_data$ruv_corrected_obj, log2_s4)
+    # KIT-075: `normData` holds each step's state reference.
+    owner <- workflow_data$state_manager
+    expect_identical(norm_data$post_filter_obj, getWorkflowStateReference(owner, "lipid_qc_complete"))
+    expect_identical(norm_data$post_log2_obj, getWorkflowStateReference(owner, "lipid_log2"))
+    expect_identical(norm_data$post_norm_obj, getWorkflowStateReference(owner, "lipid_normalized"))
+    expect_identical(norm_data$ruv_corrected_obj, norm_data$post_norm_obj)
     expect_true(norm_data$normalization_complete)
     expect_true(norm_data$ruv_complete)
     expect_identical(norm_data$plot_refresh_trigger, 1)
@@ -2386,6 +2397,7 @@ test_that("handleLipidNormRunNormalization keeps the skip-path contract stable",
 })
 
 test_that("handleLipidNormPreNormalizationQc keeps the pre-QC generation contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     if (!methods::isClass("LipidomicsAssayData")) {
         methods::setClass(
             "LipidomicsAssayData",
@@ -2468,6 +2480,7 @@ test_that("handleLipidNormPreNormalizationQc keeps the pre-QC generation contrac
 })
 
 test_that("handleLipidNormSelectedTabPreNormalizationTrigger keeps the auto-trigger contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     if (!methods::isClass("LipidomicsAssayData")) {
         methods::setClass(
             "LipidomicsAssayData",
@@ -2646,7 +2659,8 @@ test_that("handleLipidNormApplyCorrelationFilter keeps the completion contract s
     # KIT-072: the pairs and the selection are the declared operations on the session owner (the modules' only path);
     # the wrapper's commit is tested with the declarations, so here it is recorded.
     omicsTestOwner(current_s4, "lipid_ruv_corrected", workflow = workflow_data, omic_type = "lipidomics")
-    correlation <- omicsMockWrapper("runLipidReferenceCorrelation", list(correlations = corr_results, object = filtered_s4))
+    # KIT-075: the wrapper returns the committed state's reference (here a stand-in value), not the object.
+    correlation <- omicsMockWrapper("runLipidReferenceCorrelation", list(correlations = corr_results, reference = "filtered-reference"))
     workflow_data$tab_status <- list(quality_control = "pending", normalization = "pending")
     norm_data <- new.env(parent = emptyenv())
     norm_data$ruv_complete <- TRUE
@@ -2688,7 +2702,7 @@ test_that("handleLipidNormApplyCorrelationFilter keeps the completion contract s
     expect_true(result)
     expect_identical(correlation$calls, list(list(workflow_data$state_manager, "group", 0.65, workflow_data$config_list)))
     expect_identical(norm_data$correlation_results, corr_results)
-    expect_identical(norm_data$correlation_filtered_obj, filtered_s4)
+    expect_identical(norm_data$correlation_filtered_obj, "filtered-reference")
     expect_true(norm_data$correlation_filtering_complete)
     expect_identical(workflow_data$tab_status$quality_control, "complete")
     expect_identical(workflow_data$tab_status$normalization, "complete")
@@ -2714,13 +2728,15 @@ test_that("handleLipidNormResetNormalization keeps the reset contract stable", {
     saved_state <- NULL
     notification <- NULL
     log_message <- NULL
-    post_filter_obj <- structure(list(id = "post-filter"), class = "mockS4")
+    post_filter_obj <- omicsOwnerLipidObject()
     workflow_data <- new.env(parent = emptyenv())
     workflow_data$config_list <- list(mode = "test")
-    # KIT-072: the reset is a store step on the session owner (the modules' only manager).
-    omicsTestOwner(post_filter_obj, "lipid_normalized", workflow = workflow_data, omic_type = "lipidomics")
+    # KIT-072: the reset is a store step on the session owner (the modules' only manager). KIT-075: `normData` holds
+    # the pre-normalisation state's reference, which the reset recommits.
+    omicsTestOwner(post_filter_obj, "lipid_qc_complete", workflow = workflow_data, omic_type = "lipidomics")
+    workflow_data$state_manager$saveState("lipid_normalized", omicsOwnerLipidObject(n = 5L), list(), "normalised")
     norm_data <- new.env(parent = emptyenv())
-    norm_data$post_filter_obj <- post_filter_obj
+    norm_data$post_filter_obj <- getWorkflowStateReference(workflow_data$state_manager, "lipid_qc_complete")
     norm_data$normalization_complete <- TRUE
     norm_data$ruv_complete <- TRUE
     norm_data$correlation_filtering_complete <- TRUE
@@ -2746,7 +2762,7 @@ test_that("handleLipidNormResetNormalization keeps the reset contract stable", {
 
     expect_true(result)
     expect_identical(workflow_data$state_manager$current_state, "lipid_reset")
-    expect_identical(workflow_data$state_manager$getState("lipid_reset"), post_filter_obj)
+    expect_equal(workflow_data$state_manager$getState("lipid_reset")@lipid_data, post_filter_obj@lipid_data, ignore_attr = TRUE)
     expect_false(norm_data$normalization_complete)
     expect_false(norm_data$ruv_complete)
     expect_false(norm_data$correlation_filtering_complete)
@@ -3396,6 +3412,7 @@ test_that("registerLipidNormServerRuntime keeps the server-runtime handoff stabl
 })
 
 test_that("runLipidNormModuleServerShell keeps the wrapper shell handoff stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     input <- new.env(parent = emptyenv())
     output <- new.env(parent = emptyenv())
     session <- list(ns = function(id) paste("ns", id))
@@ -3446,7 +3463,7 @@ test_that("runLipidNormModuleServerShell keeps the wrapper shell handoff stable"
     )
     expect_setequal(
         names(startup_runtime_args),
-        c("input", "experimentPaths", "normData", "ns")
+        c("input", "experimentPaths", "normData", "ns", "workflowData") # KIT-075: the renderers read through the owner
     )
     expect_identical(startup_runtime_args$input, input)
     expect_identical(startup_runtime_args$experimentPaths, experiment_paths)
@@ -3658,12 +3675,13 @@ test_that("mod_lipid_norm_server routes the module wrapper through the top-level
 })
 
 test_that("mod_lipid_norm_server routes the startup runtime through the top-level seam", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     module_env <- loadLipidNormModuleHarness(stubStartupRuntime = TRUE)
 
     expect_length(module_env$startupRuntimeHelperCalls, 1)
     expect_setequal(
         names(module_env$startupRuntimeHelperCalls[[1]]),
-        c("input", "experimentPaths", "normData", "ns")
+        c("input", "experimentPaths", "normData", "ns", "workflowData") # KIT-075: the renderers read through the owner
     )
     expect_false(is.null(module_env$startupRuntimeHelperCalls[[1]]$input))
     expect_identical(

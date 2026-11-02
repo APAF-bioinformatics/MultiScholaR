@@ -46,7 +46,7 @@ test_that("MCI-021.1 normalization method matrix preserves assay names, samples,
   expect_true(pipeline$norm_data$normalization_complete)
   expect_true(pipeline$norm_data$ruv_complete)
   expect_true("lipid_normalized" %in% pipeline$workflow$state_manager$getHistory())
-  module_ci_lipid_norm_assert_alignment(pipeline$norm_data$post_norm_obj, c("LCMS_Pos", "GCMS"))
+  module_ci_lipid_norm_assert_alignment(module_ci_lipid_norm_state(pipeline$workflow, pipeline$norm_data$post_norm_obj), c("LCMS_Pos", "GCMS"))
 })
 
 test_that("MCI-021.2 ITSD matrix serializes regex, manual, absent, and invalid ITSD choices", {
@@ -95,9 +95,9 @@ test_that("MCI-021.2 ITSD matrix serializes regex, manual, absent, and invalid I
   )))
 
   expect_true(itsd_pipeline$result)
-  expect_s4_class(norm_data$post_itsd_obj, "LipidomicsAssayData")
+  expect_true(isSavedWorkflowReference(norm_data$post_itsd_obj)) # KIT-075: the state's reference
   expect_true("lipid_itsd_norm" %in% workflow$state_manager$getHistory())
-  expect_identical(norm_data$post_itsd_obj@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
+  expect_identical(module_ci_lipid_norm_state(workflow, norm_data$post_itsd_obj)@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
 
   no_itsd <- module_ci_lipid_norm_object(layout = "gc", include_itsd = FALSE, positive_only = TRUE)
   no_itsd_warnings <- character()
@@ -145,8 +145,8 @@ test_that("MCI-021.3 RUV matrix covers skip, manual, automatic, invalid k, contr
   expect_true(manual_pipeline$result)
   expect_true(manual_pipeline$norm_data$ruv_complete)
   expect_true("lipid_ruv_corrected" %in% manual_pipeline$workflow$state_manager$getHistory())
-  expect_identical(manual_pipeline$norm_data$ruv_corrected_obj@args$ruv_number_k$LCMS_Pos, 2L)
-  expect_true(all(vapply(manual_pipeline$norm_data$ruv_corrected_obj@args$ctrl, function(x) {
+  expect_identical(module_ci_lipid_norm_state(manual_pipeline$workflow, manual_pipeline$norm_data$ruv_corrected_obj)@args$ruv_number_k$LCMS_Pos, 2L)
+  expect_true(all(vapply(module_ci_lipid_norm_state(manual_pipeline$workflow, manual_pipeline$norm_data$ruv_corrected_obj)@args$ctrl, function(x) {
     is.logical(x) && !is.null(names(x)) && sum(x) == 6L
   }, logical(1))))
 
@@ -155,8 +155,8 @@ test_that("MCI-021.3 RUV matrix covers skip, manual, automatic, invalid k, contr
     object = object
   )))
   expect_true(auto_pipeline$result)
-  expect_identical(auto_pipeline$norm_data$ruv_corrected_obj@args$ruv_number_k$LCMS_Pos, 1L)
-  expect_identical(auto_pipeline$norm_data$ruv_corrected_obj@args$ruv_number_k$GCMS, 2L)
+  expect_identical(module_ci_lipid_norm_state(auto_pipeline$workflow, auto_pipeline$norm_data$ruv_corrected_obj)@args$ruv_number_k$LCMS_Pos, 1L)
+  expect_identical(module_ci_lipid_norm_state(auto_pipeline$workflow, auto_pipeline$norm_data$ruv_corrected_obj)@args$ruv_number_k$GCMS, 2L)
   expect_equal(auto_pipeline$norm_data$ruv_optimization_results$LCMS_Pos$best_percentage, 13)
   expect_s3_class(auto_pipeline$norm_data$ruv_optimization_results$GCMS$optimization_results, "data.frame")
 
@@ -237,17 +237,17 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
 
   pass_all <- run_apply_case("pass_all")
   expect_true(pass_all$result)
-  expect_setequal(pass_all$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2", "S3", "S4"))
+  expect_setequal(module_ci_lipid_norm_state(pass_all$workflow, pass_all$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2", "S3", "S4"))
   expect_true("lipid_correlation_filtered" %in% pass_all$workflow$state_manager$getHistory())
 
   boundary <- run_apply_case("boundary")
   expect_true(boundary$result)
-  expect_setequal(boundary$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2", "S3", "S4"))
+  expect_setequal(module_ci_lipid_norm_state(boundary$workflow, boundary$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2", "S3", "S4"))
 
   fail_one <- run_apply_case("fail_one")
   expect_true(fail_one$result)
-  expect_identical(fail_one$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2"))
-  expect_identical(module_ci_lipid_norm_sample_cols(fail_one$norm_data$correlation_filtered_obj, "LCMS_Pos"), c("S1", "S2"))
+  expect_identical(module_ci_lipid_norm_state(fail_one$workflow, fail_one$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2"))
+  expect_identical(module_ci_lipid_norm_sample_cols(module_ci_lipid_norm_state(fail_one$workflow, fail_one$norm_data$correlation_filtered_obj), "LCMS_Pos"), c("S1", "S2"))
 
   fail_many <- suppressMessages(filterSamplesByLipidCorrelationThreshold(
     object,

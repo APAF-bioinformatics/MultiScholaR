@@ -227,15 +227,16 @@ for (omic in c("lipidomics", "metabolomics")) {
     withr::defer(closeDIAStateAdapter(workflow$state_manager))
     owner <- workflow$state_manager
     expect_identical(workflowSummaryFinalStateName(owner, case$data_states), case$states[[2]])
+    # KIT-075: the summary reads the final state's metadata, not the object.
     picked <- if (identical(omic, "lipidomics")) getLipidSummaryStateObject(workflow) else getMetabSummaryStateObject(workflow)
-    expect_s4_class(picked, class(case$object)[[1]])
-    expect_identical(omicsSessionComponentIds(owner, picked, case$slot), omicsSessionHeadIds(owner, case$slot))
+    expect_identical(picked$class, class(case$object)[[1]])
+    expect_identical(picked$reference, getWorkflowStateReference(owner, case$states[[2]]))
     # The head reverted to a state that is not a data state: the scan over the head's history finds none, and the
     # site falls back to the current state as before.
     owner$revertToState(case$states[[1]])
     expect_null(workflowSummaryFinalStateName(owner, case$data_states))
     picked <- if (identical(omic, "lipidomics")) getLipidSummaryStateObject(workflow) else getMetabSummaryStateObject(workflow)
-    expect_s4_class(picked, class(case$object)[[1]])
+    expect_identical(picked$class, class(case$object)[[1]])
     # The site's detect seam scans the head's history the same way.
     expect_null(workflowSummaryFinalStateName(owner, case$data_states, detectFn = purrr::detect))
     # KIT-072: a manager that is not an owner is refused by name.

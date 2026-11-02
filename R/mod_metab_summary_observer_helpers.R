@@ -37,10 +37,14 @@ getMetabSummaryStateObject <- function(workflowData) {
         return(NULL)
     }
 
-    tryCatch(state_manager$getState(state_name), error = function(e) NULL)
+    # KIT-075: the state's metadata (its slots, assay names and row counts, design), not the object.
+    tryCatch(readMetabWorkflowMetadata(state_manager, state_name), error = function(e) NULL)
 }
 
 getMetabSummaryObjectArgs <- function(object) {
+    if (is.list(object) && !isS4(object)) {
+        return(object$slots$args) # KIT-075: the state's metadata
+    }
     if (is.null(object) || !isS4(object) || !"args" %in% methods::slotNames(object)) {
         return(NULL)
     }
@@ -105,7 +109,16 @@ prepareMetabSummarySessionState <- function(
     )
     session_state$parameter_payload <- parameter_payload
 
-    if (!is.null(final_s4_object) && isS4(final_s4_object)) {
+    if (is.list(final_s4_object) && !isS4(final_s4_object)) {
+        # KIT-075: the state's metadata.
+        session_state$assay_names <- final_s4_object$assay_names
+        session_state$feature_counts <- final_s4_object$assay_rows
+        sample_id_col <- final_s4_object$slots$sample_id
+        design_matrix <- final_s4_object$design_matrix
+        if (is.data.frame(design_matrix) && length(sample_id_col) == 1L && sample_id_col %in% names(design_matrix)) {
+            session_state$sample_count <- length(unique(design_matrix[[sample_id_col]]))
+        }
+    } else if (!is.null(final_s4_object) && isS4(final_s4_object)) {
         slot_names <- methods::slotNames(final_s4_object)
         if ("metabolite_data" %in% slot_names) {
             assay_data <- tryCatch(final_s4_object@metabolite_data, error = function(e) NULL)
@@ -363,6 +376,7 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
         s4_filepath <- file.path(integration_dir, s4_filename)
 
         saveRdsFn(final_s4_object, s4_filepath)
+        final_s4_object <- NULL # KIT-075: the outputs below keep this frame; the object leaves it once written
         catFn(sprintf(
             "SESSION SUMMARY: Saved Integration S4 object to: %s\n",
             s4_filepath

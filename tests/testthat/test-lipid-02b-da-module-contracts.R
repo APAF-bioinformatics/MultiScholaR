@@ -51,6 +51,7 @@ test_that("initializeLipidDaServerState keeps the reactive-value defaults stable
 })
 
 test_that("registerLipidDaPrimaryTextOutputs keeps the paired render registrations stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     output <- new.env(parent = emptyenv())
     workflow_data <- new.env(parent = emptyenv())
     da_data <- new.env(parent = emptyenv())
@@ -98,7 +99,7 @@ test_that("registerLipidDaPrimaryTextOutputs keeps the paired render registratio
     expect_identical(captured$contrastsTbl, workflow_data$contrasts_tbl)
     expect_true(captured$statusArgs$analysisComplete)
     expect_identical(captured$statusArgs$daResultsList, da_data$da_results_list)
-    expect_identical(captured$statusArgs$currentS4Object, mock_s4)
+    expect_identical(captured$statusArgs$currentS4Object$class, "mock_s4") # KIT-075: the state's metadata
     expect_s3_class(output$contrasts_display, "mock_render")
     expect_s3_class(output$da_status, "mock_render")
 })
@@ -1120,6 +1121,7 @@ test_that("restoreLipidDaFormulaFromSession keeps the formula-restore contract s
 })
 
 test_that("restoreLipidDaFormulaFromSession keeps the warning path stable on S4 extraction errors", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     da_data <- new.env(parent = emptyenv())
     update_calls <- list()
     debug_messages <- character()
@@ -2001,6 +2003,7 @@ test_that("prepareLipidDaRunAnalysisContext keeps the missing-data notification 
 })
 
 test_that("prepareLipidDaRunAnalysisContext keeps the missing-contrasts notification contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     da_data <- new.env(parent = emptyenv())
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
     da_data$current_state_name <- "loaded_for_de"
@@ -2042,13 +2045,14 @@ test_that("prepareLipidDaRunAnalysisContext keeps the missing-contrasts notifica
 })
 
 test_that("prepareLipidDaRunAnalysisContext keeps the state-resolution and running-notification contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     da_data <- new.env(parent = emptyenv())
     workflow_data <- new.env(parent = emptyenv())
     workflow_data$contrasts_tbl <- data.frame(
         contrasts = c("B_vs_A", "C_vs_A"),
         stringsAsFactors = FALSE
     )
-    resolved_s4 <- structure(list(marker = TRUE), class = "LipidomicsAssayData")
+    resolved_s4 <- list(class = "LipidomicsAssayData", marker = TRUE) # KIT-075: the resolver returns the state's metadata
     notifications <- list()
     info_messages <- character()
     resolve_calls <- 0L
@@ -2117,6 +2121,7 @@ test_that("handleLipidDaRunAnalysisPreflight keeps the NULL early-return contrac
 })
 
 test_that("handleLipidDaRunAnalysisPreflight keeps the execution handoff stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     execute_call <- NULL
 
     returned <- handleLipidDaRunAnalysisPreflight(

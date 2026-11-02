@@ -1402,8 +1402,8 @@ ingestWorkflowOmicsLegacySession <- function(value, workflow_data, source_dir, o
     TRUE
 }
 
-#' KIT-071: the DE tab's Open on an owner: the session the owner itself published (its metadata and the head's
-#' state, hydrated as the module reads every state) when `path` is that export, verified by `resolveDIAOwnedExport`
+#' KIT-071: the DE tab's Open on an owner: the session the owner itself published (its metadata, and the head's
+#' state as its reference and slots, KIT-075) when `path` is that export, verified by `resolveDIAOwnedExport`
 #' (the completion record, the file's hash, the head unchanged since); NULL for a legacy RDS, when the caller reads
 #' the file. A manager that is not an owner is refused (KIT-072).
 #' @param manager The module's state manager.
@@ -1419,7 +1419,9 @@ resolveWorkflowOmicsOwnedSession <- function(manager, path) {
         cli::cli_abort("the owner's export names state {.val {state_name}} but the head is {.val {manager$current_state}}",
             class = "saved_entity_corrupt")
     }
-    session$current_s4_object <- manager$getState(state_name)
+    # KIT-075: the head's reference and its slots (the proteomics `state_metadata`), never the object.
+    session$current_s4_object <- getWorkflowStateReference(manager, state_name)
+    session$state_metadata <- withWorkflowStateScope(manager, function() readWorkflowStateMetadata(manager, session$current_s4_object)$data$slots)
     session$owned_generation <- TRUE
     session
 }

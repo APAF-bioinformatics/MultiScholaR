@@ -62,7 +62,8 @@ mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
         registerLipidDaVolcanoGlimmaOutput(
             output = output,
             input = input,
-            daData = da_data
+            daData = da_data,
+            workflowData = workflow_data
         )
 
         # ================================================================
@@ -80,7 +81,8 @@ mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, 
         registerLipidDaHeatmapPlotOutput(
             output = output,
             input = input,
-            daData = da_data
+            daData = da_data,
+            workflowData = workflow_data
         )
 
         # Cluster Summary Output

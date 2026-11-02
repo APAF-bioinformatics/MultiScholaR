@@ -60,13 +60,14 @@ registerLipidNormAssayNameInitializationObserver <- function(
         reqFn(workflowData$state_manager)
 
         tryCatch({
-            current_s4 <- workflowData$state_manager$getState()
+            # KIT-075: the assay names come from the state's metadata.
+            current <- readLipidWorkflowMetadata(workflowData$state_manager)
 
-            if (!inherits(current_s4, "LipidomicsAssayData")) {
+            if (!identical(current$class, "LipidomicsAssayData")) {
                 return()
             }
 
-            detected_assays <- names(current_s4@lipid_data)
+            detected_assays <- current$assay_names
             normData$assay_names <- detected_assays
             logInfoFn(paste("Detected assays:", paste(detected_assays, collapse = ", ")))
 
@@ -164,29 +165,37 @@ registerLipidNormItsdTableOutputs <- function(
         reqFn(normData$assay_names)
         reqFn(workflowData$state_manager)
 
+        # KIT-075: the state is read here for the candidate tables only; each table's render keeps its own table.
         current_s4 <- tryCatch({
-            workflowData$state_manager$getState()
+            readLipidWorkflowState(workflowData$state_manager)
         }, error = function(e) NULL)
 
         if (is.null(current_s4) || !inherits(current_s4, "LipidomicsAssayData")) {
             return()
         }
 
+        selection_tables <- lapply(stats::setNames(normData$assay_names, normData$assay_names), \(assay_name) {
+            assay_data <- current_s4@lipid_data[[assay_name]]
+            if (is.null(assay_data)) {
+                return(NULL)
+            }
+            buildLipidItsdSelectionTableFn(
+                assay_data = assay_data
+                , lipid_id_col = current_s4@lipid_id_column
+                , annotation_cols = current_s4@annotation_id_column
+            )
+        })
+        rm(current_s4)
+
         walkFn(normData$assay_names, \(assay_name) {
             safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
             output_id <- paste0("itsd_table_", safe_name)
+            selection_table <- selection_tables[[assay_name]]
 
             output[[output_id]] <- renderDataTableFn({
-                assay_data <- current_s4@lipid_data[[assay_name]]
-                if (is.null(assay_data)) {
+                if (is.null(selection_table)) {
                     return(NULL)
                 }
-
-                selection_table <- buildLipidItsdSelectionTableFn(
-                    assay_data = assay_data
-                    , lipid_id_col = current_s4@lipid_id_column
-                    , annotation_cols = current_s4@annotation_id_column
-                )
 
                 preselected <- which(selection_table$is_candidate)
 
@@ -257,7 +266,7 @@ handleLipidNormPreNormalizationQc <- function(
     logInfoFn("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
 
     reqFn(workflowData$state_manager)
-    current_s4 <- workflowData$state_manager$getState()
+    current_s4 <- readLipidWorkflowState(workflowData$state_manager) # KIT-075: read for this action only
 
     if (is.null(current_s4)) {
         logWarnFn("No S4 object available for QC plot generation")
@@ -319,12 +328,12 @@ handleLipidNormSelectedTabPreNormalizationTrigger <- function(
     }
 
     reqFn(workflowData$state_manager)
-    current_s4 <- tryCatch(
-        workflowData$state_manager$getState(),
+    current <- tryCatch(
+        readLipidWorkflowMetadata(workflowData$state_manager), # KIT-075: the class only
         error = function(e) NULL
     )
 
-    if (is.null(current_s4) || !inherits(current_s4, "LipidomicsAssayData")) {
+    if (is.null(current) || !identical(current$class, "LipidomicsAssayData")) {
         return(invisible(FALSE))
     }
 

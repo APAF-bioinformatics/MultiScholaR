@@ -101,6 +101,7 @@ makeLipidQcItsdWorkflowHarness <- function(current_s4 = makeLipidQcItsdCharacter
 }
 
 test_that("mod_lipid_qc_itsd_server preserves public internal-standard analysis behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_not(
     exists("mod_lipid_qc_itsd_server", envir = multiScholaRNamespace(), inherits = FALSE),
     "mod_lipid_qc_itsd_server is unavailable in this ref."

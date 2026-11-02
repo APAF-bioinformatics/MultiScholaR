@@ -101,7 +101,8 @@ test_that("MCI-020.2 duplicate matrix covers IDs, annotations/classes, ties, con
   expect_identical(names(dispatched$statsList), c("LCMS_Pos", "GCMS"))
   expect_true(all(vapply(dispatched$statsList, `[[`, numeric(1), "removed") >= 2))
   expect_true("lipid_duplicates_resolved" %in% workflow$state_manager$getHistory())
-  expect_identical(names(dispatched$currentS4@lipid_data), c("LCMS_Pos", "GCMS"))
+  # KIT-075: the result carries the resolved state's reference.
+  expect_identical(readLipidWorkflowMetadata(workflow$state_manager, dispatched$stateReference)$assay_names, c("LCMS_Pos", "GCMS"))
 })
 
 test_that("MCI-020.3 ITSD matrix covers global regex, assay-specific matches, no matches, multiple matches, and invalid selections", {
@@ -258,7 +259,9 @@ test_that("MCI-020.5 finalization validates lipid S4 state and unlocks normaliza
       invisible(NULL)
     }
   )
-  expect_match(captured$invalid_error, "Current state is not a LipidomicsAssayData object", fixed = TRUE)
+  # KIT-075: the state is read through the component reader, which refuses a state with no component metadata before
+  # the class check; the finalise is refused either way.
+  expect_match(captured$invalid_error, "Current state is not a LipidomicsAssayData object|requires explicit legacy conversion")
   expect_identical(invalid_workflow$tab_status$quality_control, "pending")
 
   empty_design <- current

@@ -31,16 +31,17 @@ prepareLipidDaRunAnalysisContext <- function(
     workflowData,
     notify = shiny::showNotification,
     logInfo = logger::log_info,
-    resolveCurrentStateFn = function(workflowData) workflowData$state_manager$getState()
+    resolveCurrentStateFn = function(workflowData) readLipidWorkflowMetadata(workflowData$state_manager)
 ) {
     logInfo("=== RUN DA ANALYSIS BUTTON CLICKED ===")
 
+    # KIT-075: the state's metadata; the DA reads its components inside the declaration.
     currentS4 <- lipidDaCurrentS4(daData, workflowData)
     if (is.null(currentS4)) {
         currentS4 <- resolveCurrentStateFn(workflowData)
     }
 
-    if (is.null(currentS4) || !inherits(currentS4, "LipidomicsAssayData")) {
+    if (!is.list(currentS4) || !identical(currentS4$class, "LipidomicsAssayData")) {
         notify(
             "No lipidomics data loaded. Please load a filtered session first.",
             type = "error",
@@ -132,9 +133,10 @@ handleLipidDaRunAnalysisPreflight <- function(
     currentS4 <- analysisContext$currentS4
     contrastsTbl <- analysisContext$contrastsTbl
 
-    if (inherits(currentS4, "LipidomicsAssayData") && is.function(validatePreflightFn)) {
+    if (is.list(currentS4) && identical(currentS4$class, "LipidomicsAssayData") && is.function(validatePreflightFn)) {
+        # KIT-075: the alignment check reads the state for this action only.
         preflight <- validatePreflightFn(
-            currentS4 = currentS4,
+            currentS4 = readLipidWorkflowState(workflowData$state_manager, currentS4$reference),
             contrastsTbl = contrastsTbl,
             formulaString = formulaString
         )
@@ -300,7 +302,7 @@ finalizeLipidDaRunAnalysisSuccess <- function(
                 list(status = "skipped", success = FALSE)
             } else {
                 success <- writeResultsFn(
-                    da_results_list = results,
+                    da_results_list = lipidDaResultsWithSource(results, daData, workflowData), # KIT-075: the heatmaps' source, read for the export
                     da_output_dir = daOutputDir,
                     publication_graphs_dir = publicationGraphsDir,
                     da_q_val_thresh = daQValThresh,

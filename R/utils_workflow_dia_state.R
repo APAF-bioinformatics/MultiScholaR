@@ -1815,10 +1815,12 @@ resolveDIAOwnedValue <- resolveWorkflowOwnedValue
 
 #' Return a saved GUI reference before a scientific product is looked up.
 #' @param owner,name Existing GUI owner and payload field.
+#' @param manager The state owner (KIT-075: the omics modules pass theirs); NULL finds the session's.
 #' @return Reference in component mode, original payload on legacy paths.
 #' @noRd
-getWorkflowOwnedInput <- function(owner, name) {
-    if (usesDIAReferenceStates(getDIAActiveManager())) owner[[name]] else getDIAOwnedPayload(owner, name)
+getWorkflowOwnedInput <- function(owner, name, manager = NULL) {
+    if (is.null(manager)) manager <- getDIAActiveManager()
+    if (usesDIAReferenceStates(manager)) owner[[name]] else getDIAOwnedPayload(owner, name, manager)
 }
 
 #' DIA name of `getWorkflowOwnedInput` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
@@ -1830,9 +1832,10 @@ getDIAOwnedInput <- getWorkflowOwnedInput
 #' Read an inventoried GUI payload holder, preserving ordinary callers.
 #' @param owner Existing reactiveValues, environment or list.
 #' @param name Existing field name.
+#' @param manager The state owner (KIT-075); NULL finds the session's.
 #' @return Original payload.
 #' @noRd
-getWorkflowOwnedPayload <- function(owner, name) resolveDIAOwnedValue(owner[[name]])
+getWorkflowOwnedPayload <- function(owner, name, manager = NULL) resolveDIAOwnedValue(owner[[name]], manager)
 
 #' DIA name of `getWorkflowOwnedPayload` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
 #' @param ... The arguments of `getWorkflowOwnedPayload`.
@@ -1844,10 +1847,11 @@ getDIAOwnedPayload <- getWorkflowOwnedPayload
 #' @param owner Existing mutable GUI owner.
 #' @param name Existing field name.
 #' @param value Original payload, or NULL to clear the holder.
+#' @param manager The state owner (KIT-075); NULL finds the session's.
 #' @return Updated owner invisibly, preserving list as well as mutable-owner semantics.
 #' @noRd
-setWorkflowOwnedPayload <- function(owner, name, value) {
-    manager <- getDIAActiveManager()
+setWorkflowOwnedPayload <- function(owner, name, value, manager = NULL) {
+    if (is.null(manager)) manager <- getDIAActiveManager()
     previous <- owner[[name]]
     reference <- saveDIAOwnedValue(value, name, manager)
     owner[[name]] <- reference
@@ -1880,15 +1884,18 @@ releaseDIAReplacedOwner <- function(manager, previous, reference) {
 #' @param label Existing consumer role.
 #' @param reactiveValFn Existing constructor, injectable by module tests.
 #' @param snapshot_field Optional existing-session dependency root for native restore.
+#' @param manager The state owner (KIT-075: the omics modules pass theirs, since one session can run several omics);
+#'   NULL finds the session's on every get and set.
 #' @return Function whose getter returns the original payload.
 #' @noRd
 savedReactiveVal <- function(value, label, reactiveValFn = shiny::reactiveVal,
-    snapshot_field = NULL) {
-    manager <- getDIAActiveManager()
+    snapshot_field = NULL, manager = NULL) {
+    owner <- manager
+    manager <- owner %||% getDIAActiveManager()
     reference <- reactiveValFn(saveDIAOwnedValue(value, label, manager))
     value <- NULL
     result <- function(value) {
-        manager <- getDIAActiveManager()
+        manager <- owner %||% getDIAActiveManager()
         if (missing(value)) return(resolveDIAOwnedValue(reference(), manager))
         previous <- shiny::isolate(reference())
         next_reference <- saveDIAOwnedValue(value, label, manager)
@@ -1974,8 +1981,11 @@ attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir =
         info$gui_assay_holders <- stats::setNames(lapply(c("data_tbl", "data_cln",
             "ruv_normalised_for_da_analysis_obj"), function(field) {
             value <- shiny::isolate(workflow_data[[field]])
+            # KIT-075: the omics assay is a named list of tables.
+            tables <- is.list(value) && !is.data.frame(value) && length(value) > 0L &&
+                all(vapply(value, is.data.frame, logical(1)))
             list(reference = isSavedWorkflowReference(value),
-                resident_assay = is.data.frame(value) || isS4(value))
+                resident_assay = is.data.frame(value) || isS4(value) || tables)
         }), c("data_tbl", "data_cln", "ruv_normalised_for_da_analysis_obj"))
         info$reclamation <- list(enabled = manager$.context$reclaim_enabled,
             pending = manager$.context$reclaim_pending, last = manager$.context$reclaim_result)

@@ -252,6 +252,7 @@ buildLipidNormRuvQcUiRenderer <- function(
 
 buildLipidNormCorrelationFilterSummaryRenderer <- function(
     normData,
+    workflowData = NULL,
     renderTextFn = shiny::renderText
 ) {
     function() {
@@ -290,8 +291,9 @@ buildLipidNormCorrelationFilterSummaryRenderer <- function(
             }
 
             if (!is.null(original_obj) && !is.null(filtered_obj)) {
-                original_samples <- nrow(original_obj@design_matrix)
-                filtered_samples <- nrow(filtered_obj@design_matrix)
+                # KIT-075: the slots hold state references; the designs come from their metadata.
+                original_samples <- nrow(readLipidWorkflowMetadata(workflowData$state_manager, original_obj)$design_matrix)
+                filtered_samples <- nrow(readLipidWorkflowMetadata(workflowData$state_manager, filtered_obj)$design_matrix)
                 removed <- original_samples - filtered_samples
 
                 summary_lines <- c(summary_lines, sprintf(
@@ -308,6 +310,7 @@ buildLipidNormCorrelationFilterSummaryRenderer <- function(
 buildLipidNormFinalQcPlotRenderer <- function(
     normData,
     getPlotAestheticsFn,
+    workflowData = NULL,
     renderPlotFn = shiny::renderPlot,
     reqFn = shiny::req,
     plotPcaFn = plotPca,
@@ -322,7 +325,7 @@ buildLipidNormFinalQcPlotRenderer <- function(
         renderPlotFn({
             reqFn(normData$correlation_filtering_complete || normData$ruv_complete)
 
-            current_s4 <- if (!is.null(normData$correlation_filtered_obj)) {
+            current_reference <- if (!is.null(normData$correlation_filtered_obj)) {
                 normData$correlation_filtered_obj
             } else if (!is.null(normData$ruv_corrected_obj)) {
                 normData$ruv_corrected_obj
@@ -330,9 +333,11 @@ buildLipidNormFinalQcPlotRenderer <- function(
                 normData$post_norm_obj
             }
 
-            if (is.null(current_s4)) {
+            if (is.null(current_reference)) {
                 return(emptyPlotFn("No data", 6))
             }
+            # KIT-075: the state is read for this render only.
+            current_s4 <- readLipidWorkflowState(workflowData$state_manager, current_reference)
 
             aesthetics <- getPlotAestheticsFn()
 

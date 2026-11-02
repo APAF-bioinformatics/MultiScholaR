@@ -215,6 +215,7 @@ test_that("metabolomics QC orchestrator preserves the unavailable-state info pan
 })
 
 test_that("metabolomics QC orchestrator preserves populated tab rendering", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedMetabQcCapture()
   server_fn <- getMetabQcServer()
   server_env <- environment(server_fn)
@@ -278,6 +279,7 @@ test_that("metabolomics QC orchestrator preserves qc-trigger submodule initializ
 })
 
 test_that("metabolomics QC orchestrator preserves state-detected auto-initialization", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedMetabQcCapture()
   server_fn <- getMetabQcServer()
   server_env <- environment(server_fn)

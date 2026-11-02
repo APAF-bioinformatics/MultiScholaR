@@ -90,12 +90,13 @@ registerLipidDaVolcanoGlimmaOutput <- function(
     output,
     input,
     daData,
+    workflowData = NULL,
     renderUiFn = shiny::renderUI,
     buildVolcanoGlimmaUiFn = buildLipidDaVolcanoGlimmaUi
 ) {
     output$volcano_glimma <- renderUiFn({
         buildVolcanoGlimmaUiFn(
-            daResultsList = daData$da_results_list,
+            daResultsList = lipidDaResultsWithSource(daData$da_results_list, daData, workflowData),
             selectedContrast = input$volcano_contrast,
             selectedAssay = input$volcano_assay,
             daQValThresh = input$da_q_val_thresh
@@ -129,13 +130,14 @@ registerLipidDaHeatmapPlotOutput <- function(
     output,
     input,
     daData,
+    workflowData = NULL,
     renderPlotFn = shiny::renderPlot,
     buildHeatmapRenderStateFn = buildLipidDaHeatmapRenderState,
     storeHeatmapRenderStateFn = storeLipidDaHeatmapRenderState
 ) {
     output$heatmap_plot <- renderPlotFn({
         heatmapState <- buildHeatmapRenderStateFn(
-            daResultsList = daData$da_results_list,
+            daResultsList = lipidDaResultsWithSource(daData$da_results_list, daData, workflowData),
             selectedContrast = input$heatmap_contrast,
             selectedAssay = input$heatmap_assay,
             topN = input$heatmap_top_n,

@@ -280,6 +280,7 @@ test_that("metabolomics duplicate helper builders preserve assay summaries and r
 })
 
 test_that("metabolomics duplicate misc helpers preserve resolution workflow behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_metab_duplicate_helpers()
 
   resolve_assay_data <- getMultiScholaRBinding("resolveMetabDuplicateAssayData")

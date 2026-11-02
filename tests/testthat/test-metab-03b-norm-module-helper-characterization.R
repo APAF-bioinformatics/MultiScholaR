@@ -269,6 +269,7 @@ test_that("metabolomics normalization module design-driven choices helper preser
 })
 
 test_that("metabolomics normalization module assay-name initialization helper preserves detected assay updates", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   norm_data <- new.env(parent = emptyenv())
   norm_data$assay_names <- NULL
   norm_data$itsd_selections <- list(Plasma = c("IS1", "IS2"))
@@ -306,7 +307,7 @@ test_that("metabolomics normalization module assay-name initialization helper pr
       },
       getStateFn = function(manager) {
         capture$manager <- manager
-        current_s4
+        omicsStandInMetadata(current_s4) # KIT-075: the getter returns the state's metadata
       },
       logInfoFn = function(message) capture$info <- message,
       logWarnFn = function(message) capture$warn <- message
@@ -401,6 +402,7 @@ test_that("metabolomics normalization module log render helper preserves empty a
 })
 
 test_that("metabolomics normalization module correlation summary render helper preserves fallback and source selection", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   render_text_capture <- function(expr) {
     eval.parent(substitute(expr))
   }
@@ -416,9 +418,12 @@ test_that("metabolomics normalization module correlation summary render helper p
     "Apply correlation filter to see results..."
   )
 
-  filtered_object <- list(stage = "filtered")
-  ruv_corrected_object <- list(stage = "ruv")
-  post_norm_object <- list(stage = "post_norm")
+  # KIT-075: `normData` holds state references (here names the stand-in manager resolves); the builder gets the
+  # sample counts from the referenced states' designs.
+  states <- list(filtered = omicsOwnerMetabObject(), ruv = omicsOwnerMetabObject(), post_norm = omicsOwnerMetabObject())
+  states$filtered@design_matrix <- states$filtered@design_matrix[1:3, , drop = FALSE]
+  states$post_norm@design_matrix <- states$post_norm@design_matrix[1:2, , drop = FALSE]
+  workflow_data <- list(state_manager = list(getState = function(state_name) states[[state_name]]))
   corr_results <- list(Plasma = data.frame(pearson_correlation = c(0.8, 0.9)))
   capture <- new.env(parent = emptyenv())
 
@@ -427,42 +432,44 @@ test_that("metabolomics normalization module correlation summary render helper p
       normData = list(
         correlation_filtering_complete = TRUE,
         correlation_results = corr_results,
-        correlation_filtered_obj = filtered_object,
-        ruv_corrected_obj = ruv_corrected_object,
-        post_norm_obj = post_norm_object
+        correlation_filtered_obj = "filtered",
+        ruv_corrected_obj = "ruv",
+        post_norm_obj = "post_norm"
       ),
+      workflowData = workflow_data,
       renderTextFn = render_text_capture,
-      buildSummaryFn = function(corrResults, filteredObject, originalObject) {
+      buildSummaryFn = function(corrResults, originalSamples, filteredSamples) {
         capture$corr_results <- corrResults
-        capture$filtered_object <- filteredObject
-        capture$original_object <- originalObject
+        capture$original_samples <- originalSamples
+        capture$filtered_samples <- filteredSamples
         "summary from builder"
       }
     ),
     "summary from builder"
   )
   expect_identical(capture$corr_results, corr_results)
-  expect_identical(capture$filtered_object, filtered_object)
-  expect_identical(capture$original_object, ruv_corrected_object)
+  expect_identical(capture$filtered_samples, 3L)
+  expect_identical(capture$original_samples, 4L)
 
   expect_identical(
     renderMetabNormCorrelationFilterSummary(
       normData = list(
         correlation_filtering_complete = TRUE,
         correlation_results = corr_results,
-        correlation_filtered_obj = filtered_object,
+        correlation_filtered_obj = "filtered",
         ruv_corrected_obj = NULL,
-        post_norm_obj = post_norm_object
+        post_norm_obj = "post_norm"
       ),
+      workflowData = workflow_data,
       renderTextFn = render_text_capture,
-      buildSummaryFn = function(corrResults, filteredObject, originalObject) {
-        capture$fallback_original_object <- originalObject
+      buildSummaryFn = function(corrResults, originalSamples, filteredSamples) {
+        capture$fallback_original_samples <- originalSamples
         "summary without ruv"
       }
     ),
     "summary without ruv"
   )
-  expect_identical(capture$fallback_original_object, post_norm_object)
+  expect_identical(capture$fallback_original_samples, 2L)
 })
 
 test_that("metabolomics normalization module final QC render helper preserves readiness gate", {
@@ -550,6 +557,7 @@ test_that("metabolomics normalization module final QC render helper preserves fa
 })
 
 test_that("metabolomics normalization module final QC render helper preserves aesthetics and builder delegation", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   render_plot_capture <- function(expr) {
     eval.parent(substitute(expr))
   }
@@ -562,10 +570,11 @@ test_that("metabolomics normalization module final QC render helper preserves ae
       normData = list(
         correlation_filtering_complete = TRUE,
         ruv_complete = FALSE,
-        correlation_filtered_obj = source_object,
+        correlation_filtered_obj = "corr-ref", # KIT-075: a state reference the stand-in manager resolves
         ruv_corrected_obj = "ruv-object",
         post_norm_obj = "post-object"
       ),
+      workflowData = list(state_manager = list(getState = function(state_name) if (identical(state_name, "corr-ref")) source_object)),
       colorVariableFn = function() {
         capture$color_requested <- TRUE
         "Condition"
@@ -617,7 +626,7 @@ test_that("metabolomics normalization module final QC render helper preserves ae
   expect_identical(
     capture$state_args,
     list(
-      correlation_filtered_object = source_object,
+      correlation_filtered_object = "corr-ref",
       ruv_corrected_object = "ruv-object",
       post_norm_object = "post-object"
     )
@@ -852,6 +861,7 @@ test_that("metabolomics normalization module manual ITSD helper preserves featur
 })
 
 test_that("metabolomics normalization module pre-normalization QC helper preserves capture and generation shell", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   capture <- new.env(parent = emptyenv())
   capture$log <- character()
 
@@ -862,6 +872,7 @@ test_that("metabolomics normalization module pre-normalization QC helper preserv
   visible <- withVisible(
     runMetabNormPreNormalizationQcStep(
       currentS4 = current_s4,
+      stateReference = "post-filter-reference", # KIT-075: the pipeline passes the state's reference
       totalSteps = 6,
       experimentPaths = experiment_paths,
       groupingVariable = "batch",
@@ -897,7 +908,7 @@ test_that("metabolomics normalization module pre-normalization QC helper preserv
     capture$progress,
     list(amount = 1 / 6, detail = "Capturing pre-normalization state...")
   )
-  expect_identical(norm_data$post_filter_obj, current_s4)
+  expect_identical(norm_data$post_filter_obj, "post-filter-reference")
   expect_identical(
     capture$plot_call,
     list(
@@ -925,6 +936,7 @@ test_that("metabolomics normalization module pre-normalization QC helper preserv
 })
 
 test_that("metabolomics normalization module auto pre-normalization QC seam preserves assay detection and plot refresh shell", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   capture <- new.env(parent = emptyenv())
   capture$add_log <- character()
   capture$info <- character()
@@ -1027,6 +1039,7 @@ test_that("metabolomics normalization module auto pre-normalization QC seam pres
 })
 
 test_that("metabolomics normalization module auto pre-normalization QC seam preserves error logging tail", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   capture <- new.env(parent = emptyenv())
   capture$add_log <- character()
   capture$info <- character()
@@ -1094,6 +1107,7 @@ test_that("metabolomics normalization module auto pre-normalization QC seam pres
 })
 
 test_that("metabolomics normalization module auto pre-normalization QC observer shell preserves tab-gated handoff", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   capture <- new.env(parent = emptyenv())
   capture$info <- character()
   capture$req <- list()
@@ -1128,7 +1142,7 @@ test_that("metabolomics normalization module auto pre-normalization QC observer 
       },
       getStateFn = function(manager) {
         capture$manager <- manager
-        current_s4
+        omicsStandInMetadata(current_s4) # KIT-075: the getter returns the state's metadata
       },
       withProgressFn = function(message, value, expr, detail = NULL) {
         capture$with_progress <- list(
@@ -1203,7 +1217,7 @@ test_that("metabolomics normalization module auto pre-normalization QC observer 
     visible$value,
     list(
       selectedTab = "norm",
-      currentS4 = current_s4,
+      currentS4 = omicsStandInMetadata(current_s4), # KIT-075: the state's metadata
       preNormQcGenerated = TRUE
     )
   )
@@ -2413,7 +2427,7 @@ test_that("metabolomics normalization module ITSD step helper preserves apply/sa
   # KIT-072: the step is its declared operation on the session owner (the module's only path); the wrapper's commit is
   # tested with the declarations, so here it is recorded.
   omicsTestOwner(workflow = workflow_data, omic_type = "metabolomics")
-  wrapper <- omicsMockWrapper("runMetabReferenceItsdNormalisation", list(object = updated_s4))
+  wrapper <- omicsMockWrapper("runMetabReferenceItsdNormalisation", list(reference = "step-reference")) # KIT-075: the reference, not the object
 
   visible <- withVisible(
     runMetabNormItsdNormalizationStep(
@@ -2431,12 +2445,12 @@ test_that("metabolomics normalization module ITSD step helper preserves apply/sa
   expect_false(visible$visible)
   expect_identical(wrapper$calls, list(list(workflow_data$state_manager, "median", list(Plasma = c("M1", "M3")),
     workflow_data$config_list, "ITSD normalization (aggregation: median )")))
-  expect_identical(norm_data$post_itsd_obj, updated_s4)
+  expect_identical(norm_data$post_itsd_obj, "step-reference")
   expect_identical(capture$log, "ITSD normalization complete")
   expect_identical(
     visible$value,
     list(
-      currentS4 = updated_s4,
+      currentS4 = "step-reference",
       stateName = "metab_itsd_norm",
       description = "ITSD normalization (aggregation: median )",
       logEntry = "ITSD normalization complete"
@@ -2457,7 +2471,7 @@ test_that("metabolomics normalization module log2 step helper preserves apply/sa
   # KIT-072: the step is its declared operation on the session owner (the module's only path); the wrapper's commit is
   # tested with the declarations, so here it is recorded.
   omicsTestOwner(workflow = workflow_data, omic_type = "metabolomics")
-  wrapper <- omicsMockWrapper("runMetabReferenceLog2", list(object = updated_s4))
+  wrapper <- omicsMockWrapper("runMetabReferenceLog2", list(reference = "step-reference")) # KIT-075: the reference, not the object
 
   visible <- withVisible(
     runMetabNormLog2TransformationStep(
@@ -2474,12 +2488,12 @@ test_that("metabolomics normalization module log2 step helper preserves apply/sa
   expect_false(visible$visible)
   expect_identical(wrapper$calls, list(list(workflow_data$state_manager, 0.5, workflow_data$config_list,
     "Log2 transformation (offset: 0.5 )")))
-  expect_identical(norm_data$post_log2_obj, updated_s4)
+  expect_identical(norm_data$post_log2_obj, "step-reference")
   expect_identical(capture$log, "Log2 transformation complete")
   expect_identical(
     visible$value,
     list(
-      currentS4 = updated_s4,
+      currentS4 = "step-reference",
       stateName = "metab_log2",
       description = "Log2 transformation (offset: 0.5 )",
       logEntry = "Log2 transformation complete"
@@ -2700,7 +2714,7 @@ test_that("metabolomics normalization module between-sample step helper preserve
   # KIT-072: the step is its declared operation on the session owner (the module's only path); the wrapper's commit is
   # tested with the declarations, so here it is recorded.
   omicsTestOwner(workflow = workflow_data, omic_type = "metabolomics")
-  wrapper <- omicsMockWrapper("runMetabReferenceBetweenSampleNormalisation", list(object = updated_s4))
+  wrapper <- omicsMockWrapper("runMetabReferenceBetweenSampleNormalisation", list(reference = "step-reference")) # KIT-075: the reference, not the object
 
   visible <- withVisible(
     runMetabNormBetweenSampleNormalizationStep(
@@ -2717,13 +2731,13 @@ test_that("metabolomics normalization module between-sample step helper preserve
   expect_false(visible$visible)
   expect_identical(wrapper$calls, list(list(workflow_data$state_manager, "median", workflow_data$config_list,
     "Between-sample normalization (method: median )")))
-  expect_identical(norm_data$post_norm_obj, updated_s4)
+  expect_identical(norm_data$post_norm_obj, "step-reference")
   expect_identical(capture$log, "Between-sample normalization complete")
   expect_true(isTRUE(norm_data$normalization_complete))
   expect_identical(
     visible$value,
     list(
-      currentS4 = updated_s4,
+      currentS4 = "step-reference",
       stateName = "metab_normalized",
       description = "Between-sample normalization (method: median )",
       logEntry = "Between-sample normalization complete"
@@ -2744,7 +2758,7 @@ test_that("metabolomics normalization module between-sample step helper preserve
   # KIT-072: the step is its declared operation on the session owner (the module's only path); the wrapper's commit is
   # tested with the declarations, so here it is recorded.
   omicsTestOwner(workflow = workflow_data, omic_type = "metabolomics")
-  wrapper <- omicsMockWrapper("runMetabReferenceBetweenSampleNormalisation", list(object = current_s4))
+  wrapper <- omicsMockWrapper("runMetabReferenceBetweenSampleNormalisation", list(reference = "step-reference")) # KIT-075: the reference, not the object
 
   visible <- withVisible(
     runMetabNormBetweenSampleNormalizationStep(
@@ -2762,13 +2776,13 @@ test_that("metabolomics normalization module between-sample step helper preserve
   # KIT-072: `none` is the declaration's identity; the state is still committed by the wrapper.
   expect_identical(wrapper$calls, list(list(workflow_data$state_manager, "none", workflow_data$config_list,
     "Between-sample normalization (method: none )")))
-  expect_identical(norm_data$post_norm_obj, current_s4)
+  expect_identical(norm_data$post_norm_obj, "step-reference")
   expect_identical(capture$log, "Between-sample normalization complete")
   expect_true(isTRUE(norm_data$normalization_complete))
   expect_identical(
     visible$value,
     list(
-      currentS4 = current_s4,
+      currentS4 = "step-reference",
       stateName = "metab_normalized",
       description = "Between-sample normalization (method: none )",
       logEntry = "Between-sample normalization complete"
@@ -2838,7 +2852,7 @@ test_that("metabolomics normalization module RUV progress/apply shell preserves 
   capture$log <- character()
 
   current_s4 <- structure(list(stage = "post_norm"), class = "MetabNormRuvShellMock")
-  updated_s4 <- structure(list(stage = "ruv_corrected"), class = "MetabNormRuvShellMock")
+  updated_s4 <- omicsOwnerMetabObject() # KIT-075: a real object, since the RUV QC step reads the committed state
   experiment_paths <- list(metabolite_qc_dir = "qc-dir")
   workflow_data <- omicsTestOwner(omic_type = "metabolomics", config = list(ruv_mode = "RUVIII-C"))
   norm_data <- new.env(parent = emptyenv())
@@ -2846,8 +2860,8 @@ test_that("metabolomics normalization module RUV progress/apply shell preserves 
   ruv_qc_state <- list(currentS4 = updated_s4, stage = "ruv_corrected")
   # KIT-072: the optimisation and the correction are the one declared operation `metab_ruv` on the session owner
   # (the module's only path); the wrapper's commit is tested with the declarations, so here it is recorded.
-  wrapper <- omicsMockWrapper("runMetabReferenceRuv",
-    list(object = updated_s4, optimisation = ruv_results, value = list(best_k = list(Plasma = 2))))
+  wrapper <- omicsMockWrapper("runMetabReferenceRuv", omicsMockCommit(updated_s4, "metab_ruv_corrected",
+    value = list(best_k = list(Plasma = 2)), extra = list(optimisation = ruv_results)))
 
   visible <- withVisible(
     runMetabNormRuvProgressApplyShell(
@@ -2890,15 +2904,18 @@ test_that("metabolomics normalization module RUV progress/apply shell preserves 
     adaptive_k_penalty = TRUE, manual_k = 3, manual_percentage = 0.25))
   expect_identical(wrapper$calls[[1L]][[3L]], workflow_data$config_list)
   expect_identical(norm_data$ruv_optimization_results, ruv_results)
-  expect_identical(norm_data$ruv_corrected_obj, updated_s4)
+  # KIT-075: `normData` and the shell carry the committed state's reference; the QC step gets the state read for it.
+  ruv_reference <- getWorkflowStateReference(workflow_data$state_manager, "metab_ruv_corrected")
+  expect_identical(norm_data$ruv_corrected_obj, ruv_reference)
   expect_true(norm_data$ruv_complete)
-  expect_identical(capture$qc_call, list(currentS4 = updated_s4, totalSteps = 6, experimentPaths = experiment_paths,
+  expect_equal(capture$qc_call$currentS4@metabolite_data, updated_s4@metabolite_data, ignore_attr = TRUE)
+  expect_identical(capture$qc_call[-1L], list(totalSteps = 6, experimentPaths = experiment_paths,
     groupingVariable = "batch", shapeVariable = "group"))
-  expect_identical(visible$value$currentS4, updated_s4)
+  expect_identical(visible$value$currentS4, ruv_reference)
   expect_identical(visible$value$applyLogEntry, "Running RUV-III (mode: RUVIII-C )")
   expect_null(visible$value$skipLogEntry)
   expect_identical(visible$value$optimizationState, list(ruvResults = ruv_results, bestKPerAssay = list(Plasma = 2)))
-  expect_identical(visible$value$correctionState, list(currentS4 = updated_s4, stateName = "metab_ruv_corrected"))
+  expect_identical(visible$value$correctionState, list(currentS4 = ruv_reference, stateName = "metab_ruv_corrected"))
   expect_identical(visible$value$ruvQcState, ruv_qc_state)
 })
 
@@ -4572,6 +4589,12 @@ test_that("metabolomics normalization module export observer shell preserves not
 })
 
 test_that("metabolomics normalization module normalization pipeline shell preserves orchestration handoff", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
+  # KIT-075: the pipeline carries each step's state reference and reads a state only for the QC plots; here the stand-in
+  # references are the objects, so a read returns the value it is given (the head when none).
+  testthat::local_mocked_bindings(readMetabWorkflowState = function(manager, reference = NULL) {
+    if (is.null(reference)) manager$getState() else reference
+  }, getWorkflowStateReference = function(manager, state_name = NULL) "head-reference", .package = "MultiScholaR")
   capture <- new.env(parent = emptyenv())
   capture$order <- character()
   capture$req <- list()
@@ -4646,10 +4669,12 @@ test_that("metabolomics normalization module normalization pipeline shell preser
       generateCompositeFromFilesFn = composite_generator,
       savePlotFn = save_plot,
       logWarnFn = warn_log,
-      runPreNormalizationQcStepFn = function(currentS4, totalSteps, experimentPaths, groupingVariable, shapeVariable, normData, addLogFn) {
+      runPreNormalizationQcStepFn = function(currentS4, totalSteps, experimentPaths, groupingVariable, shapeVariable, normData, addLogFn,
+          stateReference = NULL) {
         capture$order <- c(capture$order, "pre")
         capture$pre <- list(
           currentS4 = currentS4,
+          stateReference = stateReference,
           totalSteps = totalSteps,
           experimentPaths = experimentPaths,
           groupingVariable = groupingVariable,
@@ -4790,6 +4815,7 @@ test_that("metabolomics normalization module normalization pipeline shell preser
   )
   expect_identical(capture$req, list(initial_s4))
   expect_identical(capture$pre$currentS4, initial_s4)
+  expect_identical(capture$pre$stateReference, "head-reference")
   expect_identical(capture$pre$totalSteps, 6)
   expect_identical(capture$pre$experimentPaths, experiment_paths)
   expect_identical(capture$pre$groupingVariable, "group")
@@ -4806,7 +4832,7 @@ test_that("metabolomics normalization module normalization pipeline shell preser
   expect_identical(capture$post$currentS4, between_s4)
   expect_identical(capture$post$groupingVariable, "group")
   expect_identical(capture$post$shapeVariable, "batch")
-  expect_identical(capture$ruv$currentS4, post_norm_s4)
+  expect_identical(capture$ruv$currentS4, between_s4) # KIT-075: the between-sample step's reference, not the QC plot's object
   expect_identical(capture$ruv$ruvMode, "per_assay")
   expect_identical(capture$ruv$ruvGroupingVariable, "group")
   expect_identical(capture$ruv$separationMetric, "pearson")
@@ -4834,6 +4860,7 @@ test_that("metabolomics normalization module normalization pipeline shell preser
 })
 
 test_that("metabolomics normalization module normalization pipeline shell preserves current-state req gate", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   capture <- new.env(parent = emptyenv())
   capture$req <- list()
   capture$pre_called <- FALSE
@@ -5448,12 +5475,13 @@ test_that("metabolomics normalization module reset observer shell preserves stat
   capture$save_state <- NULL
 
   # KIT-072: the reset is a store step on the session owner (the module's only manager).
-  workflow_data <- omicsTestOwner(omic_type = "metabolomics", config = list(method = "TIC"))
+  # KIT-075: `normData` holds the pre-normalisation state's reference, which the reset recommits.
+  post_filter_object <- omicsOwnerMetabObject()
+  workflow_data <- omicsTestOwner(post_filter_object, "metab_qc_complete", omic_type = "metabolomics", config = list(method = "TIC"))
   state_manager <- workflow_data$state_manager
 
-  post_filter_object <- structure(list(stage = "post_filter"), class = "MetabNormResetMock")
   norm_data <- new.env(parent = emptyenv())
-  norm_data$post_filter_obj <- post_filter_object
+  norm_data$post_filter_obj <- getWorkflowStateReference(state_manager, "metab_qc_complete")
   norm_data$normalization_complete <- TRUE
   norm_data$ruv_complete <- TRUE
   norm_data$correlation_filtering_complete <- TRUE
@@ -5486,7 +5514,7 @@ test_that("metabolomics normalization module reset observer shell preserves stat
   expect_false(visible$visible)
   expect_identical(capture$req, list(state_manager))
   expect_identical(state_manager$current_state, "metab_reset")
-  expect_identical(state_manager$getState("metab_reset"), post_filter_object)
+  expect_equal(state_manager$getState("metab_reset")@metabolite_data, post_filter_object@metabolite_data, ignore_attr = TRUE)
   expect_false(norm_data$normalization_complete)
   expect_false(norm_data$ruv_complete)
   expect_false(norm_data$correlation_filtering_complete)
@@ -6613,7 +6641,8 @@ test_that("metabolomics normalization module apply-correlation dispatch preserve
   # KIT-072: the pairs and the selection are the declared operations on the session owner (the module's only path);
   # the wrapper's commit is tested with the declarations, so here it is recorded.
   workflow_data <- omicsTestOwner(omic_type = "metabolomics")
-  correlation <- omicsMockWrapper("runMetabReferenceCorrelation", list(correlations = corr_results, object = filtered_s4))
+  # KIT-075: the wrapper returns the committed state's reference (here a stand-in value), not the object.
+  correlation <- omicsMockWrapper("runMetabReferenceCorrelation", list(correlations = corr_results, reference = filtered_s4))
   norm_data <- list(
     correlation_results = NULL,
     correlation_filtered_obj = NULL,

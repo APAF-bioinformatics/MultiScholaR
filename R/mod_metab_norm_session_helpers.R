@@ -20,7 +20,7 @@ dispatchMetabNormApplyCorrelation <- function(
             normData = normData,
             observerState = observerState,
             corrResults = correlation$correlations,
-            filteredS4 = correlation$object,
+            filteredS4 = correlation$reference, # KIT-075: the state's reference
             addLogFn = addLogFn,
             showNotificationFn = showNotificationFn,
             removeNotificationFn = removeNotificationFn,
@@ -261,13 +261,9 @@ runMetabNormResetNormalizationObserverShell <- function(
 
     tryCatch({
         if (!is.null(postFilterObject)) {
-            markWorkflowOmicsStoreStep(workflowData$state_manager, "metab_reset") # KIT-032: a store step
-            workflowData$state_manager$saveState(
-                state_name = "metab_reset"
-                , s4_data_object = postFilterObject
-                , config_object = workflowData$config_list
-                , description = "Reset to pre-normalization state"
-            )
+            # KIT-032: a store step. KIT-075: the pre-normalisation state's record is recommitted by its reference.
+            commitWorkflowOmicsStoreStep(workflowData$state_manager, "metab_reset", "metab_reset", workflowData$config_list,
+                "Reset to pre-normalization state", source = postFilterObject)
         }
 
         normData$normalization_complete <- FALSE
@@ -723,7 +719,10 @@ runMetabNormExportSessionWorkflow <- function(
     })
 }
 
-buildMetabNormCorrelationFilterSummary <- function(corrResults, filteredObject = NULL, originalObject = NULL) {
+buildMetabNormCorrelationFilterSummary <- function(corrResults, filteredObject = NULL, originalObject = NULL,
+    originalSamples = if (!is.null(originalObject)) nrow(originalObject@design_matrix),
+    filteredSamples = if (!is.null(filteredObject)) nrow(filteredObject@design_matrix)) {
+    # KIT-075: the module passes the sample counts (from the states' metadata); the objects are counted when given.
     if (is.null(corrResults) || length(corrResults) == 0) {
         return("No correlation results available.")
     }
@@ -745,9 +744,9 @@ buildMetabNormCorrelationFilterSummary <- function(corrResults, filteredObject =
         }
     }
 
-    if (!is.null(originalObject) && !is.null(filteredObject)) {
-        original_samples <- nrow(originalObject@design_matrix)
-        filtered_samples <- nrow(filteredObject@design_matrix)
+    if (!is.null(originalSamples) && !is.null(filteredSamples)) {
+        original_samples <- originalSamples
+        filtered_samples <- filteredSamples
         removed <- original_samples - filtered_samples
 
         summaryLines <- c(summaryLines, sprintf(

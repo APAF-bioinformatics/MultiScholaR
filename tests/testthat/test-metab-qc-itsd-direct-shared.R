@@ -179,6 +179,7 @@ test_that("metabolomics ITSD summary, tabs, and plots preserve current rendering
 })
 
 test_that("metabolomics ITSD server body preserves notification and output wiring", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   current_s4 <- makeMetabItsdObject()
   notifications <- list()
   output <- new.env(parent = emptyenv())

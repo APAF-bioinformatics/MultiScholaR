@@ -172,7 +172,7 @@ test_that("MCI-022.2 formula and contrast preflight rejects invalid DA inputs be
   shell_called <- FALSE
   analysis_state <- handleLipidDaRunAnalysisPreflight(
     analysisContext = list(
-      currentS4 = object,
+      currentS4 = readLipidWorkflowMetadata(invalid_workflow$state_manager), # KIT-075: the state's metadata
       contrastsTbl = invalid_workflow$contrasts_tbl,
       runningNotification = list(id = "da_running")
     ),

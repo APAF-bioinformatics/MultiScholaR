@@ -626,6 +626,7 @@ test_that("metabolomics DA status render seam preserves status-count extraction 
 })
 
 test_that("metabolomics DA overview-output seam preserves contrasts and status registration fan-out", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   output <- new.env(parent = emptyenv())
   workflow_state <- new.env(parent = emptyenv())
   workflow_state$contrasts_tbl <- "contrast-state"
@@ -661,7 +662,7 @@ test_that("metabolomics DA overview-output seam preserves contrasts and status r
   expect_identical(output$contrasts_display, list(kind = "print", value = "contrasts-output"))
   expect_identical(captured_status$daResultsList, "results-state")
   expect_identical(captured_status$analysisComplete, TRUE)
-  expect_identical(captured_status$currentS4Object, "current-s4")
+  expect_identical(captured_status$currentS4Object$reference, "loaded_for_de") # KIT-075: the DA state's metadata
   expect_identical(output$da_status, list(kind = "print", value = "status-output"))
 })
 
@@ -1298,6 +1299,7 @@ test_that("metabolomics DA load-filtered-session observer registration seam pres
 })
 
 test_that("metabolomics DA run-analysis observer registration seam preserves event, log, and entry handoff", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured_event <- NULL
   captured_entry <- NULL
   captured_log <- NULL
@@ -1348,7 +1350,7 @@ test_that("metabolomics DA run-analysis observer registration seam preserves eve
   expect_identical(registration, "observer-registered")
   expect_identical(captured_event, 2)
   expect_identical(captured_log, "=== RUN DA ANALYSIS BUTTON CLICKED ===")
-  expect_identical(captured_entry$currentS4Object, "current-s4")
+  expect_identical(captured_entry$currentS4Object$reference, "loaded_for_de") # KIT-075: the DA state's metadata
   expect_identical(captured_entry$workflowData, workflow_state)
   expect_identical(captured_entry$formulaString, "~ 0 + group")
   expect_identical(captured_entry$daQValThresh, 0.01)
@@ -2076,10 +2078,11 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
   workflow_state$tab_status <- list(differential_analysis = "pending", other = "keep")
   # KIT-072: the DA is the declared operation on the session owner (the module's only path); the wrapper is tested
   # with the declarations, so here it is recorded and returns the kernel's list.
-  omicsTestOwner(workflow = workflow_state, omic_type = "metabolomics")
+  # KIT-075: the export's heatmaps read the DA's source state, so the owner holds it.
+  current_s4 <- makeMetabDaObserverS4()
+  omicsTestOwner(current_s4, "metab_correlation_filtered", workflow = workflow_state, omic_type = "metabolomics")
 
   da_state <- new.env(parent = emptyenv())
-  current_s4 <- makeMetabDaObserverS4()
   contrasts_tbl <- data.frame(
     friendly_names = c("B vs A"),
     contrasts = c("groupB-groupA"),
@@ -2147,7 +2150,8 @@ test_that("metabolomics DA run-analysis shell preserves success-path state, noti
   expect_identical(captured_removed, "da_running")
   expect_identical(captured_selectors$daResultsLong, results$da_metabolites_long)
   expect_identical(captured_selectors$session, "metab-session")
-  expect_identical(captured_artifacts$results, results)
+  expect_identical(captured_artifacts$results[names(results)], results)
+  expect_s4_class(captured_artifacts$results$theObject, "MetaboliteAssayData") # KIT-075: the source, read for the export
   expect_identical(captured_artifacts$experimentPaths$da_output_dir, "/tmp/metab-da-output")
   expect_identical(captured_artifacts$daQValThresh, 0.01)
   expect_identical(captured_artifacts$treatLfcCutoff, 1.5)

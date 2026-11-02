@@ -326,6 +326,7 @@ ensureLipidDuplicateWorkflowTestClass <- function() {
 }
 
 test_that("handleLipidDuplicateDetection keeps the detect-summary workflow stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     ensureLipidDuplicateWorkflowTestClass()
 
     current_s4 <- methods::new(
@@ -369,6 +370,7 @@ test_that("handleLipidDuplicateDetection keeps the detect-summary workflow stabl
 })
 
 test_that("handleLipidDuplicateDetection keeps the zero-duplicate notification stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     ensureLipidDuplicateWorkflowTestClass()
 
     current_s4 <- methods::new(
@@ -1072,6 +1074,7 @@ test_that("registerLipidDuplicateRevertObserver keeps the revert failure notific
 })
 
 test_that("handleLipidDuplicateRevert keeps the revert workflow contract stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     reverted_state <- NULL
     info_messages <- character()
 

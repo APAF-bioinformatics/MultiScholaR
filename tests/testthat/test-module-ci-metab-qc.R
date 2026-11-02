@@ -219,7 +219,7 @@ test_that("MCI-014.5 finalization validates current S4 state and unlocks normali
       invisible(NULL)
     }
   )
-  expect_match(captured$invalid_error, "Current state is not a MetaboliteAssayData object", fixed = TRUE)
+  expect_match(captured$invalid_error, "Current state is not a MetaboliteAssayData object|requires explicit legacy conversion") # KIT-075: refused either way
   expect_identical(invalid_workflow$tab_status$quality_control, "pending")
 
   empty_design <- current

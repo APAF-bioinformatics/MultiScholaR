@@ -439,8 +439,9 @@ test_that("metabolomics duplicate resolution workflow seam composes preflight, a
   # KIT-072: the resolution is the declared operation on the session owner (its only path); the wrapper's commit is
   # tested with the declarations, so here it is recorded and returns the resolved object and stats.
   workflow_data <- omicsTestOwner(omic_type = "metabolomics", config = list(config = "value"))
+  # KIT-075: the wrapper returns the committed state's reference and the stats, not the object.
   resolution <- omicsMockWrapper("runMetabReferenceDuplicateResolution",
-    list(object = resolved_s4, value = list(stats = expected_stats)))
+    omicsMockCommit(resolved_s4, "metab_duplicates_resolved", list(stats = expected_stats)))
 
   visible <- withVisible(
     runMetabDuplicateResolutionWorkflow(
@@ -669,6 +670,7 @@ test_that("metabolomics duplicate table renderer seam registers only populated a
 })
 
 test_that("metabolomics duplicate detection seam validates state and counts duplicates", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- new.env(parent = emptyenv())
   captured$req_values <- list()
   current_s4 <- newMetabDuplicateModuleObject(

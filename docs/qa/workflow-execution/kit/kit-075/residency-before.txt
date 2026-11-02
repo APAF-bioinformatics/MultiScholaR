@@ -1,0 +1,30 @@
+── Error ('test-workflow-omics-residency.R:13:5'): an omics value is saved to the omics owner passed, with no proteomics owner in the session ──
+Error in `setWorkflowOwnedPayload(holder, "data_cln", table, manager = owner)`: unused argument (manager = owner)
+── Error ('test-workflow-omics-residency.R:36:5'): with a proteomics owner in the session, the omics value lands in the omics owner's store ──
+── Failure ('test-workflow-omics-residency.R:56:5'): lipidomics: no assay object is reachable after any journey step ──
+intensity: assay objects reachable at
+  $private$outs[[lipidomics_workflow-qc-intensity-filter_results]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$filtered_s4
+  $private$outs[[lipidomics_workflow-qc-intensity-filter_results]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$current_s4
+duplicates: assay objects reachable at
+  $private$outs[[lipidomics_workflow-qc-duplicates-resolution_results]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$resolutionResult[[currentS4]]
+qc_finalize: assay objects reachable at
+  $private$outs[[lipidomics_workflow-qc-s4_finalize-finalize_results]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$currentS4
+normalisation: assay objects reachable at
+  .values$private$map[[reset]]<closure>$values[[21]]
+  .values$private$map[[reset]]<closure>$values[[22]]
+  .values$private$map[[reset]]<closure>$values[[23]]
+  .values$private$map[[reset]]<closure>$values[[24]]
+  .values$private$map[[reset]]<closure>$values[[25]]
+correlation: assay objects reachable at
+  .values$private$map[[reset]]<closure>$values[[20]]
+session_export: assay objects reachable at
+da_load: assay objects reachable at
+da: assay objects reachable at
+  .values$private$map[[reset]]<closure>$values[[32]][[theObject]]
+summary: assay objects reachable at
+── Failure ('test-workflow-omics-residency.R:56:5'): metabolomics: no assay object is reachable after any journey step ──
+design: assay objects reachable at
+  $private$outs[[metabolomics_workflow-norm-itsd_table_lcms_pos]][[func]]<closure>$renderFunc<closure>$env$currentS4
+  $private$outs[[metabolomics_workflow-norm-itsd_table_gcms]][[func]]<closure>$renderFunc<closure>$env$currentS4
+  $private$outs[[metabolomics_workflow-qc-s4_finalize-finalize_results]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$currentS4
+COUNTS test-workflow-omics-residency.R pass 7 fail 19 error 2 skip 0

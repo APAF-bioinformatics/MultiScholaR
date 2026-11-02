@@ -173,7 +173,7 @@ generateMetabNormPreNormalizationQc <- function(
     logInfoFn("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
 
     reqFn(workflowData$state_manager)
-    current_s4 <- workflowData$state_manager$getState()
+    current_s4 <- readMetabWorkflowState(workflowData$state_manager) # KIT-075: read for this action only
 
     if (is.null(current_s4)) {
         logWarnFn("No S4 object available for QC plot generation")
@@ -335,6 +335,7 @@ renderMetabNormNormalizationLog <- function(
 # wave can move it without reopening the module server wrapper's output shell.
 renderMetabNormCorrelationFilterSummary <- function(
     normData,
+    workflowData = NULL,
     renderTextFn = shiny::renderText,
     buildSummaryFn = buildMetabNormCorrelationFilterSummary,
     incompleteMessage = "Apply correlation filter to see results..."
@@ -352,10 +353,15 @@ renderMetabNormCorrelationFilterSummary <- function(
             normData$post_norm_obj
         }
 
+        # KIT-075: the slots hold state references; the sample counts come from their designs' metadata.
+        sampleCount <- function(reference) {
+            if (is.null(reference)) return(NULL)
+            nrow(readMetabWorkflowMetadata(workflowData$state_manager, reference)$design_matrix)
+        }
         buildSummaryFn(
             corrResults = corrResults
-            , filteredObject = filteredObject
-            , originalObject = originalObject
+            , originalSamples = sampleCount(originalObject)
+            , filteredSamples = sampleCount(filteredObject)
         )
     })
 }
@@ -364,6 +370,7 @@ renderMetabNormCorrelationFilterSummary <- function(
 # without reopening the module server wrapper's output shell.
 renderMetabNormFinalQcPlot <- function(
     normData,
+    workflowData = NULL,
     colorVariableFn = function() NULL,
     shapeVariableFn = function() NULL,
     renderPlotFn = shiny::renderPlot,
@@ -391,7 +398,7 @@ renderMetabNormFinalQcPlot <- function(
         )
 
         buildPcaPlotFn(
-            sourceObject = finalQcState$sourceObject
+            sourceObject = readMetabWorkflowState(workflowData$state_manager, finalQcState$sourceObject) # KIT-075: per render
             , colorVar = aesthetics$color_var
             , shapeVar = aesthetics$shape_var
         )

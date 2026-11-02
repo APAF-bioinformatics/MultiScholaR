@@ -37,17 +37,19 @@ handleLipidNormRunNormalization <- function(
         , value = 0
         , {
             tryCatch({
-                current_s4 <- workflowData$state_manager$getState()
+                manager <- workflowData$state_manager
+                current_s4 <- readLipidWorkflowState(manager)
                 reqFn(current_s4)
                 # KIT-031: each kernel is its declared operation, committed with its provenance
                 # (`lipid_itsd_normalisation`, `lipid_log2`, `lipid_between_sample_normalisation`, `lipid_ruv`;
-                # KIT-072: the owner's path is the only path).
+                # KIT-072: the owner's path is the only path). KIT-075: `normData` holds each step's state reference;
+                # the QC plots and the internal-standard selection read the state for this action only.
 
                 aesthetics <- getPlotAestheticsFn()
                 total_steps <- 6
 
                 incProgressFn(1 / total_steps, detail = "Capturing pre-normalization state...")
-                normData$post_filter_obj <- current_s4
+                normData$post_filter_obj <- getWorkflowStateReference(manager)
                 addLog("Post-filtering state captured")
 
                 generateLipidQcPlotsFn(
@@ -95,9 +97,9 @@ handleLipidNormRunNormalization <- function(
                         }
                     }
 
-                    current_s4 <- runLipidReferenceItsdNormalisation(workflowData$state_manager, input$itsd_aggregation,
-                        itsd_feature_ids, workflowData$config_list)$object
-                    normData$post_itsd_obj <- current_s4
+                    current_s4 <- NULL
+                    normData$post_itsd_obj <- runLipidReferenceItsdNormalisation(manager, input$itsd_aggregation,
+                        itsd_feature_ids, workflowData$config_list)$reference
                     addLog("ITSD normalization complete")
                 } else {
                     addLog("ITSD normalization skipped")
@@ -106,23 +108,21 @@ handleLipidNormRunNormalization <- function(
                 incProgressFn(1 / total_steps, detail = "Applying log2 transformation...")
                 addLog(paste("Applying log2 transformation (offset:", input$log_offset, ")"))
 
-                current_s4 <- runLipidReferenceLog2(workflowData$state_manager, input$log_offset,
-                    workflowData$config_list)$object
-                normData$post_log2_obj <- current_s4
+                current_s4 <- NULL
+                normData$post_log2_obj <- runLipidReferenceLog2(manager, input$log_offset, workflowData$config_list)$reference
                 addLog("Log2 transformation complete")
 
                 incProgressFn(1 / total_steps, detail = "Applying between-sample normalization...")
                 if (input$norm_method != "none") {
                     addLog(paste("Applying between-sample normalization (method:", input$norm_method, ")"))
                 }
-                current_s4 <- runLipidReferenceBetweenSampleNormalisation(workflowData$state_manager, input$norm_method,
-                    workflowData$config_list)$object
-                normData$post_norm_obj <- current_s4
+                normData$post_norm_obj <- runLipidReferenceBetweenSampleNormalisation(manager, input$norm_method,
+                    workflowData$config_list)$reference
                 addLog("Between-sample normalization complete")
                 normData$normalization_complete <- TRUE
 
                 generateLipidQcPlotsFn(
-                    theObject = current_s4
+                    theObject = readLipidWorkflowState(manager, normData$post_norm_obj)
                     , experiment_paths = experimentPaths
                     , stage = "post_norm"
                     , grouping_variable = aesthetics$color_var
@@ -154,14 +154,13 @@ handleLipidNormRunNormalization <- function(
                         "RUV optimization complete. Best k per assay:",
                         paste(names(best_k_list), "=", unlist(best_k_list), collapse = ", ")
                     ))
-                    current_s4 <- ruv_run$object
-                    normData$ruv_corrected_obj <- current_s4
+                    normData$ruv_corrected_obj <- ruv_run$reference
                     normData$ruv_complete <- TRUE
                     addLog("RUV-III correction applied")
 
                     incProgressFn(1 / total_steps, detail = "Generating RUV QC plots...")
                     generateLipidQcPlotsFn(
-                        theObject = current_s4
+                        theObject = readLipidWorkflowState(manager, normData$ruv_corrected_obj)
                         , experiment_paths = experimentPaths
                         , stage = "ruv_corrected"
                         , grouping_variable = aesthetics$color_var
@@ -170,7 +169,7 @@ handleLipidNormRunNormalization <- function(
                     addLog("RUV QC plots generated")
                 } else {
                     addLog("RUV-III skipped")
-                    normData$ruv_corrected_obj <- current_s4
+                    normData$ruv_corrected_obj <- normData$post_norm_obj
                     normData$ruv_complete <- TRUE
                 }
 
@@ -587,13 +586,9 @@ handleLipidNormResetNormalization <- function(
 
     tryCatch({
         if (!is.null(normData$post_filter_obj)) {
-            markLipidReferenceStoreStep(workflowData$state_manager, "lipid_reset") # KIT-031: a store step
-            workflowData$state_manager$saveState(
-                state_name = "lipid_reset"
-                , s4_data_object = normData$post_filter_obj
-                , config_object = workflowData$config_list
-                , description = "Reset to pre-normalization state"
-            )
+            # KIT-031: a store step. KIT-075: the pre-normalisation state's record is recommitted by its reference.
+            commitLipidReferenceStoreStep(workflowData$state_manager, "lipid_reset", "lipid_reset", workflowData$config_list,
+                "Reset to pre-normalization state", source = normData$post_filter_obj)
         }
 
         normData$normalization_complete <- FALSE
@@ -651,10 +646,9 @@ handleLipidNormApplyCorrelationFilter <- function(
         correlation <- runLipidReferenceCorrelation(workflowData$state_manager, input$ruv_grouping_variable, threshold,
             workflowData$config_list)
         corr_results <- correlation$correlations
-        filtered_s4 <- correlation$object
 
         normData$correlation_results <- corr_results
-        normData$correlation_filtered_obj <- filtered_s4
+        normData$correlation_filtered_obj <- correlation$reference # KIT-075: the state's reference
         normData$correlation_filtering_complete <- TRUE
 
         updated_status <- workflowData$tab_status

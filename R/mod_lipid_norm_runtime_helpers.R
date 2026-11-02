@@ -27,6 +27,7 @@ createLipidNormStartupRuntime <- function(
     experimentPaths,
     normData,
     ns,
+    workflowData = NULL,
     buildAddLogFn = buildLipidNormAddLog,
     buildPlotAestheticsGetterFn = buildLipidNormPlotAestheticsGetter,
     buildCompositeFromFilesGeneratorFn = buildLipidNormCompositeFromFilesGenerator,
@@ -71,13 +72,16 @@ createLipidNormStartupRuntime <- function(
         normData = normData
     )
 
+    # KIT-075: `normData` holds state references; these renderers read them through the owner.
     renderCorrelationFilterSummary <- buildCorrelationFilterSummaryRendererFn(
-        normData = normData
+        normData = normData,
+        workflowData = workflowData
     )
 
     renderFinalQcPlot <- buildFinalQcPlotRendererFn(
         normData = normData,
-        getPlotAestheticsFn = getPlotAesthetics
+        getPlotAestheticsFn = getPlotAesthetics,
+        workflowData = workflowData
     )
 
     list(

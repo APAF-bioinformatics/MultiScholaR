@@ -71,6 +71,13 @@ lipidomicsStepLabels <- lipidomicsDeclarationBinding$step_labels
 #' @noRd
 lipidomicsFeatureCounts <- function(object) omicsFeatureCounts(lipidomicsDeclarationBinding, object)
 
+#' The lipidomics state read for one action, and its metadata without a table (KIT-075).
+#' @noRd
+readLipidWorkflowState <- function(manager, reference = NULL) readWorkflowOmicsState(lipidomicsDeclarationBinding, manager, reference)
+
+#' @noRd
+readLipidWorkflowMetadata <- function(manager, reference = NULL) readWorkflowOmicsMetadata(lipidomicsDeclarationBinding, manager, reference)
+
 #' Identify the lipidomics DA manifest.
 #' @noRd
 isLipidResultManifest <- function(value) {
@@ -107,43 +114,43 @@ commitLipidReferenceStoreStep <- commitWorkflowOmicsStoreStep
 
 #' @noRd
 runLipidReferenceIntensityFilter <- function(manager, percentile, proportion, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceIntensityFilter(lipidomicsDeclarationBinding, manager, percentile, proportion, config, description,
         state_name, hydrate)
 }
 
 #' @noRd
-runLipidReferenceDuplicateResolution <- function(manager, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runLipidReferenceDuplicateResolution <- function(manager, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceDuplicateResolution(lipidomicsDeclarationBinding, manager, config, description, state_name, hydrate)
 }
 
 #' @noRd
 runLipidReferenceItsdNormalisation <- function(manager, aggregation, feature_ids, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceItsdNormalisation(lipidomicsDeclarationBinding, manager, aggregation, feature_ids, config, description,
         state_name, hydrate)
 }
 
 #' @noRd
-runLipidReferenceLog2 <- function(manager, offset, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runLipidReferenceLog2 <- function(manager, offset, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceLog2(lipidomicsDeclarationBinding, manager, offset, config, description, state_name, hydrate)
 }
 
 #' @noRd
 runLipidReferenceBetweenSampleNormalisation <- function(manager, method, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceBetweenSampleNormalisation(lipidomicsDeclarationBinding, manager, method, config, description,
         state_name, hydrate)
 }
 
 #' @noRd
-runLipidReferenceRuv <- function(manager, parameters, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runLipidReferenceRuv <- function(manager, parameters, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceRuv(lipidomicsDeclarationBinding, manager, parameters, config, description, state_name, hydrate)
 }
 
 #' @noRd
 runLipidReferenceCorrelation <- function(manager, group, threshold, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceCorrelation(lipidomicsDeclarationBinding, manager, group, threshold, config, description,
         state_name, hydrate)
 }

@@ -192,7 +192,8 @@ handleLipidDuplicateDetection <- function(
 ) {
     reqFn(workflowData$state_manager)
 
-    currentS4 <- workflowData$state_manager$getState()
+    # KIT-075: the state is read for the detection only.
+    currentS4 <- readLipidWorkflowState(workflowData$state_manager)
     reqFn(currentS4)
 
     if (!inherits(currentS4, "LipidomicsAssayData")) {
@@ -235,24 +236,20 @@ handleLipidDuplicateResolution <- function(
 ) {
     reqFn(workflowData$state_manager)
 
-    currentS4 <- workflowData$state_manager$getState()
-    reqFn(currentS4)
+    # KIT-075: the assay names from the state's metadata, the QC plot from the resolved state read for this action;
+    # the result carries the state's reference, not the object.
+    current <- readLipidWorkflowMetadata(workflowData$state_manager)
+    reqFn(current)
 
-    if (!inherits(currentS4, "LipidomicsAssayData")) {
+    if (!identical(current$class, "LipidomicsAssayData")) {
         stop("Current state is not a LipidomicsAssayData object")
     }
 
-    lipidIdCol <- currentS4@lipid_id_column
-    assayList <- currentS4@lipid_data
-    assayNames <- names(assayList)
-    if (is.null(assayNames)) {
-        assayNames <- paste0("Assay_", seq_along(assayList))
-    }
+    assayNames <- current$assay_names
 
     # KIT-031: the resolution is the declared operation `lipid_duplicate_resolution`, committed under
     # `lipid_duplicates_resolved` with its provenance (KIT-072: the owner's path is the only path).
     resolved <- runLipidReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
-    currentS4 <- resolved$object
     counts <- resolved$value$counts
     statsList <- lapply(stats::setNames(assayNames, assayNames), function(assayName) list(
         original = unname(counts$before[[assayName]]), resolved = unname(counts$after[[assayName]]),
@@ -260,7 +257,7 @@ handleLipidDuplicateResolution <- function(
 
     qcPlot <- tryCatch({
         updateFilteringFn(
-            theObject = currentS4
+            theObject = readLipidWorkflowState(workflowData$state_manager, resolved$reference)
             , step_name = "3_Duplicates_Resolved"
             , omics_type = omicType
             , return_grid = TRUE
@@ -296,7 +293,7 @@ handleLipidDuplicateResolution <- function(
     )
 
     list(
-        currentS4 = currentS4
+        stateReference = resolved$reference
         , statsList = statsList
         , qcPlot = qcPlot
         , totalRemoved = totalRemoved
@@ -520,7 +517,7 @@ handleLipidDuplicateRevert <- function(
     }
 
     previousStateName <- history[[length(history) - 1]]
-    workflowData$state_manager$revertToState(previousStateName)
+    selectWorkflowStateReference(workflowData$state_manager, previousStateName) # KIT-075: no materialised object
 
     logInfoFn(paste("Reverted duplicate resolution to", previousStateName))
 

@@ -25,6 +25,7 @@ runLipidNormModuleServerShell <- function(
         , experimentPaths = experimentPaths
         , normData = normData
         , ns = ns
+        , workflowData = workflowData
     )
 
     addLog <- startupRuntime$addLog

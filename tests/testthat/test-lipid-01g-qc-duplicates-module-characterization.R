@@ -289,6 +289,7 @@ test_that("lipid duplicate output helpers preserve render registration behavior"
 })
 
 test_that("lipid duplicate detection helpers preserve duplicate summary behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_lipid_duplicate_helpers()
 
   handle_detection <- getMultiScholaRBinding("handleLipidDuplicateDetection")

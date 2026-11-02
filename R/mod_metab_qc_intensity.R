@@ -170,7 +170,9 @@ renderMetabIntensityFilterPlot <- function(
     invisible(NULL)
 }
 
-buildMetabIntensityFilterStats <- function(currentS4, filteredS4) {
+buildMetabIntensityFilterStats <- function(currentS4 = NULL, filteredS4 = NULL,
+    originalCounts = countMetabolites(currentS4), filteredCounts = countMetabolites(filteredS4)) {
+    # KIT-075: the module passes the declaration's counts; the objects are counted when given instead.
     countMetabolites <- function(s4Object) {
         vapply(s4Object@metabolite_data, function(assay) {
             if (s4Object@metabolite_id_column %in% names(assay)) {
@@ -180,9 +182,6 @@ buildMetabIntensityFilterStats <- function(currentS4, filteredS4) {
             }
         }, numeric(1))
     }
-
-    originalCounts <- countMetabolites(currentS4)
-    filteredCounts <- countMetabolites(filteredS4)
 
     statsDf <- data.frame(
         Assay = names(originalCounts)
@@ -363,12 +362,13 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
             )
             
             tryCatch({
-                # Get current MetaboliteAssayData S4 object from state
-                current_s4 <- workflow_data$state_manager$getState()
-                shiny::req(current_s4)
+                # KIT-075: the counts come from the declaration's result and the QC plot from the committed state read
+                # for this action; no object outlives the observer (its outputs' closures keep this frame).
+                current <- readMetabWorkflowMetadata(workflow_data$state_manager)
+                shiny::req(current)
                 
                 # Verify it's a MetaboliteAssayData object
-                if (!inherits(current_s4, "MetaboliteAssayData")) {
+                if (!identical(current$class, "MetaboliteAssayData")) {
                     stop("Current state is not a MetaboliteAssayData object")
                 }
                 
@@ -381,17 +381,17 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 
                 # KIT-032: the filter is the declared operation `metab_intensity_filter`, committed under
                 # `metab_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path).
-                filtered_s4 <- runMetabReferenceIntensityFilter(workflow_data$state_manager, input$intensity_cutoff_percentile,
-                    input$proportion_below_cutoff, workflow_data$config_list)$object
+                filter_run <- runMetabReferenceIntensityFilter(workflow_data$state_manager, input$intensity_cutoff_percentile,
+                    input$proportion_below_cutoff, workflow_data$config_list)
                 
                 stats_df <- buildMetabIntensityFilterStats(
-                    currentS4 = current_s4
-                    , filteredS4 = filtered_s4
+                    originalCounts = filter_run$value$counts$before
+                    , filteredCounts = filter_run$value$counts$after
                 )
                 filter_stats(stats_df)
                 
                 updateMetabIntensityFilterQcPlot(
-                    filteredS4 = filtered_s4
+                    filteredS4 = readMetabWorkflowState(workflow_data$state_manager, filter_run$reference)
                     , omicType = omic_type
                     , setFilterPlotFn = filter_plot
                 )
@@ -420,7 +420,7 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                 history <- workflow_data$state_manager$getHistory()
                 if (length(history) > 1) {
                     prev_state_name <- history[length(history) - 1]
-                    workflow_data$state_manager$revertToState(prev_state_name)
+                    selectWorkflowStateReference(workflow_data$state_manager, prev_state_name) # KIT-075: no materialised object
                     reportMetabIntensityFilterRevertSuccess(
                         prevStateName = prev_state_name
                         , output = output

@@ -219,8 +219,9 @@ registerLipidQcS4DataSummaryOutput <- function(
     output$data_summary <- renderUiFn({
         reqFn(workflowData$state_manager)
 
+        # KIT-075: the state is read for this render only.
         current_s4 <- tryCatch({
-            workflowData$state_manager$getState()
+            readLipidWorkflowState(workflowData$state_manager)
         }, error = function(e) {
             NULL
         })
@@ -292,7 +293,7 @@ registerLipidQcS4AssayStatsOutput <- function(
         reqFn(workflowData$state_manager)
 
         current_s4 <- tryCatch({
-            workflowData$state_manager$getState()
+            readLipidWorkflowState(workflowData$state_manager)
         }, error = function(e) {
             NULL
         })
@@ -333,7 +334,7 @@ buildLipidQcS4FinalizeResultsText <- function(currentS4, history) {
 
 getLipidQcS4FinalizeState <- function(
     stateManager,
-    stateGetterFn = function(manager) manager$getState()
+    stateGetterFn = function(manager) readLipidWorkflowState(manager)
 ) {
     stateGetterFn(stateManager)
 }
@@ -474,6 +475,8 @@ reportLipidQcS4FinalizeSuccess <- function(
         currentS4 = currentS4
         , history = history
     )
+    # KIT-075: the output's closure keeps this frame, so the object leaves it first.
+    rm(currentS4)
 
     output[[finalizeResultsOutputName]] <- renderTextFn(resultText)
 

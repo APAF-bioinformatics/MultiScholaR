@@ -493,3 +493,9 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
     summary = readLines(summary_file, warn = FALSE)
   )
 }
+
+# KIT-075: `normData` holds state references; the lanes read the state a slot names through the lane's owner.
+module_ci_lipid_norm_state <- function(workflow, value) {
+  if (isS4(value) || is.null(value)) return(value)
+  readLipidWorkflowState(workflow$state_manager, value)
+}

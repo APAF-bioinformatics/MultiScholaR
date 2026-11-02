@@ -137,7 +137,7 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
     expect_equal(as.data.frame(journey$da$results$da_metabolites_long), as.data.frame(direct$da_metabolites_long))
     expect_equal(journey$da$results$per_assay_results, direct$per_assay_results)
     expect_identical(journey$da$results$significant_counts, direct$significant_counts)
-    expect_s4_class(journey$da$results$theObject, "MetaboliteAssayData")
+    expect_null(journey$da$results$theObject) # KIT-075: the results carry no source object
     long <- materializeWorkflowTable(owner$.context, manifest$results$LCMS_Pos$tables$da_metabolites_long)
     expect_identical(nrow(long), manifest$results$LCMS_Pos$rows)
     # A second run on the same state and settings is a hit: the manifest's tables are the same entities.

@@ -279,15 +279,26 @@ buildMetabDaResultsDownloadHandler <- function(
     )
 }
 
-#' The DA tab's current object: the state the loaded session was committed under, read through
-#' the state manager (KIT-030: the holder keeps the state name, not the object).
+#' The DA results with their source state read for one display or export (KIT-075): the Glimma volcano and the
+#' heatmaps read the displayed assay from `theObject`; the tab holds the results without it.
+#' @noRd
+metabDaResultsWithSource <- function(results, daData, workflowData) {
+    manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager
+    if (is.null(results) || is.null(manager)) return(results)
+    results$theObject <- readMetabWorkflowState(manager, daData$current_state_name)
+    results
+}
+
+#' The DA tab's current state: the state the loaded session was committed under (KIT-030: the holder keeps the
+#' state name, not the object). KIT-075: its metadata (`readMetabWorkflowMetadata`), never the object; the status
+#' needs its presence and the analysis reads the state for its preflight only.
 #' @noRd
 metabDaCurrentS4 <- function(daData, workflowData) {
     stateName <- daData$current_state_name
     if (is.null(stateName) || is.null(workflowData) || is.null(workflowData$state_manager)) {
         return(NULL)
     }
-    workflowData$state_manager$getState(stateName)
+    readMetabWorkflowMetadata(workflowData$state_manager, stateName)
 }
 
 resolveMetabDaAnalysisInputs <- function(
@@ -301,6 +312,10 @@ resolveMetabDaAnalysisInputs <- function(
     currentS4 <- currentS4Object
     if (is.null(currentS4) && is.function(getState)) {
         currentS4 <- getState()
+    }
+    # KIT-075: the tab passes the state's metadata; the preflight reads the state for this action only.
+    if (is.list(currentS4) && !isS4(currentS4) && identical(currentS4$class, assayDataClass)) {
+        currentS4 <- readMetabWorkflowState(workflowData$state_manager, currentS4$reference)
     }
 
     if (is.null(currentS4) || !inherits(currentS4, assayDataClass)) {
@@ -372,7 +387,7 @@ runMetabDaAnalysisObserverEntry <- function(
         currentS4Object = currentS4Object,
         workflowData = workflowData,
         getState = if (!is.null(workflowData$state_manager)) {
-            workflowData$state_manager$getState
+            function() readMetabWorkflowMetadata(workflowData$state_manager) # KIT-075: metadata; read in the preflight
         } else {
             NULL
         }
@@ -667,7 +682,7 @@ runMetabDaAnalysisObserverShell <- function(
             )
 
             diskState <- writeArtifacts(
-                results = results,
+                results = metabDaResultsWithSource(results, daData, workflowData), # KIT-075: the heatmaps' source, read for the export
                 experimentPaths = experimentPaths,
                 daQValThresh = daQValThresh,
                 treatLfcCutoff = treatLfcCutoff
@@ -834,7 +849,13 @@ restoreMetabDaLoadedSessionState <- function(
         {
             debugLog("  STEP 9a: Checking S4 @args slot...")
             debugLog("    hasSlot 'args': ", methods::hasMethod("@", "MetaboliteAssayData"))
-            s4_args <- sessionData$current_s4_object@args
+            # KIT-075: the owner's own export carries the state's reference and its slots (`state_metadata`); a session
+            # file from an older build carries the object.
+            s4_args <- if (!isS4(sessionData$current_s4_object) && !is.null(sessionData$state_metadata)) {
+                sessionData$state_metadata$args
+            } else {
+                sessionData$current_s4_object@args
+            }
             debugLog("  STEP 9b: s4_args is NULL: ", is.null(s4_args))
             if (!is.null(s4_args)) {
                 debugLog("    s4_args class: ", class(s4_args)[1])

@@ -102,7 +102,7 @@ detectMetabDuplicateFeatures <- function(
 ) {
     reqFn(stateManager)
 
-    currentS4 <- stateManager$getState()
+    currentS4 <- readMetabWorkflowState(stateManager) # KIT-075: read for the detection only
     reqFn(currentS4)
 
     if (!inheritsFn(currentS4, expectedClass)) {
@@ -128,7 +128,7 @@ revertMetabDuplicateResolution <- function(
     stateManager
     , reqFn = shiny::req
     , historyGetterFn = function(manager) manager$getHistory()
-    , revertStateFn = function(manager, stateName) manager$revertToState(stateName)
+    , revertStateFn = function(manager, stateName) selectWorkflowStateReference(manager, stateName) # KIT-075
 ) {
     reqFn(stateManager)
 
@@ -376,7 +376,9 @@ runMetabDuplicateResolutionWorkflow <- function(
     # `metab_duplicates_resolved` with its provenance; the apply step then publishes (KIT-072: the owner's path is
     # the only path).
     resolved <- runMetabReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
-    resolutionPreflight <- list(currentS4 = resolved$object, statsList = resolved$value$stats)
+    # KIT-075: the resolved state is read for the QC plot only.
+    resolutionPreflight <- list(currentS4 = readMetabWorkflowState(workflowData$state_manager, resolved$reference),
+        statsList = resolved$value$stats)
     resolutionApply <- applyResolutionStateFn(
         currentS4 = resolutionPreflight$currentS4
         , statsList = resolutionPreflight$statsList

@@ -195,12 +195,15 @@ runMetabNormModuleServerShell <- function(
         )
     })
 
+    # KIT-075: `normData` holds state references; these renderers read them through the owner.
     output$correlation_filter_summary <- renderCorrelationFilterSummaryFn(
-        normData = normData
+        normData = normData,
+        workflowData = workflowData
     )
 
     output$final_qc_plot <- renderFinalQcPlotFn(
         normData = normData,
+        workflowData = workflowData,
         colorVariableFn = function() input$color_variable,
         shapeVariableFn = function() input$shape_variable
     )

@@ -307,7 +307,7 @@ buildMetabQcS4FinalizeResultsText <- function(
 # module entry point.
 getMetabQcS4FinalizeState <- function(
     stateManager,
-    stateGetterFn = function(manager) manager$getState()
+    stateGetterFn = function(manager) readMetabWorkflowState(manager) # KIT-075: read for this action only
 ) {
     stateGetterFn(stateManager)
 }
@@ -429,6 +429,8 @@ reportMetabQcS4FinalizeSuccess <- function(
         currentS4 = currentS4
         , history = history
     )
+    # KIT-075: the output's closure keeps this frame, so the object leaves it first.
+    rm(currentS4)
 
     output[[finalizeResultsOutputName]] <- renderTextFn(resultText)
 
@@ -517,7 +519,7 @@ runMetabQcS4FinalizeWorkflow <- function(
 # the public module entry point.
 getMetabQcS4DataSummaryState <- function(
     stateManager,
-    stateGetterFn = function(manager) manager$getState(),
+    stateGetterFn = function(manager) readMetabWorkflowState(manager), # KIT-075: read for this render only
     errorState = NULL
 ) {
     tryCatch(
@@ -544,7 +546,7 @@ buildMetabQcS4DataSummaryRenderOutput <- function(
 # the public module entry point.
 getMetabQcS4AssayStatsState <- function(
     stateManager,
-    stateGetterFn = function(manager) manager$getState(),
+    stateGetterFn = function(manager) readMetabWorkflowState(manager), # KIT-075: read for this render only
     errorState = NULL
 ) {
     tryCatch(

@@ -372,3 +372,9 @@ module_ci_metab_norm_export_variant <- function(variant = c("skip", "manual", "a
     exportTimestamp = as.POSIXct("2026-05-05 12:00:00", tz = "UTC")
   )
 }
+
+# KIT-075: `normData` holds state references; the lanes read the state a slot names through the lane's owner.
+module_ci_metab_norm_state <- function(workflow, value) {
+  if (isS4(value) || is.null(value)) return(value)
+  readMetabWorkflowState(workflow$state_manager, value)
+}

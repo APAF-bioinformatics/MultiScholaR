@@ -224,6 +224,7 @@ test_that("metabolomics QC server delegates qc-trigger initialization through th
 })
 
 test_that("metabolomics QC server delegates auto-initialization through the seam when state appears", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- new.env(parent = emptyenv())
   server_env <- environment(mod_metab_qc_server)
   had_initializer <- exists("initializeMetabQcSubmodules", envir = server_env, inherits = FALSE)

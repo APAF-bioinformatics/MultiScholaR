@@ -83,3 +83,38 @@ omicsMockWrapper <- function(name, result = NULL, env = parent.frame()) {
     list(.package = "MultiScholaR", .env = env)))
   capture
 }
+
+#' KIT-075: what `read{Lipid,Metab}WorkflowMetadata` returns, built from a fixture object (for the seam tests' stand-ins
+#' and injected getters).
+omicsStandInMetadata <- function(state, reference = NULL) {
+  if (is.null(state)) return(NULL)
+  slot_of <- function(name) if (isS4(state) && methods::.hasSlot(state, name)) methods::slot(state, name)
+  data <- slot_of(if (methods::is(state, "MetaboliteAssayData")) "metabolite_data" else "lipid_data")
+  list(reference = reference, class = class(state)[[1]], slots = list(args = slot_of("args"), sample_id = slot_of("sample_id")),
+    assay_names = names(data), assay_rows = if (length(data)) vapply(data, nrow, integer(1)), design_matrix = slot_of("design_matrix"))
+}
+
+#' KIT-075: for the module seam tests whose state manager is a stand-in list (`getState()`, `revertToState()`): the
+#' state and metadata readers the modules now call (`read{Lipid,Metab}Workflow{State,Metadata}`) and the state
+#' selection answer from that stand-in, bound in the package namespace for the calling test. The readers themselves are
+#' exercised on real owners by the declaration tests, the module-CI lanes and the residency walk.
+omicsStandInReaders <- function(env = parent.frame()) {
+  state_of <- function(manager, reference = NULL) {
+    if (!is.function(manager$getState)) return(NULL)
+    if (is.character(reference) && length(formals(manager$getState))) manager$getState(reference) else manager$getState()
+  }
+  metadata_of <- function(manager, reference = NULL) omicsStandInMetadata(state_of(manager, reference), reference)
+  select_of <- function(manager, state_name) manager$revertToState(state_name)
+  testthat::local_mocked_bindings(readLipidWorkflowState = state_of, readMetabWorkflowState = state_of,
+    readLipidWorkflowMetadata = metadata_of, readMetabWorkflowMetadata = metadata_of,
+    selectWorkflowStateReference = select_of, .package = "MultiScholaR", .env = env)
+}
+
+#' KIT-075: a wrapper result for `omicsMockWrapper`: commits `object` under `state_name` on the call's owner (the
+#' wrapper's commit) and returns the committed state's reference and `value`, as the wrappers do (no object).
+omicsMockCommit <- function(object, state_name, value = list(), extra = list()) {
+  function(manager, ...) {
+    manager$saveState(state_name, object, list(), "KIT-075 mock wrapper commit")
+    c(list(reference = getWorkflowStateReference(manager), value = value), extra)
+  }
+}

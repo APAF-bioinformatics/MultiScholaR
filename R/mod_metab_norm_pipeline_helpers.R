@@ -69,7 +69,10 @@ runMetabNormNormalizationPipelineShell <- function(
     runRuvProgressApplyShellFn = runMetabNormRuvProgressApplyShell,
     runCompositeQcRefreshShellFn = runMetabNormCompositeQcRefreshShell
 ) {
-    currentS4 <- workflowData$state_manager$getState()
+    # KIT-075: the state is read for this action; after each declared step the pipeline carries that step's state
+    # reference (which `normData` holds), and the QC plots read the state for the plot only.
+    manager <- workflowData$state_manager
+    currentS4 <- readMetabWorkflowState(manager)
     reqFn(currentS4)
 
     aesthetics <- getPlotAestheticsFn()
@@ -77,6 +80,7 @@ runMetabNormNormalizationPipelineShell <- function(
 
     preNormQcState <- runPreNormalizationQcStepFn(
         currentS4 = currentS4
+        , stateReference = getWorkflowStateReference(manager)
         , totalSteps = totalSteps
         , experimentPaths = experimentPaths
         , groupingVariable = aesthetics$color_var
@@ -119,13 +123,12 @@ runMetabNormNormalizationPipelineShell <- function(
     currentS4 <- betweenSampleShellState$currentS4
 
     postNormQcState <- runPostNormalizationQcStepFn(
-        currentS4 = currentS4
+        currentS4 = readMetabWorkflowState(manager, currentS4)
         , experimentPaths = experimentPaths
         , groupingVariable = aesthetics$color_var
         , shapeVariable = aesthetics$shape_var
         , addLogFn = addLogFn
     )
-    currentS4 <- postNormQcState$currentS4
 
     ruvShellState <- runRuvProgressApplyShellFn(
         currentS4 = currentS4
@@ -230,12 +233,13 @@ runMetabNormPreNormalizationQcStep <- function(
     normData,
     addLogFn = function(entry) invisible(entry),
     incProgressFn = shiny::incProgress,
-    generateMetabQcPlotsFn = generateMetabQcPlots
+    generateMetabQcPlotsFn = generateMetabQcPlots,
+    stateReference = NULL
 ) {
     progressDetail <- "Capturing pre-normalization state..."
     incProgressFn(1 / totalSteps, detail = progressDetail)
 
-    normData$post_filter_obj <- currentS4
+    normData$post_filter_obj <- stateReference # KIT-075: the state's reference, not the object
     captureLogEntry <- "Post-filtering state captured"
     addLogFn(captureLogEntry)
 
@@ -336,8 +340,8 @@ runMetabNormItsdNormalizationStep <- function(
 
     # KIT-032: the declared operation `metab_itsd_normalisation` (KIT-072: the owner's path is the only path).
     currentS4 <- runMetabReferenceItsdNormalisation(workflowData$state_manager, itsdAggregation, itsdFeatureIds,
-        workflowData$config_list, stateDescription)$object
-    normData$post_itsd_obj <- currentS4
+        workflowData$config_list, stateDescription)$reference
+    normData$post_itsd_obj <- currentS4 # KIT-075: the state's reference
 
     logEntry <- "ITSD normalization complete"
     addLogFn(logEntry)
@@ -398,8 +402,8 @@ runMetabNormLog2TransformationStep <- function(
 
     # KIT-032: the declared operation `metab_log2` (KIT-072: the owner's path is the only path).
     currentS4 <- runMetabReferenceLog2(workflowData$state_manager, logOffset, workflowData$config_list,
-        stateDescription)$object
-    normData$post_log2_obj <- currentS4
+        stateDescription)$reference
+    normData$post_log2_obj <- currentS4 # KIT-075: the state's reference
 
     logEntry <- "Log2 transformation complete"
     addLogFn(logEntry)
@@ -470,8 +474,8 @@ runMetabNormBetweenSampleNormalizationStep <- function(
     # KIT-032: the declared operation `metab_between_sample_normalisation` (`none` the identity, the state still
     # committed; KIT-072: the owner's path is the only path).
     currentS4 <- runMetabReferenceBetweenSampleNormalisation(workflowData$state_manager, normMethod,
-        workflowData$config_list, stateDescription)$object
-    normData$post_norm_obj <- currentS4
+        workflowData$config_list, stateDescription)$reference
+    normData$post_norm_obj <- currentS4 # KIT-075: the state's reference
 
     logEntry <- "Between-sample normalization complete"
     addLogFn(logEntry)
@@ -557,21 +561,20 @@ runMetabNormRuvProgressApplyShell <- function(
         normData$ruv_optimization_results <- ruvRun$optimisation
         addLogFn(paste("RUV optimization complete. Best k per assay:",
             paste(names(ruvRun$value$best_k), "=", unlist(ruvRun$value$best_k), collapse = ", ")))
-        currentS4 <- ruvRun$object
-        normData$ruv_corrected_obj <- currentS4
+        currentS4 <- ruvRun$reference
+        normData$ruv_corrected_obj <- currentS4 # KIT-075: the state's reference
         normData$ruv_complete <- TRUE
         addLogFn("RUV-III correction applied")
         optimizationState <- list(ruvResults = ruvRun$optimisation, bestKPerAssay = ruvRun$value$best_k)
         correctionState <- list(currentS4 = currentS4, stateName = "metab_ruv_corrected")
         ruvQcState <- runRuvQcStepFn(
-            currentS4 = currentS4,
+            currentS4 = readMetabWorkflowState(workflowData$state_manager, currentS4), # KIT-075: read for the plot
             totalSteps = totalSteps,
             experimentPaths = experimentPaths,
             groupingVariable = groupingVariable,
             shapeVariable = shapeVariable,
             addLogFn = addLogFn
         )
-        currentS4 <- ruvQcState$currentS4
     } else {
         skipLogEntry <- "RUV-III skipped"
         addLogFn(skipLogEntry)

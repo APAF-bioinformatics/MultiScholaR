@@ -63,6 +63,13 @@ metabolomicsStepLabels <- metabolomicsDeclarationBinding$step_labels
 #' @noRd
 metabolomicsFeatureCounts <- function(object) omicsFeatureCounts(metabolomicsDeclarationBinding, object)
 
+#' The metabolomics state read for one action, and its metadata without a table (KIT-075).
+#' @noRd
+readMetabWorkflowState <- function(manager, reference = NULL) readWorkflowOmicsState(metabolomicsDeclarationBinding, manager, reference)
+
+#' @noRd
+readMetabWorkflowMetadata <- function(manager, reference = NULL) readWorkflowOmicsMetadata(metabolomicsDeclarationBinding, manager, reference)
+
 #' Identify the metabolomics DA manifest.
 #' @noRd
 isMetabResultManifest <- function(value) {
@@ -90,43 +97,43 @@ metabDaOperation <- function() omicsDaOperation(metabolomicsDeclarationBinding)
 
 #' @noRd
 runMetabReferenceIntensityFilter <- function(manager, percentile, proportion, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceIntensityFilter(metabolomicsDeclarationBinding, manager, percentile, proportion, config, description,
         state_name, hydrate)
 }
 
 #' @noRd
-runMetabReferenceDuplicateResolution <- function(manager, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runMetabReferenceDuplicateResolution <- function(manager, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceDuplicateResolution(metabolomicsDeclarationBinding, manager, config, description, state_name, hydrate)
 }
 
 #' @noRd
 runMetabReferenceItsdNormalisation <- function(manager, aggregation, feature_ids, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceItsdNormalisation(metabolomicsDeclarationBinding, manager, aggregation, feature_ids, config,
         description, state_name, hydrate)
 }
 
 #' @noRd
-runMetabReferenceLog2 <- function(manager, offset, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runMetabReferenceLog2 <- function(manager, offset, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceLog2(metabolomicsDeclarationBinding, manager, offset, config, description, state_name, hydrate)
 }
 
 #' @noRd
 runMetabReferenceBetweenSampleNormalisation <- function(manager, method, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceBetweenSampleNormalisation(metabolomicsDeclarationBinding, manager, method, config, description,
         state_name, hydrate)
 }
 
 #' @noRd
-runMetabReferenceRuv <- function(manager, parameters, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runMetabReferenceRuv <- function(manager, parameters, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceRuv(metabolomicsDeclarationBinding, manager, parameters, config, description, state_name, hydrate)
 }
 
 #' @noRd
 runMetabReferenceCorrelation <- function(manager, group, threshold, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     runWorkflowOmicsReferenceCorrelation(metabolomicsDeclarationBinding, manager, group, threshold, config, description,
         state_name, hydrate)
 }

@@ -170,6 +170,7 @@ test_that("metabolomics QC S4 helper builders preserve summary and assay statist
 })
 
 test_that("metabolomics QC S4 history and state helpers preserve fallback behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_metab_qc_s4_helpers()
 
   build_state_history_ui <- getMultiScholaRBinding("buildMetabQcS4StateHistoryUi")
@@ -251,6 +252,7 @@ test_that("metabolomics QC S4 finalize helpers preserve persistence and completi
 })
 
 test_that("metabolomics QC S4 render helpers preserve render-path behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_metab_qc_s4_helpers()
 
   get_data_summary_state <- getMultiScholaRBinding("getMetabQcS4DataSummaryState")

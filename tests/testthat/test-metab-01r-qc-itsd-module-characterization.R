@@ -335,6 +335,7 @@ test_that("metabolomics ITSD intensity plot seam preserves labels, layers, and t
 })
 
 test_that("metabolomics ITSD server body seam preserves helper handoffs and reactive wiring", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- new.env(parent = emptyenv())
   captured$notifications <- list()
   captured$reactive_updates <- list(metrics = list(), long_data = list())
@@ -482,6 +483,7 @@ test_that("metabolomics ITSD server body seam preserves helper handoffs and reac
 })
 
 test_that("metabolomics ITSD module server delegates the analyze observer through the seam and clears stale long data", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- new.env(parent = emptyenv())
   captured$notifications <- list()
   captured$reactive_updates <- list(metrics = list(), long_data = list())

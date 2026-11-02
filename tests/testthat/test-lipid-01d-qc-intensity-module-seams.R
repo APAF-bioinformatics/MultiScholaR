@@ -205,7 +205,9 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
     # KIT-072: the module runs the declared operation on the session owner (its only path); the wrapper's commit is
     # tested with the declarations, so here it is recorded and returns the filtered object.
     workflow <- omicsTestOwner(current_s4, "lipid_raw_data_s4", config = list(cache = "cfg"))
-    wrapper <- omicsMockWrapper("runLipidReferenceIntensityFilter", list(object = filtered_s4))
+    # KIT-075: the wrapper returns the committed state's reference and the declaration's counts, not the object.
+    wrapper <- omicsMockWrapper("runLipidReferenceIntensityFilter", omicsMockCommit(filtered_s4, "lipid_intensity_filtered",
+        list(counts = list(before = lipidomicsFeatureCounts(current_s4), after = lipidomicsFeatureCounts(filtered_s4)))))
 
     result <- registerLipidIntensityApplyFilterObserver(
         input = input,
@@ -268,7 +270,7 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
     expect_identical(wrapper$calls[[1L]][[2L]], 10L)
     expect_identical(wrapper$calls[[1L]][[3L]], 0.5)
     expect_identical(wrapper$calls[[1L]][[4L]], list(cache = "cfg"))
-    expect_identical(qc_plot_args$theObject, filtered_s4)
+    expect_equal(qc_plot_args$theObject@lipid_data, filtered_s4@lipid_data, ignore_attr = TRUE) # KIT-075: read per action
     expect_identical(qc_plot_args$step_name, "2_Intensity_Filtered")
     expect_identical(qc_plot_args$omics_type, "lipidomics")
     expect_identical(qc_plot_args$return_grid, TRUE)
@@ -317,6 +319,7 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter work
 })
 
 test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter failure shell stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     input <- list(
         apply_filter = 8L,
         intensity_cutoff_percentile = 10L,
@@ -412,6 +415,7 @@ test_that("registerLipidIntensityApplyFilterObserver keeps the apply-filter fail
 })
 
 test_that("registerLipidIntensityRevertObserver keeps the revert observer shell handoff stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     input <- list(revert_filter = 9L)
     reverted_state <- NULL
     filter_stats_value <- "stale-stats"

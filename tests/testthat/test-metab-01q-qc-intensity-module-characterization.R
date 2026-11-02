@@ -310,7 +310,7 @@ test_that("metabolomics intensity module preserves apply filter public behavior"
   expect_equal(captured$filter_call$the_object@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
   expect_identical(captured$filter_call$intensity_cutoff_percentile, 10)
   expect_identical(captured$filter_call$proportion_below_cutoff, 0.5)
-  expect_identical(captured$qc_update$the_object, filtered_s4)
+  expect_equal(captured$qc_update$the_object@metabolite_data, filtered_s4@metabolite_data, ignore_attr = TRUE) # KIT-075: read per action
   expect_identical(captured$qc_update$step_name, "2_Intensity_Filtered")
   expect_identical(captured$qc_update$omics_type, "metabolomics")
   expect_true(isTRUE(captured$qc_update$return_grid))
@@ -330,6 +330,7 @@ test_that("metabolomics intensity module preserves apply filter public behavior"
 })
 
 test_that("metabolomics intensity module preserves revert public behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- new.env(parent = emptyenv())
   captured$notifications <- list()
   package_ns <- asNamespace("MultiScholaR")
@@ -1296,10 +1297,11 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
   )
   assign(
     "buildMetabIntensityFilterStats",
-    function(currentS4, filteredS4) {
+    function(currentS4 = NULL, filteredS4 = NULL, originalCounts = NULL, filteredCounts = NULL) {
+      # KIT-075: the module passes the declaration's counts.
       captured$stats_call <- list(
-        current_s4 = currentS4,
-        filtered_s4 = filteredS4
+        original_counts = originalCounts,
+        filtered_counts = filteredCounts
       )
       expected_stats
     },
@@ -1396,14 +1398,14 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
   expect_equal(captured$filter_call$the_object@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
   expect_identical(captured$filter_call$intensity_cutoff_percentile, 10)
   expect_identical(captured$filter_call$proportion_below_cutoff, 0.5)
-  expect_equal(captured$stats_call$current_s4@metabolite_data, current_s4@metabolite_data, ignore_attr = TRUE)
-  expect_identical(captured$stats_call$filtered_s4, filtered_s4)
+  expect_identical(captured$stats_call$original_counts, metabolomicsFeatureCounts(current_s4))
+  expect_identical(captured$stats_call$filtered_counts, metabolomicsFeatureCounts(filtered_s4))
   expect_identical(captured$success_report_call$stats, expected_stats)
   expect_identical(captured$success_report_call$intensity_cutoff_percentile, 10)
   expect_identical(captured$success_report_call$proportion_below_cutoff, 0.5)
   expect_identical(captured$success_report_call$state_name, "metab_intensity_filtered")
   expect_identical(captured$success_report_call$output, captured$output)
-  expect_identical(captured$qc_plot_helper_call$filtered_s4, filtered_s4)
+  expect_equal(captured$qc_plot_helper_call$filtered_s4@metabolite_data, filtered_s4@metabolite_data, ignore_attr = TRUE) # KIT-075: read per action
   expect_identical(captured$qc_plot_helper_call$omic_type, "metabolomics")
   expect_type(captured$qc_plot_helper_call$set_filter_plot_fn, "closure")
   expect_identical(workflow_data$state_manager$current_state, "metab_intensity_filtered")
@@ -1428,6 +1430,7 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
 })
 
 test_that("metabolomics intensity module revert observer delegates reset and reporting through the seam", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."

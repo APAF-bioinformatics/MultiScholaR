@@ -101,10 +101,14 @@ getLipidSummaryStateObject <- function(workflowData) {
         return(NULL)
     }
 
-    tryCatch(stateManager$getState(stateName), error = function(e) NULL)
+    # KIT-075: the state's metadata (its slots, assay names and row counts, design), not the object.
+    tryCatch(readLipidWorkflowMetadata(stateManager, stateName), error = function(e) NULL)
 }
 
 getLipidSummaryObjectArgs <- function(object) {
+    if (is.list(object) && !isS4(object)) {
+        return(object$slots$args) # KIT-075: the state's metadata
+    }
     if (is.null(object) || !isS4(object) || !"args" %in% methods::slotNames(object)) {
         return(NULL)
     }
@@ -168,7 +172,16 @@ prepareLipidSummarySessionState <- function(
     )
     sessionState$parameter_payload <- parameterPayload
 
-    if (!is.null(finalS4Object) && isS4(finalS4Object)) {
+    if (is.list(finalS4Object) && !isS4(finalS4Object)) {
+        # KIT-075: the state's metadata.
+        sessionState$assay_names <- finalS4Object$assay_names
+        sessionState$feature_counts <- finalS4Object$assay_rows
+        sampleIdCol <- finalS4Object$slots$sample_id
+        designMatrix <- finalS4Object$design_matrix
+        if (is.data.frame(designMatrix) && length(sampleIdCol) == 1L && sampleIdCol %in% names(designMatrix)) {
+            sessionState$sample_count <- length(unique(designMatrix[[sampleIdCol]]))
+        }
+    } else if (!is.null(finalS4Object) && isS4(finalS4Object)) {
         slotNames <- methods::slotNames(finalS4Object)
         if ("lipid_data" %in% slotNames) {
             assayData <- tryCatch(finalS4Object@lipid_data, error = function(e) NULL)

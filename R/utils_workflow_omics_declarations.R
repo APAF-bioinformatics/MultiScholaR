@@ -235,10 +235,11 @@ omicsDeclarationBindings <- function() {
 #' @param state_name,config,description The module's commit.
 #' @param source Saved reference of the input state; the head when NULL.
 #' @return `list(run, reference, value, object)`: the operation run, the committed state's reference, the kernel's
-#'   value and the committed object hydrated for the module's display (the modules hydrate whole objects per read).
+#'   value, and the committed object only when `hydrate` asks for it (KIT-075: the modules hold the reference and read
+#'   per action; the argument stays for the harness's recorders).
 #' @noRd
 runWorkflowOmicsReferenceOperation <- function(manager, declaration, parameters, state_name, config, description, source = NULL,
-    dependencies = list(), hydrate = TRUE) {
+    dependencies = list(), hydrate = FALSE) {
     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
         source <- source %||% getWorkflowStateReference(manager)
@@ -251,9 +252,42 @@ runWorkflowOmicsReferenceOperation <- function(manager, declaration, parameters,
     })
 }
 
+#' Read an omics state for one action (KIT-075): the binding's components of the state, read in the owner's scope.
+#' The caller uses the object within the action and holds only references between actions.
+#' @param reference The state's saved reference or name; the head when NULL.
+#' @return The transient object, or NULL when the owner has no such state.
+#' @noRd
+readWorkflowOmicsState <- function(binding, manager, reference = NULL) {
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort(paste(binding$step_scope, "needs the session's state owner"), class = "saved_entity_scope")
+    if (is.character(reference)) reference <- getWorkflowStateReference(manager, reference)
+    reference <- reference %||% getWorkflowStateReference(manager)
+    if (is.null(reference)) return(NULL)
+    withWorkflowStateScope(manager, function() readWorkflowExecutionComponents(manager, reference, fields = binding$fields))
+}
+
+#' An omics state's metadata (KIT-075): the stored slots, the assay names and row counts (from the stored tables'
+#' shapes) and the design (a sample table), read without any assay table.
+#' @param reference The state's saved reference or name; the head when NULL.
+#' @return `list(reference, class, slots, assay_names, assay_rows, design_matrix)`, or NULL when the owner has no such
+#'   state.
+#' @noRd
+readWorkflowOmicsMetadata <- function(binding, manager, reference = NULL) {
+    if (!inherits(manager, "DIAStateAdapter")) return(NULL)
+    if (is.character(reference)) reference <- getWorkflowStateReference(manager, reference)
+    reference <- reference %||% getWorkflowStateReference(manager)
+    if (is.null(reference)) return(NULL)
+    withWorkflowStateScope(manager, function() {
+        spec <- readWorkflowStateMetadata(manager, reference)$data
+        assays <- spec$components[[binding$data_slot]]
+        list(reference = reference, class = spec$class, slots = spec$slots, assay_names = names(assays),
+            assay_rows = vapply(assays, function(table) as.integer(table$metadata$shape[[1L]]), integer(1)),
+            design_matrix = materializeWorkflowTable(manager$.context, spec$components$design_matrix))
+    })
+}
+
 #' @noRd
 runWorkflowOmicsReferenceIntensityFilter <- function(binding, manager, percentile, proportion, config, description = NULL,
-    state_name = NULL, hydrate = TRUE) {
+    state_name = NULL, hydrate = FALSE) {
     description <- description %||% sprintf("Applied %s intensity filter (percentile: %d%%, proportion: %.2f)",
         binding$feature_noun, as.integer(percentile), proportion)
     runWorkflowOmicsReferenceOperation(manager, omicsIntensityFilterOperation(binding),
@@ -263,7 +297,7 @@ runWorkflowOmicsReferenceIntensityFilter <- function(binding, manager, percentil
 
 #' @noRd
 runWorkflowOmicsReferenceDuplicateResolution <- function(binding, manager, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     description <- description %||% sprintf("Resolved duplicate %s features by keeping highest intensity", binding$feature_noun)
     runWorkflowOmicsReferenceOperation(manager, omicsDuplicateResolutionOperation(binding), list(),
         state_name %||% paste0(binding$prefix, "_duplicates_resolved"), config, description, hydrate = hydrate)
@@ -271,7 +305,7 @@ runWorkflowOmicsReferenceDuplicateResolution <- function(binding, manager, confi
 
 #' @noRd
 runWorkflowOmicsReferenceItsdNormalisation <- function(binding, manager, aggregation, feature_ids, config, description = NULL,
-    state_name = NULL, hydrate = TRUE) {
+    state_name = NULL, hydrate = FALSE) {
     parameters <- list(itsd_aggregation = aggregation)
     parameters["itsd_feature_ids"] <- list(feature_ids)
     runWorkflowOmicsReferenceOperation(manager, omicsItsdNormalisationOperation(binding), parameters,
@@ -280,7 +314,7 @@ runWorkflowOmicsReferenceItsdNormalisation <- function(binding, manager, aggrega
 }
 
 #' @noRd
-runWorkflowOmicsReferenceLog2 <- function(binding, manager, offset, config, description = NULL, state_name = NULL, hydrate = TRUE) {
+runWorkflowOmicsReferenceLog2 <- function(binding, manager, offset, config, description = NULL, state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceOperation(manager, omicsLog2Operation(binding), list(offset = offset),
         state_name %||% paste0(binding$prefix, "_log2"), config,
         description %||% paste("Log2 transformation (offset:", offset, ")"), hydrate = hydrate)
@@ -288,7 +322,7 @@ runWorkflowOmicsReferenceLog2 <- function(binding, manager, offset, config, desc
 
 #' @noRd
 runWorkflowOmicsReferenceBetweenSampleNormalisation <- function(binding, manager, method, config, description = NULL,
-    state_name = NULL, hydrate = TRUE) {
+    state_name = NULL, hydrate = FALSE) {
     runWorkflowOmicsReferenceOperation(manager, omicsBetweenSampleNormalisationOperation(binding), list(normalisation_method = method),
         state_name %||% paste0(binding$prefix, "_normalized"), config,
         description %||% paste("Between-sample normalization (method:", method, ")"), hydrate = hydrate)
@@ -298,7 +332,7 @@ runWorkflowOmicsReferenceBetweenSampleNormalisation <- function(binding, manager
 #' @return The operation result with `optimisation`, the hydrated per-assay optimisation results.
 #' @noRd
 runWorkflowOmicsReferenceRuv <- function(binding, manager, parameters, config, description = NULL, state_name = NULL,
-    hydrate = TRUE) {
+    hydrate = FALSE) {
     result <- runWorkflowOmicsReferenceOperation(manager, omicsRuvOperation(binding), parameters[omicsRuvParameterNames],
         state_name %||% paste0(binding$prefix, "_ruv_corrected"), config, description %||% "RUV-III batch correction complete",
         hydrate = hydrate)
@@ -310,7 +344,7 @@ runWorkflowOmicsReferenceRuv <- function(binding, manager, parameters, config, d
 #' @return The selection's result with `correlations`, the per-assay correlation tables.
 #' @noRd
 runWorkflowOmicsReferenceCorrelation <- function(binding, manager, group, threshold, config, description = NULL,
-    state_name = NULL, hydrate = TRUE) {
+    state_name = NULL, hydrate = FALSE) {
     if (!inherits(manager, "DIAStateAdapter")) {
         cli::cli_abort(paste(binding$step_scope, "needs the session's state owner"), class = "saved_entity_scope")
     }
@@ -337,14 +371,15 @@ markWorkflowOmicsStoreStep <- function(manager, operation) {
     invisible(NULL)
 }
 
-#' Commit a store step on the owner (the QC finalise, the correlation skip): the head's record under the new name
-#' with the step's provenance, the prior products kept and no component re-serialised.
+#' Commit a store step on the owner (the QC finalise, the correlation skip, the reset): the head's record, or the
+#' `source` state's, under the new name with the step's provenance, the prior products kept and no component re-serialised.
 #' @noRd
-commitWorkflowOmicsStoreStep <- function(manager, operation, state_name, config, description) {
+commitWorkflowOmicsStoreStep <- function(manager, operation, state_name, config, description, source = NULL) {
     if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort("the step needs the session's state owner", class = "saved_entity_scope")
     withWorkflowStateScope(manager, function() {
         markWorkflowOmicsStoreStep(manager, operation)
-        commitWorkflowReferenceState(manager, state_name, readWorkflowStateMetadata(manager)$data, config, description)
+        # KIT-075: `source` (a saved state reference) recommits that state's record, as the reset does; the head's otherwise.
+        commitWorkflowReferenceState(manager, state_name, readWorkflowStateMetadata(manager, source)$data, config, description)
         getWorkflowStateReference(manager)
     })
 }
@@ -376,8 +411,8 @@ recordWorkflowOmicsDesignProvenance <- function(binding, manager, object, source
 #' @param source Saved reference of the state the DA runs on.
 #' @param settings `formula_string`, `da_q_val_thresh`, `treat_lfc_cutoff`.
 #' @param contrasts The contrasts table (`contrasts`, `friendly_names`, `full_format`).
-#' @return `list(manifest, results, reference)`: `results` is the kernel's list for the module's display and files,
-#'   with `theObject` the hydrated source.
+#' @return `list(manifest, results, reference)`: `results` is the kernel's list for the module's display and files
+#'   (KIT-075: without the source object; its readers take the source's components per action).
 #' @noRd
 runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settings, contrasts) {
     if (!inherits(manager, "DIAStateAdapter")) {
@@ -410,7 +445,6 @@ runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settin
         snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, run$value))
         publishWorkflowStateHead(context, snapshot)
         results <- hydrateSavedWorkflowEntity(context$store, run$value$products$da_results)$value
-        results$theObject <- readWorkflowExecutionComponents(manager, source, fields = binding$fields)
         list(manifest = manifest, results = results, reference = reference)
     })
 }

@@ -117,6 +117,7 @@ test_that("buildLipidQcS4DataSummaryUi keeps the summary table shell stable", {
 })
 
 test_that("registerLipidQcS4DataSummaryOutput keeps the builder handoff stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     ensureLipidQcS4WorkflowTestClass()
 
     current_s4 <- methods::new(
@@ -211,6 +212,7 @@ test_that("buildLipidQcS4AssayStatsTable keeps the assay-stats shell stable", {
 })
 
 test_that("registerLipidQcS4AssayStatsOutput keeps the builder handoff stable", {
+    omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
     ensureLipidQcS4WorkflowTestClass()
 
     current_s4 <- methods::new(

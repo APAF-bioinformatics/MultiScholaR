@@ -410,6 +410,7 @@ test_that("mod_metab_norm_server preserves reset error behavior", {
 })
 
 test_that("metab norm shared render and plotting helpers preserve current contracts", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skipIfMissingMultiScholaRBindings(
     "getPlotAesthetics",
     "appendMetabNormNormalizationLog",
@@ -526,6 +527,8 @@ test_that("metab norm shared render and plotting helpers preserve current contra
 
   final_plot <- render_final_qc(
     normData = norm_state,
+    # KIT-075: the render reads the referenced state through the owner (here a stand-in returning the object).
+    workflowData = list(state_manager = list(getState = function(...) filtered_object)),
     colorVariableFn = function() "group",
     shapeVariableFn = function() "batch",
     renderPlotFn = function(expr) eval.parent(substitute(expr)),

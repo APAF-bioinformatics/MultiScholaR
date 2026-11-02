@@ -225,7 +225,8 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
             )
             
             tryCatch({
-                current_s4 <- workflow_data$state_manager$getState()
+                # KIT-075: the state is read for this analysis only; it leaves the frame before the output is made.
+                current_s4 <- readLipidWorkflowState(workflow_data$state_manager)
                 shiny::req(current_s4)
                 
                 if (!inherits(current_s4, "LipidomicsAssayData")) {
@@ -368,6 +369,7 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                     , sep = "\n"
                 )
                 
+                rm(current_s4, assay_list)
                 output$is_results <- shiny::renderText(result_text)
                 
                 logger::log_info(paste("IS analysis complete:", n_is_total, "standards found"))

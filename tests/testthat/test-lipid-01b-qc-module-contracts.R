@@ -29,6 +29,12 @@ loadLipidQcModuleHarness <- function(
     module_env$mod_lipid_qc_itsd_ui <- function(id) shiny::tabPanel("ITSD")
     module_env$mod_lipid_qc_s4_ui <- function(id) shiny::tabPanel("Finalize")
 
+    # KIT-075: the module reads the state's metadata; the harness's manager answers it through its state factory.
+    module_env$readLipidWorkflowMetadata <- function(manager, reference = NULL) {
+        state <- manager$getState()
+        if (is.null(state)) NULL else list(class = class(state)[[1]])
+    }
+
     module_env$serverCalls <- character()
     module_env$mod_lipid_qc_intensity_server <- function(...) {
         module_env$serverCalls <- c(module_env$serverCalls, "intensity")

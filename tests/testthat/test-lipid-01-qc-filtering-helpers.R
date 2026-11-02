@@ -662,7 +662,9 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
     # KIT-072: the apply observer runs the declared operation on the session owner (its only path); the wrapper's
     # commit is tested with the declarations, so here it is recorded and returns the filtered object.
     owner_workflow <- omicsTestOwner(current_s4, "lipid_raw_data_s4", config = list(cache = "cfg"))
-    wrapper <- omicsMockWrapper("runLipidReferenceIntensityFilter", list(object = filtered_s4))
+    # KIT-075: the wrapper returns the committed state's reference and the declaration's counts, not the object.
+    wrapper <- omicsMockWrapper("runLipidReferenceIntensityFilter", omicsMockCommit(filtered_s4, "lipid_intensity_filtered",
+        list(counts = list(before = lipidomicsFeatureCounts(current_s4), after = lipidomicsFeatureCounts(filtered_s4)))))
     lipidQcNamespaceBinding("registerLipidIntensityApplyFilterObserver")(
         input = input,
         workflowData = owner_workflow,
@@ -722,7 +724,7 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
     expect_identical(wrapper$calls[[1L]][[2L]], 10L)
     expect_identical(wrapper$calls[[1L]][[3L]], 0.5)
     expect_identical(wrapper$calls[[1L]][[4L]], list(cache = "cfg"))
-    expect_identical(qc_plot_args$theObject, filtered_s4)
+    expect_equal(qc_plot_args$theObject@lipid_data, filtered_s4@lipid_data, ignore_attr = TRUE) # KIT-075: read per action
     expect_identical(qc_plot_args$step_name, "2_Intensity_Filtered")
     expect_identical(qc_plot_args$omics_type, "lipidomics")
     expect_identical(qc_plot_args$return_grid, TRUE)
@@ -745,6 +747,9 @@ test_that("lipid intensity module observers preserve apply and revert contracts"
     expect_identical(removed_notifications, "lipid_intensity_filter_working")
     expect_identical(notifications[[2]]$message, "Intensity filter applied: 2 lipids retained")
 
+    # KIT-075: the revert selects the state by reference; the stand-in manager answers the selection.
+    testthat::local_mocked_bindings(selectWorkflowStateReference = function(manager, state_name) manager$revertToState(state_name),
+        .package = "MultiScholaR")
     lipidQcNamespaceBinding("registerLipidIntensityRevertObserver")(
         input = input,
         workflowData = list(state_manager = state_manager),

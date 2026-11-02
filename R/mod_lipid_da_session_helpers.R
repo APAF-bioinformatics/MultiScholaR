@@ -109,7 +109,13 @@ restoreLipidDaFormulaFromSession <- function(
                 debugLog("    hasSlot 'args': ", hasArgsMethodFn())
             }
 
-            s4Args <- sessionData$current_s4_object@args
+            # KIT-075: the owner's own export carries the state's reference and its slots (`state_metadata`); a session
+            # file from an older build carries the object.
+            s4Args <- if (!isS4(sessionData$current_s4_object) && !is.null(sessionData$state_metadata)) {
+                sessionData$state_metadata$args
+            } else {
+                sessionData$current_s4_object@args
+            }
 
             if (!is.null(debugLog)) {
                 debugLog("  STEP 9b: s4_args is NULL: ", is.null(s4Args))
@@ -282,15 +288,26 @@ readLipidDaSessionData <- function(
     )
 }
 
-#' The DA tab's current object: the state the loaded session was committed under, read through
-#' the state manager (KIT-030: the holder keeps the state name, not the object).
+#' The DA results with their source state read for one display or export (KIT-075): the Glimma volcano and the
+#' heatmaps read the displayed assay from `theObject`; the tab holds the results without it.
+#' @noRd
+lipidDaResultsWithSource <- function(results, daData, workflowData) {
+    manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager
+    if (is.null(results) || is.null(manager)) return(results)
+    results$theObject <- readLipidWorkflowState(manager, daData$current_state_name)
+    results
+}
+
+#' The DA tab's current state: the state the loaded session was committed under (KIT-030: the holder keeps the
+#' state name, not the object). KIT-075: its metadata (`readLipidWorkflowMetadata`), never the object; the status
+#' and the preflight need only its presence and class.
 #' @noRd
 lipidDaCurrentS4 <- function(daData, workflowData) {
     stateName <- daData$current_state_name
     if (is.null(stateName) || is.null(workflowData) || is.null(workflowData$state_manager)) {
         return(NULL)
     }
-    workflowData$state_manager$getState(stateName)
+    readLipidWorkflowMetadata(workflowData$state_manager, stateName)
 }
 
 restoreLipidDaCurrentS4FromSession <- function(

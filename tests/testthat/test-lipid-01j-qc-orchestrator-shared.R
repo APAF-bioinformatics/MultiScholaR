@@ -215,6 +215,7 @@ test_that("lipidomics QC orchestrator preserves the unavailable-state info panel
 })
 
 test_that("lipidomics QC orchestrator preserves populated tab rendering", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidQcCapture()
   server_fn <- getLipidQcServer()
   server_env <- environment(server_fn)
@@ -278,6 +279,7 @@ test_that("lipidomics QC orchestrator preserves qc-trigger submodule initializat
 })
 
 test_that("lipidomics QC orchestrator preserves state-detected auto-initialization", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidQcCapture()
   server_fn <- getLipidQcServer()
   server_env <- environment(server_fn)

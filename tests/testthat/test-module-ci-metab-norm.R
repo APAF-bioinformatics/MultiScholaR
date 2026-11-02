@@ -46,10 +46,10 @@ test_that("MCI-015.1 normalization method matrix preserves assay names, samples,
     incProgressFn = function(...) invisible(NULL)
   )))
 
-  expect_s4_class(shell_state$currentS4, "MetaboliteAssayData")
+  expect_true(isSavedWorkflowReference(shell_state$currentS4)) # KIT-075: the step carries the state's reference
   expect_true(norm_data$normalization_complete)
   expect_true("metab_normalized" %in% workflow$state_manager$getHistory())
-  module_ci_metab_norm_assert_alignment(shell_state$currentS4, c("LCMS_Pos", "GCMS"))
+  module_ci_metab_norm_assert_alignment(module_ci_metab_norm_state(workflow, shell_state$currentS4), c("LCMS_Pos", "GCMS"))
 })
 
 test_that("MCI-015.2 ITSD matrix serializes regex, manual, absent, and invalid ITSD choices", {
@@ -96,9 +96,9 @@ test_that("MCI-015.2 ITSD matrix serializes regex, manual, absent, and invalid I
   )))
 
   expect_true(itsd_state$applied)
-  expect_s4_class(norm_data$post_itsd_obj, "MetaboliteAssayData")
+  expect_true(isSavedWorkflowReference(norm_data$post_itsd_obj)) # KIT-075: the state's reference
   expect_true("metab_itsd_norm" %in% workflow$state_manager$getHistory())
-  expect_identical(norm_data$post_itsd_obj@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
+  expect_identical(module_ci_metab_norm_state(workflow, norm_data$post_itsd_obj)@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
 
   no_itsd <- module_ci_metab_norm_object(layout = "gc", include_itsd = FALSE, positive_only = TRUE)
   no_itsd_warnings <- character()
@@ -201,10 +201,10 @@ test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, contr
   expect_equal(auto$state$optimizationState$ruvResults$LCMS_Pos$best_percentage, 13)
   expect_s3_class(auto$state$optimizationState$ruvResults$GCMS$optimization_results, "data.frame")
   # The correction: committed under `metab_ruv_corrected` with the per-assay k of the optimisation.
-  expect_s4_class(auto$state$currentS4, "MetaboliteAssayData")
+  expect_true(isSavedWorkflowReference(auto$state$currentS4)) # KIT-075: the state's reference
   expect_true(auto$norm_data$ruv_complete)
   expect_true("metab_ruv_corrected" %in% auto$workflow$state_manager$getHistory())
-  expect_identical(auto$state$currentS4@args$ruvIII_C_Varying$ruv_number_k$LCMS_Pos, 1L)
+  expect_identical(module_ci_metab_norm_state(auto$workflow, auto$state$currentS4)@args$ruvIII_C_Varying$ruv_number_k$LCMS_Pos, 1L)
 
   failed_results <- module_ci_metab_norm_ruv_results(object)
   failed_results$LCMS_Pos <- list(
@@ -276,17 +276,17 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
 
   pass_all <- run_apply_case("pass_all")
   expect_identical(pass_all$result$status, "success")
-  expect_setequal(pass_all$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2", "S3", "S4"))
+  expect_setequal(module_ci_metab_norm_state(pass_all$workflow, pass_all$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2", "S3", "S4"))
   expect_true("metab_correlation_filtered" %in% pass_all$workflow$state_manager$getHistory())
 
   boundary <- run_apply_case("boundary")
   expect_identical(boundary$result$status, "success")
-  expect_setequal(boundary$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2", "S3", "S4"))
+  expect_setequal(module_ci_metab_norm_state(boundary$workflow, boundary$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2", "S3", "S4"))
 
   fail_one <- run_apply_case("fail_one")
   expect_identical(fail_one$result$status, "success")
-  expect_identical(fail_one$norm_data$correlation_filtered_obj@design_matrix$Run, c("S1", "S2"))
-  expect_identical(module_ci_metab_norm_sample_cols(fail_one$norm_data$correlation_filtered_obj, "LCMS_Pos"), c("S1", "S2"))
+  expect_identical(module_ci_metab_norm_state(fail_one$workflow, fail_one$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2"))
+  expect_identical(module_ci_metab_norm_sample_cols(module_ci_metab_norm_state(fail_one$workflow, fail_one$norm_data$correlation_filtered_obj), "LCMS_Pos"), c("S1", "S2"))
 
   fail_many <- suppressMessages(filterSamplesByMetaboliteCorrelationThreshold(
     object,

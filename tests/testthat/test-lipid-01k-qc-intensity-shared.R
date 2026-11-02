@@ -274,6 +274,7 @@ withSharedLipidIntensityUiMocks <- function(captured,
 }
 
 test_that("lipidomics intensity module preserves apply-filter success behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidIntensityCapture()
   server_fn <- getLipidIntensityServer()
   server_env <- environment(server_fn)
@@ -365,6 +366,7 @@ test_that("lipidomics intensity module preserves plot warning behavior", {
 })
 
 test_that("lipidomics intensity module preserves apply-filter error behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidIntensityCapture()
   server_fn <- getLipidIntensityServer()
   server_env <- environment(server_fn)
@@ -444,6 +446,7 @@ test_that("lipidomics intensity module preserves ggplot output dispatch", {
 })
 
 test_that("lipidomics intensity module preserves revert success behavior", {
+  omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidIntensityCapture()
   server_fn <- getLipidIntensityServer()
 

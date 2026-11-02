@@ -64,6 +64,8 @@ handleLipidSummarySaveWorkflowArgs <- function(
         s4Filepath <- filePathFn(integrationDir, s4Filename)
 
         saveRDSFn(context$finalS4Object, s4Filepath)
+        # KIT-075: the outputs below keep this frame; the object leaves it once written.
+        context$finalS4Object <- NULL
         catFn(sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4Filepath))
         showNotificationFn("Saved Integration S4 Object", type = "message")
 

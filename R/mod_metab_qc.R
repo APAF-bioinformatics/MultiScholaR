@@ -95,9 +95,10 @@ mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
         # Render dynamic QC tabs
         output$dynamic_qc_tabs <- shiny::renderUI({
             # Check if we have data available
+            # KIT-075: the state's metadata answers whether there is data; no object is read.
             has_data <- tryCatch({
                 !is.null(workflow_data$state_manager) && 
-                !is.null(workflow_data$state_manager$getState())
+                !is.null(readMetabWorkflowMetadata(workflow_data$state_manager))
             }, error = function(e) {
                 FALSE
             })
@@ -144,13 +145,13 @@ mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, 
             
             # Check if we have a metabolomics S4 object
             current_state <- tryCatch({
-                workflow_data$state_manager$getState()
+                readMetabWorkflowMetadata(workflow_data$state_manager)
             }, error = function(e) {
                 NULL
             })
             
             if (!is.null(current_state) && 
-                inherits(current_state, "MetaboliteAssayData") && 
+                identical(current_state$class, "MetaboliteAssayData") && 
                 !shiny::isolate(modules_initialized())) {
                 
                 logger::log_info("Metabolomics QC: Auto-initializing sub-modules (state detected)")
