@@ -183,9 +183,9 @@ executeLipidDaRunAnalysis <- function(
 ) {
     tryCatch(
         {
-            # KIT-031: the DA is the declared operation `lipid_da_output` on the loaded state, its manifest
-            # `lipid.da_results.v1` accepted on the head; the kernel's list drives the display and the files as before
-            # (KIT-072: the owner's path is the only path).
+            # KIT-031: the DA is the declared operation on the loaded state (KIT-076: `lipid_da_contrast`, one per contrast),
+            # its manifest `lipid.da_results.v2` accepted on the head; the kernel's list drives the display and the files
+            # as before (KIT-072: the owner's path is the only path).
             manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager else NULL
             source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
             results <- runLipidReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
@@ -247,6 +247,15 @@ finalizeLipidDaRunAnalysisSuccess <- function(
     )
 
     logInfo("   DA analysis completed successfully")
+
+    # KIT-076: a failed contrast fails alone; the run says so instead of a table that is silently missing.
+    if (length(results$failed_contrasts) > 0) {
+        notify(
+            sprintf("DA failed for: %s", paste(names(results$failed_contrasts), collapse = ", ")),
+            type = "warning",
+            duration = NULL
+        )
+    }
 
     contrastChoices <- NULL
     assayChoices <- NULL

@@ -1,3 +1,126 @@
+# KIT-076: the orchestrator's per-assay and per-contrast steps, moved unchanged so that `runMetabolitesDA` and the
+# per-contrast declaration build the same tables.
+
+#' The assay's expression matrix and annotation table.
+#' @return `list(expr_matrix, annotation_info)`, or NULL when no sample of the assay is in the design.
+#' @noRd
+prepareMetabDaAssayInput <- function(assay_data, assay_name, design_matrix, sample_id_col, metabolite_id_col, annotation_col) {
+    # Build expression matrix (metabolites as rows, samples as columns)
+    # First, identify sample columns (those that match design matrix)
+    sample_cols <- intersect(colnames(assay_data), design_matrix[[sample_id_col]])
+
+    if (length(sample_cols) == 0) {
+        logger::log_warn(sprintf("   No matching samples for assay: %s, skipping", assay_name))
+        return(NULL)
+    }
+
+    # Extract numeric data and set rownames to metabolite IDs
+    expr_matrix <- as.matrix(assay_data[, sample_cols, drop = FALSE])
+    rownames(expr_matrix) <- assay_data[[metabolite_id_col]]
+
+    # Get annotation info for later joining. Custom imports may not have a
+    # distinct annotation column; in that case keep DA output usable by
+    # falling back to the primary metabolite ID.
+    annotation_values <- if (
+        length(annotation_col) == 1L &&
+        !is.na(annotation_col) &&
+        nzchar(annotation_col) &&
+        annotation_col %in% colnames(assay_data)
+    ) {
+        assay_data[[annotation_col]]
+    } else {
+        assay_data[[metabolite_id_col]]
+    }
+
+    annotation_info <- data.frame(
+        metabolite_id = assay_data[[metabolite_id_col]],
+        metabolite_name = annotation_values,
+        stringsAsFactors = FALSE
+    )
+
+    logger::log_info(sprintf(
+        "   Expression matrix: %d metabolites x %d samples",
+        nrow(expr_matrix), ncol(expr_matrix)
+    ))
+
+    list(expr_matrix = expr_matrix, annotation_info = annotation_info)
+}
+
+#' One contrast's table of one assay: the id column, the labels, the annotation, the significance call and the
+#' sample intensity columns.
+#' @noRd
+formatMetabDaContrastTable <- function(da_tbl, contrast_name, assay_name, friendly_name, annotation_info, expr_matrix,
+                                        design_matrix, sample_id_col, group_col, da_q_val_thresh, treat_lfc_cutoff) {
+    tryCatch(
+        {
+            cat(sprintf("[D66] Processing contrast: %s (assay: %s)\n", contrast_name, assay_name))
+
+            # Validate da_tbl
+            if (!is.data.frame(da_tbl)) {
+                stop(sprintf("da_tbl is not a data frame, it is a %s", class(da_tbl)[1]))
+            }
+
+            # Add metabolite_id from rownames
+            cat("[D66]   Step: rownames_to_column\n")
+            da_tbl <- tibble::rownames_to_column(da_tbl, "metabolite_id")
+
+            # Add metadata columns
+            cat("[D66]   Step: adding assay/comparison/friendly_name\n")
+            da_tbl$assay <- assay_name
+            da_tbl$comparison <- contrast_name
+
+            # Add friendly name
+            da_tbl$friendly_name <- friendly_name
+
+            # Join annotation info
+            cat("[D66]   Step: left_join annotation\n")
+            da_tbl <- dplyr::left_join(
+                da_tbl,
+                annotation_info,
+                by = "metabolite_id"
+            )
+
+            # Classify significance
+            cat("[D66]   Step: classifying significance\n")
+            da_tbl$significant <- ifelse(
+                da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
+                ifelse(da_tbl$logFC > 0, "Up", "Down"),
+                "NS"
+            )
+
+            # Add sample intensity columns using createMetabDaResultsLongFormat
+            cat(sprintf("[D66]   Calling createMetabDaResultsLongFormat for contrast: %s\n", contrast_name))
+            da_tbl <- createMetabDaResultsLongFormat(
+                lfc_qval_tbl = da_tbl,
+                expr_matrix = expr_matrix,
+                design_matrix = design_matrix,
+                sample_id_col = sample_id_col,
+                group_id_col = group_col,
+                metabolite_id_col = "metabolite_id"
+            )
+
+            return(da_tbl)
+        },
+        error = function(inner_e) {
+            cat(sprintf("[ERROR] Inner loop failure for contrast %s: %s\n", contrast_name, inner_e$message))
+            stop(inner_e)
+        }
+    )
+}
+
+#' The up, down and not-significant counts of one results table.
+#' @noRd
+countMetabDaSignificant <- function(df) {
+    if (is.null(df) || nrow(df) == 0) {
+        return(list(up = 0, down = 0, ns = 0))
+    }
+    list(
+        up = sum(df$significant == "Up", na.rm = TRUE),
+        down = sum(df$significant == "Down", na.rm = TRUE),
+        ns = sum(df$significant == "NS", na.rm = TRUE)
+    )
+}
+
 # ----------------------------------------------------------------------------
 # runMetabolitesDA
 # ----------------------------------------------------------------------------
@@ -109,43 +232,11 @@ runMetabolitesDA <- function(
 
         assay_data <- assay_list[[assay_name]]
 
-        # Build expression matrix (metabolites as rows, samples as columns)
-        # First, identify sample columns (those that match design matrix)
-        sample_cols <- intersect(colnames(assay_data), design_matrix[[sample_id_col]])
-
-        if (length(sample_cols) == 0) {
-            logger::log_warn(sprintf("   No matching samples for assay: %s, skipping", assay_name))
-            next
-        }
-
-        # Extract numeric data and set rownames to metabolite IDs
-        expr_matrix <- as.matrix(assay_data[, sample_cols, drop = FALSE])
-        rownames(expr_matrix) <- assay_data[[metabolite_id_col]]
-
-        # Get annotation info for later joining. Custom imports may not have a
-        # distinct annotation column; in that case keep DA output usable by
-        # falling back to the primary metabolite ID.
-        annotation_values <- if (
-            length(annotation_col) == 1L &&
-            !is.na(annotation_col) &&
-            nzchar(annotation_col) &&
-            annotation_col %in% colnames(assay_data)
-        ) {
-            assay_data[[annotation_col]]
-        } else {
-            assay_data[[metabolite_id_col]]
-        }
-
-        annotation_info <- data.frame(
-            metabolite_id = assay_data[[metabolite_id_col]],
-            metabolite_name = annotation_values,
-            stringsAsFactors = FALSE
-        )
-
-        logger::log_info(sprintf(
-            "   Expression matrix: %d metabolites x %d samples",
-            nrow(expr_matrix), ncol(expr_matrix)
-        ))
+        # KIT-076: the assay's matrix and annotation, the contrast path's too.
+        assay_input <- prepareMetabDaAssayInput(assay_data, assay_name, design_matrix, sample_id_col, metabolite_id_col, annotation_col)
+        if (is.null(assay_input)) next
+        expr_matrix <- assay_input$expr_matrix
+        annotation_info <- assay_input$annotation_info
 
         # Run limma DA
         tryCatch(
@@ -177,62 +268,10 @@ runMetabolitesDA <- function(
                     limma_results$results,
                     names(limma_results$results),
                     function(da_tbl, contrast_name) {
-                        tryCatch(
-                            {
-                                cat(sprintf("[D66] Processing contrast: %s (assay: %s)\n", contrast_name, assay_name))
-
-                                # Validate da_tbl
-                                if (!is.data.frame(da_tbl)) {
-                                    stop(sprintf("da_tbl is not a data frame, it is a %s", class(da_tbl)[1]))
-                                }
-
-                                # Add metabolite_id from rownames
-                                cat("[D66]   Step: rownames_to_column\n")
-                                da_tbl <- tibble::rownames_to_column(da_tbl, "metabolite_id")
-
-                                # Add metadata columns
-                                cat("[D66]   Step: adding assay/comparison/friendly_name\n")
-                                da_tbl$assay <- assay_name
-                                da_tbl$comparison <- contrast_name
-
-                                # Add friendly name
-                                idx <- match(contrast_name, contrast_strings)
-                                da_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
-
-                                # Join annotation info
-                                cat("[D66]   Step: left_join annotation\n")
-                                da_tbl <- dplyr::left_join(
-                                    da_tbl,
-                                    annotation_info,
-                                    by = "metabolite_id"
-                                )
-
-                                # Classify significance
-                                cat("[D66]   Step: classifying significance\n")
-                                da_tbl$significant <- ifelse(
-                                    da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
-                                    ifelse(da_tbl$logFC > 0, "Up", "Down"),
-                                    "NS"
-                                )
-
-                                # Add sample intensity columns using createMetabDaResultsLongFormat
-                                cat(sprintf("[D66]   Calling createMetabDaResultsLongFormat for contrast: %s\n", contrast_name))
-                                da_tbl <- createMetabDaResultsLongFormat(
-                                    lfc_qval_tbl = da_tbl,
-                                    expr_matrix = expr_matrix,
-                                    design_matrix = design_matrix,
-                                    sample_id_col = sample_id_col,
-                                    group_id_col = group_col,
-                                    metabolite_id_col = "metabolite_id"
-                                )
-
-                                return(da_tbl)
-                            },
-                            error = function(inner_e) {
-                                cat(sprintf("[ERROR] Inner loop failure for contrast %s: %s\n", contrast_name, inner_e$message))
-                                stop(inner_e)
-                            }
-                        )
+                        idx <- match(contrast_name, contrast_strings)
+                        formatMetabDaContrastTable(da_tbl, contrast_name, assay_name,
+                            if (!is.na(idx)) friendly_names[idx] else contrast_name, annotation_info, expr_matrix, design_matrix,
+                            sample_id_col, group_col, da_q_val_thresh, treat_lfc_cutoff)
                     }
                 )
 
@@ -258,16 +297,7 @@ runMetabolitesDA <- function(
     logger::log_info(sprintf("   Combined results: %d total rows", nrow(da_metabolites_long)))
 
     # Calculate significant counts per assay
-    significant_counts <- purrr::map(per_assay_results, function(df) {
-        if (is.null(df) || nrow(df) == 0) {
-            return(list(up = 0, down = 0, ns = 0))
-        }
-        list(
-            up = sum(df$significant == "Up", na.rm = TRUE),
-            down = sum(df$significant == "Down", na.rm = TRUE),
-            ns = sum(df$significant == "NS", na.rm = TRUE)
-        )
-    }) |> purrr::set_names(names(per_assay_results))
+    significant_counts <- purrr::map(per_assay_results, countMetabDaSignificant) |> purrr::set_names(names(per_assay_results))
 
     logger::log_info("=== Completed runMetabolitesDA ===")
 

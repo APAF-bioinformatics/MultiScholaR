@@ -54,7 +54,14 @@ metabolomicsDeclarationBinding <- list(
         runMetabolitesDAFn <- runMetabolitesDA
         runMetabolitesDAFn(theObject = object, contrasts_tbl = parameters$contrasts, formula_string = parameters$formula,
             da_q_val_thresh = parameters$qvalue, treat_lfc_cutoff = parameters$lfc, eBayes_trend = TRUE, eBayes_robust = TRUE)
-    }
+    },
+    # KIT-076: the kernel's halves and steps, for one declaration per contrast.
+    da_preflight = function(object, contrasts, formula) invisible(NULL),
+    da_assay_input = function(...) prepareMetabDaAssayInput(...),
+    da_fit = function(...) fitMetabDaAssayModel(...),
+    da_apply = function(...) applyMetabDaContrasts(...),
+    da_format = function(...) formatMetabDaContrastTable(...),
+    da_count = function(...) countMetabDaSignificant(...)
 )
 
 metabolomicsStepLabels <- metabolomicsDeclarationBinding$step_labels
@@ -73,7 +80,7 @@ readMetabWorkflowMetadata <- function(manager, reference = NULL) readWorkflowOmi
 #' Identify the metabolomics DA manifest.
 #' @noRd
 isMetabResultManifest <- function(value) {
-    is.list(value) && identical(value[["schema", exact = TRUE]], "metab.da_results.v1")
+    is.list(value) && isTRUE(value[["schema", exact = TRUE]] %in% c("metab.da_results.v1", "metab.da_results.v2"))
 }
 
 #' Every metabolomics declaration, by name.
@@ -92,6 +99,7 @@ metabRuvOperation <- function() omicsRuvOperation(metabolomicsDeclarationBinding
 metabPearsonPairsOperation <- function() omicsPearsonPairsOperation(metabolomicsDeclarationBinding)
 metabPearsonSelectionOperation <- function() omicsPearsonSelectionOperation(metabolomicsDeclarationBinding)
 metabDaOperation <- function() omicsDaOperation(metabolomicsDeclarationBinding)
+metabDaContrastOperation <- function() omicsDaContrastOperation(metabolomicsDeclarationBinding)
 
 # The metabolomics names of the wrappers (KIT-032), one body each in the core.
 

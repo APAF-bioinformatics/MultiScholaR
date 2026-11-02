@@ -205,7 +205,157 @@ omicsDaOperation <- function(binding) {
         })
 }
 
-#' Every declaration of one omic, by name.
+#' Identify one assay's uncontrasted limma fit (KIT-076): the values in order, the design and formula, the software.
+#' New code: the proteomics `newWorkflowDiaBaseFitIdentity` hashes protein-only inputs.
+#' @param data Feature-by-sample matrix.
+#' @param design Design table of the run.
+#' @param formula_string The model formula.
+#' @param assay The assay's name.
+#' @param software Installed software identity.
+#' @return The store's scientific identity.
+#' @noRd
+newWorkflowOmicsDaFitIdentity <- function(data, design, formula_string, assay, software) {
+    newSavedWorkflowScientificIdentity(
+        digest::digest(list(values = data, feature_order = rownames(data), sample_order = colnames(data)), algo = "sha256"),
+        digest::digest(list(formula = formula_string, design = design), algo = "sha256"),
+        digest::digest(list(layer = "omics_da_base_fit"), algo = "sha256"),
+        digest::digest(list(assay = assay), algo = "sha256"), software)
+}
+
+#' One assay's fit for the contrast operations (KIT-076): the saved `da_fit` when the identity has one, else the fit half
+#' of the omic's kernel, saved once. A fit failure drops the assay (the orchestrator's silent drop, kept for the
+#' fit half only and recorded in the KIT-076 outcome); ids the store's envelope refuses keep the fit unsaved.
+#' @return `list(fit, reference)`, or NULL when the fit failed.
+#' @noRd
+omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample_id, assay) {
+    manager <- store$manager
+    identity <- newWorkflowOmicsDaFitIdentity(data, design, formula_string, assay, manager$.context$software)
+    factors <- list(route = binding$prefix, layer = "base_fit")
+    hit <- resolveSavedWorkflowEntity(manager$.context$store, "da_fit", identity, factors = factors)
+    if (identical(hit$status, "hit")) return(list(fit = hit$value$fit, reference = hit$reference))
+    fit <- tryCatch(binding$da_fit(data, design, formula_string, sample_id), error = function(e) {
+        cat(sprintf("[ERROR] Processing assay %s: %s\n", assay, e$message))
+        logger::log_error(sprintf("   ERROR processing assay %s: %s", assay, e$message))
+        NULL
+    })
+    if (is.null(fit)) return(NULL)
+    features <- rownames(fit$coefficients)
+    if (anyDuplicated(features) || anyNA(features) || !all(nzchar(features))) return(list(fit = fit, reference = NULL))
+    reference <- saveWorkflowConsumerEntity(manager$.context$store,
+        newSavedWorkflowDaFit(fit, features, rownames(fit$design), colnames(fit$design)),
+        basename(tempfile(paste0(binding$prefix, "-da-fit-"))), identity, "da_fit", factors = factors)
+    rootWorkflowProduct(manager, reference, list(store$source))
+    list(fit = fit, reference = reference)
+}
+
+#' Differential abundance for one contrast (KIT-076; whole matrix, product only): per assay the saved fit, the contrast
+#' half of the omic's kernel, the orchestrator's table. A failure of this contrast on an assay is recorded under
+#' `errors` and costs nothing else; store errors are not caught. The product keeps what the module's list is rebuilt
+#' from (`readWorkflowOmicsDaResults`).
+#' @noRd
+omicsDaContrastOperation <- function(binding) {
+    long_table <- binding$long_table
+    newOmicsOperation(binding, paste0(binding$prefix, "_da_contrast"), "whole_matrix",
+        parameters = c("formula", "qvalue", "lfc", "contrast", "friendly_name"),
+        product_type = paste0(binding$prefix, "-da-contrast-references"), output_class = NULL,
+        fixed = list(eBayes_trend = TRUE, eBayes_robust = TRUE),
+        kernel = function(object, parameters, store) {
+            contrast <- parameters$contrast
+            accepted <- list(schema = paste0(binding$prefix, ".da_contrast_reference.v1"), source = store$source,
+                contrast = contrast, comparison = parameters$friendly_name, assays = list(), errors = list(),
+                qvalue_warnings = list(), products = list())
+            assays <- methods::slot(object, binding$data_slot)
+            design <- object@design_matrix
+            preflight <- tryCatch({
+                binding$da_preflight(object, data.frame(contrasts = contrast, friendly_names = parameters$friendly_name,
+                    stringsAsFactors = FALSE), parameters$formula)
+                NULL
+            }, error = function(e) conditionMessage(e))
+            if (!is.null(preflight)) {
+                accepted$errors <- stats::setNames(rep(list(preflight), length(assays)), names(assays))
+                return(accepted)
+            }
+            products <- list()
+            for (assay in names(assays)) {
+                input <- binding$da_assay_input(assays[[assay]], assay, design, object@sample_id,
+                    methods::slot(object, binding$id_slot), object@annotation_id_column)
+                if (is.null(input)) next
+                fit <- omicsDaAssayFit(binding, store, input$expr_matrix, design, parameters$formula, object@sample_id, assay)
+                if (is.null(fit)) next
+                outcome <- tryCatch({
+                    applied <- binding$da_apply(fit$fit, contrast, if (parameters$lfc > 0) parameters$lfc else NA, TRUE, TRUE)
+                    list(applied = applied, table = binding$da_format(applied$results[[contrast]], contrast, assay,
+                        parameters$friendly_name, input$annotation_info, input$expr_matrix, design, object@sample_id,
+                        object@group_id, parameters$qvalue, parameters$lfc))
+                }, error = function(e) {
+                    logger::log_error(sprintf("   ERROR in contrast %s, assay %s: %s", contrast, assay, conditionMessage(e)))
+                    list(error = conditionMessage(e))
+                })
+                if (!is.null(outcome$error)) {
+                    accepted$errors[[assay]] <- outcome$error
+                    next
+                }
+                table <- as.data.frame(outcome$table)
+                accepted$assays[[assay]] <- list(assay = assay, tables = stats::setNames(list(store$table(table)), long_table),
+                    rows = nrow(table), fit = fit$reference, significant_counts = binding$da_count(outcome$table))
+                if (length(outcome$applied$qvalue_warnings)) accepted$qvalue_warnings[[assay]] <- outcome$applied$qvalue_warnings
+                products[[assay]] <- list(results = outcome$applied$results[[contrast]], table = outcome$table,
+                    fit.eb = outcome$applied$fit.eb)
+            }
+            object <- NULL
+            accepted$products$da_contrast <- store$product(list(assays = products), "da_contrast", paste0(binding$prefix, "-da-contrast"))
+            accepted$rows <- sum(vapply(accepted$assays, function(entry) entry$rows, integer(1)))
+            accepted$columns <- if (length(products)) names(products[[1L]]$table)
+            accepted
+        })
+}
+
+#' The contrast strings and friendly names of a contrasts table, as the orchestrators read them.
+#' @noRd
+omicsDaContrastNames <- function(contrasts) {
+    strings <- if ("contrasts" %in% colnames(contrasts)) {
+        as.character(contrasts$contrasts)
+    } else if ("contrast_string" %in% colnames(contrasts)) {
+        as.character(contrasts$contrast_string)
+    } else {
+        stop("contrasts_tbl must have a 'contrasts' or 'contrast_string' column")
+    }
+    list(strings = strings, friendly = if ("friendly_names" %in% colnames(contrasts)) as.character(contrasts$friendly_names) else strings)
+}
+
+#' The kernel's list rebuilt from a v2 manifest (KIT-076), in the kernel's order: assay-major, then contrast. The
+#' exports, the Glimma pages, the volcanoes, the heatmaps, the selectors and the tables read this list. `fit.eb` here
+#' is a coefficient view (one column per contrast): its consumers read the names and the row order; the full
+#' per-contrast fit stays in the saved product. `failed_contrasts` names what the run could not compute.
+#' @param manifest A `<prefix>.da_results.v2` manifest.
+#' @return The list `runLipidsDA` / `runMetabolitesDA` return, without the source object.
+#' @noRd
+readWorkflowOmicsDaResults <- function(binding, manager, manifest) {
+    # A contrast the preflight refused saved no product.
+    products <- lapply(manifest$results, function(entry) {
+        if (is.null(entry$products$da_contrast)) return(list())
+        hydrateSavedWorkflowEntity(manager$.context$store, entry$products$da_contrast)$value$assays
+    })
+    per_assay <- list()
+    contrasts_results <- list()
+    warnings <- list()
+    for (assay in manifest$assays) {
+        present <- Filter(Negate(is.null), lapply(products, `[[`, assay))
+        if (!length(present)) next
+        per_assay[[assay]] <- dplyr::bind_rows(lapply(present, `[[`, "table"))
+        contrasts_results[[assay]] <- list(results = lapply(present, `[[`, "results"),
+            fit.eb = list(coefficients = do.call(cbind, lapply(unname(present), function(entry) entry$fit.eb$coefficients))),
+            qvalue_warnings = do.call(c, c(list(list()), lapply(unname(manifest$results), function(entry) entry$qvalue_warnings[[assay]]))))
+        if (length(contrasts_results[[assay]]$qvalue_warnings)) warnings[[assay]] <- contrasts_results[[assay]]$qvalue_warnings
+    }
+    failed <- Filter(length, lapply(manifest$results, `[[`, "errors"))
+    c(list(contrasts_results = contrasts_results), stats::setNames(list(dplyr::bind_rows(per_assay)), binding$long_table),
+        list(per_assay_results = per_assay, significant_counts = lapply(per_assay, binding$da_count), qvalue_warnings = warnings,
+            da_q_val_thresh = manifest$parameters$qvalue, treat_lfc_cutoff = manifest$parameters$lfc, failed_contrasts = failed))
+}
+
+#' Every declaration of one omic, by name. `<prefix>_da_output` is no longer run (KIT-076): it stays registered so v1
+#' records and manifests keep resolving their operation.
 #' @noRd
 omicsWorkflowOperations <- function(binding) {
     prefix <- binding$prefix
@@ -214,7 +364,7 @@ omicsWorkflowOperations <- function(binding) {
         omicsLog2Operation(binding), omicsBetweenSampleNormalisationOperation(binding), omicsRuvOperation(binding),
         omicsPearsonPairsOperation(binding), omicsPearsonSelectionOperation(binding),
         omicsStoreOperation(binding, paste0(prefix, "_norm_complete")), omicsStoreOperation(binding, paste0(prefix, "_reset")),
-        omicsDaOperation(binding))
+        omicsDaOperation(binding), omicsDaContrastOperation(binding))
     stats::setNames(declarations, vapply(declarations, `[[`, "", "name"))
 }
 
@@ -437,15 +587,16 @@ recordWorkflowOmicsDesignProvenance <- function(binding, manager, object, source
     invisible(NULL)
 }
 
-#' Run the omic's DA declaration on a state and accept its manifest on the head (the `runDIAReferenceDaAnalysis`
-#' twin): one kernel call for every contrast and assay, the manifest `<prefix>.da_results.v1` saved as
-#' `da-result-references`, the DA step's provenance cleared (it commits no state).
+#' Run the omic's DA on a state, one declaration per contrast on the saved per-assay fits, and accept the manifest on
+#' the head (the `runDIAReferenceDaAnalysis` twin; KIT-076, `<prefix>.da_results.v2`, keyed by contrast), the DA step's
+#' provenance cleared (it commits no state). A failed contrast is recorded and the others complete; when none
+#' completes the run stops with their messages and the head keeps its previous result.
 #' @param manager The session owner.
 #' @param source Saved reference of the state the DA runs on.
 #' @param settings `formula_string`, `da_q_val_thresh`, `treat_lfc_cutoff`.
 #' @param contrasts The contrasts table (`contrasts`, `friendly_names`, `full_format`).
 #' @return `list(manifest, results, reference)`: `results` is the kernel's list for the module's display and files
-#'   (KIT-075: without the source object; its readers take the source's components per action).
+#'   (`readWorkflowOmicsDaResults`; without the source object, whose readers take its components per action).
 #' @noRd
 runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settings, contrasts) {
     if (!inherits(manager, "DIAStateAdapter")) {
@@ -456,29 +607,37 @@ runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settin
     }
     withWorkflowStateScope(manager, function() {
         context <- manager$.context
-        spec <- readWorkflowStateMetadata(manager, source)$data
+        metadata <- readWorkflowOmicsMetadata(binding, manager, source)
         contrasts <- as.data.frame(contrasts, stringsAsFactors = FALSE)
-        parameters <- list(formula = settings$formula_string, qvalue = settings$da_q_val_thresh,
-            lfc = settings$treat_lfc_cutoff, contrasts = contrasts)
-        run <- runSavedOperation(manager, omicsDaOperation(binding), source, parameters)
-        if (identical(run$status, "computed")) {
-            snapshot <- context$snapshot
-            snapshot$da_dependencies[[run$reference$entity_id]] <- collectWorkflowNativeReferences(run$value)
-            publishWorkflowStateHead(context, snapshot)
+        names_of <- omicsDaContrastNames(contrasts)
+        parameters <- list(formula = settings$formula_string, qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff)
+        operation <- omicsDaContrastOperation(binding)
+        results <- list()
+        for (i in seq_along(names_of$strings)) {
+            run <- runSavedOperation(manager, operation, source, c(parameters,
+                list(contrast = names_of$strings[[i]], friendly_name = names_of$friendly[[i]])))
+            if (identical(run$status, "computed")) {
+                snapshot <- context$snapshot
+                snapshot$da_dependencies[[run$reference$entity_id]] <- collectWorkflowNativeReferences(run$value)
+                publishWorkflowStateHead(context, snapshot)
+            }
+            results[[names_of$strings[[i]]]] <- run$value
         }
         clearWorkflowStepProvenance(manager)
-        manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v1"), source = source),
-            stats::setNames(list(spec$slots[[binding$id_slot]]), binding$id_slot),
-            list(sample_id = spec$slots$sample_id, contrasts = contrasts, results = run$value$results, tables = run$value$tables,
-                products = run$value$products, parameters = parameters[c("formula", "qvalue", "lfc")],
-                qvalue_warnings = run$value$qvalue_warnings, model = run$value$model))
+        if (length(results) && all(vapply(results, function(entry) !length(entry$assays) && length(entry$errors) > 0L, logical(1)))) {
+            stop(paste(unique(unlist(lapply(results, `[[`, "errors"))), collapse = "; "), call. = FALSE)
+        }
+        manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
+            stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
+            list(sample_id = metadata$slots$sample_id, assays = metadata$assay_names, contrasts = contrasts, results = results,
+                parameters = parameters, model = list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
+                    eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))))
         reference <- saveWorkflowStateValue(context, manifest, "da-result-references", codec = "rds")
         snapshot <- context$snapshot
         snapshot$da_results <- reference
-        snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, run$value))
+        snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, results))
         publishWorkflowStateHead(context, snapshot)
-        results <- hydrateSavedWorkflowEntity(context$store, run$value$products$da_results)$value
-        list(manifest = manifest, results = results, reference = reference)
+        list(manifest = manifest, results = readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)
     })
 }
 

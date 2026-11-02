@@ -652,9 +652,9 @@ runMetabDaAnalysisObserverShell <- function(
 
     tryCatch(
         {
-            # KIT-032: the DA is the declared operation `metab_da_output` on the loaded state, its manifest
-            # `metab.da_results.v1` accepted on the head; the kernel's list drives the display and the files as before
-            # (KIT-072: the owner's path is the only path).
+            # KIT-032: the DA is the declared operation on the loaded state (KIT-076: `metab_da_contrast`, one per contrast),
+            # its manifest `metab.da_results.v2` accepted on the head; the kernel's list drives the display and the files
+            # as before (KIT-072: the owner's path is the only path).
             manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager else NULL
             source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
             results <- runMetabReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
@@ -675,6 +675,15 @@ runMetabDaAnalysisObserverShell <- function(
             )
 
             logInfo("   DA analysis completed successfully")
+
+            # KIT-076: a failed contrast fails alone; the run says so instead of a table that is silently missing.
+            if (length(results$failed_contrasts) > 0) {
+                showNotification(
+                    sprintf("DA failed for: %s", paste(names(results$failed_contrasts), collapse = ", ")),
+                    type = "warning",
+                    duration = NULL
+                )
+            }
 
             selectorState <- updateSelectors(
                 daResultsLong = results$da_metabolites_long,

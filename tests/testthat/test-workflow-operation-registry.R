@@ -3,9 +3,9 @@
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
     # KIT-031/032: the twelve lipidomics and twelve metabolomics declarations (in process) beside the proteomics operations.
-    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
+    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_da_contrast", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
         "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
-        "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "metab_between_sample_normalisation", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
+        "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "metab_between_sample_normalisation", "metab_da_contrast", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_finalize", "metab_reset", "metab_ruv", "minimum_peptides_per_sample",
         "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
@@ -92,10 +92,10 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readWorkflowStateMetadata = function(...) list(data = record)) # KIT-045: the execution layer calls the workflow name
     expect_identical(sort(workflowOperationNames()), sort(c("DA-contrast-output", "da_publication", "enrichment",
-        "lipid_between_sample_normalisation", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
+        "lipid_between_sample_normalisation", "lipid_da_contrast", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
         "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
         "lipid_qc_finalize", "lipid_reset", "lipid_ruv", 
-        "metab_between_sample_normalisation", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
+        "metab_between_sample_normalisation", "metab_da_contrast", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_finalize", "metab_reset", "metab_ruv", 
         "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",

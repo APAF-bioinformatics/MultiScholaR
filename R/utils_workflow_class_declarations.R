@@ -89,6 +89,19 @@ workflowOutputDeclarations <- function() {
         producer = "runMetabReferenceDaAnalysis", operation = "metab_da_output", long_table = "da_metabolites_long",
         fields = c("source", "metabolite_id_column", "sample_id", "contrasts", "results", "tables", "products", "parameters", "model"),
         products = c("da_metabolites_long", "da_results", "significant_counts", "qvalue_warnings"),
+        identifies = "isMetabResultManifest"),
+        # KIT-076: one declaration per contrast on the saved per-assay fits; `results` is keyed by contrast, each with its
+        # per-assay long tables and fit references; `products$da_contrast` holds what the module's list is rebuilt from.
+        # The v1 entries above stay, so the records and stores of earlier builds keep resolving.
+        `lipid.da_results.v2` = list(schema = "lipid.da_results.v2", version = 2L, kind = "manifest",
+        producer = "runLipidReferenceDaAnalysis", operation = "lipid_da_contrast", long_table = "da_lipids_long",
+        fields = c("source", "lipid_id_column", "sample_id", "assays", "contrasts", "results", "parameters", "model"),
+        products = c("da_lipids_long", "da_contrast", "significant_counts", "qvalue_warnings"),
+        identifies = "isLipidResultManifest"),
+        `metab.da_results.v2` = list(schema = "metab.da_results.v2", version = 2L, kind = "manifest",
+        producer = "runMetabReferenceDaAnalysis", operation = "metab_da_contrast", long_table = "da_metabolites_long",
+        fields = c("source", "metabolite_id_column", "sample_id", "assays", "contrasts", "results", "parameters", "model"),
+        products = c("da_metabolites_long", "da_contrast", "significant_counts", "qvalue_warnings"),
         identifies = "isMetabResultManifest"))
 }
 

@@ -62,7 +62,18 @@ lipidomicsDeclarationBinding <- list(
         runLipidsDAFn <- runLipidsDA
         runLipidsDAFn(theObject = object, contrasts_tbl = parameters$contrasts, formula_string = parameters$formula,
             da_q_val_thresh = parameters$qvalue, treat_lfc_cutoff = parameters$lfc, eBayes_trend = TRUE, eBayes_robust = TRUE)
-    }
+    },
+    # KIT-076: the kernel's halves and steps, for one declaration per contrast.
+    da_preflight = function(object, contrasts, formula) {
+        preflight <- validateLipidDaAnalysisPreflight(currentS4 = object, contrastsTbl = contrasts, formulaString = formula)
+        if (!isTRUE(preflight$valid)) stop(paste(preflight$errors, collapse = "; "))
+        invisible(NULL)
+    },
+    da_assay_input = function(...) prepareLipidDaAssayInput(...),
+    da_fit = function(...) fitLipidDaAssayModel(...),
+    da_apply = function(...) applyLipidDaContrasts(...),
+    da_format = function(...) formatLipidDaContrastTable(...),
+    da_count = function(...) countLipidDaSignificant(...)
 )
 
 lipidomicsStepLabels <- lipidomicsDeclarationBinding$step_labels
@@ -81,7 +92,7 @@ readLipidWorkflowMetadata <- function(manager, reference = NULL) readWorkflowOmi
 #' Identify the lipidomics DA manifest.
 #' @noRd
 isLipidResultManifest <- function(value) {
-    is.list(value) && identical(value[["schema", exact = TRUE]], "lipid.da_results.v1")
+    is.list(value) && isTRUE(value[["schema", exact = TRUE]] %in% c("lipid.da_results.v1", "lipid.da_results.v2"))
 }
 
 #' Every lipidomics declaration, by name.
@@ -100,6 +111,7 @@ lipidRuvOperation <- function() omicsRuvOperation(lipidomicsDeclarationBinding)
 lipidPearsonPairsOperation <- function() omicsPearsonPairsOperation(lipidomicsDeclarationBinding)
 lipidPearsonSelectionOperation <- function() omicsPearsonSelectionOperation(lipidomicsDeclarationBinding)
 lipidDaOperation <- function() omicsDaOperation(lipidomicsDeclarationBinding)
+lipidDaContrastOperation <- function() omicsDaContrastOperation(lipidomicsDeclarationBinding)
 
 # The lipid names of the wrappers (KIT-031), one body each in the core.
 

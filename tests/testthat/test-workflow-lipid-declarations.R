@@ -1,7 +1,7 @@
 # KIT-031: the lipidomics declarations, the kit's completeness test. Every step of the lipidomics route is a registered
 # in-process declaration with the unit of the step map; on a real owner in a temporary project the wrappers the
 # modules call commit each state as a component checkpoint with its operation's provenance, the analysis record is
-# complete (no legacy step, no missing parameter, the inputs recorded), the DA manifest `lipid.da_results.v1` is the
+# complete (no legacy step, no missing parameter, the inputs recorded), the DA manifest `lipid.da_results.v2` is the
 # head's and its display list equals the kernel's direct output, the report overlay reads the lipid variables, and
 # the record replays exact state by state on a copy of the store. The fixture is helper-workflow-lipid-declarations.R.
 library(testthat)
@@ -10,7 +10,7 @@ test_that("KIT-031: the lipidomics declarations are registered in process with t
     units <- c(lipid_intensity_filter = "row", lipid_duplicate_resolution = "feature_group", lipid_qc_finalize = "store",
         lipid_itsd_normalisation = "complete_sample", lipid_log2 = "row", lipid_between_sample_normalisation = "whole_matrix",
         lipid_ruv = "whole_matrix", lipid_pearson_pairs = "whole_matrix", lipid_pearson_selection = "whole_matrix",
-        lipid_norm_complete = "store", lipid_reset = "store", lipid_da_output = "whole_matrix")
+        lipid_norm_complete = "store", lipid_reset = "store", lipid_da_output = "whole_matrix", lipid_da_contrast = "whole_matrix")
     declarations <- lipidomicsWorkflowOperations()
     expect_setequal(names(declarations), names(units))
     for (name in names(units)) {
@@ -33,11 +33,14 @@ test_that("KIT-031: the lipidomics declarations are registered in process with t
     expect_named(declarations$lipid_intensity_filter$global_statistics, "min_lipid_intensity_threshold")
     expect_named(declarations$lipid_itsd_normalisation$global_statistics, "mean_standard_factor")
     expect_identical(declarations$lipid_itsd_normalisation$fixed, list(method = "ITSD"))
-    expect_identical(declarations$lipid_da_output$fixed, list(eBayes_trend = TRUE, eBayes_robust = TRUE))
-    expect_null(declarations$lipid_da_output$output_class)
+    for (name in c("lipid_da_output", "lipid_da_contrast")) {
+        expect_identical(declarations[[name]]$fixed, list(eBayes_trend = TRUE, eBayes_robust = TRUE))
+        expect_null(declarations[[name]]$output_class)
+    }
     expect_null(declarations$lipid_pearson_pairs$output_class)
     expect_identical(workflowActionSpec("lipid_intensity_filter")$step_label, "2_Intensity_Filtered")
     expect_null(workflowActionSpec("lipid_da_output")$step_label)
+    expect_null(workflowActionSpec("lipid_da_contrast")$step_label)
     # The route's sections name its declarations; the proteomics map is untouched.
     expect_identical(workflowOperationForSection("lipidIntensityFilteringFn", "LIPIDOMICS"), "lipid_intensity_filter")
     expect_identical(workflowOperationForSection("ruvIII_C_Varying", "LIPIDOMICS"), "lipid_ruv")
@@ -49,6 +52,10 @@ test_that("KIT-031: the lipidomics declarations are registered in process with t
     expect_identical(output$long_table, "da_lipids_long")
     expect_identical(output$identifies, "isLipidResultManifest")
     expect_true(isLipidResultManifest(list(schema = "lipid.da_results.v1")))
+    # KIT-076: the v2 manifest, keyed by contrast; v1 stays declared for the records and stores of earlier builds.
+    expect_identical(workflowOutputDeclaration("lipid.da_results.v2")$operation, "lipid_da_contrast")
+    expect_identical(workflowOutputDeclaration("lipid.da_results.v2")$long_table, "da_lipids_long")
+    expect_true(isLipidResultManifest(list(schema = "lipid.da_results.v2")))
     expect_false(isLipidResultManifest(list(schema = "dia.da_results.v1")))
     expect_identical(workflowOutputDeclaration("dia.da_results.v1")$long_table, "da_proteins_long")
 })
@@ -119,9 +126,12 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
     expect_true(by_state$lipid_itsd_norm$outcomes$itsd_applied)
     expect_identical(by_state$lipid_itsd_norm$step_label, "5_ITSD_Normalised")
     da <- record$analyses$differential_abundance
-    expect_identical(da$operation, "lipid_da_output")
+    expect_identical(da$operation, "lipid_da_contrast")
     expect_identical(da$source_state, "lipid_correlation_filtered")
-    expect_identical(vapply(da$results, function(r) r$contrast, ""), c("LCMS_Pos", "LCMS_Neg"))
+    # KIT-076: one entry per contrast and assay, labelled by its contrast.
+    expect_identical(vapply(da$results, function(r) r$contrast, ""), c("groupKO-groupWT", "groupKO-groupWT"))
+    expect_identical(vapply(da$results, function(r) r$assay, ""), c("LCMS_Pos", "LCMS_Neg"))
+    expect_length(da$failures, 0L)
     expect_true(all(vapply(da$results, function(r) r$rows, 1L) > 0L))
     expect_identical(named(da$parameters)$qvalue$provenance, "default")
     expect_identical(da$model$model, "limma")
@@ -144,12 +154,13 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
     expect_s4_class(with_source$theObject, "LipidomicsAssayData")
     expect_equal(with_source$theObject@lipid_data, owner$getState(owner$current_state)@lipid_data, ignore_attr = TRUE)
     expect_identical(with_source[names(journey$da$results)], journey$da$results)
-    long <- materializeWorkflowTable(owner$.context, manifest$results$LCMS_Pos$tables$da_lipids_long)
-    expect_identical(nrow(long), manifest$results$LCMS_Pos$rows)
+    entry <- manifest$results[["groupKO-groupWT"]]$assays$LCMS_Pos
+    long <- materializeWorkflowTable(owner$.context, entry$tables$da_lipids_long)
+    expect_identical(nrow(long), entry$rows)
     # A second run on the same state and settings is a hit: the manifest's tables are the same entities.
     again <- suppressWarnings(suppressMessages(runLipidReferenceDaAnalysis(owner, getWorkflowStateReference(owner),
         list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), fixture$workflow$contrasts_tbl)))
-    expect_identical(again$manifest$results$LCMS_Pos$tables$da_lipids_long$entity_id, manifest$results$LCMS_Pos$tables$da_lipids_long$entity_id)
+    expect_identical(again$manifest$results[["groupKO-groupWT"]]$assays$LCMS_Pos$tables$da_lipids_long$entity_id, entry$tables$da_lipids_long$entity_id)
 
     # The report overlay: the lipid template's variables take the record's values; the proteomics-only ones are left.
     json <- file.path(root, "analysis_record.json")
@@ -188,7 +199,7 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
     replay <- suppressWarnings(suppressMessages(harness$kitReplayJourney(record_read, prepared, store_root, inputs, fixture$paths, scratch, api)))
     expect_identical(replay$states, history)
     expect_identical(as.character(replay$mismatches), character())
-    expect_true(any(vapply(replay$per_step, function(x) identical(x$operation, "lipid_da_output"), logical(1))))
+    expect_true(any(vapply(replay$per_step, function(x) identical(x$operation, "lipid_da_contrast"), logical(1))))
     # A record whose input file changed is refused before any step runs.
     tampered <- inputs
     tampered[["design_file"]] <- file.path(fixture$source_dir, "import_sources", "LCMS_Pos_export.txt")

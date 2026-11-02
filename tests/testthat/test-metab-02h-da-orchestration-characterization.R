@@ -41,7 +41,7 @@ loadSelectedFunctions(
   paths = c(
     file.path(repo_root, "R", "func_metab_da_orchestration.R")
   ),
-  symbols = "runMetabolitesDA",
+  symbols = c("runMetabolitesDA", "prepareMetabDaAssayInput", "formatMetabDaContrastTable", "countMetabDaSignificant"),
   env = environment()
 )
 

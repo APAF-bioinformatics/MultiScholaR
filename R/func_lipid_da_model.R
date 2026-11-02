@@ -1,53 +1,9 @@
-# ----------------------------------------------------------------------------
-# runTestsContrastsLipidDA
-# ----------------------------------------------------------------------------
-#' Run limma differential abundance analysis for a single assay
-#'
-#' @description Performs limma-based differential abundance analysis on a
-#'   single lipidomics assay matrix.
-#'
-#' @param data Numeric matrix with lipids as rows and samples as columns.
-#'   Rownames should be lipid IDs.
-#' @param contrast_strings Character vector of contrast specifications
-#'   (e.g., "Treatment-Control").
-#' @param design_matrix Data frame containing sample metadata with sample IDs
-#'   as a column (will be converted to rownames).
-#' @param formula_string Model formula string (e.g., "~ 0 + group").
-#' @param sample_id_col Name of the sample ID column in design_matrix.
-#' @param treat_lfc_cutoff Optional log fold-change cutoff for TREAT analysis.
-#'   Set to NA for standard analysis.
-#' @param eBayes_trend Logical, whether to use trend in eBayes.
-#' @param eBayes_robust Logical, whether to use robust eBayes.
-#'
-#' @return A list containing:
-#'   - results: Named list of DE result tables (one per contrast)
-#'   - fit.eb: The eBayes fit object
-#'   - qvalue_warnings: List of contrasts where qvalue() failed
-#'
-#' @importFrom limma lmFit contrasts.fit eBayes treat topTable topTreat makeContrasts
-#' @importFrom qvalue qvalue
-#' @importFrom stats model.matrix model.frame as.formula p.adjust
-#' @importFrom dplyr mutate rename
-#' @importFrom rlang ensym as_name
-#' @importFrom purrr map
-#' @export
-runTestsContrastsLipidDA <- function(
-  data,
-  contrast_strings,
-  design_matrix,
-  formula_string,
-  sample_id_col = "Run",
-  treat_lfc_cutoff = NA,
-  eBayes_trend = TRUE,
-  eBayes_robust = TRUE
-) {
-    logger::log_info("--- Entering runTestsContrastsLipidDA ---")
-    logger::log_info(sprintf(
-        "   data dims = %d x %d, %d contrasts",
-        nrow(data), ncol(data), length(contrast_strings)
-    ))
-    logger::log_info(sprintf("   contrasts = %s", paste(contrast_strings, collapse = ", ")))
-
+# KIT-076: the fit half of `runTestsContrastsLipidDA`, moved unchanged: the model matrix on every sample, the samples the data
+# shares with it, and `lmFit`. It depends on no contrast, so one saved fit serves every contrast of an assay.
+#' @param data,design_matrix,formula_string,sample_id_col As `runTestsContrastsLipidDA`.
+#' @return The uncontrasted `MArrayLM`; its `design` is the model matrix on the shared samples.
+#' @noRd
+fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_col = "Run") {
     # Prepare design matrix with sample IDs as rownames
     dm <- design_matrix
     if (sample_id_col %in% colnames(dm)) {
@@ -64,7 +20,6 @@ runTestsContrastsLipidDA <- function(
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("  runTestsContrastsLipidDA - Model matrix created:")
     d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
-    d66_log("    contrast_strings = ", paste(contrast_strings, collapse = ", "))
     # [D66:END] ---------------------------
 
     # Subset data to match design matrix samples
@@ -75,6 +30,20 @@ runTestsContrastsLipidDA <- function(
     data_subset <- data[, common_samples, drop = FALSE]
     design_m <- design_m[common_samples, , drop = FALSE]
     logger::log_info(sprintf("   data_subset dims = %d x %d", nrow(data_subset), ncol(data_subset)))
+
+    logger::log_info("   Running lmFit...")
+    limma::lmFit(data_subset, design = design_m)
+}
+
+# KIT-076: the contrast half of `runTestsContrastsLipidDA`, moved unchanged: the terms checked against the model, then
+# `contrasts.fit`, `eBayes`, `treat` when asked, the extraction and the q-values, for one or more contrasts.
+#' @param fit The fit half's `MArrayLM`.
+#' @param contrast_strings,treat_lfc_cutoff,eBayes_trend,eBayes_robust As `runTestsContrastsLipidDA`.
+#' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts.
+#' @noRd
+applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE) {
+    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
+    design_m <- fit$design
 
     # [D66:START] -------------------------
     d66_log("  About to call makeContrasts:")
@@ -122,9 +91,6 @@ runTestsContrastsLipidDA <- function(
     )
 
     # Run limma analysis
-    logger::log_info("   Running lmFit...")
-    fit <- limma::lmFit(data_subset, design = design_m)
-
     logger::log_info("   Running contrasts.fit...")
     cfit <- limma::contrasts.fit(fit, contrasts = contr.matrix)
 
@@ -210,13 +176,166 @@ runTestsContrastsLipidDA <- function(
     })
 
     names(result_tables) <- contrast_strings
-    logger::log_info("--- Exiting runTestsContrastsLipidDA ---")
 
-    return(list(
+    list(
         results = result_tables,
         fit.eb = t.fit,
         qvalue_warnings = qvalue_failures
+    )
+}
+
+# ----------------------------------------------------------------------------
+# runTestsContrastsLipidDA
+# ----------------------------------------------------------------------------
+#' Run limma differential abundance analysis for a single assay
+#'
+#' @description Performs limma-based differential abundance analysis on a
+#'   single lipidomics assay matrix.
+#'
+#' @param data Numeric matrix with lipids as rows and samples as columns.
+#'   Rownames should be lipid IDs.
+#' @param contrast_strings Character vector of contrast specifications
+#'   (e.g., "Treatment-Control").
+#' @param design_matrix Data frame containing sample metadata with sample IDs
+#'   as a column (will be converted to rownames).
+#' @param formula_string Model formula string (e.g., "~ 0 + group").
+#' @param sample_id_col Name of the sample ID column in design_matrix.
+#' @param treat_lfc_cutoff Optional log fold-change cutoff for TREAT analysis.
+#'   Set to NA for standard analysis.
+#' @param eBayes_trend Logical, whether to use trend in eBayes.
+#' @param eBayes_robust Logical, whether to use robust eBayes.
+#'
+#' @return A list containing:
+#'   - results: Named list of DE result tables (one per contrast)
+#'   - fit.eb: The eBayes fit object
+#'   - qvalue_warnings: List of contrasts where qvalue() failed
+#'
+#' @importFrom limma lmFit contrasts.fit eBayes treat topTable topTreat makeContrasts
+#' @importFrom qvalue qvalue
+#' @importFrom stats model.matrix model.frame as.formula p.adjust
+#' @importFrom dplyr mutate rename
+#' @importFrom rlang ensym as_name
+#' @importFrom purrr map
+#' @export
+runTestsContrastsLipidDA <- function(
+  data,
+  contrast_strings,
+  design_matrix,
+  formula_string,
+  sample_id_col = "Run",
+  treat_lfc_cutoff = NA,
+  eBayes_trend = TRUE,
+  eBayes_robust = TRUE
+) {
+    logger::log_info("--- Entering runTestsContrastsLipidDA ---")
+    logger::log_info(sprintf(
+        "   data dims = %d x %d, %d contrasts",
+        nrow(data), ncol(data), length(contrast_strings)
     ))
+    logger::log_info(sprintf("   contrasts = %s", paste(contrast_strings, collapse = ", ")))
+
+    # KIT-076: the two halves, in the order they ran.
+    fit <- fitLipidDaAssayModel(data, design_matrix, formula_string, sample_id_col)
+    results <- applyLipidDaContrasts(fit, contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust)
+    logger::log_info("--- Exiting runTestsContrastsLipidDA ---")
+
+    return(results)
+}
+
+# KIT-076: the orchestrator's per-assay and per-contrast steps, moved unchanged so that `runLipidsDA` and the
+# per-contrast declaration build the same tables.
+
+#' The assay's expression matrix and annotation table.
+#' @return `list(expr_matrix, annotation_info)`, or NULL when no sample of the assay is in the design.
+#' @noRd
+prepareLipidDaAssayInput <- function(assay_data, assay_name, design_matrix, sample_id_col, lipid_id_col, annotation_col) {
+    # Build expression matrix (lipids as rows, samples as columns)
+    # First, identify sample columns (those that match design matrix)
+    sample_cols <- intersect(colnames(assay_data), design_matrix[[sample_id_col]])
+
+    if (length(sample_cols) == 0) {
+        logger::log_warn(sprintf("   No matching samples for assay: %s, skipping", assay_name))
+        return(NULL)
+    }
+
+    # Extract numeric data and set rownames to lipid IDs
+    expr_matrix <- as.matrix(assay_data[, sample_cols, drop = FALSE])
+    rownames(expr_matrix) <- assay_data[[lipid_id_col]]
+
+    # Get annotation info for later joining
+    lipid_names <- if (annotation_col %in% colnames(assay_data)) {
+        assay_data[[annotation_col]]
+    } else {
+        assay_data[[lipid_id_col]]
+    }
+    annotation_info <- data.frame(
+        lipid_id = assay_data[[lipid_id_col]],
+        lipid_name = lipid_names,
+        stringsAsFactors = FALSE
+    )
+
+    logger::log_info(sprintf(
+        "   Expression matrix: %d lipids x %d samples",
+        nrow(expr_matrix), ncol(expr_matrix)
+    ))
+
+    list(expr_matrix = expr_matrix, annotation_info = annotation_info)
+}
+
+#' One contrast's table of one assay: the id column, the labels, the annotation, the significance call and the
+#' sample intensity columns.
+#' @noRd
+formatLipidDaContrastTable <- function(da_tbl, contrast_name, assay_name, friendly_name, annotation_info, expr_matrix,
+                                        design_matrix, sample_id_col, group_col, da_q_val_thresh, treat_lfc_cutoff) {
+    # Add lipid_id from rownames
+    da_tbl <- tibble::rownames_to_column(da_tbl, "lipid_id")
+
+    # Add metadata columns
+    da_tbl$assay <- assay_name
+    da_tbl$comparison <- contrast_name
+
+    # Add friendly name
+    da_tbl$friendly_name <- friendly_name
+
+    # Join annotation info
+    da_tbl <- dplyr::left_join(
+        da_tbl,
+        annotation_info,
+        by = "lipid_id"
+    )
+
+    # Classify significance
+    da_tbl$significant <- ifelse(
+        da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
+        ifelse(da_tbl$logFC > 0, "Up", "Down"),
+        "NS"
+    )
+
+    # Add sample intensity columns using createLipidDaResultsLongFormat
+    cat(sprintf("[D66] Calling createLipidDaResultsLongFormat for contrast: %s\n", contrast_name))
+    da_tbl <- createLipidDaResultsLongFormat(
+        lfc_qval_tbl = da_tbl,
+        expr_matrix = expr_matrix,
+        design_matrix = design_matrix,
+        sample_id_col = sample_id_col,
+        group_id_col = group_col,
+        lipid_id_col = "lipid_id"
+    )
+
+    return(da_tbl)
+}
+
+#' The up, down and not-significant counts of one results table.
+#' @noRd
+countLipidDaSignificant <- function(df) {
+    if (is.null(df) || nrow(df) == 0) {
+        return(list(up = 0, down = 0, ns = 0))
+    }
+    list(
+        up = sum(df$significant == "Up", na.rm = TRUE),
+        down = sum(df$significant == "Down", na.rm = TRUE),
+        ns = sum(df$significant == "NS", na.rm = TRUE)
+    )
 }
 
 # ----------------------------------------------------------------------------
@@ -339,35 +458,11 @@ runLipidsDA <- function(
 
         assay_data <- assay_list[[assay_name]]
 
-        # Build expression matrix (lipids as rows, samples as columns)
-        # First, identify sample columns (those that match design matrix)
-        sample_cols <- intersect(colnames(assay_data), design_matrix[[sample_id_col]])
-
-        if (length(sample_cols) == 0) {
-            logger::log_warn(sprintf("   No matching samples for assay: %s, skipping", assay_name))
-            next
-        }
-
-        # Extract numeric data and set rownames to lipid IDs
-        expr_matrix <- as.matrix(assay_data[, sample_cols, drop = FALSE])
-        rownames(expr_matrix) <- assay_data[[lipid_id_col]]
-
-        # Get annotation info for later joining
-        lipid_names <- if (annotation_col %in% colnames(assay_data)) {
-            assay_data[[annotation_col]]
-        } else {
-            assay_data[[lipid_id_col]]
-        }
-        annotation_info <- data.frame(
-            lipid_id = assay_data[[lipid_id_col]],
-            lipid_name = lipid_names,
-            stringsAsFactors = FALSE
-        )
-
-        logger::log_info(sprintf(
-            "   Expression matrix: %d lipids x %d samples",
-            nrow(expr_matrix), ncol(expr_matrix)
-        ))
+        # KIT-076: the assay's matrix and annotation, the contrast path's too.
+        assay_input <- prepareLipidDaAssayInput(assay_data, assay_name, design_matrix, sample_id_col, lipid_id_col, annotation_col)
+        if (is.null(assay_input)) next
+        expr_matrix <- assay_input$expr_matrix
+        annotation_info <- assay_input$annotation_info
 
         # Run limma DE
         tryCatch(
@@ -396,43 +491,10 @@ runLipidsDA <- function(
                     limma_results$results,
                     names(limma_results$results),
                     function(da_tbl, contrast_name) {
-                        # Add lipid_id from rownames
-                        da_tbl <- tibble::rownames_to_column(da_tbl, "lipid_id")
-
-                        # Add metadata columns
-                        da_tbl$assay <- assay_name
-                        da_tbl$comparison <- contrast_name
-
-                        # Add friendly name
                         idx <- match(contrast_name, contrast_strings)
-                        da_tbl$friendly_name <- if (!is.na(idx)) friendly_names[idx] else contrast_name
-
-                        # Join annotation info
-                        da_tbl <- dplyr::left_join(
-                            da_tbl,
-                            annotation_info,
-                            by = "lipid_id"
-                        )
-
-                        # Classify significance
-                        da_tbl$significant <- ifelse(
-                            da_tbl$fdr_qvalue < da_q_val_thresh & abs(da_tbl$logFC) >= treat_lfc_cutoff,
-                            ifelse(da_tbl$logFC > 0, "Up", "Down"),
-                            "NS"
-                        )
-
-                        # Add sample intensity columns using createLipidDaResultsLongFormat
-                        cat(sprintf("[D66] Calling createLipidDaResultsLongFormat for contrast: %s\n", contrast_name))
-                        da_tbl <- createLipidDaResultsLongFormat(
-                            lfc_qval_tbl = da_tbl,
-                            expr_matrix = expr_matrix,
-                            design_matrix = design_matrix,
-                            sample_id_col = sample_id_col,
-                            group_id_col = group_col,
-                            lipid_id_col = "lipid_id"
-                        )
-
-                        return(da_tbl)
+                        formatLipidDaContrastTable(da_tbl, contrast_name, assay_name,
+                            if (!is.na(idx)) friendly_names[idx] else contrast_name, annotation_info, expr_matrix, design_matrix,
+                            sample_id_col, group_col, da_q_val_thresh, treat_lfc_cutoff)
                     }
                 )
 
@@ -458,16 +520,7 @@ runLipidsDA <- function(
     logger::log_info(sprintf("   Combined results: %d total rows", nrow(da_lipids_long)))
 
     # Calculate significant counts per assay
-    significant_counts <- purrr::map(per_assay_results, function(df) {
-        if (is.null(df) || nrow(df) == 0) {
-            return(list(up = 0, down = 0, ns = 0))
-        }
-        list(
-            up = sum(df$significant == "Up", na.rm = TRUE),
-            down = sum(df$significant == "Down", na.rm = TRUE),
-            ns = sum(df$significant == "NS", na.rm = TRUE)
-        )
-    }) |> purrr::set_names(names(per_assay_results))
+    significant_counts <- purrr::map(per_assay_results, countLipidDaSignificant) |> purrr::set_names(names(per_assay_results))
 
     logger::log_info("=== Completed runLipidsDA ===")
 

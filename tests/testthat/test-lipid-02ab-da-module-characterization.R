@@ -17,7 +17,7 @@ register_binding_teardown(
 register_binding_teardown(
   asNamespace("MultiScholaR"),
   c(
-    "runLipidsDA",
+    "runLipidReferenceDaAnalysis",
     "generateLipidDAVolcanoPlotGlimma",
     "generateLipidDAHeatmap",
     "outputLipidDaResultsAllContrasts",
@@ -287,7 +287,11 @@ installLipidDaModuleMocks <- function(
   )
 
   package_bindings <- list(
-    runLipidsDA = run_analysis_fn,
+    # KIT-076: the tab reaches the DA through the wrapper; the settings are what it hands over.
+    runLipidReferenceDaAnalysis = function(manager, source, settings, contrasts) {
+      list(results = run_analysis_fn(contrasts_tbl = contrasts, formula_string = settings$formula_string,
+        da_q_val_thresh = settings$da_q_val_thresh, treat_lfc_cutoff = settings$treat_lfc_cutoff))
+    },
     generateLipidDAVolcanoPlotGlimma = glimma_fn,
     generateLipidDAHeatmap = heatmap_fn,
     outputLipidDaResultsAllContrasts = output_results_fn,

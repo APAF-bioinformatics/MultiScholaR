@@ -1,54 +1,9 @@
-# ----------------------------------------------------------------------------
-# runTestsContrastsMetabDA
-# ----------------------------------------------------------------------------
-#' Run limma differential abundance analysis for a single assay
-#'
-#' @description Performs limma-based differential abundance analysis on a
-#'   single metabolomics assay matrix. This is the core DA engine adapted from
-#'   the proteomics `runTestsContrastsDA()` function.
-#'
-#' @param data Numeric matrix with metabolites as rows and samples as columns.
-#'   Rownames should be metabolite IDs.
-#' @param contrast_strings Character vector of contrast specifications
-#'   (e.g., "Treatment-Control").
-#' @param design_matrix Data frame containing sample metadata with sample IDs
-#'   as a column (will be converted to rownames).
-#' @param formula_string Model formula string (e.g., "~ 0 + group").
-#' @param sample_id_col Name of the sample ID column in design_matrix.
-#' @param treat_lfc_cutoff Optional log fold-change cutoff for TREAT analysis.
-#'   Set to NA for standard analysis.
-#' @param eBayes_trend Logical, whether to use trend in eBayes.
-#' @param eBayes_robust Logical, whether to use robust eBayes.
-#'
-#' @return A list containing:
-#'   - results: Named list of DE result tables (one per contrast)
-#'   - fit.eb: The eBayes fit object
-#'   - qvalue_warnings: List of contrasts where qvalue() failed
-#'
-#' @importFrom limma lmFit contrasts.fit eBayes treat topTable topTreat makeContrasts
-#' @importFrom qvalue qvalue
-#' @importFrom stats model.matrix model.frame as.formula p.adjust
-#' @importFrom dplyr mutate rename
-#' @importFrom rlang ensym as_name
-#' @importFrom purrr map
-#' @export
-runTestsContrastsMetabDA <- function(
-  data,
-  contrast_strings,
-  design_matrix,
-  formula_string,
-  sample_id_col = "Run",
-  treat_lfc_cutoff = NA,
-  eBayes_trend = TRUE,
-  eBayes_robust = TRUE
-) {
-    logger::log_info("--- Entering runTestsContrastsMetabDA ---")
-    logger::log_info(sprintf(
-        "   data dims = %d x %d, %d contrasts",
-        nrow(data), ncol(data), length(contrast_strings)
-    ))
-    logger::log_info(sprintf("   contrasts = %s", paste(contrast_strings, collapse = ", ")))
-
+# KIT-076: the fit half of `runTestsContrastsMetabDA`, moved unchanged: the model matrix on every sample, the samples the data
+# shares with it, and `lmFit`. It depends on no contrast, so one saved fit serves every contrast of an assay.
+#' @param data,design_matrix,formula_string,sample_id_col As `runTestsContrastsMetabDA`.
+#' @return The uncontrasted `MArrayLM`; its `design` is the model matrix on the shared samples.
+#' @noRd
+fitMetabDaAssayModel <- function(data, design_matrix, formula_string, sample_id_col = "Run") {
     # Prepare design matrix with sample IDs as rownames
     dm <- design_matrix
     if (sample_id_col %in% colnames(dm)) {
@@ -65,7 +20,6 @@ runTestsContrastsMetabDA <- function(
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
     d66_log("  runTestsContrastsMetabDA - Model matrix created:")
     d66_log("    design_m levels (colnames) = ", paste(colnames(design_m), collapse = ", "))
-    d66_log("    contrast_strings = ", paste(contrast_strings, collapse = ", "))
     # [D66:END] ---------------------------
 
     # Subset data to match design matrix samples
@@ -76,6 +30,20 @@ runTestsContrastsMetabDA <- function(
     data_subset <- data[, common_samples, drop = FALSE]
     design_m <- design_m[common_samples, , drop = FALSE]
     logger::log_info(sprintf("   data_subset dims = %d x %d", nrow(data_subset), ncol(data_subset)))
+
+    logger::log_info("   Running lmFit...")
+    limma::lmFit(data_subset, design = design_m)
+}
+
+# KIT-076: the contrast half of `runTestsContrastsMetabDA`, moved unchanged: the terms checked against the model, then
+# `contrasts.fit`, `eBayes`, `treat` when asked, the extraction and the q-values, for one or more contrasts.
+#' @param fit The fit half's `MArrayLM`.
+#' @param contrast_strings,treat_lfc_cutoff,eBayes_trend,eBayes_robust As `runTestsContrastsMetabDA`.
+#' @return `list(results, fit.eb, qvalue_warnings)` for those contrasts.
+#' @noRd
+applyMetabDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, eBayes_trend = TRUE, eBayes_robust = TRUE) {
+    d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
+    design_m <- fit$design
 
     # [D66:START] -------------------------
     d66_log("  About to call makeContrasts:")
@@ -123,9 +91,6 @@ runTestsContrastsMetabDA <- function(
     )
 
     # Run limma analysis
-    logger::log_info("   Running lmFit...")
-    fit <- limma::lmFit(data_subset, design = design_m)
-
     logger::log_info("   Running contrasts.fit...")
     cfit <- limma::contrasts.fit(fit, contrasts = contr.matrix)
 
@@ -211,10 +176,69 @@ runTestsContrastsMetabDA <- function(
     })
 
     names(result_tables) <- contrast_strings
-    logger::log_info("--- Exiting runTestsContrastsMetabDA ---")
-    return(list(
+
+    list(
         results = result_tables,
         fit.eb = t.fit,
         qvalue_warnings = qvalue_failures
+    )
+}
+
+# ----------------------------------------------------------------------------
+# runTestsContrastsMetabDA
+# ----------------------------------------------------------------------------
+#' Run limma differential abundance analysis for a single assay
+#'
+#' @description Performs limma-based differential abundance analysis on a
+#'   single metabolomics assay matrix. This is the core DA engine adapted from
+#'   the proteomics `runTestsContrastsDA()` function.
+#'
+#' @param data Numeric matrix with metabolites as rows and samples as columns.
+#'   Rownames should be metabolite IDs.
+#' @param contrast_strings Character vector of contrast specifications
+#'   (e.g., "Treatment-Control").
+#' @param design_matrix Data frame containing sample metadata with sample IDs
+#'   as a column (will be converted to rownames).
+#' @param formula_string Model formula string (e.g., "~ 0 + group").
+#' @param sample_id_col Name of the sample ID column in design_matrix.
+#' @param treat_lfc_cutoff Optional log fold-change cutoff for TREAT analysis.
+#'   Set to NA for standard analysis.
+#' @param eBayes_trend Logical, whether to use trend in eBayes.
+#' @param eBayes_robust Logical, whether to use robust eBayes.
+#'
+#' @return A list containing:
+#'   - results: Named list of DE result tables (one per contrast)
+#'   - fit.eb: The eBayes fit object
+#'   - qvalue_warnings: List of contrasts where qvalue() failed
+#'
+#' @importFrom limma lmFit contrasts.fit eBayes treat topTable topTreat makeContrasts
+#' @importFrom qvalue qvalue
+#' @importFrom stats model.matrix model.frame as.formula p.adjust
+#' @importFrom dplyr mutate rename
+#' @importFrom rlang ensym as_name
+#' @importFrom purrr map
+#' @export
+runTestsContrastsMetabDA <- function(
+  data,
+  contrast_strings,
+  design_matrix,
+  formula_string,
+  sample_id_col = "Run",
+  treat_lfc_cutoff = NA,
+  eBayes_trend = TRUE,
+  eBayes_robust = TRUE
+) {
+    logger::log_info("--- Entering runTestsContrastsMetabDA ---")
+    logger::log_info(sprintf(
+        "   data dims = %d x %d, %d contrasts",
+        nrow(data), ncol(data), length(contrast_strings)
     ))
+    logger::log_info(sprintf("   contrasts = %s", paste(contrast_strings, collapse = ", ")))
+
+    # KIT-076: the two halves, in the order they ran.
+    fit <- fitMetabDaAssayModel(data, design_matrix, formula_string, sample_id_col)
+    results <- applyMetabDaContrasts(fit, contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust)
+    logger::log_info("--- Exiting runTestsContrastsMetabDA ---")
+
+    return(results)
 }

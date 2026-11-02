@@ -306,9 +306,20 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
                 provenance = workflowParameterProvenance(da_entry$defaults[[name]], manifest$parameters[[name]], shipped))),
             contrasts = lapply(seq_len(nrow(manifest$contrasts %||% data.frame())), function(j) as.list(manifest$contrasts[j, , drop = FALSE])),
             model = manifest$model,
-            results = lapply(names(manifest$results), function(name) list(contrast = name,
+            # KIT-076: a v2 manifest is keyed by contrast, one entry per contrast and assay; a v1 entry keeps its reading
+            # (the omics v1 manifests put the assay names under `contrast`).
+            results = if (identical(output$version, 2L)) unlist(lapply(names(manifest$results), function(name) {
+                lapply(manifest$results[[name]]$assays, function(entry) list(contrast = name, assay = entry$assay,
+                    entity_id = entry$tables[[long_table]]$entity_id %||% NA_character_, rows = entry$rows %||% NA_integer_))
+            }), recursive = FALSE, use.names = FALSE) else lapply(names(manifest$results), function(name) list(contrast = name,
                 entity_id = manifest$results[[name]]$tables[[long_table]]$entity_id %||% NA_character_,
                 rows = manifest$results[[name]]$rows %||% NA_integer_)))
+        if (identical(output$version, 2L)) {
+            analyses$differential_abundance$failures <- unlist(lapply(names(manifest$results), function(name) {
+                errors <- manifest$results[[name]]$errors
+                lapply(names(errors), function(assay) list(contrast = name, assay = assay, error = errors[[assay]]))
+            }), recursive = FALSE, use.names = FALSE)
+        }
     }
     inputs <- list()
     for (name in names(snapshot$file_dependencies)) {
@@ -589,7 +600,8 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         da_workflow <- new.env(parent = emptyenv())
         da_workflow$state_manager <- manager
         da_workflow$contrasts_tbl <- contrasts
-        omics_binding <- Find(function(b) identical(da$operation, paste0(b$prefix, "_da_output")), omicsDeclarationBindings())
+        # KIT-076: a v1 record's operation too; either way the DA re-runs one declaration per contrast.
+        omics_binding <- Find(function(b) isTRUE(da$operation %in% paste0(b$prefix, c("_da_output", "_da_contrast"))), omicsDeclarationBindings())
         if (!is.null(omics_binding)) {
             # KIT-031/032 (KIT-073: one branch): the omics DA from the record's settings and contrasts on the replayed head.
             withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,

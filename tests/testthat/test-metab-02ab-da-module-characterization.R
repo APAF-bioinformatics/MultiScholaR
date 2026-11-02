@@ -18,7 +18,7 @@ register_binding_teardown(
 register_binding_teardown(
   asNamespace("MultiScholaR"),
   c(
-    "runMetabolitesDA",
+    "runMetabReferenceDaAnalysis",
     "generateMetabDAVolcanoPlotGlimma",
     "generateMetabDAHeatmap",
     "outputMetabDaResultsAllContrasts",
@@ -276,7 +276,11 @@ installMetabDaModuleMocks <- function(
   )
 
   scoped_mocked_bindings(
-    runMetabolitesDA = run_analysis_fn,
+    # KIT-076: the tab reaches the DA through the wrapper; the settings are what it hands over.
+    runMetabReferenceDaAnalysis = function(manager, source, settings, contrasts) {
+      list(results = run_analysis_fn(contrasts_tbl = contrasts, formula_string = settings$formula_string,
+        da_q_val_thresh = settings$da_q_val_thresh, treat_lfc_cutoff = settings$treat_lfc_cutoff))
+    },
     generateMetabDAVolcanoPlotGlimma = glimma_fn,
     generateMetabDAHeatmap = heatmap_fn,
     outputMetabDaResultsAllContrasts = output_results_fn,

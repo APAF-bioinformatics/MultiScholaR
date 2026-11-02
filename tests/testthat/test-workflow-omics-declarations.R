@@ -10,6 +10,9 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
   frozen <- readRDS(frozen_file)
   root <- withr::local_tempdir()
   current <- suppressWarnings(suppressMessages(omicsDeclarationsDump(root)))
+  # KIT-076 adds one declaration per omic (`<prefix>_da_contrast`); the twelve frozen ones are unchanged.
+  current$registry$lipidomics$lipid_da_contrast <- NULL
+  current$registry$metabolomics$metab_da_contrast <- NULL
   expect_identical(names(current$registry$lipidomics), names(frozen$registry$lipidomics))
   expect_identical(names(current$registry$metabolomics), names(frozen$registry$metabolomics))
   expect_identical(current$registry, frozen$registry)
@@ -20,7 +23,9 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
     }
     expect_identical(current[[omic]]$values, frozen[[omic]]$values, info = omic)
     expect_identical(current[[omic]]$correlations, frozen[[omic]]$correlations, info = omic)
-    expect_identical(current[[omic]]$da, frozen[[omic]]$da, info = omic)
+    # KIT-076: the manifest is v2 and `fit.eb` moved per contrast; the tables, the counts and the warnings are the frozen ones.
+    products <- setdiff(names(frozen[[omic]]$da$results), "contrasts_results")
+    expect_identical(current[[omic]]$da$results[products], frozen[[omic]]$da$results[products], info = omic)
   }
 })
 

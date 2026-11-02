@@ -1,7 +1,7 @@
 # KIT-032: the metabolomics declarations, the kit's completeness test. Every step of the metabolomics route is a registered
 # in-process declaration with the unit of the step map; on a real owner in a temporary project the wrappers the
 # modules call commit each state as a component checkpoint with its operation's provenance, the analysis record is
-# complete (no legacy step, no missing parameter, the inputs recorded), the DA manifest `metab.da_results.v1` is the
+# complete (no legacy step, no missing parameter, the inputs recorded), the DA manifest `metab.da_results.v2` is the
 # head's and its display list equals the kernel's direct output, the report overlay reads the metab variables, and
 # the record replays exact state by state on a copy of the store. The fixture is helper-workflow-metab-declarations.R.
 library(testthat)
@@ -10,7 +10,7 @@ test_that("KIT-032: the metabolomics declarations are registered in process with
     units <- c(metab_intensity_filter = "row", metab_duplicate_resolution = "feature_group", metab_qc_finalize = "store",
         metab_itsd_normalisation = "complete_sample", metab_log2 = "row", metab_between_sample_normalisation = "whole_matrix",
         metab_ruv = "whole_matrix", metab_pearson_pairs = "whole_matrix", metab_pearson_selection = "whole_matrix",
-        metab_norm_complete = "store", metab_reset = "store", metab_da_output = "whole_matrix")
+        metab_norm_complete = "store", metab_reset = "store", metab_da_output = "whole_matrix", metab_da_contrast = "whole_matrix")
     declarations <- metabolomicsWorkflowOperations()
     expect_setequal(names(declarations), names(units))
     for (name in names(units)) {
@@ -33,11 +33,14 @@ test_that("KIT-032: the metabolomics declarations are registered in process with
     expect_named(declarations$metab_intensity_filter$global_statistics, "min_metabolite_intensity_threshold")
     expect_named(declarations$metab_itsd_normalisation$global_statistics, "mean_standard_factor")
     expect_identical(declarations$metab_itsd_normalisation$fixed, list(method = "ITSD"))
-    expect_identical(declarations$metab_da_output$fixed, list(eBayes_trend = TRUE, eBayes_robust = TRUE))
-    expect_null(declarations$metab_da_output$output_class)
+    for (name in c("metab_da_output", "metab_da_contrast")) {
+        expect_identical(declarations[[name]]$fixed, list(eBayes_trend = TRUE, eBayes_robust = TRUE))
+        expect_null(declarations[[name]]$output_class)
+    }
     expect_null(declarations$metab_pearson_pairs$output_class)
     expect_identical(workflowActionSpec("metab_intensity_filter")$step_label, "2_Intensity_Filtered")
     expect_null(workflowActionSpec("metab_da_output")$step_label)
+    expect_null(workflowActionSpec("metab_da_contrast")$step_label)
     # The route's sections name its declarations; the proteomics map is untouched.
     expect_identical(workflowOperationForSection("metaboliteIntensityFiltering", "METABOLOMICS"), "metab_intensity_filter")
     expect_identical(workflowOperationForSection("ruvIII_C_Varying", "METABOLOMICS"), "metab_ruv")
@@ -49,6 +52,10 @@ test_that("KIT-032: the metabolomics declarations are registered in process with
     expect_identical(output$long_table, "da_metabolites_long")
     expect_identical(output$identifies, "isMetabResultManifest")
     expect_true(isMetabResultManifest(list(schema = "metab.da_results.v1")))
+    # KIT-076: the v2 manifest, keyed by contrast; v1 stays declared for the records and stores of earlier builds.
+    expect_identical(workflowOutputDeclaration("metab.da_results.v2")$operation, "metab_da_contrast")
+    expect_identical(workflowOutputDeclaration("metab.da_results.v2")$long_table, "da_metabolites_long")
+    expect_true(isMetabResultManifest(list(schema = "metab.da_results.v2")))
     expect_false(isMetabResultManifest(list(schema = "dia.da_results.v1")))
     expect_identical(workflowOutputDeclaration("dia.da_results.v1")$long_table, "da_proteins_long")
 })
@@ -119,9 +126,12 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
     expect_true(by_state$metab_itsd_norm$outcomes$itsd_applied)
     expect_identical(by_state$metab_itsd_norm$step_label, "5_ITSD_Normalised")
     da <- record$analyses$differential_abundance
-    expect_identical(da$operation, "metab_da_output")
+    expect_identical(da$operation, "metab_da_contrast")
     expect_identical(da$source_state, "metab_correlation_filtered")
-    expect_identical(vapply(da$results, function(r) r$contrast, ""), c("LCMS_Pos", "GCMS"))
+    # KIT-076: one entry per contrast and assay, labelled by its contrast.
+    expect_identical(vapply(da$results, function(r) r$contrast, ""), c("groupKO-groupWT", "groupKO-groupWT"))
+    expect_identical(vapply(da$results, function(r) r$assay, ""), c("LCMS_Pos", "GCMS"))
+    expect_length(da$failures, 0L)
     expect_true(all(vapply(da$results, function(r) r$rows, 1L) > 0L))
     expect_identical(named(da$parameters)$qvalue$provenance, "default")
     expect_identical(da$model$model, "limma")
@@ -144,12 +154,13 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
     expect_s4_class(with_source$theObject, "MetaboliteAssayData")
     expect_equal(with_source$theObject@metabolite_data, owner$getState(owner$current_state)@metabolite_data, ignore_attr = TRUE)
     expect_identical(with_source[names(journey$da$results)], journey$da$results)
-    long <- materializeWorkflowTable(owner$.context, manifest$results$LCMS_Pos$tables$da_metabolites_long)
-    expect_identical(nrow(long), manifest$results$LCMS_Pos$rows)
+    entry <- manifest$results[["groupKO-groupWT"]]$assays$LCMS_Pos
+    long <- materializeWorkflowTable(owner$.context, entry$tables$da_metabolites_long)
+    expect_identical(nrow(long), entry$rows)
     # A second run on the same state and settings is a hit: the manifest's tables are the same entities.
     again <- suppressWarnings(suppressMessages(runMetabReferenceDaAnalysis(owner, getWorkflowStateReference(owner),
         list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), fixture$workflow$contrasts_tbl)))
-    expect_identical(again$manifest$results$LCMS_Pos$tables$da_metabolites_long$entity_id, manifest$results$LCMS_Pos$tables$da_metabolites_long$entity_id)
+    expect_identical(again$manifest$results[["groupKO-groupWT"]]$assays$LCMS_Pos$tables$da_metabolites_long$entity_id, entry$tables$da_metabolites_long$entity_id)
 
     # The report overlay: the metabolomics template's variables take the record's values; the proteomics-only ones are left.
     json <- file.path(root, "analysis_record.json")
@@ -188,7 +199,7 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
     replay <- suppressWarnings(suppressMessages(harness$kitReplayJourney(record_read, prepared, store_root, inputs, fixture$paths, scratch, api)))
     expect_identical(replay$states, history)
     expect_identical(as.character(replay$mismatches), character())
-    expect_true(any(vapply(replay$per_step, function(x) identical(x$operation, "metab_da_output"), logical(1))))
+    expect_true(any(vapply(replay$per_step, function(x) identical(x$operation, "metab_da_contrast"), logical(1))))
     # A record whose input file changed is refused before any step runs.
     tampered <- inputs
     tampered[["design_file"]] <- file.path(fixture$source_dir, "import_sources", "LCMS_Pos_export.txt")

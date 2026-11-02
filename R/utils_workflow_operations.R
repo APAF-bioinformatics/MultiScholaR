@@ -344,6 +344,9 @@ workflowOperationDefaults <- local({
         lipid_da_output = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
             contrasts = "input"),
+        lipid_da_contrast = list(formula = key("deAnalysisParameters", "formula_string"),
+            qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
+            contrast = "input", friendly_name = "input"),
         # KIT-032: the metabolomics declarations; `config.ini` ships the intensity filter's section.
         metab_intensity_filter = list(
             metabolites_intensity_cutoff_percentile = key("metaboliteIntensityFiltering", "metabolites_intensity_cutoff_percentile"),
@@ -361,7 +364,10 @@ workflowOperationDefaults <- local({
         metab_pearson_selection = list(pairs = "input", min_pearson_correlation_threshold = "no_shipped_default"),
         metab_da_output = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
-            contrasts = "input"))
+            contrasts = "input"),
+        metab_da_contrast = list(formula = key("deAnalysisParameters", "formula_string"),
+            qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
+            contrast = "input", friendly_name = "input"))
 })
 
 #' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
@@ -439,6 +445,8 @@ workflowParameterLabels <- local({
             min_pearson_correlation_threshold = "Minimum Pearson correlation to keep a sample"),
         lipid_da_output = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
             lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"),
+        lipid_da_contrast = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
+            lfc = "Log fold-change cutoff (treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"),
         # KIT-032: the metabolomics declarations.
         metab_intensity_filter = list(metabolites_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
             metabolites_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),
@@ -457,7 +465,9 @@ workflowParameterLabels <- local({
         metab_pearson_selection = list(pairs = "Sample-pair correlations (input)",
             min_pearson_correlation_threshold = "Minimum Pearson correlation to keep a sample"),
         metab_da_output = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
-            lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"))
+            lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"),
+        metab_da_contrast = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
+            lfc = "Log fold-change cutoff (treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"))
 })
 
 #' Register one operation.
