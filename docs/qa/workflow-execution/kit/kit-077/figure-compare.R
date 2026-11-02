@@ -22,12 +22,11 @@ for (m in utils::head(missing, 20L)) cat("  MISSING", m, "\n")
 new_kinds <- sub("^.*/", "", setdiff(files, baseline$files$path))
 cat("  new files, by ending:", paste(names(table(sub("^.*_", "", new_kinds))), table(sub("^.*_", "", new_kinds)), collapse = "; "), "\n")
 assets <- api("findSavedWorkflowEntities")(store, list(kind = "rendered_asset"), max_matches = 2000L)$matches
-asset_hash <- vapply(assets, function(r) digest::digest(api("hydrateSavedWorkflowEntity")(store, r)$value$bytes, serialize = FALSE, algo = "sha256"), "")
+asset_hash <- vapply(assets, function(r) digest::digest(api("hydrateSavedWorkflowEntity")(store, r)$bytes, serialize = FALSE, algo = "sha256"), "")
 roots <- names(manager$.context$snapshot$products)
 asset_ids <- vapply(assets, function(r) r$entity_id, "")
 cat(sprintf("assets: %d; rooted in the head: %d\n", length(assets), sum(asset_ids %in% roots)))
 file_hash <- vapply(file.path(project, files), function(f) digest::digest(file = f, algo = "sha256"), "", USE.NAMES = FALSE)
-outside <- files[!file_hash %in% asset_hash & !duplicated(file_hash)]
 outside <- files[!file_hash %in% asset_hash]
 cat(sprintf("figure files whose bytes are a stored asset: %d of %d; not stored: %d\n", sum(file_hash %in% asset_hash), length(files), length(outside)))
 for (f in outside) cat("  NOT STORED", f, "\n")
