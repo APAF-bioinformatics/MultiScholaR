@@ -1,0 +1,19 @@
+Fail first, on 812a5943 + the new test (real generator, no mock), R 4.6.1:
+KIT-077: lipid: expectations 7, failed 6, error FALSE
+KIT-077: metab: expectations 7, failed 6, error FALSE
+   Expected `grDevices::dev.list()` to be identical to `devices`. Differences: `actual` is an integer vector (2,  
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: 0.0 <= 0.0 Difference: 0.0 <= 0 
+   Expected `grDevices::dev.list()` to be identical to `devices`. Differences: `names(actual)`:   "png" "png" "pd 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: NA <= 0.0 
+   Expected `file.size(file.path(heatmaps, name))` > 0. Actual comparison: 0.0 <= 0.0 Difference: 0.0 <= 0 
+
+After the fix, the same test:
+KIT-077: lipid: expectations 7, failed 0, error FALSE
+KIT-077: metab: expectations 7, failed 0, error FALSE

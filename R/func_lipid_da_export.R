@@ -254,7 +254,9 @@ outputLipidDaResultsAllContrasts <- function(
                     if (!is.null(heatmap_obj)) {
                         # Unique key for combined PDF
                         plot_key <- paste0(mode_prefix, "_", contrast_name)
-                        all_heatmap_plots[[plot_key]] <- heatmap_obj
+                        # KIT-077: the generator returns list(plot, row_clusters, col_clusters); the export draws the plot.
+                        heatmap_plot <- heatmap_obj$plot
+                        all_heatmap_plots[[plot_key]] <- heatmap_plot
 
                         # Filename: {mode}_{contrast}_heatmap
                         heatmap_base <- paste0(mode_prefix, "_", contrast_name)
@@ -262,15 +264,13 @@ outputLipidDaResultsAllContrasts <- function(
                         # Save PNG
                         heatmap_png <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.png"))
                         grDevices::png(heatmap_png, width = 10, height = 8, units = "in", res = 300)
-                        ComplexHeatmap::draw(heatmap_obj)
-                        grDevices::dev.off()
+                        tryCatch(ComplexHeatmap::draw(heatmap_plot), finally = grDevices::dev.off())
                         logger::log_info(sprintf("      Saved heatmap PNG: %s", basename(heatmap_png)))
 
                         # Save PDF
                         heatmap_pdf <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.pdf"))
                         grDevices::pdf(heatmap_pdf, width = 10, height = 8)
-                        ComplexHeatmap::draw(heatmap_obj)
-                        grDevices::dev.off()
+                        tryCatch(ComplexHeatmap::draw(heatmap_plot), finally = grDevices::dev.off())
                         logger::log_info(sprintf("      Saved heatmap PDF: %s", basename(heatmap_pdf)))
                     } else {
                         logger::log_warn(sprintf(
@@ -349,10 +349,12 @@ outputLipidDaResultsAllContrasts <- function(
             {
                 combined_heatmap_pdf <- file.path(heatmap_dir, "all_heatmaps_combined.pdf")
                 grDevices::pdf(combined_heatmap_pdf, width = 10, height = 8, onefile = TRUE)
-                purrr::walk(all_heatmap_plots, function(hm) {
-                    ComplexHeatmap::draw(hm)
-                })
-                grDevices::dev.off()
+                tryCatch(
+                    purrr::walk(all_heatmap_plots, function(hm) {
+                        ComplexHeatmap::draw(hm)
+                    }),
+                    finally = grDevices::dev.off()
+                )
                 logger::log_info(sprintf(
                     "   Created combined heatmap PDF: %d plots",
                     length(all_heatmap_plots)

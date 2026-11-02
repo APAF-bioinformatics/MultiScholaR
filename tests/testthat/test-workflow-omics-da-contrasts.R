@@ -198,3 +198,24 @@ test_that("KIT-076: the DA tabs warn about a failed contrast, and say nothing wh
   expect_identical(metab_warnings(list(da_metabolites_long = long, failed_contrasts = failed)), list("DA failed for: groupC-groupA"))
   expect_length(metab_warnings(list(da_metabolites_long = long, failed_contrasts = list())), 0L)
 })
+
+for (omic in c("lipid", "metab")) {
+  test_that(paste("KIT-077:", omic, "export writes the per-contrast heatmaps with the real generator and leaves no device open"), {
+    skip_if_not_installed("ComplexHeatmap")
+    object <- omicsDaContrastsFixture(omic)
+    results <- suppressWarnings(suppressMessages(omicsDaKernel(omic)(theObject = object, contrasts_tbl = omicsDaContrastsTable("groupB-groupA"),
+      formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)))
+    root <- withr::local_tempdir()
+    writer <- if (identical(omic, "lipid")) outputLipidDaResultsAllContrasts else outputMetabDaResultsAllContrasts
+    devices <- grDevices::dev.list()
+    expect_true(suppressWarnings(suppressMessages(writer(da_results_list = results, da_output_dir = file.path(root, "da"),
+      publication_graphs_dir = file.path(root, "pub"), da_q_val_thresh = 0.05, lfc_threshold = 1))))
+    expect_identical(grDevices::dev.list(), devices)
+    heatmaps <- file.path(root, "pub", "Heatmaps")
+    # The assay names `pos` and `neg` map to the mode prefixes.
+    for (name in c("posmode_groupB-groupA_heatmap.png", "posmode_groupB-groupA_heatmap.pdf",
+      "negmode_groupB-groupA_heatmap.png", "negmode_groupB-groupA_heatmap.pdf", "all_heatmaps_combined.pdf")) {
+      expect_gt(file.size(file.path(heatmaps, name)), 0)
+    }
+  })
+}

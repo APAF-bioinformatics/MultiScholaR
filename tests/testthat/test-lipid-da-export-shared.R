@@ -155,7 +155,8 @@ test_that("lipidomics DA export covers heatmap rendering and empty-result exit",
     package_ns,
     "generateLipidDAHeatmap",
     function(...) {
-      ComplexHeatmap::Heatmap(matrix(c(1, 2, 3, 4), nrow = 2))
+      # The generator's real shape (KIT-077: a bare Heatmap here hid that the export drew the list).
+      list(plot = ComplexHeatmap::Heatmap(matrix(c(1, 2, 3, 4), nrow = 2)), row_clusters = NULL, col_clusters = NULL)
     }
   )
 

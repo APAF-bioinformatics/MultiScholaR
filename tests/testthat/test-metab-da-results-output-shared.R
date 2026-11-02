@@ -148,7 +148,8 @@ test_that("metabolomics DA results output covers heatmap rendering and empty-res
     package_ns,
     "generateMetabDAHeatmap",
     function(...) {
-      ComplexHeatmap::Heatmap(matrix(c(1, 2, 3, 4), nrow = 2))
+      # The generator's real shape (KIT-077: a bare Heatmap here hid that the export drew the list).
+      list(plot = ComplexHeatmap::Heatmap(matrix(c(1, 2, 3, 4), nrow = 2)), row_clusters = NULL, col_clusters = NULL)
     }
   )
 
