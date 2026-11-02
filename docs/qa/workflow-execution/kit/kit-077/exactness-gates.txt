@@ -1,0 +1,21 @@
+# KIT-077 exactness set, items (1)(3)(6), on kit_077 = browser-smoke.FXMKdB (e9807ab7), R 4.6.1
+
+## (3) against the KIT-076 oracles (the in-process records run no figure site, so no figure products appear here)
+reference oracles-lipid76_lipid_screen.rds (lipidomics, build 812a59438a62): 10 steps; candidate oracles-lipid77_lipid_screen.rds (build e9807ab7802a): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-metab76_metab_screen.rds (metabolomics, build 812a59438a62): 10 steps; candidate oracles-metab77_metab_screen.rds (build e9807ab7802a): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+
+## (6) proteomics: copyToResultsSummary and the session attach are shared
+KIT-028 replay: EXACT 16 states, 0 mismatches | 257 s
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate lfq.rds (build e9807ab7802a): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate tmt.rds (build e9807ab7802a): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate limpa.rds (build e9807ab7802a): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
