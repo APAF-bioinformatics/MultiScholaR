@@ -1,0 +1,8 @@
+Copy defects, fail first on 224ff3b9 + the corrected summary fixtures, R 4.6.1:
+── Failure ('test-workflow-omics-figures.R:205:3'): KIT-077: the metab composite reaches QC_figures under the name the report reads ──
+Expected `file.exists(...)` to be TRUE.
+── Failure ('test-workflow-omics-figures.R:206:3'): KIT-077: the metab composite reaches QC_figures under the name the report reads ──
+Expected `any(...)` to be FALSE.
+── Failure ('test-workflow-omics-figures.R:221:3'): KIT-077: the lipid composite copies with no spurious failure ──
+Expected `any(...)` to be FALSE.
+COUNTS test-workflow-omics-figures.R pass 67 fail 3 error 0 skip 0

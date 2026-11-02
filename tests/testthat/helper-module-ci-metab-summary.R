@@ -154,8 +154,8 @@ module_ci_metab_summary_write_publication_inputs <- function(project_dirs,
   writeLines("study parameters", file.path(paths$source_dir, "study_parameters.txt"))
 
   if (isTRUE(include_optional)) {
-    writeBin(charToRaw("%PDF-1.4 module-ci"), file.path(paths$feature_qc_dir, "composite_QC_figure.pdf"))
-    writeBin(as.raw(c(0x89, 0x50, 0x4e, 0x47)), file.path(paths$feature_qc_dir, "composite_QC_figure.png"))
+    writeBin(charToRaw("%PDF-1.4 module-ci"), file.path(paths$feature_qc_dir, "metabolomics_composite_QC_figure.pdf"))
+    writeBin(as.raw(c(0x89, 0x50, 0x4e, 0x47)), file.path(paths$feature_qc_dir, "metabolomics_composite_QC_figure.png"))
     writeBin(as.raw(c(0x89, 0x50, 0x4e, 0x47)), file.path(paths$feature_qc_dir, "lcms_pos_pre_norm_pca.png"))
     writeBin(as.raw(c(0x89, 0x50, 0x4e, 0x47)), file.path(paths$feature_qc_dir, "gcms_post_norm_density.png"))
     writeBin(as.raw(c(0x89, 0x50, 0x4e, 0x47)), file.path(paths$feature_qc_dir, "lcms_pos_ruv_corrected_rle.png"))

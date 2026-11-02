@@ -3,31 +3,6 @@
 # contrast fails alone, and a v1 record still resolves its operation.
 library(testthat)
 
-omicsDaContrastsFixture <- function(omic) {
-  samples <- paste0("S", seq_len(12L))
-  design <- data.frame(Run = samples, group = rep(c("A", "B", "C"), each = 4L), batch = rep(c("b1", "b2"), 6L), stringsAsFactors = FALSE)
-  assay <- function(seed, id, annotation) {
-    withr::with_seed(seed, {
-      values <- matrix(stats::rnorm(60L * 12L, 10, 1), nrow = 60L, dimnames = list(NULL, samples))
-      values[seq_len(10L), design$group == "B"] <- values[seq_len(10L), design$group == "B"] + 2
-    })
-    table <- data.frame(paste0("F", seed, "_", seq_len(60L)), paste("Name", seq_len(60L)), stringsAsFactors = FALSE)
-    names(table) <- c(id, annotation)
-    cbind(table, as.data.frame(values, check.names = FALSE))
-  }
-  if (identical(omic, "lipid")) {
-    methods::new("LipidomicsAssayData", lipid_data = list(pos = assay(1L, "lipid_id", "lipid_name"), neg = assay(2L, "lipid_id", "lipid_name")),
-      design_matrix = design, sample_id = "Run", group_id = "group", lipid_id_column = "lipid_id", annotation_id_column = "lipid_name")
-  } else {
-    methods::new("MetaboliteAssayData", metabolite_data = list(pos = assay(1L, "metabolite_id", "metabolite_name"), neg = assay(2L, "metabolite_id", "metabolite_name")),
-      design_matrix = design, sample_id = "Run", group_id = "group", metabolite_id_column = "metabolite_id", annotation_id_column = "metabolite_name")
-  }
-}
-
-omicsDaContrastsTable <- function(contrasts = c("groupB-groupA", "groupC-groupA", "groupC-groupB")) {
-  data.frame(contrasts = contrasts, friendly_names = gsub("group", "", sub("-", "_vs_", contrasts)), stringsAsFactors = FALSE)
-}
-
 omicsDaContrastsRun <- function(omic, object = omicsDaContrastsFixture(omic), contrasts = omicsDaContrastsTable(), lfc = 0, formula = "~ 0 + group", env = parent.frame()) {
   workflow <- omicsTestOwner(object, "da_input", env = env)
   manager <- workflow$state_manager
@@ -37,7 +12,6 @@ omicsDaContrastsRun <- function(omic, object = omicsDaContrastsFixture(omic), co
   list(manager = manager, run = run)
 }
 
-omicsDaKernel <- function(omic) if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA
 
 for (omic in c("lipid", "metab")) {
   long_table <- if (identical(omic, "lipid")) "da_lipids_long" else "da_metabolites_long"

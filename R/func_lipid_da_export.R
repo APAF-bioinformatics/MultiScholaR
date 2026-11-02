@@ -210,12 +210,21 @@ outputLipidDaResultsAllContrasts <- function(
 
                         # Save PNG
                         volcano_png <- file.path(volcano_dir, paste0(volcano_base, ".png"))
-                        ggplot2::ggsave(volcano_png, volcano_plot, width = 8, height = 7, dpi = 300)
+                        # KIT-077: every file below comes from the store: a hit writes the stored bytes.
+                        write_volcano <- function(path) {
+                            writeWorkflowOmicsFigure(path, function(target) {
+                                ggplot2::ggsave(target, volcano_plot, width = 8, height = 7, dpi = 300)
+                                TRUE
+                            }, "lipidomics", content = omicsFigurePlotContent(volcano_plot), figure = paste0(volcano_base, "_volcano"),
+                                assay = assay_name, type = "volcano", parameters = list(q = da_q_val_thresh, lfc = lfc_threshold),
+                                width = 8, height = 7, dpi = 300)
+                        }
+                        write_volcano(volcano_png)
                         logger::log_info(sprintf("      Saved volcano PNG: %s", basename(volcano_png)))
 
                         # Save PDF
                         volcano_pdf <- file.path(volcano_dir, paste0(volcano_base, ".pdf"))
-                        ggplot2::ggsave(volcano_pdf, volcano_plot, width = 8, height = 7)
+                        write_volcano(volcano_pdf)
                         logger::log_info(sprintf("      Saved volcano PDF: %s", basename(volcano_pdf)))
                     }
                 },
@@ -263,14 +272,20 @@ outputLipidDaResultsAllContrasts <- function(
 
                         # Save PNG
                         heatmap_png <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.png"))
-                        grDevices::png(heatmap_png, width = 10, height = 8, units = "in", res = 300)
-                        tryCatch(ComplexHeatmap::draw(heatmap_plot), finally = grDevices::dev.off())
+                        write_heatmap <- function(path, device) {
+                            writeWorkflowOmicsFigure(path, function(target) {
+                                device(target)
+                                tryCatch(ComplexHeatmap::draw(heatmap_plot), finally = grDevices::dev.off())
+                                TRUE
+                            }, "lipidomics", content = heatmap_plot@matrix, figure = paste0(heatmap_base, "_heatmap"), assay = assay_name,
+                                type = "heatmap", width = 10, height = 8, dpi = 300)
+                        }
+                        write_heatmap(heatmap_png, function(target) grDevices::png(target, width = 10, height = 8, units = "in", res = 300))
                         logger::log_info(sprintf("      Saved heatmap PNG: %s", basename(heatmap_png)))
 
                         # Save PDF
                         heatmap_pdf <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.pdf"))
-                        grDevices::pdf(heatmap_pdf, width = 10, height = 8)
-                        tryCatch(ComplexHeatmap::draw(heatmap_plot), finally = grDevices::dev.off())
+                        write_heatmap(heatmap_pdf, function(target) grDevices::pdf(target, width = 10, height = 8))
                         logger::log_info(sprintf("      Saved heatmap PDF: %s", basename(heatmap_pdf)))
                     } else {
                         logger::log_warn(sprintf(
@@ -327,9 +342,12 @@ outputLipidDaResultsAllContrasts <- function(
         tryCatch(
             {
                 combined_volcano_pdf <- file.path(volcano_dir, "all_volcano_plots_combined.pdf")
-                grDevices::pdf(combined_volcano_pdf, width = 8, height = 7, onefile = TRUE)
-                purrr::walk(all_volcano_plots, print)
-                grDevices::dev.off()
+                writeWorkflowOmicsFigure(combined_volcano_pdf, function(target) {
+                    grDevices::pdf(target, width = 8, height = 7, onefile = TRUE)
+                    tryCatch(purrr::walk(all_volcano_plots, print), finally = grDevices::dev.off())
+                    TRUE
+                }, "lipidomics", content = lapply(all_volcano_plots, omicsFigurePlotContent), figure = "all_volcano_plots_combined",
+                    type = "volcano_combined", parameters = list(q = da_q_val_thresh, lfc = lfc_threshold), width = 8, height = 7)
                 logger::log_info(sprintf(
                     "   Created combined volcano PDF: %d plots",
                     length(all_volcano_plots)
@@ -348,13 +366,17 @@ outputLipidDaResultsAllContrasts <- function(
         tryCatch(
             {
                 combined_heatmap_pdf <- file.path(heatmap_dir, "all_heatmaps_combined.pdf")
-                grDevices::pdf(combined_heatmap_pdf, width = 10, height = 8, onefile = TRUE)
-                tryCatch(
-                    purrr::walk(all_heatmap_plots, function(hm) {
-                        ComplexHeatmap::draw(hm)
-                    }),
-                    finally = grDevices::dev.off()
-                )
+                writeWorkflowOmicsFigure(combined_heatmap_pdf, function(target) {
+                    grDevices::pdf(target, width = 10, height = 8, onefile = TRUE)
+                    tryCatch(
+                        purrr::walk(all_heatmap_plots, function(hm) {
+                            ComplexHeatmap::draw(hm)
+                        }),
+                        finally = grDevices::dev.off()
+                    )
+                    TRUE
+                }, "lipidomics", content = lapply(all_heatmap_plots, function(hm) hm@matrix), figure = "all_heatmaps_combined",
+                    type = "heatmap_combined", width = 10, height = 8)
                 logger::log_info(sprintf(
                     "   Created combined heatmap PDF: %d plots",
                     length(all_heatmap_plots)
@@ -403,7 +425,10 @@ outputLipidDaResultsAllContrasts <- function(
 
                 # Save bar plot
                 numsig_png <- file.path(numsigde_dir, "lipids_num_sig_barplot.png")
-                ggplot2::ggsave(numsig_png, numsig_plot, width = 10, height = 6, dpi = 300)
+                writeWorkflowOmicsFigure(numsig_png, function(target) {
+                    ggplot2::ggsave(target, numsig_plot, width = 10, height = 6, dpi = 300)
+                    TRUE
+                }, "lipidomics", content = combined_numsig, figure = "lipids_num_sig_barplot", type = "numsig", width = 10, height = 6, dpi = 300)
                 logger::log_info(sprintf("   Saved NumSigDE barplot: %s", basename(numsig_png)))
             },
             error = function(e) {

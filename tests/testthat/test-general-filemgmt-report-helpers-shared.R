@@ -504,7 +504,7 @@ test_that("copyToResultsSummary preserves metabolomics-specific result exports",
   dir.create(paths$feature_qc_dir, recursive = TRUE, showWarnings = FALSE)
 
   dir.create(file.path(paths$publication_graphs_dir, "Heatmaps"), recursive = TRUE, showWarnings = FALSE)
-  writeMockBinary(file.path(paths$feature_qc_dir, "composite_QC_figure.png"))
+  writeMockBinary(file.path(paths$feature_qc_dir, "metabolomics_composite_QC_figure.png"))
   writeMockBinary(file.path(paths$feature_qc_dir, "lcms_neg_pre_norm_pca.png"))
   writeMockBinary(file.path(paths$feature_qc_dir, "lcms_pos_post_norm_density.png"))
   writeMockBinary(file.path(paths$feature_qc_dir, "batch_assay_metrics.png"))

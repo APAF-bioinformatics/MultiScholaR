@@ -336,21 +336,31 @@ saveLipidFilteringPlots <- function(plot_list,
         purrr::iwalk(plot_list, function(plot, plot_name) {
             filename <- file.path(actual_save_dir, sprintf("%s_%s.png", step_name, plot_name))
             message(sprintf("Saving plot: %s", filename))
-            ggsave(filename,
-                plot = plot,
-                width = 10,
-                height = 8,
-                dpi = 300
-            )
+            # KIT-077: from the store: a hit writes the stored bytes.
+            writeWorkflowOmicsFigure(filename, function(target) {
+                ggsave(target,
+                    plot = plot,
+                    width = 10,
+                    height = 8,
+                    dpi = 300
+                )
+                TRUE
+            }, "lipidomics", content = omicsFigurePlotContent(plot), figure = sprintf("%s_%s", step_name, plot_name), type = "filtering",
+                width = 10, height = 8, dpi = 300)
         })
 
         if (return_grid && length(plot_list) > 0 && !is.null(plot_list[[1]]) && inherits(plot_list[[1]], "ggplot")) {
-            pdf(NULL)
-            grid_plot_obj <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2))
-            invisible(dev.off())
             filename_grid <- file.path(actual_save_dir, sprintf("%s_combined_plots.png", step_name))
             message(sprintf("Saving combined grid plot: %s", filename_grid))
-            ggsave(filename_grid, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
+            # KIT-077: a grid has no plot-data rebuild path; its product keeps the rendered bytes only.
+            writeWorkflowOmicsFigure(filename_grid, function(target) {
+                pdf(NULL)
+                grid_plot_obj <- do.call(gridExtra::arrangeGrob, c(plot_list, ncol = 2))
+                invisible(dev.off())
+                ggsave(target, plot = grid_plot_obj, width = 15, height = 15, dpi = 300)
+                TRUE
+            }, "lipidomics", content = lapply(plot_list, omicsFigurePlotContent), figure = sprintf("%s_combined_plots", step_name), type = "filtering_grid",
+                width = 15, height = 15, dpi = 300)
         }
         message("Lipidomics QC plots saved to: ", actual_save_dir)
     } else {

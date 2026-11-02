@@ -1,0 +1,4 @@
+ggsave png, 150 dpi, identical: TRUE 
+ggsave png, 300 dpi, identical: TRUE 
+ggsave pdf, identical: FALSE 
+png() device, identical: TRUE 

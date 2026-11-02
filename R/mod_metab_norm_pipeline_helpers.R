@@ -715,14 +715,16 @@ runMetabNormCompositeQcFigureStep <- function(
         )
 
         if (!is.null(compositeRes)) {
-            savePlotFn(
+            writeWorkflowOmicsCompositeFigure(
                 compositeRes$plot,
                 qcDir,
                 paste0(omicType, "_composite_QC_figure"),
                 width = compositeRes$width,
                 height = compositeRes$height,
-                dpi = 150,
-                limitsize = FALSE
+                plot_files = allPlotFiles,
+                labels = list(rows = allRowLabels, columns = columnLabels),
+                omic_type = omicType,
+                savePlotFn = savePlotFn
             )
             addLogFn(sprintf("Composite QC figure saved to: %s", file.path(qcDir, "composite_QC_figure")))
         }

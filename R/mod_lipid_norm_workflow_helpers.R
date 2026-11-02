@@ -231,14 +231,16 @@ handleLipidNormRunNormalization <- function(
                         )
 
                         if (!is.null(composite_res)) {
-                            savePlotFn(
+                            writeWorkflowOmicsCompositeFigure(
                                 composite_res$plot
                                 , qc_dir
                                 , paste0(omicType, "_composite_QC_figure")
                                 , width = composite_res$width
                                 , height = composite_res$height
-                                , dpi = 150
-                                , limitsize = FALSE
+                                , plot_files = all_plot_files
+                                , labels = list(rows = all_row_labels, columns = column_labels)
+                                , omic_type = omicType
+                                , savePlotFn = savePlotFn
                             )
                             addLog(sprintf(
                                 "Composite QC figure saved to: %s",

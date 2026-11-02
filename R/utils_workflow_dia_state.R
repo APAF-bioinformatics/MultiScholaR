@@ -1955,6 +1955,8 @@ attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir =
     session_owner <- if (identical(omic_type, "proteomics")) function() session$userData$dia_capacity_manager else
         function() shiny::isolate(workflow_data$state_manager)
     if (identical(omic_type, "proteomics")) session$userData$dia_capacity_manager <- manager
+    # KIT-077: the omics figure writers find the session's owner by omic (`workflowOmicsFigureOwner`).
+    if (!identical(omic_type, "proteomics")) session$userData$workflow_omics_owners[[omic_type]] <- manager
     manager$.context$store$progress <- if (is.null(receipt_dir)) NULL else
         newWorkflowProgressObserver(receipt_dir, function() manager$.context$snapshot$current_state)
     owner_events <- 0L

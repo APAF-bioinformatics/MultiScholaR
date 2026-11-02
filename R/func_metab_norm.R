@@ -110,126 +110,138 @@ generateMetabQcPlots <- function(
 
     for (assay_name in assay_names) {
         safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
+        # KIT-077: each file comes from the store; on a hit nothing below is plotted.
+        write_figure <- function(path, type, width, height, render) {
+            writeWorkflowOmicsFigure(path, render, "metabolomics",
+                content = list(assay = assay_list[[assay_name]], design = theObject@design_matrix),
+                figure = tools::file_path_sans_ext(basename(path)), assay = assay_name, type = type,
+                parameters = list(stage = stage, grouping_variable = grouping_variable, shape_variable = shape_variable,
+                    font_size = font_size), width = width, height = height, dpi = 150)
+        }
         logger::log_info(paste("Generating QC plots for assay:", assay_name))
 
         # --- PCA Plot ---
         tryCatch({
-            pca_plots <- plotPca(
-                theObject
-                , grouping_variable = grouping_variable
-                , label_column = ""
-                , shape_variable = shape_variable
-                , title = ""
-                , font_size = font_size
-            )
+            pca_path <- write_figure(file.path(qc_dir, sprintf("%s_%s_pca.png", safe_name, stage_prefix)), "pca", 8, 6, function(path) {
+                pca_plots <- plotPca(
+                    theObject
+                    , grouping_variable = grouping_variable
+                    , label_column = ""
+                    , shape_variable = shape_variable
+                    , title = ""
+                    , font_size = font_size
+                )
 
-            # Select plot for this assay
-            pca_plot <- if (is.list(pca_plots) && assay_name %in% names(pca_plots)) {
-                pca_plots[[assay_name]]
-            } else if (inherits(pca_plots, "ggplot")) {
-                pca_plots
-            } else if (is.list(pca_plots) && length(pca_plots) > 0) {
-                pca_plots[[1]]
-            } else {
-                NULL
-            }
+                # Select plot for this assay
+                pca_plot <- if (is.list(pca_plots) && assay_name %in% names(pca_plots)) {
+                    pca_plots[[assay_name]]
+                } else if (inherits(pca_plots, "ggplot")) {
+                    pca_plots
+                } else if (is.list(pca_plots) && length(pca_plots) > 0) {
+                    pca_plots[[1]]
+                } else {
+                    NULL
+                }
 
-            if (!is.null(pca_plot)) {
-                pca_path <- file.path(qc_dir, sprintf("%s_%s_pca.png", safe_name, stage_prefix))
-                ggplot2::ggsave(pca_path, pca_plot, width = 8, height = 6, dpi = 150)
-                saved_paths[[paste0(assay_name, "_pca")]] <- pca_path
-            }
+                if (is.null(pca_plot)) return(NULL)
+                ggplot2::ggsave(path, pca_plot, width = 8, height = 6, dpi = 150)
+                omicsFigurePlotData(pca_plot)
+            })
+            if (!is.null(pca_path)) saved_paths[[paste0(assay_name, "_pca")]] <- pca_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating PCA for", assay_name, ":", e$message))
         })
 
         # --- RLE Plot ---
         tryCatch({
-            rle_plots <- plotRle(
-                theObject
-                , grouping_variable = grouping_variable
-                , yaxis_limit = c(-6, 6)
-            )
+            rle_path <- write_figure(file.path(qc_dir, sprintf("%s_%s_rle.png", safe_name, stage_prefix)), "rle", 10, 6, function(path) {
+                rle_plots <- plotRle(
+                    theObject
+                    , grouping_variable = grouping_variable
+                    , yaxis_limit = c(-6, 6)
+                )
 
-            rle_plot <- if (is.list(rle_plots) && assay_name %in% names(rle_plots)) {
-                rle_plots[[assay_name]]
-            } else if (inherits(rle_plots, "ggplot")) {
-                rle_plots
-            } else if (is.list(rle_plots) && length(rle_plots) > 0) {
-                rle_plots[[1]]
-            } else {
-                NULL
-            }
+                rle_plot <- if (is.list(rle_plots) && assay_name %in% names(rle_plots)) {
+                    rle_plots[[assay_name]]
+                } else if (inherits(rle_plots, "ggplot")) {
+                    rle_plots
+                } else if (is.list(rle_plots) && length(rle_plots) > 0) {
+                    rle_plots[[1]]
+                } else {
+                    NULL
+                }
 
-            if (!is.null(rle_plot)) {
-                rle_path <- file.path(qc_dir, sprintf("%s_%s_rle.png", safe_name, stage_prefix))
-                ggplot2::ggsave(rle_path, rle_plot, width = 10, height = 6, dpi = 150)
-                saved_paths[[paste0(assay_name, "_rle")]] <- rle_path
-            }
+                if (is.null(rle_plot)) return(NULL)
+                ggplot2::ggsave(path, rle_plot, width = 10, height = 6, dpi = 150)
+                omicsFigurePlotData(rle_plot)
+            })
+            if (!is.null(rle_path)) saved_paths[[paste0(assay_name, "_rle")]] <- rle_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating RLE for", assay_name, ":", e$message))
         })
 
         # --- Density Plot ---
         tryCatch({
-            # Generate PCA first for density plot
-            pca_for_density <- plotPca(
-                theObject
-                , grouping_variable = grouping_variable
-                , label_column = ""
-                , shape_variable = shape_variable
-                , title = ""
-                , font_size = font_size
-            )
+            density_path <- write_figure(file.path(qc_dir, sprintf("%s_%s_density.png", safe_name, stage_prefix)), "density", 8, 6, function(path) {
+                # Generate PCA first for density plot
+                pca_for_density <- plotPca(
+                    theObject
+                    , grouping_variable = grouping_variable
+                    , label_column = ""
+                    , shape_variable = shape_variable
+                    , title = ""
+                    , font_size = font_size
+                )
 
-            density_plots <- plotDensity(
-                theObject
-                , grouping_variable = grouping_variable
-                , title = ""
-                , font_size = font_size
-            )
+                density_plots <- plotDensity(
+                    theObject
+                    , grouping_variable = grouping_variable
+                    , title = ""
+                    , font_size = font_size
+                )
 
-            density_plot <- if (is.list(density_plots) && assay_name %in% names(density_plots)) {
-                density_plots[[assay_name]]
-            } else if (inherits(density_plots, "ggplot")) {
-                density_plots
-            } else if (is.list(density_plots) && length(density_plots) > 0) {
-                density_plots[[1]]
-            } else {
-                NULL
-            }
+                density_plot <- if (is.list(density_plots) && assay_name %in% names(density_plots)) {
+                    density_plots[[assay_name]]
+                } else if (inherits(density_plots, "ggplot")) {
+                    density_plots
+                } else if (is.list(density_plots) && length(density_plots) > 0) {
+                    density_plots[[1]]
+                } else {
+                    NULL
+                }
 
-            if (!is.null(density_plot)) {
-                density_path <- file.path(qc_dir, sprintf("%s_%s_density.png", safe_name, stage_prefix))
-                ggplot2::ggsave(density_path, density_plot, width = 8, height = 6, dpi = 150)
-                saved_paths[[paste0(assay_name, "_density")]] <- density_path
-            }
+                if (is.null(density_plot)) return(NULL)
+                ggplot2::ggsave(path, density_plot, width = 8, height = 6, dpi = 150)
+                omicsFigurePlotData(density_plot)
+            })
+            if (!is.null(density_path)) saved_paths[[paste0(assay_name, "_density")]] <- density_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating Density for", assay_name, ":", e$message))
         })
 
         # --- Pearson Correlation Plot ---
         tryCatch({
-            corr_plots <- plotPearson(
-                theObject
-                , correlation_group = grouping_variable
-            )
+            corr_path <- write_figure(file.path(qc_dir, sprintf("%s_%s_correlation.png", safe_name, stage_prefix)), "correlation", 10, 8, function(path) {
+                corr_plots <- plotPearson(
+                    theObject
+                    , correlation_group = grouping_variable
+                )
 
-            corr_plot <- if (is.list(corr_plots) && assay_name %in% names(corr_plots)) {
-                corr_plots[[assay_name]]
-            } else if (inherits(corr_plots, "ggplot")) {
-                corr_plots
-            } else if (is.list(corr_plots) && length(corr_plots) > 0) {
-                corr_plots[[1]]
-            } else {
-                NULL
-            }
+                corr_plot <- if (is.list(corr_plots) && assay_name %in% names(corr_plots)) {
+                    corr_plots[[assay_name]]
+                } else if (inherits(corr_plots, "ggplot")) {
+                    corr_plots
+                } else if (is.list(corr_plots) && length(corr_plots) > 0) {
+                    corr_plots[[1]]
+                } else {
+                    NULL
+                }
 
-            if (!is.null(corr_plot)) {
-                corr_path <- file.path(qc_dir, sprintf("%s_%s_correlation.png", safe_name, stage_prefix))
-                ggplot2::ggsave(corr_path, corr_plot, width = 10, height = 8, dpi = 150)
-                saved_paths[[paste0(assay_name, "_correlation")]] <- corr_path
-            }
+                if (is.null(corr_plot)) return(NULL)
+                ggplot2::ggsave(path, corr_plot, width = 10, height = 8, dpi = 150)
+                omicsFigurePlotData(corr_plot)
+            })
+            if (!is.null(corr_path)) saved_paths[[paste0(assay_name, "_correlation")]] <- corr_path
         }, error = function(e) {
             logger::log_warn(paste("Error generating Correlation for", assay_name, ":", e$message))
         })
