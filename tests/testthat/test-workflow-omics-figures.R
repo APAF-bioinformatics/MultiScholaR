@@ -170,6 +170,22 @@ test_that("KIT-077: filtering QC plots and their grid are saved; a grid keeps it
   })
 })
 
+test_that("KIT-077: the metab filtering site saves its plots and grid when given a directory", {
+  object <- omicsDaContrastsFixture("metab")
+  manager <- omicsTestOwner(object, "s")$state_manager
+  root <- withr::local_tempdir()
+  session <- shiny::MockShinySession$new()
+  withWorkflowStateScope(manager, function() shiny::withReactiveDomain(session, suppressWarnings(suppressMessages(
+    updateMetaboliteFiltering(object, "kit077_step", omics_type = "metabolomics", time_dir = root, return_grid = TRUE, overwrite = TRUE,
+      project_dirs = list(metabolomics_kit077 = list(time_dir = root)), experiment_label = "kit077")))))
+  written <- list.files(root, pattern = "^kit077_step.*\\.png$")
+  expect_gt(length(written), 1L)
+  expect_true("kit077_step_combined_plots.png" %in% written)
+  expect_length(omicsFigureAssets(manager), length(written))
+  types <- withWorkflowStateScope(manager, function() vapply(omicsFigureProducts(manager), `[[`, "", "figure_type"))
+  expect_setequal(types, c("filtering", "filtering_grid"))
+})
+
 test_that("KIT-077: the composite's png and pdf are saved from one render, and its rds is written on a hit too", {
   manager <- omicsTestOwner(omicsOwnerLipidObject(), "s")$state_manager
   root <- withr::local_tempdir()
