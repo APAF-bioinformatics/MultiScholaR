@@ -2,7 +2,7 @@
 
 Status 2026-11-02: **completed**, with one recorded divergence (the import's file-selection preview) and a memory result that met the stop rule but not the expectation. Stage 3b, ticket 4 of 10.
 
-- **Commits** on `performance-v2`: code f4791128 and 83b11a5a, help pages and bindings 9c138c58 and its predecessor, and this evidence commit.
+- **Commits** on `performance-v2`: code f4791128 and 83b11a5a, help pages 8a445a22, bindings 9c138c58, and this evidence commit.
 - **Base:** a0001f4a (KIT-074 closed).
 - **Install:** `kit_075` = `core/browser-smoke.VuMtXT` (83b11a5a), over the kit_074 library. `browser-smoke.4lGlmC` (f4791128) was an intermediate install, used only for the R 4.6.2 control. The help-page commit changed no code, so the install stands.
 - **Ticket:** `tickets/kit/KIT-075.md`, revision 1.1. Plan: [plan.md](plan.md).
@@ -67,7 +67,7 @@ Anonymous peak in GiB, standard (lifecycle) runs:
 - **The ticket's "state names"** in `normData` became state references, the proteomics `correlation_filtered_obj` pattern.
 - **`design_matrix` is not in the receipt probe.** Proteomics keeps it plain on purpose, and the proof tool fails on any resident assay holder, so adding it would break proteomics.
 - **Kept on purpose:** the session export RDS and the integration RDS still use the owner's full read. They are per action, and the component reader's attributes would otherwise enter the files.
-- **Test stand-ins.** About 40 seam tests with a stand-in manager list use `omicsStandInReaders()`; wrapper mocks use `omicsMockCommit()`. The readers themselves are exercised on real owners by the declaration tests, the lanes and the walk. A non-S4 state in the finalise lanes is now refused by the component reader before the class check; the assertion accepts either message.
+- **Test stand-ins.** 54 seam tests with a stand-in manager list use `omicsStandInReaders()`; wrapper mocks use `omicsMockCommit()`. The readers themselves are exercised on real owners by the declaration tests, the lanes and the walk. A non-S4 state in the finalise lanes is now refused by the component reader before the class check; the assertion accepts either message.
 - **Displays.** The walk does not render the lazily drawn Glimma and heatmap outputs. The declaration tests check that their source read equals the state's data and leaves the results otherwise unchanged, and the exports' heatmaps ran in the journeys. Rendered images were not compared.
 - **Reset not in the journeys.** The recommit by reference is covered by the module tests only.
 - **Note for KIT-078.** `revertToState` cancels a managed worker action and `selectWorkflowStateReference` does not. The omics have no worker yet; KIT-078 must add the cancel.
