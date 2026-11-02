@@ -1,0 +1,2 @@
+kit-journey-076l: valid TRUE, operation lipid_da_contrast, failures 0, entries: groupWT-groupKO / LCMS_Pos (183 rows); groupWT-groupKO / LCMS_Neg (182 rows)
+kit-journey-076m: valid TRUE, operation metab_da_contrast, failures 0, entries: groupWT-groupKO / LCMS_Pos (281 rows); groupWT-groupKO / GCMS (283 rows)

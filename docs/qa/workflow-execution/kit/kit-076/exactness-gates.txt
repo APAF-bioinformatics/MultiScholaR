@@ -26,3 +26,8 @@ RESULT identical
 reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate limpa.rds (build 812a59438a62): 14 steps
 steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
 RESULT identical
+
+## (6) proteomics: KIT-028 replay on kit_076
+EXACT: 16 states, 0 mismatches | 287 s
+
+Reading (3): every state is identical to stage 3. The one mismatch per omic is da/products/names, which the ticket predicts: the v1 DA products are replaced by da_fit and <prefix>-da-contrast-references. Item (2) is judged against the v2 oracles lipid76/metab76.

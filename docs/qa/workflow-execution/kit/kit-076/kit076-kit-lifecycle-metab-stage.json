@@ -1,0 +1,144 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-053",
+  "stage": "kit076-kit-lifecycle-metab",
+  "date": "2026-11-02",
+  "decision": {
+    "status": "lifecycle_complete_observed",
+    "rule": null,
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": false,
+    "route": "metabolomics",
+    "in_memory": true,
+    "head_rule": null
+  },
+  "member": {
+    "id": "member",
+    "corpus": "metab_screen",
+    "build": "f5b87832a36bfd42aa497582e50c64ed5bbfa516976ae18869fad0fab5b6cb42",
+    "status": "complete",
+    "exact": null,
+    "elapsed_seconds": 249.970000000001,
+    "peak_bytes": 2770219008,
+    "peak_anon_bytes": 2698694656,
+    "resident_end_bytes": 2143088640,
+    "phase_seconds": {
+      "import": 6.27999999999884,
+      "design": 15.3600000000006,
+      "intensity": 5.93000000000029,
+      "duplicates": 4.88999999999942,
+      "qc_finalize": 2.61000000000058,
+      "normalisation": 121.980000000003,
+      "correlation": 7.67000000000189,
+      "session_export": 2.56000000000131,
+      "da": 12.5099999999984,
+      "report": 3.96000000000276
+    },
+    "phase_peak_anon_bytes": {
+      "import": 914239488,
+      "design": 931348480,
+      "intensity": 949821440,
+      "duplicates": 968613888,
+      "qc_finalize": 964325376,
+      "normalisation": 2698694656,
+      "correlation": 2502262784,
+      "session_export": 2502787072,
+      "da": 2142326784,
+      "report": 2181545984
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.069999999999709,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "afda654bb7095ee3ed411d338f1a01bd70842812ed81c102ddf3adb6a30c6ee1",
+        "rows": null,
+        "fingerprints": 1
+      },
+      "design": {
+        "state": "metab_raw_data_s4",
+        "entity_id": "d5ec17f258f1b055e6d3891425109085f7c39ed4c1c89f337024898df4ad8b64",
+        "rows": 612,
+        "fingerprints": 4
+      },
+      "intensity": {
+        "state": "metab_intensity_filtered",
+        "entity_id": "e91bd324530ceb5265337093a5c3c3a12d91a0b3780621407e92a7b9c313e0a3",
+        "rows": 576,
+        "fingerprints": 6
+      },
+      "duplicates": {
+        "state": "metab_duplicates_resolved",
+        "entity_id": "a5742738f4df2905a6e64cfc9b573b480b9bd8e53c3cedcff64ce83ba58de371",
+        "rows": 576,
+        "fingerprints": 7
+      },
+      "qc_finalize": {
+        "state": "metab_qc_complete",
+        "entity_id": "ee644f2b22a00d4820b338aa4ef2f1cf6bbf140664d7e5bf7a92ea3e7798f297",
+        "rows": 576,
+        "fingerprints": 6
+      },
+      "normalisation": {
+        "state": "metab_ruv_corrected",
+        "entity_id": "acf00ebf34fdca4da0f74b33c42d5810f63e8bf0827fe7f98a64cda4a24bcb45",
+        "rows": 564,
+        "fingerprints": 14
+      },
+      "correlation": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "fb79249b0a9767c75e001d2b7b0110af53ef7852839eec9407d2fb3025638f95",
+        "rows": 564,
+        "fingerprints": 13
+      },
+      "session_export": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "fb79249b0a9767c75e001d2b7b0110af53ef7852839eec9407d2fb3025638f95",
+        "rows": 564,
+        "fingerprints": 11
+      },
+      "da": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "fb79249b0a9767c75e001d2b7b0110af53ef7852839eec9407d2fb3025638f95",
+        "rows": 564,
+        "fingerprints": 14
+      },
+      "report": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "fb79249b0a9767c75e001d2b7b0110af53ef7852839eec9407d2fb3025638f95",
+        "rows": 564,
+        "fingerprints": 11
+      }
+    },
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": 93,
+    "failure": null
+  }
+}

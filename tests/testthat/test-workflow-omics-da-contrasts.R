@@ -156,3 +156,45 @@ for (omic in c("lipid", "metab")) {
     expect_null(da$failures)
   })
 }
+
+test_that("KIT-076: ids the fit envelope refuses keep the fit unsaved and the results unchanged", {
+  object <- omicsDaContrastsFixture("lipid")
+  object@lipid_data$pos$lipid_id[[2L]] <- object@lipid_data$pos$lipid_id[[1L]]
+  direct <- suppressWarnings(suppressMessages(runLipidsDA(theObject = object, contrasts_tbl = omicsDaContrastsTable(),
+    formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)))
+  out <- omicsDaContrastsRun("lipid", object)
+  expect_identical(out$run$results$da_lipids_long, direct$da_lipids_long)
+  expect_null(out$run$manifest$results[[1L]]$assays$pos$fit)
+  expect_true(isSavedWorkflowReference(out$run$manifest$results[[1L]]$assays$neg$fit))
+  expect_length(findSavedWorkflowEntities(out$manager$.context$store, list(kind = "da_fit"), max_matches = 10L)$matches, 1L)
+})
+
+test_that("KIT-076: the DA tabs warn about a failed contrast, and say nothing when none failed", {
+  failed <- list(`groupC-groupA` = list(pos = "limma could not fit this contrast"))
+  long <- data.frame(friendly_name = "B_vs_A", comparison = "groupB-groupA", assay = "pos", stringsAsFactors = FALSE)
+  lipid_warnings <- function(results) {
+    warnings <- list()
+    finalizeLipidDaRunAnalysisSuccess(results = results, daData = new.env(parent = emptyenv()), workflowData = new.env(parent = emptyenv()),
+      session = NULL, experimentPaths = list(), daQValThresh = 0.05, treatLfcCutoff = 0, removeNotificationFn = function(...) NULL,
+      notify = function(message, type = NULL, ...) if (identical(type, "warning")) warnings[[length(warnings) + 1L]] <<- message,
+      updateSelectInputFn = function(...) NULL, logInfo = function(...) NULL, logWarn = function(...) NULL, writeResultsFn = function(...) TRUE)
+    warnings
+  }
+  expect_identical(lipid_warnings(list(da_lipids_long = long, failed_contrasts = failed)), list("DA failed for: groupC-groupA"))
+  expect_length(lipid_warnings(list(da_lipids_long = long, failed_contrasts = list())), 0L)
+
+  metab_warnings <- function(results) {
+    warnings <- list()
+    testthat::local_mocked_bindings(runMetabReferenceDaAnalysis = function(...) list(results = results),
+      getWorkflowStateReference = function(...) NULL, metabDaResultsWithSource = function(results, ...) results, .package = "MultiScholaR")
+    workflow <- new.env(parent = emptyenv()); workflow$tab_status <- list()
+    runMetabDaAnalysisObserverShell(currentS4 = NULL, contrastsTbl = data.frame(), formulaString = "~ 0 + group", daQValThresh = 0.05, treatLfcCutoff = 0,
+      workflowData = workflow, daData = new.env(parent = emptyenv()), session = NULL, experimentPaths = list(),
+      updateSelectors = function(...) NULL, writeArtifacts = function(...) NULL,
+      showNotification = function(message, type = NULL, ...) if (identical(type, "warning")) warnings[[length(warnings) + 1L]] <<- message,
+      removeNotification = function(...) NULL, logInfo = function(...) NULL, logError = function(...) NULL)
+    warnings
+  }
+  expect_identical(metab_warnings(list(da_metabolites_long = long, failed_contrasts = failed)), list("DA failed for: groupC-groupA"))
+  expect_length(metab_warnings(list(da_metabolites_long = long, failed_contrasts = list())), 0L)
+})
