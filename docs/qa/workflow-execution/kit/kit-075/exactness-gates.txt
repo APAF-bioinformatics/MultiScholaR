@@ -1,0 +1,25 @@
+# KIT-075 exactness set, items 1, 3 and 6 on kit_075 = browser-smoke.VuMtXT (83b11a5a), R 4.6.1
+
+## (1) the build's in-process records
+recorded lipid31 lipid_screen -> docs/qa/workflow-execution/kit/kit-075/oracles-lipid75_lipid_screen.rds | states 10 | history initial,lipid_raw_data_s4,lipid_intensity_filtered,lipid_duplicates_resolved,lipid_qc_complete,lipid_itsd_norm,lipid_log2,lipid_normalized,lipid_ruv_corrected,lipid_correlation_filtered | record valid TRUE | legacy steps 0 | 43 s
+recorded metab32 metab_screen -> docs/qa/workflow-execution/kit/kit-075/oracles-metab75_metab_screen.rds | states 10 | history initial,metab_raw_data_s4,metab_intensity_filtered,metab_duplicates_resolved,metab_qc_complete,metab_itsd_norm,metab_log2,metab_normalized,metab_ruv_corrected,metab_correlation_filtered | record valid TRUE | legacy steps 0 | 46 s
+
+## (3) no change across builds: against the stage-3 oracles
+reference oracles-lipid31_lipid_screen.rds (lipidomics, build 6506af27c9a7): 10 steps; candidate oracles-lipid75_lipid_screen.rds (build 83b11a5a6996): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-metab32_metab_screen.rds (metabolomics, build 4819f030063b): 10 steps; candidate oracles-metab75_metab_screen.rds (build 83b11a5a6996): 10 ste
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+
+## (6) proteomics: KIT-028 replay, and the LFQ/TMT/DIA_LIMPA records against the kit_065 oracles
+EXACT: 16 states, 0 mismatches  | 265 s
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-lfq_fixture-kit075.rds (build 83b11a5a6996): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate oracles-tmt_fixture-kit075.rds (build 83b11a5a6996): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate oracles-limpa_screen-kit075.rds (build 83b11a5a6996): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical

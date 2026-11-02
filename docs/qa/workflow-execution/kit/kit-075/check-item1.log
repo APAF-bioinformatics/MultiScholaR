@@ -1,12 +1,12 @@
 * using log directory ‘/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-075-check/MultiScholaR.Rcheck’
-* using R version 4.6.2 (2026-10-29)
+* using R version 4.6.1 (2026-06-24)
 * using platform: x86_64-pc-linux-gnu
 * R was compiled by
-    gcc (GCC) 16.2.1 20260810
-    GNU Fortran (GCC) 16.2.1 20260810
+    gcc (GCC) 16.1.1 20260430
+    GNU Fortran (GCC) 16.1.1 20260430
 * running under: CachyOS
 * using session charset: UTF-8
-* current time: 2026-11-02 02:00:06 UTC
+* current time: 2026-11-02 03:33:49 UTC
 * using options ‘--no-tests --no-manual --no-build-vignettes’
 * checking for file ‘MultiScholaR/DESCRIPTION’ ... OK
 * this is package ‘MultiScholaR’ version ‘0.5.0’
