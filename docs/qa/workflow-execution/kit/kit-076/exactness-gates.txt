@@ -1,0 +1,28 @@
+# KIT-076 exactness set, items (1)(3)(6), on kit_076 = browser-smoke.FGYOUX (812a5943), R 4.6.1
+
+## (3) the states did not change: the new records against the stage-3 oracles (the DA step's products differ by design, below)
+reference oracles-lipid31_lipid_screen.rds (lipidomics, build 6506af27c9a7): 10 steps; candidate oracles-lipid76_lipid_screen.rds (build 812a59438a62): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 1; per-state mismatches (class/rows/components/support/summary) 0
+  MISMATCH da/products/names 
+  additional product (reported, not judged): da/da_fit:0882d0bb4668 
+  additional product (reported, not judged): da/da_fit:23fc887c4533 
+  additional product (reported, not judged): da/lipid-da-contrast-references:38e3daf028c8 
+RESULT differs
+reference oracles-metab32_metab_screen.rds (metabolomics, build 4819f030063b): 10 steps; candidate oracles-metab76_metab_screen.rds (build 812a59438a62): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 1; per-state mismatches (class/rows/components/support/summary) 0
+  MISMATCH da/products/names 
+  additional product (reported, not judged): da/da_fit:17942b85f08a 
+  additional product (reported, not judged): da/da_fit:b4893df24077 
+  additional product (reported, not judged): da/metab-da-contrast-references:d1fa188514f1 
+RESULT differs
+
+## (6) proteomics: the LFQ/TMT/DIA_LIMPA records against the kit_065 oracles
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate lfq.rds (build 812a59438a62): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate tmt.rds (build 812a59438a62): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate limpa.rds (build 812a59438a62): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical

@@ -1,0 +1,6 @@
+figure files v1 110, v1 second run 110, v2 110; same set True
+differ between two runs of the old build: 94
+differ old vs new: 94
+differ old vs new but not between two old runs (candidates for a real change): 0
+noise by type {'.pdf': 60, '.png': 34}
+old-vs-new by type {'.pdf': 60, '.png': 34}

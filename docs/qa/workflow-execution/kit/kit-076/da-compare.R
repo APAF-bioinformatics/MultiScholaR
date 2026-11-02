@@ -45,8 +45,8 @@ compare_fit <- function(old_fit, new_fit, contrast, rule, where) {
         if (is.null(a) != is.null(b)) { violate(where, paste0("fit field present in one build only: ", field)); next }
         if (is.null(a)) next
         if (is.matrix(a)) a <- a[, contrast]
-        # The per-coefficient prior is a named vector over the fit's coefficients.
-        if (identical(field, "var.prior")) a <- a[[contrast]]
+        # The per-coefficient prior is a vector over the fit's coefficients, in their order.
+        if (identical(field, "var.prior")) a <- a[[match(contrast, colnames(old_fit$coefficients))]]
         gap <- difference(a, b)
         largest <- max(largest, gap)
         if (identical(rule, "identical") && gap != 0) violate(where, sprintf("fit field differs: %s (%g)", field, gap))

@@ -1,0 +1,10 @@
+lipid: head manifest lipid.da_results.v1, 2 result entries
+record valid TRUE; DA operation lipid_da_output; entries labelled LCMS_Pos, LCMS_Neg
+Open: status success (adopted into a fresh owner); the tab shows state lipid_correlation_filtered (class LipidomicsAssayData, assays LCMS_Pos, LCMS_Neg)
+re-run: manifest lipid.da_results.v2, 365 long rows; identical to the table the old build saved: TRUE
+RESULT older session opens, records and re-runs
+metab: head manifest metab.da_results.v1, 2 result entries
+record valid TRUE; DA operation metab_da_output; entries labelled LCMS_Pos, GCMS
+Open: status success (adopted into a fresh owner); the tab shows state metab_correlation_filtered (class MetaboliteAssayData, assays LCMS_Pos, GCMS)
+re-run: manifest metab.da_results.v2, 564 long rows; identical to the table the old build saved: TRUE
+RESULT older session opens, records and re-runs

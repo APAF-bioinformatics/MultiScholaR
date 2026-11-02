@@ -1,0 +1,14 @@
+Loading required namespace: limma
+lipid/screen       ~ 0 + group            rule identical contrasts 1, contrast-assay tables   2: largest difference tables 0, fits 0, exports 0; files tsv 2 xlsx 3, figures same 2 different 7 (reported)
+lipid/multi        ~ 0 + group            rule identical contrasts 3, contrast-assay tables   6: largest difference tables 0, fits 0, exports 0; files tsv 6 xlsx 7, figures same 2 different 15 (reported)
+lipid/multi_treat  ~ 0 + group            rule identical contrasts 3, contrast-assay tables   6: largest difference tables 0, fits 0, exports 0; files tsv 6 xlsx 7, figures same 4 different 13 (reported)
+lipid/nonorth      ~ 0 + group + batch    rule tolerance contrasts 2, contrast-assay tables   4: largest difference tables 6.22e-15, fits 6.22e-15, exports 7.11e-15; files tsv 4 xlsx 5, figures same 3 different 10 (reported)
+lipid/e2e          ~ 0 + group            rule identical contrasts 1, contrast-assay tables   2: largest difference tables 0, fits 0, exports 0; files tsv 2 xlsx 3, figures same 2 different 7 (reported)
+metab/screen       ~ 0 + group            rule identical contrasts 1, contrast-assay tables   2: largest difference tables 0, fits 0, exports 0; files tsv 2 xlsx 3, figures same 2 different 7 (reported)
+metab/multi        ~ 0 + group            rule identical contrasts 3, contrast-assay tables   6: largest difference tables 0, fits 0, exports 0; files tsv 6 xlsx 7, figures same 3 different 14 (reported)
+metab/multi_treat  ~ 0 + group            rule identical contrasts 3, contrast-assay tables   6: largest difference tables 0, fits 0, exports 0; files tsv 6 xlsx 7, figures same 4 different 13 (reported)
+metab/nonorth      ~ 0 + group + batch    rule tolerance contrasts 2, contrast-assay tables   4: largest difference tables 4.44e-15, fits 4.44e-15, exports 5.11e-15; files tsv 4 xlsx 5, figures same 2 different 11 (reported)
+metab/e2e          ~ 0 + group            rule identical contrasts 1, contrast-assay tables   2: largest difference tables 0, fits 0, exports 0; files tsv 2 xlsx 3, figures same 2 different 7 (reported)
+
+violations: 0
+RESULT within the frozen rule on every capture
