@@ -46,6 +46,50 @@ omicsFigurePlotData <- function(plot) {
     if (is.data.frame(plot$data)) as.data.frame(plot$data) else TRUE
 }
 
+#' One figure's plot, built on the first file the store does not hold and only once: a repeat export builds no plot.
+#' @param build The plot's generator.
+#' @param arguments The generator's arguments, taken now.
+#' @return A function returning the plot.
+#' @noRd
+omicsFigureLazyPlot <- function(build, arguments) {
+    force(build)
+    force(arguments)
+    built <- FALSE
+    plot <- NULL
+    function() {
+        if (!built) {
+            plot <<- do.call(build, arguments)
+            built <<- TRUE
+        }
+        plot
+    }
+}
+
+#' What a DA heatmap draws, known before it is built: the contrast's results and, from the source object, the assay and
+#' the design it reads.
+#' @param results The contrast's long table for this assay.
+#' @param object The source object, or anything else where a test mocks the generator.
+#' @param assay_slot The object's slot of assay tables.
+#' @param assay The assay's name.
+#' @return A hash.
+#' @noRd
+omicsDaHeatmapContent <- function(results, object, assay_slot, assay) {
+    source <- if (isS4(object)) list(assay = methods::slot(object, assay_slot)[[assay]], design = object@design_matrix,
+        sample_id = object@sample_id, group_id = object@group_id)
+    digest::digest(list(results = results, source = source), algo = "sha256")
+}
+
+#' The directory the app writes an omic's filtering figures to: its owner's run directory, where a workbook and the
+#' proteomics modules write theirs. The modules pass the omic type only.
+#' @param omic_type The omic.
+#' @return A directory, or NULL with no owner for this omic in reach.
+#' @noRd
+workflowOmicsFilteringDir <- function(omic_type) {
+    if (!is.character(omic_type) || length(omic_type) != 1L) return(NULL)
+    time_dir <- workflowOmicsFigureOwner(omic_type)$.context$experiment_paths$time_dir
+    if (is.character(time_dir) && length(time_dir) == 1L && nzchar(time_dir)) time_dir
+}
+
 #' The composite QC figure (`savePlot` writes its pdf, png and rds in one call) from the store. It is still assembled from
 #' the per-assay files; the `.rds` is a plot object, not a figure, and keeps being written beside it.
 #' @param plot,base_path,plot_name,width,height What `savePlot` takes.

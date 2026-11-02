@@ -109,6 +109,9 @@ outputMetabDaResultsAllContrasts <- function(
         }
     }
 
+    # What every heatmap is drawn with: part of its identity, since the data alone would serve the old colours.
+    heatmap_parameters <- list(top_n = heatmap_top_n, clustering = heatmap_clustering, color_scheme = heatmap_color_scheme, q = da_q_val_thresh)
+
     # Storage for combined PDFs
     all_volcano_plots <- list()
     all_heatmap_plots <- list()
@@ -192,7 +195,9 @@ outputMetabDaResultsAllContrasts <- function(
                     assay_filtered_results <- da_results_list
                     assay_filtered_results$da_metabolites_long <- assay_contrast_data
 
-                    volcano_plot <- generateMetabDAVolcanoStatic(
+                    # KIT-077: every file below comes from the store: a hit writes the stored bytes, and the plot is built
+                    # only for the first file the store does not hold.
+                    volcano_plot <- omicsFigureLazyPlot(generateMetabDAVolcanoStatic, list(
                         da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
@@ -200,28 +205,25 @@ outputMetabDaResultsAllContrasts <- function(
                         lfc_threshold = lfc_threshold,
                         show_labels = TRUE,
                         n_labels = 15
-                    )
+                    ))
+                    volcano_content <- digest::digest(assay_contrast_data, algo = "sha256")
+                    volcano_base <- paste0(mode_prefix, "_", contrast_name)
+                    write_volcano <- function(path) {
+                        writeWorkflowOmicsFigure(path, function(target) {
+                            plot <- volcano_plot()
+                            if (is.null(plot)) return(NULL)
+                            ggplot2::ggsave(target, plot, width = 8, height = 7, dpi = 300)
+                            TRUE
+                        }, "metabolomics", content = volcano_content, figure = paste0(volcano_base, "_volcano"),
+                            assay = assay_name, type = "volcano", parameters = list(q = da_q_val_thresh, lfc = lfc_threshold),
+                            width = 8, height = 7, dpi = 300)
+                    }
 
-                    if (!is.null(volcano_plot)) {
+                    # Filename: {mode}_{contrast}_volcano
+                    volcano_png <- file.path(volcano_dir, paste0(volcano_base, ".png"))
+                    if (!is.null(write_volcano(volcano_png))) {
                         # Unique key for combined PDF
-                        plot_key <- paste0(mode_prefix, "_", contrast_name)
-                        all_volcano_plots[[plot_key]] <- volcano_plot
-
-                        # Filename: {mode}_{contrast}_volcano
-                        volcano_base <- paste0(mode_prefix, "_", contrast_name)
-
-                        # Save PNG
-                        volcano_png <- file.path(volcano_dir, paste0(volcano_base, ".png"))
-                        # KIT-077: every file below comes from the store: a hit writes the stored bytes.
-                        write_volcano <- function(path) {
-                            writeWorkflowOmicsFigure(path, function(target) {
-                                ggplot2::ggsave(target, volcano_plot, width = 8, height = 7, dpi = 300)
-                                TRUE
-                            }, "metabolomics", content = omicsFigurePlotContent(volcano_plot), figure = paste0(volcano_base, "_volcano"),
-                                assay = assay_name, type = "volcano", parameters = list(q = da_q_val_thresh, lfc = lfc_threshold),
-                                width = 8, height = 7, dpi = 300)
-                        }
-                        write_volcano(volcano_png)
+                        all_volcano_plots[[volcano_base]] <- list(plot = volcano_plot, content = volcano_content)
                         logger::log_info(sprintf("      Saved volcano PNG: %s", basename(volcano_png)))
 
                         # Save PDF
@@ -247,7 +249,7 @@ outputMetabDaResultsAllContrasts <- function(
                     assay_filtered_results <- da_results_list
                     assay_filtered_results$da_metabolites_long <- assay_contrast_data
 
-                    heatmap_obj <- generateMetabDAHeatmap(
+                    heatmap_plot <- omicsFigureLazyPlot(generateMetabDAHeatmap, list(
                         da_results_list = assay_filtered_results,
                         selected_contrast = contrast_name,
                         selected_assay = assay_name,
@@ -260,29 +262,26 @@ outputMetabDaResultsAllContrasts <- function(
                         color_scheme = heatmap_color_scheme,
                         show_metabolite_names = FALSE,
                         da_q_val_thresh = da_q_val_thresh
-                    )
+                    ))
+                    heatmap_content <- omicsDaHeatmapContent(assay_contrast_data, da_results_list$theObject, "metabolite_data", assay_name)
+                    heatmap_base <- paste0(mode_prefix, "_", contrast_name)
+                    write_heatmap <- function(path, device) {
+                        writeWorkflowOmicsFigure(path, function(target) {
+                            # KIT-077: the generator returns list(plot, row_clusters, col_clusters); the export draws the plot.
+                            heatmap_obj <- heatmap_plot()
+                            if (is.null(heatmap_obj)) return(NULL)
+                            device(target)
+                            tryCatch(ComplexHeatmap::draw(heatmap_obj$plot), finally = grDevices::dev.off())
+                            TRUE
+                        }, "metabolomics", content = heatmap_content, figure = paste0(heatmap_base, "_heatmap"), assay = assay_name,
+                            type = "heatmap", parameters = heatmap_parameters, width = 10, height = 8, dpi = 300)
+                    }
 
-                    if (!is.null(heatmap_obj)) {
+                    # Filename: {mode}_{contrast}_heatmap
+                    heatmap_png <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.png"))
+                    if (!is.null(write_heatmap(heatmap_png, function(target) grDevices::png(target, width = 10, height = 8, units = "in", res = 300)))) {
                         # Unique key for combined PDF
-                        plot_key <- paste0(mode_prefix, "_", contrast_name)
-                        # KIT-077: the generator returns list(plot, row_clusters, col_clusters); the export draws the plot.
-                        heatmap_plot <- heatmap_obj$plot
-                        all_heatmap_plots[[plot_key]] <- heatmap_plot
-
-                        # Filename: {mode}_{contrast}_heatmap
-                        heatmap_base <- paste0(mode_prefix, "_", contrast_name)
-
-                        # Save PNG
-                        heatmap_png <- file.path(heatmap_dir, paste0(heatmap_base, "_heatmap.png"))
-                        write_heatmap <- function(path, device) {
-                            writeWorkflowOmicsFigure(path, function(target) {
-                                device(target)
-                                tryCatch(ComplexHeatmap::draw(heatmap_plot), finally = grDevices::dev.off())
-                                TRUE
-                            }, "metabolomics", content = heatmap_plot@matrix, figure = paste0(heatmap_base, "_heatmap"), assay = assay_name,
-                                type = "heatmap", width = 10, height = 8, dpi = 300)
-                        }
-                        write_heatmap(heatmap_png, function(target) grDevices::png(target, width = 10, height = 8, units = "in", res = 300))
+                        all_heatmap_plots[[heatmap_base]] <- list(plot = heatmap_plot, content = heatmap_content)
                         logger::log_info(sprintf("      Saved heatmap PNG: %s", basename(heatmap_png)))
 
                         # Save PDF
@@ -345,10 +344,11 @@ outputMetabDaResultsAllContrasts <- function(
             {
                 combined_volcano_pdf <- file.path(volcano_dir, "all_volcano_plots_combined.pdf")
                 writeWorkflowOmicsFigure(combined_volcano_pdf, function(target) {
+                    plots <- lapply(all_volcano_plots, function(entry) entry$plot())
                     grDevices::pdf(target, width = 8, height = 7, onefile = TRUE)
-                    tryCatch(purrr::walk(all_volcano_plots, print), finally = grDevices::dev.off())
+                    tryCatch(purrr::walk(plots, print), finally = grDevices::dev.off())
                     TRUE
-                }, "metabolomics", content = lapply(all_volcano_plots, omicsFigurePlotContent), figure = "all_volcano_plots_combined",
+                }, "metabolomics", content = lapply(all_volcano_plots, function(entry) entry$content), figure = "all_volcano_plots_combined",
                     type = "volcano_combined", parameters = list(q = da_q_val_thresh, lfc = lfc_threshold), width = 8, height = 7)
                 logger::log_info(sprintf(
                     "   Created combined volcano PDF: %d plots",
@@ -369,16 +369,17 @@ outputMetabDaResultsAllContrasts <- function(
             {
                 combined_heatmap_pdf <- file.path(heatmap_dir, "all_heatmaps_combined.pdf")
                 writeWorkflowOmicsFigure(combined_heatmap_pdf, function(target) {
+                    plots <- lapply(all_heatmap_plots, function(entry) entry$plot()$plot)
                     grDevices::pdf(target, width = 10, height = 8, onefile = TRUE)
                     tryCatch(
-                        purrr::walk(all_heatmap_plots, function(hm) {
+                        purrr::walk(plots, function(hm) {
                             ComplexHeatmap::draw(hm)
                         }),
                         finally = grDevices::dev.off()
                     )
                     TRUE
-                }, "metabolomics", content = lapply(all_heatmap_plots, function(hm) hm@matrix), figure = "all_heatmaps_combined",
-                    type = "heatmap_combined", width = 10, height = 8)
+                }, "metabolomics", content = lapply(all_heatmap_plots, function(entry) entry$content), figure = "all_heatmaps_combined",
+                    type = "heatmap_combined", parameters = heatmap_parameters, width = 10, height = 8)
                 logger::log_info(sprintf(
                     "   Created combined heatmap PDF: %d plots",
                     length(all_heatmap_plots)
@@ -408,26 +409,24 @@ outputMetabDaResultsAllContrasts <- function(
                 writexl::write_xlsx(combined_numsig, numsig_xlsx)
                 logger::log_info(sprintf("   Wrote NumSigDE Excel: %s", basename(numsig_xlsx)))
 
-                # Create bar plot
-                numsig_plot <- ggplot2::ggplot(
-                    combined_numsig,
-                    ggplot2::aes(x = contrast, y = significant, fill = mode)
-                ) +
-                    ggplot2::geom_bar(stat = "identity", position = "dodge") +
-                    ggplot2::labs(
-                        title = "Number of Significant DE Metabolites",
-                        x = "Contrast",
-                        y = "Number of Significant Metabolites",
-                        fill = "Assay"
-                    ) +
-                    ggplot2::theme_minimal() +
-                    ggplot2::theme(
-                        axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
-                    )
-
-                # Save bar plot
+                # Create and save bar plot
                 numsig_png <- file.path(numsigde_dir, "metabolites_num_sig_barplot.png")
                 writeWorkflowOmicsFigure(numsig_png, function(target) {
+                    numsig_plot <- ggplot2::ggplot(
+                        combined_numsig,
+                        ggplot2::aes(x = contrast, y = significant, fill = mode)
+                    ) +
+                        ggplot2::geom_bar(stat = "identity", position = "dodge") +
+                        ggplot2::labs(
+                            title = "Number of Significant DE Metabolites",
+                            x = "Contrast",
+                            y = "Number of Significant Metabolites",
+                            fill = "Assay"
+                        ) +
+                        ggplot2::theme_minimal() +
+                        ggplot2::theme(
+                            axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
+                        )
                     ggplot2::ggsave(target, numsig_plot, width = 10, height = 6, dpi = 300)
                     TRUE
                 }, "metabolomics", content = combined_numsig, figure = "metabolites_num_sig_barplot", type = "numsig", width = 10, height = 6, dpi = 300)

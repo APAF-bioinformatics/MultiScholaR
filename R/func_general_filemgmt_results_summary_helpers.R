@@ -446,6 +446,14 @@ copyToResultsSummary <- function(omic_type,
             cat(sprintf("COPY: Added %d metabolomics legacy QC files\n", length(metab_qc_files)))
         }
 
+        # KIT-077: the filtering grids the application writes to the run directory.
+        filtering_grids <- list.files(current_paths$time_dir %||% character(), pattern = "_combined_plots\\.png$", full.names = TRUE)
+        for (grid_file in filtering_grids) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = grid_file, dest = "QC_figures", is_dir = FALSE, display_name = sprintf("Metab QC: %s", basename(grid_file)))
+            ))
+        }
+
         # ITSD normalization figures (pattern: itsd_*.png)
         itsd_files <- list.files(current_paths$feature_qc_dir, pattern = "itsd.*\\.png$", full.names = TRUE)
         if (length(itsd_files) > 0) {
@@ -542,6 +550,14 @@ copyToResultsSummary <- function(omic_type,
                 ))
             }
             cat(sprintf("COPY: Added %d lipidomics QC files\n", length(lipid_qc_files)))
+        }
+
+        # KIT-077: the filtering grids the application writes to the run directory.
+        filtering_grids <- list.files(current_paths$time_dir %||% character(), pattern = "_combined_plots\\.png$", full.names = TRUE)
+        for (grid_file in filtering_grids) {
+            files_to_copy <- c(files_to_copy, list(
+                list(source = grid_file, dest = "QC_figures", is_dir = FALSE, display_name = sprintf("Lipid QC: %s", basename(grid_file)))
+            ))
         }
 
         itsd_files <- list.files(current_paths$feature_qc_dir, pattern = "itsd.*\\.png$", full.names = TRUE)

@@ -1,0 +1,16 @@
+On ae68db4d (KIT-077 rev 1.2), the new tests in test-workflow-omics-figures.R:
+── Failure ('test-workflow-omics-figures.R:255:5'): KIT-077: an omics owner reopened with no session knows its omic and saves its figures; a proteomic
+── Failure ('test-workflow-omics-figures.R:262:7'): KIT-077: an omics owner reopened with no session knows its omic and saves its figures; a proteomic
+── Failure ('test-workflow-omics-figures.R:255:5'): KIT-077: an omics owner reopened with no session knows its omic and saves its figures; a proteomic
+── Failure ('test-workflow-omics-figures.R:262:7'): KIT-077: an omics owner reopened with no session knows its omic and saves its figures; a proteomic
+── Failure ('test-workflow-omics-figures.R:303:5'): KIT-077: lipid a repeat DA export builds no plot; a changed heatmap setting draws anew ──
+── Error ('test-workflow-omics-figures.R:304:5'): KIT-077: lipid a repeat DA export builds no plot; a changed heatmap setting draws anew ──
+── Failure ('test-workflow-omics-figures.R:323:5'): KIT-077: lipid the app's filtering figures go to the owner's run directory, saved and rooted ──
+── Failure ('test-workflow-omics-figures.R:324:5'): KIT-077: lipid the app's filtering figures go to the owner's run directory, saved and rooted ──
+── Failure ('test-workflow-omics-figures.R:303:5'): KIT-077: metab a repeat DA export builds no plot; a changed heatmap setting draws anew ──
+── Error ('test-workflow-omics-figures.R:304:5'): KIT-077: metab a repeat DA export builds no plot; a changed heatmap setting draws anew ──
+── Failure ('test-workflow-omics-figures.R:323:5'): KIT-077: metab the app's filtering figures go to the owner's run directory, saved and rooted ──
+── Failure ('test-workflow-omics-figures.R:324:5'): KIT-077: metab the app's filtering figures go to the owner's run directory, saved and rooted ──
+── Failure ('test-workflow-omics-figures.R:347:3'): KIT-077: the filtering grids in the run directory reach QC_figures ──
+── Failure ('test-workflow-omics-figures.R:361:3'): KIT-077: the filtering grids in the run directory reach QC_figures ──
+COUNTS test-workflow-omics-figures.R pass 86 fail 12 error 2 skip 0

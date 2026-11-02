@@ -236,3 +236,127 @@ test_that("KIT-077: the lipid composite copies with no spurious failure", {
   expect_true(file.exists(file.path(dirs$lipidomics$results_summary_dir, "QC_figures", "lipidomics_composite_QC_figure.pdf")))
   expect_false(any(vapply(failed, function(f) grepl("composite_QC_figure", paste(unlist(f), collapse = " ")), logical(1))))
 })
+
+# Revision 1.3 (user decision 2026-11-03): the three limits KIT-077 first recorded.
+
+omicsFigureBareReopen <- function(manager) {
+  directory <- manager$.context$store$directory
+  identity <- readSavedStoreIdentity(file.path(directory, "store.json"))
+  closeDIAStateAdapter(manager)
+  newDIAStateAdapter(newWorkflowEntityStore(dirname(directory), identity$project_id, identity$workflow_id), reopen = TRUE)
+}
+
+test_that("KIT-077: an omics owner reopened with no session knows its omic and saves its figures; a proteomics owner stays unmarked", {
+  for (omic_type in c("lipidomics", "metabolomics")) {
+    workflow <- omicsTestOwner(omicsOwnerLipidObject(), "s", omic_type = omic_type, bind = FALSE)
+    shiny::withReactiveDomain(omicsOwnerSession(), bindWorkflowOwnerTypeAtDesign(workflow, toupper(omic_type)))
+    reopened <- omicsFigureBareReopen(workflow$state_manager)
+    withr::defer(closeDIAStateAdapter(reopened))
+    expect_identical(reopened$.context$omic_type, omic_type)
+    path <- file.path(withr::local_tempdir(), "figure.png")
+    withWorkflowStateScope(reopened, function() {
+      writeWorkflowOmicsFigure(path, function(target) {
+        grDevices::png(target); graphics::plot(1); grDevices::dev.off()
+        TRUE
+      }, omic_type, content = 1, figure = "worker")
+      expect_length(omicsFigureAssets(reopened), 1L)
+    })
+  }
+  root <- withr::local_tempdir()
+  store <- newWorkflowEntityStore(root, "DIA-test", "DIA", max_cache_bytes = 0)
+  manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+  reopened <- omicsFigureBareReopen(manager)
+  withr::defer(closeDIAStateAdapter(reopened))
+  expect_null(reopened$.context$omic_type)
+})
+
+for (omic in c("lipid", "metab")) {
+  omic_type <- if (identical(omic, "lipid")) "lipidomics" else "metabolomics"
+
+  test_that(paste("KIT-077:", omic, "a repeat DA export builds no plot; a changed heatmap setting draws anew"), {
+    skip_if_not_installed("ComplexHeatmap")
+    object <- omicsDaContrastsFixture(omic)
+    manager <- omicsTestOwner(object, "s")$state_manager
+    results <- suppressWarnings(suppressMessages(omicsDaKernel(omic)(theObject = object,
+      contrasts_tbl = omicsDaContrastsTable(c("groupB-groupA", "groupB-groupC")), formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)))
+    root <- withr::local_tempdir()
+    writer <- if (identical(omic, "lipid")) outputLipidDaResultsAllContrasts else outputMetabDaResultsAllContrasts
+    run <- function(...) withWorkflowStateScope(manager, function() suppressWarnings(suppressMessages(writer(da_results_list = results,
+      da_output_dir = file.path(root, "da"), publication_graphs_dir = file.path(root, "pub"), da_q_val_thresh = 0.05, lfc_threshold = 1, ...))))
+    expect_true(run())
+    figures <- list.files(file.path(root, "pub"), recursive = TRUE, full.names = TRUE, pattern = "\\.(png|pdf)$")
+    assets <- omicsFigureAssets(manager)
+    expect_length(assets, 19L)
+    stored <- lapply(figures, omicsFigureBytes)
+    unlink(figures)
+
+    builds <- 0L
+    count <- function(...) {
+      builds <<- builds + 1L
+      stop("a repeat export built a plot")
+    }
+    if (identical(omic, "lipid")) {
+      testthat::with_mocked_bindings(expect_true(run()), generateLipidDAVolcanoStatic = count, generateLipidDAHeatmap = count, .package = "MultiScholaR")
+    } else {
+      testthat::with_mocked_bindings(expect_true(run()), generateMetabDAVolcanoStatic = count, generateMetabDAHeatmap = count, .package = "MultiScholaR")
+    }
+    expect_identical(builds, 0L)
+    expect_identical(lapply(figures, omicsFigureBytes), stored)
+    expect_setequal(omicsFigureAssets(manager), assets)
+
+    # The settings a heatmap draws with are its identity: the data alone would serve the old colours.
+    expect_true(run(heatmap_color_scheme = "viridis"))
+    expect_length(setdiff(omicsFigureAssets(manager), assets), 9L)
+  })
+
+  test_that(paste("KIT-077:", omic, "the app's filtering figures go to the owner's run directory, saved and rooted"), {
+    object <- omicsDaContrastsFixture(omic)
+    time_dir <- file.path(withr::local_tempdir(), "qc", "20261103")
+    workflow <- omicsTestOwner(object, "s", experiment_paths = list(time_dir = time_dir))
+    manager <- workflow$state_manager
+    session <- shiny::MockShinySession$new()
+    session$userData$workflow_omics_owners[[omic_type]] <- manager
+    filter <- if (identical(omic, "lipid")) updateLipidFiltering else updateMetaboliteFiltering
+    shiny::withReactiveDomain(session, suppressWarnings(suppressMessages(
+      filter(object, "2_Intensity_Filtered", omics_type = omic_type, return_grid = TRUE, overwrite = TRUE))))
+    written <- list.files(time_dir, pattern = "\\.png$")
+    expect_gt(length(written), 1L)
+    expect_true("2_Intensity_Filtered_combined_plots.png" %in% written)
+    expect_length(omicsFigureAssets(manager), length(written))
+    # A session with no owner for this omic writes nothing.
+    shiny::withReactiveDomain(shiny::MockShinySession$new(), suppressWarnings(suppressMessages(
+      filter(object, "1_Raw_Data", omics_type = omic_type, return_grid = FALSE, overwrite = TRUE))))
+    expect_false(any(grepl("^1_Raw_Data", list.files(time_dir))))
+  })
+}
+
+test_that("KIT-077: the filtering grids in the run directory reach QC_figures", {
+  metab_dirs <- module_ci_metab_summary_paths()
+  metab_config <- module_ci_metab_summary_config("combined", ruv_mode = "automatic")
+  module_ci_metab_summary_write_publication_inputs(metab_dirs, metab_config, include_optional = TRUE)
+  metab_workflow <- module_ci_metab_summary_workflow(metab_config)
+  time_dir <- metab_dirs$metabolomics$time_dir
+  dir.create(time_dir, recursive = TRUE, showWarnings = FALSE)
+  writeBin(as.raw(1:10), file.path(time_dir, "2_Intensity_Filtered_combined_plots.png"))
+  writeBin(as.raw(1:10), file.path(time_dir, "2_Intensity_Filtered_assay_metrics.png"))
+  module_ci_metab_summary_with_project_dirs(metab_dirs, {
+    utils::capture.output(suppressWarnings(suppressMessages(copyToResultsSummary("metabolomics", "kit077",
+      contrasts_tbl = metab_workflow$contrasts_tbl, design_matrix = metab_workflow$design_matrix, force = TRUE))))
+  })
+  qc_figures <- file.path(metab_dirs$metabolomics$results_summary_dir, "QC_figures")
+  expect_true(file.exists(file.path(qc_figures, "2_Intensity_Filtered_combined_plots.png")))
+  expect_false(file.exists(file.path(qc_figures, "2_Intensity_Filtered_assay_metrics.png")))
+
+  lipid_dirs <- module_ci_lipid_summary_paths()
+  lipid_config <- module_ci_lipid_summary_config("pos_neg", ruv_mode = "automatic")
+  module_ci_lipid_summary_write_publication_inputs(lipid_dirs, lipid_config, include_optional = TRUE)
+  lipid_workflow <- module_ci_lipid_summary_workflow(lipid_config)
+  time_dir <- lipid_dirs$lipidomics$time_dir
+  dir.create(time_dir, recursive = TRUE, showWarnings = FALSE)
+  writeBin(as.raw(1:10), file.path(time_dir, "3_Duplicates_Resolved_combined_plots.png"))
+  module_ci_lipid_summary_with_project_dirs(lipid_dirs, {
+    utils::capture.output(suppressWarnings(suppressMessages(copyToResultsSummary("lipidomics", "kit077",
+      contrasts_tbl = lipid_workflow$contrasts_tbl, design_matrix = lipid_workflow$design_matrix, force = TRUE))))
+  })
+  expect_true(file.exists(file.path(lipid_dirs$lipidomics$results_summary_dir, "QC_figures", "3_Duplicates_Resolved_combined_plots.png")))
+})

@@ -301,11 +301,10 @@ updateMetaboliteFiltering <- function(theObject,
 
     message("Attempting to determine save directory from project_dirs, omic_type, and experiment_label...")
 
-    # KIT-030: inside the application the directories, omic type and label come from the arguments
-    # (the modules pass the omic type only, so no figure is written, as before); outside a Shiny
-    # session a workbook's global `project_dirs`, `omic_type` and `experiment_label` keep the
-    # documented script contract (workflowScriptGlobal). The application never reads the global
-    # environment here.
+    # KIT-030: a workbook's global `project_dirs`, `omic_type` and `experiment_label` keep the documented
+    # script contract outside a Shiny session (workflowScriptGlobal); the application never reads the global
+    # environment here. KIT-077: inside the application the directories come from the arguments, else the
+    # modules, which pass the omic type only, write to the owner's run directory.
     if (is.null(shiny::getDefaultReactiveDomain())) {
         local_project_dirs <- workflowScriptGlobal("project_dirs")
         local_omic_type <- workflowScriptGlobal("omic_type")
@@ -314,8 +313,11 @@ updateMetaboliteFiltering <- function(theObject,
         local_project_dirs <- project_dirs
         local_omic_type <- omics_type
         local_experiment_label <- experiment_label
+        if (is.null(project_dirs)) actual_save_dir <- workflowOmicsFilteringDir(omics_type)
     }
-    if (!is.null(local_project_dirs) && !is.null(local_omic_type) && !is.null(local_experiment_label)) {
+    if (!is.null(actual_save_dir)) {
+        message(sprintf("Saving to the owner's run directory: '%s'", actual_save_dir))
+    } else if (!is.null(local_project_dirs) && !is.null(local_omic_type) && !is.null(local_experiment_label)) {
         message("project_dirs, omic_type, and experiment_label available.")
         message(sprintf("Global omic_type value: '%s', Global experiment_label value: '%s'", local_omic_type, local_experiment_label))
 

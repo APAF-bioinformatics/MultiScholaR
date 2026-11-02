@@ -1319,6 +1319,8 @@ newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
             if (is.null(snapshot$file_dependencies[[name]]$role)) snapshot$file_dependencies[[name]]$role <- NA_character_
         context$snapshot <- snapshot
         context$reference_states <- isTRUE(snapshot$reference_states)
+        # KIT-077: the store's identity names an omics owner's omic, so a bare reopen (a worker's) knows it as a session's does.
+        if (store$identity$workflow_id %in% c("LIPIDOMICS", "METABOLOMICS")) context$omic_type <- tolower(store$identity$workflow_id)
         # Rebuild only the bounded index from accepted roots, never from orphan stages.
         for (reference in collectDIANativeReferences(list(context$head, snapshot))) {
             registerSavedWorkflowMetadata(store, reference)
