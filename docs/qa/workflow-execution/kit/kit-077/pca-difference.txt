@@ -1,0 +1,14 @@
+lcms_pos_post_norm_pca           app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_neg_ruv_corrected_pca       app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_neg_pre_norm_pca            app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_pos_pre_norm_pca            app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_neg_post_norm_pca           app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_pos_ruv_corrected_pca       app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+RESULT 6 of 6 PCA products identical to plotPca on the old build with the app's parameters
+gcms_ruv_corrected_pca           app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+gcms_pre_norm_pca                app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_pos_pre_norm_pca            app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+gcms_post_norm_pca               app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_pos_post_norm_pca           app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+lcms_pos_ruv_corrected_pca       app parameters: grouping group, shape group; identical on the old build: TRUE; columns the bare call lacks: []; extra: []
+RESULT 6 of 6 PCA products identical to plotPca on the old build with the app's parameters
