@@ -15,7 +15,8 @@ mod_metab_design_builder_server(
   config_list,
   column_mapping,
   existing_design_matrix = NULL,
-  existing_contrasts = NULL
+  existing_contrasts = NULL,
+  state_owner = NULL
 )
 }
 \arguments{
@@ -33,6 +34,9 @@ group assignments, will be used instead of creating a fresh matrix.}
 
 \item{existing_contrasts}{Optional reactive expression that returns an existing
 contrasts table (e.g., from "Import Existing Design").}
+
+\item{state_owner}{Optional function returning the session's state owner; the builder
+then holds its tables by reference. Without it they stay plain values.}
 }
 \value{
 A reactive expression that returns a list containing the results
