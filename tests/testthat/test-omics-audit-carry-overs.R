@@ -31,6 +31,7 @@ countQcAutoInitialisation <- function(server_name, init_name, state_class) {
   }
   mock_args <- stats::setNames(list(init_mock), init_name)
   do.call(testthat::local_mocked_bindings, c(mock_args, list(.package = "MultiScholaR", .env = environment())))
+  omicsStandInReaders(env = environment()) # KIT-075: the tab and the observer read the state's metadata
 
   shiny::testServer(
     server_fn,

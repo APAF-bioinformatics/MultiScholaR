@@ -1,0 +1,134 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-053",
+  "stage": "kit075-kit-journey-075l",
+  "date": "2026-11-02",
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "lipidomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "lipid_screen",
+    "build": "b2b62236d147e23da1f49a8d92647a43d3f1914411d842329f07da9ccbe3bf0f",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 241.07,
+    "peak_bytes": 2715099136,
+    "peak_anon_bytes": 2641825792,
+    "resident_end_bytes": 2078089216,
+    "phase_seconds": {
+      "import": 6.56999999999971,
+      "design": 15.380000000001,
+      "intensity": 5.88999999999942,
+      "duplicates": 5.64999999999964,
+      "qc_finalize": 3.06999999999971,
+      "normalisation": 113.51,
+      "correlation": 6.92000000000007,
+      "session_export": 2.29999999999927,
+      "da": 12.2700000000004,
+      "report": 3.64000000000124
+    },
+    "phase_peak_anon_bytes": {
+      "import": 913264640,
+      "design": 937332736,
+      "intensity": 943210496,
+      "duplicates": 964632576,
+      "qc_finalize": 975114240,
+      "normalisation": 2641825792,
+      "correlation": 2527637504,
+      "session_export": 2527301632,
+      "da": 2078216192,
+      "report": 2113941504
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0600000000013097,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process lipid75_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "d767803900be4a045a9669638baa4507ae05faf51a009ae9aa0922a2a0c5640a",
+        "rows": null
+      },
+      "design": {
+        "state": "lipid_raw_data_s4",
+        "entity_id": "c0583e3ebf985f8f11e4ea272b1af9ce0ed9a77a79f11239fb93742aadc430ee",
+        "rows": 432
+      },
+      "intensity": {
+        "state": "lipid_intensity_filtered",
+        "entity_id": "3750ffd10454d86e5b15c9922ae223098496ae0fbde428f55292310971244893",
+        "rows": 392
+      },
+      "duplicates": {
+        "state": "lipid_duplicates_resolved",
+        "entity_id": "654409e12d9220881e1d6976642647d79cee62be95627b0c98b181e86d0d9c51",
+        "rows": 377
+      },
+      "qc_finalize": {
+        "state": "lipid_qc_complete",
+        "entity_id": "444d013a6443be8ebc7cef3810c079a83b4fb1a85a615c087f74d0477cbb37e3",
+        "rows": 377
+      },
+      "normalisation": {
+        "state": "lipid_ruv_corrected",
+        "entity_id": "843a81b334052e283c3f6090a6e53e34a04786aacffe7cacb0ff00e93a67884b",
+        "rows": 365
+      },
+      "correlation": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "55d5e8a5f7e17fcc1046b43e0b588b8101f9793e0508674a2c47256c76d007ef",
+        "rows": 365
+      },
+      "session_export": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "55d5e8a5f7e17fcc1046b43e0b588b8101f9793e0508674a2c47256c76d007ef",
+        "rows": 365
+      },
+      "da": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "55d5e8a5f7e17fcc1046b43e0b588b8101f9793e0508674a2c47256c76d007ef",
+        "rows": 365
+      },
+      "report": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "55d5e8a5f7e17fcc1046b43e0b588b8101f9793e0508674a2c47256c76d007ef",
+        "rows": 365
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 97,
+    "failure": null
+  }
+}

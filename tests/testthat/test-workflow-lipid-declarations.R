@@ -138,6 +138,12 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
     expect_equal(journey$da$results$per_assay_results, direct$per_assay_results)
     expect_identical(journey$da$results$significant_counts, direct$significant_counts)
     expect_null(journey$da$results$theObject) # KIT-075: the results carry no source object
+    # KIT-075: a display or an export reads the DA's source state for the call: the Glimma volcano and heatmaps see the
+    # same object the wrapper used to attach.
+    with_source <- lipidDaResultsWithSource(journey$da$results, list(current_state_name = owner$current_state), list(state_manager = owner))
+    expect_s4_class(with_source$theObject, "LipidomicsAssayData")
+    expect_equal(with_source$theObject@lipid_data, owner$getState(owner$current_state)@lipid_data, ignore_attr = TRUE)
+    expect_identical(with_source[names(journey$da$results)], journey$da$results)
     long <- materializeWorkflowTable(owner$.context, manifest$results$LCMS_Pos$tables$da_lipids_long)
     expect_identical(nrow(long), manifest$results$LCMS_Pos$rows)
     # A second run on the same state and settings is a hit: the manifest's tables are the same entities.
