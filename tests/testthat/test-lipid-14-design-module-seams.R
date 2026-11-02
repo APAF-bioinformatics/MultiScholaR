@@ -99,7 +99,8 @@ test_that("registerLipidDesignBuilderModule keeps builder registration handoff s
         config_list,
         column_mapping,
         existing_design_matrix,
-        existing_contrasts
+        existing_contrasts,
+        state_owner = NULL
     ) {
         builder_calls <<- list(
             moduleId = moduleId,
@@ -122,7 +123,8 @@ test_that("registerLipidDesignBuilderModule keeps builder registration handoff s
 
     expect_identical(result, builder_result)
     expect_identical(builder_calls$moduleId, "builder")
-    expect_identical(builder_calls$data_tbl, workflow_data$data_tbl)
+    # KIT-075: a function reading the bus per use, not a caching reactive.
+    expect_identical(builder_calls$data_tbl(), workflow_data$data_tbl)
     expect_identical(builder_calls$config_list, workflow_data$config_list)
     expect_identical(builder_calls$column_mapping, workflow_data$column_mapping)
     expect_identical(builder_calls$existing_design_matrix, workflow_data$design_matrix)
@@ -130,7 +132,6 @@ test_that("registerLipidDesignBuilderModule keeps builder registration handoff s
     expect_identical(
         reactive_calls,
         c(
-            "workflowData$data_tbl",
             "workflowData$config_list",
             "workflowData$column_mapping",
             "workflowData$design_matrix",

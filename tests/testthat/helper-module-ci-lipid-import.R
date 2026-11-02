@@ -167,7 +167,8 @@ module_ci_lipid_import_run <- function(assay,
   removed_notifications <- character()
   error_messages <- character()
 
-  result <- runLipidImportProcessing(
+  # KIT-075: the import binds the session's owner, which attaches to the reactive domain.
+  result <- shiny::withReactiveDomain(omicsOwnerSession(), runLipidImportProcessing(
     workflowData = workflow,
     assay1Name = assay_name,
     assay1Data = assay,
@@ -199,7 +200,7 @@ module_ci_lipid_import_run <- function(assay,
       error_messages <<- c(error_messages, message)
       invisible(NULL)
     }
-  )
+  ))
 
   list(
     result = result,

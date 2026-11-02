@@ -314,8 +314,10 @@ runLipidDesignImportConfirmationShell <- function(
         workflowData$column_mapping <- col_map
         workflowData$design_matrix <- imported_design
         workflowData$contrasts_tbl <- imported_contrasts
-        workflowData$data_tbl <- assay_list
-        workflowData$data_cln <- assay_list
+        # KIT-075: the owner is bound before the tables are held by reference.
+        bindWorkflowOmicsOwnerAtImport(workflowData, "LIPIDOMICS", workflowData$data_format)
+        setWorkflowOmicsBusTables(workflowData, "data_tbl", assay_list)
+        setWorkflowOmicsBusTables(workflowData, "data_cln", assay_list)
         # KIT-030: the imported config and contrasts live on workflow_data only (no global copies).
         logger::log_info("Imported config and contrasts held on workflow_data.")
 

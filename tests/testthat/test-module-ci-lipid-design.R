@@ -138,7 +138,7 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
 
   expect_identical(workflow$design_matrix$Run, payload$design_matrix$Run)
   expect_identical(workflow$design_matrix$group, payload$design_matrix$group)
-  expect_identical(names(workflow$data_cln), names(payload$data_cln))
+  expect_identical(names(getWorkflowOmicsBusTables(workflow, "data_cln")), names(payload$data_cln))
   expect_identical(workflow$column_mapping$sample_columns, payload$column_mapping$sample_columns)
   expect_identical(workflow$contrasts_tbl$contrasts, payload$contrasts_tbl$contrasts)
   expect_identical(workflow$contrasts_tbl$friendly_names, payload$contrasts_tbl$friendly_names)

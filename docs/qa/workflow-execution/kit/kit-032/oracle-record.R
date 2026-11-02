@@ -95,7 +95,7 @@ run("design", {
     kit_groups <- unique(kit_design$group)
     stopifnot(length(kit_groups) >= 2L)
     kit_holder <- new.env(parent = emptyenv())
-    shiny::testServer(mod_metab_design_builder_server, args = list(data_tbl = shiny::reactive(workflow$data_tbl),
+    shiny::testServer(mod_metab_design_builder_server, args = list(data_tbl = shiny::reactive(resolveDIAOwnedValue(workflow$data_tbl, workflow$state_manager)),
         config_list = shiny::reactive(workflow$config_list), column_mapping = shiny::reactive(workflow$column_mapping)), {
         for (kit_group in kit_groups) { session$setInputs(new_factor = kit_group); session$setInputs(add_factor = match(kit_group, kit_groups)) }
         kit_clicks <- 0L

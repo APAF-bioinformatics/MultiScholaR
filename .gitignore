@@ -92,3 +92,6 @@ tests/testthat/qc-plots.pdf
 /src/*.dll
 __pycache__/
 *.pyc
+
+# testthat failure snapshots
+tests/testthat/_problems/

@@ -285,6 +285,39 @@ readWorkflowOmicsMetadata <- function(binding, manager, reference = NULL) {
     })
 }
 
+#' Bind the omics session owner to its route at the import (KIT-075, the proteomics pattern): binding replaces the
+#' pending store, so the import's tables can only be held by reference once the owner is bound. An owner that is
+#' already bound, or a bus without an owner, is left as it is.
+#' @noRd
+bindWorkflowOmicsOwnerAtImport <- function(workflowData, workflow_type, format) {
+    if (isDIASessionOwnerPending(workflowData$state_manager)) bindWorkflowOwnerTypeAtDesign(workflowData, workflow_type, format)
+    invisible(workflowData$state_manager)
+}
+
+#' Hold an import or design table list on the bus by reference, in the omic's owner (KIT-075).
+#' @noRd
+setWorkflowOmicsBusTables <- function(workflowData, field, value) {
+    setWorkflowOwnedPayload(workflowData, field, value, manager = workflowData$state_manager)
+}
+
+#' Read an import or design table list from the bus for one action (KIT-075).
+#' @noRd
+getWorkflowOmicsBusTables <- function(workflowData, field) {
+    getWorkflowOwnedPayload(workflowData, field, manager = workflowData$state_manager)
+}
+
+#' A design builder's table-list holder (KIT-075): the get/set contract of a `reactiveVal`, holding a reference in the
+#' owner `owner()` returns at each use (the builder starts before the import binds the owner); plain without an owner.
+#' @noRd
+omicsBuilderTableVal <- function(label, owner) {
+    held <- shiny::reactiveVal()
+    function(value) {
+        if (missing(value)) return(resolveWorkflowOwnedValue(held(), owner()))
+        held(saveWorkflowOwnedValue(value, label, owner()))
+        invisible(NULL)
+    }
+}
+
 #' @noRd
 runWorkflowOmicsReferenceIntensityFilter <- function(binding, manager, percentile, proportion, config, description = NULL,
     state_name = NULL, hydrate = FALSE) {

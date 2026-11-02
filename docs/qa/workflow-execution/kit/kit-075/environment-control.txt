@@ -1,0 +1,54 @@
+# KIT-075 environment control, 2026-11-02. A system upgrade at 11:59 (before the reboot) changed R 4.6.1 -> 4.6.2 and onetbb 2023.1.0 -> 2023.2.0 (114 packages in all; kernel 7.3.0 -> 7.3.1).
+# Every record below was made after the upgrade. kit_074 = E9Srqc (4f4a6b02), unchanged code; kit_075 = 4lGlmC (f4791128).
+
+[2026-11-02T11:59:11+1100] [ALPM] upgraded onetbb (2023.1.0-1.1 -> 2023.2.0-1.1)
+[2026-11-02T11:59:26+1100] [ALPM] upgraded r (4.6.1-1.1 -> 4.6.2-1.1)
+### kit_074 vs stage 3, lipid, R 4.6.2
+reference oracles-lipid31_lipid_screen.rds (lipidomics, build 6506af27c9a7): 10 steps; candidate ctl-lipid.rds (build 4f4a6b021793): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 5; per-state mismatches (class/rows/components/support/summary) 0
+  MISMATCH intensity/products/names 
+  MISMATCH duplicates/products/names 
+  MISMATCH normalisation/products/names 
+  MISMATCH correlation/products/names 
+  MISMATCH da/products/names 
+RESULT differs
+### kit_074 vs kit_065, limpa, R 4.6.2
+  MISMATCH ruv_covariates/summary 
+  MISMATCH session_export/summary 
+  MISMATCH da/summary 
+  MISMATCH report/summary 
+  STATE-MISMATCH design/components/peptide_data 
+  STATE-MISMATCH dpc_quant/summary 
+  STATE-MISMATCH protein_normalisation_limpa/summary 
+  STATE-MISMATCH peptide_count/summary 
+  STATE-MISMATCH correlation/summary 
+  STATE-MISMATCH ruv_covariates/summary 
+  STATE-MISMATCH session_export/summary 
+  STATE-MISMATCH da/summary 
+  STATE-MISMATCH report/summary 
+RESULT differs
+### kit_075 vs kit_074 lipid, both R 4.6.2
+reference ctl-lipid.rds (lipidomics, build 4f4a6b021793): 10 steps; candidate oracles-lipid75_lipid_screen.rds (build f47911280c24): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+### kit_075 vs kit_074 metab
+reference ctl-metab.rds (metabolomics, build 4f4a6b021793): 10 steps; candidate oracles-metab75_metab_screen.rds (build f47911280c24): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+### kit_075 vs kit_074 lfq
+reference oracles-lfq-on-kit074-postreboot.rds (protein, build 4f4a6b021793): 11 steps; candidate oracles-lfq_fixture-kit075.rds (build f47911280c24):
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+### kit_075 vs kit_074 tmt
+reference ctl-tmt.rds (protein, build 4f4a6b021793): 11 steps; candidate oracles-tmt_fixture-kit075.rds (build f47911280c24): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+### kit_075 vs kit_074 limpa
+reference ctl-limpa.rds (DIA_LIMPA, build 4f4a6b021793): 14 steps; candidate oracles-limpa_screen-kit075.rds (build f47911280c24): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+
+
+### kit_074 vs kit_065 LFQ, R 4.6.2 (unchanged code against the stored oracle)
+steps compared 11; state names identical 11; reproduce mismatches 1; per-state mismatches 0
+  MISMATCH normalisation_ruv/products/normalization_science

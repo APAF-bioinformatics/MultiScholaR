@@ -9,16 +9,22 @@
 #'   group assignments, will be used instead of creating a fresh matrix.
 #' @param existing_contrasts Optional reactive expression that returns an existing
 #'   contrasts table (e.g., from "Import Existing Design").
+#' @param state_owner Optional function returning the session's state owner; the builder
+#'   then holds its tables by reference. Without it they stay plain values.
 #'
 #' @rdname metabolomicsDesignMatrixBuilderModule
 #' @export
 mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_mapping
                                             , existing_design_matrix = NULL
-                                            , existing_contrasts = NULL) {
+                                            , existing_contrasts = NULL
+                                            , state_owner = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
 
         # Reactive value to store the final results
         result_rv <- shiny::reactiveVal(NULL)
+
+        # KIT-075: the builder's table lists are held by reference in the owner (plain without one).
+        currentOwner <- function() if (is.function(state_owner)) state_owner()
 
         # == Helper: Extract Sample Names from Metabolomics Data List =============
         # Metabolomics data is a LIST of assays where samples are COLUMN NAMES
@@ -213,7 +219,7 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
                 
                 return(list(
                     design_matrix = existing_dm
-                    , data_cln = assay_list
+                    , data_cln = saveWorkflowOwnedValue(assay_list, "design_builder_initial_data_cln", currentOwner()) # KIT-075
                     , sample_names = sample_names
                     , groups = groups_from_dm
                     , factors = factors_from_dm
@@ -240,7 +246,8 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
 
             list(
                 design_matrix = design_matrix_raw
-                , data_cln = assay_list
+                # KIT-075: a reactive keeps its value; it keeps the tables' reference.
+                , data_cln = saveWorkflowOwnedValue(assay_list, "design_builder_initial_data_cln", currentOwner())
                 , sample_names = sample_names
                 , groups = unique(design_matrix_raw$group[!is.na(design_matrix_raw$group) & design_matrix_raw$group != ""])
                 , factors = character(0)
@@ -256,7 +263,7 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
 
         # Reactive values for the current, mutable state
         design_matrix <- shiny::reactiveVal()
-        data_cln_reactive <- shiny::reactiveVal()
+        data_cln_reactive <- omicsBuilderTableVal("design_builder_data_cln", currentOwner)
         sample_names_reactive <- shiny::reactiveVal()
         groups <- shiny::reactiveVal()
         factors <- shiny::reactiveVal()
@@ -842,7 +849,8 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
             # 5. Set the final result
             final_result <- list(
                 design_matrix = design_matrix_final
-                , data_cln = data_cln_final
+                # KIT-075: the returned result carries the tables' reference.
+                , data_cln = saveWorkflowOwnedValue(data_cln_final, "design_builder_result_data_cln", currentOwner())
                 , contrasts_tbl = contrasts_tbl
                 , config_list = config_list_final
             )

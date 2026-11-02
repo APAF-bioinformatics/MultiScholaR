@@ -257,7 +257,9 @@ applyLipidImportResultToWorkflow <- function(
   workflowType = "LIPIDOMICS", # KIT-070: the owner's type name
   logInfo = logger::log_info
 ) {
-  workflowData$data_tbl <- assayList
+  # KIT-075: the owner is bound here and the tables are held by reference from the import on.
+  bindWorkflowOmicsOwnerAtImport(workflowData, workflowType, dataFormat)
+  setWorkflowOmicsBusTables(workflowData, "data_tbl", assayList)
   workflowData$data_format <- dataFormat
   workflowData$data_type <- "lipid"
   workflowData$column_mapping <- buildLipidImportColumnMapping(

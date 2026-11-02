@@ -13,7 +13,9 @@ registerLipidDesignBuilderModule <- function(
 
         return(builderServerFn(
             moduleId,
-            data_tbl = reactiveFn(workflowData$data_tbl),
+            # KIT-075: a function, not a reactive: the tables are read per use and never cached.
+            data_tbl = function() getWorkflowOmicsBusTables(workflowData, "data_tbl"),
+            state_owner = function() shiny::isolate(workflowData$state_manager),
             config_list = reactiveFn(workflowData$config_list),
             column_mapping = reactiveFn(workflowData$column_mapping),
             existing_design_matrix = reactiveFn(workflowData$design_matrix),
@@ -46,6 +48,10 @@ runLipidDesignBuilderObserverShell <- function(
 
     logger::log_info("Received results from lipidomics design builder. Saving to workflow and disk.")
 
+    # KIT-075: the builder's result carries the tables' reference; they are read for this action.
+    held_data_cln <- results$data_cln
+    results$data_cln <- resolveWorkflowOwnedValue(held_data_cln, workflowData$state_manager)
+
     source_dir <- experimentPaths$source_dir
     if (is.null(source_dir) || !dir.exists(source_dir)) {
         msg <- "Could not find source directory to save files."
@@ -74,7 +80,8 @@ runLipidDesignBuilderObserverShell <- function(
     }
 
     workflowData$design_matrix <- results$design_matrix
-    workflowData$data_cln <- results$data_cln
+    bindWorkflowOmicsOwnerAtImport(workflowData, "LIPIDOMICS", workflowData$data_format)
+    setWorkflowOmicsBusTables(workflowData, "data_cln", held_data_cln)
     workflowData$contrasts_tbl <- results$contrasts_tbl
     workflowData$config_list <- results$config_list
     # KIT-030: contrasts_tbl and config_list live on workflow_data only (no global copies).

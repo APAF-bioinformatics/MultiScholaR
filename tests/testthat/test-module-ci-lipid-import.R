@@ -31,9 +31,9 @@ test_that("MCI-018.1 LipidSearch matrix preserves routing, mappings, and boundar
 
     expect_identical(run$result$status, "success", info = case_name)
     expect_identical(run$workflow$data_format, "lipidsearch", info = case_name)
-    expect_identical(names(run$workflow$data_tbl), case$assay_name, info = case_name)
+    expect_identical(names(getWorkflowOmicsBusTables(run$workflow, "data_tbl")), case$assay_name, info = case_name)
     expect_true(run$result$artifactResult$written, info = case_name)
-    module_ci_assert_numeric_finite(run$workflow$data_tbl[[case$assay_name]], module_ci_lipid_sample_cols(), allow_na = TRUE)
+    module_ci_assert_numeric_finite(getWorkflowOmicsBusTables(run$workflow, "data_tbl")[[case$assay_name]], module_ci_lipid_sample_cols(), allow_na = TRUE)
   }
 
   missing_id <- module_ci_lipid_import_run(
@@ -42,7 +42,7 @@ test_that("MCI-018.1 LipidSearch matrix preserves routing, mappings, and boundar
   )
   expect_null(missing_id$result)
   expect_match(missing_id$error_messages[[1]], "Lipid ID column not found: LipidName", fixed = TRUE)
-  expect_null(missing_id$workflow$data_tbl)
+  expect_null(getWorkflowOmicsBusTables(missing_id$workflow, "data_tbl"))
   expect_identical(missing_id$workflow$tab_status$setup_import, "incomplete")
 })
 
@@ -71,8 +71,8 @@ test_that("MCI-018.2 MS-DIAL matrix preserves annotation, duplicate, and intensi
 
   expect_identical(run$result$status, "success")
   expect_identical(run$workflow$data_format, "msdial")
-  expect_true(any(run$workflow$data_tbl$LCMS_Pos$WT_1 == 0))
-  expect_true(any(is.na(run$workflow$data_tbl$LCMS_Pos$WT_2)))
+  expect_true(any(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1 == 0))
+  expect_true(any(is.na(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_2)))
   expect_true(any(grepl("duplicate lipid IDs", run$result$validationResult$warnings, fixed = TRUE)))
 
   no_annotation <- module_ci_lipid_msdial_assay(include_annotation = FALSE, duplicate_feature = FALSE)
@@ -160,7 +160,7 @@ test_that("MCI-018.4 multi-assay routing matrix preserves assay2 parity and reje
     assay2_name = "LCMS_Neg"
   )
   expect_identical(pair$result$status, "success")
-  expect_identical(names(pair$workflow$data_tbl), c("LCMS_Pos", "LCMS_Neg"))
+  expect_identical(names(getWorkflowOmicsBusTables(pair$workflow, "data_tbl")), c("LCMS_Pos", "LCMS_Neg"))
   expect_identical(unname(pair$workflow$processing_log$setup_import$n_lipids), c(3L, 3L))
 
   absent <- module_ci_lipid_import_run(
@@ -170,7 +170,7 @@ test_that("MCI-018.4 multi-assay routing matrix preserves assay2 parity and reje
     assay2_name = ""
   )
   expect_identical(absent$result$status, "success")
-  expect_identical(names(absent$workflow$data_tbl), "GCMS")
+  expect_identical(names(getWorkflowOmicsBusTables(absent$workflow, "data_tbl")), "GCMS")
 
   unusual <- module_ci_lipid_import_run(
     assay = primary,
@@ -179,7 +179,7 @@ test_that("MCI-018.4 multi-assay routing matrix preserves assay2 parity and reje
     assay2_name = "LCMS_Pos_2026"
   )
   expect_identical(unusual$result$status, "success")
-  expect_identical(names(unusual$workflow$data_tbl), c("GCMS-2026_A", "LCMS_Pos_2026"))
+  expect_identical(names(getWorkflowOmicsBusTables(unusual$workflow, "data_tbl")), c("GCMS-2026_A", "LCMS_Pos_2026"))
 
   duplicate <- module_ci_lipid_import_run(
     assay = primary,
@@ -189,7 +189,7 @@ test_that("MCI-018.4 multi-assay routing matrix preserves assay2 parity and reje
   )
   expect_null(duplicate$result)
   expect_match(duplicate$error_messages[[1]], "Duplicate lipidomics assay names", fixed = TRUE)
-  expect_null(duplicate$workflow$data_tbl)
+  expect_null(getWorkflowOmicsBusTables(duplicate$workflow, "data_tbl"))
 
   empty_assay2 <- file.path(paths$raw_dir, "empty_assay2.txt")
   writeLines(character(), empty_assay2)
@@ -199,7 +199,7 @@ test_that("MCI-018.4 multi-assay routing matrix preserves assay2 parity and reje
     assay2_name = "LCMS_Neg"
   )
   expect_null(empty$result)
-  expect_null(empty$workflow$data_tbl)
+  expect_null(getWorkflowOmicsBusTables(empty$workflow, "data_tbl"))
 
   reader_calls <- character()
   reader <- resolveLipidImportSecondAssayReader(
@@ -258,7 +258,7 @@ test_that("MCI-018.5 invalid input matrix fails before downstream state advances
     sample_cols = malformed_preview$importResult$sample_columns
   )
   expect_null(malformed_run$result)
-  expect_null(malformed_run$workflow$data_tbl)
+  expect_null(getWorkflowOmicsBusTables(malformed_run$workflow, "data_tbl"))
 })
 
 test_that("MCI-018.6 artifact and state digest matrix preserves downstream design handoff", {

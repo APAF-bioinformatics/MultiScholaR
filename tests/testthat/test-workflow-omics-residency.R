@@ -39,6 +39,18 @@ test_that("with a proteomics owner in the session, the omics value lands in the 
   })
 })
 
+test_that("the walk finds a held object and a held assay table, through closures, reactive values and attributes", {
+  object <- omicsOwnerLipidObject()
+  table <- data.frame(id = 1:2, S1 = 1:2, S2 = 3:4)
+  held <- new.env(parent = emptyenv())
+  held$kept <- local({ captured <- object; function() captured })
+  expect_identical(as.character(omicsResidencyWalk(list(root = held))), "root$kept<closure>$captured")
+  values <- shiny::reactiveValues(assay = table)
+  expect_true(length(attr(omicsResidencyWalk(list(root = values), table_columns = c("S1", "S2")), "tables")) == 1L)
+  expect_length(attr(omicsResidencyWalk(list(root = list(meta = data.frame(id = 1:2, S1 = 1:2))), table_columns = c("S1", "S2")), "tables"), 0L)
+  expect_length(omicsResidencyWalk(list(root = list(attr_free = 1:3))), 0L)
+})
+
 expected_states <- function(prefix) c(import = "initial", design = paste0(prefix, "_raw_data_s4"),
   intensity = paste0(prefix, "_intensity_filtered"), duplicates = paste0(prefix, "_duplicates_resolved"),
   qc_finalize = paste0(prefix, "_qc_complete"), normalisation = paste0(prefix, "_ruv_corrected"),
@@ -55,5 +67,14 @@ for (omic in c("lipidomics", "metabolomics")) {
     holder <- function(path) sub("^.*(\\$private\\$outs\\[\\[|\\.values\\$private\\$map|\\$userData\\$)", "\\1", path)
     for (step in names(hits)) expect(length(hits[[step]]) == 0L,
       sprintf("%s: assay objects reachable at\n  %s", step, paste(unique(holder(hits[[step]])), collapse = "\n  ")))
+    # The import and design tables are held by reference too (the import's own file-selection preview is outside this
+    # walk, which drives the import through its processing helper; recorded in the outcome).
+    tables <- attr(hits, "tables")
+    for (step in names(hits)) {
+      expect(length(tables[[step]]) == 0L, sprintf("%s: assay tables reachable at\n  %s", step,
+        paste(unique(holder(tables[[step]])), collapse = "\n  ")))
+      expect(all(attr(hits, "bus")[[step]] %in% c("reference", "empty")), sprintf("%s: the bus holds %s", step,
+        paste(names(attr(hits, "bus")[[step]]), attr(hits, "bus")[[step]], collapse = ", ")))
+    }
   })
 }

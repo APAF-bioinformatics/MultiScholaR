@@ -23,7 +23,7 @@ registerLipidDesignPreviewOutputs <- function(
 
     output$assays_preview <- renderText({
         req(workflowData$data_tbl)
-        assayPreviewFormatter(workflowData$data_tbl)
+        assayPreviewFormatter(getWorkflowOmicsBusTables(workflowData, "data_tbl")) # KIT-075: read for this render
     })
 
     invisible(output)

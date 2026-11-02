@@ -140,13 +140,14 @@ test_that("MCI-013.4 existing-design import and browser controls preserve builde
     contrastFile = preflight$contrastFile,
     messageFn = function(...) invisible(NULL)
   )
-  hydrated <- hydrateMetabDesignImportWorkflowState(
+  # KIT-075: the state binds the session's owner before holding the tables, which attaches to the reactive domain.
+  hydrated <- shiny::withReactiveDomain(omicsOwnerSession(), hydrateMetabDesignImportWorkflowState(
     workflowData = workflow,
     importedDesign = artifacts$importedDesign,
     assayList = artifacts$assayList,
     importedContrasts = metadata$importedContrasts,
     assignFn = function(...) invisible(NULL)
-  )
+  ))
 
   expect_identical(hydrated$designMatrix$Run, payload$design_matrix$Run)
   expect_identical(hydrated$designMatrix$group, payload$design_matrix$group)

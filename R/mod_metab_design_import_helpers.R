@@ -331,8 +331,10 @@ hydrateMetabDesignImportWorkflowState <- function(
 ) {
     workflowData$design_matrix <- importedDesign
     workflowData$contrasts_tbl <- importedContrasts
-    workflowData$data_tbl <- assayList
-    workflowData$data_cln <- assayList
+    # KIT-075: the owner is bound before the tables are held by reference.
+    bindWorkflowOmicsOwnerAtImport(workflowData, "METABOLOMICS", workflowData$data_format)
+    setWorkflowOmicsBusTables(workflowData, "data_tbl", assayList)
+    setWorkflowOmicsBusTables(workflowData, "data_cln", assayList)
     # KIT-030: the imported contrasts live on workflow_data only (no global copy).
 
     workflowData$design_matrix <- mutateFn(
@@ -342,7 +344,7 @@ hydrateMetabDesignImportWorkflowState <- function(
 
     list(
         designMatrix = workflowData$design_matrix,
-        assayList = workflowData$data_tbl,
+        assayList = assayList,
         importedContrasts = workflowData$contrasts_tbl
     )
 }

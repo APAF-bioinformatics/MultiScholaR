@@ -257,7 +257,8 @@ test_that("metabolomics design builder seam preserves builder module registratio
       config_list,
       column_mapping,
       existing_design_matrix,
-      existing_contrasts
+      existing_contrasts,
+      state_owner = NULL
   ) {
     captured_call <<- list(
       id = id,
@@ -280,7 +281,8 @@ test_that("metabolomics design builder seam preserves builder module registratio
 
   expect_identical(result, "builder-results")
   expect_identical(captured_call$id, "builder")
-  expect_identical(captured_call$data_tbl, fakeReactive(workflow_state$data_tbl))
+  # KIT-075: a function reading the bus per use, not a caching reactive.
+  expect_identical(captured_call$data_tbl(), workflow_state$data_tbl)
   expect_identical(captured_call$config_list, fakeReactive(workflow_state$config_list))
   expect_identical(captured_call$column_mapping, fakeReactive(workflow_state$column_mapping))
   expect_identical(

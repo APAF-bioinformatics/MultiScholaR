@@ -158,7 +158,7 @@ test_that("lipid design import bootstrap, modal, and preview helpers preserve sh
     workflowData = workflow_data,
     moduleId = "builder",
     builderServerExists = TRUE,
-    builderServerFn = function(id, data_tbl, config_list, column_mapping, existing_design_matrix, existing_contrasts) {
+    builderServerFn = function(id, data_tbl, config_list, column_mapping, existing_design_matrix, existing_contrasts, state_owner = NULL) {
       builder_args <<- list(
         id = id,
         data_tbl = data_tbl(),
@@ -266,7 +266,7 @@ test_that("lipid design import confirmation helper preserves failure and success
   ))
 
   expect_identical(workflow_data$design_matrix$tech_rep_group, c("Control_1", "Treatment_1"))
-  expect_identical(names(workflow_data$data_tbl), "LCMS_Pos")
+  expect_identical(names(getWorkflowOmicsBusTables(workflow_data, "data_tbl")), "LCMS_Pos")
   expect_identical(workflow_data$column_mapping$sample_columns, c("Sample_1", "Sample_2"))
   expect_identical(workflow_data$contrasts_tbl$friendly_names, "Treatment_vs_Control")
   expect_true("lipid_raw_data_s4" %in% workflow_data$state_manager$getHistory())

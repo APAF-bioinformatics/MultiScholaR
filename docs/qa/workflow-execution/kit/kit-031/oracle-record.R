@@ -89,7 +89,7 @@ run("import", shiny::withReactiveDomain(session, {
 # builder's default formula, the payload builder and the module's save shell (files, the S4, the owner bound to the
 # route, the design provenance and inputs, the `lipid_raw_data_s4` commit).
 run("design", shiny::withReactiveDomain(session, {
-    initial <- buildLipidDesignInitialState(assayList = workflow$data_tbl, configList = workflow$config_list, colMap = workflow$column_mapping, messageFn = quiet)
+    initial <- buildLipidDesignInitialState(assayList = resolveDIAOwnedValue(workflow$data_tbl, workflow$state_manager), configList = workflow$config_list, colMap = workflow$column_mapping, messageFn = quiet)
     design <- initial$design_matrix
     design_in <- utils::read.delim(design_path, stringsAsFactors = FALSE, check.names = FALSE)
     groups <- unique(design_in$group)

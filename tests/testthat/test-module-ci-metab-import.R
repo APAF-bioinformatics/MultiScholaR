@@ -24,7 +24,7 @@ test_that("MCI-012.1 custom import matrix preserves mappings and numeric coercio
     expect_identical(run$workflow$data_format, "custom", info = case_name)
     expect_identical(run$workflow$column_mapping$metabolite_id_col, "Feature.Name", info = case_name)
     expect_identical(run$workflow$column_mapping$sample_columns, sample_cols, info = case_name)
-    expect_true(all(vapply(run$workflow$data_tbl[[1]][sample_cols], is.numeric, logical(1))), info = case_name)
+    expect_true(all(vapply(getWorkflowOmicsBusTables(run$workflow, "data_tbl")[[1]][sample_cols], is.numeric, logical(1))), info = case_name)
     expect_true(run$result$artifactResult$written, info = case_name)
   }
 })
@@ -63,8 +63,8 @@ test_that("MCI-012.2 MS-DIAL-style import matrix preserves metadata and edge int
 
   expect_identical(run$result$status, "success")
   expect_identical(run$workflow$data_format, "msdial")
-  expect_true(any(is.na(run$workflow$data_tbl$LCMS_Pos$WT_2)))
-  expect_true(any(run$workflow$data_tbl$LCMS_Pos$WT_1 == 0))
+  expect_true(any(is.na(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_2)))
+  expect_true(any(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1 == 0))
   expect_identical(run$workflow$processing_log$setup_import$n_assays, 1L)
 })
 
@@ -82,7 +82,7 @@ test_that("MCI-012.3 multi-assay imports preserve assay names and reject ambiguo
     assay2_name = "LCMS_Neg"
   )
   expect_identical(lcms_pair$result$status, "success")
-  expect_identical(names(lcms_pair$workflow$data_tbl), c("LCMS_Pos", "LCMS_Neg"))
+  expect_identical(names(getWorkflowOmicsBusTables(lcms_pair$workflow, "data_tbl")), c("LCMS_Pos", "LCMS_Neg"))
   expect_identical(unname(lcms_pair$workflow$processing_log$setup_import$n_metabolites), c(3L, 3L))
 
   gc_only <- module_ci_metab_import_run(
@@ -92,7 +92,7 @@ test_that("MCI-012.3 multi-assay imports preserve assay names and reject ambiguo
     assay2_name = ""
   )
   expect_identical(gc_only$result$status, "success")
-  expect_identical(names(gc_only$workflow$data_tbl), "GCMS")
+  expect_identical(names(getWorkflowOmicsBusTables(gc_only$workflow, "data_tbl")), "GCMS")
 
   unusual <- module_ci_metab_import_run(
     assay = primary,
@@ -101,7 +101,7 @@ test_that("MCI-012.3 multi-assay imports preserve assay names and reject ambiguo
     assay2_name = "LCMS_Pos_2026"
   )
   expect_identical(unusual$result$status, "success")
-  expect_identical(names(unusual$workflow$data_tbl), c("GCMS-2026_A", "LCMS_Pos_2026"))
+  expect_identical(names(getWorkflowOmicsBusTables(unusual$workflow, "data_tbl")), c("GCMS-2026_A", "LCMS_Pos_2026"))
 
   duplicate <- module_ci_metab_import_run(
     assay = primary,
@@ -111,7 +111,7 @@ test_that("MCI-012.3 multi-assay imports preserve assay names and reject ambiguo
   )
   expect_identical(duplicate$result$status, "error")
   expect_match(duplicate$result$error$message, "Duplicate metabolomics assay names", fixed = TRUE)
-  expect_null(duplicate$workflow$data_tbl)
+  expect_null(getWorkflowOmicsBusTables(duplicate$workflow, "data_tbl"))
   expect_identical(duplicate$workflow$tab_status$setup_import, "incomplete")
 
   unsafe <- module_ci_metab_import_run(
@@ -184,7 +184,7 @@ test_that("MCI-012.6 import artifacts and state digest payload are complete", {
   expect_true(all(file.exists(artifacts)))
 
   cleaned <- read.delim(artifacts[["data_cln_LCMS_Pos"]], check.names = FALSE)
-  expect_setequal(names(cleaned), names(run$workflow$data_tbl$LCMS_Pos))
+  expect_setequal(names(cleaned), names(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos))
   expect_true(is.numeric(cleaned$WT_1))
 
   manifest <- readLines(artifacts[["assay_manifest"]], warn = FALSE)

@@ -119,7 +119,8 @@ module_ci_metab_import_run <- function(assay,
   }
   notifications <- list()
   logs <- character()
-  result <- runMetabImportProcessing(
+  # KIT-075: the import binds the session's owner, which attaches to the reactive domain.
+  result <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabImportProcessing(
     assay1Data = assay,
     assay1Name = assay_name,
     assay1File = assay_file,
@@ -151,7 +152,7 @@ module_ci_metab_import_run <- function(assay,
     finalizeFeedbackFn = function(status, error = NULL) {
       invisible(list(status = status, error = if (is.null(error)) NULL else conditionMessage(error)))
     }
-  )
+  ))
   list(
     result = result,
     workflow = workflow,

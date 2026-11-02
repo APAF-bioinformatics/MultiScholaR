@@ -2,9 +2,11 @@
 # reactive internals), stopping at namespaces, attached packages and the global environment; lazy and active bindings
 # are not forced. Returns the paths at which an object of one of `classes` was reached.
 
-omicsResidencyWalk <- function(roots, classes = c("LipidomicsAssayData", "MetaboliteAssayData"), max_nodes = 500000L) {
+omicsResidencyWalk <- function(roots, classes = c("LipidomicsAssayData", "MetaboliteAssayData"), max_nodes = 500000L,
+    table_columns = character()) {
   seen <- new.env(hash = TRUE, parent = emptyenv())
   hits <- character()
+  tables <- character()
   nodes <- 0L
   skip_attributes <- c("names", "class", "row.names", "dim", "dimnames", "srcref", "srcfile", "wholeSrcref", "levels", "tsp")
   stop_env <- function(env) {
@@ -21,6 +23,8 @@ omicsResidencyWalk <- function(roots, classes = c("LipidomicsAssayData", "Metabo
       hits <<- c(hits, path)
       return(invisible())
     }
+    # A plain table carrying the corpus's sample columns is an assay table in memory.
+    if (is.data.frame(x) && length(table_columns) && sum(names(x) %in% table_columns) >= 2L) tables <<- c(tables, path)
     if (is.environment(x)) {
       if (stop_env(x)) return(invisible())
       key <- rlang::obj_address(x)
@@ -55,7 +59,7 @@ omicsResidencyWalk <- function(roots, classes = c("LipidomicsAssayData", "Metabo
     invisible()
   }
   for (name in names(roots)) visit(roots[[name]], name)
-  unique(hits)
+  structure(unique(hits), tables = unique(tables))
 }
 
 #' The default value of every input a module UI renders (numeric/text value, checkbox state, the checked radio, the
@@ -140,14 +144,22 @@ omicsResidencyJourney <- function(omic) {
   acc <- new.env(parent = emptyenv())
   acc$out <- list()
   acc$states <- list()
+  acc$tables <- list()
+  acc$bus <- list()
   shiny::testServer(server, args = list(id = paste0(omic, "_workflow"), project_dirs = project_dirs, omic_type = omic,
     experiment_label = "kit075"), {
     paths <- project_dirs[[omic]]
     set <- function(values) do.call(session$setInputs, values)
     defaults <- function(ui_name, id) set(omicsUiInputDefaults(ui(ui_name)(id)))
     walk <- function(step) {
-      acc$out[[step]] <- omicsResidencyWalk(list(session = session, workflow_data = workflow_data))
+      walked <- omicsResidencyWalk(list(session = session, workflow_data = workflow_data), table_columns = design_in$sample)
+      acc$tables[[step]] <- attr(walked, "tables")
+      acc$out[[step]] <- as.character(walked)
       acc$states[[step]] <- shiny::isolate(workflow_data$state_manager$current_state)
+      acc$bus[[step]] <- vapply(c("data_tbl", "data_cln"), function(field) {
+        value <- shiny::isolate(workflow_data[[field]])
+        if (is.null(value)) "empty" else if (isSavedWorkflowReference(value)) "reference" else "resident"
+      }, character(1))
     }
     # Import, through the processing helper the tab's process_import calls.
     if (identical(omic, "lipidomics")) {
@@ -235,5 +247,5 @@ omicsResidencyJourney <- function(omic) {
     set(list(`summary-copy_to_publication` = 1L))
     walk("summary")
   })
-  structure(acc$out, states = acc$states)
+  structure(acc$out, states = acc$states, tables = acc$tables, bus = acc$bus)
 }

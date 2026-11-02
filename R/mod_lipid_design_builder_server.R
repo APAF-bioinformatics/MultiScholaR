@@ -9,34 +9,43 @@
 #'   group assignments, will be used instead of creating a fresh matrix.
 #' @param existing_contrasts Optional reactive expression that returns an existing
 #'   contrasts table (e.g., from "Import Existing Design").
+#' @param state_owner Optional function returning the session's state owner; the builder
+#'   then holds its tables by reference. Without it they stay plain values.
 #'
 #' @rdname lipidomicsDesignMatrixBuilderModule
 #' @export
 mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_mapping
                                             , existing_design_matrix = NULL
-                                            , existing_contrasts = NULL) {
+                                            , existing_contrasts = NULL
+                                            , state_owner = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
 
         # Reactive value to store the final results
         result_rv <- shiny::reactiveVal(NULL)
+
+        # KIT-075: the builder's table lists are held by reference in the owner (plain without one).
+        currentOwner <- function() if (is.function(state_owner)) state_owner()
 
         # == Initial State Setup =================================================
         initial_state <- shiny::reactive({
             shiny::req(data_tbl())
             shiny::req(config_list())
 
-            buildLipidDesignInitialState(
+            state <- buildLipidDesignInitialState(
                 assayList = data_tbl()
                 , configList = config_list()
                 , colMap = column_mapping()
                 , existingDesignMatrix = existing_design_matrix
                 , existingContrasts = existing_contrasts
             )
+            # KIT-075: a reactive keeps its value; it keeps the tables' reference.
+            state$data_cln <- saveWorkflowOwnedValue(state$data_cln, "design_builder_initial_data_cln", currentOwner())
+            state
         })
 
         # Reactive values for the current, mutable state
         design_matrix <- shiny::reactiveVal()
-        data_cln_reactive <- shiny::reactiveVal()
+        data_cln_reactive <- omicsBuilderTableVal("design_builder_data_cln", currentOwner)
         sample_names_reactive <- shiny::reactiveVal()
         groups <- shiny::reactiveVal()
         factors <- shiny::reactiveVal()
@@ -162,7 +171,11 @@ mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_ma
             , columnMapping = column_mapping
             , contrasts = contrasts
             , configList = config_list
-            , resultRv = result_rv
+            , resultRv = function(value) {
+                # KIT-075: the returned result carries the tables' reference.
+                value$data_cln <- saveWorkflowOwnedValue(value$data_cln, "design_builder_result_data_cln", currentOwner())
+                result_rv(value)
+            }
         )
 
         # Return the reactive containing results

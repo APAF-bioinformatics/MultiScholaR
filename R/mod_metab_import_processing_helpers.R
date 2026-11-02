@@ -284,7 +284,9 @@ applyMetabImportWorkflowPayload <- function(
     workflowType = "METABOLOMICS", # KIT-070: the owner's type name
     logInfo = logger::log_info
 ) {
-  workflowData$data_tbl <- workflowPayload$assayList
+  # KIT-075: the owner is bound here and the tables are held by reference from the import on.
+  bindWorkflowOmicsOwnerAtImport(workflowData, workflowType, workflowPayload$dataFormat)
+  setWorkflowOmicsBusTables(workflowData, "data_tbl", workflowPayload$assayList)
   workflowData$data_format <- workflowPayload$dataFormat
   workflowData$data_type <- "metabolite"
   workflowData$column_mapping <- workflowPayload$columnMapping

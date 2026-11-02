@@ -1,0 +1,47 @@
+── Failure ('test-workflow-omics-residency.R:74:7'): lipidomics: no assay object is reachable after any journey step ──
+import: assay tables reachable at
+  $private$outs[[lipidomics_workflow-design-builder-tech_rep_summary]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$formulaString<closure>$data_cln_reactive<closure>$ret<attr:.impl>$private$value
+  $private$outs[[lipidomics_workflow-design-builder-tech_rep_summary]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$formulaString<closure>$data_cln_reactive<closure>$ret<attr:.impl>$private$value
+  $private$outs[[lipidomics_workflow-design-builder-tech_rep_summary]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$formulaString<closure>$initial_state<closure>$.value[[data_cln]][[LCMS_Pos]]
+  $private$outs[[lipidomics_workflow-design-builder-tech_rep_summary]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$formulaString<closure>$initial_state<closure>$.value[[data_cln]][[LCMS_Neg]]
+  $userData$omics_workflow_data[[lipidomics]][[impl]]$.dependents$private$map[[reset]]<closure>$values[[24]]$.dependents$private$map[[reset]]<closure>$values[[30]]$.domain$overrides[[input]][[impl]]$.dependents
+  $userData$omics_workflow_data[[lipidomics]][[impl]]$.dependents$private$map[[reset]]<closure>$values[[24]]$.dependents$private$map[[reset]]<closure>$values[[30]]$.domain$overrides[[input]][[impl]]$.dependents
+  .values$private$map[[reset]]<closure>$values[[32]][[LCMS_Pos]]
+  .values$private$map[[reset]]<closure>$values[[32]][[LCMS_Neg]]
+── Failure ('test-workflow-omics-residency.R:76:7'): lipidomics: no assay object is reachable after any journey step ──
+import: the bus holds data_tbl resident, data_cln empty
+design: assay tables reachable at
+  $private$outs[[lipidomics_workflow-design-builder-tech_rep_summary]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$formulaString<closure>$result_rv<closure>$ret<attr:.impl>$private$value[[data_c
+  $private$outs[[lipidomics_workflow-design-builder-tech_rep_summary]][[func]]<closure>$renderFunc<closure>$transform<closure>$env$formulaString<closure>$result_rv<closure>$ret<attr:.impl>$private$value[[data_c
+  .values$private$map[[reset]]<closure>$values[[18]][[LCMS_Pos]]
+  .values$private$map[[reset]]<closure>$values[[18]][[LCMS_Neg]]
+design: the bus holds data_tbl resident, data_cln resident
+intensity: assay tables reachable at
+intensity: the bus holds data_tbl resident, data_cln resident
+duplicates: assay tables reachable at
+duplicates: the bus holds data_tbl resident, data_cln resident
+qc_finalize: assay tables reachable at
+qc_finalize: the bus holds data_tbl resident, data_cln resident
+normalisation: assay tables reachable at
+normalisation: the bus holds data_tbl resident, data_cln resident
+correlation: assay tables reachable at
+correlation: the bus holds data_tbl resident, data_cln resident
+session_export: assay tables reachable at
+session_export: the bus holds data_tbl resident, data_cln resident
+da_load: assay tables reachable at
+da_load: the bus holds data_tbl resident, data_cln resident
+da: assay tables reachable at
+da: the bus holds data_tbl resident, data_cln resident
+summary: assay tables reachable at
+summary: the bus holds data_tbl resident, data_cln resident
+── Failure ('test-workflow-omics-residency.R:74:7'): metabolomics: no assay object is reachable after any journey step ──
+  $private$outs[[metabolomics_workflow-design-builder-data_table]][[func]]<closure>$renderFunc<closure>$env$data_cln_reactive<closure>$ret<attr:.impl>$private$value[[LCMS_Pos]]
+  $private$outs[[metabolomics_workflow-design-builder-data_table]][[func]]<closure>$renderFunc<closure>$env$data_cln_reactive<closure>$ret<attr:.impl>$private$value[[GCMS]]
+  $private$outs[[metabolomics_workflow-design-builder-data_table]][[func]]<closure>$renderFunc<closure>$env$initial_state<closure>$.value[[data_cln]][[LCMS_Pos]]
+  $private$outs[[metabolomics_workflow-design-builder-data_table]][[func]]<closure>$renderFunc<closure>$env$initial_state<closure>$.value[[data_cln]][[GCMS]]
+  .values$private$map[[reset]]<closure>$values[[32]][[GCMS]]
+── Failure ('test-workflow-omics-residency.R:76:7'): metabolomics: no assay object is reachable after any journey step ──
+  $private$outs[[metabolomics_workflow-design-builder-data_table]][[func]]<closure>$renderFunc<closure>$env$result_rv<closure>$ret<attr:.impl>$private$value[[data_cln]][[LCMS_Pos]]
+  $private$outs[[metabolomics_workflow-design-builder-data_table]][[func]]<closure>$renderFunc<closure>$env$result_rv<closure>$ret<attr:.impl>$private$value[[data_cln]][[GCMS]]
+  .values$private$map[[reset]]<closure>$values[[18]][[GCMS]]
+COUNTS test-workflow-omics-residency.R pass 38 fail 44 error 0 skip 0
