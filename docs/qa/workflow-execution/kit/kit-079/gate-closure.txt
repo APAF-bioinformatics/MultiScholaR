@@ -1,0 +1,3 @@
+status gui_member_observed elapsed 306.58 anon 2.07 
+dispatched 13 operations, all complete: TRUE 
+mismatches 0 

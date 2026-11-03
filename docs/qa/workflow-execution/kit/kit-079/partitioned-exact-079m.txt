@@ -1,0 +1,4 @@
+metab_intensity_filter: EXACT; rows after 287+289; 0.7 s
+metab_duplicate_resolution: EXACT; rows after 287+289; 0.5 s
+metab_log2: EXACT; rows after 281+283; 0.4 s
+RESULT exact
