@@ -484,6 +484,15 @@
       "install_member": "browser-smoke.wKv236",
       "source_commit": "cbd70e7d49f53996766a9aa245940356c1c77bbc",
       "runtime_patch_bytes": 0
+    },
+    "kit_078": {
+      "ticket": "KIT-078",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.IFYQXu/library",
+      "build": "9127d90552f9555320d84e9d7cb41d52f515e66fba88aa893b90dd9b4b6ef4cc",
+      "exact_sum": "121d2871daa191e6b62286204eaac8c5a9ac750f9ef2c27d18fdb6cfa8400acb",
+      "install_member": "browser-smoke.IFYQXu",
+      "source_commit": "d76c760420df7f881935484f2ca419de88688efd",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -25039,6 +25048,14 @@
       "operations": ["peptide_qvalue_filter", "peptide_protein_evidence_filter", "precursor_rollup", "peptide_intensity_filter", "minimum_peptides_per_sample", "peptide_replicate_filter", "peptide_imputation", "protein_iq_rollup", "protein_accession_cleanup", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "da_publication"],
       "ceiling_seconds": 1800
     },
+    "078": {
+      "kind": "gui",
+      "build": "kit_078",
+      "corpus": "screen",
+      "reference": "kit-gui-077",
+      "operations": ["peptide_qvalue_filter", "peptide_protein_evidence_filter", "precursor_rollup", "peptide_intensity_filter", "minimum_peptides_per_sample", "peptide_replicate_filter", "peptide_imputation", "protein_iq_rollup", "protein_accession_cleanup", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "da_publication"],
+      "ceiling_seconds": 1800
+    },
     "009": {
       "control": "kit_009",
       "candidate": "kit_009",
@@ -25642,7 +25659,7 @@
     "step_map_metab_sha256": "7a1640ad98ddafb350b21fd67a9d88da714e9237b49442f25b8ee5cc32256f41",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "0353618f8c4b52068702acf0cc8d37d1fb9228a864b57adc539099c1d23a1472",
+      "tools/profiling/workflow_kit.R": "3b693edeeb6e564235a31a36cca9c22948f46d323a78ff222b2cdcc71bc32554",
       "tools/profiling/workflow_kit_driver.R": "a6508228244c93735a910f92de884db67f1a0ea65fed869ceefd5dd7ed8b9a1f",
       "tools/profiling/workflow_kit_coordinator.R": "9abb115bad3db47aaea998d078a5e3f3f04a28bbcffbfc9b5a081317602dbcc7",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
