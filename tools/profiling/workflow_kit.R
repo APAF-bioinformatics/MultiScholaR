@@ -924,6 +924,8 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, ap
     if (is.null(result$failing_rule) && file.exists(reference_path) && !is.null(candidate_path) && file.exists(candidate_path)) {
         reference <- readRDS(reference_path)
         candidate <- readRDS(candidate_path)
+        # KIT-078: a reference member's stage directory may have been renamed to keep it; its store moved with it.
+        if (!dir.exists(reference$store)) reference$store <- file.path(dirname(reference_path), sub("^.*/member/", "", reference$store))
         # With an api the state fingerprints of both members are recomputed from their immutable stores under the
         # current canonical form (a correction to that form after the run then applies to both sides, as the
         # journey verifier does); the per-step assets the driver attached stay as recorded.
@@ -944,7 +946,12 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, ap
             candidate <- recompute(candidate)
             result$fingerprints <- "recomputed from both stores under the current canonical form"
         }
-        mismatches <- kitReproduceMismatches(reference$populations, candidate$populations, ignore_products = kitOperationIdentityProducts)
+        # KIT-078: the interactive volcano page's name is its content hash and its bytes differ between members of one build
+        # (kit_065, build bdd543d3cd: 664f2d9b14f5 and 383c460734be), so a page is reported, never judged across members.
+        pages <- function(journey) unlist(lapply(journey$populations, function(step) grep("^rendered_asset:", names(step$fingerprint$products), value = TRUE)))
+        result$rendered_pages <- list(reference = length(pages(reference)), candidate = length(pages(candidate)))
+        mismatches <- kitReproduceMismatches(reference$populations, candidate$populations,
+            ignore_products = paste0(kitOperationIdentityProducts, "|^rendered_asset:"))
         result$reference <- spec$reference %||% "kit-lifecycle-complete"
         result$reproduction <- list(fingerprint_mismatches = length(mismatches), mismatches = mismatches)
         if (length(mismatches)) result$failing_rule <- "reference_mismatch"
