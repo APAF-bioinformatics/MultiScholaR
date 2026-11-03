@@ -1,0 +1,34 @@
+lipid: reopened with no session; omic_type lipidomics; figure owner in scope: TRUE
+INFO [2026-11-03 19:34:32] --- Entering outputLipidDaResultsAllContrasts ---
+INFO [2026-11-03 19:34:32]    da_output_dir = /tmp/RtmpcTVk17/kit077-repeat-5969073ba301e/repeat-da
+INFO [2026-11-03 19:34:32]    publication_graphs_dir = /tmp/RtmpcTVk17/kit077-repeat-5969073ba301e/repeat-pub
+INFO [2026-11-03 19:34:32]    Created da_output_dir: /tmp/RtmpcTVk17/kit077-repeat-5969073ba301e/repeat-da
+INFO [2026-11-03 19:34:32]    Created Volcano_Plots directory: /tmp/RtmpcTVk17/kit077-repeat-5969073ba301e/repeat-pub/Volcano_Plots
+INFO [2026-11-03 19:34:32]    Created Heatmaps directory: /tmp/RtmpcTVk17/kit077-repeat-5969073ba301e/repeat-pub/Heatmaps
+INFO [2026-11-03 19:34:32]    Created NumSigDeMolecules directory: /tmp/RtmpcTVk17/kit077-repeat-5969073ba301e/repeat-pub/NumSigDeMolecules
+INFO [2026-11-03 19:34:32]    Found 2 assays: LCMS_Pos, LCMS_Neg
+INFO [2026-11-03 19:34:32]    Found 1 contrasts: groupWT-groupKO
+INFO [2026-11-03 19:34:32]    Processing assay: LCMS_Pos (mode: posmode)
+INFO [2026-11-03 19:34:32]       Processing contrast: groupWT-groupKO
+INFO [2026-11-03 19:34:32]       Wrote TSV: de_posmode_lipids_groupWT-groupKO_long_annot.tsv (183 rows, 41 cols)
+INFO [2026-11-03 19:34:32]       Wrote Excel: de_posmode_lipids_groupWT-groupKO_long_annot.xlsx
+INFO [2026-11-03 19:34:32]       Saved volcano PNG: posmode_groupWT-groupKO.png
+INFO [2026-11-03 19:34:32]       Saved volcano PDF: posmode_groupWT-groupKO.pdf
+INFO [2026-11-03 19:34:32]       Saved heatmap PNG: posmode_groupWT-groupKO_heatmap.png
+INFO [2026-11-03 19:34:32]       Saved heatmap PDF: posmode_groupWT-groupKO_heatmap.pdf
+INFO [2026-11-03 19:34:32]    Processing assay: LCMS_Neg (mode: negmode)
+INFO [2026-11-03 19:34:32]       Processing contrast: groupWT-groupKO
+INFO [2026-11-03 19:34:32]       Wrote TSV: de_negmode_lipids_groupWT-groupKO_long_annot.tsv (182 rows, 41 cols)
+INFO [2026-11-03 19:34:32]       Wrote Excel: de_negmode_lipids_groupWT-groupKO_long_annot.xlsx
+INFO [2026-11-03 19:34:32]       Saved volcano PNG: negmode_groupWT-groupKO.png
+INFO [2026-11-03 19:34:32]       Saved volcano PDF: negmode_groupWT-groupKO.pdf
+INFO [2026-11-03 19:34:32]       Saved heatmap PNG: negmode_groupWT-groupKO_heatmap.png
+INFO [2026-11-03 19:34:32]       Saved heatmap PDF: negmode_groupWT-groupKO_heatmap.pdf
+INFO [2026-11-03 19:34:32]    Created combined volcano PDF: 2 plots
+INFO [2026-11-03 19:34:32]    Created combined heatmap PDF: 2 plots
+INFO [2026-11-03 19:34:32]    Wrote NumSigDE table: lipids_num_sig_de_molecules.tab
+INFO [2026-11-03 19:34:32]    Wrote NumSigDE Excel: lipids_num_sig_de_molecules.xlsx
+INFO [2026-11-03 19:34:32]    Saved NumSigDE barplot: lipids_num_sig_barplot.png
+INFO [2026-11-03 19:34:32] --- Exiting outputLipidDaResultsAllContrasts ---
+lipid: export TRUE; plots built 0; figures written 11; byte-identical to a stored asset 11; assets 64 before, 64 after; names not in the journey's project 0
+RESULT a repeat export builds no plot and writes stored bytes

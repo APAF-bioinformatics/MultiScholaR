@@ -1,0 +1,13 @@
+files: 91 now, 58 in the baseline; missing from the baseline's paths: 0; new: 33; empty: 0
+  new files, by ending: assay.png 3; distribution.png 3; figure.png 1; heatmap.pdf 4; heatmap.png 4; intensity.png 3; metabolites.png 3; missingness.png 3; plots.png 6; sample.png 3 
+assets: 58; rooted in the head: 58
+figure files whose bytes are a stored asset: 91 of 91; not stored: 0
+products by type: composite 1; correlation 6; density 6; filtering 18; filtering_grid 3; heatmap 2; heatmap_combined 1; numsig 1; pca 6; rle 6; volcano 2; volcano_combined 1 
+plot data compared with the baseline: 24; different: 6
+  DIFFERENT lcms_pos_pre_norm_pca 
+  DIFFERENT gcms_ruv_corrected_pca 
+  DIFFERENT gcms_pre_norm_pca 
+  DIFFERENT lcms_pos_ruv_corrected_pca 
+  DIFFERENT gcms_post_norm_pca 
+  DIFFERENT lcms_pos_post_norm_pca 
+RESULT differs

@@ -1,0 +1,10 @@
+kit-journey-078l start 18:56:06: AC 0, profile low-power, battery 25%
+kit-journey-078l end 19:05:16: AC 0, profile low-power, battery 20%
+kit-journey-078m start 19:05:16: AC 0, profile low-power, battery 20%
+kit-journey-078m end 19:14:06: AC 0, profile low-power, battery 15%
+kit-lifecycle-lipid start 19:14:07: AC 0, profile low-power, battery 15%
+kit-lifecycle-lipid end 19:21:47: AC 1, profile low-power, battery 13%
+kit-lifecycle-metab start 19:21:47: AC 1, profile low-power, battery 13%
+kit-lifecycle-metab end 19:26:37: AC 1, profile low-power, battery 16%
+kit-gui-078 start 19:26:37: AC 1, profile low-power, battery 16%
+kit-gui-078 end 19:33:58: AC 1, profile low-power, battery 19%
