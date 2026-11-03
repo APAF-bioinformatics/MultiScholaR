@@ -1,0 +1,7 @@
+# kit-journey-078l, first launch on kit_078 = Gw3jSa: kept as evidence, no decision taken from it.
+# 10 of 10 steps complete, 360 s, 15 worker dispatches complete, verifier accepted, 0 oracle mismatches, 0 canonical-form differences.
+# Decision invalid on measurement_valid: 4 sampler gaps, largest 0.88 s against the frozen journey limit of 0.5 s.
+# Cause: the host. It rebooted at 15:16 and has been on battery in power-saver since (ACAD online 0, powersave governor, low-power
+# platform profile). Every member before the reboot had 0 gaps, also under test load (kit-gui-077, kit-gui-078 on items 1-2, 077l);
+# every member after it has bursts of them, proteomics included (kit-gui-078 on item 3, 3 gaps, largest 0.50 s and 0.85 s).
+# The limit is frozen and unchanged. The rerun waits for mains power.
