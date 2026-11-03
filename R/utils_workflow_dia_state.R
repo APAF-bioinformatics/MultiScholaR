@@ -430,7 +430,7 @@ readDIAExecutionComponents <- readWorkflowExecutionComponents
 #'   `TRUE` hydrates everything. Unrequested tables become zero-row prototypes, unrequested list
 #'   elements zero-row prototypes (tables) or NULL (values), unrequested nested objects are rebuilt
 #'   with prototypes, unrequested opaque slots keep the class prototype.
-#' @param columns Named list of column selections per table slot.
+#' @param columns Named list of column selections per table slot; for a list slot, one selection or a named list per element.
 #' @return The S4 object; support entries are not restored here (see materializeDIAStateRecord).
 #' @noRd
 rebuildDIACheckpointObject <- function(context, spec, fields = TRUE, columns = list()) {
@@ -443,12 +443,14 @@ rebuildDIACheckpointObject <- function(context, spec, fields = TRUE, columns = l
         tryCatch(readSavedWorkflowTablePrototype(scope), finally = releaseWorkflowTableReadScope(scope))
     }
     read_table <- function(component, field, element = NULL) {
-        if (wanted(field, element)) materializeDIATable(context, component, columns[[field]]) else prototype(component)
+        # KIT-079: a list slot's selection may be per element (a named list), since its assays' sample columns can differ.
+        selection <- if (is.list(columns[[field]])) columns[[field]][[element]] else columns[[field]]
+        if (wanted(field, element)) materializeDIATable(context, component, selection) else prototype(component)
     }
     slots <- spec$slots
     # Sample projection of a wide assay (KIT-010): the design is hydrated and restricted to the selected
     # sample columns whatever `fields` says, so the rebuilt object's sample sets agree.
-    assay_selection <- if (!is.null(declaration$assay)) columns[[declaration$assay]] else NULL
+    assay_selection <- if (!is.null(declaration$assay)) unlist(columns[[declaration$assay]], use.names = FALSE) else NULL
     projected_wide <- identical(declaration$layout, "wide") && !is.null(assay_selection)
     for (field in names(spec$components)) {
         component <- spec$components[[field]]
@@ -1730,6 +1732,30 @@ rememberDIAWorkers <- function(context, config) {
     invisible(NULL)
 }
 
+#' Save a component checkpoint as an owned value under a named role (KIT-079: a partitioned step's result has no object).
+#' @param checkpoint The component checkpoint.
+#' @param label Named current consumer role.
+#' @param manager Session manager.
+#' @return The saved reference.
+#' @noRd
+saveWorkflowOwnedCheckpoint <- function(checkpoint, label, manager) {
+    reference <- saveDIAStateValue(manager$.context,
+        list(data = checkpoint, config = NULL, description = label), paste0("owner:", label), codec = "rds")
+    components <- collectDIANativeReferences(
+        list(reference, checkpoint$components, checkpoint$support, checkpoint$products, checkpoint$dependencies))
+    # KIT-078: a worker holds no head; the controller's completion records what it saved.
+    if (is.list(manager$.context$deferred_roots)) {
+        manager$.context$deferred_owned[[length(manager$.context$deferred_owned) + 1L]] <- list(label = label,
+            reference = reference, components = components)
+        return(reference)
+    }
+    snapshot <- manager$.context$snapshot
+    snapshot$owned_components[[reference$entity_id]] <- components
+    snapshot$gui_references[[label]] <- reference
+    publishDIAStateHead(manager$.context, snapshot)
+    reference
+}
+
 #' Store a named GUI payload using the same whole-record codec, not a new backend.
 #' @param value Existing table, S4 or design-builder result.
 #' @param label Named current consumer role.
@@ -1763,24 +1789,7 @@ saveWorkflowOwnedValue <- function(value, label, manager = NULL) {
         publishDIAStateHead(manager$.context, snapshot)
         return(reference)
     }
-    if (usesDIAReferenceStates(manager) && isS4(value)) {
-        checkpoint <- checkpointDIAExecutionResult(manager, value)
-        reference <- saveDIAStateValue(manager$.context,
-            list(data = checkpoint, config = NULL, description = label), paste0("owner:", label), codec = "rds")
-        components <- collectDIANativeReferences(
-            list(reference, checkpoint$components, checkpoint$support, checkpoint$products, checkpoint$dependencies))
-        # KIT-078: a worker holds no head; the controller's completion records what it saved.
-        if (is.list(manager$.context$deferred_roots)) {
-            manager$.context$deferred_owned[[length(manager$.context$deferred_owned) + 1L]] <- list(label = label,
-                reference = reference, components = components)
-            return(reference)
-        }
-        snapshot <- manager$.context$snapshot
-        snapshot$owned_components[[reference$entity_id]] <- components
-        snapshot$gui_references[[label]] <- reference
-        publishDIAStateHead(manager$.context, snapshot)
-        return(reference)
-    }
+    if (usesDIAReferenceStates(manager) && isS4(value)) return(saveWorkflowOwnedCheckpoint(checkpointDIAExecutionResult(manager, value), label, manager))
     if (is.list(value) && !is.data.frame(value) && !is.null(value$config_list)) {
         rememberDIAWorkers(manager$.context, value$config_list)
         value$config_list <- prepareDIAStateRecord(list(data = NULL, config = value$config_list))$config

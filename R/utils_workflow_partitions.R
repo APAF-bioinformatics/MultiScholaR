@@ -180,3 +180,30 @@ partitionByRows <- function(scope, columns, kernel, consume, worker_cap, working
     })
     list(batches = index, batch_sizes = batch_sizes, rows = sum(batch_sizes), admission = admission)
 }
+
+#' Save one output table a partitioned step writes in batches (KIT-079): one element of a list slot, or any table.
+#' @param context The owner's context.
+#' @param prototype A zero-row table with the output's schema and restoration.
+#' @param identity The table's scientific identity.
+#' @param produce `function(append)`: calls `append(table)` per batch, in output order. A batch with no rows adds nothing;
+#'   a run with none saves the empty table.
+#' @return The saved table's reference.
+#' @noRd
+saveWorkflowPartitionedTable <- function(context, prototype, identity, produce) {
+    metadata <- workflowSavedTableMetadata(prototype, ".rownames", 3L)
+    metadata$rows <- NULL
+    saveWorkflowTable(context$store, NULL, basename(tempfile("partitioned-table-")), identity, ".rownames",
+        metadata = metadata, write_fn = function(path, restoration) {
+            writer <- openWorkflowTableWriter(path, restoration, context$store$progress)
+            on.exit(abortWorkflowTableWriter(writer), add = TRUE)
+            produce(function(table) {
+                if (!is.data.frame(table) || !nrow(table)) return(invisible(NULL))
+                table <- as.data.frame(table)[, restoration$columns, drop = FALSE]
+                rownames(table) <- NULL
+                appendWorkflowTableWriter(writer, completeWorkflowTableBatch(table, restoration))
+                invisible(NULL)
+            })
+            if (is.null(writer$output)) appendWorkflowTableWriter(writer, completeWorkflowTableBatch(as.data.frame(prototype), restoration))
+            finishWorkflowTableWriter(writer)
+        })
+}

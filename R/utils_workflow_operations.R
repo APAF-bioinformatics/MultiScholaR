@@ -153,7 +153,7 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
     if (identical(hit$status, "hit")) {
         return(list(status = "hit", value = hit$value$value, reference = hit$reference))
     }
-    store <- newWorkflowOperationStore(manager, declaration, source, identity)
+    store <- newWorkflowOperationStore(manager, declaration, source, identity, parameters$worker_cap)
     value <- runProjected(manager, declaration, source, parameters, store)
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
         newSavedWorkflowScientificProduct(value, declaration$product_type),
@@ -169,6 +169,8 @@ runSavedOperation <- function(manager, declaration, source, parameters, dependen
 #' @noRd
 runProjected <- function(manager, declaration, source, parameters, store = NULL) {
     if (is.null(store)) store <- newWorkflowOperationStore(manager, declaration, source, NULL)
+    # KIT-079: a declaration's partitioned variant reads its own pages; it never hydrates the object.
+    if (identical(parameters$variant, "partitioned") && is.function(declaration$partitioned)) return(declaration$partitioned(parameters, store))
     object <- readWorkflowExecutionComponents(manager, source, fields = declaration$fields, columns = declaration$columns)
     declaration$kernel(object, parameters, store)
 }
@@ -176,7 +178,7 @@ runProjected <- function(manager, declaration, source, parameters, store = NULL)
 #' Store handle handed to a kernel: checkpoints through the output class declaration and records
 #' every reference it creates so the product can be rooted on them.
 #' @noRd
-newWorkflowOperationStore <- function(manager, declaration, source, identity) {
+newWorkflowOperationStore <- function(manager, declaration, source, identity, parameters_worker_cap = NULL) {
     created <- list()
     remember <- function(reference) {
         created[[length(created) + 1L]] <<- reference
@@ -185,6 +187,8 @@ newWorkflowOperationStore <- function(manager, declaration, source, identity) {
     list(
         source = source,
         manager = manager,
+        # KIT-079: the admitted worker capacity, for a partitioned variant's admission (the request's; NULL in process).
+        worker_cap = parameters_worker_cap,
         checkpoint = function(value, label, from = NULL) {
             if (is.null(declaration$output_class) || !methods::is(value, declaration$output_class)) {
                 cli::cli_abort("operation {.val {declaration$name}} may only checkpoint {.cls {declaration$output_class}}",
@@ -194,6 +198,8 @@ newWorkflowOperationStore <- function(manager, declaration, source, identity) {
             remember(saveWorkflowOwnedValue(value, label, manager))
         },
         table = function(table) remember(saveWorkflowOwnedTable(manager$.context, table)),
+        # KIT-079: a partitioned step's result, already a component checkpoint.
+        checkpoint_record = function(checkpoint, label) remember(saveWorkflowOwnedCheckpoint(checkpoint, label, manager)),
         product = function(value, name, product_type) {
             if (is.null(identity)) {
                 cli::cli_abort("derived products need the operation identity", class = "workflow_operation_output")
@@ -679,13 +685,15 @@ registerBuiltinWorkflowOperations <- function() {
         for (declaration in omicsWorkflowOperations(binding)) {
             label <- binding$step_labels[declaration$name]
             worker <- declaration$name %in% workers
+            # KIT-079: `whole` stays the default until KIT-080's operation pairs decide.
             registerWorkflowOperation(c(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
                 compute = if (worker) "omics" else "in_process", handler = if (worker) "computeWorkflowOmicsOperationAction",
                 validate = if (worker) "validateWorkflowOmicsParameters" else "validateWorkflowInProcessParameters", resolve = NULL,
                 parameter_limit = 65536, parameters = declaration$parameters %||% character(),
                 completion = if (worker) "omics" else "in_process", publication = if (worker) "omics" else "in_process",
                 step_label = if (is.na(label)) NULL else unname(label),
-                omic_type = binding$omic_type, variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
+                omic_type = binding$omic_type, variants = if (is.function(declaration$partitioned)) c("whole", "partitioned") else "whole",
+                default_variant = "whole", diagnostic_only = FALSE,
                 inclusion_absence = FALSE, declaration = declaration),
                 if (worker && !declaration$name %in% sections) list(section = NULL)))
         }

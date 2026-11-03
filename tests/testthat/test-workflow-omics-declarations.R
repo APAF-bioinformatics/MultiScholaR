@@ -18,6 +18,13 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
   for (omic in c("lipidomics", "metabolomics")) {
     prefix <- if (identical(omic, "lipidomics")) "lipid" else "metab"
     current$registry[[omic]][paste0(prefix, c("_qc_figures", "_composite_figure", "_da_publication"))] <- NULL
+    # KIT-079: three steps gain a partitioned variant, `whole` staying the default.
+    for (step in paste0(prefix, c("_intensity_filter", "_log2", "_duplicate_resolution"))) {
+      expect_identical(current$registry[[omic]][[step]]$entry$variants, c("whole", "partitioned"), info = step)
+      expect_identical(current$registry[[omic]][[step]]$entry$default_variant, "whole", info = step)
+      current$registry[[omic]][[step]]$entry$variants <- "whole"
+      current$registry[[omic]][[step]]$declaration$partitioned <- NULL
+    }
     for (name in names(current$registry[[omic]])) {
       if (!identical(current$registry[[omic]][[name]]$entry$compute, "omics")) next
       entry <- current$registry[[omic]][[name]]$entry

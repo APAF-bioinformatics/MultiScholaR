@@ -17,7 +17,7 @@ lipidRuvParameterNames <- omicsRuvParameterNames
 lipidomicsDeclarationBinding <- list(
     omic_type = "lipidomics", prefix = "lipid", class = "LipidomicsAssayData", data_slot = "lipid_data",
     id_slot = "lipid_id_column", fields = lipidomicsOperationFields, merge = lipidomicsPartitionMerge,
-    feature_noun = "lipid", long_table = "da_lipids_long", design_input_prefix = "lipid_assay_",
+    design_field = "design_matrix", feature_noun = "lipid", long_table = "da_lipids_long", design_input_prefix = "lipid_assay_",
     step_scope = "the lipid step", da_scope = "the lipid DA",
     intensity_parameters = c("lipids_intensity_cutoff_percentile", "lipids_proportion_of_samples_below_cutoff"),
     intensity_threshold = "min_lipid_intensity_threshold",
@@ -74,6 +74,12 @@ lipidomicsDeclarationBinding <- list(
     da_apply = function(...) applyLipidDaContrasts(...),
     da_format = function(...) formatLipidDaContrastTable(...),
     da_count = function(...) countLipidDaSignificant(...),
+    # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
+    filter_intensity_page = function(page, threshold, proportion, id_column) lipidIntensityFilteringHelper(assay_table = page,
+        min_lipid_intensity_threshold = threshold, lipids_proportion_of_samples_below_cutoff = proportion, lipid_id_column = id_column),
+    resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveLipidDuplicateFeaturesByIntensity(assay_tibble = batch,
+        id_col = id_column, sample_cols = sample_columns),
+    duplicate_value = function(before, after, without_samples) list(counts = list(before = before, after = after)),
     # KIT-078: what the worker reads from the matrix for the step's figures and files.
     qc_dir_role = "lipid_qc_dir",
     qc_plots = function(...) generateLipidQcPlots(...),

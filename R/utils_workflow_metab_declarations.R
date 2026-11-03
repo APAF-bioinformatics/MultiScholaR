@@ -17,7 +17,7 @@ metabRuvParameterNames <- omicsRuvParameterNames
 metabolomicsDeclarationBinding <- list(
     omic_type = "metabolomics", prefix = "metab", class = "MetaboliteAssayData", data_slot = "metabolite_data",
     id_slot = "metabolite_id_column", fields = metabolomicsOperationFields, merge = metabolomicsPartitionMerge,
-    feature_noun = "metabolite", long_table = "da_metabolites_long", design_input_prefix = "metab_assay_",
+    design_field = "design_matrix", feature_noun = "metabolite", long_table = "da_metabolites_long", design_input_prefix = "metab_assay_",
     step_scope = "the step", da_scope = "the metabolomics DA",
     intensity_parameters = c("metabolites_intensity_cutoff_percentile", "metabolites_proportion_of_samples_below_cutoff"),
     intensity_threshold = "min_metabolite_intensity_threshold",
@@ -62,6 +62,15 @@ metabolomicsDeclarationBinding <- list(
     da_apply = function(...) applyMetabDaContrasts(...),
     da_format = function(...) formatMetabDaContrastTable(...),
     da_count = function(...) countMetabDaSignificant(...),
+    # KIT-079: the kernels' per-page and per-batch halves, for the partitioned variants.
+    filter_intensity_page = function(page, threshold, proportion, id_column) metaboliteIntensityFilteringHelper(assay_table = page,
+        min_metabolite_intensity_threshold = threshold, metabolites_proportion_of_samples_below_cutoff = proportion, metabolite_id_column = id_column),
+    resolve_duplicates_batch = function(batch, id_column, sample_columns) resolveDuplicateFeaturesByIntensity(assay_tibble = batch,
+        id_col = id_column, sample_cols = sample_columns),
+    # As `resolveMetabDuplicateAssayData` reports each assay.
+    duplicate_value = function(before, after, without_samples) list(stats = lapply(stats::setNames(names(before), names(before)), function(assay) {
+        list(original = before[[assay]], resolved = after[[assay]], removed = if (without_samples[[assay]]) 0 else before[[assay]] - after[[assay]])
+    })),
     # KIT-078: what the worker reads from the matrix for the step's figures and files.
     qc_dir_role = "metabolite_qc_dir",
     qc_plots = function(...) generateMetabQcPlots(...),

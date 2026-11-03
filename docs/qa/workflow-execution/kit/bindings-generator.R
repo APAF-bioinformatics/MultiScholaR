@@ -337,6 +337,10 @@ if (!is.null(b$builds$kit_077)) b$tickets[["077"]] <- list(kind = "gui", build =
 if (!is.null(b$builds$kit_078)) b$tickets[["078"]] <- list(kind = "gui", build = "kit_078", corpus = "screen",
     reference = "kit-gui-077", operations = kit_078p_operations, ceiling_seconds = 1800L)
 
+# KIT-079: the same member on the partitioned variants' build (codec and checkpoint code change), against `kit-gui-078`.
+if (!is.null(b$builds$kit_079)) b$tickets[["079"]] <- list(kind = "gui", build = "kit_079", corpus = "screen",
+    reference = "kit-gui-078", operations = kit_078p_operations, ceiling_seconds = 1800L)
+
 # KIT-009: the imputation step as an operation on the feature-group partitioner, control and candidate on the
 # KIT-005 imputation population (input: the state after the replicate filter, `journey_replicate`; oracle: the
 # state after imputation, `journey_imputation`), with the journey's recorded parameters (proportion 0.5, no

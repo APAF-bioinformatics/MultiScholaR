@@ -1,0 +1,7 @@
+# KIT-079 composite on both omics' real per-assay files (kit_078 lifecycle members), each reader in a fresh process
+# peak = VmHWM after load, after build, after render
+lipid double: peak GiB 0.37, 1.51, 2.02; png b8aaabf198ac; rds 41.2 MB
+lipid native: peak GiB 0.37, 0.53, 0.87; png b8aaabf198ac; rds 11.0 MB
+metab double: peak GiB 0.37, 1.51, 2.03; png b76c3bd4bac0; rds 41.6 MB
+metab native: peak GiB 0.37, 0.53, 0.87; png b76c3bd4bac0; rds 10.9 MB
+pdf: pdftoppm -r 100 page 1 byte-identical between readers on both omics

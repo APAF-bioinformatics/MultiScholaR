@@ -645,3 +645,187 @@ test_that("the controller's completion finishes a Q-value result through the ste
         expect_identical(entry$completion, "peptide")
     }
 })
+
+# KIT-079: the partitioned omics steps. The gaps first, then each variant exact against `whole` on every component, at the
+# page and batch counts these fixtures reach.
+
+test_that("KIT-079 gap: a feature-group cursor reads more than 64 columns, each batch's whole groups in source order", {
+  skip_if_not(workflowOwnerCapable())
+  set.seed(7901)
+  wide <- as.data.frame(matrix(stats::rnorm(40 * 70), nrow = 40, dimnames = list(NULL, paste0("S", seq_len(70)))))
+  wide <- cbind(feature = sprintf("F%02d", c(1:30, 1:10)), wide, stringsAsFactors = FALSE)
+  store <- newWorkflowEntityStore(withr::local_tempdir(), "kit079-cursor", "LIPIDOMICS")
+  withr::defer(closeWorkflowEntityStore(store))
+  manager <- newWorkflowStateOwner(store)
+  withr::defer(closeWorkflowStateOwner(manager), priority = "first")
+  reference <- saveWorkflowOwnedTable(manager$.context, wide)
+  scope <- newWorkflowTableReadScope(store, reference, reader = "duckdb")
+  withr::defer(releaseWorkflowTableReadScope(scope), priority = "first")
+  cursor <- openWorkflowTableGroups(scope, names(wide), "feature", "key")
+  parts <- list()
+  repeat {
+    part <- cursor$next_group()
+    if (is.null(part)) break
+    parts[[length(parts) + 1L]] <- part
+  }
+  got <- do.call(rbind, parts)
+  expected <- wide[order(wide$feature, seq_len(nrow(wide)), method = "radix"), ]
+  rownames(expected) <- NULL
+  rownames(got) <- NULL
+  expect_identical(names(got), names(wide))
+  attr(got, "workflow_source_order") <- NULL
+  expect_equal(as.data.frame(got), expected)
+})
+
+test_that("KIT-079 gap: a list slot's element is written in batches and read back as one table", {
+  skip_if_not(workflowOwnerCapable())
+  fixture <- lipidDeclarationsOwner(withr::local_tempdir())
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  context <- fixture$owner$.context
+  assay <- as.data.frame(fixture$object@lipid_data[[1L]])
+  identity <- newSavedWorkflowScientificIdentity("source", "design", "parameters", "selectors", context$software)
+  reference <- saveWorkflowPartitionedTable(context, assay[0L, , drop = FALSE], identity, function(append) {
+    append(assay[1:3, , drop = FALSE])
+    append(assay[0L, , drop = FALSE])
+    append(assay[-(1:3), , drop = FALSE])
+  })
+  expect_true(isWorkflowTableReference(reference))
+  back <- materializeWorkflowTable(context, reference)
+  rownames(assay) <- NULL
+  expect_equal(as.data.frame(back), assay)
+  none <- saveWorkflowPartitionedTable(context, assay[0L, , drop = FALSE],
+    newSavedWorkflowScientificIdentity("source2", "design", "parameters", "selectors", context$software), function(append) invisible(NULL))
+  expect_identical(nrow(materializeWorkflowTable(context, none)), 0L)
+})
+
+test_that("KIT-079 gap: a list slot's column selection can differ by element", {
+  skip_if_not(workflowOwnerCapable())
+  set.seed(7905)
+  samples <- sprintf("S%d", 1:4)
+  with_annotation <- data.frame(feature = sprintf("P%d", 1:3), class_name = "PC", stringsAsFactors = FALSE)
+  with_annotation[samples] <- as.data.frame(matrix(stats::rnorm(12), nrow = 3))
+  without <- data.frame(feature = sprintf("N%d", 1:3), stringsAsFactors = FALSE)
+  without[samples] <- as.data.frame(matrix(stats::rnorm(12), nrow = 3))
+  design <- data.frame(Run = samples, group = c("A", "A", "B", "B"), stringsAsFactors = FALSE)
+  object <- methods::new("LipidomicsAssayData", lipid_data = list(pos = with_annotation, neg = without), design_matrix = design,
+    sample_id = "Run", group_id = "group", lipid_id_column = "feature", annotation_id_column = "feature")
+  owner <- omicsTestOwner(object, "raw", omic_type = "lipidomics")$state_manager
+  selection <- list(pos = c("feature", "class_name", samples), neg = c("feature", samples))
+  read <- readWorkflowExecutionComponents(owner, getWorkflowStateReference(owner), fields = c("lipid_data", "design_matrix"), columns = list(lipid_data = selection))
+  expect_identical(names(read@lipid_data$pos), selection$pos)
+  expect_identical(names(read@lipid_data$neg), selection$neg)
+  # One selection still applies to every element, and refuses a column an element lacks.
+  expect_error(readWorkflowExecutionComponents(owner, getWorkflowStateReference(owner), fields = "lipid_data", columns = list(lipid_data = selection$pos)),
+    class = "saved_entity_invalid")
+})
+
+#' A lipid or metab object from per-assay tables, on the declaration fixtures' class slots.
+kit079Object <- function(omic, assays, samples) {
+  design <- data.frame(Run = samples, group = rep_len(c("A", "B"), length(samples)), stringsAsFactors = FALSE)
+  if (identical(omic, "lipidomics")) {
+    methods::new("LipidomicsAssayData", lipid_data = assays, design_matrix = design, sample_id = "Run", group_id = "group",
+      lipid_id_column = "feature", annotation_id_column = "feature")
+  } else {
+    methods::new("MetaboliteAssayData", metabolite_data = assays, design_matrix = design, sample_id = "Run", group_id = "group",
+      metabolite_id_column = "feature", annotation_id_column = "feature")
+  }
+}
+
+#' A wide assay with `duplicates` extra rows of existing ids, in shuffled source order.
+kit079Assay <- function(rows, samples, duplicates, prefix) {
+  ids <- sprintf("%s%05d", prefix, seq_len(rows))
+  ids <- c(ids, sample(ids, duplicates))
+  values <- matrix(stats::rlnorm(length(ids) * length(samples), 8, 1), nrow = length(ids), dimnames = list(NULL, samples))
+  values[sample(length(values), length(values) %/% 20L)] <- NA_real_
+  out <- cbind(data.frame(feature = ids, stringsAsFactors = FALSE), as.data.frame(values, check.names = FALSE))
+  out[sample(nrow(out)), , drop = FALSE]
+}
+
+#' Each partitioned step on its own owner against `whole` on another: the committed state, the value, the checkpoint's record.
+kit079ExpectExact <- function(omic, object, label) {
+  binding <- omicsDeclarationBindings()[[omic]]
+  config <- list(qc = list(mode = "kit079"))
+  owner_frame <- environment()
+  owner_on <- function(name) omicsTestOwner(object, "raw", omic_type = omic, config = config, env = owner_frame)$state_manager
+  steps <- list(omicsIntensityFilterStep(binding, 10, 0.5), omicsLog2Step(binding, 1), omicsDuplicateResolutionStep(binding))
+  for (step in steps) {
+    run <- function(variant) {
+      owner <- owner_on(variant)
+      out <- suppressWarnings(suppressMessages(runWorkflowOmicsReferenceOperation(owner, workflowOperationEntry(step$operation)$declaration,
+        c(step$parameters, list(variant = variant)), step$state_name, config, step$description)))
+      spec <- readWorkflowStateMetadata(owner)$data
+      list(state = omicsDeclarationsScrub(suppressWarnings(owner$getState(step$state_name))), value = omicsDeclarationsScrub(out$value),
+        args = spec$slots$args, dimensions = spec$dimensions, class = spec$class,
+        assays = names(spec$components[[binding$data_slot]]), provenance = owner$.context$snapshot$step_provenance[[step$state_name]]$operation)
+    }
+    whole <- run("whole")
+    partitioned <- run("partitioned")
+    info <- paste(label, step$operation)
+    expect_identical(partitioned$state, whole$state, info = info)
+    expect_identical(partitioned$value, whole$value, info = info)
+    expect_identical(partitioned$args, whole$args, info = info)
+    expect_identical(partitioned$dimensions, whole$dimensions, info = info)
+    expect_identical(partitioned[c("class", "assays", "provenance")], whole[c("class", "assays", "provenance")], info = info)
+  }
+}
+
+test_that("KIT-079: every partitioned step is exact against whole on a 300-sample wide lipid assay", {
+  skip_if_not(workflowOwnerCapable())
+  set.seed(7902)
+  samples <- sprintf("S%03d", seq_len(300))
+  object <- kit079Object("lipidomics", list(pos = kit079Assay(300, samples, 12, "P"), neg = kit079Assay(60, samples, 0, "N")), samples)
+  kit079ExpectExact("lipidomics", object, "300 samples")
+})
+
+test_that("KIT-079: every partitioned step is exact against whole on uneven metab assays, across more than one page and batch", {
+  skip_if_not(workflowOwnerCapable())
+  set.seed(7903)
+  samples <- sprintf("S%02d", seq_len(8))
+  object <- kit079Object("metabolomics", list(LCMS_Pos = kit079Assay(12000, samples, 700, "M"), GCMS = kit079Assay(25, samples, 3, "G")), samples)
+  kit079ExpectExact("metabolomics", object, "uneven")
+})
+
+test_that("KIT-079: the awkward assays stay exact: integer columns, mixed-case and missing ids, all-missing and empty assays, on both omics", {
+  skip_if_not(workflowOwnerCapable())
+  set.seed(7904)
+  samples <- sprintf("S%d", 1:6)
+  assay <- kit079Assay(12, samples, 4, "x")
+  assay$feature[1:3] <- c("Zeta", "alpha", "Beta")
+  assay$feature[4:5] <- NA_character_
+  integers <- kit079Assay(10, samples, 2, "I")
+  integers[samples] <- lapply(integers[samples], function(values) as.integer(round(values)))
+  no_duplicate <- kit079Assay(9, samples, 0, "N")
+  no_duplicate[samples[[1L]]] <- as.integer(round(no_duplicate[[samples[[1L]]]]))
+  missing_values <- kit079Assay(5, samples, 0, "A")
+  missing_values[samples] <- lapply(missing_values[samples], function(values) rep(NA_real_, length(values)))
+  empty <- kit079Assay(3, samples, 0, "E")[0L, , drop = FALSE]
+  assays <- list(mixed = assay, integers = integers, no_duplicate = no_duplicate, missing_values = missing_values, empty = empty)
+  for (omic in c("lipidomics", "metabolomics")) kit079ExpectExact(omic, kit079Object(omic, assays, samples), paste("awkward", omic))
+})
+
+test_that("KIT-079: the worker passes the variant, and whole stays the default; ITSD has no partitioned variant", {
+  skip_if_not(workflowOwnerCapable())
+  for (prefix in c("lipid", "metab")) {
+    for (step in c("_intensity_filter", "_log2", "_duplicate_resolution")) {
+      entry <- workflowActionSpec(paste0(prefix, step))
+      expect_identical(entry$variants, c("whole", "partitioned"), info = step)
+      expect_identical(entry$default_variant, "whole", info = step)
+    }
+    itsd <- workflowActionSpec(paste0(prefix, "_itsd_normalisation"))
+    expect_identical(itsd$variants, "whole")
+    expect_null(itsd$declaration$partitioned)
+  }
+  testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), .package = "MultiScholaR")
+  fixture <- lipidDeclarationsOwner(withr::local_tempdir())
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  binding <- lipidomicsDeclarationBinding
+  step <- omicsLog2Step(binding, 1)
+  run <- omicsWorkerRun(fixture, step$operation, step$parameters, config = list(mode = "adapters", qualification = list(programme = "perf106-repair-v2",
+    variant = "partitioned", member_sha256 = strrep("a", 64), deadline = 600)))
+  expect_identical(run$status, "complete", info = run$error)
+  expect_identical(run$result$checkpoint$class, "LipidomicsAssayData")
+  # The worker wrote the assay tables as partitioned output, and left the head alone.
+  expect_true(length(run$result$owned) >= 1L)
+  expect_false(step$state_name %in% unlist(fixture$owner$getHistory()))
+  expect_identical(names(run$result$checkpoint$components$lipid_data), names(fixture$object@lipid_data))
+})

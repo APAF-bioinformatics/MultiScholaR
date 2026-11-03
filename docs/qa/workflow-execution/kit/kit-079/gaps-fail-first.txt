@@ -1,0 +1,8 @@
+# KIT-079 gaps, each on dc970263 (KIT-078's code) with this ticket's tests
+## KIT-079 gap: a feature-group cursor reads more than 64 columns, each batch's whole groups in source order
+COUNTS test-workflow-partitions.R pass 0 fail 0 error 1 skip 0
+## KIT-079 gap: a list slot's element is written in batches and read back as one table
+COUNTS test-workflow-partitions.R pass 0 fail 0 error 1 skip 0
+ Error in `saveWorkflowPartitionedTable(context, assay[0L, , drop = FALSE], identity, function(append) {     append(assay[1:3, , drop = FALSE])     append(assay[0L, , dro
+## KIT-079 gap: a list slot's column selection can differ by element
+COUNTS test-workflow-partitions.R pass 0 fail 0 error 1 skip 0

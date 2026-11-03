@@ -24,6 +24,102 @@ newOmicsOperation <- function(binding, name, unit, parameters, product_type, ker
         global_statistics = global_statistics, merge = if (partitioned) binding$merge else NULL, fixed = fixed)
 }
 
+#' A declared numeric parameter as a kernel reads it: the text before any comment, as a number.
+#' @noRd
+omicsCleanNumericParameter <- function(value) as.numeric(trimws(sub("#.*$", "", value)))
+
+#' Unique feature ids per assay from saved tables, as `omicsFeatureCounts` counts them, reading the id column alone (KIT-079).
+#' @noRd
+omicsPartitionedFeatureCounts <- function(binding, store, tables, id_column) {
+    context <- store$manager$.context
+    vapply(tables, function(table) {
+        scope <- newWorkflowTableReadScope(context$store, table, metadata_only = TRUE)
+        columns <- scope$metadata$columns
+        releaseWorkflowTableReadScope(scope)
+        if (id_column %in% columns) length(unique(materializeWorkflowTable(context, table, id_column)[[id_column]])) else as.double(table$metadata$shape[[1L]])
+    }, numeric(1))
+}
+
+#' Declared row and feature-group working bytes per column of a partitioned omics step (the proteomics row filter's figure).
+#' @noRd
+omicsPartitionedWorkingBytesPerColumn <- 48
+
+#' Run a partitioned variant (KIT-079): the kernel on the object with empty assays gives what the step records and the
+#' design it carries; each assay's output table is written from its pages or groups by `write_assay`; the checkpoint is
+#' the one the kernel would have produced, with those tables as its list slot's elements.
+#' @param on_template `function(template)`: the unchanged kernel on the object with zero-row assays.
+#' @param label The checkpoint's owned-value label.
+#' @param write_assay `function(assay, component, prototype, template, partition)` returning the saved table's reference.
+#'   `prototype` is the kernel's zero-row output for the assay; `partition` the assay's readers and writers.
+#' @return `list(final, tables, source_tables, id_column)`.
+#' @noRd
+omicsRunPartitioned <- function(binding, store, on_template, label, write_assay) {
+    manager <- store$manager
+    context <- manager$.context
+    source <- store$source
+    spec <- readWorkflowStateMetadata(manager, source)$data
+    worker_cap <- store$worker_cap %||% (12 * 1024^3)
+    source_tables <- spec$components[[binding$data_slot]]
+    template <- readWorkflowExecutionComponents(manager, source, fields = binding$design_field)
+    result <- suppressWarnings(suppressMessages(on_template(template)))
+    tables <- source_tables
+    for (assay in names(source_tables)) {
+        component <- source_tables[[assay]]
+        if (!isWorkflowTableReference(component)) next
+        scope <- newWorkflowTableReadScope(context$store, component, reader = if (component$metadata$shape[[2L]] > 64L) "duckdb" else "arrow")
+        partition <- omicsAssayPartition(scope, context, component, label, assay, worker_cap)
+        tables[[assay]] <- tryCatch(suppressWarnings(suppressMessages(write_assay(assay, component,
+            methods::slot(result, binding$data_slot)[[assay]], template, partition))), finally = releaseWorkflowTableReadScope(scope))
+    }
+    result <- inheritWorkflowExecutionSource(result, manager, source)
+    # The assays are written above; only the design comes from this object.
+    attr(result, "dia_execution_fields") <- binding$design_field
+    checkpoint <- checkpointWorkflowExecutionResult(manager, result)
+    checkpoint$components[[binding$data_slot]] <- tables
+    checkpoint$dimensions$rows <- sum(vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1)))
+    list(final = store$checkpoint_record(checkpoint, label), tables = tables, source_tables = source_tables,
+        id_column = methods::slot(template, binding$id_slot))
+}
+
+#' One assay's readers and writers for a partitioned variant.
+#' @noRd
+omicsAssayPartition <- function(scope, context, component, label, assay, worker_cap) {
+    columns <- scope$metadata$columns
+    prototype <- readSavedWorkflowTablePrototype(scope)
+    identity_of <- function(kind) newSavedWorkflowScientificIdentity(component$entity_id, label, digest::digest(list(assay, kind), algo = "sha256"),
+        "omics-partitioned-table-v1", context$software)
+    working <- omicsPartitionedWorkingBytesPerColumn * length(columns)
+    overhead <- 2 * 67108864 + 2 * 8388608
+    list(columns = columns, prototype = prototype,
+        numeric_columns = function() names(prototype)[vapply(prototype, is.numeric, logical(1))],
+        # Every value of the columns, for a pre-pass that needs them all.
+        all_values = function(selected) {
+            values <- list()
+            streamWorkflowTableRows(scope, selected, function(page, offset, row_names) {
+                values[[length(values) + 1L]] <<- unlist(page, use.names = FALSE)
+                invisible(NULL)
+            })
+            unlist(values, use.names = FALSE)
+        },
+        has_duplicates = function(id_column) {
+            if (!scope$metadata$rows) return(FALSE)
+            cursor <- openWorkflowTableGroups(scope, id_column, id_column)
+            on.exit(cursor$close(), add = TRUE)
+            any(cursor$group_sizes > 1L)
+        },
+        write_rows = function(output_prototype, page_kernel) saveWorkflowPartitionedTable(context, output_prototype, identity_of("rows"), function(append) {
+            if (!scope$metadata$rows) return(invisible(NULL))
+            partitionByRows(scope, columns, kernel = function(page, index, offset) page_kernel(page), consume = function(value, index) append(value),
+                worker_cap = worker_cap, working_bytes_per_row = working, overhead_bytes = overhead, policy = "omics-row-pages-v1")
+            invisible(NULL)
+        }),
+        write_groups = function(output_prototype, id_column, batch_kernel) saveWorkflowPartitionedTable(context, output_prototype, identity_of("groups"), function(append) {
+            partitionByFeatureGroup(scope, columns, id_column, kernel = function(batch, index) batch_kernel(batch), consume = function(value, index) append(value),
+                worker_cap = worker_cap, working_bytes_per_row = working, overhead_bytes = overhead, policy = "omics-feature-groups-v1", group_order = "key")
+            invisible(NULL)
+        }))
+}
+
 #' Unique feature ids per assay (the QC tabs' count), by the id column when the table has it.
 #' @noRd
 omicsFeatureCounts <- function(binding, object) {
@@ -37,7 +133,8 @@ omicsFeatureCounts <- function(binding, object) {
 #' `ceiling()` from that quantile in both kernels before any oracle was recorded).
 #' @noRd
 omicsIntensityFilterOperation <- function(binding) {
-    newOmicsOperation(binding, paste0(binding$prefix, "_intensity_filter"), "row",
+    filter <- function(object, parameters) binding$filter_intensity(object, parameters)
+    declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_intensity_filter"), "row",
         parameters = binding$intensity_parameters,
         product_type = paste0(binding$prefix, ".intensity_filter_result"),
         global_statistics = stats::setNames(
@@ -45,23 +142,65 @@ omicsIntensityFilterOperation <- function(binding) {
             binding$intensity_threshold),
         kernel = function(object, parameters, store) {
             before <- omicsFeatureCounts(binding, object)
-            filtered <- binding$filter_intensity(object, parameters)
+            filtered <- filter(object, parameters)
             object <- NULL
             list(final = store$checkpoint(filtered, paste0(binding$prefix, "-intensity-filtered")),
                 counts = list(before = before, after = omicsFeatureCounts(binding, filtered)))
         })
+    # KIT-079: the percentile once per assay over its every intensity, then the kernel's own filter per page.
+    declaration$partitioned <- function(parameters, store) {
+        percentile <- omicsCleanNumericParameter(parameters[[binding$intensity_parameters[[1L]]]])
+        proportion <- omicsCleanNumericParameter(parameters[[binding$intensity_parameters[[2L]]]])
+        run <- omicsRunPartitioned(binding, store, function(template) filter(template, parameters), paste0(binding$prefix, "-intensity-filtered"),
+            write_assay = function(assay, component, prototype, template, partition) {
+                id_column <- methods::slot(template, binding$id_slot)
+                numeric_columns <- partition$numeric_columns()
+                intensities <- if (id_column %in% partition$columns && length(numeric_columns)) partition$all_values(numeric_columns)
+                if (!length(intensities) || all(is.na(intensities))) return(partition$write_rows(partition$prototype, identity))
+                threshold <- stats::quantile(intensities, na.rm = TRUE, probs = c(percentile / 100))[1]
+                intensities <- NULL
+                page_filter <- function(page) binding$filter_intensity_page(page, threshold, proportion, id_column)
+                partition$write_rows(suppressWarnings(page_filter(partition$prototype)), page_filter)
+            })
+        c(list(final = run$final), list(counts = list(before = omicsPartitionedFeatureCounts(binding, store, run$source_tables, run$id_column),
+            after = omicsPartitionedFeatureCounts(binding, store, run$tables, run$id_column))))
+    }
+    declaration
 }
 
 #' Duplicate resolution (feature group by the id column), through the omic's adaptor (`resolve_duplicates` returns
 #' the resolved object and the step's statistics under the name the module reads).
 #' @noRd
 omicsDuplicateResolutionOperation <- function(binding) {
-    newOmicsOperation(binding, paste0(binding$prefix, "_duplicate_resolution"), "feature_group", parameters = character(),
+    declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_duplicate_resolution"), "feature_group", parameters = character(),
         product_type = paste0(binding$prefix, ".duplicate_resolution_result"),
         kernel = function(object, parameters, store) {
             resolved <- binding$resolve_duplicates(object)
             c(list(final = store$checkpoint(resolved$object, paste0(binding$prefix, "-duplicates-resolved"))), resolved$value)
         })
+    # KIT-079: an assay with no duplicate comes back as it is, in source order. One with any is resolved group by group in
+    # the kernel's output order, its id's key order (`group_by`, C locale, missing last: the cursor's `key` order), with every
+    # numeric column double: the kernel converts them all before it groups.
+    declaration$partitioned <- function(parameters, store) {
+        without_samples <- list()
+        run <- omicsRunPartitioned(binding, store, function(template) binding$resolve_duplicates(template)$object,
+            paste0(binding$prefix, "-duplicates-resolved"),
+            write_assay = function(assay, component, prototype, template, partition) {
+                id_column <- methods::slot(template, binding$id_slot)
+                numeric_columns <- partition$numeric_columns()
+                without_samples[[assay]] <<- !length(numeric_columns)
+                if (!id_column %in% partition$columns || !length(numeric_columns) || !partition$has_duplicates(id_column)) {
+                    return(partition$write_rows(partition$prototype, identity))
+                }
+                as_double <- function(table) dplyr::mutate(table, dplyr::across(dplyr::any_of(numeric_columns), as.numeric))
+                partition$write_groups(tibble::as_tibble(as_double(partition$prototype)), id_column, function(batch) {
+                    binding$resolve_duplicates_batch(as_double(batch), id_column, numeric_columns)
+                })
+            })
+        rows <- function(tables) vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1))
+        c(list(final = run$final), binding$duplicate_value(rows(run$source_tables), rows(run$tables), without_samples))
+    }
+    declaration
 }
 
 #' A store step: the current object under a new name (the QC finalise, the correlation skip, the reset). No kernel,
@@ -93,14 +232,30 @@ omicsItsdNormalisationOperation <- function(binding) {
 #' Log2 transformation (row: `log2(x + offset)` per value).
 #' @noRd
 omicsLog2Operation <- function(binding) {
-    newOmicsOperation(binding, paste0(binding$prefix, "_log2"), "row", parameters = "offset",
+    transform <- function(object, parameters) {
+        logTransformAssaysFn <- logTransformAssays
+        logTransformAssaysFn(theObject = object, offset = parameters$offset)
+    }
+    declaration <- newOmicsOperation(binding, paste0(binding$prefix, "_log2"), "row", parameters = "offset",
         product_type = paste0(binding$prefix, ".log2_result"),
         kernel = function(object, parameters, store) {
-            logTransformAssaysFn <- logTransformAssays
-            transformed <- logTransformAssaysFn(theObject = object, offset = parameters$offset)
+            transformed <- transform(object, parameters)
             object <- NULL
             list(final = store$checkpoint(transformed, paste0(binding$prefix, "-log2")))
         })
+    # KIT-079: the kernel per page, on the object with that page as its assay.
+    declaration$partitioned <- function(parameters, store) {
+        run <- omicsRunPartitioned(binding, store, function(template) transform(template, parameters), paste0(binding$prefix, "-log2"),
+            write_assay = function(assay, component, prototype, template, partition) {
+                partition$write_rows(prototype, function(page) {
+                    object <- template
+                    methods::slot(object, binding$data_slot) <- stats::setNames(list(page), assay)
+                    methods::slot(transform(object, parameters), binding$data_slot)[[assay]]
+                })
+            })
+        list(final = run$final)
+    }
+    declaration
 }
 
 #' Between-sample normalisation (whole matrix; `none` is the module's identity, the state still committed).
@@ -755,6 +910,7 @@ computeWorkflowOmicsOperationAction <- function(manager, request, variant) {
     source <- request$input_references$state
     parameters <- request$parameters
     parameters$variant <- variant
+    parameters$worker_cap <- request$worker_cap
     dependencies <- if ("pairs" %in% declaration$parameters) list(manager$.context$snapshot$products[[parameters$pairs]]) else list()
     run <- runSavedOperation(manager, declaration, source, parameters, dependencies)
     # An earlier worker's product whose action never completed has no root yet.

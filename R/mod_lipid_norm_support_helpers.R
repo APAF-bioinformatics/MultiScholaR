@@ -406,7 +406,8 @@ buildLipidNormCompositeFromFilesGenerator <- function(
     requireNamespaceFn = requireNamespace,
     warningFn = warning,
     fileExistsFn = file.exists,
-    readPngFn = png::readPNG,
+    # KIT-079: a native raster, 4 bytes a pixel against 32 for an array of doubles; the rendered figure is byte-identical.
+    readPngFn = function(path) png::readPNG(path, native = TRUE),
     rasterGrobFn = grid::rasterGrob,
     wrapPlotsFn = patchwork::wrap_plots,
     plotLayoutFn = patchwork::plot_layout,

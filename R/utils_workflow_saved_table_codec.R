@@ -1856,7 +1856,8 @@ openWorkflowContiguousGroups <- function(scope, columns, group, directory, depen
 
 #' Open one projected cursor for complete independence groups, without copying the assay.
 #' @param scope Existing SQL action lease.
-#' @param columns Required scientific columns, at most 64 per fetch.
+#' @param columns Required scientific columns. More than 64 are read in 64-column blocks (KIT-079: a feature group of a
+#'   wide assay), each cohort assembled from its blocks.
 #' @param group Existing grouping column; NULL values remain one complete group.
 #' @param group_order First-observation order, or native key order for ordered producers.
 #' @return Iterator with next_group() and close(); callers must close on failure.
@@ -1864,7 +1865,7 @@ openWorkflowContiguousGroups <- function(scope, columns, group, directory, depen
 openWorkflowTableGroups <- function(scope, columns, group, group_order = "first") {
     checkWorkflowTableReadScope(scope)
     if (!is.character(columns) || !length(columns) || anyDuplicated(columns) ||
-        length(columns) > 64L || !all(c(columns, group) %in% scope$metadata$columns) ||
+        !all(c(columns, group) %in% scope$metadata$columns) ||
         !group_order %in% c("first", "key"))
         cli::cli_abort("invalid scientific group projection", class = "saved_entity_limit")
     index <- saveWorkflowGroupIndex(scope, group)
@@ -1880,7 +1881,7 @@ openWorkflowTableGroups <- function(scope, columns, group, group_order = "first"
     if (group_order == "key" && nrow(directory)) directory <- directory[
         order(directory$value, method = "radix", na.last = TRUE), , drop = FALSE]
     contiguous_starts <- if (nrow(directory)) 1 + cumsum(c(0, utils::head(directory$size, -1L))) else numeric()
-    if (is.null(scope$view) && nrow(directory) && group %in% columns &&
+    if (is.null(scope$view) && nrow(directory) && group %in% columns && length(columns) <= 64L &&
         identical(as.integer(directory$first_order), as.integer(contiguous_starts))) {
         return(openWorkflowContiguousGroups(scope, columns, group, directory,
             list(index$reference, index$value$groups, index$value$positions, scope$physical_reference)))
@@ -1923,7 +1924,7 @@ openWorkflowTableGroups <- function(scope, columns, group, group_order = "first"
             selected <- remaining[seq_len(take)]
             if (any(directory$size[selected] * row_bytes > 67108864))
                 cli::cli_abort("complete scientific group exceeds 64 MiB", class = "saved_entity_limit")
-            iterator$cohort <- readWorkflowGroupCohort(scope, columns, index$value$positions,
+            iterator$cohort <- readWorkflowGroupCohortBlocks(scope, columns, index$value$positions,
                 directory[selected, , drop = FALSE])
             iterator$cohort_groups <- directory$size[selected]
             iterator$cohort_at <- 1L
@@ -2714,6 +2715,27 @@ readWorkflowIndexDirectory <- function(store, reference) {
 #' @param positions Saved group-to-source-ordinal table.
 #' @param groups Admitted rows from the small group directory, in execution order.
 #' @return Group-contiguous data with stable source identities.
+#' @noRd
+readWorkflowGroupCohortBlocks <- function(scope, columns, positions, groups) {
+    blocks <- unname(split(columns, ceiling(seq_along(columns) / 64L)))
+    if (length(blocks) == 1L) return(readWorkflowGroupCohort(scope, columns, positions, groups))
+    cohort <- readWorkflowGroupCohort(scope, blocks[[1L]], positions, groups)
+    order_of_rows <- attr(cohort, "workflow_source_order")
+    values <- unclass(cohort)
+    row_names <- .row_names_info(cohort, type = 0L)
+    cohort <- NULL
+    for (block in blocks[-1L]) values[block] <- unclass(readWorkflowGroupCohort(scope, block, positions, groups))[block]
+    values <- values[columns]
+    metadata <- scope$metadata
+    metadata$columns <- columns
+    attr(values, "row.names") <- row_names
+    class(values) <- "data.frame"
+    value <- completeWorkflowTableBatch(values, metadata)
+    attr(value, "workflow_source_order") <- order_of_rows
+    value
+}
+
+#' One cohort of complete groups from at most 64 columns.
 #' @noRd
 readWorkflowGroupCohort <- function(scope, columns, positions, groups) {
     rows <- sum(groups$size)

@@ -360,3 +360,35 @@ test_that("KIT-077: the filtering grids in the run directory reach QC_figures", 
   })
   expect_true(file.exists(file.path(lipid_dirs$lipidomics$results_summary_dir, "QC_figures", "3_Duplicates_Resolved_combined_plots.png")))
 })
+
+test_that("KIT-079: the composite reads its PNGs as native rasters, and the figure is byte-identical to the double reader's", {
+  skip_if_not_installed("png")
+  skip_if_not_installed("patchwork")
+  root <- withr::local_tempdir()
+  files <- file.path(root, sprintf("panel_%d.png", 1:4))
+  set.seed(7906)
+  for (file in files) {
+    grDevices::png(file, width = 300, height = 200)
+    graphics::plot(stats::rnorm(40), stats::rnorm(40))
+    grDevices::dev.off()
+  }
+  # The shipped readers hand the grob a native raster.
+  seen <- character()
+  capture <- function(image, ...) { seen <<- c(seen, class(image)[[1L]]); grid::rasterGrob(image, ...) }
+  buildLipidNormCompositeFromFilesGenerator(rasterGrobFn = capture)(plot_files = files, ncol = 2, column_labels = c("a", "b"))
+  loadMetabNormImageAsPlot(files[[1L]], rasterGrobFn = capture)
+  expect_identical(unique(seen), "nativeRaster")
+  render <- function(reader, name) {
+    composite <- buildLipidNormCompositeFromFilesGenerator(readPngFn = reader)(plot_files = files, ncol = 2, column_labels = c("a", "b"))
+    target <- file.path(root, name)
+    dir.create(target)
+    savePlot(composite$plot, target, "composite", width = composite$width, height = composite$height, dpi = 100, limitsize = FALSE)
+    target
+  }
+  double <- render(png::readPNG, "double")
+  native <- render(function(path) png::readPNG(path, native = TRUE), "native")
+  expect_identical(digest::digest(file = file.path(native, "composite.png"), algo = "sha256"),
+    digest::digest(file = file.path(double, "composite.png"), algo = "sha256"))
+  # The read itself: 4 bytes a pixel against 32 (the .rds compresses, so it shows this only on real figures).
+  expect_lt(as.numeric(object.size(png::readPNG(files[[1L]], native = TRUE))), as.numeric(object.size(png::readPNG(files[[1L]]))) / 4)
+})

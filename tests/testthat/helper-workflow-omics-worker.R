@@ -7,7 +7,7 @@
 #' @param parameters The request's parameters.
 #' @param directory The request's directory; a new one under the fixture's source directory when NULL.
 #' @return The worker's handoff (`worker-result.rds`), with the request's directory.
-omicsWorkerRun <- function(fixture, operation, parameters = list(), directory = NULL, token = list(request_id = "wfx-test")) {
+omicsWorkerRun <- function(fixture, operation, parameters = list(), directory = NULL, token = list(request_id = "wfx-test"), config = list(mode = "adapters")) {
   owner <- fixture$owner
   store <- owner$.context$store
   if (is.null(directory)) directory <- tempfile("request-", tmpdir = fixture$source_dir)
@@ -15,7 +15,7 @@ omicsWorkerRun <- function(fixture, operation, parameters = list(), directory = 
   request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = operation,
     input_references = list(state = getWorkflowStateReference(owner)), parameters = parameters,
     token = token, owner = store$identity, project_root = dirname(store$directory),
-    directory = directory, config = list(mode = "adapters"), worker_cap = 12 * 1024^3)
+    directory = directory, config = config, worker_cap = 12 * 1024^3)
   path <- file.path(directory, "request.rds")
   writeWorkflowExecutionMessage(path, request)
   # A failed worker writes its handoff and stops; the test reads the handoff.
