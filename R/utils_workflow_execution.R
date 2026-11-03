@@ -179,6 +179,8 @@ prepareWorkflowHeadAcceptance <- function(context, reference) {
     accepted <- list(reference = pending$reference, summary = pending$summary,
         dependencies = pending$dependencies, state_reference = snapshot$states[[snapshot$current_state]],
         operation = pending$operation %||% workflowFixtureOperation)
+    # KIT-078: an omics worker's display handoff, read by `readManagedOmicsResult`.
+    if (!is.null(pending$display)) accepted$display <- pending$display
     result_path <- file.path(paths$request_dir, "accepted-result.rds")
     writeWorkflowExecutionMessage(result_path, accepted)
     syncSavedWorkflowPaths(context$store, result_path)
@@ -541,6 +543,18 @@ validateWorkflowCompletionContext <- function(context) {
     context
 }
 
+#' Bound an omics completion context (KIT-078): plain data only, at most 4 MiB. A state-producing declaration's names the
+#' module's commit (`state_name`, `config`, `description`); any other action's is empty.
+#' @noRd
+validateWorkflowOmicsCompletionContext <- function(operation, context) {
+    commits <- !is.null(workflowActionSpec(operation)$declaration$output_class)
+    valid <- if (commits) is.list(context) && is.character(context$state_name) && length(context$state_name) == 1L &&
+        !is.na(context$state_name) && nzchar(context$state_name) && is.character(context$description) && length(context$description) == 1L &&
+        is.list(context$config) && !hasMutableWorkflowEntityOwner(context) && as.numeric(object.size(context)) <= 4194304 else is.null(context)
+    if (!isTRUE(valid)) cli::cli_abort("unsupported omics completion context", class = "workflow_execution_invalid")
+    context
+}
+
 #' The workflow owner the controller finishes a worker result on: the project owner plus the GUI's
 #' accumulated QC parameters and prior progress from the completion context (empty without one).
 #' @noRd
@@ -597,6 +611,10 @@ readManagedPeptideResult <- function(manager, result, workflow_data) {
 #' @param read_result Function(manager, accepted, workflow_data) returning the display handoff.
 #' @return An environment: `apply(parameters)` starts or retries an action; `active()` the current
 #'   action or NULL; `cancel(reason)` releases a running action (Revert, session end).
+#'
+#' KIT-078, for a tab that runs several actions under one display: `apply` also takes the action's `operation` and
+#' completion `context`, `publication` may be a function read at each action, and a `ui` with no `ack` closes each action
+#' as it is delivered, without a browser acknowledgement, then calls `ui$delivered()`; `ui$failed(error)` hears a failure.
 #' @noRd
 installWorkflowManagedStep <- function(session, input, workflow_data, operation, publication, ui, deliver,
     read_result = readManagedPeptideResult) {
@@ -616,10 +634,18 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         message <- paste(failure_prefix, conditionMessage(error))
         logger::log_error(message)
         shiny::showNotification(message, type = "error", duration = 15)
+        if (is.function(ui$failed)) ui$failed(error)
         invisible(NULL)
     }
     deliver_action <- function(action, result) {
         plot_grid <- withWorkflowStateScope(workflow_data$state_manager, function() deliver(result))
+        if (is.null(ui$ack)) {
+            finishWorkflowGUIAction(action$reservation, "delivered")
+            managed_action(NULL)
+            shiny::removeNotification(ui$notification)
+            if (is.function(ui$delivered)) ui$delivered()
+            return(invisible(NULL))
+        }
         content_id <- digest::digest(list(result$resultText,
             result$stateReference$entity_id %||% workflow_data$state_manager$current_state, ui$step_label), algo = "sha256")
         action$result <- result
@@ -648,7 +674,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         shiny::removeNotification(ui$notification)
         invisible(NULL)
     }
-    step$apply <- function(parameters) {
+    step$apply <- function(parameters, operation_name = operation, context = NULL) {
         application <- workflowSessionApplication(session)
         if (is.null(application)) cli::cli_abort("no managed application on this session", class = "workflow_execution_scope")
         if (!is.null(shiny::isolate(managed_action()))) {
@@ -657,16 +683,17 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         }
         action <- list(owner = NULL, phase = "starting")
         action$reservation <- tryCatch(beginWorkflowGUIAction(application, workflow_data$state_manager,
-            operation, publication), error = function(error) error)
+            operation_name, if (is.function(publication)) publication() else publication), error = function(error) error)
         if (inherits(action$reservation, "error")) {
             shiny::showNotification(conditionMessage(action$reservation), type = "error", duration = 15)
+            if (is.function(ui$failed)) ui$failed(action$reservation)
             return(invisible(NULL))
         }
         shiny::showNotification(working, id = ui$notification, duration = NULL)
         tryCatch({
             manager <- workflow_data$state_manager
             if (!inherits(manager, "DIAStateAdapter") || !usesWorkflowReferenceStates(manager))
-                stop("the managed worker needs the on-disk state owner (DIA-NN import on Linux)")
+                stop("the managed worker needs the on-disk state owner")
             pending <- shiny::isolate(pending_publication())
             if (!is.null(pending)) {
                 if (!identical(pending$owner$manager, manager) || !identical(pending$parameters, parameters))
@@ -684,9 +711,9 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             if (is.null(owner)) owner <- newWorkflowExecutionController(manager, application)
             action$owner <- owner
             action$phase <- "running"
-            action$worker_request_id <- runWorkflowAction(operation, list(state = getWorkflowStateReference(manager)),
+            action$worker_request_id <- runWorkflowAction(operation_name, list(state = getWorkflowStateReference(manager)),
                 parameters, owner, reservation = action$reservation,
-                completion_context = workflowManagedCompletionContext(operation, workflow_data))
+                completion_context = context %||% workflowManagedCompletionContext(operation_name, workflow_data))
             managed_action(action)
         }, error = function(error) fail(action, error))
         invisible(NULL)
@@ -1546,7 +1573,8 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$request <- request
     # KIT-008 (audit PE-02): the GUI's accumulated QC parameters and prior progress travel with the job so the
     # controller's completion writes the same progress product the in-process path writes.
-    job$completion_context <- validateWorkflowCompletionContext(completion_context)
+    job$completion_context <- if (identical(workflowActionSpec(operation)$completion, "omics"))
+        validateWorkflowOmicsCompletionContext(operation, completion_context) else validateWorkflowCompletionContext(completion_context)
     job$paths <- paths
     job$admission <- admission
     job$stage <- "admitting"
@@ -1765,7 +1793,8 @@ publishWorkflowFixtureResult <- function(owner, paths) {
     if (!identical(getWorkflowStateReference(owner$manager), result$state_reference))
         cli::cli_abort("publication belongs to a superseded state", class = "workflow_execution_stale")
     publication <- workflowActionSpec(result$operation %||% workflowFixtureOperation)$publication
-    if (publication %in% c("peptide", "protein", "da")) {
+    if (publication %in% c("peptide", "protein", "da", "omics")) {
+        if (publication == "omics") publishWorkflowOmicsResult(owner, paths, result) else
         if (publication == "da") publishWorkflowDaResult(owner, paths, result) else
         if (publication == "protein") publishWorkflowProteinResult(owner, paths, result) else
             publishWorkflowPeptideResult(owner, paths, result)
@@ -2413,7 +2442,9 @@ workflowRequestExperimentPaths <- function(request) {
     publication <- tryCatch(readRDS(path), error = function(error) NULL)
     if (!is.list(publication)) return(NULL)
     if (is.list(publication$experiment_paths)) return(publication$experiment_paths)
-    if (is.list(publication$proteomics)) return(publication$proteomics)
+    # KIT-078: by the operation's omic; a request that names no operation is a proteomics one.
+    omic <- if (is.null(request$operation)) "proteomics" else workflowActionSpec(request$operation)$omic_type
+    if (is.list(publication[[omic]])) return(publication[[omic]])
     NULL
 }
 
@@ -2633,6 +2664,35 @@ publishWorkflowDaResult <- function(owner, paths, result) {
                 manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])))
             list(completed = TRUE)
         }, identity = diaDaPublicationIdentity(manifest))
+    invisible(NULL)
+}
+
+#' Publish the files an omics worker staged (KIT-078) through the owner's action-output journal, so that a failure leaves
+#' the action pending and `resumeWorkflowAction` retries it; each request is its own publication. A compute step stages no
+#' file and publishes nothing here: its figures are drawn when the tab delivers it.
+#' @noRd
+publishWorkflowOmicsResult <- function(owner, paths, result) {
+    staged_root <- file.path(paths$request_dir, "omics-publication")
+    # An empty file means a figure with nothing to draw; the journal refuses one, and no reader wants it.
+    files <- list.files(staged_root, recursive = TRUE, full.names = TRUE)
+    unlink(files[file.size(files) == 0])
+    roles <- list.dirs(staged_root, full.names = FALSE, recursive = FALSE)
+    roles <- roles[vapply(roles, function(role) length(list.files(file.path(staged_root, role), recursive = TRUE)) > 0L, logical(1))]
+    if (!length(roles)) return(invisible(NULL))
+    manager <- owner$manager
+    publication <- readRDS(file.path(paths$request_dir, "publication-context.rds"))
+    experiment_paths <- publication$experiment_paths
+    if (!is.list(experiment_paths) || any(vapply(experiment_paths[roles], is.null, logical(1))))
+        cli::cli_abort("publication context is invalid", class = "workflow_execution_invalid")
+    workflowExecutionBoundary("publication")
+    publishWorkflowActionOutputs(manager, result$state_reference, result$operation, experiment_paths[roles], function(staged) {
+        for (role in names(staged)) {
+            members <- list.files(file.path(staged_root, role), full.names = TRUE, all.files = TRUE, no.. = TRUE)
+            if (!all(file.copy(members, staged[[role]], recursive = TRUE)))
+                cli::cli_abort("cannot stage the worker's files", class = "saved_entity_outputs_pending")
+        }
+        list(completed = TRUE)
+    }, identity = basename(paths$request_dir))
     invisible(NULL)
 }
 
@@ -2917,6 +2977,7 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL, vari
     if (entry$completion == "fixture")
         return(commitWorkflowReferenceState(owner$manager, value$state_name, value$checkpoint,
             value$config, "guarded fixture computation"))
+    if (entry$completion == "omics") return(completeWorkflowOmicsAction(owner$manager, entry, value, context))
     workflow <- newWorkflowCompletionWorkflow(owner$manager, context)
     if (entry$completion == "protein") return(completeDIAProteinAction(workflow, value))
     if (entry$completion == "da") return(completeDIADaPublication(workflow, value))
@@ -2926,6 +2987,38 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL, vari
         value$description, value$config, value$section, value$counts,
         observed_inclusion_absence = if (isTRUE(entry$inclusion_absence))
             value$summary$inclusion_entries_absent_from_data else NULL)
+}
+
+#' Complete an omics worker's action under the acceptance lease (KIT-078), in one head: what the worker saved is recorded
+#' and rooted, then a state-producing declaration commits under the module's name, as its wrapper does in process. An
+#' action that commits nothing leaves the head's state and the next step's provenance alone.
+#' @param manager The session owner.
+#' @param entry The action's registry entry.
+#' @param value The worker's result.
+#' @param context The module's commit (`validateWorkflowOmicsCompletionContext`).
+#' @return The committed state's reference, or NULL.
+#' @noRd
+completeWorkflowOmicsAction <- function(manager, entry, value, context) {
+    workflow_context <- manager$.context
+    snapshot <- workflow_context$snapshot
+    for (root in value$roots) snapshot <- addWorkflowProductRoot(manager, snapshot, root$reference, root$dependencies)
+    for (owned in value$owned) {
+        snapshot$owned_components[[owned$reference$entity_id]] <- owned$components
+        snapshot$gui_references[[owned$label]] <- owned$reference
+    }
+    if (!is.null(value$native)) snapshot$da_dependencies[[value$reference$entity_id]] <- value$native
+    if (is.null(entry$declaration)) clearWorkflowStepProvenance(manager)
+    if (is.null(entry$declaration$output_class)) {
+        publishWorkflowStateHead(workflow_context, snapshot)
+        return(invisible(NULL))
+    }
+    previous <- workflow_context$snapshot
+    committed <- FALSE
+    on.exit(if (!committed) workflow_context$snapshot <- previous, add = TRUE)
+    workflow_context$snapshot <- snapshot
+    reference <- commitWorkflowReferenceState(manager, context$state_name, value$checkpoint, context$config, context$description)
+    committed <- TRUE
+    reference
 }
 
 #' Rank the repaired pilot on both widths without changing historical policies.

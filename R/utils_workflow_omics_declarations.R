@@ -645,9 +645,8 @@ recordWorkflowOmicsDesignProvenance <- function(binding, manager, object, source
 }
 
 #' Run the omic's DA on a state, one declaration per contrast on the saved per-assay fits, and accept the manifest on
-#' the head (the `runDIAReferenceDaAnalysis` twin; KIT-076, `<prefix>.da_results.v2`, keyed by contrast), the DA step's
-#' provenance cleared (it commits no state). A failed contrast is recorded and the others complete; when none
-#' completes the run stops with their messages and the head keeps its previous result.
+#' the head (the `runDIAReferenceDaAnalysis` twin; KIT-076, `<prefix>.da_results.v2`, keyed by contrast). A failed contrast
+#' is recorded and the others complete.
 #' @param manager The session owner.
 #' @param source Saved reference of the state the DA runs on.
 #' @param settings `formula_string`, `da_q_val_thresh`, `treat_lfc_cutoff`.
@@ -664,38 +663,57 @@ runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settin
     }
     withWorkflowStateScope(manager, function() {
         context <- manager$.context
-        metadata <- readWorkflowOmicsMetadata(binding, manager, source)
-        contrasts <- as.data.frame(contrasts, stringsAsFactors = FALSE)
-        names_of <- omicsDaContrastNames(contrasts)
-        parameters <- list(formula = settings$formula_string, qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff)
-        operation <- omicsDaContrastOperation(binding)
+        steps <- omicsDaContrastSteps(binding, settings, contrasts)
         results <- list()
-        for (i in seq_along(names_of$strings)) {
-            run <- runSavedOperation(manager, operation, source, c(parameters,
-                list(contrast = names_of$strings[[i]], friendly_name = names_of$friendly[[i]])))
+        for (step in steps) {
+            run <- runSavedOperation(manager, workflowOperationEntry(step$operation)$declaration, source, step$parameters)
             if (identical(run$status, "computed")) {
                 snapshot <- context$snapshot
                 snapshot$da_dependencies[[run$reference$entity_id]] <- collectWorkflowNativeReferences(run$value)
                 publishWorkflowStateHead(context, snapshot)
             }
-            results[[names_of$strings[[i]]]] <- run$value
+            results[[step$contrast]] <- run$value
         }
-        clearWorkflowStepProvenance(manager)
-        if (length(results) && all(vapply(results, function(entry) !length(entry$assays) && length(entry$errors) > 0L, logical(1)))) {
-            stop(paste(unique(unlist(lapply(results, `[[`, "errors"))), collapse = "; "), call. = FALSE)
-        }
-        manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
-            stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
-            list(sample_id = metadata$slots$sample_id, assays = metadata$assay_names, contrasts = contrasts, results = results,
-                parameters = parameters, model = list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
-                    eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))))
-        reference <- saveWorkflowStateValue(context, manifest, "da-result-references", codec = "rds")
-        snapshot <- context$snapshot
-        snapshot$da_results <- reference
-        snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, results))
-        publishWorkflowStateHead(context, snapshot)
-        list(manifest = manifest, results = readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)
+        acceptWorkflowOmicsDaManifest(binding, manager, source, settings, contrasts, results)
     })
+}
+
+#' One contrast's declaration parameters per row of the contrasts table (KIT-078: in process or a managed action each).
+#' @return A list of `list(operation, contrast, parameters)`.
+#' @noRd
+omicsDaContrastSteps <- function(binding, settings, contrasts) {
+    names_of <- omicsDaContrastNames(as.data.frame(contrasts, stringsAsFactors = FALSE))
+    lapply(seq_along(names_of$strings), function(i) list(operation = paste0(binding$prefix, "_da_contrast"), contrast = names_of$strings[[i]],
+        parameters = list(formula = settings$formula_string, qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff,
+            contrast = names_of$strings[[i]], friendly_name = names_of$friendly[[i]])))
+}
+
+#' Accept the per-contrast results' manifest on the head (KIT-078: the last step of the DA in process and under a managed
+#' session), the DA step's provenance cleared (it commits no state). When no contrast completed the run stops with their
+#' messages and the head keeps its previous result.
+#' @param results The contrast operations' values, by contrast.
+#' @return `list(manifest, results, reference)`, as `runWorkflowOmicsReferenceDaAnalysis`.
+#' @noRd
+acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, contrasts, results) {
+    context <- manager$.context
+    metadata <- readWorkflowOmicsMetadata(binding, manager, source)
+    contrasts <- as.data.frame(contrasts, stringsAsFactors = FALSE)
+    parameters <- list(formula = settings$formula_string, qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff)
+    clearWorkflowStepProvenance(manager)
+    if (length(results) && all(vapply(results, function(entry) !length(entry$assays) && length(entry$errors) > 0L, logical(1)))) {
+        stop(paste(unique(unlist(lapply(results, `[[`, "errors"))), collapse = "; "), call. = FALSE)
+    }
+    manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
+        stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
+        list(sample_id = metadata$slots$sample_id, assays = metadata$assay_names, contrasts = contrasts, results = results,
+            parameters = parameters, model = list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
+                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))))
+    reference <- saveWorkflowStateValue(context, manifest, "da-result-references", codec = "rds")
+    snapshot <- context$snapshot
+    snapshot$da_results <- reference
+    snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, results))
+    publishWorkflowStateHead(context, snapshot)
+    list(manifest = manifest, results = readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)
 }
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -781,6 +799,16 @@ computeWorkflowOmicsDaPublicationAction <- function(manager, request, variant) {
             list(success = FALSE, message = substr(conditionMessage(error), 1L, 1024L))
         })
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source, display = export)
+}
+
+#' What the tab reads from an accepted omics action (KIT-078): the declaration's value (the product the worker saved) and
+#' the worker's display handoff. No assay table.
+#' @return `list(stateReference, reference, value, display)`.
+#' @noRd
+readManagedOmicsResult <- function(manager, result, workflow_data) {
+    value <- if (!is.null(workflowActionSpec(result$operation)$declaration))
+        hydrateSavedWorkflowEntity(manager$.context$store, result$reference)$value
+    list(stateReference = result$state_reference, reference = result$reference, value = value, display = result$display)
 }
 
 #' Replay one recorded omics step (KIT-031/032): the record's operation with its recorded values through the wrapper

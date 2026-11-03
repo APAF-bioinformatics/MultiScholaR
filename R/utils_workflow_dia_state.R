@@ -652,7 +652,12 @@ readDIAProteinScience <- function(manager, state_name = NULL) {
 inheritWorkflowExecutionSource <- function(object, manager, source) {
     if (!usesDIAReferenceStates(manager)) return(object)
     attr(object, "dia_component_source") <- source
-    attr(object, "dia_execution_fields") <- c("protein_quant_table", "design_matrix", "protein_id_table")
+    # KIT-078: the fields the kernel computed are the class's stored assay and table slots (for the protein class, the same
+    # three as before); an emptied omics assay is then saved as the result rather than taken for an untouched one. The
+    # peptide class keeps the old list, so the proteomics rule for an emptied peptide assay does not move here.
+    declaration <- workflowClassDeclaration(object)
+    attr(object, "dia_execution_fields") <- if (identical(declaration$class, "PeptideQuantitativeData"))
+        c("protein_quant_table", "design_matrix", "protein_id_table") else c(declaration$tables, declaration$lists)
     object
 }
 
