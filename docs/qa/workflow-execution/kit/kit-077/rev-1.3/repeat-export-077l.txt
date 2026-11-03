@@ -1,0 +1,3 @@
+lipid: reopened with no session; omic_type lipidomics; figure owner in scope: TRUE
+lipid: export TRUE; plots built 0; figures written 11; byte-identical to a stored asset 11; assets 64 before, 64 after; names not in the journey's project 0
+RESULT a repeat export builds no plot and writes stored bytes

@@ -1,11 +1,11 @@
 # KIT-077 outcome: lipid and metab figures as store entities, and the heatmap repair
 
-Status 2026-11-02: **completed**. Stage 3b, ticket 6 of 10. Every figure file on both journeys is a stored, rooted asset. The per-contrast heatmaps now exist, and two copy defects are repaired. No memory benefit is claimed; the costs are below.
+Status 2026-11-03: **completed, revision 1.3**. Stage 3b, ticket 6 of 10. Every figure file on both journeys is a stored, rooted asset. The per-contrast heatmaps now exist, and two copy defects are repaired. No memory benefit is claimed; the costs are below. Revision 1.3 closed the three limits first recorded here; see [its section](#revision-13-2026-11-03). The tables up to Handoff are revision 1.2's, on install FXMKdB.
 
 - **Commits** on `performance-v2`: heatmap repair 224ff3b9, mechanism e9807ab7, bindings 5c46896f, evidence after them.
 - **Base:** c9f2cac9 (KIT-076 closed).
-- **Install:** `kit_077` = `core/browser-smoke.FXMKdB` (e9807ab7), over the kit_076 library. Later commits change tests and documents only, so the install stands.
-- **Ticket:** `tickets/kit/KIT-077.md`, revision 1.2.
+- **Install:** `kit_077` = `core/browser-smoke.wKv236` (cbd70e7d), over FXMKdB's library. `core/browser-smoke.FXMKdB` (e9807ab7) was revision 1.2's install; it is superseded and stays on disk.
+- **Ticket:** `tickets/kit/KIT-077.md`, revision 1.3.
 
 ## What changed
 
@@ -45,11 +45,11 @@ Status 2026-11-02: **completed**. Stage 3b, ticket 6 of 10. Every figure file on
 
 ## Deviations and discoveries
 
-- **The owner is found by omic on the session** (`session$userData$workflow_omics_owners`, set at attach), not passed in. KIT-075 rejected a single lookup slot because one session can run several omics; a key by omic does not have that problem, and the figure sites are exported kernels with no manager argument. **For KIT-078:** a bare reopen has no `omic_type` until a session attaches, so the worker must set it or figures silently render without saving.
+- **The owner is found by omic on the session** (`session$userData$workflow_omics_owners`, set at attach), not passed in. KIT-075 rejected a single lookup slot because one session can run several omics; a key by omic does not have that problem, and the figure sites are exported kernels with no manager argument. (Revision 1.3 closed the note here: a bare reopen now knows its omic.)
 - **Identity uses what the figure draws, not the source state's id** as the ticket words it, because the DA tab's source need not be the head. It is stricter: different data can never hit.
-- **DA plot objects are still built before the store is asked;** only the render is skipped on a hit. The QC sites plot nothing on a hit. DA figures do not recompute any statistics either way.
+- **DA plot objects were built before the store was asked,** with only the render skipped on a hit (closed by revision 1.3). The QC sites plot nothing on a hit. DA figures do not recompute any statistics either way.
 - **No rebuild function.** Plot data is saved for the four types, but figures are served from bytes; nothing rebuilds a plot from the data yet.
-- **Filtering figures are not written inside the app,** as KIT-030 recorded: the modules pass no directory. So the journeys never exercise those sites. Tests cover both, with a directory given. Whether the app should write them is a separate question, not taken up here.
+- **Filtering figures were not written inside the app,** as KIT-030 recorded: the modules pass no directory (closed by revision 1.3).
 - **Lipid copy repair rests on its test.** Members do not capture the copy step's output, so the baseline's copy-failure list could not be taken as the ticket asks; the `QC_figures` files themselves are in the baseline.
 - **Tests changed on purpose:** the fixtures that seeded `composite_QC_figure.*`, and the two heatmap mocks. Each had been hiding a real defect.
 - **Out of scope, as the ticket states:** the Glimma interactive volcanoes.
@@ -60,4 +60,40 @@ File names and paths are unchanged; the new files are the heatmaps that should a
 
 ## Handoff
 
-KIT-078 gets figure products a worker can produce, with the `omic_type` note above. KIT-067 inherits omics figures that are entities, with their files still written.
+KIT-078 gets figure products a worker can produce, on an owner that knows its omic when reopened. A bare reopen still has no `experiment_paths`, so the filtering directory exists only on the session's owner: the filtering figure calls run in the modules, and if KIT-078 moves them into a worker it must pass the directory. KIT-067 inherits omics figures that are entities, with their files still written.
+
+## Revision 1.3 (2026-11-03)
+
+User decision "fix all this", on the three limits recorded above. Code cbd70e7d; bindings 685aa594. Evidence in [rev-1.3/](rev-1.3/). The ticket's mechanism is unchanged.
+
+| Limit | Repair | Fail first | Real run |
+|---|---|---|---|
+| The app wrote no filtering figures | In a session, the two save-directory resolvers fall back to the run directory of the owner for that omic (`time_dir`, where a workbook and proteomics write). No module changed, since each already passes the omic type. The copy step takes the grids from there into `QC_figures`, as the proteomics copy does for its correlation grid. | [fail-first.txt](rev-1.3/fail-first.txt) | Written and stored for the three QC steps on both omics, including 3 grids in `QC_figures`. |
+| A repeat DA export built its plots first | The DA figure identities now come from the plot's inputs, so the store is asked first; plots are built lazily, at most once. | same | [077l](rev-1.3/repeat-export-077l.txt), [077m](rev-1.3/repeat-export-077m.txt): in a new process, 0 plots built, 11 of 11 figures byte-identical to stored assets, no asset added. |
+| A bare reopen did not know its omic | The owner's reopen takes the omic from the store's identity, for the two omics workflow types only. Proteomics owners stay unmarked. | same | The same two checks: with no session attached, the owner found itself and served its figures. |
+
+**A defect of revision 1.2, found here and repaired:** the heatmap's identity held the matrix but not its drawing settings, so asking for another colour scheme or clustering served the old figure ([colour-stale-fail-first.txt](rev-1.3/colour-stale-fail-first.txt): 19 assets before and after, PNG unchanged). The app always asks for the same settings, so its runs were not affected. The settings are now part of the identity.
+
+| Gate | Evidence | Result |
+|---|---|---|
+| Every file from the store | [077l](rev-1.3/figure-compare-077l.txt), [077m](rev-1.3/figure-compare-077m.txt) | **99 of 99 and 91 of 91 figure files are stored assets; 64 and 58 assets, all rooted.** Every baseline path present, nothing empty. The tool's `RESULT differs` is the 12 PCA products already explained above: the same 6 per omic, and no others. |
+| Exactness | [gates](rev-1.3/exactness-gates.txt), [077l](rev-1.3/kit077r-kit-journey-077l-stage.json), [077m](rev-1.3/kit077r-kit-journey-077m-stage.json), [replay 077l](rev-1.3/member-record-replay-077l.json), [replay 077m](rev-1.3/member-record-replay-077m.json) | Oracles identical to revision 1.2's (kept in `rev-1.3/`); LFQ, TMT, DIA_LIMPA identical to kit_065; KIT-028 replay exact (16 states); 077l and 077m accepted exact; both replays exact (10 states). Both lifecycle members observed, launched one at a time. |
+| Tests and check | [affected-tests.txt](rev-1.3/affected-tests.txt), [check.log](rev-1.3/check.log) | 114 dependent files: 14,630 pass, 0 fail. R CMD check at baseline, code note unchanged. No full suite: the next checkpoint is KIT-078. |
+
+**Costs, standard lifecycle runs, revision 1.2 to 1.3:**
+
+| | Whole slice, GiB anon | Total peak, GiB | QC phase peak, GiB anon | Intensity, s | Duplicates, s | QC finalise, s | Whole run, s |
+|---|---|---|---|---|---|---|---|
+| Lipid | 2.53 → 2.50 | 2.61 → 2.62 | 0.91 → 1.01 | 6.1 → 12.8 | 5.7 → 12.6 | 3.1 → 11.2 | 251 → 274 |
+| Metab | 2.57 → 2.52 | 2.65 → 2.63 | 0.91 → 1.00 | 5.9 → 10.7 | 4.6 → 10.0 | 2.6 → 8.4 | 248 → 268 |
+
+- **Time:** each QC step takes 5 to 9 s longer on these screen corpora, the main-process wait for the figures: about 20 s per run. It scales with the number of plots, not samples.
+- **Disk:** a member's store grows from 66 to 94 MiB (lipid) and 63 to 83 MiB (metab).
+- **Memory:** the QC phases peak about 0.1 GiB higher; the run's peak stays in normalisation and did not rise beyond noise. Nothing is claimed.
+- **Repeat DA export:** the saving was not timed. On a hit, the export no longer builds plots; it still reads the source object, which the identity needs.
+
+**Limits:**
+- **`1_Raw_Data`:** this baseline runs only on the import-an-existing-design path, which the journeys do not take, so its figures are covered by the resolver's test alone. It writes no grid.
+- **Earlier projects:** revision 1.2's DA identities no longer match, so the first export on such a project redraws its DA figures and stores them again. Its older assets stay rooted and unused.
+- **A heatmap with nothing to draw** stores nothing, so its generator runs again on every export.
+- **Evidence:** the copy step's output for a whole run was checked by file presence; rendered grids were not inspected by eye.
