@@ -1,20 +1,20 @@
-# KIT-078 exactness set, items (1)(3)(6), on kit_078 = browser-smoke.Gw3jSa (0d028452), R 4.6.1
+# KIT-078 exactness set, items (1)(3)(6), on kit_078 = browser-smoke.mdSh5c (b5307e91), R 4.6.1
 
 ## (3) against the kit_077 oracles
-reference oracles-lipid77_lipid_screen.rds (lipidomics, build cbd70e7d49f5): 10 steps; candidate oracles-lipid78_lipid_screen.rds (build 0d028452d9af): 10 steps
+reference oracles-lipid77_lipid_screen.rds (lipidomics, build cbd70e7d49f5): 10 steps; candidate oracles-lipid78_lipid_screen.rds (build b5307e91eb3a): 10 steps
 steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
 RESULT identical
-reference oracles-metab77_metab_screen.rds (metabolomics, build cbd70e7d49f5): 10 steps; candidate oracles-metab78_metab_screen.rds (build 0d028452d9af): 10 steps
+reference oracles-metab77_metab_screen.rds (metabolomics, build cbd70e7d49f5): 10 steps; candidate oracles-metab78_metab_screen.rds (build b5307e91eb3a): 10 steps
 steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
 RESULT identical
 
 ## (6) proteomics: the chain and the owner are shared
-reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate lfq.rds (build 0d028452d9af): 11 steps
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate lfq.rds (build b5307e91eb3a): 11 steps
 steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
 RESULT identical
-reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate tmt.rds (build 0d028452d9af): 11 steps
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate tmt.rds (build b5307e91eb3a): 11 steps
 steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
 RESULT identical
-reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate limpa.rds (build 0d028452d9af): 14 steps
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate limpa.rds (build b5307e91eb3a): 14 steps
 steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
 RESULT identical

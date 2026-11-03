@@ -3,7 +3,7 @@
   "ticket": "KIT-028",
   "label": "kit078",
   "date": "2026-11-03",
-  "head_commit": "0d028452d9af9a5fa480d10ba196ffe5f62aeb40",
+  "head_commit": "b5307e91eb3a466b320869c79fb5ab982c48dce1",
   "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-028/candidate-1",
   "states": [
     {
@@ -88,7 +88,7 @@
     }
   ],
   "exact": {
-    "seconds": 312.927626132965,
+    "seconds": 295.229261636734,
     "states": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
     "mismatches": [],
     "replayed_steps": ["qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered", "correlation_filtered"]
@@ -101,7 +101,7 @@
   },
   "edited_expected_rows": 281343,
   "edited": {
-    "seconds": 275.378218173981,
+    "seconds": 270.878601551056,
     "mismatched_states": ["protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
     "before_identical": true,
     "at_differs": true,
@@ -114,6 +114,6 @@
   "inputs_message": "replay input \"fasta\" does not match the record's sha256",
   "legacy_refused": true,
   "legacy_message": "step \"qvalue_filtered\" cannot be replayed: operation \"legacy\"",
-  "total_seconds": 603.176960468292,
+  "total_seconds": 580.347005844116,
   "within_ceiling": true
 }

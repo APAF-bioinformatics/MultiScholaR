@@ -1,6 +1,6 @@
 {
   "schema": "multischolar.analysis_record.v1",
-  "generated_at": "2026-11-03T16:08:05.365+1100",
+  "generated_at": "2026-11-03T17:06:23.626+1100",
   "workflow": "DIA",
   "omic_type": "proteomics",
   "store_identity": {
