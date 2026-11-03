@@ -326,6 +326,17 @@ if (!is.null(b$builds$kit_008)) {
         operations = c("precursor_rollup", "minimum_peptides_per_sample"), ceiling_seconds = 900L)
 }
 
+# KIT-078 (the proteomics gate on the chain, S3B-20): one `gui`-mode managed member, the KIT-008 kind. `kit-gui-077` is the
+# baseline on the build before the chain changes, verified against the kit_065 screen member (the bare
+# `kit-lifecycle-complete` stage no longer exists); `kit-gui-078` is the plan's `078p`, verified against that baseline.
+kit_078p_operations <- c("peptide_qvalue_filter", "peptide_protein_evidence_filter", "precursor_rollup", "peptide_intensity_filter",
+    "minimum_peptides_per_sample", "peptide_replicate_filter", "peptide_imputation", "protein_iq_rollup", "protein_accession_cleanup",
+    "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "da_publication")
+if (!is.null(b$builds$kit_077)) b$tickets[["077"]] <- list(kind = "gui", build = "kit_077", corpus = "screen",
+    reference = "kit-lifecycle-complete.kit065r-dia-102150", operations = kit_078p_operations, ceiling_seconds = 1800L)
+if (!is.null(b$builds$kit_078)) b$tickets[["078"]] <- list(kind = "gui", build = "kit_078", corpus = "screen",
+    reference = "kit-gui-077", operations = kit_078p_operations, ceiling_seconds = 1800L)
+
 # KIT-009: the imputation step as an operation on the feature-group partitioner, control and candidate on the
 # KIT-005 imputation population (input: the state after the replicate filter, `journey_replicate`; oracle: the
 # state after imputation, `journey_imputation`), with the journey's recorded parameters (proportion 0.5, no
