@@ -1,0 +1,20 @@
+# KIT-079 exactness set, items (1)(3)(6), on kit_079 = browser-smoke.VxhycO (4ced76c5), R 4.6.1
+
+## (3) against the kit_078 oracles
+reference oracles-lipid78_lipid_screen.rds (lipidomics, build b5307e91eb3a): 10 steps; candidate oracles-lipid79_lipid_screen.rds (build 4ced76c51492): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-metab78_metab_screen.rds (metabolomics, build b5307e91eb3a): 10 steps; candidate oracles-metab79_metab_screen.rds (build 4ced76c51492): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+
+## (6) proteomics: the codec and the checkpoint are shared
+reference oracles-lfq_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate lfq.rds (build 4ced76c51492): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-tmt_fixture.rds (protein, build f55bef1bfa28): 11 steps; candidate tmt.rds (build 4ced76c51492): 11 steps
+steps compared 11; state names identical 11; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-limpa_screen.rds (DIA_LIMPA, build f55bef1bfa28): 14 steps; candidate limpa.rds (build 4ced76c51492): 14 steps
+steps compared 14; state names identical 14; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
