@@ -6,7 +6,7 @@
 # the record replays exact state by state on a copy of the store. The fixture is helper-workflow-lipid-declarations.R.
 library(testthat)
 
-test_that("KIT-031: the lipidomics declarations are registered in process with the units, merges and statistics of the step map", {
+test_that("KIT-031: the lipidomics declarations are registered with the units, merges and statistics of the step map", {
     units <- c(lipid_intensity_filter = "row", lipid_duplicate_resolution = "feature_group", lipid_qc_finalize = "store",
         lipid_itsd_normalisation = "complete_sample", lipid_log2 = "row", lipid_between_sample_normalisation = "whole_matrix",
         lipid_ruv = "whole_matrix", lipid_pearson_pairs = "whole_matrix", lipid_pearson_selection = "whole_matrix",
@@ -21,11 +21,18 @@ test_that("KIT-031: the lipidomics declarations are registered in process with t
         partitioned <- units[[name]] %in% c("row", "complete_sample", "feature_group")
         expect_identical(declaration$merge, if (partitioned) c(lipid_data = "concatenate", design_matrix = "design") else NULL, info = name)
         entry <- workflowActionSpec(name)
-        expect_identical(entry$compute, "in_process", info = name)
+        # KIT-078: the compute steps run on the worker's `omics` role; the store steps and the v1 DA stay in process.
+        worker <- sub("^lipid_", "", name) %in% omicsWorkerSteps
+        expect_identical(entry$compute, if (worker) "omics" else "in_process", info = name)
         expect_identical(entry$omic_type, "lipidomics", info = name)
-        expect_null(entry$handler, info = name)
+        if (worker) {
+            expect_identical(entry$handler, "computeWorkflowOmicsOperationAction", info = name)
+            expect_identical(assertWorkflowOperationDispatchable(name)$compute, "omics", info = name)
+        } else {
+            expect_null(entry$handler, info = name)
+            expect_error(assertWorkflowOperationDispatchable(name), class = "workflow_execution_unsupported")
+        }
         expect_identical(entry$variants, "whole", info = name)
-        expect_error(assertWorkflowOperationDispatchable(name), class = "workflow_execution_unsupported")
         expect_true(all(entry$parameters %in% c(names(workflowOperationDefaults[[name]]), names(entry$declaration$fixed))), info = name)
         expect_true(all(entry$parameters %in% names(workflowParameterLabels[[name]])), info = name)
     }

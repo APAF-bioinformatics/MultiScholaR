@@ -209,15 +209,18 @@ finalizeLipidFilteringStep <- function(prog_met,
                                        metrics_list_this_step,
                                        assay_list,
                                        lipid_id_col,
-                                       overwrite = FALSE) {
-    total_lipids <- tryCatch(
-        {
-            calculateTotalUniqueLipidsAcrossAssays(assay_list, lipid_id_col)
-        },
-        error = function(e) {
-            stop(e)
-        }
-    )
+                                       overwrite = FALSE,
+                                       total_lipids = NULL) {
+    if (is.null(total_lipids)) {
+        total_lipids <- tryCatch(
+            {
+                calculateTotalUniqueLipidsAcrossAssays(assay_list, lipid_id_col)
+            },
+            error = function(e) {
+                stop(e)
+            }
+        )
+    }
 
     tryCatch(
         {

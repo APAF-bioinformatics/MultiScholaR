@@ -224,14 +224,14 @@ validateWorkflowOperationEntry <- function(entry) {
     scalar <- function(value) is.character(value) && length(value) == 1L && !is.na(value) && nzchar(value)
     flag <- function(value) is.logical(value) && length(value) == 1L && !is.na(value)
     valid <- is.list(entry) && scalar(entry$name) && scalar(entry$input) && entry$input %in% c("checkpoint", "peptide") &&
-        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide", "protein", "in_process") &&
+        scalar(entry$input_class) && scalar(entry$compute) && entry$compute %in% c("fixture", "peptide", "protein", "omics", "in_process") &&
         # KIT-024: an in-process declaration names no worker handler; every other role must.
         (if (identical(entry$compute, "in_process")) is.null(entry$handler) && !is.null(entry$declaration) else scalar(entry$handler)) &&
         scalar(entry$validate) && (is.null(entry$resolve) || scalar(entry$resolve)) &&
         is.numeric(entry$parameter_limit) && length(entry$parameter_limit) == 1L && entry$parameter_limit > 0 &&
         is.character(entry$parameters) && !anyDuplicated(entry$parameters) &&
-        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein", "da", "in_process") &&
-        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein", "da", "in_process") &&
+        scalar(entry$completion) && entry$completion %in% c("fixture", "peptide", "protein", "da", "omics", "in_process") &&
+        scalar(entry$publication) && entry$publication %in% c("fixture", "peptide", "protein", "da", "omics", "in_process") &&
         (is.null(entry$step_label) || scalar(entry$step_label)) && scalar(entry$omic_type) &&
         is.character(entry$variants) &&
         (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
@@ -668,18 +668,34 @@ registerBuiltinWorkflowOperations <- function() {
             variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
             declaration = declaration))
     }
-    # KIT-031/032: the lipidomics and metabolomics declarations, every one in process (the route's kernels run projected
-    # on the `whole` variant; the kit's rule that a new workflow adds declarations, registry entries and module code
-    # only). KIT-073: both omics from the shared declaration core.
+    # KIT-031/032: the lipidomics and metabolomics declarations (the kit's rule that a new workflow adds declarations,
+    # registry entries and module code only). KIT-073: both omics from the shared declaration core. KIT-078: the compute
+    # declarations on the worker's `omics` role; the store steps (QC finalise, norm complete, reset) and the v1 DA stay
+    # in process. A worker step with no `@args` section declares `section = NULL`: its parameters come from the
+    # provenance values the completion records.
     for (binding in omicsDeclarationBindings()) {
+        workers <- paste0(binding$prefix, "_", omicsWorkerSteps)
+        sections <- workflowSectionOperationsByType[[toupper(binding$omic_type)]]
         for (declaration in omicsWorkflowOperations(binding)) {
             label <- binding$step_labels[declaration$name]
-            registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
-                compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
+            worker <- declaration$name %in% workers
+            registerWorkflowOperation(c(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
+                compute = if (worker) "omics" else "in_process", handler = if (worker) "computeWorkflowOmicsOperationAction",
+                validate = if (worker) "validateWorkflowOmicsParameters" else "validateWorkflowInProcessParameters", resolve = NULL,
                 parameter_limit = 65536, parameters = declaration$parameters %||% character(),
-                completion = "in_process", publication = "in_process", step_label = if (is.na(label)) NULL else unname(label),
+                completion = if (worker) "omics" else "in_process", publication = if (worker) "omics" else "in_process",
+                step_label = if (is.na(label)) NULL else unname(label),
                 omic_type = binding$omic_type, variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
-                inclusion_absence = FALSE, declaration = declaration))
+                inclusion_absence = FALSE, declaration = declaration),
+                if (worker && !declaration$name %in% sections) list(section = NULL)))
+        }
+        # KIT-078: what the steps' figures and exports read from the matrix, in the worker; they commit nothing.
+        for (publication in list(c("qc_figures", "computeWorkflowOmicsQcFiguresAction"), c("da_publication", "computeWorkflowOmicsDaPublicationAction"))) {
+            registerWorkflowOperation(list(name = paste0(binding$prefix, "_", publication[[1L]]), input = "checkpoint",
+                input_class = binding$class, compute = "omics", handler = publication[[2L]], validate = "validateWorkflowOmicsParameters",
+                resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "omics", publication = "omics",
+                step_label = NULL, omic_type = binding$omic_type, variants = "whole", default_variant = "whole",
+                diagnostic_only = FALSE, inclusion_absence = FALSE, section = NULL))
         }
     }
     invisible(workflowOperationNames())

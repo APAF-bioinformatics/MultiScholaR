@@ -28,85 +28,12 @@
 # metrics, plotting, progress, and variability live in func_metab_qc_* owners.
 # ============================================================================
 
-#' @title Update and Visualize Metabolomics Filtering Progress
-#' @description Tracks and visualizes the impact of filtering steps on metabolomics
-#'              data, updating a global `FilteringProgressMetabolomics` object.
-#'              Generates QC plots summarizing the changes.
-#'
-#' @details
-#' This function serves as the primary interface for tracking metabolomics QC.
-#' It performs the following:
-#' \itemize{
-#'   \item Initializes or retrieves the global `FilteringProgressMetabolomics` object.
-#'   \item Takes a `MetaboliteAssayData` object (or similar S4 containing assays list
-#'         and design matrix) as input for the current processing step.
-#'   \item Extracts the list of assay data frames/tibbles and the design matrix.
-#'   \item For each assay, calls helper functions (`countUniqueMetabolites`,
-#'         `countMetabolitesPerSample`, `calculateMissingness`,
-#'         `calculateSumIntensityPerSample`, `calculateMetaboliteCVs`,
-#'         `getInternalStandardMetrics`) to calculate QC metrics.
-#'   \item Calls `calculateTotalUniqueMetabolitesAcrossAssays` for an overall count.
-#'   \item Updates the global `FilteringProgressMetabolomics` object with the
-#'         calculated metrics for the given `step_name`.
-#'   \item Generates summary plots visualizing the tracked metrics across steps.
-#'   \item Optionally saves plots to disk if `publication_graphs_dir` and a time
-#'         directory are available.
-#'   \item Returns either a combined grid plot or an invisible list of plots.
-#' }
-#'
-#' **Important:** Relies on and modifies the global `filtering_progress_metabolomics` object.
-#' Requires helper functions (defined previously in this file) to be available.
-#' For plot saving, requires either `time_dir` in the global environment or access to
-#' the appropriate directory via `project_dirs$omics_type$time_dir`.
-#'
-#' @param theObject A S4 object (e.g., `MetaboliteAssayData`, `SummarizedExperiment`,
-#'                  `MultiAssayExperiment`) containing metabolomics data. Must provide
-#'                  access to a list of assays (data frames/tibbles with metabolite rows
-#'                  and sample columns) and a colData/design matrix linking samples to groups.
-#' @param step_name Character string uniquely identifying the current filtering step.
-#' @param publication_graphs_dir Optional path for saving plots. If provided, the function
-#'                              will try to find the corresponding time_dir.
-#' @param omics_type Optional character string specifying the omics type (e.g., "metabolomics").
-#'                  If provided and project_dirs exists in the global environment, will use
-#'                  `project_dirs[[omics_type]]$time_dir` for plot saving.
-#' @param time_dir Optional explicit path to the time directory. If provided, this overrides
-#'                other methods of finding the time directory.
-#' @param overwrite Logical, whether to overwrite existing data for `step_name`.
-#' @param return_grid Logical, whether to return a `gridExtra` combined plot.
-#' @param group_id_col Character, name of the column in `colData(theObject)` specifying groups.
-#' @param sample_id_col Character, name of the sample ID column in `colData(theObject)`.
-#' @param metabolite_id_col Character, name of the metabolite ID column in assay data.
-#' @param is_pattern Character, regex for identifying internal standards. If not provided,
-#'                   attempts to get from `theObject@internal_standard_regex` if slot exists.
-#' @param project_dirs Optional `setupDirectories()` list; with `omics_type` and `experiment_label`
-#'                     it derives the plot directory. Outside a Shiny session a workbook's global
-#'                     `project_dirs`, `omic_type` and `experiment_label` are used when these are NULL.
-#' @param experiment_label Optional experiment label paired with `project_dirs`.
-#'
-#' @return If `return_grid` is `TRUE`, a `grob` object. Otherwise, an invisible list
-#'         containing individual `ggplot` objects.
-#'
-#' @importFrom methods slotNames is
-#' @importFrom gridExtra arrangeGrob
-#' @importFrom ggplot2 ggsave
-#' @importFrom purrr map map_dfr imap imap_dfr walk iwalk
-#' @export
-updateMetaboliteFiltering <- function(theObject,
-                                      step_name,
-                                      publication_graphs_dir = NULL,
-                                      omics_type = NULL,
-                                      time_dir = NULL,
-                                      overwrite = FALSE,
-                                      return_grid = FALSE,
-                                      group_id_col = NULL,
-                                      sample_id_col = NULL,
-                                      metabolite_id_col = NULL,
-                                      is_pattern = NULL,
-                                      project_dirs = NULL,
-                                      experiment_label = NULL) {
-    prog_met <- getFilteringProgressMetabolomics()
-
-
+#' What the metabolite filtering figures read from the matrix, per assay (KIT-078: a worker computes it).
+#' @param theObject The step's object.
+#' @param group_id_col,sample_id_col,metabolite_id_col,is_pattern As `updateMetaboliteFiltering`.
+#' @return `list(assay_names, metrics_list_this_step, total_metabolites)`, or NULL with a warning for an object with no assay.
+#' @noRd
+computeMetabFilteringMetrics <- function(theObject, group_id_col = NULL, sample_id_col = NULL, metabolite_id_col = NULL, is_pattern = NULL) {
     if (!isS4(theObject)) {
         stop("`theObject` must be an S4 object.")
     }
@@ -270,6 +197,100 @@ updateMetaboliteFiltering <- function(theObject,
             stop(e)
         }
     )
+
+    list(assay_names = assay_names, metrics_list_this_step = metrics_list_this_step, total_metabolites = total_metabolites)
+}
+
+#' @title Update and Visualize Metabolomics Filtering Progress
+#' @description Tracks and visualizes the impact of filtering steps on metabolomics
+#'              data, updating a global `FilteringProgressMetabolomics` object.
+#'              Generates QC plots summarizing the changes.
+#'
+#' @details
+#' This function serves as the primary interface for tracking metabolomics QC.
+#' It performs the following:
+#' \itemize{
+#'   \item Initializes or retrieves the global `FilteringProgressMetabolomics` object.
+#'   \item Takes a `MetaboliteAssayData` object (or similar S4 containing assays list
+#'         and design matrix) as input for the current processing step.
+#'   \item Extracts the list of assay data frames/tibbles and the design matrix.
+#'   \item For each assay, calls helper functions (`countUniqueMetabolites`,
+#'         `countMetabolitesPerSample`, `calculateMissingness`,
+#'         `calculateSumIntensityPerSample`, `calculateMetaboliteCVs`,
+#'         `getInternalStandardMetrics`) to calculate QC metrics.
+#'   \item Calls `calculateTotalUniqueMetabolitesAcrossAssays` for an overall count.
+#'   \item Updates the global `FilteringProgressMetabolomics` object with the
+#'         calculated metrics for the given `step_name`.
+#'   \item Generates summary plots visualizing the tracked metrics across steps.
+#'   \item Optionally saves plots to disk if `publication_graphs_dir` and a time
+#'         directory are available.
+#'   \item Returns either a combined grid plot or an invisible list of plots.
+#' }
+#'
+#' **Important:** Relies on and modifies the global `filtering_progress_metabolomics` object.
+#' Requires helper functions (defined previously in this file) to be available.
+#' For plot saving, requires either `time_dir` in the global environment or access to
+#' the appropriate directory via `project_dirs$omics_type$time_dir`.
+#'
+#' @param theObject A S4 object (e.g., `MetaboliteAssayData`, `SummarizedExperiment`,
+#'                  `MultiAssayExperiment`) containing metabolomics data. Must provide
+#'                  access to a list of assays (data frames/tibbles with metabolite rows
+#'                  and sample columns) and a colData/design matrix linking samples to groups.
+#' @param step_name Character string uniquely identifying the current filtering step.
+#' @param publication_graphs_dir Optional path for saving plots. If provided, the function
+#'                              will try to find the corresponding time_dir.
+#' @param omics_type Optional character string specifying the omics type (e.g., "metabolomics").
+#'                  If provided and project_dirs exists in the global environment, will use
+#'                  `project_dirs[[omics_type]]$time_dir` for plot saving.
+#' @param time_dir Optional explicit path to the time directory. If provided, this overrides
+#'                other methods of finding the time directory.
+#' @param overwrite Logical, whether to overwrite existing data for `step_name`.
+#' @param return_grid Logical, whether to return a `gridExtra` combined plot.
+#' @param group_id_col Character, name of the column in `colData(theObject)` specifying groups.
+#' @param sample_id_col Character, name of the sample ID column in `colData(theObject)`.
+#' @param metabolite_id_col Character, name of the metabolite ID column in assay data.
+#' @param is_pattern Character, regex for identifying internal standards. If not provided,
+#'                   attempts to get from `theObject@internal_standard_regex` if slot exists.
+#' @param project_dirs Optional `setupDirectories()` list; with `omics_type` and `experiment_label`
+#'                     it derives the plot directory. Outside a Shiny session a workbook's global
+#'                     `project_dirs`, `omic_type` and `experiment_label` are used when these are NULL.
+#' @param experiment_label Optional experiment label paired with `project_dirs`.
+#'
+#' @return If `return_grid` is `TRUE`, a `grob` object. Otherwise, an invisible list
+#'         containing individual `ggplot` objects.
+#'
+#' @importFrom methods slotNames is
+#' @importFrom gridExtra arrangeGrob
+#' @importFrom ggplot2 ggsave
+#' @importFrom purrr map map_dfr imap imap_dfr walk iwalk
+#' @param metrics What `computeMetabFilteringMetrics` returned, computed where the matrix is; `theObject` is unused then.
+#' @export
+updateMetaboliteFiltering <- function(theObject,
+                                      step_name,
+                                      publication_graphs_dir = NULL,
+                                      omics_type = NULL,
+                                      time_dir = NULL,
+                                      overwrite = FALSE,
+                                      return_grid = FALSE,
+                                      group_id_col = NULL,
+                                      sample_id_col = NULL,
+                                      metabolite_id_col = NULL,
+                                      is_pattern = NULL,
+                                      project_dirs = NULL,
+                                      experiment_label = NULL,
+                                      metrics = NULL) {
+    prog_met <- getFilteringProgressMetabolomics()
+    # KIT-078: under a managed session the worker computes the metrics from the matrix (`computeMetabFilteringMetrics`)
+    # and `theObject` is NULL here; the progress and the figures need only the metrics.
+    if (is.null(metrics)) {
+        metrics <- computeMetabFilteringMetrics(theObject, group_id_col, sample_id_col, metabolite_id_col, is_pattern)
+    }
+    if (is.null(metrics)) {
+        return(invisible(NULL))
+    }
+    assay_names <- metrics$assay_names
+    metrics_list_this_step <- metrics$metrics_list_this_step
+    total_metabolites <- metrics$total_metabolites
 
     tryCatch(
         {

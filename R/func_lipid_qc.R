@@ -92,6 +92,40 @@ lipidIntensityFilteringHelper <- function(
 
 
 
+#' What the lipid filtering figures read from the matrix, per assay (KIT-078: a worker computes it).
+#' @param theObject The step's object.
+#' @param group_id_col,sample_id_col,lipid_id_col,is_pattern As `updateLipidFiltering`.
+#' @return `list(assay_names, metrics_list_this_step, total_lipids)`, or NULL with a warning for an object with no assay.
+#' @noRd
+computeLipidFilteringMetrics <- function(theObject, group_id_col = NULL, sample_id_col = NULL, lipid_id_col = NULL, is_pattern = NULL) {
+    filtering_context <- prepareLipidFilteringContext(
+        theObject = theObject,
+        group_id_col = group_id_col,
+        sample_id_col = sample_id_col,
+        lipid_id_col = lipid_id_col,
+        is_pattern = is_pattern
+    )
+    assay_list <- filtering_context$assay_list
+    if (length(assay_list) == 0) {
+        warning("No assays found in theObject.")
+        return(NULL)
+    }
+    metrics_list_this_step <- purrr::imap(assay_list, function(current_assay_data, current_assay_name) {
+        calculateLipidFilteringAssayMetrics(
+            current_assay_data = current_assay_data,
+            current_assay_name = current_assay_name,
+            design_matrix = filtering_context$design_matrix,
+            group_id_col = filtering_context$group_id_col,
+            sample_id_col = filtering_context$sample_id_col,
+            lipid_id_col = filtering_context$lipid_id_col,
+            is_pattern = filtering_context$is_pattern,
+            sample_columns = filtering_context$sample_columns
+        )
+    })
+    list(assay_names = filtering_context$assay_names, metrics_list_this_step = metrics_list_this_step,
+        total_lipids = calculateTotalUniqueLipidsAcrossAssays(assay_list, filtering_context$lipid_id_col))
+}
+
 #' @importFrom methods slotNames is
 #' @importFrom gridExtra arrangeGrob
 #' @importFrom ggplot2 ggsave
@@ -109,52 +143,27 @@ updateLipidFiltering <- function(theObject,
                                  lipid_id_col = NULL,
                                  is_pattern = NULL,
                                  project_dirs = NULL,
-                                 experiment_label = NULL) {
+                                 experiment_label = NULL,
+                                 metrics = NULL) {
     prog_met <- getFilteringProgressLipidomics()
-    filtering_context <- prepareLipidFilteringContext(
-        theObject = theObject,
-        group_id_col = group_id_col,
-        sample_id_col = sample_id_col,
-        lipid_id_col = lipid_id_col,
-        is_pattern = is_pattern
-    )
-    design_matrix <- filtering_context$design_matrix
-    assay_list <- filtering_context$assay_list
-    assay_names <- filtering_context$assay_names
-    group_id_col <- filtering_context$group_id_col
-    sample_id_col <- filtering_context$sample_id_col
-    lipid_id_col <- filtering_context$lipid_id_col
-    is_pattern <- filtering_context$is_pattern
-    sample_columns <- filtering_context$sample_columns
-
-    metrics_list_this_step <- list()
-    if (length(assay_list) > 0) {
-        metrics_list_this_step <- purrr::imap(assay_list, function(current_assay_data, current_assay_name) {
-            calculateLipidFilteringAssayMetrics(
-                current_assay_data = current_assay_data,
-                current_assay_name = current_assay_name,
-                design_matrix = design_matrix,
-                group_id_col = group_id_col,
-                sample_id_col = sample_id_col,
-                lipid_id_col = lipid_id_col,
-                is_pattern = is_pattern,
-                sample_columns = sample_columns
-            )
-        })
-    } else {
-        warning("No assays found in theObject.")
-        # Handle empty assay list case - maybe stop or proceed with empty metrics
-        return(invisible(NULL)) # Or handle appropriately
+    # KIT-078: under a managed session the worker computes the metrics from the matrix (`computeLipidFilteringMetrics`)
+    # and `theObject` is NULL here; the progress and the figures need only the metrics.
+    if (is.null(metrics)) {
+        metrics <- computeLipidFilteringMetrics(theObject, group_id_col, sample_id_col, lipid_id_col, is_pattern)
+    }
+    if (is.null(metrics)) {
+        return(invisible(NULL))
     }
 
     filtering_step_outputs <- finalizeLipidFilteringStep(
         prog_met = prog_met,
         step_name = step_name,
-        assay_names = assay_names,
-        metrics_list_this_step = metrics_list_this_step,
-        assay_list = assay_list,
-        lipid_id_col = lipid_id_col,
-        overwrite = overwrite
+        assay_names = metrics$assay_names,
+        metrics_list_this_step = metrics$metrics_list_this_step,
+        assay_list = NULL,
+        lipid_id_col = NULL,
+        overwrite = overwrite,
+        total_lipids = metrics$total_lipids
     )
     plot_list <- filtering_step_outputs$plot_list
 

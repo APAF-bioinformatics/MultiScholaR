@@ -61,7 +61,12 @@ metabolomicsDeclarationBinding <- list(
     da_fit = function(...) fitMetabDaAssayModel(...),
     da_apply = function(...) applyMetabDaContrasts(...),
     da_format = function(...) formatMetabDaContrastTable(...),
-    da_count = function(...) countMetabDaSignificant(...)
+    da_count = function(...) countMetabDaSignificant(...),
+    # KIT-078: what the worker reads from the matrix for the step's figures and files.
+    qc_dir_role = "metabolite_qc_dir",
+    qc_plots = function(...) generateMetabQcPlots(...),
+    filtering_metrics = function(object) computeMetabFilteringMetrics(object),
+    da_export = function(...) outputMetabDaResultsAllContrasts(...)
 )
 
 metabolomicsStepLabels <- metabolomicsDeclarationBinding$step_labels

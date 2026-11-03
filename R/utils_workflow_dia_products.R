@@ -204,13 +204,14 @@ saveWorkflowDiaQcAsset <- function(store, asset, request_id, render_identity) {
     "rendered_asset")
 }
 
-#' Root a reusable scientific or display product in the durable session head.
+#' One product's root in a snapshot, not yet published.
 #' @param manager Current component owner.
+#' @param snapshot The head snapshot to add to.
 #' @param reference Accepted existing-store product descriptor.
-#' @return Descriptor invisibly, without hydrating its source components.
+#' @param dependencies What the product depends on.
+#' @return The snapshot.
 #' @noRd
-rootWorkflowProduct <- function(manager, reference, dependencies = list()) {
-    snapshot <- manager$.context$snapshot
+addWorkflowProductRoot <- function(manager, snapshot, reference, dependencies = list()) {
     snapshot$products[[reference$entity_id]] <- reference
     roots <- collectDIANativeReferences(dependencies)
     for (root in roots) {
@@ -221,7 +222,22 @@ rootWorkflowProduct <- function(manager, reference, dependencies = list()) {
         }
     }
     snapshot$product_dependencies[[reference$entity_id]] <- roots
-    publishDIAStateHead(manager$.context, snapshot)
+    snapshot
+}
+
+#' Root a reusable scientific or display product in the durable session head. A worker holds no head (KIT-078): an
+#' owner whose context carries `deferred_roots` collects the root instead, and the controller's completion publishes it.
+#' @param manager Current component owner.
+#' @param reference Accepted existing-store product descriptor.
+#' @return Descriptor invisibly, without hydrating its source components.
+#' @noRd
+rootWorkflowProduct <- function(manager, reference, dependencies = list()) {
+    if (is.list(manager$.context$deferred_roots)) {
+        manager$.context$deferred_roots[[length(manager$.context$deferred_roots) + 1L]] <- list(reference = reference,
+            dependencies = collectDIANativeReferences(dependencies))
+        return(invisible(reference))
+    }
+    publishDIAStateHead(manager$.context, addWorkflowProductRoot(manager, manager$.context$snapshot, reference, dependencies))
     invisible(reference)
 }
 

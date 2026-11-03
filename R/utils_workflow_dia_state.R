@@ -1762,9 +1762,16 @@ saveWorkflowOwnedValue <- function(value, label, manager = NULL) {
         checkpoint <- checkpointDIAExecutionResult(manager, value)
         reference <- saveDIAStateValue(manager$.context,
             list(data = checkpoint, config = NULL, description = label), paste0("owner:", label), codec = "rds")
-        snapshot <- manager$.context$snapshot
-        snapshot$owned_components[[reference$entity_id]] <- collectDIANativeReferences(
+        components <- collectDIANativeReferences(
             list(reference, checkpoint$components, checkpoint$support, checkpoint$products, checkpoint$dependencies))
+        # KIT-078: a worker holds no head; the controller's completion records what it saved.
+        if (is.list(manager$.context$deferred_roots)) {
+            manager$.context$deferred_owned[[length(manager$.context$deferred_owned) + 1L]] <- list(label = label,
+                reference = reference, components = components)
+            return(reference)
+        }
+        snapshot <- manager$.context$snapshot
+        snapshot$owned_components[[reference$entity_id]] <- components
         snapshot$gui_references[[label]] <- reference
         publishDIAStateHead(manager$.context, snapshot)
         return(reference)

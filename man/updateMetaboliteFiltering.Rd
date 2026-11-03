@@ -17,7 +17,8 @@ updateMetaboliteFiltering(
   metabolite_id_col = NULL,
   is_pattern = NULL,
   project_dirs = NULL,
-  experiment_label = NULL
+  experiment_label = NULL,
+  metrics = NULL
 )
 }
 \arguments{
@@ -56,6 +57,8 @@ it derives the plot directory. Outside a Shiny session a workbook's global
 \code{project_dirs}, \code{omic_type} and \code{experiment_label} are used when these are NULL.}
 
 \item{experiment_label}{Optional experiment label paired with \code{project_dirs}.}
+
+\item{metrics}{What the worker computed from the matrix for this step; \code{theObject} is unused then.}
 }
 \value{
 If \code{return_grid} is \code{TRUE}, a \code{grob} object. Otherwise, an invisible list

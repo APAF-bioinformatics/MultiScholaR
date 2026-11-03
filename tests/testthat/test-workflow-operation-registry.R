@@ -2,12 +2,12 @@
 
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
-    # KIT-031/032: the twelve lipidomics and twelve metabolomics declarations (in process) beside the proteomics operations.
-    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_da_contrast", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
+    # KIT-031/032: the lipidomics and metabolomics declarations beside the proteomics operations (KIT-078: their compute steps on the `omics` role).
+    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_da_contrast", "lipid_da_output", "lipid_da_publication", "lipid_duplicate_resolution", "lipid_intensity_filter",
         "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
-        "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "metab_between_sample_normalisation", "metab_da_contrast", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
+        "lipid_qc_figures", "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "metab_between_sample_normalisation", "metab_da_contrast", "metab_da_output", "metab_da_publication", "metab_duplicate_resolution", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
-        "metab_qc_finalize", "metab_reset", "metab_ruv", "minimum_peptides_per_sample",
+        "metab_qc_figures", "metab_qc_finalize", "metab_reset", "metab_ruv", "minimum_peptides_per_sample",
         "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
         "peptide_intensity_filter", "peptide_log2_matrix", "peptide_protein_evidence_filter", "peptide_qvalue_filter",
         "peptide_replicate_filter", "precursor_rollup", "protein_accession_cleanup", "protein_between_sample_normalisation",
@@ -103,7 +103,9 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         "precursor_rollup", "protein_accession_cleanup", "protein_duplicate_removal", "protein_intensity_filter",
         "protein_iq_rollup", "protein_replicate_filter", "wfx_fixture",
         "peptide_log2_matrix", "peptide_accession_cleanup", "protein_dpc_quant",
-        "protein_between_sample_normalisation", "protein_peptide_count_filter", "protein_ruv_covariates")))
+        "protein_between_sample_normalisation", "protein_peptide_count_filter", "protein_ruv_covariates",
+        # KIT-078: what the omics figures and exports read from the matrix, in the worker.
+        "lipid_qc_figures", "lipid_da_publication", "metab_qc_figures", "metab_da_publication")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
@@ -225,8 +227,19 @@ test_that("no registered DIA kernel draws random numbers; randomness would be a 
 
 test_that("every registered worker step's section maps to its operation, and the in-process finishers name it (KIT-025 audit PH-02)", {
     registerBuiltinWorkflowOperations()
+    # KIT-078: a recorded change to this rule. A worker step either maps to a section or its entry declares `section = NULL`
+    # (the omics log2, between-sample, duplicate, Pearson and DA steps write no `@args` section; the publication steps commit nothing).
+    declares_none <- function(name) {
+        entry <- workflowOperationEntry(name)
+        "section" %in% names(entry) && is.null(entry$section)
+    }
     workers <- Filter(function(name) !identical(workflowOperationEntry(name)$compute, "in_process") && name != "wfx_fixture" &&
-        name != "da_publication", workflowOperationNames())
+        name != "da_publication" && !declares_none(name), workflowOperationNames())
+    for (prefix in c("lipid", "metab")) {
+        expect_true(all(vapply(paste0(prefix, c("_log2", "_between_sample_normalisation", "_duplicate_resolution", "_pearson_pairs", "_pearson_selection",
+            "_da_contrast", "_qc_figures", "_da_publication")), declares_none, logical(1))), info = prefix)
+        expect_false(any(vapply(paste0(prefix, c("_intensity_filter", "_itsd_normalisation", "_ruv")), declares_none, logical(1))), info = prefix)
+    }
     # KIT-047/041: the DIA_LIMPA route's own sections (a section shared with the DIA route names the route's declaration);
     # the route's in-process declaration (the RUV covariates) is mapped too and is not a worker step.
     in_process <- Filter(function(name) identical(workflowOperationEntry(name)$compute, "in_process"), workflowOperationNames())

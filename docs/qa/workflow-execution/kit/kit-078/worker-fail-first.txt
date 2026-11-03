@@ -1,0 +1,9 @@
+# KIT-078, a frozen omics request through workflowWorkerMain. Before: commit 4aed0d98 (kit_077's code). After: this ticket's item 2.
+
+## before
+lipid_log2 compute role in_process: worker status failed: operation adapter unavailable
+metab_log2 compute role in_process: worker status failed: operation adapter unavailable
+
+## after
+lipid_log2 compute role omics: worker status complete: (no error)
+metab_log2 compute role omics: worker status complete: (no error)

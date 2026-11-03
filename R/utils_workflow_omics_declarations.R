@@ -8,6 +8,11 @@
 # the commit under the module's state name with the module's configuration and description. Nothing here reads GUI
 # inputs, the global environment or a Shiny session.
 
+#' The declarations that run on the worker's `omics` role (KIT-078), by the name after the omic's prefix.
+#' @noRd
+omicsWorkerSteps <- c("intensity_filter", "duplicate_resolution", "itsd_normalisation", "log2", "between_sample_normalisation",
+    "ruv", "pearson_pairs", "pearson_selection", "da_contrast")
+
 #' One omics declaration: the binding's class in, both stored components hydrated, the merge rules of a partitioned
 #' unit supplied.
 #' @noRd
@@ -164,7 +169,13 @@ omicsPearsonSelectionOperation <- function(binding) {
         parameters = c("pairs", "min_pearson_correlation_threshold"),
         product_type = paste0(binding$prefix, ".pearson_selection_result"),
         kernel = function(object, parameters, store) {
-            filtered <- binding$filter_correlation(object, parameters$correlations, parameters$min_pearson_correlation_threshold)
+            # KIT-078: the declared `pairs` entity, read through the store in either process (it was the undeclared
+            # live `correlations`).
+            manager <- store$manager
+            pairs <- manager$.context$snapshot$products[[parameters$pairs]]
+            if (is.null(pairs)) cli::cli_abort("the Pearson pairs product is not in the session", class = "workflow_operation_parameters")
+            correlations <- hydrateSavedWorkflowEntity(manager$.context$store, pairs)$value
+            filtered <- binding$filter_correlation(object, correlations, parameters$min_pearson_correlation_threshold)
             object <- NULL
             list(final = store$checkpoint(filtered, paste0(binding$prefix, "-correlation-filtered")))
         })
@@ -468,47 +479,98 @@ omicsBuilderTableVal <- function(label, owner) {
     }
 }
 
+#' One tab step, as a wrapper runs it in process and a managed action dispatches it (KIT-078): the declaration's name, its
+#' parameters, and the module's state name and description for the commit.
+#' @return `list(operation, parameters, state_name, description)`.
+#' @noRd
+omicsIntensityFilterStep <- function(binding, percentile, proportion, description = NULL, state_name = NULL) {
+    list(operation = paste0(binding$prefix, "_intensity_filter"),
+        parameters = stats::setNames(list(percentile, proportion), binding$intensity_parameters),
+        state_name = state_name %||% paste0(binding$prefix, "_intensity_filtered"),
+        description = description %||% sprintf("Applied %s intensity filter (percentile: %d%%, proportion: %.2f)",
+            binding$feature_noun, as.integer(percentile), proportion))
+}
+
+#' @noRd
+omicsDuplicateResolutionStep <- function(binding, description = NULL, state_name = NULL) {
+    list(operation = paste0(binding$prefix, "_duplicate_resolution"), parameters = list(),
+        state_name = state_name %||% paste0(binding$prefix, "_duplicates_resolved"),
+        description = description %||% sprintf("Resolved duplicate %s features by keeping highest intensity", binding$feature_noun))
+}
+
+#' @noRd
+omicsItsdNormalisationStep <- function(binding, aggregation, feature_ids, description = NULL, state_name = NULL) {
+    parameters <- list(itsd_aggregation = aggregation)
+    parameters["itsd_feature_ids"] <- list(feature_ids)
+    list(operation = paste0(binding$prefix, "_itsd_normalisation"), parameters = parameters,
+        state_name = state_name %||% paste0(binding$prefix, "_itsd_norm"),
+        description = description %||% paste("ITSD normalization (aggregation:", aggregation, ")"))
+}
+
+#' @noRd
+omicsLog2Step <- function(binding, offset, description = NULL, state_name = NULL) {
+    list(operation = paste0(binding$prefix, "_log2"), parameters = list(offset = offset),
+        state_name = state_name %||% paste0(binding$prefix, "_log2"),
+        description = description %||% paste("Log2 transformation (offset:", offset, ")"))
+}
+
+#' @noRd
+omicsBetweenSampleNormalisationStep <- function(binding, method, description = NULL, state_name = NULL) {
+    list(operation = paste0(binding$prefix, "_between_sample_normalisation"), parameters = list(normalisation_method = method),
+        state_name = state_name %||% paste0(binding$prefix, "_normalized"),
+        description = description %||% paste("Between-sample normalization (method:", method, ")"))
+}
+
+#' @param parameters The nine RUV parameters by their declared names (the tab's `ruv_params` plus the mode and grouping).
+#' @noRd
+omicsRuvStep <- function(binding, parameters, description = NULL, state_name = NULL) {
+    list(operation = paste0(binding$prefix, "_ruv"), parameters = parameters[omicsRuvParameterNames],
+        state_name = state_name %||% paste0(binding$prefix, "_ruv_corrected"),
+        description = description %||% "RUV-III batch correction complete")
+}
+
+#' @noRd
+omicsPearsonSelectionStep <- function(binding, pairs, threshold, description = NULL, state_name = NULL) {
+    list(operation = paste0(binding$prefix, "_pearson_selection"),
+        parameters = list(pairs = pairs, min_pearson_correlation_threshold = threshold),
+        state_name = state_name %||% paste0(binding$prefix, "_correlation_filtered"),
+        description = description %||% paste("Correlation filtering (threshold:", threshold, ")"))
+}
+
+#' Run one tab step through its wrapper's commit.
+#' @noRd
+runWorkflowOmicsReferenceStep <- function(manager, step, config, source = NULL, dependencies = list(), hydrate = FALSE) {
+    runWorkflowOmicsReferenceOperation(manager, workflowOperationEntry(step$operation)$declaration, step$parameters, step$state_name,
+        config, step$description, source = source, dependencies = dependencies, hydrate = hydrate)
+}
+
 #' @noRd
 runWorkflowOmicsReferenceIntensityFilter <- function(binding, manager, percentile, proportion, config, description = NULL,
     state_name = NULL, hydrate = FALSE) {
-    description <- description %||% sprintf("Applied %s intensity filter (percentile: %d%%, proportion: %.2f)",
-        binding$feature_noun, as.integer(percentile), proportion)
-    runWorkflowOmicsReferenceOperation(manager, omicsIntensityFilterOperation(binding),
-        stats::setNames(list(percentile, proportion), binding$intensity_parameters),
-        state_name %||% paste0(binding$prefix, "_intensity_filtered"), config, description, hydrate = hydrate)
+    runWorkflowOmicsReferenceStep(manager, omicsIntensityFilterStep(binding, percentile, proportion, description, state_name), config, hydrate = hydrate)
 }
 
 #' @noRd
 runWorkflowOmicsReferenceDuplicateResolution <- function(binding, manager, config, description = NULL, state_name = NULL,
     hydrate = FALSE) {
-    description <- description %||% sprintf("Resolved duplicate %s features by keeping highest intensity", binding$feature_noun)
-    runWorkflowOmicsReferenceOperation(manager, omicsDuplicateResolutionOperation(binding), list(),
-        state_name %||% paste0(binding$prefix, "_duplicates_resolved"), config, description, hydrate = hydrate)
+    runWorkflowOmicsReferenceStep(manager, omicsDuplicateResolutionStep(binding, description, state_name), config, hydrate = hydrate)
 }
 
 #' @noRd
 runWorkflowOmicsReferenceItsdNormalisation <- function(binding, manager, aggregation, feature_ids, config, description = NULL,
     state_name = NULL, hydrate = FALSE) {
-    parameters <- list(itsd_aggregation = aggregation)
-    parameters["itsd_feature_ids"] <- list(feature_ids)
-    runWorkflowOmicsReferenceOperation(manager, omicsItsdNormalisationOperation(binding), parameters,
-        state_name %||% paste0(binding$prefix, "_itsd_norm"), config,
-        description %||% paste("ITSD normalization (aggregation:", aggregation, ")"), hydrate = hydrate)
+    runWorkflowOmicsReferenceStep(manager, omicsItsdNormalisationStep(binding, aggregation, feature_ids, description, state_name), config, hydrate = hydrate)
 }
 
 #' @noRd
 runWorkflowOmicsReferenceLog2 <- function(binding, manager, offset, config, description = NULL, state_name = NULL, hydrate = FALSE) {
-    runWorkflowOmicsReferenceOperation(manager, omicsLog2Operation(binding), list(offset = offset),
-        state_name %||% paste0(binding$prefix, "_log2"), config,
-        description %||% paste("Log2 transformation (offset:", offset, ")"), hydrate = hydrate)
+    runWorkflowOmicsReferenceStep(manager, omicsLog2Step(binding, offset, description, state_name), config, hydrate = hydrate)
 }
 
 #' @noRd
 runWorkflowOmicsReferenceBetweenSampleNormalisation <- function(binding, manager, method, config, description = NULL,
     state_name = NULL, hydrate = FALSE) {
-    runWorkflowOmicsReferenceOperation(manager, omicsBetweenSampleNormalisationOperation(binding), list(normalisation_method = method),
-        state_name %||% paste0(binding$prefix, "_normalized"), config,
-        description %||% paste("Between-sample normalization (method:", method, ")"), hydrate = hydrate)
+    runWorkflowOmicsReferenceStep(manager, omicsBetweenSampleNormalisationStep(binding, method, description, state_name), config, hydrate = hydrate)
 }
 
 #' @param parameters The nine RUV parameters by their declared names (the tab's `ruv_params` plus the mode and grouping).
@@ -516,9 +578,7 @@ runWorkflowOmicsReferenceBetweenSampleNormalisation <- function(binding, manager
 #' @noRd
 runWorkflowOmicsReferenceRuv <- function(binding, manager, parameters, config, description = NULL, state_name = NULL,
     hydrate = FALSE) {
-    result <- runWorkflowOmicsReferenceOperation(manager, omicsRuvOperation(binding), parameters[omicsRuvParameterNames],
-        state_name %||% paste0(binding$prefix, "_ruv_corrected"), config, description %||% "RUV-III batch correction complete",
-        hydrate = hydrate)
+    result <- runWorkflowOmicsReferenceStep(manager, omicsRuvStep(binding, parameters, description, state_name), config, hydrate = hydrate)
     result$optimisation <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
     result
 }
@@ -534,11 +594,8 @@ runWorkflowOmicsReferenceCorrelation <- function(binding, manager, group, thresh
     withWorkflowStateScope(manager, function() {
         source <- getWorkflowStateReference(manager)
         pairs <- runSavedOperation(manager, omicsPearsonPairsOperation(binding), source, list(correlation_group = group))
-        result <- runWorkflowOmicsReferenceOperation(manager, omicsPearsonSelectionOperation(binding),
-            list(pairs = pairs$reference$entity_id, min_pearson_correlation_threshold = threshold, correlations = pairs$value),
-            state_name %||% paste0(binding$prefix, "_correlation_filtered"), config,
-            description %||% paste("Correlation filtering (threshold:", threshold, ")"), source = source,
-            dependencies = list(pairs$reference), hydrate = hydrate)
+        result <- runWorkflowOmicsReferenceStep(manager, omicsPearsonSelectionStep(binding, pairs$reference$entity_id, threshold, description, state_name),
+            config, source = source, dependencies = list(pairs$reference), hydrate = hydrate)
         result$correlations <- pairs$value
         result
     })
@@ -639,6 +696,91 @@ runWorkflowOmicsReferenceDaAnalysis <- function(binding, manager, source, settin
         publishWorkflowStateHead(context, snapshot)
         list(manifest = manifest, results = readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)
     })
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# The worker (KIT-078): each action runs under `computeWorkflowOmicsAction`, in the owner's scope, and leaves the head
+# to the controller's completion (`completeWorkflowOmicsAction`). Nothing here reads a Shiny session.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' A directory the worker stages one role's files in; the controller publishes them (`publishWorkflowOmicsResult`).
+#' @noRd
+omicsStagedPublicationDir <- function(request, role) {
+    path <- file.path(request$directory, "omics-publication", role)
+    dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    path
+}
+
+#' The filtering step's metrics, saved for the controller's figures (the metabolite tables can pass the result's limit).
+#' A failure costs the figures only, as it does in process.
+#' @return The saved value's reference, or NULL.
+#' @noRd
+omicsFilteringMetricsReference <- function(binding, manager, state) {
+    tryCatch({
+        metrics <- binding$filtering_metrics(readWorkflowExecutionComponents(manager, state, fields = binding$fields))
+        saveWorkflowStateValue(manager$.context, metrics, "omics-filtering-metrics", codec = "rds")
+    }, error = function(error) {
+        logger::log_warn(paste("Could not compute the filtering metrics:", conditionMessage(error)))
+        NULL
+    })
+}
+
+#' The worker's one compute handler: the registered declaration on the request's state, by the request's variant. A
+#' state-producing declaration returns the checkpoint the completion commits; a product-only one returns the source's.
+#' @noRd
+computeWorkflowOmicsOperationAction <- function(manager, request, variant) {
+    entry <- workflowActionSpec(request$operation)
+    declaration <- entry$declaration
+    binding <- omicsDeclarationBindings()[[entry$omic_type]]
+    source <- request$input_references$state
+    parameters <- request$parameters
+    parameters$variant <- variant
+    dependencies <- if ("pairs" %in% declaration$parameters) list(manager$.context$snapshot$products[[parameters$pairs]]) else list()
+    run <- runSavedOperation(manager, declaration, source, parameters, dependencies)
+    # An earlier worker's product whose action never completed has no root yet.
+    if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, c(list(source), dependencies, list(run$value)))
+    if (is.null(declaration$output_class)) {
+        return(list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference,
+            native = if (identical(declaration$name, paste0(binding$prefix, "_da_contrast"))) collectWorkflowNativeReferences(run$value)))
+    }
+    final <- readWorkflowStateMetadata(manager, run$value$final)$data
+    final$products[[paste0(declaration$name, "_science")]] <- run$reference
+    filtering <- declaration$name %in% paste0(binding$prefix, c("_intensity_filter", "_duplicate_resolution"))
+    list(checkpoint = final, reference = run$reference,
+        display = if (filtering) list(filtering_metrics = omicsFilteringMetricsReference(binding, manager, run$value$final)))
+}
+
+#' One stage's per-assay QC figures from the request's state: the files staged, the assets saved.
+#' @noRd
+computeWorkflowOmicsQcFiguresAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    binding$qc_plots(theObject = readWorkflowExecutionComponents(manager, source, fields = binding$fields),
+        experiment_paths = stats::setNames(list(omicsStagedPublicationDir(request, binding$qc_dir_role)), binding$qc_dir_role),
+        stage = request$parameters$stage, grouping_variable = request$parameters$grouping_variable,
+        shape_variable = request$parameters$shape_variable)
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
+}
+
+#' The DA tables and figures from the accepted manifest and its source state: the files staged, the assets saved. A
+#' failure is reported to the tab, which warns as it does in process; the science is already accepted.
+#' @noRd
+computeWorkflowOmicsDaPublicationAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    manifest_reference <- manager$.context$snapshot$da_results
+    if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
+    manifest <- resolveWorkflowStateValue(manager$.context, manifest_reference)
+    results <- readWorkflowOmicsDaResults(binding, manager, manifest)
+    results$theObject <- readWorkflowOmicsState(binding, manager, manifest$source)
+    export <- tryCatch(list(success = isTRUE(binding$da_export(da_results_list = results,
+        da_output_dir = omicsStagedPublicationDir(request, "da_output_dir"),
+        publication_graphs_dir = omicsStagedPublicationDir(request, "publication_graphs_dir"),
+        da_q_val_thresh = manifest$parameters$qvalue, lfc_threshold = manifest$parameters$lfc, heatmap_top_n = 50,
+        heatmap_clustering = "both", heatmap_color_scheme = "RdBu"))), error = function(error) {
+            list(success = FALSE, message = substr(conditionMessage(error), 1L, 1024L))
+        })
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source, display = export)
 }
 
 #' Replay one recorded omics step (KIT-031/032): the record's operation with its recorded values through the wrapper

@@ -142,6 +142,11 @@ writeWorkflowOmicsFigure <- function(path, render, omic_type, content, figure, a
     if (identical(found$status, "hit")) {
         asset <- resolveSavedWorkflowAsset(store, product, render_identity(product))
         if (identical(asset$status, "hit")) {
+            # KIT-078: an earlier worker's figure whose action never completed has no root yet.
+            if (is.list(manager$.context$deferred_roots)) {
+                rootWorkflowProduct(manager, product, list())
+                rootWorkflowProduct(manager, asset$reference, list(product))
+            }
             writeBin(asset$value$bytes, path)
             return(path)
         }

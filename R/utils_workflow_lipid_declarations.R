@@ -73,7 +73,12 @@ lipidomicsDeclarationBinding <- list(
     da_fit = function(...) fitLipidDaAssayModel(...),
     da_apply = function(...) applyLipidDaContrasts(...),
     da_format = function(...) formatLipidDaContrastTable(...),
-    da_count = function(...) countLipidDaSignificant(...)
+    da_count = function(...) countLipidDaSignificant(...),
+    # KIT-078: what the worker reads from the matrix for the step's figures and files.
+    qc_dir_role = "lipid_qc_dir",
+    qc_plots = function(...) generateLipidQcPlots(...),
+    filtering_metrics = function(object) computeLipidFilteringMetrics(object),
+    da_export = function(...) outputLipidDaResultsAllContrasts(...)
 )
 
 lipidomicsStepLabels <- lipidomicsDeclarationBinding$step_labels

@@ -1456,9 +1456,10 @@ workflowWorkerMain <- function(arguments) {
     result <- tryCatch({
         handler <- workflowActionSpec(request$operation)$compute
         # The registry's compute role selects the worker's entry: the fixture, or the scientific action for
-        # the peptide and protein roles (KIT-010), whose handler the entry names.
+        # the peptide and protein roles (KIT-010) and the omics role (KIT-078), whose handler the entry names.
         value <- switch(handler, fixture = computeWorkflowFixture(request),
             peptide = , protein = computeWorkflowPeptideAction(request),
+            omics = computeWorkflowOmicsAction(request),
             cli::cli_abort("operation adapter unavailable", class = "workflow_execution_unsupported"))
         list(schema = 1L, status = "complete", token = request$token, result = value)
     }, error = function(error) list(schema = 1L, status = "failed", token = request$token,
@@ -2363,6 +2364,31 @@ computeWorkflowPeptideAction <- function(request) {
     value
 }
 
+#' Compute one frozen omics action inside W, without a mutation lease (KIT-078). The owner collects the roots of what
+#' the handler saves (`rootWorkflowProduct`); the controller's completion publishes them.
+#' @param request Immutable action request.
+#' @return The handler's bounded result, with its roots.
+#' @noRd
+computeWorkflowOmicsAction <- function(request) {
+    store <- newWorkflowEntityStore(request$project_root, request$owner$project_id, request$owner$workflow_id)
+    on.exit(closeWorkflowEntityStore(store))
+    if (!identical(store$identity, request$owner)) cli::cli_abort("project incarnation changed")
+    manager <- newWorkflowStateOwner(store, reopen = TRUE)
+    on.exit(closeWorkflowStateOwner(manager), add = TRUE, after = FALSE)
+    validateWorkflowActionParameters(request$operation, request$parameters, request$config$policy)
+    validateWorkflowActionInput(request$operation, manager, request$input_references)
+    variant <- workflowQualificationVariant(request$config, request$operation)
+    entry <- workflowActionSpec(request$operation)
+    if (!identical(entry$compute, "omics")) cli::cli_abort("scientific adapter unavailable")
+    manager$.context$deferred_roots <- list()
+    manager$.context$deferred_owned <- list()
+    value <- withWorkflowStateScope(manager, function() get(entry$handler, mode = "function")(manager, request, variant))
+    value$operation <- request$operation
+    value$roots <- manager$.context$deferred_roots
+    value$owned <- manager$.context$deferred_owned
+    value
+}
+
 #' Compute handlers named by the registry: each runs the unchanged reference entry point of its
 #' declaration with the dispatched worker cap and the qualification variant.
 #' @noRd
@@ -2499,6 +2525,14 @@ computeWorkflowProteinDuplicateAction <- function(manager, request, variant) {
 #' An in-process declaration's parameters are validated by its own runner, never by a worker request (KIT-024).
 #' @noRd
 validateWorkflowInProcessParameters <- function(parameters, policy, resolved = TRUE) invisible(NULL)
+
+#' An omics action's parameters are named; the declaration checks its own when it runs (KIT-078).
+#' @noRd
+validateWorkflowOmicsParameters <- function(parameters, policy, resolved = TRUE) {
+    if (length(parameters) && (is.null(names(parameters)) || anyNA(names(parameters)) || !all(nzchar(names(parameters)))))
+        cli::cli_abort("omics action parameters must be named", class = "workflow_execution_invalid")
+    invisible(NULL)
+}
 
 #' The DA publication's one parameter (KIT-019): the annotation table as a saved reference, or absent.
 #' @noRd
