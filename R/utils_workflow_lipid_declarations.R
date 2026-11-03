@@ -77,6 +77,8 @@ lipidomicsDeclarationBinding <- list(
     # KIT-078: what the worker reads from the matrix for the step's figures and files.
     qc_dir_role = "lipid_qc_dir",
     qc_plots = function(...) generateLipidQcPlots(...),
+    composite_figure = function(qc_dir, output_dir, assay_names, ruv_mode) writeLipidNormCompositeFigure(qc_dir, assay_names, ruv_mode, "lipidomics",
+        buildLipidNormCompositeFromFilesGenerator(), output_dir = output_dir),
     filtering_metrics = function(object) computeLipidFilteringMetrics(object),
     da_export = function(...) outputLipidDaResultsAllContrasts(...)
 )

@@ -689,8 +689,9 @@ registerBuiltinWorkflowOperations <- function() {
                 inclusion_absence = FALSE, declaration = declaration),
                 if (worker && !declaration$name %in% sections) list(section = NULL)))
         }
-        # KIT-078: what the steps' figures and exports read from the matrix, in the worker; they commit nothing.
-        for (publication in list(c("qc_figures", "computeWorkflowOmicsQcFiguresAction"), c("da_publication", "computeWorkflowOmicsDaPublicationAction"))) {
+        # KIT-078: what the steps' figures and exports read (the matrix, the composite's rasters), in the worker; they commit nothing.
+        for (publication in list(c("qc_figures", "computeWorkflowOmicsQcFiguresAction"), c("composite_figure", "computeWorkflowOmicsCompositeFigureAction"),
+            c("da_publication", "computeWorkflowOmicsDaPublicationAction"))) {
             registerWorkflowOperation(list(name = paste0(binding$prefix, "_", publication[[1L]]), input = "checkpoint",
                 input_class = binding$class, compute = "omics", handler = publication[[2L]], validate = "validateWorkflowOmicsParameters",
                 resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "omics", publication = "omics",

@@ -609,11 +609,10 @@ runMetabNormNormalizationObserverWrapper <- function(
             ruv_mode = input$ruv_mode, ruv_parameters = list(ruv_mode = input$ruv_mode, ruv_grouping_variable = input$ruv_grouping_variable,
                 percentage_min = input$auto_percentage_min, percentage_max = input$auto_percentage_max, separation_metric = input$separation_metric,
                 k_penalty_weight = input$k_penalty_weight, adaptive_k_penalty = input$adaptive_k_penalty, manual_k = input$ruv_k, manual_percentage = input$ruv_percentage),
-            grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var), normData, workflowData$config_list, addLogFn,
+            grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, assay_names = normData$assay_names,
+            qc_dir = experimentPaths$metabolite_qc_dir), normData, workflowData$config_list, addLogFn,
             finish = function() {
-                runMetabNormCompositeQcRefreshShell(currentS4 = NULL, experimentPaths = experimentPaths, assayNames = normData$assay_names,
-                    ruvMode = input$ruv_mode, omicType = omicType, normData = normData, addLogFn = addLogFn,
-                    generateCompositeFromFilesFn = generateCompositeFromFilesFn, savePlotFn = savePlotFn, logWarnFn = logWarnFn)
+                normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
                 addLogFn("Normalization pipeline complete!")
                 showNotificationFn("Normalization pipeline complete!", type = "message")
             }, failed = function(error) {

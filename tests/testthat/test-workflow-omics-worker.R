@@ -245,13 +245,20 @@ test_that("KIT-078: the controller materialises no assay table of the omic durin
         expect_length(reads, 0L)
         # Every compute declaration was dispatched, with the figures and the export, each closed on delivery.
         expect_true(all(paste0(prefix, c("_intensity_filter", "_duplicate_resolution", "_qc_figures", "_itsd_normalisation", "_log2",
-          "_between_sample_normalisation", "_ruv", "_pearson_pairs", "_pearson_selection", "_da_contrast", "_da_publication")) %in% probe$operations),
+          "_between_sample_normalisation", "_ruv", "_pearson_pairs", "_pearson_selection", "_da_contrast", "_composite_figure", "_da_publication")) %in% probe$operations),
           info = paste(omic, paste(probe$operations, collapse = " ")))
         expect_true(all(probe$statuses == "delivered"), info = omic)
         expect_identical(sum(probe$operations == paste0(prefix, "_qc_figures")), 3L, info = omic)
         # The tab's completion ran: the normalisation's references, and the DA's files through the journal.
         qc_dir <- fixture$paths[[binding$qc_dir_role]]
         expect_true(any(grepl("_ruv_corrected_pca[.]png$", list.files(qc_dir))), info = omic)
+        # The composite is assembled in the worker from the published files: the raster reader never runs in the controller.
+        composite <- file.path(qc_dir, paste0(omic, "_composite_QC_figure.png"))
+        expect_true(file.exists(composite), info = omic)
+        expect_identical(probe$controller_png_reads %||% 0L, 0L, info = omic)
+        hashes <- vapply(Filter(function(reference) identical(reference$kind, "rendered_asset"), fixture$owner$.context$snapshot$products),
+          function(reference) digest::digest(hydrateSavedWorkflowEntity(fixture$owner$.context$store, reference)$bytes, algo = "sha256"), "")
+        expect_true(digest::digest(readBin(composite, "raw", n = file.size(composite)), algo = "sha256") %in% hashes, info = omic)
         expect_true(length(list.files(fixture$paths$da_output_dir, recursive = TRUE)) > 0L, info = omic)
         expect_identical(fixture$owner$.context$snapshot$step_provenance[[paste0(prefix, "_itsd_norm")]]$values$itsd_feature_ids,
           stats::setNames(lapply(names(methods::slot(fixture$object, binding$data_slot)), function(assay) methods::slot(fixture$object, binding$data_slot)[[assay]][[methods::slot(fixture$object, binding$id_slot)]][1:2]),

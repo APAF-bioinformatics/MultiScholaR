@@ -1,3 +1,104 @@
+#' The composite QC figure, from the per-assay files (no matrix). KIT-078: a worker reads the published files and stages the
+#' figure in `output_dir`; in process it is written beside them.
+#' @return `list(compositeSaved, errorMessage)`.
+#' @noRd
+writeLipidNormCompositeFigure <- function(
+    qc_dir,
+    assay_names,
+    ruv_mode,
+    omicType,
+    generateCompositeFromFilesFn,
+    output_dir = qc_dir,
+    addLog = function(entry) invisible(entry),
+    savePlotFn = savePlot,
+    dirExistsFn = dir.exists,
+    filePathFn = file.path,
+    logWarnFn = logger::log_warn
+) {
+    addLog("Generating composite QC figure...")
+    tryCatch({
+        saved <- FALSE
+        if (!is.null(qc_dir) && dirExistsFn(qc_dir) && !is.null(assay_names)) {
+            ncol_composite <- if (ruv_mode == "skip") 2 else 3
+            column_labels <- if (ruv_mode == "skip") {
+                c("Pre-Normalisation", "Post-Normalisation")
+            } else {
+                c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
+            }
+
+            all_plot_files <- c()
+            all_row_labels <- list()
+            label_counter <- 1
+
+            for (assay_name in assay_names) {
+                safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
+                plot_types <- c("pca", "density", "rle", "correlation")
+
+                for (plot_type in plot_types) {
+                    if (ruv_mode == "skip") {
+                        files <- c(
+                            filePathFn(qc_dir, sprintf("%s_pre_norm_%s.png", safe_name, plot_type))
+                            , filePathFn(qc_dir, sprintf("%s_post_norm_%s.png", safe_name, plot_type))
+                        )
+                        labels <- c(
+                            sprintf("%s)", letters[label_counter])
+                            , sprintf("%s)", letters[label_counter + 1])
+                        )
+                        label_counter <- label_counter + 2
+                    } else {
+                        files <- c(
+                            filePathFn(qc_dir, sprintf("%s_pre_norm_%s.png", safe_name, plot_type))
+                            , filePathFn(qc_dir, sprintf("%s_post_norm_%s.png", safe_name, plot_type))
+                            , filePathFn(qc_dir, sprintf("%s_ruv_corrected_%s.png", safe_name, plot_type))
+                        )
+                        labels <- c(
+                            sprintf("%s)", letters[label_counter])
+                            , sprintf("%s)", letters[label_counter + 1])
+                            , sprintf("%s)", letters[label_counter + 2])
+                        )
+                        label_counter <- label_counter + 3
+                    }
+
+                    all_plot_files <- c(all_plot_files, files)
+                    row_key <- sprintf("%s_%s", safe_name, plot_type)
+                    all_row_labels[[row_key]] <- labels
+                }
+            }
+
+            composite_res <- generateCompositeFromFilesFn(
+                plot_files = all_plot_files
+                , ncol = ncol_composite
+                , row_labels = all_row_labels
+                , column_labels = column_labels
+            )
+
+            if (!is.null(composite_res)) {
+                writeWorkflowOmicsCompositeFigure(
+                    composite_res$plot
+                    , output_dir
+                    , paste0(omicType, "_composite_QC_figure")
+                    , width = composite_res$width
+                    , height = composite_res$height
+                    , plot_files = all_plot_files
+                    , labels = list(rows = all_row_labels, columns = column_labels)
+                    , omic_type = omicType
+                    , savePlotFn = savePlotFn
+                )
+                saved <- TRUE
+                addLog(sprintf(
+                    "Composite QC figure saved to: %s",
+                    filePathFn(qc_dir, "composite_QC_figure")
+                ))
+            }
+        }
+        list(compositeSaved = saved)
+    }, error = function(e) {
+        addLog(paste("Warning: Could not generate composite QC figure:", e$message))
+        logWarnFn(paste("Composite QC generation failed:", e$message))
+        list(compositeSaved = FALSE, errorMessage = conditionMessage(e))
+    })
+}
+
 handleLipidNormRunNormalization <- function(
     input,
     workflowData,
@@ -32,88 +133,8 @@ handleLipidNormRunNormalization <- function(
 
     addLog("Starting normalization pipeline...")
 
-    # KIT-078: the composite figure (from the per-assay files, no matrix) and the tab's completion, in process or on the worker.
-    finish_pipeline <- function() {
-        addLog("Generating composite QC figure...")
-        tryCatch({
-            qc_dir <- experimentPaths$lipid_qc_dir
-            if (!is.null(qc_dir) && dirExistsFn(qc_dir) && !is.null(normData$assay_names)) {
-                ncol_composite <- if (input$ruv_mode == "skip") 2 else 3
-                column_labels <- if (input$ruv_mode == "skip") {
-                    c("Pre-Normalisation", "Post-Normalisation")
-                } else {
-                    c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
-                }
-
-                all_plot_files <- c()
-                all_row_labels <- list()
-                label_counter <- 1
-
-                for (assay_name in normData$assay_names) {
-                    safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
-                    plot_types <- c("pca", "density", "rle", "correlation")
-
-                    for (plot_type in plot_types) {
-                        if (input$ruv_mode == "skip") {
-                            files <- c(
-                                filePathFn(qc_dir, sprintf("%s_pre_norm_%s.png", safe_name, plot_type))
-                                , filePathFn(qc_dir, sprintf("%s_post_norm_%s.png", safe_name, plot_type))
-                            )
-                            labels <- c(
-                                sprintf("%s)", letters[label_counter])
-                                , sprintf("%s)", letters[label_counter + 1])
-                            )
-                            label_counter <- label_counter + 2
-                        } else {
-                            files <- c(
-                                filePathFn(qc_dir, sprintf("%s_pre_norm_%s.png", safe_name, plot_type))
-                                , filePathFn(qc_dir, sprintf("%s_post_norm_%s.png", safe_name, plot_type))
-                                , filePathFn(qc_dir, sprintf("%s_ruv_corrected_%s.png", safe_name, plot_type))
-                            )
-                            labels <- c(
-                                sprintf("%s)", letters[label_counter])
-                                , sprintf("%s)", letters[label_counter + 1])
-                                , sprintf("%s)", letters[label_counter + 2])
-                            )
-                            label_counter <- label_counter + 3
-                        }
-
-                        all_plot_files <- c(all_plot_files, files)
-                        row_key <- sprintf("%s_%s", safe_name, plot_type)
-                        all_row_labels[[row_key]] <- labels
-                    }
-                }
-
-                composite_res <- generateCompositeFromFilesFn(
-                    plot_files = all_plot_files
-                    , ncol = ncol_composite
-                    , row_labels = all_row_labels
-                    , column_labels = column_labels
-                )
-
-                if (!is.null(composite_res)) {
-                    writeWorkflowOmicsCompositeFigure(
-                        composite_res$plot
-                        , qc_dir
-                        , paste0(omicType, "_composite_QC_figure")
-                        , width = composite_res$width
-                        , height = composite_res$height
-                        , plot_files = all_plot_files
-                        , labels = list(rows = all_row_labels, columns = column_labels)
-                        , omic_type = omicType
-                        , savePlotFn = savePlotFn
-                    )
-                    addLog(sprintf(
-                        "Composite QC figure saved to: %s",
-                        filePathFn(qc_dir, "composite_QC_figure")
-                    ))
-                }
-            }
-        }, error = function(e) {
-            addLog(paste("Warning: Could not generate composite QC figure:", e$message))
-            logWarnFn(paste("Composite QC generation failed:", e$message))
-        })
-
+    # KIT-078: the tab's completion, in process or on the worker.
+    complete_pipeline <- function() {
         normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
 
         addLog("Normalization pipeline complete!")
@@ -131,8 +152,9 @@ handleLipidNormRunNormalization <- function(
             ruv_mode = input$ruv_mode, ruv_parameters = list(ruv_mode = input$ruv_mode, percentage_min = input$auto_percentage_min,
                 percentage_max = input$auto_percentage_max, ruv_grouping_variable = input$ruv_grouping_variable, separation_metric = input$separation_metric,
                 k_penalty_weight = input$k_penalty_weight, adaptive_k_penalty = input$adaptive_k_penalty, manual_k = input$ruv_k, manual_percentage = input$ruv_percentage),
-            grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var), normData, workflowData$config_list, addLog,
-            finish = finish_pipeline, failed = function(error) {
+            grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, assay_names = normData$assay_names,
+            qc_dir = experimentPaths$lipid_qc_dir), normData, workflowData$config_list, addLog,
+            finish = complete_pipeline, failed = function(error) {
                 addLog(paste("ERROR:", conditionMessage(error)))
                 logErrorFn(paste("Normalization pipeline error:", conditionMessage(error)))
             }))
@@ -279,7 +301,9 @@ handleLipidNormRunNormalization <- function(
                     normData$ruv_complete <- TRUE
                 }
 
-                finish_pipeline()
+                writeLipidNormCompositeFigure(experimentPaths$lipid_qc_dir, normData$assay_names, input$ruv_mode, omicType, generateCompositeFromFilesFn,
+                    addLog = addLog, savePlotFn = savePlotFn, dirExistsFn = dirExistsFn, filePathFn = filePathFn, logWarnFn = logWarnFn)
+                complete_pipeline()
 
                 invisible(TRUE)
             }, error = function(e) {

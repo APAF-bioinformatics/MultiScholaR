@@ -782,6 +782,19 @@ computeWorkflowOmicsQcFiguresAction <- function(manager, request, variant) {
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
 }
 
+#' The composite QC figure from the published per-assay files, staged and saved (its rasters are the application's largest
+#' memory event when it is assembled there). A failure is reported to the tab, which warns as it does in process.
+#' @noRd
+computeWorkflowOmicsCompositeFigureAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    composite <- tryCatch(binding$composite_figure(workflowRequestExperimentPaths(request)[[binding$qc_dir_role]],
+        omicsStagedPublicationDir(request, binding$qc_dir_role), request$parameters$assay_names, request$parameters$ruv_mode),
+        error = function(error) list(compositeSaved = FALSE, errorMessage = substr(conditionMessage(error), 1L, 1024L)))
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source,
+        display = list(saved = isTRUE(composite$compositeSaved), message = composite$errorMessage))
+}
+
 #' The DA tables and figures from the accepted manifest and its source state: the files staged, the assets saved. A
 #' failure is reported to the tab, which warns as it does in process; the science is already accepted.
 #' @noRd

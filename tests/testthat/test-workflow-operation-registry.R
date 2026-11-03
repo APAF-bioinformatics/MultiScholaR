@@ -3,9 +3,9 @@
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
     # KIT-031/032: the lipidomics and metabolomics declarations beside the proteomics operations (KIT-078: their compute steps on the `omics` role).
-    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_da_contrast", "lipid_da_output", "lipid_da_publication", "lipid_duplicate_resolution", "lipid_intensity_filter",
+    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_composite_figure", "lipid_da_contrast", "lipid_da_output", "lipid_da_publication", "lipid_duplicate_resolution", "lipid_intensity_filter",
         "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
-        "lipid_qc_figures", "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "metab_between_sample_normalisation", "metab_da_contrast", "metab_da_output", "metab_da_publication", "metab_duplicate_resolution", "metab_intensity_filter",
+        "lipid_qc_figures", "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "metab_between_sample_normalisation", "metab_composite_figure", "metab_da_contrast", "metab_da_output", "metab_da_publication", "metab_duplicate_resolution", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_figures", "metab_qc_finalize", "metab_reset", "metab_ruv", "minimum_peptides_per_sample",
         "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
@@ -92,10 +92,10 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         isSavedWorkflowReference = function(x) identical(x, "owned"), isDIAComponentCheckpoint = function(x) TRUE,
         readWorkflowStateMetadata = function(...) list(data = record)) # KIT-045: the execution layer calls the workflow name
     expect_identical(sort(workflowOperationNames()), sort(c("DA-contrast-output", "da_publication", "enrichment",
-        "lipid_between_sample_normalisation", "lipid_da_contrast", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
+        "lipid_between_sample_normalisation", "lipid_composite_figure", "lipid_da_contrast", "lipid_da_output", "lipid_duplicate_resolution", "lipid_intensity_filter",
         "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
         "lipid_qc_finalize", "lipid_reset", "lipid_ruv", 
-        "metab_between_sample_normalisation", "metab_da_contrast", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
+        "metab_between_sample_normalisation", "metab_composite_figure", "metab_da_contrast", "metab_da_output", "metab_duplicate_resolution", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_finalize", "metab_reset", "metab_ruv", 
         "minimum_peptides_per_sample", "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_imputation",
@@ -237,7 +237,7 @@ test_that("every registered worker step's section maps to its operation, and the
         name != "da_publication" && !declares_none(name), workflowOperationNames())
     for (prefix in c("lipid", "metab")) {
         expect_true(all(vapply(paste0(prefix, c("_log2", "_between_sample_normalisation", "_duplicate_resolution", "_pearson_pairs", "_pearson_selection",
-            "_da_contrast", "_qc_figures", "_da_publication")), declares_none, logical(1))), info = prefix)
+            "_da_contrast", "_qc_figures", "_composite_figure", "_da_publication")), declares_none, logical(1))), info = prefix)
         expect_false(any(vapply(paste0(prefix, c("_intensity_filter", "_itsd_normalisation", "_ruv")), declares_none, logical(1))), info = prefix)
     }
     # KIT-047/041: the DIA_LIMPA route's own sections (a section shared with the DIA route names the route's declaration);

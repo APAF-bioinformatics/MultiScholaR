@@ -120,13 +120,13 @@ omicsManualItsdFeatureIds <- function(selections, candidates, addLog = function(
 }
 
 #' The normalisation tab's pipeline on the worker (`handleLipidNormRunNormalization` and `runMetabNormNormalizationPipeline`
-#' run it in process): the QC figures, ITSD, log2, between-sample normalisation, the figures, RUV-III and its figures, one
-#' managed action each under one progress display. `normData` holds each step's state reference as in process.
+#' run it in process): the QC figures, ITSD, log2, between-sample normalisation, the figures, RUV-III and its figures, the
+#' composite, one managed action each under one progress display. `normData` holds each step's state reference as in process.
 #' @param binding The omic's binding.
 #' @param runner The omic's runner.
 #' @param manager The session owner.
 #' @param settings `apply_itsd`, `itsd_aggregation`, `itsd_feature_ids`, `log_offset`, `norm_method`, `ruv_mode`,
-#'   `ruv_parameters` (the nine by their declared names), `grouping_variable`, `shape_variable`.
+#'   `ruv_parameters` (the nine by their declared names), `grouping_variable`, `shape_variable`, `assay_names`, `qc_dir`.
 #' @param normData The tab's reactive values.
 #' @param config The states' configuration.
 #' @param addLog The tab's log.
@@ -190,14 +190,31 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
             addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
         }), figures("ruv_corrected", "RUV QC plots generated", function() advance("Generating RUV QC plots..."))))
     }
+    warn_composite <- function(message) {
+        addLog(paste("Warning: Could not generate composite QC figure:", message))
+        logger::log_warn(paste("Composite QC generation failed:", message))
+    }
     runner$run(actions, done = function() {
-        progress$close()
         if (!ruv) {
             addLog("RUV-III skipped")
             normData$ruv_corrected_obj <- normData$post_norm_obj
             normData$ruv_complete <- TRUE
         }
-        finish()
+        close_and_finish <- function() {
+            progress$close()
+            finish()
+        }
+        if (is.null(settings$assay_names)) return(close_and_finish())
+        addLog("Generating composite QC figure...")
+        # The states are committed; the figure's failure warns, as it does in process.
+        runner$run(list(omicsManagedProduct(paste0(prefix, "_composite_figure"), list(assay_names = settings$assay_names, ruv_mode = settings$ruv_mode),
+            function(result) {
+                if (isTRUE(result$display$saved)) addLog(sprintf("Composite QC figure saved to: %s", file.path(settings$qc_dir, "composite_QC_figure")))
+                else if (!is.null(result$display$message)) warn_composite(result$display$message)
+            })), done = close_and_finish, failed = function(error) {
+                warn_composite(conditionMessage(error))
+                close_and_finish()
+            })
     }, failed = function(error) {
         progress$close()
         failed(error)

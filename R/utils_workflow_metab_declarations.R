@@ -65,6 +65,8 @@ metabolomicsDeclarationBinding <- list(
     # KIT-078: what the worker reads from the matrix for the step's figures and files.
     qc_dir_role = "metabolite_qc_dir",
     qc_plots = function(...) generateMetabQcPlots(...),
+    composite_figure = function(qc_dir, output_dir, assay_names, ruv_mode) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc_dir), assay_names, ruv_mode,
+        "metabolomics", generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = output_dir),
     filtering_metrics = function(object) computeMetabFilteringMetrics(object),
     da_export = function(...) outputMetabDaResultsAllContrasts(...)
 )

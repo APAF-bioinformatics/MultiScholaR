@@ -13,11 +13,11 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
   # KIT-076 adds one declaration per omic (`<prefix>_da_contrast`); the twelve frozen ones are unchanged.
   current$registry$lipidomics$lipid_da_contrast <- NULL
   current$registry$metabolomics$metab_da_contrast <- NULL
-  # KIT-078 adds the two publication operations per omic and moves the compute steps to the worker's `omics` role, with
+  # KIT-078 adds the three publication operations per omic and moves the compute steps to the worker's `omics` role, with
   # their handler, validator and, where they write no section, `section = NULL`; every other field is the frozen one.
   for (omic in c("lipidomics", "metabolomics")) {
     prefix <- if (identical(omic, "lipidomics")) "lipid" else "metab"
-    current$registry[[omic]][paste0(prefix, c("_qc_figures", "_da_publication"))] <- NULL
+    current$registry[[omic]][paste0(prefix, c("_qc_figures", "_composite_figure", "_da_publication"))] <- NULL
     for (name in names(current$registry[[omic]])) {
       if (!identical(current$registry[[omic]][[name]]$entry$compute, "omics")) next
       entry <- current$registry[[omic]][[name]]$entry

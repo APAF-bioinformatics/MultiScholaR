@@ -638,7 +638,8 @@ runMetabNormCompositeQcFigureStep <- function(
     generateCompositeFromFilesFn = NULL,
     savePlotFn = savePlot,
     dirExistsFn = dir.exists,
-    logWarnFn = logger::log_warn
+    logWarnFn = logger::log_warn,
+    outputDir = NULL
 ) {
     if (is.null(generateCompositeFromFilesFn)) {
         stop("generateCompositeFromFilesFn must be provided")
@@ -715,9 +716,10 @@ runMetabNormCompositeQcFigureStep <- function(
         )
 
         if (!is.null(compositeRes)) {
+            # KIT-078: a worker reads the published files and stages the figure (`outputDir`).
             writeWorkflowOmicsCompositeFigure(
                 compositeRes$plot,
-                qcDir,
+                outputDir %||% qcDir,
                 paste0(omicType, "_composite_QC_figure"),
                 width = compositeRes$width,
                 height = compositeRes$height,

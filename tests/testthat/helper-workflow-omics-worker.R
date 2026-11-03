@@ -110,6 +110,7 @@ omicsManagedChainMocks <- function(fixture, probe, env = parent.frame()) {
   table <- materializeWorkflowTable
   components <- readWorkflowExecutionComponents
   resume <- resumeWorkflowAction
+  composite <- writeWorkflowOmicsCompositeFigure
   working <- function() isTRUE(probe$active) && !identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")
   testthat::local_mocked_bindings(
     workflowSessionApplication = function(session) application,
@@ -126,6 +127,11 @@ omicsManagedChainMocks <- function(fixture, probe, env = parent.frame()) {
       probe$statuses <- c(probe$statuses, status)
       reservation$closed <- TRUE
       list()
+    },
+    # The composite's raster read, counted in the controller only.
+    writeWorkflowOmicsCompositeFigure = function(...) {
+      if (!identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) probe$controller_png_reads <- (probe$controller_png_reads %||% 0L) + 1L
+      composite(...)
     },
     runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
       probe$handoff <- omicsWorkerAction(fixture, controller, operation, parameters, completion_context)
