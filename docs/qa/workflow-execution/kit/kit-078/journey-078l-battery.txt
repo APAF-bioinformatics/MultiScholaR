@@ -5,3 +5,4 @@
 # platform profile). Every member before the reboot had 0 gaps, also under test load (kit-gui-077, kit-gui-078 on items 1-2, 077l);
 # every member after it has bursts of them, proteomics included (kit-gui-078 on item 3, 3 gaps, largest 0.50 s and 0.85 s).
 # The limit is frozen and unchanged. The rerun waits for mains power.
+# Correction, same evening: battery as the cause is not established. The final members ran after the 18:52 reboot, the first two also on battery in power-saver, with gaps under 0.1 s. See outcome.md.

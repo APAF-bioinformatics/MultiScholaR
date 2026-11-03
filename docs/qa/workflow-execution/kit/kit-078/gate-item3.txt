@@ -1,6 +1,6 @@
 # kit-gui-078 on item 3 (bcf6a512, install h4c3hq), reference kit-gui-077.
 # Launch 1: killed when the session ended; no result (kit-gui-078.interrupted-item3).
-# Launch 2: no result: decision invalid on measurement_valid, 13 of 13 dispatches complete; R CMD check was running on the host during the member, my doing (kit-gui-078.item3-invalid).
+# Launch 2: no result: decision invalid on measurement_valid, 13 of 13 dispatches complete; R CMD check was running on the host during the member, though the gaps fell in the first seconds and the next launch had a smaller burst at the same point, so the check is not established as the cause (kit-gui-078.item3-invalid).
 # Launch 3, quiet host: status gui_member_observed elapsed 584.97 anon 2.08 
 # Launch 3, quiet host: dispatched 13 operations, all complete: TRUE 
 # Launch 3, quiet host: mismatches 0 
