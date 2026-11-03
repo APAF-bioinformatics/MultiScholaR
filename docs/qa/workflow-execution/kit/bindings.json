@@ -487,11 +487,11 @@
     },
     "kit_078": {
       "ticket": "KIT-078",
-      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.IFYQXu/library",
-      "build": "9127d90552f9555320d84e9d7cb41d52f515e66fba88aa893b90dd9b4b6ef4cc",
-      "exact_sum": "121d2871daa191e6b62286204eaac8c5a9ac750f9ef2c27d18fdb6cfa8400acb",
-      "install_member": "browser-smoke.IFYQXu",
-      "source_commit": "d76c760420df7f881935484f2ca419de88688efd",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h4c3hq/library",
+      "build": "b9f6d4f49eea93adcaa4e209b1793a1f7129b98eb26f91c0e316aade5ed18491",
+      "exact_sum": "81f81cee552f27242211ab61cc8d1369314a6b2e6e54038465249c260e38b730",
+      "install_member": "browser-smoke.h4c3hq",
+      "source_commit": "bcf6a512578cdc5ddee5c1ed3c61fd2656dbde7b",
       "runtime_patch_bytes": 0
     }
   },
