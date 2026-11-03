@@ -25031,6 +25031,14 @@
       "operations": ["precursor_rollup", "minimum_peptides_per_sample"],
       "ceiling_seconds": 900
     },
+    "077": {
+      "kind": "gui",
+      "build": "kit_077",
+      "corpus": "screen",
+      "reference": "kit-lifecycle-complete.kit065r-dia-102150",
+      "operations": ["peptide_qvalue_filter", "peptide_protein_evidence_filter", "precursor_rollup", "peptide_intensity_filter", "minimum_peptides_per_sample", "peptide_replicate_filter", "peptide_imputation", "protein_iq_rollup", "protein_accession_cleanup", "protein_intensity_filter", "protein_duplicate_removal", "protein_replicate_filter", "da_publication"],
+      "ceiling_seconds": 1800
+    },
     "009": {
       "control": "kit_009",
       "candidate": "kit_009",
