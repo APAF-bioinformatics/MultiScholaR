@@ -925,7 +925,7 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, ap
         reference <- readRDS(reference_path)
         candidate <- readRDS(candidate_path)
         # KIT-078: a reference member's stage directory may have been renamed to keep it; its store moved with it.
-        if (!dir.exists(reference$store)) reference$store <- file.path(dirname(reference_path), sub("^.*/member/", "", reference$store))
+        if (is.character(reference$store) && !dir.exists(reference$store)) reference$store <- file.path(dirname(reference_path), sub("^.*/member/", "", reference$store))
         # With an api the state fingerprints of both members are recomputed from their immutable stores under the
         # current canonical form (a correction to that form after the run then applies to both sides, as the
         # journey verifier does); the per-step assets the driver attached stay as recorded.
