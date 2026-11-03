@@ -204,16 +204,19 @@ updateMetabIntensityFilterQcPlot <- function(
     setFilterPlotFn,
     stepName = "2_Intensity_Filtered",
     updateMetaboliteFilteringFn = updateMetaboliteFiltering,
-    logWarnFn = logger::log_warn
+    logWarnFn = logger::log_warn,
+    metrics = NULL
 ) {
     qcPlot <- tryCatch({
-        updateMetaboliteFilteringFn(
+        # KIT-078: a worker's metrics stand for the object.
+        if (is.null(filteredS4) && is.null(metrics)) stop("the worker computed no filtering metrics")
+        do.call(updateMetaboliteFilteringFn, c(list(
             theObject = filteredS4
             , step_name = stepName
             , omics_type = omicType
             , return_grid = TRUE
             , overwrite = TRUE
-        )
+        ), if (!is.null(metrics)) list(metrics = metrics)))
     }, error = function(e) {
         logWarnFn(paste("Could not generate QC plot:", e$message))
         NULL
@@ -379,33 +382,47 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
                     , input$proportion_below_cutoff
                 ))
                 
+                # KIT-078: the tab's completion, from the declaration's counts in process or on the worker.
+                finish <- function(counts, filteredS4, metrics = NULL) {
+                    stats_df <- buildMetabIntensityFilterStats(
+                        originalCounts = counts$before
+                        , filteredCounts = counts$after
+                    )
+                    filter_stats(stats_df)
+
+                    updateMetabIntensityFilterQcPlot(
+                        filteredS4 = filteredS4
+                        , omicType = omic_type
+                        , setFilterPlotFn = filter_plot
+                        , metrics = metrics
+                    )
+
+                    saved_state_name <- "metab_intensity_filtered"
+
+                    reportMetabIntensityFilterSuccess(
+                        stats = stats_df
+                        , intensityCutoffPercentile = input$intensity_cutoff_percentile
+                        , proportionBelowCutoff = input$proportion_below_cutoff
+                        , savedStateName = saved_state_name
+                        , output = output
+                    )
+                }
+
                 # KIT-032: the filter is the declared operation `metab_intensity_filter`, committed under
-                # `metab_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path).
+                # `metab_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path). KIT-078: on
+                # the worker under a managed session, which also computes what the figures read from the matrix.
+                runner <- workflowOmicsManagedActions("metabolomics")
+                if (!is.null(runner)) {
+                    step <- omicsIntensityFilterStep(metabolomicsDeclarationBinding, input$intensity_cutoff_percentile, input$proportion_below_cutoff)
+                    runner$run(list(omicsManagedCommit(step, workflow_data$config_list, function(result) {
+                        finish(result$value$counts, NULL, readWorkflowOmicsFilteringMetrics(workflow_data$state_manager, result))
+                    })), failed = function(error) shiny::removeNotification("metab_intensity_filter_working"))
+                    return(invisible(NULL))
+                }
                 filter_run <- runMetabReferenceIntensityFilter(workflow_data$state_manager, input$intensity_cutoff_percentile,
                     input$proportion_below_cutoff, workflow_data$config_list)
-                
-                stats_df <- buildMetabIntensityFilterStats(
-                    originalCounts = filter_run$value$counts$before
-                    , filteredCounts = filter_run$value$counts$after
-                )
-                filter_stats(stats_df)
-                
-                updateMetabIntensityFilterQcPlot(
-                    filteredS4 = readMetabWorkflowState(workflow_data$state_manager, filter_run$reference)
-                    , omicType = omic_type
-                    , setFilterPlotFn = filter_plot
-                )
+                finish(filter_run$value$counts, readMetabWorkflowState(workflow_data$state_manager, filter_run$reference))
 
-                saved_state_name <- "metab_intensity_filtered"
-
-                reportMetabIntensityFilterSuccess(
-                    stats = stats_df
-                    , intensityCutoffPercentile = input$intensity_cutoff_percentile
-                    , proportionBelowCutoff = input$proportion_below_cutoff
-                    , savedStateName = saved_state_name
-                    , output = output
-                )
-                
             }, error = function(e) {
                 msg <- paste("Error applying metabolite intensity filter:", e$message)
                 logger::log_error(msg)

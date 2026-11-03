@@ -753,7 +753,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         shiny::invalidateLater(1000, session)
         ready_message(action)
     })
-    shiny::observeEvent(input[[ui$ack]], {
+    if (!is.null(ui$ack)) shiny::observeEvent(input[[ui$ack]], {
         action <- managed_action()
         acknowledgement <- input[[ui$ack]]
         if (is.null(action) || !identical(action$phase, "awaiting_browser") || !is.list(acknowledgement) ||

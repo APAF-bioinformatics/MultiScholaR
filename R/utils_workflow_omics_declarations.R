@@ -594,6 +594,8 @@ runWorkflowOmicsReferenceCorrelation <- function(binding, manager, group, thresh
     withWorkflowStateScope(manager, function() {
         source <- getWorkflowStateReference(manager)
         pairs <- runSavedOperation(manager, omicsPearsonPairsOperation(binding), source, list(correlation_group = group))
+        # KIT-078: the selection reads the pairs through the head (a hit from a store whose head no longer roots it).
+        if (is.null(manager$.context$snapshot$products[[pairs$reference$entity_id]])) rootWorkflowProduct(manager, pairs$reference, list(source))
         result <- runWorkflowOmicsReferenceStep(manager, omicsPearsonSelectionStep(binding, pairs$reference$entity_id, threshold, description, state_name),
             config, source = source, dependencies = list(pairs$reference), hydrate = hydrate)
         result$correlations <- pairs$value

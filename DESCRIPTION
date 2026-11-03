@@ -392,6 +392,7 @@ Collate:
     'utils_workflow_dia_da.R'
     'utils_workflow_omics_declarations.R'
     'utils_workflow_omics_figures.R'
+    'utils_workflow_omics_actions.R'
     'utils_workflow_lipid_declarations.R'
     'utils_workflow_metab_declarations.R'
     'utils_workflow_saved_exports.R'

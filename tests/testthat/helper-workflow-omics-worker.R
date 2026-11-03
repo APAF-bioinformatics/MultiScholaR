@@ -69,7 +69,7 @@ omicsWorkerAction <- function(fixture, controller, operation, parameters = list(
     paths = paths, completion_context = validateWorkflowOmicsCompletionContext(operation, context))
   receipt <- acceptWorkflowActionResult(controller, message[c("schema", "status", "token", "result")])
   accepted <- resumeWorkflowAction(controller, id)
-  c(readManagedOmicsResult(owner, accepted, NULL), list(acceptance = receipt$status, paths = paths))
+  c(readManagedOmicsResult(owner, accepted, NULL), list(acceptance = receipt$status, paths = paths, accepted = accepted))
 }
 
 #' The whole journey of `lipidDeclarationsJourney` / `metabDeclarationsJourney` on the worker: the same values, in the shape
@@ -98,4 +98,136 @@ omicsWorkerJourney <- function(fixture, binding, ruv) {
   for (step in omicsDaContrastSteps(binding, settings, contrasts)) values[[step$contrast]] <- omicsWorkerAction(fixture, controller, step$operation, step$parameters)$value
   out$da <- withWorkflowStateScope(owner, function() acceptWorkflowOmicsDaManifest(binding, owner, source, settings, contrasts, values))
   out
+}
+
+#' A managed session for the tabs, in this process: `session`'s runner dispatches each action to the real worker entry point
+#' and acceptance (`omicsWorkerAction`), and the probe records every assay read the controller makes between the action's
+#' reservation and its delivery. The service layer (the reservation's systemd units, the poll) is mocked.
+#' @param probe An environment; `tables` collects the entity ids the controller materialises during an action.
+omicsManagedChainMocks <- function(fixture, probe, env = parent.frame()) {
+  controller <- omicsWorkerController(fixture)
+  application <- WorkflowExecutionApplication$new()
+  table <- materializeWorkflowTable
+  components <- readWorkflowExecutionComponents
+  resume <- resumeWorkflowAction
+  working <- function() isTRUE(probe$active) && !identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")
+  testthat::local_mocked_bindings(
+    workflowSessionApplication = function(session) application,
+    workflowExecutionBuildIdentity = function() strrep("f", 64),
+    finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) },
+    beginWorkflowGUIAction = function(application, manager, operation, publication) {
+      probe$publication <- publication
+      probe$active <- TRUE
+      probe$operations <- c(probe$operations, operation)
+      list2env(list(id = paste0("gui-", operation), closed = FALSE))
+    },
+    finishWorkflowGUIAction = function(reservation, status, ...) {
+      probe$active <- FALSE
+      probe$statuses <- c(probe$statuses, status)
+      reservation$closed <- TRUE
+      list()
+    },
+    runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
+      probe$handoff <- omicsWorkerAction(fixture, controller, operation, parameters, completion_context)
+      paste0("worker-", operation)
+    },
+    pollWorkflowAction = function(owner) list(status = "complete"),
+    # The step's resume returns what the in-test worker's acceptance already published.
+    resumeWorkflowAction = function(owner, request_id) if (startsWith(request_id, "worker-")) probe$handoff$accepted else resume(owner, request_id),
+    materializeWorkflowTable = function(context, reference, ...) {
+      if (working()) probe$tables <- c(probe$tables, reference$entity_id)
+      table(context, reference, ...)
+    },
+    readWorkflowExecutionComponents = function(manager, reference, fields = NULL, ...) {
+      if (working()) probe$reads <- c(probe$reads, paste(fields %||% "<every field>", collapse = ","))
+      components(manager, reference, fields = fields, ...)
+    },
+    .package = "MultiScholaR", .env = env)
+  controller
+}
+
+#' The assay tables of every committed state in the owner, by entity id.
+omicsAssayTableIds <- function(owner, binding) {
+  ids <- character()
+  for (name in setdiff(names(owner$.context$snapshot$states), "initial")) {
+    spec <- readWorkflowStateMetadata(owner, owner$.context$snapshot$states[[name]])$data
+    if (isDIAComponentCheckpoint(spec)) ids <- c(ids, vapply(spec$components[[binding$data_slot]], function(table) table$entity_id, ""))
+  }
+  unique(ids)
+}
+
+#' The inputs of the tabs' journey.
+omicsTabInputs <- function() {
+  list(intensity_cutoff_percentile = 1, proportion_below_cutoff = 0.5, apply_itsd = TRUE, itsd_aggregation = "median", log_offset = 1,
+    norm_method = "cyclicloess", ruv_mode = "manual", auto_percentage_min = 1, auto_percentage_max = 20, ruv_grouping_variable = "group",
+    separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_k = 1L, ruv_percentage = 20,
+    min_pearson_correlation_threshold = 0.5)
+}
+
+#' One server with one omic's real tab observers: intensity, duplicates, normalisation, correlation and DA.
+omicsTabServer <- function(fixture, omic, probe, managed) {
+  force(fixture); force(omic); force(probe); force(managed)
+  function(input, output, session) {
+    workflow <- fixture$workflow
+    paths <- fixture$paths
+    if (managed) {
+      runner <- installWorkflowOmicsActions(session, workflow, omic, "kit078", paths)
+      runner$progress <- function(message) list(inc = function(...) invisible(NULL), close = function() invisible(NULL))
+    }
+    addLog <- function(entry) probe$log <- c(probe$log, entry)
+    aesthetics <- function(...) list(color_var = "group", shape_var = NULL)
+    stats <- shiny::reactiveVal(NULL); plot <- shiny::reactiveVal(NULL); info <- shiny::reactiveVal(NULL)
+    daData <- list2env(list(current_state_name = NULL, analysis_complete = FALSE))
+    session$userData$probe_da <- daData
+    if (identical(omic, "lipidomics")) {
+      normData <- createLipidNormReactiveState()
+      session$userData$probe_norm <- normData
+      registerLipidIntensityApplyFilterObserver(input, workflow, output, stats, plot, omic)
+      registerLipidDuplicateResolveObserver(input, workflow, omic, stats, info, plot, output)
+      registerLipidNormRunNormalizationObserver(input, workflow, paths, omic, normData, addLog, aesthetics, function(...) NULL)
+      registerLipidNormApplyCorrelationFilterObserver(input, workflow, normData, addLog)
+      shiny::observeEvent(input$run_da, {
+        daData$current_state_name <- workflow$state_manager$current_state
+        executeLipidDaRunAnalysis(NULL, workflow$contrasts_tbl, "~ 0 + group", 0.05, 0, daData, workflow, session, paths)
+      })
+    } else {
+      normData <- createMetabNormReactiveState()
+      session$userData$probe_norm <- normData
+      mod_metab_qc_intensity_server("intensity", workflow, omic, "kit078")
+      shiny::observeEvent(input$resolve_duplicates, runMetabDuplicateResolutionObserver(workflow, omic, output, info, stats, plot))
+      shiny::observeEvent(input$run_normalization, runMetabNormNormalizationObserverWrapper(workflow, input, paths, omic, normData, addLog,
+        getPlotAestheticsFn = aesthetics, generateCompositeFromFilesFn = function(...) NULL))
+      shiny::observeEvent(input$apply_correlation_filter, runMetabNormApplyCorrelationObserverEntry(workflow, normData, input$min_pearson_correlation_threshold,
+        input$ruv_grouping_variable, addLog))
+      shiny::observeEvent(input$run_da, {
+        daData$current_state_name <- workflow$state_manager$current_state
+        runMetabDaAnalysisObserverShell(NULL, workflow$contrasts_tbl, "~ 0 + group", 0.05, 0, workflow, daData, session, paths)
+      })
+    }
+  }
+}
+
+#' Click through the tabs' journey in the server.
+omicsTabJourney <- function(session, omic, selections = NULL) {
+  do.call(session$setInputs, omicsTabInputs())
+  apply_intensity <- if (identical(omic, "metabolomics")) list(`intensity-intensity_cutoff_percentile` = 1, `intensity-proportion_below_cutoff` = 0.5, `intensity-apply_filter` = 1) else list(apply_filter = 1)
+  do.call(session$setInputs, apply_intensity)
+  session$flushReact()
+  session$setInputs(resolve_duplicates = 1)
+  session$flushReact()
+  commitWorkflowOmicsStoreStep(session$userData$probe_owner, paste0(if (identical(omic, "metabolomics")) "metab" else "lipid", "_qc_finalize"),
+    paste0(if (identical(omic, "metabolomics")) "metab" else "lipid", "_qc_complete"), list(), "QC processing complete - ready for normalization")
+  if (!is.null(selections)) {
+    norm <- session$userData$probe_norm
+    norm$itsd_selections <- selections$rows
+    norm$itsd_candidate_ids <- selections$candidates
+  }
+  session$userData$probe_norm$assay_names <- selections$assays
+  session$setInputs(run_normalization = 1)
+  session$flushReact()
+  session$setInputs(apply_correlation_filter = 1)
+  session$flushReact()
+  session$setInputs(run_da = 1)
+  session$flushReact()
+  invisible(NULL)
 }

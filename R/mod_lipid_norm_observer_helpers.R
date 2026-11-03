@@ -186,6 +186,8 @@ registerLipidNormItsdTableOutputs <- function(
             )
         })
         rm(current_s4)
+        # KIT-078: the shown rows' feature ids, so that a selection resolves without the matrix on a managed run.
+        normData$itsd_candidate_ids <- lapply(selection_tables, function(table) table$feature_id)
 
         walkFn(normData$assay_names, \(assay_name) {
             safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
@@ -266,6 +268,21 @@ handleLipidNormPreNormalizationQc <- function(
     logInfoFn("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
 
     reqFn(workflowData$state_manager)
+    # KIT-078: on the worker under a managed session; the assay names from the state's metadata.
+    runner <- workflowOmicsManagedActions("lipidomics")
+    if (!is.null(runner)) {
+        current <- readLipidWorkflowMetadata(workflowData$state_manager)
+        if (is.null(current)) return(invisible(FALSE))
+        if (length(current$assay_names) > 0 && is.null(normData$assay_names)) normData$assay_names <- current$assay_names
+        aesthetics <- getPlotAestheticsFn()
+        runner$run(list(omicsManagedProduct("lipid_qc_figures", list(stage = "post_filter", grouping_variable = aesthetics$color_var,
+            shape_variable = aesthetics$shape_var), function(result) {
+                normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
+                normData$pre_norm_qc_generated <- TRUE
+                logInfoFn("Pre-normalization QC plots generated successfully")
+            })), failed = function(error) addLog(paste("Error generating Pre-QC:", conditionMessage(error))))
+        return(invisible(TRUE))
+    }
     current_s4 <- readLipidWorkflowState(workflowData$state_manager) # KIT-075: read for this action only
 
     if (is.null(current_s4)) {

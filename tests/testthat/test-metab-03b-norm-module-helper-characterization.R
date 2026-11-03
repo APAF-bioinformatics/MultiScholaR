@@ -1685,7 +1685,7 @@ test_that("metabolomics normalization module ITSD selection table observer shell
         current_s4
       },
       walkFn = function(.x, .f) lapply(.x, .f),
-      renderItsdSelectionTableFn = function(assayName, currentS4) {
+      renderItsdSelectionTableFn = function(assayName, currentS4, ...) {
         capture$render_calls[[length(capture$render_calls) + 1L]] <- list(
           assayName = assayName,
           currentS4 = currentS4

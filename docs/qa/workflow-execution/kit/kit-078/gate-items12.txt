@@ -1,0 +1,4 @@
+# kit-gui-078 on items 1-2 (d76c7604, install IFYQXu), reference kit-gui-077
+status gui_member_observed elapsed 718.31 anon 2.07 
+dispatched 13 operations, all complete: TRUE 
+mismatches 0 

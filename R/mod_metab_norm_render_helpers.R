@@ -173,6 +173,21 @@ generateMetabNormPreNormalizationQc <- function(
     logInfoFn("=== GENERATING PRE-NORMALIZATION QC PLOTS ===")
 
     reqFn(workflowData$state_manager)
+    # KIT-078: on the worker under a managed session; the assay names from the state's metadata.
+    runner <- workflowOmicsManagedActions("metabolomics")
+    if (!is.null(runner)) {
+        current <- readMetabWorkflowMetadata(workflowData$state_manager)
+        if (is.null(current)) return()
+        if (length(current$assay_names) > 0 && is.null(normData$assay_names)) normData$assay_names <- current$assay_names
+        aesthetics <- getPlotAestheticsFn()
+        runner$run(list(omicsManagedProduct("metab_qc_figures", list(stage = "post_filter", grouping_variable = aesthetics$color_var,
+            shape_variable = aesthetics$shape_var), function(result) {
+                normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
+                normData$pre_norm_qc_generated <- TRUE
+                logInfoFn("Pre-normalization QC plots generated successfully")
+            })), failed = function(error) addLogFn(paste("Error generating Pre-QC:", conditionMessage(error))))
+        return(invisible(NULL))
+    }
     current_s4 <- readMetabWorkflowState(workflowData$state_manager) # KIT-075: read for this action only
 
     if (is.null(current_s4)) {

@@ -87,9 +87,7 @@ test_that("updateMetaboliteFiltering preserves metrics collection, save-path der
   assign("omic_type", "metabolomics", envir = .GlobalEnv)
   assign("experiment_label", "demo", envir = .GlobalEnv)
 
-  update_fun <- makeFunctionWithOverrides(
-    updateMetaboliteFiltering,
-    list(
+  overrides <- list(
       getFilteringProgressMetabolomics = function() "progress-object",
       countUniqueMetabolites = function(current_assay_data, metabolite_id_col) 2L,
       countMetabolitesPerSample = function(current_assay_data, sample_id_col, metabolite_id_col, sample_columns) {
@@ -127,8 +125,10 @@ test_that("updateMetaboliteFiltering preserves metrics collection, save-path der
         recorded$saved <- c(recorded$saved, filename)
         invisible(filename)
       }
-    )
   )
+  # KIT-078: the metrics are computed by their own function, which a worker can call.
+  overrides$computeMetabFilteringMetrics <- makeFunctionWithOverrides(computeMetabFilteringMetrics, overrides)
+  update_fun <- makeFunctionWithOverrides(updateMetaboliteFiltering, overrides)
 
   the_object <- methods::new(
     "MetaboliteAssayData",

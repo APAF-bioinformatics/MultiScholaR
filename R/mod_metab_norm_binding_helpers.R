@@ -212,7 +212,8 @@ renderMetabNormItsdSelectionTable <- function(
     candidateHighlight = "#d4edda",
     roundedColumns = c("mean_intensity", "cv_percent"),
     digits = 2,
-    filter = "top"
+    filter = "top",
+    normData = NULL
 ) {
     # KIT-075: the candidate table is built now and the render keeps only it, not the state.
     assayData <- currentS4@metabolite_data[[assayName]]
@@ -224,6 +225,12 @@ renderMetabNormItsdSelectionTable <- function(
         )
     }
     rm(currentS4, assayData)
+    # KIT-078: the shown rows' feature ids, so that a selection resolves without the matrix on a managed run.
+    if (!is.null(normData)) shiny::isolate({
+        candidates <- normData$itsd_candidate_ids
+        candidates[[assayName]] <- selectionTable$feature_id
+        normData$itsd_candidate_ids <- candidates
+    })
 
     renderDataTableFn({
         if (is.null(selectionTable)) {
@@ -322,7 +329,8 @@ runMetabNormItsdSelectionTableObserverShell <- function(
 
         output[[outputId]] <- renderItsdSelectionTableFn(
             assayName = assayName,
-            currentS4 = currentS4
+            currentS4 = currentS4,
+            normData = normData
         )
     })
 
@@ -587,6 +595,32 @@ runMetabNormNormalizationObserverWrapper <- function(
     savePlotFn = savePlot,
     logWarnFn = logger::log_warn
 ) {
+    # KIT-078: on the worker under a managed session.
+    runner <- workflowOmicsManagedActions("metabolomics")
+    if (!is.null(runner)) {
+        reqFn(workflowData$state_manager)
+        addLogFn("Starting normalization pipeline...")
+        manager <- workflowData$state_manager
+        aesthetics <- getPlotAestheticsFn(colorVariable = input$color_variable, shapeVariable = input$shape_variable)
+        normData$post_filter_obj <- getWorkflowStateReference(manager)
+        itsdFeatureIds <- if (isTRUE(input$apply_itsd)) omicsManualItsdFeatureIds(normData$itsd_selections, normData$itsd_candidate_ids, addLogFn)
+        return(runWorkflowOmicsManagedNormalisation(metabolomicsDeclarationBinding, runner, manager, list(apply_itsd = input$apply_itsd,
+            itsd_aggregation = input$itsd_aggregation, itsd_feature_ids = itsdFeatureIds, log_offset = input$log_offset, norm_method = input$norm_method,
+            ruv_mode = input$ruv_mode, ruv_parameters = list(ruv_mode = input$ruv_mode, ruv_grouping_variable = input$ruv_grouping_variable,
+                percentage_min = input$auto_percentage_min, percentage_max = input$auto_percentage_max, separation_metric = input$separation_metric,
+                k_penalty_weight = input$k_penalty_weight, adaptive_k_penalty = input$adaptive_k_penalty, manual_k = input$ruv_k, manual_percentage = input$ruv_percentage),
+            grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var), normData, workflowData$config_list, addLogFn,
+            finish = function() {
+                runMetabNormCompositeQcRefreshShell(currentS4 = NULL, experimentPaths = experimentPaths, assayNames = normData$assay_names,
+                    ruvMode = input$ruv_mode, omicType = omicType, normData = normData, addLogFn = addLogFn,
+                    generateCompositeFromFilesFn = generateCompositeFromFilesFn, savePlotFn = savePlotFn, logWarnFn = logWarnFn)
+                addLogFn("Normalization pipeline complete!")
+                showNotificationFn("Normalization pipeline complete!", type = "message")
+            }, failed = function(error) {
+                addLogFn(paste("ERROR:", conditionMessage(error)))
+                logger::log_error(paste("Normalization pipeline error:", conditionMessage(error)))
+            }))
+    }
     runObserverShellFn(
         workflowData = workflowData
         , addLogFn = addLogFn

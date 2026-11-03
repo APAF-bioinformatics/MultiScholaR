@@ -313,6 +313,15 @@ resolveMetabDaAnalysisInputs <- function(
     if (is.null(currentS4) && is.function(getState)) {
         currentS4 <- getState()
     }
+    # KIT-078: under a managed session the declaration's own preflight runs in the worker, on each contrast.
+    if (!is.null(workflowOmicsManagedActions("metabolomics")) && is.list(currentS4) && identical(currentS4$class, assayDataClass)) {
+        contrastsTbl <- workflowData$contrasts_tbl
+        if (is.null(contrastsTbl) || nrow(contrastsTbl) == 0) {
+            return(list(ok = FALSE, currentS4 = currentS4, contrastsTbl = contrastsTbl,
+                errorMessage = "No contrasts defined. Please define contrasts in the design tab."))
+        }
+        return(list(ok = TRUE, currentS4 = currentS4, contrastsTbl = contrastsTbl, preflight = NULL, errorMessage = NULL))
+    }
     # KIT-075: the tab passes the state's metadata; the preflight reads the state for this action only.
     if (is.list(currentS4) && !isS4(currentS4) && identical(currentS4$class, assayDataClass)) {
         currentS4 <- readMetabWorkflowState(workflowData$state_manager, currentS4$reference)
@@ -652,6 +661,67 @@ runMetabDaAnalysisObserverShell <- function(
 
     tryCatch(
         {
+            # KIT-078: the tab's completion, in process or on the worker.
+            finish <- function(results, workerExport = NULL) {
+                daData$da_results_list <- results
+                daData$analysis_complete <- TRUE
+
+                updatedStatus <- workflowData$tab_status
+                updatedStatus$differential_analysis <- "complete"
+                workflowData$tab_status <- updatedStatus
+
+                removeNotification("da_running")
+                showNotification(
+                    "Differential expression analysis complete!",
+                    type = "message",
+                    duration = 5
+                )
+
+                logInfo("   DA analysis completed successfully")
+
+                # KIT-076: a failed contrast fails alone; the run says so instead of a table that is silently missing.
+                if (length(results$failed_contrasts) > 0) {
+                    showNotification(
+                        sprintf("DA failed for: %s", paste(names(results$failed_contrasts), collapse = ", ")),
+                        type = "warning",
+                        duration = NULL
+                    )
+                }
+
+                selectorState <- updateSelectors(
+                    daResultsLong = results$da_metabolites_long,
+                    session = session
+                )
+
+                # KIT-078: a managed session's worker has written them (`workerExport` is its outcome).
+                diskState <- if (!is.null(workerExport)) reportWorkflowOmicsDaExport(workerExport, showNotification, logInfo) else writeArtifacts(
+                    results = metabDaResultsWithSource(results, daData, workflowData), # KIT-075: the heatmaps' source, read for the export
+                    experimentPaths = experimentPaths,
+                    daQValThresh = daQValThresh,
+                    treatLfcCutoff = treatLfcCutoff
+                )
+
+                invisible(list(
+                    status = "success",
+                    results = results,
+                    selectorState = selectorState,
+                    diskState = diskState
+                ))
+            }
+            fail <- function(message) {
+                logError(sprintf("   DA analysis error: %s", message))
+                removeNotification("da_running")
+                showNotification(sprintf("Analysis error: %s", message), type = "error", duration = 10)
+            }
+            # On the worker under a managed session, with the tables and figures.
+            runner <- workflowOmicsManagedActions("metabolomics")
+            if (!is.null(runner)) {
+                manager <- workflowData$state_manager
+                runWorkflowOmicsManagedDa(metabolomicsDeclarationBinding, runner, manager, getWorkflowStateReference(manager, daData$current_state_name),
+                    list(formula_string = formulaString, da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl,
+                    deliver = finish, failed = function(error) fail(conditionMessage(error)))
+                return(invisible(list(status = "dispatched")))
+            }
             # KIT-032: the DA is the declared operation on the loaded state (KIT-076: `metab_da_contrast`, one per contrast),
             # its manifest `metab.da_results.v2` accepted on the head; the kernel's list drives the display and the files
             # as before (KIT-072: the owner's path is the only path).
@@ -659,50 +729,7 @@ runMetabDaAnalysisObserverShell <- function(
             source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
             results <- runMetabReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
                 da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl)$results
-
-            daData$da_results_list <- results
-            daData$analysis_complete <- TRUE
-
-            updatedStatus <- workflowData$tab_status
-            updatedStatus$differential_analysis <- "complete"
-            workflowData$tab_status <- updatedStatus
-
-            removeNotification("da_running")
-            showNotification(
-                "Differential expression analysis complete!",
-                type = "message",
-                duration = 5
-            )
-
-            logInfo("   DA analysis completed successfully")
-
-            # KIT-076: a failed contrast fails alone; the run says so instead of a table that is silently missing.
-            if (length(results$failed_contrasts) > 0) {
-                showNotification(
-                    sprintf("DA failed for: %s", paste(names(results$failed_contrasts), collapse = ", ")),
-                    type = "warning",
-                    duration = NULL
-                )
-            }
-
-            selectorState <- updateSelectors(
-                daResultsLong = results$da_metabolites_long,
-                session = session
-            )
-
-            diskState <- writeArtifacts(
-                results = metabDaResultsWithSource(results, daData, workflowData), # KIT-075: the heatmaps' source, read for the export
-                experimentPaths = experimentPaths,
-                daQValThresh = daQValThresh,
-                treatLfcCutoff = treatLfcCutoff
-            )
-
-            invisible(list(
-                status = "success",
-                results = results,
-                selectorState = selectorState,
-                diskState = diskState
-            ))
+            finish(results)
         },
         error = function(e) {
             logError(sprintf("   DA analysis error: %s", e$message))

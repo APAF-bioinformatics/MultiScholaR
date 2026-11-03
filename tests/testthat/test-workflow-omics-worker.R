@@ -150,11 +150,10 @@ test_that("KIT-078: the worker's QC figures reach the project through the journa
   for (file in published) expect_true(digest::digest(readBin(file, "raw", n = file.size(file)), algo = "sha256") %in% hashes, info = basename(file))
 
   # A publication that fails is pending: the next action is refused until the retry publishes it, from the same request.
-  withr::local_options(multischolar.workflow_export_boundary = NULL)
   unlink(published)
   failing <- TRUE
-  testthat::local_mocked_bindings(workflowExecutionBoundary = function(stage) {
-    if (identical(stage, "publication") && failing) stop("disk full")
+  testthat::local_mocked_bindings(workflowExportBoundary = function(phase) {
+    if (identical(phase, "before_action_outputs") && failing) stop("disk full")
     invisible(NULL)
   }, .package = "MultiScholaR")
   id <- paste0("wfx-", strrep("b", 32))
@@ -171,10 +170,13 @@ test_that("KIT-078: the worker's QC figures reach the project through the journa
   receipt <- acceptWorkflowActionResult(controller, message[c("schema", "status", "token", "result")])
   expect_identical(receipt$status, "publication_pending")
   expect_length(list.files(fixture$paths$lipid_qc_dir, "[.]png$"), 0L)
+  # `assertWorkflowExportReady`'s action-output guard refuses dependent work; no state list is needed (recorded divergence).
+  expect_error(assertWorkflowExportReady(fixture$owner), class = "saved_entity_outputs_pending")
   failing <- FALSE
   retried <- resumeWorkflowAction(controller, id)
   expect_identical(retried$operation, "lipid_qc_figures")
   expect_identical(sort(list.files(fixture$paths$lipid_qc_dir, "[.]png$", full.names = TRUE)), sort(published))
+  expect_null(assertWorkflowExportReady(fixture$owner))
 })
 
 test_that("KIT-078: an emptied omics assay is saved as the kernel's result, not taken for an untouched one", {
@@ -193,4 +195,71 @@ test_that("KIT-078: an emptied omics assay is saved as the kernel's result, not 
   expect_false(identical(checkpoint$components$lipid_data[[1L]]$entity_id, previous[[1L]]$entity_id))
   # The protein class's fields are the same three as before.
   expect_setequal(with(workflowClassDeclaration("ProteinQuantitativeData"), c(tables, lists)), c("protein_quant_table", "design_matrix", "protein_id_table"))
+})
+
+test_that("KIT-078: the controller materialises no assay table of the omic during any managed step (the objective's probe); the same tabs in process do", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  for (omic in c("lipidomics", "metabolomics")) {
+    lipid <- identical(omic, "lipidomics")
+    binding <- omicsDeclarationBindings()[[omic]]
+    owner_of <- function(path) if (lipid) lipidDeclarationsOwner(path) else metabDeclarationsOwner(path)
+    for (managed in c(TRUE, FALSE)) {
+      fixture <- owner_of(file.path(root, omic, if (managed) "managed" else "in-process"))
+      withr::defer(closeDIAStateAdapter(fixture$owner))
+      probe <- new.env()
+      local({
+        if (managed) omicsManagedChainMocks(fixture, probe)
+        # The tabs in process: every action counts, from the click to the tab's completion.
+        else {
+          table <- materializeWorkflowTable
+          components <- readWorkflowExecutionComponents
+          testthat::local_mocked_bindings(materializeWorkflowTable = function(context, reference, ...) {
+            probe$tables <- c(probe$tables, reference$entity_id)
+            table(context, reference, ...)
+          }, readWorkflowExecutionComponents = function(manager, reference, fields = NULL, ...) {
+            probe$reads <- c(probe$reads, paste(fields %||% "<every field>", collapse = ","))
+            components(manager, reference, fields = fields, ...)
+          }, .package = "MultiScholaR")
+        }
+        assays <- names(methods::slot(fixture$object, binding$data_slot))
+        # A manual internal-standard selection: the ids the shown table holds, resolved without the matrix on a managed run.
+        id_column <- methods::slot(fixture$object, binding$id_slot)
+        ids <- stats::setNames(lapply(assays, function(assay) methods::slot(fixture$object, binding$data_slot)[[assay]][[id_column]]), assays)
+        selections <- list(assays = assays, candidates = ids, rows = stats::setNames(lapply(assays, function(assay) 1:2), assays))
+        if (!managed) selections <- list(assays = assays)
+        suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(omicsTabServer(fixture, omic, probe, managed), {
+          session$userData$probe_owner <- fixture$owner
+          omicsTabJourney(session, omic, selections)
+        }))))
+      })
+      history <- unlist(fixture$owner$getHistory())
+      prefix <- binding$prefix
+      expect_true(all(paste0(prefix, c("_intensity_filtered", "_duplicates_resolved", "_qc_complete", "_itsd_norm", "_log2", "_normalized", "_ruv_corrected", "_correlation_filtered")) %in% history),
+        info = paste(omic, managed, paste(history, collapse = " ")))
+      expect_identical(fixture$owner$.context$snapshot$da_results$kind %||% "absent" != "absent", TRUE, info = paste(omic, managed))
+      materialised <- intersect(probe$tables, omicsAssayTableIds(fixture$owner, binding))
+      reads <- Filter(function(read) grepl(binding$data_slot, read, fixed = TRUE) || identical(read, "<every field>"), probe$reads)
+      if (managed) {
+        expect_length(materialised, 0L)
+        expect_length(reads, 0L)
+        # Every compute declaration was dispatched, with the figures and the export, each closed on delivery.
+        expect_true(all(paste0(prefix, c("_intensity_filter", "_duplicate_resolution", "_qc_figures", "_itsd_normalisation", "_log2",
+          "_between_sample_normalisation", "_ruv", "_pearson_pairs", "_pearson_selection", "_da_contrast", "_da_publication")) %in% probe$operations),
+          info = paste(omic, paste(probe$operations, collapse = " ")))
+        expect_true(all(probe$statuses == "delivered"), info = omic)
+        expect_identical(sum(probe$operations == paste0(prefix, "_qc_figures")), 3L, info = omic)
+        # The tab's completion ran: the normalisation's references, and the DA's files through the journal.
+        qc_dir <- fixture$paths[[binding$qc_dir_role]]
+        expect_true(any(grepl("_ruv_corrected_pca[.]png$", list.files(qc_dir))), info = omic)
+        expect_true(length(list.files(fixture$paths$da_output_dir, recursive = TRUE)) > 0L, info = omic)
+        expect_identical(fixture$owner$.context$snapshot$step_provenance[[paste0(prefix, "_itsd_norm")]]$values$itsd_feature_ids,
+          stats::setNames(lapply(names(methods::slot(fixture$object, binding$data_slot)), function(assay) methods::slot(fixture$object, binding$data_slot)[[assay]][[methods::slot(fixture$object, binding$id_slot)]][1:2]),
+            names(methods::slot(fixture$object, binding$data_slot))), info = omic)
+      } else {
+        # The positive control: the probe sees the in-process tabs read the matrix.
+        expect_gt(length(reads), 0L)
+      }
+    }
+  }
 })

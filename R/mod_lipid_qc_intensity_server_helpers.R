@@ -150,83 +150,96 @@ registerLipidIntensityApplyFilterObserver <- function(
                 , input$proportion_below_cutoff
             ))
 
+            # KIT-078: the tab's completion, from the declaration's counts in process or on the worker.
+            finish <- function(counts, draw_qc_plot) {
+                original_counts <- counts$before
+                filtered_counts <- counts$after
+
+                stats_df <- data.frame(
+                    Assay = names(original_counts)
+                    , Original = as.numeric(original_counts)
+                    , Filtered = as.numeric(filtered_counts)
+                    , Removed = as.numeric(original_counts) - as.numeric(filtered_counts)
+                    , stringsAsFactors = FALSE
+                )
+                stats_df$Percent_Retained <- round(
+                    (stats_df$Filtered / stats_df$Original) * 100
+                    , 1
+                )
+                filterStatsVal(stats_df)
+
+                qc_plot <- tryCatch(draw_qc_plot(), error = function(e) {
+                    logWarnFn(paste("Could not generate QC plot:", e$message))
+                    NULL
+                })
+
+                filterPlotVal(qc_plot)
+
+                total_original <- sum(stats_df$Original)
+                total_filtered <- sum(stats_df$Filtered)
+                total_removed <- sum(stats_df$Removed)
+
+                result_text <- paste(
+                    "Lipid Intensity Filter Applied Successfully"
+                    , "============================================"
+                    , sprintf("Intensity cutoff percentile: %d%%", input$intensity_cutoff_percentile)
+                    , sprintf("Max proportion below cutoff: %.2f", input$proportion_below_cutoff)
+                    , ""
+                    , "Per-Assay Results:"
+                    , paste(sapply(seq_len(nrow(stats_df)), function(i) {
+                        sprintf(
+                            "  %s: %d -> %d (removed %d, %.1f%% retained)"
+                            , stats_df$Assay[i]
+                            , stats_df$Original[i]
+                            , stats_df$Filtered[i]
+                            , stats_df$Removed[i]
+                            , stats_df$Percent_Retained[i]
+                        )
+                    }), collapse = "\n")
+                    , ""
+                    , sprintf("Total: %d -> %d lipids (removed %d)", total_original, total_filtered, total_removed)
+                    , ""
+                    , "State saved as: 'lipid_intensity_filtered'"
+                    , sep = "\n"
+                )
+
+                output$filter_results <- renderTextFn(result_text)
+
+                logInfoFn(paste(
+                    "Lipid intensity filter applied: removed"
+                    , total_removed
+                    , "lipids"
+                ))
+
+                removeNotificationFn("lipid_intensity_filter_working")
+                showNotificationFn(
+                    sprintf("Intensity filter applied: %d lipids retained", total_filtered)
+                    , type = "message"
+                )
+            }
+            draw <- function(arguments) do.call(updateLipidFilteringFn, c(arguments, list(step_name = "2_Intensity_Filtered",
+                omics_type = omicType, return_grid = TRUE, overwrite = TRUE)))
+
             # KIT-031: the filter is the declared operation `lipid_intensity_filter`, committed under
-            # `lipid_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path).
+            # `lipid_intensity_filtered` with its provenance (KIT-072: the owner's path is the only path). KIT-078: on the
+            # worker under a managed session, which also computes what the figures read from the matrix.
+            runner <- workflowOmicsManagedActions("lipidomics")
+            if (!is.null(runner)) {
+                step <- omicsIntensityFilterStep(lipidomicsDeclarationBinding, input$intensity_cutoff_percentile, input$proportion_below_cutoff)
+                runner$run(list(omicsManagedCommit(step, workflowData$config_list, function(result) {
+                    finish(result$value$counts, function() {
+                        metrics <- readWorkflowOmicsFilteringMetrics(workflowData$state_manager, result)
+                        if (is.null(metrics)) stop("the worker computed no filtering metrics")
+                        draw(list(theObject = NULL, metrics = metrics))
+                    })
+                })), failed = function(error) removeNotificationFn("lipid_intensity_filter_working"))
+                return(invisible(NULL))
+            }
             filter_run <- runLipidReferenceIntensityFilter(workflowData$state_manager, input$intensity_cutoff_percentile,
                 input$proportion_below_cutoff, workflowData$config_list)
-            original_counts <- filter_run$value$counts$before
-            filtered_counts <- filter_run$value$counts$after
-
-            stats_df <- data.frame(
-                Assay = names(original_counts)
-                , Original = as.numeric(original_counts)
-                , Filtered = as.numeric(filtered_counts)
-                , Removed = as.numeric(original_counts) - as.numeric(filtered_counts)
-                , stringsAsFactors = FALSE
-            )
-            stats_df$Percent_Retained <- round(
-                (stats_df$Filtered / stats_df$Original) * 100
-                , 1
-            )
-            filterStatsVal(stats_df)
-
-            qc_plot <- tryCatch({
-                result <- updateLipidFilteringFn(
-                    theObject = readLipidWorkflowState(workflowData$state_manager, filter_run$reference)
-                    , step_name = "2_Intensity_Filtered"
-                    , omics_type = omicType
-                    , return_grid = TRUE
-                    , overwrite = TRUE
-                )
-                result
-            }, error = function(e) {
-                logWarnFn(paste("Could not generate QC plot:", e$message))
-                NULL
+            finish(filter_run$value$counts, function() {
+                draw(list(theObject = readLipidWorkflowState(workflowData$state_manager, filter_run$reference)))
             })
-
-            filterPlotVal(qc_plot)
-
-            total_original <- sum(stats_df$Original)
-            total_filtered <- sum(stats_df$Filtered)
-            total_removed <- sum(stats_df$Removed)
-
-            result_text <- paste(
-                "Lipid Intensity Filter Applied Successfully"
-                , "============================================"
-                , sprintf("Intensity cutoff percentile: %d%%", input$intensity_cutoff_percentile)
-                , sprintf("Max proportion below cutoff: %.2f", input$proportion_below_cutoff)
-                , ""
-                , "Per-Assay Results:"
-                , paste(sapply(seq_len(nrow(stats_df)), function(i) {
-                    sprintf(
-                        "  %s: %d -> %d (removed %d, %.1f%% retained)"
-                        , stats_df$Assay[i]
-                        , stats_df$Original[i]
-                        , stats_df$Filtered[i]
-                        , stats_df$Removed[i]
-                        , stats_df$Percent_Retained[i]
-                    )
-                }), collapse = "\n")
-                , ""
-                , sprintf("Total: %d -> %d lipids (removed %d)", total_original, total_filtered, total_removed)
-                , ""
-                , "State saved as: 'lipid_intensity_filtered'"
-                , sep = "\n"
-            )
-
-            output$filter_results <- renderTextFn(result_text)
-
-            logInfoFn(paste(
-                "Lipid intensity filter applied: removed"
-                , total_removed
-                , "lipids"
-            ))
-
-            removeNotificationFn("lipid_intensity_filter_working")
-            showNotificationFn(
-                sprintf("Intensity filter applied: %d lipids retained", total_filtered)
-                , type = "message"
-            )
         }, error = function(e) {
             msg <- paste("Error applying lipid intensity filter:", e$message)
             logErrorFn(msg)

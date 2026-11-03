@@ -192,6 +192,8 @@ mod_lipidomics_server <- function(id, project_dirs, omic_type, experiment_label,
         # KIT-070: the session's state owner from the start (the KIT-048 proteomics pattern), bound to the route at
         # the design step; every save is a reference commit of the declared class.
         workflow_data$state_manager <- createWorkflowSessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)
+        # KIT-078: under a managed application the tabs dispatch their declarations to the worker.
+        installWorkflowOmicsActions(session, workflow_data, omic_type, experiment_label, experiment_paths)
 
         logger::log_info(sprintf("Lipidomics module initialized with paths for: %s", paths_key))
 

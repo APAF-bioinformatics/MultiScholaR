@@ -11,6 +11,16 @@ dispatchMetabNormApplyCorrelation <- function(
     logErrorFn = logger::log_error
 ) {
     tryCatch({
+        # KIT-078: on the worker under a managed session.
+        runner <- workflowOmicsManagedActions("metabolomics")
+        if (!is.null(runner)) {
+            outcome <- function(...) handleOutcomeFn(workflowData = workflowData, normData = normData, observerState = observerState, ...,
+                addLogFn = addLogFn, showNotificationFn = showNotificationFn, removeNotificationFn = removeNotificationFn, logErrorFn = logErrorFn)
+            runWorkflowOmicsManagedCorrelation(metabolomicsDeclarationBinding, runner, observerState$groupingVariable, observerState$threshold,
+                workflowData$config_list, function(correlations, reference) outcome(corrResults = correlations, filteredS4 = reference),
+                function(error) outcome(error = error))
+            return(invisible(list(status = "dispatched")))
+        }
         # KIT-032: the pairs and the selection are the declared operations on the head (the normalisation's last
         # commit), committed under `metab_correlation_filtered` (KIT-072: the owner's path is the only path).
         correlation <- runMetabReferenceCorrelation(workflowData$state_manager, observerState$groupingVariable,

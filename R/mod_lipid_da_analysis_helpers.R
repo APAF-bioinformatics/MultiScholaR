@@ -133,7 +133,8 @@ handleLipidDaRunAnalysisPreflight <- function(
     currentS4 <- analysisContext$currentS4
     contrastsTbl <- analysisContext$contrastsTbl
 
-    if (is.list(currentS4) && identical(currentS4$class, "LipidomicsAssayData") && is.function(validatePreflightFn)) {
+    # KIT-078: under a managed session the declaration's own preflight runs in the worker, on each contrast.
+    if (is.null(workflowOmicsManagedActions("lipidomics")) && is.list(currentS4) && identical(currentS4$class, "LipidomicsAssayData") && is.function(validatePreflightFn)) {
         # KIT-075: the alignment check reads the state for this action only.
         preflight <- validatePreflightFn(
             currentS4 = readLipidWorkflowState(workflowData$state_manager, currentS4$reference),
@@ -183,6 +184,17 @@ executeLipidDaRunAnalysis <- function(
 ) {
     tryCatch(
         {
+            # KIT-078: on the worker under a managed session, with the tables and figures.
+            runner <- workflowOmicsManagedActions("lipidomics")
+            if (!is.null(runner)) {
+                manager <- workflowData$state_manager
+                runWorkflowOmicsManagedDa(lipidomicsDeclarationBinding, runner, manager, getWorkflowStateReference(manager, daData$current_state_name),
+                    list(formula_string = formulaString, da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl,
+                    deliver = function(results, export) successFinalizerFn(results = results, daData = daData, workflowData = workflowData, session = session,
+                        experimentPaths = experimentPaths, daQValThresh = daQValThresh, treatLfcCutoff = treatLfcCutoff, workerExport = export),
+                    failed = function(error) errorFinalizerFn(errorMessage = conditionMessage(error)))
+                return(list(status = "dispatched"))
+            }
             # KIT-031: the DA is the declared operation on the loaded state (KIT-076: `lipid_da_contrast`, one per contrast),
             # its manifest `lipid.da_results.v2` accepted on the head; the kernel's list drives the display and the files
             # as before (KIT-072: the owner's path is the only path).
@@ -230,7 +242,8 @@ finalizeLipidDaRunAnalysisSuccess <- function(
     updateSelectInputFn = shiny::updateSelectInput,
     logInfo = logger::log_info,
     logWarn = logger::log_warn,
-    writeResultsFn = outputLipidDaResultsAllContrasts
+    writeResultsFn = outputLipidDaResultsAllContrasts,
+    workerExport = NULL
 ) {
     daData$da_results_list <- results
     daData$analysis_complete <- TRUE
@@ -298,7 +311,8 @@ finalizeLipidDaRunAnalysisSuccess <- function(
 
     logInfo("   Writing DA results to disk...")
 
-    diskWrite <- tryCatch(
+    # KIT-078: a managed session's worker has written them (`workerExport` is its outcome).
+    diskWrite <- if (!is.null(workerExport)) reportWorkflowOmicsDaExport(workerExport, notify, logInfo, logWarn) else tryCatch(
         {
             daOutputDir <- experimentPaths$da_output_dir
             publicationGraphsDir <- experimentPaths$publication_graphs_dir

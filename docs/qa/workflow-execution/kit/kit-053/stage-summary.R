@@ -18,7 +18,19 @@ verification_path <- file.path(stage, case_id, "verification.rds")
 verification <- if (file.exists(verification_path)) readRDS(verification_path) else NULL
 m <- decision$member %||% list()
 steps <- names(op$phase_status)
-summary <- list(schema = "kit.stage_summary.v1", ticket = ticket_id, stage = label, date = format(Sys.Date()),
+# KIT-078: each worker dispatch of the member, by operation, from the requests under its project store.
+requests <- list.files(file.path(stage, case_id), "^request[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
+requests <- requests[grepl("/[.]workflow-export/wfx-", requests)]
+dispatches <- list()
+for (path in requests) {
+    request <- tryCatch(readRDS(path), error = function(error) NULL)
+    if (is.null(request$operation)) next
+    journal <- file.path(dirname(path), "journal.json")
+    status <- if (file.exists(journal)) tryCatch(jsonlite::read_json(journal)$status, error = function(error) NULL)
+    dispatches[[request$operation]] <- c(dispatches[[request$operation]], status %||% NA_character_)
+}
+dispatches <- lapply(dispatches[order(names(dispatches))], function(statuses) list(requests = length(statuses), complete = sum(statuses == "complete", na.rm = TRUE)))
+summary <- list(schema = "kit.stage_summary.v1", ticket = ticket_id, stage = label, date = format(Sys.Date()), dispatches = dispatches,
     decision = list(status = decision$status, rule = decision$rule, failing_rule = decision$failing_rule,
         steps = decision$steps %||% steps, stop_after = decision$stop_after, promotion_authorized = decision$promotion_authorized,
         expect_failure = decision$expect_failure, route = decision$route %||% op$member$route, in_memory = decision$in_memory,

@@ -232,7 +232,8 @@ handleLipidDuplicateResolution <- function(
     reqFn = shiny::req,
     resolveDuplicatesFn = resolveLipidDuplicateFeaturesByIntensity,
     updateFilteringFn = updateLipidFiltering,
-    logWarnFn = logger::log_warn
+    logWarnFn = logger::log_warn,
+    managedResult = NULL
 ) {
     reqFn(workflowData$state_manager)
 
@@ -249,20 +250,26 @@ handleLipidDuplicateResolution <- function(
 
     # KIT-031: the resolution is the declared operation `lipid_duplicate_resolution`, committed under
     # `lipid_duplicates_resolved` with its provenance (KIT-072: the owner's path is the only path).
-    resolved <- runLipidReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list)
+    # KIT-078: under a managed session the worker ran it (`managedResult`, which also carries what the figures read).
+    resolved <- if (is.null(managedResult)) runLipidReferenceDuplicateResolution(workflowData$state_manager, workflowData$config_list) else
+        list(value = managedResult$value, reference = managedResult$stateReference)
     counts <- resolved$value$counts
     statsList <- lapply(stats::setNames(assayNames, assayNames), function(assayName) list(
         original = unname(counts$before[[assayName]]), resolved = unname(counts$after[[assayName]]),
         removed = unname(counts$before[[assayName]]) - unname(counts$after[[assayName]])))
 
     qcPlot <- tryCatch({
-        updateFilteringFn(
-            theObject = readLipidWorkflowState(workflowData$state_manager, resolved$reference)
-            , step_name = "3_Duplicates_Resolved"
+        arguments <- if (is.null(managedResult)) list(theObject = readLipidWorkflowState(workflowData$state_manager, resolved$reference)) else {
+            metrics <- readWorkflowOmicsFilteringMetrics(workflowData$state_manager, managedResult)
+            if (is.null(metrics)) stop("the worker computed no filtering metrics")
+            list(theObject = NULL, metrics = metrics)
+        }
+        do.call(updateFilteringFn, c(arguments, list(
+            step_name = "3_Duplicates_Resolved"
             , omics_type = omicType
             , return_grid = TRUE
             , overwrite = TRUE
-        )
+        )))
     }, error = function(e) {
         logWarnFn(paste("Could not generate QC plot:", e$message))
         NULL
@@ -417,12 +424,7 @@ registerLipidDuplicateResolveObserver <- function(
         )
 
         tryCatch({
-            resolutionResult <- handleResolutionFn(
-                workflowData = workflowData
-                , omicType = omicType
-            )
-
-            applyResolutionResultFn(
+            apply_result <- function(resolutionResult) applyResolutionResultFn(
                 resolutionResult = resolutionResult
                 , resolutionStatsVal = resolutionStatsVal
                 , duplicateInfoVal = duplicateInfoVal
@@ -432,6 +434,20 @@ registerLipidDuplicateResolveObserver <- function(
                 , showNotificationFn = showNotificationFn
                 , workingNotificationId = workingNotificationId
             )
+            # KIT-078: on the worker under a managed session.
+            runner <- workflowOmicsManagedActions("lipidomics")
+            if (!is.null(runner)) {
+                runner$run(list(omicsManagedCommit(omicsDuplicateResolutionStep(lipidomicsDeclarationBinding), workflowData$config_list, function(result) {
+                    resolutionResult <- handleResolutionFn(workflowData = workflowData, omicType = omicType, managedResult = result)
+                    apply_result(resolutionResult)
+                })), failed = function(error) removeNotificationFn(workingNotificationId))
+                return(invisible(NULL))
+            }
+            resolutionResult <- handleResolutionFn(
+                workflowData = workflowData
+                , omicType = omicType
+            )
+            apply_result(resolutionResult)
         }, error = function(e) {
             msg <- paste("Error resolving duplicates:", e$message)
             logErrorFn(msg)
