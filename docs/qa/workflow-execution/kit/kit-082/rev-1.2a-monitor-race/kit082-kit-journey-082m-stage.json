@@ -1,0 +1,112 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-082",
+  "stage": "kit082-kit-journey-082m",
+  "date": "2026-11-04",
+  "dispatches": {
+    "metab_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_qc_figures": {
+      "requests": 1,
+      "complete": 0
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 704491520,
+    "phase_peak_anon_bytes": {
+      "import": 547631104,
+      "design": 565964800,
+      "intensity": 679583744,
+      "duplicates": 697708544,
+      "qc_finalize": 704491520,
+      "normalisation": 624492544
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_screen",
+    "build": "a71cd64267faf8a7cf1b56f8e1638e66ca28a9249544e35248ce6c3616ac752e",
+    "status": "journey_failed",
+    "exact": false,
+    "elapsed_seconds": 103.200000000001,
+    "peak_bytes": 1609437184,
+    "peak_anon_bytes": 1576325120,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 6.79000000000087,
+      "design": 15.9000000000015,
+      "intensity": 19.7299999999996,
+      "duplicates": 15.5699999999997,
+      "qc_finalize": 16.4000000000015,
+      "normalisation": 14.0699999999997,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_peak_anon_bytes": {
+      "import": 914849792,
+      "design": 933183488,
+      "intensity": 1332482048,
+      "duplicates": 1359310848,
+      "qc_finalize": 1378992128,
+      "normalisation": 1576325120,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "failed",
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "max_sample_interval": 0.069999999999709,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}

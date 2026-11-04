@@ -433,6 +433,19 @@ workflowMemoryCounter <- function(path) {
     as.numeric(value)
 }
 
+#' Read a worker's memory for the monitor (KIT-082). A worker's control group goes when it exits, so a read can land after its
+#' last check: the journey member `kit-journey-082m` lost its application to that window when a worker ended normally. A file
+#' still there with no number in it fails closed, as every other counter does.
+#' @param path The worker's `memory.current`.
+#' @return Bytes, or NULL when the worker has gone.
+#' @noRd
+workflowWorkerMemory <- function(path) {
+    tryCatch(workflowMemoryCounter(path), workflow_execution_unsupported = function(error) {
+        if (file.exists(path)) stop(error)
+        NULL
+    })
+}
+
 #' Read available host memory from the kernel, including reclaimable cache.
 #' @return Available bytes; unsupported/missing counters fail closed.
 #' @noRd
@@ -1335,11 +1348,9 @@ workflowMonitorMain <- function(arguments) {
                     stop_reason <- "invalid_worker_registration"
                 } else {
                     worker_group <- file.path(group, active$worker_unit)
-                    if (file.exists(file.path(worker_group, "memory.current"))) {
-                        worker <- workflowMemoryCounter(file.path(worker_group, "memory.current"))
-                        if (current - worker > active$reservation) {
-                            stop_reason <- "nonworker_reservation"
-                        }
+                    worker <- workflowWorkerMemory(file.path(worker_group, "memory.current"))
+                    if (!is.null(worker) && current - worker > active$reservation) {
+                        stop_reason <- "nonworker_reservation"
                     }
                 }
             }
@@ -1412,10 +1423,8 @@ workflowMonitorMain <- function(arguments) {
         admission <- file.path(request$directory, "admitted.rds")
         if (file.exists(admission)) {
             admitted <- readRDS(admission)
-            if (file.exists(file.path(worker_group, "memory.current"))) {
-                worker <- workflowMemoryCounter(file.path(worker_group, "memory.current"))
-                if (current - worker > admitted$reservation) stop_reason <- "nonworker_reservation"
-            }
+            worker <- workflowWorkerMemory(file.path(worker_group, "memory.current"))
+            if (!is.null(worker) && current - worker > admitted$reservation) stop_reason <- "nonworker_reservation"
         }
         if (!is.null(stop_reason)) {
             writeWorkflowExecutionMessage(file.path(request$directory, "guard-stop.rds"),

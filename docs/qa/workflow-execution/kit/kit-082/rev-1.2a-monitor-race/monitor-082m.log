@@ -1,0 +1,22 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+Error in `workflowMemoryCounter()`:
+! memory observation is unavailable
+Backtrace:
+    ▆
+ 1. └─MultiScholaR:::workflowMonitorMain(commandArgs(TRUE))
+ 2.   └─MultiScholaR:::workflowMemoryCounter(file.path(worker_group, "memory.current"))
+ 3.     └─cli::cli_abort("memory observation is unavailable", class = "workflow_execution_unsupported")
+ 4.       └─rlang::abort(...)
+Warning message:
+In file(con, "r") :
+  cannot open file '/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/multischolarwfx4251e4d3b91081c3.slice/multischolarwfx4251e4d3b91081c3-w1d8467ab10cc.service/memory.current': No such file or directory
+Execution halted

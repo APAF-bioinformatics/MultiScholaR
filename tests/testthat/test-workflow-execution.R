@@ -28,6 +28,20 @@ awaitExecutionTest <- function(owner, until_started = FALSE, seconds = 70) {
     }
 }
 
+test_that("KIT-082: the monitor's read of a worker that has just gone is no worker, and a counter with no number still fails closed", {
+    path <- tempfile("memory.current-")
+    # The window: the worker's control group goes between any check and this read.
+    expect_null(suppressWarnings(workflowWorkerMemory(path)))
+    writeLines("4096", path)
+    expect_identical(workflowWorkerMemory(path), 4096)
+    writeLines("not a number", path)
+    expect_error(workflowWorkerMemory(path), class = "workflow_execution_unsupported")
+    # The worker goes during the read itself.
+    unlink(path)
+    testthat::local_mocked_bindings(workflowMemoryCounter = function(path) cli::cli_abort("memory observation is unavailable", class = "workflow_execution_unsupported"), .package = "MultiScholaR")
+    expect_null(workflowWorkerMemory(path))
+})
+
 test_that("qualification decisions match frozen cases and reject malformed bindings", {
     skip_if(!exists("workflow_test_mode") || !workflow_test_mode %in% c("protocol", "resources"), "installed lifecycle suite only")
     manifest <- jsonlite::read_json(file.path(workflow_test_root,
