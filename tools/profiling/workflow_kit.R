@@ -229,7 +229,7 @@ kitCases <- function(bindings, stage) {
             # KIT-009: the pair may name the registry variant each arm runs and the journey oracle of its output.
             variant = variant, oracle = oracle,
             input = list(store = population$store, head_sha256 = population$head_sha256, rows = population$rows,
-                entity_id = population$entity_id, head_entity = population$head_entity, state = population$state),
+                entity_id = population$entity_id, head_entity = population$head_entity, state = population$state, route = population$route),
             library = build$library, expected_build = build$build, exact_sum = build$exact_sum,
             expect_failure = fault != "none",
             binding = digest::digest(c(list(population = population, build = build, stage = stage, rep = rep,

@@ -1452,3 +1452,18 @@ test_that("KIT-081: a worker pair decides its two claims separately, the worker 
     expect_identical(unobserved$status, "invalid")
     expect_identical(unobserved$failing_rule, "worker_steps_unobserved")
 })
+
+test_that("KIT-081: an operation member's case carries its population's route, which marks a list assay's recorded state", {
+    h <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), h)
+    b <- list(protocol_sha256 = "p", builds = list(kit_081 = list(library = "l", build = "b", exact_sum = "e")),
+        populations = list(lipid81_design = list(store = "s", head_sha256 = "h", rows = 1L, entity_id = "state", state = "lipid_raw_data_s4", route = "lipidomics"),
+            plain = list(store = "s", head_sha256 = "h", rows = 1L, entity_id = "table")),
+        tickets = list(`081a` = list(control = "kit_081", candidate = "kit_081", ceiling_seconds = 1800L, pairs = list(
+            list(operation = "lipid_intensity_filter", population = "lipid81_design", oracle = "o", parameters = list(a = 1L), variants = list(control = "whole", candidate = "partitioned")),
+            list(operation = "precursor_rollup", population = "plain", oracle = "o", parameters = list(a = 1L), variants = list(control = "whole", candidate = "whole"))))))
+    cases <- h$kitCases(b, "kit-081a")
+    expect_identical(vapply(cases, `[[`, "", "selector"), c("kit:081a:control:1", "kit:081a:candidate:1", "kit:081a:control:2", "kit:081a:candidate:2"))
+    expect_identical(cases[[1L]]$input$route, "lipidomics")
+    expect_identical(cases[[2L]]$variant, "partitioned")
+    expect_null(cases[[3L]]$input$route)
+})
