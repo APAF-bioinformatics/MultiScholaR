@@ -341,6 +341,18 @@ if (!is.null(b$builds$kit_078)) b$tickets[["078"]] <- list(kind = "gui", build =
 if (!is.null(b$builds$kit_079)) b$tickets[["079"]] <- list(kind = "gui", build = "kit_079", corpus = "screen",
     reference = "kit-gui-078", operations = kit_078p_operations, ceiling_seconds = 1800L)
 
+# KIT-081 (protocol v1.6): the instruments' small test, recorded and never counted: the intensity filter of each omic on a
+# suffixed key, `whole` against `partitioned` on the build's recorded design state, against that build's in-process oracle.
+if (!is.null(b$builds$kit_081)) {
+    b$tickets[["081a"]] <- list(control = "kit_081", candidate = "kit_081", ceiling_seconds = 1800L, purpose = "lifecycle", pairs = list(
+        list(operation = "lipid_intensity_filter", population = "lipid81_design", oracle = "lipid81_intensity",
+            parameters = list(lipids_intensity_cutoff_percentile = 10L, lipids_proportion_of_samples_below_cutoff = 0.5),
+            variants = list(control = "whole", candidate = "partitioned")),
+        list(operation = "metab_intensity_filter", population = "metab81_design", oracle = "metab81_intensity",
+            parameters = list(metabolites_intensity_cutoff_percentile = 10L, metabolites_proportion_of_samples_below_cutoff = 0.5),
+            variants = list(control = "whole", candidate = "partitioned"))))
+}
+
 # KIT-009: the imputation step as an operation on the feature-group partitioner, control and candidate on the
 # KIT-005 imputation population (input: the state after the replicate filter, `journey_replicate`; oracle: the
 # state after imputation, `journey_imputation`), with the journey's recorded parameters (proportion 0.5, no

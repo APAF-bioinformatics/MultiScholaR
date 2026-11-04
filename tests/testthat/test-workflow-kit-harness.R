@@ -1350,3 +1350,105 @@ test_that("KIT-057: a journey pair binds its route, oracles and normalisation se
     expect_identical(plain[[1L]]$route, "DIA")
     expect_null(plain[[1L]]$oracles)
 })
+
+# KIT-081: the stage-3b instruments (protocol v1.6 section 8).
+test_that("KIT-081: a suffixed operation key binds its ceiling and selectors, and unsuffixed keys keep theirs", {
+    h <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), h)
+    b <- list(tickets = list(`081a` = list(ceiling_seconds = 1800L), `081b` = list(ceiling_seconds = 2400L), `081c` = list()))
+    expect_identical(h$kitMemberSeconds("kit-081a", b), 1800L)
+    expect_error(h$kitMemberSeconds("kit-081b", b), "1,800")
+    expect_error(h$kitMemberSeconds("kit-081c", b), "1,800")
+    expect_identical(h$kitMemberSeconds("kit-081", b), 600L)
+    expect_identical(h$kitSelectorStage("kit:081a:control:2"), list(stage = "kit-081a", id = "control-2"))
+    expect_identical(h$kitSelectorStage("kit:081:candidate:1"), list(stage = "kit-081", id = "candidate-1"))
+    expect_error(h$kitSelectorStage("kit:081ab:control:1"))
+})
+
+test_that("KIT-081: a list assay is identified by the digest of its sorted element ids, whatever their order", {
+    h <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), h)
+    one <- list(entity_id = "abc")
+    expect_identical(h$kitAssayComponentId(one), "abc")
+    a <- list(pos = list(entity_id = "b"), neg = list(entity_id = "a"))
+    b <- list(neg = list(entity_id = "a"), pos = list(entity_id = "b"))
+    expect_identical(h$kitAssayComponentId(a), h$kitAssayComponentId(b))
+    expect_identical(h$kitAssayComponentId(a), digest::digest(c("a", "b"), algo = "sha256"))
+})
+
+test_that("KIT-081: the phase measures carry the controller's peak when the trace has it, and only then", {
+    h <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), h)
+    phases <- data.frame(uptime = c(1, 2, 3, 4), step = c("a", "a", "b", "b"), event = c("start", "complete", "start", "complete"))
+    trace <- data.frame(uptime = c(1, 1.5, 2, 3, 3.5, 4), current = 1:6, anon = 11:16)
+    expect_null(h$kitPhaseMeasures(phases, trace)$phase_controller_peak_anon_bytes)
+    trace$controller_anon <- c(5, 7, 6, NA, 2, 3)
+    expect_identical(h$kitPhaseMeasures(phases, trace)$phase_controller_peak_anon_bytes, list(a = 7, b = 3))
+})
+
+#' A receipt and cases from a recorded pair's members, as `kitJourneyTicketDecision` reads them.
+kit081Replay <- function(members) {
+    h <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), h)
+    cases <- list(); receipt <- list(cases = list())
+    for (role in c("control", "candidate")) {
+        member <- members[[paste0(role, "-1")]] %||% members[[role]]
+        id <- paste0(role, "-1")
+        steps <- names(member$phase_peak_anon_bytes)
+        cases[[length(cases) + 1L]] <- list(id = id, role = role, selector = "kit:journey-081:candidate:1")
+        receipt$cases[[id]] <- list(verifier_completion = list(accepted = TRUE), operation = list(status = member$status %||% "complete",
+            max_sample_interval = 0.05, peak_bytes = member$peak_bytes, swap_bytes = 0, cleanup = list(slice_stopped = TRUE), sampled_anon_bytes = member$peak_anon_bytes,
+            populations_complete = TRUE, elapsed_seconds = member$elapsed_seconds, resident_end_bytes = member$resident_end_bytes,
+            phase_peak_anon_bytes = member$phase_peak_anon_bytes, phase_seconds = member$phase_seconds,
+            phase_status = member$phase_status %||% stats::setNames(rep(list("complete"), length(steps)), steps)))
+    }
+    list(h = h, receipt = receipt, cases = cases)
+}
+
+test_that("KIT-081: the recorded pair decisions of KIT-017, KIT-036 and KIT-057 reproduce unchanged", {
+    for (file in c("kit-017/kit-journey-017-stage.json", "kit-036/kit-journey-036-stage.json", "kit-057/kit-journey-057-stage.json")) {
+        path <- testthat::test_path("../../docs/qa/workflow-execution/kit", file)
+        skip_if_not(file.exists(path))
+        recorded <- jsonlite::read_json(path)
+        replay <- kit081Replay(recorded$members)
+        bindings <- list(journey = list(ceiling_seconds = 14400L), tickets = list(`081` = list(rule = recorded$decision$rule, ceiling_seconds = 14400L)))
+        decision <- replay$h$kitJourneyTicketDecision(replay$receipt, replay$cases, bindings)
+        expect_identical(decision$status, recorded$decision$status, info = file)
+        expect_identical(as.character(decision$failing_rule %||% character()), as.character(unlist(recorded$decision$failing_rule)), info = file)
+        expect_equal(decision$whole_slice_anon_ratio, recorded$decision$whole_slice_anon_ratio, info = file)
+        expect_equal(decision$step_ratios[names(recorded$decision$step_ratios)], recorded$decision$step_ratios, info = file)
+    }
+})
+
+test_that("KIT-081: a worker pair decides its two claims separately, the worker steps reported on the whole slice and judged on the application", {
+    steps <- c("import", "design", "intensity", "qc_finalize", "normalisation", "report")
+    member <- function(whole, step_anon, controller) list(status = "complete", outcome = "complete", peak_bytes = whole, peak_anon_bytes = whole, elapsed_seconds = 10,
+        resident_end_bytes = 1, phase_seconds = stats::setNames(as.list(rep(1, 6)), steps), phase_peak_anon_bytes = stats::setNames(as.list(step_anon), steps))
+    decide <- function(candidate_whole = 1.86, candidate_steps = c(1, 1, 1.24, 1, 1.7, 1), candidate_controller = c(0.9, 0.9), control_controller = c(1, 2.5)) {
+        replay <- kit081Replay(list(`control-1` = member(2.5, c(1, 1, 1, 1, 2.5, 1)), `candidate-1` = member(candidate_whole, candidate_steps)))
+        receipt <- replay$receipt
+        receipt$cases$`control-1`$operation$phase_controller_peak_anon_bytes <- list(intensity = control_controller[[1]], normalisation = control_controller[[2]])
+        receipt$cases$`candidate-1`$operation$phase_controller_peak_anon_bytes <- list(intensity = candidate_controller[[1]], normalisation = candidate_controller[[2]])
+        replay$h$kitJourneyTicketDecision(receipt, replay$cases, list(journey = list(ceiling_seconds = 14400L),
+            tickets = list(`081` = list(ceiling_seconds = 14400L, worker_steps = c("intensity", "normalisation")))))
+    }
+    good <- decide()
+    expect_identical(good$status, "accepted")
+    expect_identical(good$rule_decisions$whole_slice_anon$status, "accepted")
+    expect_identical(good$rule_decisions$app_process$status, "accepted")
+    # The intensity step's 1.24 on the whole slice is reported, not guarded.
+    expect_equal(good$rule_decisions$whole_slice_anon$step_ratios_reported$intensity, 1.24)
+    expect_false("intensity" %in% good$rule_decisions$whole_slice_anon$steps_guarded)
+    # A non-worker step is still guarded.
+    worse <- decide(candidate_steps = c(1, 1, 1.24, 1.5, 1.7, 1))
+    expect_identical(worse$rule_decisions$whole_slice_anon$failing_rule, "step_not_worse")
+    expect_identical(worse$rule_decisions$app_process$status, "accepted")
+    expect_identical(worse$status, "rejected")
+    # The total's reduction is required.
+    expect_identical(decide(candidate_whole = 2.45)$rule_decisions$whole_slice_anon$failing_rule, "required_reduction")
+    # The application's: every worker step at most 0.95.
+    app <- decide(candidate_controller = c(0.99, 0.9))
+    expect_identical(app$rule_decisions$app_process$failing_rule, "app_process_reduction")
+    expect_identical(app$rule_decisions$whole_slice_anon$status, "accepted")
+    expect_identical(app$failing_rule, "app_process_reduction")
+    # A worker step with no controller reading cannot be decided.
+    unobserved <- decide(control_controller = c(NA_real_, 2.5))
+    expect_identical(unobserved$status, "invalid")
+    expect_identical(unobserved$failing_rule, "worker_steps_unobserved")
+})

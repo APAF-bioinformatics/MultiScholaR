@@ -111,6 +111,13 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-lifecycle-(lipid|metab)(-fail)?$", stage)) return(as.integer(bindings$lifecycle_omics$ceiling_seconds %||% 1800L))
     if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
     if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
+    # KIT-081 (protocol v1.6 item 8): a suffixed operation key binds its ceiling, at most 1,800 s.
+    if (grepl("^kit-0[0-9]{2}[a-z]$", stage)) {
+        seconds <- bindings$tickets[[sub("kit-", "", stage, fixed = TRUE)]]$ceiling_seconds
+        if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 1800)
+            stop("a suffixed operation key binds its ceiling (at most 1,800 s, protocol v1.6)")
+        return(as.integer(seconds))
+    }
     if (grepl("^kit-gui-0[0-9]{2}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
     if (startsWith(stage, "kit-journey")) {
         # KIT-028: a ticket's journey member may bind its own ceiling (the screen replay origin, 900 s).
@@ -168,7 +175,7 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -470,7 +477,7 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab):(complete|fail)|0[0-9]{2}:((control|candidate):[12]|single:[1-5]))$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab):(complete|fail)|0[0-9]{2}[a-z]?:((control|candidate):[12]|single:[1-5]))$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     # KIT-068: `kit:lifecycle:lipid:complete` is stage `kit-lifecycle-lipid`; `:fail` the `-fail` stage.
     if (parts[[1L]] == "lifecycle" && parts[[2L]] %in% c("lipid", "metab"))
@@ -494,7 +501,7 @@ kitPhaseMeasures <- function(phases, trace) {
     starts <- phases[phases$event == "start", , drop = FALSE]
     ends <- phases[phases$event %in% c("complete", "failed"), , drop = FALSE]
     labels <- unique(starts$step)
-    seconds <- peaks <- anon <- stats::setNames(rep(NA_real_, length(labels)), labels)
+    seconds <- peaks <- anon <- controller <- stats::setNames(rep(NA_real_, length(labels)), labels)
     status <- stats::setNames(rep("complete", length(labels)), labels)
     last <- if (nrow(trace)) max(trace$uptime) else max(c(phases$uptime, -Inf))
     for (i in seq_len(nrow(starts))) {
@@ -509,6 +516,9 @@ kitPhaseMeasures <- function(phases, trace) {
         if (any(rows)) {
             peaks[[label]] <- max(peaks[[label]], trace$current[rows], na.rm = TRUE)
             anon[[label]] <- max(anon[[label]], trace$anon[rows], na.rm = TRUE)
+            # KIT-081: the controller's own peak in the step, when the trace has it.
+            if ("controller_anon" %in% names(trace) && any(is.finite(trace$controller_anon[rows])))
+                controller[[label]] <- max(controller[[label]], trace$controller_anon[rows], na.rm = TRUE)
         }
     }
     teardown <- phases$uptime[phases$event == "teardown"]
@@ -517,9 +527,10 @@ kitPhaseMeasures <- function(phases, trace) {
         window <- trace$uptime >= teardown - 5 & trace$uptime <= teardown
         if (any(window)) resident <- min(trace$anon[window])
     }
-    list(phase_seconds = as.list(seconds), phase_peak_bytes = as.list(peaks),
+    c(list(phase_seconds = as.list(seconds), phase_peak_bytes = as.list(peaks),
         phase_peak_anon_bytes = as.list(anon), phase_status = as.list(status),
-        resident_end_bytes = resident)
+        resident_end_bytes = resident),
+        if ("controller_anon" %in% names(trace)) list(phase_controller_peak_anon_bytes = as.list(controller)))
 }
 
 #' Measurement validity: coordinator sampling gap at most 250 ms (operation members) or 500 ms
@@ -849,6 +860,9 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
     resident_ratio <- if (control_complete && is.finite(control$resident_end_bytes) && is.finite(candidate$resident_end_bytes))
         candidate$resident_end_bytes / control$resident_end_bytes else NA_real_
     not_worse_steps <- length(guarded) >= 1L && all(step_ratios[guarded] <= 1.02)
+    # KIT-081 (protocol v1.6 items 3-6): a worker pair binds both rules; each decides its own claim.
+    if (length(bindings$tickets[[ticket]]$worker_steps)) return(kitWorkerPairDecision(receipt, cases, bindings$tickets[[ticket]], members, completed,
+        setdiff(completed, reported_only), step_ratios, whole_ratio, control$outcome))
     if (identical(rule, "resident_end")) {
         # The resident-end rule needs both members' end-of-journey readings: a control that ended at a guard has none.
         if (!control_complete || !is.finite(resident_ratio))
@@ -868,6 +882,39 @@ kitJourneyTicketDecision <- function(receipt, cases, bindings) {
         whole_slice_anon_ratio = whole_ratio, resident_end_ratio = resident_ratio,
         resident_end_bytes = list(control = control$resident_end_bytes, candidate = candidate$resident_end_bytes),
         promotion_authorized = FALSE)
+}
+
+#' Decide a stage-3b worker pair (protocol v1.6 section 8 items 3-6). `whole_slice_anon` decides the total-memory claim:
+#' the whole-slice peak over the journey at most 0.95 x the control's, and the per-step guard at the steps that are not
+#' worker steps; a worker step's whole-slice ratio is reported. `app_process` decides the application claim: at each
+#' worker step the controller's anonymous peak at most 0.95 x the control's.
+#' @param spec The ticket's binding; `worker_steps` names the steps, listed before the member runs.
+#' @return `status` (`accepted` only when both rules accept), `failing_rule`, and `rule_decisions` by rule, each verbatim.
+#' @noRd
+kitWorkerPairDecision <- function(receipt, cases, spec, members, completed, judged, step_ratios, whole_ratio, control_outcome) {
+    worker_steps <- unlist(spec$worker_steps)
+    controller <- function(id) receipt$cases[[id]]$operation$phase_controller_peak_anon_bytes
+    control <- controller("control-1")
+    candidate <- controller("candidate-1")
+    app_ratios <- vapply(worker_steps, function(step) (candidate[[step]] %||% NA_real_) / (control[[step]] %||% NA_real_), numeric(1))
+    if (!identical(control_outcome, "complete") || !all(worker_steps %in% completed) || !all(is.finite(app_ratios)))
+        return(list(status = "invalid", failing_rule = "worker_steps_unobserved", members = members, worker_steps = worker_steps,
+            app_process_ratios = as.list(app_ratios), control_outcome = control_outcome, promotion_authorized = FALSE))
+    guarded <- setdiff(judged, worker_steps)
+    not_worse <- all(step_ratios[guarded] <= 1.02)
+    reduced <- is.finite(whole_ratio) && whole_ratio <= 0.95
+    whole_failing <- if (!not_worse) "step_not_worse" else if (!reduced) "required_reduction" else NULL
+    app_failing <- if (!all(app_ratios <= 0.95)) "app_process_reduction" else NULL
+    rule_decisions <- list(
+        whole_slice_anon = list(claim = "stage 3b lowers the total memory of the omics journey", status = if (is.null(whole_failing)) "accepted" else "rejected",
+            failing_rule = whole_failing, whole_slice_anon_ratio = whole_ratio, steps_guarded = guarded, step_ratios_guarded = as.list(step_ratios[guarded]),
+            step_ratios_reported = as.list(step_ratios[intersect(worker_steps, names(step_ratios))])),
+        app_process = list(claim = "the application process no longer carries the omics compute", status = if (is.null(app_failing)) "accepted" else "rejected",
+            failing_rule = app_failing, app_process_ratios = as.list(app_ratios), controller_peak_anon_bytes = list(control = control[worker_steps], candidate = candidate[worker_steps])))
+    failing <- c(whole_failing, app_failing)
+    list(status = if (length(failing)) "rejected" else "accepted", failing_rule = failing, rule = "whole_slice_anon+app_process", rule_decisions = rule_decisions,
+        members = members, control_outcome = control_outcome, worker_steps = worker_steps, steps_compared = completed, step_ratios = as.list(step_ratios),
+        whole_slice_anon_ratio = whole_ratio, promotion_authorized = FALSE)
 }
 
 #' Decide a ticket's `gui`-mode managed member (KIT-008; protocol: completion and exactness, peak recorded).
@@ -1158,15 +1205,40 @@ kitFindStore <- function(project) {
 #' @noRd
 kitPopulationInputComponent <- function(store_dir, state, api, field = NULL) {
     head <- kitReadHead(store_dir, api)
-    stopifnot(identical(head$current_state, state))
     store <- kitOpenStore(store_dir, api)
     on.exit(api("closeWorkflowEntityStore")(store), add = TRUE)
     record <- api("hydrateSavedWorkflowCheckpoint")(store, head$references[[state]])
     # The class declaration names the assay component (KIT-010: a protein state's wide table).
     if (is.null(field)) field <- api("workflowClassDeclaration")(record$data$class)$assay
-    component <- record$data$components[[field]]$entity_id
+    # KIT-081 (protocol v1.6 item 9): a list assay is identified by the digest of its sorted element ids.
+    component <- kitAssayComponentId(record$data$components[[field]])
     stopifnot(is.character(component), length(component) == 1L, nzchar(component))
     component
+}
+
+#' The identity of a state's assay component: its entity id, or for a list assay the digest of its sorted element ids.
+#' @noRd
+kitAssayComponentId <- function(component) {
+    if (is.character(component$entity_id)) return(component$entity_id)
+    digest::digest(sort(unname(vapply(component, function(element) element$entity_id, character(1)))), algo = "sha256")
+}
+
+#' Fingerprint a state's assay component: one table, or a list assay element by element.
+#' @noRd
+kitFingerprintAssay <- function(store, component, api) {
+    if (is.character(component$entity_id)) return(kitFingerprintTable(store, component, api))
+    elements <- lapply(component, function(element) kitFingerprintTable(store, element, api))
+    list(kind = "list", rows = sum(vapply(elements, `[[`, numeric(1), "rows")), elements = lapply(elements, `[[`, "sha256"),
+        sha256 = digest::digest(unlist(lapply(elements, `[[`, "sha256")), algo = "sha256"))
+}
+
+#' What an omics state-producing operation member's completion commits under: the state its oracle names, the
+#' description, the configuration of the state it runs on (read by the vehicle). NULL for any other member.
+#' @noRd
+kitOmicsCompletionContext <- function(case, bindings, api) {
+    entry <- api("workflowOperationEntry")(case$operation)
+    if (!identical(entry$completion, "omics") || is.null(entry$declaration$output_class) || is.null(case$oracle)) return(NULL)
+    list(state_name = bindings$populations[[case$oracle]]$state, description = paste("operation member", case$operation))
 }
 
 #' Open an existing store read-only through the installed namespace.
@@ -1509,7 +1581,8 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         identical(digest::digest(file = file.path(source_store, "dia-state-head.rds"), algo = "sha256"), case$input$head_sha256))
     if (!is.null(case$input$state)) {
         source_head <- kitReadHead(source_store, api)
-        stopifnot(identical(source_head$current_state, case$input$state),
+        # KIT-081: a recorded omics population is the recorder's store; the vehicle selects the bound state in its copy.
+        stopifnot(!is.null(case$input$route) || identical(source_head$current_state, case$input$state),
             identical(source_head$states[[case$input$state]], case$input$entity_id))
     }
     project <- file.path(owned, "project")
@@ -1539,7 +1612,7 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     stopifnot(identical(journal$status, "complete"))
     execution <- worker$result$execution
     store <- manager$.context$store
-    hashes <- kitFingerprintTable(store, input_component, api)
+    hashes <- kitFingerprintAssay(store, input_component, api)
     if (case$operation == "precursor_rollup") {
         screen <- identical(case$input$rows, bindings$populations$screen_p14$rows)
         oracle <- bindings$oracles$p14

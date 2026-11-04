@@ -377,7 +377,10 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
         record <- readDIAStateMetadata(manager)$data
         declare <- get0("workflowClassDeclaration", envir = asNamespace("MultiScholaR"), inherits = FALSE)
         assay <- if (is.function(declare)) declare(record$class)$assay else "peptide_data"
-        stopifnot(identical(record$components[[assay]]$entity_id, request$input_entity_id))
+        # KIT-081 (protocol v1.6 item 9): a list assay is identified by the digest of its sorted element ids.
+        component <- record$components[[assay]]
+        stopifnot(identical(if (is.character(component$entity_id)) component$entity_id else
+            digest::digest(sort(unname(vapply(component, function(element) element$entity_id, character(1)))), algo = "sha256"), request$input_entity_id))
     }
     withr::defer(closeDIAStateAdapter(manager))
     owner <- newWorkflowExecutionController(manager, app)
@@ -430,7 +433,11 @@ test_that("PERF-106 repair uses actual installed action dispatch and durable mea
             workflowLaunchService = perf106ProfileLauncher(workflowLaunchService, expression),
             .package = "MultiScholaR")
     }
-    id <- runWorkflowAction(request$operation, list(state = before), request$parameters, owner)
+    # KIT-081: an omics state-producing declaration's completion commits under the state the binding names, with the
+    # configuration of the state it runs on, as the tab's action does.
+    id <- if (is.null(request$completion_context)) runWorkflowAction(request$operation, list(state = before), request$parameters, owner) else
+        runWorkflowAction(request$operation, list(state = before), request$parameters, owner,
+            completion_context = c(request$completion_context, list(config = readDIAStateMetadata(manager)$config)))
     paths <- owner$job$paths
     injected <- FALSE
     repeat {

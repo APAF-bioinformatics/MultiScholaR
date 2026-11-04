@@ -31,6 +31,8 @@ for (path in requests) {
 }
 dispatches <- lapply(dispatches[order(names(dispatches))], function(statuses) list(requests = length(statuses), complete = sum(statuses == "complete", na.rm = TRUE)))
 summary <- list(schema = "kit.stage_summary.v1", ticket = ticket_id, stage = label, date = format(Sys.Date()), dispatches = dispatches,
+    # KIT-081: the controller service's own anonymous memory, when the trace has it.
+    controller = list(peak_anon_bytes = op$controller_peak_anon_bytes, phase_peak_anon_bytes = op$phase_controller_peak_anon_bytes),
     decision = list(status = decision$status, rule = decision$rule, failing_rule = decision$failing_rule,
         steps = decision$steps %||% steps, stop_after = decision$stop_after, promotion_authorized = decision$promotion_authorized,
         expect_failure = decision$expect_failure, route = decision$route %||% op$member$route, in_memory = decision$in_memory,

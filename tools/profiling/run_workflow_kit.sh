@@ -6,16 +6,18 @@
 # Stages: kit-lifecycle-(complete|fail) (journey shape), kit-lifecycle-operation-(complete|fail)
 # (operation shape, KIT-005), kit-lifecycle-(lipid|metab)[-fail] (the omics routes' in-memory lifecycle, KIT-068),
 # kit-journey (baseline pair + production default), kit-0NN (operation members).
-#   run_workflow_kit.sh --sample <cgroup> <trace> <deadline_uptime> <slice> <stop_file> <guard_file>
+#   run_workflow_kit.sh --sample <cgroup> <trace> <deadline_uptime> <slice> <stop_file> <guard_file> [<controller cgroup>]
 # The proof root comes from docs/qa/workflow-execution/kit/bindings.json (harness.root).
 set -euo pipefail
 kit_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo="$(cd -- "$kit_dir/../.." && pwd)"
 
 if [[ "${1:-}" == "--sample" ]]; then
-    [[ "$#" == 7 ]] || exit 2
+    [[ "$#" == 7 || "$#" == 8 ]] || exit 2
     group="$2"; trace="$3"; deadline="$4"; slice="$5"; stop_file="$6"; guard_file="$7"
-    printf 'uptime\tcurrent\tpeak\tanon\tfile\tkernel\tswap_peak\n' > "$trace"
+    # KIT-081 (protocol v1.6): the controller service's cgroup inside the slice, read in the same awk at the same cadence.
+    controller="${8:-/nonexistent}"
+    printf 'uptime\tcurrent\tpeak\tanon\tfile\tkernel\tswap_peak\tcontroller_anon\n' > "$trace"
     while [[ ! -e "$stop_file" ]]; do
         if [[ ! -d "$group" ]]; then
             printf '%s\tcgroup_gone\n' "$(cut -d' ' -f1 /proc/uptime)" >> "${trace%.tsv}-gaps.tsv"
@@ -23,13 +25,14 @@ if [[ "${1:-}" == "--sample" ]]; then
         fi
         # One awk per sample (KIT-005 correction 6): the earlier six process spawns per sample left gaps
         # above the 250 ms validity rule on a busy host.
-        read -r uptime current peak swap anon file kernel available < <(awk '
+        read -r uptime current peak swap anon file kernel available controller_anon < <(awk '
             FILENAME=="/proc/uptime"{u=$1} FILENAME==ARGV[2]{c=$1} FILENAME==ARGV[3]{p=$1} FILENAME==ARGV[4]{s=$1}
             FILENAME==ARGV[5]{if($1=="anon")a=$2; if($1=="file")f=$2; if($1=="kernel")k=$2}
             FILENAME=="/proc/meminfo" && /^MemAvailable:/{m=$2*1024}
-            END{printf "%s %s %s %s %s %s %s %.0f\n", u, (c==""?"NA":c), (p==""?"NA":p), (s==""?"NA":s), (a==""?"NA":a), (f==""?"NA":f), (k==""?"NA":k), m}' \
-            /proc/uptime "$group/memory.current" "$group/memory.peak" "$group/memory.swap.peak" "$group/memory.stat" /proc/meminfo 2>/dev/null || echo "NA NA NA NA NA NA NA NA")
-        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$uptime" "$current" "$peak" "$anon" "$file" "$kernel" "$swap" >> "$trace"
+            FILENAME==ARGV[7]{if($1=="anon")ca=$2}
+            END{printf "%s %s %s %s %s %s %s %.0f %s\n", u, (c==""?"NA":c), (p==""?"NA":p), (s==""?"NA":s), (a==""?"NA":a), (f==""?"NA":f), (k==""?"NA":k), m, (ca==""?"NA":ca)}' \
+            /proc/uptime "$group/memory.current" "$group/memory.peak" "$group/memory.swap.peak" "$group/memory.stat" /proc/meminfo "$controller/memory.stat" 2>/dev/null || echo "NA NA NA NA NA NA NA NA")
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$uptime" "$current" "$peak" "$anon" "$file" "$kernel" "$swap" "$controller_anon" >> "$trace"
         # KIT-068: a sample taken as the cgroup vanishes (the application's own guard stop) reads no uptime; the guards
         # below compare numbers only (attempt 2 of kit-lifecycle-lipid-fail: "NA" >= the deadline as a string ended the
         # member as time_guard 46 s in).
@@ -79,7 +82,7 @@ if [[ "${1:-}" == "install" ]]; then
 fi
 
 mode="${1:-}"; stage="${2:-}"; library="${3:-}"; rerun="${4:-}"
-[[ ( "$mode" == validate || "$mode" == run || ( "$mode" == rerun && "$rerun" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ ) ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$ && -d "$library" ]] || {
+[[ ( "$mode" == validate || "$mode" == run || ( "$mode" == rerun && "$rerun" =~ ^[a-z0-9-]+(,[a-z0-9-]+)*$ ) ) && "$stage" =~ ^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$ && -d "$library" ]] || {
     echo "Usage: run_workflow_kit.sh validate|run <stage> <library> | rerun <stage> <library> <member,member>" >&2; exit 2; }
 root="$(jq -r '.harness.root' "$repo/docs/qa/workflow-execution/kit/bindings.json")"
 # The browser driver runs in the coordinator (outside the slice); chromote needs the executable (as the pinned runner does).

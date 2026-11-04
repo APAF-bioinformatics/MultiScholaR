@@ -15,7 +15,7 @@ if (length(args) == 4L && grepl("^--rerun=", args[[4L]])) {
     rerun_cases <- strsplit(sub("^--rerun=", "", args[[4L]]), ",", fixed = TRUE)[[1L]]
     args <- args[1:3]
 }
-stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2})$", args[[1L]]))
+stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", args[[1L]]))
 stage <- args[[1L]]
 library_path <- normalizePath(args[[2L]])
 root <- args[[3L]]
@@ -153,16 +153,17 @@ tryCatch({
         trace_path <- file.path(owned, "memory-trace.tsv")
         stop_file <- file.path(owned, "stop-sampling")
         sampler_log <- file.path(owned, "sampler.log")
-        startSampler <- function(group, deadline_uptime, slice) {
+        # KIT-081 (protocol v1.6): `controller` is the controller service's cgroup inside the slice.
+        startSampler <- function(group, deadline_uptime, slice, controller) {
             system2("bash", shQuote(c(file.path(snapshot, "tools/profiling/run_workflow_kit.sh"), "--sample", group,
-                trace_path, sprintf("%.3f", deadline_uptime), slice, stop_file, file.path(owned, "guard-stop.txt"))),
+                trace_path, sprintf("%.3f", deadline_uptime), slice, stop_file, file.path(owned, "guard-stop.txt"), controller)),
                 stdout = sampler_log, stderr = sampler_log, wait = FALSE)
             sampler <<- stop_file
         }
         readTrace <- function() {
             trace <- utils::read.delim(trace_path, stringsAsFactors = FALSE)
             trace <- trace[is.finite(suppressWarnings(as.numeric(trace$uptime))), , drop = FALSE]
-            for (column in c("uptime", "current", "peak", "anon", "file", "kernel", "swap_peak"))
+            for (column in c("uptime", "current", "peak", "anon", "file", "kernel", "swap_peak", "controller_anon"))
                 trace[[column]] <- suppressWarnings(as.numeric(trace[[column]]))
             trace
         }
@@ -179,7 +180,8 @@ tryCatch({
             population_store <- helpers$kitPopulationStore(case$input, file.path(owned, "population-store"), api)
             # The vehicle checks the input by its assay component; a journey population is bound by its state
             # descriptor (KIT-009 attempt 1: both members refused before any work for that reason).
-            input_component <- if (is.null(case$input$head_entity)) case$input$entity_id else
+            # KIT-081: a recorded omics population's state is selected by the vehicle, and its input is the list assay.
+            input_component <- if (is.null(case$input$head_entity) && is.null(case$input$route)) case$input$entity_id else
                 helpers$kitPopulationInputComponent(population_store, case$input$state, api)
             member <- list(schema = 1L, programme = "perf106-repair-v2", preflight = FALSE,
                 # The pair's bound variant (KIT-009), else the production variant of the two KIT-006 operations.
@@ -190,6 +192,8 @@ tryCatch({
                 parameters = case$parameters, source_store = population_store, bound_store = case$input$store,
                 source_head_sha256 = case$input$head_sha256, input_entity_id = input_component,
                 input_state_entity_id = case$input$entity_id,
+                # KIT-081: an omics state-producing declaration commits under the state its oracle names.
+                completion_context = helpers$kitOmicsCompletionContext(case, bindings, api),
                 phase_events = case$operation == "precursor_rollup", id = case$id, role = case$role, rep = case$rep,
                 population = case$population, binding = case$binding, stage = stage, selector = case$selector)
             saveRDS(member, file.path(owned, "timed-member.rds"))
@@ -208,7 +212,7 @@ tryCatch({
             cat("START", case$id, config$controller_unit, "\n")
             active_slice <- config$slice
             group <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
-            startSampler(group, operation_started + member_seconds, config$slice)
+            startSampler(group, operation_started + member_seconds, config$slice, file.path(group, config$controller_unit))
             repeat {
                 properties <- api("workflowServiceProperties")(config$controller_unit)
                 if (!isTRUE(properties$available) || !properties$SubState %in% c("running", "start", "start-pre")) break
@@ -251,7 +255,7 @@ tryCatch({
                 config = config, binding = case$binding, member = member,
                 elapsed_seconds = clock() - operation_started, peak_bytes = peak,
                 peak_source = if (!is.null(counters)) "cgroup" else "trace", swap_bytes = swap, accounting = counters$accounting,
-                sampled_anon_bytes = safe_max(trace$anon),
+                sampled_anon_bytes = safe_max(trace$anon), controller_peak_anon_bytes = safe_max(trace$controller_anon),
                 max_sample_interval = if (nrow(trace) > 1L) max(diff(trace$uptime)) else NA_real_, samples = nrow(trace),
                 outer_guard = outer_guard, execution = result$execution, science_execution = science, head_unchanged = head_unchanged,
                 lifecycle_passed = !is.null(tests) && !any(tests$failed > 0 | tests$error),
@@ -290,7 +294,7 @@ tryCatch({
             cat("START", case$id, config$controller_unit, "\n")
             active_slice <- config$slice
             group <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
-            startSampler(group, deadline_uptime, config$slice)
+            startSampler(group, deadline_uptime, config$slice, file.path(group, config$controller_unit))
             corpus_spec <- bindings$corpora[[case$corpus]]
             # KIT-021: a corpus names its report file and import format (the DIA corpora: report.tsv, diann).
             corpus <- list(report = corpus_spec$files[[corpus_spec$report_file %||% "report.tsv"]]$path,
@@ -349,7 +353,7 @@ tryCatch({
                 elapsed_seconds = (result$teardown_clock %||% clock()) - operation_started,
                 peak_bytes = peak, peak_source = if (!is.null(counters)) "cgroup" else "trace",
                 swap_bytes = swap, accounting = counters$accounting,
-                sampled_anon_bytes = safe_max(trace$anon),
+                sampled_anon_bytes = safe_max(trace$anon), controller_peak_anon_bytes = safe_max(trace$controller_anon),
                 max_sample_interval = if (nrow(trace) > 1L) max(diff(trace$uptime)) else NA_real_,
                 gaps_above_250ms = if (nrow(trace) > 1L) sum(diff(trace$uptime) > 0.25) else NA_integer_,
                 samples = nrow(trace), guard = guard, outer_guard = outer_guard,
