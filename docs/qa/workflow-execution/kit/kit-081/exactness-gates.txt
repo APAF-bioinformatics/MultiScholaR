@@ -1,0 +1,7 @@
+# KIT-081 oracles on kit_081 = browser-smoke.6nbYY3 (dbd5b88b), R 4.6.1, against kit_079's. No package code changed.
+reference oracles-lipid79_lipid_screen.rds (lipidomics, build 4ced76c51492): 10 steps; candidate oracles-lipid81_lipid_screen.rds (build dbd5b88b6e14): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
+reference oracles-metab79_metab_screen.rds (metabolomics, build 4ced76c51492): 10 steps; candidate oracles-metab81_metab_screen.rds (build dbd5b88b6e14): 10 steps
+steps compared 10; state names identical 10; reproduce mismatches 0; per-state mismatches (class/rows/components/support/summary) 0
+RESULT identical
