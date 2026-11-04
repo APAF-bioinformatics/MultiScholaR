@@ -3,3 +3,4 @@ kit-journey-084a invalid failed_step normalisation error production action faile
 kit-journey-084c accepted failed_step none error none 
 kit-journey-084b invalid failed_step normalisation error Chromote: timed out waiting for response to command Runtime.evaluate 
 kit-journey-084f invalid failed_step normalisation error diagnostic Shiny session disconnected 
+kit-journey-084d accepted failed_step none error none 

@@ -13,3 +13,5 @@ kit-journey-084b invalid by machine suspend, not by the build: org_kde_powerdevi
 kit-journey-084f start 07:27:39: AC 1, profile low-power, battery 85%, load 4.40, available 38 GiB
 kit-journey-084f end 09:52:41: AC 1, profile low-power, battery 100%, load 2.89, available 38 GiB
 kit-journey-084f stopped at 09:52:09 by the user's direction ("i dont want the fstupid fucking slow kit"): no decision; 8,670 s, in normalisation, on the second assay's RUV; no suspend, no error. The kit_032 controls are dropped: 084e does not run. kit_084 runs what is left.
+kit-journey-084d start 09:53:08: AC 1, profile low-power, battery 100%, load 3.10, available 38 GiB
+kit-journey-084d end 10:32:08: AC 1, profile low-power, battery 100%, load 2.63, available 38 GiB
