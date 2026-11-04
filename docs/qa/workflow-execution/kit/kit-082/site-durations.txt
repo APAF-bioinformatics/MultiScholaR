@@ -1,0 +1,12 @@
+kit-journey-082l	lipid_filtering_metrics	2.7
+kit-journey-082l	lipid_final_pca	3.6
+kit-journey-082l	lipid_final_pca	3.7
+kit-journey-082l	lipid_integration_export	3.0
+kit-journey-082l	lipid_session_export	3.7
+kit-journey-082l	lipid_volcano_page	6.6
+kit-journey-082m	metab_filtering_metrics	2.7
+kit-journey-082m	metab_final_pca	3.6
+kit-journey-082m	metab_final_pca	3.8
+kit-journey-082m	metab_integration_export	3.3
+kit-journey-082m	metab_session_export	3.7
+kit-journey-082m	metab_volcano_page	7.4
