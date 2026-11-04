@@ -557,6 +557,12 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             notify(paste0(prefix("qc"), "duplicates-resolve_duplicates"), "Duplicates resolved")
         },
         qc_finalize = {
+            # KIT-082: the internal-standard analysis, which commits nothing.
+            h$checkpointSetInput(driver, qc_tabs, "Internal Standards")
+            h$checkpointSetInput(driver, paste0(prefix("qc"), "itsd-is_pattern"), "^IS_")
+            notify(paste0(prefix("qc"), "itsd-analyze_is"), "internal standards")
+            h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&el.textContent.trim().length>0;})()",
+                jsonlite::toJSON(paste0(prefix("qc"), "itsd-is_summary"), auto_unbox = TRUE)), timeout = h$checkpointWaitBudget())
             h$checkpointSetInput(driver, qc_tabs, "Finalize QC")
             notify(paste0(prefix("qc"), "s4_finalize-finalize_qc"), "QC complete!")
         },
@@ -569,6 +575,9 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             h$checkpointSetInput(driver, paste0(norm, "norm_method"), settings$norm_method %||% "cyclicloess")
             h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode %||% "automatic")
             for (name in names(settings$ruv)) h$checkpointSetInput(driver, paste0(norm, name), settings$ruv[[name]])
+            # KIT-082: the ITSD candidate tables, built a page at a time, drawn before the run.
+            if (isTRUE(settings$apply_itsd)) h$checkpointWaitForJs(driver, sprintf("document.querySelectorAll('[id^=%s] tbody tr td').length>1",
+                paste0("\"", norm, "itsd_table_\"")), timeout = h$checkpointWaitBudget())
             notify(paste0(norm, "run_normalization"), "Normalization pipeline complete!")
         },
         correlation = {
@@ -597,6 +606,29 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
                 timeout = h$checkpointWaitBudget())
             failure <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s).querySelector('.alert-danger');return el?el.textContent:'';})()", volcano))
             if (nzchar(failure)) stop("the DA tab's interactive volcano failed: ", failure, call. = FALSE)
+            # KIT-082: the tab's other displays, each waited for itself; an output's error fails the step.
+            drawn <- function(output, selector) {
+                id <- jsonlite::toJSON(paste0(de, output), auto_unbox = TRUE)
+                h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&(el.classList.contains('shiny-output-error')||el.querySelector(%s)!==null);})()",
+                    id, jsonlite::toJSON(selector, auto_unbox = TRUE)), timeout = h$checkpointWaitBudget())
+                error <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s);return el.classList.contains('shiny-output-error')?el.textContent:'';})()", id))
+                if (nzchar(error)) stop("the DA tab's ", output, " failed: ", error, call. = FALSE)
+            }
+            assay <- driver$get_js(assay_script)
+            h$checkpointSetInput(driver, paste0(de, "volcano_interactive"), FALSE)
+            drawn("volcano_static", "img")
+            h$checkpointSetInput(driver, paste0(de, "volcano_interactive"), TRUE)
+            h$checkpointSetInput(driver, paste0(de, "da_results_tabs"), "Heatmap")
+            h$checkpointSetInput(driver, paste0(de, "heatmap_assay"), assay)
+            drawn("heatmap_plot", "img")
+            h$checkpointSetInput(driver, paste0(de, "da_results_tabs"), "DA Results Table")
+            drawn("da_results_table", "tbody tr td")
+            # The download, through the handler: its text arrives in the page, and only its length is kept.
+            link <- jsonlite::toJSON(paste0(de, "download_da_results"), auto_unbox = TRUE)
+            h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&(el.getAttribute('href')||'').length>1;})()", link), timeout = h$checkpointWaitBudget())
+            driver$get_js(sprintf("window.__kitDownload=null;fetch(document.getElementById(%s).getAttribute('href')).then(r=>r.ok?r.text():'').then(t=>{window.__kitDownload=t.length;});true", link))
+            h$checkpointWaitForJs(driver, "window.__kitDownload!==null", timeout = h$checkpointWaitBudget())
+            if (!isTRUE(driver$get_js("window.__kitDownload>0"))) stop("the DA tab's download was empty", call. = FALSE)
         },
         report = {
             # The summary tab: the publication copy (which writes the study parameters when they were not saved), then

@@ -310,13 +310,21 @@ runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings
         omicsManagedProduct(step$operation, step$parameters, function(result) values[[step$contrast]] <<- result$value)
     })
     runner$run(actions, done = function() {
-        accepted <- withWorkflowStateScope(manager, function() acceptWorkflowOmicsDaManifest(binding, manager, source, settings, contrasts, values))
+        # KIT-082: the worker reads the contrasts' tables, and the tab holds their rows without the per-sample columns.
+        accepted <- withWorkflowStateScope(manager, function() acceptWorkflowOmicsDaManifest(binding, manager, source, settings, contrasts, values, read_results = FALSE))
+        tab <- NULL
         export <- NULL
-        finish <- function(outcome) deliver(accepted$results, outcome)
-        runner$run(list(omicsManagedProduct(paste0(binding$prefix, "_da_publication"), list(), function(result) export <<- result$display)),
+        finish <- function(outcome) {
+            results <- resolveWorkflowStateValue(manager$.context, tab)
+            columns <- results$download_columns
+            results$write_download <- function(file) writeWorkflowOmicsDaDownload(binding, manager, accepted$manifest, columns, file)
+            deliver(results, outcome)
+        }
+        runner$run(list(omicsManagedProduct(paste0(binding$prefix, "_da_tab_results"), list(), function(result) tab <<- result$display$tab),
+            omicsManagedProduct(paste0(binding$prefix, "_da_publication"), list(), function(result) export <<- result$display)),
             done = function() finish(export),
-            # The science is accepted; the tab warns about the files, as it does in process.
-            failed = function(error) finish(list(success = FALSE, message = conditionMessage(error))))
+            # The science is accepted; with the tab's rows the tab warns about the files, as it does in process.
+            failed = function(error) if (is.null(tab)) failed(error) else finish(list(success = FALSE, message = conditionMessage(error))))
     }, failed = failed)
     invisible(TRUE)
 }

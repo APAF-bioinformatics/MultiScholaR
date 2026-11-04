@@ -270,6 +270,8 @@ buildMetabDaResultsDownloadHandler <- function(
             buildFilename()
         },
         content = function(file) {
+            # KIT-082: a managed tab holds no per-sample columns and writes the download from the store.
+            if (is.function(daData$da_results_list$write_download)) return(daData$da_results_list$write_download(file))
             results <- daData$da_results_list$da_metabolites_long
             writeDownloadCsv(
                 results = results,

@@ -170,13 +170,15 @@ buildLipidDaResultsDownloadHandler <- function(
         content = function(file) {
             results <- daResultsReactive()
             reqFn(results)
+            # KIT-082: a managed tab holds no per-sample columns and writes the download from the store.
+            if (is.function(results)) return(results(file))
             csvWriter(results, file, row.names = FALSE)
         }
     )
 }
 
 resolveLipidDaResultsDownloadData <- function(daResultsList) {
-    daResultsList$da_lipids_long
+    daResultsList$write_download %||% daResultsList$da_lipids_long
 }
 
 buildLipidDaResultsDownloadOutputHandler <- function(

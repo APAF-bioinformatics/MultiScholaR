@@ -135,6 +135,73 @@ for (omic in c("lipidomics", "metabolomics")) local({
     expect_identical(from_rows$plot@matrix, from_whole$plot@matrix)
   })
 
+  test_that(sprintf("KIT-082: the %s DA tab holds no per-sample column and shows what the whole results show; its download has the same bytes", omic), {
+    skip_if_not(workflowOwnerCapable())
+    omicsReadMocks()
+    fixture <- case$owner_of(withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    owner <- fixture$owner
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) }, .package = "MultiScholaR")
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDuplicateResolution(binding, owner, list())))
+    source <- getWorkflowStateReference(owner)
+    whole <- suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDaAnalysis(binding, owner, source,
+      list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), fixture$workflow$contrasts_tbl)))$results
+    controller <- omicsWorkerController(fixture)
+    done <- omicsWorkerAction(fixture, controller, paste0(case$prefix, "_da_tab_results"))
+    expect_identical(done$acceptance, "complete")
+    tab <- resolveWorkflowStateValue(owner$.context, done$display$tab)
+    long <- whole[[binding$long_table]]
+    expect_gt(sum(grepl("^intensity[.]", names(long))), 0L)
+    expect_false(any(grepl("^intensity[.]", names(tab[[binding$long_table]]))))
+    expect_null(tab$contrasts_results)
+    expect_null(tab$per_assay_results)
+    expect_equal(as.data.frame(tab[[binding$long_table]]), as.data.frame(long[, !grepl("^intensity[.]", names(long)), drop = FALSE]))
+    expect_identical(tab$significant_counts, whole$significant_counts)
+    # Every display the tab builds from these rows, on each selection.
+    contrast <- unique(long$comparison)[[1L]]
+    assay <- unique(long$assay)[[1L]]
+    for (selected in c(assay, "Combined", "All")) for (filter in c("all", "significant", "up", "down")) {
+      shown <- function(results) if (identical(omic, "lipidomics")) {
+        buildLipidDaResultsTableRenderWidget(results, contrast, selected, filter, 1, 0, 1000L, reqFn = identity)$x$data
+      } else buildMetabDaResultsTableRenderOutput(results, contrast, selected, filter, 1, 0, 1000L)$x$data
+      expect_identical(shown(tab), shown(whole), info = paste(selected, filter))
+    }
+    stats <- function(results) if (identical(omic, "lipidomics")) buildLipidDaSummaryStatsRenderText(results, contrast, assay, 0.05, reqFn = identity) else
+      buildMetabDaSummaryStatsRenderOutput(results, contrast, assay, 0.05)
+    expect_identical(stats(tab), stats(whole))
+    static <- if (identical(omic, "lipidomics")) generateLipidDAVolcanoStatic else generateMetabDAVolcanoStatic
+    # A plot's data carries every column of its input; the layers draw none of the per-sample ones.
+    plotted <- function(results) {
+      data <- as.data.frame(suppressWarnings(static(results, selected_contrast = contrast, selected_assay = assay, da_q_val_thresh = 1))$data)
+      data[, !grepl("^intensity[.]", names(data)), drop = FALSE]
+    }
+    expect_equal(plotted(tab), plotted(whole))
+    # The heatmap on the tab's rows chooses and draws what the whole results do.
+    generate <- if (identical(omic, "lipidomics")) generateLipidDAHeatmap else generateMetabDAHeatmap
+    state <- owner$current_state
+    with_rows <- function(results) omicsDaResultsWithRowReader(binding, results, list(current_state_name = state), fixture$workflow)
+    drawn <- function(results) suppressWarnings(suppressMessages(generate(with_rows(results), selected_contrast = contrast, selected_assay = assay, top_n = 10L, da_q_val_thresh = 1)))$plot@matrix
+    expect_identical(drawn(tab), drawn(whole))
+    # The download.
+    manifest <- resolveWorkflowStateValue(owner$.context, owner$.context$snapshot$da_results)
+    streamed <- tempfile(fileext = ".csv")
+    writeWorkflowOmicsDaDownload(binding, owner, manifest, tab$download_columns, streamed)
+    written <- tempfile(fileext = ".csv")
+    utils::write.csv(long, written, row.names = FALSE)
+    expect_identical(digest::digest(file = streamed, algo = "sha256"), digest::digest(file = written, algo = "sha256"))
+    # Through each omic's handler builder, the managed list writes that file.
+    tab$write_download <- function(file) writeWorkflowOmicsDaDownload(binding, owner, manifest, tab$download_columns, file)
+    through <- tempfile(fileext = ".csv")
+    if (identical(omic, "lipidomics")) {
+      handler <- buildLipidDaResultsDownloadOutputHandler(tab, buildResultsDownloadHandlerFn = function(daResultsReactive) buildLipidDaResultsDownloadHandler(daResultsReactive, downloadHandlerFactory = function(filename, content) content, reqFn = identity))
+      handler(through)
+    } else {
+      handler <- buildMetabDaResultsDownloadHandler(list(da_results_list = tab), downloadHandler = function(filename, content) content)
+      handler(through)
+    }
+    expect_identical(digest::digest(file = through, algo = "sha256"), digest::digest(file = written, algo = "sha256"))
+  })
+
   test_that(sprintf("KIT-082: the %s worker's filtering metrics, PCA, session file and integration object equal the whole object's", omic), {
     skip_if_not(workflowOwnerCapable())
     omicsReadMocks()
@@ -309,8 +376,13 @@ for (omic in c("lipidomics", "metabolomics")) local({
         next
       }
       expect_length(materialised, 0L)
-      expect_true(all(paste0(case$prefix, c("_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export")) %in% probe$operations),
+      expect_true(all(paste0(case$prefix, c("_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export")) %in% probe$operations),
         info = paste(omic, paste(probe$operations, collapse = " ")))
+      # The tab holds the DA rows without reading a contrast's product; nothing else in the application reads one either.
+      manifest <- resolveWorkflowStateValue(fixture$owner$.context, fixture$owner$.context$snapshot$da_results)
+      contrast_products <- unlist(lapply(manifest$results, function(entry) entry$products$da_contrast$entity_id))
+      expect_gt(length(contrast_products), 0L)
+      expect_length(intersect(probe$hydrated, contrast_products), 0L)
       expect_true(all(probe$statuses == "delivered"), info = omic)
       expect_true(paste0(case$prefix, "_qc_complete") %in% unlist(fixture$owner$getHistory()), info = omic)
       # What the tabs show and write.

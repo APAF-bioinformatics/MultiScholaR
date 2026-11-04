@@ -3,9 +3,9 @@
 test_that("the registry carries the built-in operations with every fact the execution layer reads", {
     names <- workflowOperationNames()
     # KIT-031/032: the lipidomics and metabolomics declarations beside the proteomics operations (KIT-078: their compute steps on the `omics` role).
-    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_composite_figure", "lipid_da_contrast", "lipid_da_output", "lipid_da_publication", "lipid_duplicate_resolution", "lipid_filtering_metrics", "lipid_final_pca", "lipid_integration_export", "lipid_intensity_filter",
+    expect_identical(names, c("DA-contrast-output", "da_publication", "enrichment", "lipid_between_sample_normalisation", "lipid_composite_figure", "lipid_da_contrast", "lipid_da_output", "lipid_da_publication", "lipid_da_tab_results", "lipid_duplicate_resolution", "lipid_filtering_metrics", "lipid_final_pca", "lipid_integration_export", "lipid_intensity_filter",
         "lipid_itsd_normalisation", "lipid_log2", "lipid_norm_complete", "lipid_pearson_pairs", "lipid_pearson_selection",
-        "lipid_qc_figures", "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "lipid_session_export", "lipid_volcano_page", "metab_between_sample_normalisation", "metab_composite_figure", "metab_da_contrast", "metab_da_output", "metab_da_publication", "metab_duplicate_resolution", "metab_filtering_metrics", "metab_final_pca", "metab_integration_export", "metab_intensity_filter",
+        "lipid_qc_figures", "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "lipid_session_export", "lipid_volcano_page", "metab_between_sample_normalisation", "metab_composite_figure", "metab_da_contrast", "metab_da_output", "metab_da_publication", "metab_da_tab_results", "metab_duplicate_resolution", "metab_filtering_metrics", "metab_final_pca", "metab_integration_export", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_figures", "metab_qc_finalize", "metab_reset", "metab_ruv", "metab_session_export", "metab_volcano_page", "minimum_peptides_per_sample",
         "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
@@ -107,7 +107,7 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         # KIT-078: what the omics figures and exports read from the matrix, in the worker.
         "lipid_qc_figures", "lipid_da_publication", "metab_qc_figures", "metab_da_publication",
         # KIT-082: what the tabs read from the whole matrix outside their steps.
-        paste0(rep(c("lipid", "metab"), each = 5L), rep(c("_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"), 2L)))))
+        paste0(rep(c("lipid", "metab"), each = 6L), rep(c("_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"), 2L)))))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
@@ -239,7 +239,7 @@ test_that("every registered worker step's section maps to its operation, and the
         name != "da_publication" && !declares_none(name), workflowOperationNames())
     for (prefix in c("lipid", "metab")) {
         expect_true(all(vapply(paste0(prefix, c("_log2", "_between_sample_normalisation", "_duplicate_resolution", "_pearson_pairs", "_pearson_selection",
-            "_da_contrast", "_qc_figures", "_composite_figure", "_da_publication", "_filtering_metrics", "_final_pca", "_volcano_page",
+            "_da_contrast", "_qc_figures", "_composite_figure", "_da_publication", "_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page",
             "_session_export", "_integration_export")), declares_none, logical(1))), info = prefix)
         expect_false(any(vapply(paste0(prefix, c("_intensity_filter", "_itsd_normalisation", "_ruv")), declares_none, logical(1))), info = prefix)
     }

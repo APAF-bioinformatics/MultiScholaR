@@ -520,6 +520,42 @@ readWorkflowOmicsDaResults <- function(binding, manager, manifest) {
             da_q_val_thresh = manifest$parameters$qvalue, treat_lfc_cutoff = manifest$parameters$lfc, failed_contrasts = failed))
 }
 
+#' What a managed DA tab holds (KIT-082): the kernel's list without its per-sample columns and without the per-assay tables
+#' and fits, which only the worker's volcano and export read. Everything the tab shows comes from these rows, unchanged.
+#' @param binding The omic's binding.
+#' @param results `readWorkflowOmicsDaResults`'s list.
+#' @return The list, with `download_columns`: the whole table's columns, for the download.
+#' @noRd
+omicsDaTabResults <- function(binding, results) {
+    long <- results[[binding$long_table]]
+    keep <- !grepl("^intensity[.]", names(long))
+    results$contrasts_results <- results$per_assay_results <- NULL
+    results[[binding$long_table]] <- long[, keep, drop = FALSE]
+    results$download_columns <- names(long)
+    results
+}
+
+#' Write the DA download a product at a time (KIT-082), the same bytes as `write.csv` on the whole table, with one contrast
+#' and assay held at once.
+#' @param binding The omic's binding.
+#' @param manager The session owner.
+#' @param manifest The accepted DA manifest.
+#' @param columns The whole table's columns.
+#' @param file The download's path.
+#' @noRd
+writeWorkflowOmicsDaDownload <- function(binding, manager, manifest, columns, file) {
+    first <- TRUE
+    for (assay in manifest$assays) for (entry in manifest$results) {
+        if (is.null(entry$products$da_contrast)) next
+        table <- hydrateSavedWorkflowEntity(manager$.context$store, entry$products$da_contrast)$value$assays[[assay]][["table"]]
+        if (is.null(table)) next
+        for (absent in setdiff(columns, names(table))) table[[absent]] <- NA
+        utils::write.table(table[, columns, drop = FALSE], file, sep = ",", dec = ".", qmethod = "double", row.names = FALSE, col.names = first, append = !first)
+        first <- FALSE
+    }
+    invisible(file)
+}
+
 #' Every declaration of one omic, by name. `<prefix>_da_output` is no longer run (KIT-076): it stays registered so v1
 #' records and manifests keep resolving their operation.
 #' @noRd
@@ -1029,7 +1065,7 @@ omicsDaContrastSteps <- function(binding, settings, contrasts) {
 #' @param results The contrast operations' values, by contrast.
 #' @return `list(manifest, results, reference)`, as `runWorkflowOmicsReferenceDaAnalysis`.
 #' @noRd
-acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, contrasts, results) {
+acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, contrasts, results, read_results = TRUE) {
     context <- manager$.context
     metadata <- readWorkflowOmicsMetadata(binding, manager, source)
     contrasts <- as.data.frame(contrasts, stringsAsFactors = FALSE)
@@ -1048,7 +1084,7 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
     snapshot$da_results <- reference
     snapshot$da_dependencies[[reference$entity_id]] <- collectWorkflowNativeReferences(list(source, results))
     publishWorkflowStateHead(context, snapshot)
-    list(manifest = manifest, results = readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)
+    list(manifest = manifest, results = if (read_results) readWorkflowOmicsDaResults(binding, manager, manifest), reference = reference)
 }
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -1162,6 +1198,17 @@ computeWorkflowOmicsFilteringMetricsAction <- function(manager, request, variant
 #' The final-QC PCA of the request's state (KIT-082), saved as the drawn grobs: a plot's aesthetics keep the frames that built
 #' it, which hold the state. A failure is the tab's to show, as it is in process.
 #' @noRd
+computeWorkflowOmicsDaTabResultsAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    context <- manager$.context
+    if (is.null(context$snapshot$da_results)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
+    manifest <- resolveWorkflowStateValue(context, context$snapshot$da_results)
+    tab <- omicsDaTabResults(binding, readWorkflowOmicsDaResults(binding, manager, manifest))
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source,
+        display = list(tab = saveWorkflowStateValue(context, tab, "omics-da-tab", codec = "rds")))
+}
+
 computeWorkflowOmicsFinalPcaAction <- function(manager, request, variant) {
     binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
     source <- request$input_references$state
