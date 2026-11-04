@@ -182,7 +182,7 @@ kitCases <- function(bindings, stage) {
         build
     }
     journey_case <- function(id, role, rep, build_key, corpus_key, fault, selector, record = TRUE, stop_after = NULL,
-        route = "DIA", oracles = NULL, normalisation = NULL) {
+        route = "DIA", oracles = NULL, normalisation = NULL, driver_settings = NULL) {
         build <- build_of(build_key)
         corpus <- bindings$corpora[[corpus_key]]
         if (is.null(corpus)) stop("corpus ", corpus_key, " is not bound")
@@ -207,8 +207,9 @@ kitCases <- function(bindings, stage) {
                     metabolomics = bindings$harness$step_map_metab_sha256, bindings$step_map_sha256)),
                 if (!is.null(stop_after)) list(stop_after = stop_after),
                 if (!identical(route, "DIA")) list(route = route, oracles = oracles),
-                if (!is.null(normalisation)) list(normalisation = normalisation)), algo = "sha256"),
-            selector = selector, normalisation = normalisation)
+                if (!is.null(normalisation)) list(normalisation = normalisation),
+                if (!is.null(driver_settings)) list(driver_settings = driver_settings)), algo = "sha256"),
+            selector = selector, normalisation = normalisation, driver_settings = driver_settings)
     }
     operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector,
         variant = NULL, oracle = NULL, parameters = NULL) {
@@ -305,7 +306,8 @@ kitCases <- function(bindings, stage) {
             # KIT-053: a ticket may bind the normalisation tab's settings for its route (the limpa route's RUV mode).
             return(list(journey_case("candidate-1", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
                 paste0("kit:journey-", ticket, ":candidate:1"), record = FALSE, stop_after = spec$stop_after,
-                route = spec$route %||% "DIA", oracles = spec$oracles, normalisation = spec$normalisation)))
+                route = spec$route %||% "DIA", oracles = spec$oracles, normalisation = spec$normalisation,
+                driver_settings = spec$driver_settings)))
         }
         if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
         record <- isTRUE(spec$record)

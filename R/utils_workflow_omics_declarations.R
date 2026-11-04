@@ -524,14 +524,14 @@ readWorkflowOmicsDaResults <- function(binding, manager, manifest) {
 #' and fits, which only the worker's volcano and export read. Everything the tab shows comes from these rows, unchanged.
 #' @param binding The omic's binding.
 #' @param results `readWorkflowOmicsDaResults`'s list.
-#' @return The list, with `download_columns`: the whole table's columns, for the download.
+#' @return The list, with `download_columns`: the whole table's column types by name, for the download.
 #' @noRd
 omicsDaTabResults <- function(binding, results) {
     long <- results[[binding$long_table]]
     keep <- !grepl("^intensity[.]", names(long))
     results$contrasts_results <- results$per_assay_results <- NULL
     results[[binding$long_table]] <- long[, keep, drop = FALSE]
-    results$download_columns <- names(long)
+    results$download_columns <- vapply(long, typeof, character(1))
     results
 }
 
@@ -540,7 +540,8 @@ omicsDaTabResults <- function(binding, results) {
 #' @param binding The omic's binding.
 #' @param manager The session owner.
 #' @param manifest The accepted DA manifest.
-#' @param columns The whole table's columns.
+#' @param columns The whole table's column types by name: `bind_rows` gives every piece of a column one type, and the file's
+#'   numbers are written by type.
 #' @param file The download's path.
 #' @noRd
 writeWorkflowOmicsDaDownload <- function(binding, manager, manifest, columns, file) {
@@ -548,11 +549,15 @@ writeWorkflowOmicsDaDownload <- function(binding, manager, manifest, columns, fi
     for (assay in manifest$assays) for (entry in manifest$results) {
         if (is.null(entry$products$da_contrast)) next
         table <- hydrateSavedWorkflowEntity(manager$.context$store, entry$products$da_contrast)$value$assays[[assay]][["table"]]
-        if (is.null(table)) next
-        for (absent in setdiff(columns, names(table))) table[[absent]] <- NA
-        utils::write.table(table[, columns, drop = FALSE], file, sep = ",", dec = ".", qmethod = "double", row.names = FALSE, col.names = first, append = !first)
+        if (is.null(table) || !nrow(table)) next
+        for (absent in setdiff(names(columns), names(table))) table[[absent]] <- NA
+        table <- as.data.frame(table)[, names(columns), drop = FALSE]
+        for (column in names(columns)) storage.mode(table[[column]]) <- columns[[column]]
+        utils::write.table(table, file, sep = ",", dec = ".", qmethod = "double", row.names = FALSE, col.names = first, append = !first)
         first <- FALSE
     }
+    # No rows anywhere: the header, as `write.csv` writes for an empty table.
+    if (first) writeLines(paste0('"', gsub('"', '""', names(columns)), '"', collapse = ","), file)
     invisible(file)
 }
 

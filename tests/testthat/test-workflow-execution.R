@@ -28,18 +28,40 @@ awaitExecutionTest <- function(owner, until_started = FALSE, seconds = 70) {
     }
 }
 
-test_that("KIT-082: the monitor's read of a worker that has just gone is no worker, and a counter with no number still fails closed", {
+test_that("KIT-082: one read decides the monitor's view of a worker: nothing to read is no worker, and a line with no number fails closed", {
     path <- tempfile("memory.current-")
-    # The window: the worker's control group goes between any check and this read.
-    expect_null(suppressWarnings(workflowWorkerMemory(path)))
+    expect_null(workflowWorkerMemory(path))
+    file.create(path)
+    expect_null(workflowWorkerMemory(path))
+    writeLines("", path)
+    expect_null(workflowWorkerMemory(path))
     writeLines("4096", path)
     expect_identical(workflowWorkerMemory(path), 4096)
     writeLines("not a number", path)
     expect_error(workflowWorkerMemory(path), class = "workflow_execution_unsupported")
-    # The worker goes during the read itself.
-    unlink(path)
-    testthat::local_mocked_bindings(workflowMemoryCounter = function(path) cli::cli_abort("memory observation is unavailable", class = "workflow_execution_unsupported"), .package = "MultiScholaR")
-    expect_null(workflowWorkerMemory(path))
+})
+
+test_that("KIT-082: the monitor's read survives real units starting and stopping", {
+    skip_on_cran()
+    skip_if_not(nzchar(Sys.which("systemd-run")) && nzchar(Sys.which("systemctl")))
+    manager <- suppressWarnings(system2("systemctl", c("--user", "show", "-p", "ControlGroup", "--value"), stdout = TRUE, stderr = FALSE))
+    skip_if_not(length(manager) == 1L && nzchar(manager))
+    seen <- list(number = 0L, none = 0L)
+    for (index in seq_len(6L)) {
+        unit <- sprintf("multischolar-kit082-monitor-%d-%d", Sys.getpid(), index)
+        path <- file.path("/sys/fs/cgroup", sub("^/", "", manager), "app.slice", paste0(unit, ".service"), "memory.current")
+        # The registration comes first, as `workflowMonitorMain` sees it: reading starts before the unit exists.
+        expect_null(workflowWorkerMemory(path))
+        status <- suppressWarnings(system2("systemd-run", c("--user", "--quiet", "--collect", paste0("--unit=", unit), "sleep", "0.2"), stdout = FALSE, stderr = FALSE))
+        skip_if_not(identical(status, 0L))
+        until <- Sys.time() + 1
+        while (Sys.time() < until) {
+            value <- workflowWorkerMemory(path)
+            if (is.null(value)) seen$none <- seen$none + 1L else seen$number <- seen$number + 1L
+        }
+    }
+    expect_gt(seen$number, 0L)
+    expect_gt(seen$none, 0L)
 })
 
 test_that("qualification decisions match frozen cases and reject malformed bindings", {

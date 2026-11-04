@@ -177,13 +177,19 @@ registerLipidNormItsdTableOutputs <- function(
         lipid_id_col <- current_s4@lipid_id_column
         annotation_cols <- current_s4@annotation_id_column
         rm(current_s4)
-        stored_tables <- readWorkflowOmicsItsdTables(lipidomicsDeclarationBinding, workflowData$state_manager, normData$assay_names, function(page) {
+        stored_tables <- tryCatch(readWorkflowOmicsItsdTables(lipidomicsDeclarationBinding, workflowData$state_manager, normData$assay_names, function(page) {
             buildLipidItsdSelectionTableFn(
                 assay_data = page
                 , lipid_id_col = lipid_id_col
                 , annotation_cols = annotation_cols
             )
+        }), error = function(e) {
+            logger::log_warn(paste("Could not read the ITSD candidate tables:", conditionMessage(e)))
+            NULL
         })
+        if (is.null(stored_tables)) {
+            return()
+        }
         selection_tables <- lapply(stats::setNames(normData$assay_names, normData$assay_names), \(assay_name) stored_tables[[assay_name]])
         # KIT-078: the shown rows' feature ids, so that a selection resolves without the matrix on a managed run.
         normData$itsd_candidate_ids <- lapply(selection_tables, function(table) table$feature_id)

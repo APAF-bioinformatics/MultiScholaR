@@ -81,6 +81,8 @@ startWorkflowManagedSessionExport <- function(manager, runner, workflowData, nor
     pending <- context$export_pending
     if (!is.null(pending) && identical(pending$generation, context$head$entity_id) && identical(pending$root, root) && !is.null(pending$metadata_reference) &&
         file.exists(file.path(workflowExportPaths(root, pending$request_id)$request_dir, "journal.json"))) return(publish())
+    # A retry continues the first request: nothing is collected again.
+    if (runner$retrying()) return(runner$run(list()))
     request <- newWorkflowOwnedExportRequest(context, root, prefix)
     session <- withWorkflowStateScope(manager, function() {
         session_data <- collectFn(workflowData = workflowData, normData = normData, input = input)

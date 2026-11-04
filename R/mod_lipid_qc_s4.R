@@ -562,7 +562,13 @@ runLipidQcS4FinalizeWorkflow <- function(
                     , setFilterPlotFn = filterPlot
                     , metrics = readWorkflowOmicsFilteringMetrics(workflowData$state_manager, result)
                 )
-            })), done = finish, failed = function(error) reportFinalizeErrorFn(error = error))
+            })),
+                # In process a tracking figure's failure leaves the tab to complete, with no figure; the state is committed either way.
+                done = function() tryCatch(finish(), error = function(error) reportFinalizeErrorFn(error = error)),
+                failed = function(error) {
+                    filterPlot(NULL)
+                    tryCatch(finish(), error = function(error) reportFinalizeErrorFn(error = error))
+                })
             return(invisible(NULL))
         }
 

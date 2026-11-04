@@ -19,11 +19,12 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         if (is.function(action$before)) action$before()
         step$apply(action$parameters, action$operation, action$context)
     }
-    begin <- function(actions, done, failed) {
+    begin <- function(actions, done, failed, dropped = NULL) {
         run$actions <- actions
         run$index <- 1L
         run$done <- done
         run$failed <- failed
+        run$dropped <- dropped
         start()
     }
     delivered <- function() {
@@ -36,7 +37,7 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         queued <- run$queued
         if (length(queued) && is.null(shiny::isolate(step$active()))) {
             run$queued <- queued[-1L]
-            begin(queued[[1L]]$actions, queued[[1L]]$done, queued[[1L]]$failed)
+            begin(queued[[1L]]$actions, queued[[1L]]$done, queued[[1L]]$failed, queued[[1L]]$dropped)
         }
     }
     step <- installWorkflowManagedStep(session, NULL, workflow_data, NULL,
@@ -46,30 +47,45 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
                 queued <- run$queued
                 run$queued <- NULL
                 if (is.function(run$failed)) run$failed(error)
-                # KIT-082: what was waiting is dropped and told, so that a display does not wait for ever.
-                for (waiting in queued) if (is.function(waiting$failed)) waiting$failed(error)
+                # KIT-082: what was waiting is dropped and told, so that a display does not wait for ever. The failure is not
+                # theirs, so a display asks again (`dropped`).
+                for (waiting in queued) {
+                    if (is.function(waiting$dropped)) waiting$dropped() else if (is.function(waiting$failed)) waiting$failed(error)
+                }
             }),
         deliver = function(result) shiny::isolate(run$actions[[run$index]]$deliver(result)),
         read_result = readManagedOmicsResult)
     runner$step <- step
     #' Run a tab's actions in order: `done()` after the last, `failed(error)` if one fails (the step has reported it).
-    runner$run <- function(actions, done = NULL, failed = NULL) {
-        # A publication that failed is retried from the action it stopped at; its science is never recomputed.
-        if (!is.null(shiny::isolate(step$pending())) && length(run$actions)) return(start())
+    #' `dropped()`, when given, replaces `failed` if another action's failure drops these before they start.
+    runner$run <- function(actions, done = NULL, failed = NULL, dropped = NULL) {
+        waiting <- list(list(actions = actions, done = done, failed = failed, dropped = dropped))
+        if (runner$retrying()) {
+            # A publication that failed is retried from the action it stopped at; its science is never recomputed. The same
+            # actions are that retry, and the first request's callbacks finish it. Anything else waits its turn.
+            operations <- function(list) vapply(list, function(action) action$operation, character(1))
+            if (length(actions) && !identical(operations(actions), operations(run$actions))) run$queued <- c(run$queued, waiting)
+            return(start())
+        }
         # The tab's button can be pressed while another tab's action runs (the pre-normalisation figures, opening the tab).
         if (!is.null(shiny::isolate(step$active()))) {
-            run$queued <- c(run$queued, list(list(actions = actions, done = done, failed = failed)))
+            run$queued <- c(run$queued, waiting)
             return(invisible(NULL))
         }
-        begin(actions, done, failed)
+        begin(actions, done, failed, dropped)
     }
+    #' A failed publication waiting for its retry.
+    runner$retrying <- function() !is.null(shiny::isolate(step$pending())) && length(run$actions) > 0L
     runner$progress <- function(message) {
+        # A retry runs under the first request's progress, which its callbacks close.
+        if (runner$retrying()) return(list(set = function(...) invisible(NULL), inc = function(...) invisible(NULL), close = function(...) invisible(NULL)))
         progress <- shiny::Progress$new(session, min = 0, max = 1)
         progress$set(message = message, value = 0)
         progress
     }
     runner$displays <- shiny::reactiveValues()
     runner$requested <- character()
+    runner$failures <- list()
     session$userData$workflow_omics_actions[[omic_type]] <- runner
     runner
 }
@@ -83,14 +99,31 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
 #' @return The entry, or NULL while the worker has not delivered it. A failure gives `list(message =)`.
 #' @noRd
 workflowOmicsDisplay <- function(runner, key, operation, parameters, read = function(result) result$display) {
+    # A failed or dropped request brings the render back through this.
+    runner$displays[[".asked"]]
     entry <- runner$displays[[key]]
     if (!is.null(entry)) return(entry)
-    # A publication waiting for its retry takes the next request; the render comes back when it clears.
-    if (!is.null(runner$step$pending())) return(NULL)
+    # A failure is shown once: the next time the render runs it asks again, as an in-process render would compute again.
+    failure <- runner$failures[[key]]
+    if (!is.null(failure)) {
+        runner$failures[[key]] <- NULL
+        return(list(message = failure))
+    }
+    # The render comes back when the retry clears it.
+    if (!is.null(runner$step$pending())) {
+        return(list(message = "An earlier step's files could not be written. Press that step's button again; this display follows."))
+    }
     if (key %in% runner$requested) return(NULL)
     runner$requested <- c(runner$requested, key)
+    again <- function() shiny::isolate({
+        runner$requested <- setdiff(runner$requested, key)
+        runner$displays[[".asked"]] <- (runner$displays[[".asked"]] %||% 0L) + 1L
+    })
     shiny::isolate(runner$run(list(omicsManagedProduct(operation, parameters, function(result) runner$displays[[key]] <- read(result))),
-        failed = function(error) shiny::isolate(runner$displays[[key]] <- list(message = conditionMessage(error)))))
+        failed = function(error) {
+            runner$failures[[key]] <- conditionMessage(error)
+            again()
+        }, dropped = again))
     NULL
 }
 
@@ -299,8 +332,10 @@ runWorkflowOmicsManagedCorrelation <- function(binding, runner, group, threshold
 #' @param contrasts The contrasts table.
 #' @param deliver `function(results, export)`: the kernel's list and the export's outcome (`list(success, message)`).
 #' @param failed `function(error)` for a failure before the results exist.
+#' @param invalidate `function()` clearing the tab's results: called when the new manifest is on the head but its rows could
+#'   not be read, so that the tab shows no results rather than the previous run's beside this run's volcano.
 #' @noRd
-runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings, contrasts, deliver, failed) {
+runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings, contrasts, deliver, failed, invalidate = NULL) {
     # A worker's input is the head; a tab left on an earlier state reloads it (in process the DA could run on either).
     if (!identical(source, getWorkflowStateReference(manager))) {
         stop("the session has moved on from the state this tab loaded; load the session again", call. = FALSE)
@@ -324,7 +359,11 @@ runWorkflowOmicsManagedDa <- function(binding, runner, manager, source, settings
             omicsManagedProduct(paste0(binding$prefix, "_da_publication"), list(), function(result) export <<- result$display)),
             done = function() finish(export),
             # The science is accepted; with the tab's rows the tab warns about the files, as it does in process.
-            failed = function(error) if (is.null(tab)) failed(error) else finish(list(success = FALSE, message = conditionMessage(error))))
+            failed = function(error) {
+                if (!is.null(tab)) return(finish(list(success = FALSE, message = conditionMessage(error))))
+                if (is.function(invalidate)) invalidate()
+                failed(error)
+            })
     }, failed = failed)
     invisible(TRUE)
 }

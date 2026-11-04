@@ -521,7 +521,10 @@ test_that("registerLipidDaResultsDownloadOutput keeps the output registration ha
     )
 
     expect_identical(result, output)
-    expect_identical(captured$daResultsList, da_data$da_results_list)
+    # KIT-082: a function, read at each click, so that a second run's results are the ones downloaded.
+    expect_identical(captured$readResultsFn(), da_data$da_results_list)
+    da_data$da_results_list <- list(da_lipids_long = data.frame(marker = "second run", stringsAsFactors = FALSE))
+    expect_identical(captured$readResultsFn(), da_data$da_results_list)
     expect_s3_class(output$download_da_results, "mock_download_handler")
 })
 

@@ -166,7 +166,7 @@ for (omic in c("lipidomics", "metabolomics")) {
     history_before <- owner$getHistory()
     fixture <- list(owner = owner, workflow = workflow, source_dir = source_dir, paths = list(source_dir = source_dir))
     controller <- omicsWorkerController(fixture)
-    runner <- list(progress = function(message) list(close = function() invisible(NULL)), run = function(actions, done = NULL, failed = NULL) {
+    runner <- list(retrying = function() FALSE, progress = function(message) list(close = function() invisible(NULL)), run = function(actions, done = NULL, failed = NULL) {
       for (action in actions) {
         result <- omicsWorkerAction(fixture, controller, action$operation, action$parameters, action$context)
         action$deliver(result)

@@ -30,7 +30,7 @@ omicsSyncRunner <- function(fixture, controller, calls = new.env()) {
     }
     if (is.function(done)) done()
     invisible(NULL)
-  }, progress = function(message) list(close = function() invisible(NULL)))
+  }, retrying = function() FALSE, progress = function(message) list(close = function() invisible(NULL)))
 }
 
 omicsReadMocks <- function(env = parent.frame()) testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
@@ -200,6 +200,55 @@ for (omic in c("lipidomics", "metabolomics")) local({
       handler(through)
     }
     expect_identical(digest::digest(file = through, algo = "sha256"), digest::digest(file = written, algo = "sha256"))
+  })
+
+  test_that(sprintf("KIT-082: a managed %s QC finalise completes when its tracking figure fails, as in process, and forwards the worker's metrics", omic), {
+    finalize <- if (identical(omic, "lipidomics")) runLipidQcS4FinalizeWorkflow else runMetabQcS4FinalizeWorkflow
+    tracking <- if (identical(omic, "lipidomics")) updateLipidQcS4TrackingPlot else updateMetabQcS4TrackingPlot
+    runner <- list(run = function(actions, done = NULL, failed = NULL) failed(simpleError("the worker failed")))
+    testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) runner, .package = "MultiScholaR")
+    seen <- new.env()
+    finalize(list(state_manager = "manager"), omic, function(plot) seen$plot <- list(plot), "output",
+      getFinalizeStateFn = function(stateManager) "state", validateFinalizeStateFn = function(currentS4) currentS4,
+      saveCompletedStateFn = function(...) NULL, completeTabStatusFn = function(workflowData) seen$complete <- TRUE,
+      getFinalizeHistoryFn = function(stateManager) "history", reportFinalizeSuccessFn = function(...) seen$success <- TRUE,
+      reportFinalizeErrorFn = function(error) seen$error <- conditionMessage(error))
+    expect_true(seen$complete)
+    expect_true(seen$success)
+    expect_null(seen$error)
+    expect_identical(seen$plot, list(NULL))
+    # A failure in the tab's own completion still reaches the tab's report, as the in-process path's `tryCatch` does.
+    seen <- new.env()
+    finalize(list(state_manager = "manager"), omic, function(plot) NULL, "output",
+      getFinalizeStateFn = function(stateManager) "state", validateFinalizeStateFn = function(currentS4) currentS4,
+      saveCompletedStateFn = function(...) NULL, completeTabStatusFn = function(workflowData) stop("no status"),
+      getFinalizeHistoryFn = function(stateManager) "history", reportFinalizeSuccessFn = function(...) seen$success <- TRUE,
+      reportFinalizeErrorFn = function(error) seen$error <- conditionMessage(error))
+    expect_identical(seen$error, "no status")
+    expect_null(seen$success)
+    # The metrics argument reaches the kernel, with no object.
+    arguments <- NULL
+    updater <- function(...) { arguments <<- list(...); "plot" }
+    if (identical(omic, "lipidomics")) tracking(NULL, omic, function(plot) NULL, updateLipidFilteringFn = updater, metrics = "metrics") else
+      tracking(NULL, omic, function(plot) NULL, updateMetaboliteFilteringFn = updater, metrics = "metrics")
+    expect_identical(arguments$metrics, "metrics")
+    expect_null(arguments$theObject)
+  })
+
+  test_that(sprintf("KIT-082: a store read error building the %s ITSD tables leaves the session running", omic), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- case$owner_of(withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    assays <- names(methods::slot(fixture$object, binding$data_slot))
+    testthat::local_mocked_bindings(readWorkflowOmicsItsdTables = function(...) stop("the store could not be read"), .package = "MultiScholaR")
+    output <- new.env()
+    norm <- list(assay_names = assays)
+    if (identical(omic, "lipidomics")) {
+      expect_no_error(suppressWarnings(registerLipidNormItsdTableOutputs(output, fixture$workflow, norm, observeFn = function(code) eval(substitute(code), parent.frame()), reqFn = identity)))
+    } else {
+      expect_no_error(suppressWarnings(runMetabNormItsdSelectionTableObserverShell(norm, fixture$workflow, output, reqFn = identity)))
+    }
+    expect_length(ls(output), 0L)
   })
 
   test_that(sprintf("KIT-082: the %s worker's filtering metrics, PCA, session file and integration object equal the whole object's", omic), {
@@ -378,11 +427,21 @@ for (omic in c("lipidomics", "metabolomics")) local({
       expect_length(materialised, 0L)
       expect_true(all(paste0(case$prefix, c("_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export")) %in% probe$operations),
         info = paste(omic, paste(probe$operations, collapse = " ")))
-      # The tab holds the DA rows without reading a contrast's product; nothing else in the application reads one either.
+      # The tab holds the DA rows without reading a contrast's product; only the download, on the user's click, reads them.
       manifest <- resolveWorkflowStateValue(fixture$owner$.context, fixture$owner$.context$snapshot$da_results)
       contrast_products <- unlist(lapply(manifest$results, function(entry) entry$products$da_contrast$entity_id))
       expect_gt(length(contrast_products), 0L)
       expect_length(intersect(probe$hydrated, contrast_products), 0L)
+      columns <- c(id = "character")
+      streamed <- tempfile(fileext = ".csv")
+      long <- readWorkflowOmicsDaResults(binding, fixture$owner, manifest)[[binding$long_table]]
+      probe$hydrated <- NULL
+      writeWorkflowOmicsDaDownload(binding, fixture$owner, manifest, vapply(long, typeof, character(1)), streamed)
+      expect_gt(length(intersect(probe$hydrated, contrast_products)), 0L)
+      # A read of the store keeps the rows or the column it was asked for, never the table: the counter above sees only whole reads.
+      whole <- max(vapply(methods::slot(fixture$object, binding$data_slot), function(table) nrow(table) * ncol(table), integer(1)))
+      expect_gt(length(probe$kept_cells), 0L)
+      expect_lt(max(probe$kept_cells), whole)
       expect_true(all(probe$statuses == "delivered"), info = omic)
       expect_true(paste0(case$prefix, "_qc_complete") %in% unlist(fixture$owner$getHistory()), info = omic)
       # What the tabs show and write.
@@ -446,7 +505,145 @@ test_that("KIT-082: the runner runs what waits in order, and tells what waits wh
     hook$fail <- TRUE
     session$elapse(100)
     session$flushReact()
-    expect_match(shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list()))$message, "managed action ended")
+    # The failure was not this display's: it asks again, and only its own failure is its message, shown once.
+    expect_null(shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list())))
+    expect_false(is.null(shiny::isolate(runner$displays[[".asked"]])))
+    session$elapse(1000)
+    session$flushReact()
+    # Read once into a variable: a failure is shown once, and `expect_match` evaluates its argument twice.
+    shown <- shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list()))
+    expect_match(shown$message, "managed action ended")
+    hook$fail <- FALSE
+    expect_null(shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list())))
   }))))
   expect_identical(told, c("running", "waiting"))
+})
+
+test_that("KIT-082: a failed publication's retry resumes the stopped action, keeps the first request's callbacks and lets other work wait", {
+  applied <- character()
+  pending <- shiny::reactiveVal(NULL)
+  active <- shiny::reactiveVal(NULL)
+  callbacks <- NULL
+  testthat::local_mocked_bindings(workflowSessionApplication = function(session) "application",
+    installWorkflowManagedStep = function(session, a, workflow_data, b, publication, ui, deliver, read_result) {
+      callbacks <<- list(ui = ui, deliver = deliver)
+      list(apply = function(parameters, operation, context) {
+        applied <<- c(applied, operation)
+        active(operation)
+      }, active = active, pending = pending)
+    }, .package = "MultiScholaR")
+  session <- shiny::MockShinySession$new()
+  runner <- installWorkflowOmicsActions(session, list(), "lipidomics", "label", list())
+  first_done <- 0L
+  second_done <- 0L
+  action <- function(operation) omicsManagedProduct(operation, list(), function(result) NULL)
+  runner$run(list(action("first")), done = function() first_done <<- first_done + 1L)
+  expect_identical(applied, "first")
+  expect_false(runner$retrying())
+  shiny::isolate(pending("the publication failed"))
+  expect_true(runner$retrying())
+  # The same actions are the retry. Nothing else begins, and its progress has nothing left open.
+  shown <- runner$progress("Exporting")
+  expect_null(shown$close())
+  runner$run(list(action("first")), done = function() second_done <<- second_done + 1L)
+  expect_identical(applied, c("first", "first"))
+  # A display during the wait says so, and asks for nothing.
+  displays <- shiny::isolate(workflowOmicsDisplay(runner, "key", "other", list()))
+  expect_match(displays$message, "Press that step's button again")
+  expect_identical(applied, c("first", "first"))
+  # Other work takes its turn after the retry.
+  other_done <- 0L
+  runner$run(list(action("other")), done = function() other_done <<- other_done + 1L)
+  expect_identical(applied, c("first", "first", "first"))
+  shiny::isolate({
+    pending(NULL)
+    active(NULL)
+  })
+  callbacks$ui$delivered()
+  expect_identical(first_done, 1L)
+  expect_identical(second_done, 0L)
+  expect_identical(applied, c("first", "first", "first", "other"))
+  shiny::isolate(active(NULL))
+  callbacks$ui$delivered()
+  expect_identical(other_done, 1L)
+})
+
+test_that("KIT-082: the DA download's writer handles an empty piece, a type that differs between pieces, and no rows at all", {
+  pieces <- list(list(LCMS_Pos = data.frame(id = "a", n = 100000L, stringsAsFactors = FALSE)),
+    list(LCMS_Pos = data.frame(id = character(), n = integer(), stringsAsFactors = FALSE), LCMS_Neg = data.frame(id = "b", n = 100000, extra = 2.5, stringsAsFactors = FALSE)))
+  manifest <- list(assays = c("LCMS_Pos", "LCMS_Neg"), results = list(list(products = list(da_contrast = 1L)), list(products = list(da_contrast = 2L)), list(products = list())))
+  manager <- list(.context = list(store = "store"))
+  testthat::local_mocked_bindings(hydrateSavedWorkflowEntity = function(store, reference, ...) {
+    list(value = list(assays = lapply(pieces[[reference]], function(table) list(table = table))))
+  }, .package = "MultiScholaR")
+  whole <- dplyr::bind_rows(pieces[[1L]]$LCMS_Pos, pieces[[2L]]$LCMS_Pos, pieces[[2L]]$LCMS_Neg)
+  streamed <- tempfile(fileext = ".csv")
+  writeWorkflowOmicsDaDownload(NULL, manager, manifest, vapply(whole, typeof, character(1)), streamed)
+  written <- tempfile(fileext = ".csv")
+  utils::write.csv(whole, written, row.names = FALSE)
+  expect_identical(readLines(streamed), readLines(written))
+  # No rows anywhere: the header alone.
+  pieces[[1L]]$LCMS_Pos <- pieces[[1L]]$LCMS_Pos[0L, ]
+  pieces[[2L]]$LCMS_Neg <- pieces[[2L]]$LCMS_Neg[0L, ]
+  empty <- dplyr::bind_rows(pieces[[1L]]$LCMS_Pos, pieces[[2L]]$LCMS_Neg)
+  streamed <- tempfile(fileext = ".csv")
+  writeWorkflowOmicsDaDownload(NULL, manager, manifest, vapply(empty, typeof, character(1)), streamed)
+  written <- tempfile(fileext = ".csv")
+  utils::write.csv(empty, written, row.names = FALSE)
+  expect_identical(readLines(streamed), readLines(written))
+})
+
+test_that("KIT-082: the lipid download serves each run's results through the registered handler, as metabolomics does", {
+  da <- new.env()
+  da$da_results_list <- NULL
+  output <- new.env()
+  contents <- NULL
+  registerLipidDaResultsDownloadOutput(output, da, buildResultsDownloadOutputHandlerFn = function(...) {
+    buildLipidDaResultsDownloadOutputHandler(..., buildResultsDownloadHandlerFn = function(daResultsReactive) daResultsReactive)
+  })
+  # A download before any run does not fix the answer.
+  expect_null(output$download_da_results())
+  da$da_results_list <- list(da_lipids_long = data.frame(run = 1L))
+  expect_identical(output$download_da_results()$run, 1L)
+  da$da_results_list <- list(da_lipids_long = data.frame(run = 2L))
+  expect_identical(output$download_da_results()$run, 2L)
+  writer <- function(file) NULL
+  da$da_results_list <- list(da_lipids_long = data.frame(run = 3L), write_download = writer)
+  expect_identical(output$download_da_results(), writer)
+})
+
+test_that("KIT-082: a managed DA whose tab rows cannot be read clears the tab; once it has them a failed publication only warns", {
+  manifest <- list(accepted = TRUE)
+  sequence <- NULL
+  runner <- list(run = function(actions, done = NULL, failed = NULL) {
+    if (is.null(sequence)) {
+      sequence <<- "contrasts"
+      return(done())
+    }
+    sequence <<- list(actions = actions, done = done, failed = failed)
+  })
+  testthat::local_mocked_bindings(getWorkflowStateReference = function(manager, ...) "source", omicsDaContrastSteps = function(...) list(),
+    withWorkflowStateScope = function(manager, code) code(), acceptWorkflowOmicsDaManifest = function(...) list(manifest = manifest),
+    resolveWorkflowStateValue = function(context, reference) list(download_columns = c(id = "character"), rows = reference), .package = "MultiScholaR")
+  managed <- function() {
+    sequence <<- NULL
+    told <- new.env()
+    runWorkflowOmicsManagedDa(lipidomicsDeclarationBinding, runner, list(.context = list()), "source", list(), NULL,
+      deliver = function(results, outcome) told$delivered <- list(results = results, outcome = outcome),
+      failed = function(error) told$failed <- conditionMessage(error), invalidate = function() told$cleared <- TRUE)
+    told
+  }
+  told <- managed()
+  sequence$failed(simpleError("the tab's read failed"))
+  expect_true(told$cleared)
+  expect_identical(told$failed, "the tab's read failed")
+  expect_null(told$delivered)
+  told <- managed()
+  sequence$actions[[1L]]$deliver(list(display = list(tab = "reference")))
+  sequence$failed(simpleError("the files failed"))
+  expect_null(told$cleared)
+  expect_null(told$failed)
+  expect_false(told$delivered$outcome$success)
+  expect_identical(told$delivered$results$rows, "reference")
+  expect_true(is.function(told$delivered$results$write_download))
 })

@@ -1,0 +1,2 @@
+kit-journey-082l.rev12a: lipidomics, 1 contrasts, 365 rows x 41 columns; whole read 0.37 MiB; the tab's rows 0.08 MiB, 17 columns
+kit-journey-082m.rev11: metabolomics, 1 contrasts, 564 rows x 41 columns; whole read 0.59 MiB; the tab's rows 0.12 MiB, 17 columns

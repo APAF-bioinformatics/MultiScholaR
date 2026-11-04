@@ -1,3 +1,4 @@
+# Provenance, added 2026-11-04 from the run order (audit A-11): the first two lines ran on kit_082 = UhTReX and the third on cSzZKS, all in process, all metabolomics, with other work on the host. Elapsed seconds and the largest single process's RSS. Sizing only.
 trial_metab_screen_50_5000 samples 200 features/assay 5000 corpus 16M exit 0 RSS_KB 2127848 ELAPSED 531
 trial_metab_screen_100_10000 samples 400 features/assay 10000 corpus 61M exit 124 RSS_KB 5243640 ELAPSED 3600
 trial_metab_screen_50_20000 samples 200 features/assay 20000 corpus 61M exit 0 RSS_KB 5241684 ELAPSED 2795

@@ -313,6 +313,8 @@ tryCatch({
             if (!is.null(corpus_spec$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, corpus_spec$normalisation)
             # KIT-053: a ticket may bind its route's normalisation settings (the limpa route's RUV mode); part of the case binding.
             if (!is.null(case$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, case$normalisation)
+            # KIT-082: a ticket may bind what the driver types: its members made to fail, proving a wait can.
+            if (!is.null(case$driver_settings)) journey <- utils::modifyList(journey, case$driver_settings)
             # KIT-068: an omics lifecycle case carries its route's fault; the DIA lifecycle keeps the bound one.
             fault <- if (case$expect_failure) case$fault_spec %||% bindings$lifecycle$fault else NULL
             # The browser driver runs in its own process per member (correction 3), outside the slice.

@@ -542,6 +542,25 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
     notify <- function(input_id, text) kitClickAndWaitText(h, driver, input_id, ".shiny-notification", text)
     open_tab <- function(value) h$checkpointSetInput(driver, tabs, value)
     settings <- journey$normalisation
+    # KIT-082: a display is observed by what it shows. `settled` ends a wait for something that will not come: the session has
+    # been idle for 20 s, which a worker's display never relies on.
+    settled <- paste0("(()=>{const busy=document.documentElement.classList.contains('shiny-busy');",
+        "if(busy||!window.__kitSettled)window.__kitSettled=Date.now();return Date.now()-window.__kitSettled>20000;})()")
+    wait_settled <- function(found) {
+        driver$get_js("window.__kitSettled=0;true")
+        h$checkpointWaitForJs(driver, sprintf("(%s)||(%s)", found, settled), timeout = h$checkpointWaitBudget())
+        isTRUE(driver$get_js(found))
+    }
+    has_data_row <- function(selector) sprintf("Boolean(document.querySelector(%s))",
+        jsonlite::toJSON(paste(selector, "tbody tr td:not(.dataTables_empty)"), auto_unbox = TRUE))
+    # The share of an output's image that is not blank, or -1 with no loaded image: an empty plot is still an image.
+    ink <- function(output) sprintf(paste0("(function(){const el=document.getElementById(%s);const img=el&&el.querySelector('img');",
+        "if(!img||!img.complete||!img.naturalWidth)return -1;const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;",
+        "const x=c.getContext('2d');x.drawImage(img,0,0);const d=x.getImageData(0,0,c.width,c.height).data;let n=0;",
+        "for(let i=0;i<d.length;i+=4)if(d[i+3]>0&&(d[i]<245||d[i+1]<245||d[i+2]<245))n++;return n/(d.length/4);})()"),
+        jsonlite::toJSON(output, auto_unbox = TRUE))
+    notifications <- function() driver$get_js(paste0("(function(){const live=Array.from(document.querySelectorAll('.shiny-notification')).map(n=>n.textContent);",
+        "const log=(window.__kitNotifications||[]).map(n=>n.text);return live.concat(log).join(' | ');})()"))
     switch(step$id,
         import = runKitOmicsImportActions(h, driver, project_parent, corpus, route),
         design = runKitDesignActions(h, driver, corpus$design, prefix = prefix("design-builder"), tab_input = tabs,
@@ -557,12 +576,14 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             notify(paste0(prefix("qc"), "duplicates-resolve_duplicates"), "Duplicates resolved")
         },
         qc_finalize = {
-            # KIT-082: the internal-standard analysis, which commits nothing.
+            # KIT-082: the internal-standard analysis, which commits nothing. Its start notice also says "internal standards",
+            # and the summary shows a placeholder from the start, so only the finished count is the observation.
             h$checkpointSetInput(driver, qc_tabs, "Internal Standards")
-            h$checkpointSetInput(driver, paste0(prefix("qc"), "itsd-is_pattern"), "^IS_")
-            notify(paste0(prefix("qc"), "itsd-analyze_is"), "internal standards")
-            h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&el.textContent.trim().length>0;})()",
-                jsonlite::toJSON(paste0(prefix("qc"), "itsd-is_summary"), auto_unbox = TRUE)), timeout = h$checkpointWaitBudget())
+            h$checkpointSetInput(driver, paste0(prefix("qc"), "itsd-is_pattern"), journey$is_pattern %||% "^IS_")
+            notify(paste0(prefix("qc"), "itsd-analyze_is"), "Found ")
+            count <- regmatches(notifications(), regexpr("Found [0-9]+ internal standards", notifications()))
+            if (!length(count) || identical(count, "Found 0 internal standards")) stop("the internal-standard analysis found none: ", toString(count), call. = FALSE)
+            cat("DISPLAY", count, "\n")
             h$checkpointSetInput(driver, qc_tabs, "Finalize QC")
             notify(paste0(prefix("qc"), "s4_finalize-finalize_qc"), "QC complete!")
         },
@@ -575,9 +596,13 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             h$checkpointSetInput(driver, paste0(norm, "norm_method"), settings$norm_method %||% "cyclicloess")
             h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode %||% "automatic")
             for (name in names(settings$ruv)) h$checkpointSetInput(driver, paste0(norm, name), settings$ruv[[name]])
-            # KIT-082: the ITSD candidate tables, built a page at a time, drawn before the run.
-            if (isTRUE(settings$apply_itsd)) h$checkpointWaitForJs(driver, sprintf("document.querySelectorAll('[id^=%s] tbody tr td').length>1",
-                paste0("\"", norm, "itsd_table_\"")), timeout = h$checkpointWaitBudget())
+            # KIT-082: the ITSD candidate tables, built a page at a time: a data row in every assay's table before the run.
+            if (isTRUE(settings$apply_itsd)) {
+                drawn_tables <- sprintf("Array.from(document.querySelectorAll('[id^=\"%sitsd_table_\"]')).filter(el=>el.querySelector('tbody tr td:not(.dataTables_empty)')).length", norm)
+                if (!wait_settled(sprintf("(%s)>=%d", drawn_tables, length(corpus$assays)))) {
+                    stop("the ITSD candidate tables did not all draw: ", driver$get_js(drawn_tables), " of ", length(corpus$assays), call. = FALSE)
+                }
+            }
             notify(paste0(norm, "run_normalization"), "Normalization pipeline complete!")
         },
         correlation = {
@@ -596,39 +621,56 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             h$checkpointSetInput(driver, paste0(de, "treat_lfc_cutoff"), journey$da$treat_lfc)
             h$checkpointClickAndWaitText(driver, paste0(de, "run_da_analysis"), paste0("#", de, "da_status"), "Analysis Complete")
             # KIT-082: the tab's interactive volcano. The assay opens on Combined, whose banner draws no plot, so select the first
-            # assay and wait for the plot itself: a worker's page from KIT-082, the widget before it. A plot's error fails the step.
+            # assay and wait for the plot itself: a worker's page from KIT-082, the widget before it. A worker's display takes as long
+            # as it takes, with the session idle, so this wait has its own ends: the plot, or a warning, error or output error.
             volcano <- jsonlite::toJSON(paste0(de, "volcano_glimma"), auto_unbox = TRUE)
             assay_input <- jsonlite::toJSON(paste0(de, "volcano_assay"), auto_unbox = TRUE)
             assay_script <- sprintf("(function(){const el=document.getElementById(%s);if(!el||!el.selectize)return '';return Object.keys(el.selectize.options).filter(k=>k!=='Combined')[0]||'';})()", assay_input)
             h$checkpointWaitForJs(driver, sprintf("%s!==''", assay_script), timeout = h$checkpointWaitBudget())
-            h$checkpointSetInput(driver, paste0(de, "volcano_assay"), driver$get_js(assay_script))
-            h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&el.querySelector('iframe,.html-widget,.alert-danger')!==null;})()", volcano),
+            assay <- driver$get_js(assay_script)
+            h$checkpointSetInput(driver, paste0(de, "volcano_assay"), assay)
+            h$checkpointWaitForJs(driver, sprintf(paste0("(function(){const el=document.getElementById(%s);return el!==null&&",
+                "(el.classList.contains('shiny-output-error')||el.querySelector('iframe,.html-widget,.alert-danger,.alert-warning')!==null);})()"), volcano),
                 timeout = h$checkpointWaitBudget())
-            failure <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s).querySelector('.alert-danger');return el?el.textContent:'';})()", volcano))
+            failure <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s);if(el.classList.contains('shiny-output-error'))return el.textContent||'output error';const a=el.querySelector('.alert-danger,.alert-warning');return a?a.textContent:'';})()", volcano))
             if (nzchar(failure)) stop("the DA tab's interactive volcano failed: ", failure, call. = FALSE)
-            # KIT-082: the tab's other displays, each waited for itself; an output's error fails the step.
-            drawn <- function(output, selector) {
-                id <- jsonlite::toJSON(paste0(de, output), auto_unbox = TRUE)
-                h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&(el.classList.contains('shiny-output-error')||el.querySelector(%s)!==null);})()",
-                    id, jsonlite::toJSON(selector, auto_unbox = TRUE)), timeout = h$checkpointWaitBudget())
-                error <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s);return el.classList.contains('shiny-output-error')?el.textContent:'';})()", id))
+            # KIT-082: the tab's other displays. A plot must have ink, a table a data row, the download data rows.
+            output_error <- function(output) {
+                error <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s);return el&&el.classList.contains('shiny-output-error')?(el.textContent||'output error'):'';})()",
+                    jsonlite::toJSON(output, auto_unbox = TRUE)))
                 if (nzchar(error)) stop("the DA tab's ", output, " failed: ", error, call. = FALSE)
             }
-            assay <- driver$get_js(assay_script)
+            plotted <- function(name, least) {
+                output <- paste0(de, name)
+                wait_settled(sprintf("(%s)>=%s", ink(output), least))
+                output_error(output)
+                share <- driver$get_js(ink(output))
+                cat(sprintf("DISPLAY %s ink %.4f\n", name, share))
+                if (share < least) stop("the DA tab's ", name, " drew nothing: ink ", share, call. = FALSE)
+            }
             h$checkpointSetInput(driver, paste0(de, "volcano_interactive"), FALSE)
-            drawn("volcano_static", "img")
+            plotted("volcano_static", 0.005)
             h$checkpointSetInput(driver, paste0(de, "volcano_interactive"), TRUE)
             h$checkpointSetInput(driver, paste0(de, "da_results_tabs"), "Heatmap")
             h$checkpointSetInput(driver, paste0(de, "heatmap_assay"), assay)
-            drawn("heatmap_plot", "img")
+            plotted("heatmap_plot", 0.05)
             h$checkpointSetInput(driver, paste0(de, "da_results_tabs"), "DA Results Table")
-            drawn("da_results_table", "tbody tr td")
-            # The download, through the handler: its text arrives in the page, and only its length is kept.
+            table_found <- has_data_row(paste0("#", de, "da_results_table"))
+            found <- wait_settled(table_found)
+            output_error(paste0(de, "da_results_table"))
+            if (!found) stop("the DA tab's results table has no data row", call. = FALSE)
+            # The download, through the handler: its text arrives in the page, and only its counts are kept.
             link <- jsonlite::toJSON(paste0(de, "download_da_results"), auto_unbox = TRUE)
-            h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&(el.getAttribute('href')||'').length>1;})()", link), timeout = h$checkpointWaitBudget())
-            driver$get_js(sprintf("window.__kitDownload=null;fetch(document.getElementById(%s).getAttribute('href')).then(r=>r.ok?r.text():'').then(t=>{window.__kitDownload=t.length;});true", link))
+            href <- sprintf("(document.getElementById(%s).getAttribute('href')||'').length>1", link)
+            if (!wait_settled(href)) stop("the DA tab's download has no link", call. = FALSE)
+            driver$get_js(sprintf(paste0("window.__kitDownload=null;fetch(document.getElementById(%s).getAttribute('href')).then(r=>r.ok?r.text():Promise.reject(r.status))",
+                ".then(t=>{const lines=t.split('\\n').filter(l=>l.length);window.__kitDownload={rows:lines.length-1,sampleColumns:lines.length?(lines[0].match(/intensity[.]/g)||[]).length:0};})",
+                ".catch(e=>{window.__kitDownload={error:String(e)};});true"), link))
             h$checkpointWaitForJs(driver, "window.__kitDownload!==null", timeout = h$checkpointWaitBudget())
-            if (!isTRUE(driver$get_js("window.__kitDownload>0"))) stop("the DA tab's download was empty", call. = FALSE)
+            download <- driver$get_js("window.__kitDownload")
+            if (!is.null(download$error)) stop("the DA tab's download failed: ", download$error, call. = FALSE)
+            cat(sprintf("DISPLAY download rows %d sample columns %d\n", download$rows, download$sampleColumns))
+            if (download$rows < 1L || download$sampleColumns < 1L) stop("the DA tab's download has no data rows or no sample columns", call. = FALSE)
         },
         report = {
             # The summary tab: the publication copy (which writes the study parameters when they were not saved), then
@@ -638,7 +680,8 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             h$checkpointSetInput(driver, paste0(summary, "experiment_label"), journey$experiment_label)
             h$checkpointSetInput(driver, paste0(summary, "description"), "KIT-068 lifecycle member")
             # KIT-082: the study parameters and the integration object (on a managed session, the worker's).
-            notify(paste0(summary, "save_workflow_args"), "Study parameters saved successfully")
+            notify(paste0(summary, "save_workflow_args"), "Study parameters saved")
+            if (grepl("saved with warnings", notifications(), fixed = TRUE)) stop("the study parameters were saved with warnings", call. = FALSE)
             h$checkpointClickAndWaitText(driver, paste0(summary, "copy_to_publication"), paste0("#", summary, "copy_status"),
                 "Files copied to publication directory")
             notify(paste0(summary, "generate_report"), "Report generated successfully!")

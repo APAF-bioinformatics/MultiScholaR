@@ -268,7 +268,8 @@ registerLipidDaResultsDownloadOutput <- function(
     buildResultsDownloadOutputHandlerFn = buildLipidDaResultsDownloadOutputHandler
 ) {
     output$download_da_results <- buildResultsDownloadOutputHandlerFn(
-        daResultsList = daData$da_results_list
+        # KIT-082: read at each click; a value here would be forced once and serve the first run's results for ever.
+        readResultsFn = function() daData$da_results_list
     )
 
     invisible(output)

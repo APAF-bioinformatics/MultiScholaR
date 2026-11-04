@@ -1,3 +1,5 @@
+> Superseded, kept as written except for this note. The ticket was reopened at revisions 1.2 and 1.3. The item 8 sizes below are wrong, measuring other products: see [the audit](../../KIT082-AUDIT-20261104.md), finding A-13.
+
 # KIT-082 outcome: the omics application reads no assay outside the managed steps
 
 Status 2026-11-04: **completed**. Stage 3b. On a managed session the lipidomics and metabolomics tabs no longer read a whole assay table in the application process. **On the screen corpora this did not lower the application's memory.** Peak controller memory is unchanged within noise, so this ticket supports no memory claim. KIT-084 tests whether it matters at larger sizes.
@@ -22,7 +24,7 @@ The runner's queue is now first in, first out, and a queued action dropped by a 
 
 | Gate | Evidence | Result |
 |---|---|---|
-| Probe fails on the base | [probe-on-base.txt](probe-on-base.txt) | Fails on 44cf3abf: 8 assay tables read on each omic, and no iframe. |
+| Probe fails on the base | [probe-on-base.txt](../probe-on-base.txt) | Fails on 44cf3abf: 8 assay tables read on each omic, and no iframe. |
 | Probe passes, with its control | `test-workflow-omics-application-reads.R` | 0 assay tables read on either omic on the changed tree; the in-process tabs read above 0. |
 | Each site equals the whole-object read | same file | 97 pass, including more than one page. |
 | Worker sites in the browser | stage JSONs | All five operations dispatched and complete on all four omics members, the final PCA twice. |

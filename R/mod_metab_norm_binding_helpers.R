@@ -329,13 +329,19 @@ runMetabNormItsdSelectionTableObserverShell <- function(
     # KIT-082: built a page at a time, with nothing whole kept. This stays synchronous so that Run cannot race the selection.
     metaboliteIdCol <- currentS4@metabolite_id_column
     annotationCols <- currentS4@annotation_id_column
-    selectionTables <- readWorkflowOmicsItsdTables(metabolomicsDeclarationBinding, workflowData$state_manager, normData$assay_names, function(page) {
+    selectionTables <- tryCatch(readWorkflowOmicsItsdTables(metabolomicsDeclarationBinding, workflowData$state_manager, normData$assay_names, function(page) {
         buildItsdSelectionTableFn(
             assay_data = page,
             metabolite_id_col = metaboliteIdCol,
             annotation_cols = annotationCols
         )
+    }), error = function(e) {
+        logger::log_warn(paste("Could not read the ITSD candidate tables:", conditionMessage(e)))
+        NULL
     })
+    if (is.null(selectionTables)) {
+        return(invisible(NULL))
+    }
 
     walkFn(normData$assay_names, \(assayName) {
         safeName <- safeNameFn(assayName)

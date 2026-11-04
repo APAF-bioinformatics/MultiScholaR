@@ -721,7 +721,14 @@ runMetabDaAnalysisObserverShell <- function(
                 manager <- workflowData$state_manager
                 runWorkflowOmicsManagedDa(metabolomicsDeclarationBinding, runner, manager, getWorkflowStateReference(manager, daData$current_state_name),
                     list(formula_string = formulaString, da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl,
-                    deliver = finish, failed = function(error) fail(conditionMessage(error)))
+                    deliver = finish, failed = function(error) fail(conditionMessage(error)),
+                    invalidate = function() {
+                        daData$da_results_list <- NULL
+                        daData$analysis_complete <- FALSE
+                        status <- workflowData$tab_status
+                        status$differential_analysis <- "pending"
+                        workflowData$tab_status <- status
+                    })
                 return(invisible(list(status = "dispatched")))
             }
             # KIT-032: the DA is the declared operation on the loaded state (KIT-076: `metab_da_contrast`, one per contrast),

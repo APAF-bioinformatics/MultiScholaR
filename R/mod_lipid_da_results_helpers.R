@@ -182,13 +182,14 @@ resolveLipidDaResultsDownloadData <- function(daResultsList) {
 }
 
 buildLipidDaResultsDownloadOutputHandler <- function(
-    daResultsList,
+    daResultsList = NULL,
     buildResultsDownloadHandlerFn = buildLipidDaResultsDownloadHandler,
-    resolveResultsDownloadDataFn = resolveLipidDaResultsDownloadData
+    resolveResultsDownloadDataFn = resolveLipidDaResultsDownloadData,
+    readResultsFn = function() daResultsList
 ) {
     buildResultsDownloadHandlerFn(
         daResultsReactive = function() {
-            resolveResultsDownloadDataFn(daResultsList)
+            resolveResultsDownloadDataFn(readResultsFn())
         }
     )
 }

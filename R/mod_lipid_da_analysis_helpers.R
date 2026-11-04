@@ -192,7 +192,14 @@ executeLipidDaRunAnalysis <- function(
                     list(formula_string = formulaString, da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl,
                     deliver = function(results, export) successFinalizerFn(results = results, daData = daData, workflowData = workflowData, session = session,
                         experimentPaths = experimentPaths, daQValThresh = daQValThresh, treatLfcCutoff = treatLfcCutoff, workerExport = export),
-                    failed = function(error) errorFinalizerFn(errorMessage = conditionMessage(error)))
+                    failed = function(error) errorFinalizerFn(errorMessage = conditionMessage(error)),
+                    invalidate = function() {
+                        daData$da_results_list <- NULL
+                        daData$analysis_complete <- FALSE
+                        status <- workflowData$tab_status
+                        status$differential_analysis <- "pending"
+                        workflowData$tab_status <- status
+                    })
                 return(list(status = "dispatched"))
             }
             # KIT-031: the DA is the declared operation on the loaded state (KIT-076: `lipid_da_contrast`, one per contrast),

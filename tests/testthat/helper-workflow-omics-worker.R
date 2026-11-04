@@ -114,7 +114,14 @@ omicsManagedChainMocks <- function(fixture, probe, env = parent.frame(), window 
   # KIT-082: `window = FALSE` counts the controller's reads from the session's start, not only during an action.
   working <- function() (isTRUE(probe$active) || !window) && !identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")
   hydrate <- hydrateSavedWorkflowEntity
+  read_rows <- omicsReadRows
   testthat::local_mocked_bindings(
+    # KIT-082: how many cells each of the controller's reads keeps.
+    omicsReadRows = function(scope, columns, keep = NULL) {
+      rows <- read_rows(scope, columns, keep)
+      if (working()) probe$kept_cells <- c(probe$kept_cells, nrow(rows) * ncol(rows))
+      rows
+    },
     # KIT-082: the entities the controller reads, by id.
     hydrateSavedWorkflowEntity = function(store, reference, ...) {
       if (working()) probe$hydrated <- c(probe$hydrated, reference$entity_id)

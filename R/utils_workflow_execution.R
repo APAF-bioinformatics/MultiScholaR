@@ -433,17 +433,18 @@ workflowMemoryCounter <- function(path) {
     as.numeric(value)
 }
 
-#' Read a worker's memory for the monitor (KIT-082). A worker's control group goes when it exits, so a read can land after its
-#' last check: the journey member `kit-journey-082m` lost its application to that window when a worker ended normally. A file
-#' still there with no number in it fails closed, as every other counter does.
+#' Read a worker's memory for the monitor (KIT-082). A worker's control group is absent before its unit starts, because the
+#' worker is registered first, and goes when it exits, so one read decides: nothing to read is no worker. A line that is not a
+#' number fails closed, as every other counter does. A second look at the file after a failed read races the group appearing,
+#' which took a member's application with it (`kit-082/rev-1.2b-monitor-fix-regression/`).
 #' @param path The worker's `memory.current`.
-#' @return Bytes, or NULL when the worker has gone.
+#' @return Bytes, or NULL when there is no worker to read.
 #' @noRd
 workflowWorkerMemory <- function(path) {
-    tryCatch(workflowMemoryCounter(path), workflow_execution_unsupported = function(error) {
-        if (file.exists(path)) stop(error)
-        NULL
-    })
+    value <- tryCatch(suppressWarnings(readLines(path, n = 1L, warn = FALSE)), error = function(error) character())
+    if (!length(value) || !nzchar(value)) return(NULL)
+    if (!grepl("^[0-9]+$", value)) cli::cli_abort("memory observation is unavailable", class = "workflow_execution_unsupported")
+    as.numeric(value)
 }
 
 #' Read available host memory from the kernel, including reclaimable cache.
