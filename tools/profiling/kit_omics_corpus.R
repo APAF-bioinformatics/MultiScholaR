@@ -60,7 +60,8 @@ kitOmicsAssayMatrix <- function(recipe, design, assay_seed, base_mean) {
             outer(batch_loading, batch_effect[design$batch]) + biological_noise[, design$tech_rep_group, drop = FALSE] +
             matrix(sample_scale, nrow = p, ncol = n, byrow = TRUE) + matrix(stats::rnorm(p * n, 0, recipe$technical_noise_sd), nrow = p)
         standards_base <- stats::rnorm(recipe$standards_per_assay, base_mean + 1, 0.5)
-        standards <- outer(standards_base, rep(0, n), "+") + matrix(sample_scale, nrow = recipe$standards_per_assay, ncol = n, byrow = TRUE) +
+        standards <- if (recipe$standards_per_assay == 0L) matrix(numeric(), nrow = 0L, ncol = n) else
+            outer(standards_base, rep(0, n), "+") + matrix(sample_scale, nrow = recipe$standards_per_assay, ncol = n, byrow = TRUE) +
             matrix(stats::rnorm(recipe$standards_per_assay * n, 0, 0.05), nrow = recipe$standards_per_assay, ncol = n)
         list(values = round(2^log2, 1), standards = round(2^standards, 1), differential = differential, sample_scale = sample_scale)
     })

@@ -132,7 +132,7 @@ for (key in names(omics_corpora)) {
     spec <- omics_corpora[[key]]
     directory <- file.path(proof, "kit/corpus", spec$dir)
     if (!file.exists(file.path(directory, "manifest.json"))) {
-        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_omics_corpus.R")), spec$kind, shQuote(directory)))
+        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_omics_corpus.R")), spec$kind, shQuote(directory), spec$size))
         stopifnot(identical(status, 0L))
     }
     manifest <- jsonlite::read_json(file.path(directory, "manifest.json"))
@@ -351,8 +351,9 @@ if (!is.null(b$builds$kit_082)) b$tickets[["082"]] <- list(kind = "gui", build =
     reference = "kit-gui-079", operations = kit_078p_operations, ceiling_seconds = 1800L)
 
 # KIT-082 revision 1.3: the final driver on `kit_081`, which reads the assay in the application, so that the controller trace
-# compares like for like (a, b); and members made to fail, proving the driver's waits can: a pattern that is no regular
-# expression (c, d), and nothing significant, so an empty heatmap (e, f).
+# compares like for like (a, b); and members made to fail, proving the driver's waits can: a corpus with no internal standard
+# (c, d; a bad pattern cannot do this, the analysis falling back to its own patterns), and nothing significant, so an empty
+# heatmap (e, f).
 if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_081)) {
     norm_082 <- list(apply_itsd = TRUE, norm_method = "cyclicloess", ruv_mode = "automatic", correlation_threshold = 0.5)
     single_082 <- function(build, corpus, route, oracles, settings = NULL) c(list(kind = "single_journey", build = build, corpus = corpus, route = route,
@@ -360,8 +361,8 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_081)) {
         if (!is.null(settings)) list(driver_settings = settings))
     b$tickets[["082a"]] <- single_082("kit_081", "lipid_screen", "lipidomics", "lipid81")
     b$tickets[["082b"]] <- single_082("kit_081", "metab_screen", "metabolomics", "metab81")
-    b$tickets[["082c"]] <- single_082("kit_082", "lipid_screen", "lipidomics", "lipid82", list(is_pattern = "["))
-    b$tickets[["082d"]] <- single_082("kit_082", "metab_screen", "metabolomics", "metab82", list(is_pattern = "["))
+    b$tickets[["082c"]] <- single_082("kit_082", "lipid_no_standards", "lipidomics", "lipid82")
+    b$tickets[["082d"]] <- single_082("kit_082", "metab_no_standards", "metabolomics", "metab82")
     b$tickets[["082e"]] <- single_082("kit_082", "lipid_screen", "lipidomics", "lipid82", list(da = list(q_value = 1e-300)))
     b$tickets[["082f"]] <- single_082("kit_082", "metab_screen", "metabolomics", "metab82", list(da = list(q_value = 1e-300)))
 }
