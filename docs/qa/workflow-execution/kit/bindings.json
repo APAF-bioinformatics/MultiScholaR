@@ -520,6 +520,15 @@
       "install_member": "browser-smoke.UzND1n",
       "source_commit": "c7557ac9078ab2ceed457f397d2526381b7d2672",
       "runtime_patch_bytes": 0
+    },
+    "kit_084": {
+      "ticket": "KIT-084",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.P9Nc2D/library",
+      "build": "4dfcd51adb51566a09af1bf36b961a870b73c2633a26fd5dab7864f7ac613f35",
+      "exact_sum": "460bae4b1e3378dd0431ff0d15926d96859e27c2fee302c3677165e3da47509b",
+      "install_member": "browser-smoke.P9Nc2D",
+      "source_commit": "2c4a453ec1f79ec62af3471f5c0e7161955a1270",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -33380,6 +33389,22 @@
       "route": "metabolomics",
       "whole_journey": true,
       "oracles": "metab84c",
+      "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "084c": {
+      "kind": "single_journey",
+      "build": "kit_084",
+      "corpus": "metab_large",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab84",
       "ceiling_seconds": 14400,
       "purpose": "exactness",
       "normalisation": {
