@@ -1,0 +1,79 @@
+{
+  "status": "accepted",
+  "members": {
+    "control-1": {
+      "role": "control",
+      "pair": 1,
+      "operation": "lipid_log2",
+      "population": "lipid84_itsd",
+      "failing_rule": null,
+      "peak_bytes": 1523372032,
+      "peak_anon_bytes": 1391738880,
+      "elapsed_seconds": 36.16,
+      "batches": null
+    },
+    "candidate-1": {
+      "role": "candidate",
+      "pair": 1,
+      "operation": "lipid_log2",
+      "population": "lipid84_itsd",
+      "failing_rule": null,
+      "peak_bytes": 1409875968,
+      "peak_anon_bytes": 1291259904,
+      "elapsed_seconds": 21.92,
+      "batches": null
+    },
+    "control-2": {
+      "role": "control",
+      "pair": 2,
+      "operation": "metab_log2",
+      "population": "metab84_itsd",
+      "failing_rule": null,
+      "peak_bytes": 1508470784,
+      "peak_anon_bytes": 1401364480,
+      "elapsed_seconds": 28.9,
+      "batches": null
+    },
+    "candidate-2": {
+      "role": "candidate",
+      "pair": 2,
+      "operation": "metab_log2",
+      "population": "metab84_itsd",
+      "failing_rule": null,
+      "peak_bytes": 1439240192,
+      "peak_anon_bytes": 1322975232,
+      "elapsed_seconds": 24.58,
+      "batches": null
+    }
+  },
+  "pairs": {
+    "1": {
+      "operation": "lipid_log2",
+      "population": "lipid84_itsd",
+      "peak_ratio": 0.925497,
+      "peak_anon_ratio": 0.927803,
+      "elapsed_ratio": 0.606195,
+      "not_worse": true,
+      "reduction": true,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    },
+    "2": {
+      "operation": "metab_log2",
+      "population": "metab84_itsd",
+      "peak_ratio": 0.954105,
+      "peak_anon_ratio": 0.944062,
+      "elapsed_ratio": 0.850519,
+      "not_worse": true,
+      "reduction": false,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    }
+  },
+  "failing_rule": null,
+  "promotion_authorized": false
+}

@@ -17,3 +17,5 @@ kit-journey-084d start 09:53:08: AC 1, profile low-power, battery 100%, load 3.1
 kit-journey-084d end 10:32:08: AC 1, profile low-power, battery 100%, load 2.63, available 38 GiB
 kit-084p start 10:32:17: AC 1, profile low-power, battery 100%, load 2.54, available 38 GiB
 kit-084p end 10:39:58: AC 1, profile low-power, battery 100%, load 3.55, available 38 GiB
+kit-084q start 10:40:05: AC 1, profile low-power, battery 100%, load 3.38, available 38 GiB
+kit-084q end 10:43:05: AC 1, profile low-power, battery 100%, load 2.96, available 38 GiB
