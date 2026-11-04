@@ -8,3 +8,7 @@ kit-lifecycle-metab-fail start 12:51:35: AC 0, profile low-power, battery 45%
 kit-lifecycle-metab-fail end 12:53:25: AC 0, profile low-power, battery 44%
 kit-081a start 12:53:25: AC 0, profile low-power, battery 44%
 kit-081a end 12:54:45: AC 0, profile low-power, battery 44%
+kit-081a start 13:09:37: AC 0, profile low-power, battery 39%
+kit-081a end 13:11:37: AC 0, profile low-power, battery 38%
+kit-lifecycle-metab start 13:11:37: AC 0, profile low-power, battery 38%
+kit-lifecycle-metab end 13:16:47: AC 0, profile low-power, battery 36%
