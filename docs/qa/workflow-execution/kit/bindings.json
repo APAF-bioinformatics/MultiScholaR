@@ -33680,6 +33680,22 @@
         "correlation_threshold": 0.5
       }
     },
+    "084f": {
+      "kind": "single_journey",
+      "build": "kit_032",
+      "corpus": "metab_large",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab84c",
+      "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
     "084p": {
       "control": "kit_084",
       "candidate": "kit_084",
