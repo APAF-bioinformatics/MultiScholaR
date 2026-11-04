@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-11-04",
+  "created": "2026-11-05",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -30110,6 +30110,134 @@
       },
       "design_file": "design.tsv"
     },
+    "lipid_large": {
+      "profile": "lipid_screen",
+      "synthetic": true,
+      "samples": 200,
+      "rows": 42012,
+      "recipe": {
+        "kind": "lipid_screen",
+        "synthetic": true,
+        "seed": 20261029,
+        "biological_per_group": 50,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 20000,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0.05,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "LCMS_Neg"
+        ]
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-large",
+      "expected_retained_samples": 200,
+      "report_file": "lipidsearch_lcms_pos.txt",
+      "format": "lipidsearch",
+      "route": "lipidomics",
+      "notes": "20000 lipids per assay in two LipidSearch exports (LCMS_Pos, LCMS_Neg), 1000 duplicate LipidName rows under a second adduct at 0.6 x intensity, 6 internal-standard rows per assay (LipidClass ISTD, LipidName IS_*), dense (no missing values); 100 biological samples x 2 technical replicates in 3 batches; 15% of lipids differential (KO vs WT)",
+      "files": {
+        "lipidsearch_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-large/lipidsearch_lcms_pos.txt",
+          "bytes": 34920625,
+          "sha256": "9b8e9597d218e065a4107e004ca679e02a8de74ffe5ca5a889ca436d9ad9cb31"
+        },
+        "lipidsearch_lcms_neg.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-large/lipidsearch_lcms_neg.txt",
+          "bytes": 34819873,
+          "sha256": "e1a7bcfe035a6bcc96a3186e3a64628bcd262dbe3c6525148b45e0a823127f68"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-large/design.tsv",
+          "bytes": 4809,
+          "sha256": "e833d01b790f7c3706148c45f42ad37043f54a9b4bf4d5b0d6dea417904dfd0b"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "lipidsearch",
+      "assay_files": {
+        "LCMS_Pos": "lipidsearch_lcms_pos.txt",
+        "LCMS_Neg": "lipidsearch_lcms_neg.txt"
+      },
+      "design_file": "design.tsv"
+    },
+    "metab_large": {
+      "profile": "metab_screen",
+      "synthetic": true,
+      "samples": 200,
+      "rows": 40012,
+      "recipe": {
+        "kind": "metab_screen",
+        "synthetic": true,
+        "seed": 20261030,
+        "biological_per_group": 50,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 20000,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "GCMS"
+        ]
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large",
+      "expected_retained_samples": 200,
+      "report_file": "msdial_lcms_pos.txt",
+      "format": "msdial",
+      "route": "metabolomics",
+      "notes": "20000 features per assay in two MS-DIAL exports (LCMS_Pos, GCMS; the GC export without m/z and adduct columns), 6 internal-standard rows per assay (Metabolite name IS_*_d<k>), unique Alignment IDs (the duplicate step resolves nothing), dense (no missing values); 100 biological samples x 2 technical replicates in 3 batches; 15% of features differential (KO vs WT)",
+      "files": {
+        "msdial_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large/msdial_lcms_pos.txt",
+          "bytes": 31979353,
+          "sha256": "9b6f992d93acfe3debcc1ea4cb2367155b6bae808e43f3c6e402c9f7d95b4287"
+        },
+        "msdial_gcms.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large/msdial_gcms.txt",
+          "bytes": 31664645,
+          "sha256": "f870f15193c258fe94a473016cdb70395599ca532dd5f3a73a4293f3d1e9483a"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large/design.tsv",
+          "bytes": 4809,
+          "sha256": "e833d01b790f7c3706148c45f42ad37043f54a9b4bf4d5b0d6dea417904dfd0b"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "msdial",
+      "assay_files": {
+        "LCMS_Pos": "msdial_lcms_pos.txt",
+        "GCMS": "msdial_gcms.txt"
+      },
+      "design_file": "design.tsv"
+    },
     "kc_lfq": {
       "profile": null,
       "synthetic": false,
@@ -30249,7 +30377,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-11-04",
+        "date": "2026-11-05",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -30451,6 +30579,22 @@
         "da": {
           "q_value": 1e-300
         }
+      }
+    },
+    "084s": {
+      "kind": "single_journey",
+      "build": "kit_032",
+      "corpus": "metab_screen",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab32",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
       }
     },
     "081a": {
