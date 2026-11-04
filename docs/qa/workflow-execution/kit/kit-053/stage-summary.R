@@ -29,7 +29,7 @@ for (path in requests) {
     status <- if (file.exists(journal)) tryCatch(jsonlite::read_json(journal)$status, error = function(error) NULL)
     dispatches[[request$operation]] <- c(dispatches[[request$operation]], status %||% NA_character_)
 }
-dispatches <- lapply(dispatches[order(names(dispatches))], function(statuses) list(requests = length(statuses), complete = sum(statuses == "complete", na.rm = TRUE)))
+dispatches <- lapply(dispatches[order(as.character(names(dispatches)))], function(statuses) list(requests = length(statuses), complete = sum(statuses == "complete", na.rm = TRUE)))
 summary <- list(schema = "kit.stage_summary.v1", ticket = ticket_id, stage = label, date = format(Sys.Date()), dispatches = dispatches,
     # KIT-081: the controller service's own anonymous memory, when the trace has it.
     controller = list(peak_anon_bytes = op$controller_peak_anon_bytes, phase_peak_anon_bytes = op$phase_controller_peak_anon_bytes),
