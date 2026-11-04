@@ -1,0 +1,79 @@
+{
+  "status": "accepted",
+  "members": {
+    "control-1": {
+      "role": "control",
+      "pair": 1,
+      "operation": "lipid_intensity_filter",
+      "population": "lipid84_design",
+      "failing_rule": null,
+      "peak_bytes": 3146866688,
+      "peak_anon_bytes": 2984689664,
+      "elapsed_seconds": 116.73,
+      "batches": null
+    },
+    "candidate-1": {
+      "role": "candidate",
+      "pair": 1,
+      "operation": "lipid_intensity_filter",
+      "population": "lipid84_design",
+      "failing_rule": null,
+      "peak_bytes": 2558717952,
+      "peak_anon_bytes": 2411130880,
+      "elapsed_seconds": 74.4,
+      "batches": null
+    },
+    "control-2": {
+      "role": "control",
+      "pair": 2,
+      "operation": "metab_intensity_filter",
+      "population": "metab84_design",
+      "failing_rule": null,
+      "peak_bytes": 3153833984,
+      "peak_anon_bytes": 3011092480,
+      "elapsed_seconds": 111.34,
+      "batches": null
+    },
+    "candidate-2": {
+      "role": "candidate",
+      "pair": 2,
+      "operation": "metab_intensity_filter",
+      "population": "metab84_design",
+      "failing_rule": null,
+      "peak_bytes": 2424786944,
+      "peak_anon_bytes": 2286239744,
+      "elapsed_seconds": 72.3,
+      "batches": null
+    }
+  },
+  "pairs": {
+    "1": {
+      "operation": "lipid_intensity_filter",
+      "population": "lipid84_design",
+      "peak_ratio": 0.8131,
+      "peak_anon_ratio": 0.807833,
+      "elapsed_ratio": 0.637368,
+      "not_worse": true,
+      "reduction": true,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    },
+    "2": {
+      "operation": "metab_intensity_filter",
+      "population": "metab84_design",
+      "peak_ratio": 0.768838,
+      "peak_anon_ratio": 0.759273,
+      "elapsed_ratio": 0.649362,
+      "not_worse": true,
+      "reduction": true,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    }
+  },
+  "failing_rule": null,
+  "promotion_authorized": false
+}

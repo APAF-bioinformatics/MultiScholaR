@@ -4,3 +4,6 @@ kit-journey-084c accepted failed_step none error none
 kit-journey-084b invalid failed_step normalisation error Chromote: timed out waiting for response to command Runtime.evaluate 
 kit-journey-084f invalid failed_step normalisation error diagnostic Shiny session disconnected 
 kit-journey-084d accepted failed_step none error none 
+kit-084p accepted failing  
+  lipid_intensity_filter lipid84_design peak 0.813 anon 0.808 elapsed 0.637 not_worse TRUE reduction TRUE 
+  metab_intensity_filter metab84_design peak 0.769 anon 0.759 elapsed 0.649 not_worse TRUE reduction TRUE 
