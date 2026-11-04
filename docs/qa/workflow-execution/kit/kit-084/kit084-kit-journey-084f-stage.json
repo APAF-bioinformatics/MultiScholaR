@@ -1,0 +1,95 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-084",
+  "stage": "kit084-kit-journey-084f",
+  "date": "2026-11-05",
+  "dispatches": [],
+  "controller": {
+    "peak_anon_bytes": 6325145600,
+    "phase_peak_anon_bytes": {
+      "import": 776318976,
+      "design": 831201280,
+      "intensity": 3120066560,
+      "duplicates": 3155128320,
+      "qc_finalize": 3150458880,
+      "normalisation": 6325145600
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_large",
+    "build": "a25a43b3ad092cb8ef834c22740a0e9d92501977a6cbfc632acf35ae711d03ab",
+    "status": "journey_failed",
+    "exact": false,
+    "elapsed_seconds": 8660.96000000001,
+    "peak_bytes": 6891999232,
+    "peak_anon_bytes": 6714134528,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 20.6000000000058,
+      "design": 100.300000000003,
+      "intensity": 115.399999999994,
+      "duplicates": 78.5899999999965,
+      "qc_finalize": 18.3499999999913,
+      "normalisation": 8308.67,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_peak_anon_bytes": {
+      "import": 1143300096,
+      "design": 1202876416,
+      "intensity": 3493732352,
+      "duplicates": 3529658368,
+      "qc_finalize": 3526090752,
+      "normalisation": 6714134528,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "failed",
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "max_sample_interval": 0.110000000000582,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}

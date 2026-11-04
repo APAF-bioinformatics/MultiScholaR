@@ -10,3 +10,6 @@ kit-journey-084c end 04:40:47: AC 1, profile low-power, battery 52%, load 2.24, 
 kit-journey-084b start 04:41:28: AC 1, profile low-power, battery 52%, load 1.81, available 40 GiB
 kit-journey-084b end 07:09:16: AC 0, profile low-power, battery 83%, load 4.59, available 39 GiB
 kit-journey-084b invalid by machine suspend, not by the build: org_kde_powerdevil requested suspend at 06:50:09 (logind, client PID 1913), no lid event, resumed 07:08:42 (18m30s); chrome's websocket closed at 06:50:09; the trace's one long gap is 1,109 s, starting 7,714 s into the sampled run. Normalisation was still running on kit_032 with no error up to the suspend. AC was off at the end (battery 83%, discharging); when it went off is not established. The stage's one correction goes to 084f, with a sleep inhibitor in member.sh. No power setting or profile changed.
+kit-journey-084f start 07:27:39: AC 1, profile low-power, battery 85%, load 4.40, available 38 GiB
+kit-journey-084f end 09:52:41: AC 1, profile low-power, battery 100%, load 2.89, available 38 GiB
+kit-journey-084f stopped at 09:52:09 by the user's direction ("i dont want the fstupid fucking slow kit"): no decision; 8,670 s, in normalisation, on the second assay's RUV; no suspend, no error. The kit_032 controls are dropped: 084e does not run. kit_084 runs what is left.
