@@ -29982,6 +29982,134 @@
       },
       "design_file": "design.tsv"
     },
+    "lipid_no_standards": {
+      "profile": "lipid_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 420,
+      "recipe": {
+        "kind": "lipid_screen",
+        "synthetic": true,
+        "seed": 20261029,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 200,
+        "standards_per_assay": 0,
+        "duplicate_fraction": 0.05,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "LCMS_Neg"
+        ]
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-no-standards",
+      "expected_retained_samples": 24,
+      "report_file": "lipidsearch_lcms_pos.txt",
+      "format": "lipidsearch",
+      "route": "lipidomics",
+      "notes": "200 lipids per assay in two LipidSearch exports (LCMS_Pos, LCMS_Neg), 10 duplicate LipidName rows under a second adduct at 0.6 x intensity, 0 internal-standard rows per assay (LipidClass ISTD, LipidName IS_*), dense (no missing values); 12 biological samples x 2 technical replicates in 3 batches; 15% of lipids differential (KO vs WT)",
+      "files": {
+        "lipidsearch_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-no-standards/lipidsearch_lcms_pos.txt",
+          "bytes": 50127,
+          "sha256": "83eeb56cf403aa7d164689137ae5fc84537df5784b7314c377c80d8c46b92f0f"
+        },
+        "lipidsearch_lcms_neg.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-no-standards/lipidsearch_lcms_neg.txt",
+          "bytes": 50146,
+          "sha256": "c44aaebe6fcc7e4f69ba61f18bc0c168dc1904097e33a5b546cf230c4a1b4772"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-no-standards/design.tsv",
+          "bytes": 597,
+          "sha256": "74da6561134abf93a867de23632988d1fd77dc8744b29308a6e6aa15af19a782"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "lipidsearch",
+      "assay_files": {
+        "LCMS_Pos": "lipidsearch_lcms_pos.txt",
+        "LCMS_Neg": "lipidsearch_lcms_neg.txt"
+      },
+      "design_file": "design.tsv"
+    },
+    "metab_no_standards": {
+      "profile": "metab_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 600,
+      "recipe": {
+        "kind": "metab_screen",
+        "synthetic": true,
+        "seed": 20261030,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 300,
+        "standards_per_assay": 0,
+        "duplicate_fraction": 0,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "GCMS"
+        ]
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-no-standards",
+      "expected_retained_samples": 24,
+      "report_file": "msdial_lcms_pos.txt",
+      "format": "msdial",
+      "route": "metabolomics",
+      "notes": "300 features per assay in two MS-DIAL exports (LCMS_Pos, GCMS; the GC export without m/z and adduct columns), 0 internal-standard rows per assay (Metabolite name IS_*_d<k>), unique Alignment IDs (the duplicate step resolves nothing), dense (no missing values); 12 biological samples x 2 technical replicates in 3 batches; 15% of features differential (KO vs WT)",
+      "files": {
+        "msdial_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-no-standards/msdial_lcms_pos.txt",
+          "bytes": 70052,
+          "sha256": "e0b187e99eb7965fecd4b3cb24384fe9aca7e0c97f7858db0ea2d00eacb5c950"
+        },
+        "msdial_gcms.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-no-standards/msdial_gcms.txt",
+          "bytes": 64527,
+          "sha256": "8dc8a6be4b35981bd37ae9d678a05e59bdb17b50958be2257fbe48835623c04b"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-no-standards/design.tsv",
+          "bytes": 597,
+          "sha256": "74da6561134abf93a867de23632988d1fd77dc8744b29308a6e6aa15af19a782"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "msdial",
+      "assay_files": {
+        "LCMS_Pos": "msdial_lcms_pos.txt",
+        "GCMS": "msdial_gcms.txt"
+      },
+      "design_file": "design.tsv"
+    },
     "kc_lfq": {
       "profile": null,
       "synthetic": false,
@@ -30254,7 +30382,7 @@
     "082c": {
       "kind": "single_journey",
       "build": "kit_082",
-      "corpus": "lipid_screen",
+      "corpus": "lipid_no_standards",
       "route": "lipidomics",
       "whole_journey": true,
       "oracles": "lipid82",
@@ -30265,15 +30393,12 @@
         "norm_method": "cyclicloess",
         "ruv_mode": "automatic",
         "correlation_threshold": 0.5
-      },
-      "driver_settings": {
-        "is_pattern": "["
       }
     },
     "082d": {
       "kind": "single_journey",
       "build": "kit_082",
-      "corpus": "metab_screen",
+      "corpus": "metab_no_standards",
       "route": "metabolomics",
       "whole_journey": true,
       "oracles": "metab82",
@@ -30284,9 +30409,6 @@
         "norm_method": "cyclicloess",
         "ruv_mode": "automatic",
         "correlation_threshold": 0.5
-      },
-      "driver_settings": {
-        "is_pattern": "["
       }
     },
     "082e": {
