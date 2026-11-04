@@ -406,6 +406,8 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     # The lipid pair's two members, as the metabolomics pair's: each exact against the kit_082 or kit_032 record of its corpus.
     if (!is.null(b$builds$kit_084) && !is.null(b$oracles$lipid84_import)) b$tickets[["084d"]] <- single_084("kit_084", "lipid_large", "lipidomics", "lipid84", 14400L)
     if (!is.null(b$oracles$lipid84c_import)) b$tickets[["084e"]] <- single_084("kit_032", "lipid_large", "lipidomics", "lipid84c", 14400L)
+    # 084f: the control again, the stage's one correction: 084b was stopped by a machine suspend (kit-084/power-state.txt).
+    if (!is.null(b$oracles$metab84c_import)) b$tickets[["084f"]] <- single_084("kit_032", "metab_large", "metabolomics", "metab84c", 14400L)
     # Operation pairs, `whole` against `partitioned` on kit_084, two pairs to a stage: intensity, log2, duplicates. The log2
     # pairs' population and oracle are the records' stored ITSD and log2 states (kit-084/norm-states.R).
     for (label in c("lipid84", "metab84")) {
