@@ -3,7 +3,7 @@
   "ticket": "KIT-028",
   "label": "kit082",
   "date": "2026-11-04",
-  "head_commit": "5d02cf5ed82cf7a22e8a0b564331a6ecc5c3385a",
+  "head_commit": "d52303f4fc5fdd2e1806d91e277c28a9486d2394",
   "origin": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-028/candidate-1",
   "states": [
     {
@@ -88,7 +88,7 @@
     }
   ],
   "exact": {
-    "seconds": 260.33765745163,
+    "seconds": 520.52340722084,
     "states": ["initial", "raw_data_s4", "qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
     "mismatches": [],
     "replayed_steps": ["qvalue_filtered", "protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered", "correlation_filtered"]
@@ -101,7 +101,7 @@
   },
   "edited_expected_rows": 281343,
   "edited": {
-    "seconds": 235.284945726395,
+    "seconds": 304.28901386261,
     "mismatched_states": ["protein_peptide_filtered", "precursor_rollup", "intensity_filtered", "sample_filtered", "replicate_filtered", "imputed", "protein_s4_created", "protein_accession_cleaned", "protein_intensity_filtered", "duplicates_removed", "protein_replicate_filtered", "ruv_corrected", "correlation_filtered"],
     "before_identical": true,
     "at_differs": true,
@@ -114,6 +114,6 @@
   "inputs_message": "replay input \"fasta\" does not match the record's sha256",
   "legacy_refused": true,
   "legacy_message": "step \"qvalue_filtered\" cannot be replayed: operation \"legacy\"",
-  "total_seconds": 508.590612411499,
+  "total_seconds": 840.582473754883,
   "within_ceiling": true
 }
