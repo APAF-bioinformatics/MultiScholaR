@@ -111,13 +111,15 @@ writeKitLipidCorpus <- function(directory, recipe = kitOmicsRecipe("lipid_screen
             duplicates[design$sample] <- round(duplicates[design$sample] * 0.6, 1)
             table <- rbind(table, duplicates)
         }
-        standards <- data.frame(LipidName = sprintf("IS_%s_d7", sprintf("%s %d:%d", classes[[assay]][seq_len(recipe$standards_per_assay) %% length(classes[[assay]]) + 1L],
-            34L + seq_len(recipe$standards_per_assay), 1L)), LipidClass = "ISTD", FattyAcid = "", IonType = adducts[[assay]][[1L]],
-            BaseRt = round(seq(2, 16, length.out = recipe$standards_per_assay), 2), CalcMz = round(seq(500, 900, length.out = recipe$standards_per_assay), 3),
-            Grade = "A", stringsAsFactors = FALSE, check.names = FALSE)
-        standard_values <- as.data.frame(m$standards); names(standard_values) <- design$sample
-        standards <- cbind(standards, standard_values)
-        table <- rbind(table, standards)
+        if (recipe$standards_per_assay > 0L) {
+            standards <- data.frame(LipidName = sprintf("IS_%s_d7", sprintf("%s %d:%d", classes[[assay]][seq_len(recipe$standards_per_assay) %% length(classes[[assay]]) + 1L],
+                34L + seq_len(recipe$standards_per_assay), 1L)), LipidClass = "ISTD", FattyAcid = "", IonType = adducts[[assay]][[1L]],
+                BaseRt = round(seq(2, 16, length.out = recipe$standards_per_assay), 2), CalcMz = round(seq(500, 900, length.out = recipe$standards_per_assay), 3),
+                Grade = "A", stringsAsFactors = FALSE, check.names = FALSE)
+            standard_values <- as.data.frame(m$standards); names(standard_values) <- design$sample
+            standards <- cbind(standards, standard_values)
+            table <- rbind(table, standards)
+        }
         table <- withr::with_seed(recipe$seed + 100L * i, table[sample.int(nrow(table)), , drop = FALSE])
         rownames(table) <- NULL
         path <- file.path(directory, sprintf("lipidsearch_%s.txt", tolower(assay)))
