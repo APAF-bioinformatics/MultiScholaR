@@ -33,6 +33,7 @@ The runner's queue is now first in, first out, and a queued action dropped by a 
 | Lifecycle | `kit-lifecycle-lipid`, `kit-lifecycle-metab` | Both `lifecycle_complete_observed`. Largest sampler gaps 0.06 s. |
 | Figures | [082l](figure-compare-082l.txt), [082m](figure-compare-082m.txt) | 99 of 99 and 91 of 91 files are stored, rooted assets. The tool's `RESULT differs` is the 12 PCA products KIT-077 explained, and only those. |
 | Dependents | `dep082` | 175 files: 15,690 pass, 0 fail, 0 error, 86 skip, including the module-CI lanes as tests. |
+| Kit harness, after the driver correction | `test-workflow-kit-harness.R` | 525 pass, 0 fail. |
 | Package | [check.log](check.log) | Baseline: 3 WARNINGs, 3 NOTEs. |
 
 ## The application's memory
