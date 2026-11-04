@@ -7,3 +7,6 @@ kit-journey-084b start 03:50:30: AC 1, profile low-power, battery 24%, load 1.77
 kit-journey-084b refused at launch twice from 03:48:50: working tree not clean (my script left a stage summary in the worktree); no member ran, no attempt used
 kit-journey-084c start 04:18:26: AC 1, profile low-power, battery 40%, load 2.57, available 40 GiB
 kit-journey-084c end 04:40:47: AC 1, profile low-power, battery 52%, load 2.24, available 40 GiB
+kit-journey-084b start 04:41:28: AC 1, profile low-power, battery 52%, load 1.81, available 40 GiB
+kit-journey-084b end 07:09:16: AC 0, profile low-power, battery 83%, load 4.59, available 39 GiB
+kit-journey-084b invalid by machine suspend, not by the build: org_kde_powerdevil requested suspend at 06:50:09 (logind, client PID 1913), no lid event, resumed 07:08:42 (18m30s); chrome's websocket closed at 06:50:09; the trace's one long gap is 1,109 s, starting 7,714 s into the sampled run. Normalisation was still running on kit_032 with no error up to the suspend. AC was off at the end (battery 83%, discharging); when it went off is not established. The stage's one correction goes to 084f, with a sleep inhibitor in member.sh. No power setting or profile changed.
