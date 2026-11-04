@@ -400,6 +400,9 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     }
     if (!is.null(b$oracles$metab84_import)) b$tickets[["084a"]] <- single_084("kit_082", "metab_large", "metabolomics", "metab84", 14400L)
     if (!is.null(b$oracles$metab84c_import)) b$tickets[["084b"]] <- single_084("kit_032", "metab_large", "metabolomics", "metab84c", 14400L)
+    # 084c: member 2 again on the matrix Pearson build (user direction 2026-11-05), against kit_082's own oracle, so the
+    # journey's exactness is the 1:1 proof at this size.
+    if (!is.null(b$builds$kit_084) && !is.null(b$oracles$metab84_import)) b$tickets[["084c"]] <- single_084("kit_084", "metab_large", "metabolomics", "metab84", 14400L)
 }
 
 # KIT-081 (protocol v1.6): the instruments' small test, recorded and never counted: the intensity filter of each omic on a

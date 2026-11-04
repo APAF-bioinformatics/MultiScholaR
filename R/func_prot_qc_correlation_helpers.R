@@ -23,6 +23,32 @@ getPairsOfSamplesTable <- function(
   pairs_for_comparison
 }
 
+#' Pearson correlations for many sample pairs from one wide assay table
+#'
+#' One `cor()` call on the assay's sample columns; each value equals
+#' `cor(x, y, use = "pairwise.complete.obs")` on that pair. An assay with fewer
+#' than two features, or with a repeated feature id, has no per-pair result: NA,
+#' as the pair kernels (`calculateMetabolitePairCorrelation`,
+#' `calculateLipidPairCorrelation`) return.
+#' @param assay_table A wide assay table, one row per feature.
+#' @param feature_id_column The feature id column name.
+#' @param sample_cols The assay's sample column names.
+#' @param sample_x,sample_y The samples of each pair, as character vectors.
+#' @return A numeric vector, one value per pair.
+#' @noRd
+calculateSamplePairCorrelations <- function(assay_table, feature_id_column, sample_cols, sample_x, sample_y) {
+  no_result <- rep(NA_real_, length(sample_x))
+  if (nrow(assay_table) < 2L) {
+    return(no_result)
+  }
+  if (anyDuplicated(assay_table[[feature_id_column]]) > 0L) {
+    warning(sprintf("Repeated values in feature id column '%s': no sample correlations.", feature_id_column), call. = FALSE)
+    return(no_result)
+  }
+  correlations <- stats::cor(as.matrix(assay_table[sample_cols]), use = "pairwise.complete.obs")
+  unname(correlations[cbind(match(sample_x, sample_cols), match(sample_y, sample_cols))])
+}
+
 # ----------------------------------------------------------------------------
 # calulatePearsonCorrelation
 # ----------------------------------------------------------------------------

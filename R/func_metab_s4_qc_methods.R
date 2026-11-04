@@ -605,15 +605,6 @@ setMethod(
             }
 
 
-            # Prepare long data for helper
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Pivoting to long format...", assay_name))
-            assay_long <- current_assay_data |>
-                tidyr::pivot_longer(
-                    cols = all_of(sample_cols),
-                    names_to = sample_id_col_name,
-                    values_to = "abundance"
-                )
-            message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': assay_long rows = %d", assay_name, nrow(assay_long)))
 
 
             # Prepare the design matrix subset for the helper
@@ -629,9 +620,6 @@ setMethod(
             design_subset <- design_subset |>
                 dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
 
-            # Also ensure the assay_long sample ID column is character (pivot_longer usually does this)
-            assay_long <- assay_long |>
-                dplyr::mutate(!!rlang::sym(sample_id_col_name) := as.character(!!rlang::sym(sample_id_col_name)))
             # ---------------------------------------------------- #
 
 
@@ -676,29 +664,18 @@ setMethod(
             message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': Calculating correlations for %d pairs...", assay_name, nrow(pairs_for_comparison)))
             calculated_correlations <- tryCatch(
                 {
-                    purrr::map2_dbl(
-                        .x = pairs_for_comparison[[run_id_col_x]], # Directly access columns
-                        .y = pairs_for_comparison[[run_id_col_y]], # Directly access columns
-                        .f = ~ {
-                            # Filter the long assay data for the current pair
-                            assay_pair_filtered <- assay_long |>
-                                dplyr::filter(!!rlang::sym(sample_id_col_name) %in% c(.x, .y))
-
-                            # Call the new metabolite-specific helper
-                            correlation_val <- calculateMetabolitePairCorrelation(
-                                input_pair_table = assay_pair_filtered,
-                                feature_id_column = metabolite_id_col_name,
-                                sample_id_column = sample_id_col_name,
-                                value_column = "abundance"
-                            )
-                            return(correlation_val) # Explicit return
-                        }
+                    calculateSamplePairCorrelations(
+                        current_assay_data,
+                        metabolite_id_col_name,
+                        sample_cols,
+                        as.character(pairs_for_comparison[[run_id_col_x]]),
+                        as.character(pairs_for_comparison[[run_id_col_y]])
                     )
                 },
                 error = function(e) {
-                    message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in map2_dbl: %s", assay_name, e$message))
-                    warning(sprintf("Assay '%s': Error during map2_dbl correlation calculation: %s. Returning NULL results.", assay_name, e$message))
-                    return(NULL) # Return NULL if map2_dbl fails
+                    message(sprintf("   DEBUG66 [pearsonCorForSamplePairs] Assay '%s': ERROR in correlation: %s", assay_name, e$message))
+                    warning(sprintf("Assay '%s': Error during correlation calculation: %s. Returning NULL results.", assay_name, e$message))
+                    return(NULL) # Return NULL if the calculation fails
                 }
             )
 

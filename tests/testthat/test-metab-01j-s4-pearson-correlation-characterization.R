@@ -130,7 +130,7 @@ helper_paths <- c(
 
 loadSelectedFunctions(
   paths = helper_paths,
-  symbols = c("getPairsOfSamplesTable", "calculateMetabolitePairCorrelation"),
+  symbols = c("getPairsOfSamplesTable", "calculateMetabolitePairCorrelation", "calculateSamplePairCorrelations"),
   env = environment()
 )
 
@@ -222,8 +222,7 @@ test_that("metabolomics S4 pearson-correlation source retains pair-building and 
 
   target_text <- paste(deparse(target_expr), collapse = "\n")
 
-  expect_match(target_text, "tidyr::pivot_longer\\(")
   expect_match(target_text, "getPairsOfSamplesTable\\(")
-  expect_match(target_text, "calculateMetabolitePairCorrelation\\(")
+  expect_match(target_text, "calculateSamplePairCorrelations\\(")
   expect_match(target_text, "!stringr::str_detect\\(")
 })
