@@ -1,0 +1,112 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-084",
+  "stage": "kit084-kit-journey-084a",
+  "date": "2026-11-05",
+  "dispatches": {
+    "metab_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_qc_figures": {
+      "requests": 1,
+      "complete": 0
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 1069670400,
+    "phase_peak_anon_bytes": {
+      "import": 878739456,
+      "design": 958251008,
+      "intensity": 1032310784,
+      "duplicates": 1017118720,
+      "qc_finalize": 1069670400,
+      "normalisation": 996417536
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_large",
+    "build": "c569a7d575a1c418407f87c85d0fea999b1874808002b864d66f7294a5f8a68f",
+    "status": "journey_failed",
+    "exact": false,
+    "elapsed_seconds": 2106.2,
+    "peak_bytes": 3750400000,
+    "peak_anon_bytes": 3487404032,
+    "resident_end_bytes": 1275109376,
+    "phase_seconds": {
+      "import": 18.8399999999965,
+      "design": 88.75,
+      "intensity": 99.3000000000029,
+      "duplicates": 43.5899999999965,
+      "qc_finalize": 33.9599999999991,
+      "normalisation": 1803.82,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_peak_anon_bytes": {
+      "import": 1245966336,
+      "design": 1325477888,
+      "intensity": 3487404032,
+      "duplicates": 2365054976,
+      "qc_finalize": 2447519744,
+      "normalisation": 3127234560,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "failed",
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "max_sample_interval": 0.180000000000291,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "production action failed: metabolomics_workflow-norm-run_normalization ×Error applying metabolomics step: managed action ended: worker_failed"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}
