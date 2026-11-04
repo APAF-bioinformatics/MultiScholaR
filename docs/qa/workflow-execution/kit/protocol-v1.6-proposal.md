@@ -1,4 +1,4 @@
-# Proposed amendment: KIT measurement protocol v1.6 (2026-11-01) — PROPOSED, not in force
+# Proposed amendment: KIT measurement protocol v1.6 (2026-11-01) — SUPERSEDED: in force as `protocol.md` section 8 since 2026-11-04, with the user's change to the per-step guard at worker steps
 
 `protocol.md` (v1.5) is frozen; its SHA-256 is bound in `bindings.json`, and any change is a new version needing a user decision. This file is the proposal. Nothing in it is in force until the user approves the text and KIT-081 appends it to `protocol.md` as section 8, before any stage-3b counted member (KIT-080). The proposal reuses the protocol's existing thresholds (0.95 reduction, 1.02 not-worse); it adds no new threshold.
 
