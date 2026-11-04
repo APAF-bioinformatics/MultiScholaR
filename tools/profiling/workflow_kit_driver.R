@@ -586,10 +586,17 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             h$checkpointSetInput(driver, paste0(de, "da_q_val_thresh"), journey$da$q_value)
             h$checkpointSetInput(driver, paste0(de, "treat_lfc_cutoff"), journey$da$treat_lfc)
             h$checkpointClickAndWaitText(driver, paste0(de, "run_da_analysis"), paste0("#", de, "da_status"), "Analysis Complete")
-            # KIT-082: the tab's interactive volcano (from KIT-082 a worker's page, which arrives after this notice).
+            # KIT-082: the tab's interactive volcano. The assay opens on Combined, whose banner draws no plot, so select the first
+            # assay and wait for the plot itself: a worker's page from KIT-082, the widget before it. A plot's error fails the step.
             volcano <- jsonlite::toJSON(paste0(de, "volcano_glimma"), auto_unbox = TRUE)
-            h$checkpointWaitForJs(driver, sprintf(paste0("(function(){const el=document.getElementById(%s);return el!==null&&el.children.length>0&&",
-                "!el.textContent.includes('Preparing the interactive plot');})()"), volcano), timeout = h$checkpointWaitBudget())
+            assay_input <- jsonlite::toJSON(paste0(de, "volcano_assay"), auto_unbox = TRUE)
+            assay_script <- sprintf("(function(){const el=document.getElementById(%s);if(!el||!el.selectize)return '';return Object.keys(el.selectize.options).filter(k=>k!=='Combined')[0]||'';})()", assay_input)
+            h$checkpointWaitForJs(driver, sprintf("%s!==''", assay_script), timeout = h$checkpointWaitBudget())
+            h$checkpointSetInput(driver, paste0(de, "volcano_assay"), driver$get_js(assay_script))
+            h$checkpointWaitForJs(driver, sprintf("(function(){const el=document.getElementById(%s);return el!==null&&el.querySelector('iframe,.html-widget,.alert-danger')!==null;})()", volcano),
+                timeout = h$checkpointWaitBudget())
+            failure <- driver$get_js(sprintf("(function(){const el=document.getElementById(%s).querySelector('.alert-danger');return el?el.textContent:'';})()", volcano))
+            if (nzchar(failure)) stop("the DA tab's interactive volcano failed: ", failure, call. = FALSE)
         },
         report = {
             # The summary tab: the publication copy (which writes the study parameters when they were not saved), then

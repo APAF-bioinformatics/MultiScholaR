@@ -1,0 +1,215 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-082",
+  "stage": "kit082-kit-journey-082l",
+  "date": "2026-11-04",
+  "dispatches": {
+    "lipid_between_sample_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_composite_figure": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_da_contrast": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_final_pca": {
+      "requests": 2,
+      "complete": 2
+    },
+    "lipid_integration_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_itsd_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_log2": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_pearson_pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_pearson_selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_qc_figures": {
+      "requests": 4,
+      "complete": 4
+    },
+    "lipid_ruv": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_session_export": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 928423936,
+    "phase_peak_anon_bytes": {
+      "import": 548438016,
+      "design": 568053760,
+      "intensity": 682180608,
+      "duplicates": 701329408,
+      "qc_finalize": 719679488,
+      "normalisation": 639729664,
+      "correlation": 654147584,
+      "session_export": 804642816,
+      "da": 805638144,
+      "report": 928423936
+    }
+  },
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "lipidomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "lipid_screen",
+    "build": "2a53e3d2f8474bedfddf4a72143b4980e47ca3fd060dc93b75406c15e51543d1",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 194.060000000001,
+    "peak_bytes": 2072092672,
+    "peak_anon_bytes": 1954807808,
+    "resident_end_bytes": 1267576832,
+    "phase_seconds": {
+      "import": 5.09999999999854,
+      "design": 15.3600000000006,
+      "intensity": 10.6800000000003,
+      "duplicates": 10.1599999999999,
+      "qc_finalize": 9.46999999999753,
+      "normalisation": 69.0900000000001,
+      "correlation": 18.6499999999978,
+      "session_export": 8.62000000000262,
+      "da": 17.0800000000017,
+      "report": 6.87999999999738
+    },
+    "phase_peak_anon_bytes": {
+      "import": 915644416,
+      "design": 935260160,
+      "intensity": 1328861184,
+      "duplicates": 1364553728,
+      "qc_finalize": 1381986304,
+      "normalisation": 1908047872,
+      "correlation": 1482170368,
+      "session_export": 1669386240,
+      "da": 1954807808,
+      "report": 1564454912
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0700000000033469,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process lipid82_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "5728297a16ca44b6a620ca09a00bdc13310588befb0e7ac154a9f035c1033eb5",
+        "rows": null
+      },
+      "design": {
+        "state": "lipid_raw_data_s4",
+        "entity_id": "3fe2650e59c2de7bcd175b29ed04414a5c93d97e0e3db4799fc2f6b796abfe06",
+        "rows": 432
+      },
+      "intensity": {
+        "state": "lipid_intensity_filtered",
+        "entity_id": "83a3b247b8207d7da9adec77341c3b90e30e77e5232ead88a47fa203cb85c0e1",
+        "rows": 392
+      },
+      "duplicates": {
+        "state": "lipid_duplicates_resolved",
+        "entity_id": "44cf3a74f77b6064cdb6978e72b661808813b8f678369d0a4d6a2e9b4eaa91b6",
+        "rows": 377
+      },
+      "qc_finalize": {
+        "state": "lipid_qc_complete",
+        "entity_id": "e3e82cb1ce8461c7dc7e88c55076b90e6fe7f9e916c6acf4ecb656b8f4b6f7ea",
+        "rows": 377
+      },
+      "normalisation": {
+        "state": "lipid_ruv_corrected",
+        "entity_id": "7c0e207c6173034ba5c84a2adf98c4a14b0aff2d7587df42b6198a4c3e28d00f",
+        "rows": 365
+      },
+      "correlation": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "07c1ccddf530b1c126328d1538cc5c18584e4a778514a8b55abd746a6ae9d7ec",
+        "rows": 365
+      },
+      "session_export": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "07c1ccddf530b1c126328d1538cc5c18584e4a778514a8b55abd746a6ae9d7ec",
+        "rows": 365
+      },
+      "da": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "07c1ccddf530b1c126328d1538cc5c18584e4a778514a8b55abd746a6ae9d7ec",
+        "rows": 365
+      },
+      "report": {
+        "state": "lipid_correlation_filtered",
+        "entity_id": "07c1ccddf530b1c126328d1538cc5c18584e4a778514a8b55abd746a6ae9d7ec",
+        "rows": 365
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 208,
+    "failure": null
+  }
+}

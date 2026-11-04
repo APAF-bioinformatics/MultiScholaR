@@ -1,0 +1,6 @@
+kit-journey-082l: lipidomics, 2 contrast products, 0.54 MiB together
+  LCMS_Pos: table 183 rows x 41 columns, 0.07 MiB; whole entry 0.25 MiB
+  LCMS_Neg: table 182 rows x 41 columns, 0.07 MiB; whole entry 0.25 MiB
+kit-journey-082m: metabolomics, 2 contrast products, 0.80 MiB together
+  LCMS_Pos: table 281 rows x 41 columns, 0.12 MiB; whole entry 0.38 MiB
+  GCMS: table 283 rows x 41 columns, 0.12 MiB; whole entry 0.38 MiB

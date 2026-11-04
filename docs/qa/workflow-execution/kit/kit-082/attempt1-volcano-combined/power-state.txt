@@ -1,0 +1,10 @@
+kit-journey-082l start 16:31:46: AC 1, profile low-power, battery 89%
+kit-journey-082l end 16:35:36: AC 1, profile low-power, battery 90%
+kit-journey-082m start 16:35:37: AC 1, profile low-power, battery 90%
+kit-journey-082m end 16:40:37: AC 1, profile low-power, battery 92%
+kit-lifecycle-lipid start 16:40:37: AC 1, profile low-power, battery 92%
+kit-lifecycle-lipid end 16:44:57: AC 1, profile low-power, battery 93%
+kit-lifecycle-metab start 16:44:57: AC 1, profile low-power, battery 93%
+kit-lifecycle-metab end 16:48:57: AC 1, profile low-power, battery 94%
+kit-gui-082 start 16:48:58: AC 1, profile low-power, battery 94%
+kit-gui-082 end 16:56:08: AC 1, profile low-power, battery 95%

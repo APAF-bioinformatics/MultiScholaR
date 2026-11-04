@@ -1,0 +1,1 @@
+The driver's DA wait passed on the Combined banner, so these members never asked for the volcano page: no <prefix>_volcano_page dispatch in either stage summary. Kept as an instrumentation failure of the driver, found on reading the dispatches; replay and exactness here were valid.
