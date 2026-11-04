@@ -127,6 +127,11 @@ omics_corpora <- list(
     lipid_no_standards = list(dir = "lipid-no-standards", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics", size = c(6L, 200L, 0L),
         assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
     metab_no_standards = list(dir = "metab-no-standards", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(6L, 300L, 0L),
+        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")),
+    # KIT-084: the declared size, synthetic: 50 biological per group x 2 technical = 200 samples, 20,000 features per assay.
+    lipid_large = list(dir = "lipid-large", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics", size = c(50L, 20000L),
+        assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
+    metab_large = list(dir = "metab-large", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(50L, 20000L),
         assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")))
 for (key in names(omics_corpora)) {
     spec <- omics_corpora[[key]]
@@ -365,6 +370,36 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_081)) {
     b$tickets[["082d"]] <- single_082("kit_082", "metab_no_standards", "metabolomics", "metab82")
     b$tickets[["082e"]] <- single_082("kit_082", "lipid_screen", "lipidomics", "lipid82", list(da = list(q_value = 1e-300)))
     b$tickets[["082f"]] <- single_082("kit_082", "metab_screen", "metabolomics", "metab82", list(da = list(q_value = 1e-300)))
+}
+
+# KIT-084: recorded, uncounted, on the declared large corpora. In-process records on the final kit_082 (lipid84, metab84)
+# and the control kit_032 (lipid84c, metab84c), each recorded by its own build's recorder, bound as <label>_<step>.
+# 084s is the small test: the final driver on kit_032 at screen size, before anything at size. 084a and 084b are the
+# declaration's managed candidate and control journeys on the metabolomics corpus.
+if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
+    norm_084 <- list(apply_itsd = TRUE, norm_method = "cyclicloess", ruv_mode = "automatic", correlation_threshold = 0.5)
+    single_084 <- function(build, corpus, route, oracles, ceiling) list(kind = "single_journey", build = build, corpus = corpus, route = route,
+        whole_journey = TRUE, oracles = oracles, ceiling_seconds = ceiling, purpose = "exactness", normalisation = norm_084)
+    b$tickets[["084s"]] <- single_084("kit_032", "metab_screen", "metabolomics", "metab32", 1800L)
+    for (omic in list(list(label = "lipid84", build = "kit_082", corpus = "lipid_large", route = "lipidomics"),
+        list(label = "lipid84c", build = "kit_032", corpus = "lipid_large", route = "lipidomics"),
+        list(label = "metab84", build = "kit_082", corpus = "metab_large", route = "metabolomics"),
+        list(label = "metab84c", build = "kit_032", corpus = "metab_large", route = "metabolomics"))) {
+        oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/kit-084/oracles-%s_%s.rds", omic$label, omic$corpus))
+        if (!file.exists(oracle_file)) next
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, omic$corpus), identical(recorded$route, omic$route),
+            identical(recorded$corpus_sha256, b$corpora[[omic$corpus]]$files[[1L]]$sha256))
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0(omic$label, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at, route = omic$route)
+            b$oracles[[paste0(omic$label, "_", step)]] <- population$fingerprint
+        }
+    }
+    if (!is.null(b$oracles$metab84_import)) b$tickets[["084a"]] <- single_084("kit_082", "metab_large", "metabolomics", "metab84", 14400L)
+    if (!is.null(b$oracles$metab84c_import)) b$tickets[["084b"]] <- single_084("kit_032", "metab_large", "metabolomics", "metab84c", 14400L)
 }
 
 # KIT-081 (protocol v1.6): the instruments' small test, recorded and never counted: the intensity filter of each omic on a
