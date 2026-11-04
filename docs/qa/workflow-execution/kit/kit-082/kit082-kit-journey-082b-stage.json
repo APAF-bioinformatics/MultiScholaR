@@ -1,0 +1,199 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-082",
+  "stage": "kit082-kit-journey-082b",
+  "date": "2026-11-05",
+  "dispatches": {
+    "metab_between_sample_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_composite_figure": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_contrast": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_itsd_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_log2": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_pearson_pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_pearson_selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_qc_figures": {
+      "requests": 4,
+      "complete": 4
+    },
+    "metab_ruv": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 1250000896,
+    "phase_peak_anon_bytes": {
+      "import": 550227968,
+      "design": 573870080,
+      "intensity": 682905600,
+      "duplicates": 701394944,
+      "qc_finalize": 708550656,
+      "normalisation": 628596736,
+      "correlation": 770424832,
+      "session_export": 815800320,
+      "da": 1109970944,
+      "report": 1250000896
+    }
+  },
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_screen",
+    "build": "d8c16cf05ac5ac32b2ffe7e5214aa3fd64b95bc3b623ae90b87c47ec0034ff06",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 291.689999999995,
+    "peak_bytes": 2039783424,
+    "peak_anon_bytes": 1940385792,
+    "resident_end_bytes": 1498398720,
+    "phase_seconds": {
+      "import": 7.97000000000116,
+      "design": 16.5500000000029,
+      "intensity": 18.7299999999959,
+      "duplicates": 14.2700000000041,
+      "qc_finalize": 10.1199999999953,
+      "normalisation": 107.759999999995,
+      "correlation": 21.0299999999988,
+      "session_export": 3.34999999999854,
+      "da": 50.1699999999983,
+      "report": 8.08999999999651
+    },
+    "phase_peak_anon_bytes": {
+      "import": 917364736,
+      "design": 941006848,
+      "intensity": 1336967168,
+      "duplicates": 1362444288,
+      "qc_finalize": 1079590912,
+      "normalisation": 1896464384,
+      "correlation": 1520463872,
+      "session_export": 1186840576,
+      "da": 1940385792,
+      "report": 1622065152
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.069999999999709,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process metab81_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "a699d4c44fbc9a8862da3f78c0c6d21e682106f4708f771fbe72073ccd8cd2e4",
+        "rows": null
+      },
+      "design": {
+        "state": "metab_raw_data_s4",
+        "entity_id": "844080cc34929476c50bf7157c8c7c85dbb152fa6382c06e1a1d792e76371f57",
+        "rows": 612
+      },
+      "intensity": {
+        "state": "metab_intensity_filtered",
+        "entity_id": "f100f63aa748d6213a1ea5c5db7b5026ca431a4ed07a899833d46bdf778483d8",
+        "rows": 576
+      },
+      "duplicates": {
+        "state": "metab_duplicates_resolved",
+        "entity_id": "c3dafb75fd703b23889ab199b6a9c0f42e07840bab98550bab61f86b3907d606",
+        "rows": 576
+      },
+      "qc_finalize": {
+        "state": "metab_qc_complete",
+        "entity_id": "73115d72574f1cf6fed9e27e0af71449900861f1c1b8be83516b8dd288e463fc",
+        "rows": 576
+      },
+      "normalisation": {
+        "state": "metab_ruv_corrected",
+        "entity_id": "a52878cdaa36cc80de0656ca7d31f1ee8b9e5388dfda57c0df3ae8bc65bd4c1c",
+        "rows": 564
+      },
+      "correlation": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "c59d6f10933437ff4f411a22ed4380ae7ca80adb4f3b2ea6d4721cb3fa623291",
+        "rows": 564
+      },
+      "session_export": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "c59d6f10933437ff4f411a22ed4380ae7ca80adb4f3b2ea6d4721cb3fa623291",
+        "rows": 564
+      },
+      "da": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "c59d6f10933437ff4f411a22ed4380ae7ca80adb4f3b2ea6d4721cb3fa623291",
+        "rows": 564
+      },
+      "report": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "c59d6f10933437ff4f411a22ed4380ae7ca80adb4f3b2ea6d4721cb3fa623291",
+        "rows": 564
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 199,
+    "failure": null
+  }
+}

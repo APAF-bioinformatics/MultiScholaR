@@ -4,18 +4,18 @@ User: "fix literally every issue before another run. write a task list against e
 
 | Task | Finding | Work | Closure evidence | State |
 |---|---|---|---|---|
-| T01 | A-01 | One read decides; a test on real starting and stopping units; the old function shown failing on it | Stress result; execution tests; members | code and tests done: on 30 real units, aborts second-look 30, the original check-then-read 11, one-read 0 ([stress](kit-082/monitor-window-stress.txt)); members pending |
-| T02 | A-02 | Wait for "Found N internal standards" with N above 0; fail on an error | Negative member (bad pattern); members | open |
-| T03 | A-03 | Non-blank image by pixels; a data row in every table; download with data rows | Negative member (nothing significant); members | open |
+| T01 | A-01 | One read decides; a test on real starting and stopping units; the old function shown failing on it | Stress result; execution tests; members | done: on 30 real units, aborts second-look 30, the original check-then-read 11, one-read 0 ([stress](kit-082/monitor-window-stress.txt)); no session died on any member on UzND1n |
+| T02 | A-02 | Wait for "Found N internal standards" with N above 0; fail on an error | Negative member (no internal standard, replacing the bad pattern: the analysis falls back to its own patterns, so `082c` was first accepted and the gate stopped the closure); members | done: `082c`, `082d` fail at `qc_finalize` on the app's error ([made-to-fail](kit-082/made-to-fail.txt)); every accepted member shows "Found 12" ([displays](kit-082/displays.txt)) |
+| T03 | A-03 | Non-blank image by pixels; a data row in every table; download with data rows | Negative member (nothing significant); members | done: `082e`, `082f` fail at `da`, heatmap ink 0; accepted members show heatmap ink 0.66, static volcano 0.03 to 0.04, download 365 and 564 rows. The table and download checks were not themselves made to fail |
 | T04 | A-04 | A managed tracking-figure failure warns and finishes, as in process | Test on both omics | done: tests pass on both omics |
 | T05 | A-05 | The ITSD page read guarded again | Test on both omics | done: tests pass on both omics |
 | T06 | A-06 | The lipid download reads the tab's results at each click | Test with two runs | done: tests pass, two runs and before any run |
 | T07 | A-07 | A failed tab read clears the tab's results | Test on both omics | done: test passes |
 | T08 | A-08 | A dropped display asks again; a failed one retries on the next invalidation; retrying a publication keeps the new callbacks | Tests | done: tests pass: dropped, own failure once then retry, retry resumes, other work queues |
-| T09 | A-09 | A failure branch in each open-ended wait | Negative members; driver review | open |
-| T10 | A-10 | The final driver on `kit_081`, so control and candidate compare like for like | Members on `kit_081` | open |
+| T09 | A-09 | A failure branch in each open-ended wait | Negative members; driver review | done: the empty analysis and the empty heatmap ended by their failure branches, not the ceiling (about 2 and 6 minutes). The volcano ends, empty table, rejected download and saved-with-warnings branches were read in review and not forced |
+| T10 | A-10 | The final driver on `kit_081`, so control and candidate compare like for like | Members on `kit_081` | done: on one driver, application peak 1.22 -> 1.02 GiB lipid, 1.16 -> 0.94 GiB metab; slice peak 1.83 -> 1.83, 1.81 -> 1.86 and 1.87 ([outcome](kit-082/outcome.md)). One control run per omic |
 | T11 | A-11 | KIT-084 declared in its ticket; builds recorded in the trial record; lipid trial and a managed member at size, after KIT-082 closes | Declaration; trial lines | done: declared in KIT-084 revision 1.1; trial record carries provenance; its runs wait for KIT-082 to close |
-| T12 | A-12 | Monitor and other files named in the ticket; `kit-gui-082` on the final build | Ticket; member | open |
+| T12 | A-12 | Monitor and other files named in the ticket; `kit-gui-082` on the final build | Ticket; member | done: named in the ticket's revision 1.3 and `files_to_modify`; `kit-gui-082` on UzND1n observed, 0 mismatches, 13 of 13 pages ([gui-082](kit-082/gui-082.txt)) |
 | T13 | A-13 | Plan, memory, links, allowlist, DA size tool and figures, evidence committed | Links and status checked | done: ticket, plan, memory, links, allowlist and tool done; figures 0.37 -> 0.08 MiB and 0.59 -> 0.12 MiB; evidence commits with this change |
 | T14 | A-14 | The quiet-host wording corrected | Script comment; report | done: script comment corrected; reported to the user |
 | T15 | Reviewer | The probe also bounds rows kept by a row read | Test | done: cells kept by each store read below the whole table's, in the journey probe |

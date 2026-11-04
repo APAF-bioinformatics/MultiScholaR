@@ -1,0 +1,6 @@
+# Rerun on the final tree, 2026-11-05, after the corpus tool's last change (f6a2f001). No package code changed since c7557ac9.
+test-workflow-kit-harness.R              pass 525 fail 0 error 0 skip 0
+test-workflow-execution.R                pass 106 fail 0 error 0 skip 10
+test-workflow-omics-application-reads.R  pass 204 fail 0 error 0 skip 0
+test-workflow-omics-residency.R          pass  82 fail 0 error 0 skip 0
+# The first run of application-reads stopped at my 500 s limit with no result; it was rerun with 1,800 s.

@@ -1,1 +1,6 @@
-kit-journey-082c accepted failed_step none error none 
+kit-journey-082c invalid failed_step qc_finalize error production action failed: lipidomics_workflow-qc-itsd-analyze_is ×Error analyzing internal standards: No internal standards found. Pattern: ^IS_
+Colum 
+kit-journey-082d invalid failed_step qc_finalize error production action failed: metabolomics_workflow-qc-itsd-analyze_is ×Error analyzing internal standards: No internal standards found. Pattern: ^IS_
+Col 
+kit-journey-082e invalid failed_step da error the DA tab's heatmap_plot drew nothing: ink 0 
+kit-journey-082f invalid failed_step da error the DA tab's heatmap_plot drew nothing: ink 0 
