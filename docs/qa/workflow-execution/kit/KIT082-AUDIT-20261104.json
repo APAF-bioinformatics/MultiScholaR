@@ -1,0 +1,229 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "post_hoc",
+ "scope": {
+  "ticket_ids": [
+   "KIT-082",
+   "KIT-084"
+  ],
+  "files": [
+   "44cf3abf..725673cc: R, tests/testthat, tools/profiling/workflow_kit_driver.R",
+   "docs/qa/workflow-execution/kit/kit-082/",
+   "docs/qa/workflow-execution/kit/kit-084/size-trial.txt"
+  ],
+  "claim_classes": [
+   "exactness",
+   "application residency",
+   "browser coverage",
+   "memory",
+   "sizing"
+  ]
+ },
+ "authority": {
+  "route_valid": null,
+  "artifacts": [
+   {
+    "path": "AGENTS.md"
+   },
+   {
+    "path": "docs/qa/workflow-execution/kit/protocol.md"
+   },
+   {
+    "path": "tickets/kit/KIT-082.md",
+    "revision": "1.2"
+   },
+   {
+    "path": "tickets/kit/KIT-084.md",
+    "revision": "1.0"
+   }
+  ]
+ },
+ "findings": [
+  {
+   "id": "A-01",
+   "severity": "High",
+   "observed": "`workflowWorkerMemory` re-raises after a failed read if the file now exists. `d52303f4` is pushed, and `bindings.json` binds `kit_082` to it. Logs: `rev-1.2b-monitor-fix-regression/`. Its test has no file appearing between read and check.",
+   "impact": "Sessions die at worker start, on any route. HEAD is worse than 44cf3abf.",
+   "smallest_repair": "Decide from one read: failed or empty is no worker, a non-numeric line aborts. Gives up: a live worker's permanently unreadable counter disables `nonworker_reservation` for that worker; the slice counters, `early_stop`, host floor and `MemoryMax` remain.",
+   "closure_evidence": "A test against real transient units starting and stopping repeatedly, before any member; then every member.",
+   "blocks": "Execution",
+   "status": "open"
+  },
+  {
+   "id": "A-02",
+   "severity": "High",
+   "observed": "Driver `:563-565`: `notify(..., \"internal standards\")` matches the start notice \"Analyzing internal standards...\"; the `is_summary` check matches the placeholder \"Click 'Analyze' to detect internal standards.\" The error check runs at once.",
+   "impact": "A failed or unfinished analysis passes. **The same false positive as the volcano, repeated in the commit that fixed it.** The application log has no line to settle whether it completed.",
+   "smallest_repair": "Wait for \"Found N internal standards\" (present on both omics).",
+   "closure_evidence": "Members plus the driver failing on a forced empty analysis.",
+   "blocks": "Decision",
+   "status": "open"
+  },
+  {
+   "id": "A-03",
+   "severity": "High",
+   "observed": "`drawn(..., \"img\")` (`:619`, `:623`): Shiny makes an `img` for a plot that drew nothing. `tbody tr td` passes on the \"No data\" row. ITSD `:579` counts `td`s across all tables with `>1`. Download passes on a header only.",
+   "impact": "The six displays are seen to raise no output error, and little more.",
+   "smallest_repair": "A loaded image, a data row in each table, a data row in the download. Corpus sizes are known.",
+   "closure_evidence": "As A-02.",
+   "blocks": "Decision",
+   "status": "open"
+  },
+  {
+   "id": "A-04",
+   "severity": "High",
+   "observed": "Managed QC finalise: a `filtering_metrics` failure reports a finalise error and never marks the tab complete, though the state is committed (`mod_lipid_qc_s4.R:565`, `mod_metab_qc_s4_server_helpers.R:524`). In process `updateLipidQcS4TrackingPlot` swallows it.",
+   "impact": "Breaks the ticket's scientific contract on a failure path.",
+   "smallest_repair": "`failed` warns and calls `finish`, as in process.",
+   "closure_evidence": "A test on both omics.",
+   "blocks": "Implementation",
+   "status": "open"
+  },
+  {
+   "id": "A-05",
+   "severity": "Med",
+   "observed": "ITSD page read moved outside the `tryCatch` (`mod_lipid_norm_observer_helpers.R:180`, `mod_metab_norm_binding_helpers.R:332`). Only the lipid base was checked.",
+   "impact": "A store read error ends the session where lipid returned quietly.",
+   "smallest_repair": "Keep the read guarded.",
+   "closure_evidence": "A test.",
+   "blocks": "Implementation",
+   "status": "open"
+  },
+  {
+   "id": "A-06",
+   "severity": "Med",
+   "observed": "`mod_lipid_da.R:270-272`: `daResultsList` is a promise forced once at the first download. Pre-existing. Metabolomics reads `daData` each time.",
+   "impact": "After a second DA, lipid downloads run 1's results. The \"same bytes\" claim holds only for the first.",
+   "smallest_repair": "Read `daData` at click.",
+   "closure_evidence": "A test with two runs.",
+   "blocks": "Implementation",
+   "status": "open"
+  },
+  {
+   "id": "A-07",
+   "severity": "Med",
+   "observed": "`utils_workflow_omics_actions.R:327`: if `da_tab_results` fails, the manifest is already on the head but `daData` stays on the prior run.",
+   "impact": "Table and heatmap ranking show run 1, the volcano run 2. Rare.",
+   "smallest_repair": "Clear the tab's results on that failure.",
+   "closure_evidence": "A test.",
+   "blocks": "Implementation",
+   "status": "open"
+  },
+  {
+   "id": "A-08",
+   "severity": "Med",
+   "observed": "`workflowOmicsDisplay`: a display dropped by another action's failure keeps that error under its key, and `requested` is never cleared. `runner$run` during a pending publication drops the new callbacks.",
+   "impact": "Wrong error until the inputs change; a progress notice that never closes. Rare.",
+   "smallest_repair": "Clear the key on a dropped request; deal with the pending branch.",
+   "closure_evidence": "A test.",
+   "blocks": "Implementation",
+   "status": "open"
+  },
+  {
+   "id": "A-09",
+   "severity": "Med",
+   "observed": "Waits with no failure branch: volcano with nothing to draw, a NULL table, a rejected `fetch`, `save_workflow_args` with warnings.",
+   "impact": "A member hangs to its ceiling in place of failing. Slow, not misleading.",
+   "smallest_repair": "A failure condition in each wait.",
+   "closure_evidence": "As A-02.",
+   "blocks": "Execution",
+   "status": "open"
+  },
+  {
+   "id": "A-10",
+   "severity": "Med",
+   "observed": "Controller peak: `kit_081` 0.91 and 0.89 GiB with no volcano drawn; rev 1.1 0.87 and 0.93; rev 1.2a 1.02 and 0.94, with every display drawn. Each has a different driver, so none is like-for-like. The chat report said \"unchanged\".",
+   "impact": "The ticket's value is unproven, and the current figure for lipid is higher.",
+   "smallest_repair": "Report it as it is; KIT-084 answers it only on one driver across builds.",
+   "closure_evidence": "Control and candidate on one driver.",
+   "blocks": "Decision",
+   "status": "open"
+  },
+  {
+   "id": "A-11",
+   "severity": "Med",
+   "observed": "KIT-084 was started before KIT-082 closed, with no declared decision rule (`AGENTS.md`). Metabolomics only; trials 1 and 2 on UhTReX and 3 on cSzZKS, unrecorded; in-process records, not managed members; other work alongside; trial 2's limit is confounded. `size-trial.txt` holds time and RSS only. The driver's new steps on `kit_032` are untested.",
+   "impact": "\"It fits inside 4 hours\" is unproven. My 3 to 6 hours is too low: oracles alone are 4 x 47 min, before the journeys and operation pairs.",
+   "smallest_repair": "A declaration: size, builds, ceilings, attempts, decision, cost; one lipid trial; one managed member at size.",
+   "closure_evidence": "The declaration in the ticket.",
+   "blocks": "Execution",
+   "status": "open"
+  },
+  {
+   "id": "A-12",
+   "severity": "Med",
+   "observed": "The monitor sits in the shared proteomics chain, outside the ticket's allowlist and named by no user decision. I changed a safety guard without asking for scope; no proteomics member passed on the changed build. `fix all` predates the finding.",
+   "impact": "Scope (`AGENTS.md`).",
+   "smallest_repair": "Name it in the ticket on the user's decision.",
+   "closure_evidence": "`kit-gui-082` on the final build.",
+   "blocks": "Decision",
+   "status": "open"
+  },
+  {
+   "id": "A-13",
+   "severity": "Low",
+   "observed": "The plan row and `MEMORY.md` say KIT-082 done on UhTReX. Ticket outcome link is dead (the outcome is in `rev-1.1/`), and that outcome's probe link too. `files_to_modify` omits 8 changed files. `rev-1.1/outcome.md` and the plan keep 0.54 and 0.80 MiB. `da-tab-read-size.R` is the wrong tool (`$table` partially matches `tables`). The corrected figure, 0.59 MiB, exists for metabolomics only and is not in a file. Two evidence directories and this audit are uncommitted.",
+   "impact": "A reader can be misled about status and size.",
+   "smallest_repair": "Correct them; keep history additive.",
+   "closure_evidence": "Links and status checked.",
+   "blocks": "Documentation",
+   "status": "open"
+  },
+  {
+   "id": "A-14",
+   "severity": "Low",
+   "observed": "I told the user the measured members need a quiet machine. `protocol.md:8` says the host as normally used, recorded and never a refusal. The user's rule was to hold heavy test runs.",
+   "impact": "Overstated rule; no protocol breach from the trial or the evals. Sampler gaps stayed at 0.07 s or less.",
+   "smallest_repair": "Correct it in the report.",
+   "closure_evidence": "This record.",
+   "blocks": "None",
+   "status": "open"
+  }
+ ],
+ "repairs": [],
+ "tests": [
+  {
+   "note": "No test or member was run for this audit; existing results read only."
+  }
+ ],
+ "graph": {
+  "duplicates": [],
+  "missing": [],
+  "cycles": []
+ },
+ "evidence_layers": [
+  {
+   "layer": "implementation_conformance",
+   "claims": "records, replays, fixture probes, fixture display equality"
+  },
+  {
+   "layer": "runtime_behavior",
+   "claims": "worker dispatches observed; six browser displays not established"
+  },
+  {
+   "layer": "controlled_incremental_utility",
+   "claims": "memory reduction not shown by any build"
+  }
+ ],
+ "formal_verification": {
+  "used": false,
+  "obligations": [],
+  "limits": []
+ },
+ "closeout": {
+  "implementation_verified": false,
+  "execution_complete": false,
+  "decision_supported": false,
+  "promotion_authorized": false,
+  "claim_scope": "KIT-082 is in progress on a build with a known defect; no memory, browser-coverage or sizing claim is supported."
+ },
+ "blockers": [
+  "A-01 pushed monitor regression",
+  "correction budget spent; a second pass needs the user's decision"
+ ],
+ "deviations": [
+  "Sized and scoped findings A-07 and A-08 from partial code reading.",
+  "An independent reviewer's findings were checked against code, not by execution."
+ ],
+ "next_action": "User decision on a second correction pass, the monitor's scope and a KIT-084 declaration."
+}

@@ -1,0 +1,3 @@
+trial_metab_screen_50_5000 samples 200 features/assay 5000 corpus 16M exit 0 RSS_KB 2127848 ELAPSED 531
+trial_metab_screen_100_10000 samples 400 features/assay 10000 corpus 61M exit 124 RSS_KB 5243640 ELAPSED 3600
+trial_metab_screen_50_20000 samples 200 features/assay 20000 corpus 61M exit 0 RSS_KB 5241684 ELAPSED 2795

@@ -1,0 +1,14 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+Error in workflowMemoryCounter(path) : memory observation is unavailable
+Calls: <Anonymous> ... tryCatch -> tryCatchList -> tryCatchOne -> <Anonymous>
+In addition: There were 50 or more warnings (use warnings() to see the first 50)
+Execution halted

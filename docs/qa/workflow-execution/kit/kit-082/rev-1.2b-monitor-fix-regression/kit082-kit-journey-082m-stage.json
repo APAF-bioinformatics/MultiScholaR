@@ -1,0 +1,97 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-082",
+  "stage": "kit082-kit-journey-082m",
+  "date": "2026-11-04",
+  "dispatches": {
+    "metab_intensity_filter": {
+      "requests": 1,
+      "complete": 0
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 570724352,
+    "phase_peak_anon_bytes": {
+      "import": 546328576,
+      "design": 564105216,
+      "intensity": 570724352
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_screen",
+    "build": "85bd57f655c951939f3b756c25e6cc1693136dd82fb25a19ca6644bcbacf1a9f",
+    "status": "journey_failed",
+    "exact": false,
+    "elapsed_seconds": 40.6100000000006,
+    "peak_bytes": 955387904,
+    "peak_anon_bytes": 938262528,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 6.95999999999913,
+      "design": 16.1800000000003,
+      "intensity": 1.56999999999971,
+      "4": null,
+      "5": null,
+      "6": null,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_peak_anon_bytes": {
+      "import": 913534976,
+      "design": 931311616,
+      "intensity": 938262528,
+      "4": null,
+      "5": null,
+      "6": null,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "failed",
+      "4": null,
+      "5": null,
+      "6": null,
+      "7": null,
+      "8": null,
+      "9": null,
+      "10": null
+    },
+    "max_sample_interval": 0.0700000000069849,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}

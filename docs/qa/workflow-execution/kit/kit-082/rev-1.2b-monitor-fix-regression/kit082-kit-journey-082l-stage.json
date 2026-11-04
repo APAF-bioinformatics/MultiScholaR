@@ -1,0 +1,172 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-082",
+  "stage": "kit082-kit-journey-082l",
+  "date": "2026-11-04",
+  "dispatches": {
+    "lipid_between_sample_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_composite_figure": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_da_contrast": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_da_tab_results": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_final_pca": {
+      "requests": 2,
+      "complete": 2
+    },
+    "lipid_integration_export": {
+      "requests": 1,
+      "complete": 0
+    },
+    "lipid_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_itsd_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_log2": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_pearson_pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_pearson_selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_qc_figures": {
+      "requests": 4,
+      "complete": 4
+    },
+    "lipid_ruv": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_session_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "lipid_volcano_page": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 895193088,
+    "phase_peak_anon_bytes": {
+      "import": 546942976,
+      "design": 568401920,
+      "intensity": 683913216,
+      "duplicates": 701956096,
+      "qc_finalize": 709033984,
+      "normalisation": 629063680,
+      "correlation": 629059584,
+      "session_export": 724262912,
+      "da": 894193664,
+      "report": 895193088
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "lipidomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "lipid_screen",
+    "build": "85bd57f655c951939f3b756c25e6cc1693136dd82fb25a19ca6644bcbacf1a9f",
+    "status": "journey_failed",
+    "exact": false,
+    "elapsed_seconds": 369.020000000004,
+    "peak_bytes": 2121670656,
+    "peak_anon_bytes": 2013904896,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 7.86000000000058,
+      "design": 17.25,
+      "intensity": 22.3499999999985,
+      "duplicates": 22.0500000000029,
+      "qc_finalize": 21.0399999999936,
+      "normalisation": 128.18,
+      "correlation": 31.3199999999997,
+      "session_export": 20.0199999999968,
+      "da": 64.5500000000029,
+      "report": 2.61000000000058
+    },
+    "phase_peak_anon_bytes": {
+      "import": 914153472,
+      "design": 935612416,
+      "intensity": 1332785152,
+      "duplicates": 1367736320,
+      "qc_finalize": 1385660416,
+      "normalisation": 1897975808,
+      "correlation": 1475080192,
+      "session_export": 1516421120,
+      "da": 2013904896,
+      "report": 1267077120
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "failed"
+    },
+    "max_sample_interval": 0.0900000000037835,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}
