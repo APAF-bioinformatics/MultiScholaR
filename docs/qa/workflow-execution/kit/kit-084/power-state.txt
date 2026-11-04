@@ -1,0 +1,2 @@
+kit-journey-084s start 01:42:08: AC 1, profile low-power, battery 100%, load 2.22, available 37 GiB
+kit-journey-084s end 01:49:48: AC 0, profile low-power, battery 95%, load 7.30, available 28 GiB
