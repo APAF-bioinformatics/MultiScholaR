@@ -1,0 +1,79 @@
+{
+  "status": "rejected",
+  "members": {
+    "control-1": {
+      "role": "control",
+      "pair": 1,
+      "operation": "lipid_duplicate_resolution",
+      "population": "lipid84_intensity",
+      "failing_rule": null,
+      "peak_bytes": 2598727680,
+      "peak_anon_bytes": 2458071040,
+      "elapsed_seconds": 89.24,
+      "batches": null
+    },
+    "candidate-1": {
+      "role": "candidate",
+      "pair": 1,
+      "operation": "lipid_duplicate_resolution",
+      "population": "lipid84_intensity",
+      "failing_rule": null,
+      "peak_bytes": 2526625792,
+      "peak_anon_bytes": 2392809472,
+      "elapsed_seconds": 66.98,
+      "batches": null
+    },
+    "control-2": {
+      "role": "control",
+      "pair": 2,
+      "operation": "metab_duplicate_resolution",
+      "population": "metab84_intensity",
+      "failing_rule": null,
+      "peak_bytes": 2169028608,
+      "peak_anon_bytes": 2028457984,
+      "elapsed_seconds": 43.57,
+      "batches": null
+    },
+    "candidate-2": {
+      "role": "candidate",
+      "pair": 2,
+      "operation": "metab_duplicate_resolution",
+      "population": "metab84_intensity",
+      "failing_rule": null,
+      "peak_bytes": 2260017152,
+      "peak_anon_bytes": 2133803008,
+      "elapsed_seconds": 37.79,
+      "batches": null
+    }
+  },
+  "pairs": {
+    "1": {
+      "operation": "lipid_duplicate_resolution",
+      "population": "lipid84_intensity",
+      "peak_ratio": 0.972255,
+      "peak_anon_ratio": 0.97345,
+      "elapsed_ratio": 0.75056,
+      "not_worse": true,
+      "reduction": false,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    },
+    "2": {
+      "operation": "metab_duplicate_resolution",
+      "population": "metab84_intensity",
+      "peak_ratio": 1.041949,
+      "peak_anon_ratio": 1.051934,
+      "elapsed_ratio": 0.86734,
+      "not_worse": false,
+      "reduction": false,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    }
+  },
+  "failing_rule": "not_worse",
+  "promotion_authorized": false
+}

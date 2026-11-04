@@ -19,3 +19,5 @@ kit-084p start 10:32:17: AC 1, profile low-power, battery 100%, load 2.54, avail
 kit-084p end 10:39:58: AC 1, profile low-power, battery 100%, load 3.55, available 38 GiB
 kit-084q start 10:40:05: AC 1, profile low-power, battery 100%, load 3.38, available 38 GiB
 kit-084q end 10:43:05: AC 1, profile low-power, battery 100%, load 2.96, available 38 GiB
+kit-084r start 10:43:13: AC 1, profile low-power, battery 100%, load 2.96, available 38 GiB
+kit-084r end 10:48:33: AC 1, profile low-power, battery 100%, load 4.53, available 38 GiB
