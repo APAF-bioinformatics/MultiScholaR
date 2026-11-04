@@ -1,0 +1,4 @@
+kit-journey-082l start 23:18:32: AC 1, profile low-power, battery 100%, load 2.51
+kit-journey-082l end 23:24:42: AC 1, profile low-power, battery 100%, load 2.95
+kit-journey-082c start 23:24:43: AC 1, profile low-power, battery 100%, load 2.95
+kit-journey-082c end 23:30:53: AC 1, profile low-power, battery 100%, load 3.06

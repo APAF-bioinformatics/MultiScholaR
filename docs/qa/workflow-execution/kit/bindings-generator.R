@@ -122,6 +122,11 @@ omics_corpora <- list(
     lipid_screen = list(dir = "lipid-screen", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics",
         assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
     metab_screen = list(dir = "metab-screen", kind = "metab_screen", vendor = "msdial", route = "metabolomics",
+        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")),
+    # KIT-082: the same corpora with no internal standard, for the members made to fail at that analysis.
+    lipid_no_standards = list(dir = "lipid-no-standards", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics", size = c(6L, 200L, 0L),
+        assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
+    metab_no_standards = list(dir = "metab-no-standards", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(6L, 300L, 0L),
         assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")))
 for (key in names(omics_corpora)) {
     spec <- omics_corpora[[key]]

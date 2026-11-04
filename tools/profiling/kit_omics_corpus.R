@@ -15,15 +15,15 @@
 # sample, group, batch, tech_rep_group (the biological sample) and replicates (the biological replicate number
 # within the group, the column the kit driver's technical-replicate assignment reads, as the DIA corpora name it).
 # Sample names are already clean (letters, digits, underscores), so the import runs with sanitize_names off.
-# Usage: Rscript tools/profiling/kit_omics_corpus.R <lipid_screen|metab_screen> <directory> [biological samples per group] [features per assay]
+# Usage: Rscript tools/profiling/kit_omics_corpus.R <lipid_screen|metab_screen> <directory> [biological samples per group] [features per assay] [internal standards per assay]
 
-kitOmicsRecipe <- function(kind, biological_per_group = 6L, features = NULL) {
+kitOmicsRecipe <- function(kind, biological_per_group = 6L, features = NULL, standards = 6L) {
     stopifnot(kind %in% c("lipid_screen", "metab_screen"))
     seed <- switch(kind, lipid_screen = 20261029L, metab_screen = 20261030L)
     features <- as.integer(features %||% switch(kind, lipid_screen = 200L, metab_screen = 300L))
     list(kind = kind, synthetic = TRUE, seed = seed, biological_per_group = as.integer(biological_per_group),
         technical_replicates = 2L, groups = c("WT", "KO"), batches = c("B1", "B2", "B3"),
-        features_per_assay = features, standards_per_assay = 6L, duplicate_fraction = if (kind == "lipid_screen") 0.05 else 0,
+        features_per_assay = features, standards_per_assay = as.integer(standards), duplicate_fraction = if (kind == "lipid_screen") 0.05 else 0,
         differential_fraction = 0.15, batch_effect_sd = 0.35, sample_scale_sd = 0.3, technical_noise_sd = 0.12,
         residual_sd = 0.3, assays = switch(kind, lipid_screen = c("LCMS_Pos", "LCMS_Neg"), metab_screen = c("LCMS_Pos", "GCMS")))
 }
@@ -61,7 +61,7 @@ kitOmicsAssayMatrix <- function(recipe, design, assay_seed, base_mean) {
             matrix(sample_scale, nrow = p, ncol = n, byrow = TRUE) + matrix(stats::rnorm(p * n, 0, recipe$technical_noise_sd), nrow = p)
         standards_base <- stats::rnorm(recipe$standards_per_assay, base_mean + 1, 0.5)
         standards <- outer(standards_base, rep(0, n), "+") + matrix(sample_scale, nrow = recipe$standards_per_assay, ncol = n, byrow = TRUE) +
-            matrix(stats::rnorm(recipe$standards_per_assay * n, 0, 0.05), nrow = recipe$standards_per_assay)
+            matrix(stats::rnorm(recipe$standards_per_assay * n, 0, 0.05), nrow = recipe$standards_per_assay, ncol = n)
         list(values = round(2^log2, 1), standards = round(2^standards, 1), differential = differential, sample_scale = sample_scale)
     })
 }
@@ -172,7 +172,7 @@ if (sys.nframe() == 0L) {
     args <- commandArgs(TRUE)
     if (length(args) < 2L) stop("usage: kit_omics_corpus.R <lipid_screen|metab_screen> <directory> [biological samples per group] [features per assay]")
     kind <- args[[1L]]; directory <- args[[2L]]
-    recipe <- kitOmicsRecipe(kind, if (length(args) > 2L) as.integer(args[[3L]]) else 6L, if (length(args) > 3L) as.integer(args[[4L]]) else NULL)
+    recipe <- kitOmicsRecipe(kind, if (length(args) > 2L) as.integer(args[[3L]]) else 6L, if (length(args) > 3L) as.integer(args[[4L]]) else NULL, if (length(args) > 4L) as.integer(args[[5L]]) else 6L)
     manifest <- switch(kind, lipid_screen = writeKitLipidCorpus(directory, recipe), metab_screen = writeKitMetabCorpus(directory, recipe))
     cat(kind, directory, "samples", manifest$samples, "rows", manifest$rows, "\n")
     for (name in names(manifest$files)) cat("  ", name, manifest$files[[name]]$bytes, "bytes", substr(manifest$files[[name]]$sha256, 1, 12), "\n")
