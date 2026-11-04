@@ -403,6 +403,34 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     # 084c: member 2 again on the matrix Pearson build (user direction 2026-11-05), against kit_082's own oracle, so the
     # journey's exactness is the 1:1 proof at this size.
     if (!is.null(b$builds$kit_084) && !is.null(b$oracles$metab84_import)) b$tickets[["084c"]] <- single_084("kit_084", "metab_large", "metabolomics", "metab84", 14400L)
+    # The lipid pair's two members, as the metabolomics pair's: each exact against the kit_082 or kit_032 record of its corpus.
+    if (!is.null(b$builds$kit_084) && !is.null(b$oracles$lipid84_import)) b$tickets[["084d"]] <- single_084("kit_084", "lipid_large", "lipidomics", "lipid84", 14400L)
+    if (!is.null(b$oracles$lipid84c_import)) b$tickets[["084e"]] <- single_084("kit_032", "lipid_large", "lipidomics", "lipid84c", 14400L)
+    # Operation pairs, `whole` against `partitioned` on kit_084, two pairs to a stage: intensity, log2, duplicates. The log2
+    # pairs' population and oracle are the records' stored ITSD and log2 states (kit-084/norm-states.R).
+    for (label in c("lipid84", "metab84")) {
+        norm_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/kit-084/norm-states-%s.rds", label))
+        if (!file.exists(norm_file)) next
+        norm <- readRDS(norm_file)
+        template <- b$populations[[paste0(label, "_design")]]
+        for (step in names(norm)) {
+            population <- template
+            population$step <- step; population$state <- norm[[step]]$state; population$entity_id <- norm[[step]]$entity_id; population$rows <- norm[[step]]$rows
+            b$populations[[paste0(label, "_", step)]] <- population
+            b$oracles[[paste0(label, "_", step)]] <- norm[[step]]$fingerprint
+        }
+    }
+    if (!is.null(b$builds$kit_084) && !is.null(b$oracles$lipid84_log2) && !is.null(b$oracles$metab84_log2)) {
+        pair_084 <- function(omic, label, step, from, to, parameters) list(operation = paste0(omic, "_", step), population = paste0(label, "_", from),
+            oracle = paste0(label, "_", to), parameters = parameters, variants = list(control = "whole", candidate = "partitioned"))
+        stage_084 <- function(step, from, to, lipid_parameters, metab_parameters) list(control = "kit_084", candidate = "kit_084", ceiling_seconds = 1800L,
+            purpose = "exactness", pairs = list(pair_084("lipid", "lipid84", step, from, to, lipid_parameters), pair_084("metab", "metab84", step, from, to, metab_parameters)))
+        b$tickets[["084p"]] <- stage_084("intensity_filter", "design", "intensity",
+            list(lipids_intensity_cutoff_percentile = 10L, lipids_proportion_of_samples_below_cutoff = 0.5),
+            list(metabolites_intensity_cutoff_percentile = 10L, metabolites_proportion_of_samples_below_cutoff = 0.5))
+        b$tickets[["084q"]] <- stage_084("log2", "itsd", "log2", list(offset = 1L), list(offset = 1L))
+        b$tickets[["084r"]] <- stage_084("duplicate_resolution", "intensity", "duplicates", list(), list())
+    }
 }
 
 # KIT-081 (protocol v1.6): the instruments' small test, recorded and never counted: the intensity filter of each omic on a
