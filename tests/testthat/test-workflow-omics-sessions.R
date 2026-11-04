@@ -152,6 +152,64 @@ for (omic in c("lipidomics", "metabolomics")) {
     expect_null(resolveWorkflowOmicsOwnedSession(owner, file.path(source_dir, "other.rds")))
   })
 
+  test_that(sprintf("KIT-082: the %s export serialised by a managed worker is the same session, published and opened the same way", omic), {
+    skip_if_not(workflowOwnerCapable())
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+      finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) }, .package = "MultiScholaR")
+    root <- withr::local_tempdir()
+    source_dir <- file.path(root, "source"); dir.create(source_dir)
+    session <- omicsOwnerSession()
+    workflow <- omicsSessionWorkflow(case, source_dir, session)
+    withr::defer(closeDIAStateAdapter(workflow$state_manager))
+    owner <- workflow$state_manager
+    state_before <- owner$current_state
+    history_before <- owner$getHistory()
+    fixture <- list(owner = owner, workflow = workflow, source_dir = source_dir, paths = list(source_dir = source_dir))
+    controller <- omicsWorkerController(fixture)
+    runner <- list(progress = function(message) list(close = function() invisible(NULL)), run = function(actions, done = NULL, failed = NULL) {
+      for (action in actions) {
+        result <- omicsWorkerAction(fixture, controller, action$operation, action$parameters, action$context)
+        action$deliver(result)
+      }
+      if (is.function(done)) done()
+      invisible(NULL)
+    })
+    in_process <- omicsSessionExport(case, workflow, source_dir)
+    expected <- readRDS(in_process$sessionFilepath %||% in_process$session_filepath)
+    expected_counts <- expected$feature_counts
+    # The export is repeated on the same head, so the owner's completed record is cleared as a new generation would be.
+    owner$.context$owned_export <- NULL
+    Sys.sleep(1.1)
+    norm <- omicsSessionNormData(case)
+    testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) runner, .package = "MultiScholaR")
+    if (identical(case$omic, "lipidomics")) {
+      handleLipidNormExportSession(omicsSessionInput(), workflow, list(source_dir = source_dir), "Owner test", norm,
+        addLog = quietFn, reqFn = identity, showNotificationFn = quietFn, withProgressFn = progressFn,
+        incProgressFn = quietFn, logInfoFn = quietFn, logWarnFn = quietFn, logErrorFn = function(message) stop(message))
+    } else {
+      dispatchMetabNormExportSession(workflow, norm, omicsSessionInput(), list(source_dir = source_dir), "Owner test",
+        resolveSourceDirFn = function(paths) paths$source_dir,
+        runWorkflowFn = function(...) runMetabNormExportSessionWorkflow(..., withProgressFn = progressFn, incProgressFn = quietFn, logInfoFn = quietFn),
+        handleOutcomeFn = function(error = NULL, ...) if (!is.null(error)) stop(error))
+    }
+    latest <- file.path(source_dir, paste0(case$prefix, "_filtered_session_data_latest.rds"))
+    exported <- readRDS(latest)
+    expect_identical(names(exported), names(expected))
+    expect_equal(exported[setdiff(names(exported), "export_timestamp")], expected[setdiff(names(expected), "export_timestamp")])
+    expect_identical(exported$feature_counts, expected_counts)
+    expect_s4_class(exported$current_s4_object, class(case$object)[[1]])
+    expect_null(owner$.context$export_pending)
+    expect_identical(owner$current_state, state_before)
+    expect_identical(owner$getHistory(), history_before)
+    # A display running after the export commits no state, so the export is still the owner's.
+    omicsWorkerAction(fixture, controller, paste0(case$prefix, "_filtering_metrics"))
+    # The DE tab's Open verifies it and reopens the owner.
+    da <- new.env(parent = emptyenv())
+    expect_identical(omicsSessionOpen(case, workflow, da, latest, session)$status, "success")
+    expect_identical(workflow$state_manager, owner)
+    expect_identical(da$current_state_name, case$states[[2]])
+  })
+
   test_that(sprintf("KIT-071: a legacy %s session adopts into a fresh owner with adopted provenance; other shapes are refused by name", omic), {
     skip_if_not(workflowOwnerCapable())
     root <- withr::local_tempdir()

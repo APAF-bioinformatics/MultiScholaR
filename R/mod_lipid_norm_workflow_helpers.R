@@ -328,7 +328,9 @@ handleLipidNormRunNormalization <- function(
 #' @noRd
 buildLipidNormExportSessionData <- function(workflowData, normData, input, experimentLabel, exportTimestamp = Sys.time()) {
     current_state_name <- workflowData$state_manager$current_state
-    current_s4 <- workflowData$state_manager$getState(current_state_name)
+    # KIT-082: on a managed session the worker serialises the state, and the counts here read the id column.
+    managed <- !is.null(workflowOmicsManagedActions("lipidomics"))
+    current_s4 <- if (managed) readLipidWorkflowShell(workflowData$state_manager, current_state_name, "features") else workflowData$state_manager$getState(current_state_name)
 
     feature_counts_per_assay <- NULL
     if (!is.null(current_s4) && inherits(current_s4, "LipidomicsAssayData")) {
@@ -336,7 +338,7 @@ buildLipidNormExportSessionData <- function(workflowData, normData, input, exper
         feature_counts_per_assay <- purrr::map(names(current_s4@lipid_data), \(assay_name) {
             assay_data <- current_s4@lipid_data[[assay_name]]
             if (!is.null(assay_data)) {
-                n_features <- length(unique(assay_data[[current_s4@lipid_id_column]]))
+                n_features <- attr(current_s4, "feature_counts")[[assay_name]] %||% length(unique(assay_data[[current_s4@lipid_id_column]]))
                 n_samples <- length(intersect(colnames(assay_data), design_samples))
                 list(features = n_features, samples = n_samples)
             } else {
@@ -348,7 +350,7 @@ buildLipidNormExportSessionData <- function(workflowData, normData, input, exper
     list(
         # --- R6 State Info ---
         r6_current_state_name = current_state_name
-        , current_s4_object = current_s4
+        , current_s4_object = if (!managed) current_s4
 
         # --- Workflow artifacts ---
         , contrasts_tbl = workflowData$contrasts_tbl
@@ -524,6 +526,14 @@ handleLipidNormExportSession <- function(
         return(invisible(FALSE))
     }
 
+    report_failure <- function(e) {
+        message <- conditionMessage(e)
+        logErrorFn(paste("*** ERROR in session export:", message, "***"))
+        addLog(paste("Export error:", message))
+        showNotificationFn(paste("Export error:", message), type = "error", duration = 10)
+        invisible(FALSE)
+    }
+
     tryCatch({
         source_dir <- experimentPaths$source_dir
         if (is.null(source_dir) || !dirExistsFn(source_dir)) {
@@ -543,46 +553,61 @@ handleLipidNormExportSession <- function(
         if (!inherits(manager, "DIAStateAdapter")) {
             cli::cli_abort("the session export needs the session's state owner", class = "saved_entity_scope")
         }
-        export_artifacts <- withWorkflowStateScope(manager, function() {
-            withProgressFn(message = "Exporting normalized session data...", value = 0, {
-                incProgressFn(0.2, detail = "Gathering data and publishing outputs...")
-                result <- runWorkflowOwnedSessionExport(manager, workflowData, normData, input, source_dir,
-                    collectFn = function(workflowData, normData, input) {
-                        session_data <- buildLipidNormExportSessionData(workflowData, normData, input,
-                            experimentLabel, exportTimestamp = getTimeFn())
-                        logInfoFn("*** EXPORT: Gathered session data successfully ***")
-                        logInfoFn(sprintf("*** EXPORT: Assays: %s ***", paste(normData$assay_names, collapse = ", ")))
-                        logInfoFn(sprintf("*** EXPORT: Contrasts available: %d ***",
-                            ifelse(is.null(session_data$contrasts_tbl), 0, nrow(session_data$contrasts_tbl))))
-                        session_data
-                    },
-                    saveFn = function(sessionData, sourceDir, publicationRequest) {
-                        saveLipidNormExportArtifacts(sessionData, sourceDir, publicationRequest,
-                            saveRdsFn = saveRdsFn, writeLinesFn = writeLinesFn,
-                            logInfoFn = logInfoFn, logWarnFn = logWarnFn)
-                    },
-                    serializeFn = saveRdsFn, prefix = "lipid_")
-                incProgressFn(0.8, detail = "Export complete")
-                result$exportArtifacts
+        collect <- function(workflowData, normData, input) {
+            session_data <- buildLipidNormExportSessionData(workflowData, normData, input,
+                experimentLabel, exportTimestamp = getTimeFn())
+            logInfoFn("*** EXPORT: Gathered session data successfully ***")
+            logInfoFn(sprintf("*** EXPORT: Assays: %s ***", paste(normData$assay_names, collapse = ", ")))
+            logInfoFn(sprintf("*** EXPORT: Contrasts available: %d ***",
+                ifelse(is.null(session_data$contrasts_tbl), 0, nrow(session_data$contrasts_tbl))))
+            session_data
+        }
+        export <- function() {
+            export_artifacts <- withWorkflowStateScope(manager, function() {
+                withProgressFn(message = "Exporting normalized session data...", value = 0, {
+                    incProgressFn(0.2, detail = "Gathering data and publishing outputs...")
+                    result <- runWorkflowOwnedSessionExport(manager, workflowData, normData, input, source_dir,
+                        collectFn = collect,
+                        saveFn = function(sessionData, sourceDir, publicationRequest) {
+                            saveLipidNormExportArtifacts(sessionData, sourceDir, publicationRequest,
+                                saveRdsFn = saveRdsFn, writeLinesFn = writeLinesFn,
+                                logInfoFn = logInfoFn, logWarnFn = logWarnFn)
+                        },
+                        serializeFn = saveRdsFn, prefix = "lipid_")
+                    incProgressFn(0.8, detail = "Export complete")
+                    result$exportArtifacts
+                })
             })
-        })
 
-        addLog(paste("Exported comprehensive session data to:", export_artifacts$session_filepath))
-        showNotificationFn(
-            sprintf("Session data exported successfully!\nSaved as: %s\nSee summary file for details.", export_artifacts$session_filename)
-            , type = "message"
-            , duration = 10
-        )
+            addLog(paste("Exported comprehensive session data to:", export_artifacts$session_filepath))
+            showNotificationFn(
+                sprintf("Session data exported successfully!\nSaved as: %s\nSee summary file for details.", export_artifacts$session_filename)
+                , type = "message"
+                , duration = 10
+            )
 
-        logInfoFn("=== EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===")
-        invisible(export_artifacts)
+            logInfoFn("=== EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===")
+            invisible(export_artifacts)
+        }
 
-    }, error = function(e) {
-        logErrorFn(paste("*** ERROR in session export:", e$message, "***"))
-        addLog(paste("Export error:", e$message))
-        showNotificationFn(paste("Export error:", e$message), type = "error", duration = 10)
-        invisible(FALSE)
-    })
+        # KIT-082: the state is serialised by a managed session's worker, and published here by the owner's retry path.
+        runner <- workflowOmicsManagedActions("lipidomics")
+        if (!is.null(runner)) {
+            progress <- runner$progress("Exporting normalized session data...")
+            return(startWorkflowManagedSessionExport(manager, runner, workflowData, normData, input, source_dir, collect, "lipid_",
+                publish = function() tryCatch({
+                    progress$close()
+                    export()
+                }, error = report_failure),
+                failed = function(error) {
+                    progress$close()
+                    report_failure(error)
+                }))
+        }
+
+        export()
+
+    }, error = report_failure)
 }
 
 handleLipidNormSkipCorrelationFilter <- function(

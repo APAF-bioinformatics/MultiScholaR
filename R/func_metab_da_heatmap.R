@@ -97,8 +97,8 @@ generateMetabDAHeatmap <- function(
 
     logger::log_info(sprintf("   Selected %d top metabolites", nrow(top_metabolites)))
 
-    # Get expression matrix
-    theObject <- da_results_list$theObject
+    # Get expression matrix (KIT-082: a tab reads only the rows chosen above)
+    theObject <- if (is.function(da_results_list$read_source)) da_results_list$read_source(top_metabolites$metabolite_id) else da_results_list$theObject
 
     # Determine which assay(s) to use
     if (!is.null(selected_assay) && !is.na(selected_assay) && selected_assay != "Combined") {

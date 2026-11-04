@@ -104,14 +104,15 @@ omicsWorkerJourney <- function(fixture, binding, ruv) {
 #' and acceptance (`omicsWorkerAction`), and the probe records every assay read the controller makes between the action's
 #' reservation and its delivery. The service layer (the reservation's systemd units, the poll) is mocked.
 #' @param probe An environment; `tables` collects the entity ids the controller materialises during an action.
-omicsManagedChainMocks <- function(fixture, probe, env = parent.frame()) {
+omicsManagedChainMocks <- function(fixture, probe, env = parent.frame(), window = TRUE) {
   controller <- omicsWorkerController(fixture)
   application <- WorkflowExecutionApplication$new()
   table <- materializeWorkflowTable
   components <- readWorkflowExecutionComponents
   resume <- resumeWorkflowAction
   composite <- writeWorkflowOmicsCompositeFigure
-  working <- function() isTRUE(probe$active) && !identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")
+  # KIT-082: `window = FALSE` counts the controller's reads from the session's start, not only during an action.
+  working <- function() (isTRUE(probe$active) || !window) && !identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")
   testthat::local_mocked_bindings(
     workflowSessionApplication = function(session) application,
     workflowExecutionBuildIdentity = function() strrep("f", 64),
@@ -141,6 +142,10 @@ omicsManagedChainMocks <- function(fixture, probe, env = parent.frame()) {
     # The step's resume returns what the in-test worker's acceptance already published.
     resumeWorkflowAction = function(owner, request_id) if (startsWith(request_id, "worker-")) probe$handoff$accepted else resume(owner, request_id),
     materializeWorkflowTable = function(context, reference, ...) {
+      if (working()) probe$tables <- c(probe$tables, reference$entity_id)
+      table(context, reference, ...)
+    },
+    materializeDIATable = function(context, reference, ...) {
       if (working()) probe$tables <- c(probe$tables, reference$entity_id)
       table(context, reference, ...)
     },

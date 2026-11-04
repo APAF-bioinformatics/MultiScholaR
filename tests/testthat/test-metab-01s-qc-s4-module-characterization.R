@@ -812,7 +812,7 @@ test_that("metabolomics QC S4 tracking-plot seam refreshes and stores the QC plo
         captured$plot_updates <- c(captured$plot_updates, list(value))
         invisible(NULL)
       },
-      updateMetaboliteFilteringFn = function(theObject, step_name, omics_type, return_grid, overwrite) {
+      updateMetaboliteFilteringFn = function(theObject, step_name, omics_type, return_grid, overwrite, metrics = NULL) {
         captured$qc_update <- list(
           the_object = theObject,
           step_name = step_name,
@@ -1345,6 +1345,8 @@ test_that("metabolomics QC S4 server delegates the filter-plot render path throu
 })
 
 test_that("metabolomics QC S4 finalize workflow seam orchestrates the downstream helper chain", {
+  # KIT-082: in process the tracking figure reads the whole state.
+  testthat::local_mocked_bindings(readMetabWorkflowState = function(manager, reference = NULL) current_s4, .package = "MultiScholaR")
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
   current_s4 <- newMetabQcS4CharacterizationObject(

@@ -105,8 +105,18 @@ omicsStandInReaders <- function(env = parent.frame()) {
   }
   metadata_of <- function(manager, reference = NULL) omicsStandInMetadata(state_of(manager, reference), reference)
   select_of <- function(manager, state_name) manager$revertToState(state_name)
+  # KIT-082: the bounded readers answer with the stand-in's object; each is proved against the whole read on real owners.
+  shell_of <- function(manager, reference = NULL, measures = character()) state_of(manager, reference)
   testthat::local_mocked_bindings(readLipidWorkflowState = state_of, readMetabWorkflowState = state_of,
     readLipidWorkflowMetadata = metadata_of, readMetabWorkflowMetadata = metadata_of,
+    readLipidWorkflowShell = shell_of, readMetabWorkflowShell = shell_of,
+    readLipidWorkflowIds = state_of, readMetabWorkflowIds = state_of,
+    readWorkflowOmicsRows = function(binding, manager, reference = NULL, keep) state_of(manager, reference),
+    readMetabQcItsdState = function(stateManager, inputPattern) state_of(stateManager),
+    readWorkflowOmicsItsdTables = function(binding, manager, assays, build, reference = NULL) {
+      tables <- methods::slot(state_of(manager, reference), binding$data_slot)
+      lapply(tables[intersect(assays, names(tables))], build)
+    },
     selectWorkflowStateReference = select_of, .package = "MultiScholaR", .env = env)
 }
 

@@ -77,7 +77,10 @@ metabolomicsDeclarationBinding <- list(
     composite_figure = function(qc_dir, output_dir, assay_names, ruv_mode) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc_dir), assay_names, ruv_mode,
         "metabolomics", generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = output_dir),
     filtering_metrics = function(object) computeMetabFilteringMetrics(object),
-    da_export = function(...) outputMetabDaResultsAllContrasts(...)
+    da_export = function(...) outputMetabDaResultsAllContrasts(...),
+    # KIT-082: what the tabs show from the whole matrix.
+    final_pca = function(object, color, shape) buildMetabNormFinalQcPcaPlot(object, color, shape),
+    volcano_widget = function(...) generateMetabDAVolcanoPlotGlimma(...)
 )
 
 metabolomicsStepLabels <- metabolomicsDeclarationBinding$step_labels
@@ -92,6 +95,13 @@ readMetabWorkflowState <- function(manager, reference = NULL) readWorkflowOmicsS
 
 #' @noRd
 readMetabWorkflowMetadata <- function(manager, reference = NULL) readWorkflowOmicsMetadata(metabolomicsDeclarationBinding, manager, reference)
+
+#' The state without its matrix, and with only the id column (KIT-082).
+#' @noRd
+readMetabWorkflowShell <- function(manager, reference = NULL, measures = character()) readWorkflowOmicsShell(metabolomicsDeclarationBinding, manager, reference, measures)
+
+#' @noRd
+readMetabWorkflowIds <- function(manager, reference = NULL) readWorkflowOmicsIds(metabolomicsDeclarationBinding, manager, reference)
 
 #' Identify the metabolomics DA manifest.
 #' @noRd

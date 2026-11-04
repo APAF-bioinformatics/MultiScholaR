@@ -165,27 +165,26 @@ registerLipidNormItsdTableOutputs <- function(
         reqFn(normData$assay_names)
         reqFn(workflowData$state_manager)
 
-        # KIT-075: the state is read here for the candidate tables only; each table's render keeps its own table.
+        # KIT-082: built a page at a time, with nothing whole kept. This stays synchronous so that Run cannot race the selection.
         current_s4 <- tryCatch({
-            readLipidWorkflowState(workflowData$state_manager)
+            readLipidWorkflowShell(workflowData$state_manager)
         }, error = function(e) NULL)
 
         if (is.null(current_s4) || !inherits(current_s4, "LipidomicsAssayData")) {
             return()
         }
 
-        selection_tables <- lapply(stats::setNames(normData$assay_names, normData$assay_names), \(assay_name) {
-            assay_data <- current_s4@lipid_data[[assay_name]]
-            if (is.null(assay_data)) {
-                return(NULL)
-            }
+        lipid_id_col <- current_s4@lipid_id_column
+        annotation_cols <- current_s4@annotation_id_column
+        rm(current_s4)
+        stored_tables <- readWorkflowOmicsItsdTables(lipidomicsDeclarationBinding, workflowData$state_manager, normData$assay_names, function(page) {
             buildLipidItsdSelectionTableFn(
-                assay_data = assay_data
-                , lipid_id_col = current_s4@lipid_id_column
-                , annotation_cols = current_s4@annotation_id_column
+                assay_data = page
+                , lipid_id_col = lipid_id_col
+                , annotation_cols = annotation_cols
             )
         })
-        rm(current_s4)
+        selection_tables <- lapply(stats::setNames(normData$assay_names, normData$assay_names), \(assay_name) stored_tables[[assay_name]])
         # KIT-078: the shown rows' feature ids, so that a selection resolves without the matrix on a managed run.
         normData$itsd_candidate_ids <- lapply(selection_tables, function(table) table$feature_id)
 

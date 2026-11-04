@@ -192,8 +192,8 @@ handleLipidDuplicateDetection <- function(
 ) {
     reqFn(workflowData$state_manager)
 
-    # KIT-075: the state is read for the detection only.
-    currentS4 <- readLipidWorkflowState(workflowData$state_manager)
+    # KIT-082: the finder reads the id column and nothing else.
+    currentS4 <- readLipidWorkflowIds(workflowData$state_manager)
     reqFn(currentS4)
 
     if (!inherits(currentS4, "LipidomicsAssayData")) {

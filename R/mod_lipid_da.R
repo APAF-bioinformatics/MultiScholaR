@@ -95,6 +95,17 @@ registerLipidDaVolcanoGlimmaOutput <- function(
     buildVolcanoGlimmaUiFn = buildLipidDaVolcanoGlimmaUi
 ) {
     output$volcano_glimma <- renderUiFn({
+        # KIT-082: the widget reads the whole matrix, so a managed session's worker writes it as a page.
+        runner <- workflowOmicsManagedActions("lipidomics")
+        if (!is.null(runner)) {
+            return(buildVolcanoGlimmaUiFn(
+                daResultsList = daData$da_results_list,
+                selectedContrast = input$volcano_contrast,
+                selectedAssay = input$volcano_assay,
+                daQValThresh = input$da_q_val_thresh,
+                widgetFactory = workflowOmicsVolcanoPageFactory(lipidomicsDeclarationBinding, runner, workflowData$state_manager)
+            ))
+        }
         buildVolcanoGlimmaUiFn(
             daResultsList = lipidDaResultsWithSource(daData$da_results_list, daData, workflowData),
             selectedContrast = input$volcano_contrast,
@@ -137,7 +148,8 @@ registerLipidDaHeatmapPlotOutput <- function(
 ) {
     output$heatmap_plot <- renderPlotFn({
         heatmapState <- buildHeatmapRenderStateFn(
-            daResultsList = lipidDaResultsWithSource(daData$da_results_list, daData, workflowData),
+            # KIT-082: the kernel reads the rows it chooses.
+            daResultsList = omicsDaResultsWithRowReader(lipidomicsDeclarationBinding, daData$da_results_list, daData, workflowData),
             selectedContrast = input$heatmap_contrast,
             selectedAssay = input$heatmap_assay,
             topN = input$heatmap_top_n,

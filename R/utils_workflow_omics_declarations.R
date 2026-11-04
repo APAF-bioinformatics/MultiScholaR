@@ -601,6 +601,184 @@ readWorkflowOmicsMetadata <- function(binding, manager, reference = NULL) {
     })
 }
 
+#' An omics state without its matrix (KIT-082): the slots and the design, each assay as its zero-row prototype, with the
+#' stored row counts and, when asked, what the QC tabs count from the tables, read a page at a time with nothing whole kept.
+#' @param reference The state's saved reference or name; the head when NULL.
+#' @param measures Any of `features` (unique ids per assay) and `missing` (percent of cells NA or zero per assay).
+#' @return The object, with the attributes `assay_rows`, `feature_counts` and `missing_percent`, or NULL with no such state.
+#' @noRd
+readWorkflowOmicsShell <- function(binding, manager, reference = NULL, measures = character()) {
+    if (!inherits(manager, "DIAStateAdapter")) cli::cli_abort(paste(binding$step_scope, "needs the session's state owner"), class = "saved_entity_scope")
+    if (is.character(reference)) reference <- getWorkflowStateReference(manager, reference)
+    reference <- reference %||% getWorkflowStateReference(manager)
+    if (is.null(reference)) return(NULL)
+    withWorkflowStateScope(manager, function() {
+        shell <- readWorkflowExecutionComponents(manager, reference, fields = binding$design_field)
+        tables <- readWorkflowStateMetadata(manager, reference)$data$components[[binding$data_slot]]
+        attr(shell, "assay_rows") <- vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1))
+        id_column <- methods::slot(shell, binding$id_slot)
+        if ("features" %in% measures) attr(shell, "feature_counts") <- vapply(omicsVisitAssays(binding, manager, reference, function(assay, scope) {
+            if (id_column %in% scope$metadata$columns) length(unique(omicsReadRows(scope, id_column)[[id_column]])) else as.integer(scope$metadata$rows)
+        }), identity, integer(1))
+        if ("missing" %in% measures) attr(shell, "missing_percent") <- vapply(omicsVisitAssays(binding, manager, reference,
+            function(assay, scope) omicsAssayMissingPercent(scope)), identity, numeric(1))
+        shell
+    })
+}
+
+#' Visit each assay table of a state through a bounded read scope.
+#' @param visit `function(assay, scope)`.
+#' @return The values, named by assay.
+#' @noRd
+omicsVisitAssays <- function(binding, manager, reference, visit, assays = NULL) {
+    tables <- readWorkflowStateMetadata(manager, reference)$data$components[[binding$data_slot]]
+    names_to_read <- if (is.null(assays)) names(tables) else intersect(assays, names(tables))
+    stats::setNames(lapply(names_to_read, function(assay) {
+        component <- tables[[assay]]
+        scope <- newWorkflowTableReadScope(manager$.context$store, component, reader = if (component$metadata$shape[[2L]] > 64L) "duckdb" else "arrow")
+        tryCatch(visit(assay, scope), finally = releaseWorkflowTableReadScope(scope))
+    }), names_to_read)
+}
+
+#' The rows of a table that a filter keeps, read a page at a time: the filter's rows are all that is held.
+#' @param keep `function(page)` returning a logical per row; every row when NULL.
+#' @noRd
+omicsReadRows <- function(scope, columns, keep = NULL) {
+    pieces <- list()
+    streamWorkflowTableRows(scope, columns, function(page, offset, row_names) {
+        rownames(page) <- NULL
+        pieces[[length(pieces) + 1L]] <<- if (is.function(keep)) page[keep(page), , drop = FALSE] else page
+        invisible(NULL)
+    })
+    if (!length(pieces)) return(readSavedWorkflowTablePrototype(scope)[columns])
+    rows <- do.call(rbind, pieces)
+    rownames(rows) <- NULL
+    rows
+}
+
+#' Percent of the numeric cells that are NA or zero, as the QC tabs' assay statistics count them.
+#' @noRd
+omicsAssayMissingPercent <- function(scope) {
+    prototype <- readSavedWorkflowTablePrototype(scope)
+    columns <- names(prototype)[vapply(prototype, is.numeric, logical(1))]
+    if (!length(columns)) return(NA_real_)
+    missing <- 0
+    if (scope$metadata$rows) streamWorkflowTableRows(scope, columns, function(page, offset, row_names) {
+        for (column in columns) missing <<- missing + sum(is.na(page[[column]]) | page[[column]] == 0)
+        invisible(NULL)
+    })
+    round((missing / (scope$metadata$rows * length(columns))) * 100, 1)
+}
+
+#' An omics state whose assays hold only the rows a filter keeps (KIT-082), for a kernel that reads those rows only.
+#' @param keep `function(page, id_column)` returning a logical per row.
+#' @return The object, or NULL with no such state.
+#' @noRd
+readWorkflowOmicsRows <- function(binding, manager, reference = NULL, keep) {
+    shell <- readWorkflowOmicsShell(binding, manager, reference)
+    if (is.null(shell)) return(NULL)
+    if (is.character(reference)) reference <- getWorkflowStateReference(manager, reference)
+    reference <- reference %||% getWorkflowStateReference(manager)
+    id_column <- methods::slot(shell, binding$id_slot)
+    withWorkflowStateScope(manager, function() {
+        methods::slot(shell, binding$data_slot, check = FALSE) <- omicsVisitAssays(binding, manager, reference, function(assay, scope) {
+            omicsReadRows(scope, scope$metadata$columns, function(page) keep(page, id_column))
+        })
+        shell
+    })
+}
+
+#' An omics state whose assays hold only the id column (KIT-082): duplicate detection and the study parameters read no other.
+#' @return The object, or NULL with no such state.
+#' @noRd
+readWorkflowOmicsIds <- function(binding, manager, reference = NULL) {
+    shell <- readWorkflowOmicsShell(binding, manager, reference)
+    if (is.null(shell)) return(NULL)
+    if (is.character(reference)) reference <- getWorkflowStateReference(manager, reference)
+    reference <- reference %||% getWorkflowStateReference(manager)
+    id_column <- methods::slot(shell, binding$id_slot)
+    withWorkflowStateScope(manager, function() {
+        methods::slot(shell, binding$data_slot, check = FALSE) <- omicsVisitAssays(binding, manager, reference, function(assay, scope) {
+            if (id_column %in% scope$metadata$columns) return(omicsReadRows(scope, id_column))
+            as.data.frame(matrix(nrow = scope$metadata$rows, ncol = 0L))
+        })
+        shell
+    })
+}
+
+#' The ITSD candidate tables, built a page at a time by the unchanged builder and sorted as it sorts: its statistics are per
+#' row, and a stable sort of stably sorted pages keeps the whole table's order.
+#' @param build `function(page)`, the omic's builder.
+#' @param reference The state; the head when NULL.
+#' @return The tables, named by assay, for the assays the state holds.
+#' @noRd
+readWorkflowOmicsItsdTables <- function(binding, manager, assays, build, reference = NULL) {
+    if (is.character(reference)) reference <- getWorkflowStateReference(manager, reference)
+    reference <- reference %||% getWorkflowStateReference(manager)
+    withWorkflowStateScope(manager, function() {
+        omicsVisitAssays(binding, manager, reference, function(assay, scope) {
+            pieces <- list()
+            streamWorkflowTableRows(scope, scope$metadata$columns, function(page, offset, row_names) {
+                rownames(page) <- NULL
+                pieces[[length(pieces) + 1L]] <<- build(page)
+                invisible(NULL)
+            })
+            if (!length(pieces)) return(build(readSavedWorkflowTablePrototype(scope)))
+            if (length(pieces) == 1L) return(pieces[[1L]])
+            dplyr::arrange(do.call(rbind, pieces), dplyr::desc(.data$is_candidate), .data$cv_percent)
+        }, assays)
+    })
+}
+
+#' The patterns the internal-standard kernels fall back to when the user's pattern finds nothing.
+#' @noRd
+omicsInternalStandardFallbackPatterns <- function() {
+    c(
+        "^IS[_-]", # IS_ or IS- prefix (e.g., IS_Caffeine, IS-Leucine)
+        "^ITSD[_-]", # ITSD_ prefix (e.g., ITSD_A, ITSD_001)
+        "ISTD", # ISTD anywhere (e.g., Caffeine-ISTD, ISTD_001)
+        "ITSD", # ITSD anywhere (alternate spelling)
+        "[_-]d\\d+$", # Deuterated suffix (e.g., Caffeine_d3, Leucine-d10)
+        "[_-]d\\d+[_-]", # Deuterated mid-name (e.g., Caffeine_d3_IS)
+        "\\(d\\d+\\)", # Deuterated in parens (e.g., Caffeine(d3))
+        "(?i)internal.?standard", # "Internal Standard" / "Internal_Standard"
+        "(?i)^is\\d+$", # IS followed by numbers (e.g., IS1, IS23)
+        "13C[_-]?labeled", # 13C labeled (e.g., 13C-labeled_reference)
+        "15N[_-]?labeled", # 15N labeled
+        "-13C\\d*-", # 13C in middle (e.g., Glucose-13C6-IS)
+        "-15N\\d*-" # 15N in middle
+    )
+}
+
+#' The rows an internal-standard kernel can use: those matching the user's pattern or the fallback patterns in any column it
+#' tries. A row whose value is NA is kept, because the kernels count a match of NA.
+#' @param page One page of an assay.
+#' @param pattern The user's pattern.
+#' @param columns The columns the kernel tries.
+#' @return A logical per row.
+#' @noRd
+omicsInternalStandardRows <- function(page, pattern, columns) {
+    keep <- rep(FALSE, nrow(page))
+    for (column in intersect(columns, names(page))) {
+        values <- as.character(page[[column]])
+        for (candidate in c(pattern, paste(omicsInternalStandardFallbackPatterns(), collapse = "|"))) {
+            hit <- tryCatch(stringr::str_detect(values, candidate), error = function(error) rep(FALSE, length(values)))
+            keep <- keep | is.na(hit) | hit
+        }
+    }
+    keep
+}
+
+#' DA results whose heatmap reads the rows it has chosen (KIT-082): `read_source(ids)` gives the source state with only those rows.
+#' @noRd
+omicsDaResultsWithRowReader <- function(binding, results, daData, workflowData) {
+    manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager
+    if (is.null(results) || is.null(manager)) return(results)
+    state <- daData$current_state_name
+    results$read_source <- function(ids) readWorkflowOmicsRows(binding, manager, state, function(page, id_column) page[[id_column]] %in% ids)
+    results
+}
+
 #' Bind the omics session owner to its route at the import (KIT-075, the proteomics pattern): binding replaces the
 #' pending store, so the import's tables can only be held by reference once the owner is bound. An owner that is
 #' already bound, or a bus without an owner, is left as it is.
@@ -970,6 +1148,103 @@ computeWorkflowOmicsDaPublicationAction <- function(manager, request, variant) {
             list(success = FALSE, message = substr(conditionMessage(error), 1L, 1024L))
         })
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source, display = export)
+}
+
+#' The head's filtering metrics, for QC finalise's tracking figure (KIT-082).
+#' @noRd
+computeWorkflowOmicsFilteringMetricsAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source,
+        display = list(filtering_metrics = omicsFilteringMetricsReference(binding, manager, source)))
+}
+
+#' The final-QC PCA of the request's state (KIT-082), saved as the drawn grobs: a plot's aesthetics keep the frames that built
+#' it, which hold the state. A failure is the tab's to show, as it is in process.
+#' @noRd
+computeWorkflowOmicsFinalPcaAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    parameters <- request$parameters
+    display <- tryCatch(list(plot = saveWorkflowStateValue(manager$.context, omicsPlotGrob(binding$final_pca(
+        readWorkflowOmicsState(binding, manager, parameters$state), parameters$grouping_variable, parameters$shape_variable)),
+        "omics-final-pca", codec = "rds")), error = function(error) list(message = substr(conditionMessage(error), 1L, 1024L)))
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source, display = display)
+}
+
+#' A plot as its grobs, drawn at any size with `grid::grid.draw`.
+#' @noRd
+omicsPlotGrob <- function(plot) {
+    # A bitmap device, as the tab's: the layout's text metrics are taken from the device the grobs are built on.
+    path <- tempfile(fileext = ".png")
+    grDevices::png(path)
+    on.exit({
+        grDevices::dev.off()
+        unlink(path)
+    }, add = TRUE)
+    if (inherits(plot, "patchwork")) patchwork::patchworkGrob(plot) else ggplot2::ggplotGrob(plot)
+}
+
+#' One contrast and assay's interactive volcano as a self-contained page, saved as an asset and shown in an iframe (KIT-082,
+#' the KIT-016 pattern). No page is `list(page = NULL)`: the widget reported nothing to draw.
+#' @noRd
+computeWorkflowOmicsVolcanoPageAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+    source <- request$input_references$state
+    parameters <- request$parameters
+    done <- function(display) list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source, display = display)
+    context <- manager$.context
+    manifest_reference <- context$snapshot$da_results
+    if (is.null(manifest_reference)) cli::cli_abort("no accepted DA manifest", class = "workflow_execution_invalid")
+    identity <- newSavedWorkflowScientificIdentity(manifest_reference$entity_id, "omics-volcano-page",
+        digest::digest(list(parameters$contrast, parameters$assay, as.numeric(parameters$qvalue)), algo = "sha256"), "omics-volcano-page-v1", context$software)
+    hit <- resolveSavedWorkflowEntity(context$store, "rendered_asset", identity, hydrate = FALSE)
+    if (identical(hit$status, "hit")) {
+        rootWorkflowProduct(manager, hit$reference, list(source))
+        return(done(list(page = hit$reference)))
+    }
+    display <- tryCatch({
+        manifest <- resolveWorkflowStateValue(context, manifest_reference)
+        results <- readWorkflowOmicsDaResults(binding, manager, manifest)
+        results$theObject <- readWorkflowOmicsState(binding, manager, manifest$source)
+        widget <- binding$volcano_widget(da_results_list = results, selected_contrast = parameters$contrast,
+            selected_assay = parameters$assay, da_q_val_thresh = parameters$qvalue)
+        if (is.null(widget)) list(page = NULL) else {
+            html <- tempfile("omics-volcano-", fileext = ".html")
+            on.exit(unlink(html), add = TRUE)
+            saveSelfContainedWidget(widget, html)
+            reference <- saveWorkflowConsumerEntity(context$store, newSavedWorkflowRenderedAsset(readBin(html, "raw", n = file.size(html)), "text/html", c(1200L, 820L)),
+                basename(tempfile("omics-volcano-html-")), identity, "rendered_asset")
+            rootWorkflowProduct(manager, reference, list(source))
+            list(page = reference)
+        }
+    }, error = function(error) list(message = substr(conditionMessage(error), 1L, 1024L)))
+    done(display)
+}
+
+#' The session export's state, serialised here (KIT-082): the controller collected the rest of the session list and publishes
+#' the staged file through the owner's existing retry path.
+#' @noRd
+computeWorkflowOmicsSessionExportAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    parameters <- request$parameters
+    session_data <- resolveWorkflowStateValue(manager$.context, parameters$session)
+    session_data$current_s4_object <- manager$getState(session_data$r6_current_state_name)
+    stageWorkflowLegacyExport(session_data, workflowExportPaths(parameters$root, parameters$request_id), parameters$request_id, parameters$timestamp,
+        serializeFn = saveRDS, serialize_only = TRUE, prefix = parameters$prefix)
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
+}
+
+#' The summary's integration object, written here (KIT-082). The file replaces any earlier one whole.
+#' @noRd
+computeWorkflowOmicsIntegrationExportAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    parameters <- request$parameters
+    temporary <- tempfile("omics-integration-", tmpdir = dirname(parameters$path), fileext = ".RDS")
+    on.exit(unlink(temporary), add = TRUE)
+    saveRDS(manager$getState(parameters$state_name), temporary)
+    if (!file.rename(temporary, parameters$path)) cli::cli_abort("cannot write the integration object", class = "saved_entity_write")
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
 }
 
 #' What the tab reads from an accepted omics action (KIT-078): the declaration's value (the product the worker saved) and

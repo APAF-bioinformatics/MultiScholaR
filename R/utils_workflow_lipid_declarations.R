@@ -86,7 +86,10 @@ lipidomicsDeclarationBinding <- list(
     composite_figure = function(qc_dir, output_dir, assay_names, ruv_mode) writeLipidNormCompositeFigure(qc_dir, assay_names, ruv_mode, "lipidomics",
         buildLipidNormCompositeFromFilesGenerator(), output_dir = output_dir),
     filtering_metrics = function(object) computeLipidFilteringMetrics(object),
-    da_export = function(...) outputLipidDaResultsAllContrasts(...)
+    da_export = function(...) outputLipidDaResultsAllContrasts(...),
+    # KIT-082: what the tabs show from the whole matrix.
+    final_pca = function(object, color, shape) buildLipidNormFinalQcPcaPlot(object, color, shape),
+    volcano_widget = function(...) generateLipidDAVolcanoPlotGlimma(...)
 )
 
 lipidomicsStepLabels <- lipidomicsDeclarationBinding$step_labels
@@ -101,6 +104,13 @@ readLipidWorkflowState <- function(manager, reference = NULL) readWorkflowOmicsS
 
 #' @noRd
 readLipidWorkflowMetadata <- function(manager, reference = NULL) readWorkflowOmicsMetadata(lipidomicsDeclarationBinding, manager, reference)
+
+#' The state without its matrix, and with only the id column (KIT-082).
+#' @noRd
+readLipidWorkflowShell <- function(manager, reference = NULL, measures = character()) readWorkflowOmicsShell(lipidomicsDeclarationBinding, manager, reference, measures)
+
+#' @noRd
+readLipidWorkflowIds <- function(manager, reference = NULL) readWorkflowOmicsIds(lipidomicsDeclarationBinding, manager, reference)
 
 #' Identify the lipidomics DA manifest.
 #' @noRd

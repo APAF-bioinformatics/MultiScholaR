@@ -24,7 +24,8 @@ buildMetabQcS4DataSummaryUi <- function(
     assay_list <- currentS4@metabolite_data
     n_assays <- length(assay_list)
 
-    total_metabolites <- sum(vapply(assay_list, function(assay) {
+    # KIT-082: counted from the store when the state is read without its matrix.
+    total_metabolites <- sum(attr(currentS4, "feature_counts") %||% vapply(assay_list, function(assay) {
         if (currentS4@metabolite_id_column %in% names(assay)) {
             length(uniqueFn(assay[[currentS4@metabolite_id_column]]))
         } else {
@@ -190,7 +191,7 @@ buildMetabQcS4AssayStatsDatatable <- function(
 
     stats_df <- data.frame(
         Assay = assay_names
-        , Metabolites = vapply(assay_list, function(assay) {
+        , Metabolites = attr(currentS4, "feature_counts") %||% vapply(assay_list, function(assay) {
             if (metabolite_id_col %in% names(assay)) {
                 length(uniqueFn(assay[[metabolite_id_col]]))
             } else {
@@ -203,7 +204,7 @@ buildMetabQcS4AssayStatsDatatable <- function(
         , stringsAsFactors = FALSE
     )
 
-    stats_df$Missingness <- vapply(assay_list, function(assay) {
+    stats_df$Missingness <- attr(currentS4, "missing_percent") %||% vapply(assay_list, function(assay) {
         quant_cols <- names(assay)[vapply(assay, isNumericFn, logical(1))]
         if (length(quant_cols) == 0) {
             return(NA_real_)
@@ -271,7 +272,7 @@ buildMetabQcS4FinalizeResultsText <- function(
     assayList <- currentS4@metabolite_data
     metaboliteIdColumn <- currentS4@metabolite_id_column
 
-    totalMetabolites <- sumFn(vapply(assayList, function(assay) {
+    totalMetabolites <- sumFn(attr(currentS4, "feature_counts") %||% vapply(assayList, function(assay) {
         if (metaboliteIdColumn %in% names(assay)) {
             length(uniqueFn(assay[[metaboliteIdColumn]]))
         } else {
@@ -307,7 +308,8 @@ buildMetabQcS4FinalizeResultsText <- function(
 # module entry point.
 getMetabQcS4FinalizeState <- function(
     stateManager,
-    stateGetterFn = function(manager) readMetabWorkflowState(manager) # KIT-075: read for this action only
+    # KIT-082: the validation reads names and classes, and the text counts the id column.
+    stateGetterFn = function(manager) readMetabWorkflowShell(manager, measures = "features")
 ) {
     stateGetterFn(stateManager)
 }
@@ -393,15 +395,18 @@ updateMetabQcS4TrackingPlot <- function(
     omicType,
     setFilterPlotFn,
     stepName = "4_QC_Complete",
-    updateMetaboliteFilteringFn = updateMetaboliteFiltering
+    updateMetaboliteFilteringFn = updateMetaboliteFiltering,
+    metrics = NULL
 ) {
     qcPlot <- tryCatch({
+        # KIT-082: `metrics` is the worker's, on a managed session.
         updateMetaboliteFilteringFn(
             theObject = currentS4
             , step_name = stepName
             , omics_type = omicType
             , return_grid = TRUE
             , overwrite = TRUE
+            , metrics = metrics
         )
     }, error = function(e) {
         NULL
@@ -492,23 +497,41 @@ runMetabQcS4FinalizeWorkflow <- function(
             , configObject = workflowData$config_list
         )
 
+        finish <- function() {
+            completeTabStatusFn(workflowData = workflowData)
+
+            history <- getFinalizeHistoryFn(
+                stateManager = workflowData$state_manager
+            )
+
+            reportFinalizeSuccessFn(
+                currentS4 = currentS4
+                , history = history
+                , output = output
+            )
+        }
+
+        # KIT-082: the tracking figure's metrics read the whole matrix, so a managed session's worker computes them.
+        runner <- workflowOmicsManagedActions("metabolomics")
+        if (!is.null(runner)) {
+            runner$run(list(omicsManagedProduct("metab_filtering_metrics", list(), function(result) {
+                updateTrackingPlotFn(
+                    currentS4 = NULL
+                    , omicType = omicType
+                    , setFilterPlotFn = filterPlot
+                    , metrics = readWorkflowOmicsFilteringMetrics(workflowData$state_manager, result)
+                )
+            })), done = finish, failed = function(error) reportFinalizeErrorFn(error = error))
+            return(invisible(NULL))
+        }
+
         updateTrackingPlotFn(
-            currentS4 = currentS4
+            currentS4 = readMetabWorkflowState(workflowData$state_manager)
             , omicType = omicType
             , setFilterPlotFn = filterPlot
         )
 
-        completeTabStatusFn(workflowData = workflowData)
-
-        history <- getFinalizeHistoryFn(
-            stateManager = workflowData$state_manager
-        )
-
-        reportFinalizeSuccessFn(
-            currentS4 = currentS4
-            , history = history
-            , output = output
-        )
+        finish()
     }, error = function(e) {
         reportFinalizeErrorFn(error = e)
     })
@@ -519,7 +542,7 @@ runMetabQcS4FinalizeWorkflow <- function(
 # the public module entry point.
 getMetabQcS4DataSummaryState <- function(
     stateManager,
-    stateGetterFn = function(manager) readMetabWorkflowState(manager), # KIT-075: read for this render only
+    stateGetterFn = function(manager) readMetabWorkflowShell(manager, measures = "features"), # KIT-082: no assay table
     errorState = NULL
 ) {
     tryCatch(
@@ -546,7 +569,7 @@ buildMetabQcS4DataSummaryRenderOutput <- function(
 # the public module entry point.
 getMetabQcS4AssayStatsState <- function(
     stateManager,
-    stateGetterFn = function(manager) readMetabWorkflowState(manager), # KIT-075: read for this render only
+    stateGetterFn = function(manager) readMetabWorkflowShell(manager, measures = c("features", "missing")), # KIT-082: a page at a time
     errorState = NULL
 ) {
     tryCatch(

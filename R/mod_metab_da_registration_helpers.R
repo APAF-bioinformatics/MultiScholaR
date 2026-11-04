@@ -44,6 +44,17 @@ registerMetabDaVisualizationOutputs <- function(
     })
 
     output$volcano_glimma <- renderUi({
+        # KIT-082: the widget reads the whole matrix, so a managed session's worker writes it as a page.
+        runner <- workflowOmicsManagedActions("metabolomics")
+        if (!is.null(runner)) {
+            return(buildGlimmaOutput(
+                daResultsList = daData$da_results_list,
+                selectedContrast = input$volcano_contrast,
+                selectedAssay = input$volcano_assay,
+                daQValThresh = input$da_q_val_thresh,
+                generatePlot = workflowOmicsVolcanoPageFactory(metabolomicsDeclarationBinding, runner, workflowData$state_manager)
+            ))
+        }
         buildGlimmaOutput(
             daResultsList = metabDaResultsWithSource(daData$da_results_list, daData, workflowData),
             selectedContrast = input$volcano_contrast,
@@ -64,7 +75,8 @@ registerMetabDaVisualizationOutputs <- function(
 
     output$heatmap_plot <- renderPlot({
         buildHeatmapOutput(
-            daResultsList = metabDaResultsWithSource(daData$da_results_list, daData, workflowData),
+            # KIT-082: the kernel reads the rows it chooses.
+            daResultsList = omicsDaResultsWithRowReader(metabolomicsDeclarationBinding, daData$da_results_list, daData, workflowData),
             selectedContrast = input$heatmap_contrast,
             selectedAssay = input$heatmap_assay,
             topN = input$heatmap_top_n,

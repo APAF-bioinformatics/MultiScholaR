@@ -698,8 +698,11 @@ registerBuiltinWorkflowOperations <- function() {
                 if (worker && !declaration$name %in% sections) list(section = NULL)))
         }
         # KIT-078: what the steps' figures and exports read (the matrix, the composite's rasters), in the worker; they commit nothing.
+        # KIT-082: what the tabs read from the whole matrix outside their steps, in the worker too.
         for (publication in list(c("qc_figures", "computeWorkflowOmicsQcFiguresAction"), c("composite_figure", "computeWorkflowOmicsCompositeFigureAction"),
-            c("da_publication", "computeWorkflowOmicsDaPublicationAction"))) {
+            c("da_publication", "computeWorkflowOmicsDaPublicationAction"), c("filtering_metrics", "computeWorkflowOmicsFilteringMetricsAction"),
+            c("final_pca", "computeWorkflowOmicsFinalPcaAction"), c("volcano_page", "computeWorkflowOmicsVolcanoPageAction"),
+            c("session_export", "computeWorkflowOmicsSessionExportAction"), c("integration_export", "computeWorkflowOmicsIntegrationExportAction"))) {
             registerWorkflowOperation(list(name = paste0(binding$prefix, "_", publication[[1L]]), input = "checkpoint",
                 input_class = binding$class, compute = "omics", handler = publication[[2L]], validate = "validateWorkflowOmicsParameters",
                 resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "omics", publication = "omics",

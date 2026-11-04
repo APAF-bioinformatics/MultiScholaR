@@ -3009,7 +3009,10 @@ completeWorkflowOmicsAction <- function(manager, entry, value, context) {
     if (!is.null(value$native)) snapshot$da_dependencies[[value$reference$entity_id]] <- value$native
     if (is.null(entry$declaration)) clearWorkflowStepProvenance(manager)
     if (is.null(entry$declaration$output_class)) {
+        generation <- workflow_context$head$entity_id
         publishWorkflowStateHead(workflow_context, snapshot)
+        # KIT-082: no state changed, so an export of this state is still the state's (a display can run after the export).
+        if (identical(workflow_context$owned_export$generation, generation)) workflow_context$owned_export$generation <- workflow_context$head$entity_id
         return(invisible(NULL))
     }
     previous <- workflow_context$snapshot

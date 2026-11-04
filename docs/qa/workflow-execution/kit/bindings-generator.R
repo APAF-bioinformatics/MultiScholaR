@@ -159,8 +159,8 @@ if (!is.null(b$builds$kit_071) && identical(Sys.getenv("KIT_071_LIFECYCLE"), "1"
 if (!is.null(b$builds$kit_031) && identical(Sys.getenv("KIT_031_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_031"
 # KIT-032 (2026-10-31): `KIT_032_LIFECYCLE=1` points them at the kit_032 install (the metabolomics declarations).
 if (!is.null(b$builds$kit_032) && identical(Sys.getenv("KIT_032_LIFECYCLE"), "1")) b$lifecycle_omics$build <- "kit_032"
-# Stage 3b (plan 3.2): `KIT_0NN_LIFECYCLE=1` points them at the kit_0NN install of a stage-3b ticket (KIT-072 to KIT-081).
-for (nn in sprintf("%03d", 72:81)) {
+# Stage 3b (plan 3.2): `KIT_0NN_LIFECYCLE=1` points them at the kit_0NN install of a stage-3b ticket (KIT-072 to KIT-082).
+for (nn in sprintf("%03d", 72:82)) {
     if (!is.null(b$builds[[paste0("kit_", nn)]]) && identical(Sys.getenv(paste0("KIT_", nn, "_LIFECYCLE")), "1")) {
         b$lifecycle_omics$build <- paste0("kit_", nn)
     }
@@ -340,6 +340,10 @@ if (!is.null(b$builds$kit_078)) b$tickets[["078"]] <- list(kind = "gui", build =
 # KIT-079: the same member on the partitioned variants' build (codec and checkpoint code change), against `kit-gui-078`.
 if (!is.null(b$builds$kit_079)) b$tickets[["079"]] <- list(kind = "gui", build = "kit_079", corpus = "screen",
     reference = "kit-gui-078", operations = kit_078p_operations, ceiling_seconds = 1800L)
+
+# KIT-082: the same member; the session export's request and metadata helpers are shared with proteomics.
+if (!is.null(b$builds$kit_082)) b$tickets[["082"]] <- list(kind = "gui", build = "kit_082", corpus = "screen",
+    reference = "kit-gui-079", operations = kit_078p_operations, ceiling_seconds = 1800L)
 
 # KIT-081 (protocol v1.6): the instruments' small test, recorded and never counted: the intensity filter of each omic on a
 # suffixed key, `whole` against `partitioned` on the build's recorded design state, against that build's in-process oracle.
@@ -649,7 +653,7 @@ if (!is.null(b$builds$kit_032)) {
 # 0NNl and 0NNm, judged against the in-process records the KIT-031/032 recorders made on that same build
 # (kit-0NN/oracles-lipidNN_lipid_screen.rds, kit-0NN/oracles-metabNN_metab_screen.rds), bound as lipidNN_<step> and
 # metabNN_<step>. A ticket binds only the omics whose record exists.
-for (nn in sprintf("%03d", 72:81)) {
+for (nn in sprintf("%03d", 72:82)) {
     build <- paste0("kit_", nn)
     if (is.null(b$builds[[build]])) next
     for (omic in list(list(suffix = "l", prefix = "lipid", corpus = "lipid_screen", route = "lipidomics"),

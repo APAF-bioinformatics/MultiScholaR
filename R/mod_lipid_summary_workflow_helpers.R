@@ -21,6 +21,29 @@ handleLipidSummarySaveWorkflowArgs <- function(
 ) {
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
 
+    summaryFailed <- function(e) {
+        catFn("SESSION SUMMARY ERROR:", conditionMessage(e), "\n")
+
+        basicParamsFile <- filePathFn(projectDirs[[omicType]]$source_dir, "study_parameters.txt")
+        if (!fileExistsFn(basicParamsFile)) {
+            writeLinesFn(c(
+                "Study Parameters",
+                "================",
+                "",
+                paste("Workflow Name:", input$experiment_label),
+                paste("Description:", input$description),
+                paste("Timestamp:", timeFn()),
+                paste("Error:", conditionMessage(e))
+            ), basicParamsFile)
+            catFn("SESSION SUMMARY: Created basic fallback file at:", basicParamsFile, "\n")
+        }
+
+        values$workflow_args_saved <- TRUE
+        showNotificationFn("Study parameters saved with warnings", type = "warning")
+
+        basicParamsFile
+    }
+
     tryCatch({
         context <- collectContextFn(workflowData = workflowData, catFn = catFn)
 
@@ -63,54 +86,46 @@ handleLipidSummarySaveWorkflowArgs <- function(
         s4Filename <- sprintf("%s_%s_final_s4.RDS", omicType, input$experiment_label)
         s4Filepath <- filePathFn(integrationDir, s4Filename)
 
+        finish <- function() {
+            catFn(sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4Filepath))
+            showNotificationFn("Saved Integration S4 Object", type = "message")
+
+            values$workflow_args_saved <- TRUE
+            showNotificationFn("Study parameters saved successfully", type = "message")
+
+            output$session_summary <- renderTextFn({
+                paste(
+                    "Study parameters created for:", input$experiment_label,
+                    "\nDescription:", input$description,
+                    "\nTimestamp:", timeFn(),
+                    "\nFile:", studyParamsFile,
+                    "\nSource: Final S4 object @args + config_list",
+                    "\nIntegration Object:", s4Filename,
+                    "\nStatus: Parameters saved [OK]"
+                )
+            })
+
+            list(
+                studyParamsFile = studyParamsFile,
+                s4Filepath = s4Filepath,
+                s4Filename = s4Filename
+            )
+        }
+
+        # KIT-082: the integration object is the whole state, so a managed session's worker writes it.
+        runner <- workflowOmicsManagedActions("lipidomics")
+        if (!is.null(runner) && !is.null(context$dataStateUsed)) {
+            context$finalS4Object <- NULL
+            runner$run(list(omicsManagedProduct("lipid_integration_export", list(path = s4Filepath, state_name = context$dataStateUsed), function(result) invisible(NULL))),
+                done = finish, failed = summaryFailed)
+            return(invisible(list(studyParamsFile = studyParamsFile, s4Filepath = s4Filepath, s4Filename = s4Filename)))
+        }
+
         saveRDSFn(context$finalS4Object, s4Filepath)
         # KIT-075: the outputs below keep this frame; the object leaves it once written.
         context$finalS4Object <- NULL
-        catFn(sprintf("SESSION SUMMARY: Saved Integration S4 object to: %s\n", s4Filepath))
-        showNotificationFn("Saved Integration S4 Object", type = "message")
-
-        values$workflow_args_saved <- TRUE
-        showNotificationFn("Study parameters saved successfully", type = "message")
-
-        output$session_summary <- renderTextFn({
-            paste(
-                "Study parameters created for:", input$experiment_label,
-                "\nDescription:", input$description,
-                "\nTimestamp:", timeFn(),
-                "\nFile:", studyParamsFile,
-                "\nSource: Final S4 object @args + config_list",
-                "\nIntegration Object:", s4Filename,
-                "\nStatus: Parameters saved [OK]"
-            )
-        })
-
-        list(
-            studyParamsFile = studyParamsFile,
-            s4Filepath = s4Filepath,
-            s4Filename = s4Filename
-        )
-    }, error = function(e) {
-        catFn("SESSION SUMMARY ERROR:", e$message, "\n")
-
-        basicParamsFile <- filePathFn(projectDirs[[omicType]]$source_dir, "study_parameters.txt")
-        if (!fileExistsFn(basicParamsFile)) {
-            writeLinesFn(c(
-                "Study Parameters",
-                "================",
-                "",
-                paste("Workflow Name:", input$experiment_label),
-                paste("Description:", input$description),
-                paste("Timestamp:", timeFn()),
-                paste("Error:", e$message)
-            ), basicParamsFile)
-            catFn("SESSION SUMMARY: Created basic fallback file at:", basicParamsFile, "\n")
-        }
-
-        values$workflow_args_saved <- TRUE
-        showNotificationFn("Study parameters saved with warnings", type = "warning")
-
-        basicParamsFile
-    })
+        finish()
+    }, error = summaryFailed)
 }
 
 registerLipidSummarySaveWorkflowArgsObserver <- function(

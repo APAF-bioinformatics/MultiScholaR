@@ -153,7 +153,8 @@ buildLipidQcS4DataSummaryUi <- function(currentS4) {
     assay_list <- currentS4@lipid_data
     n_assays <- length(assay_list)
 
-    total_lipids <- sum(vapply(assay_list, function(a) {
+    # KIT-082: counted from the store when the state is read without its matrix.
+    total_lipids <- sum(attr(currentS4, "feature_counts") %||% vapply(assay_list, function(a) {
         if (currentS4@lipid_id_column %in% names(a)) {
             length(unique(a[[currentS4@lipid_id_column]]))
         } else {
@@ -219,9 +220,9 @@ registerLipidQcS4DataSummaryOutput <- function(
     output$data_summary <- renderUiFn({
         reqFn(workflowData$state_manager)
 
-        # KIT-075: the state is read for this render only.
+        # KIT-082: the design, column names and id column; no assay table.
         current_s4 <- tryCatch({
-            readLipidWorkflowState(workflowData$state_manager)
+            readLipidWorkflowShell(workflowData$state_manager, measures = "features")
         }, error = function(e) {
             NULL
         })
@@ -245,7 +246,7 @@ buildLipidQcS4AssayStatsTable <- function(
 
     stats_df <- data.frame(
         Assay = names(assay_list)
-        , Lipids = sapply(assay_list, function(a) {
+        , Lipids = attr(currentS4, "feature_counts") %||% sapply(assay_list, function(a) {
             if (lipid_id_col %in% names(a)) {
                 length(unique(a[[lipid_id_col]]))
             } else {
@@ -258,7 +259,7 @@ buildLipidQcS4AssayStatsTable <- function(
         , stringsAsFactors = FALSE
     )
 
-    stats_df$Missingness <- sapply(assay_list, function(a) {
+    stats_df$Missingness <- attr(currentS4, "missing_percent") %||% sapply(assay_list, function(a) {
         quant_cols <- names(a)[vapply(a, is.numeric, logical(1))]
         if (length(quant_cols) == 0) return(NA)
 
@@ -292,8 +293,9 @@ registerLipidQcS4AssayStatsOutput <- function(
     output$assay_stats_table <- renderDtFn({
         reqFn(workflowData$state_manager)
 
+        # KIT-082: counted a page at a time from the store.
         current_s4 <- tryCatch({
-            readLipidWorkflowState(workflowData$state_manager)
+            readLipidWorkflowShell(workflowData$state_manager, measures = c("features", "missing"))
         }, error = function(e) {
             NULL
         })
@@ -306,7 +308,7 @@ registerLipidQcS4AssayStatsOutput <- function(
 
 buildLipidQcS4FinalizeResultsText <- function(currentS4, history) {
     assay_list <- currentS4@lipid_data
-    total_lipids <- sum(vapply(assay_list, function(a) {
+    total_lipids <- sum(attr(currentS4, "feature_counts") %||% vapply(assay_list, function(a) {
         if (currentS4@lipid_id_column %in% names(a)) {
             length(unique(a[[currentS4@lipid_id_column]]))
         } else {
@@ -334,7 +336,8 @@ buildLipidQcS4FinalizeResultsText <- function(currentS4, history) {
 
 getLipidQcS4FinalizeState <- function(
     stateManager,
-    stateGetterFn = function(manager) readLipidWorkflowState(manager)
+    # KIT-082: the validation reads names, classes and row counts, and the text counts the id column.
+    stateGetterFn = function(manager) readLipidWorkflowShell(manager, measures = "features")
 ) {
     stateGetterFn(stateManager)
 }
@@ -357,7 +360,7 @@ validateLipidQcS4FinalizeState <- function(
     if (isTRUE(requireAssays) &&
         (!"lipid_data" %in% currentSlots ||
             length(currentS4@lipid_data) == 0L ||
-            any(vapply(currentS4@lipid_data, nrow, integer(1)) == 0L))) {
+            any((attr(currentS4, "assay_rows") %||% vapply(currentS4@lipid_data, nrow, integer(1))) == 0L))) {
         stop("Current LipidomicsAssayData object has no assay data to finalize.")
     }
     if (isTRUE(requireDesign) &&
@@ -442,15 +445,18 @@ updateLipidQcS4TrackingPlot <- function(
     omicType,
     setFilterPlotFn,
     stepName = "4_QC_Complete",
-    updateLipidFilteringFn = updateLipidFiltering
+    updateLipidFilteringFn = updateLipidFiltering,
+    metrics = NULL
 ) {
     qcPlot <- tryCatch({
+        # KIT-082: `metrics` is the worker's, on a managed session.
         updateLipidFilteringFn(
             theObject = currentS4
             , step_name = stepName
             , omics_type = omicType
             , return_grid = TRUE
             , overwrite = TRUE
+            , metrics = metrics
         )
     }, error = function(e) {
         NULL
@@ -532,23 +538,41 @@ runLipidQcS4FinalizeWorkflow <- function(
             , configObject = workflowData$config_list
         )
 
+        finish <- function() {
+            completeTabStatusFn(workflowData = workflowData)
+
+            history <- getFinalizeHistoryFn(
+                stateManager = workflowData$state_manager
+            )
+
+            reportFinalizeSuccessFn(
+                currentS4 = currentS4
+                , history = history
+                , output = output
+            )
+        }
+
+        # KIT-082: the tracking figure's metrics read the whole matrix, so a managed session's worker computes them.
+        runner <- workflowOmicsManagedActions("lipidomics")
+        if (!is.null(runner)) {
+            runner$run(list(omicsManagedProduct("lipid_filtering_metrics", list(), function(result) {
+                updateTrackingPlotFn(
+                    currentS4 = NULL
+                    , omicType = omicType
+                    , setFilterPlotFn = filterPlot
+                    , metrics = readWorkflowOmicsFilteringMetrics(workflowData$state_manager, result)
+                )
+            })), done = finish, failed = function(error) reportFinalizeErrorFn(error = error))
+            return(invisible(NULL))
+        }
+
         updateTrackingPlotFn(
-            currentS4 = currentS4
+            currentS4 = readLipidWorkflowState(workflowData$state_manager)
             , omicType = omicType
             , setFilterPlotFn = filterPlot
         )
 
-        completeTabStatusFn(workflowData = workflowData)
-
-        history <- getFinalizeHistoryFn(
-            stateManager = workflowData$state_manager
-        )
-
-        reportFinalizeSuccessFn(
-            currentS4 = currentS4
-            , history = history
-            , output = output
-        )
+        finish()
     }, error = function(e) {
         reportFinalizeErrorFn(error = e)
     })

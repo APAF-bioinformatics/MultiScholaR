@@ -15,15 +15,7 @@ runWorkflowOwnedSessionExport <- function(manager, workflowData, normData, input
     request <- context$export_pending
     if (is.null(request) || !identical(request$generation, context$head$entity_id) ||
         !identical(request$root, root)) {
-        stamp <- Sys.time()
-        # Keep the existing timestamp filename convention without overwriting a
-        # completed same-second export. This affects filenames, not scientific time.
-        while (file.exists(file.path(root, paste0(prefix, "filtered_session_data_",
-            format(stamp, "%Y%m%d_%H%M%S"), ".rds")))) stamp <- stamp + 1
-        request <- list(request_id = basename(tempfile("dia-export-")),
-            timestamp = format(stamp, "%Y%m%d_%H%M%S"), root = root,
-            generation = context$head$entity_id, identity = context$store$identity,
-            state_reference = context$snapshot$states[[context$snapshot$current_state]])
+        request <- newWorkflowOwnedExportRequest(context, root, prefix)
         context$export_pending <- request
     }
     paths <- workflowExportPaths(root, request$request_id)
@@ -49,6 +41,61 @@ runWorkflowOwnedSessionExport <- function(manager, workflowData, normData, input
     context$owned_export <- request
     context$export_pending <- NULL
     list(sessionData = NULL, exportArtifacts = artifacts)
+}
+
+#' A new export request on the owner's head.
+#' @noRd
+newWorkflowOwnedExportRequest <- function(context, root, prefix) {
+    stamp <- Sys.time()
+    # Keep the existing timestamp filename convention without overwriting a
+    # completed same-second export. This affects filenames, not scientific time.
+    while (file.exists(file.path(root, paste0(prefix, "filtered_session_data_",
+        format(stamp, "%Y%m%d_%H%M%S"), ".rds")))) stamp <- stamp + 1
+    list(request_id = basename(tempfile("dia-export-")),
+        timestamp = format(stamp, "%Y%m%d_%H%M%S"), root = root,
+        generation = context$head$entity_id, identity = context$store$identity,
+        state_reference = context$snapshot$states[[context$snapshot$current_state]])
+}
+
+#' The session list without its state, as the owner keeps it for a retry.
+#' @noRd
+workflowExportMetadata <- function(session_data) {
+    metadata <- session_data
+    metadata[c("r6_complete_states", "current_s4_object", "correlation_filtered_s4")] <- NULL
+    metadata$config_list <- prepareDIAStateRecord(list(data = NULL, config = metadata$config_list))$config
+    metadata
+}
+
+#' A managed session's export (KIT-082): the controller collects the session list without its state, the worker serialises
+#' the state under the request, and `publish()` runs `runWorkflowOwnedSessionExport`, which finds the staged file and
+#' publishes it through its retry path. A publication that failed earlier goes straight there.
+#' @param runner The omic's runner.
+#' @param collectFn The session collector, leaving `current_s4_object` NULL.
+#' @param prefix The omic's file-name prefix, `lipid_` or `metab_`.
+#' @param publish Function run once the file is staged.
+#' @param failed `function(error)`.
+#' @noRd
+startWorkflowManagedSessionExport <- function(manager, runner, workflowData, normData, input, sourceDir, collectFn, prefix, publish, failed) {
+    context <- manager$.context
+    root <- normalizePath(sourceDir, mustWork = TRUE)
+    pending <- context$export_pending
+    if (!is.null(pending) && identical(pending$generation, context$head$entity_id) && identical(pending$root, root) && !is.null(pending$metadata_reference) &&
+        file.exists(file.path(workflowExportPaths(root, pending$request_id)$request_dir, "journal.json"))) return(publish())
+    request <- newWorkflowOwnedExportRequest(context, root, prefix)
+    session <- withWorkflowStateScope(manager, function() {
+        session_data <- collectFn(workflowData = workflowData, normData = normData, input = input)
+        request$correlation_reference <<- saveDIAOwnedValue(session_data$correlation_filtered_s4, "export-correlation", manager)
+        request$metadata_reference <<- saveDIAStateValue(context, workflowExportMetadata(session_data), "export-metadata")
+        saveWorkflowStateValue(context, session_data, "export-session", codec = "rds")
+    })
+    runner$run(list(omicsManagedProduct(paste0(sub("_$", "", prefix), "_session_export"),
+        list(session = session, root = root, request_id = request$request_id, timestamp = request$timestamp, prefix = prefix),
+        function(result) {
+            # The action recorded itself on the head; the state, which is what the export holds, did not change.
+            request$generation <- context$head$entity_id
+            context$export_pending <- request
+        })), done = publish, failed = failed)
+    invisible(TRUE)
 }
 
 #' DIA name of `runWorkflowOwnedSessionExport` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
@@ -79,9 +126,7 @@ serializeDIAOwnedSessionExport <- function(manager, request, workflowData, normD
     }
     request$correlation_reference <- saveDIAOwnedValue(session_data$correlation_filtered_s4,
         "export-correlation", manager)
-    metadata <- session_data
-    metadata[c("r6_complete_states", "current_s4_object", "correlation_filtered_s4")] <- NULL
-    metadata$config_list <- prepareDIAStateRecord(list(data = NULL, config = metadata$config_list))$config
+    metadata <- workflowExportMetadata(session_data)
     request$metadata_reference <- saveDIAStateValue(context, metadata, "export-metadata")
     context$export_pending <- request
     paths <- workflowExportPaths(request$root, request$request_id)

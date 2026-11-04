@@ -213,11 +213,13 @@ renderMetabNormItsdSelectionTable <- function(
     roundedColumns = c("mean_intensity", "cv_percent"),
     digits = 2,
     filter = "top",
-    normData = NULL
+    normData = NULL,
+    selectionTable = NULL
 ) {
     # KIT-075: the candidate table is built now and the render keeps only it, not the state.
-    assayData <- currentS4@metabolite_data[[assayName]]
-    selectionTable <- if (!is.null(assayData)) {
+    # KIT-082: the observer has built it a page at a time.
+    assayData <- if (is.null(selectionTable)) currentS4@metabolite_data[[assayName]]
+    selectionTable <- selectionTable %||% if (!is.null(assayData)) {
         buildItsdSelectionTableFn(
             assay_data = assayData,
             metabolite_id_col = currentS4@metabolite_id_column,
@@ -307,7 +309,8 @@ runMetabNormItsdSelectionTableObserverShell <- function(
     workflowData,
     output,
     reqFn = shiny::req,
-    getStateFn = function(stateManager) readMetabWorkflowState(stateManager), # KIT-075: read for the candidate tables
+    getStateFn = function(stateManager) readMetabWorkflowShell(stateManager), # KIT-082: no assay table
+    buildItsdSelectionTableFn = buildItsdSelectionTable,
     walkFn = purrr::walk,
     safeNameFn = function(assayName) gsub("[^A-Za-z0-9]", "_", tolower(assayName)),
     renderItsdSelectionTableFn = renderMetabNormItsdSelectionTable
@@ -323,6 +326,17 @@ runMetabNormItsdSelectionTableObserverShell <- function(
         return(invisible(NULL))
     }
 
+    # KIT-082: built a page at a time, with nothing whole kept. This stays synchronous so that Run cannot race the selection.
+    metaboliteIdCol <- currentS4@metabolite_id_column
+    annotationCols <- currentS4@annotation_id_column
+    selectionTables <- readWorkflowOmicsItsdTables(metabolomicsDeclarationBinding, workflowData$state_manager, normData$assay_names, function(page) {
+        buildItsdSelectionTableFn(
+            assay_data = page,
+            metabolite_id_col = metaboliteIdCol,
+            annotation_cols = annotationCols
+        )
+    })
+
     walkFn(normData$assay_names, \(assayName) {
         safeName <- safeNameFn(assayName)
         outputId <- paste0("itsd_table_", safeName)
@@ -330,7 +344,8 @@ runMetabNormItsdSelectionTableObserverShell <- function(
         output[[outputId]] <- renderItsdSelectionTableFn(
             assayName = assayName,
             currentS4 = currentS4,
-            normData = normData
+            normData = normData,
+            selectionTable = selectionTables[[assayName]]
         )
     })
 

@@ -1,0 +1,380 @@
+# KIT-082: the omics application reads no whole assay table on a managed session. Each read is proved against the whole-object
+# read it replaces; the probe (with no window) runs the tabs' real outputs and observers, with the in-process tabs as its control.
+library(testthat)
+
+omicsReadCase <- function(omic) {
+  if (identical(omic, "lipidomics")) {
+    list(binding = lipidomicsDeclarationBinding, owner_of = lipidDeclarationsOwner, prefix = "lipid",
+      summary = buildLipidQcS4DataSummaryUi, stats = function(object) buildLipidQcS4AssayStatsTable(object, datatableFn = function(table, ...) table),
+      text = buildLipidQcS4FinalizeResultsText, validate = function(object) validateLipidQcS4FinalizeState(object, reqFn = identity),
+      finder = findLipidDuplicateFeatureIDs,
+      itsd = function(page, object) buildLipidItsdSelectionTable(assay_data = page, lipid_id_col = object@lipid_id_column, annotation_cols = object@annotation_id_column),
+      volcano = "generateLipidDAVolcanoPlotGlimma")
+  } else {
+    list(binding = metabolomicsDeclarationBinding, owner_of = metabDeclarationsOwner, prefix = "metab",
+      summary = buildMetabQcS4DataSummaryUi, stats = function(object) buildMetabQcS4AssayStatsDatatable(object, datatableFn = function(table, ...) table),
+      text = buildMetabQcS4FinalizeResultsText, validate = function(object) validateMetabQcS4FinalizeState(object, reqFn = identity),
+      finder = findMetabDuplicateFeatureIDs,
+      itsd = function(page, object) buildItsdSelectionTable(assay_data = page, metabolite_id_col = object@metabolite_id_column, annotation_cols = object@annotation_id_column),
+      volcano = "generateMetabDAVolcanoPlotGlimma")
+  }
+}
+
+#' A managed tab's runner in this process: each action through the real worker entry point and acceptance.
+omicsSyncRunner <- function(fixture, controller, calls = new.env()) {
+  list(run = function(actions, done = NULL, failed = NULL) {
+    for (action in actions) {
+      calls$operations <- c(calls$operations, action$operation)
+      result <- omicsWorkerAction(fixture, controller, action$operation, action$parameters, action$context)
+      action$deliver(result)
+    }
+    if (is.function(done)) done()
+    invisible(NULL)
+  }, progress = function(message) list(close = function() invisible(NULL)))
+}
+
+omicsReadMocks <- function(env = parent.frame()) testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+  finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) }, .package = "MultiScholaR", .env = env)
+
+for (omic in c("lipidomics", "metabolomics")) local({
+  omic <- omic
+  case <- omicsReadCase(omic)
+  binding <- case$binding
+
+  test_that(sprintf("KIT-082: the %s QC tab's counts, text and validation from the store equal the whole object's", omic), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- case$owner_of(withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    owner <- fixture$owner
+    whole <- readWorkflowOmicsState(binding, owner)
+    shell <- readWorkflowOmicsShell(binding, owner, measures = c("features", "missing"))
+    expect_true(all(vapply(methods::slot(shell, binding$data_slot), nrow, 1L) == 0L))
+    expect_identical(attr(shell, "assay_rows"), vapply(methods::slot(whole, binding$data_slot), nrow, 1L))
+    expect_equal(attr(shell, "feature_counts"), omicsFeatureCounts(binding, whole))
+    expect_identical(as.character(case$summary(shell)), as.character(case$summary(whole)))
+    expect_equal(case$stats(shell), case$stats(whole))
+    expect_identical(case$text(shell, "a"), case$text(whole, "a"))
+    # The zero-row shell validates exactly as the object does.
+    expect_s4_class(case$validate(shell), binding$class)
+    expect_s4_class(case$validate(whole), binding$class)
+    # The design, the slots and the parameters come with it.
+    expect_identical(shell@design_matrix, whole@design_matrix)
+    expect_identical(shell@args, whole@args)
+    expect_identical(names(methods::slot(shell, binding$data_slot)[[1L]]), names(methods::slot(whole, binding$data_slot)[[1L]]))
+  })
+
+  test_that(sprintf("KIT-082: %s duplicate detection on the id column equals the whole object's", omic), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- case$owner_of(withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    whole <- readWorkflowOmicsState(binding, fixture$owner)
+    ids <- readWorkflowOmicsIds(binding, fixture$owner)
+    expect_identical(lengths(methods::slot(ids, binding$data_slot)), stats::setNames(rep(1L, length(methods::slot(whole, binding$data_slot))), names(methods::slot(whole, binding$data_slot))))
+    found <- suppressMessages(case$finder(whole))
+    expect_true(any(!vapply(found, is.null, logical(1))))
+    expect_identical(suppressMessages(case$finder(ids)), found)
+  })
+
+  test_that(sprintf("KIT-082: the %s ITSD tables, missingness and counts read by pages equal the whole table's past one page", omic), {
+    skip_if_not(workflowOwnerCapable())
+    set.seed(82L)
+    samples <- sprintf("S%02d", 1:6)
+    assay <- function(rows, prefix) {
+      ids <- c(sprintf("%s%05d", prefix, seq_len(rows)), sprintf("IS_%s%d", prefix, 1:5), sprintf("%s00003", prefix))
+      values <- matrix(stats::rlnorm(length(ids) * length(samples), 8, 1), nrow = length(ids), dimnames = list(NULL, samples))
+      values[sample(length(values), length(values) %/% 20L)] <- NA_real_
+      values[sample(length(values), length(values) %/% 50L)] <- 0
+      # Ties in the sort: a tenth of the rows have one value everywhere, so their spread is zero or missing.
+      values[seq(1L, nrow(values), by = 10L), ] <- 5
+      cbind(data.frame(feature = ids, stringsAsFactors = FALSE), as.data.frame(values, check.names = FALSE))
+    }
+    design <- data.frame(Run = samples, group = rep_len(c("A", "B"), 6L), stringsAsFactors = FALSE)
+    assays <- list(big = assay(12700L, "P"), small = assay(40L, "N"))
+    object <- if (identical(omic, "lipidomics")) methods::new("LipidomicsAssayData", lipid_data = assays, design_matrix = design, sample_id = "Run", group_id = "group",
+      lipid_id_column = "feature", annotation_id_column = "feature") else methods::new("MetaboliteAssayData", metabolite_data = assays, design_matrix = design,
+      sample_id = "Run", group_id = "group", metabolite_id_column = "feature", annotation_id_column = "feature")
+    frame <- environment()
+    owner <- omicsTestOwner(object, "raw", omic_type = omic, config = list(qc = list(mode = "kit082")), env = frame)$state_manager
+    whole <- readWorkflowOmicsState(binding, owner)
+    tables <- readWorkflowOmicsItsdTables(binding, owner, c("big", "small", "absent"), function(page) case$itsd(page, whole))
+    expect_identical(names(tables), c("big", "small"))
+    for (name in names(tables)) expect_identical(tables[[name]], case$itsd(methods::slot(whole, binding$data_slot)[[name]], whole), info = name)
+    shell <- readWorkflowOmicsShell(binding, owner, measures = c("features", "missing"))
+    expect_equal(case$stats(shell), case$stats(whole))
+    expect_identical(as.character(case$summary(shell)), as.character(case$summary(whole)))
+    # The rows a filter keeps are in source order, past the page boundary.
+    keep <- readWorkflowOmicsRows(binding, owner, NULL, function(page, id_column) grepl("^IS_|00003$", page[[id_column]]))
+    table <- methods::slot(whole, binding$data_slot)$big
+    expect_equal(methods::slot(keep, binding$data_slot)$big, {
+      rows <- table[grepl("^IS_|00003$", table$feature), , drop = FALSE]
+      rownames(rows) <- NULL
+      rows
+    })
+  })
+
+  test_that(sprintf("KIT-082: the %s DA heatmap reading its chosen rows equals the whole object's", omic), {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- case$owner_of(withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    owner <- fixture$owner
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), .package = "MultiScholaR")
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDuplicateResolution(binding, owner, list())))
+    source <- getWorkflowStateReference(owner)
+    results <- suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDaAnalysis(binding, owner, source,
+      list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), fixture$workflow$contrasts_tbl)))$results
+    expect_false(is.null(results))
+    state <- owner$current_state
+    generate <- if (identical(omic, "lipidomics")) generateLipidDAHeatmap else generateMetabDAHeatmap
+    with_whole <- results
+    with_whole$theObject <- readWorkflowOmicsState(binding, owner, state)
+    with_rows <- omicsDaResultsWithRowReader(binding, results, list(current_state_name = state), fixture$workflow)
+    run <- function(list) suppressWarnings(suppressMessages(generate(list, selected_contrast = fixture$workflow$contrasts_tbl$contrasts[[1L]], selected_assay = names(methods::slot(with_whole$theObject, binding$data_slot))[[1L]], top_n = 10L, da_q_val_thresh = 1)))
+    from_whole <- run(with_whole)
+    from_rows <- run(with_rows)
+    expect_false(is.null(from_whole))
+    expect_identical(from_rows$plot@matrix, from_whole$plot@matrix)
+  })
+
+  test_that(sprintf("KIT-082: the %s worker's filtering metrics, PCA, session file and integration object equal the whole object's", omic), {
+    skip_if_not(workflowOwnerCapable())
+    omicsReadMocks()
+    fixture <- case$owner_of(withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    owner <- fixture$owner
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceDuplicateResolution(binding, owner, list())))
+    controller <- omicsWorkerController(fixture)
+    whole <- owner$getState(owner$current_state)
+    state <- owner$current_state
+    history <- owner$getHistory()
+    # The filtering metrics.
+    metrics <- omicsWorkerAction(fixture, controller, paste0(case$prefix, "_filtering_metrics"))
+    expect_equal(withWorkflowStateScope(owner, function() readWorkflowOmicsFilteringMetrics(owner, metrics)), binding$filtering_metrics(whole))
+    # The PCA: the same points, with no copy of the state in the plot.
+    pca <- omicsWorkerAction(fixture, controller, paste0(case$prefix, "_final_pca"), list(state = owner$current_state, grouping_variable = "group", shape_variable = NULL))
+    expect_null(pca$display$message)
+    plot <- withWorkflowStateScope(owner, function() resolveWorkflowStateValue(owner$.context, pca$display$plot))
+    in_process <- suppressWarnings(suppressMessages(binding$final_pca(readWorkflowOmicsState(binding, owner), "group", NULL)))
+    draw <- function(paint) {
+      path <- tempfile(fileext = ".png")
+      grDevices::png(path, width = 600, height = 800)
+      paint()
+      grDevices::dev.off()
+      digest::digest(file = path, algo = "sha256")
+    }
+    expect_identical(draw(function() { grid::grid.newpage(); grid::grid.draw(plot) }), draw(function() print(in_process)))
+    expect_length(grepRaw(charToRaw(binding$class), serialize(plot, NULL), all = TRUE), 0L)
+    # The integration object.
+    path <- file.path(fixture$paths$source_dir, "integration.RDS")
+    done <- omicsWorkerAction(fixture, controller, paste0(case$prefix, "_integration_export"), list(path = path, state_name = owner$current_state))
+    expect_identical(done$acceptance, "complete")
+    expect_equal(readRDS(path), whole)
+    # The session file: the worker's is the list the controller collected with the state as the in-process export writes it.
+    source_dir <- fixture$paths$source_dir
+    collect_with <- function(state) function(workflowData, normData, input) list(r6_current_state_name = owner$current_state, current_s4_object = state, config_list = list(a = 1), omic_type = omic)
+    staged <- NULL
+    runner <- omicsSyncRunner(fixture, controller)
+    startWorkflowManagedSessionExport(owner, runner, fixture$workflow, NULL, NULL, source_dir, collect_with(NULL), paste0(case$prefix, "_"),
+      publish = function() {
+        request <- owner$.context$export_pending
+        staged <<- readRDS(file.path(workflowExportPaths(source_dir, request$request_id)$request_dir, "session.rds"))
+      }, failed = function(error) stop(error))
+    expect_false(is.null(staged))
+    expect_identical(names(staged), names(collect_with(whole)()))
+    expect_equal(staged$current_s4_object, whole)
+    # None of them committed a state.
+    expect_identical(owner$current_state, state)
+    expect_identical(owner$getHistory(), history)
+  })
+})
+
+#' The tabs' journey with every site the application read the matrix at: the module's real outputs and observers.
+omicsAppServer <- function(fixture, omic, probe, managed) {
+  base <- omicsTabServer(fixture, omic, probe, managed)
+  function(input, output, session) {
+    base(input, output, session)
+    workflow <- fixture$workflow
+    paths <- fixture$paths
+    norm <- session$userData$probe_norm
+    da <- session$userData$probe_da
+    filter_plot <- shiny::reactiveVal(NULL)
+    values <- shiny::reactiveValues(workflow_args_saved = FALSE)
+    dirs <- stats::setNames(list(list(source_dir = paths$source_dir, integration_dir = file.path(paths$source_dir, "integration"), base_dir = paths$source_dir)), omic)
+    quiet <- function(...) invisible(NULL)
+    if (identical(omic, "lipidomics")) {
+      registerLipidQcS4DataSummaryOutput(output, workflow)
+      registerLipidQcS4AssayStatsOutput(output, workflow)
+      shiny::observeEvent(input$detect, probe$detected <- handleLipidDuplicateDetection(workflow))
+      shiny::observeEvent(input$finalize, runLipidQcS4FinalizeWorkflow(workflow, omic, filter_plot, output))
+      registerLipidNormItsdTableOutputs(output, workflow, norm)
+      mod_lipid_qc_itsd_server("itsd", workflow, omic, "kit082")
+      output$final_qc <- buildLipidNormFinalQcPlotRenderer(norm, function(...) list(color_var = "group", shape_var = NULL), workflow)()
+      # The test's DA holder is not reactive, so its outputs are registered once it holds the results.
+      session$userData$register_da_outputs <- function() {
+        registerLipidDaVolcanoGlimmaOutput(output, input, da, workflow)
+        registerLipidDaHeatmapPlotOutput(output, input, da, workflow)
+      }
+      shiny::observeEvent(input$export_session, handleLipidNormExportSession(input, workflow, paths, "kit082", norm, addLog = quiet))
+      shiny::observeEvent(input$save_args, handleLipidSummarySaveWorkflowArgs(input, values, output, dirs, omic, workflow))
+    } else {
+      output$data_summary <- shiny::renderUI(buildMetabQcS4DataSummaryRenderOutput(workflow$state_manager))
+      output$assay_stats_table <- DT::renderDT(buildMetabQcS4AssayStatsRenderOutput(workflow$state_manager))
+      shiny::observeEvent(input$detect, probe$detected <- detectMetabDuplicateFeatures(workflow$state_manager))
+      shiny::observeEvent(input$finalize, runMetabQcS4FinalizeWorkflow(workflow, omic, filter_plot, output))
+      shiny::observe(runMetabNormItsdSelectionTableObserverShell(norm, workflow, output))
+      mod_metab_qc_itsd_server("itsd", workflow, omic, "kit082")
+      output$final_qc <- renderMetabNormFinalQcPlot(norm, workflow, colorVariableFn = function() "group", shapeVariableFn = function() NULL)
+      session$userData$register_da_outputs <- function() registerMetabDaVisualizationOutputs(input, output, da, workflow)
+      shiny::observeEvent(input$export_session, runMetabNormExportSessionObserverShell(workflow, norm, input, paths, "kit082"))
+      shiny::observeEvent(input$save_args, runMetabSummarySaveWorkflowArgsObserverShell(input, dirs, omic, workflow, values, output))
+    }
+  }
+}
+
+omicsAppJourney <- function(session, output, omic, prefix, assays, contrast) {
+  do.call(session$setInputs, omicsTabInputs())
+  apply_intensity <- if (identical(omic, "metabolomics")) list(`intensity-intensity_cutoff_percentile` = 1, `intensity-proportion_below_cutoff` = 0.5, `intensity-apply_filter` = 1) else list(apply_filter = 1)
+  do.call(session$setInputs, apply_intensity)
+  session$flushReact()
+  session$setInputs(detect = 1)
+  session$flushReact()
+  session$setInputs(resolve_duplicates = 1)
+  session$flushReact()
+  force(output$data_summary)
+  force(output$assay_stats_table)
+  session$setInputs(`itsd-is_pattern` = "^IS_")
+  session$setInputs(`itsd-analyze_is` = 1)
+  session$flushReact()
+  session$setInputs(finalize = 1)
+  session$flushReact()
+  session$userData$probe_norm$assay_names <- assays
+  session$flushReact()
+  session$setInputs(run_normalization = 1)
+  session$flushReact()
+  session$setInputs(apply_correlation_filter = 1)
+  session$flushReact()
+  # The first read asks the worker for the figure; the second draws what it delivered.
+  try(force(output$final_qc), silent = TRUE)
+  session$flushReact()
+  force(output$final_qc)
+  session$setInputs(experiment_label = "kit082", description = "probe")
+  session$setInputs(export_session = 1)
+  session$flushReact()
+  session$setInputs(run_da = 1)
+  session$flushReact()
+  session$userData$register_da_outputs()
+  session$setInputs(da_q_val_thresh = 1, volcano_contrast = contrast, volcano_assay = assays[[1L]], heatmap_contrast = contrast, heatmap_assay = assays[[1L]],
+    heatmap_top_n = 10L, heatmap_clustering = "both", heatmap_scaling = "row", heatmap_color_scheme = "RdBu", heatmap_cluster_method = "complete",
+    heatmap_distance_method = "euclidean", heatmap_show_labels = TRUE, heatmap_tree_cut_method = "none")
+  session$flushReact()
+  force(output$heatmap_plot)
+  session$flushReact()
+  page <- output$volcano_glimma
+  session$setInputs(save_args = 1)
+  session$flushReact()
+  page
+}
+
+for (omic in c("lipidomics", "metabolomics")) local({
+  omic <- omic
+  test_that(sprintf("KIT-082: on a managed session the %s application reads no assay table on the whole journey; the same tabs in process do", omic), {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not_installed("Glimma")
+    case <- omicsReadCase(omic)
+    binding <- case$binding
+    for (managed in c(TRUE, FALSE)) {
+      fixture <- case$owner_of(file.path(withr::local_tempdir(), if (managed) "managed" else "in-process"))
+      withr::defer(closeDIAStateAdapter(fixture$owner))
+      probe <- new.env()
+      assays <- names(methods::slot(fixture$object, binding$data_slot))
+      # The selectors offer the results' comparison names.
+      contrast <- fixture$workflow$contrasts_tbl$contrasts[[1L]]
+      if (managed) omicsManagedChainMocks(fixture, probe, window = FALSE) else {
+        table <- materializeWorkflowTable
+        components <- readWorkflowExecutionComponents
+        testthat::local_mocked_bindings(materializeWorkflowTable = function(context, reference, ...) {
+          probe$tables <- c(probe$tables, reference$entity_id)
+          table(context, reference, ...)
+        }, materializeDIATable = function(context, reference, ...) {
+          probe$tables <- c(probe$tables, reference$entity_id)
+          table(context, reference, ...)
+        }, .package = "MultiScholaR")
+      }
+      suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(omicsAppServer(fixture, omic, probe, managed), {
+        session$userData$probe_owner <- fixture$owner
+        probe$page <- omicsAppJourney(session, output, omic, case$prefix, assays, contrast)
+      }))))
+      materialised <- intersect(probe$tables, omicsAssayTableIds(fixture$owner, binding))
+      if (!managed) {
+        expect_gt(length(materialised), 0L)
+        next
+      }
+      expect_length(materialised, 0L)
+      expect_true(all(paste0(case$prefix, c("_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export")) %in% probe$operations),
+        info = paste(omic, paste(probe$operations, collapse = " ")))
+      expect_true(all(probe$statuses == "delivered"), info = omic)
+      expect_true(paste0(case$prefix, "_qc_complete") %in% unlist(fixture$owner$getHistory()), info = omic)
+      # What the tabs show and write.
+      expect_gt(sum(probe$detected$totalDuplicates), 0L)
+      expect_match(paste(unlist(probe$page), collapse = " "), "<iframe")
+      latest <- readRDS(file.path(fixture$paths$source_dir, paste0(case$prefix, "_filtered_session_data_latest.rds")))
+      expect_s4_class(latest$current_s4_object, binding$class)
+      integration <- readRDS(file.path(fixture$paths$source_dir, "integration", sprintf("%s_kit082_final_s4.RDS", omic)))
+      expect_s4_class(integration, binding$class)
+      expect_identical(nrow(methods::slot(integration, binding$data_slot)[[1L]]) > 0L, TRUE)
+      expect_true(file.exists(file.path(fixture$paths$source_dir, "study_parameters.txt")))
+    }
+  })
+})
+
+test_that("KIT-082: the runner runs what waits in order, and tells what waits when an action fails", {
+  skip_if_not(workflowOwnerCapable())
+  fixture <- lipidDeclarationsOwner(withr::local_tempdir())
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  probe <- new.env()
+  omicsManagedChainMocks(fixture, probe)
+  suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+    runner <- installWorkflowOmicsActions(session, fixture$workflow, "lipidomics", "kit082", fixture$paths)
+    session$userData$runner <- runner
+  }, {
+    runner <- session$userData$runner
+    seen <- character()
+    action <- function(name) omicsManagedProduct("lipid_filtering_metrics", list(), function(result) seen <<- c(seen, name))
+    # Each `run` inside a delivery finds the action still active, so it waits.
+    runner$run(list(omicsManagedProduct("lipid_filtering_metrics", list(), function(result) {
+      seen <<- c(seen, "first")
+      runner$run(list(action("second")))
+      runner$run(list(action("third")))
+    })))
+    session$flushReact()
+    expect_identical(seen, c("first", "second", "third"))
+    # A display asks once per key, whatever renders it, and reads what was delivered.
+    asked <- 0L
+    read <- function(result) {
+      asked <<- asked + 1L
+      list(value = "delivered")
+    }
+    expect_null(shiny::isolate(workflowOmicsDisplay(runner, "key", "lipid_filtering_metrics", list(), read)))
+    session$flushReact()
+    expect_identical(shiny::isolate(workflowOmicsDisplay(runner, "key", "lipid_filtering_metrics", list(), read)), list(value = "delivered"))
+    expect_identical(asked, 1L)
+  }))))
+  # A failure drops what waits and tells it.
+  told <- character()
+  hook <- new.env()
+  testthat::local_mocked_bindings(pollWorkflowAction = function(owner) list(status = if (isTRUE(hook$fail)) "failed" else "running"), .package = "MultiScholaR")
+  suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+    session$userData$runner <- installWorkflowOmicsActions(session, fixture$workflow, "lipidomics", "kit082", fixture$paths)
+  }, {
+    runner <- session$userData$runner
+    action <- function() omicsManagedProduct("lipid_filtering_metrics", list(), function(result) stop("not delivered"))
+    runner$run(list(action()), failed = function(error) told <<- c(told, "running"))
+    session$flushReact()
+    runner$run(list(action()), failed = function(error) told <<- c(told, "waiting"))
+    expect_null(shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list())))
+    hook$fail <- TRUE
+    session$elapse(100)
+    session$flushReact()
+    expect_match(shiny::isolate(workflowOmicsDisplay(runner, "broken", "lipid_filtering_metrics", list()))$message, "managed action ended")
+  }))))
+  expect_identical(told, c("running", "waiting"))
+})

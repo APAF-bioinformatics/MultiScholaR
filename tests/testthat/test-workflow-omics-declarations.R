@@ -17,7 +17,9 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
   # their handler, validator and, where they write no section, `section = NULL`; every other field is the frozen one.
   for (omic in c("lipidomics", "metabolomics")) {
     prefix <- if (identical(omic, "lipidomics")) "lipid" else "metab"
-    current$registry[[omic]][paste0(prefix, c("_qc_figures", "_composite_figure", "_da_publication"))] <- NULL
+    current$registry[[omic]][paste0(prefix, c("_qc_figures", "_composite_figure", "_da_publication",
+      # KIT-082: what the tabs read from the whole matrix outside their steps.
+      "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"))] <- NULL
     # KIT-079: three steps gain a partitioned variant, `whole` staying the default.
     for (step in paste0(prefix, c("_intensity_filter", "_log2", "_duplicate_resolution"))) {
       expect_identical(current$registry[[omic]][[step]]$entry$variants, c("whole", "partitioned"), info = step)

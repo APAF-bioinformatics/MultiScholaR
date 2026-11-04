@@ -225,8 +225,8 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
             )
             
             tryCatch({
-                # KIT-075: the state is read for this analysis only; it leaves the frame before the output is made.
-                current_s4 <- readLipidWorkflowState(workflow_data$state_manager)
+                # KIT-082: only the rows the kernel can use are read; the object leaves the frame before the output is made.
+                current_s4 <- readLipidWorkflowShell(workflow_data$state_manager)
                 shiny::req(current_s4)
                 
                 if (!inherits(current_s4, "LipidomicsAssayData")) {
@@ -251,8 +251,6 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                 lipid_id_col <- current_s4@lipid_id_column
                 annotation_id_col <- current_s4@annotation_id_column
                 sample_id_col <- current_s4@sample_id
-                assay_list <- current_s4@lipid_data
-                assay_names <- names(assay_list)
 
                 # Determine which column(s) to search for IS patterns
                 # Try lipid_id_col first, then annotation_id_col, then common MS-DIAL columns
@@ -263,6 +261,9 @@ mod_lipid_qc_itsd_server <- function(id, workflow_data, omic_type, experiment_la
                     , "Name"             # MS-DIAL alternate
                     , "lipid"       # Generic
                 ))
+                assay_list <- methods::slot(readWorkflowOmicsRows(lipidomicsDeclarationBinding, workflow_data$state_manager, NULL,
+                    function(page, id_column) omicsInternalStandardRows(page, is_pattern, cols_to_try)), "lipid_data")
+                assay_names <- names(assay_list)
 
                 # Calculate IS metrics per assay
                 metrics_list <- list()

@@ -102,7 +102,7 @@ detectMetabDuplicateFeatures <- function(
 ) {
     reqFn(stateManager)
 
-    currentS4 <- readMetabWorkflowState(stateManager) # KIT-075: read for the detection only
+    currentS4 <- readMetabWorkflowIds(stateManager) # KIT-082: the finder reads the id column and nothing else
     reqFn(currentS4)
 
     if (!inheritsFn(currentS4, expectedClass)) {

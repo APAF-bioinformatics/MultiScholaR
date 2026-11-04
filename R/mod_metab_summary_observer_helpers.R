@@ -260,6 +260,53 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
 
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
 
+    summaryFailed <- function(e) {
+        error_message <- if (inherits(e, "condition")) {
+            conditionMessage(e)
+        } else {
+            as.character(e)
+        }
+
+        catFn("SESSION SUMMARY ERROR:", error_message, "\n")
+
+        basic_params_file <- file.path(
+            project_dirs[[omic_type]]$source_dir,
+            "study_parameters.txt"
+        )
+        fallback_created <- FALSE
+
+        if (!fileExistsFn(basic_params_file)) {
+            writeLinesFn(c(
+                "Study Parameters",
+                "================",
+                "",
+                paste("Workflow Name:", input$experiment_label),
+                paste("Description:", input$description),
+                paste("Timestamp:", sysTimeFn()),
+                paste("Error:", error_message)
+            ), basic_params_file)
+            catFn(
+                "SESSION SUMMARY: Created basic fallback file at:",
+                basic_params_file,
+                "\n"
+            )
+            fallback_created <- TRUE
+        }
+
+        values$workflow_args_saved <- TRUE
+        showNotificationFn(
+            "Study parameters saved with warnings",
+            type = "warning"
+        )
+
+        invisible(list(
+            status = "warning",
+            basicParamsFile = basic_params_file,
+            fallbackCreated = fallback_created,
+            errorMessage = error_message
+        ))
+    }
+
     tryCatch({
         final_s4_object <- NULL
         data_state_used <- NULL
@@ -275,7 +322,9 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
             data_state_used <- workflowSummaryFinalStateName(workflow_data$state_manager, data_states, detectFn = detectFn)
 
             if (!is.null(data_state_used)) {
-                final_s4_object <- workflow_data$state_manager$getState(data_state_used)
+                # KIT-082: on a managed session the worker writes the integration object, and the parameters here read the id column.
+                final_s4_object <- if (!is.null(workflowOmicsManagedActions("metabolomics"))) readMetabWorkflowIds(workflow_data$state_manager, data_state_used)
+                    else workflow_data$state_manager$getState(data_state_used)
             }
 
             if (!is.null(final_s4_object)) {
@@ -375,82 +424,50 @@ runMetabSummarySaveWorkflowArgsObserverShell <- function(
         )
         s4_filepath <- file.path(integration_dir, s4_filename)
 
+        finish <- function() {
+            catFn(sprintf(
+                "SESSION SUMMARY: Saved Integration S4 object to: %s\n",
+                s4_filepath
+            ))
+            showNotificationFn("Saved Integration S4 Object", type = "message")
+
+            values$workflow_args_saved <- TRUE
+            showNotificationFn("Study parameters saved successfully", type = "message")
+
+            output$session_summary <- renderTextFn({
+                paste(
+                    "Study parameters created for:", input$experiment_label,
+                    "\nDescription:", input$description,
+                    "\nTimestamp:", sysTimeFn(),
+                    "\nFile:", study_params_file,
+                    "\nSource: Final S4 object @args + config_list",
+                    "\nIntegration Object:", s4_filename,
+                    "\nStatus: Parameters saved [OK]"
+                )
+            })
+
+            invisible(list(
+                status = "success",
+                studyParamsFile = study_params_file,
+                s4Filepath = s4_filepath,
+                dataStateUsed = data_state_used,
+                configListAssigned = config_list_assigned
+            ))
+        }
+
+        # KIT-082: the integration object is the whole state, so a managed session's worker writes it.
+        runner <- workflowOmicsManagedActions("metabolomics")
+        if (!is.null(runner) && !is.null(data_state_used)) {
+            final_s4_object <- NULL
+            runner$run(list(omicsManagedProduct("metab_integration_export", list(path = s4_filepath, state_name = data_state_used), function(result) invisible(NULL))),
+                done = finish, failed = summaryFailed)
+            return(invisible(list(status = "dispatched", studyParamsFile = study_params_file, s4Filepath = s4_filepath, dataStateUsed = data_state_used)))
+        }
+
         saveRdsFn(final_s4_object, s4_filepath)
         final_s4_object <- NULL # KIT-075: the outputs below keep this frame; the object leaves it once written
-        catFn(sprintf(
-            "SESSION SUMMARY: Saved Integration S4 object to: %s\n",
-            s4_filepath
-        ))
-        showNotificationFn("Saved Integration S4 Object", type = "message")
-
-        values$workflow_args_saved <- TRUE
-        showNotificationFn("Study parameters saved successfully", type = "message")
-
-        output$session_summary <- renderTextFn({
-            paste(
-                "Study parameters created for:", input$experiment_label,
-                "\nDescription:", input$description,
-                "\nTimestamp:", sysTimeFn(),
-                "\nFile:", study_params_file,
-                "\nSource: Final S4 object @args + config_list",
-                "\nIntegration Object:", s4_filename,
-                "\nStatus: Parameters saved [OK]"
-            )
-        })
-
-        invisible(list(
-            status = "success",
-            studyParamsFile = study_params_file,
-            s4Filepath = s4_filepath,
-            dataStateUsed = data_state_used,
-            configListAssigned = config_list_assigned
-        ))
-    }, error = function(e) {
-        error_message <- if (inherits(e, "condition")) {
-            conditionMessage(e)
-        } else {
-            as.character(e)
-        }
-
-        catFn("SESSION SUMMARY ERROR:", error_message, "\n")
-
-        basic_params_file <- file.path(
-            project_dirs[[omic_type]]$source_dir,
-            "study_parameters.txt"
-        )
-        fallback_created <- FALSE
-
-        if (!fileExistsFn(basic_params_file)) {
-            writeLinesFn(c(
-                "Study Parameters",
-                "================",
-                "",
-                paste("Workflow Name:", input$experiment_label),
-                paste("Description:", input$description),
-                paste("Timestamp:", sysTimeFn()),
-                paste("Error:", error_message)
-            ), basic_params_file)
-            catFn(
-                "SESSION SUMMARY: Created basic fallback file at:",
-                basic_params_file,
-                "\n"
-            )
-            fallback_created <- TRUE
-        }
-
-        values$workflow_args_saved <- TRUE
-        showNotificationFn(
-            "Study parameters saved with warnings",
-            type = "warning"
-        )
-
-        invisible(list(
-            status = "warning",
-            basicParamsFile = basic_params_file,
-            fallbackCreated = fallback_created,
-            errorMessage = error_message
-        ))
-    })
+        finish()
+    }, error = summaryFailed)
 }
 
 runMetabSummaryCopyToPublicationObserverShell <- function(

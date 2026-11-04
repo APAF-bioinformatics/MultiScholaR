@@ -586,6 +586,10 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             h$checkpointSetInput(driver, paste0(de, "da_q_val_thresh"), journey$da$q_value)
             h$checkpointSetInput(driver, paste0(de, "treat_lfc_cutoff"), journey$da$treat_lfc)
             h$checkpointClickAndWaitText(driver, paste0(de, "run_da_analysis"), paste0("#", de, "da_status"), "Analysis Complete")
+            # KIT-082: the tab's interactive volcano (from KIT-082 a worker's page, which arrives after this notice).
+            volcano <- jsonlite::toJSON(paste0(de, "volcano_glimma"), auto_unbox = TRUE)
+            h$checkpointWaitForJs(driver, sprintf(paste0("(function(){const el=document.getElementById(%s);return el!==null&&el.children.length>0&&",
+                "!el.textContent.includes('Preparing the interactive plot');})()"), volcano), timeout = h$checkpointWaitBudget())
         },
         report = {
             # The summary tab: the publication copy (which writes the study parameters when they were not saved), then
@@ -594,6 +598,8 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             summary <- prefix("summary")
             h$checkpointSetInput(driver, paste0(summary, "experiment_label"), journey$experiment_label)
             h$checkpointSetInput(driver, paste0(summary, "description"), "KIT-068 lifecycle member")
+            # KIT-082: the study parameters and the integration object (on a managed session, the worker's).
+            notify(paste0(summary, "save_workflow_args"), "Study parameters saved successfully")
             h$checkpointClickAndWaitText(driver, paste0(summary, "copy_to_publication"), paste0("#", summary, "copy_status"),
                 "Files copied to publication directory")
             notify(paste0(summary, "generate_report"), "Report generated successfully!")

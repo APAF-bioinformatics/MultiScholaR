@@ -336,32 +336,47 @@ buildLipidNormFinalQcPlotRenderer <- function(
             if (is.null(current_reference)) {
                 return(emptyPlotFn("No data", 6))
             }
+            aesthetics <- getPlotAestheticsFn()
+
+            # KIT-082: the PCA reads the whole matrix, so a managed session's worker draws it.
+            runner <- workflowOmicsManagedActions("lipidomics")
+            if (!is.null(runner)) {
+                entry <- workflowOmicsFinalPca(lipidomicsDeclarationBinding, runner, workflowData$state_manager, current_reference, aesthetics$color_var, aesthetics$shape_var)
+                if (is.null(entry)) return(emptyPlotFn("Preparing the final QC plot...", 5))
+                if (!is.null(entry$message)) return(emptyPlotFn(paste("Error:", entry$message), 4))
+                return(grid::grid.draw(entry$plot))
+            }
+
             # KIT-075: the state is read for this render only.
             current_s4 <- readLipidWorkflowState(workflowData$state_manager, current_reference)
 
-            aesthetics <- getPlotAestheticsFn()
-
             tryCatch({
-                pca_plots <- plotPcaFn(
-                    current_s4
-                    , grouping_variable = aesthetics$color_var
-                    , shape_variable = aesthetics$shape_var
-                    , title = "Final QC - PCA"
-                )
-
-                if (is.list(pca_plots) && length(pca_plots) > 1) {
-                    wrapPlotsFn(pca_plots, ncol = 1)
-                } else if (is.list(pca_plots) && length(pca_plots) == 1) {
-                    pca_plots[[1]]
-                } else if (inherits(pca_plots, "ggplot")) {
-                    pca_plots
-                } else {
-                    ggplot2::ggplot() + ggplot2::theme_void()
-                }
+                buildLipidNormFinalQcPcaPlot(current_s4, aesthetics$color_var, aesthetics$shape_var, plotPcaFn, wrapPlotsFn)
             }, error = function(e) {
                 emptyPlotFn(paste("Error:", e$message), 4)
             })
         })
+    }
+}
+
+#' The final-QC PCA: one assay's plot, or the assays' plots in a column.
+#' @noRd
+buildLipidNormFinalQcPcaPlot <- function(sourceObject, colorVar, shapeVar, plotPcaFn = plotPca, wrapPlotsFn = patchwork::wrap_plots) {
+    pca_plots <- plotPcaFn(
+        sourceObject
+        , grouping_variable = colorVar
+        , shape_variable = shapeVar
+        , title = "Final QC - PCA"
+    )
+
+    if (is.list(pca_plots) && length(pca_plots) > 1) {
+        wrapPlotsFn(pca_plots, ncol = 1)
+    } else if (is.list(pca_plots) && length(pca_plots) == 1) {
+        pca_plots[[1]]
+    } else if (inherits(pca_plots, "ggplot")) {
+        pca_plots
+    } else {
+        ggplot2::ggplot() + ggplot2::theme_void()
     }
 }
 

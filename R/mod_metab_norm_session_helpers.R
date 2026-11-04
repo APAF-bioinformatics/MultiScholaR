@@ -171,6 +171,35 @@ dispatchMetabNormExportSession <- function(
     tryCatch({
         sourceDir <- resolveSourceDirFn(experimentPaths)
 
+        # KIT-082: the state is serialised by a managed session's worker, and published here by the owner's retry path.
+        runner <- workflowOmicsManagedActions("metabolomics")
+        if (!is.null(runner)) {
+            progress <- runner$progress("Exporting normalized session data...")
+            failed <- function(error) handleOutcomeFn(error = error, addLogFn = addLogFn)
+            return(startWorkflowManagedSessionExport(workflowData$state_manager, runner, workflowData, normData, inputValues, sourceDir,
+                function(workflowData, normData, input) buildMetabNormExportSessionData(workflowData = workflowData, normData = normData,
+                    inputValues = input, experimentLabel = experimentLabel), "metab_",
+                publish = function() tryCatch({
+                    progress$close()
+                    exportFiles <- runWorkflowFn(
+                        workflowData = workflowData,
+                        normData = normData,
+                        inputValues = inputValues,
+                        experimentLabel = experimentLabel,
+                        sourceDir = sourceDir
+                    )
+                    handleOutcomeFn(
+                        sessionFilename = exportFiles$sessionFilename,
+                        sessionFilepath = exportFiles$sessionFilepath,
+                        addLogFn = addLogFn
+                    )
+                }, error = failed),
+                failed = function(error) {
+                    progress$close()
+                    failed(error)
+                }))
+        }
+
         exportFiles <- runWorkflowFn(
             workflowData = workflowData,
             normData = normData,
@@ -458,7 +487,7 @@ collectMetabNormFeatureCountsPerAssay <- function(currentS4) {
     purrr::map(assayNames, \(assay_name) {
         assay_data <- currentS4@metabolite_data[[assay_name]]
         if (!is.null(assay_data)) {
-            n_features <- length(unique(assay_data[[currentS4@metabolite_id_column]]))
+            n_features <- attr(currentS4, "feature_counts")[[assay_name]] %||% length(unique(assay_data[[currentS4@metabolite_id_column]]))
             n_samples <- ncol(assay_data) - length(c(currentS4@metabolite_id_column, currentS4@annotation_id_column))
             list(features = n_features, samples = n_samples)
         } else {
@@ -469,13 +498,15 @@ collectMetabNormFeatureCountsPerAssay <- function(currentS4) {
 
 buildMetabNormExportSessionData <- function(workflowData, normData, inputValues, experimentLabel, exportTimestamp = Sys.time()) {
     currentStateName <- workflowData$state_manager$current_state
-    currentS4 <- workflowData$state_manager$getState(currentStateName)
+    # KIT-082: on a managed session the worker serialises the state, and the counts here read the id column.
+    managed <- !is.null(workflowOmicsManagedActions("metabolomics"))
+    currentS4 <- if (managed) readMetabWorkflowShell(workflowData$state_manager, currentStateName, "features") else workflowData$state_manager$getState(currentStateName)
     featureCountsPerAssay <- collectMetabNormFeatureCountsPerAssay(currentS4)
 
     list(
         # --- R6 State Info ---
         r6_current_state_name = currentStateName
-        , current_s4_object = currentS4
+        , current_s4_object = if (!managed) currentS4
 
         # --- Workflow artifacts ---
         , contrasts_tbl = workflowData$contrasts_tbl

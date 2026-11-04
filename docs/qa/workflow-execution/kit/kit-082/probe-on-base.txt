@@ -1,0 +1,9 @@
+# KIT-082: the whole-journey probe and new tests run on the base build, 44cf3abf, before the change. The probe must fail here.
+# dep082 on the changed tree: files 175 pass 15690 fail 0 error 0 skip 86
+
+RESULT KIT-082: on a managed session the lipidomics application reads no assay table on the whole journey; the same tabs in process do :: Expected `materialised` to have length 0. Actual length: 8. 
+RESULT KIT-082: on a managed session the lipidomics application reads no assay table on the whole journey; the same tabs in process do :: Expected `all(...)` to be TRUE. Differences: `actual`:   FALSE `expected`: TRUE   lipidomics lipid_intensity_filter lipid_duplicate_resolution lipid_qc_figures lipid_itsd_normalisation lipid_log2 lipi 
+RESULT KIT-082: on a managed session the lipidomics application reads no assay table on the whole journey; the same tabs in process do :: Expected `paste(unlist(probe$page), collapse = " ")` to match regexp "<iframe". Actual text: x | <style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !impor 
+RESULT KIT-082: on a managed session the metabolomics application reads no assay table on the whole journey; the same tabs in process do :: Expected `materialised` to have length 0. Actual length: 8. 
+RESULT KIT-082: on a managed session the metabolomics application reads no assay table on the whole journey; the same tabs in process do :: Expected `all(...)` to be TRUE. Differences: `actual`:   FALSE `expected`: TRUE   metabolomics metab_intensity_filter metab_duplicate_resolution metab_qc_figures metab_itsd_normalisation metab_log2 me 
+RESULT KIT-082: on a managed session the metabolomics application reads no assay table on the whole journey; the same tabs in process do :: Expected `paste(unlist(probe$page), collapse = " ")` to match regexp "<iframe". Actual text: x | <style> .dataTables_wrapper { overflow-x: auto !important; } .dataTables_scroll { display: table !impor 

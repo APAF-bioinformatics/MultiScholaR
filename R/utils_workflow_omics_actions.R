@@ -34,17 +34,20 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         if (is.function(done)) done()
         # A tab's own sequence (`done` starting the next) comes before a click that waited.
         queued <- run$queued
-        if (!is.null(queued) && is.null(shiny::isolate(step$active()))) {
-            run$queued <- NULL
-            begin(queued$actions, queued$done, queued$failed)
+        if (length(queued) && is.null(shiny::isolate(step$active()))) {
+            run$queued <- queued[-1L]
+            begin(queued[[1L]]$actions, queued[[1L]]$done, queued[[1L]]$failed)
         }
     }
     step <- installWorkflowManagedStep(session, NULL, workflow_data, NULL,
         publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
         ui = list(notification = paste0(omic_type, "_action_working"), label = paste(omic_type, "step"), delivered = delivered,
             failed = function(error) {
+                queued <- run$queued
                 run$queued <- NULL
                 if (is.function(run$failed)) run$failed(error)
+                # KIT-082: what was waiting is dropped and told, so that a display does not wait for ever.
+                for (waiting in queued) if (is.function(waiting$failed)) waiting$failed(error)
             }),
         deliver = function(result) shiny::isolate(run$actions[[run$index]]$deliver(result)),
         read_result = readManagedOmicsResult)
@@ -55,7 +58,7 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         if (!is.null(shiny::isolate(step$pending())) && length(run$actions)) return(start())
         # The tab's button can be pressed while another tab's action runs (the pre-normalisation figures, opening the tab).
         if (!is.null(shiny::isolate(step$active()))) {
-            run$queued <- list(actions = actions, done = done, failed = failed)
+            run$queued <- c(run$queued, list(list(actions = actions, done = done, failed = failed)))
             return(invisible(NULL))
         }
         begin(actions, done, failed)
@@ -65,8 +68,58 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         progress$set(message = message, value = 0)
         progress
     }
+    runner$displays <- shiny::reactiveValues()
+    runner$requested <- character()
     session$userData$workflow_omics_actions[[omic_type]] <- runner
     runner
+}
+
+#' One display from the worker, asked for once per key by the render that shows it (KIT-082). The render reads the entry, so
+#' it runs again when the action delivers it.
+#' @param runner The omic's runner.
+#' @param key What identifies this display.
+#' @param operation,parameters The registered operation.
+#' @param read `function(result)` giving what the render keeps.
+#' @return The entry, or NULL while the worker has not delivered it. A failure gives `list(message =)`.
+#' @noRd
+workflowOmicsDisplay <- function(runner, key, operation, parameters, read = function(result) result$display) {
+    entry <- runner$displays[[key]]
+    if (!is.null(entry)) return(entry)
+    # A publication waiting for its retry takes the next request; the render comes back when it clears.
+    if (!is.null(runner$step$pending())) return(NULL)
+    if (key %in% runner$requested) return(NULL)
+    runner$requested <- c(runner$requested, key)
+    shiny::isolate(runner$run(list(omicsManagedProduct(operation, parameters, function(result) runner$displays[[key]] <- read(result))),
+        failed = function(error) shiny::isolate(runner$displays[[key]] <- list(message = conditionMessage(error)))))
+    NULL
+}
+
+#' The final-QC PCA from the worker.
+#' @return `list(plot =)`, NULL while it is being drawn, or `list(message =)` on a failure.
+#' @noRd
+workflowOmicsFinalPca <- function(binding, runner, manager, state, color, shape) {
+    key <- paste0("final-pca-", digest::digest(list(state, color, shape), algo = "sha256"))
+    workflowOmicsDisplay(runner, key, paste0(binding$prefix, "_final_pca"), list(state = state, grouping_variable = color, shape_variable = shape),
+        function(result) if (is.null(result$display$plot)) result$display else list(plot = resolveWorkflowStateValue(manager$.context, result$display$plot)))
+}
+
+#' A volcano widget generator for a managed session: the tab's Glimma output builder keeps its messages, and this gives it the
+#' worker's page in place of the widget.
+#' @return A function with the generator's arguments.
+#' @noRd
+workflowOmicsVolcanoPageFactory <- function(binding, runner, manager) {
+    function(da_results_list, selected_contrast, selected_assay, da_q_val_thresh) {
+        key <- paste0("volcano-", digest::digest(list(manager$.context$snapshot$da_results$entity_id, selected_contrast, selected_assay, as.numeric(da_q_val_thresh)), algo = "sha256"))
+        entry <- workflowOmicsDisplay(runner, key, paste0(binding$prefix, "_volcano_page"),
+            list(contrast = selected_contrast, assay = selected_assay, qvalue = as.numeric(da_q_val_thresh)),
+            # `list(page = NULL)` would read as an absent entry.
+            function(result) if (is.null(result$display$page) && is.null(result$display$message)) list(unavailable = TRUE) else result$display)
+        if (is.null(entry)) return(shiny::div(class = "alert alert-info", style = "margin: 20px;", "Preparing the interactive plot..."))
+        if (!is.null(entry$message)) stop(entry$message, call. = FALSE)
+        if (isTRUE(entry$unavailable)) return(NULL)
+        shiny::tags$iframe(srcdoc = rawToChar(hydrateSavedWorkflowEntity(manager$.context$store, entry$page)$bytes),
+            style = "width:100%;height:820px;border:0;", title = paste("Interactive volcano", selected_contrast))
+    }
 }
 
 #' The omic's runner on the current session, or NULL when the tab runs in process.

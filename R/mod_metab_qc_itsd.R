@@ -31,6 +31,29 @@
 NULL
 
 
+#' The columns the analysis tries for its pattern, in order.
+#' @noRd
+metabQcItsdColumns <- function(currentS4) {
+    unique(c(
+        currentS4@metabolite_id_column,
+        currentS4@annotation_id_column,
+        "Metabolite name",
+        "Name",
+        "metabolite"
+    ))
+}
+
+#' The state the analysis reads (KIT-082): the rows it can use. With no pattern there are none, and the analysis says so.
+#' @noRd
+readMetabQcItsdState <- function(stateManager, inputPattern) {
+    shell <- readMetabWorkflowShell(stateManager)
+    if (is.null(shell)) return(NULL)
+    pattern <- if (!is.null(inputPattern) && nzchar(inputPattern)) inputPattern else if (!is.na(shell@internal_standard_regex) && nzchar(shell@internal_standard_regex)) shell@internal_standard_regex
+    if (is.null(pattern)) return(shell)
+    columns <- metabQcItsdColumns(shell)
+    readWorkflowOmicsRows(metabolomicsDeclarationBinding, stateManager, NULL, function(page, id_column) omicsInternalStandardRows(page, pattern, columns))
+}
+
 analyzeMetabQcItsdData <- function(
     currentS4,
     inputPattern = NULL,
@@ -63,13 +86,7 @@ analyzeMetabQcItsdData <- function(
     sampleIdCol <- currentS4@sample_id
     assayList <- currentS4@metabolite_data
     assayNames <- names(assayList)
-    colsToTry <- unique(c(
-        metaboliteIdCol,
-        annotationIdCol,
-        "Metabolite name",
-        "Name",
-        "metabolite"
-    ))
+    colsToTry <- metabQcItsdColumns(currentS4)
 
     metricsList <- list()
     longDataList <- list()
@@ -387,8 +404,8 @@ runMetabQcItsdServerBody <- function(
         )
 
         tryCatch({
-            # KIT-075: the state is read for this analysis only; it leaves the frame before the output is made.
-            current_s4 <- readMetabWorkflowState(workflowData$state_manager)
+            # KIT-082: only the rows the analysis can use are read; the object leaves the frame before the output is made
+            current_s4 <- readMetabQcItsdState(workflowData$state_manager, input$is_pattern)
             reqFn(current_s4)
             analysis <- analyzeMetabQcItsdDataFn(
                 currentS4 = current_s4,

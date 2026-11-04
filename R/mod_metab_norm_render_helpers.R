@@ -413,6 +413,15 @@ renderMetabNormFinalQcPlot <- function(
             , shapeVariable = shapeVariableFn()
         )
 
+        # KIT-082: the PCA reads the whole matrix, so a managed session's worker draws it.
+        runner <- workflowOmicsManagedActions("metabolomics")
+        if (!is.null(runner)) {
+            entry <- workflowOmicsFinalPca(metabolomicsDeclarationBinding, runner, workflowData$state_manager, finalQcState$sourceObject, aesthetics$color_var, aesthetics$shape_var)
+            if (!is.null(entry$plot)) return(grid::grid.draw(entry$plot))
+            label <- if (is.null(entry)) "Preparing the final QC plot..." else paste("Error:", entry$message)
+            return(ggplot2::ggplot() + ggplot2::annotate("text", x = 0.5, y = 0.5, label = label, size = 5) + ggplot2::theme_void())
+        }
+
         buildPcaPlotFn(
             sourceObject = readMetabWorkflowState(workflowData$state_manager, finalQcState$sourceObject) # KIT-075: per render
             , colorVar = aesthetics$color_var

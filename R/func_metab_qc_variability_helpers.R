@@ -229,21 +229,7 @@ getInternalStandardMetrics <- function(assay_data,
 
     # Fallback: try common ITSD naming conventions if no matches found
     if (length(is_rows) == 0) {
-        common_is_patterns <- c(
-            "^IS[_-]" # IS_ or IS- prefix (e.g., IS_Caffeine, IS-Leucine)
-            , "^ITSD[_-]" # ITSD_ prefix (e.g., ITSD_A, ITSD_001)
-            , "ISTD" # ISTD anywhere (e.g., Caffeine-ISTD, ISTD_001)
-            , "ITSD" # ITSD anywhere (alternate spelling)
-            , "[_-]d\\d+$" # Deuterated suffix (e.g., Caffeine_d3, Leucine-d10)
-            , "[_-]d\\d+[_-]" # Deuterated mid-name (e.g., Caffeine_d3_IS)
-            , "\\(d\\d+\\)" # Deuterated in parens (e.g., Caffeine(d3))
-            , "(?i)internal.?standard" # "Internal Standard" / "Internal_Standard"
-            , "(?i)^is\\d+$" # IS followed by numbers (e.g., IS1, IS23)
-            , "13C[_-]?labeled" # 13C labeled (e.g., 13C-labeled_reference)
-            , "15N[_-]?labeled" # 15N labeled
-            , "-13C\\d*-" # 13C in middle (e.g., Glucose-13C6-IS)
-            , "-15N\\d*-" # 15N in middle
-        )
+        common_is_patterns <- omicsInternalStandardFallbackPatterns()
         combined_pattern <- paste(common_is_patterns, collapse = "|")
 
         tryCatch(

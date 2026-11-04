@@ -329,7 +329,9 @@ collectLipidSummaryWorkflowArgsContext <- function(
         dataStateUsed <- workflowSummaryFinalStateName(workflowData$state_manager, dataStates, detectFn = detectFn)
 
         if (!is.null(dataStateUsed)) {
-            finalS4Object <- workflowData$state_manager$getState(dataStateUsed)
+            # KIT-082: on a managed session the worker writes the integration object, and the parameters here read the id column.
+            finalS4Object <- if (!is.null(workflowOmicsManagedActions("lipidomics"))) readLipidWorkflowIds(workflowData$state_manager, dataStateUsed)
+                else workflowData$state_manager$getState(dataStateUsed)
         }
 
         if (!is.null(finalS4Object)) {
@@ -367,6 +369,7 @@ collectLipidSummaryWorkflowArgsContext <- function(
 
     list(
         finalS4Object = finalS4Object,
-        contrastsTbl = contrastsTbl
+        contrastsTbl = contrastsTbl,
+        dataStateUsed = if (!is.null(workflowData$state_manager)) dataStateUsed
     )
 }
