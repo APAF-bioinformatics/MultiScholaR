@@ -1524,6 +1524,266 @@
       "recorded_at": "2026-11-05T02:49:06+1100",
       "route": "metabolomics"
     },
+    "lipid86s_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "4639991a927e52ae5b2efcbb97c502ecfd8506881be3c326f79dbad754be03e8",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_design": {
+      "step": "design",
+      "state": "lipid_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "b95f647372207560f1b5b61e0f7b3d75e80b72c5028d8557de0a738e8f3294b8",
+      "rows": 432,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_intensity": {
+      "step": "intensity",
+      "state": "lipid_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "f891ce32e95928786f477adfedd174a98087eb4d197edf3d416e36839b12c808",
+      "rows": 391,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_duplicates": {
+      "step": "duplicates",
+      "state": "lipid_duplicates_resolved",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "0736bf94f24ba6f54cc9d1bd354eb43dc2d2c5e4c25368746bdae4d92678ed46",
+      "rows": 377,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "lipid_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "f018002f72232f7e5a1001b5383667c292cc1b6e8114974f12a3e8e8013cd47d",
+      "rows": 377,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_normalisation": {
+      "step": "normalisation",
+      "state": "lipid_ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "5aba9d689f028c4bb6ef9a535e41b5467ffa8c2a089568387a2c2c538131ce15",
+      "rows": 365,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_correlation": {
+      "step": "correlation",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "5071f2e7e764401f752a56d54444529dc93c5440fd93b0b31fea143b7b30692c",
+      "rows": 365,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_session_export": {
+      "step": "session_export",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "5071f2e7e764401f752a56d54444529dc93c5440fd93b0b31fea143b7b30692c",
+      "rows": 365,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_da": {
+      "step": "da",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "5071f2e7e764401f752a56d54444529dc93c5440fd93b0b31fea143b7b30692c",
+      "rows": 365,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "lipid86s_report": {
+      "step": "report",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_screen_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-335d94a5f98a3/.workflow-entities",
+      "head_sha256": "e1771309181012ed83f9e0afdcc80304b78f6e345df9bafa4fc335283bf088df",
+      "entity_id": "5071f2e7e764401f752a56d54444529dc93c5440fd93b0b31fea143b7b30692c",
+      "rows": 365,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:04:29+1100",
+      "route": "lipidomics"
+    },
+    "metab86s_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "04dab7e8470ec241268bbdf5dca6b14cb5a3f055373549934c942a1bdde24b18",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_design": {
+      "step": "design",
+      "state": "metab_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "5f8e6238f886243600de2098f00f4288e5e498e65988f99b9cd57f34d775b2e2",
+      "rows": 612,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_intensity": {
+      "step": "intensity",
+      "state": "metab_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "803afb0838198b1f5bdd6753011bf43a965b5bb122ee239550caa367c82d7408",
+      "rows": 578,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_duplicates": {
+      "step": "duplicates",
+      "state": "metab_duplicates_resolved",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "77c333f40453b39f1566422bb87f4648acacd90011602d7a1c72ffec904eb814",
+      "rows": 578,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "metab_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "2d54f075a00860bccf97749d691ee8ebc63495045aabfb2b17f52023a6582328",
+      "rows": 578,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_normalisation": {
+      "step": "normalisation",
+      "state": "metab_ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "fbecaa918e887741657fcef734272e28c5d8ad3d62129387f65136ff6dea8a3f",
+      "rows": 566,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_correlation": {
+      "step": "correlation",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "904ae6be15778e204037bc9e1994de93a0da244b9b5b251e55fd47106f1661f1",
+      "rows": 566,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_session_export": {
+      "step": "session_export",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "904ae6be15778e204037bc9e1994de93a0da244b9b5b251e55fd47106f1661f1",
+      "rows": 566,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_da": {
+      "step": "da",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "904ae6be15778e204037bc9e1994de93a0da244b9b5b251e55fd47106f1661f1",
+      "rows": 566,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
+    "metab86s_report": {
+      "step": "report",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_screen_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-336ba573df459b/.workflow-entities",
+      "head_sha256": "bc7670868b1e0325eba9166451de34fd108aafe945ad7ad87c9404b85da7170e",
+      "entity_id": "904ae6be15778e204037bc9e1994de93a0da244b9b5b251e55fd47106f1661f1",
+      "rows": 566,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:05:23+1100",
+      "route": "metabolomics"
+    },
     "lipid84_itsd": {
       "step": "itsd",
       "state": "lipid_itsd_norm",
@@ -11739,6 +11999,1026 @@
         }
       },
       "summary_sha256": "a361089c220158ffa7f5bee996e08020f4b6127623bde198a6f7d4c84e1f284e"
+    },
+    "lipid86s_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "lipid86s_design": {
+      "class": "LipidomicsAssayData",
+      "rows": 432,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 216,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "882410fc43d26033b2a3a3155bab8030e3f586039175ef56e2dd371bba5a710a"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 216,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "c2a0cecfeb1ea1d4e7b2cf7ddec9a3fad2af29a8075e4c54d54cd69c981d128e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "540336ed00e4c95e3bc5afe0dd5e2c943facf996d06ff8c07c1f3cbec19af046"
+    },
+    "lipid86s_intensity": {
+      "class": "LipidomicsAssayData",
+      "rows": 391,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 195,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "928f20f424c5c3ee5c164baf7bddaf01236e54c2dad309a28fa9805966ce5c45"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 196,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "3698314fc3934de6f1774fff0ba97c0cf6b3382315efb1c3a717972b729d7559"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid.intensity_filter_result:f3c6af9fc74c": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        }
+      },
+      "summary_sha256": "036087c5fa2c83a10f6a4e769af1a1aa1dfcff9280bc19c974d9f4924214f845"
+    },
+    "lipid86s_duplicates": {
+      "class": "LipidomicsAssayData",
+      "rows": 377,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 189,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "1da64b3d083446434ce2a7967d549f04298a939158aa11132cbcac74a2b6ec39"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 188,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "1a3574eb4dd88e12e02320abb9a78757f392b96445e3683126f57f2156de36c8"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        },
+        "lipid.duplicate_resolution_result:261db94dcc74": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        }
+      },
+      "summary_sha256": "a3aed048aff7966c4abaa28895ab90b3f04845bc47109c150084c2417c63c958"
+    },
+    "lipid86s_qc_finalize": {
+      "class": "LipidomicsAssayData",
+      "rows": 377,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 189,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "1da64b3d083446434ce2a7967d549f04298a939158aa11132cbcac74a2b6ec39"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 188,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "1a3574eb4dd88e12e02320abb9a78757f392b96445e3683126f57f2156de36c8"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        }
+      },
+      "summary_sha256": "a3aed048aff7966c4abaa28895ab90b3f04845bc47109c150084c2417c63c958"
+    },
+    "lipid86s_normalisation": {
+      "class": "LipidomicsAssayData",
+      "rows": 365,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 183,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "6a2eb2345c254b1dc0afdb906443ac97a87309b400778fd39694992a5a927283"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 182,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "5779e89485c5e29704fbfbff54bda13d70a79c8a7847345f803b059bbf545539"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+        },
+        "lipid.between_sample_normalisation_result:03070f86f204": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+        },
+        "lipid.itsd_normalisation_result:0acebae0d24d": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+        },
+        "lipid.ruv_result:a4107001157a": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+        },
+        "lipid.log2_result:d6554cd8f7ff": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+        }
+      },
+      "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
+    },
+    "lipid86s_correlation": {
+      "class": "LipidomicsAssayData",
+      "rows": 365,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 183,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "6a2eb2345c254b1dc0afdb906443ac97a87309b400778fd39694992a5a927283"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 182,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "5779e89485c5e29704fbfbff54bda13d70a79c8a7847345f803b059bbf545539"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+        },
+        "lipid-pearson-pairs:8566b911c04b": {
+          "kind": "scientific_product",
+          "product_type": "lipid-pearson-pairs",
+          "sha256": "8566b911c04b90468838986e77e5088b1ef9f2752abaf5bae9514182df3abf2d"
+        },
+        "lipid.pearson_selection_result:faa96cadff79": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+        }
+      },
+      "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
+    },
+    "lipid86s_session_export": {
+      "class": "LipidomicsAssayData",
+      "rows": 365,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 183,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "6a2eb2345c254b1dc0afdb906443ac97a87309b400778fd39694992a5a927283"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 182,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "5779e89485c5e29704fbfbff54bda13d70a79c8a7847345f803b059bbf545539"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+        }
+      },
+      "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
+    },
+    "lipid86s_da": {
+      "class": "LipidomicsAssayData",
+      "rows": 365,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 183,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "6a2eb2345c254b1dc0afdb906443ac97a87309b400778fd39694992a5a927283"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 182,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "5779e89485c5e29704fbfbff54bda13d70a79c8a7847345f803b059bbf545539"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+        },
+        "da_fit:0882d0bb4668": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "0882d0bb46686e2694df6a2b704474a874a54e4d7462064666ef0fe6998c2ecb"
+        },
+        "da_fit:23fc887c4533": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "23fc887c453332f32ab98a7a0f48f6680247a228b28e1da0db81261076333adc"
+        },
+        "lipid-da-contrast-references:f4b9f6d809d1": {
+          "kind": "scientific_product",
+          "product_type": "lipid-da-contrast-references",
+          "sha256": "f4b9f6d809d16ce356d0f342f031b2033b917538cd55d33f791197deaf0afda8"
+        }
+      },
+      "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
+    },
+    "lipid86s_report": {
+      "class": "LipidomicsAssayData",
+      "rows": 365,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 183,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "6a2eb2345c254b1dc0afdb906443ac97a87309b400778fd39694992a5a927283"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 182,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "5779e89485c5e29704fbfbff54bda13d70a79c8a7847345f803b059bbf545539"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+        }
+      },
+      "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
+    },
+    "metab86s_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "metab86s_design": {
+      "class": "MetaboliteAssayData",
+      "rows": 612,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 306,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "c3e679503b1763b040dd0edf860e23d3036f7892056bcfa2c0ce42888d58bb20"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 306,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "9d31004e7bf69c5c63e0e878abb6a877594368c858f2c2f1ad2275bdda00519f"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "78892e173db074e7d70177d530729abe465303c02b88bf4a108fbdaa27f90279"
+    },
+    "metab86s_intensity": {
+      "class": "MetaboliteAssayData",
+      "rows": 578,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 289,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "b8a544b11489b80e17e08999eb3091c8356d313a63ba4d9fcf17669c81660611"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 289,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "c617072cbfc3a0fa6a5e9a15d5a72906918c940851fa3566e7a5818a2d321a41"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab.intensity_filter_result:9ddd8ffc80f6": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        }
+      },
+      "summary_sha256": "b157c102e7b82071778e4796945bc45fb4b6de3c306b7f0299a39de7374c7349"
+    },
+    "metab86s_duplicates": {
+      "class": "MetaboliteAssayData",
+      "rows": 578,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 289,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "b8a544b11489b80e17e08999eb3091c8356d313a63ba4d9fcf17669c81660611"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 289,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "c617072cbfc3a0fa6a5e9a15d5a72906918c940851fa3566e7a5818a2d321a41"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        },
+        "metab.duplicate_resolution_result:07b1db03c3fa": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        }
+      },
+      "summary_sha256": "b157c102e7b82071778e4796945bc45fb4b6de3c306b7f0299a39de7374c7349"
+    },
+    "metab86s_qc_finalize": {
+      "class": "MetaboliteAssayData",
+      "rows": 578,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 289,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "b8a544b11489b80e17e08999eb3091c8356d313a63ba4d9fcf17669c81660611"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 289,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "c617072cbfc3a0fa6a5e9a15d5a72906918c940851fa3566e7a5818a2d321a41"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d0db89e007e8604bed3100f4d75cf0ba1a3a0f31bebdc357d477e085f574bf23"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        }
+      },
+      "summary_sha256": "b157c102e7b82071778e4796945bc45fb4b6de3c306b7f0299a39de7374c7349"
+    },
+    "metab86s_normalisation": {
+      "class": "MetaboliteAssayData",
+      "rows": 566,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "eb0e6de9506a1ccfa0667b566df94db7dedfadbf2dcba37642210d85b3a5af43"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "9ebcdc9cae90c06e07afe84fcebc5b4ec1951f7d8b1c4044d29083ed01b8ce02"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+        },
+        "metab.itsd_normalisation_result:0a2728a44b99": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+        },
+        "metab.log2_result:1d8ec563b4c2": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+        },
+        "metab.ruv_result:6894ed156e89": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+        },
+        "metab.between_sample_normalisation_result:6f471d2d5b37": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+        }
+      },
+      "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
+    },
+    "metab86s_correlation": {
+      "class": "MetaboliteAssayData",
+      "rows": 566,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "eb0e6de9506a1ccfa0667b566df94db7dedfadbf2dcba37642210d85b3a5af43"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "9ebcdc9cae90c06e07afe84fcebc5b4ec1951f7d8b1c4044d29083ed01b8ce02"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+        },
+        "metab-pearson-pairs:6e8865c863b5": {
+          "kind": "scientific_product",
+          "product_type": "metab-pearson-pairs",
+          "sha256": "6e8865c863b5b9cdc7a2d1b40f73e6dcedd7b379adf2d5efe24329df78315c20"
+        },
+        "metab.pearson_selection_result:a6ce67516fff": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+        }
+      },
+      "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
+    },
+    "metab86s_session_export": {
+      "class": "MetaboliteAssayData",
+      "rows": 566,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "eb0e6de9506a1ccfa0667b566df94db7dedfadbf2dcba37642210d85b3a5af43"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "9ebcdc9cae90c06e07afe84fcebc5b4ec1951f7d8b1c4044d29083ed01b8ce02"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+        }
+      },
+      "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
+    },
+    "metab86s_da": {
+      "class": "MetaboliteAssayData",
+      "rows": 566,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "eb0e6de9506a1ccfa0667b566df94db7dedfadbf2dcba37642210d85b3a5af43"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "9ebcdc9cae90c06e07afe84fcebc5b4ec1951f7d8b1c4044d29083ed01b8ce02"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+        },
+        "metab-da-contrast-references:0fb53d5f5e66": {
+          "kind": "scientific_product",
+          "product_type": "metab-da-contrast-references",
+          "sha256": "0fb53d5f5e66ace67bccca4a31a107bfc243095ecf2a575176fa940b0758ca62"
+        },
+        "da_fit:17942b85f08a": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "17942b85f08a6aba798c21077fa0a914d073cfe86a2e19c0b12614dca0df951d"
+        },
+        "da_fit:ce1f4c0eafb8": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "ce1f4c0eafb89d5e56ef24e585f168d978a367bd3c2805a8eb5346c56add4089"
+        }
+      },
+      "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
+    },
+    "metab86s_report": {
+      "class": "MetaboliteAssayData",
+      "rows": 566,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "eb0e6de9506a1ccfa0667b566df94db7dedfadbf2dcba37642210d85b3a5af43"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 283,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2"],
+          "sha256": "9ebcdc9cae90c06e07afe84fcebc5b4ec1951f7d8b1c4044d29083ed01b8ce02"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "d4393a87b073af471a783ce72352bc0e38e1f72662e1aa283d57242bf77e9a50"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+        }
+      },
+      "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
     },
     "lipid84_itsd": {
       "class": "LipidomicsAssayData",
@@ -33935,6 +35215,38 @@
       "route": "metabolomics",
       "whole_journey": true,
       "oracles": "metab82",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "086t": {
+      "kind": "single_journey",
+      "build": "kit_086",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "086s": {
+      "kind": "single_journey",
+      "build": "kit_086",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
       "ceiling_seconds": 1800,
       "purpose": "exactness",
       "normalisation": {
