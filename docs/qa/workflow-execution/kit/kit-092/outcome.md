@@ -70,4 +70,5 @@ The decisions recorded under v1.6 stand as recorded. These are re-verifications 
 ## Recorded, not changed
 
 - A DIA single journey on a corpus other than `full` and without oracles (`028`, the replay origin) would now be refused at binding. It has no oracle source, and the verifier never judged it against one. Its recorded decision stands.
+- Opening a store to read it appends to its `checkpoint-io.log`, so the four oracle stores' logs grew during the re-fingerprint. Every bind already does the same to the KIT-005 control-1 store. Heads and entities are unchanged. The six member directories were not touched: the verifier read reflinked copies.
 - `kitGuiMemberDecision` still recomputes only the state's own products of both members, so the attached products stay as recorded. These DIA `gui` members are outside this ticket.
