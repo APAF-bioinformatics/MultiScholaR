@@ -1,0 +1,9 @@
+# ruv-part-times.R, 2026-11-05: simulated assay, 200 samples x 18,000 features. The four parts started side by side, on low-power, with other work on the host.
+RUVIII_C_Varying controls 183: 267.0 s
+RUVIII_C_Varying controls 912: 272.6 s
+anova pct5: 274.9 s; alone afterwards, pct5 23.9 s and pct6 16.2 s (the side-by-side figure and its 5,595 s sweep estimate are not usable)
+cancor pct5: 4.8 s; alone 4.5 s
+nipals ncomp 2, 5% missing: did not finish inside its 1,200 s cap (exit 124)
+# The real journeys' worker logs on kit_084, by logger timestamps:
+kit-journey-084c metab: sweep 04:24:18 to 04:26:12, 114 s; RUVIII_C_Varying 04:26:12 to 04:30:03 and to 04:33:59, 231 s and 236 s; RUV worker 602 s; normalisation 789 s
+kit-journey-084d lipid: sweep 10:02:16 to 10:05:40, 204 s; RUVIII_C_Varying 10:05:40 to 10:12:47 and to 10:19:30, 427 s and 403 s; RUV worker 1,065 s; normalisation 1,343 s
