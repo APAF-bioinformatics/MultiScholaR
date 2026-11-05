@@ -410,8 +410,9 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     if (!is.null(b$oracles$metab84c_import)) b$tickets[["084f"]] <- single_084("kit_032", "metab_large", "metabolomics", "metab84c", 14400L)
     # 085l, 085m: the screen journeys on the build that imputes the cancor input once, against kit_082's oracles. No corpus has
     # missing values, so the new path does nothing here: these show no regression, and the 1:1 test covers missing values.
-    if (!is.null(b$builds$kit_085)) for (label in c("l", "m")) {
-        b$tickets[[paste0("085", label)]] <- utils::modifyList(b$tickets[[paste0("082", label)]], list(build = "kit_085"))
+    if (!is.null(b$builds$kit_085)) {
+        b$tickets[["085l"]] <- single_084("kit_085", "lipid_screen", "lipidomics", "lipid82", 1800L)
+        b$tickets[["085m"]] <- single_084("kit_085", "metab_screen", "metabolomics", "metab82", 1800L)
     }
     # Operation pairs, `whole` against `partitioned` on kit_084, two pairs to a stage: intensity, log2, duplicates. The log2
     # pairs' population and oracle are the records' stored ITSD and log2 states (kit-084/norm-states.R).
