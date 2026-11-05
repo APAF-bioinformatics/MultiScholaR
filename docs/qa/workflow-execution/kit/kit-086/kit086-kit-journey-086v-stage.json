@@ -1,0 +1,223 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-086",
+  "stage": "kit086-kit-journey-086v",
+  "date": "2026-11-05",
+  "dispatches": {
+    "metab_between_sample_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_composite_figure": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_contrast": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_tab_results": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_final_pca": {
+      "requests": 2,
+      "complete": 2
+    },
+    "metab_integration_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_itsd_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_log2": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_pearson_pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_pearson_selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_qc_figures": {
+      "requests": 4,
+      "complete": 4
+    },
+    "metab_ruv": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_session_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_volcano_page": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 925081600,
+    "phase_peak_anon_bytes": {
+      "import": 546455552,
+      "design": 564326400,
+      "intensity": 679211008,
+      "duplicates": 697602048,
+      "qc_finalize": 698515456,
+      "normalisation": 618557440,
+      "correlation": 618557440,
+      "session_export": 654958592,
+      "da": 870137856,
+      "report": 925081600
+    }
+  },
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_screen_missing",
+    "build": "01337b52a34568a09583020ae91bdc12acc5203c6ba2efd28b39ec9be6c8bbfe",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 180.020000000004,
+    "peak_bytes": 2089684992,
+    "peak_anon_bytes": 1981628416,
+    "resident_end_bytes": 1262346240,
+    "phase_seconds": {
+      "import": 5.74000000000524,
+      "design": 15.6699999999983,
+      "intensity": 10.429999999993,
+      "duplicates": 9.14999999999418,
+      "qc_finalize": 9.41000000000349,
+      "normalisation": 53.5699999999924,
+      "correlation": 11.1699999999983,
+      "session_export": 8.36000000000058,
+      "da": 31,
+      "report": 7.15999999998894
+    },
+    "phase_peak_anon_bytes": {
+      "import": 913653760,
+      "design": 931524608,
+      "intensity": 1328934912,
+      "duplicates": 1354928128,
+      "qc_finalize": 1378709504,
+      "normalisation": 1885986816,
+      "correlation": 1452789760,
+      "session_export": 1492582400,
+      "da": 1981628416,
+      "report": 1641377792
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0600000000122236,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process metab86s_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "cd753187ce8ae5839fd057c9df6499f157e128ce4a9c5f1fe9203b1d929636ac",
+        "rows": null
+      },
+      "design": {
+        "state": "metab_raw_data_s4",
+        "entity_id": "0f849d595be77bd4eb796aa20d79c97c9a9e168954b1de80c1a0b0db2591488a",
+        "rows": 612
+      },
+      "intensity": {
+        "state": "metab_intensity_filtered",
+        "entity_id": "af436b32b3908388e483ce4cef93145b3a40b230a89ba82e295b3d10cb4fda4c",
+        "rows": 578
+      },
+      "duplicates": {
+        "state": "metab_duplicates_resolved",
+        "entity_id": "4415bccbdc4a594a8754fab83ae2f9c9ebb48fd128c98b3083ea41cb10cc4b80",
+        "rows": 578
+      },
+      "qc_finalize": {
+        "state": "metab_qc_complete",
+        "entity_id": "61418a4a7dcdf12ef32108b7a43a2041d07eb899338b3ba67aa6e68cac217393",
+        "rows": 578
+      },
+      "normalisation": {
+        "state": "metab_ruv_corrected",
+        "entity_id": "3af6abe84b93d7fbf0c6da0d77fde8844d3c2935de15272e61c36617e9b74e44",
+        "rows": 566
+      },
+      "correlation": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "3ed3bb3486558a1707f6b1b05f264ac75cc7f60ff6f10f1b221ac497429fad52",
+        "rows": 566
+      },
+      "session_export": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "3ed3bb3486558a1707f6b1b05f264ac75cc7f60ff6f10f1b221ac497429fad52",
+        "rows": 566
+      },
+      "da": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "3ed3bb3486558a1707f6b1b05f264ac75cc7f60ff6f10f1b221ac497429fad52",
+        "rows": 566
+      },
+      "report": {
+        "state": "metab_correlation_filtered",
+        "entity_id": "3ed3bb3486558a1707f6b1b05f264ac75cc7f60ff6f10f1b221ac497429fad52",
+        "rows": 566
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 199,
+    "failure": null
+  }
+}

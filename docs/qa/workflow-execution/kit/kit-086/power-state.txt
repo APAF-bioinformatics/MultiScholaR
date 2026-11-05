@@ -10,3 +10,5 @@ kit-journey-086m start 14:16:59: AC 1, profile low-power, battery 100%, load 5.0
 kit-journey-086m end 14:53:19: AC 1, profile low-power, battery 100%, load 8.18, available 41 GiB
 kit-journey-086u start 17:43:49: AC 1, profile low-power, battery 100%, load 2.14, available 45 GiB
 kit-journey-086u end 17:47:30: AC 1, profile low-power, battery 100%, load 2.12, available 45 GiB
+kit-journey-086v start 17:47:32: AC 1, profile low-power, battery 100%, load 2.03, available 45 GiB
+kit-journey-086v end 17:51:13: AC 1, profile low-power, battery 100%, load 2.12, available 45 GiB
