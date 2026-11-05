@@ -300,7 +300,7 @@ prepareOmicsRuvCancorObject <- function(theObject, data_slot, id_column_slot) {
         if (!anyNA(values)) next
         ordered_samples <- design_samples[design_samples %in% sample_cols]
         imputed <- tryCatch(
-            mixOmics::impute.nipals(t(values[, ordered_samples, drop = FALSE]), ncomp = num_components),
+            imputeNipalsMatrix(t(values[, ordered_samples, drop = FALSE]), ncomp = num_components),
             error = function(e) NULL
         )
         if (is.null(imputed)) next

@@ -157,7 +157,6 @@ setMethod(
 #' compute the same matrix.
 #' @noRd
 prepareRuvCancorInput <- function(theObject, num_components_to_impute) {
-  requireOptionalPackage("mixOmics", "the RUV canonical-correlation imputation") # KIT-064 (roar BUG-24)
   design_matrix <- theObject@design_matrix
   sample_columns <- design_matrix |> dplyr::pull(!!sym(theObject@sample_id))
   normalised_frozen_protein_matrix_filt <- theObject@protein_quant_table |>
@@ -166,7 +165,7 @@ prepareRuvCancorInput <- function(theObject, num_components_to_impute) {
   Y <- t(normalised_frozen_protein_matrix_filt[, sample_columns])
   if (length(which(is.na(normalised_frozen_protein_matrix_filt))) > 0) {
     message("   DEBUG66 S4: Performing imputation (NIPALS)...")
-    Y <- mixOmics::impute.nipals(t(normalised_frozen_protein_matrix_filt[, sample_columns]),
+    Y <- imputeNipalsMatrix(t(normalised_frozen_protein_matrix_filt[, sample_columns]),
       ncomp = num_components_to_impute
     )
   }

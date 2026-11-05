@@ -184,13 +184,13 @@ setMethod(
             Y_matrix <- t(assay_matrix[, as.character(design_matrix_filtered[[sample_id]]), drop = FALSE]) # Ensure column order matches filtered design
             message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Y_matrix dims = %d x %d (samples x features)", assay_name, nrow(Y_matrix), ncol(Y_matrix)))
 
-            # --- Imputation (using mixOmics::impute.nipals) ---
+            # --- Imputation (NIPALS: imputeNipalsMatrix, KIT-087) ---
             if (anyNA(Y_matrix)) {
                 message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NAs detected, performing NIPALS imputation", assay_name))
                 log_info("   Assay '{assay_name}': Missing values detected. Performing NIPALS imputation with {num_components_to_impute_final} components.", .logr = TRUE)
                 Y_imputed <- tryCatch(
                     {
-                        mixOmics::impute.nipals(Y_matrix, ncomp = num_components_to_impute_final)
+                        imputeNipalsMatrix(Y_matrix, ncomp = num_components_to_impute_final)
                     },
                     error = function(e) {
                         message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NIPALS imputation FAILED - %s", assay_name, e$message))

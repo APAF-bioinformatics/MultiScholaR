@@ -60,6 +60,7 @@ Collate:
     'func_metab_s4_da_methods.R'
     'func_metab_s4_transformation_methods.R'
     'func_metab_s4_design_control_methods.R'
+    'func_general_nipals.R'
     'func_metab_s4_ruv_methods.R'
     'func_metab_s4_qc_methods.R'
     'func_metab_s4_plotting_methods.R'

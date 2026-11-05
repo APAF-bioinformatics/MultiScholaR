@@ -369,7 +369,7 @@ test_that("metabolomics S4 ruvCancor source retains imputation and control-selec
 
   target_text <- paste(deparse(target_expr), collapse = "\n")
 
-  expect_match(target_text, "mixOmics::impute.nipals\\(")
+  expect_match(target_text, "imputeNipalsMatrix\\(")
   expect_match(target_text, "ruv_cancorplot\\(")
   expect_match(target_text, "feature_names_in_assay %in%\\s*ctrl_assay")
   expect_match(target_text, "num_controls_found < 5")

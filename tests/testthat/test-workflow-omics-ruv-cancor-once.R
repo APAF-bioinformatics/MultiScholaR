@@ -56,8 +56,8 @@ for (omic in names(ruvCases())) {
   test_that(paste(omic, "sweep imputes each assay once"), {
     case <- ruvCases()[[omic]]
     calls <- 0L
-    original <- mixOmics::impute.nipals
-    local_mocked_bindings(impute.nipals = function(...) { calls <<- calls + 1L; original(...) }, .package = "mixOmics")
+    original <- MultiScholaR:::imputeNipalsMatrix
+    local_mocked_bindings(imputeNipalsMatrix = function(...) { calls <<- calls + 1L; original(...) }, .package = "MultiScholaR")
     ruvSweep(case, case$make(case$assays(0.05)))
     expect_identical(calls, 2L)
   })
@@ -80,8 +80,8 @@ for (omic in names(ruvCases())) {
     id_slot <- if (omic == "metab") "metabolite_id_column" else "lipid_id_column"
     expect_identical(MultiScholaR:::prepareOmicsRuvCancorObject(complete, slot_name, id_slot), complete)
     seen_ncomp <- NULL
-    original <- mixOmics::impute.nipals
-    local_mocked_bindings(impute.nipals = function(X, ncomp, ...) { seen_ncomp <<- ncomp; original(X, ncomp, ...) }, .package = "mixOmics")
+    original <- MultiScholaR:::imputeNipalsMatrix
+    local_mocked_bindings(imputeNipalsMatrix = function(X, ncomp, ...) { seen_ncomp <<- ncomp; original(X, ncomp, ...) }, .package = "MultiScholaR")
     with_args <- case$make(case$assays(0.05), args = list(ruvCancor = list(num_components_to_impute = 3)))
     prepared <- MultiScholaR:::prepareOmicsRuvCancorObject(with_args, slot_name, id_slot)
     expect_identical(seen_ncomp, 3)

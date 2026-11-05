@@ -179,7 +179,7 @@ module_ci_prot_norm_s4_methods <- function() {
     updateParamInObject = module_ci_prot_norm_param_updater,
     cleanDesignMatrix = function(theObject) theObject,
     resolveProtLimmaNormalizer = function(functionName, envir = parent.frame()) normalizers[[functionName]],
-    impute.nipals = function(x, ncomp) {
+    imputeNipalsMatrix = function(x, ncomp) {
       x[is.na(x)] <- -99
       x
     },
