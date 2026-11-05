@@ -1,0 +1,6 @@
+# KIT-040: the counted repeat render on trx_edge_12 against the counted reference render (products compared with identical())
+products: 70 of 70 identical; names identical: TRUE; both complete: TRUE
+product sha256 maps identical: TRUE
+stable outputs (CSV/TSV): 5 of 5 identical
+recorded_only outputs differing: 8 of 153 (PNG, PDF, xlsx, HTML, summary text and caches; recorded, not compared)
+differing products: none

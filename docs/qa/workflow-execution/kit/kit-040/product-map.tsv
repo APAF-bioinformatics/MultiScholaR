@@ -1,0 +1,45 @@
+kit093_kernel	kit093_product	reference_product	notebook_object	rmd_lines	note
+trxExpressionFilter	effective_lib_size	filter_effective_lib_size	dge_raw$samples$lib.size * norm.factors	166-170	derived by edgeR's rule
+trxExpressionFilter	min_sample_size	filter_min_sample_size	(filterByExpr.default internal)	170	derived by edgeR's rule
+trxExpressionFilter	median_lib_size	filter_median_lib_size	(filterByExpr.default internal)	170	derived by edgeR's rule
+trxExpressionFilter	keep_expr	keep_expr	keep_expr	170	
+trxExpressionFilter	keep_var	gene_vars_positive	gene_vars > 0	174-175	
+trxExpressionFilter	filtered_counts	count_matrix_filtered	count_matrix_filtered	171-175	
+trxTmmLogCpm	norm_factors_filtered	dge_filtered_samples	dge_filtered$samples	178-179	the norm.factors column
+trxTmmLogCpm	log_cpm_tmm	log_cpm_tmm	log_cpm_tmm	180	
+trxTmmLogCpm	log_cpm_raw	log_cpm_raw	log_cpm_raw	490	filtered counts, no TMM
+trxRuvGrid	prelim_order	ordered_features_idx	ordered_features_idx	237	tt_prelim (236) is frozen as well
+trxRuvGrid	max_acceptable_k	max_acceptable_k	max_acceptable_k	242	
+trxRuvGrid	grid_members	grid_members; grid_cancor_data; grid_control_genes	grid_results	247-281	unrounded; complete rows of grid_members
+trxRuvGrid	grid_failures	grid_members	grid_results (compact)	281	rows with status failed
+trxRuvGrid	grid_summary	df_summary	df_summary	283-292	4-dp rounded
+trxRuvGrid	best	best_res	best_res	295-296	
+trxRuvGrid	control_genes	best_control_genes	best_control_genes	298	inferred
+trxRuvGrid	control_source	-	(none)	-	a label, not a notebook object: the reference labels best_control_genes inferred
+trxRuvs	W	w_matrix	w_matrix	417-418	
+trxRuvs	ruvs_counts	ruvs_counts	counts(set_ruvs)	413	and ruvs_counts_identical
+trxRuvs	log_cpm_ruvs	log_cpm_corrected	log_cpm_corrected	421-426	visualisation only
+trxRuvs	control_source	-	(none)	-	a label, as above
+trxDaContrast	design_final	design_final	design_final	532-533	
+trxDaContrast	design_formula	design_formula_str	design_formula_str	529	
+trxDaContrast	contrast_entry	contrast_entry	contrast_entry	542	
+trxDaContrast	contrasts_matrix	contrasts_matrix	contrasts_matrix	547-548	
+trxDaContrast	fit	fit_final	fit_final	536-537	
+trxDaContrast	qlf	qlf; qlf_table	lrt	554	the notebook names it lrt
+trxDaContrast	top_table	top_genes	top_genes	555	
+trxDaContrast	method	-	(none)	-	a literal (edgeR_QL_robust), not a notebook object
+trxAnnotateDe	feature_meta	feature_meta	feature_meta	144-148	
+trxAnnotateDe	de_annotated	top_genes_annotated	top_genes_annotated	558-562	
+trxAnnotateDe	top_de	top_de_combined	top_de_combined	569-582	top_up and top_down frozen as well
+trxRuviii	newY	ruviii_newY	res_ruviii$newY	711-712	M from group (notebook default)
+trxRuviii	M	ruviii_M	M	704	
+trxRuviii	m_source	-	(none)	-	the notebook's M is from group; the reference label says so
+trxRuviii	m_label	-	(none)	-	a label, as above
+trxRuviii	control_genes	best_control_genes; ruviii_ctl_mask	best_control_genes, ctl_mask	707-708	
+trxRuviii	control_source	-	(none)	-	a label, as above
+trxRuviii	k	best_k	best_k	297, 711	
+trxPcaStats	pca_scores	pca_<stage>_scores	p_pca_<stage>$data	472-488, 492-494, 731	stages raw, tmm, ruvs, post_ruviii
+trxPcaStats	pca_variance	pca_<stage>_variance; pca_<stage>_axis_labels	summary(prcomp)$importance (labels)	474	unrounded from the plot's scores; the labels carry the notebook's rounded values
+trxRleStats	rle_matrix	rle_<stage>_data	p_rle_<stage>$data	441-447	long form of the centred matrix, with the design
+trxRleStats	rle_whiskers	rle_<stage>_whiskers	whisker_limits (local)	449-458	derived from the plot's data by the notebook's rule
+trxRleStats	rle_ylim	rle_<stage>_ylim	ylim_vals (local)	459-465	the plot's coord_cartesian limits

@@ -1,0 +1,4 @@
+corpus	samples	genes_in	removed_filterByExpr	removed_zero_variance	genes_retained	k_cap	grid_failed_members	distinct_composite_scores	best_percentage	best_k	n_controls	de_fdr_0.05	de_up	de_down	ruvs_counts_identical	glimma_html	seconds
+trx_edge_12	12	6000	1377	1	4622	3	0	6	10	2	462	679	348	331	TRUE	TRUE	21.9
+trx_edge_16	16	6000	1382	1	4617	4	0	6	25	3	1154	849	413	436	TRUE	TRUE	28.1
+trx_screen	24	6000	1434	1	4565	4	0	6	5	2	228	655	339	316	TRUE	TRUE	28.1

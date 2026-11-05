@@ -1,0 +1,84 @@
+{
+  "render": "lifecycle-complete-trx_edge_12",
+  "fail_before": null,
+  "exit_status": 0,
+  "complete": true,
+  "incomplete_marked": false,
+  "error_class": null,
+  "error_message": null,
+  "markers": [
+    {
+      "label": "setup",
+      "start": "2026-11-06T09:30:36.039+1100",
+      "end": "2026-11-06T09:30:44.177+1100"
+    },
+    {
+      "label": "load-data",
+      "start": "2026-11-06T09:30:44.179+1100",
+      "end": "2026-11-06T09:30:44.963+1100"
+    },
+    {
+      "label": "cpm-filtering",
+      "start": "2026-11-06T09:30:44.964+1100",
+      "end": "2026-11-06T09:30:45.108+1100"
+    },
+    {
+      "label": "ruv-grid-search",
+      "start": "2026-11-06T09:30:45.109+1100",
+      "end": "2026-11-06T09:30:45.848+1100"
+    },
+    {
+      "label": "plot-cca-diagnostics",
+      "start": "2026-11-06T09:30:45.850+1100",
+      "end": "2026-11-06T09:30:46.765+1100"
+    },
+    {
+      "label": "ruvs-normalization",
+      "start": "2026-11-06T09:30:46.801+1100",
+      "end": "2026-11-06T09:30:46.963+1100"
+    },
+    {
+      "label": "plot-norm-stages",
+      "start": "2026-11-06T09:30:46.964+1100",
+      "end": "2026-11-06T09:30:49.866+1100"
+    },
+    {
+      "label": "edger-de-analysis",
+      "start": "2026-11-06T09:30:49.928+1100",
+      "end": "2026-11-06T09:30:51.305+1100"
+    },
+    {
+      "label": "plot-volcano-summary",
+      "start": "2026-11-06T09:30:51.306+1100",
+      "end": "2026-11-06T09:30:52.586+1100"
+    },
+    {
+      "label": "glimma-volcano",
+      "start": "2026-11-06T09:30:52.624+1100",
+      "end": "2026-11-06T09:30:52.850+1100"
+    },
+    {
+      "label": "ruviii-mofa-normalization",
+      "start": "2026-11-06T09:30:52.851+1100",
+      "end": "2026-11-06T09:30:54.536+1100"
+    },
+    {
+      "label": "pipeline-summary",
+      "start": "2026-11-06T09:30:54.577+1100",
+      "end": "2026-11-06T09:30:54.677+1100"
+    },
+    {
+      "label": "session-info",
+      "start": "2026-11-06T09:30:54.678+1100",
+      "end": "2026-11-06T09:30:54.692+1100"
+    }
+  ],
+  "last_marked_chunk": "session-info",
+  "every_marked_chunk_ended": true,
+  "products_present": 70,
+  "products_absent": [],
+  "seconds": 19.8927500247955,
+  "notebook_copy_sha256": "44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a",
+  "driver_sha256": "dde1f7ced9007e63dba61c410b42ccae185757b6e386cede2cb50a17c5ca2d4c",
+  "corpus_manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+}
