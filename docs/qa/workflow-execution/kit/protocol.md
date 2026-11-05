@@ -82,6 +82,7 @@ The rule judges the same content as before; only the storage layout stops counti
 2. **Products recomputed in verification.** The journey verifier recomputes the products the driver attached to each step from the member's store under the current canonical form (`<type>:<sha12>`, attached to the step after which they first appear). It also recomputes the state's own products, as it did before. Before this change, the attached products stayed as recorded in-run.
 3. **Oracles.**
    - Re-fingerprinted from their stores under this form, with the old files kept in git history and the changes listed in `kit-092/refingerprint.txt`: `lipid86s`, `metab86s`, `metab86` and `lipid86`.
+   - The KIT-005 journey oracles follow the current form at every bind, since the generator has recomputed them from control-1's store since KIT-012. Under v1.7 two entries changed: `journey_design`'s `peptide_data` component, a record that nests tables, and one operation identity product. The products the driver attached to each step reproduce unchanged (`kit-092/kit005-check.txt`).
    - Every other bound oracle keeps its v1.6 fingerprints, and the decisions recorded against it stand. A new comparison against such an oracle first re-fingerprints it from its store. If the store no longer exists, the oracle is listed as unavailable, not guessed.
    - KIT-088's baselines are recorded under this form.
 4. **Every judged step has an oracle (KIT098-F02).**

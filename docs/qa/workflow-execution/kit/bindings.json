@@ -8560,7 +8560,7 @@
         "peptide_data": {
           "kind": "result_table",
           "product_type": null,
-          "sha256": "8eec57c19d71c9177907ce26054907b39dfcddd737e1392834c060abb944b403"
+          "sha256": "cc544a432bcaaa59e6a70ba47ebb0a6527c172f535115f9d109b6188daf319bf"
         },
         "design_matrix": {
           "kind": "table",
@@ -9548,7 +9548,7 @@
         "normalization_science": {
           "kind": "scientific_product",
           "product_type": "dia-normalization-ruv",
-          "sha256": "3ce7cf0a830d2bb7b62c74cd5c74403467cf08f5d2f6d25c789a1a69cd3b1d6d"
+          "sha256": "82636ba60b668b3944a75418f50cae7db6f7004016b27bac87a4f330d25e5fa5"
         },
         "rendered_asset:22111db166cf": {
           "kind": "rendered_asset",
@@ -12342,12 +12342,12 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
-        "lipid.intensity_filter_result:f3c6af9fc74c": {
+        "lipid.intensity_filter_result:d926ee430453": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         }
       },
       "summary_sha256": "036087c5fa2c83a10f6a4e769af1a1aa1dfcff9280bc19c974d9f4924214f845"
@@ -12380,17 +12380,17 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         },
-        "lipid.duplicate_resolution_result:261db94dcc74": {
+        "lipid.duplicate_resolution_result:18ff74ad32ad": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         }
       },
       "summary_sha256": "a3aed048aff7966c4abaa28895ab90b3f04845bc47109c150084c2417c63c958"
@@ -12423,12 +12423,12 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         }
       },
       "summary_sha256": "a3aed048aff7966c4abaa28895ab90b3f04845bc47109c150084c2417c63c958"
@@ -12461,52 +12461,52 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+          "sha256": "9488b12b994e942f3e4586854ed5913846bffee24e0af5feb432183cff634f23"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+          "sha256": "4da2b61558d644d62adc52365c7c453b7febb30024830271897f8ae2a57ed0be"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+          "sha256": "71454c25ffb8563051b8e4924a2b8263e7bfff85464b66a07e716a46cdc491fb"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+          "sha256": "5acdf90e53517d8d4e9bc5371439e1e87d37c8f03613dddf782b235a28b877d8"
         },
-        "lipid.between_sample_normalisation_result:03070f86f204": {
-          "kind": "scientific_product",
-          "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
-        },
-        "lipid.itsd_normalisation_result:0acebae0d24d": {
-          "kind": "scientific_product",
-          "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
-        },
-        "lipid.ruv_result:a4107001157a": {
-          "kind": "scientific_product",
-          "product_type": "lipid.ruv_result",
-          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
-        },
-        "lipid.log2_result:d6554cd8f7ff": {
+        "lipid.log2_result:4da2b61558d6": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+          "sha256": "4da2b61558d644d62adc52365c7c453b7febb30024830271897f8ae2a57ed0be"
+        },
+        "lipid.ruv_result:5acdf90e5351": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "5acdf90e53517d8d4e9bc5371439e1e87d37c8f03613dddf782b235a28b877d8"
+        },
+        "lipid.between_sample_normalisation_result:71454c25ffb8": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "71454c25ffb8563051b8e4924a2b8263e7bfff85464b66a07e716a46cdc491fb"
+        },
+        "lipid.itsd_normalisation_result:9488b12b994e": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "9488b12b994e942f3e4586854ed5913846bffee24e0af5feb432183cff634f23"
         }
       },
       "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
@@ -12539,47 +12539,47 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+          "sha256": "9488b12b994e942f3e4586854ed5913846bffee24e0af5feb432183cff634f23"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+          "sha256": "4da2b61558d644d62adc52365c7c453b7febb30024830271897f8ae2a57ed0be"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+          "sha256": "71454c25ffb8563051b8e4924a2b8263e7bfff85464b66a07e716a46cdc491fb"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+          "sha256": "5acdf90e53517d8d4e9bc5371439e1e87d37c8f03613dddf782b235a28b877d8"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+          "sha256": "bd315de0c8e09c09623d180df742b30f0aa979e53c51e015895518e6b0d0ebde"
         },
         "lipid-pearson-pairs:8566b911c04b": {
           "kind": "scientific_product",
           "product_type": "lipid-pearson-pairs",
           "sha256": "8566b911c04b90468838986e77e5088b1ef9f2752abaf5bae9514182df3abf2d"
         },
-        "lipid.pearson_selection_result:faa96cadff79": {
+        "lipid.pearson_selection_result:bd315de0c8e0": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+          "sha256": "bd315de0c8e09c09623d180df742b30f0aa979e53c51e015895518e6b0d0ebde"
         }
       },
       "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
@@ -12612,37 +12612,37 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+          "sha256": "9488b12b994e942f3e4586854ed5913846bffee24e0af5feb432183cff634f23"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+          "sha256": "4da2b61558d644d62adc52365c7c453b7febb30024830271897f8ae2a57ed0be"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+          "sha256": "71454c25ffb8563051b8e4924a2b8263e7bfff85464b66a07e716a46cdc491fb"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+          "sha256": "5acdf90e53517d8d4e9bc5371439e1e87d37c8f03613dddf782b235a28b877d8"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+          "sha256": "bd315de0c8e09c09623d180df742b30f0aa979e53c51e015895518e6b0d0ebde"
         }
       },
       "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
@@ -12675,37 +12675,37 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+          "sha256": "9488b12b994e942f3e4586854ed5913846bffee24e0af5feb432183cff634f23"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+          "sha256": "4da2b61558d644d62adc52365c7c453b7febb30024830271897f8ae2a57ed0be"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+          "sha256": "71454c25ffb8563051b8e4924a2b8263e7bfff85464b66a07e716a46cdc491fb"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+          "sha256": "5acdf90e53517d8d4e9bc5371439e1e87d37c8f03613dddf782b235a28b877d8"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+          "sha256": "bd315de0c8e09c09623d180df742b30f0aa979e53c51e015895518e6b0d0ebde"
         },
         "da_fit:0882d0bb4668": {
           "kind": "da_fit",
@@ -12717,10 +12717,10 @@
           "product_type": null,
           "sha256": "23fc887c453332f32ab98a7a0f48f6680247a228b28e1da0db81261076333adc"
         },
-        "lipid-da-contrast-references:f4b9f6d809d1": {
+        "lipid-da-contrast-references:9e042c883825": {
           "kind": "scientific_product",
           "product_type": "lipid-da-contrast-references",
-          "sha256": "f4b9f6d809d16ce356d0f342f031b2033b917538cd55d33f791197deaf0afda8"
+          "sha256": "9e042c883825e35abaf520a8368701448cca962795fad85e53cbbcc13b451d88"
         }
       },
       "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
@@ -12753,37 +12753,37 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "f3c6af9fc74c3546dd78c541d5443f3a51edd788c62ffbe070c3de96aa11fb01"
+          "sha256": "d926ee430453744b138e5b04acdb8b28ab0ef34f41338f7feb2ba477aa90251d"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "261db94dcc74f4218531f7dbe4d00e2606cedc5c480d67fff05b424222040693"
+          "sha256": "18ff74ad32ade55ed7e851aa6caa008d0a7208336134f5c52ccca9ce7760b453"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "0acebae0d24dcefe0d41fdff9e6ff498b8050270ec4662c0d316079ca7398b25"
+          "sha256": "9488b12b994e942f3e4586854ed5913846bffee24e0af5feb432183cff634f23"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "d6554cd8f7ff98d1d36516aef948471b413435e3c9c66a6e413251ea94e0bc1b"
+          "sha256": "4da2b61558d644d62adc52365c7c453b7febb30024830271897f8ae2a57ed0be"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "03070f86f204f1a2b04759952f16029ad4878fa0a00b36a6977b738e61977551"
+          "sha256": "71454c25ffb8563051b8e4924a2b8263e7bfff85464b66a07e716a46cdc491fb"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "a4107001157af9e9de559a640cdacb612fce35fbb86f95b26d7c42c37d5d1251"
+          "sha256": "5acdf90e53517d8d4e9bc5371439e1e87d37c8f03613dddf782b235a28b877d8"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "faa96cadff79099ec955cf62d2457c0faa06209848f8bffaa2de45ec8e21d65f"
+          "sha256": "bd315de0c8e09c09623d180df742b30f0aa979e53c51e015895518e6b0d0ebde"
         }
       },
       "summary_sha256": "f423ebde77d254bcde24bdffeb9ab80ee64396dd8b1706340e04a805ed1de747"
@@ -12852,12 +12852,12 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
-        "metab.intensity_filter_result:9ddd8ffc80f6": {
+        "metab.intensity_filter_result:fc6dd950b86f": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         }
       },
       "summary_sha256": "b157c102e7b82071778e4796945bc45fb4b6de3c306b7f0299a39de7374c7349"
@@ -12890,17 +12890,17 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         },
-        "metab.duplicate_resolution_result:07b1db03c3fa": {
+        "metab.duplicate_resolution_result:899b70173a66": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         }
       },
       "summary_sha256": "b157c102e7b82071778e4796945bc45fb4b6de3c306b7f0299a39de7374c7349"
@@ -12933,12 +12933,12 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         }
       },
       "summary_sha256": "b157c102e7b82071778e4796945bc45fb4b6de3c306b7f0299a39de7374c7349"
@@ -12971,52 +12971,52 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+          "sha256": "79d1e7b6451352084a6738b6634b824439db095f72820fa84d91aac9bf97ba52"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+          "sha256": "1a2e2abb009197ad11ce0a9ec54e25f923405b6274874cc2a081992e3b27892f"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+          "sha256": "90492c1a382f7b74adc95dd076737ff84d77d6ab468046b0396cd526de427517"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+          "sha256": "3a7233bb9dc2bc3917fc2299427d6c5ba5b48096c20aa2fd69a5751a2e05fe9d"
         },
-        "metab.itsd_normalisation_result:0a2728a44b99": {
-          "kind": "scientific_product",
-          "product_type": "metab.itsd_normalisation_result",
-          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
-        },
-        "metab.log2_result:1d8ec563b4c2": {
+        "metab.log2_result:1a2e2abb0091": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+          "sha256": "1a2e2abb009197ad11ce0a9ec54e25f923405b6274874cc2a081992e3b27892f"
         },
-        "metab.ruv_result:6894ed156e89": {
+        "metab.ruv_result:3a7233bb9dc2": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+          "sha256": "3a7233bb9dc2bc3917fc2299427d6c5ba5b48096c20aa2fd69a5751a2e05fe9d"
         },
-        "metab.between_sample_normalisation_result:6f471d2d5b37": {
+        "metab.itsd_normalisation_result:79d1e7b64513": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "79d1e7b6451352084a6738b6634b824439db095f72820fa84d91aac9bf97ba52"
+        },
+        "metab.between_sample_normalisation_result:90492c1a382f": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+          "sha256": "90492c1a382f7b74adc95dd076737ff84d77d6ab468046b0396cd526de427517"
         }
       },
       "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
@@ -13049,47 +13049,47 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+          "sha256": "79d1e7b6451352084a6738b6634b824439db095f72820fa84d91aac9bf97ba52"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+          "sha256": "1a2e2abb009197ad11ce0a9ec54e25f923405b6274874cc2a081992e3b27892f"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+          "sha256": "90492c1a382f7b74adc95dd076737ff84d77d6ab468046b0396cd526de427517"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+          "sha256": "3a7233bb9dc2bc3917fc2299427d6c5ba5b48096c20aa2fd69a5751a2e05fe9d"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+          "sha256": "0a341232c7b0d83042e30129e18a0b75e8d1889ea421214480e9da2819900e90"
+        },
+        "metab.pearson_selection_result:0a341232c7b0": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "0a341232c7b0d83042e30129e18a0b75e8d1889ea421214480e9da2819900e90"
         },
         "metab-pearson-pairs:6e8865c863b5": {
           "kind": "scientific_product",
           "product_type": "metab-pearson-pairs",
           "sha256": "6e8865c863b5b9cdc7a2d1b40f73e6dcedd7b379adf2d5efe24329df78315c20"
-        },
-        "metab.pearson_selection_result:a6ce67516fff": {
-          "kind": "scientific_product",
-          "product_type": "metab.pearson_selection_result",
-          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
         }
       },
       "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
@@ -13122,37 +13122,37 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+          "sha256": "79d1e7b6451352084a6738b6634b824439db095f72820fa84d91aac9bf97ba52"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+          "sha256": "1a2e2abb009197ad11ce0a9ec54e25f923405b6274874cc2a081992e3b27892f"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+          "sha256": "90492c1a382f7b74adc95dd076737ff84d77d6ab468046b0396cd526de427517"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+          "sha256": "3a7233bb9dc2bc3917fc2299427d6c5ba5b48096c20aa2fd69a5751a2e05fe9d"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+          "sha256": "0a341232c7b0d83042e30129e18a0b75e8d1889ea421214480e9da2819900e90"
         }
       },
       "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
@@ -13185,47 +13185,47 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+          "sha256": "79d1e7b6451352084a6738b6634b824439db095f72820fa84d91aac9bf97ba52"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+          "sha256": "1a2e2abb009197ad11ce0a9ec54e25f923405b6274874cc2a081992e3b27892f"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+          "sha256": "90492c1a382f7b74adc95dd076737ff84d77d6ab468046b0396cd526de427517"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+          "sha256": "3a7233bb9dc2bc3917fc2299427d6c5ba5b48096c20aa2fd69a5751a2e05fe9d"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
-        },
-        "metab-da-contrast-references:0fb53d5f5e66": {
-          "kind": "scientific_product",
-          "product_type": "metab-da-contrast-references",
-          "sha256": "0fb53d5f5e66ace67bccca4a31a107bfc243095ecf2a575176fa940b0758ca62"
+          "sha256": "0a341232c7b0d83042e30129e18a0b75e8d1889ea421214480e9da2819900e90"
         },
         "da_fit:17942b85f08a": {
           "kind": "da_fit",
           "product_type": null,
           "sha256": "17942b85f08a6aba798c21077fa0a914d073cfe86a2e19c0b12614dca0df951d"
+        },
+        "metab-da-contrast-references:bc101ad80939": {
+          "kind": "scientific_product",
+          "product_type": "metab-da-contrast-references",
+          "sha256": "bc101ad809394b92566a36cdfdfba14c84adeea21dcc5a33919a85d040e56262"
         },
         "da_fit:ce1f4c0eafb8": {
           "kind": "da_fit",
@@ -13263,37 +13263,37 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "9ddd8ffc80f6b828f24ed3feb05c30a7997df6084fc6308905ec9810969ea6ea"
+          "sha256": "fc6dd950b86f3235e35db2d2c0e37b19e5dd1545148c4920bf1493b1426072f8"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "07b1db03c3fae858ed619316d0a5943e466eb1f273f082fb16544d9f0e16a432"
+          "sha256": "899b70173a664229a43d7a417cf8840470ad3c1b362ae4c5c98d9824e8c12130"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "0a2728a44b99de7aace858cfbf0ba5714ff35ec3aa273903798fac1e27c50318"
+          "sha256": "79d1e7b6451352084a6738b6634b824439db095f72820fa84d91aac9bf97ba52"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1d8ec563b4c2d218ded70ddd9226ee8bed4f80ba458f8f9bcce06558b8872284"
+          "sha256": "1a2e2abb009197ad11ce0a9ec54e25f923405b6274874cc2a081992e3b27892f"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "6f471d2d5b37a4178ec29ed38c62dd4d3973b4e792d93cccc0d65f7dfe5ac4d8"
+          "sha256": "90492c1a382f7b74adc95dd076737ff84d77d6ab468046b0396cd526de427517"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "6894ed156e897632b4abf6ddb4cc4f25bfb98b4359064eab6c5e1e5077594971"
+          "sha256": "3a7233bb9dc2bc3917fc2299427d6c5ba5b48096c20aa2fd69a5751a2e05fe9d"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "a6ce67516fff974ed9ba99bc513656af35b04bb9b16cc84f594c412dd6b351fd"
+          "sha256": "0a341232c7b0d83042e30129e18a0b75e8d1889ea421214480e9da2819900e90"
         }
       },
       "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
@@ -13362,12 +13362,12 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
-        "metab.intensity_filter_result:1a3bf07b268a": {
+        "metab.intensity_filter_result:f1ac5af06d54": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         }
       },
       "summary_sha256": "c3840220b8d0a2a416d80c5dccee092d797763f5f7a80c6de8c5d5804639ed7e"
@@ -13400,17 +13400,17 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         },
-        "metab.duplicate_resolution_result:3b7c9f78b46d": {
+        "metab.duplicate_resolution_result:fa586726e8f2": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         }
       },
       "summary_sha256": "c3840220b8d0a2a416d80c5dccee092d797763f5f7a80c6de8c5d5804639ed7e"
@@ -13443,12 +13443,12 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         }
       },
       "summary_sha256": "c3840220b8d0a2a416d80c5dccee092d797763f5f7a80c6de8c5d5804639ed7e"
@@ -13492,52 +13492,52 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+          "sha256": "7dd2842d948e533875375ee3f7283d93206c4e22c63d2a6a0ef1f42794a2e8c3"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+          "sha256": "e5f575592e78adbb85357793285a3149652df25067b92d14182c3f5f94af4552"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+          "sha256": "02b646fd7bad26eedf2dfbe9e0e8d689e02b246c23129e10502d243149ea901e"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+          "sha256": "1aa5395180b55826836b269b1a51d52f798afb56a47248070b23ed71d5b31626"
         },
-        "metab.log2_result:1f492571137e": {
-          "kind": "scientific_product",
-          "product_type": "metab.log2_result",
-          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
-        },
-        "metab.between_sample_normalisation_result:50ed1215e4c9": {
+        "metab.between_sample_normalisation_result:02b646fd7bad": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+          "sha256": "02b646fd7bad26eedf2dfbe9e0e8d689e02b246c23129e10502d243149ea901e"
         },
-        "metab.itsd_normalisation_result:5796aa5fdd2f": {
-          "kind": "scientific_product",
-          "product_type": "metab.itsd_normalisation_result",
-          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
-        },
-        "metab.ruv_result:87cb6bab3f55": {
+        "metab.ruv_result:1aa5395180b5": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+          "sha256": "1aa5395180b55826836b269b1a51d52f798afb56a47248070b23ed71d5b31626"
+        },
+        "metab.itsd_normalisation_result:7dd2842d948e": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "7dd2842d948e533875375ee3f7283d93206c4e22c63d2a6a0ef1f42794a2e8c3"
+        },
+        "metab.log2_result:e5f575592e78": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "e5f575592e78adbb85357793285a3149652df25067b92d14182c3f5f94af4552"
         }
       },
       "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
@@ -13581,42 +13581,42 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+          "sha256": "7dd2842d948e533875375ee3f7283d93206c4e22c63d2a6a0ef1f42794a2e8c3"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+          "sha256": "e5f575592e78adbb85357793285a3149652df25067b92d14182c3f5f94af4552"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+          "sha256": "02b646fd7bad26eedf2dfbe9e0e8d689e02b246c23129e10502d243149ea901e"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+          "sha256": "1aa5395180b55826836b269b1a51d52f798afb56a47248070b23ed71d5b31626"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+          "sha256": "417440ea6804a7af39d8ae9c64da0ffc78a8a3deed7f9f48b54dbf07992411fb"
         },
-        "metab.pearson_selection_result:0a261948eb3c": {
+        "metab.pearson_selection_result:417440ea6804": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+          "sha256": "417440ea6804a7af39d8ae9c64da0ffc78a8a3deed7f9f48b54dbf07992411fb"
         },
         "metab-pearson-pairs:69f1d1ee0a37": {
           "kind": "scientific_product",
@@ -13665,37 +13665,37 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+          "sha256": "7dd2842d948e533875375ee3f7283d93206c4e22c63d2a6a0ef1f42794a2e8c3"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+          "sha256": "e5f575592e78adbb85357793285a3149652df25067b92d14182c3f5f94af4552"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+          "sha256": "02b646fd7bad26eedf2dfbe9e0e8d689e02b246c23129e10502d243149ea901e"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+          "sha256": "1aa5395180b55826836b269b1a51d52f798afb56a47248070b23ed71d5b31626"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+          "sha256": "417440ea6804a7af39d8ae9c64da0ffc78a8a3deed7f9f48b54dbf07992411fb"
         }
       },
       "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
@@ -13739,42 +13739,37 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+          "sha256": "7dd2842d948e533875375ee3f7283d93206c4e22c63d2a6a0ef1f42794a2e8c3"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+          "sha256": "e5f575592e78adbb85357793285a3149652df25067b92d14182c3f5f94af4552"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+          "sha256": "02b646fd7bad26eedf2dfbe9e0e8d689e02b246c23129e10502d243149ea901e"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+          "sha256": "1aa5395180b55826836b269b1a51d52f798afb56a47248070b23ed71d5b31626"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
-        },
-        "metab-da-contrast-references:0c680c4e496b": {
-          "kind": "scientific_product",
-          "product_type": "metab-da-contrast-references",
-          "sha256": "0c680c4e496bb2aad17b0ca160c610b25c2a89dd8e7f23d0a37510e6a2a52587"
+          "sha256": "417440ea6804a7af39d8ae9c64da0ffc78a8a3deed7f9f48b54dbf07992411fb"
         },
         "da_fit:2477ad5f0ddb": {
           "kind": "da_fit",
@@ -13785,6 +13780,11 @@
           "kind": "da_fit",
           "product_type": null,
           "sha256": "7fedff352ea6ca24922e8881a326b718b86f596778f3659e979a44c92b089907"
+        },
+        "metab-da-contrast-references:cb5ea511bfc6": {
+          "kind": "scientific_product",
+          "product_type": "metab-da-contrast-references",
+          "sha256": "cb5ea511bfc6edecfe36a9422d3d1aa76987462c4f4a823032b147a746626466"
         }
       },
       "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
@@ -13828,37 +13828,37 @@
         "metab_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "metab.intensity_filter_result",
-          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+          "sha256": "f1ac5af06d541ed35f6906d402eba261e8778ba095b5b45db5cfda8ecfc90211"
         },
         "metab_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "metab.duplicate_resolution_result",
-          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+          "sha256": "fa586726e8f2f20ba68b7d059d1d07cf1a8f0f49f42bf8fe813921d81c9041ed"
         },
         "metab_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.itsd_normalisation_result",
-          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+          "sha256": "7dd2842d948e533875375ee3f7283d93206c4e22c63d2a6a0ef1f42794a2e8c3"
         },
         "metab_log2_science": {
           "kind": "scientific_product",
           "product_type": "metab.log2_result",
-          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+          "sha256": "e5f575592e78adbb85357793285a3149652df25067b92d14182c3f5f94af4552"
         },
         "metab_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "metab.between_sample_normalisation_result",
-          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+          "sha256": "02b646fd7bad26eedf2dfbe9e0e8d689e02b246c23129e10502d243149ea901e"
         },
         "metab_ruv_science": {
           "kind": "scientific_product",
           "product_type": "metab.ruv_result",
-          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+          "sha256": "1aa5395180b55826836b269b1a51d52f798afb56a47248070b23ed71d5b31626"
         },
         "metab_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "metab.pearson_selection_result",
-          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+          "sha256": "417440ea6804a7af39d8ae9c64da0ffc78a8a3deed7f9f48b54dbf07992411fb"
         }
       },
       "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
@@ -13927,12 +13927,12 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
-        "lipid.intensity_filter_result:6cc84ddcf489": {
+        "lipid.intensity_filter_result:599ea0a46323": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         }
       },
       "summary_sha256": "cabd9d7f773b22ce6944cab4071c69a74082c7909eb74734d8140b49c2f2fab3"
@@ -13965,17 +13965,17 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         },
-        "lipid.duplicate_resolution_result:39f7e6a3d573": {
+        "lipid.duplicate_resolution_result:2dcaef3fa1f3": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         }
       },
       "summary_sha256": "48844689590f870cab4e7d9c6ee13a36f453e8ec71f5cc59ad465aeecb76cab6"
@@ -14008,12 +14008,12 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         }
       },
       "summary_sha256": "48844689590f870cab4e7d9c6ee13a36f453e8ec71f5cc59ad465aeecb76cab6"
@@ -14057,52 +14057,52 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+          "sha256": "f48920b5cf29fc3c26d14b9b9ba294987c092b1d6de52701b1ed1de14f3f46a7"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+          "sha256": "a605e056dbeaf420bc7a3bf412e16d7c85d33c0ed6500b5cccb9ec2dbac3d8bf"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+          "sha256": "713bfdfe3cddc53de0f4c7519449c18ecac39b9b903a70f530940e6a00ed589c"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+          "sha256": "61f5cc8b5894e53d78794920b0754e2c6fddfe81456d817b106a555fce62843f"
         },
-        "lipid.between_sample_normalisation_result:3a7794ed69ab": {
-          "kind": "scientific_product",
-          "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
-        },
-        "lipid.log2_result:6726d202466d": {
-          "kind": "scientific_product",
-          "product_type": "lipid.log2_result",
-          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
-        },
-        "lipid.ruv_result:77cf4d040b05": {
+        "lipid.ruv_result:61f5cc8b5894": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+          "sha256": "61f5cc8b5894e53d78794920b0754e2c6fddfe81456d817b106a555fce62843f"
         },
-        "lipid.itsd_normalisation_result:96011ff156d9": {
+        "lipid.between_sample_normalisation_result:713bfdfe3cdd": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "713bfdfe3cddc53de0f4c7519449c18ecac39b9b903a70f530940e6a00ed589c"
+        },
+        "lipid.log2_result:a605e056dbea": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "a605e056dbeaf420bc7a3bf412e16d7c85d33c0ed6500b5cccb9ec2dbac3d8bf"
+        },
+        "lipid.itsd_normalisation_result:f48920b5cf29": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+          "sha256": "f48920b5cf29fc3c26d14b9b9ba294987c092b1d6de52701b1ed1de14f3f46a7"
         }
       },
       "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
@@ -14146,47 +14146,47 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+          "sha256": "f48920b5cf29fc3c26d14b9b9ba294987c092b1d6de52701b1ed1de14f3f46a7"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+          "sha256": "a605e056dbeaf420bc7a3bf412e16d7c85d33c0ed6500b5cccb9ec2dbac3d8bf"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+          "sha256": "713bfdfe3cddc53de0f4c7519449c18ecac39b9b903a70f530940e6a00ed589c"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+          "sha256": "61f5cc8b5894e53d78794920b0754e2c6fddfe81456d817b106a555fce62843f"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
-        },
-        "lipid.pearson_selection_result:19c6ae69def9": {
-          "kind": "scientific_product",
-          "product_type": "lipid.pearson_selection_result",
-          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+          "sha256": "bd8eee63a526270ea3ebdf9dc4a4295acb56591651ebe22ceea7c9d309653464"
         },
         "lipid-pearson-pairs:697040d4ab5d": {
           "kind": "scientific_product",
           "product_type": "lipid-pearson-pairs",
           "sha256": "697040d4ab5ddc1e70e67f672ec96c139c1fd6c9e181e346cd2c18a7ef82c7c6"
+        },
+        "lipid.pearson_selection_result:bd8eee63a526": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "bd8eee63a526270ea3ebdf9dc4a4295acb56591651ebe22ceea7c9d309653464"
         }
       },
       "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
@@ -14230,37 +14230,37 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+          "sha256": "f48920b5cf29fc3c26d14b9b9ba294987c092b1d6de52701b1ed1de14f3f46a7"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+          "sha256": "a605e056dbeaf420bc7a3bf412e16d7c85d33c0ed6500b5cccb9ec2dbac3d8bf"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+          "sha256": "713bfdfe3cddc53de0f4c7519449c18ecac39b9b903a70f530940e6a00ed589c"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+          "sha256": "61f5cc8b5894e53d78794920b0754e2c6fddfe81456d817b106a555fce62843f"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+          "sha256": "bd8eee63a526270ea3ebdf9dc4a4295acb56591651ebe22ceea7c9d309653464"
         }
       },
       "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
@@ -14304,47 +14304,47 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+          "sha256": "f48920b5cf29fc3c26d14b9b9ba294987c092b1d6de52701b1ed1de14f3f46a7"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+          "sha256": "a605e056dbeaf420bc7a3bf412e16d7c85d33c0ed6500b5cccb9ec2dbac3d8bf"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+          "sha256": "713bfdfe3cddc53de0f4c7519449c18ecac39b9b903a70f530940e6a00ed589c"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+          "sha256": "61f5cc8b5894e53d78794920b0754e2c6fddfe81456d817b106a555fce62843f"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+          "sha256": "bd8eee63a526270ea3ebdf9dc4a4295acb56591651ebe22ceea7c9d309653464"
         },
         "da_fit:16886637c6bc": {
           "kind": "da_fit",
           "product_type": null,
           "sha256": "16886637c6bc0abadeeb2fcddb7541a10374536c221491faf848092a46f29901"
         },
-        "lipid-da-contrast-references:506c9822c2cb": {
+        "lipid-da-contrast-references:28fbc8f51b77": {
           "kind": "scientific_product",
           "product_type": "lipid-da-contrast-references",
-          "sha256": "506c9822c2cb7de383f1ebfcb2835bad2f62ca465d51c905523ba311c5cd3b82"
+          "sha256": "28fbc8f51b774d6a561d0567b4672a6962460affd7b35039abe3df4462eb00d3"
         },
         "da_fit:bed87f982b8f": {
           "kind": "da_fit",
@@ -14393,37 +14393,37 @@
         "lipid_intensity_filter_science": {
           "kind": "scientific_product",
           "product_type": "lipid.intensity_filter_result",
-          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+          "sha256": "599ea0a4632305e9aad69ee4eb91c32532b409f4e2e59c2bcd5fde78d2a34df2"
         },
         "lipid_duplicate_resolution_science": {
           "kind": "scientific_product",
           "product_type": "lipid.duplicate_resolution_result",
-          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+          "sha256": "2dcaef3fa1f3f06762a4b99d0ffaf45a962f009a7424c88fa5884029598317aa"
         },
         "lipid_itsd_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.itsd_normalisation_result",
-          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+          "sha256": "f48920b5cf29fc3c26d14b9b9ba294987c092b1d6de52701b1ed1de14f3f46a7"
         },
         "lipid_log2_science": {
           "kind": "scientific_product",
           "product_type": "lipid.log2_result",
-          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+          "sha256": "a605e056dbeaf420bc7a3bf412e16d7c85d33c0ed6500b5cccb9ec2dbac3d8bf"
         },
         "lipid_between_sample_normalisation_science": {
           "kind": "scientific_product",
           "product_type": "lipid.between_sample_normalisation_result",
-          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+          "sha256": "713bfdfe3cddc53de0f4c7519449c18ecac39b9b903a70f530940e6a00ed589c"
         },
         "lipid_ruv_science": {
           "kind": "scientific_product",
           "product_type": "lipid.ruv_result",
-          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+          "sha256": "61f5cc8b5894e53d78794920b0754e2c6fddfe81456d817b106a555fce62843f"
         },
         "lipid_pearson_selection_science": {
           "kind": "scientific_product",
           "product_type": "lipid.pearson_selection_result",
-          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+          "sha256": "bd8eee63a526270ea3ebdf9dc4a4295acb56591651ebe22ceea7c9d309653464"
         }
       },
       "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
@@ -36354,7 +36354,7 @@
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
-          "design": "summary_sha256",
+          "design": ["components", "summary_sha256"],
           "qvalue": "summary_sha256",
           "protein_peptide": "summary_sha256",
           "rollup": "summary_sha256",
@@ -37189,7 +37189,8 @@
       "corpus": "kc_lfq_dotted",
       "route": "protein",
       "whole_journey": true,
-      "ceiling_seconds": 14400
+      "ceiling_seconds": 14400,
+      "in_memory": true
     },
     "054m": {
       "kind": "single_journey",
@@ -37197,7 +37198,8 @@
       "corpus": "tmt_300",
       "route": "protein",
       "whole_journey": true,
-      "ceiling_seconds": 14400
+      "ceiling_seconds": 14400,
+      "in_memory": true
     },
     "053": {
       "kind": "single_journey",
@@ -37720,7 +37722,7 @@
     "member": "tools/profiling/workflow_kit_member.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "1531ad5b75e7d0b56b830db0fe8d181fa3869eee5b6d82e05ed92b860a70d6bd",
+    "protocol_sha256": "0fe52c060da5a8abe0429f2fd1f54ba29ddc7cbf80a978add697fe769c31da7a",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     "step_map_sha256": "755bc7e6d6670aaf16d5fe8ebc5cdbe168a28794dba46a212b4986dbee1ef3ca",
     "step_map_protein": "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
@@ -37733,13 +37735,13 @@
     "step_map_metab_sha256": "7a1640ad98ddafb350b21fd67a9d88da714e9237b49442f25b8ee5cc32256f41",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "c0a0ff3e7549f5c70a566cabef0bd33e9caf8e2d5d48f6d1b4c1f53c15f99de1",
+      "tools/profiling/workflow_kit.R": "02cdb544dc0f52f0ade762044f8ef5b6124f3efc9295aff8a00e0974d49a44ab",
       "tools/profiling/workflow_kit_driver.R": "d5fb1a2e5becc3520cf826a2603b7d7952defc03053cb47c5e65b94132d62c08",
       "tools/profiling/workflow_kit_coordinator.R": "c58e1b921af67797e0b768dc9c9809516cf09952f1a1f9c8e1d663fd841a0d5e",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "fe209d6a852137a9e38faf28404c2c0abd736c7474746fccc64173bc10c323f0",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "2651368c3c88eaacab02e6b31af9d55df26f54682387825aae1954569b2512a8",
+      "tests/testthat/test-workflow-kit-harness.R": "8ad78d40073dfd4ca34564a5e066e2c72239486a3088058dd6df9d0e5fbea094",
       "tests/testthat/test-workflow-execution-adapters.R": "758020ac8b928f737c12cf9faaaba3bb044bcdee1e68c1b5c2773f34bb7304af",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

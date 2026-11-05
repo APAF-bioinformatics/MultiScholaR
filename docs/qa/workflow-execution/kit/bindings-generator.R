@@ -398,6 +398,7 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
         list(label = "metab86s", build = "kit_086", corpus = "metab_screen_missing", route = "metabolomics", ticket = "kit-086"),
         list(label = "metab86", build = "kit_086", corpus = "metab_large_missing", route = "metabolomics", ticket = "kit-086"),
         list(label = "lipid86", build = "kit_087", corpus = "lipid_large_missing", route = "lipidomics", ticket = "kit-086"))) {
+        # KIT-092 (protocol v1.7): the four kit-086 files are re-fingerprinted under the content form (kit-092/refingerprint.R).
         oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/%s/oracles-%s_%s.rds", omic$ticket %||% "kit-084", omic$label, omic$corpus))
         if (!file.exists(oracle_file)) next
         recorded <- readRDS(oracle_file)
@@ -625,15 +626,16 @@ if (!is.null(b$builds$kit_021)) {
 }
 # KIT-054: the real-data members (3 single journeys): the new lane on the reader-repaired build with in-process oracles
 # on the real corpus; the legacy in-memory lane on kit_036 on the header-renamed copy and on the synthetic tmt_300
-# (no oracles: the harness's in-memory branch, completion and measures only).
+# (no oracles: the harness's in-memory branch, completion and measures only). KIT-092 (protocol v1.7): the legacy lane
+# declares in_memory, which the harness no longer infers from a route other than DIA bound without oracles.
 if (!is.null(b$builds$kit_054) && !is.null(b$corpora$kc_lfq))
     b$tickets[["054"]] <- list(kind = "single_journey", build = "kit_054", corpus = "kc_lfq", route = "protein", whole_journey = TRUE,
         oracles = "kc_lfq", ceiling_seconds = 14400L)
 if (!is.null(b$corpora$kc_lfq_dotted))
     b$tickets[["054l"]] <- list(kind = "single_journey", build = "kit_036", corpus = "kc_lfq_dotted", route = "protein", whole_journey = TRUE,
-        ceiling_seconds = 14400L)
+        ceiling_seconds = 14400L, in_memory = TRUE)
 b$tickets[["054m"]] <- list(kind = "single_journey", build = "kit_036", corpus = "tmt_300", route = "protein", whole_journey = TRUE,
-    ceiling_seconds = 14400L)
+    ceiling_seconds = 14400L, in_memory = TRUE)
 # KIT-053: the DIA_LIMPA single journey member (protocol v1.5: the whole journey of the route; exactness against the
 # route's in-process oracles recorded on the same build and corpus by kit-053/oracle-record.R; completion and the peaks
 # recorded, no ratio, no control). `KIT_053_CORPUS=screen` binds the screen corpus for the lifecycle run (not counted,
