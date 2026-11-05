@@ -108,6 +108,10 @@ runLipidPerAssayRuvOptimization <- function(
         # --- Percentage-first whole-object loop ---
         # getNegCtrlMetabAnova() and ruvCancor() are called ONCE PER PERCENTAGE,
         # not once per assay.  Both return whole-object named lists.
+        cancor_object <- tryCatch(
+            prepareOmicsRuvCancorObject(theObject, "lipid_data", "lipid_id_column")
+            , error = function(e) theObject
+        )
         percentage_results <- purrr::map(percentage_range, function(pct) {
             message(sprintf(
                 "   DEBUG66 [runLipidPerAssayRuvOptimization] Whole-object pass: pct=%d%%", pct
@@ -133,7 +137,7 @@ runLipidPerAssayRuvOptimization <- function(
 
             cancor_list <- tryCatch(
                 ruvCancor(
-                    theObject
+                    cancor_object
                     , ctrl = ctrl_list
                     , ruv_grouping_variable = ruv_grouping_variable
                 )

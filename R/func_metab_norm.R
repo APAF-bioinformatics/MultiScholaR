@@ -252,6 +252,41 @@ generateMetabQcPlots <- function(
 }
 
 
+#' The object a lipid or metabolite RUV sweep hands to `ruvCancor`: assays with missing values carry their NIPALS
+#' imputation of the matrix `ruvCancor` would build, so the method finds nothing left to impute. The imputation does
+#' not depend on the percentage, so a sweep prepares it once per assay (KIT-005's rule for proteomics). An assay this
+#' cannot prepare stays as it is, and `ruvCancor` handles and reports it as before. Only the canonical-correlation
+#' plots read this object: the control selection and the correction keep the data with its missing values.
+#' @param theObject A `MetaboliteAssayData` or `LipidomicsAssayData`.
+#' @param data_slot,id_column_slot The names of the class's assay list and feature id slots.
+#' @return `theObject`, with imputed values in the assays that had missing values.
+#' @noRd
+prepareOmicsRuvCancorObject <- function(theObject, data_slot, id_column_slot) {
+    assays <- methods::slot(theObject, data_slot)
+    id_column <- methods::slot(theObject, id_column_slot)
+    design_samples <- as.character(theObject@design_matrix[[theObject@sample_id]])
+    # The value `ruvCancor` resolves when a sweep calls it: the object's stored argument, else its default.
+    num_components <- theObject@args[["ruvCancor"]][["num_components_to_impute"]] %||% 2
+    for (assay_name in names(assays)) {
+        assay <- assays[[assay_name]]
+        sample_cols <- intersect(colnames(assay), design_samples)
+        if (!id_column %in% colnames(assay) || length(sample_cols) < 2L) next
+        values <- as.matrix(as.data.frame(lapply(assay[sample_cols], as.numeric), check.names = FALSE))
+        values[!is.finite(values)] <- NA_real_
+        if (!anyNA(values)) next
+        ordered_samples <- design_samples[design_samples %in% sample_cols]
+        imputed <- tryCatch(
+            mixOmics::impute.nipals(t(values[, ordered_samples, drop = FALSE]), ncomp = num_components),
+            error = function(e) NULL
+        )
+        if (is.null(imputed)) next
+        assay[ordered_samples] <- as.data.frame(t(imputed), check.names = FALSE)
+        assays[[assay_name]] <- assay
+    }
+    methods::slot(theObject, data_slot) <- assays
+    theObject
+}
+
 #' Run Per-Assay RUV Optimization
 #'
 #' @title Run RUV optimization per assay
@@ -369,6 +404,10 @@ runPerAssayRuvOptimization <- function(
         # --- Percentage-first whole-object loop ---
         # getNegCtrlMetabAnova() and ruvCancor() are called ONCE PER PERCENTAGE,
         # not once per assay.  Both return whole-object named lists.
+        cancor_object <- tryCatch(
+            prepareOmicsRuvCancorObject(theObject, "metabolite_data", "metabolite_id_column")
+            , error = function(e) theObject
+        )
         percentage_results <- purrr::map(percentage_range, function(pct) {
             message(sprintf(
                 "   DEBUG66 [runPerAssayRuvOptimization] Whole-object pass: pct=%d%%", pct
@@ -394,7 +433,7 @@ runPerAssayRuvOptimization <- function(
 
             cancor_list <- tryCatch(
                 ruvCancor(
-                    theObject
+                    cancor_object
                     , ctrl = ctrl_list
                     , ruv_grouping_variable = ruv_grouping_variable
                 )
