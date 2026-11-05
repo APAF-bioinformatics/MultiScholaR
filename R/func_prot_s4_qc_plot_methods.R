@@ -284,7 +284,7 @@ setMethod(
     frozen_protein_matrix_pca[!is.finite(frozen_protein_matrix_pca)] <- NA
 
 
-    pca_mixomics_before_cyclic_loess <- mixOmics::pca(t(as.matrix(frozen_protein_matrix_pca)))$variates$X |>
+    pca_mixomics_before_cyclic_loess <- pcaWithMissing(t(as.matrix(frozen_protein_matrix_pca)))$variates$X |>
       as.data.frame() |>
       rownames_to_column(sample_id) |>
       left_join(design_matrix, by = sample_id)

@@ -424,7 +424,7 @@ setMethod(
             # --- Perform PCA ---
             pca_data_for_plot <- tryCatch(
                 {
-                    pca.res <- mixOmics::pca(t(as.matrix(frozen_metabolite_matrix_pca_final)), ncomp = 2) # Ensure ncomp=2 for PC1/PC2
+                    pca.res <- pcaWithMissing(t(as.matrix(frozen_metabolite_matrix_pca_final)), ncomp = 2) # Ensure ncomp=2 for PC1/PC2
                     pca.res$variates$X |>
                         as.data.frame() |>
                         tibble::rownames_to_column(var = sample_id_col_name) |>

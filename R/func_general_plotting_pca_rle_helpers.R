@@ -192,7 +192,7 @@ plotPcaHelper <- function(data,
         max_mixomics_components
       ))
       pca.res <- tryCatch(
-        mixOmics::pca(pca_input, ncomp = max_mixomics_components),
+        pcaWithMissing(pca_input, ncomp = max_mixomics_components),
         error = function(error) {
           message(sprintf(
             "   DEBUG66 [plotPcaHelper] mixOmics::pca() failed (%s); falling back to stats::prcomp()",
@@ -407,7 +407,7 @@ plotPcaListHelper <- function(data,
   # --- END of modification ---
 
 
-  pca.res <- mixOmics::pca(t(as.matrix(data_filtered)), ncomp = ncomp)
+  pca.res <- pcaWithMissing(t(as.matrix(data_filtered)), ncomp = ncomp)
   proportion_explained <- pca.res$prop_expl_var
 
   temp_tbl <- pca.res$variates$X |>
@@ -463,7 +463,7 @@ plotPcaGgpairs <- function(
 ) {
   requireOptionalPackage("mixOmics", "the mixOmics PCA") # KIT-064 (roar BUG-24)
   requireOptionalPackage("GGally", "PCA pair plots")
-  pca.res <- mixOmics::pca(t(as.matrix(data_matrix)), ncomp = ncomp)
+  pca.res <- pcaWithMissing(t(as.matrix(data_matrix)), ncomp = ncomp)
 
 
   pca_prop_explained_helper <- function(pca_obj, comp_idx) {

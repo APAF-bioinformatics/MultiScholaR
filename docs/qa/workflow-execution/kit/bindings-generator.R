@@ -139,7 +139,9 @@ omics_corpora <- list(
     metab_screen_missing = list(dir = "metab-screen-missing", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(6L, 300L, 6L, 0.3),
         assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")),
     metab_large_missing = list(dir = "metab-large-missing", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(50L, 20000L, 6L, 0.3),
-        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")))
+        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")),
+    lipid_large_missing = list(dir = "lipid-large-missing", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics", size = c(50L, 20000L, 6L, 0.3),
+        assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")))
 for (key in names(omics_corpora)) {
     spec <- omics_corpora[[key]]
     directory <- file.path(proof, "kit/corpus", spec$dir)
@@ -394,7 +396,8 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
         list(label = "metab84c", build = "kit_032", corpus = "metab_large", route = "metabolomics"),
         list(label = "lipid86s", build = "kit_086", corpus = "lipid_screen_missing", route = "lipidomics", ticket = "kit-086"),
         list(label = "metab86s", build = "kit_086", corpus = "metab_screen_missing", route = "metabolomics", ticket = "kit-086"),
-        list(label = "metab86", build = "kit_086", corpus = "metab_large_missing", route = "metabolomics", ticket = "kit-086"))) {
+        list(label = "metab86", build = "kit_086", corpus = "metab_large_missing", route = "metabolomics", ticket = "kit-086"),
+        list(label = "lipid86", build = "kit_087", corpus = "lipid_large_missing", route = "lipidomics", ticket = "kit-086"))) {
         oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/%s/oracles-%s_%s.rds", omic$ticket %||% "kit-084", omic$label, omic$corpus))
         if (!file.exists(oracle_file)) next
         recorded <- readRDS(oracle_file)
@@ -429,6 +432,13 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     if (!is.null(b$oracles$lipid86s_import)) b$tickets[["086t"]] <- single_084("kit_086", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L)
     if (!is.null(b$oracles$metab86s_import)) b$tickets[["086s"]] <- single_084("kit_086", "metab_screen_missing", "metabolomics", "metab86s", 1800L)
     if (!is.null(b$oracles$metab86_import)) b$tickets[["086m"]] <- single_084("kit_086", "metab_large_missing", "metabolomics", "metab86", 14400L)
+    # On the fixed build (KIT-087): the small journeys and the large rerun, against the same oracles; lipid at large on its own.
+    if (!is.null(b$builds$kit_087)) {
+        b$tickets[["086u"]] <- single_084("kit_087", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L)
+        b$tickets[["086v"]] <- single_084("kit_087", "metab_screen_missing", "metabolomics", "metab86s", 1800L)
+        b$tickets[["086p"]] <- single_084("kit_087", "metab_large_missing", "metabolomics", "metab86", 14400L)
+        if (!is.null(b$oracles$lipid86_import)) b$tickets[["086q"]] <- single_084("kit_087", "lipid_large_missing", "lipidomics", "lipid86", 14400L)
+    }
     if (!is.null(b$builds$kit_085)) {
         b$tickets[["085l"]] <- single_084("kit_085", "lipid_screen", "lipidomics", "lipid82", 1800L)
         b$tickets[["085m"]] <- single_084("kit_085", "metab_screen", "metabolomics", "metab82", 1800L)

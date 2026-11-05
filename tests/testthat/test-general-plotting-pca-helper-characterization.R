@@ -68,7 +68,7 @@ test_that("plotPcaHelper source retains the mixOmics fast path with an explicit 
 
   target_text <- paste(deparse(target_expr), collapse = "\n")
 
-  expect_match(target_text, "mixOmics::pca\\(")
+  expect_match(target_text, "pcaWithMissing\\(")
   expect_match(target_text, "requireNamespace\\(\"mixOmics\", quietly = TRUE\\)")
   expect_match(target_text, "stats::prcomp\\(")
 })

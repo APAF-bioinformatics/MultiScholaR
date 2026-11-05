@@ -207,7 +207,7 @@ test_that("metabolomics S4 plotDensity source retains both PCA and list-method p
 
   expect_length(metab_text, 1)
   expect_length(list_text, 1)
-  expect_match(metab_text, "mixOmics::pca\\(")
+  expect_match(metab_text, "pcaWithMissing\\(")
   expect_match(metab_text, "patchwork::plot_layout\\(")
   expect_match(list_text, "pca_plot\\$data")
   expect_match(list_text, "plot_title_final <- if \\(!is\\.null\\(title\\) && title !=\\s+\"\"\\)")
