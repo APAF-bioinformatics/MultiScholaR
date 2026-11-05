@@ -1784,6 +1784,136 @@
       "recorded_at": "2026-11-05T13:05:23+1100",
       "route": "metabolomics"
     },
+    "metab86_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "4c889371d841c126c938baa8728cccd55e426e5d7b6d36dfb9097a063701e431",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_design": {
+      "step": "design",
+      "state": "metab_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "309d7b4d02ed0a7c8f39c22eb26e28a3989454da6d533d067b0b1b0f13f93e24",
+      "rows": 40012,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_intensity": {
+      "step": "intensity",
+      "state": "metab_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "b568981d5bf039a904f263c3e4440ec4f8476819cce2e9461e258766da186b3e",
+      "rows": 36582,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_duplicates": {
+      "step": "duplicates",
+      "state": "metab_duplicates_resolved",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "71dae93ba94ce0a364cd69abf6905e8f99627fe116b320055768a1a9f947b09c",
+      "rows": 36582,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "metab_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "60e09c130c8285904b0add86964a5b2a2cc135efa9685ab5069e4664f986e1c6",
+      "rows": 36582,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_normalisation": {
+      "step": "normalisation",
+      "state": "metab_ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "6d4a2ecad1955fbeaca30fcff47d1a475ab0acb034092f17cb9add5a629d8145",
+      "rows": 36570,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_correlation": {
+      "step": "correlation",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "b34ce621e2b35a5b169b726b63dc6d7e07c2015d4bdb7b5b9df0795de3fd90c6",
+      "rows": 36570,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_session_export": {
+      "step": "session_export",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "b34ce621e2b35a5b169b726b63dc6d7e07c2015d4bdb7b5b9df0795de3fd90c6",
+      "rows": 36570,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_da": {
+      "step": "da",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "b34ce621e2b35a5b169b726b63dc6d7e07c2015d4bdb7b5b9df0795de3fd90c6",
+      "rows": 36570,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
+    "metab86_report": {
+      "step": "report",
+      "state": "metab_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/metab32_metab_large_missing/project/kit_omics_lifecycle/scripts/metabolomics/.dia-native-33791f3f79cc58/.workflow-entities",
+      "head_sha256": "2bbc040ecd82f3a6cd7208d65b2ca703de94fc2dc67468cfde8be3314d9dbb9d",
+      "entity_id": "b34ce621e2b35a5b169b726b63dc6d7e07c2015d4bdb7b5b9df0795de3fd90c6",
+      "rows": 36570,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "recorded_at": "2026-11-05T13:36:59+1100",
+      "route": "metabolomics"
+    },
     "lipid84_itsd": {
       "step": "itsd",
       "state": "lipid_itsd_norm",
@@ -13019,6 +13149,571 @@
         }
       },
       "summary_sha256": "5a408791c30ad380dbc126403a75ef9229c9271fe2d14a1ff413a5cdf89dc663"
+    },
+    "metab86_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "metab86_design": {
+      "class": "MetaboliteAssayData",
+      "rows": 40012,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 20006,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "2214de3e6c0e76a0fa286cfdb6c83b5707ac8ef5dd8e23f61052f1cb290cd679"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 20006,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "20bc1917d42c6d8db15b59c4cc81cffa8d6e42a08af97885193cefb56efa5e61"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "26ce1b2e4a57448d11c255f661a129f22e8d38439f544c7fa8b74781a0d7ac7c"
+    },
+    "metab86_intensity": {
+      "class": "MetaboliteAssayData",
+      "rows": 36582,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18291,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "e16a37cd93ee32743499f002215230ca48965c7e95912216fd1288329e0b2acd"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18291,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "a3cdf06a1e31889532422fd9599fdf55b168c9e845eb564504a3176c61da989e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab.intensity_filter_result:1a3bf07b268a": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        }
+      },
+      "summary_sha256": "c3840220b8d0a2a416d80c5dccee092d797763f5f7a80c6de8c5d5804639ed7e"
+    },
+    "metab86_duplicates": {
+      "class": "MetaboliteAssayData",
+      "rows": 36582,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18291,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "e16a37cd93ee32743499f002215230ca48965c7e95912216fd1288329e0b2acd"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18291,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "a3cdf06a1e31889532422fd9599fdf55b168c9e845eb564504a3176c61da989e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        },
+        "metab.duplicate_resolution_result:3b7c9f78b46d": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        }
+      },
+      "summary_sha256": "c3840220b8d0a2a416d80c5dccee092d797763f5f7a80c6de8c5d5804639ed7e"
+    },
+    "metab86_qc_finalize": {
+      "class": "MetaboliteAssayData",
+      "rows": 36582,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18291,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "e16a37cd93ee32743499f002215230ca48965c7e95912216fd1288329e0b2acd"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18291,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "a3cdf06a1e31889532422fd9599fdf55b168c9e845eb564504a3176c61da989e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        }
+      },
+      "summary_sha256": "c3840220b8d0a2a416d80c5dccee092d797763f5f7a80c6de8c5d5804639ed7e"
+    },
+    "metab86_normalisation": {
+      "class": "MetaboliteAssayData",
+      "rows": 36570,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "cc3444688752ec3624511a7fe78930e61fb6ab8752c4131c7ee7417e706bac1e"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "c7cdb9a90b2473e4316bd9dbf5dfa6d3d33c5b81aa60ec2edbfe48bf5eaa9be6"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f0c8dce0840fd7267765a1f8a945cabb3a14d9d2164ad6aec7daa176fc0e6236"
+        },
+        "ctrl/GCMS": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "a5a2bb80173edb5b624059ceb9a3589fa9acdcb0da437c82fa892ec50ea7089c"
+        }
+      },
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+        },
+        "metab.log2_result:1f492571137e": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+        },
+        "metab.between_sample_normalisation_result:50ed1215e4c9": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+        },
+        "metab.itsd_normalisation_result:5796aa5fdd2f": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+        },
+        "metab.ruv_result:87cb6bab3f55": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+        }
+      },
+      "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
+    },
+    "metab86_correlation": {
+      "class": "MetaboliteAssayData",
+      "rows": 36570,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "cc3444688752ec3624511a7fe78930e61fb6ab8752c4131c7ee7417e706bac1e"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "c7cdb9a90b2473e4316bd9dbf5dfa6d3d33c5b81aa60ec2edbfe48bf5eaa9be6"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f0c8dce0840fd7267765a1f8a945cabb3a14d9d2164ad6aec7daa176fc0e6236"
+        },
+        "ctrl/GCMS": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "a5a2bb80173edb5b624059ceb9a3589fa9acdcb0da437c82fa892ec50ea7089c"
+        }
+      },
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+        },
+        "metab.pearson_selection_result:0a261948eb3c": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+        },
+        "metab-pearson-pairs:69f1d1ee0a37": {
+          "kind": "scientific_product",
+          "product_type": "metab-pearson-pairs",
+          "sha256": "69f1d1ee0a3714736ab950b293f699a03f00551317fbba33380f2c93bfe78f17"
+        }
+      },
+      "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
+    },
+    "metab86_session_export": {
+      "class": "MetaboliteAssayData",
+      "rows": 36570,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "cc3444688752ec3624511a7fe78930e61fb6ab8752c4131c7ee7417e706bac1e"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "c7cdb9a90b2473e4316bd9dbf5dfa6d3d33c5b81aa60ec2edbfe48bf5eaa9be6"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f0c8dce0840fd7267765a1f8a945cabb3a14d9d2164ad6aec7daa176fc0e6236"
+        },
+        "ctrl/GCMS": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "a5a2bb80173edb5b624059ceb9a3589fa9acdcb0da437c82fa892ec50ea7089c"
+        }
+      },
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+        }
+      },
+      "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
+    },
+    "metab86_da": {
+      "class": "MetaboliteAssayData",
+      "rows": 36570,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "cc3444688752ec3624511a7fe78930e61fb6ab8752c4131c7ee7417e706bac1e"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "c7cdb9a90b2473e4316bd9dbf5dfa6d3d33c5b81aa60ec2edbfe48bf5eaa9be6"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f0c8dce0840fd7267765a1f8a945cabb3a14d9d2164ad6aec7daa176fc0e6236"
+        },
+        "ctrl/GCMS": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "a5a2bb80173edb5b624059ceb9a3589fa9acdcb0da437c82fa892ec50ea7089c"
+        }
+      },
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+        },
+        "metab-da-contrast-references:0c680c4e496b": {
+          "kind": "scientific_product",
+          "product_type": "metab-da-contrast-references",
+          "sha256": "0c680c4e496bb2aad17b0ca160c610b25c2a89dd8e7f23d0a37510e6a2a52587"
+        },
+        "da_fit:2477ad5f0ddb": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "2477ad5f0ddb3498ba8275a9d22ed85a93c48e128c21f46b288a774137ec58de"
+        },
+        "da_fit:7fedff352ea6": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "7fedff352ea6ca24922e8881a326b718b86f596778f3659e979a44c92b089907"
+        }
+      },
+      "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
+    },
+    "metab86_report": {
+      "class": "MetaboliteAssayData",
+      "rows": 36570,
+      "components": {
+        "metabolite_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "cc3444688752ec3624511a7fe78930e61fb6ab8752c4131c7ee7417e706bac1e"
+        },
+        "metabolite_data/GCMS": {
+          "kind": "table",
+          "rows": 18285,
+          "columns": ["Alignment ID", "Metabolite name", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "c7cdb9a90b2473e4316bd9dbf5dfa6d3d33c5b81aa60ec2edbfe48bf5eaa9be6"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f0c8dce0840fd7267765a1f8a945cabb3a14d9d2164ad6aec7daa176fc0e6236"
+        },
+        "ctrl/GCMS": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "a5a2bb80173edb5b624059ceb9a3589fa9acdcb0da437c82fa892ec50ea7089c"
+        }
+      },
+      "products": {
+        "metab_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.intensity_filter_result",
+          "sha256": "1a3bf07b268a14d19a3f9aa6300436123dd4ee2e80ff19730963dc90c89b0354"
+        },
+        "metab_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.duplicate_resolution_result",
+          "sha256": "3b7c9f78b46df6092f06adbc7234a4a8a4813372b81bd2db426be9870d46224c"
+        },
+        "metab_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.itsd_normalisation_result",
+          "sha256": "5796aa5fdd2ff513e92a88076d39af12b27c5510111af59da25e61b80879521a"
+        },
+        "metab_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.log2_result",
+          "sha256": "1f492571137e2e54f0ad1dc448603b9c35a13c0857a42674847ffa7dbcfc4efc"
+        },
+        "metab_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.between_sample_normalisation_result",
+          "sha256": "50ed1215e4c9e22c429e8488aafb3fdd4d31433e09c01db7d552d59e927b109b"
+        },
+        "metab_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.ruv_result",
+          "sha256": "87cb6bab3f55d58603e13f84a4aad68971ec30ecccd3fa6dd266d6d36b266630"
+        },
+        "metab_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "metab.pearson_selection_result",
+          "sha256": "0a261948eb3cdbd54f7480fab1a8c0c014f0c466628406cf9aa4e7e5671941d4"
+        }
+      },
+      "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
     },
     "lipid84_itsd": {
       "class": "LipidomicsAssayData",
@@ -35248,6 +35943,22 @@
       "whole_journey": true,
       "oracles": "metab86s",
       "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "086m": {
+      "kind": "single_journey",
+      "build": "kit_086",
+      "corpus": "metab_large_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86",
+      "ceiling_seconds": 14400,
       "purpose": "exactness",
       "normalisation": {
         "apply_itsd": true,
