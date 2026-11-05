@@ -26,6 +26,22 @@ lipidomicsDeclarationBinding <- list(
         lipid_between_sample_normalisation = "7_Normalised", lipid_ruv = "8_RUV_Corrected",
         lipid_pearson_selection = "9_Correlation_Filtered", lipid_norm_complete = "9_Normalisation_Complete",
         lipid_reset = "0_Reset"),
+    # KIT-094: the steps the shared core registers, runs, replays and records for this omic.
+    steps = omicsRouteSteps,
+    # KIT-078: the declarations on the worker's `omics` role.
+    worker_steps = c("lipid_intensity_filter", "lipid_duplicate_resolution", "lipid_itsd_normalisation", "lipid_log2",
+        "lipid_between_sample_normalisation", "lipid_ruv", "lipid_pearson_pairs", "lipid_pearson_selection", "lipid_da_contrast"),
+    # KIT-089: the intensity filter defaults to `partitioned` (user, 2026-11-06, on KIT-084's synthetic pairs: exact, peak
+    # .77 and .81 of `whole`); every other step to `whole`.
+    default_variants = c(lipid_intensity_filter = "partitioned"),
+    publications = omicsRoutePublications,
+    # The worker's compute handler: the steps whose figures read the filtering metrics, the step whose product holds
+    # native references, and the parameter naming a product the step depends on.
+    filtering_steps = c("lipid_intensity_filter", "lipid_duplicate_resolution"),
+    native_steps = "lipid_da_contrast",
+    dependency_parameters = "pairs",
+    replay = omicsRouteReplay,
+    record_outcomes = omicsRouteRecordOutcomes,
     filter_intensity = function(object, parameters) {
         lipidIntensityFilteringFn <- lipidIntensityFiltering
         lipidIntensityFilteringFn(object,

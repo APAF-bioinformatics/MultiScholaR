@@ -1327,7 +1327,8 @@ newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
         context$snapshot <- snapshot
         context$reference_states <- isTRUE(snapshot$reference_states)
         # KIT-077: the store's identity names an omics owner's omic, so a bare reopen (a worker's) knows it as a session's does.
-        if (store$identity$workflow_id %in% c("LIPIDOMICS", "METABOLOMICS")) context$omic_type <- tolower(store$identity$workflow_id)
+        # KIT-094: the omics workflow types are the bindings'.
+        if (store$identity$workflow_id %in% toupper(omicsWorkflowTypes())) context$omic_type <- tolower(store$identity$workflow_id)
         # Rebuild only the bounded index from accepted roots, never from orphan stages.
         for (reference in collectDIANativeReferences(list(context$head, snapshot))) {
             registerSavedWorkflowMetadata(store, reference)
@@ -1406,10 +1407,11 @@ newWorkflowStateOwner <- function(store, native = NULL, reopen = FALSE) {
     })
     adapter$setWorkflowType <- function(type) {
         # KIT-020: the on-disk owner serves the DIA-NN routes (KIT-046: DIA and DIA_LIMPA) and the protein-level LFQ and TMT
-        # routes; KIT-070: the lipidomics and metabolomics routes.
-        if (!is.character(type) || length(type) != 1L || !type %in% c("DIA", "DIA_LIMPA", "LFQ", "TMT", "LIPIDOMICS", "METABOLOMICS")) {
-            cli::cli_abort("the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and METABOLOMICS workflow types",
-                class = "saved_entity_scope")
+        # routes; KIT-070: the lipidomics and metabolomics routes; KIT-094: the omics routes are the bindings'.
+        types <- c("DIA", "DIA_LIMPA", "LFQ", "TMT", toupper(omicsWorkflowTypes()))
+        if (!is.character(type) || length(type) != 1L || !type %in% types) {
+            cli::cli_abort(paste0("the on-disk session serves the ", paste(types[-length(types)], collapse = ", "), " and ",
+                types[[length(types)]], " workflow types"), class = "saved_entity_scope")
         }
         adapter$workflow_type <- type
     }

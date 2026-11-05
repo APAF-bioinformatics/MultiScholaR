@@ -8,11 +8,6 @@
 # the commit under the module's state name with the module's configuration and description. Nothing here reads GUI
 # inputs, the global environment or a Shiny session.
 
-#' The declarations that run on the worker's `omics` role (KIT-078), by the name after the omic's prefix.
-#' @noRd
-omicsWorkerSteps <- c("intensity_filter", "duplicate_resolution", "itsd_normalisation", "log2", "between_sample_normalisation",
-    "ruv", "pearson_pairs", "pearson_selection", "da_contrast")
-
 #' One omics declaration: the binding's class in, both stored components hydrated, the merge rules of a partitioned
 #' unit supplied.
 #' @noRd
@@ -561,17 +556,26 @@ writeWorkflowOmicsDaDownload <- function(binding, manager, manifest, columns, fi
     invisible(file)
 }
 
-#' Every declaration of one omic, by name. `<prefix>_da_output` is no longer run (KIT-076): it stays registered so v1
-#' records and manifests keep resolving their operation.
+#' The steps of the lipidomics and metabolomics routes (a binding's `steps`, KIT-094), in registry order.
+#' `<prefix>_da_output` is no longer run (KIT-076): it stays registered so v1 records and manifests keep resolving their
+#' operation.
+#' @param binding The omic's binding.
+#' @return The declarations.
 #' @noRd
-omicsWorkflowOperations <- function(binding) {
+omicsRouteSteps <- function(binding) {
     prefix <- binding$prefix
-    declarations <- list(omicsIntensityFilterOperation(binding), omicsDuplicateResolutionOperation(binding),
+    list(omicsIntensityFilterOperation(binding), omicsDuplicateResolutionOperation(binding),
         omicsStoreOperation(binding, paste0(prefix, "_qc_finalize")), omicsItsdNormalisationOperation(binding),
         omicsLog2Operation(binding), omicsBetweenSampleNormalisationOperation(binding), omicsRuvOperation(binding),
         omicsPearsonPairsOperation(binding), omicsPearsonSelectionOperation(binding),
         omicsStoreOperation(binding, paste0(prefix, "_norm_complete")), omicsStoreOperation(binding, paste0(prefix, "_reset")),
         omicsDaOperation(binding), omicsDaContrastOperation(binding))
+}
+
+#' Every declaration of one omic, by name: the binding's own steps (KIT-094).
+#' @noRd
+omicsWorkflowOperations <- function(binding) {
+    declarations <- binding$steps(binding)
     stats::setNames(declarations, vapply(declarations, `[[`, "", "name"))
 }
 
@@ -579,6 +583,53 @@ omicsWorkflowOperations <- function(binding) {
 #' @noRd
 omicsDeclarationBindings <- function() {
     list(lipidomics = lipidomicsDeclarationBinding, metabolomics = metabolomicsDeclarationBinding)
+}
+
+#' The bindings' omic types (KIT-094): the session's type allowlists and routes take an omic's from its binding
+#' (`toupper` of it is the workflow type).
+#' @noRd
+omicsWorkflowTypes <- function() vapply(omicsDeclarationBindings(), function(binding) binding$omic_type, character(1))
+
+#' The worker's publication operations of the lipidomics and metabolomics routes (a binding's `publications`, KIT-094):
+#' `c(<name after the prefix>, <handler>)` each. KIT-078: what the steps' figures and exports read (the matrix, the
+#' composite's rasters), in the worker; they commit nothing. KIT-082: what the tabs read from the whole matrix outside
+#' their steps, in the worker too.
+#' @noRd
+omicsRoutePublications <- list(c("qc_figures", "computeWorkflowOmicsQcFiguresAction"),
+    c("composite_figure", "computeWorkflowOmicsCompositeFigureAction"), c("da_publication", "computeWorkflowOmicsDaPublicationAction"),
+    c("da_tab_results", "computeWorkflowOmicsDaTabResultsAction"), c("filtering_metrics", "computeWorkflowOmicsFilteringMetricsAction"),
+    c("final_pca", "computeWorkflowOmicsFinalPcaAction"), c("volcano_page", "computeWorkflowOmicsVolcanoPageAction"),
+    c("session_export", "computeWorkflowOmicsSessionExportAction"), c("integration_export", "computeWorkflowOmicsIntegrationExportAction"))
+
+#' The realised outcomes the record keeps for a lipidomics or metabolomics step (a binding's `record_outcomes`,
+#' KIT-094). KIT-031: the RUV step's realised result (k and the control count per assay, their totals) and the
+#' internal-standard step's application, in the words the lipid report's RUV and ITSD sentences use. KIT-032: the
+#' metabolomics RUV and ITSD steps record the same outcomes under their own operation names.
+#' @param binding The omic's binding.
+#' @param context The owner's context.
+#' @param operation The step's operation, one of the binding's.
+#' @param record The state's record.
+#' @param outcomes The outcomes every step has.
+#' @return `outcomes`, with the step's own.
+#' @noRd
+omicsRouteRecordOutcomes <- function(binding, context, operation, record, outcomes) {
+    if (identical(operation, paste0(binding$prefix, "_ruv"))) {
+        product <- record$data$products[[paste0(operation, "_science")]]
+        saved <- if (isSavedWorkflowReference(product)) tryCatch({
+            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
+            if (is.list(hydrated$value)) hydrated$value else hydrated
+        }, error = function(error) NULL) else NULL
+        k <- unlist(saved$best_k); controls <- unlist(saved$control_count); percentage <- unlist(saved$percentage)
+        outcomes$ruv_applied <- TRUE
+        outcomes$k <- if (length(k)) sum(k, na.rm = TRUE) else NA_real_
+        outcomes$k_per_assay <- as.list(saved$best_k)
+        outcomes$negative_control_count <- if (length(controls)) sum(controls, na.rm = TRUE) else NA_integer_
+        outcomes$negative_control_count_per_assay <- as.list(saved$control_count)
+        outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
+        outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
+    }
+    if (identical(operation, paste0(binding$prefix, "_itsd_normalisation"))) outcomes$itsd_applied <- TRUE
+    outcomes
 }
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -1126,6 +1177,8 @@ omicsFilteringMetricsReference <- function(binding, manager, state) {
 
 #' The worker's one compute handler: the registered declaration on the request's state, by the request's variant. A
 #' state-producing declaration returns the checkpoint the completion commits; a product-only one returns the source's.
+#' KIT-094: the binding names the parameters that are product dependencies, the steps whose product holds native
+#' references and the steps whose figures need the filtering metrics.
 #' @noRd
 computeWorkflowOmicsOperationAction <- function(manager, request, variant) {
     entry <- workflowActionSpec(request$operation)
@@ -1135,17 +1188,18 @@ computeWorkflowOmicsOperationAction <- function(manager, request, variant) {
     parameters <- request$parameters
     parameters$variant <- variant
     parameters$worker_cap <- request$worker_cap
-    dependencies <- if ("pairs" %in% declaration$parameters) list(manager$.context$snapshot$products[[parameters$pairs]]) else list()
+    dependencies <- lapply(intersect(binding$dependency_parameters, declaration$parameters),
+        function(parameter) manager$.context$snapshot$products[[parameters[[parameter]]]])
     run <- runSavedOperation(manager, declaration, source, parameters, dependencies)
     # An earlier worker's product whose action never completed has no root yet.
     if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, c(list(source), dependencies, list(run$value)))
     if (is.null(declaration$output_class)) {
         return(list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference,
-            native = if (identical(declaration$name, paste0(binding$prefix, "_da_contrast"))) collectWorkflowNativeReferences(run$value)))
+            native = if (declaration$name %in% binding$native_steps) collectWorkflowNativeReferences(run$value)))
     }
     final <- readWorkflowStateMetadata(manager, run$value$final)$data
     final$products[[paste0(declaration$name, "_science")]] <- run$reference
-    filtering <- declaration$name %in% paste0(binding$prefix, c("_intensity_filter", "_duplicate_resolution"))
+    filtering <- declaration$name %in% binding$filtering_steps
     list(checkpoint = final, reference = run$reference,
         display = if (filtering) list(filtering_metrics = omicsFilteringMetricsReference(binding, manager, run$value$final)))
 }
@@ -1314,40 +1368,67 @@ readManagedOmicsResult <- function(manager, result, workflow_data) {
     list(stateReference = result$state_reference, reference = result$reference, value = value, display = result$display)
 }
 
+#' Refuse to replay a recorded omics step.
+#' @noRd
+omicsReplayUnsupported <- function(step) {
+    state <- step$state
+    operation <- step$operation
+    cli::cli_abort("step {.val {state}} cannot be replayed: operation {.val {operation}}", class = "workflow_replay_unsupported")
+}
+
+#' The replay of the lipidomics and metabolomics steps (a binding's `replay`, KIT-094), by the name after the prefix:
+#' each is `function(binding, manager, step, parameters, config, description)`, the wrapper the module used.
+#' @noRd
+omicsRouteReplay <- local({
+    store_step <- function(binding, manager, step, parameters, config, description) {
+        commitWorkflowOmicsStoreStep(manager, step$operation, step$state, config, description)
+    }
+    list(
+        intensity_filter = function(binding, manager, step, parameters, config, description) {
+            runWorkflowOmicsReferenceIntensityFilter(binding, manager, parameters[[binding$intensity_parameters[[1L]]]],
+                parameters[[binding$intensity_parameters[[2L]]]], config, description, state_name = step$state, hydrate = FALSE)
+        },
+        duplicate_resolution = function(binding, manager, step, parameters, config, description) {
+            runWorkflowOmicsReferenceDuplicateResolution(binding, manager, config, description, state_name = step$state, hydrate = FALSE)
+        },
+        qc_finalize = store_step,
+        norm_complete = store_step,
+        itsd_normalisation = function(binding, manager, step, parameters, config, description) {
+            runWorkflowOmicsReferenceItsdNormalisation(binding, manager, parameters$itsd_aggregation, parameters$itsd_feature_ids,
+                config, description, state_name = step$state, hydrate = FALSE)
+        },
+        log2 = function(binding, manager, step, parameters, config, description) {
+            runWorkflowOmicsReferenceLog2(binding, manager, parameters$offset, config, description, state_name = step$state, hydrate = FALSE)
+        },
+        between_sample_normalisation = function(binding, manager, step, parameters, config, description) {
+            runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, manager, parameters$normalisation_method, config, description,
+                state_name = step$state, hydrate = FALSE)
+        },
+        ruv = function(binding, manager, step, parameters, config, description) {
+            runWorkflowOmicsReferenceRuv(binding, manager, parameters, config, description, state_name = step$state, hydrate = FALSE)
+        },
+        pearson_selection = function(binding, manager, step, parameters, config, description) {
+            pairs_operation <- paste0(binding$prefix, "_pearson_pairs")
+            previous <- Filter(function(p) identical(p$operation, pairs_operation), step$preceded_by %||% list())
+            if (!length(previous)) omicsReplayUnsupported(step)
+            pairs <- workflowReplayParameters(previous[[1L]]$parameters, workflowOperationEntry(pairs_operation)$parameters)
+            runWorkflowOmicsReferenceCorrelation(binding, manager, pairs$correlation_group, parameters$min_pearson_correlation_threshold,
+                config, description, state_name = step$state, hydrate = FALSE)
+        })
+})
+
 #' Replay one recorded omics step (KIT-031/032): the record's operation with its recorded values through the wrapper
 #' the module used, committed under the recorded state name with the head's configuration and the recorded
-#' description.
+#' description. KIT-094: the step's entry is the binding's `replay` entry for the name after its prefix.
 #' @noRd
 replayWorkflowOmicsStep <- function(binding, manager, step, parameters) {
     operation <- step$operation
     config <- readWorkflowStateMetadata(manager)$config
     description <- step$description %||% operation
-    state <- step$state
-    unsupported <- function() cli::cli_abort("step {.val {state}} cannot be replayed: operation {.val {operation}}",
-        class = "workflow_replay_unsupported")
     prefix <- paste0(binding$prefix, "_")
-    if (!startsWith(operation, prefix)) unsupported()
-    switch(substring(operation, nchar(prefix) + 1L),
-        intensity_filter = runWorkflowOmicsReferenceIntensityFilter(binding, manager, parameters[[binding$intensity_parameters[[1L]]]],
-            parameters[[binding$intensity_parameters[[2L]]]], config, description, state_name = state, hydrate = FALSE),
-        duplicate_resolution = runWorkflowOmicsReferenceDuplicateResolution(binding, manager, config, description,
-            state_name = state, hydrate = FALSE),
-        qc_finalize = , norm_complete = commitWorkflowOmicsStoreStep(manager, operation, state, config, description),
-        itsd_normalisation = runWorkflowOmicsReferenceItsdNormalisation(binding, manager, parameters$itsd_aggregation,
-            parameters$itsd_feature_ids, config, description, state_name = state, hydrate = FALSE),
-        log2 = runWorkflowOmicsReferenceLog2(binding, manager, parameters$offset, config, description, state_name = state,
-            hydrate = FALSE),
-        between_sample_normalisation = runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, manager,
-            parameters$normalisation_method, config, description, state_name = state, hydrate = FALSE),
-        ruv = runWorkflowOmicsReferenceRuv(binding, manager, parameters, config, description, state_name = state, hydrate = FALSE),
-        pearson_selection = {
-            pairs_operation <- paste0(prefix, "pearson_pairs")
-            previous <- Filter(function(p) identical(p$operation, pairs_operation), step$preceded_by %||% list())
-            if (!length(previous)) unsupported()
-            pairs <- workflowReplayParameters(previous[[1L]]$parameters, workflowOperationEntry(pairs_operation)$parameters)
-            runWorkflowOmicsReferenceCorrelation(binding, manager, pairs$correlation_group, parameters$min_pearson_correlation_threshold,
-                config, description, state_name = state, hydrate = FALSE)
-        },
-        unsupported())
+    if (!startsWith(operation, prefix)) omicsReplayUnsupported(step)
+    suffix <- substring(operation, nchar(prefix) + 1L)
+    if (!suffix %in% names(binding$replay)) omicsReplayUnsupported(step)
+    binding$replay[[suffix]](binding, manager, step, parameters, config, description)
     invisible(NULL)
 }
