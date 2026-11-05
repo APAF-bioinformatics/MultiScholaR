@@ -1,0 +1,32 @@
+PCACALL dia_full protein new features 2500 elapsed 0.4 s digest 7e16d43c5b80111f175c4c55f478599b RSS_KB 444468 ELAPSED 4
+PCACOMPARE dia_full protein samples 297 features 2500 missing 0.0147 identical TRUE
+PCACALL lfq_300 protein new features 8000 elapsed 4.5 s digest eb0a411ce5ed1b5091b27acba513472e RSS_KB 591848 ELAPSED 8
+PCACOMPARE lfq_300 protein samples 300 features 8000 missing 0.0450 identical TRUE
+PCACALL limpa_full protein new features 2500 elapsed 1.7 s digest 2b3a80bcf9956029a4b2f333b08d15f4 RSS_KB 439836 ELAPSED 5
+PCACOMPARE limpa_full protein samples 300 features 2500 missing 0.0450 identical TRUE
+PCACALL lipid_large LCMS_Neg new features 18301 elapsed 1.3 s digest 82ae9a3d942bd9fb8c8ab4dcc5740f70 RSS_KB 592616 ELAPSED 5
+PCACOMPARE lipid_large LCMS_Neg samples 200 features 18301 missing 0.0450 identical TRUE
+PCACALL lipid_large LCMS_Neg new features 4000 elapsed 0.1 s digest aaed0ba0b50d7090b8f7a712bedfa362 RSS_KB 480944 ELAPSED 4
+PCACOMPARE lipid_large LCMS_Neg samples 200 features 4000 missing 0.0456 identical TRUE
+PCACALL lipid_large LCMS_Pos new features 18208 elapsed 1.4 s digest 27f335883eb5cb506b746eceab09fe69 RSS_KB 591736 ELAPSED 6
+PCACOMPARE lipid_large LCMS_Pos samples 200 features 18208 missing 0.0450 identical TRUE
+PCACALL lipid_large LCMS_Pos new features 4000 elapsed 0.1 s digest e8eb600bf935addd392d24f961d5c229 RSS_KB 480852 ELAPSED 4
+PCACOMPARE lipid_large LCMS_Pos samples 200 features 4000 missing 0.0452 identical TRUE
+PCACALL lipid_screen LCMS_Neg new features 182 elapsed 0.0 s digest bd617b6afb7947d91a0974e600c5ecaa RSS_KB 392436 ELAPSED 4
+PCACOMPARE lipid_screen LCMS_Neg samples 24 features 182 missing 0.0385 identical TRUE
+PCACALL lipid_screen LCMS_Pos new features 183 elapsed 0.0 s digest b7369905e6fc8419678ac27902b565f1 RSS_KB 392496 ELAPSED 4
+PCACOMPARE lipid_screen LCMS_Pos samples 24 features 183 missing 0.0392 identical TRUE
+PCACALL metab_large GCMS new features 18285 elapsed 1.4 s digest 876fd6cee97694af1e38962e6ce09cac RSS_KB 591856 ELAPSED 6
+PCACOMPARE metab_large GCMS samples 200 features 18285 missing 0.0352 identical TRUE
+PCACALL metab_large GCMS new features 4000 elapsed 0.1 s digest 8eb0a81927de38235a6de8a2a66cb7ef RSS_KB 481624 ELAPSED 4
+PCACOMPARE metab_large GCMS samples 200 features 4000 missing 0.0357 identical TRUE
+PCACALL metab_large LCMS_Pos new features 18285 elapsed 1.4 s digest 94173940d1064e8ed0d518e5a80b53bb RSS_KB 592092 ELAPSED 6
+PCACOMPARE metab_large LCMS_Pos samples 200 features 18285 missing 0.0352 identical TRUE
+PCACALL metab_large LCMS_Pos new features 4000 elapsed 0.1 s digest 91e9ae27e89cba1e28e40e0c04b1de23 RSS_KB 481452 ELAPSED 4
+PCACOMPARE metab_large LCMS_Pos samples 200 features 4000 missing 0.0353 identical TRUE
+PCACALL metab_screen GCMS new features 283 elapsed 0.0 s digest e40ee9ca0f85ec9cca2a264c1d65a257 RSS_KB 392488 ELAPSED 4
+PCACOMPARE metab_screen GCMS samples 24 features 283 missing 0.0436 identical TRUE
+PCACALL metab_screen LCMS_Pos new features 283 elapsed 0.0 s digest 1a0333a713582fe26478443ddc92da9b RSS_KB 391644 ELAPSED 6
+PCACOMPARE metab_screen LCMS_Pos samples 24 features 283 missing 0.0430 identical TRUE
+PCACALL tmt_300 protein new features 7987 elapsed 2.0 s digest 7a7a24f83aef763f895d16697c18edd6 RSS_KB 561104 ELAPSED 8
+PCACOMPARE tmt_300 protein samples 300 features 7987 missing 0.0200 identical TRUE

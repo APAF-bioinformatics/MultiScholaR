@@ -1,0 +1,24 @@
+CALL dia_full protein new elapsed 4.2 s digest 78b5fa5e0b91c6d16d8e52f86730e15a RSS_KB 463616 ELAPSED 9
+CALL lfq_300 protein new elapsed 16.0 s digest 77dbe3692f397db9f3c56901849b2640 RSS_KB 601364 ELAPSED 21
+CALL limpa_full protein new elapsed 4.0 s digest f0d427a0a5c78f14452fc9e2db6a5bea RSS_KB 463400 ELAPSED 9
+CALL lipid_large LCMS_Neg new elapsed 2.0 s digest fbc8466ea6bed8fd470a1346ac895bc1 RSS_KB 641228 ELAPSED 7
+CALL lipid_large LCMS_Pos new elapsed 2.2 s digest c09f003b0957deb80f7aa50622e0d4e9 RSS_KB 612580 ELAPSED 8
+CALL lipid_screen LCMS_Neg new elapsed 0.0 s digest 3389076c88c20ec951b6073c06840b39 RSS_KB 396196 ELAPSED 5
+CALL lipid_screen LCMS_Pos new elapsed 0.0 s digest 72a2569b30e5ebb6d10e28a30a50d025 RSS_KB 396196 ELAPSED 4
+CALL metab_large GCMS new elapsed 1.7 s digest 477496185521a62c62515e2ed846c711 RSS_KB 612624 ELAPSED 6
+CALL metab_large LCMS_Pos new elapsed 1.7 s digest 4b400946d8f7aecc2e6b75bb812e9aa9 RSS_KB 609340 ELAPSED 6
+CALL metab_screen GCMS new elapsed 0.0 s digest 0aba89fd11c5a4cd337f8541a0ac5a9b RSS_KB 395968 ELAPSED 4
+CALL metab_screen LCMS_Pos new elapsed 0.0 s digest de02273d4c33921ea63371d5cedc7d0e RSS_KB 396812 ELAPSED 4
+CALL tmt_300 protein new elapsed 8.8 s digest c130c9bb355ca977e955b52e7447ff38 RSS_KB 636380 ELAPSED 14
+COMPARE dia_full protein protein_replicate_filtered samples 297 features 2500 missing 0.0147 as_stored identical TRUE max_abs_difference 0
+COMPARE limpa_full protein protein_normalised samples 300 features 2500 missing 0.0450 declared_mask identical TRUE max_abs_difference 0
+COMPARE lipid_large LCMS_Neg lipid_normalized samples 200 features 18301 missing 0.0450 declared_mask identical TRUE max_abs_difference 0
+COMPARE lipid_large LCMS_Pos lipid_normalized samples 200 features 18208 missing 0.0450 declared_mask identical TRUE max_abs_difference 0
+COMPARE lipid_screen LCMS_Neg lipid_normalized samples 24 features 182 missing 0.0385 as_stored identical TRUE max_abs_difference 0
+COMPARE lipid_screen LCMS_Pos lipid_normalized samples 24 features 183 missing 0.0392 as_stored identical TRUE max_abs_difference 0
+COMPARE metab_large GCMS metab_normalized samples 200 features 18285 missing 0.0352 as_stored identical TRUE max_abs_difference 0
+COMPARE metab_large LCMS_Pos metab_normalized samples 200 features 18285 missing 0.0352 as_stored identical TRUE max_abs_difference 0
+COMPARE metab_screen GCMS metab_normalized samples 24 features 283 missing 0.0436 as_stored identical TRUE max_abs_difference 0
+COMPARE metab_screen LCMS_Pos metab_normalized samples 24 features 283 missing 0.0430 as_stored identical TRUE max_abs_difference 0
+SUBSET lfq_300 protein samples 300 features 4000 ncomp 5 missing 0.0441 identical TRUE old 1391.2 s new 2.7 s
+SUBSET tmt_300 protein samples 300 features 4000 ncomp 5 missing 0.0199 identical TRUE old 1006.0 s new 2.0 s
