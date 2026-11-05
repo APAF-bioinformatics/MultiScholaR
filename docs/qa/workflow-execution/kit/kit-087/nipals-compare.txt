@@ -1,3 +1,4 @@
+# Annotation, 2026-11-05: the two 'exit 124' lines are mixOmics on LFQ and TMT at full size, stopped at the declared 3,600 s ceiling. The two 'Error in gzfile' lines are the comparison step finding no result for them: no comparison was made at full size. nipals-subset.R compares those two at 4,000 features. The lines are kept as they ran.
 EXTRACT metab_large LCMS_Pos state metab_normalized samples 200 features 18285 missing 0.0352 stored
 EXTRACT metab_large GCMS state metab_normalized samples 200 features 18285 missing 0.0352 stored
 EXTRACT metab_screen LCMS_Pos state metab_normalized samples 24 features 283 missing 0.0430 stored
