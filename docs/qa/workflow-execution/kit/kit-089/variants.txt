@@ -1,0 +1,9 @@
+kit-journey-089u lipid_intensity_filtered operation lipid_intensity_filter variant partitioned 
+kit-journey-089u lipid_duplicates_resolved operation lipid_duplicate_resolution variant whole 
+kit-journey-089u lipid_log2 operation lipid_log2 variant whole 
+kit-journey-089v metab_intensity_filtered operation metab_intensity_filter variant partitioned 
+kit-journey-089v metab_duplicates_resolved operation metab_duplicate_resolution variant whole 
+kit-journey-089v metab_log2 operation metab_log2 variant whole 
+kit-journey-086u lipid_intensity_filtered operation lipid_intensity_filter variant whole 
+kit-journey-086u lipid_duplicates_resolved operation lipid_duplicate_resolution variant whole 
+kit-journey-086u lipid_log2 operation lipid_log2 variant whole 

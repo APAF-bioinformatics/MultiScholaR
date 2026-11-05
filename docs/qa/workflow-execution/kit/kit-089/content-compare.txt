@@ -1,0 +1,32 @@
+history identical TRUE states 10 
+STATE initial                        class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_raw_data_s4              class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_intensity_filtered       class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_duplicates_resolved      class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_qc_complete              class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_itsd_norm                class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_log2                     class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_normalized               class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_ruv_corrected            class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE lipid_correlation_filtered     class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+PRODUCTS kit-journey-089u 135 kit-journey-086u 135 identical multiset FALSE 
+  only in kit-journey-089u : rendered_asset:1062453da305f7635297cf8fa20f861622db7e9eb5875 rendered_asset:119f356dd462288c792a4cf2695b986e84688184e1a02 rendered_asset:148260a75376118db368938e83515f41dde656f667798 rendered_asset:240c72726f8100c49b183880e62de1c013779d1d4191b rendered_asset:64e262246803df3161a9eb9b8ff5039cc145186dbc416 rendered_asset:6d0ead29a91047e10e18ced344338294f43a11f0126f5 rendered_asset:97f6cba51f6419dfd1207716d9e1acf5205572ceaef6e rendered_asset:d5568f26b1aeb4bb0be34862dd10927c631c2b7b43054 rendered_asset:e3cd97f0c98ba4ba463f552b616ab38c804d37fb4e319 rendered_asset:fe75ab003341160914f2e2ada06abfab6e559dc0a500d 
+  only in kit-journey-086u : rendered_asset:1230553687faf14751065a18fe7748b0b13ac2827bb38 rendered_asset:1ff11633d3ede9d5336cfac977e2036aae08bb3a9a62d rendered_asset:32fd5c459dc5dae578e86f5e76853b4317f259a153699 rendered_asset:4218c199d696a26e598b8c702dab89d510c269f8bbb90 rendered_asset:720370a340bfc08dc74ad8816e42602d82959e1267877 rendered_asset:738521aa10fb9cbe8647f9f77a91419ce20b24df18650 rendered_asset:7d99386a6eec3ca4dc4b914e6c3d1b8558d303a5d0aee rendered_asset:a8fbd7f824b9587ff43de5d7e21e14dcb5aa704089406 rendered_asset:b3c9c40ff191311c7d7e709e8d07abd33ba972eda1a20 rendered_asset:f09106926e5a1fab32fe372a99b9a1a8a5047e2f0f435 
+JUDGED PRODUCTS 70 70 identical TRUE | rendered pages 65 65 
+RESULT kit-journey-089u vs kit-journey-086u content identical 
+history identical TRUE states 10 
+STATE initial                        class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_raw_data_s4              class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_intensity_filtered       class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_duplicates_resolved      class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_qc_complete              class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_itsd_norm                class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_log2                     class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_normalized               class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_ruv_corrected            class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+STATE metab_correlation_filtered     class=TRUE rows=TRUE components=TRUE support=TRUE summary=TRUE products=TRUE
+PRODUCTS kit-journey-089v 123 kit-journey-086v 123 identical multiset FALSE 
+  only in kit-journey-089v : rendered_asset:148c2aaeb1ea97b192172ebb0676dc5062b0ca75e384a rendered_asset:34fa9738391c0fcac99670543c723ed3af7dc0451d2db rendered_asset:355736d551d30633b4faa68ac7cb53798e58cb03e78bd rendered_asset:46bc63e2178391d583b3bb1b5ac98fac0932e432382e7 rendered_asset:5cad83bab99564247787af49d5220c975719eb8b378b2 rendered_asset:8164bde782fb8ae18195281c8472b916cb46ef2d29d36 rendered_asset:8ebd28028337bc406e1e5250a1c5f8963c96d4507cd0b rendered_asset:90afdab2655ba7517cd75a1473ddd52034cdb6a0bc19e rendered_asset:d89400d7f82e737dc119f1a22e35b0356212043e29bdc rendered_asset:f934258ed248635e3fdd010ece710b892302e70f1c078 
+  only in kit-journey-086v : rendered_asset:0948e1d55b735099690291a4d57db4ea9a3991ad6c79c rendered_asset:099019c9e42df4c8ba93c40d73e0b70716c3df2f2f168 rendered_asset:0c357aa29a32d70111b6ad1d8d4cde06399b2a8f22cbf rendered_asset:0dd874796e41897d0c41d44a6f8d70e0828c91769c537 rendered_asset:190d304479881334a1874dfc8f1eaf12ba0928f695448 rendered_asset:2d8a42949fbf26f6949c9eed2838a9cab78ead6504e38 rendered_asset:2dcde88bcc7014fcfcba7916337a80688eaf0b167a7f9 rendered_asset:75f9979f6ceb4f62e2a2f3b48a34ee7553cc2c416ca17 rendered_asset:79d0242a37edd94dfe42f92b7528b2dbeaf6a7549ad48 rendered_asset:d8141872847ea1d2423db7c5260ae7bb2164e7e42c253 
+JUDGED PRODUCTS 64 64 identical TRUE | rendered pages 59 59 
+RESULT kit-journey-089v vs kit-journey-086v content identical 
