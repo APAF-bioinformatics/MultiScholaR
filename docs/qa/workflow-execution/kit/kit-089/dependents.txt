@@ -1,0 +1,6 @@
+# Dependents of the intensity default (KIT-089), on kit_089's library
+files 63 pass 10087 fail 9 error 0 skip 120
+  BAD test-lipid-01k-qc-intensity-shared.R :: lipidomics intensity module preserves apply-filter success behavior
+  BAD test-metab-01q-qc-intensity-module-characterization.R :: metabolomics intensity module preserves apply filter public behavior
+  BAD test-metab-01q-qc-intensity-module-characterization.R :: metabolomics intensity module apply observer delegates QC plot refresh, state save, and success reporting through seams
+DEP DONE

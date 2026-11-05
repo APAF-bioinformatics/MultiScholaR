@@ -52,3 +52,14 @@ omicsDeclarationsDump <- function(root) {
     metabolomics = omicsDeclarationsJourneyDump(metab, metabDeclarationsJourney)
   )
 }
+
+# KIT-089: the intensity filter defaults to `partitioned`, which hands the kernel only an empty template. A module test that
+# fakes the kernel and checks what it received and returned characterises the `whole` path, so it pins that variant here.
+kit089WholeIntensity <- function(env = parent.frame()) {
+  original <- workflowOperationEntry
+  testthat::local_mocked_bindings(workflowOperationEntry = function(operation) {
+    entry <- original(operation)
+    if (grepl("_intensity_filter$", operation)) entry$default_variant <- "whole"
+    entry
+  }, .package = "MultiScholaR", .env = env)
+}

@@ -274,6 +274,7 @@ withSharedLipidIntensityUiMocks <- function(captured,
 }
 
 test_that("lipidomics intensity module preserves apply-filter success behavior", {
+  kit089WholeIntensity() # KIT-089: this test fakes the filter kernel, which only the `whole` variant hands the object to.
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidIntensityCapture()
   server_fn <- getLipidIntensityServer()

@@ -151,6 +151,7 @@ metabIntensityHasExtractedSeams <- function() {
 }
 
 test_that("metabolomics intensity module preserves apply filter public behavior", {
+  kit089WholeIntensity() # KIT-089: this test fakes the filter kernel, which only the `whole` variant hands the object to.
   captured <- new.env(parent = emptyenv())
   captured$notifications <- list()
   package_ns <- asNamespace("MultiScholaR")
@@ -1161,6 +1162,7 @@ test_that("metabolomics intensity module server delegates the filter-plot render
 })
 
 test_that("metabolomics intensity module apply observer delegates QC plot refresh, state save, and success reporting through seams", {
+  kit089WholeIntensity() # KIT-089: this test fakes the filter kernel, which only the `whole` variant hands the object to.
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
