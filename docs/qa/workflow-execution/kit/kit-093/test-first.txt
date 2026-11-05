@@ -1,0 +1,24 @@
+# KIT-093 test first: the new tests run before any function existed (R/func_trx_*.R absent, no declaration entry), kit_040 library, one process per file
+COUNTS test-trx-design.R pass 6 fail 0 error 5 skip 0
+  BAD test-trx-design.R :: KIT-093: validateTrxDesign attaches labels by run ID in design-file order, with the declared levels
+  BAD test-trx-design.R :: KIT-093: every design refusal is raised with its class, all under trx_design_invalid
+  BAD test-trx-design.R :: KIT-093: validateTrxCounts refuses KIT-040's invalid fixtures and the in-test variants by class; whole doubles pass
+  BAD test-trx-design.R :: KIT-093: createTranscriptomicsAssayData builds a valid object from the screen corpus; validity runs both policies
+  BAD test-trx-design.R :: KIT-093: the TranscriptomicsAssayData declaration is accepted and read by the kit
+COUNTS test-trx-kernels.R pass 6 fail 0 error 5 skip 0
+  BAD test-trx-kernels.R :: KIT-093: every kernel product is identical to its KIT-040 reference product on the three corpora
+  BAD test-trx-kernels.R :: KIT-093: two consecutive runs on the screen corpus are identical; shuffled columns and another group_id change nothing
+  BAD test-trx-kernels.R :: KIT-093: a constructed tie selects the first member; a forced member failure is recorded and leaves the winner
+  BAD test-trx-kernels.R :: KIT-093: technical-replicate RUVIII equals the direct ruv::RUVIII call; labels and FDR (BH) are set
+  BAD test-trx-kernels.R :: KIT-093: the preflight refusals are raised by class, all under trx_error
+COUNTS test-trx-publication.R pass 4 fail 0 error 2 skip 0
+  BAD test-trx-publication.R :: KIT-093: every renderer product is identical to its KIT-040 reference product on the three corpora
+  BAD test-trx-publication.R :: KIT-093: the renderers return figures with their data, write no files, label FDR (BH) and keep zero-count bars
+COUNTS test-workflow-omics-owner.R pass 73 fail 1 error 0 skip 0
+  BAD test-workflow-omics-owner.R :: KIT-070: the metadata reader's class list is every declared assay class
+
+# after (commit 6862f662): see tests.txt
+COUNTS test-trx-design.R pass 67 fail 0 error 0 skip 0 seconds 6
+COUNTS test-trx-kernels.R pass 341 fail 0 error 0 skip 0 seconds 37
+COUNTS test-trx-publication.R pass 174 fail 0 error 0 skip 0 seconds 38
+COUNTS test-workflow-omics-owner.R pass 74 fail 0 error 0 skip 0 seconds 12

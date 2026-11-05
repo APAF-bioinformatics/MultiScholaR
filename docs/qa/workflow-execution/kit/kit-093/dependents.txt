@@ -1,0 +1,8 @@
+# KIT-093 dependents grep (workflowDeclaredClassNames, workflowClassDeclarations) over R/, tests/, tools/ at 6862f662
+R/utils_workflow_dia_state.R:229:    record <- readComponentMetadata(manager, reference, classes = workflowDeclaredClassNames("assay"))
+R/utils_workflow_dia_state.R:256:    accepted <- if (is.null(classes)) names(workflowClassDeclarations()) else classes
+tests/testthat/test-workflow-omics-owner.R:8:  expect_setequal(workflowDeclaredClassNames("assay"),
+tests/testthat/test-workflow-omics-owner.R:10:  expect_true(all(c("LipidomicsDifferentialAbundanceResults", "EnrichmentResults") %in% workflowDeclaredClassNames("result")))
+tests/testthat/test-trx-design.R:131:    expect_true("TranscriptomicsAssayData" %in% workflowDeclaredClassNames("assay"))
+
+R/utils_workflow_dia_state.R:229,256: the metadata reader's accepted classes now include TranscriptomicsAssayData (additive; no other consumer enumerates the list). Covered by test-workflow-omics-owner.R and test-workflow-checkpoint-dia-state.R (tests.txt); test-workflow-class-declarations.R validates every declaration it names (unchanged).
