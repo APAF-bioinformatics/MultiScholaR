@@ -22,7 +22,9 @@ test_that("KIT-032: the metabolomics declarations are registered with the units,
         expect_identical(declaration$merge, if (partitioned) c(metabolite_data = "concatenate", design_matrix = "design") else NULL, info = name)
         entry <- workflowActionSpec(name)
         # KIT-078: the compute steps run on the worker's `omics` role; the store steps and the v1 DA stay in process.
-        worker <- sub("^metab_", "", name) %in% omicsWorkerSteps
+        # KIT-094: the nine worker steps by name, not read from the binding.
+        worker <- name %in% c("metab_intensity_filter", "metab_duplicate_resolution", "metab_itsd_normalisation", "metab_log2",
+            "metab_between_sample_normalisation", "metab_ruv", "metab_pearson_pairs", "metab_pearson_selection", "metab_da_contrast")
         expect_identical(entry$compute, if (worker) "omics" else "in_process", info = name)
         expect_identical(entry$omic_type, "metabolomics", info = name)
         if (worker) {
@@ -213,5 +215,9 @@ test_that("KIT-032: the metabolomics journey on the owner commits every state wi
     # A record whose input file changed is refused before any step runs.
     tampered <- inputs
     tampered[["design_file"]] <- file.path(fixture$source_dir, "import_sources", "LCMS_Pos_export.txt")
+    expect_error(replayWorkflowAnalysisRecord(record_read, prepared, tampered, fixture$paths, scratch), class = "workflow_replay_inputs")
+    # KIT-094: so is a record whose assay file changed (the omic's input-role prefix, `metab_assay_`).
+    tampered <- inputs
+    tampered[["metab_assay_1"]] <- inputs[["metab_assay_2"]]
     expect_error(replayWorkflowAnalysisRecord(record_read, prepared, tampered, fixture$paths, scratch), class = "workflow_replay_inputs")
 })
