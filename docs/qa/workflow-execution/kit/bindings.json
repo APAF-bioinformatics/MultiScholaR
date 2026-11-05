@@ -1923,6 +1923,136 @@
       "recorded_at": "2026-11-05T13:36:59+1100",
       "route": "metabolomics"
     },
+    "lipid86_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "69732b7c36a6487aa3f6fc8d3482943a0080a7f5c816d1114e331ed92c14760c",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_design": {
+      "step": "design",
+      "state": "lipid_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "1abcbada55f4e8229b05ef7db8456506523e399c355c674b0d4a92badbd11d5b",
+      "rows": 42012,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_intensity": {
+      "step": "intensity",
+      "state": "lipid_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "4d77626a6243a49b63f19cb1bc9ce9e2a5e75ab220630549160d17c48195c045",
+      "rows": 38215,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_duplicates": {
+      "step": "duplicates",
+      "state": "lipid_duplicates_resolved",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "9590212233203dc1f021b188a4999bd48c3df22efafc93df6b6ca27808ee51ca",
+      "rows": 36559,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "lipid_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "9e59bc9be2202d684622d07ed4e7fbe820ebcba6c393c151a67c7a926707a16a",
+      "rows": 36559,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_normalisation": {
+      "step": "normalisation",
+      "state": "lipid_ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "4e15db642ae8f9a6402b401e29f2568f984719b83cda0090d913751993576ad8",
+      "rows": 36547,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_correlation": {
+      "step": "correlation",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "fc7f3ffb7643f293b92ee11be5f09864a6f95ee2fd5ab11492d65219d83f7489",
+      "rows": 36547,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_session_export": {
+      "step": "session_export",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "fc7f3ffb7643f293b92ee11be5f09864a6f95ee2fd5ab11492d65219d83f7489",
+      "rows": 36547,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_da": {
+      "step": "da",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "fc7f3ffb7643f293b92ee11be5f09864a6f95ee2fd5ab11492d65219d83f7489",
+      "rows": 36547,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
+    "lipid86_report": {
+      "step": "report",
+      "state": "lipid_correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lipid31_lipid_large_missing/project/kit_omics_lifecycle/scripts/lipidomics/.dia-native-7ad71651221e0/.workflow-entities",
+      "head_sha256": "e7f0091d6bc6df6910ba5e9c48dc8237f72a82929e9ceb1d18eb30863642641b",
+      "entity_id": "fc7f3ffb7643f293b92ee11be5f09864a6f95ee2fd5ab11492d65219d83f7489",
+      "rows": 36547,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "248261dff078c8a35e84ffc382eccbd2c1178a2f",
+      "recorded_at": "2026-11-05T18:23:46+1100",
+      "route": "lipidomics"
+    },
     "lipid84_itsd": {
       "step": "itsd",
       "state": "lipid_itsd_norm",
@@ -13723,6 +13853,571 @@
         }
       },
       "summary_sha256": "a0a0449ce18eae45a08d7f6dd9152a2c751ba8538c78befce74f4c4e8da058f2"
+    },
+    "lipid86_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "lipid86_design": {
+      "class": "LipidomicsAssayData",
+      "rows": 42012,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 21006,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "1c55315a1ff5c845d963a4ef7de9dd4d6972d12525826d1ff1333d0de2cd8dbf"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 21006,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "1c39d0a6e0f09c032e9d67414ba01e873b155fe2f32fdb0ac00ee10b7b1b7a28"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "dc8165724f70a21017e01d9ef11649500befd4db6f73afa0d6c74fda579b079d"
+    },
+    "lipid86_intensity": {
+      "class": "LipidomicsAssayData",
+      "rows": 38215,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 19042,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "6cfed610a33aa847bac621f4e50d5499990a0511694a107090588f676e1da590"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 19173,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "573db113ad7555a3478603782fbf6272c887cf5659e0e81d96ad42b14697cf4d"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid.intensity_filter_result:6cc84ddcf489": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        }
+      },
+      "summary_sha256": "cabd9d7f773b22ce6944cab4071c69a74082c7909eb74734d8140b49c2f2fab3"
+    },
+    "lipid86_duplicates": {
+      "class": "LipidomicsAssayData",
+      "rows": 36559,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18224,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "dbe114a71e69fc6be70cde7b22ddff403903adf42c294a5dc7a775b7bc6570f8"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18335,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "86608cdb91df3f8caab2704648ba04bc916e5b5ccf4c3e7f2aa4c696c029311a"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        },
+        "lipid.duplicate_resolution_result:39f7e6a3d573": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        }
+      },
+      "summary_sha256": "48844689590f870cab4e7d9c6ee13a36f453e8ec71f5cc59ad465aeecb76cab6"
+    },
+    "lipid86_qc_finalize": {
+      "class": "LipidomicsAssayData",
+      "rows": 36559,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18224,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "dbe114a71e69fc6be70cde7b22ddff403903adf42c294a5dc7a775b7bc6570f8"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18335,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "86608cdb91df3f8caab2704648ba04bc916e5b5ccf4c3e7f2aa4c696c029311a"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "2cda5febbb76822e375d909043fe456841bc1c7d69f6e7f212198e4a92509d1b"
+        }
+      },
+      "support": [],
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        }
+      },
+      "summary_sha256": "48844689590f870cab4e7d9c6ee13a36f453e8ec71f5cc59ad465aeecb76cab6"
+    },
+    "lipid86_normalisation": {
+      "class": "LipidomicsAssayData",
+      "rows": 36547,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18218,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "122371effadc62f12341f2b6c214daafcf5c4a6013f4f41f0ec7e908a926fee2"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18329,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "f237e693e6a0991b72693728a18faada2ed1df95e70b7663e009a9a26a56c62e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "ad96b6cf50a4a9f889e5bc1a08ce7beb87c6ca7703346dc7b9a13c6e00a6ace4"
+        },
+        "ctrl/LCMS_Neg": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f5ecd21c49b3a22708bb14f7b749cdefec1fecb0ba41c13ce64a116cefbfcfd8"
+        }
+      },
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+        },
+        "lipid.between_sample_normalisation_result:3a7794ed69ab": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+        },
+        "lipid.log2_result:6726d202466d": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+        },
+        "lipid.ruv_result:77cf4d040b05": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+        },
+        "lipid.itsd_normalisation_result:96011ff156d9": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+        }
+      },
+      "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
+    },
+    "lipid86_correlation": {
+      "class": "LipidomicsAssayData",
+      "rows": 36547,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18218,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "122371effadc62f12341f2b6c214daafcf5c4a6013f4f41f0ec7e908a926fee2"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18329,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "f237e693e6a0991b72693728a18faada2ed1df95e70b7663e009a9a26a56c62e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "ad96b6cf50a4a9f889e5bc1a08ce7beb87c6ca7703346dc7b9a13c6e00a6ace4"
+        },
+        "ctrl/LCMS_Neg": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f5ecd21c49b3a22708bb14f7b749cdefec1fecb0ba41c13ce64a116cefbfcfd8"
+        }
+      },
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+        },
+        "lipid.pearson_selection_result:19c6ae69def9": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+        },
+        "lipid-pearson-pairs:697040d4ab5d": {
+          "kind": "scientific_product",
+          "product_type": "lipid-pearson-pairs",
+          "sha256": "697040d4ab5ddc1e70e67f672ec96c139c1fd6c9e181e346cd2c18a7ef82c7c6"
+        }
+      },
+      "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
+    },
+    "lipid86_session_export": {
+      "class": "LipidomicsAssayData",
+      "rows": 36547,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18218,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "122371effadc62f12341f2b6c214daafcf5c4a6013f4f41f0ec7e908a926fee2"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18329,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "f237e693e6a0991b72693728a18faada2ed1df95e70b7663e009a9a26a56c62e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "ad96b6cf50a4a9f889e5bc1a08ce7beb87c6ca7703346dc7b9a13c6e00a6ace4"
+        },
+        "ctrl/LCMS_Neg": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f5ecd21c49b3a22708bb14f7b749cdefec1fecb0ba41c13ce64a116cefbfcfd8"
+        }
+      },
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+        }
+      },
+      "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
+    },
+    "lipid86_da": {
+      "class": "LipidomicsAssayData",
+      "rows": 36547,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18218,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "122371effadc62f12341f2b6c214daafcf5c4a6013f4f41f0ec7e908a926fee2"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18329,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "f237e693e6a0991b72693728a18faada2ed1df95e70b7663e009a9a26a56c62e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "ad96b6cf50a4a9f889e5bc1a08ce7beb87c6ca7703346dc7b9a13c6e00a6ace4"
+        },
+        "ctrl/LCMS_Neg": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f5ecd21c49b3a22708bb14f7b749cdefec1fecb0ba41c13ce64a116cefbfcfd8"
+        }
+      },
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+        },
+        "da_fit:16886637c6bc": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "16886637c6bc0abadeeb2fcddb7541a10374536c221491faf848092a46f29901"
+        },
+        "lipid-da-contrast-references:506c9822c2cb": {
+          "kind": "scientific_product",
+          "product_type": "lipid-da-contrast-references",
+          "sha256": "506c9822c2cb7de383f1ebfcb2835bad2f62ca465d51c905523ba311c5cd3b82"
+        },
+        "da_fit:bed87f982b8f": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "bed87f982b8f3ae4dd2b5abc703562ae2a2c519f5e4e1c39c4bccdbe8b719865"
+        }
+      },
+      "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
+    },
+    "lipid86_report": {
+      "class": "LipidomicsAssayData",
+      "rows": 36547,
+      "components": {
+        "lipid_data/LCMS_Pos": {
+          "kind": "table",
+          "rows": 18218,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "122371effadc62f12341f2b6c214daafcf5c4a6013f4f41f0ec7e908a926fee2"
+        },
+        "lipid_data/LCMS_Neg": {
+          "kind": "table",
+          "rows": 18329,
+          "columns": ["LipidName", "LipidClass", "KO_01_r1", "KO_01_r2", "KO_02_r1", "KO_02_r2", "KO_03_r1", "KO_03_r2", "KO_04_r1", "KO_04_r2", "KO_05_r1", "KO_05_r2", "KO_06_r1", "KO_06_r2", "KO_07_r1", "KO_07_r2", "KO_08_r1", "KO_08_r2", "KO_09_r1", "KO_09_r2", "KO_10_r1", "KO_10_r2", "KO_11_r1", "KO_11_r2", "KO_12_r1", "KO_12_r2", "KO_13_r1", "KO_13_r2", "KO_14_r1", "KO_14_r2", "KO_15_r1", "KO_15_r2", "KO_16_r1", "KO_16_r2", "KO_17_r1", "KO_17_r2", "KO_18_r1", "KO_18_r2", "KO_19_r1", "KO_19_r2", "KO_20_r1", "KO_20_r2", "KO_21_r1", "KO_21_r2", "KO_22_r1", "KO_22_r2", "KO_23_r1", "KO_23_r2", "KO_24_r1", "KO_24_r2", "KO_25_r1", "KO_25_r2", "KO_26_r1", "KO_26_r2", "KO_27_r1", "KO_27_r2", "KO_28_r1", "KO_28_r2", "KO_29_r1", "KO_29_r2", "KO_30_r1", "KO_30_r2", "KO_31_r1", "KO_31_r2", "KO_32_r1", "KO_32_r2", "KO_33_r1", "KO_33_r2", "KO_34_r1", "KO_34_r2", "KO_35_r1", "KO_35_r2", "KO_36_r1", "KO_36_r2", "KO_37_r1", "KO_37_r2", "KO_38_r1", "KO_38_r2", "KO_39_r1", "KO_39_r2", "KO_40_r1", "KO_40_r2", "KO_41_r1", "KO_41_r2", "KO_42_r1", "KO_42_r2", "KO_43_r1", "KO_43_r2", "KO_44_r1", "KO_44_r2", "KO_45_r1", "KO_45_r2", "KO_46_r1", "KO_46_r2", "KO_47_r1", "KO_47_r2", "KO_48_r1", "KO_48_r2", "KO_49_r1", "KO_49_r2", "KO_50_r1", "KO_50_r2", "WT_01_r1", "WT_01_r2", "WT_02_r1", "WT_02_r2", "WT_03_r1", "WT_03_r2", "WT_04_r1", "WT_04_r2", "WT_05_r1", "WT_05_r2", "WT_06_r1", "WT_06_r2", "WT_07_r1", "WT_07_r2", "WT_08_r1", "WT_08_r2", "WT_09_r1", "WT_09_r2", "WT_10_r1", "WT_10_r2", "WT_11_r1", "WT_11_r2", "WT_12_r1", "WT_12_r2", "WT_13_r1", "WT_13_r2", "WT_14_r1", "WT_14_r2", "WT_15_r1", "WT_15_r2", "WT_16_r1", "WT_16_r2", "WT_17_r1", "WT_17_r2", "WT_18_r1", "WT_18_r2", "WT_19_r1", "WT_19_r2", "WT_20_r1", "WT_20_r2", "WT_21_r1", "WT_21_r2", "WT_22_r1", "WT_22_r2", "WT_23_r1", "WT_23_r2", "WT_24_r1", "WT_24_r2", "WT_25_r1", "WT_25_r2", "WT_26_r1", "WT_26_r2", "WT_27_r1", "WT_27_r2", "WT_28_r1", "WT_28_r2", "WT_29_r1", "WT_29_r2", "WT_30_r1", "WT_30_r2", "WT_31_r1", "WT_31_r2", "WT_32_r1", "WT_32_r2", "WT_33_r1", "WT_33_r2", "WT_34_r1", "WT_34_r2", "WT_35_r1", "WT_35_r2", "WT_36_r1", "WT_36_r2", "WT_37_r1", "WT_37_r2", "WT_38_r1", "WT_38_r2", "WT_39_r1", "WT_39_r2", "WT_40_r1", "WT_40_r2", "WT_41_r1", "WT_41_r2", "WT_42_r1", "WT_42_r2", "WT_43_r1", "WT_43_r2", "WT_44_r1", "WT_44_r2", "WT_45_r1", "WT_45_r2", "WT_46_r1", "WT_46_r2", "WT_47_r1", "WT_47_r2", "WT_48_r1", "WT_48_r2", "WT_49_r1", "WT_49_r2", "WT_50_r1", "WT_50_r2"],
+          "sha256": "f237e693e6a0991b72693728a18faada2ed1df95e70b7663e009a9a26a56c62e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "6904bf5315807622870883bda0b653c19f533bab18ad4f07ac359029635725c3"
+        }
+      },
+      "support": {
+        "ctrl/LCMS_Pos": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "ad96b6cf50a4a9f889e5bc1a08ce7beb87c6ca7703346dc7b9a13c6e00a6ace4"
+        },
+        "ctrl/LCMS_Neg": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "f5ecd21c49b3a22708bb14f7b749cdefec1fecb0ba41c13ce64a116cefbfcfd8"
+        }
+      },
+      "products": {
+        "lipid_intensity_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.intensity_filter_result",
+          "sha256": "6cc84ddcf48981780fea67f814d2f287c99d0c2f7e522d3a74e5077da013d616"
+        },
+        "lipid_duplicate_resolution_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.duplicate_resolution_result",
+          "sha256": "39f7e6a3d57370fe10d8038cf76ab6b220bd26daa6a653b9c63295605bbc96e3"
+        },
+        "lipid_itsd_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.itsd_normalisation_result",
+          "sha256": "96011ff156d9acdea55d00f052ef7ea78552b3012ca3fad83deaac1ba3644338"
+        },
+        "lipid_log2_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.log2_result",
+          "sha256": "6726d202466d863f0267b26cbf08945463ec799e22bf5431027adbb20b9f0ad3"
+        },
+        "lipid_between_sample_normalisation_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.between_sample_normalisation_result",
+          "sha256": "3a7794ed69ab6e6566007ee1cef5ce2acd032e461b4cc57048e34b905a77fdf5"
+        },
+        "lipid_ruv_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.ruv_result",
+          "sha256": "77cf4d040b054c2a5fe8333e1dff80d5dd181aa0ece668b82587498ad6d8ac3b"
+        },
+        "lipid_pearson_selection_science": {
+          "kind": "scientific_product",
+          "product_type": "lipid.pearson_selection_result",
+          "sha256": "19c6ae69def910d1893f2a23e61c58d9bd05c895ad719008f8e3636a214bc679"
+        }
+      },
+      "summary_sha256": "9e91aec6d25406bac33e04ad5c513fa31411a95cb4fab54ac2d402e0320f9a39"
     },
     "lipid84_itsd": {
       "class": "LipidomicsAssayData",
@@ -36081,6 +36776,22 @@
       "route": "metabolomics",
       "whole_journey": true,
       "oracles": "metab86",
+      "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "086q": {
+      "kind": "single_journey",
+      "build": "kit_087",
+      "corpus": "lipid_large_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86",
       "ceiling_seconds": 14400,
       "purpose": "exactness",
       "normalisation": {
