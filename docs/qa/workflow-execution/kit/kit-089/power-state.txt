@@ -3,3 +3,5 @@ Attempt 1 (2026-11-06, build kcZWY8 at 11f0e9e0): install and check at baseline;
 Correction pass (this ticket's one): the three tests pin `whole` through `kit089WholeIntensity()` (helper-workflow-omics-declarations.R). Both files pass (35/0/0 and 130/0/0, 1 skip). Rerun of install, check, dependents and journeys follows.
 kit-journey-089u start 07:21:28: AC 1, profile low-power, battery 97%, load 2.06, available 42 GiB
 kit-journey-089u end 07:25:08: AC 1, profile low-power, battery 98%, load 2.32, available 42 GiB
+kit-journey-089v start 07:25:12: AC 1, profile low-power, battery 98%, load 2.30, available 42 GiB
+kit-journey-089v end 07:28:52: AC 1, profile low-power, battery 98%, load 2.67, available 42 GiB

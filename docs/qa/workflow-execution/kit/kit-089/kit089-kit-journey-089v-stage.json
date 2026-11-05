@@ -1,0 +1,172 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-089",
+  "stage": "kit089-kit-journey-089v",
+  "date": "2026-11-06",
+  "dispatches": {
+    "metab_between_sample_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_composite_figure": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_contrast": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_da_tab_results": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_duplicate_resolution": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_final_pca": {
+      "requests": 2,
+      "complete": 2
+    },
+    "metab_integration_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_itsd_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_log2": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_pearson_pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_pearson_selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_qc_figures": {
+      "requests": 4,
+      "complete": 4
+    },
+    "metab_ruv": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_session_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "metab_volcano_page": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 991645696,
+    "phase_peak_anon_bytes": {
+      "import": 546381824,
+      "design": 566484992,
+      "intensity": 681103360,
+      "duplicates": 699518976,
+      "qc_finalize": 700362752,
+      "normalisation": 620429312,
+      "correlation": 620425216,
+      "session_export": 673742848,
+      "da": 864423936,
+      "report": 991645696
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "intensity", "duplicates", "qc_finalize", "normalisation", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "metabolomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "metab_screen_missing",
+    "build": "90655a8e9e583518b5bb8fa2e2fa5340519931a287c281547d80cc6c957a91d2",
+    "status": "complete",
+    "exact": false,
+    "elapsed_seconds": 193.799999999988,
+    "peak_bytes": 2089336832,
+    "peak_anon_bytes": 1981906944,
+    "resident_end_bytes": 1288429568,
+    "phase_seconds": {
+      "import": 5.02999999999884,
+      "design": 15.9700000000012,
+      "intensity": 9.44000000000233,
+      "duplicates": 9.41000000000349,
+      "qc_finalize": 9.22000000000116,
+      "normalisation": 66.8000000000175,
+      "correlation": 11.6600000000035,
+      "session_export": 8.87999999997555,
+      "da": 32,
+      "report": 7.16000000000349
+    },
+    "phase_peak_anon_bytes": {
+      "import": 913989632,
+      "design": 934092800,
+      "intensity": 1333841920,
+      "duplicates": 1359986688,
+      "qc_finalize": 1377787904,
+      "normalisation": 1887932416,
+      "correlation": 1461768192,
+      "session_export": 1500733440,
+      "da": 1981906944,
+      "report": 1626492928
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "intensity": "complete",
+      "duplicates": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0600000000267755,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": ["intensity/products/names", "duplicates/products/names", "normalisation/products/names", "correlation/products/names", "da/products/names"],
+    "populations": null,
+    "oracle_mismatches": ["intensity/products/names", "duplicates/products/names", "normalisation/products/names", "correlation/products/names", "da/products/names"],
+    "canonical_form_differences": [],
+    "files": 199,
+    "failure": null
+  }
+}
