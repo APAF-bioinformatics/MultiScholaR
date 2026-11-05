@@ -1,0 +1,3 @@
+OUTPUT metab_screen metab corrected_assays_identical_to_stored LCMS_Pos TRUE, GCMS TRUE k 1,1 percentage 3,7
+OUTPUT lipid_screen lipid corrected_assays_identical_to_stored LCMS_Pos TRUE, LCMS_Neg TRUE k 2,2 percentage 3,7
+OUTPUT metab_large metab corrected_assays_identical_to_stored LCMS_Pos TRUE, GCMS TRUE k 1,1 percentage 1,5

@@ -1,0 +1,12 @@
+CALL dia_full protein new elapsed 2.7 s digest 78b5fa5e0b91c6d16d8e52f86730e15a
+CALL lfq_300 protein new elapsed 9.9 s digest 77dbe3692f397db9f3c56901849b2640
+CALL limpa_full protein new elapsed 2.2 s digest f0d427a0a5c78f14452fc9e2db6a5bea
+CALL lipid_large LCMS_Neg new elapsed 0.8 s digest fbc8466ea6bed8fd470a1346ac895bc1
+CALL lipid_large LCMS_Pos new elapsed 0.8 s digest c09f003b0957deb80f7aa50622e0d4e9
+CALL lipid_screen LCMS_Neg new elapsed 0.0 s digest 3389076c88c20ec951b6073c06840b39
+CALL lipid_screen LCMS_Pos new elapsed 0.0 s digest 72a2569b30e5ebb6d10e28a30a50d025
+CALL metab_large GCMS new elapsed 0.8 s digest 477496185521a62c62515e2ed846c711
+CALL metab_large LCMS_Pos new elapsed 0.8 s digest 4b400946d8f7aecc2e6b75bb812e9aa9
+CALL metab_screen GCMS new elapsed 0.0 s digest 0aba89fd11c5a4cd337f8541a0ac5a9b
+CALL metab_screen LCMS_Pos new elapsed 0.0 s digest de02273d4c33921ea63371d5cedc7d0e
+CALL tmt_300 protein new elapsed 5.3 s digest c130c9bb355ca977e955b52e7447ff38
