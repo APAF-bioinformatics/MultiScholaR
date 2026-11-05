@@ -3,3 +3,7 @@ kit-journey-085l end 12:02:10: AC 1, profile low-power, battery 100%, load 4.56,
 kit-journey-085m start 12:02:10: AC 1, profile low-power, battery 100%, load 4.56, available 39 GiB
 kit-journey-085m end 12:02:30: AC 1, profile low-power, battery 100%, load 4.18, available 39 GiB
 The launches above ran no member: my binding edit failed (the 082 tickets are not yet in the bindings at that point of the generator), kit_085 was not bound, and run.sh carried on. My script's defect, not a result. This ticket's one correction pass: bind with the 084s form, stop if binding fails, launch again.
+kit-journey-085l start 12:18:34: AC 1, profile low-power, battery 100%, load 4.50, available 39 GiB
+kit-journey-085l end 12:25:14: AC 1, profile low-power, battery 100%, load 3.46, available 39 GiB
+kit-journey-085m start 12:25:15: AC 1, profile low-power, battery 100%, load 3.46, available 39 GiB
+kit-journey-085m end 12:31:55: AC 1, profile low-power, battery 100%, load 3.62, available 39 GiB
