@@ -914,7 +914,12 @@ omicsPearsonSelectionStep <- function(binding, pairs, threshold, description = N
 #' Run one tab step through its wrapper's commit.
 #' @noRd
 runWorkflowOmicsReferenceStep <- function(manager, step, config, source = NULL, dependencies = list(), hydrate = FALSE) {
-    runWorkflowOmicsReferenceOperation(manager, workflowOperationEntry(step$operation)$declaration, step$parameters, step$state_name,
+    entry <- workflowOperationEntry(step$operation)
+    parameters <- step$parameters
+    # KIT-089: a step whose default is not `whole` runs that variant in process too, as in the worker, so the record names
+    # what ran. Other steps get no variant parameter.
+    if (is.null(parameters$variant) && !identical(entry$default_variant %||% "whole", "whole")) parameters$variant <- entry$default_variant
+    runWorkflowOmicsReferenceOperation(manager, entry$declaration, parameters, step$state_name,
         config, step$description, source = source, dependencies = dependencies, hydrate = hydrate)
 }
 

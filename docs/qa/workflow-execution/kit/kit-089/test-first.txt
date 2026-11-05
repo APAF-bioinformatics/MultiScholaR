@@ -1,0 +1,5 @@
+# KIT-089: the new test, `KIT-089: the intensity filter runs partitioned by default, in the worker and in process, and records what ran`
+# (test-workflow-partitions.R), run on the source with the two R changes stashed, then with them, R_LIBS = kit_087's library.
+before: expectations 12 failed 4 error 0
+after:  test-workflow-partitions.R pass 405 fail 0 error 0 skip 2; omics-declarations 68/0/0; lipid-declarations 258/0/0; metab-declarations 258/0/0
+# Without the kit library (no fastduckdb), the lipid journey test already errors before the change (pass 253 fail 1 error 1, the fail being the moved pin): the partitioned default adds no new fastduckdb requirement to it. fastduckdb is in Suggests; proteomics' partitioned defaults need it too.

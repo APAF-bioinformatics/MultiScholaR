@@ -439,6 +439,11 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
         b$tickets[["086p"]] <- single_084("kit_087", "metab_large_missing", "metabolomics", "metab86", 14400L)
         if (!is.null(b$oracles$lipid86_import)) b$tickets[["086q"]] <- single_084("kit_087", "lipid_large_missing", "lipidomics", "lipid86", 14400L)
     }
+    # KIT-089: the intensity filter on partitioned by default; the small journeys with missing values against the same oracles.
+    if (!is.null(b$builds$kit_089)) {
+        b$tickets[["089u"]] <- single_084("kit_089", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L)
+        b$tickets[["089v"]] <- single_084("kit_089", "metab_screen_missing", "metabolomics", "metab86s", 1800L)
+    }
     if (!is.null(b$builds$kit_085)) {
         b$tickets[["085l"]] <- single_084("kit_085", "lipid_screen", "lipidomics", "lipid82", 1800L)
         b$tickets[["085m"]] <- single_084("kit_085", "metab_screen", "metabolomics", "metab82", 1800L)

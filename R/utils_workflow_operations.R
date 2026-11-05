@@ -685,7 +685,8 @@ registerBuiltinWorkflowOperations <- function() {
         for (declaration in omicsWorkflowOperations(binding)) {
             label <- binding$step_labels[declaration$name]
             worker <- declaration$name %in% workers
-            # KIT-079: `whole` stays the default until KIT-080's operation pairs decide.
+            # KIT-079: `whole` is the default, except the intensity filter, on `partitioned` since KIT-089 (user, 2026-11-06,
+            # on KIT-084's synthetic pairs: exact, peak .77 and .81 of `whole`).
             registerWorkflowOperation(c(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
                 compute = if (worker) "omics" else "in_process", handler = if (worker) "computeWorkflowOmicsOperationAction",
                 validate = if (worker) "validateWorkflowOmicsParameters" else "validateWorkflowInProcessParameters", resolve = NULL,
@@ -693,8 +694,8 @@ registerBuiltinWorkflowOperations <- function() {
                 completion = if (worker) "omics" else "in_process", publication = if (worker) "omics" else "in_process",
                 step_label = if (is.na(label)) NULL else unname(label),
                 omic_type = binding$omic_type, variants = if (is.function(declaration$partitioned)) c("whole", "partitioned") else "whole",
-                default_variant = "whole", diagnostic_only = FALSE,
-                inclusion_absence = FALSE, declaration = declaration),
+                default_variant = if (identical(declaration$name, paste0(binding$prefix, "_intensity_filter"))) "partitioned" else "whole",
+                diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = declaration),
                 if (worker && !declaration$name %in% sections) list(section = NULL)))
         }
         # KIT-078: what the steps' figures and exports read (the matrix, the composite's rasters), in the worker; they commit nothing.
