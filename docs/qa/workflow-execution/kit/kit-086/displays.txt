@@ -1,1 +1,2 @@
 kit-journey-086l: DISPLAY Found 12 internal standards ;DISPLAY volcano_static ink 0.0278;DISPLAY heatmap_plot ink 0.6571;DISPLAY download rows 365 sample columns 24;
+kit-journey-086n: DISPLAY Found 12 internal standards ;DISPLAY volcano_static ink 0.0392;DISPLAY heatmap_plot ink 0.6615;DISPLAY download rows 564 sample columns 24;
