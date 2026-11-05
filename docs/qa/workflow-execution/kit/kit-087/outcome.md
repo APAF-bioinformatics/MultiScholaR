@@ -32,7 +32,7 @@ The KC real data was excluded. Only aggregates and hashes were recorded.
 
 Peak memory is the process's maximum resident size in GiB (`ru_maxrss`, in KiB, ÷ 1,048,576), including about 0.38 GiB for R and the package. Each figure is one run on a shared host, so memory is firm and time is indicative.
 
-**Imputation:**
+**Imputation (2 components on lipid and metabolomics, 5 on the proteomics paths):**
 
 | Assay | Samples × features | Old peak | New peak | Old time | New time |
 |---|---|---|---|---|---|
