@@ -1,0 +1,2 @@
+# KIT-090 attempts
+Run 1 (2026-11-06, kit_090 = y0OrcU at bbe1fae9): install; check at baseline; dependents 61 files 8,932 pass 0 fail; identity on the installed build 77/77; imputation and PCA comparisons all identical; LFQ/TMT subset identical; full suite 363 files. The three RUV-output comparisons stopped at `openCopy` because run.sh did not set KIT087_WORK (instrumentation, my script). This ticket's one correction pass: rerun those three with KIT087_WORK set; all TRUE (nipals-output.txt).

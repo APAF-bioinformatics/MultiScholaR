@@ -84,3 +84,5 @@ These are per call. What a whole journey saves is for KIT-086 and KIT-088 to sho
 ## Handoff
 
 `kit_087` goes to KIT-086's journeys. KIT-088 reruns all paths against `kit_086` for the exact reduction. Transcriptomics has no NIPALS call today; KIT-040 has a note to use these functions if it needs them.
+
+**Superseded in part by KIT-090 (2026-11-06):** the file described here was replaced by a clean-room rewrite with the same results. That rewrite corrects the licence note above: this version copied `mixOmics`' specifics to match it, so "written from the published method" overstated it. See [KIT-090](../kit-090/outcome.md).
