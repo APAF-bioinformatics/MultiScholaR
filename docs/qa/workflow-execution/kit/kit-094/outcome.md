@@ -52,3 +52,16 @@ Not changed, as the ticket decided:
 1. KIT-092 lands.
 2. Then, from the main checkout: install, bind `kit_094` in `bindings-generator.R`, and regenerate `bindings.json`.
 3. Run `094a` and `094b` (one attempt each, 1,800 s) against the re-fingerprinted `lipid86s`/`metab86s`, and record the decision table's branch.
+
+## The screen journeys (2026-11-06, after KIT-092)
+
+`kit_094` = te0soO, installed from a worktree pinned at e6919066: the merged KIT-094 code, KIT-093's trx code and KIT-092's protocol v1.7, with no uncommitted work from other agents. One attempt each, ceiling 1,800 s.
+
+| Member | Corpus | Oracle (v1.7) | Decision | Exact | Files | Mismatches | Time | Whole slice | Application |
+|---|---|---|---|---|---|---|---|---|---|
+| `094a` | lipid_screen_missing | `lipid86s` | accepted | yes | 208 | 0 | 195 s | 1.95 GiB | 0.94 GiB |
+| `094b` | metab_screen_missing | `metab86s` | accepted | yes | 199 | 0 | 185 s | 1.95 GiB | 0.94 GiB |
+
+Both are exact under the decision table's first row, so no attribution member was needed. The step-list generalisation changes nothing in a whole lipid or metab journey.
+
+(The verifier's oracle label still reads "protocol v1.5", a fixed string in the harness. The oracles are the v1.7 re-fingerprints bound by KIT-092.)
