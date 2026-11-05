@@ -538,6 +538,15 @@
       "install_member": "browser-smoke.RQRIvK",
       "source_commit": "415b2974ec3bac7238d10aa8e1b1915d3b8ca510",
       "runtime_patch_bytes": 0
+    },
+    "kit_086": {
+      "ticket": "KIT-086",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.aKld9N/library",
+      "build": "e458ff617f53f57cf13ccda91880941466d8bf9d0e5a08a201f770376970bc09",
+      "exact_sum": "4c8de1170af238390ad378a765f4724ae965f2e1d4ddb7482491071b965fb5cd",
+      "install_member": "browser-smoke.aKld9N",
+      "source_commit": "e9b27f0a0fcb65e86cddde505999c26960fcd6d9",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -33250,6 +33259,204 @@
       },
       "design_file": "design.tsv"
     },
+    "lipid_screen_missing": {
+      "profile": "lipid_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 432,
+      "recipe": {
+        "kind": "lipid_screen",
+        "synthetic": true,
+        "seed": 20261029,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 200,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0.05,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "LCMS_Neg"
+        ],
+        "missing_features": 0.3,
+        "missing_samples": 0.15
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen-missing",
+      "expected_retained_samples": 24,
+      "report_file": "lipidsearch_lcms_pos.txt",
+      "format": "lipidsearch",
+      "route": "lipidomics",
+      "notes": "200 lipids per assay in two LipidSearch exports (LCMS_Pos, LCMS_Neg), 10 duplicate LipidName rows under a second adduct at 0.6 x intensity, 6 internal-standard rows per assay (LipidClass ISTD, LipidName IS_*), dense (no missing values); 12 biological samples x 2 technical replicates in 3 batches; 15% of lipids differential (KO vs WT)",
+      "files": {
+        "lipidsearch_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen-missing/lipidsearch_lcms_pos.txt",
+          "bytes": 49850,
+          "sha256": "74b0392a232fc4232c07c584bf63897e4b356c77706bde0c31c801e3b051abd5"
+        },
+        "lipidsearch_lcms_neg.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen-missing/lipidsearch_lcms_neg.txt",
+          "bytes": 49882,
+          "sha256": "4a6a2438b639f9f5c97fd8fec159645a1aa801afc016a82b6b31323509f2580b"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lipid-screen-missing/design.tsv",
+          "bytes": 597,
+          "sha256": "74da6561134abf93a867de23632988d1fd77dc8744b29308a6e6aa15af19a782"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "lipidsearch",
+      "assay_files": {
+        "LCMS_Pos": "lipidsearch_lcms_pos.txt",
+        "LCMS_Neg": "lipidsearch_lcms_neg.txt"
+      },
+      "design_file": "design.tsv"
+    },
+    "metab_screen_missing": {
+      "profile": "metab_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 612,
+      "recipe": {
+        "kind": "metab_screen",
+        "synthetic": true,
+        "seed": 20261030,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 300,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "GCMS"
+        ],
+        "missing_features": 0.3,
+        "missing_samples": 0.15
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen-missing",
+      "expected_retained_samples": 24,
+      "report_file": "msdial_lcms_pos.txt",
+      "format": "msdial",
+      "route": "metabolomics",
+      "notes": "300 features per assay in two MS-DIAL exports (LCMS_Pos, GCMS; the GC export without m/z and adduct columns), 6 internal-standard rows per assay (Metabolite name IS_*_d<k>), unique Alignment IDs (the duplicate step resolves nothing), dense (no missing values); 12 biological samples x 2 technical replicates in 3 batches; 15% of features differential (KO vs WT)",
+      "files": {
+        "msdial_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen-missing/msdial_lcms_pos.txt",
+          "bytes": 69177,
+          "sha256": "e1f2ee237b34c7450ac9c084b026733efe806c60b7ea512284e36ffd23e9d327"
+        },
+        "msdial_gcms.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen-missing/msdial_gcms.txt",
+          "bytes": 63607,
+          "sha256": "776929ec4f085ccf7798a6bd7c954fcbe1a2a465f62f3584ad2dd6f1a5105434"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-screen-missing/design.tsv",
+          "bytes": 597,
+          "sha256": "74da6561134abf93a867de23632988d1fd77dc8744b29308a6e6aa15af19a782"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "msdial",
+      "assay_files": {
+        "LCMS_Pos": "msdial_lcms_pos.txt",
+        "GCMS": "msdial_gcms.txt"
+      },
+      "design_file": "design.tsv"
+    },
+    "metab_large_missing": {
+      "profile": "metab_screen",
+      "synthetic": true,
+      "samples": 200,
+      "rows": 40012,
+      "recipe": {
+        "kind": "metab_screen",
+        "synthetic": true,
+        "seed": 20261030,
+        "biological_per_group": 50,
+        "technical_replicates": 2,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 20000,
+        "standards_per_assay": 6,
+        "duplicate_fraction": 0,
+        "differential_fraction": 0.15,
+        "batch_effect_sd": 0.35,
+        "sample_scale_sd": 0.3,
+        "technical_noise_sd": 0.12,
+        "residual_sd": 0.3,
+        "assays": [
+          "LCMS_Pos",
+          "GCMS"
+        ],
+        "missing_features": 0.3,
+        "missing_samples": 0.15
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large-missing",
+      "expected_retained_samples": 200,
+      "report_file": "msdial_lcms_pos.txt",
+      "format": "msdial",
+      "route": "metabolomics",
+      "notes": "20000 features per assay in two MS-DIAL exports (LCMS_Pos, GCMS; the GC export without m/z and adduct columns), 6 internal-standard rows per assay (Metabolite name IS_*_d<k>), unique Alignment IDs (the duplicate step resolves nothing), dense (no missing values); 100 biological samples x 2 technical replicates in 3 batches; 15% of features differential (KO vs WT)",
+      "files": {
+        "msdial_lcms_pos.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large-missing/msdial_lcms_pos.txt",
+          "bytes": 30875162,
+          "sha256": "b203064eaa9152a6896147aa038443a438d2fae8af3c1104e893a834355b8ec2"
+        },
+        "msdial_gcms.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large-missing/msdial_gcms.txt",
+          "bytes": 30560265,
+          "sha256": "2abd8cead170476084ebfdcd7b8a9f41bfb496e0436e07c0f38794204a14e5d6"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/metab-large-missing/design.tsv",
+          "bytes": 4809,
+          "sha256": "e833d01b790f7c3706148c45f42ad37043f54a9b4bf4d5b0d6dea417904dfd0b"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "msdial",
+      "assay_files": {
+        "LCMS_Pos": "msdial_lcms_pos.txt",
+        "GCMS": "msdial_gcms.txt"
+      },
+      "design_file": "design.tsv"
+    },
     "kc_lfq": {
       "profile": null,
       "synthetic": false,
@@ -33697,6 +33904,38 @@
       "whole_journey": true,
       "oracles": "metab84c",
       "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "086l": {
+      "kind": "single_journey",
+      "build": "kit_086",
+      "corpus": "lipid_screen",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid82",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "086n": {
+      "kind": "single_journey",
+      "build": "kit_086",
+      "corpus": "metab_screen",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab82",
+      "ceiling_seconds": 1800,
       "purpose": "exactness",
       "normalisation": {
         "apply_itsd": true,
