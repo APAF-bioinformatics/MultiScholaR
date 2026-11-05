@@ -1,0 +1,4 @@
+kit-journey-085l start 12:01:49: AC 1, profile low-power, battery 100%, load 5.08, available 39 GiB
+kit-journey-085l end 12:02:10: AC 1, profile low-power, battery 100%, load 4.56, available 39 GiB
+kit-journey-085m start 12:02:10: AC 1, profile low-power, battery 100%, load 4.56, available 39 GiB
+kit-journey-085m end 12:02:30: AC 1, profile low-power, battery 100%, load 4.18, available 39 GiB
