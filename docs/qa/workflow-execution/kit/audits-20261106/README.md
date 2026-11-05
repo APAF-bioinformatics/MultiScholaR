@@ -35,3 +35,32 @@ Eight independent auditors, one per ticket (KIT-040, KIT-093 to 099), each using
 - The corpus's WT/KO groups become NA in the notebook, which hard-codes RPMI/Sera.
 - "Prepared once, as KIT-085" points at NIPALS imputation, which doesn't apply to counts.
 - Plan rows for KIT-088 and KIT-050 still show KIT-040, and the full-suite checkpoint line is stale.
+
+## Repairs (2026-11-06)
+
+The user decided five points and said "fix all recommendations":
+1. RUVSeq and EDASeq go into the kit library only (KIT-040).
+2. The shared DA saving accepts an edgeR QL fit and records the real method (KIT-095).
+3. The lipid modules are parameterised for a new omic, not copied (KIT-096, KIT-097).
+4. RUVIII is a product-only export after DA, with `M` recorded (KIT-095, KIT-097).
+5. KIT-092 is protocol v1.7 and also takes the KIT098-F02 exactness gaps; transcriptomics is v1.8 (KIT-098).
+
+Each auditor repaired its own ticket, and the remediation record sits beside each audit. Every finding is closed in the ticket text or routed to a named owner; none is left open. The evidence for each closure arrives when its ticket runs.
+
+**Specifier's share:**
+- KIT-092 revision 1.1 (the exactness gaps, v1.7).
+- KIT-091 revision 1.1 (the transcriptomics RUV grid at size).
+- KIT-100, new: the default change split out of KIT-099.
+- Plan 3.9: the stale rows, the TRX paragraph and the decision row.
+- The index synced from each ticket's frontmatter.
+
+**Consistency pass:**
+- KIT-040 freezes the products KIT-093 names and writes `kit-040/product-map.tsv` mapping kernel names to notebook objects. It adds the derived filter values, the k cap, the annotation join and the QL table.
+- KIT-095 drops the `skip` RUV mode, since the notebook has none and KIT-097 offers none.
+- The class-declaration entry is KIT-093's.
+- The Glimma outcome is recorded explicitly.
+- KIT-088's stub waits for KIT-099.
+
+**Validation:** all twelve touched tickets pass `next-openai-ticket.sh`, and `audit_inventory.py` finds no defects.
+
+**Open with the user:** KIT-093 refuses designs with more than two groups (`trx_design_groups_unsupported`), because the notebook's `coef = 2` control ranking defines a two-group test only. Allowing more changes the science.
