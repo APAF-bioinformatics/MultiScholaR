@@ -1,1 +1,2 @@
 kit-journey-094a: DISPLAY Found 12 internal standards ;DISPLAY volcano_static ink 0.0298;DISPLAY heatmap_plot ink 0.6215;DISPLAY download rows 365 sample columns 24;
+kit-journey-094b: DISPLAY Found 12 internal standards ;DISPLAY volcano_static ink 0.0368;DISPLAY heatmap_plot ink 0.6319;DISPLAY download rows 566 sample columns 24;

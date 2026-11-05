@@ -1,2 +1,4 @@
 kit-journey-094a start 10:30:06: AC 1, profile low-power, battery 100%, load 3.08, available 40 GiB
 kit-journey-094a end 10:34:06: AC 1, profile low-power, battery 100%, load 2.82, available 40 GiB
+kit-journey-094b start 10:34:09: AC 1, profile low-power, battery 100%, load 2.67, available 40 GiB
+kit-journey-094b end 10:37:49: AC 1, profile low-power, battery 100%, load 3.57, available 39 GiB
