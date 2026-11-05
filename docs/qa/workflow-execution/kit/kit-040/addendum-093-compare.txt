@@ -1,0 +1,12 @@
+# KIT-040 addendum (2026-11-06, for KIT-093): the 70 KIT-040 products before and after, and the repeat
+
+trx_edge_12 (add093-ref-trx_edge_12): KIT-040 products identical() 70 of 70; sha256 equal to KIT-040's store 70 of 70; added 25 (pca_raw_layers, rle_raw_layers, pca_tmm_layers, rle_tmm_layers, pca_ruvs_layers, rle_ruvs_layers, pca_post_ruviii_layers, rle_post_ruviii_layers, cca_cancor_layers, cca_cancor_data, cca_tuning_layers, cca_tuning_data, cca_grid_layers, cca_optimal_parameters, norm_grid_layers, norm_grid_annotation, ruviii_grid_layers, ruviii_grid_annotation, volcano_layers, volcano_data, bar_layers, bar_data, glimma_anno, glimma_anno_aligned, summary_text); total 95; 30.6 s
+trx_edge_16 (add093-ref-trx_edge_16): KIT-040 products identical() 70 of 70; sha256 equal to KIT-040's store 70 of 70; added 25 (pca_raw_layers, rle_raw_layers, pca_tmm_layers, rle_tmm_layers, pca_ruvs_layers, rle_ruvs_layers, pca_post_ruviii_layers, rle_post_ruviii_layers, cca_cancor_layers, cca_cancor_data, cca_tuning_layers, cca_tuning_data, cca_grid_layers, cca_optimal_parameters, norm_grid_layers, norm_grid_annotation, ruviii_grid_layers, ruviii_grid_annotation, volcano_layers, volcano_data, bar_layers, bar_data, glimma_anno, glimma_anno_aligned, summary_text); total 95; 27.6 s
+trx_screen (add093-ref-trx_screen): KIT-040 products identical() 70 of 70; sha256 equal to KIT-040's store 70 of 70; added 25 (pca_raw_layers, rle_raw_layers, pca_tmm_layers, rle_tmm_layers, pca_ruvs_layers, rle_ruvs_layers, pca_post_ruviii_layers, rle_post_ruviii_layers, cca_cancor_layers, cca_cancor_data, cca_tuning_layers, cca_tuning_data, cca_grid_layers, cca_optimal_parameters, norm_grid_layers, norm_grid_annotation, ruviii_grid_layers, ruviii_grid_annotation, volcano_layers, volcano_data, bar_layers, bar_data, glimma_anno, glimma_anno_aligned, summary_text); total 95; 27.5 s
+
+repeat on trx_edge_12: 95 of 95 products identical(); product sha256 maps identical: TRUE
+
+fingerprint store sha256 (the hashes KIT-093's tests check):
+  reference-trx_edge_12.rds f460b376008219c667fdca32bd1184813ff1f5b8ba8c53d31f45c63b728cb12c
+  reference-trx_edge_16.rds ac118c0ada3411ad5510efdd385e0ae08a4b6b3cecfb6c9a4ba436c75a7ecf59
+  reference-trx_screen.rds dd058d7bd344e606899f95dac67786ef8a60df473ffede1e71918bdca0d66840

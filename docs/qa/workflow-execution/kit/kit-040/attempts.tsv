@@ -5,3 +5,7 @@ ref-trx_screen	2026-11-06T09:29:43+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes
 repeat-trx_edge_12	2026-11-06T09:30:13+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=21.1 absent=0 error=none
 lifecycle-complete-trx_edge_12	2026-11-06T09:30:35+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=19.9 absent=0 error=none
 lifecycle-fail-trx_edge_12	2026-11-06T09:30:56+11:00	1	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=FALSE exit=1 seconds=15.3 absent=23 error=kit_trx_forced_failure/kit_trx_error/error/condition
+add093-ref-trx_edge_12	2026-11-06T09:49:05+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=30.6 absent=0 error=none
+add093-ref-trx_edge_16	2026-11-06T09:49:37+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=27.6 absent=0 error=none
+add093-ref-trx_screen	2026-11-06T09:50:06+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=27.5 absent=0 error=none
+add093-repeat-trx_edge_12	2026-11-06T09:50:35+11:00	0	6ce5c5ca5b8983a8	6ce5c5ca5b8983a8	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=23.9 absent=0 error=none

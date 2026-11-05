@@ -43,3 +43,17 @@ trxPcaStats	pca_variance	pca_<stage>_variance; pca_<stage>_axis_labels	summary(p
 trxRleStats	rle_matrix	rle_<stage>_data	p_rle_<stage>$data	441-447	long form of the centred matrix, with the design
 trxRleStats	rle_whiskers	rle_<stage>_whiskers	whisker_limits (local)	449-458	derived from the plot's data by the notebook's rule
 trxRleStats	rle_ylim	rle_<stage>_ylim	ylim_vals (local)	459-465	the plot's coord_cartesian limits
+trxCcaPanels	cancor$layers; cancor$data	cca_cancor_layers; cca_cancor_data	p_cca_a	313-341, 373	layer_data() per layer
+trxCcaPanels	tuning$layers; tuning$data	cca_tuning_layers; cca_tuning_data	p_cca_b	343-371, 374	layer_data() per layer
+trxCcaPanels	grid$layers	cca_grid_layers	grid_cca	375	cowplot panel placement
+trxCcaPanels	workbook$Optimal_Parameters; workbook$Grid_Optimization	cca_optimal_parameters; df_summary	opt_summary_tbl; df_summary	387-392	
+trxNormStageGrid	panels$<pca|rle>_<stage>$layers	pca_<stage>_layers; rle_<stage>_layers (rle_<stage>_box)	p_pca_<stage>, p_rle_<stage>	492-498	stages raw, tmm, ruvs; axis labels as pca_<stage>_axis_labels
+trxNormStageGrid	grid$layers; grid$annotation	norm_grid_layers; norm_grid_annotation	final_norm_grid	500-506	panels in reading order
+trxVolcano	layers; data	volcano_layers; volcano_data	volcano_p	597-628, 655	labels before repulsion
+trxSignificanceBar	layers; data	bar_layers; bar_data	bar_p	630-653, 656	zero-count levels kept
+trxDeTables	de_table; top_de	top_genes_annotated; top_de_combined	top_genes_annotated; top_de_combined	565-583	and the stable CSV/TSV hashes
+trxGlimmaInputs	anno	glimma_anno_aligned	glimma_anno[rownames(lrt), ]	674-680	derived: reindexed to qlf's feature order (glimma_anno frozen as well)
+trxGlimmaInputs	display_columns; main; lfc; fdr	-	(literals)	682-686	the notebook's literals
+trxRuviiiGrid	panels$<pca|rle>_<stage>$layers	pca_<stage>_layers; rle_<stage>_layers	p_pca_<stage>, p_rle_<stage>	731-732	stages tmm, post_ruviii
+trxRuviiiGrid	grid$layers; grid$annotation	ruviii_grid_layers; ruviii_grid_annotation	ruviii_comparison_grid	734-740	panels in reading order
+trxSummaryText	lines; grid_table	summary_text	ruv_optimization_summary.txt	755-775	derived: the file's lines without the timestamp line
