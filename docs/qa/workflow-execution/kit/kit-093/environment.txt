@@ -1,0 +1,30 @@
+# KIT-093 environment (the KIT-040 library on R_LIBS; nothing installed by this ticket)
+recorded: 2026-11-06T09:51:54+1100
+R_LIBS: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uYxoS2/library
+.libPaths(): /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uYxoS2/library ; /home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6 ; /usr/lib/R/library
+thread environment: OMP_NUM_THREADS=(unset) OPENBLAS_NUM_THREADS=(unset) MKL_NUM_THREADS=(unset) R_PARALLEL_NUM_THREADS=(unset)
+reference render session (trx_screen): BLAS /usr/lib/libblas.so.3.12.0, LAPACK /usr/lib/liblapack.so.3.12.0
+all items match KIT-040: TRUE
+
+item	kit093	kit040	source	match	library
+R	R version 4.6.1 (2026-06-24)	R version 4.6.1 (2026-06-24)	library-receipt.json	TRUE	/usr/lib64/R
+Bioconductor	3.23	3.23	library-receipt.json	TRUE	
+BLAS	/usr/lib/libblas.so.3.12.0	/usr/lib/libblas.so.3.12.0	library-receipt.json	TRUE	
+LAPACK	/usr/lib/liblapack.so.3.12.0	/usr/lib/liblapack.so.3.12.0	library-receipt.json	TRUE	
+La_version	3.12.0	3.12.0	library-receipt.json	TRUE	
+edgeR	4.10.1	4.10.1	library-receipt.json	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+limma	3.68.4	3.68.4	library-receipt.json	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+ruv	0.9.7.1	0.9.7.1	library-receipt.json	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+RUVSeq	1.46.0	1.46.0	library-receipt.json	TRUE	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uYxoS2/library
+EDASeq	2.46.0	2.46.0	library-receipt.json	TRUE	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uYxoS2/library
+Biobase	2.72.0	2.72.0	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+BiocGenerics	0.58.1	0.58.1	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+ggplot2	4.0.3	4.0.3	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+patchwork	1.3.2	1.3.2	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+cowplot	1.2.0	1.2.0	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+ggrepel	0.9.8	0.9.8	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+dplyr	1.2.1	1.2.1	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+tidyr	1.3.2	1.3.2	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+tibble	3.3.1	3.3.1	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+purrr	1.2.2	1.2.2	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
+vroom	1.7.1	1.7.1	reference session	TRUE	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6
