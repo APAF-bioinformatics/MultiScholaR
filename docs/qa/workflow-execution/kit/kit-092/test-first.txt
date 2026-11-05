@@ -1,0 +1,58 @@
+# KIT-092 test first: test-workflow-kit-harness.R with the three new tests and the adjusted ones, run on the unchanged workflow_kit.R (load_all, kit_090 library). The three new tests fail (11 failures, 1 error); every other test passes. After the change: 551 pass, 0 fail.
+COUNTS test-workflow-kit-harness.R pass 536 fail 11 error 1 skip 0
+  BAD test-workflow-kit-harness.R :: KIT-092: a table nested in a product is hashed by its content, so the same content in different bytes matches
+  BAD test-workflow-kit-harness.R :: KIT-092: the verifier rebuilds the products the driver attached to each step from the recomputed store
+  BAD test-workflow-kit-harness.R :: KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused
+--- KIT-092: a table nested in a product is hashed by its content, so the same content in different bytes matches 
+ Expected `canonical(whole)` to be identical to `canonical(other)`.
+Differences:
+actual$filtered$sha256 vs expected$filtered$sha256
+- "6a91f2b3b1f978a9ff4ab4fafe9ad9679f616eb350cfe5346c9bb75488fd3b5a"
++ "dde1eb941a0b23d2b79d8089e7ac84a577669f4effd1d4ab95c102d58bf5eabc"
+ 
+--- KIT-092: a table nested in a product is hashed by its content, so the same content in different bytes matches 
+ Expected `canonical(whole)$filtered$content` to be identical to `h$kitFingerprintTable(store, whole, api)$sha256`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('800ddf8e6e9e3329ae68dddc1e1dc5dc3f70cd440b66aab69d40dc5721ea3401')
+ 
+--- KIT-092: the verifier rebuilds the products the driver attached to each step from the recomputed store 
+ Error in `eval(code, test_env)`: attempt to apply non-function 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `case$in_memory` to be FALSE.
+Differences:
+`actual` is NULL
+`expected` is a logical vector (FALSE)
+ 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `h$kitCases(gap, "kit-journey-092a")` to throw a error. 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `h$kitCases(empty, "kit-journey-092a")` to throw a error. 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `h$kitCases(bare, "kit-journey-092a")` to throw a error. 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `h$kitCases(screen, "kit-journey-092d")` to throw a error. 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `memory_case$in_memory` to be TRUE.
+Differences:
+`actual` is NULL
+`expected` is a logical vector (TRUE)
+ 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `complete[[1L]]$in_memory` to be FALSE.
+Differences:
+`actual` is NULL
+`expected` is a logical vector (FALSE)
+ 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `...$failing_rule` to be identical to "populations_incomplete".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('populations_incomplete')
+ 
+--- KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused 
+ Expected `h$kitLifecycleDecision(failed, fail, b)$failing_rule` to be identical to "head_unchanged".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('head_unchanged')
+ 
