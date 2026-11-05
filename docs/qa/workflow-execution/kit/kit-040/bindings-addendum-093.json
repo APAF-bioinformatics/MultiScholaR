@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "ticket": "KIT-040 addendum (2026-11-06, for KIT-093)",
+  "created": "2026-11-06T09:48:49+1100",
+  "source_commit": "991e472d1a127781a4a97e0afde8acaf0e6591c7",
+  "base_bindings": {
+    "path": "docs/qa/workflow-execution/kit/kit-040/bindings.json",
+    "sha256": "e3d161de0fad5424963c85f96ca4e587d81e13875fbd4851294f9bc32bf1cdcb"
+  },
+  "driver": {
+    "path": "tools/profiling/trx_notebook_reference.R",
+    "sha256": "8d1a2181e1432ee6e4d375fe6a698f4372035b28fdf21c8560ea85e12ad18ba3",
+    "replaces_sha256": "dde1f7ced9007e63dba61c410b42ccae185757b6e386cede2cb50a17c5ca2d4c"
+  },
+  "notebook": {
+    "path": "dev/distributable/plans/transcriptomics_workflow.rmd",
+    "sha256": "44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a"
+  },
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y0OrcU/library",
+  "library_receipt": {
+    "path": "docs/qa/workflow-execution/kit/kit-040/library-receipt.json",
+    "sha256": "b9a43611598887982eaaabc34dffe012cd61b8351e1830afdc8a0f6d746f696a"
+  },
+  "corpora": {
+    "trx_screen": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen",
+      "samples": 24,
+      "genes": 6000,
+      "expected_k_cap": 4,
+      "manifest_sha256": "775fafb6440ff2ef30cff6722551cfa1a62f5487325e8a3799253dbd331c0e97"
+    },
+    "trx_edge_12": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12",
+      "samples": 12,
+      "genes": 6000,
+      "expected_k_cap": 3,
+      "manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+    },
+    "trx_edge_16": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-16",
+      "samples": 16,
+      "genes": 6000,
+      "expected_k_cap": 4,
+      "manifest_sha256": "76023e6826fb4d799408c710df559dd86d9a968e35102905f58aa563dee53d38"
+    }
+  },
+  "counted_renders": [
+    {
+      "id": "add093-ref-trx_edge_12",
+      "corpus": "trx_edge_12",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/add093-ref-trx_edge_12",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/add093-ref-trx_edge_12",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "add093-ref-trx_edge_16",
+      "corpus": "trx_edge_16",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/add093-ref-trx_edge_16",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/add093-ref-trx_edge_16",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "add093-ref-trx_screen",
+      "corpus": "trx_screen",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/add093-ref-trx_screen",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/add093-ref-trx_screen",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "add093-repeat-trx_edge_12",
+      "corpus": "trx_edge_12",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/add093-repeat-trx_edge_12",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/add093-repeat-trx_edge_12",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    }
+  ],
+  "products_added": 25,
+  "products_kept": 70,
+  "acceptance": "each counted render complete, exit 0, 95 products; the 70 KIT-040 products identical() to KIT-040's full references and their sha256 equal to KIT-040's fingerprint stores; the repeat identical to its reference on all 95; git status unchanged per render",
+  "budget": "one counted render each (900 s ceiling); one bounded correction pass only for a demonstrated driver or instrumentation failure; every attempt kept",
+  "development": "two development renders of the changed driver on trx_edge_12 in kit/scratch-093-dev before this freeze: both complete (95 products), identical to each other on all 95, the 70 KIT-040 products identical to KIT-040's reference"
+}

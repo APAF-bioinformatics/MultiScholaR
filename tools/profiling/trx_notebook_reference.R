@@ -103,6 +103,18 @@ trxRleBox <- function(p) {
     d[, intersect(c("x", "group", "PANEL", "fill", "ymin", "lower", "middle", "upper", "ymax", "notchlower", "notchupper", "relvarwidth", "width"), names(d))]
 }
 
+# KIT-040 addendum (2026-11-06, for KIT-093): every layer's ggplot2::layer_data() of a figure, in layer order. base::
+# throughout, as above (the notebook attaches conflicted).
+trxLayers <- function(p) base::lapply(base::seq_along(p$layers), function(i) ggplot2::layer_data(p, i))
+
+# The panels of a patchwork grid in reading order (a filler, patchwork's empty top level, is not a panel).
+trxGridPanels <- function(p) {
+    inner <- if (base::inherits(p, "patchwork")) base::unlist(base::lapply(p$patches$plots, trxGridPanels), recursive = FALSE) else base::list()
+    if (base::inherits(p, "plot_filler")) inner else base::c(inner, base::list(p))
+}
+
+trxGridLayers <- function(g) base::lapply(trxGridPanels(g), trxLayers)
+
 trxProductDefinitions <- function() {
     defs <- list(
         keep_expr = trxProduct("keep_expr", quote(keep_expr), "rmd:170", "edgeR::filterByExpr mask on the unfiltered, design-ordered counts"),
@@ -183,14 +195,42 @@ trxProductDefinitions <- function() {
         defs[[paste0("rle_", stage, "_ylim")]] <- trxProduct(stages[[stage]][[2L]], bquote(.(rle)$coordinates$limits$y), src, "the RLE plot's y limits (coord_cartesian)")
         defs[[paste0("rle_", stage, "_whiskers")]] <- trxProduct(stages[[stage]][[2L]], bquote(trxRleWhiskers(.(rle))), src,
             "derived: the per-run whisker limits recomputed from the RLE plot's data by the notebook's rule", derived = TRUE)
+        # KIT-040 addendum: every layer of the stage's PCA and RLE panels.
+        defs[[paste0("pca_", stage, "_layers")]] <- trxProduct(stages[[stage]][[1L]], bquote(trxLayers(.(pca))), src, "layer_data() of every layer of the PCA panel")
+        defs[[paste0("rle_", stage, "_layers")]] <- trxProduct(stages[[stage]][[2L]], bquote(trxLayers(.(rle))), src, "layer_data() of every layer of the RLE panel")
     }
+    # KIT-040 addendum (2026-11-06, for KIT-093's renderer parity): the publication figures' layer_data() and plotted data.
+    defs$cca_cancor_layers <- trxProduct("p_cca_a", quote(trxLayers(p_cca_a)), "rmd:313-341,373", "layer_data() of every layer of the winner's CCA panel")
+    defs$cca_cancor_data <- trxProduct("p_cca_a", quote(p_cca_a$data), "rmd:314,373", "the CCA panel's plotted data (the winner's cancor data)")
+    defs$cca_tuning_layers <- trxProduct("p_cca_b", quote(trxLayers(p_cca_b)), "rmd:343-371,374", "layer_data() of every layer of the tuning curve")
+    defs$cca_tuning_data <- trxProduct("p_cca_b", quote(p_cca_b$data), "rmd:351,374", "the tuning curve's plotted data (df_summary)")
+    defs$cca_grid_layers <- trxProduct("grid_cca", quote(trxLayers(grid_cca)), "rmd:375", "layer_data() of the cowplot grid (panel placement)")
+    defs$cca_optimal_parameters <- trxProduct("opt_summary_tbl", quote(opt_summary_tbl), "rmd:387-391", "the workbook's Optimal_Parameters sheet")
+    defs$norm_grid_layers <- trxProduct("final_norm_grid", quote(trxGridLayers(final_norm_grid)), "rmd:500-506",
+        "layer_data() of every layer of every panel of the normalisation grid, in reading order")
+    defs$norm_grid_annotation <- trxProduct("final_norm_grid", quote(final_norm_grid$patches$annotation[c("title", "caption")]), "rmd:501-504", "the grid's title and caption")
+    defs$ruviii_grid_layers <- trxProduct("ruviii_comparison_grid", quote(trxGridLayers(ruviii_comparison_grid)), "rmd:734-740",
+        "layer_data() of every layer of every panel of the RUVIII grid, in reading order")
+    defs$ruviii_grid_annotation <- trxProduct("ruviii_comparison_grid", quote(ruviii_comparison_grid$patches$annotation[c("title", "caption")]), "rmd:735-738",
+        "the grid's title and caption")
+    defs$volcano_layers <- trxProduct("volcano_p", quote(trxLayers(volcano_p)), "rmd:597-628,655", "layer_data() of every layer of the volcano (labels before repulsion)")
+    defs$volcano_data <- trxProduct("volcano_p", quote(volcano_p$data), "rmd:598-606,655", "the volcano's plotted data")
+    defs$bar_layers <- trxProduct("bar_p", quote(trxLayers(bar_p)), "rmd:630-653,656", "layer_data() of every layer of the significance bar plot")
+    defs$bar_data <- trxProduct("bar_p", quote(bar_p$data), "rmd:631-640,656", "the bar plot's plotted counts (.drop = FALSE)")
+    defs$glimma_anno <- trxProduct("glimma_anno", quote(glimma_anno), "rmd:674-676", "the annotation passed to glimmaVolcano (top_genes order)")
+    defs$glimma_anno_aligned <- trxProduct(c("glimma_anno", "lrt"), quote(glimma_anno[base::rownames(lrt$table), , drop = FALSE]), "rmd:674-680",
+        "derived: the Glimma annotation reindexed to lrt's feature order (the order glimmaVolcano's table is in)", derived = TRUE)
+    defs$summary_text <- trxProduct("summary_txt_path", quote({
+        text <- base::readLines(summary_txt_path, warn = FALSE)
+        text[!base::startsWith(text, "Timestamp: ")]
+    }), "rmd:755-775", "derived: the summary file's lines without the timestamp line", derived = TRUE)
     defs
 }
 
 trxReadProducts <- function(e) {
     defs <- trxProductDefinitions()
     helpers <- new.env(parent = e)
-    for (f in c("trxPcaVariance", "trxRleWhiskers", "trxRleBox")) assign(f, get(f), envir = helpers)
+    for (f in c("trxPcaVariance", "trxRleWhiskers", "trxRleBox", "trxLayers", "trxGridPanels", "trxGridLayers")) assign(f, get(f), envir = helpers)
     products <- list(); absent <- character(); errors <- list()
     for (name in names(defs)) {
         def <- defs[[name]]
@@ -318,7 +358,22 @@ trxProductMap <- function() {
         row("trxPcaStats", "pca_variance", "pca_<stage>_variance; pca_<stage>_axis_labels", "summary(prcomp)$importance (labels)", "474", "unrounded from the plot's scores; the labels carry the notebook's rounded values"),
         row("trxRleStats", "rle_matrix", "rle_<stage>_data", "p_rle_<stage>$data", "441-447", "long form of the centred matrix, with the design"),
         row("trxRleStats", "rle_whiskers", "rle_<stage>_whiskers", "whisker_limits (local)", "449-458", "derived from the plot's data by the notebook's rule"),
-        row("trxRleStats", "rle_ylim", "rle_<stage>_ylim", "ylim_vals (local)", "459-465", "the plot's coord_cartesian limits")
+        row("trxRleStats", "rle_ylim", "rle_<stage>_ylim", "ylim_vals (local)", "459-465", "the plot's coord_cartesian limits"),
+        # KIT-040 addendum (2026-11-06, for KIT-093): the publication renderers.
+        row("trxCcaPanels", "cancor$layers; cancor$data", "cca_cancor_layers; cca_cancor_data", "p_cca_a", "313-341, 373", "layer_data() per layer"),
+        row("trxCcaPanels", "tuning$layers; tuning$data", "cca_tuning_layers; cca_tuning_data", "p_cca_b", "343-371, 374", "layer_data() per layer"),
+        row("trxCcaPanels", "grid$layers", "cca_grid_layers", "grid_cca", "375", "cowplot panel placement"),
+        row("trxCcaPanels", "workbook$Optimal_Parameters; workbook$Grid_Optimization", "cca_optimal_parameters; df_summary", "opt_summary_tbl; df_summary", "387-392"),
+        row("trxNormStageGrid", "panels$<pca|rle>_<stage>$layers", "pca_<stage>_layers; rle_<stage>_layers (rle_<stage>_box)", "p_pca_<stage>, p_rle_<stage>", "492-498", "stages raw, tmm, ruvs; axis labels as pca_<stage>_axis_labels"),
+        row("trxNormStageGrid", "grid$layers; grid$annotation", "norm_grid_layers; norm_grid_annotation", "final_norm_grid", "500-506", "panels in reading order"),
+        row("trxVolcano", "layers; data", "volcano_layers; volcano_data", "volcano_p", "597-628, 655", "labels before repulsion"),
+        row("trxSignificanceBar", "layers; data", "bar_layers; bar_data", "bar_p", "630-653, 656", "zero-count levels kept"),
+        row("trxDeTables", "de_table; top_de", "top_genes_annotated; top_de_combined", "top_genes_annotated; top_de_combined", "565-583", "and the stable CSV/TSV hashes"),
+        row("trxGlimmaInputs", "anno", "glimma_anno_aligned", "glimma_anno[rownames(lrt), ]", "674-680", "derived: reindexed to qlf's feature order (glimma_anno frozen as well)"),
+        row("trxGlimmaInputs", "display_columns; main; lfc; fdr", "-", "(literals)", "682-686", "the notebook's literals"),
+        row("trxRuviiiGrid", "panels$<pca|rle>_<stage>$layers", "pca_<stage>_layers; rle_<stage>_layers", "p_pca_<stage>, p_rle_<stage>", "731-732", "stages tmm, post_ruviii"),
+        row("trxRuviiiGrid", "grid$layers; grid$annotation", "ruviii_grid_layers; ruviii_grid_annotation", "ruviii_comparison_grid", "734-740", "panels in reading order"),
+        row("trxSummaryText", "lines; grid_table", "summary_text", "ruv_optimization_summary.txt", "755-775", "derived: the file's lines without the timestamp line")
     )
 }
 
