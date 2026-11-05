@@ -1,0 +1,13 @@
+# KIT-092: kit005-check.R on the kit_065 library (browser-smoke.InuLC5), 2026-11-06, v1.6 harness = workflow_kit.R at 9dbf531d.
+# Under both forms the attached products differ from the in-run record only in the operation identity products
+# (dia-normalization-ruv, dia-pearson-selection, dia-contrast-references: reported, never judged; the in-run names predate
+# KIT-011's corrections). Every judged attached product reproduces with the same name, so the same hash, under v1.7.
+product_ids present: 18 of 18
+v16 normalisation_ruv in-run 25 recomputed 25 only in-run: dia-normalization-ruv:bd9f0c35dd5b
+v16 correlation in-run 3 recomputed 3 only in-run: dia-pearson-selection:f380b7d85da4
+v16 da in-run 3 recomputed 3 only in-run: dia-contrast-references:3693777c95a9
+v16 attached products in-run 31 steps differing 3 243 s
+v17 normalisation_ruv in-run 25 recomputed 25 only in-run: dia-normalization-ruv:bd9f0c35dd5b
+v17 correlation in-run 3 recomputed 3 only in-run: dia-pearson-selection:f380b7d85da4
+v17 da in-run 3 recomputed 3 only in-run: dia-contrast-references:3693777c95a9
+v17 attached products in-run 31 steps differing 3 331 s

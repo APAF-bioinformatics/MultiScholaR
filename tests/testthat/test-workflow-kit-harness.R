@@ -33,6 +33,15 @@ kitSyntheticBindings <- function() {
                 operations = c("precursor_rollup", "minimum_peptides_per_sample"), ceiling_seconds = 600L)))
 }
 
+# KIT-092 (protocol v1.7): a single journey is refused at binding without an oracle for every step it runs that leaves a
+# state, so a synthetic single journey binds one per such step.
+kitSyntheticOracles <- function(b, h, route, prefix) {
+    for (step in h$kitJourneySteps(route)) if (!is.null(step$state) && !identical(step$state, "initial"))
+        b$oracles[[paste0(prefix, "_", step$id)]] <- list(class = "Synthetic", rows = 1L,
+            components = list(table = list(kind = "table", sha256 = "x")))
+    b
+}
+
 kitSyntheticOperationReceipt <- function(cases, h, edit = NULL) {
     receipt <- list(cases = list())
     phases <- h$kitRequiredOperationPhases
@@ -92,6 +101,7 @@ test_that("KIT-021: the protein route's step list, a whole-journey single member
         oracles = "lfq_300", ceiling_seconds = 14400L)
     b$tickets[["021t"]] <- list(kind = "single_journey", build = "kit_021", corpus = "lfq_300", route = "protein", whole_journey = TRUE,
         oracles = "lfq_300", ceiling_seconds = 1800L)
+    b <- kitSyntheticOracles(b, h, "protein", "lfq_300")
     cases <- h$kitCases(b, "kit-journey-021")
     expect_length(cases, 1L)
     case <- cases[[1L]]
@@ -308,6 +318,8 @@ test_that("KIT-068: the lipidomics and metabolomics routes, their in-memory life
     b$lifecycle_omics <- list(ceiling_seconds = 1800L, build = "kit_006",
         fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation"),
         normalisation = list(apply_itsd = TRUE, norm_method = "cyclicloess", ruv_mode = "automatic", correlation_threshold = 0.5))
+    # KIT-092 (protocol v1.7): in memory only where declared; the KIT-068 builds had no store.
+    b$lifecycle_omics$in_memory <- TRUE
     complete <- h$kitCases(b, "kit-lifecycle-lipid")
     expect_length(complete, 1L)
     case <- complete[[1L]]
@@ -1049,6 +1061,7 @@ test_that("a ticket may bind a single journey member that stops after a step: ex
     b <- kitSyntheticBindings()
     b$builds$kit_018 <- list(library = "/lib/r", build = strrep("r", 64), exact_sum = "sum-r")
     b$tickets[["018"]] <- list(kind = "single_journey", build = "kit_018", corpus = "full", stop_after = "design")
+    b <- kitSyntheticOracles(b, h, "DIA", "journey")
     cases <- h$kitCases(b, "kit-journey-018")
     expect_length(cases, 1L)
     case <- cases[[1L]]
@@ -1181,10 +1194,12 @@ test_that("KIT-054: the real-data keys bind a whole-journey single member with o
     b$harness$step_map_protein_sha256 <- strrep("m", 64)
     b$tickets[["054"]] <- list(kind = "single_journey", build = "kit_054", corpus = "kc_lfq", route = "protein", whole_journey = TRUE,
         oracles = "kc_lfq", ceiling_seconds = 14400L)
+    # KIT-092 (protocol v1.7): the legacy lane declares itself in memory.
     b$tickets[["054l"]] <- list(kind = "single_journey", build = "core_018", corpus = "kc_lfq_dotted", route = "protein", whole_journey = TRUE,
-        ceiling_seconds = 14400L)
+        ceiling_seconds = 14400L, in_memory = TRUE)
     b$tickets[["054m"]] <- list(kind = "single_journey", build = "core_018", corpus = "full", route = "protein", whole_journey = TRUE,
-        ceiling_seconds = 14400L)
+        ceiling_seconds = 14400L, in_memory = TRUE)
+    b <- kitSyntheticOracles(b, h, "protein", "kc_lfq")
     new <- h$kitCases(b, "kit-journey-054")[[1L]]
     expect_identical(new$selector, "kit:journey-054:candidate:1")
     expect_identical(new$oracles, "kc_lfq")
@@ -1256,6 +1271,7 @@ test_that("KIT-053: the DIA_LIMPA route's step list, its single journey member w
     b$harness$step_map_limpa_sha256 <- strrep("q", 64)
     b$tickets[["053"]] <- list(kind = "single_journey", build = "kit_053", corpus = "full", route = "DIA_LIMPA", whole_journey = TRUE,
         oracles = "limpa_full", ceiling_seconds = 14400L, normalisation = list(norm_method = "none", ruv_mode = "covariates", correlation_threshold = 0.5))
+    b <- kitSyntheticOracles(kitSyntheticOracles(b, h, "DIA_LIMPA", "limpa_full"), h, "DIA_LIMPA", "limpa_corr_screen")
     cases <- h$kitCases(b, "kit-journey-053")
     expect_length(cases, 1L)
     case <- cases[[1L]]
@@ -1570,4 +1586,114 @@ test_that("KIT-040: the notebook reference driver's preflight refuses invalid co
         expect_error(d$trxPreflight(partial, packages = "stats"), class = "kit_trx_missing_input", info = missing)
     }
     expect_error(d$trxPreflight(corpus, packages = c("stats", "kitTrxNoSuchPackage")), class = "kit_trx_missing_package")
+})
+
+# KIT-092 (protocol v1.7, user decision 2026-11-06): content fingerprints for tables inside products; KIT098-F02.
+test_that("KIT-092: a table nested in a product is hashed by its content, so the same content in different bytes matches", {
+    skip_if_not_installed("fastduckdb")
+    skip_if(inherits(try(workflowFastWriterInfo("fast_r"), silent = TRUE), "try-error"), "the direct table writer is not qualified here")
+    h <- kitHarness()
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    root <- withr::local_tempdir()
+    store <- newWorkflowEntityStore(root, basename(root), "DIA")
+    withr::defer(closeWorkflowEntityStore(store))
+    identity <- function(tag) newSavedWorkflowScientificIdentity("input", "design", tag, "all", "kit092")
+    table <- data.frame(id = letters[1:4], quantity = as.double(1:4))
+    whole <- saveWorkflowTable(store, table, "whole", identity("whole"), "id")
+    # The same rows through the other writer: the same content in different bytes, as the partitioned intensity filter gives.
+    other <- saveWorkflowTable(store, table, "other", identity("other"), "id", write_fn = function(payload, metadata) {
+        writer <- openWorkflowTableWriter(payload, metadata, NULL, backend = "fast_r")
+        appendWorkflowTableWriter(writer, table, seq_len(nrow(table)))
+        finishWorkflowTableWriter(writer)
+    })
+    changed_table <- table
+    changed_table$quantity[[3L]] <- 30
+    changed <- saveWorkflowTable(store, changed_table, "changed", identity("changed"), "id")
+    expect_false(identical(whole$payload$sha256, other$payload$sha256))
+    product <- function(reference) list(product_type = "lipid.intensity_filter_result", counts = c(206L, 189L), filtered = reference)
+    canonical <- function(reference) h$kitCanonical(product(reference), store, api, memo = new.env(parent = emptyenv()))
+    expect_identical(canonical(whole), canonical(other))
+    expect_false(identical(canonical(whole), canonical(changed)))
+    expect_identical(canonical(whole)$filtered$content, h$kitFingerprintTable(store, whole, api)$sha256)
+    # Without a store (the args summary, an .rds publication file) a nested table keeps its payload hash, as before.
+    expect_identical(h$kitCanonical(product(whole))$filtered$sha256, whole$payload$sha256)
+})
+
+test_that("KIT-092: the verifier rebuilds the products the driver attached to each step from the recomputed store", {
+    h <- kitHarness()
+    product <- function(type, sha) list(kind = "scientific_product", product_type = type, sha256 = sha)
+    products <- list(p1 = product("lipid.intensity_filter_result", strrep("b", 64)), p2 = product(NULL, strrep("a", 64)),
+        p3 = product("omics-figure", strrep("c", 64)))
+    products$p2$kind <- "rendered_asset"
+    populations <- list(import = list(state = NULL, product_ids = character()),
+        intensity = list(state = "lipid_intensity_filtered", product_ids = c("p1", "p2")),
+        duplicates = list(state = "lipid_duplicates_resolved", product_ids = c("p1", "p2", "p3", "gone")))
+    attached <- h$kitStepProducts(populations, products)
+    # First appearance, ordered by hash, named <type>:<sha12> as the driver names them; an id the head no longer holds is skipped.
+    expect_identical(names(attached$intensity), c(paste0("rendered_asset:", strrep("a", 12)), paste0("lipid.intensity_filter_result:", strrep("b", 12))))
+    expect_identical(names(attached$duplicates), paste0("omics-figure:", strrep("c", 12)))
+    expect_length(attached$import, 0L)
+    # The in-process recorder leaves rendered pages out.
+    expect_identical(names(h$kitStepProducts(populations, products, rendered = FALSE)$intensity), paste0("lipid.intensity_filter_result:", strrep("b", 12)))
+})
+
+test_that("KIT-092 (KIT098-F02): a single journey with an unbound step oracle, or an undeclared in-memory member, is refused", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_092 <- list(library = "/lib/q", build = strrep("q", 64), exact_sum = "sum-q")
+    b$corpora$lipid_screen <- b$corpora$screen
+    b$harness <- list(step_map_lipid_sha256 = strrep("l", 64))
+    b$tickets[["092a"]] <- list(kind = "single_journey", build = "kit_092", corpus = "lipid_screen", route = "lipidomics",
+        whole_journey = TRUE, oracles = "lipid92", ceiling_seconds = 1800L)
+    b <- kitSyntheticOracles(b, h, "lipidomics", "lipid92")
+    case <- h$kitCases(b, "kit-journey-092a")[[1L]]
+    expect_false(case$in_memory)
+    # An unbound step oracle is refused at binding, never skipped at verification; an oracle without components is unbound.
+    gap <- b; gap$oracles$lipid92_duplicates <- NULL
+    expect_error(h$kitCases(gap, "kit-journey-092a"), "duplicates")
+    empty <- b; empty$oracles$lipid92_intensity$components <- list()
+    expect_error(h$kitCases(empty, "kit-journey-092a"), "intensity")
+    # A member stopped after a step needs the oracles of the steps it runs only.
+    early <- gap; early$tickets[["092a"]]$whole_journey <- NULL; early$tickets[["092a"]]$stop_after <- "intensity"
+    expect_identical(h$kitCases(early, "kit-journey-092a")[[1L]]$stop_after, "intensity")
+    # A member without oracles is refused unless it declares in_memory (DIA on the full corpus keeps the KIT-005 oracles).
+    bare <- b; bare$tickets[["092a"]]$oracles <- NULL
+    expect_error(h$kitCases(bare, "kit-journey-092a"), "in_memory")
+    screen <- b; screen$tickets[["092d"]] <- list(kind = "single_journey", build = "kit_092", corpus = "screen", whole_journey = TRUE, ceiling_seconds = 1800L)
+    expect_error(h$kitCases(screen, "kit-journey-092d"), "in_memory")
+    declared <- bare; declared$tickets[["092a"]]$in_memory <- TRUE
+    memory_case <- h$kitCases(declared, "kit-journey-092a")[[1L]]
+    expect_true(memory_case$in_memory)
+    # Decisions: in memory only where declared; an undeclared member needs its populations and its exactness is judged.
+    ids <- h$kitStepIds("lipidomics")
+    receipt_for <- function(case, populations_complete) list(cases = stats::setNames(list(list(passed = TRUE,
+        verifier_completion = list(accepted = TRUE), operation = list(status = "complete", swap_bytes = 0, peak_bytes = 4e9,
+            elapsed_seconds = 900, max_sample_interval = 0.06, cleanup = list(slice_stopped = TRUE), resident_end_bytes = 1e9,
+            populations_complete = populations_complete, head_unchanged = NA,
+            phase_status = as.list(stats::setNames(rep("complete", length(ids)), ids)),
+            phase_peak_anon_bytes = as.list(stats::setNames(rep(2e9, length(ids)), ids))))), case$id))
+    judged <- h$kitSingleJourneyDecision(receipt_for(case, FALSE), list(case), b)
+    expect_identical(judged$failing_rule, "populations_incomplete")
+    expect_false(judged$member$in_memory)
+    exact <- h$kitSingleJourneyDecision(receipt_for(case, TRUE), list(case), b)
+    expect_identical(exact$status, "accepted")
+    expect_true(exact$member$exact)
+    memory <- h$kitSingleJourneyDecision(receipt_for(memory_case, FALSE), list(memory_case), declared)
+    expect_identical(memory$status, "accepted")
+    expect_true(is.na(memory$member$exact))
+    # An omics lifecycle member is in memory only when the binding declares it: undeclared, the populations and head rules apply.
+    b$lifecycle_omics <- list(ceiling_seconds = 1800L, build = "kit_092",
+        fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation"),
+        normalisation = list(ruv_mode = "automatic"))
+    complete <- h$kitCases(b, "kit-lifecycle-lipid")
+    expect_false(complete[[1L]]$in_memory)
+    expect_identical(h$kitLifecycleDecision(receipt_for(complete[[1L]], FALSE), complete, b)$failing_rule, "populations_incomplete")
+    fail <- h$kitCases(b, "kit-lifecycle-lipid-fail")
+    failed <- receipt_for(fail[[1L]], TRUE)
+    failed$cases$member$operation$status <- "journey_failed"
+    failed$cases$member$operation$phase_status$normalisation <- "failed"
+    failed$cases$member$operation$guard <- list(reason = "injected_guard_stop")
+    expect_identical(h$kitLifecycleDecision(failed, fail, b)$failing_rule, "head_unchanged")
+    failed$cases$member$operation$head_unchanged <- TRUE
+    expect_identical(h$kitLifecycleDecision(failed, fail, b)$status, "lifecycle_failure_observed")
 })

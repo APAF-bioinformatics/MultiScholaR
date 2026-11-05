@@ -182,7 +182,7 @@ kitCases <- function(bindings, stage) {
         build
     }
     journey_case <- function(id, role, rep, build_key, corpus_key, fault, selector, record = TRUE, stop_after = NULL,
-        route = "DIA", oracles = NULL, normalisation = NULL, driver_settings = NULL) {
+        route = "DIA", oracles = NULL, normalisation = NULL, driver_settings = NULL, in_memory = FALSE) {
         build <- build_of(build_key)
         corpus <- bindings$corpora[[corpus_key]]
         if (is.null(corpus)) stop("corpus ", corpus_key, " is not bound")
@@ -196,9 +196,11 @@ kitCases <- function(bindings, stage) {
         # KIT-068: the lipidomics and metabolomics routes bind their own step maps (authored by reading the kernels).
         if (identical(route, "lipidomics") && is.null(bindings$harness$step_map_lipid_sha256)) stop("the lipid step map is not bound")
         if (identical(route, "metabolomics") && is.null(bindings$harness$step_map_metab_sha256)) stop("the metab step map is not bound")
+        # KIT-092 (protocol v1.7, KIT098-F02): a member is in memory (no store, exactness not judged) only where its
+        # binding declares it; it was inferred from a route other than DIA bound without oracles.
         list(id = id, kind = "journey", role = role, control = role == "control", rep = rep, fault = fault,
             corpus = corpus_key, record = record, stop_after = stop_after, route = route, oracles = oracles,
-            library = build$library, expected_build = build$build,
+            in_memory = isTRUE(in_memory), library = build$library, expected_build = build$build,
             exact_sum = build$exact_sum, expect_failure = fault != "none",
             binding = digest::digest(c(list(corpus = corpus$files, build = build, stage = stage, rep = rep, record = record,
                 journey = bindings$journey[setdiff(names(bindings$journey), "pair")], protocol = bindings$protocol_sha256,
@@ -208,7 +210,8 @@ kitCases <- function(bindings, stage) {
                 if (!is.null(stop_after)) list(stop_after = stop_after),
                 if (!identical(route, "DIA")) list(route = route, oracles = oracles),
                 if (!is.null(normalisation)) list(normalisation = normalisation),
-                if (!is.null(driver_settings)) list(driver_settings = driver_settings)), algo = "sha256"),
+                if (!is.null(driver_settings)) list(driver_settings = driver_settings),
+                if (isTRUE(in_memory)) list(in_memory = TRUE)), algo = "sha256"),
             selector = selector, normalisation = normalisation, driver_settings = driver_settings)
     }
     operation_case <- function(id, role, rep, build_key, operation, population_key, fault, selector,
@@ -261,9 +264,11 @@ kitCases <- function(bindings, stage) {
         # a launch record with guard_stop_test (workflowGuiLaunchRecord; attempt 1 of kit-lifecycle-lipid-fail ended
         # invalid_guard_injection without it). The complete member runs the production default (no record), as the
         # in-memory modules need nothing from it.
+        # KIT-092 (protocol v1.7): in memory only when `lifecycle_omics$in_memory` declares it (builds before KIT-070).
         case <- journey_case("member", "candidate", 1L, spec$build %||% kitControl(bindings), paste0(omic, "_screen"),
             fault = if (kind == "fail") spec$fault$name else "none", selector = paste0("kit:lifecycle:", omic, ":", kind),
-            record = kind == "fail", route = if (omic == "lipid") "lipidomics" else "metabolomics", normalisation = spec$normalisation)
+            record = kind == "fail", route = if (omic == "lipid") "lipidomics" else "metabolomics", normalisation = spec$normalisation,
+            in_memory = spec$in_memory)
         case$fault_spec <- spec$fault
         return(list(case))
     }
@@ -304,10 +309,25 @@ kitCases <- function(bindings, stage) {
             if (is.null(spec$stop_after) && !identical(spec$whole_journey, TRUE)) stop("KIT-", ticket, " single journey binds no build or stop_after")
             # The case id is the one its selector maps back to (KIT-018 pre-execution audit PE-01; KIT-008 correction 1).
             # KIT-053: a ticket may bind the normalisation tab's settings for its route (the limpa route's RUV mode).
-            return(list(journey_case("candidate-1", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
+            case <- journey_case("candidate-1", "candidate", 1L, spec$build, spec$corpus %||% "full", "none",
                 paste0("kit:journey-", ticket, ":candidate:1"), record = FALSE, stop_after = spec$stop_after,
                 route = spec$route %||% "DIA", oracles = spec$oracles, normalisation = spec$normalisation,
-                driver_settings = spec$driver_settings)))
+                driver_settings = spec$driver_settings, in_memory = spec$in_memory)
+            # KIT-092 (protocol v1.7, KIT098-F02): exactness is judged against an oracle for every step the member runs that
+            # leaves a state (`initial` carries no data), or the member is refused here, at binding; a member with no oracle
+            # source (bound `oracles`, or the KIT-005 oracles for DIA on the full corpus) must declare `in_memory`.
+            if (!case$in_memory) {
+                if (is.null(case$oracles) && !(identical(case$route, "DIA") && identical(case$corpus, "full")))
+                    stop("KIT-", ticket, " single journey binds no oracles and does not declare in_memory (protocol v1.7)")
+                steps <- kitJourneySteps(case$route)
+                if (!is.null(case$stop_after)) steps <- steps[seq_len(match(case$stop_after, vapply(steps, `[[`, "", "id")))]
+                judged <- vapply(Filter(function(step) !is.null(step$state) && !identical(step$state, "initial"), steps), `[[`, "", "id")
+                oracles <- kitOracleJourneyPopulations(bindings, case$route, case$oracles %||% "journey")
+                unbound <- judged[vapply(judged, function(step) is.null(oracles[[step]]$fingerprint), logical(1))]
+                if (length(unbound)) stop("KIT-", ticket, " single journey has no bound oracle for step(s) ",
+                    paste(unbound, collapse = ", "), " (protocol v1.7)")
+            }
+            return(list(case))
         }
         if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
         record <- isTRUE(spec$record)
@@ -459,9 +479,9 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
     failing <- kitIneligible(item, seconds, "journey")
     status <- op$phase_status
     if (is.null(failing) && !(all(steps %in% names(status)) && all(unlist(status[steps]) == "complete"))) failing <- "phase_timing"
-    # KIT-054: a protein-route single member bound without oracles is the legacy in-memory lane (a build that attaches
-    # no owner: no store, no populations); it records completion and measures only, and its exactness is not judged.
-    in_memory <- is.null(case$oracles) && !identical(kitRouteOf(case), "DIA")
+    # KIT-054: the legacy in-memory lane (a build that attaches no owner: no store, no populations) records completion and
+    # measures only, and its exactness is not judged. KIT-092 (protocol v1.7): only where the binding declares it.
+    in_memory <- isTRUE(case$in_memory)
     if (is.null(failing) && !in_memory && !isTRUE(op$populations_complete)) failing <- "populations_incomplete"
     inexact <- identical(failing, "verifier_accepted") &&
         grepl("oracle mismatch", item$verifier_completion$reason %||% "", fixed = TRUE)
@@ -612,11 +632,11 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
     result <- list(status = "invalid", failing_rule = NULL, promotion_authorized = FALSE,
         expect_failure = case$expect_failure)
     status <- op$phase_status
-    # KIT-068: the route's steps; an omics member runs the in-memory modules (no store: no populations, no head), so
-    # the populations and head rules are not applicable and are recorded as such (the KIT-054 in-memory rule).
+    # KIT-068: the route's steps; a member declared in memory (no store: no populations, no head) has the populations
+    # and head rules recorded as not applicable (the KIT-054 rule; KIT-092, protocol v1.7: only where declared).
     route <- kitRouteOf(case)
     steps <- kitStepIds(route)
-    in_memory <- !identical(route, "DIA") && is.null(case$oracles)
+    in_memory <- isTRUE(case$in_memory)
     result$route <- route
     result$in_memory <- in_memory
     stage <- if (route %in% c("lipidomics", "metabolomics")) paste0("kit-lifecycle-", if (route == "lipidomics") "lipid" else "metab") else "kit-lifecycle-complete"
@@ -734,6 +754,8 @@ kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL)
     keep <- function(names) if (is.null(ignore_products)) names else names[!grepl(ignore_products, names)]
     for (step in names(reference)) {
         expected <- reference[[step]]$fingerprint
+        # A reference step with nothing to judge (no state, or the empty `initial`). Against oracles, a step that leaves a
+        # state and has no bound oracle never reaches here: its single journey is refused at binding (KIT-092, v1.7).
         if (is.null(expected)) next
         actual <- candidate[[step]]$fingerprint
         if (is.null(actual)) { mismatches <- c(mismatches, paste0(step, "/missing")); next }
@@ -1055,8 +1077,9 @@ kitPageHashes <- function(store, reference, api, scope) {
 }
 
 #' Canonical form of a hydrated value for fingerprints that must reproduce across runs: absolute
-#' paths masked, `timestamp`/`mtime` fields dropped, saved references replaced by their payload
-#' hash (tables) or their own canonical form (records), plot and grob objects by their class.
+#' paths masked, `timestamp`/`mtime` fields dropped, saved references replaced by their content
+#' (tables, by pages, as a state's own tables) or their own canonical form (records), plot and grob
+#' objects by their class. Without a store a reference keeps its payload hash.
 #' @noRd
 kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NULL) {
     if (depth > 48L) return("<depth>")
@@ -1066,8 +1089,20 @@ kitCanonical <- function(value, store = NULL, api = NULL, depth = 0L, memo = NUL
     reference <- is.list(value) && !is.data.frame(value) && is.character(value$entity_id) && length(value$entity_id) == 1L &&
         is.list(value$payload) && is.character(value$payload$sha256)
     if (reference) {
-        if (identical(value$payload$codec, "parquet_duckdb") || is.null(store) || is.null(api))
-            return(list(.ref = value$kind %||% "value", sha256 = value$payload$sha256))
+        if (is.null(store) || is.null(api)) return(list(.ref = value$kind %||% "value", sha256 = value$payload$sha256))
+        # KIT-092 (protocol v1.7, user decision 2026-11-06): a table nested in a product is hashed by its pages, as
+        # `kitFingerprintTable` hashes a state's components, with its rows and columns; a partitioned write stores the
+        # same content in different bytes. The form is KIT-089's content comparison (kit-089/content-compare.R).
+        if (identical(value$payload$codec, "parquet_duckdb")) {
+            key <- paste0("table:", value$entity_id)
+            if (!is.null(memo) && !is.null(memo[[key]])) return(memo[[key]])
+            table <- kitFingerprintTable(store, value, api)
+            # Rows and column names keep a zero-row table's schema; typed plainly, so the codec version cannot count.
+            canonical <- list(.ref = "table", rows = as.numeric(table$rows), columns = as.character(unlist(table$columns)),
+                content = table$sha256)
+            if (!is.null(memo)) memo[[key]] <- canonical
+            return(canonical)
+        }
         # Records are hydrated once per fingerprint run (memo by entity id); their reference registries
         # (`dependencies` and the like) accumulate every earlier state and are derived, not science.
         if (!is.null(memo) && !is.null(memo[[value$entity_id]])) return(memo[[value$entity_id]])
@@ -1367,6 +1402,27 @@ kitFingerprintStore <- function(store_dir, api, states = NULL) {
     list(head_sha256 = head$head_sha256, states = result, products = products)
 }
 
+#' The head products attached to each journey step, as the driver and the in-process recorders attach them: a product
+#' belongs to the step after which its id first appears (`product_ids`, the head's products after the step), ordered by
+#' hash and named `<product type or kind>:<sha12>`; an id the final head no longer holds is skipped (KIT-092).
+#' @param populations A journey's populations in step order; `products` the `kitFingerprintStore()` products by id.
+#' @param rendered FALSE leaves rendered pages out, as the in-process recorders do.
+#' @return Named list by step of named product fingerprints.
+#' @noRd
+kitStepProducts <- function(populations, products, rendered = TRUE) {
+    seen <- character()
+    lapply(populations, function(population) {
+        ids <- as.character(population$product_ids %||% character())
+        new_ids <- setdiff(ids, seen)
+        seen <<- union(seen, ids)
+        attached <- products[intersect(new_ids, names(products))]
+        if (!rendered) attached <- attached[!vapply(attached, function(p) identical(p$kind, "rendered_asset"), logical(1))]
+        attached <- unname(attached[order(vapply(attached, `[[`, character(1), "sha256"))])
+        names(attached) <- vapply(attached, function(p) paste0(p$product_type %||% p$kind, ":", substr(p$sha256, 1L, 12L)), character(1))
+        attached
+    })
+}
+
 #' Does an in-run state fingerprint match the one recomputed from the immutable store? The in-run
 #' record also carries the products that appeared after the step (snapshot products), which a state
 #' record does not reference; those are compared only where the recomputed record has them.
@@ -1448,9 +1504,10 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         fault <- case$fault_spec %||% bindings$lifecycle$fault
         stopifnot(identical(operation$status, "journey_failed"), identical(operation$guard$reason, "injected_guard_stop"),
             identical(status[[fault$failed_step]], "failed"), identical(status[[fault$after_step]], "complete"))
-        if (is.null(journey$store) && !identical(kitRouteOf(case), "DIA") && is.null(case$oracles)) {
+        if (is.null(journey$store) && isTRUE(case$in_memory)) {
             # KIT-068: an in-memory member (the lipidomics and metabolomics modules before the owner) has no store, so
-            # the head rule cannot be checked; the failure is verified on the guard and the step marks alone.
+            # the head rule cannot be checked; the failure is verified on the guard and the step marks alone. KIT-092
+            # (protocol v1.7): only a member declared in memory; any other member without a store is refused below.
             receipt$failure <- list(failed_step = fault$failed_step, guard = operation$guard, in_memory = TRUE,
                 head_rule = "not applicable: in-memory member, no store")
             receipt$status <- "complete"
@@ -1507,6 +1564,9 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
         # correction between the run and this verification (KIT-011 correction 1) is recorded, not fatal.
         recomputed_populations <- journey$populations
         receipt$canonical_form_differences <- character()
+        # KIT-092 (protocol v1.7): the per-step products the driver attached from the head are recomputed from the store
+        # too, so the products are judged under the current canonical form throughout; before, they stayed as recorded.
+        attached <- kitStepProducts(journey$populations, recomputed$products)
         for (step in names(journey$populations)) {
             population <- journey$populations[[step]]
             if (is.null(population$state)) next
@@ -1515,10 +1575,8 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
                 stopifnot(identical(population$fingerprint[[field]], fresh[[field]]))
             if (!kitStateFingerprintMatches(population$fingerprint, fresh))
                 receipt$canonical_form_differences <- c(receipt$canonical_form_differences, step)
-            # The in-run fingerprint also carries the per-step assets the driver attached from the head; the
-            # recomputed values overlay the entries the state record itself holds.
             merged <- population$fingerprint
-            for (name in names(fresh$products)) merged$products[[name]] <- fresh$products[[name]]
+            merged$products <- c(fresh$products, attached[[step]])
             recomputed_populations[[step]]$fingerprint <- merged
         }
         # Cross-build: the operation identity products are reported, every state, support entry, summary and
