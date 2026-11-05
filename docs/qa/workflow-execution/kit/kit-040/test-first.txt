@@ -1,0 +1,5 @@
+# KIT-040 test first: the two new tests in test-workflow-kit-harness.R run on the tree before kit_omics_corpus.R gains trx_screen and before trx_notebook_reference.R exists (HEAD 86a32799 plus the tests).
+KIT-040: the trx_screen corpus regenerates byte for byte wit | pass 0 fail 0 error TRUE skip 0
+KIT-040: the notebook reference driver's preflight refuses i | pass 0 fail 0 error TRUE skip 0
+--- KIT-040: the trx_screen corpus regenerat : Error in `h$kitOmicsRecipe("trx_screen", 3L)`: kind %in% c("lipid_screen", "metab_screen") is not TRUE 
+--- KIT-040: the notebook reference driver's : Error in `eval(code, test_env)`: attempt to apply non-function 

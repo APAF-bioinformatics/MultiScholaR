@@ -1,0 +1,67 @@
+{
+  "ticket": "KIT-040",
+  "created": "2026-11-05 22:14:14 UTC",
+  "finished": "2026-11-05 22:18:20 UTC",
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y0OrcU/library",
+  "default_libraries": ["/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6", "/usr/lib/R/library"],
+  "r": "R version 4.6.1 (2026-06-24)",
+  "bioconductor": "3.23",
+  "blas": "/usr/lib/libblas.so.3.12.0",
+  "lapack": "/usr/lib/liblapack.so.3.12.0",
+  "la_version": "3.12.0",
+  "install_call": "BiocManager::install(c(\"RUVSeq\", \"EDASeq\"), lib = <kit library>, update = FALSE, ask = FALSE, Ncpus = 4L) with .libPaths() = c(<kit library>, <default libraries>)",
+  "versions": {
+    "edgeR": {
+      "version": "4.10.1",
+      "lib": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+    },
+    "limma": {
+      "version": "3.68.4",
+      "lib": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+    },
+    "RUVSeq": {
+      "version": "1.46.0",
+      "lib": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y0OrcU/library"
+    },
+    "EDASeq": {
+      "version": "2.46.0",
+      "lib": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y0OrcU/library"
+    },
+    "ruv": {
+      "version": "0.9.7.1",
+      "lib": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+    },
+    "Glimma": {
+      "version": "2.15.2",
+      "lib": "/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6"
+    }
+  },
+  "packages_added": {
+    "aroma.light": "3.42.0",
+    "BiocIO": "1.22.0",
+    "biomaRt": "2.68.0",
+    "cigarillo": "1.2.1",
+    "EDASeq": "2.46.0",
+    "GenomicAlignments": "1.48.0",
+    "GenomicFeatures": "1.64.0",
+    "hwriter": "1.3.2.1",
+    "pwalign": "1.8.0",
+    "restfulr": "0.0.17",
+    "Rhtslib": "3.8.0",
+    "Rsamtools": "2.28.0",
+    "rtracklayer": "1.72.0",
+    "RUVSeq": "1.46.0",
+    "ShortRead": "1.70.0"
+  },
+  "default_library_digest": {
+    "before": {
+      "sha256": "27a71a67cf75329ada5c532928f423d557eecc03258b739a620da278361dbf55",
+      "packages": 586
+    },
+    "after": {
+      "sha256": "27a71a67cf75329ada5c532928f423d557eecc03258b739a620da278361dbf55",
+      "packages": 586
+    },
+    "equal": true
+  }
+}

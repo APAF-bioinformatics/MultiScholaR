@@ -1467,3 +1467,107 @@ test_that("KIT-081: an operation member's case carries its population's route, w
     expect_identical(cases[[2L]]$variant, "partitioned")
     expect_null(cases[[3L]]$input$route)
 })
+
+kitTrxCorpusTool <- function() {
+    h <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/kit_omics_corpus.R"), h)
+    h
+}
+
+kitTrxCountCells <- function(directory) {
+    utils::read.delim(file.path(directory, "counts.tsv"), colClasses = "character", na.strings = character(), check.names = FALSE, quote = "")
+}
+
+test_that("KIT-040: the trx_screen corpus regenerates byte for byte with the notebook's groups, technical pairs, shuffled columns, edge genes and one-value fixtures", {
+    h <- kitTrxCorpusTool()
+    recipe <- h$kitOmicsRecipe("trx_screen", 3L)
+    expect_identical(recipe$seed, 20261106L)
+    expect_identical(recipe$features_per_assay, 6000L)
+    a <- withr::local_tempdir(); b <- withr::local_tempdir()
+    ma <- h$writeKitTrxCorpus(a, recipe); mb <- h$writeKitTrxCorpus(b, recipe)
+    files <- c("counts.tsv", "design_matrix.tab", "contrast_strings.tab", "design.tsv", "truth.json")
+    expect_setequal(names(ma$files), files)
+    expect_identical(ma$samples, 12L)
+    for (f in files) expect_identical(unname(tools::md5sum(file.path(a, f))), unname(tools::md5sum(file.path(b, f))), info = f)
+    expect_identical(ma$files, mb$files)
+    # The notebook's levels and file layout: Run, group, replicates; the contrast file's header line and one entry.
+    dm <- utils::read.delim(file.path(a, "design_matrix.tab"), check.names = FALSE)
+    expect_identical(names(dm), c("Run", "group", "replicates"))
+    expect_setequal(unique(dm$group), c("RPMI", "Sera"))
+    expect_identical(readLines(file.path(a, "contrast_strings.tab")), c("contrasts", "Sera_vs_RPMI=groupSera-groupRPMI"))
+    design <- utils::read.delim(file.path(a, "design.tsv"))
+    expect_identical(names(design), c("sample", "group", "batch", "tech_rep_group", "replicates"))
+    expect_identical(design$sample, dm$Run)
+    expect_true(all(table(design$tech_rep_group) == 2L))
+    expect_identical(length(unique(design$tech_rep_group)), 6L)
+    expect_true(all(tapply(design$group, design$tech_rep_group, function(g) length(unique(g))) == 1L))
+    expect_setequal(unique(design$batch), c("B1", "B2", "B3"))
+    # The count columns are a seeded permutation of the design order, recorded in truth.json.
+    truth <- jsonlite::read_json(file.path(a, "truth.json"), simplifyVector = TRUE)
+    counts <- kitTrxCountCells(a)
+    runs <- names(counts)[-(1:2)]
+    expect_identical(names(counts)[1:2], c("GeneID", "GeneName"))
+    expect_identical(runs, truth$column_order)
+    expect_identical(runs, design$sample[truth$column_permutation])
+    expect_false(identical(runs, design$sample))
+    # DE is checked by Run ID: the per-group means taken by the design's Run IDs recover the declared fold changes.
+    x <- matrix(as.numeric(unlist(counts[, runs])), ncol = length(runs), dimnames = list(counts$GeneID, runs))
+    cpm <- t(t(x) / colSums(x)) * 1e6
+    sera <- design$sample[design$group == "Sera"]; rpmi <- design$sample[design$group == "RPMI"]
+    de <- truth$differential
+    observed <- log2(rowMeans(cpm[de$GeneID, sera]) + 1) - log2(rowMeans(cpm[de$GeneID, rpmi]) + 1)
+    expressed <- rowMeans(cpm[de$GeneID, ]) > 50
+    expect_gt(mean(sign(observed[expressed]) == sign(de$log2fc[expressed])), 0.9)
+    positional <- log2(rowMeans(cpm[de$GeneID, runs[seq_along(sera)]]) + 1) - log2(rowMeans(cpm[de$GeneID, runs[-seq_along(sera)]]) + 1)
+    expect_lt(abs(stats::cor(positional[expressed], de$log2fc[expressed])), abs(stats::cor(observed[expressed], de$log2fc[expressed])))
+    expect_identical(nrow(de), 600L)
+    expect_true(all(abs(de$log2fc) >= 1 & abs(de$log2fc) <= 2))
+    # Edge content: 50 all-zero genes, one constant gene of 100, 1% each of NA, empty and duplicated GeneName.
+    # The 50 declared all-zero genes; low-mean genes may also draw all zeros by chance, which truth.json counts.
+    expect_identical(length(truth$zero_genes), 50L)
+    expect_true(all(truth$zero_genes %in% rownames(x)[rowSums(x) == 0]))
+    expect_identical(sum(rowSums(x) == 0), truth$observed_all_zero_genes)
+    constant <- rownames(x)[apply(x, 1, function(r) all(r == 100))]
+    expect_identical(constant, truth$constant_genes)
+    expect_identical(sum(counts$GeneName == "NA"), 60L)
+    expect_identical(sum(counts$GeneName == ""), 60L)
+    named <- counts$GeneName[!counts$GeneName %in% c("", "NA")]
+    expect_identical(sum(duplicated(named)), 60L)
+    expect_true(all(x == round(x)) && all(x >= 0))
+    # The fixtures: each differs from its parent in one value.
+    fixtures <- h$writeKitTrxFixtures(a, withr::local_tempdir())
+    expect_setequal(names(fixtures), c("counts_fractional", "counts_negative", "counts_na", "counts_whole_double"))
+    parent <- as.matrix(counts)
+    expected <- c(counts_fractional = "20.37", counts_negative = "-1", counts_na = "NA", counts_whole_double = "20.0")
+    for (name in names(fixtures)) {
+        changed <- as.matrix(kitTrxCountCells(fixtures[[name]]))
+        expect_identical(dim(changed), dim(parent))
+        expect_identical(sum(changed != parent), 1L, info = name)
+        expect_identical(changed[changed != parent], unname(expected[[name]]), info = name)
+        for (f in c("design_matrix.tab", "contrast_strings.tab", "design.tsv")) {
+            expect_identical(unname(tools::md5sum(file.path(fixtures[[name]], f))), unname(tools::md5sum(file.path(a, f))))
+        }
+    }
+})
+
+test_that("KIT-040: the notebook reference driver's preflight refuses invalid counts, a missing input and a missing package by class", {
+    h <- kitTrxCorpusTool()
+    corpus <- withr::local_tempdir()
+    h$writeKitTrxCorpus(corpus, h$kitOmicsRecipe("trx_screen", 3L))
+    fixtures <- h$writeKitTrxFixtures(corpus, withr::local_tempdir())
+    d <- new.env(parent = globalenv()); sys.source(testthat::test_path("../../tools/profiling/trx_notebook_reference.R"), d)
+    # The package list is the notebook's own p_load list (and pacman), so the notebook never installs at render time.
+    packages <- d$trxNotebookPackages(testthat::test_path("../../dev/distributable/plans/transcriptomics_workflow.rmd"))
+    expect_true(all(c("pacman", "edgeR", "limma", "RUVSeq", "ruv", "Glimma", "here", "vroom") %in% packages))
+    for (name in c("counts_fractional", "counts_negative", "counts_na")) {
+        expect_error(d$trxPreflight(fixtures[[name]], packages = "stats"), class = "kit_trx_invalid_counts", info = name)
+    }
+    expect_no_error(d$trxPreflight(fixtures[["counts_whole_double"]], packages = "stats"))
+    expect_no_error(d$trxPreflight(corpus, packages = "stats"))
+    for (missing in c("design_matrix.tab", "contrast_strings.tab")) {
+        partial <- withr::local_tempdir()
+        file.copy(list.files(corpus, full.names = TRUE), partial)
+        unlink(file.path(partial, missing))
+        expect_error(d$trxPreflight(partial, packages = "stats"), class = "kit_trx_missing_input", info = missing)
+    }
+    expect_error(d$trxPreflight(corpus, packages = c("stats", "kitTrxNoSuchPackage")), class = "kit_trx_missing_package")
+})

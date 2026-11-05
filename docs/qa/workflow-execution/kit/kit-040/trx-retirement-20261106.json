@@ -1,0 +1,277 @@
+{
+  "recorded": "2026-11-06",
+  "ticket": "KIT-040",
+  "decision": "user 2026-11-06: plan the transcriptomics re-cut for work directly on performance-v2 (plan 3.8, approved); TRX-001 to TRX-005 superseded and archived by KIT-040",
+  "source_index": "tickets/transcriptomics/tickets-index.json (gitignored)",
+  "supersession_map": "tickets/transcriptomics/TRX-SUPERSESSION.md (gitignored; its content is reproduced in requirement_map below)",
+  "successor_plan": "tickets/kit/00-KIT-PLAN.md (gitignored)",
+  "worktree": {
+    "path": "../MultiScholaR-transcriptomics",
+    "branch": "transcriptomics",
+    "head": "e7db197f95a1f5fb1dba8f16911002b3eb541c92",
+    "commits_of_its_own": 0,
+    "note": "left as it is for the user; the branch head is an ancestor of performance-v2"
+  },
+  "index_before": {
+    "project": "MultiScholaR",
+    "sprint": "Transcriptomics function-level memory adaptations (non-GUI)",
+    "branch": "transcriptomics",
+    "plan": "00-TRANSCRIPTOMICS-PLAN.md",
+    "plan_version": "1.1",
+    "tickets": [
+      {
+        "id": "TRX-001",
+        "title": "Isolated baseline library and seeded synthetic fixtures",
+        "status": "pending",
+        "priority": "P0",
+        "dependencies": [],
+        "time_estimate": "3h",
+        "file": "TRX-001.md"
+      },
+      {
+        "id": "TRX-002",
+        "title": "Notebook baseline driver, frozen oracle and guarded lifecycle proof",
+        "status": "pending",
+        "priority": "P0",
+        "dependencies": [
+          "TRX-001"
+        ],
+        "time_estimate": "5h",
+        "file": "TRX-002.md"
+      },
+      {
+        "id": "TRX-003",
+        "title": "Screening profile and single-mechanism decision",
+        "status": "blocked",
+        "priority": "P0",
+        "dependencies": [
+          "TRX-002"
+        ],
+        "time_estimate": "3h",
+        "file": "TRX-003.md"
+      },
+      {
+        "id": "TRX-004",
+        "title": "Authoritative sample-to-group design validation",
+        "status": "pending",
+        "priority": "P1",
+        "dependencies": [
+          "TRX-001"
+        ],
+        "time_estimate": "3h",
+        "file": "TRX-004.md"
+      },
+      {
+        "id": "TRX-005",
+        "title": "Extract notebook stages into native package functions",
+        "status": "pending",
+        "priority": "P1",
+        "dependencies": [
+          "TRX-002",
+          "TRX-004"
+        ],
+        "time_estimate": "6h",
+        "file": "TRX-005.md"
+      }
+    ]
+  },
+  "index_after": {
+    "project": "MultiScholaR",
+    "sprint": "Transcriptomics function-level memory adaptations (non-GUI)",
+    "branch": "transcriptomics",
+    "plan": "00-TRANSCRIPTOMICS-PLAN.md",
+    "plan_version": "1.1",
+    "tickets": [],
+    "archived_tickets": [
+      {
+        "id": "TRX-001",
+        "title": "Isolated baseline library and seeded synthetic fixtures",
+        "status": "pending",
+        "priority": "P0",
+        "dependencies": [],
+        "time_estimate": "3h",
+        "file": "TRX-001.md",
+        "retirement_reason": "retired 2026-11-06 (user: transcriptomics re-cut on performance-v2, plan 3.8/3.9): superseded by the KIT transcriptomics series (KIT-040, KIT-093 to KIT-099); original file and status preserved; requirements carried by successor_owners (TRX-SUPERSESSION.md)",
+        "successor_owners": [
+          "KIT-040",
+          "KIT-093",
+          "KIT-099"
+        ]
+      },
+      {
+        "id": "TRX-002",
+        "title": "Notebook baseline driver, frozen oracle and guarded lifecycle proof",
+        "status": "pending",
+        "priority": "P0",
+        "dependencies": [
+          "TRX-001"
+        ],
+        "time_estimate": "5h",
+        "file": "TRX-002.md",
+        "retirement_reason": "retired 2026-11-06 (user: transcriptomics re-cut on performance-v2, plan 3.8/3.9): superseded by the KIT transcriptomics series (KIT-040, KIT-093 to KIT-099); original file and status preserved; requirements carried by successor_owners (TRX-SUPERSESSION.md)",
+        "successor_owners": [
+          "KIT-040",
+          "KIT-098"
+        ]
+      },
+      {
+        "id": "TRX-003",
+        "title": "Screening profile and single-mechanism decision",
+        "status": "blocked",
+        "priority": "P0",
+        "dependencies": [
+          "TRX-002"
+        ],
+        "time_estimate": "3h",
+        "file": "TRX-003.md",
+        "retirement_reason": "retired 2026-11-06 (user: transcriptomics re-cut on performance-v2, plan 3.8/3.9): superseded by the KIT transcriptomics series (KIT-040, KIT-093 to KIT-099); original file and status preserved; requirements carried by successor_owners (TRX-SUPERSESSION.md)",
+        "successor_owners": [
+          "KIT-099"
+        ]
+      },
+      {
+        "id": "TRX-004",
+        "title": "Authoritative sample-to-group design validation",
+        "status": "pending",
+        "priority": "P1",
+        "dependencies": [
+          "TRX-001"
+        ],
+        "time_estimate": "3h",
+        "file": "TRX-004.md",
+        "retirement_reason": "retired 2026-11-06 (user: transcriptomics re-cut on performance-v2, plan 3.8/3.9): superseded by the KIT transcriptomics series (KIT-040, KIT-093 to KIT-099); original file and status preserved; requirements carried by successor_owners (TRX-SUPERSESSION.md)",
+        "successor_owners": [
+          "KIT-093"
+        ]
+      },
+      {
+        "id": "TRX-005",
+        "title": "Extract notebook stages into native package functions",
+        "status": "pending",
+        "priority": "P1",
+        "dependencies": [
+          "TRX-002",
+          "TRX-004"
+        ],
+        "time_estimate": "6h",
+        "file": "TRX-005.md",
+        "retirement_reason": "retired 2026-11-06 (user: transcriptomics re-cut on performance-v2, plan 3.8/3.9): superseded by the KIT transcriptomics series (KIT-040, KIT-093 to KIT-099); original file and status preserved; requirements carried by successor_owners (TRX-SUPERSESSION.md)",
+        "successor_owners": [
+          "KIT-093",
+          "KIT-095"
+        ]
+      }
+    ],
+    "retired": {
+      "date": "2026-11-06",
+      "by": "KIT-040",
+      "supersession": "TRX-SUPERSESSION.md",
+      "tracked_copy": "docs/qa/workflow-execution/kit/kit-040/trx-retirement-20261106.json",
+      "successor_plan": "../kit/00-KIT-PLAN.md"
+    }
+  },
+  "requirement_map": [
+    {
+      "trx": "TRX-001",
+      "requirement": "isolated library (RUVSeq and missing notebook packages, outside the default library, versions and BLAS recorded)",
+      "owner": "KIT-040",
+      "how": "RUVSeq and EDASeq installed into the kit library (kit-040/library-receipt.json); the default library digest equal before and after"
+    },
+    {
+      "trx": "TRX-001",
+      "requirement": "seeded synthetic fixtures (shuffled columns, truth.json, DE by Run ID, zero/constant genes, GeneName NA/duplicates, invalid-count fixtures, 12- and 16-sample k-cap fixtures)",
+      "owner": "KIT-040",
+      "how": "trx_screen corpora (24, 12, 16 samples; 6,000 genes) and the one-value fixtures in tools/profiling/kit_omics_corpus.R"
+    },
+    {
+      "trx": "TRX-001",
+      "requirement": "6,000 x 300 screening shape",
+      "owner": "KIT-099",
+      "how": "the transcriptomics sizes are KIT-099's (the four KIT-088 sizes); not generated by KIT-040"
+    },
+    {
+      "trx": "TRX-001",
+      "requirement": "tied p-values via duplicated count rows; a rank-deficient design fixture",
+      "owner": "KIT-093",
+      "how": "KIT-093's preflight refusals (trx_da_rank_deficient) and kernel tests own these edge cases"
+    },
+    {
+      "trx": "TRX-001",
+      "requirement": "profvis and lobstr versions",
+      "owner": "dropped",
+      "how": "profiling attribution is not part of the re-cut; memory is measured by the kit harness (KIT-098, KIT-099)"
+    },
+    {
+      "trx": "TRX-002",
+      "requirement": "notebook baseline driver with chunk markers, --fail-after, no runtime install",
+      "owner": "KIT-040",
+      "how": "tools/profiling/trx_notebook_reference.R renders the notebook unchanged (no edited copy), knitr hook markers, --fail-before, preflight refusing a missing package"
+    },
+    {
+      "trx": "TRX-002",
+      "requirement": "frozen oracle (masks, grid unrounded with status, W, design, top_genes, PCA, RLE layer_data, newY, Glimma outcome, output hashes)",
+      "owner": "KIT-040",
+      "how": "the reference products and fingerprint stores in kit-040/"
+    },
+    {
+      "trx": "TRX-002",
+      "requirement": "guarded wrapper (systemd unit, MemAvailable preconditions, thread environment)",
+      "owner": "KIT-098",
+      "how": "the kit harness's transcriptomics route (in-process recorder, lifecycle and screen journeys)"
+    },
+    {
+      "trx": "TRX-002",
+      "requirement": "--profvis mode and per-chunk retained sizes",
+      "owner": "dropped",
+      "how": "see TRX-003"
+    },
+    {
+      "trx": "TRX-003",
+      "requirement": "screening profile and single-mechanism decision",
+      "owner": "KIT-099",
+      "how": "KIT-099 measures the transcriptomics journeys and variant pairs at size; the default change is KIT-100"
+    },
+    {
+      "trx": "TRX-004",
+      "requirement": "authoritative sample-to-group design validation, no positional fallback, classed refusals",
+      "owner": "KIT-093",
+      "how": "design validation in R/func_trx_design.R"
+    },
+    {
+      "trx": "TRX-005",
+      "requirement": "notebook stages as package functions, notebook methods unchanged, find_best_k not findBestKElbow",
+      "owner": "KIT-093",
+      "how": "one side-effect-free kernel per notebook stage, identical to the KIT-040 reference"
+    },
+    {
+      "trx": "TRX-005",
+      "requirement": "count-value check (NA, negative, non-whole refused; integer-valued doubles pass)",
+      "owner": "KIT-093",
+      "how": "the whole-number count policy in the kernels (KIT-040's driver preflight applies the same rule to the reference inputs)"
+    },
+    {
+      "trx": "TRX-005",
+      "requirement": "preflight errors: too few features, no successful grid member, rank, contrast",
+      "owner": "KIT-093",
+      "how": "trx_grid_too_few_features, trx_grid_no_member, trx_da_rank_deficient, trx_contrast_unparseable / trx_contrast_not_estimable"
+    },
+    {
+      "trx": "TRX-005",
+      "requirement": "RUVIII replicate structure flagged, not relabelled",
+      "owner": "KIT-093",
+      "how": "m_source parameter defaulting to group (the notebook), technical replicates selectable (user decision 2026-11-06)"
+    },
+    {
+      "trx": "TRX-005",
+      "requirement": "edgeR and RUVSeq as Suggests behind requireOptionalPackage; GUI out of scope",
+      "owner": "KIT-093",
+      "how": "KIT-093's DESCRIPTION change; the GUI is in the series (KIT-096, KIT-097) by user decision 2026-11-06"
+    },
+    {
+      "trx": "TRX-005",
+      "requirement": "exports",
+      "owner": "KIT-095",
+      "how": "the transcriptomics binding's publication operations"
+    }
+  ]
+}

@@ -16,10 +16,18 @@
 # within the group, the column the kit driver's technical-replicate assignment reads, as the DIA corpora name it).
 # Sample names are already clean (letters, digits, underscores), so the import runs with sanitize_names off.
 # KIT-086: an optional sixth argument, the share of features (lowest abundance first) missing in 15% of their samples; default 0.
-# Usage: Rscript tools/profiling/kit_omics_corpus.R <lipid_screen|metab_screen> <directory> [biological samples per group] [features per assay] [internal standards per assay]
+# KIT-040: trx_screen, a seeded gamma-Poisson RNA-seq count corpus in the layout the transcriptomics notebook reads
+#   (dev/distributable/plans/transcriptomics_workflow.rmd): counts.tsv (GeneID, GeneName, runs in a seeded permutation of the
+#   design order), design_matrix.tab (Run, group, replicates), contrast_strings.tab, the kit design.tsv, truth.json and the
+#   manifest. Groups RPMI and Sera (the notebook's levels), two technical replicates per biological sample, three batches;
+#   the per-group argument gives the size and the features argument the gene count (default 6,000).
+#   `trx_fixtures <corpus> <directory>` writes the one-value count fixtures (KIT-040) derived from a corpus.
+# Usage: Rscript tools/profiling/kit_omics_corpus.R <lipid_screen|metab_screen|trx_screen> <directory> [biological samples per group] [features per assay] [internal standards per assay]
+#        Rscript tools/profiling/kit_omics_corpus.R trx_fixtures <corpus directory> <fixtures directory>
 
 kitOmicsRecipe <- function(kind, biological_per_group = 6L, features = NULL, standards = 6L, missing_features = 0) {
-    stopifnot(kind %in% c("lipid_screen", "metab_screen"))
+    stopifnot(kind %in% c("lipid_screen", "metab_screen", "trx_screen"))
+    if (kind == "trx_screen") return(kitTrxRecipe(biological_per_group, features))
     seed <- switch(kind, lipid_screen = 20261029L, metab_screen = 20261030L)
     features <- as.integer(features %||% switch(kind, lipid_screen = 200L, metab_screen = 300L))
     recipe <- list(kind = kind, synthetic = TRUE, seed = seed, biological_per_group = as.integer(biological_per_group),
@@ -184,12 +192,137 @@ writeKitMetabCorpus <- function(directory, recipe = kitOmicsRecipe("metab_screen
             length(unique(design$tech_rep_group)), recipe$technical_replicates, length(recipe$batches), round(100 * recipe$differential_fraction)))
 }
 
+# KIT-040: the transcriptomics count corpus. Every parameter is declared here and written into the manifest and truth.json.
+kitTrxRecipe <- function(biological_per_group = 6L, features = NULL) {
+    list(kind = "trx_screen", synthetic = TRUE, seed = 20261106L, biological_per_group = as.integer(biological_per_group),
+        technical_replicates = 2L, groups = c("RPMI", "Sera"), batches = c("B1", "B2", "B3"),
+        features_per_assay = as.integer(features %||% 6000L), assays = "counts",
+        base_mean_meanlog = 4, base_mean_sdlog = 1.5, low_mean_fraction = 0.1, low_mean_range = c(0.05, 1),
+        batch_fraction = 0.3, batch_log2_sd = 0.5, differential_fraction = 0.1, differential_abs_log2fc = c(1, 2),
+        dispersion_scale = 0.05, dispersion_sdlog = 0.5, library_factor_range = c(0.5, 2),
+        zero_genes = 50L, constant_genes = 1L, constant_count = 100L,
+        gene_name_na_fraction = 0.01, gene_name_empty_fraction = 0.01, gene_name_duplicate_fraction = 0.01,
+        contrast = "Sera_vs_RPMI=groupSera-groupRPMI")
+}
+
+# Gamma-Poisson counts (genes x design-ordered runs): a log-normal base mean (10% of genes set below a mean of 1), a
+# per-batch log2 N(0, sd) effect on a share of genes, a Sera-vs-RPMI log2 fold change on another share, a gamma multiplier
+# per gene and biological sample (shape 1/phi), then a Poisson draw per technical replicate times its library factor.
+# The all-zero and constant genes are drawn from neither the batch nor the differential sets.
+kitTrxCounts <- function(recipe, design) {
+    withr::with_seed(recipe$seed, {
+        p <- recipe$features_per_assay; n <- nrow(design)
+        biological <- unique(design$tech_rep_group)
+        base_mean <- stats::rlnorm(p, recipe$base_mean_meanlog, recipe$base_mean_sdlog)
+        edge <- sample.int(p, recipe$zero_genes + recipe$constant_genes)
+        zero <- edge[seq_len(recipe$zero_genes)]; constant <- edge[recipe$zero_genes + seq_len(recipe$constant_genes)]
+        regular <- setdiff(seq_len(p), edge)
+        low <- regular[sample.int(length(regular), round(p * recipe$low_mean_fraction))]
+        base_mean[low] <- stats::runif(length(low), recipe$low_mean_range[[1L]], recipe$low_mean_range[[2L]])
+        batch_genes <- sort(regular[sample.int(length(regular), round(p * recipe$batch_fraction))])
+        batch_log2 <- matrix(stats::rnorm(length(batch_genes) * length(recipe$batches), 0, recipe$batch_log2_sd),
+            ncol = length(recipe$batches), dimnames = list(NULL, recipe$batches))
+        de_genes <- sort(regular[sample.int(length(regular), round(p * recipe$differential_fraction))])
+        de_log2fc <- stats::runif(length(de_genes), recipe$differential_abs_log2fc[[1L]], recipe$differential_abs_log2fc[[2L]]) *
+            sample(c(-1, 1), length(de_genes), replace = TRUE)
+        dispersion <- recipe$dispersion_scale * stats::rlnorm(p, 0, recipe$dispersion_sdlog)
+        biological_multiplier <- matrix(stats::rgamma(p * length(biological), shape = 1 / dispersion, rate = 1 / dispersion), nrow = p)
+        library_factor <- exp(stats::runif(n, log(recipe$library_factor_range[[1L]]), log(recipe$library_factor_range[[2L]])))
+        log2_effect <- matrix(0, nrow = p, ncol = n)
+        log2_effect[batch_genes, ] <- batch_log2[, design$batch, drop = FALSE]
+        sera <- design$group == "Sera"
+        log2_effect[de_genes, sera] <- log2_effect[de_genes, sera] + de_log2fc
+        mu <- base_mean * 2^log2_effect * biological_multiplier[, match(design$tech_rep_group, biological), drop = FALSE] *
+            matrix(library_factor, nrow = p, ncol = n, byrow = TRUE)
+        counts <- matrix(stats::rpois(p * n, mu), nrow = p, ncol = n)
+        counts[zero, ] <- 0L
+        counts[constant, ] <- as.integer(recipe$constant_count)
+        list(counts = counts, base_mean = base_mean, zero = zero, constant = constant, low = low, batch_genes = batch_genes,
+            batch_log2 = batch_log2, de_genes = de_genes, de_log2fc = de_log2fc, library_factor = library_factor)
+    })
+}
+
+writeKitTrxCorpus <- function(directory, recipe = kitOmicsRecipe("trx_screen")) {
+    dir.create(directory, recursive = TRUE, showWarnings = FALSE)
+    design <- kitOmicsDesign(recipe)
+    m <- kitTrxCounts(recipe, design)
+    p <- recipe$features_per_assay; n <- nrow(design)
+    gene_id <- sprintf("TRXG%05d", seq_len(p))
+    # GeneName edge cases (the notebook falls back to GeneID for NA and empty; a duplicated symbol is joined by GeneID).
+    names <- withr::with_seed(recipe$seed + 1L, {
+        symbol <- sprintf("SYM%05d", seq_len(p))
+        k <- round(p * c(recipe$gene_name_na_fraction, recipe$gene_name_empty_fraction, recipe$gene_name_duplicate_fraction))
+        chosen <- sample.int(p, sum(k))
+        na <- chosen[seq_len(k[[1L]])]; empty <- chosen[k[[1L]] + seq_len(k[[2L]])]; duplicate <- chosen[sum(k[1:2]) + seq_len(k[[3L]])]
+        source <- sample(setdiff(seq_len(p), chosen), k[[3L]])
+        symbol[duplicate] <- symbol[source]; symbol[na] <- NA_character_; symbol[empty] <- ""
+        list(symbol = symbol, na = na, empty = empty, duplicate = duplicate, source = source)
+    })
+    permutation <- withr::with_seed(recipe$seed + 2L, sample.int(n))
+    counts <- m$counts[, permutation, drop = FALSE]; colnames(counts) <- design$sample[permutation]
+    table <- cbind(data.frame(GeneID = gene_id, GeneName = names$symbol, stringsAsFactors = FALSE), as.data.frame(counts, stringsAsFactors = FALSE))
+    utils::write.table(table, file.path(directory, "counts.tsv"), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
+    utils::write.table(data.frame(Run = design$sample, group = design$group, replicates = design$replicate),
+        file.path(directory, "design_matrix.tab"), sep = "\t", quote = FALSE, row.names = FALSE)
+    writeLines(c("contrasts", recipe$contrast), file.path(directory, "contrast_strings.tab"))
+    utils::write.table(design[, c("sample", "group", "batch", "tech_rep_group")] |> transform(replicates = design$replicate),
+        file.path(directory, "design.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+    truth <- list(recipe = recipe, genes = p, samples = n,
+        differential = data.frame(GeneID = gene_id[m$de_genes], log2fc = m$de_log2fc), differential_contrast = "Sera vs RPMI",
+        batch_loadings = cbind(data.frame(GeneID = gene_id[m$batch_genes]), as.data.frame(m$batch_log2)),
+        zero_genes = gene_id[m$zero], constant_genes = gene_id[m$constant], low_mean_genes = gene_id[sort(m$low)],
+        genes_below_mean_1 = sum(m$base_mean < 1), observed_all_zero_genes = sum(rowSums(m$counts) == 0),
+        gene_name = list(na = gene_id[sort(names$na)], empty = gene_id[sort(names$empty)], duplicated = gene_id[sort(names$duplicate)]),
+        design_order = design$sample, column_order = design$sample[permutation], column_permutation = permutation,
+        technical = data.frame(Run = design$sample, group = design$group, batch = design$batch, tech_rep_group = design$tech_rep_group,
+            replicates = design$replicate, library_factor = m$library_factor))
+    jsonlite::write_json(truth, file.path(directory, "truth.json"), auto_unbox = TRUE, pretty = TRUE, digits = NA, null = "null")
+    files <- file.path(directory, c("counts.tsv", "design_matrix.tab", "contrast_strings.tab", "design.tsv", "truth.json"))
+    kitWriteOmicsManifest(directory, recipe, files, p, design,
+        notes = sprintf("%d genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); %d biological samples x %d technical replicates in %d batches; groups %s; %d%% of genes differential (Sera vs RPMI, |log2FC| 1-2), %d%% with a batch effect; %d all-zero genes, %d constant gene, 1%% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+            p, length(unique(design$tech_rep_group)), recipe$technical_replicates, length(recipe$batches), paste(recipe$groups, collapse = "/"),
+            round(100 * recipe$differential_fraction), round(100 * recipe$batch_fraction), recipe$zero_genes, recipe$constant_genes))
+}
+
+# The one-value fixtures (KIT-040), each a copy of the corpus whose counts.tsv differs in one cell: three invalid values
+# (fractional, negative, NA) and one valid whole number written as a double. The cell is the first run's count of the
+# first gene (in file order) that is neither all-zero nor constant and whose count is not 20.
+writeKitTrxFixtures <- function(corpus, directory) {
+    lines <- readLines(file.path(corpus, "counts.tsv"))
+    cells <- strsplit(lines, "\t", fixed = TRUE)
+    truth <- jsonlite::read_json(file.path(corpus, "truth.json"), simplifyVector = TRUE)
+    skip <- c(truth$zero_genes, truth$constant_genes)
+    gene <- vapply(cells, `[[`, "", 1L)
+    row <- which(!gene %in% c("GeneID", skip) & vapply(cells, `[[`, "", 3L) != "20")[[1L]]
+    values <- c(counts_fractional = "20.37", counts_negative = "-1", counts_na = "NA", counts_whole_double = "20.0")
+    out <- list()
+    for (name in names(values)) {
+        target <- file.path(directory, name)
+        dir.create(target, recursive = TRUE, showWarnings = FALSE)
+        file.copy(file.path(corpus, c("design_matrix.tab", "contrast_strings.tab", "design.tsv", "truth.json")), target, overwrite = TRUE, copy.date = FALSE)
+        changed <- cells; parent_value <- changed[[row]][[3L]]; changed[[row]][[3L]] <- values[[name]]
+        writeLines(vapply(changed, paste, "", collapse = "\t"), file.path(target, "counts.tsv"))
+        jsonlite::write_json(list(fixture = name, parent_manifest_sha256 = digest::digest(file = file.path(corpus, "manifest.json"), algo = "sha256"),
+            gene = cells[[row]][[1L]], run = cells[[1L]][[3L]], parent_value = parent_value, value = values[[name]],
+            counts_sha256 = digest::digest(file = file.path(target, "counts.tsv"), algo = "sha256")),
+            file.path(target, "fixture.json"), auto_unbox = TRUE, pretty = TRUE)
+        out[[name]] <- target
+    }
+    out
+}
+
 if (sys.nframe() == 0L) {
     args <- commandArgs(TRUE)
-    if (length(args) < 2L) stop("usage: kit_omics_corpus.R <lipid_screen|metab_screen> <directory> [biological samples per group] [features per assay]")
+    if (length(args) < 2L) stop("usage: kit_omics_corpus.R <lipid_screen|metab_screen|trx_screen> <directory> [biological samples per group] [features per assay] | trx_fixtures <corpus> <directory>")
     kind <- args[[1L]]; directory <- args[[2L]]
+    if (kind == "trx_fixtures") {
+        stopifnot(length(args) == 3L)
+        fixtures <- writeKitTrxFixtures(directory, args[[3L]])
+        for (name in names(fixtures)) cat(name, fixtures[[name]], "\n")
+        quit(save = "no")
+    }
     recipe <- kitOmicsRecipe(kind, if (length(args) > 2L) as.integer(args[[3L]]) else 6L, if (length(args) > 3L) as.integer(args[[4L]]) else NULL, if (length(args) > 4L) as.integer(args[[5L]]) else 6L, if (length(args) > 5L) as.numeric(args[[6L]]) else 0)
-    manifest <- switch(kind, lipid_screen = writeKitLipidCorpus(directory, recipe), metab_screen = writeKitMetabCorpus(directory, recipe))
+    manifest <- switch(kind, lipid_screen = writeKitLipidCorpus(directory, recipe), metab_screen = writeKitMetabCorpus(directory, recipe), trx_screen = writeKitTrxCorpus(directory, recipe))
     cat(kind, directory, "samples", manifest$samples, "rows", manifest$rows, "\n")
     for (name in names(manifest$files)) cat("  ", name, manifest$files[[name]]$bytes, "bytes", substr(manifest$files[[name]]$sha256, 1, 12), "\n")
 }
