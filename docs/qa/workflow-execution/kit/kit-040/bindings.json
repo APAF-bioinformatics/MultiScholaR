@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "ticket": "KIT-040",
+  "created": "2026-11-06T09:28:34+1100",
+  "source_commit": "4a9d4c5d308f8b23a68ef3fc669eaa5cd6ee9796",
+  "driver": {
+    "path": "tools/profiling/trx_notebook_reference.R",
+    "sha256": "dde1f7ced9007e63dba61c410b42ccae185757b6e386cede2cb50a17c5ca2d4c"
+  },
+  "generator": {
+    "path": "tools/profiling/kit_omics_corpus.R",
+    "sha256": "9a3cf26be96beab66363314b587785bb4cb861f7fb2b7568e15da2f2527f4546"
+  },
+  "notebook": {
+    "path": "dev/distributable/plans/transcriptomics_workflow.rmd",
+    "sha256": "44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a"
+  },
+  "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y0OrcU/library",
+  "library_receipt": {
+    "path": "docs/qa/workflow-execution/kit/kit-040/library-receipt.json",
+    "sha256": "b9a43611598887982eaaabc34dffe012cd61b8351e1830afdc8a0f6d746f696a"
+  },
+  "corpora": {
+    "trx_screen": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen",
+      "generator_args": ["trx_screen", "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen", "6"],
+      "samples": 24,
+      "genes": 6000,
+      "expected_k_cap": 4,
+      "manifest_sha256": "775fafb6440ff2ef30cff6722551cfa1a62f5487325e8a3799253dbd331c0e97",
+      "files": {
+        "counts.tsv": {
+          "bytes": 561541,
+          "sha256": "d9bf774f8d11f3c03d6588be05e1ee2ba92518105affe49e9f075cc29b6624a2"
+        },
+        "design_matrix.tab": {
+          "bytes": 453,
+          "sha256": "ca81a1277960cbb6b0510ce613795e30d2f83bf47498b206390f61c076493558"
+        },
+        "contrast_strings.tab": {
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "design.tsv": {
+          "bytes": 741,
+          "sha256": "d8cf9d03ff31564e4a8a396c8a7a6a76ab50387fc4d30be1164cd4728f39307d"
+        },
+        "truth.json": {
+          "bytes": 306397,
+          "sha256": "8e0d820d096c2dfd7d08b153a784be5c17dc57072a08f3962d526c28e91e562d"
+        }
+      }
+    },
+    "trx_edge_12": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12",
+      "generator_args": ["trx_screen", "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12", "3"],
+      "samples": 12,
+      "genes": 6000,
+      "expected_k_cap": 3,
+      "manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344",
+      "files": {
+        "counts.tsv": {
+          "bytes": 338894,
+          "sha256": "4c4a47ea06947e26308ed91f36030c19285416066735f1824be0d3d98e51ccab"
+        },
+        "design_matrix.tab": {
+          "bytes": 237,
+          "sha256": "dd0286ac09c6fe2f26289bc78233c0042e73b1ebce17d2fc167cce4c4952ae88"
+        },
+        "contrast_strings.tab": {
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "design.tsv": {
+          "bytes": 393,
+          "sha256": "9437ea87a5a0175a52500e684c250f6f14c92c1f83ee4deb46c3d1652dd8dadc"
+        },
+        "truth.json": {
+          "bytes": 303810,
+          "sha256": "e5a22e9301aa74f10f35904e16fe24f1698f16e6446a5900d4e3e97d4e53cd20"
+        }
+      }
+    },
+    "trx_edge_16": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-16",
+      "generator_args": ["trx_screen", "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-16", "4"],
+      "samples": 16,
+      "genes": 6000,
+      "expected_k_cap": 4,
+      "manifest_sha256": "76023e6826fb4d799408c710df559dd86d9a968e35102905f58aa563dee53d38",
+      "files": {
+        "counts.tsv": {
+          "bytes": 410060,
+          "sha256": "53b422666b84a2c15ddefab8fa35157d150dc7e0ec834cac10dacd31b31f40ab"
+        },
+        "design_matrix.tab": {
+          "bytes": 309,
+          "sha256": "0df358ecb2f4e3579ba1bf52fd1bed7caa0c6a2d697f1f6cbfbfed42d724f026"
+        },
+        "contrast_strings.tab": {
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "design.tsv": {
+          "bytes": 509,
+          "sha256": "7ca83d15581492bd774d3b05c8fcf96411e07395b8db78d4be0edfdc9df12ba9"
+        },
+        "truth.json": {
+          "bytes": 304672,
+          "sha256": "6f830b59d0b80eefd11059e823d788169862e6e63722bd8a748bc6f879045b3b"
+        }
+      }
+    }
+  },
+  "fixtures": {
+    "counts_fractional": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12-fixtures/counts_fractional",
+      "gene": "TRXG00001",
+      "run": "RPMI_03_r2",
+      "parent_value": "1",
+      "value": "20.37",
+      "counts_sha256": "4539a8fc2121c5cf4f8fdfb76f626fcf1a4fc5d8e7c95bc3bd6d8113f77b9c23",
+      "parent_manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+    },
+    "counts_negative": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12-fixtures/counts_negative",
+      "gene": "TRXG00001",
+      "run": "RPMI_03_r2",
+      "parent_value": "1",
+      "value": "-1",
+      "counts_sha256": "d968400bcfe85244d7e4113e8c349ceace2d98b4658efd1e900e5e8bdd00a20d",
+      "parent_manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+    },
+    "counts_na": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12-fixtures/counts_na",
+      "gene": "TRXG00001",
+      "run": "RPMI_03_r2",
+      "parent_value": "1",
+      "value": "NA",
+      "counts_sha256": "e6146774c52418c682500ca5f6d78f2e385fad3688aa6f44cdaaf89403b69c44",
+      "parent_manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+    },
+    "counts_whole_double": {
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-edge-12-fixtures/counts_whole_double",
+      "gene": "TRXG00001",
+      "run": "RPMI_03_r2",
+      "parent_value": "1",
+      "value": "20.0",
+      "counts_sha256": "f617a5ff5ce7b989c321ea60fda7ef418960849a1200f45cdee5951a107dc38b",
+      "parent_manifest_sha256": "e17d1ed5c95cd915bebc39aa6fe23ba5f6838e4a9b628ac0583f999277fc4344"
+    }
+  },
+  "counted_renders": [
+    {
+      "id": "ref-trx_edge_12",
+      "corpus": "trx_edge_12",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/ref-trx_edge_12",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/ref-trx_edge_12",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "ref-trx_edge_16",
+      "corpus": "trx_edge_16",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/ref-trx_edge_16",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/ref-trx_edge_16",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "ref-trx_screen",
+      "corpus": "trx_screen",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/ref-trx_screen",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/ref-trx_screen",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "repeat-trx_edge_12",
+      "corpus": "trx_edge_12",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/repeat-trx_edge_12",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/repeat-trx_edge_12",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "lifecycle-complete-trx_edge_12",
+      "corpus": "trx_edge_12",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/lifecycle-complete-trx_edge_12",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/lifecycle-complete-trx_edge_12",
+      "fail_before": null,
+      "ceiling_seconds": 900
+    },
+    {
+      "id": "lifecycle-fail-trx_edge_12",
+      "corpus": "trx_edge_12",
+      "work": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/work/lifecycle-fail-trx_edge_12",
+      "out": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/out/lifecycle-fail-trx_edge_12",
+      "fail_before": "edger-de-analysis",
+      "ceiling_seconds": 900
+    }
+  ],
+  "budget": "one counted render each (900 s ceiling); one bounded correction pass only for a demonstrated driver or instrumentation failure; every attempt kept and classed",
+  "development": "development renders before this freeze: 4, all on a 12-sample corpus generated in kit/scratch-040-dev (3 complete, 1 forced failure; the first incomplete through a driver defect, the conflicted package refusing an unqualified as.factor in a derived product, fixed before the freeze)"
+}

@@ -1,0 +1,6 @@
+# KIT-040: the driver preflight (frozen driver) on the frozen trx_edge_12 corpus and its fixtures, packages from the notebook on the kit library
+trx-edge-12 : accepted 
+counts_fractional : kit_trx_invalid_counts - count '20.37' for gene TRXG00001 in run RPMI_03_r2 is not a whole non-negative number (1 invalid cells) 
+counts_negative : kit_trx_invalid_counts - count '-1' for gene TRXG00001 in run RPMI_03_r2 is not a whole non-negative number (1 invalid cells) 
+counts_na : kit_trx_invalid_counts - count 'NA' for gene TRXG00001 in run RPMI_03_r2 is not a whole non-negative number (1 invalid cells) 
+counts_whole_double : accepted 
