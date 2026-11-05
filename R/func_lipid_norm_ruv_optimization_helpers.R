@@ -181,6 +181,8 @@ runLipidPerAssayRuvOptimization <- function(
             }
 
             # Build one result row per tested percentage for this assay
+            complete_rows <- omicsRuvCompleteRows(assay_data, theObject@lipid_id_column, design_samples)
+
             assay_pct_rows <- purrr::map(percentage_results, function(pct_res) {
                 pct <- pct_res$percentage_requested
 
@@ -272,6 +274,24 @@ runLipidPerAssayRuvOptimization <- function(
                 }
 
                 best_k <- as.integer(best_k)
+                complete_controls <- omicsRuvCompleteControlCount(complete_rows, ctrl_indices)
+                # RUV-III cannot estimate more factors than it has controls observed in every sample (KIT-005).
+                if (isTRUE(best_k > complete_controls)) {
+                    return(list(
+                        percentage_requested    = pct
+                        , candidate_feature_count = candidate_feature_count
+                        , realized_num_controls   = realized_num_controls
+                        , realized_percentage     = realized_percentage
+                        , sample_size             = sample_size
+                        , best_k                  = best_k
+                        , separation_score        = separation_score
+                        , composite_score         = NA_real_
+                        , status                  = "skipped_k_exceeds_complete_controls"
+                        , error_reason            = sprintf("k = %d exceeds %d controls complete in every sample", best_k, complete_controls)
+                        , ctrl_indices            = ctrl_indices
+                        , cancor_plot             = cancor_plot
+                    ))
+                }
                 composite_score <- tryCatch(
                     calculateCompositeScore(separation_score, best_k, k_penalty_weight, effective_max_k)
                     , error = function(e) NA_real_

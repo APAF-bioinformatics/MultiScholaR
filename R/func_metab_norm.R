@@ -252,6 +252,30 @@ generateMetabQcPlots <- function(
 }
 
 
+#' Which features of an omics assay are observed (finite) in every design sample: the controls RUV-III can use
+#' for every sample, and so the upper bound on the factors it can estimate (`ruvCompleteControlRows`, KIT-005).
+#' @return Logical vector, one entry per row of the assay, named by feature id.
+#' @noRd
+omicsRuvCompleteRows <- function(assay_data, id_column, design_samples) {
+    sample_cols <- intersect(colnames(assay_data), design_samples)
+    values <- suppressWarnings(vapply(assay_data[sample_cols], as.numeric, numeric(nrow(assay_data))))
+    values <- matrix(values, nrow = nrow(assay_data))
+    stats::setNames(rowSums(!is.finite(values)) == 0L, as.character(assay_data[[id_column]]))
+}
+
+#' How many of a control set are complete: by feature id when the set is named, else by position.
+#' @return The count, or `NA_integer_` when the set cannot be aligned with the assay.
+#' @noRd
+omicsRuvCompleteControlCount <- function(complete_rows, ctrl_indices) {
+    if (!is.null(names(ctrl_indices))) {
+        return(as.integer(sum(complete_rows[names(ctrl_indices)[which(ctrl_indices)]], na.rm = TRUE)))
+    }
+    if (length(ctrl_indices) != length(complete_rows)) {
+        return(NA_integer_)
+    }
+    as.integer(sum(complete_rows[which(ctrl_indices)], na.rm = TRUE))
+}
+
 #' The object a lipid or metabolite RUV sweep hands to `ruvCancor`: assays with missing values carry their NIPALS
 #' imputation of the matrix `ruvCancor` would build, so the method finds nothing left to impute. The imputation does
 #' not depend on the percentage, so a sweep prepares it once per assay (KIT-005's rule for proteomics). An assay this
@@ -477,6 +501,8 @@ runPerAssayRuvOptimization <- function(
             }
 
             # Build one result row per tested percentage for this assay
+            complete_rows <- omicsRuvCompleteRows(assay_data, theObject@metabolite_id_column, design_samples)
+
             assay_pct_rows <- purrr::map(percentage_results, function(pct_res) {
                 pct <- pct_res$percentage_requested
 
@@ -568,6 +594,24 @@ runPerAssayRuvOptimization <- function(
                 }
 
                 best_k <- as.integer(best_k)
+                complete_controls <- omicsRuvCompleteControlCount(complete_rows, ctrl_indices)
+                # RUV-III cannot estimate more factors than it has controls observed in every sample (KIT-005).
+                if (isTRUE(best_k > complete_controls)) {
+                    return(list(
+                        percentage_requested    = pct
+                        , candidate_feature_count = candidate_feature_count
+                        , realized_num_controls   = realized_num_controls
+                        , realized_percentage     = realized_percentage
+                        , sample_size             = sample_size
+                        , best_k                  = best_k
+                        , separation_score        = separation_score
+                        , composite_score         = NA_real_
+                        , status                  = "skipped_k_exceeds_complete_controls"
+                        , error_reason            = sprintf("k = %d exceeds %d controls complete in every sample", best_k, complete_controls)
+                        , ctrl_indices            = ctrl_indices
+                        , cancor_plot             = cancor_plot
+                    ))
+                }
                 composite_score <- tryCatch(
                     calculateCompositeScore(separation_score, best_k, k_penalty_weight, effective_max_k)
                     , error = function(e) NA_real_

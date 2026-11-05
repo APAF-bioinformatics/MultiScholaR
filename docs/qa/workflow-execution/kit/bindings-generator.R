@@ -132,6 +132,13 @@ omics_corpora <- list(
     lipid_large = list(dir = "lipid-large", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics", size = c(50L, 20000L),
         assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
     metab_large = list(dir = "metab-large", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(50L, 20000L),
+        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")),
+    # KIT-086: the same corpora with missing values: the lowest-abundance 30% of features, in 15% of their samples.
+    lipid_screen_missing = list(dir = "lipid-screen-missing", kind = "lipid_screen", vendor = "lipidsearch", route = "lipidomics", size = c(6L, 200L, 6L, 0.3),
+        assay_files = c(LCMS_Pos = "lipidsearch_lcms_pos.txt", LCMS_Neg = "lipidsearch_lcms_neg.txt")),
+    metab_screen_missing = list(dir = "metab-screen-missing", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(6L, 300L, 6L, 0.3),
+        assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")),
+    metab_large_missing = list(dir = "metab-large-missing", kind = "metab_screen", vendor = "msdial", route = "metabolomics", size = c(50L, 20000L, 6L, 0.3),
         assay_files = c(LCMS_Pos = "msdial_lcms_pos.txt", GCMS = "msdial_gcms.txt")))
 for (key in names(omics_corpora)) {
     spec <- omics_corpora[[key]]
@@ -384,8 +391,11 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     for (omic in list(list(label = "lipid84", build = "kit_082", corpus = "lipid_large", route = "lipidomics"),
         list(label = "lipid84c", build = "kit_032", corpus = "lipid_large", route = "lipidomics"),
         list(label = "metab84", build = "kit_082", corpus = "metab_large", route = "metabolomics"),
-        list(label = "metab84c", build = "kit_032", corpus = "metab_large", route = "metabolomics"))) {
-        oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/kit-084/oracles-%s_%s.rds", omic$label, omic$corpus))
+        list(label = "metab84c", build = "kit_032", corpus = "metab_large", route = "metabolomics"),
+        list(label = "lipid86s", build = "kit_086", corpus = "lipid_screen_missing", route = "lipidomics", ticket = "kit-086"),
+        list(label = "metab86s", build = "kit_086", corpus = "metab_screen_missing", route = "metabolomics", ticket = "kit-086"),
+        list(label = "metab86", build = "kit_086", corpus = "metab_large_missing", route = "metabolomics", ticket = "kit-086"))) {
+        oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/%s/oracles-%s_%s.rds", omic$ticket %||% "kit-084", omic$label, omic$corpus))
         if (!file.exists(oracle_file)) next
         recorded <- readRDS(oracle_file)
         stopifnot(identical(recorded$corpus, omic$corpus), identical(recorded$route, omic$route),
@@ -410,6 +420,10 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     if (!is.null(b$oracles$metab84c_import)) b$tickets[["084f"]] <- single_084("kit_032", "metab_large", "metabolomics", "metab84c", 14400L)
     # 085l, 085m: the screen journeys on the build that imputes the cancor input once, against kit_082's oracles. No corpus has
     # missing values, so the new path does nothing here: these show no regression, and the 1:1 test covers missing values.
+    # KIT-086: missing values: the two small tests, then the large member. A journey with missing values, on its own build's oracle.
+    if (!is.null(b$oracles$lipid86s_import)) b$tickets[["086t"]] <- single_084("kit_086", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L)
+    if (!is.null(b$oracles$metab86s_import)) b$tickets[["086s"]] <- single_084("kit_086", "metab_screen_missing", "metabolomics", "metab86s", 1800L)
+    if (!is.null(b$oracles$metab86_import)) b$tickets[["086m"]] <- single_084("kit_086", "metab_large_missing", "metabolomics", "metab86", 14400L)
     if (!is.null(b$builds$kit_085)) {
         b$tickets[["085l"]] <- single_084("kit_085", "lipid_screen", "lipidomics", "lipid82", 1800L)
         b$tickets[["085m"]] <- single_084("kit_085", "metab_screen", "metabolomics", "metab82", 1800L)

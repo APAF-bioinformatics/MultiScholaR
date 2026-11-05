@@ -783,6 +783,14 @@ setMethod(
             message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': potential_controls_names count = %d", assay_name, length(potential_controls_names)))
 
 
+            # RUV-III cannot estimate more factors than it has controls observed in every sample; with fewer it
+            # returns no finite values (KIT-005's rule for proteomics).
+            complete_controls <- sum(colSums(!is.finite(Y_final[, which(ctrl_logical_assay), drop = FALSE])) == 0L)
+            if (k_assay > complete_controls) {
+                cli::cli_abort(c("RUV-III cannot estimate {k_assay} factor{?s} from {complete_controls} control{?s} observed in every sample of assay {.val {assay_name}}.",
+                    i = "choose a smaller k or a larger control set"), class = "omics_ruv_insufficient_controls")
+            }
+
             # --- Call RUVIII_C_Varying ---
             message(sprintf(
                 "   DEBUG66 [ruvIII_C_Varying] Assay '%s': Calling RUVIII_C_Varying with k = %d, Y dims = %dx%d, M dims = %dx%d",
