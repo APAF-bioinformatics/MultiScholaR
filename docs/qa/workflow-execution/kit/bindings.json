@@ -529,6 +529,15 @@
       "install_member": "browser-smoke.P9Nc2D",
       "source_commit": "2c4a453ec1f79ec62af3471f5c0e7161955a1270",
       "runtime_patch_bytes": 0
+    },
+    "kit_085": {
+      "ticket": "KIT-085",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.RQRIvK/library",
+      "build": "0eb9530708e11f149aad611d05dd1302ed584b8af8564d2e300aeaba892d1631",
+      "exact_sum": "2616abeb1e6935c6416d74c51ec8df5260e72c61cabc775f08c925fe8384dbf3",
+      "install_member": "browser-smoke.RQRIvK",
+      "source_commit": "415b2974ec3bac7238d10aa8e1b1915d3b8ca510",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -33688,6 +33697,38 @@
       "whole_journey": true,
       "oracles": "metab84c",
       "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "085l": {
+      "kind": "single_journey",
+      "build": "kit_085",
+      "corpus": "lipid_screen",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid82",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "085m": {
+      "kind": "single_journey",
+      "build": "kit_085",
+      "corpus": "metab_screen",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab82",
+      "ceiling_seconds": 1800,
       "purpose": "exactness",
       "normalisation": {
         "apply_itsd": true,
