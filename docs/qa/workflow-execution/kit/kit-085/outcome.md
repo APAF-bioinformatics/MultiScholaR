@@ -44,6 +44,8 @@ From the worker logs of the large journeys on `kit_084` (`ruv-timings.txt`):
 
 One NIPALS imputation at 200 × 18,000 with 5% missing did not finish inside a 1,200 s cap, so at that size:
 
+**Corrected 2026-11-05 (KIT-086):** the two estimates below came from uniform missingness, which the corpus doesn't use. On the declared clustered pattern, old imputation measured about 5 minutes per assay, and KIT-087 then removed that cost. RUV fits the deadline at 603-617 s. The lines stay as written.
+
 - **Before:** 40 imputations over 2 assays, at least 13 hours.
 - **Now:** 2 imputations, at least 40 minutes.
 

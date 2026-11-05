@@ -1,0 +1,12 @@
+kit-journey-086t LCMS_Pos best_percentage 3 best_k 2 success TRUE percentages 20 statuses: ok 18; skipped_insufficient_controls 2 k_range 1-2
+kit-journey-086t LCMS_Neg best_percentage 7 best_k 2 success TRUE percentages 20 statuses: ok 18; skipped_insufficient_controls 2 k_range 1-2
+kit-journey-086s LCMS_Pos best_percentage 3 best_k 1 success TRUE percentages 20 statuses: ok 19; skipped_insufficient_controls 1 k_range 1-1
+kit-journey-086s GCMS best_percentage 7 best_k 1 success TRUE percentages 20 statuses: ok 19; skipped_insufficient_controls 1 k_range 1-2
+kit-journey-086u LCMS_Pos best_percentage 3 best_k 2 success TRUE percentages 20 statuses: ok 18; skipped_insufficient_controls 2 k_range 1-2
+kit-journey-086u LCMS_Neg best_percentage 7 best_k 2 success TRUE percentages 20 statuses: ok 18; skipped_insufficient_controls 2 k_range 1-2
+kit-journey-086v LCMS_Pos best_percentage 3 best_k 1 success TRUE percentages 20 statuses: ok 19; skipped_insufficient_controls 1 k_range 1-1
+kit-journey-086v GCMS best_percentage 7 best_k 1 success TRUE percentages 20 statuses: ok 19; skipped_insufficient_controls 1 k_range 1-2
+kit-journey-086p LCMS_Pos best_percentage 1 best_k 1 success TRUE percentages 20 statuses: ok 20 k_range 1-1
+kit-journey-086p GCMS best_percentage 5 best_k 1 success TRUE percentages 20 statuses: ok 20 k_range 1-1
+kit-journey-086q LCMS_Pos best_percentage 14 best_k 1 success TRUE percentages 20 statuses: ok 20 k_range 1-1
+kit-journey-086q LCMS_Neg best_percentage 1 best_k 1 success TRUE percentages 20 statuses: ok 20 k_range 1-1
