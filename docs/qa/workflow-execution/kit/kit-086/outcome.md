@@ -26,7 +26,7 @@ Peak is the slice's anonymous memory.
 
 **Three limits on reading this table:**
 - **No finite ratio.** The "before" run did not finish, so there is no speedup figure, and its peak is only what it had reached. It stopped in the first QC figures, before RUV.
-- **The early steps aren't a time comparison.** Load was 5-8 during the "before" run and about 2 during the "after" run, and the code for those steps is unchanged.
+- **The early steps aren't a time comparison.** Load was 5 and 8 at the start and end of the "before" run and about 2 for the "after" run, and the code for those steps is unchanged.
 - **Which step stopped it.** The first `metab_qc_figures` step ran 1,800.4 s before the worker deadline. On the fixed build the same step takes 29.7 s. `plotDensity` runs PCA with missing values on the full matrix, per assay, which is why PCA joined KIT-087's scope.
 
 ## All members on the fixed build
@@ -53,7 +53,7 @@ No large lipid journey with missing values ran on the old build, so there's no b
 | Lipid large, complete (`084d`, `kit_084`) | 5.63 GiB | 3.79 GiB | 2,136 s |
 | Lipid large, missing values (`086q`) | 5.24 GiB | 4.13 GiB | 1,246 s |
 
-On this pattern of missing values, imputation no longer shows in the peak or the time. The lipid times don't show a speedup: `084d` ran with other work on the host, and its RUV took 1,065 s against 617 s here on the same third-party code. On a quiet host RUV takes about the same on both omics (603 s and 617 s), so lipid isn't inherently slower, which answers the question I'd left open in KIT-084.
+On this pattern of missing values, imputation no longer shows in the peak or the time. **The lipid times don't show a speedup, and the gap isn't explained.** `084d`'s RUV took 1,065 s against 617 s here, on the same third-party code. Its host was a little busier (load 3.1 and 2.6 at start and end, 38 GiB available, against about 2 and 45 GiB here), but that doesn't establish the cause. These two runs also have different corpora. What the pair does show is that RUV can take about the same on both omics (603 s and 617 s), so lipid's 1.8× in KIT-084 isn't inherent to lipid.
 
 ## What the ticket asked to report
 
@@ -74,7 +74,7 @@ On this pattern of missing values, imputation no longer shows in the peak or the
 
 ## Checks
 
-- **The rule's test:** `test-workflow-omics-ruv-complete-controls.R`, 16 pass. Since the rule never fired in a journey, this test is its only evidence.
+- **The rule's test:** `test-workflow-omics-ruv-complete-controls.R`, 16 pass. On `kit_085`, the build before the rule, 6 of those expectations fail (`rule-test-first.txt`, run at closure). Since the rule never fired in a journey, this test is its only evidence.
 - **Corpora:** regenerated `metab_screen` is byte-identical at 0 missing values.
 - **Complete data:** `086l` and `086n` accepted and exact on `kit_086`. Not rerun on `kit_087`: complete data returns unchanged from the imputation and goes to `mixOmics::pca` as before.
 - **Dependents:** 52 files, 8,774 pass, 0 fail (`dependents.txt`, `kit_086`). On the final build, KIT-087's 61 files, 8,932 pass, 0 fail.
