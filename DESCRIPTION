@@ -76,6 +76,15 @@ Collate:
     'func_lipid_s4_results_accessors.R'
     'func_lipid_s4_da_plot_methods.R'
     'func_lipid_s4_plotting_methods.R'
+    'func_trx_counts.R'
+    'func_trx_design.R'
+    'func_trx_s4_class.R'
+    'func_trx_filter.R'
+    'func_trx_normalisation.R'
+    'func_trx_ruv.R'
+    'func_trx_da.R'
+    'func_trx_qc_plots.R'
+    'func_trx_publication.R'
     'func_omics_da_list_methods.R'
     'func_general_design.R'
     'func_general_enrichment_core.R'
@@ -407,6 +416,7 @@ Suggests:
     RhpcBLASctl,
     duckplyr (>= 1.2.1),
     Biobase,
+    BiocGenerics,
     circlize,
     ComplexHeatmap,
     cowplot,
@@ -414,6 +424,8 @@ Suggests:
     GGally,
     ggpubr,
     Glimma,
+    edgeR,
+    EDASeq,
     ggraph,
     git2r,
     seqinr,
@@ -445,6 +457,7 @@ Suggests:
     Rcpp,
     RcppEigen,
     RSpectra,
+    RUVSeq,
     statmod,
     SummarizedExperiment,
     tidytext,

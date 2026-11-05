@@ -6,7 +6,7 @@ library(testthat)
 
 test_that("KIT-070: the metadata reader's class list is every declared assay class", {
   expect_setequal(workflowDeclaredClassNames("assay"),
-    c("PeptideQuantitativeData", "ProteinQuantitativeData", "LipidomicsAssayData", "MetaboliteAssayData"))
+    c("PeptideQuantitativeData", "ProteinQuantitativeData", "LipidomicsAssayData", "MetaboliteAssayData", "TranscriptomicsAssayData"))
   expect_true(all(c("LipidomicsDifferentialAbundanceResults", "EnrichmentResults") %in% workflowDeclaredClassNames("result")))
   expect_identical(workflowRouteForType("LIPIDOMICS"), "lipidomics")
   expect_identical(workflowRouteForType("METABOLOMICS"), "metabolomics")

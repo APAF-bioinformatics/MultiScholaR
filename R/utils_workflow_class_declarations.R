@@ -40,6 +40,10 @@ workflowClassDeclarations <- function() {
         MetaboliteAssayData = declare("MetaboliteAssayData", "assay", "metabolite_data", "wide", "design_matrix",
             tables = "design_matrix", lists = "metabolite_data",
             roles = c("metabolite_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id")),
+        # KIT-093 owns this entry; KIT-095 only reads it.
+        TranscriptomicsAssayData = declare("TranscriptomicsAssayData", "assay", "count_data", "wide", "design_matrix",
+            tables = "design_matrix", lists = "count_data",
+            roles = c("gene_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id")),
         LipidomicsDifferentialAbundanceResults = declare("LipidomicsDifferentialAbundanceResults", "result", NULL, NULL, NULL,
             tables = c("num_sig_diff_table", "results_table_long", "results_table_wide"),
             lists = "contrasts_results_table", nested = "theObject", opaque = c("fit.eb", plots), roles = character()),
