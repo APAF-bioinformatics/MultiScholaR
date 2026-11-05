@@ -26,6 +26,22 @@ metabolomicsDeclarationBinding <- list(
         metab_between_sample_normalisation = "7_Normalised", metab_ruv = "8_RUV_Corrected",
         metab_pearson_selection = "9_Correlation_Filtered", metab_norm_complete = "9_Normalisation_Complete",
         metab_reset = "0_Reset"),
+    # KIT-094: the steps the shared core registers, runs, replays and records for this omic.
+    steps = omicsRouteSteps,
+    # KIT-078: the declarations on the worker's `omics` role.
+    worker_steps = c("metab_intensity_filter", "metab_duplicate_resolution", "metab_itsd_normalisation", "metab_log2",
+        "metab_between_sample_normalisation", "metab_ruv", "metab_pearson_pairs", "metab_pearson_selection", "metab_da_contrast"),
+    # KIT-089: the intensity filter defaults to `partitioned` (user, 2026-11-06, on KIT-084's synthetic pairs: exact, peak
+    # .77 and .81 of `whole`); every other step to `whole`.
+    default_variants = c(metab_intensity_filter = "partitioned"),
+    publications = omicsRoutePublications,
+    # The worker's compute handler: the steps whose figures read the filtering metrics, the step whose product holds
+    # native references, and the parameter naming a product the step depends on.
+    filtering_steps = c("metab_intensity_filter", "metab_duplicate_resolution"),
+    native_steps = "metab_da_contrast",
+    dependency_parameters = "pairs",
+    replay = omicsRouteReplay,
+    record_outcomes = omicsRouteRecordOutcomes,
     # The module calls the kernel by its own name, so the adaptor does too (the `@args` key `metaboliteIntensityFiltering`).
     filter_intensity = function(object, parameters) {
         metaboliteIntensityFiltering(object,

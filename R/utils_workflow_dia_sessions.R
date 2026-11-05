@@ -682,8 +682,8 @@ openDIANativeSession <- function(path, project_root) {
         file.path(directory, "archive-extract.log"))
     manifest <- jsonlite::read_json(file.path(directory, "manifest.json"))
     if (!manifest$schema %in% c("multischolar.dia_native_session.v1", "multischolar.dia_native_session.v2", "multischolar.dia_native_session.v3") ||
-        !is.character(manifest$workflow) || !manifest$workflow %in% names(workflowRoutesByType) ||
-        !identical(manifest$route, workflowRoutesByType[[manifest$workflow]]) ||
+        !is.character(manifest$workflow) || !manifest$workflow %in% names(workflowRoutesByType()) ||
+        !identical(manifest$route, workflowRoutesByType()[[manifest$workflow]]) ||
         !is.list(manifest$files) || !setequal(names(listed), c("manifest.json", names(manifest$files)))) {
         cli::cli_abort("native session manifest is invalid", class = "saved_entity_corrupt")
     }
@@ -812,19 +812,24 @@ workflowTypeForImportFormat <- function(format, data_type = NULL, dia_route = "D
 }
 
 #' The native session manifest's `route` for each workflow type (KIT-020): the DIA route is `iq`; the
-#' protein-level types have no quantification route and are `protein`.
+#' protein-level types have no quantification route and are `protein`. KIT-070: the omics routes of the kit; KIT-094:
+#' each binding's, its workflow type `toupper(omic_type)` and its route `omic_type`.
+#' @return The routes, named by workflow type.
 #' @noRd
-workflowRoutesByType <- c(DIA = "iq", DIA_LIMPA = "limpa", LFQ = "protein", TMT = "protein",
-    LIPIDOMICS = "lipidomics", METABOLOMICS = "metabolomics") # KIT-070: the two omics routes of the kit
+workflowRoutesByType <- function() {
+    omic_types <- omicsWorkflowTypes()
+    c(DIA = "iq", DIA_LIMPA = "limpa", LFQ = "protein", TMT = "protein", stats::setNames(omic_types, toupper(omic_types)))
+}
 
 #' The manifest route of a workflow type.
-#' @param type One of `names(workflowRoutesByType)`.
+#' @param type One of `names(workflowRoutesByType())`.
 #' @return The route string; aborts with `saved_entity_scope` for any other type.
 #' @noRd
 workflowRouteForType <- function(type) {
-    if (!is.character(type) || length(type) != 1L || !type %in% names(workflowRoutesByType))
+    routes <- workflowRoutesByType()
+    if (!is.character(type) || length(type) != 1L || !type %in% names(routes))
         cli::cli_abort("workflow type {.val {type}} has no native session route", class = "saved_entity_scope")
-    workflowRoutesByType[[type]]
+    routes[[type]]
 }
 
 #' The store label of the owner an import format attaches (KIT-020): `DIA-IQ-native` for DIA-NN, otherwise
@@ -1224,7 +1229,7 @@ ingestDIANativeLegacySession <- function(value, workflow_data, session, source_d
     enabled <- isDIANativeDefaultEnabled() || isDIANativeSession(workflow_data$state_manager)
     workflow_type <- value$workflow_type
     if (!enabled || !workflowOwnerCapable() || !is.character(workflow_type) || # KIT-044: a capability gate
-        length(workflow_type) != 1L || !workflow_type %in% names(workflowRoutesByType)) return(FALSE)
+        length(workflow_type) != 1L || !workflow_type %in% names(workflowRoutesByType())) return(FALSE)
     if (isTRUE(value$use_limpa) || isTRUE(value$limpa_applied) || !is.null(value$limpa_dpc_quant_results)) {
         cli::cli_abort("sessions from the retired in-memory limpa route cannot be adopted; rerun on the DIA with limpa workflow",
             class = "workflow_session_unsupported")

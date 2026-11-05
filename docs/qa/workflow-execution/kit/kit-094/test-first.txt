@@ -1,0 +1,47 @@
+KIT-094 test first, on the base commit 86a32799 (performance-v2 HEAD; no R/ file edited), 2026-11-06.
+Library: R_LIBS=<kit library of scripts-090/install.txt>/library, NOT_CRAN=true, R 4.6.1, pkgload::load_all, one process per file.
+
+== The characterisation snapshot (taken before any edit) ==
+docs/qa/workflow-execution/kit/kit-094/characterise.R . <out>, run twice in separate processes on the base commit:
+  both runs sha256 c69a60084841533d1f0a79bdbcf088e48ab1d51e4ead8f710e0be72c657bdfa8 (identical() TRUE)
+  installed as tests/testthat/fixtures/kit094-characterisation.rds (same sha256)
+  parts: report_sources, types (reopen, session, route over 10 types), input_roles (22 roles), steps,
+         registry (lipidomics and metabolomics: compute, handler, validate, completion, publication, variants,
+         default_variant, step_label, section flag), records (lipid and metab fixture records: steps, parameters,
+         outcomes, inputs, DA; entity ids, which carry the software identity, read <entity>)
+
+== Baseline of the edited and frozen tests on the base commit ==
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0   (literal worker steps, lipid_assay_ tamper added)
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0   (literal worker steps, metab_assay_ tamper added)
+COUNTS test-workflow-omics-declarations.R pass 68 fail 0 error 0 skip 0    (KIT-073 frozen dump, unedited)
+
+== Run 1: tests/testthat/test-workflow-omics-binding-steps.R as committed ==
+The characterisation test passes (8 expectations); every stub test fails: the base core builds the 13 lipid/metab
+steps from any binding, so the stub cannot register (its intensity filter declaration is invalid).
+COUNTS test-workflow-omics-binding-steps.R pass 8 fail 0 error 6 skip 0
+  BAD :: KIT-094: a stub third binding's own steps, worker steps, default variants and publications register
+  BAD :: KIT-094: the worker's compute handler reads the stub's filtering, native and dependency steps
+  BAD :: KIT-094: replay dispatches the stub's steps through its own entries
+  BAD :: KIT-094: the record calls the stub's outcomes hook for its own operations only
+  BAD :: KIT-094: the replay checks the stub's input roles, from its input prefix
+  BAD :: KIT-094: the stub's workflow type is accepted by the reopen and the session, and its route is returned
+  each: <workflow_operation_invalid> workflow operation declaration is invalid
+
+== Run 2: per site (docs/qa/workflow-execution/kit/kit-094/test-first-sites.R) ==
+Diagnostic only: `omicsWorkflowOperations` alone is made to honour `binding$steps`, every other site as on the base
+commit, so each remaining failure is one site that does not read the binding.
+COUNTS test-workflow-omics-binding-steps.R (steps honoured only) pass 22 fail 24 error 1 skip 0
+worker steps   : stub_filter, stub_native, stub_dependent compute "in_process" (handler NULL), expected "omics"
+default variant: stub_filter "whole", expected "partitioned"; stub_intensity_filter "partitioned" (the name rule),
+                 expected "whole"
+publications   : stub_figures not registered; stub_qc_figures registered (the fixed nine)
+filtering      : display$filtering_metrics NULL for stub_filter; a display list for stub_intensity_filter (name rule)
+native         : $native NULL for stub_native
+dependency     : dependencies list() for stub_dependent, expected list("anchor-reference")
+replay         : <workflow_replay_unsupported> step "stub_stored" cannot be replayed: operation "stub_store"
+record outcomes: stub_hook absent (hook not called)
+input role     : stub_assay_1 and stub_assay "unchecked", expected "checked"
+route          : workflow type "STUBOMICS" has no native session route
+reopen         : .context$omic_type NULL, expected "stubomics"
+session type   : <saved_entity_scope> the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and
+                 METABOLOMICS workflow types

@@ -137,25 +137,10 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
         outcomes$negative_control_percentage <- if (applied) config$percentage_as_neg_ctrl %||% NA_real_ else NA_real_
         outcomes$negative_control_count <- if (applied) count else NA_integer_
     }
-    # KIT-031: the lipidomics RUV step's realised result (k and the control count per assay, their totals) and the
-    # internal-standard step's application, in the words the lipid report's RUV and ITSD sentences use.
-    # KIT-032: the metabolomics RUV and ITSD steps record the same outcomes under their own operation names.
-    if (operation %in% c("lipid_ruv", "metab_ruv")) {
-        product <- record$data$products[[paste0(operation, "_science")]]
-        saved <- if (isSavedWorkflowReference(product)) tryCatch({
-            hydrated <- hydrateSavedWorkflowEntity(context$store, product)
-            if (is.list(hydrated$value)) hydrated$value else hydrated
-        }, error = function(error) NULL) else NULL
-        k <- unlist(saved$best_k); controls <- unlist(saved$control_count); percentage <- unlist(saved$percentage)
-        outcomes$ruv_applied <- TRUE
-        outcomes$k <- if (length(k)) sum(k, na.rm = TRUE) else NA_real_
-        outcomes$k_per_assay <- as.list(saved$best_k)
-        outcomes$negative_control_count <- if (length(controls)) sum(controls, na.rm = TRUE) else NA_integer_
-        outcomes$negative_control_count_per_assay <- as.list(saved$control_count)
-        outcomes$negative_control_percentage <- if (length(percentage) && !all(is.na(percentage))) mean(percentage, na.rm = TRUE) else NA_real_
-        outcomes$negative_control_percentage_per_assay <- as.list(saved$percentage)
+    # KIT-031/032 (KIT-094: the binding's hook): an omics step's own outcomes, from the binding whose prefix it carries.
+    for (binding in omicsDeclarationBindings()) {
+        if (isTRUE(startsWith(operation, paste0(binding$prefix, "_")))) outcomes <- binding$record_outcomes(binding, context, operation, record, outcomes)
     }
-    if (operation %in% c("lipid_itsd_normalisation", "metab_itsd_normalisation")) outcomes$itsd_applied <- TRUE
     outcomes
 }
 
@@ -459,11 +444,14 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     check <- validateWorkflowAnalysisRecord(record)
     if (!check$valid) cli::cli_abort(c("the analysis record is malformed", check$errors), class = "workflow_replay_invalid")
     # Inputs first: a record whose files do not match the project is refused before any step runs.
+    # KIT-031: an omics route records one `<input prefix><n>` role per imported assay file (`lipid_assay_<n>`,
+    # `metab_assay_<n>`); KIT-094: the roles are the bindings' `design_input_prefix`.
+    omics_roles <- sub("_$", "", vapply(omicsDeclarationBindings(), function(binding) binding$design_input_prefix, character(1)))
+    omics_role_pattern <- paste0("^(", paste(omics_roles, collapse = "|"), ")(_|$)")
     for (input in record$inputs) {
-        # KIT-031: an omics route records one `lipid_assay_<n>` / `metab_assay_<n>` role per imported assay file.
         if (is.null(input$sha256) || is.na(input$sha256) || !(input$role %in% c("diann_report", "maxquant_report",
-            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", "lipid_assay", "metab_assay") ||
-            grepl("^(lipid|metab)_assay(_|$)", input$role))) next
+            "fragpipe_report", "pd_tmt_report", "spectronaut_report", "fasta", "design_file", omics_roles) ||
+            grepl(omics_role_pattern, input$role))) next
         path <- if (input$role %in% names(inputs)) inputs[[input$role]] else NULL
         if (is.null(path) || !file.exists(path) || !identical(digest::digest(file = path, algo = "sha256"), input$sha256)) {
             cli::cli_abort("replay input {.val {input$role}} does not match the record's sha256", class = "workflow_replay_inputs")

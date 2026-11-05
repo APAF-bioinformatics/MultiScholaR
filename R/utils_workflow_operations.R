@@ -678,15 +678,15 @@ registerBuiltinWorkflowOperations <- function() {
     # registry entries and module code only). KIT-073: both omics from the shared declaration core. KIT-078: the compute
     # declarations on the worker's `omics` role; the store steps (QC finalise, norm complete, reset) and the v1 DA stay
     # in process. A worker step with no `@args` section declares `section = NULL`: its parameters come from the
-    # provenance values the completion records.
+    # provenance values the completion records. KIT-094: each binding's own steps, worker steps, default variants and
+    # publications.
     for (binding in omicsDeclarationBindings()) {
-        workers <- paste0(binding$prefix, "_", omicsWorkerSteps)
         sections <- workflowSectionOperationsByType[[toupper(binding$omic_type)]]
         for (declaration in omicsWorkflowOperations(binding)) {
             label <- binding$step_labels[declaration$name]
-            worker <- declaration$name %in% workers
-            # KIT-079: `whole` is the default, except the intensity filter, on `partitioned` since KIT-089 (user, 2026-11-06,
-            # on KIT-084's synthetic pairs: exact, peak .77 and .81 of `whole`).
+            worker <- declaration$name %in% binding$worker_steps
+            # KIT-079: `whole` is the default, except where the binding names another.
+            default_variant <- if (declaration$name %in% names(binding$default_variants)) binding$default_variants[[declaration$name]] else "whole"
             registerWorkflowOperation(c(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
                 compute = if (worker) "omics" else "in_process", handler = if (worker) "computeWorkflowOmicsOperationAction",
                 validate = if (worker) "validateWorkflowOmicsParameters" else "validateWorkflowInProcessParameters", resolve = NULL,
@@ -694,16 +694,12 @@ registerBuiltinWorkflowOperations <- function() {
                 completion = if (worker) "omics" else "in_process", publication = if (worker) "omics" else "in_process",
                 step_label = if (is.na(label)) NULL else unname(label),
                 omic_type = binding$omic_type, variants = if (is.function(declaration$partitioned)) c("whole", "partitioned") else "whole",
-                default_variant = if (identical(declaration$name, paste0(binding$prefix, "_intensity_filter"))) "partitioned" else "whole",
+                default_variant = default_variant,
                 diagnostic_only = FALSE, inclusion_absence = FALSE, declaration = declaration),
                 if (worker && !declaration$name %in% sections) list(section = NULL)))
         }
-        # KIT-078: what the steps' figures and exports read (the matrix, the composite's rasters), in the worker; they commit nothing.
-        # KIT-082: what the tabs read from the whole matrix outside their steps, in the worker too.
-        for (publication in list(c("qc_figures", "computeWorkflowOmicsQcFiguresAction"), c("composite_figure", "computeWorkflowOmicsCompositeFigureAction"),
-            c("da_publication", "computeWorkflowOmicsDaPublicationAction"), c("da_tab_results", "computeWorkflowOmicsDaTabResultsAction"), c("filtering_metrics", "computeWorkflowOmicsFilteringMetricsAction"),
-            c("final_pca", "computeWorkflowOmicsFinalPcaAction"), c("volcano_page", "computeWorkflowOmicsVolcanoPageAction"),
-            c("session_export", "computeWorkflowOmicsSessionExportAction"), c("integration_export", "computeWorkflowOmicsIntegrationExportAction"))) {
+        # KIT-078/082: the worker's publication operations; they commit nothing.
+        for (publication in binding$publications) {
             registerWorkflowOperation(list(name = paste0(binding$prefix, "_", publication[[1L]]), input = "checkpoint",
                 input_class = binding$class, compute = "omics", handler = publication[[2L]], validate = "validateWorkflowOmicsParameters",
                 resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "omics", publication = "omics",
