@@ -421,6 +421,11 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
     # 085l, 085m: the screen journeys on the build that imputes the cancor input once, against kit_082's oracles. No corpus has
     # missing values, so the new path does nothing here: these show no regression, and the 1:1 test covers missing values.
     # KIT-086: missing values: the two small tests, then the large member. A journey with missing values, on its own build's oracle.
+    # 086l, 086n: complete data on the same build against kit_082's oracles: the rule changes nothing there.
+    if (!is.null(b$builds$kit_086)) {
+        b$tickets[["086l"]] <- single_084("kit_086", "lipid_screen", "lipidomics", "lipid82", 1800L)
+        b$tickets[["086n"]] <- single_084("kit_086", "metab_screen", "metabolomics", "metab82", 1800L)
+    }
     if (!is.null(b$oracles$lipid86s_import)) b$tickets[["086t"]] <- single_084("kit_086", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L)
     if (!is.null(b$oracles$metab86s_import)) b$tickets[["086s"]] <- single_084("kit_086", "metab_screen_missing", "metabolomics", "metab86s", 1800L)
     if (!is.null(b$oracles$metab86_import)) b$tickets[["086m"]] <- single_084("kit_086", "metab_large_missing", "metabolomics", "metab86", 14400L)
