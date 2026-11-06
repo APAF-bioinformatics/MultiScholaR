@@ -329,6 +329,36 @@ mod_metab_da_ui <- function(id) {
                                             value = FALSE
                                         )
                                     )
+                                ),
+                                # KIT-101 F-03: lipid's tree-cut inputs (mod_lipid_da_ui.R), which the server reads.
+                                shiny::fluidRow(
+                                    shiny::column(
+                                        3,
+                                        shiny::selectInput(
+                                            ns("heatmap_tree_cut_method"),
+                                            "Tree Cutting:",
+                                            choices = c("None" = "none", "K Clusters" = "k_clusters", "Height Cutoff" = "height_cutoff", "Dynamic" = "dynamic"),
+                                            selected = "none"
+                                        )
+                                    ),
+                                    shiny::column(
+                                        3,
+                                        shiny::conditionalPanel(
+                                            condition = "input.heatmap_tree_cut_method == 'k_clusters'",
+                                            ns = ns,
+                                            shiny::numericInput(ns("heatmap_n_clusters"), "Number of Clusters:", value = 4, min = 2, max = 20, step = 1)
+                                        ),
+                                        shiny::conditionalPanel(
+                                            condition = "input.heatmap_tree_cut_method == 'height_cutoff'",
+                                            ns = ns,
+                                            shiny::numericInput(ns("heatmap_cut_height"), "Cut Height:", value = 10, min = 1, max = 100, step = 1)
+                                        ),
+                                        shiny::conditionalPanel(
+                                            condition = "input.heatmap_tree_cut_method == 'dynamic'",
+                                            ns = ns,
+                                            shiny::numericInput(ns("heatmap_min_cluster_size"), "Min Cluster Size:", value = 5, min = 2, max = 20, step = 1)
+                                        )
+                                    )
                                 )
                             )
                         )

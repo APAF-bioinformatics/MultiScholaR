@@ -42,3 +42,22 @@ RESULT pass=214 fail=3 error=0 skip=1
 
 After the fix:
 RESULT file=test-module-ci-prot-da.R pass=217 fail=0 error=0 skip=1
+
+== F-03  tests/testthat/test-metab-da-heatmap-shared.R ==
+New blocks:
+  "KIT-101 F-03: the metab DA UI defines lipid's four tree-cut inputs and the heatmap server receives them"
+    (reads the defaults from the rendered mod_metab_da_ui, sets them in shiny::testServer on
+     registerMetabDaVisualizationOutputs, captures what the heatmap and cluster-summary builders receive)
+  "KIT-101 F-03: with tree cutting 'none' the metab heatmap is identical to the one drawn without the inputs"
+    (production buildMetabDaHeatmapRenderOutput -> generateMetabDAHeatmap with NULL x4, today's values,
+     against "none"/4/10/5; compares matrix, row/col clusters and the drawn PNG md5) - an invariance
+     check, passes before and after by design.
+
+Before the fix (unfixed R/mod_metab_da.R, corrected test file):
+── 1. Failure (...:174:3): `ui_defaults` actual NULL x4; expected "none", 4, 10, 5
+── 2.-5. Failure (...:202-205): captured treeCutMethod / nClusters / cutHeight / minClusterSize are NULL
+── 6. Failure (...:206:3): captured cluster_summary treeCutMethod is NULL
+RESULT pass=12 fail=6 error=0 skip=0
+
+After the fix:
+RESULT file=test-metab-da-heatmap-shared.R pass=18 fail=0 error=0 skip=0

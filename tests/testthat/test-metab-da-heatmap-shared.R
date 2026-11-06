@@ -144,3 +144,99 @@ test_that("metabolomics DA heatmap helper preserves assay filtering before matri
   expect_true(is.list(assay_heatmap))
   expect_s4_class(assay_heatmap$plot, "Heatmap")
 })
+
+# KIT-101 F-03: the metab DA UI's tree-cut defaults, read from the rendered UI.
+metabDaTreeCutUiDefaults <- function(ui_html, prefix) {
+  select_html <- regmatches(ui_html, regexpr(
+    sprintf('(?s)<select id="%s-heatmap_tree_cut_method"[^>]*>.*?</select>', prefix),
+    ui_html, perl = TRUE
+  ))
+  numeric_default <- function(id) {
+    match <- regmatches(ui_html, regexec(
+      sprintf('<input id="%s-%s" type="number"[^>]*value="([^"]+)"', prefix, id),
+      ui_html, perl = TRUE
+    ))[[1]]
+    if (length(match) < 2L) NULL else as.numeric(match[[2L]])
+  }
+  method <- if (length(select_html)) {
+    regmatches(select_html, regexec('<option value="([^"]+)" selected>', select_html))[[1]][2]
+  }
+  list(
+    heatmap_tree_cut_method = method,
+    heatmap_n_clusters = numeric_default("heatmap_n_clusters"),
+    heatmap_cut_height = numeric_default("heatmap_cut_height"),
+    heatmap_min_cluster_size = numeric_default("heatmap_min_cluster_size")
+  )
+}
+
+test_that("KIT-101 F-03: the metab DA UI defines lipid's four tree-cut inputs and the heatmap server receives them", {
+  ui_defaults <- metabDaTreeCutUiDefaults(as.character(mod_metab_da_ui("f03")), "f03")
+  expect_identical(ui_defaults, list(
+    heatmap_tree_cut_method = "none",
+    heatmap_n_clusters = 4,
+    heatmap_cut_height = 10,
+    heatmap_min_cluster_size = 5
+  ))
+
+  captured <- new.env(parent = emptyenv())
+  server <- function(input, output, session) {
+    registerMetabDaVisualizationOutputs(
+      input = input,
+      output = output,
+      daData = list(da_results_list = NULL, analysis_complete = FALSE),
+      buildHeatmapOutput = function(...) {
+        captured$heatmap <- list(...)
+        NULL
+      },
+      buildClusterSummaryOutput = function(...) {
+        captured$cluster_summary <- list(...)
+        invisible(NULL)
+      }
+    )
+  }
+  shiny::testServer(server, {
+    do.call(session$setInputs, Filter(Negate(is.null), ui_defaults))
+    output$heatmap_plot
+    output$cluster_summary
+  })
+  expect_identical(captured$heatmap$treeCutMethod, "none")
+  expect_identical(captured$heatmap$nClusters, 4)
+  expect_identical(captured$heatmap$cutHeight, 10)
+  expect_identical(captured$heatmap$minClusterSize, 5)
+  expect_identical(captured$cluster_summary$treeCutMethod, "none")
+})
+
+test_that("KIT-101 F-03: with tree cutting 'none' the metab heatmap is identical to the one drawn without the inputs", {
+  da_results <- list(
+    da_metabolites_long = buildMetabDaHeatmapResultsShared(),
+    theObject = buildMetabDaHeatmapObjectShared()
+  )
+  render <- function(treeCutMethod, nClusters, cutHeight, minClusterSize) {
+    daData <- new.env(parent = emptyenv())
+    plot <- buildMetabDaHeatmapRenderOutput(
+      daResultsList = da_results,
+      selectedContrast = "groupB-groupA",
+      selectedAssay = "Combined",
+      topN = 3,
+      treeCutMethod = treeCutMethod,
+      nClusters = nClusters,
+      cutHeight = cutHeight,
+      minClusterSize = minClusterSize,
+      daData = daData
+    )
+    png_path <- tempfile(fileext = ".png")
+    grDevices::png(png_path, width = 600, height = 500)
+    tryCatch(ComplexHeatmap::draw(plot), finally = grDevices::dev.off())
+    list(
+      matrix = plot@matrix,
+      row_clusters = daData$current_row_clusters,
+      col_clusters = daData$current_col_clusters,
+      png = unname(tools::md5sum(png_path))
+    )
+  }
+  # Today the four inputs are absent, so the server passes NULL for each.
+  without_inputs <- render(NULL, NULL, NULL, NULL)
+  with_defaults <- render("none", 4, 10, 5)
+  expect_identical(with_defaults, without_inputs)
+  expect_null(with_defaults$row_clusters)
+})
