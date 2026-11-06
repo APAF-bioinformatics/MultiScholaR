@@ -2000,3 +2000,32 @@ test_that("KIT-099: an operation output that the population store already held i
     expect_false(h$kitOperationCacheHit(store, "e3"))
     expect_false(h$kitOperationCacheHit(store, character()))
 })
+
+test_that("KIT-100 (protocol v1.9): ticket keys take three digits; two-digit keys are unchanged", {
+    h <- kitHarness()
+    b <- kitSyntheticBindings()
+    b$builds$kit_021 <- list(library = "/lib/p", build = strrep("p", 64), exact_sum = "sum-p")
+    b$corpora$lfq_300 <- b$corpora$full
+    b$corpora$lfq_300$report_file <- "proteinGroups.txt"; b$corpora$lfq_300$format <- "maxquant"; b$corpora$lfq_300$route <- "protein"
+    b$harness$step_map_protein_sha256 <- strrep("m", 64)
+    spec <- list(kind = "single_journey", build = "kit_021", corpus = "lfq_300", route = "protein", whole_journey = TRUE,
+        oracles = "lfq_300", ceiling_seconds = 1800L)
+    b$tickets[["021t"]] <- spec
+    b$tickets[["100a"]] <- spec
+    b <- kitSyntheticOracles(b, h, "protein", "lfq_300")
+    # A three-digit journey key is a stage, a selector and a bound ceiling, as a two-digit key is.
+    expect_identical(h$kitSelectorStage("kit:journey-100a:candidate:1"), list(stage = "kit-journey-100a", id = "candidate-1"))
+    expect_identical(h$kitCases(b, "kit-journey-100a")[[1L]]$selector, "kit:journey-100a:candidate:1")
+    expect_identical(h$kitMemberSeconds("kit-journey-100a", b), 1800L)
+    expect_identical(h$kitSelectorStage("kit:100:candidate:2"), list(stage = "kit-100", id = "candidate-2"))
+    expect_identical(h$kitMemberSeconds("kit-100"), 600L)
+    expect_identical(h$kitSelectorStage("kit:gui-101:candidate:1")$stage, "kit-gui-101")
+    # Two-digit keys resolve exactly as before.
+    expect_identical(h$kitSelectorStage("kit:journey-021t:candidate:1"), list(stage = "kit-journey-021t", id = "candidate-1"))
+    expect_identical(h$kitMemberSeconds("kit-journey-021t", b), 1800L)
+    expect_identical(h$kitSelectorStage("kit:006:candidate:2"), list(stage = "kit-006", id = "candidate-2"))
+    expect_identical(h$kitMemberSeconds("kit-006"), 600L)
+    # Other widths and a second suffix letter still refuse.
+    for (bad in c("kit:journey-1000:candidate:1", "kit:journey-10:candidate:1", "kit:journey-100ab:candidate:1", "kit:1000:single:1"))
+        expect_error(h$kitSelectorStage(bad))
+})

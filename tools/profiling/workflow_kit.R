@@ -133,19 +133,19 @@ kitMemberSeconds <- function(stage, bindings = NULL) {
     # KIT-068: the lipidomics and metabolomics lifecycle members (in-memory modules through the report) bind their own ceiling.
     if (grepl("^kit-lifecycle-(lipid|metab)(-fail)?$", stage)) return(as.integer(bindings$lifecycle_omics$ceiling_seconds %||% 1800L))
     if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
-    if (grepl("^kit-0[0-9]{2}$", stage)) return(600L)
+    if (grepl("^kit-[0-9]{3}$", stage)) return(600L)
     # KIT-081 (protocol v1.6 item 8): a suffixed operation key binds its ceiling, at most 1,800 s.
-    if (grepl("^kit-0[0-9]{2}[a-z]$", stage)) {
+    if (grepl("^kit-[0-9]{3}[a-z]$", stage)) {
         seconds <- bindings$tickets[[sub("kit-", "", stage, fixed = TRUE)]]$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 1800)
             stop("a suffixed operation key binds its ceiling (at most 1,800 s, protocol v1.6)")
         return(as.integer(seconds))
     }
-    if (grepl("^kit-gui-0[0-9]{2}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
+    if (grepl("^kit-gui-[0-9]{3}$", stage)) return(as.integer(bindings$tickets[[sub("kit-gui-", "", stage)]]$ceiling_seconds %||% 600L))
     if (startsWith(stage, "kit-journey")) {
         # KIT-028: a ticket's journey member may bind its own ceiling (the screen replay origin, 900 s).
         # KIT-021 (protocol v1.5): a ticket key may carry a one-letter suffix (`021t`), each key with its own ceiling.
-        ticket_seconds <- if (grepl("^kit-journey-0[0-9]{2}[a-z]?$", stage)) bindings$tickets[[sub("kit-journey-", "", stage)]]$ceiling_seconds
+        ticket_seconds <- if (grepl("^kit-journey-[0-9]{3}[a-z]?$", stage)) bindings$tickets[[sub("kit-journey-", "", stage)]]$ceiling_seconds
         seconds <- ticket_seconds %||% bindings$journey$ceiling_seconds
         if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 14400)
             stop("the journey ceiling is not fixed in the bindings (at most 4 h, protocol v1.2)")
@@ -198,7 +198,7 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab|trx)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab|trx)(-fail)?|journey(-[0-9]{3}[a-z]?)?|gui-[0-9]{3}|[0-9]{3}[a-z]?)$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -350,7 +350,7 @@ kitCases <- function(bindings, stage) {
             spec$control, "full", "none", "kit:journey:default:1", record = FALSE)
         return(cases)
     }
-    if (grepl("^kit-journey-0[0-9]{2}[a-z]?$", stage)) {
+    if (grepl("^kit-journey-[0-9]{3}[a-z]?$", stage)) {
         # A ticket's journey pair (KIT-011): control and candidate builds run the whole journey as users run
         # it (`record = FALSE`: no launch record, the build's own production default), one member each.
         ticket <- sub("kit-journey-", "", stage, fixed = TRUE)
@@ -400,7 +400,7 @@ kitCases <- function(bindings, stage) {
             journey_case("candidate-1", "candidate", 1L, spec$candidate, corpus, "none", paste0("kit:journey-", ticket, ":candidate:1"), record = record,
                 route = spec$route %||% "DIA", oracles = oracles_for("candidate"), normalisation = spec$normalisation)))
     }
-    if (grepl("^kit-gui-0[0-9]{2}$", stage)) {
+    if (grepl("^kit-gui-[0-9]{3}$", stage)) {
         # A ticket's `gui`-mode managed member (KIT-008): one journey on the bound corpus and build, launched
         # with no record (the build's production default under a managed application), a candidate only.
         ticket <- sub("kit-gui-", "", stage, fixed = TRUE)
@@ -564,7 +564,7 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings, member_dir = NULL
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab|trx):(complete|fail)|0[0-9]{2}[a-z]?:((control|candidate):[12]|single:[1-5]))$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-[0-9]{3}[a-z]?:(control|candidate):1|gui-[0-9]{3}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab|trx):(complete|fail)|[0-9]{3}[a-z]?:((control|candidate):[12]|single:[1-5]))$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     # KIT-068: `kit:lifecycle:lipid:complete` is stage `kit-lifecycle-lipid`; `:fail` the `-fail` stage.
     if (parts[[1L]] == "lifecycle" && parts[[2L]] %in% c("lipid", "metab", "trx"))
