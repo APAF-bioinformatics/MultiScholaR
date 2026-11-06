@@ -1,0 +1,24 @@
+# KIT-097 e2e diagnosis (not counted; $P/kit/scripts-097/e2e-diagnose.R): the counted e2e's steps on the KIT-040 trx_screen corpus, kit_097 (8e97b55e), then the digest polled after the DA click.
+
+16:21:06 import 
+16:21:14 design 
+16:21:21 qc 
+16:21:49 norm 
+16:21:55 da clicked 
+16:22:45 poll 1 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:23:35 poll 2 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:24:25 poll 3 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:25:15 poll 4 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:26:05 poll 5 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:26:55 poll 6 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:27:45 poll 7 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:28:35 poll 8 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:29:25 poll 9 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:30:15 poll 10 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:31:05 poll 11 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:31:55 poll 12 status: ERR An error occurred while waiting for Shiny to be stable | names:  
+16:31:55 da_status: Analysis Complete
+16:31:55 logs saved 625 
+
+
+Browser-side events after the click (from the app driver's log): de-da_status, workflow_progress and formula_display re-render at 16:21:54 (DA complete), de-volcano_glimma arrives at 16:21:55 (the interactive Glimma volcano of every gene, built on completion because the checkbox defaulted to TRUE and the single assay was selected), two digests at 16:22:05, then no event until the driver gave up: every wait for Shiny to be stable failed. The DA tab itself reads 'Analysis Complete'; the tab status was never lost.

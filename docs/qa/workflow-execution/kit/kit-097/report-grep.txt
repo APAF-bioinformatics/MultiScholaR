@@ -1,0 +1,32 @@
+report: transcriptomics_report.docx (sha256 6706957b36a54189b84e8bc1655f2e68d48cf6ccb9f4695220ae133c6468a1dd)
+
+REQUIRED (fixed, case-sensitive):
+  edgeR quasi-likelihood F-test            FOUND  | tial expression Differential expression was tested with the edgeR quasi-likelihood F-test: dispersions were estimated with estimateDisp (robust = TRU
+  robust                                   FOUND  | ihood F-test: dispersions were estimated with estimateDisp (robust = TRUE), the model was fitted with glmQLFit (robust = TRUE)
+  ~ 0 + group + W_1                        FOUND  |  glmQLFTest on that one fit. The realised model formula was ~ 0 + group + W_1 + W_2. P-values were adjusted with the Benjamini-Hochberg m
+  Benjamini-Hochberg                       FOUND  | as ~ 0 + group + W_1 + W_2. P-values were adjusted with the Benjamini-Hochberg method, and genes with a false discovery rate (FDR, BH) bel
+  false discovery rate                     FOUND  | justed with the Benjamini-Hochberg method, and genes with a false discovery rate (FDR, BH) below 0.05 were called significant. No fold-chang
+  RUVs factors W_1                         FOUND  | paration score of 0.999 and a composite score of 0.974. The RUVs factors W_1..W_k were added to the design and used as model covariates 
+  model covariates                         FOUND  |  RUVs factors W_1..W_k were added to the design and used as model covariates in the differential expression model; the counts themselves
+  display only                             FOUND  |  were not corrected. The RUVs-corrected logCPM was used for display only (PCA and RLE figures). Differential expression Differential
+  inferred empirical negative control      FOUND  | UVs) Unwanted variation was estimated with RUVs (RUVSeq) on inferred empirical negative control genes: the least significant genes of a preliminary group-o
+  least significant                        FOUND  |  (RUVSeq) on inferred empirical negative control genes: the least significant genes of a preliminary group-only quasi-likelihood GLM, tak
+  selection mode                           FOUND  |  They are inferred from the data, not known in advance. The selection mode was automatic; the grid tested 5 to 30 % in steps of 5 %, w
+  separation score                         FOUND  | es, giving 462 inferred empirical negative controls, with a separation score of 0.999 and a composite score of 0.974. The RUVs factors W
+  composite score                          FOUND  | d at 3 and a k penalty weight of 0.05, choosing the maximum composite score. The chosen values were k = 2, 10 % of the genes, giving 46
+  RUVIII                                   FOUND  | lines in the figures are visual guides. Integration export (RUVIII) RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with t
+  integration export                       FOUND  | with the RUVs inferred negative controls and k = 2, for the integration export only, with the replicate structure M taken from the group. 
+  replicate structure M                    FOUND  | ntrols and k = 2, for the integration export only, with the replicate structure M taken from the group. The differential expression results d
+
+FORBIDDEN (case-insensitive):
+  limma        absent
+  eBayes       absent
+  TREAT        absent
+  q-value      absent
+  qvalue       absent
+  RUVIII-C     absent
+  RUV-III-C    absent
+  stable       absent
+  housekeeping absent
+  GSE152840    absent
+  Sepsis       absent

@@ -1,0 +1,6 @@
+# KIT-097 e2e, the one correction attempt ($P/kit/scripts-097/e2e.sh: one attempt, 1,800 s ceiling, kit_097 = core/browser-smoke.5gh5pn from 35f855bd, CHROMOTE_CHROME=/usr/bin/brave, any skip a failure)
+START 2026-11-06T17:14:58+11:00 HEAD 35f855bd
+COUNTS test-e2e-trx-journey.R pass 14 fail 0 error 0 skip 0
+EXIT 0 WALL 113s
+
+The rendered report was kept as tests/testthat/_e2e_artifacts/E2E-KIT097-trx_edge_12/transcriptomics_report.docx (git-ignored); its wording grep is report-grep.txt.

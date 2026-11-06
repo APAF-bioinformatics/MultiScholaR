@@ -39,3 +39,30 @@ COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
 WALL test-module-ci-trx-da.R 127s
 COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
 WALL test-module-ci-trx-summary.R 126s
+
+# The e2e defect (35f855bd): test first, MCI-029.2 on 8e97b55e's R code (the volcano still built on completion):
+COUNTS test-module-ci-trx-app.R pass 47 fail 1 error 0 skip 0
+  BAD test-module-ci-trx-app.R :: MCI-029.2 the module in process: import, design, QC, normalisation and DA each complete; the DA's completion keeps every status, the digest reads it, and the interactive volcano is built only on demand
+--- MCI-029.2 the module in process: import, design, QC, normalisation and DA each complete; the DA's completion keeps every status, the digest reads it, and the interactive volcano is built only on demand 
+ Expected `seen$widgets_on_completion` to be identical to 0L.
+Differences:
+  `actual`: 1
+`expected`: 0
+# After the fix (35f855bd), kit_096 library:
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0
+WALL test-workflow-omics-application-reads.R 677s
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+WALL test-module-ci-trx-app.R 56s
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+WALL test-module-ci-trx-norm.R 126s
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
+WALL test-module-ci-trx-da.R 147s
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
+WALL test-module-ci-trx-summary.R 201s
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-da.R 42s
+COUNTS test-lipid-02ab-da-module-characterization.R pass 33 fail 0 error 0 skip 0
+WALL test-lipid-02ab-da-module-characterization.R 22s
+COUNTS test-lipid-02b-da-module-contracts.R pass 569 fail 0 error 0 skip 0
+WALL test-lipid-02b-da-module-contracts.R 13s
+# The lipid UI's HTML (norm, DA, summary, the lipidomics module) is identical to the baseline's (rendered and compared, tab ids normalised).
