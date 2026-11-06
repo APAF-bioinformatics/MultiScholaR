@@ -982,6 +982,78 @@ if (!is.null(b$builds$kit_012)) {
     b$tickets[["012"]] <- list(kind = "journey", control = "kit_008", candidate = "kit_012", record = FALSE, rule = "resident_end")
 }
 
+# KIT-098 (protocol v1.8): the transcriptomics route. The bound corpus is KIT-040's trx_screen (counts, design_matrix.tab,
+# contrast_strings.tab, truth.json and design.tsv, whose rows the driver's design builder assigns); its manifest must be the
+# one KIT-040's notebook reference recorded. The notebook comparison reads the second reference (user decision 2026-11-06,
+# "Second notebook reference": the unchanged notebook on design_matrix.tab in the counts file's run order), checked to derive
+# from that corpus. The lifecycle pair and the two journeys bind their own settings (kit-098/plan.md section 3), never the
+# shared journey's; the oracles are the in-process recordings of kit-098/oracle-record.R on kit_098.
+trx_dir <- file.path(proof, "kit/corpus/trx-screen")
+if (file.exists(file.path(trx_dir, "manifest.json"))) {
+    trx_manifest <- jsonlite::read_json(file.path(trx_dir, "manifest.json"))
+    kit040_store <- readRDS(file.path(repo, "docs/qa/workflow-execution/kit/kit-040/reference-trx_screen.rds"))
+    stopifnot(identical(hash(file.path(trx_dir, "manifest.json")), kit040_store$corpus_manifest_sha256))
+    trx_files <- c("counts.tsv", "design_matrix.tab", "contrast_strings.tab", "truth.json", "design.tsv")
+    b$corpora$trx_screen <- bind_corpus(trx_dir, trx_manifest, files = trx_files, format = "trx_counts", route = "transcriptomics")
+    b$corpora$trx_screen$generator <- "tools/profiling/kit_omics_corpus.R"
+    b$corpora$trx_screen$vendor <- "trx_counts"
+    b$corpora$trx_screen$assay_files <- list(counts = "counts.tsv")
+    b$corpora$trx_screen$design_file <- "design.tsv"
+    b$corpora$trx_screen$reference_store <- list(path = "docs/qa/workflow-execution/kit/kit-040/reference-trx_screen.rds",
+        corpus_manifest_sha256 = kit040_store$corpus_manifest_sha256)
+    # The second notebook reference: its corpus derives from the bound one (counts and contrast byte-identical, the design rows
+    # permuted only), and its fingerprint store names that corpus's manifest.
+    gui_dir <- file.path(proof, "kit/corpus/trx-screen-gui-order")
+    gui_store_path <- file.path(repo, "docs/qa/workflow-execution/kit/kit-098/reference-trx_screen_gui_order.rds")
+    gui_full <- file.path(proof, "kit/trx-reference/reference-trx_screen-gui-order.rds")
+    if (file.exists(gui_store_path) && file.exists(gui_full)) {
+        gui_manifest <- jsonlite::read_json(file.path(gui_dir, "manifest.json"))
+        gui_store <- readRDS(gui_store_path)
+        stopifnot(identical(gui_manifest$derived_from$manifest_sha256, hash(file.path(trx_dir, "manifest.json"))),
+            identical(hash(file.path(gui_dir, "manifest.json")), gui_store$corpus_manifest_sha256),
+            identical(hash(file.path(gui_dir, "counts.tsv")), b$corpora$trx_screen$files$counts.tsv$sha256),
+            identical(hash(file.path(gui_dir, "contrast_strings.tab")), b$corpora$trx_screen$files$contrast_strings.tab$sha256),
+            identical(sort(readLines(file.path(gui_dir, "design_matrix.tab"))), sort(readLines(file.path(trx_dir, "design_matrix.tab")))),
+            identical(gui_store$products_rds_sha256, hash(gui_full)), isTRUE(gui_store$complete))
+        trx_reference <- list(path = gui_full, sha256 = hash(gui_full), store = "docs/qa/workflow-execution/kit/kit-098/reference-trx_screen_gui_order.rds",
+            store_sha256 = hash(gui_store_path), corpus = gui_dir, corpus_manifest_sha256 = gui_store$corpus_manifest_sha256,
+            design_matrix_sha256 = hash(file.path(gui_dir, "design_matrix.tab")), notebook_copy_sha256 = gui_store$notebook_copy_sha256,
+            driver_sha256 = gui_store$driver_sha256, decision = "user 2026-11-06: Second notebook reference")
+    } else trx_reference <- NULL
+}
+if (!is.null(b$builds$kit_098) && !is.null(b$corpora$trx_screen)) {
+    trx_norm <- list(ruv_mode = "automatic", auto_percentage_min = 5L, auto_percentage_max = 30L, auto_percentage_step = 5L, k_penalty_weight = 0.05)
+    trx_settings <- function(m_source) list(da = list(q_value = 0.05, treat_lfc = 1L), ruviii_m_source = m_source)
+    trx_workers <- list("trx_expression_filter", "trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_ruviii_export")
+    for (omic in list(list(label = "trx98a", build = "kit_098"), list(label = "trx98b", build = "kit_098"))) {
+        oracle_file <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/kit-098/oracles-%s_trx_screen.rds", omic$label))
+        if (!file.exists(oracle_file)) next
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, "trx_screen"), identical(recorded$route, "transcriptomics"),
+            identical(recorded$corpus_sha256, b$corpora$trx_screen$files[[1L]]$sha256),
+            identical(recorded$build, b$builds[[omic$build]]$source_commit))
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0(omic$label, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.8 section 10, under section 7.1)", build = recorded$build,
+                recorded_at = recorded$recorded_at, route = "transcriptomics")
+            b$oracles[[paste0(omic$label, "_", step)]] <- population$fingerprint
+        }
+        b$oracles[[paste0(omic$label, "_history")]] <- as.list(recorded$history)
+    }
+    trx_ticket <- function(oracles, m_source) list(kind = "single_journey", build = "kit_098", corpus = "trx_screen", route = "transcriptomics",
+        whole_journey = TRUE, oracles = oracles, ceiling_seconds = 1800L, purpose = "exactness (protocol v1.8: recorded, uncounted)",
+        normalisation = trx_norm, driver_settings = trx_settings(m_source), worker_steps = trx_workers,
+        notebook_reference = c(trx_reference, list(ruviii = if (identical(m_source, "group")) "notebook" else "direct ruv::RUVIII (KIT-093)")))
+    b$tickets[["098a"]] <- trx_ticket("trx98a", "group")
+    b$tickets[["098b"]] <- trx_ticket("trx98b", "technical_replicate")
+    b$lifecycle_trx <- list(ceiling_seconds = 1800L, build = "kit_098", corpus = "trx_screen", oracles = "trx98a",
+        normalisation = trx_norm, driver_settings = trx_settings("group"),
+        fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation",
+            mechanism = "application-guard-inject.rds written after the QC finalise completes; the application monitor stops the slice (injected_guard_stop); the normalisation step, the first worker step after it, fails; the head stays trx_qc_complete"))
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
@@ -1014,6 +1086,9 @@ b$harness <- list(root = file.path(proof, "kit/runtime"),
     step_map_lipid_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-lipid.json")),
     step_map_metab = "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json",
     step_map_metab_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json")),
+    # KIT-098: the transcriptomics step map (KIT-095), part of the route's case binding.
+    step_map_trx = "docs/qa/workflow-execution/kit/kit-001/step-map-trx.json",
+    step_map_trx_sha256 = hash(file.path(repo, "docs/qa/workflow-execution/kit/kit-001/step-map-trx.json")),
     core_pinned_unchanged = TRUE,
     files = as.list(stats::setNames(vapply(file.path(repo, files), hash, character(1), USE.NAMES = FALSE), files)))
 jsonlite::write_json(b, path, auto_unbox = TRUE, pretty = TRUE, null = "null", digits = NA)

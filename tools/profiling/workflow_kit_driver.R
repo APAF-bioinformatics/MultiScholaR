@@ -195,6 +195,8 @@ runKitJourney <- function(h, driver, project_parent, corpus, journey, fault, app
         # KIT-068: the lipidomics and metabolomics routes run their own modules' tab actions.
         if (kitRouteOf(journey) %in% c("lipidomics", "metabolomics"))
             return(runKitOmicsStep(h, driver, project_parent, corpus, journey, step))
+        # KIT-098: the transcriptomics route runs its own module ids (kit-098/plan.md section 2).
+        if (identical(kitRouteOf(journey), "transcriptomics")) return(runKitTrxStep(h, driver, project_parent, corpus, journey, step))
         switch(step$kind,
             store = switch(id,
                 # KIT-053: the limpa route is chosen at the entry point before the import (the pinned import action
@@ -503,7 +505,8 @@ runKitLimpaImportActions <- function(h, driver, run_dir, inputs) {
 #' @param corpus `list(assays = <named list of paths by assay name>, vendor, design)` from the coordinator.
 #' @noRd
 runKitOmicsImportActions <- function(h, driver, run_dir, corpus, route) {
-    short <- if (identical(route, "lipidomics")) "lipid" else "metab"
+    # KIT-098: lipidomics or metabolomics only; any other route is refused, never driven as metabolomics.
+    short <- switch(route, lipidomics = "lipid", metabolomics = "metab", stop("the omics import drives lipidomics or metabolomics only, not ", route))
     prefix <- paste0(route, "_workflow-import-")
     stopifnot(length(corpus$assays) >= 1L, length(corpus$assays) <= 2L, !is.null(names(corpus$assays)))
     h$checkpointClickControl(driver, paste0("tile-", route))
@@ -535,7 +538,7 @@ runKitOmicsImportActions <- function(h, driver, run_dir, corpus, route) {
 #' @noRd
 runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
     route <- kitRouteOf(journey)
-    short <- if (identical(route, "lipidomics")) "lipid" else "metab"
+    short <- switch(route, lipidomics = "lipid", metabolomics = "metab", stop("the omics steps drive lipidomics or metabolomics only, not ", route))
     tabs <- paste0(route, "_workflow-", route, "_tabs")
     prefix <- function(tab) paste0(route, "_workflow-", tab, "-")
     qc_tabs <- paste0(prefix("qc"), short, "_qc_tabs")
@@ -687,5 +690,90 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             notify(paste0(summary, "generate_report"), "Report generated successfully!")
         },
         stop("unknown omics step ", step$id))
+    invisible(NULL)
+}
+
+#' KIT-098: the transcriptomics import: the tile, the project setup, the import tab's count-table format, the count file through
+#' the module's own shinyFiles button (selected as the pinned helpers select the DIA report), then the process button. The id
+#' and name columns are the tab's proposal (`GeneID`, `GeneName`); the profile offers no sanitising control.
+#' @param corpus `list(assays = list(counts = <path>), vendor = "trx_counts", design)` from the coordinator.
+#' @noRd
+runKitTrxImportActions <- function(h, driver, run_dir, corpus) {
+    prefix <- "transcriptomics_workflow-import-"
+    stopifnot(length(corpus$assays) == 1L)
+    h$checkpointClickControl(driver, "tile-transcriptomics")
+    h$checkpointClickControl(driver, "btn-start-analysis")
+    driver$set_inputs(experiment_label = "kit_omics_lifecycle", project_dir = run_dir)
+    h$checkpointClickControl(driver, "btn-confirm-setup")
+    h$checkpointWaitForJs(driver, "document.querySelector('[data-testid=\"trx-tab-import\"]') !== null", timeout = h$checkpointWaitBudget())
+    h$checkpointSetInput(driver, paste0(prefix, "vendor_format"), corpus$vendor %||% "trx_counts")
+    id <- paste0(prefix, "assay1_file")
+    selection <- h$checkpointFileSelection(corpus$assays[[1L]], shinyFiles::getVolumes()())
+    h$checkpointWaitForJs(driver, sprintf("document.getElementById(%s) !== null", jsonlite::toJSON(id, auto_unbox = TRUE)),
+        timeout = h$checkpointWaitBudget(control = TRUE))
+    driver$get_js(sprintf("Shiny.setInputValue(%s,%s,{priority:'event'});true", jsonlite::toJSON(id, auto_unbox = TRUE),
+        jsonlite::toJSON(selection, auto_unbox = TRUE)))
+    h$checkpointWaitForIdle(driver, timeout = h$checkpointWaitBudget())
+    kitClickAndWaitText(h, driver, paste0(prefix, "process_import"), ".shiny-notification", "Data imported successfully!")
+    invisible(NULL)
+}
+
+#' KIT-098: one step of the transcriptomics route through KIT-097's tabs (the lipid modules under `trxOmicProfile()`, ids under
+#' `transcriptomics_workflow-<tab>-`). Each action waits on the module's own completion text or an error notification. The
+#' settings are the binding's (`journey$normalisation`, `journey$da`, `journey$ruviii_m_source`), never the shared journey's.
+#' @noRd
+runKitTrxStep <- function(h, driver, project_parent, corpus, journey, step) {
+    tabs <- "transcriptomics_workflow-transcriptomics_tabs"
+    prefix <- function(tab) paste0("transcriptomics_workflow-", tab, "-")
+    notify <- function(input_id, text) kitClickAndWaitText(h, driver, input_id, ".shiny-notification", text)
+    open_tab <- function(value) h$checkpointSetInput(driver, tabs, value)
+    settings <- journey$normalisation
+    switch(step$id,
+        import = runKitTrxImportActions(h, driver, project_parent, corpus),
+        design = runKitDesignActions(h, driver, corpus$design, prefix = prefix("design-builder"), tab_input = tabs,
+            tab_value = "design", save = function(id) notify(id, "Design matrix and contrasts saved successfully!")),
+        expression_filter = {
+            open_tab("qc")
+            notify(paste0(prefix("qc"), "filter-apply_filter"), "Expression filter applied")
+        },
+        qc_finalize = {
+            h$checkpointSetInput(driver, paste0(prefix("qc"), "trx_qc_tabs"), "Finalize QC")
+            notify(paste0(prefix("qc"), "s4_finalize-finalize_qc"), "QC complete!")
+        },
+        normalisation = {
+            open_tab("norm")
+            norm <- prefix("norm")
+            h$checkpointSetInput(driver, paste0(norm, "ruv_mode"), settings$ruv_mode)
+            for (name in c("auto_percentage_min", "auto_percentage_max", "auto_percentage_step", "k_penalty_weight"))
+                h$checkpointSetInput(driver, paste0(norm, name), settings[[name]])
+            notify(paste0(norm, "run_normalization"), "Normalization complete!")
+        },
+        da = {
+            open_tab("de")
+            de <- prefix("de")
+            h$checkpointSetInput(driver, paste0(de, "da_q_val_thresh"), journey$da$q_value)
+            h$checkpointSetInput(driver, paste0(de, "treat_lfc_cutoff"), journey$da$treat_lfc)
+            h$checkpointClickAndWaitText(driver, paste0(de, "run_da_analysis"), paste0("#", de, "da_status"), "Analysis Complete")
+        },
+        ruviii_export = {
+            open_tab("summary")
+            summary <- prefix("summary")
+            h$checkpointSetInput(driver, paste0(summary, "ruviii_m_source"), journey$ruviii_m_source)
+            h$checkpointClickAndWaitText(driver, paste0(summary, "run_ruviii_export"), paste0("#", summary, "ruviii_status"),
+                paste("M =", journey$ruviii_m_source))
+        },
+        report = {
+            summary <- prefix("summary")
+            h$checkpointSetInput(driver, paste0(summary, "experiment_label"), journey$experiment_label)
+            h$checkpointSetInput(driver, paste0(summary, "description"), "KIT-098 transcriptomics journey")
+            notify(paste0(summary, "save_workflow_args"), "Study parameters saved")
+            logged <- driver$get_js("(window.__kitNotifications||[]).map(n=>n.text).join(' | ')")
+            if (grepl("saved with warnings", paste(logged, collapse = " "), fixed = TRUE)) stop("the study parameters were saved with warnings", call. = FALSE)
+            h$checkpointClickAndWaitText(driver, paste0(summary, "copy_to_publication"), paste0("#", summary, "copy_status"),
+                "Files copied to publication directory")
+            notify(paste0(summary, "generate_report"), "Report generated successfully!")
+        },
+        session_export = notify(paste0(prefix("summary"), "export_session_state"), "Session state exported to:"),
+        stop("unknown transcriptomics step ", step$id))
     invisible(NULL)
 }

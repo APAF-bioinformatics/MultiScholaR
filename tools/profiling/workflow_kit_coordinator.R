@@ -15,7 +15,7 @@ if (length(args) == 4L && grepl("^--rerun=", args[[4L]])) {
     rerun_cases <- strsplit(sub("^--rerun=", "", args[[4L]]), ",", fixed = TRUE)[[1L]]
     args <- args[1:3]
 }
-stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", args[[1L]]))
+stopifnot(length(args) == 3L, grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab|trx)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", args[[1L]]))
 stage <- args[[1L]]
 library_path <- normalizePath(args[[2L]])
 root <- args[[3L]]
@@ -311,6 +311,12 @@ tryCatch({
             journey$route <- helpers$kitRouteOf(case)
             # KIT-021: a corpus may override normalisation settings (the fixtures skip RUV); part of the case binding through the corpus.
             if (!is.null(corpus_spec$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, corpus_spec$normalisation)
+            # KIT-098 (KIT098-F09): the transcriptomics route takes its own bound normalisation and DA settings, never the shared
+            # proteomics ones; the DA and the RUVIII M source come from the case's driver settings below.
+            if (identical(journey$route, "transcriptomics")) {
+                journey$normalisation <- case$normalisation
+                journey$da <- NULL
+            } else
             # KIT-053: a ticket may bind its route's normalisation settings (the limpa route's RUV mode); part of the case binding.
             if (!is.null(case$normalisation)) journey$normalisation <- utils::modifyList(journey$normalisation, case$normalisation)
             # KIT-082: a ticket may bind what the driver types: its members made to fail, proving a wait can.
@@ -395,7 +401,7 @@ tryCatch({
         if (startsWith(stage, "kit-lifecycle-")) helpers$kitLifecycleDecision(receipt, all_cases, bindings) else
         if (stage == "kit-journey") helpers$kitJourneyDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-journey-") && identical(bindings$tickets[[sub("kit-journey-", "", stage, fixed = TRUE)]]$kind, "single_journey"))
-            helpers$kitSingleJourneyDecision(receipt, all_cases, bindings) else
+            helpers$kitSingleJourneyDecision(receipt, all_cases, bindings, member_dir = file.path(stage_root, all_cases[[1L]]$id)) else
         if (startsWith(stage, "kit-journey-")) helpers$kitJourneyTicketDecision(receipt, all_cases, bindings) else
         if (startsWith(stage, "kit-gui-")) helpers$kitGuiMemberDecision(receipt, all_cases, bindings,
             # Both members' fingerprints are recomputed from their stores under the current canonical form at launch

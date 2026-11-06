@@ -1697,3 +1697,208 @@ test_that("KIT-092 (KIT098-F02): a single journey with an unbound step oracle, o
     failed$cases$member$operation$head_unchanged <- TRUE
     expect_identical(h$kitLifecycleDecision(failed, fail, b)$status, "lifecycle_failure_observed")
 })
+
+# KIT-098: the transcriptomics route (protocol v1.8, kit-098/plan.md). Each test failed before its change.
+kitSyntheticTrxBindings <- function(h) {
+    b <- kitSyntheticBindings()
+    file <- function(name) list(path = paste0("/corpus/", name), bytes = 1, sha256 = strrep("a", 64))
+    b$builds$kit_098 <- list(library = "/lib/t", build = strrep("t", 64), exact_sum = "sum-t")
+    b$corpora$trx_screen <- list(profile = "trx_screen", samples = 24L, route = "transcriptomics", format = "trx_counts",
+        vendor = "trx_counts", report_file = "counts.tsv", assay_files = list(counts = "counts.tsv"), design_file = "design.tsv",
+        files = list(`counts.tsv` = file("counts.tsv"), `design_matrix.tab` = file("design_matrix.tab"),
+            `contrast_strings.tab` = file("contrast_strings.tab"), `truth.json` = file("truth.json"), `design.tsv` = file("design.tsv")))
+    b$harness <- list(step_map_trx_sha256 = strrep("x", 64))
+    norm <- list(ruv_mode = "automatic", auto_percentage_min = 5, auto_percentage_max = 30, auto_percentage_step = 5, k_penalty_weight = 0.05)
+    settings <- list(da = list(q_value = 0.05, treat_lfc = 1L), ruviii_m_source = "group")
+    workers <- c("trx_expression_filter", "trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_ruviii_export")
+    b$lifecycle_trx <- list(ceiling_seconds = 1800L, build = "kit_098", corpus = "trx_screen", oracles = "trx98a",
+        normalisation = norm, driver_settings = settings,
+        fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation"))
+    b$tickets[["098a"]] <- list(kind = "single_journey", build = "kit_098", corpus = "trx_screen", route = "transcriptomics",
+        whole_journey = TRUE, oracles = "trx98a", ceiling_seconds = 1800L, normalisation = norm, driver_settings = settings,
+        worker_steps = as.list(workers))
+    b <- kitSyntheticOracles(b, h, "transcriptomics", "trx98a")
+    b$oracles$trx98a_ruviii_export$products <- list(`trx.ruviii:0123456789ab` = list(kind = "value", sha256 = "r"))
+    b
+}
+
+test_that("KIT-098: the transcriptomics step list follows KIT-097's GUI, and an unknown route is refused", {
+    h <- kitHarness()
+    expect_identical(h$kitStepIds("transcriptomics"), c("import", "design", "expression_filter", "qc_finalize", "normalisation",
+        "da", "ruviii_export", "report", "session_export"))
+    steps <- h$kitJourneySteps("transcriptomics")
+    expect_identical(lapply(steps, `[[`, "state"), list(NULL, "trx_raw_data_s4", "trx_expression_filtered", "trx_qc_complete",
+        "trx_ruvs", "trx_ruvs", "trx_ruvs", NULL, NULL))
+    # A route the harness does not know is refused, never driven or bound as DIA.
+    b <- kitSyntheticTrxBindings(h)
+    b$tickets[["098z"]] <- list(kind = "single_journey", build = "kit_098", corpus = "trx_screen", route = "proteomics",
+        whole_journey = TRUE, in_memory = TRUE, ceiling_seconds = 1800L)
+    expect_error(h$kitCases(b, "kit-journey-098z"), "route")
+    unknown <- list(id = "member", route = "proteomics", in_memory = FALSE, expect_failure = FALSE)
+    expect_error(h$kitLifecycleDecision(list(cases = list(member = list(operation = list()))), list(unknown), b), "route")
+})
+
+test_that("KIT-098: a trx case binds its step map, its oracles and its own settings; the lifecycle pair takes 1,800 s", {
+    h <- kitHarness()
+    b <- kitSyntheticTrxBindings(h)
+    case <- h$kitCases(b, "kit-journey-098a")[[1L]]
+    expect_identical(case$route, "transcriptomics")
+    expect_identical(case$oracles, "trx98a")
+    expect_false(case$in_memory)
+    expect_identical(case$normalisation$auto_percentage_max, 30)
+    expect_identical(case$driver_settings$ruviii_m_source, "group")
+    other <- b; other$harness$step_map_trx_sha256 <- strrep("y", 64)
+    expect_false(identical(h$kitCases(other, "kit-journey-098a")[[1L]]$binding, case$binding))
+    none <- b; none$harness$step_map_trx_sha256 <- NULL
+    expect_error(h$kitCases(none, "kit-journey-098a"), "trx step map")
+    # The lifecycle pair: its own spec, oracles bound, never in memory, the failure member with the launch record.
+    complete <- h$kitCases(b, "kit-lifecycle-trx")
+    expect_identical(complete[[1L]]$selector, "kit:lifecycle:trx:complete")
+    expect_identical(complete[[1L]]$oracles, "trx98a")
+    expect_false(complete[[1L]]$in_memory)
+    expect_false(complete[[1L]]$record)
+    fail <- h$kitCases(b, "kit-lifecycle-trx-fail")
+    expect_true(fail[[1L]]$record)
+    expect_identical(fail[[1L]]$fault_spec$failed_step, "normalisation")
+    expect_identical(h$kitSelectorStage("kit:lifecycle:trx:complete"), list(stage = "kit-lifecycle-trx", id = "member"))
+    expect_identical(h$kitSelectorStage("kit:lifecycle:trx:fail"), list(stage = "kit-lifecycle-trx-fail", id = "member"))
+    expect_identical(h$kitMemberSeconds("kit-lifecycle-trx", b), 1800L)
+    expect_identical(h$kitMemberSeconds("kit-lifecycle-trx-fail", b), 1800L)
+    long <- b; long$lifecycle_trx$ceiling_seconds <- 3600L
+    expect_error(h$kitMemberSeconds("kit-lifecycle-trx", long), "1,800")
+    memory <- b; memory$lifecycle_trx$in_memory <- TRUE
+    expect_error(h$kitCases(memory, "kit-lifecycle-trx"), "in memory")
+    ids <- h$kitStepIds("transcriptomics")
+    receipt_for <- function(case, edit = NULL) {
+        operation <- list(status = "complete", swap_bytes = 0, peak_bytes = 4e9, elapsed_seconds = 1700, max_sample_interval = 0.06,
+            cleanup = list(slice_stopped = TRUE), resident_end_bytes = 1e9, populations_complete = TRUE, head_unchanged = NA,
+            phase_status = as.list(stats::setNames(rep("complete", length(ids)), ids)),
+            phase_peak_anon_bytes = as.list(stats::setNames(rep(2e9, length(ids)), ids)))
+        r <- list(cases = stats::setNames(list(list(passed = TRUE, operation = operation, verifier_completion = list(accepted = TRUE))), case$id))
+        if (is.function(edit)) r <- edit(r)
+        r
+    }
+    # 1,700 s is inside the trx lifecycle ceiling (the DIA lifecycle's 300 s would make it invalid).
+    decision <- h$kitLifecycleDecision(receipt_for(complete[[1L]]), complete, b)
+    expect_identical(decision$status, "lifecycle_complete_observed")
+    expect_false(decision$in_memory)
+    failed <- receipt_for(fail[[1L]], function(r) {
+        r$cases$member$operation$status <- "journey_failed"
+        r$cases$member$operation$phase_status$normalisation <- "failed"
+        r$cases$member$operation$guard <- list(reason = "injected_guard_stop")
+        r
+    })
+    expect_identical(h$kitLifecycleDecision(failed, fail, b)$failing_rule, "head_unchanged")
+    failed$cases$member$operation$head_unchanged <- TRUE
+    expect_identical(h$kitLifecycleDecision(failed, fail, b)$status, "lifecycle_failure_observed")
+})
+
+test_that("KIT-098: a trx case without an oracle for a step, or without the RUVIII product, is refused (oracle_missing)", {
+    h <- kitHarness()
+    b <- kitSyntheticTrxBindings(h)
+    gap <- b; gap$oracles$trx98a_normalisation <- NULL
+    expect_error(h$kitCases(gap, "kit-journey-098a"), "oracle_missing.*normalisation")
+    expect_error(h$kitCases(gap, "kit-lifecycle-trx"), "oracle_missing.*normalisation")
+    product <- b; product$oracles$trx98a_ruviii_export$products <- list()
+    expect_error(h$kitCases(product, "kit-journey-098a"), "oracle_missing.*RUVIII")
+    expect_error(h$kitCases(product, "kit-lifecycle-trx-fail"), "oracle_missing.*RUVIII")
+    bare <- b; bare$tickets[["098a"]]$oracles <- NULL; bare$tickets[["098a"]]$in_memory <- TRUE
+    expect_error(h$kitCases(bare, "kit-journey-098a"), "oracles")
+    unbound <- b; unbound$lifecycle_trx$oracles <- NULL
+    expect_error(h$kitCases(unbound, "kit-lifecycle-trx"), "oracles")
+})
+
+test_that("KIT-098: a trx product outside the identity set is judged; only the trx *_science products are reported", {
+    h <- kitHarness()
+    expect_true(grepl(h$kitOperationIdentityProducts, "trx_ruvs_science"))
+    expect_true(grepl(h$kitOperationIdentityProducts, "trx_expression_filter_science"))
+    expect_false(grepl(h$kitOperationIdentityProducts, "trx.ruvs_result:0123456789ab"))
+    expect_false(grepl(h$kitOperationIdentityProducts, "trx.ruviii:0123456789ab"))
+    fingerprint <- function(science, result) list(fingerprint = list(class = "TranscriptomicsAssayData", rows = 4565L,
+        components = list(count_data = list(sha256 = "c")), support = list(), summary_sha256 = "s",
+        products = list(trx_ruvs_science = list(sha256 = science), `trx.ruvs_result:0123456789ab` = list(sha256 = result))))
+    reference <- list(normalisation = fingerprint("a", "w"))
+    expect_length(h$kitReproduceMismatches(reference, list(normalisation = fingerprint("b", "w")), h$kitOperationIdentityProducts), 0L)
+    expect_identical(as.vector(h$kitReproduceMismatches(reference, list(normalisation = fingerprint("a", "v")), h$kitOperationIdentityProducts)),
+        "normalisation/products/trx.ruvs_result:0123456789ab")
+    # The state's history is judged by name against the oracle's recorded history.
+    b <- kitSyntheticTrxBindings(h)
+    b$oracles$trx98a_history <- list("initial", "trx_raw_data_s4", "trx_expression_filtered", "trx_qc_complete", "trx_ruvs")
+    case <- h$kitCases(b, "kit-journey-098a")[[1L]]
+    expect_length(h$kitHistoryMismatches(b, case, c("initial", "trx_raw_data_s4", "trx_expression_filtered", "trx_qc_complete", "trx_ruvs")), 0L)
+    expect_identical(h$kitHistoryMismatches(b, case, c("initial", "trx_raw_data_s4", "trx_qc_complete", "trx_ruvs")), "history")
+    nohistory <- b; nohistory$oracles$trx98a_history <- NULL
+    expect_identical(h$kitHistoryMismatches(nohistory, case, "initial"), "history")
+})
+
+test_that("KIT-098: a trx journey needs a completed worker journal for each listed worker step (worker_dispatch_missing)", {
+    h <- kitHarness()
+    b <- kitSyntheticTrxBindings(h)
+    case <- h$kitCases(b, "kit-journey-098a")[[1L]]
+    ids <- h$kitStepIds("transcriptomics")
+    member <- withr::local_tempdir()
+    journal <- function(operation, status) {
+        dir <- file.path(member, "project", ".dia-native-x", ".workflow-entities", ".workflow-export", paste0("wfx-", operation))
+        dir.create(dir, recursive = TRUE)
+        saveRDS(list(operation = operation), file.path(dir, "request.rds"))
+        jsonlite::write_json(list(status = status), file.path(dir, "journal.json"), auto_unbox = TRUE)
+    }
+    for (operation in c("trx_expression_filter", "trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast")) journal(operation, "complete")
+    journal("trx_ruviii_export", "worker_failed")
+    receipt <- list(cases = list(`candidate-1` = list(passed = TRUE, verifier_completion = list(accepted = TRUE),
+        operation = list(status = "complete", swap_bytes = 0, peak_bytes = 4e9, elapsed_seconds = 900, max_sample_interval = 0.06,
+            cleanup = list(slice_stopped = TRUE), resident_end_bytes = 1e9, populations_complete = TRUE,
+            phase_status = as.list(stats::setNames(rep("complete", length(ids)), ids)),
+            phase_peak_anon_bytes = as.list(stats::setNames(rep(2e9, length(ids)), ids))))))
+    missing <- h$kitSingleJourneyDecision(receipt, list(case), b, member_dir = member)
+    expect_identical(missing$status, "invalid")
+    expect_identical(missing$failing_rule, "worker_dispatch_missing")
+    expect_identical(missing$dispatched$trx_ruviii_export, list(requests = 1L, complete = 0L))
+    journal("trx_ruviii_export_again", "complete")
+    file.rename(file.path(member, "project/.dia-native-x/.workflow-entities/.workflow-export/wfx-trx_ruviii_export_again"),
+        file.path(member, "project/.dia-native-x/.workflow-entities/.workflow-export/wfx-2"))
+    saveRDS(list(operation = "trx_ruviii_export"), file.path(member, "project/.dia-native-x/.workflow-entities/.workflow-export/wfx-2/request.rds"))
+    accepted <- h$kitSingleJourneyDecision(receipt, list(case), b, member_dir = member)
+    expect_identical(accepted$status, "accepted")
+    expect_identical(accepted$worker_steps, c("trx_expression_filter", "trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_ruviii_export"))
+    # Without the member's directory the listed steps cannot be shown, so the member is not accepted.
+    expect_identical(h$kitSingleJourneyDecision(receipt, list(case), b)$failing_rule, "worker_dispatch_missing")
+})
+
+test_that("KIT-098: the trx driver runs its own module ids; the lipid-or-metab steps refuse any other route", {
+    d <- new.env(parent = globalenv())
+    sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), d)
+    sys.source(testthat::test_path("../../tools/profiling/workflow_kit_driver.R"), d)
+    expect_error(d$runKitOmicsImportActions(NULL, NULL, tempdir(), list(assays = list(counts = "x")), "transcriptomics"), "lipidomics or metabolomics")
+    expect_error(d$runKitOmicsStep(NULL, NULL, tempdir(), list(), list(route = "transcriptomics"), list(id = "intensity")), "lipidomics or metabolomics")
+    seen <- new.env(parent = emptyenv()); seen$ids <- character(); seen$values <- list()
+    h <- list(checkpointSetInput = function(driver, id, value) { seen$ids <- c(seen$ids, id); seen$values[[id]] <- value },
+        checkpointClickControl = function(driver, id) seen$ids <- c(seen$ids, id),
+        checkpointWaitForJs = function(...) TRUE, checkpointWaitBudget = function(...) 1000L, checkpointWaitForIdle = function(...) TRUE,
+        checkpointFileSelection = function(path, roots) list(files = path),
+        checkpointClickAndWaitText = function(driver, id, selector, text) { seen$ids <- c(seen$ids, id); seen$values[[paste0(id, "#wait")]] <- text })
+    driver <- list(get_js = function(script, timeout = NULL) {
+        id <- regmatches(script, regexpr("getElementById\\(\"[^\"]+\"\\)\\.click", script))
+        if (length(id)) seen$ids <- c(seen$ids, sub("^getElementById\\(\"([^\"]+)\"\\)\\.click$", "\\1", id))
+        NULL
+    }, set_inputs = function(...) invisible(NULL))
+    journey <- list(route = "transcriptomics", normalisation = list(ruv_mode = "automatic", auto_percentage_min = 5, auto_percentage_max = 30,
+        auto_percentage_step = 5, k_penalty_weight = 0.05), da = list(q_value = 0.05, treat_lfc = 1L), ruviii_m_source = "technical_replicate",
+        experiment_label = "kit_omics_lifecycle")
+    corpus <- list(assays = list(counts = "/corpus/counts.tsv"), vendor = "trx_counts", design = "/corpus/design.tsv")
+    for (id in c("import", "expression_filter", "qc_finalize", "normalisation", "da", "ruviii_export", "report", "session_export"))
+        d$runKitTrxStep(h, driver, tempdir(), corpus, journey, list(id = id))
+    expect_true("tile-transcriptomics" %in% seen$ids)
+    expect_true(all(startsWith(setdiff(seen$ids, c("tile-transcriptomics", "btn-start-analysis", "btn-confirm-setup")), "transcriptomics_workflow-")))
+    for (id in c("import-process_import", "qc-filter-apply_filter", "qc-s4_finalize-finalize_qc", "norm-run_normalization", "de-run_da_analysis",
+        "summary-run_ruviii_export", "summary-generate_report", "summary-export_session_state"))
+        expect_true(paste0("transcriptomics_workflow-", id) %in% seen$ids, info = id)
+    expect_identical(seen$values[["transcriptomics_workflow-import-vendor_format"]], "trx_counts")
+    expect_identical(seen$values[["transcriptomics_workflow-norm-auto_percentage_max"]], 30)
+    expect_identical(seen$values[["transcriptomics_workflow-norm-k_penalty_weight"]], 0.05)
+    expect_identical(seen$values[["transcriptomics_workflow-de-treat_lfc_cutoff"]], 1L)
+    expect_identical(seen$values[["transcriptomics_workflow-summary-ruviii_m_source"]], "technical_replicate")
+    expect_identical(seen$values[["transcriptomics_workflow-summary-run_ruviii_export#wait"]], "M = technical_replicate")
+    expect_false(any(grepl("lipid|metab", seen$ids)))
+    expect_error(d$runKitTrxStep(h, driver, tempdir(), corpus, journey, list(id = "intensity")), "unknown transcriptomics step")
+})

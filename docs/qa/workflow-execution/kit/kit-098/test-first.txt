@@ -1,0 +1,9 @@
+BEFORE (harness at c4839d25, new tests): pass 623 fail 3 error 6 
+ - KIT-098: the transcriptomics step list follows KIT-097's GUI, and an unknown route is refused : failed 0 error TRUE 
+ - KIT-098: a trx case binds its step map, its oracles and its own settings; the lifecycle pair takes 1,800 s : failed 0 error TRUE 
+ - KIT-098: a trx case without an oracle for a step, or without the RUVIII product, is refused (oracle_missing) : failed 0 error TRUE 
+ - KIT-098: a trx product outside the identity set is judged; only the trx *_science products are reported : failed 3 error TRUE 
+ - KIT-098: a trx journey needs a completed worker journal for each listed worker step (worker_dispatch_missing) : failed 0 error TRUE 
+ - KIT-098: the trx driver runs its own module ids; the lipid-or-metab steps refuse any other route : failed 0 error TRUE 
+
+AFTER (this commit's harness, devtools::load_all on kit_097's library): test-workflow-kit-harness.R pass 688, fail 0, error 0, skip 0

@@ -12,7 +12,23 @@
 kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
     step <- function(id, label, state, kind, module, action) list(id = id, label = label,
         state = state, kind = kind, module = module, action = action)
-    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA", "lipidomics", "metabolomics"))
+    stopifnot(is.character(route), length(route) == 1L, route %in% c("DIA", "protein", "DIA_LIMPA", "lipidomics", "metabolomics", "transcriptomics"))
+    # KIT-098 (protocol v1.8): the transcriptomics route in KIT-097's GUI order (kit-098/plan.md section 2). The normalisation
+    # button runs three worker steps (TMM/logCPM and the grid are products, RUVs the state); the DA and the RUVIII export
+    # leave the RUVs head and add products; the session export is the summary tab's, after the report.
+    if (identical(route, "transcriptomics")) {
+        module <- function(name) paste0("mod_", name, " (trxOmicProfile)")
+        return(list(
+            step("import", "Import", NULL, "store", module("lipid_import"), "import-process_import"),
+            step("design", "Design", "trx_raw_data_s4", "store", module("lipid_design"), "design-builder-save_results"),
+            step("expression_filter", "Expression Filter", "trx_expression_filtered", "omics_qc", "mod_trx_qc_filter", "qc-filter-apply_filter"),
+            step("qc_finalize", "Finalize QC", "trx_qc_complete", "omics_qc", module("lipid_qc"), "qc-s4_finalize-finalize_qc"),
+            step("normalisation", "TMM/logCPM, RUV grid, RUVs", "trx_ruvs", "omics_norm", "mod_trx_norm", "norm-run_normalization"),
+            step("da", "Differential expression", "trx_ruvs", "da", "mod_trx_da", "de-run_da_analysis"),
+            step("ruviii_export", "RUVIII export", "trx_ruvs", "omics_export", "mod_trx_summary", "summary-run_ruviii_export"),
+            step("report", "Report", NULL, "report", module("lipid_summary"), "summary-save_workflow_args, copy_to_publication, generate_report"),
+            step("session_export", "Session export", NULL, "store", module("lipid_summary"), "summary-export_session_state")))
+    }
     # KIT-068: the lipidomics and metabolomics routes (the twin modules: import, design, QC, normalisation, DE, summary).
     # The import writes files only (no state); the design commits the assay object; the QC tab's intensity filter,
     # duplicate resolution and finalise; the normalisation tab's one action runs ITSD, log2, between-sample
@@ -107,6 +123,13 @@ kitRouteOf <- function(x) x$route %||% "DIA"
 #' @noRd
 kitMemberSeconds <- function(stage, bindings = NULL) {
     if (grepl("^kit-lifecycle-operation-", stage)) return(as.integer(bindings$operation_lifecycle$ceiling_seconds %||% 300L))
+    # KIT-098 (protocol v1.8): the transcriptomics lifecycle pair binds its own ceiling, at most 1,800 s.
+    if (grepl("^kit-lifecycle-trx(-fail)?$", stage)) {
+        seconds <- bindings$lifecycle_trx$ceiling_seconds
+        if (!is.numeric(seconds) || length(seconds) != 1L || !is.finite(seconds) || seconds <= 0 || seconds > 1800)
+            stop("the transcriptomics lifecycle binds its ceiling (at most 1,800 s, protocol v1.8)")
+        return(as.integer(seconds))
+    }
     # KIT-068: the lipidomics and metabolomics lifecycle members (in-memory modules through the report) bind their own ceiling.
     if (grepl("^kit-lifecycle-(lipid|metab)(-fail)?$", stage)) return(as.integer(bindings$lifecycle_omics$ceiling_seconds %||% 1800L))
     if (grepl("^kit-lifecycle-", stage)) return(as.integer(bindings$lifecycle$ceiling_seconds %||% 300L))
@@ -154,7 +177,7 @@ kitBindings <- function(path) {
         step_map_sha256 = raw$harness$step_map_sha256, files = raw$harness$files, harness = raw$harness,
         builds = raw$builds, outcomes = raw$outcomes, control = raw$control,
         corpora = raw$corpora, journey = raw$journey, lifecycle = raw$lifecycle,
-        operation_lifecycle = raw$operation_lifecycle, lifecycle_omics = raw$lifecycle_omics, tickets = raw$tickets,
+        operation_lifecycle = raw$operation_lifecycle, lifecycle_omics = raw$lifecycle_omics, lifecycle_trx = raw$lifecycle_trx, tickets = raw$tickets,
         populations = raw$populations, oracles = raw$oracles)
 }
 
@@ -175,7 +198,7 @@ kitControl <- function(bindings) {
 #'   and a `binding` digest of everything that fixes it.
 #' @noRd
 kitCases <- function(bindings, stage) {
-    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", stage))
+    stopifnot(grepl("^kit-(lifecycle-(operation-)?(complete|fail)|lifecycle-(lipid|metab|trx)(-fail)?|journey(-0[0-9]{2}[a-z]?)?|gui-0[0-9]{2}|0[0-9]{2}[a-z]?)$", stage))
     build_of <- function(build_key) {
         build <- bindings$builds[[build_key]]
         if (is.null(build)) stop("build ", build_key, " is not bound")
@@ -196,6 +219,13 @@ kitCases <- function(bindings, stage) {
         # KIT-068: the lipidomics and metabolomics routes bind their own step maps (authored by reading the kernels).
         if (identical(route, "lipidomics") && is.null(bindings$harness$step_map_lipid_sha256)) stop("the lipid step map is not bound")
         if (identical(route, "metabolomics") && is.null(bindings$harness$step_map_metab_sha256)) stop("the metab step map is not bound")
+        # KIT-098: the transcriptomics step map (KIT-095's kit-001/step-map-trx.json); a route the harness does not know is
+        # refused here, never bound with the DIA step map.
+        if (identical(route, "transcriptomics") && is.null(bindings$harness$step_map_trx_sha256)) stop("the trx step map is not bound")
+        step_map <- switch(route, DIA = bindings$step_map_sha256, protein = bindings$harness$step_map_protein_sha256,
+            DIA_LIMPA = bindings$harness$step_map_limpa_sha256, lipidomics = bindings$harness$step_map_lipid_sha256,
+            metabolomics = bindings$harness$step_map_metab_sha256, transcriptomics = bindings$harness$step_map_trx_sha256,
+            stop("unknown route ", route, ": no step map is bound for it"))
         # KIT-092 (protocol v1.7, KIT098-F02): a member is in memory (no store, exactness not judged) only where its
         # binding declares it; it was inferred from a route other than DIA bound without oracles.
         list(id = id, kind = "journey", role = role, control = role == "control", rep = rep, fault = fault,
@@ -204,9 +234,7 @@ kitCases <- function(bindings, stage) {
             exact_sum = build$exact_sum, expect_failure = fault != "none",
             binding = digest::digest(c(list(corpus = corpus$files, build = build, stage = stage, rep = rep, record = record,
                 journey = bindings$journey[setdiff(names(bindings$journey), "pair")], protocol = bindings$protocol_sha256,
-                step_map = switch(route, protein = bindings$harness$step_map_protein_sha256,
-                    DIA_LIMPA = bindings$harness$step_map_limpa_sha256, lipidomics = bindings$harness$step_map_lipid_sha256,
-                    metabolomics = bindings$harness$step_map_metab_sha256, bindings$step_map_sha256)),
+                step_map = step_map),
                 if (!is.null(stop_after)) list(stop_after = stop_after),
                 if (!identical(route, "DIA")) list(route = route, oracles = oracles),
                 if (!is.null(normalisation)) list(normalisation = normalisation),
@@ -250,6 +278,33 @@ kitCases <- function(bindings, stage) {
         return(list(operation_case("member", "candidate", 1L, bindings$operation_lifecycle$build %||% kitControl(bindings),
             fault$operation, fault$population,
             fault = if (kind == "fail") fault$name else "none", selector = paste0("kit:lifecycle:operation:", kind))))
+    }
+    # KIT-098 (protocol v1.8 item 4, KIT098-F02): every transcriptomics case binds oracles, is never in memory, and has an
+    # oracle for every step that leaves a state and a RUVIII product on the RUVIII export step's oracle (`oracle_missing`).
+    trx_coverage <- function(case, label) {
+        if (!identical(case$route, "transcriptomics")) return(case)
+        if (isTRUE(case$in_memory) || is.null(case$oracles)) stop(label, ": a transcriptomics case binds oracles and is never in memory (protocol v1.8)")
+        oracles <- kitOracleJourneyPopulations(bindings, case$route, case$oracles)
+        judged <- vapply(Filter(function(step) !is.null(step$state), kitJourneySteps(case$route)), `[[`, "", "id")
+        unbound <- judged[vapply(judged, function(step) is.null(oracles[[step]]$fingerprint), logical(1))]
+        if (length(unbound)) stop(label, ": oracle_missing for step(s) ", paste(unbound, collapse = ", "), " (protocol v1.8)")
+        if (!any(startsWith(as.character(names(oracles$ruviii_export$fingerprint$products)), "trx.ruviii:")))
+            stop(label, ": oracle_missing: the RUVIII export step's oracle carries no RUVIII product (protocol v1.8)")
+        case
+    }
+    if (grepl("^kit-lifecycle-trx(-fail)?$", stage)) {
+        # KIT-098: the transcriptomics lifecycle pair on its own spec (`lifecycle_trx`): its build, corpus, settings, oracles
+        # and fault; on the owner from the start (KIT-096), so never in memory, with the populations and head rules.
+        kind <- if (endsWith(stage, "-fail")) "fail" else "complete"
+        spec <- bindings$lifecycle_trx
+        if (is.null(spec) || is.null(spec$fault) || is.null(spec$build) || is.null(spec$corpus)) stop("the transcriptomics lifecycle is not bound")
+        if (isTRUE(spec$in_memory)) stop("the transcriptomics lifecycle cannot be declared in memory (protocol v1.8)")
+        case <- journey_case("member", "candidate", 1L, spec$build, spec$corpus,
+            fault = if (kind == "fail") spec$fault$name else "none", selector = paste0("kit:lifecycle:trx:", kind),
+            record = kind == "fail", route = "transcriptomics", oracles = spec$oracles, normalisation = spec$normalisation,
+            driver_settings = spec$driver_settings)
+        case$fault_spec <- spec$fault
+        return(list(trx_coverage(case, paste0("kit-lifecycle-trx ", kind))))
     }
     if (grepl("^kit-lifecycle-(lipid|metab)(-fail)?$", stage)) {
         # KIT-068: one lifecycle member per omics route on the in-memory modules (no owner, no store, no oracles:
@@ -324,10 +379,10 @@ kitCases <- function(bindings, stage) {
                 judged <- vapply(Filter(function(step) !is.null(step$state) && !identical(step$state, "initial"), steps), `[[`, "", "id")
                 oracles <- kitOracleJourneyPopulations(bindings, case$route, case$oracles %||% "journey")
                 unbound <- judged[vapply(judged, function(step) is.null(oracles[[step]]$fingerprint), logical(1))]
-                if (length(unbound)) stop("KIT-", ticket, " single journey has no bound oracle for step(s) ",
+                if (length(unbound)) stop("KIT-", ticket, " single journey: oracle_missing: no bound oracle for step(s) ",
                     paste(unbound, collapse = ", "), " (protocol v1.7)")
             }
-            return(list(case))
+            return(list(trx_coverage(case, paste0("KIT-", ticket))))
         }
         if (is.null(spec) || !identical(spec$kind, "journey")) stop("KIT-", ticket, " has no bound journey pair")
         record <- isTRUE(spec$record)
@@ -467,7 +522,7 @@ kitSingleDecision <- function(receipt, cases, bindings) {
 #' formed and no control is involved. `accepted` when exact and eligible; `rejected` when the verifier's log names
 #' an oracle mismatch; `invalid` for any other failing rule.
 #' @noRd
-kitSingleJourneyDecision <- function(receipt, cases, bindings) {
+kitSingleJourneyDecision <- function(receipt, cases, bindings, member_dir = NULL) {
     stopifnot(length(cases) == 1L)
     case <- cases[[1L]]
     ticket <- sub("^kit:journey-([0-9]{3}[a-z]?):.*$", "\\1", case$selector)
@@ -486,8 +541,18 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
     inexact <- identical(failing, "verifier_accepted") &&
         grepl("oracle mismatch", item$verifier_completion$reason %||% "", fixed = TRUE)
     if (inexact) failing <- "oracle_mismatch"
+    # KIT-098 (protocol v1.8 item 5): a ticket that lists worker steps needs one completed worker journal per listed step in
+    # the member's project store; a listed step without one makes the member invalid.
+    worker_steps <- unlist(bindings$tickets[[ticket]]$worker_steps)
+    dispatched <- NULL
+    if (length(worker_steps)) {
+        dispatched <- kitWorkerDispatches(member_dir)
+        ran <- vapply(worker_steps, function(name) isTRUE(dispatched[[name]]$complete >= 1L), logical(1))
+        if (is.null(failing) && !all(ran)) failing <- "worker_dispatch_missing"
+    }
     list(status = if (is.null(failing)) "accepted" else if (inexact) "rejected" else "invalid",
         rule = "exactness_and_completion", failing_rule = failing, ticket = ticket, stop_after = case$stop_after,
+        worker_steps = worker_steps, dispatched = dispatched,
         steps = steps, member = list(role = "single", exact = if (in_memory) NA else is.null(failing), in_memory = in_memory,
             outcome = op$status, peak_bytes = op$peak_bytes, peak_anon_bytes = op$sampled_anon_bytes,
             resident_end_bytes = op$resident_end_bytes, elapsed_seconds = op$elapsed_seconds,
@@ -499,10 +564,10 @@ kitSingleJourneyDecision <- function(receipt, cases, bindings) {
 #' Map a verifier selector back to its stage and case id.
 #' @noRd
 kitSelectorStage <- function(selection) {
-    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab):(complete|fail)|0[0-9]{2}[a-z]?:((control|candidate):[12]|single:[1-5]))$", selection))
+    stopifnot(grepl("^kit:(journey:((control|candidate):[12]|default:1)|journey-0[0-9]{2}[a-z]?:(control|candidate):1|gui-0[0-9]{2}:candidate:1|lifecycle:(operation:)?(complete|fail)|lifecycle:(lipid|metab|trx):(complete|fail)|0[0-9]{2}[a-z]?:((control|candidate):[12]|single:[1-5]))$", selection))
     parts <- strsplit(sub("^kit:", "", selection), ":", fixed = TRUE)[[1L]]
     # KIT-068: `kit:lifecycle:lipid:complete` is stage `kit-lifecycle-lipid`; `:fail` the `-fail` stage.
-    if (parts[[1L]] == "lifecycle" && parts[[2L]] %in% c("lipid", "metab"))
+    if (parts[[1L]] == "lifecycle" && parts[[2L]] %in% c("lipid", "metab", "trx"))
         return(list(stage = paste0("kit-lifecycle-", parts[[2L]], if (parts[[3L]] == "fail") "-fail" else ""), id = "member"))
     if (parts[[1L]] == "lifecycle") return(list(stage = paste0("kit-lifecycle-", paste(parts[-1L], collapse = "-")), id = "member"))
     # A ticket's gui member is the single case `member` (KIT-008 correction 1: the verifier looked for `candidate-1`).
@@ -639,7 +704,9 @@ kitLifecycleDecision <- function(receipt, cases, bindings) {
     in_memory <- isTRUE(case$in_memory)
     result$route <- route
     result$in_memory <- in_memory
-    stage <- if (route %in% c("lipidomics", "metabolomics")) paste0("kit-lifecycle-", if (route == "lipidomics") "lipid" else "metab") else "kit-lifecycle-complete"
+    # KIT-098: the stage, and so the ceiling, by route; a route without a lifecycle stage is refused.
+    stage <- switch(route, lipidomics = "kit-lifecycle-lipid", metabolomics = "kit-lifecycle-metab", transcriptomics = "kit-lifecycle-trx",
+        DIA = "kit-lifecycle-complete", stop("unknown route ", route, ": no lifecycle stage"))
     if (!case$expect_failure) {
         result$failing_rule <- kitIneligible(item, kitMemberSeconds(stage, bindings), "journey")
         if (is.null(result$failing_rule) && !(all(steps %in% names(status)) &&
@@ -746,7 +813,10 @@ kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
 # KIT-031: the lipidomics declarations' products (`<operation>_science` on the state) are of the same kind: their value
 # is the owned checkpoint entity, whose bytes carry the ITSD kernel's `@args` timestamp and the chain of the earlier
 # products' ids; the states they reference are judged, the products reported.
-kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science|(lipid|metab)_[a-z0-9_]+_science)$"
+# KIT-098 (protocol v1.8): the transcriptomics declarations' `<operation>_science` products, by the same cause: the value is the
+# declaration run's own entity (its run identity and the earlier products it names by entity id), while its content is judged
+# through the state's components and the step's attached `trx.*:<sha12>` products, which are not in this set.
+kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science|(lipid|metab|trx)_[a-z0-9_]+_science)$"
 
 kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL) {
     mismatches <- character()
@@ -969,21 +1039,7 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, ap
     result$resident_end_bytes <- op$resident_end_bytes
     result$elapsed_seconds <- op$elapsed_seconds
     # Dispatch evidence: completed worker journals under the member's project store, by operation.
-    dispatched <- list()
-    if (!is.null(member_dir) && dir.exists(member_dir)) {
-        requests <- list.files(member_dir, "^request[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
-        requests <- requests[grepl("/[.]workflow-export/wfx-", requests)]
-        for (path in requests) {
-            request <- tryCatch(readRDS(path), error = function(error) NULL)
-            operation <- request$operation %||% NA_character_
-            if (is.na(operation)) next
-            journal_path <- file.path(dirname(path), "journal.json")
-            status <- if (file.exists(journal_path)) tryCatch(jsonlite::read_json(journal_path)$status, error = function(error) NULL) else NULL
-            dispatched[[operation]] <- c(dispatched[[operation]], status %||% NA_character_)
-        }
-    }
-    result$dispatched <- lapply(dispatched, function(statuses) list(requests = length(statuses),
-        complete = sum(statuses == "complete", na.rm = TRUE)))
+    result$dispatched <- kitWorkerDispatches(member_dir)
     required <- spec$operations %||% c("precursor_rollup", "minimum_peptides_per_sample")
     worker_ran <- all(vapply(required, function(name) isTRUE(result$dispatched[[name]]$complete >= 1L), logical(1)))
     if (is.null(result$failing_rule) && !worker_ran) result$failing_rule <- "worker_dispatch_missing"
@@ -1030,6 +1086,37 @@ kitGuiMemberDecision <- function(receipt, cases, bindings, member_dir = NULL, ap
     if (is.null(result$failing_rule)) result$status <- "gui_member_observed" else if (
         result$failing_rule %in% c("worker_dispatch_missing", "reference_mismatch")) result$status <- "rejected"
     result
+}
+
+#' Worker dispatches under a member's directory (KIT-008; shared with the KIT-098 journeys): the requests under the project
+#' store's `.workflow-export/wfx-*`, by operation, with the number whose journal reads `complete`.
+#' @return Named list by operation of `requests` and `complete`; empty without the directory.
+#' @noRd
+kitWorkerDispatches <- function(member_dir) {
+    dispatched <- list()
+    if (!is.null(member_dir) && dir.exists(member_dir)) {
+        requests <- list.files(member_dir, "^request[.]rds$", recursive = TRUE, full.names = TRUE, all.files = TRUE)
+        requests <- requests[grepl("/[.]workflow-export/wfx-", requests)]
+        for (path in requests) {
+            request <- tryCatch(readRDS(path), error = function(error) NULL)
+            operation <- request$operation %||% NA_character_
+            if (is.na(operation)) next
+            journal_path <- file.path(dirname(path), "journal.json")
+            status <- if (file.exists(journal_path)) tryCatch(jsonlite::read_json(journal_path)$status, error = function(error) NULL) else NULL
+            dispatched[[operation]] <- c(dispatched[[operation]], status %||% NA_character_)
+        }
+    }
+    lapply(dispatched, function(statuses) list(requests = length(statuses), complete = sum(statuses == "complete", na.rm = TRUE)))
+}
+
+#' KIT-098 (protocol v1.8 item 4): the store head's state history against the oracle's recorded history
+#' (`<oracles>_history`), by state name, for a transcriptomics case; nothing to judge on another route.
+#' @return `"history"` when it differs or the oracle's history is not bound, else empty.
+#' @noRd
+kitHistoryMismatches <- function(bindings, case, history) {
+    if (!identical(kitRouteOf(case), "transcriptomics")) return(character())
+    expected <- bindings$oracles[[paste0(case$oracles, "_history")]]
+    if (is.null(expected) || !identical(as.character(unlist(expected)), as.character(history))) "history" else character()
 }
 
 #' Mask run-specific absolute paths so args summaries compare across members.
@@ -1589,12 +1676,18 @@ verifyKitMember <- function(run_dir, repo, selection, api) {
             ignore_products = kitOperationIdentityProducts)
         receipt$additional_products <- attr(receipt$oracle_mismatches, "additional_products")
         attr(receipt$oracle_mismatches, "additional_products") <- NULL
+        # KIT-098: every history state by name (the normalisation action runs three worker steps).
+        receipt$history <- kitReadHead(store_dir, api)$history
+        receipt$oracle_mismatches <- c(receipt$oracle_mismatches, kitHistoryMismatches(bindings, case, receipt$history))
         receipt$operation_identity_products <- unlist(lapply(journey$populations, function(p)
             grep(kitOperationIdentityProducts, names(p$fingerprint$products), value = TRUE)), use.names = FALSE)
-        stopifnot(!length(receipt$oracle_mismatches))
+        # KIT-098: named as an oracle mismatch, the text the decisions classify as `rejected` (before, the bare assertion
+        # read as a harness refusal and the member as `invalid`).
+        if (length(receipt$oracle_mismatches)) stop("oracle mismatch: ", paste(receipt$oracle_mismatches, collapse = ", "))
+        receipt$judged_steps <- names(Filter(function(o) !is.null(o$fingerprint), oracles))
         receipt$populations <- lapply(journey$populations, \(p) list(state = p$state, entity_id = p$entity_id, rows = p$rows))
         receipt$oracle <- if (is.null(case$oracles)) "KIT-005 journey_<step> fingerprints" else
-            paste0("in-process ", case$oracles, "_<step> fingerprints (protocol v1.5)")
+            paste0("in-process ", case$oracles, "_<step> fingerprints (protocol ", if (identical(kitRouteOf(case), "transcriptomics")) "v1.8 section 10" else "v1.5", ")")
         receipt$status <- "complete"
         return(receipt)
     }
