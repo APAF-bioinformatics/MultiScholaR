@@ -142,3 +142,21 @@ Ticket revision 1.1 plus the consistency pass. In-process only (no journeys, no 
 - **KIT-099:** the default variants.
 
 Rollback: `git revert` of this ticket's commits; the evidence is kept.
+
+## Closure (coordinator, 2026-11-06)
+
+**The full suite's one real failure is resolved.** The four failing checks were all in the KIT-094 characterisation test (`test-workflow-omics-binding-steps.R`), whose snapshot was taken before transcriptomics existed. The test now compares the characterisation with exactly the transcriptomics entries removed:
+- the trx report sources, steps, registry and `TRANSCRIPTOMICS` type rows;
+- the supported-types message, read without the added name.
+
+It also asserts that transcriptomics is now served by the reopen, the route and the steps. The snapshot fixture is unchanged. The file passes 51/0/0/0 on `kit_095`.
+
+**Suite result:**
+- At 815db998: 368 files, 32,701 pass, 4 fail (this test), 2 errors (the two known diagnostics).
+- With this test fix: no unexpected failures.
+
+**Recorded and accepted:**
+- **DESCRIPTION Collate:** one line was added, outside the file list, because the new R file needs it to load.
+- **Report overlay:** lipid and metab records now also carry `ruv_mode` and `ruviii_m_source`, reading "not recorded". These are report variables the lipid and metab templates don't use. The lipid and metab declaration tests (259/0 each) and the frozen dump pass. The next lipid and metab journeys (KIT-098's regression members) confirm it end to end.
+
+**Hand-off to KIT-096:** `readWorkflowOmicsShell`, `readWorkflowOmicsRows` and `readWorkflowOmicsIds` can't build a `TranscriptomicsAssayData` shell, because the class's validity check rejects empty counts as a zero library. The binding reads its template with `trxReadTemplate`, and the tabs must do the same.
