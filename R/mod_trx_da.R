@@ -55,7 +55,7 @@ trxDaStatusText <- function(analysisComplete, daResultsList, currentS4Object) {
 
 #' The contrasts the binding reads: the builder's `name=expression` entries (its `full_format`).
 #' @noRd
-trxDaContrasts <- function(contrastsTbl) {
+trxDaContrastEntries <- function(contrastsTbl) {
     entries <- if ("full_format" %in% names(contrastsTbl)) contrastsTbl$full_format else contrastsTbl$contrasts
     trxContrastsTable(as.character(entries))
 }
@@ -63,7 +63,7 @@ trxDaContrasts <- function(contrastsTbl) {
 #' The contrast entry of a contrast name (the tab's selectors show names; the results are keyed by entry).
 #' @noRd
 trxDaContrastEntry <- function(workflowData, name) {
-    entries <- trxDaContrasts(workflowData$contrasts_tbl)
+    entries <- trxDaContrastEntries(workflowData$contrasts_tbl)
     hit <- entries$contrasts[entries$friendly_names == name]
     if (length(hit)) hit[[1L]] else name
 }
