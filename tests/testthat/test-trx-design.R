@@ -61,8 +61,17 @@ test_that("KIT-093: every design refusal is raised with its class, all under trx
     refuse("trx_design_level_unknown", columns, unknown, levels, "Run", "group")
     empty <- design; empty$group <- "RPMI"
     refuse("trx_design_group_empty", columns, empty, levels, "Run", "group")
-    three <- design; three$group[[4]] <- "LPS"
-    refuse("trx_design_groups_unsupported", columns, three, c("RPMI", "Sera", "LPS"), "Run", "group")
+    expect_error(validateTrxDesign(columns, empty, "RPMI", "Run", "group"), class = "trx_design_invalid")
+})
+
+test_that("KIT-093 revision 1.2: any number of groups (two or more, each non-empty) is accepted", {
+    design <- data.frame(Run = sprintf("r%d", 1:8), group = rep(c("control", "T1", "T2", "T3"), each = 2L))
+    out <- validateTrxDesign(rev(design$Run), design, c("control", "T1", "T2", "T3"), "Run", "group")
+    expect_identical(levels(out$group), c("control", "T1", "T2", "T3"))
+    expect_identical(as.character(out$group), design$group)
+    three <- design[design$group != "T3", ]
+    expect_identical(nlevels(validateTrxDesign(three$Run, three, c("control", "T1", "T2"), "Run", "group")$group), 3L)
+    expect_error(validateTrxDesign(three$Run, three, c("control", "T1", "T2", "T3"), "Run", "group"), class = "trx_design_group_empty")
 })
 
 test_that("KIT-093: validateTrxCounts refuses KIT-040's invalid fixtures and the in-test variants by class; whole doubles pass", {

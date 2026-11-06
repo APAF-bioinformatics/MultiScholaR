@@ -2,15 +2,18 @@
 # (dev/distributable/plans/transcriptomics_workflow.rmd:144-148, 524-583) as kernels. The significance column is edgeR's
 # Benjamini-Hochberg `FDR` from topTags, kept under that name; no q-value is computed.
 
-#' The notebook's contrast entry: the first non-header, non-empty line of a contrast file (rmd:540-542).
+#' The contrast entries of a contrast file: every non-header, non-empty line (rmd:540-542 takes the first; KIT-093 revision
+#' 1.2 keeps one pairwise contrast per line, as the other omics).
 #' @param path The contrast file.
-#' @return The entry, `"name = expression"`. Refuses `trx_contrast_unparseable` when there is none.
+#' @return The entries, `"name = expression"`, in file order. Refuses `trx_contrast_unparseable` when there is none or one
+#'   does not parse.
 #' @noRd
 trxParseContrastFile <- function(path) {
     contrast_lines <- readLines(path, warn = FALSE)
-    contrast_entry <- contrast_lines[!grepl("^contrast", contrast_lines) & nzchar(contrast_lines)][1]
-    trxParseContrastEntry(contrast_entry)
-    contrast_entry
+    entries <- contrast_lines[!grepl("^contrast", contrast_lines) & nzchar(contrast_lines)]
+    if (!length(entries)) trxParseContrastEntry(NA_character_)
+    for (entry in entries) trxParseContrastEntry(entry)
+    entries
 }
 
 #' Split a contrast entry as the notebook does (rmd:543-545); refuses `trx_contrast_unparseable`.
@@ -44,9 +47,20 @@ trxContrastMatrix <- function(parsed, design_final) {
 #'   `trx_da_rank_deficient`, `trx_contrast_unparseable` and `trx_contrast_not_estimable` before fitting.
 #' @noRd
 trxDaContrast <- function(ruvs_counts, pdata, contrast_entry) {
+    if (length(contrast_entry) != 1L) trxParseContrastEntry(NA_character_)
+    trxDaContrasts(ruvs_counts, pdata, contrast_entry)[[1L]]
+}
+
+#' One fit and one result per pairwise contrast entry (KIT-093 revision 1.2: one contrast per contrast line).
+#' @param ruvs_counts,pdata trxRuvs' `ruvs_counts` and `pdata`.
+#' @param contrast_entries The `"name = expression"` entries.
+#' @return A list named by the entries, each element in trxDaContrast's shape (the fit is shared). Every entry is parsed
+#'   and checked before fitting.
+#' @noRd
+trxDaContrasts <- function(ruvs_counts, pdata, contrast_entries) {
     validateTrxCounts(ruvs_counts)
     requireOptionalPackage("edgeR", "the transcriptomics differential expression")
-    parsed <- trxParseContrastEntry(contrast_entry)
+    parsed <- lapply(contrast_entries, trxParseContrastEntry)
     dge_final <- edgeR::DGEList(counts = ruvs_counts, group = pdata$group)
     dge_final <- edgeR::calcNormFactors(dge_final, method = "TMM")
     w_terms <- colnames(pdata)[stringr::str_starts(colnames(pdata), "W_")]
@@ -56,13 +70,16 @@ trxDaContrast <- function(ruvs_counts, pdata, contrast_entry) {
     if (qr(design_final)$rank < ncol(design_final)) {
         trxAbort("the final design is not of full column rank (W confounded with group)", c("trx_da_rank_deficient", "trx_error"))
     }
-    contrasts_matrix <- trxContrastMatrix(parsed, design_final)
+    matrices <- lapply(parsed, trxContrastMatrix, design_final = design_final)
     dge_final <- edgeR::estimateDisp(dge_final, design_final, robust = TRUE)
     fit_final <- edgeR::glmQLFit(dge_final, design_final, robust = TRUE)
-    lrt <- edgeR::glmQLFTest(fit_final, contrast = contrasts_matrix[, parsed$name])
-    top_genes <- edgeR::topTags(lrt, n = Inf, sort.by = "PValue")$table
-    list(design_final = design_final, design_formula = design_formula_str, contrast_entry = contrast_entry,
-        contrasts_matrix = contrasts_matrix, fit = fit_final, qlf = lrt, top_table = top_genes, method = "edgeR_QL_robust")
+    results <- Map(function(entry, p, contrasts_matrix) {
+        lrt <- edgeR::glmQLFTest(fit_final, contrast = contrasts_matrix[, p$name])
+        top_genes <- edgeR::topTags(lrt, n = Inf, sort.by = "PValue")$table
+        list(design_final = design_final, design_formula = design_formula_str, contrast_entry = entry,
+            contrasts_matrix = contrasts_matrix, fit = fit_final, qlf = lrt, top_table = top_genes, method = "edgeR_QL_robust")
+    }, contrast_entries, parsed, matrices)
+    stats::setNames(results, contrast_entries)
 }
 
 #' The notebook's gene annotation of the DE table (rmd:144-148, 558-582).

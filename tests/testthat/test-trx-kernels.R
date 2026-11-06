@@ -223,3 +223,76 @@ test_that("KIT-093: the preflight refusals are raised by class, all under trx_er
     expect_error(trxDaContrast(p$ruvs$ruvs_counts, p$ruvs$pdata, "x=groupSera-groupSera"), class = "trx_contrast_not_estimable")
     expect_error(trxDaContrast(p$ruvs$ruvs_counts, p$ruvs$pdata, "x=groupSera-groupSera"), class = "trx_error")
 })
+
+# KIT-093 revision 1.2 (user, 2026-11-06): any number of groups; the control ranking tests across all groups; DA as one
+# pairwise contrast per contrast line. A seeded four-group fixture (the KIT-040 generator builds two groups only): control
+# and three treatments, 3 runs each, 800 genes; genes 1-60 change only in T1, 61-120 only in T2, 121-180 only in T3.
+trxFourGroupInput <- function() {
+    withr::local_seed(20261106)
+    groups <- rep(c("control", "T1", "T2", "T3"), each = 3L)
+    n <- 800L
+    base <- stats::rgamma(n, shape = 2, rate = 2 / 200)
+    fold <- matrix(1, n, 4L, dimnames = list(NULL, c("control", "T1", "T2", "T3")))
+    fold[1:60, "T1"] <- 4; fold[61:120, "T2"] <- 4; fold[121:180, "T3"] <- 4
+    mu <- base * fold[, groups] * rep(stats::runif(12L, 0.7, 1.3), each = n)
+    counts <- matrix(as.double(stats::rnbinom(n * 12L, mu = mu, size = 10)), n, 12L)
+    runs <- sprintf("%s_%d", groups, rep(1:3, 4L))
+    colnames(counts) <- runs
+    table <- tibble::as_tibble(counts)
+    table <- tibble::add_column(table, GeneID = sprintf("G%04d", seq_len(n)), GeneName = sprintf("S%04d", seq_len(n)), .before = 1L)
+    design <- data.frame(Run = runs, group = groups)
+    list(counts = table[, c("GeneID", "GeneName", rev(runs))], design = design)
+}
+
+test_that("KIT-093 revision 1.2: a four-group design runs end to end with three pairwise contrasts; the ranking uses all groups", {
+    input <- trxFourGroupInput()
+    object <- createTranscriptomicsAssayData(list(counts = input$counts), input$design, c("control", "T1", "T2", "T3"))
+    x <- trxAssayInputs(object)
+    expect_identical(colnames(x$counts), input$design$Run)
+    f <- trxExpressionFilter(x$counts, x$design$group)
+    n <- trxTmmLogCpm(f$filtered_counts, x$design$group)
+    g <- trxRuvGrid(f$filtered_counts, n$log_cpm_tmm, x$design)
+    expect_identical(g$max_acceptable_k, 3L)
+    expect_identical(nrow(g$grid_failures), 0L)
+    # The ranking is the QL F-test over every group coefficient (oracle: the direct edgeR calls).
+    design_prelim <- stats::model.matrix(~ group, data = x$design)
+    dge <- edgeR::calcNormFactors(edgeR::DGEList(counts = f$filtered_counts, group = x$design$group), method = "TMM")
+    fit <- edgeR::glmQLFit(edgeR::estimateDisp(dge, design_prelim), design_prelim)
+    rank_by <- function(coef) {
+        tt <- edgeR::topTags(edgeR::glmQLFTest(fit, coef = coef), n = nrow(dge), sort.by = "none")$table
+        order(tt$PValue, decreasing = TRUE)
+    }
+    expect_identical(g$prelim_order, rank_by(2:4))
+    # A gene changing only in T3 ranks as non-control; a test of the first coefficient alone would take many as controls.
+    genes <- rownames(n$log_cpm_tmm)
+    candidates <- function(order) genes[order[seq_len(floor(length(genes) * 0.3))]]
+    t3_only <- sprintf("G%04d", 121:180)
+    expect_identical(sum(t3_only %in% candidates(g$prelim_order)), 0L)
+    expect_gt(sum(t3_only %in% candidates(rank_by(2L))), 10L)
+    expect_false(any(t3_only %in% g$control_genes))
+    s <- trxRuvs(f$filtered_counts, n$log_cpm_tmm, x$design, g$control_genes, g$best$best_k)
+    expect_identical(s$ruvs_counts, f$filtered_counts)
+    file <- withr::local_tempfile(lines = c("contrasts", "T1_vs_control=groupT1-groupcontrol", "T2_vs_control=groupT2-groupcontrol",
+        "T3_vs_control=groupT3-groupcontrol"))
+    entries <- trxParseContrastFile(file)
+    expect_length(entries, 3L)
+    d <- trxDaContrasts(s$ruvs_counts, s$pdata, entries)
+    expect_identical(names(d), entries)
+    expect_identical(trxDaContrast(s$ruvs_counts, s$pdata, entries[[1L]]), d[[1L]])
+    expect_identical(colnames(d[[1L]]$design_final)[1:4], c("groupcontrol", "groupT1", "groupT2", "groupT3"))
+    truth <- list(sprintf("G%04d", 1:60), sprintf("G%04d", 61:120), t3_only)
+    for (i in 1:3) {
+        r <- d[[i]]
+        expect_identical(r$fit, d[[1L]]$fit)
+        expect_identical(r$contrast_entry, entries[[i]])
+        expect_identical(r$method, "edgeR_QL_robust")
+        significant <- rownames(r$top_table)[r$top_table$FDR < 0.05]
+        expect_gt(mean(truth[[i]] %in% significant), 0.8)
+        expect_lt(mean(unlist(truth[-i]) %in% significant), 0.1)
+        a <- trxAnnotateDe(r$top_table, object@count_data[[1L]], colnames(r$contrasts_matrix))
+        expect_identical(unique(a$top_de$comparison), colnames(r$contrasts_matrix))
+    }
+    r <- trxRuviii(n$log_cpm_tmm, x$design, g$control_genes, g$best$best_k)
+    expect_identical(dim(r$M), c(12L, 4L))
+    expect_identical(dim(r$newY), rev(dim(n$log_cpm_tmm)))
+})

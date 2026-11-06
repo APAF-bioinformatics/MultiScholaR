@@ -36,12 +36,14 @@ trxRuvGrid <- function(filtered_counts, log_cpm_tmm, design, params = list()) {
         grid_summary = trxGridSummary(members), best = best, control_genes = best$control_genes, control_source = TRX_CONTROL_SOURCE)
 }
 
-#' The preliminary non-robust QL ranking (rmd:232-237): least significant first.
+#' The preliminary non-robust QL ranking (rmd:232-237): least significant first. The test is over every group coefficient of
+#' the `~ group` design (KIT-093 revision 1.2: across all groups, as proteomics' ANOVA control selection); with two groups
+#' that is the notebook's `coef = 2`.
 #' @noRd
 trxPrelimOrder <- function(dge_filtered, design_prelim) {
     dge_prelim <- edgeR::estimateDisp(dge_filtered, design_prelim)
     fit_prelim <- edgeR::glmQLFit(dge_prelim, design_prelim)
-    lrt_prelim <- edgeR::glmQLFTest(fit_prelim, coef = 2)
+    lrt_prelim <- edgeR::glmQLFTest(fit_prelim, coef = 2:ncol(design_prelim))
     tt_prelim <- edgeR::topTags(lrt_prelim, n = nrow(dge_filtered), sort.by = "none")$table
     order(tt_prelim$PValue, decreasing = TRUE)
 }
