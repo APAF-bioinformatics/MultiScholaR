@@ -7291,6 +7291,240 @@
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
       "recorded_at": "2026-10-21T14:26:37+1100"
+    },
+    "trx98a_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "6d4ef381839ebd3ecbed96f0f7ffa1e3164c03d63fcdae9e684fb43bcc5cbdfa",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_design": {
+      "step": "design",
+      "state": "trx_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "3aab466ce01091ec080b992363a1647ccff5dc745fab6f00f1c84df52bfa6a6b",
+      "rows": 6000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_expression_filter": {
+      "step": "expression_filter",
+      "state": "trx_expression_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "1216e11528dcf71ff336493ca596eb60105fe31f4ba1375a03d9c6da4e937e54",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "trx_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "101879003becd016fc0cc2d48b6cdb869ab030fa18ff4fdf30b3d22676668c5d",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_normalisation": {
+      "step": "normalisation",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "cc8bfd20d9299304b8515ea70116bf22719cf55d7422962780439c05e1440ca1",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_da": {
+      "step": "da",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "cc8bfd20d9299304b8515ea70116bf22719cf55d7422962780439c05e1440ca1",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_ruviii_export": {
+      "step": "ruviii_export",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "cc8bfd20d9299304b8515ea70116bf22719cf55d7422962780439c05e1440ca1",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_report": {
+      "step": "report",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "cc8bfd20d9299304b8515ea70116bf22719cf55d7422962780439c05e1440ca1",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98a_session_export": {
+      "step": "session_export",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98a/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36907c3cdefb00/.workflow-entities",
+      "head_sha256": "cb5593ecffd79a06a2f568b191247068cc8749ee4f1361f38054d407f0d1ff29",
+      "entity_id": "cc8bfd20d9299304b8515ea70116bf22719cf55d7422962780439c05e1440ca1",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:34:37+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "8bca6a4400315117453537a6bfd87f8613e88c51eebe76d6672a4d99b8042cbf",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_design": {
+      "step": "design",
+      "state": "trx_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "bca4ca45e18a1cf19a57574d11c81479ca00cf2cc45bb0b665d0fd87bfd6001c",
+      "rows": 6000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_expression_filter": {
+      "step": "expression_filter",
+      "state": "trx_expression_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "6528ceec891b0a1f8faf13ca94f1d9bc2ec7959157a7efd28cdc376bfca243a2",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "trx_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "6bec7fb79e31423c709c8af0f97551d43792331b284f4c1bf51988ab24943f8a",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_normalisation": {
+      "step": "normalisation",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "3f2c4fae4952805e039b719154c8e83ea6e39acfd5498b3370efe67b6a6d5af5",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_da": {
+      "step": "da",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "3f2c4fae4952805e039b719154c8e83ea6e39acfd5498b3370efe67b6a6d5af5",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_ruviii_export": {
+      "step": "ruviii_export",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "3f2c4fae4952805e039b719154c8e83ea6e39acfd5498b3370efe67b6a6d5af5",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_report": {
+      "step": "report",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "3f2c4fae4952805e039b719154c8e83ea6e39acfd5498b3370efe67b6a6d5af5",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
+    },
+    "trx98b_session_export": {
+      "step": "session_export",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities",
+      "head_sha256": "a12f3a6491a0c705b0caf32c5ce62e53d9ca0c3459987d0b9d322460e6612629",
+      "entity_id": "3f2c4fae4952805e039b719154c8e83ea6e39acfd5498b3370efe67b6a6d5af5",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T19:35:13+1100",
+      "route": "transcriptomics"
     }
   },
   "oracles": {
@@ -35007,7 +35241,579 @@
         }
       },
       "summary_sha256": "523bb051fe02e0acfd2f106f106c65e210a44b6832d931d9a51e13bed1544124"
-    }
+    },
+    "trx98a_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "trx98a_design": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 6000,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 6000,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "30dc9bb3add5c965f507c9d46abc612f4d48a3720c543c66760be0048ef32c3b"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "081a6e658cee4e0514954471ea05677a97942cae30c14b06279a58868074bac6"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "7c79185872a327a576de770480a482bb039a362df85c7fad49002708104f6534"
+    },
+    "trx98a_expression_filter": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "081a6e658cee4e0514954471ea05677a97942cae30c14b06279a58868074bac6"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx.expression_filter_result:a730c1b48441": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_qc_finalize": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "081a6e658cee4e0514954471ea05677a97942cae30c14b06279a58868074bac6"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_normalisation": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx.ruvs_result:12f1b5ad5e49": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx.ruv_grid:623a77828578": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruv_grid",
+          "sha256": "623a7782857802fcf48e24777ac907076aeb20e7c73894823c144ffa4fb26dd4"
+        },
+        "trx.tmm_logcpm:c88cf6fabfd1": {
+          "kind": "scientific_product",
+          "product_type": "trx.tmm_logcpm",
+          "sha256": "c88cf6fabfd1226d1a96dbf297b2fb81ae00443523a5dbc48824c68988bc76e5"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_da": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx-da-contrast-references:2b3d97d63b02": {
+          "kind": "scientific_product",
+          "product_type": "trx-da-contrast-references",
+          "sha256": "2b3d97d63b02d024c7b8708353a1b064ce5458c8d91aa906599a5b977b9714ef"
+        },
+        "da_fit:e7b2e1a6e20e": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "e7b2e1a6e20efa34ae9981fc1c62b2900d1d9ad62e181b02338b089cd63e683e"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_ruviii_export": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx.ruviii:5b8a84de8eb6": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruviii",
+          "sha256": "5b8a84de8eb6fca4886c9e2eb0b5f041dba9cb51b05ddcb1553a098e44b92233"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_report": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_session_export": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98a_history": [
+      "initial",
+      "trx_raw_data_s4",
+      "trx_expression_filtered",
+      "trx_qc_complete",
+      "trx_ruvs"
+    ],
+    "trx98b_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "trx98b_design": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 6000,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 6000,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "30dc9bb3add5c965f507c9d46abc612f4d48a3720c543c66760be0048ef32c3b"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "081a6e658cee4e0514954471ea05677a97942cae30c14b06279a58868074bac6"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "7c79185872a327a576de770480a482bb039a362df85c7fad49002708104f6534"
+    },
+    "trx98b_expression_filter": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "081a6e658cee4e0514954471ea05677a97942cae30c14b06279a58868074bac6"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx.expression_filter_result:a730c1b48441": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_qc_finalize": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "081a6e658cee4e0514954471ea05677a97942cae30c14b06279a58868074bac6"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_normalisation": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx.ruvs_result:12f1b5ad5e49": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx.ruv_grid:623a77828578": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruv_grid",
+          "sha256": "623a7782857802fcf48e24777ac907076aeb20e7c73894823c144ffa4fb26dd4"
+        },
+        "trx.tmm_logcpm:c88cf6fabfd1": {
+          "kind": "scientific_product",
+          "product_type": "trx.tmm_logcpm",
+          "sha256": "c88cf6fabfd1226d1a96dbf297b2fb81ae00443523a5dbc48824c68988bc76e5"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_da": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx-da-contrast-references:2b3d97d63b02": {
+          "kind": "scientific_product",
+          "product_type": "trx-da-contrast-references",
+          "sha256": "2b3d97d63b02d024c7b8708353a1b064ce5458c8d91aa906599a5b977b9714ef"
+        },
+        "da_fit:e7b2e1a6e20e": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "e7b2e1a6e20efa34ae9981fc1c62b2900d1d9ad62e181b02338b089cd63e683e"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_ruviii_export": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        },
+        "trx.ruviii:dc681716b6b0": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruviii",
+          "sha256": "dc681716b6b017bf94d0be543352f61287fdd01eedc6c50d579dad2e143f7fc3"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_report": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_session_export": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 4565,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 4565,
+          "columns": ["GeneID", "GeneName", "RPMI_03_r2", "Sera_03_r1", "Sera_06_r1", "RPMI_05_r1", "RPMI_02_r2", "RPMI_02_r1", "RPMI_06_r1", "RPMI_04_r2", "Sera_05_r1", "Sera_04_r2", "Sera_06_r2", "RPMI_03_r1", "RPMI_01_r2", "RPMI_05_r2", "RPMI_06_r2", "Sera_01_r1", "Sera_03_r2", "RPMI_04_r1", "Sera_05_r2", "Sera_04_r1", "RPMI_01_r1", "Sera_02_r1", "Sera_02_r2", "Sera_01_r2"],
+          "sha256": "37ad0a1d63fe07bf5c516228568f8a68c1e943a9e7017345c0a67bd2fa150b2c"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 24,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "41cc1d1dcbe86c0985b82e799def479f1b7c548c1f9bf1d51f975143deea8a66"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "a730c1b48441e59ae67f1536b29bef465c5760767f8fdac1e2f5e77803145bed"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "12f1b5ad5e49d4e269f0724f65b958b1a59ba6303e247a1ea8ab87464f35b3cd"
+        }
+      },
+      "summary_sha256": "36c4ebc0fcc218cb56e68a761de21278da181f9538249eb34701a4d45b7df046"
+    },
+    "trx98b_history": [
+      "initial",
+      "trx_raw_data_s4",
+      "trx_expression_filtered",
+      "trx_qc_complete",
+      "trx_ruvs"
+    ]
   },
   "corpora": {
     "full": {
