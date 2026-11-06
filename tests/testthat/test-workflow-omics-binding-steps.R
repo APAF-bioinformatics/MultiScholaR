@@ -140,6 +140,25 @@ kit094LocalStub <- function(env = parent.frame()) {
     list(binding = stub, calls = calls)
 }
 
+#' KIT-095: the characterisation with exactly the transcriptomics entries taken out, for comparison with the snapshot
+#' taken before transcriptomics existed. The snapshot proves lipid and metab unchanged; a third omic adds its own
+#' entries and nothing else. The supported-types message is the one allowed textual change: it now lists TRANSCRIPTOMICS.
+kit095WithoutTranscriptomics <- function(current, expected) {
+    stripped <- current
+    stripped$report_sources[c("ruv_mode", "ruviii_m_source")] <- NULL
+    for (name in c("ruv_applied", "best_k", "best_percentage", "num_neg_ctrl")) {
+        stripped$report_sources[[name]]$record <- Filter(function(r) !identical(r[[2L]], "trx_ruvs"), stripped$report_sources[[name]]$record)
+    }
+    stripped$steps$transcriptomics <- NULL
+    stripped$registry$transcriptomics <- NULL
+    for (set in names(stripped$types)) {
+        stripped$types[[set]][["TRANSCRIPTOMICS"]] <- expected$types[[set]][["TRANSCRIPTOMICS"]]
+        stripped$types[[set]] <- vapply(stripped$types[[set]], function(text) sub("LIPIDOMICS, METABOLOMICS and TRANSCRIPTOMICS",
+            "LIPIDOMICS and METABOLOMICS", text, fixed = TRUE), character(1))
+    }
+    stripped
+}
+
 test_that("KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit", {
     skip_if_not(workflowOwnerCapable())
     snapshot_file <- test_path("fixtures", "kit094-characterisation.rds")
@@ -148,7 +167,13 @@ test_that("KIT-094: the characterisation of the lists the bindings own equals th
     root <- withr::local_tempdir()
     current <- suppressWarnings(suppressMessages(kit094Characterisation(root)))
     expect_identical(names(current), names(expected))
-    for (part in names(expected)) expect_identical(current[[part]], expected[[part]], info = part)
+    # KIT-095: transcriptomics is the third binding; lipid and metab must still equal the snapshot exactly.
+    stripped <- kit095WithoutTranscriptomics(current, expected)
+    for (part in names(expected)) expect_identical(stripped[[part]], expected[[part]], info = part)
+    # And transcriptomics is accepted: the reopen, the session and the route serve it.
+    expect_identical(unname(current$types$reopen[["TRANSCRIPTOMICS"]]), "transcriptomics")
+    expect_identical(unname(current$types$route[["TRANSCRIPTOMICS"]]), "transcriptomics")
+    expect_true("transcriptomics" %in% names(current$steps))
 })
 
 test_that("KIT-094: a stub third binding's own steps, worker steps, default variants and publications register", {
