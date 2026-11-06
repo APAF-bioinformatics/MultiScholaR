@@ -1,0 +1,9 @@
+START 2026-11-06T15:19:03+11:00 HEAD 8e97b55e
+[2026-11-06 15:31:44] [error] handle_read_frame error: websocketpp.transport:7 (End of File)
+! Reconnecting to chrome process.
+i All active sessions will be need to be respawned.
+COUNTS test-e2e-trx-journey.R pass 2 fail 0 error 1 skip 0
+  BAD test-e2e-trx-journey.R :: E2E-KIT097 transcriptomics: the GUI journey commits every state, runs the RUVIII export and renders the report
+--- E2E-KIT097 transcriptomics: the GUI journey commits every state, runs the RUVIII export and renders the report 
+ Error: Timed out waiting for transcriptomics/differential_analysis to become complete; last status was <NULL> 
+EXIT 0 WALL 1264s

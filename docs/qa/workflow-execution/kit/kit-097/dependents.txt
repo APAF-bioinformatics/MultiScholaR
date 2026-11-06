@@ -1,0 +1,131 @@
+# KIT-097 dependents and regressions (kit_096 library, one process per file; CHROMOTE_CHROME unset, so browser journeys of other omics skip).
+# Files: grep of tests/testthat for every parameterised lipid function and module, mod_transcriptomics, trxOmicProfile and the e2e helper functions, plus the lipid/metab/proteomics module CI, the declaration tests (frozen dump test-workflow-omics-declarations.R), the KIT-094 characterisation, residency, worker and manifest tests.
+
+COUNTS test-app-shell-shared.R pass 29 fail 0 error 0 skip 0
+WALL test-app-shell-shared.R 9s
+COUNTS test-ci-impact-audit.R pass 26 fail 0 error 0 skip 0
+WALL test-ci-impact-audit.R 10s
+COUNTS test-ci-impact-e2e.R pass 10 fail 0 error 0 skip 0
+WALL test-ci-impact-e2e.R 8s
+COUNTS test-ci-impact-router.R pass 27 fail 0 error 0 skip 0
+WALL test-ci-impact-router.R 9s
+COUNTS test-ci-impact-scorecard.R pass 11 fail 0 error 0 skip 0
+WALL test-ci-impact-scorecard.R 8s
+COUNTS test-ci-impact-source-map.R pass 19 fail 0 error 0 skip 0
+WALL test-ci-impact-source-map.R 9s
+COUNTS test-e2e-browser-harness.R pass 113 fail 0 error 0 skip 1
+WALL test-e2e-browser-harness.R 8s
+COUNTS test-e2e-proteomics-enrichment.R pass 0 fail 0 error 0 skip 2
+WALL test-e2e-proteomics-enrichment.R 7s
+COUNTS test-e2e-test-mode-integration.R pass 63 fail 0 error 0 skip 0
+WALL test-e2e-test-mode-integration.R 9s
+COUNTS test-general-filemgmt-report-helpers-shared.R pass 85 fail 0 error 0 skip 1
+WALL test-general-filemgmt-report-helpers-shared.R 8s
+COUNTS test-lipid-02ab-da-module-characterization.R pass 33 fail 0 error 0 skip 0
+WALL test-lipid-02ab-da-module-characterization.R 19s
+COUNTS test-lipid-02b-da-module-contracts.R pass 569 fail 0 error 0 skip 0
+WALL test-lipid-02b-da-module-contracts.R 11s
+COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0
+WALL test-lipid-12a-norm-module-characterization.R 18s
+COUNTS test-lipid-12-norm-module-contracts.R pass 704 fail 0 error 1 skip 0
+WALL test-lipid-12-norm-module-contracts.R 19s
+COUNTS test-lipid-14a-summary-module-characterization.R pass 131 fail 0 error 0 skip 0
+WALL test-lipid-14a-summary-module-characterization.R 10s
+COUNTS test-lipid-15-summary-module-seams.R pass 136 fail 0 error 0 skip 0
+WALL test-lipid-15-summary-module-seams.R 9s
+COUNTS test-metab-05-summary-module-characterization.R pass 161 fail 0 error 0 skip 9
+WALL test-metab-05-summary-module-characterization.R 8s
+COUNTS test-module-ci-fixture-integrity.R pass 2559 fail 0 error 0 skip 0
+WALL test-module-ci-fixture-integrity.R 13s
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-da.R 33s
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-design.R 14s
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-import.R 16s
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-norm.R 62s
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-qc.R 19s
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+WALL test-module-ci-lipid-summary.R 33s
+COUNTS test-module-ci-manifest.R pass 33 fail 0 error 0 skip 0
+WALL test-module-ci-manifest.R 7s
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0
+WALL test-module-ci-metab-da.R 27s
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+WALL test-module-ci-metab-design.R 9s
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+WALL test-module-ci-metab-import.R 13s
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0
+WALL test-module-ci-metab-norm.R 48s
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0
+WALL test-module-ci-metab-qc.R 15s
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0
+WALL test-module-ci-metab-summary.R 32s
+COUNTS test-module-ci-prot-da.R pass 214 fail 0 error 0 skip 1
+WALL test-module-ci-prot-da.R 9s
+COUNTS test-module-ci-prot-design.R pass 11 fail 0 error 0 skip 5
+WALL test-module-ci-prot-design.R 7s
+COUNTS test-module-ci-prot-dia-limpa.R pass 24 fail 0 error 0 skip 2
+WALL test-module-ci-prot-dia-limpa.R 7s
+COUNTS test-module-ci-prot-enrich.R pass 92 fail 0 error 0 skip 1
+WALL test-module-ci-prot-enrich.R 8s
+COUNTS test-module-ci-prot-import.R pass 90 fail 0 error 0 skip 0
+WALL test-module-ci-prot-import.R 8s
+COUNTS test-module-ci-prot-norm.R pass 60 fail 0 error 0 skip 4
+WALL test-module-ci-prot-norm.R 9s
+COUNTS test-module-ci-prot-peptide-qc.R pass 39 fail 0 error 0 skip 1
+WALL test-module-ci-prot-peptide-qc.R 9s
+COUNTS test-module-ci-prot-protein-qc.R pass 0 fail 0 error 0 skip 6
+WALL test-module-ci-prot-protein-qc.R 8s
+COUNTS test-module-ci-prot-summary.R pass 70 fail 0 error 0 skip 1
+WALL test-module-ci-prot-summary.R 8s
+COUNTS test-module-ci-trx-app.R pass 36 fail 0 error 0 skip 0
+WALL test-module-ci-trx-app.R 11s
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+WALL test-module-ci-trx-design.R 27s
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+WALL test-module-ci-trx-import.R 10s
+COUNTS test-module-ci-trx-qc.R pass 30 fail 0 error 0 skip 0
+WALL test-module-ci-trx-qc.R 43s
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0
+WALL test-module-ui-wrapper-direct-shared.R 8s
+COUNTS test-prot-12-summary-module-contracts.R pass 430 fail 0 error 0 skip 3
+WALL test-prot-12-summary-module-contracts.R 9s
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0
+WALL test-workflow-lipid-declarations.R 69s
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0
+WALL test-workflow-metab-declarations.R 70s
+COUNTS test-workflow-omics-binding-steps.R pass 51 fail 0 error 0 skip 0
+WALL test-workflow-omics-binding-steps.R 72s
+COUNTS test-workflow-omics-da-contrasts.R pass 138 fail 0 error 0 skip 0
+WALL test-workflow-omics-da-contrasts.R 124s
+COUNTS test-workflow-omics-declarations.R pass 68 fail 0 error 0 skip 0
+WALL test-workflow-omics-declarations.R 66s
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0
+WALL test-workflow-omics-figures.R 138s
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0
+WALL test-workflow-omics-residency.R 269s
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0
+WALL test-workflow-omics-worker.R 503s
+COUNTS test-workflow-server-shared.R pass 70 fail 0 error 0 skip 0
+WALL test-workflow-server-shared.R 8s
+COUNTS test-workflow-trx-declarations.R pass 308 fail 0 error 0 skip 0
+WALL test-workflow-trx-declarations.R 128s
+COUNTS test-workflow-ui-shared.R pass 51 fail 0 error 0 skip 0
+WALL test-workflow-ui-shared.R 8s
+
+# First pass: one error, test-lipid-12-norm-module-contracts.R (its seam mock takes buildLipidNormQcTabsetPanel(ns); the lipid call had gained profile = NULL). Fixed in the correction pass by passing the profile only when there is one; rerun (final tree): see tests.txt (707 pass, 0 fail, 0 error).
+
+# Skips: the same counts at baseline (worktree at efb8b605, R/ as c07809ed):
+COUNTS test-metab-05-summary-module-characterization.R pass 161 fail 0 error 0 skip 9
+COUNTS test-module-ci-prot-da.R pass 214 fail 0 error 0 skip 1
+COUNTS test-module-ci-prot-design.R pass 11 fail 0 error 0 skip 5
+COUNTS test-module-ci-prot-dia-limpa.R pass 24 fail 0 error 0 skip 2
+COUNTS test-module-ci-prot-enrich.R pass 92 fail 0 error 0 skip 1
+COUNTS test-module-ci-prot-norm.R pass 60 fail 0 error 0 skip 4
+COUNTS test-module-ci-prot-peptide-qc.R pass 39 fail 0 error 0 skip 1
+COUNTS test-module-ci-prot-protein-qc.R pass 0 fail 0 error 0 skip 6
+COUNTS test-module-ci-prot-summary.R pass 70 fail 0 error 0 skip 1
+COUNTS test-prot-12-summary-module-contracts.R pass 430 fail 0 error 0 skip 3

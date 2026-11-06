@@ -1,0 +1,410 @@
+# KIT-097 test first: the new and extended tests run on a worktree at efb8b605 (R/ as c07809ed, before any R change), kit_096 library, one process per file.
+# Run 1 (harness, probe): the tab servers' missing profile argument errors at start. Run 2 (module CI): the helper records a tab that cannot start, so each behaviour test fails on its assertions (record fields, M, model, files).
+
+## Run 1
+COUNTS test-e2e-browser-harness.R pass 112 fail 2 error 0 skip 0
+  BAD test-e2e-browser-harness.R :: e2e_input_id maps all current omic module namespaces
+--- e2e_input_id maps all current omic module namespaces 
+ Expected `transcriptomics_id` to be identical to "transcriptomics_workflow-import-assay1_file".
+Differences:
+`actual`:   "Unsupported omic: transcriptomics"          
+`expected`: "transcriptomics_workflow-import-assay1_file"
+ 
+--- e2e_input_id maps all current omic module namespaces 
+ Expected `tryCatch(...)` to be identical to "transcriptomics_workflow-de-run_da_analysis".
+Differences:
+`actual`:   "Unsupported omic: transcriptomics"          
+`expected`: "transcriptomics_workflow-de-run_da_analysis"
+ 
+WALL test-e2e-browser-harness.R 21s
+COUNTS test-module-ci-trx-norm.R pass 2 fail 0 error 4 skip 0
+  BAD test-module-ci-trx-norm.R :: MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's
+  BAD test-module-ci-trx-norm.R :: MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept
+  BAD test-module-ci-trx-norm.R :: MCI-030.3 under a managed session the norm tab runs on the worker and commits what the wrappers commit
+  BAD test-module-ci-trx-norm.R :: MCI-030.4 the norm tab under the transcriptomics profile: automatic or manual RUVs, inferred controls, no skip, the stage figures
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-030.3 under a managed session the norm tab runs on the worker and commits what the wrappers commit 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-030.4 the norm tab under the transcriptomics profile: automatic or manual RUVs, inferred controls, no skip, the stage figures 
+ Error in `mod_lipid_norm_ui("norm", profile = trxOmicProfile())`: unused argument (profile = trxOmicProfile()) 
+WALL test-module-ci-trx-norm.R 35s
+COUNTS test-module-ci-trx-da.R pass 2 fail 0 error 4 skip 0
+  BAD test-module-ci-trx-da.R :: MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's
+  BAD test-module-ci-trx-da.R :: MCI-031.2 several pairwise contrasts run on one fit and are offered by the tab; the managed tab equals the in-process one
+  BAD test-module-ci-trx-da.R :: MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH); the interactive status is FDR (BH) < 0.05 with no lfc test
+  BAD test-module-ci-trx-da.R :: MCI-031.4 the DA tab under the transcriptomics profile names the model, labels FDR (BH), keeps the fold change display-only
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-031.2 several pairwise contrasts run on one fit and are offered by the tab; the managed tab equals the in-process one 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH); the interactive status is FDR (BH) < 0.05 with no lfc test 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-031.4 the DA tab under the transcriptomics profile names the model, labels FDR (BH), keeps the fold change display-only 
+ Error in `mod_lipid_da_ui("de", profile = trxOmicProfile())`: unused argument (profile = trxOmicProfile()) 
+WALL test-module-ci-trx-da.R 34s
+COUNTS test-module-ci-trx-summary.R pass 2 fail 0 error 5 skip 0
+  BAD test-module-ci-trx-summary.R :: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+  BAD test-module-ci-trx-summary.R :: MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change
+  BAD test-module-ci-trx-summary.R :: MCI-032.3 a design without technical replicates disables the option, and a request for it shows the classed refusal
+  BAD test-module-ci-trx-summary.R :: MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones
+  BAD test-module-ci-trx-summary.R :: MCI-032.5 the summary tab under the transcriptomics profile: the RUVIII export and its M, the transcriptomics template
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-032.3 a design without technical replicates disables the option, and a request for it shows the classed refusal 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- MCI-032.5 the summary tab under the transcriptomics profile: the RUVIII export and its M, the transcriptomics template 
+ Error in `mod_lipid_summary_ui("summary", profile = trxOmicProfile())`: unused argument (profile = trxOmicProfile()) 
+WALL test-module-ci-trx-summary.R 38s
+Total metabolites: 44
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0Total metabolites: 44
+Significant (Q < 0.050): 0 (0.0%)
+  Up-regulated: 0
+  Down-regulated: 0COUNTS test-workflow-omics-application-reads.R pass 216 fail 0 error 2 skip 0
+  BAD test-workflow-omics-application-reads.R :: KIT-097: on a managed session the transcriptomics norm, DA and summary tabs read no count table and hold none; in process they read them
+  BAD test-workflow-omics-application-reads.R :: KIT-097: a DA tab variant that reads and holds the transcriptomics state is caught by the probe and the walk
+--- KIT-097: on a managed session the transcriptomics norm, DA and summary tabs read no count table and hold none; in process they read them 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+--- KIT-097: a DA tab variant that reads and holds the transcriptomics state is caught by the probe and the walk 
+ Error in `mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile)`: unused argument (profile = profile) 
+WALL test-workflow-omics-application-reads.R 346s
+DONE
+
+## Run 2
+COUNTS test-module-ci-trx-norm.R pass 6 fail 20 error 2 skip 0
+  BAD test-module-ci-trx-norm.R :: MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's
+  BAD test-module-ci-trx-norm.R :: MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept
+  BAD test-module-ci-trx-norm.R :: MCI-030.3 under a managed session the norm tab runs on the worker and commits what the wrappers commit
+  BAD test-module-ci-trx-norm.R :: MCI-030.4 the norm tab under the transcriptomics profile: automatic or manual RUVs, inferred controls, no skip, the stage figures
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `out$errors` to be identical to `character()`.
+Differences:
+`names(actual)` is a character vector ('norm', 'de', 'summary', 'norm')
+`names(expected)` is absent
+actual vs expected
+- norm"unused argument (profile = profile)"
+- de"unused argument (profile = profile)"
+- summary"unused argument (profile = profile)"
+- norm"The test referenced an output that hasn't been defined yet: output$norm-norm_log"
+ 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `owner$current_state` to be identical to "trx_ruvs".
+Differences:
+`actual`:   "trx_qc_complete"
+`expected`: "trx_ruvs"       
+ 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `fixture$workflow$tab_status$normalization` to be identical to "complete".
+Differences:
+`actual`:   "pending" 
+`expected`: "complete"
+ 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `outcomes$ruv_mode` to be identical to "automatic".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('automatic')
+ 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `unlist(...)` to be identical to `c(...)`.
+Differences:
+`actual` is NULL
+`expected` is a double vector (5, 30, 5, 0.05)
+ 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `is.null(outcomes[[name]])` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+k 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `is.null(outcomes[[name]])` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+negative_control_percentage 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `is.null(outcomes[[name]])` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+negative_control_count 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `is.null(outcomes[[name]])` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+separation_score 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `is.null(outcomes[[name]])` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+composite_score 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `is.null(outcomes[[name]])` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+max_acceptable_k 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ Expected `outcomes$controls` to be identical to "inferred".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('inferred')
+ 
+--- MCI-030.1 the automatic run commits trx_ruvs and records the mode, grid, k, percentage, controls and scores; k, percentage and controls are the reference's 
+ <workflow_execution_invalid/rlang_error/error/condition>
+Error in `trxStateRuvs(owner, getWorkflowStateReference(owner))`: the state has no RUVs result 
+--- MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept 
+ Expected `fixture$owner$current_state` to be identical to "trx_ruvs".
+Differences:
+`actual`:   "trx_qc_complete"
+`expected`: "trx_ruvs"       
+ 
+--- MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept 
+ Expected `outcomes$ruv_mode` to be identical to "manual".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('manual')
+ 
+--- MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept 
+ Expected `outcomes$k` to be identical to 2L.
+Differences:
+`actual` is NULL
+`expected` is an integer vector (2)
+ 
+--- MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept 
+ Expected `outcomes$negative_control_percentage` to be identical to 10.
+Differences:
+`actual` is NULL
+`expected` is a double vector (10)
+ 
+--- MCI-030.2 the manual run records its mode, k and percentage; a k above the cap is refused with its class and the head kept 
+ Expected `any(grepl("trx_ruv_k_above_cap", shown, fixed = TRUE))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+ 
+--- MCI-030.3 under a managed session the norm tab runs on the worker and commits what the wrappers commit 
+ Expected `out$errors` to be identical to `character()`.
+Differences:
+`names(actual)` is a character vector ('norm', 'de', 'summary', 'norm')
+`names(expected)` is absent
+actual vs expected
+- norm"unused argument (profile = profile)"
+- de"unused argument (profile = profile)"
+- summary"unused argument (profile = profile)"
+- norm"The test referenced an output that hasn't been defined yet: output$norm-norm_log"
+ 
+--- MCI-030.3 under a managed session the norm tab runs on the worker and commits what the wrappers commit 
+ Expected `all(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+ 
+--- MCI-030.3 under a managed session the norm tab runs on the worker and commits what the wrappers commit 
+ Expected `file.exists(file.path(fixture$paths$gene_qc_dir, "trx_ruvs_pca.png"))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+ 
+--- MCI-030.4 the norm tab under the transcriptomics profile: automatic or manual RUVs, inferred controls, no skip, the stage figures 
+ Error in `mod_lipid_norm_ui("norm", profile = trxOmicProfile())`: unused argument (profile = trxOmicProfile()) 
+WALL test-module-ci-trx-norm.R 26s
+COUNTS test-module-ci-trx-da.R pass 3 fail 8 error 4 skip 0
+  BAD test-module-ci-trx-da.R :: MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's
+  BAD test-module-ci-trx-da.R :: MCI-031.2 several pairwise contrasts run on one fit and are offered by the tab; the managed tab equals the in-process one
+  BAD test-module-ci-trx-da.R :: MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH); the interactive status is FDR (BH) < 0.05 with no lfc test
+  BAD test-module-ci-trx-da.R :: MCI-031.4 the DA tab under the transcriptomics profile names the model, labels FDR (BH), keeps the fold change display-only
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `out$errors` to be identical to `character()`.
+Differences:
+`names(actual)` is a character vector ('norm', 'de', 'summary', 'norm', 'da')
+`names(expected)` is absent
+actual vs expected
+- norm"unused argument (profile = profile)"
+- de"unused argument (profile = profile)"
+- summary"unused argument (profile = profile)"
+- norm"The test referenced an output that hasn't been defined yet: output$norm-norm_log"
+- da"The test referenced an output that hasn't been defined yet: output$de-da_summary_stats"
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `da$source_state` to be identical to "trx_ruvs".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('trx_ruvs')
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `da$model$model` to be identical to "edgeR_QL".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('edgeR_QL')
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `da$model$fit` to be identical to "glmQLFit(robust = TRUE)".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('glmQLFit(robust = TRUE)')
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `da$model$test` to be identical to "QL F-test (glmQLFTest)".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('QL F-test (glmQLFTest)')
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `da$model$adjust` to be identical to "BH".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('BH')
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Expected `da$model$treat_applied` to be identical to FALSE.
+Differences:
+`actual` is NULL
+`expected` is a logical vector (FALSE)
+ 
+--- MCI-031.1 the DA tab runs on the RUVs head; the record names the edgeR QL model; counts and the FDR column are the reference's 
+ Error in `expect_match(da$model$formula_used, "^~ 0 \\+ group \\+ W_1")`: `object` must be a character vector, not `NULL`. 
+--- MCI-031.2 several pairwise contrasts run on one fit and are offered by the tab; the managed tab equals the in-process one 
+ Expected `vapply(...)` to have the same values as `entries`.
+Actual: 
+Expected: "Sera_vs_RPMI=groupSera-groupRPMI", "RPMI_vs_Sera=groupRPMI-groupSera"
+Absent: "Sera_vs_RPMI=groupSera-groupRPMI", "RPMI_vs_Sera=groupRPMI-groupSera" 
+--- MCI-031.2 several pairwise contrasts run on one fit and are offered by the tab; the managed tab equals the in-process one 
+ Error in `expect_setequal(unique(expected$da$da_genes_long$comparison), c("Sera_vs_RPMI", "RPMI_vs_Sera"))`: `object` must be a vector, not `NULL`. 
+--- MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH); the interactive status is FDR (BH) < 0.05 with no lfc test 
+ Error in `eval(code, test_env)`: attempt to apply non-function 
+--- MCI-031.4 the DA tab under the transcriptomics profile names the model, labels FDR (BH), keeps the fold change display-only 
+ Error in `mod_lipid_da_ui("de", profile = trxOmicProfile())`: unused argument (profile = trxOmicProfile()) 
+WALL test-module-ci-trx-da.R 22s
+COUNTS test-module-ci-trx-summary.R pass 6 fail 14 error 3 skip 0
+  BAD test-module-ci-trx-summary.R :: MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report
+  BAD test-module-ci-trx-summary.R :: MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change
+  BAD test-module-ci-trx-summary.R :: MCI-032.3 a design without technical replicates disables the option, and a request for it shows the classed refusal
+  BAD test-module-ci-trx-summary.R :: MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones
+  BAD test-module-ci-trx-summary.R :: MCI-032.5 the summary tab under the transcriptomics profile: the RUVIII export and its M, the transcriptomics template
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Expected `out$errors` to be identical to `character()`.
+Differences:
+`names(actual)` is a character vector ('norm', 'de', 'summary', 'norm', 'da', ...)
+`names(expected)` is absent
+actual vs expected
+- norm"unused argument (profile = profile)"
+- de"unused argument (profile = profile)"
+- summary"unused argument (profile = profile)"
+- norm"The test referenced an output that hasn't been defined yet: output$norm-norm_log"
+- da"The test referenced an output that hasn't been defined yet: output$de-da_summary_stats"
+- ruviii_1"The test referenced an output that hasn't been defined yet: output$summary-ruviii_status"
+- summary"The test referenced an output that hasn't been defined yet: output$summary-session_summary"
+ 
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Expected `record$analyses$trx_ruviii_export$outcomes$ruviii_m_source` to be identical to "group".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('group')
+ 
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Expected `record$analyses$differential_abundance$source_state` to be identical to "trx_ruvs".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('trx_ruvs')
+ 
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Expected `owner$current_state` to be identical to "trx_ruvs".
+Differences:
+`actual`:   "trx_qc_complete"
+`expected`: "trx_ruvs"       
+ 
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Expected `trxDeclSha(products[[name]])` to be identical to `prints$sha256[prints$product == name]`.
+Differences:
+`actual`:   "1e8d93415411c9caecc3ce4932c05f26923726fcdab89e7c8f63ea3d4f3720fc"
+`expected`: "a1f43e2db82b39ad738e2308d8483abd5c9e406da7a7bbfb38d3049bbd03093e"
+trx_edge_12 the summary tab's RUVIII export ruviii_newY 
+--- MCI-032.1 after DA the RUVIII export records M = group, leaves the DA unchanged and its newY is the reference's; the summary writes the record, the integration export, the results summary and the report 
+ Error in `expect_match(out$ruviii_status, "group", fixed = TRUE)`: `object` must be a character vector, not `NULL`. 
+--- MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change 
+ Expected `out$errors` to be identical to `character()`.
+Differences:
+`names(actual)` is a character vector ('norm', 'de', 'summary', 'norm', 'da', ...)
+`names(expected)` is absent
+actual vs expected
+- norm"unused argument (profile = profile)"
+- de"unused argument (profile = profile)"
+- summary"unused argument (profile = profile)"
+- norm"The test referenced an output that hasn't been defined yet: output$norm-norm_log"
+- da"The test referenced an output that hasn't been defined yet: output$de-da_summary_stats"
+- ruviii_1"The test referenced an output that hasn't been defined yet: output$summary-ruviii_status"
+- ruviii_2"The test referenced an output that hasn't been defined yet: output$summary-ruviii_status"
+ 
+--- MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change 
+ Expected `record$analyses$trx_ruviii_export$outcomes$ruviii_m_source` to be identical to "technical_replicate".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('technical_replicate')
+ 
+--- MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change 
+ Expected `value$m_source` to be identical to "technical_replicate".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('technical_replicate')
+ 
+--- MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change 
+ Expected `is.null(out$da_reference)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+ 
+--- MCI-032.2 a design with technical replicates offers M = technical_replicate; its export is recorded as such and the DA does not change 
+ Expected `record$analyses$differential_abundance$source_state` to be identical to "trx_ruvs".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('trx_ruvs')
+ 
+--- MCI-032.3 a design without technical replicates disables the option, and a request for it shows the classed refusal 
+ Expected `any(grepl("trx_ruviii_replicates_invalid", shown, fixed = TRUE))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+ 
+--- MCI-032.3 a design without technical replicates disables the option, and a request for it shows the classed refusal 
+ Error in `eval_bare(expr, quo_get_env(quo))`: attempt to apply non-function 
+--- MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones 
+ Expected `out$errors` to be identical to `character()`.
+Differences:
+`names(actual)` is a character vector ('norm', 'de', 'summary', 'norm', 'da', ...)
+`names(expected)` is absent
+actual vs expected
+- norm"unused argument (profile = profile)"
+- de"unused argument (profile = profile)"
+- summary"unused argument (profile = profile)"
+- norm"The test referenced an output that hasn't been defined yet: output$norm-norm_log"
+- da"The test referenced an output that hasn't been defined yet: output$de-da_summary_stats"
+- ruviii_1"The test referenced an output that hasn't been defined yet: output$summary-ruviii_status"
+ 
+--- MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones 
+ Expected `all(...)` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+ 
+--- MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones 
+ Expected `file.exists(file.path(fixture$paths$publication_graphs_dir, "ruviii_before_and_after.png"))` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE 
+ 
+--- MCI-032.5 the summary tab under the transcriptomics profile: the RUVIII export and its M, the transcriptomics template 
+ Error in `mod_lipid_summary_ui("summary", profile = trxOmicProfile())`: unused argument (profile = trxOmicProfile()) 
+WALL test-module-ci-trx-summary.R 26s
+DONE

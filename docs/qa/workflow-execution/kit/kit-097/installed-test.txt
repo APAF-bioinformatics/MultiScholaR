@@ -1,0 +1,2 @@
+MultiScholaR from /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.QqMykR/library 
+INSTALLED test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0

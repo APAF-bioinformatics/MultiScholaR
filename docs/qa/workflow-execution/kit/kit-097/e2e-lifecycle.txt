@@ -1,0 +1,17 @@
+# KIT-097 e2e lifecycle check (not counted): the browser instrumentation before the counted run.
+## On kit_096 (the installed build the app process loads; before this ticket's install): the module has three tabs
+LIFECYCLE import tab reached; statuses: setup_import=pending design_matrix=disabled quality_control=disabled 
+LIFECYCLE failure observed: Timed out waiting for JavaScript script to return `true`
+LIFECYCLE wall 18 s
+## On kit_097 (HEAD 8e97b55e):
+LIFECYCLE import tab reached; statuses: setup_import=pending design_matrix=disabled quality_control=disabled normalization=disabled differential_analysis=disabled session_summary=disabled 
+LIFECYCLE failure observed: Timed out waiting for JavaScript script to return `true`
+NORMTAB present 
+ $ transcriptomics:List of 6
+  ..$ setup_import         : chr "pending"
+  ..$ design_matrix        : chr "disabled"
+  ..$ quality_control      : chr "disabled"
+  ..$ normalization        : chr "disabled"
+  ..$ differential_analysis: chr "disabled"
+  ..$ session_summary      : chr "disabled"
+LIFECYCLE wall 12 s
