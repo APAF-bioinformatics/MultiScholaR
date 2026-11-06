@@ -1,0 +1,5 @@
+# KIT-099 test first (tests/testthat/test-workflow-kit-harness.R, devtools::load_all on kit_098's library)
+## Step 1: the trx *_science products leave kitOperationIdentityProducts
+BEFORE (the test rewritten, workflow_kit.R unchanged): pass 694 fail 3 error 0
+ - KIT-099: every trx product is judged, the trx *_science products included (KIT-098 hand-off) : failed 3
+AFTER (the regex without trx): pass 697 fail 0 error 0 skip 0

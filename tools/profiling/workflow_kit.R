@@ -813,10 +813,10 @@ kitOperationLifecycleDecision <- function(receipt, cases, bindings) {
 # KIT-031: the lipidomics declarations' products (`<operation>_science` on the state) are of the same kind: their value
 # is the owned checkpoint entity, whose bytes carry the ITSD kernel's `@args` timestamp and the chain of the earlier
 # products' ids; the states they reference are judged, the products reported.
-# KIT-098 (protocol v1.8): the transcriptomics declarations' `<operation>_science` products, by the same cause: the value is the
-# declaration run's own entity (its run identity and the earlier products it names by entity id), while its content is judged
-# through the state's components and the step's attached `trx.*:<sha12>` products, which are not in this set.
-kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science|(lipid|metab|trx)_[a-z0-9_]+_science)$"
+# KIT-099 (KIT-098 hand-off): the transcriptomics declarations' `<operation>_science` products are not in this set. KIT-098
+# found them equal across its two in-process recordings (kit-098/science-compare.txt), so they carry no run-specific bytes
+# and are judged directly, as the step's attached `trx.*:<sha12>` products are.
+kitOperationIdentityProducts <- "^(dia-(normalization-ruv|ruv-covariates|pearson-pairs|pearson-selection|contrast-references):[0-9a-f]{12}|ruv_covariates_science|(lipid|metab)_[a-z0-9_]+_science)$"
 
 kitReproduceMismatches <- function(reference, candidate, ignore_products = NULL) {
     mismatches <- character()

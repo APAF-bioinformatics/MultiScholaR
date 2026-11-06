@@ -1808,17 +1808,23 @@ test_that("KIT-098: a trx case without an oracle for a step, or without the RUVI
     expect_error(h$kitCases(unbound, "kit-lifecycle-trx"), "oracles")
 })
 
-test_that("KIT-098: a trx product outside the identity set is judged; only the trx *_science products are reported", {
+test_that("KIT-099: every trx product is judged, the trx *_science products included (KIT-098 hand-off)", {
     h <- kitHarness()
-    expect_true(grepl(h$kitOperationIdentityProducts, "trx_ruvs_science"))
-    expect_true(grepl(h$kitOperationIdentityProducts, "trx_expression_filter_science"))
+    # KIT-098 found the trx *_science products equal across the two in-process recordings (kit-098/science-compare.txt):
+    # no run-specific bytes, so they leave the identity set and are judged directly. lipid and metab keep theirs (KIT-031).
+    expect_false(grepl(h$kitOperationIdentityProducts, "trx_ruvs_science"))
+    expect_false(grepl(h$kitOperationIdentityProducts, "trx_expression_filter_science"))
+    expect_true(grepl(h$kitOperationIdentityProducts, "lipid_intensity_filter_science"))
+    expect_true(grepl(h$kitOperationIdentityProducts, "metab_log2_science"))
     expect_false(grepl(h$kitOperationIdentityProducts, "trx.ruvs_result:0123456789ab"))
     expect_false(grepl(h$kitOperationIdentityProducts, "trx.ruviii:0123456789ab"))
     fingerprint <- function(science, result) list(fingerprint = list(class = "TranscriptomicsAssayData", rows = 4565L,
         components = list(count_data = list(sha256 = "c")), support = list(), summary_sha256 = "s",
         products = list(trx_ruvs_science = list(sha256 = science), `trx.ruvs_result:0123456789ab` = list(sha256 = result))))
     reference <- list(normalisation = fingerprint("a", "w"))
-    expect_length(h$kitReproduceMismatches(reference, list(normalisation = fingerprint("b", "w")), h$kitOperationIdentityProducts), 0L)
+    expect_length(h$kitReproduceMismatches(reference, list(normalisation = fingerprint("a", "w")), h$kitOperationIdentityProducts), 0L)
+    expect_identical(as.vector(h$kitReproduceMismatches(reference, list(normalisation = fingerprint("b", "w")), h$kitOperationIdentityProducts)),
+        "normalisation/products/trx_ruvs_science")
     expect_identical(as.vector(h$kitReproduceMismatches(reference, list(normalisation = fingerprint("a", "v")), h$kitOperationIdentityProducts)),
         "normalisation/products/trx.ruvs_result:0123456789ab")
     # The state's history is judged by name against the oracle's recorded history.

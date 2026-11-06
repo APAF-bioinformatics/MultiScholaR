@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;b=json.load(open('docs/qa/workflow-execution/kit/bindings.json'));print(b['tickets'][sys.argv[1]]['build'])
+                                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'docs/qa/workflow-execution/kit/bindings.json'
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;b=json.load(open('docs/qa/workflow-execution/kit/bindings.json'));print(b['builds'][sys.argv[1]]['library'])
+                                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'docs/qa/workflow-execution/kit/bindings.json'
+## kit-journey-098a on  (.)
+Fatal error: cannot open file 'docs/qa/workflow-execution/kit/kit-092/reverify.R': No such file or directory
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;b=json.load(open('docs/qa/workflow-execution/kit/bindings.json'));print(b['tickets'][sys.argv[1]]['build'])
+                                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'docs/qa/workflow-execution/kit/bindings.json'
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+    import json,sys;b=json.load(open('docs/qa/workflow-execution/kit/bindings.json'));print(b['builds'][sys.argv[1]]['library'])
+                                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'docs/qa/workflow-execution/kit/bindings.json'
+## kit-journey-098b on  (.)
+Fatal error: cannot open file 'docs/qa/workflow-execution/kit/kit-092/reverify.R': No such file or directory

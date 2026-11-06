@@ -1,0 +1,8 @@
+# KIT-099 first step (KIT-098 hand-off), 2026-11-06: 098a and 098b re-verified offline after the trx *_science products left kitOperationIdentityProducts (tools/profiling/workflow_kit.R). reverify.sh reflinks each stage into kit/scratch-099-reverify (the runtime directory only read); reverify.R is KIT-092's with the member directory passed to kitSingleJourneyDecision. No journey ran.
+# Attempt 1 (reverify-attempt1.txt) ran KIT-092's reverify.R unchanged: 0 oracle mismatches, but the decision read worker_dispatch_missing because that script predates the member_dir argument (KIT-098). A script defect, corrected once.
+## kit-journey-098a on kit_098 (browser-smoke.eoJzd6)
+REVERIFY kit-journey-098a | recorded accepted exact TRUE | now accepted exact TRUE in_memory FALSE | oracle mismatches 0 | additional products 0 | operation identity products 0 | canonical form differences  | judged steps import,design,expression_filter,qc_finalize,normalisation,da,ruviii_export,report,session_export | 2 s
+## kit-journey-098b on kit_098 (browser-smoke.eoJzd6)
+REVERIFY kit-journey-098b | recorded accepted exact TRUE | now accepted exact TRUE in_memory FALSE | oracle mismatches 0 | additional products 0 | operation identity products 0 | canonical form differences  | judged steps import,design,expression_filter,qc_finalize,normalisation,da,ruviii_export,report,session_export | 2 s
+# The trx *_science entries now judged, from the bound oracles (all equal: 0 mismatches above):
+kit-journey-098a: 12 entries (trx_expression_filter_science at expression_filter onward, trx_ruvs_science at normalisation onward); kit-journey-098b: the same 12
