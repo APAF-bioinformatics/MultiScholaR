@@ -1,0 +1,5 @@
+# KIT-100 bind (12190be1): bindings.json against its state before the bind (scripts-100/bind.sh, BIND_EXTRA kit_100=browser-smoke.2jjdqX).
+ADDED /builds/kit_100 (source_commit 53e66b4a, build 66f0b119…, runtime_patch_bytes 0)
+ADDED /tickets/100a, /tickets/100b, /tickets/100c
+CHANGED /created, /journey/baseline/oracle_canonical_form/date (generation timestamps)
+# No other key changed: protocol and harness file hashes unchanged.
