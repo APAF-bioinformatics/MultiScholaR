@@ -1,0 +1,2 @@
+kit-lifecycle-trx start 19:51:28 at e1c131cd: AC 1, profile low-power, battery 42%, load 2.63, available 35 GiB
+kit-lifecycle-trx end 19:54:13: AC 1, profile low-power, battery 43%, load 2.72, available 35 GiB

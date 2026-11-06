@@ -1,0 +1,67 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-098",
+  "stage": "kit098-kit-lifecycle-trx",
+  "date": "2026-11-06",
+  "dispatches": [],
+  "controller": {
+    "peak_anon_bytes": 558407680,
+    "phase_peak_anon_bytes": {
+      "import": 555233280,
+      "design": 558407680
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": null,
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": false,
+    "route": "transcriptomics",
+    "in_memory": false,
+    "head_rule": null
+  },
+  "member": {
+    "id": "member",
+    "corpus": "trx_screen",
+    "build": "1f5a1142352128e9529fac030425dfccbd2e4e6d043829dfa0c619bc7bb67f99",
+    "status": "journey_failed",
+    "exact": null,
+    "elapsed_seconds": 139.619999999995,
+    "peak_bytes": 945147904,
+    "peak_anon_bytes": 929943552,
+    "resident_end_bytes": 929943552,
+    "phase_seconds": {
+      "import": 4.67000000001281,
+      "design": 120.399999999994
+    },
+    "phase_peak_anon_bytes": {
+      "import": 922816512,
+      "design": 929943552
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "failed"
+    },
+    "max_sample_interval": 0.0600000000267755,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "diagnostic browser condition timed out"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}
