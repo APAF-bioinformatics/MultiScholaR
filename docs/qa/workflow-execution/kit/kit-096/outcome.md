@@ -56,4 +56,93 @@ kit journeys (KIT-098).
   `trx-tab-import`, `trx-tab-design`, `trx-tab-qc`, and `trx-import-format`, `trx-import-assay1-file`,
   `trx-import-id-col`, `trx-import-annotation-col`, `trx-import-process`, `trx-qc-apply-filter`.
 
-EVIDENCE_PLACEHOLDER
+## Evidence
+
+- **Test first** ([test-first.txt](test-first.txt)): with only the tests and the test data written, every new transcriptomics
+  test errored or failed (import 5 errors, design 6, QC 4, app 2 failures and 3 errors), and the trx residency journey and
+  both KIT-082 probe tests failed. The manifest test passed then (it validates the data written with it), as did the
+  walk's positive control (it tests the walk).
+- **Targeted** ([tests.txt](tests.txt), final tree): `test-module-ci-trx-import.R` 96, `-design.R` 71, `-qc.R` 30,
+  `-app.R` 22, `test-module-ci-manifest.R` 33, `test-workflow-omics-residency.R` 97, `test-workflow-omics-application-reads.R`
+  216 pass; 0 fail, 0 error, 0 skip in each.
+  - **Import (MCI-026):** the screen corpus and the whole-number-as-double fixture are accepted with names and file order
+    unchanged, the table held by reference, the owner bound to `TRANSCRIPTOMICS`, the source copy byte-identical; NA,
+    negative and fractional are refused, the class shown in the one error notification and raised by
+    `checkTrxImportCounts`; nothing is held or bound and the tab does not complete.
+  - **Design (MCI-027):** the fresh design is `truth$column_order`; the committed object's inputs keep those names and that
+    order; the level order entered is recorded (both orders tested); technical replicates partition the runs as the
+    corpus's biological samples; the record is valid. **Identity with KIT-095's journey setup:** on the same corpus and
+    design, the GUI owner and `trxDeclarationsOwner(..., technical_replicate_id = "tech_rep_group")` have identical history,
+    head, workflow id, state object (its store attributes aside), state metadata (class, slots, assay names and rows,
+    design), `design_builder` provenance (operation, parameter names, values) and inputs (`trx_counts_1`, `design_file`:
+    role, bytes, sha256). Refusals by class: `trx_design_runs_missing` (a design run with no count column),
+    `trx_design_runs_duplicated`, `trx_design_level_unknown`, `trx_design_group_empty`, `trx_design_runs_extra` (an
+    unassigned run), `trx_design_group_singleton`; the head stays `initial`. Removed runs leave design and counts; three
+    groups are accepted in the order entered.
+  - **QC (MCI-028):** in process the filter commits `trx_expression_filtered` and the finalise `trx_qc_complete`; the
+    counts at each step equal `trxExpressionFilter`'s masks; metrics equal `trxFilteringMetrics`; the PCA and RLE equal
+    `trxPcaStats`/`trxRleStats` of the raw logCPM; the record is valid. **Mask:** on the KIT-040 `trx_edge_12` corpus
+    (hash-checked), imported and designed through the tabs, the filtered count matrix (runs put in the reference's design
+    order by name) has the reference's `count_matrix_filtered` sha256, and the filterByExpr count equals the reference's.
+    **Managed:** the worker ran `trx_expression_filter`, `trx_qc_figures` and `trx_filtering_metrics`, every action was
+    delivered, and what the tab shows equals the in-process values; the raw PCA and RLE PNGs were staged to `gene_qc_dir`.
+  - **App (MCI-029):** `app_server`'s environment finds `mod_transcriptomics_ui`/`_server`; the UI renders the module, not
+    the fallback; the stable ids above are asserted; the server registers the bus and the owner and opens QC after the
+    design.
+  - **Residency (KIT-075 walk):** the trx journey under `testServer` on `mod_transcriptomics_server` (import, builder
+    inputs, filter, finalise) reaches `trx_raw_data_s4`, `trx_expression_filtered`, `trx_qc_complete` with no
+    `TranscriptomicsAssayData` and no table with the corpus's sample columns reachable, and the bus holding references
+    only, after every step. Positive control: a held object and a held count table are found.
+  - **KIT-082 probe:** on a managed session the QC tab (filter and finalise, every output read) materialises none of the
+    owner's count tables and leaves nothing reachable; in process the same tabs read them (the control). Positive control:
+    a variant that reads and holds the state is caught by both the probe and the walk.
+- **Dependents** ([dependents.txt](dependents.txt)): 43 files. First pass two failures, both fixed in the one correction
+  pass (the observer passed `profile = NULL` to a seam mock; the generator looked for the corpus tool under its output
+  root). Afterwards every file passes with 0 fail and 0 error: lipid import/QC/design seams and characterisations, the
+  lipid and metab module CI (6 + 6 files), the lipid and metab declaration tests (259 each), the frozen dump
+  (`test-workflow-omics-declarations.R` 68), the KIT-094 characterisation (51), KIT-095's binding test (308),
+  `test-module-ci-fixture-integrity.R` (2559). **No lipid or metab test file was modified.**
+- **Generator:** `generate-fixtures.R --root <tmp>` reproduces `fx/transcriptomics` byte for byte.
+- **R CMD check** ([check.log](check.log), `--no-tests --no-manual --no-build-vignettes`, HEAD `f874cd09`, kit_095 library):
+  3 WARNINGs and 3 NOTEs, the sections of KIT-095's baseline; the dependencies WARNING and the code-problems NOTE bodies
+  are identical to KIT-095's; Rd usage and code/documentation checks OK.
+- **Install** ([installed-test.txt](installed-test.txt)): `kit_096` = `$P/core/browser-smoke.1VgwvX` (source `f874cd09`),
+  installed through the kit runner from kit_095's library (RUVSeq, EDASeq, ShortRead, Rsamtools, aroma.light carried);
+  `test-module-ci-trx-design.R` against the installed build: 71 pass, 0 fail, 0 error, 0 skip. Path in
+  `$P/kit/scripts-096/install.txt`.
+- **Full suite:** not run (the per-ticket rule: targeted, dependents, check, install; the next checkpoint runs it).
+
+## Divergences and notes
+
+- **Outside the file list:** `DESCRIPTION` Collate gains the two new files (needed to load them; as KIT-095); `man/`
+  usage and arguments of the five Rd files whose exported functions gained `profile` (otherwise a codoc mismatch); the
+  roxygen `@param profile` lines match.
+- **Conventions (F12):** the shinydashboard/`wellPanel` shell, the managed runner in place of `ExtendedTask` and the
+  `fileInput` fallback are kept, to match the other omics (the user's instruction) under the scope rule of
+  `conventions/R.md`. New functions are about 50 lines or fewer; the existing lipid functions keep their length (scope rule).
+- **Not changed:** `fixture_packs.json` and `helper-module-ci-fixtures.R` (the MCI-002 catalog is the vendor-format class
+  matrix; the transcriptomics fixtures are KIT-040's, pinned by their manifest and `fixture.json`). Regenerating the
+  catalog with `--root` already differs from the committed one in its paths (`fixtures/` vs `fx/`); that predates this
+  ticket and the integrity test passes.
+- **Run order (hand-off to KIT-098):** a GUI design keeps the counts file's order (the ticket's rule); KIT-040's reference
+  is in the design file's order, so a GUI journey's matrices are the reference's with the runs permuted. The mask test
+  puts runs in the reference's order by name; KIT-098's identity check needs the same alignment, or a decision.
+- **Config:** the design state's config holds the builder's formula field (`deAnalysisParameters$formula_string`), as the
+  lipid commit's does; KIT-095's journey saves an empty config. Not part of the identity compared above; the DA formula
+  is realised from the design (KIT-095).
+- **Contrasts (hand-off to KIT-097):** the builder's contrasts table is the lipid shape (`contrasts` without the name,
+  `friendly_names`, `full_format`); KIT-095's DA takes `trxContrastsTable` entries (`name=expression`), i.e. `full_format`.
+- **Source copy name:** the import copies the file as `import_sources/assay1_<file>`; KIT-095's journey names it
+  `counts.tsv`. Role, size and sha256 of `trx_counts_1` are identical; only the recorded basename differs.
+- **Level order** is the order the factor levels were added, restricted to assigned groups; an empty declared group can
+  therefore only reach the commit from a result built outside the builder (tested at the commit).
+- **Logs:** the reused lipid functions keep their lipid log lines (for example "Lipidomics QC: Initializing sub-module
+  servers", "Reverted lipid intensity filter"); user-facing text is the profile's.
+
+## Hand-offs
+
+- **KIT-097:** the module and the profile; the design state `trx_raw_data_s4` with `technical_replicate_id =
+  "tech_rep_group"` and `args$group_levels`; `trx_qc_complete` as the QC head; the contrasts note above.
+- **KIT-098:** the stable ids above; the run-order note.
+
+Rollback: `git revert` of this ticket's commits; the evidence is kept.
