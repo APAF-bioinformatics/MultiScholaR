@@ -1,6 +1,6 @@
 # KIT measurement protocol
 
-**Version 1.7 (amended 2026-11-06, section 9; was 1.6: amended 2026-11-04, section 8; was 1.5: frozen by KIT-001, 2026-10-09 as 1.4; amended 2026-10-09 before any counted member, user decision: the control is the rebuilt `kit_001` build and KIT-005 adds a production-default baseline member; amended 2026-10-10 by user decision after the first 300-sample journey attempt: the journey member ceiling may be set up to 4 h (14,400 s) instead of 90 min, because the data steps scale about 20 x from 8 to 300 samples; the launch record's deadline limit is raised to match and the control is rebuilt from the `kit_001` source plus that one constant; amended 2026-10-11 by user decision after KIT-005's baseline stage: a journey member's measurement tolerates isolated sampling gaps up to 500 ms, because its whole-slice peak is the kernel's own high-water mark and a gap only blinds the sampled anonymous trace for that window; the number of gaps above 250 ms is recorded with the member; operation and lifecycle-operation members keep the 250 ms rule; amended 2026-10-14 by user decision after the KIT-022 report (best-practice pass): section 4 names every member kind and selector the harness has used since KIT-007 (lifecycle-operation members, ticket journey pairs with their two rules, the `gui`-mode managed member, single members and the single journey member), none of which changes a rule, threshold, workload or limit; the KIT-014 and KIT-018 audits had recorded the gap; amended 2026-10-19 by user decision after the series audit (version 1.5, section 7 below): the oracle source for routes and corpora without a KIT-005 oracle, the full-journey single member, the single-journey selector grammar, recorded runs without a managed slice, and per-route step maps; no rule, threshold, workload, ceiling or limit changes).** Its SHA-256 is recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
+**Version 1.8 (amended 2026-11-06, section 10, KIT-098; was 1.7: amended 2026-11-06, section 9; was 1.6: amended 2026-11-04, section 8; was 1.5: frozen by KIT-001, 2026-10-09 as 1.4; amended 2026-10-09 before any counted member, user decision: the control is the rebuilt `kit_001` build and KIT-005 adds a production-default baseline member; amended 2026-10-10 by user decision after the first 300-sample journey attempt: the journey member ceiling may be set up to 4 h (14,400 s) instead of 90 min, because the data steps scale about 20 x from 8 to 300 samples; the launch record's deadline limit is raised to match and the control is rebuilt from the `kit_001` source plus that one constant; amended 2026-10-11 by user decision after KIT-005's baseline stage: a journey member's measurement tolerates isolated sampling gaps up to 500 ms, because its whole-slice peak is the kernel's own high-water mark and a gap only blinds the sampled anonymous trace for that window; the number of gaps above 250 ms is recorded with the member; operation and lifecycle-operation members keep the 250 ms rule; amended 2026-10-14 by user decision after the KIT-022 report (best-practice pass): section 4 names every member kind and selector the harness has used since KIT-007 (lifecycle-operation members, ticket journey pairs with their two rules, the `gui`-mode managed member, single members and the single journey member), none of which changes a rule, threshold, workload or limit; the KIT-014 and KIT-018 audits had recorded the gap; amended 2026-10-19 by user decision after the series audit (version 1.5, section 7 below): the oracle source for routes and corpora without a KIT-005 oracle, the full-journey single member, the single-journey selector grammar, recorded runs without a managed slice, and per-route step maps; no rule, threshold, workload, ceiling or limit changes).** Its SHA-256 is recorded in `kit/bindings.json` and a change to this file is a new version needing a user decision. Carries the CORE protocol v8.1 (`../core/protocol.md`) unless stated.
 
 ## 1. Rules carried from CORE
 
@@ -94,3 +94,45 @@ The rule judges the same content as before; only the storage layout stops counti
    - Before this change, any member on a route other than DIA bound without oracles was inferred to be in memory. A member with a store now meets the populations and head rules.
    - The KIT-054 legacy members (`054l`, `054m`) declare it. A declaration enters the case's binding digest.
 6. **Unchanged.** Every rule, threshold, guard, gap tolerance, ceiling and selector; the run ledger's authority; and the correction-rerun rule. Decisions recorded before v1.7 stand under their own protocol hash.
+
+## 10. Amendment v1.8 (2026-11-06, KIT-098: transcriptomics)
+
+**Authority.** The user, 2026-11-06:
+- "Approve v1.8 as proposed", on the transcriptomics re-cut audit (`audits-20261106/KIT-098-AUDIT.md`, findings F05, F07 and F08);
+- "Second notebook reference", on KIT-098's run-order question (`kit-098/run-order.txt`).
+
+Decided after v1.7 and before any KIT-098 member is bound.
+
+1. **Oracle.** A transcriptomics member's per-step oracle is the same-build in-process run of section 7.1 (`kit-098/oracle-record.R`).
+   - It is not a control and supports no memory ratio.
+   - It proves the GUI, owner and worker path reproduces the in-process path of the same kernels on the same build.
+   - A defect shared by both paths passes it.
+2. **Independent check.** The notebook reference is a second exactness check, independent of the package's code. It is compared, `identical()` throughout with no tolerance, from the **journey member's store**, never the oracle's.
+   - The reference is the unchanged notebook rendered by KIT-040's driver on the bound corpus with `design_matrix.tab`'s rows in the counts file's run order, the order a GUI design keeps. Aligning runs by name is not bit-identical: edgeR's sums over samples and the RUVs SVD depend on run order.
+   - KIT-040's design-order reference is unchanged.
+   - The technical-replicate RUVIII product has no notebook counterpart. It is compared with the direct `ruv::RUVIII` call of KIT-093 (`M = ruv::replicate.matrix(<technical replicate sets>)`) on the reference's inputs. Its upstream products are compared with the notebook reference.
+3. **Claim limits.**
+   - No memory claim: no control build exists for this route.
+   - No cross-build claim.
+   - Synthetic corpora only, no real-data claim.
+4. **Stages and selectors.**
+   - Lifecycle: `kit-lifecycle-trx` and `kit-lifecycle-trx-fail`, selectors `kit:lifecycle:trx:(complete|fail)`, bound under `lifecycle_trx` with its own build, settings, fault, oracles and ceiling (at most 1,800 s).
+   - Journeys: `kit-journey-098[a-z]`, selectors `kit:journey-098[a-z]:candidate:1`, single journey members with `whole_journey`.
+   - Every transcriptomics case, the lifecycle pair included, binds oracles and is never in memory. A step that leaves a state without a bound oracle, or a RUVIII export step whose oracle carries no RUVIII product, refuses the case at binding.
+   - Every history state is judged by name.
+5. **Worker steps.** Listed in the binding before the member runs:
+   - `trx_expression_filter`;
+   - `trx_tmm_logcpm`;
+   - `trx_ruv_grid`;
+   - `trx_ruvs`;
+   - `trx_da_contrast`;
+   - `trx_ruviii_export`.
+
+   A transcriptomics journey needs one completed worker journal per listed step in its project store. A listed step without one makes the member `invalid` (`worker_dispatch_missing`).
+6. **Section 8 extended to transcriptomics operation members.** These rules apply to transcriptomics operation members as they do to lipidomics and metabolomics:
+   - suffixed selectors (item 7);
+   - a bound ceiling of at most 1,800 s (item 8);
+   - list-assay identity (item 9);
+   - recorded and uncounted status.
+7. **Status.** Every KIT-098 member is recorded and uncounted: one attempt, exactness and completion only, no ratio.
+8. **Unchanged.** Every other rule, threshold, guard, gap tolerance, ceiling and selector, the run ledger's authority and the correction-rerun rule. Decisions recorded before v1.8 stand under their own protocol hash.

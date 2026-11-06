@@ -1,0 +1,46 @@
+# KIT-098 second notebook reference (user decision 2026-11-06, "Second notebook reference")
+
+Render (one attempt, scripts-098/render.sh): ref098-trx_screen_gui_order	2026-11-06T17:33:11+11:00	0	e3b0c44298fc1c14	e3b0c44298fc1c14	yes	TRX_REFERENCE complete=TRUE exit=0 seconds=48.2 absent=0 error=none
+Corpus variant /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen-gui-order (scripts-098/corpus-gui-order.sh): design_matrix.tab rows permuted to the counts file's order; every other file byte-identical to trx_screen
+65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b  trx-screen-gui-order/contrast_strings.tab
+d9bf774f8d11f3c03d6588be05e1ee2ba92518105affe49e9f075cc29b6624a2  trx-screen-gui-order/counts.tsv
+f8763aaf2ee73dae6003b464e892b6bf5749ec27a5d6b70da2a4dd152410ad25  trx-screen-gui-order/design_matrix.tab
+d8cf9d03ff31564e4a8a396c8a7a6a76ab50387fc4d30be1164cd4728f39307d  trx-screen-gui-order/design.tsv
+2e8893e625f00289a6fb05113ddc4fef947ac1a6846e2e25a5affeacce910b45  trx-screen-gui-order/manifest.json
+8e0d820d096c2dfd7d08b153a784be5c17dc57072a08f3962d526c28e91e562d  trx-screen-gui-order/truth.json
+trx_screen design_matrix.tab (KIT-040): ca81a1277960cbb6b0510ce613795e30d2f83bf47498b206390f61c076493558
+notebook copy 44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a | driver 8d1a2181e1432ee6e4d375fe6a698f4372035b28fdf21c8560ea85e12ad18ba3 | manifest 2e8893e625f00289a6fb05113ddc4fef947ac1a6846e2e25a5affeacce910b45 | 13 chunks | 48 s | exit 0
+library /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y0OrcU/library
+full products: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/reference-trx_screen-gui-order.rds 8ff1202ac9206a2213d2bb03ad25374471607e13c3165ddb8895131fa1dc1e01
+fingerprint store: kit-098/reference-trx_screen_gui_order.rds 27e601cd1c23e3434a808e7a638a8657ce661651f12d133d1d72ec5d83ec4a85
+
+## Confirmation: run-order.R on kit_097, reference = the GUI-order render. The column gui_unaligned is the kernels in counts-file order, unaligned: 21 of 21 identical. (file_order/gui_aligned compare the design-file run with this reference and are expected to differ.)
+
+corpus /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen 
+counts-file order != design-file order: TRUE 
+product                    run_indexed  file_order     gui_aligned    gui_unaligned
+keep_expr                  FALSE        TRUE           TRUE           TRUE           
+gene_vars_positive         FALSE        TRUE           TRUE           TRUE           
+count_matrix_filtered      TRUE         FALSE          FALSE          TRUE           55398
+filter_effective_lib_size  TRUE         FALSE          FALSE          TRUE           1268274
+dge_filtered_samples       TRUE         FALSE          FALSE          TRUE           
+log_cpm_tmm                TRUE         FALSE          FALSE          TRUE           4.350515
+log_cpm_raw                TRUE         FALSE          FALSE          TRUE           4.466792
+ordered_features_idx       FALSE        TRUE           TRUE           TRUE           
+max_acceptable_k           FALSE        TRUE           TRUE           TRUE           
+df_summary                 FALSE        TRUE           TRUE           TRUE           
+best_k                     FALSE        TRUE           TRUE           TRUE           
+best_control_genes         FALSE        TRUE           TRUE           TRUE           
+w_matrix                   TRUE         FALSE          FALSE          TRUE           0.6195054
+ruvs_counts                TRUE         FALSE          FALSE          TRUE           55398
+log_cpm_corrected          TRUE         FALSE          FALSE          TRUE           4.16946
+design_final               TRUE         FALSE          FALSE          TRUE           1
+qlf_table                  FALSE        FALSE          TRUE           TRUE           
+top_genes                  FALSE        FALSE          TRUE           TRUE           
+ruviii_M                   TRUE         FALSE          FALSE          TRUE           1
+ruviii_newY                TRUE         FALSE          FALSE          TRUE           4.30362
+ruviii_ctl_mask            FALSE        TRUE           TRUE           TRUE           
+
+file order identical to the reference: 8 of 21 
+counts-file order, aligned by name, identical to the reference: 10 of 21 
+R R version 4.6.1 (2026-06-24) | BLAS /usr/lib/libblas.so.3.12.0 | LAPACK /usr/lib/liblapack.so.3.12.0 
