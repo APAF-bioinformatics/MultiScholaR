@@ -1,0 +1,37 @@
+corpus /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen 
+counts-file order != design-file order: TRUE 
+product                    run_indexed  file_order     gui_aligned    gui_unaligned
+keep_expr                  FALSE        TRUE           TRUE           TRUE           
+gene_vars_positive         FALSE        TRUE           TRUE           TRUE           
+count_matrix_filtered      TRUE         TRUE           TRUE           FALSE          
+filter_effective_lib_size  TRUE         TRUE           TRUE           FALSE          
+dge_filtered_samples       TRUE         TRUE           TRUE           FALSE          
+log_cpm_tmm                TRUE         TRUE           FALSE          FALSE          2.664535e-15
+log_cpm_raw                TRUE         TRUE           TRUE           FALSE          
+ordered_features_idx       FALSE        TRUE           TRUE           TRUE           
+max_acceptable_k           FALSE        TRUE           TRUE           TRUE           
+df_summary                 FALSE        TRUE           TRUE           TRUE           
+best_k                     FALSE        TRUE           TRUE           TRUE           
+best_control_genes         FALSE        TRUE           TRUE           TRUE           
+w_matrix                   TRUE         TRUE           FALSE          FALSE          5.081238
+ruvs_counts                TRUE         TRUE           TRUE           FALSE          
+log_cpm_corrected          TRUE         TRUE           FALSE          FALSE          1.154632e-14
+design_final               TRUE         TRUE           FALSE          FALSE          5.081238
+qlf_table                  FALSE        TRUE           FALSE          FALSE          1.057487e-08
+top_genes                  FALSE        TRUE           FALSE          FALSE          1.057487e-08
+ruviii_M                   TRUE         TRUE           FALSE          FALSE          0
+ruviii_newY                TRUE         TRUE           FALSE          FALSE          3.996803e-14
+ruviii_ctl_mask            FALSE        TRUE           TRUE           TRUE           
+
+file order identical to the reference: 21 of 21 
+counts-file order, aligned by name, identical to the reference: 13 of 21 
+R R version 4.6.1 (2026-06-24) | BLAS /usr/lib/libblas.so.3.12.0 | LAPACK /usr/lib/liblapack.so.3.12.0 
+
+Follow-up (same corpus, same build, read-only):
+- w_matrix after alignment: column W_1 equals -1 x the reference (max |aligned + ref| 1.07e-14; |aligned - ref| 5.08), W_2 differs by
+  2.4e-14. The run permutation flips the sign of the first RUVs factor (SVD sign) and moves the last digits. design_final carries W.
+- ruviii_M: values equal (max diff 0); the subset drops model.matrix's `assign`/`contrasts` attributes (an alignment artefact).
+- Run order of a fresh design: lipid and metab builders gtools::mixedsort(sample names) (R/mod_lipid_design_builder_state_helpers.R:395,
+  R/mod_metab_design_builder_server.R:237); transcriptomics `run_order = identity`, the counts file's order (R/mod_transcriptomics.R:44,
+  KIT-096). On trx_screen: design-file RPMI_01_r1 RPMI_01_r2 Sera_01_r1 Sera_01_r2 RPMI_02_r1 ...; mixedsort RPMI_01_r1 RPMI_01_r2
+  RPMI_02_r1 ...; counts file RPMI_03_r2 Sera_03_r1 Sera_06_r1 ... mixedsort == design-file order: FALSE.
