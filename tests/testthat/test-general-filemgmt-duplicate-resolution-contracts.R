@@ -1,7 +1,9 @@
 # fidelity-coverage-compare: shared
 library(testthat)
 
-repoRoot <- pkgload::pkg_path()
+# KIT-101 F-12: the test directory's grandparent, as the other R/-path-guarded files resolve it; under R CMD
+# check's layout it has no R/, so the guard below skips instead of pkgload erroring before it.
+repoRoot <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 skipIfMissingGeneralFilemgmtCanonicalTargetFiles <- function() {
   required_paths <- c(

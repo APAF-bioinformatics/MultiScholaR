@@ -14,3 +14,8 @@ F-10
   test-prot-05d-norm-module-characterization.R   pass 100 fail 0 error 0 skip 10 (baseline 100/0/0/10)
   dependents: git grep of runProtNormTabEntryWorkflow, shouldProtNormAutoGeneratePreQc and
   notifyProtNormNormalizationPrereqWarning in tests/ -> the two files above.
+
+F-12
+  load_all: test-general-filemgmt-duplicate-resolution-contracts.R pass 88 fail 0 error 0 skip 0 (baseline 88/0/0/0)
+            test-prot-04-design.R pass 1560 fail 0 error 0 skip 4 (baseline 1560/0/0/4)
+  check layout: both files skip at file level at their R/-path guard (were one file-level error each)

@@ -51,3 +51,30 @@ COUNTS test-prot-05b-norm-module-contracts.R pass 493 fail 4 error 0 skip 9
 
 After the fix:
 COUNTS test-prot-05b-norm-module-contracts.R pass 497 fail 0 error 0 skip 9
+
+== F-12  test-general-filemgmt-duplicate-resolution-contracts.R, test-prot-04-design.R ==
+The test is the files themselves run in R CMD check's test layout, as test-baseline.md's check mode
+runs them: the tree's tests/ copied to <scratch>/MultiScholaR.Rcheck/tests, each file run from
+MultiScholaR.Rcheck/tests/testthat with the installed package (R_LIBS = kit_100;
+library(MultiScholaR); test_file(package = "MultiScholaR", load_package = "installed");
+NOT_CRAN=true), so ../.. has no R/ and no DESCRIPTION.
+Fix: line 4 `repoRoot <- pkgload::pkg_path()` becomes the idiom of the other ten path-guarded files,
+`repoRoot <- normalizePath(file.path("..", ".."), mustWork = TRUE)` (the test directory's
+grandparent: the package root under load_all and test_dir, the .Rcheck directory under check).
+
+Before the fix (check layout):
+COUNTS test-general-filemgmt-duplicate-resolution-contracts.R blocks 1 pass 0 fail 0 error 1 skip 0
+  <pkgload_no_desc> Could not find a root 'DESCRIPTION' file that starts with '^Package' in
+  '.../MultiScholaR.Rcheck/tests/testthat'.
+COUNTS test-prot-04-design.R blocks 1 pass 0 fail 0 error 1 skip 0   (the same pkgload error)
+
+After the fix (check layout): both files skip at file level at their guard
+  test-general-filemgmt-duplicate-resolution-contracts.R:16 "Target-only general filemgmt canonical
+  file(s) not present: func_prot_norm_optimization_helpers.R, ..."
+  test-prot-04-design.R:18 "Target-only prot design extracted file(s) not present:
+  mod_prot_design_builder_action_helpers.R, ..."
+  (0 blocks run, 0 errors; the skip is the strict-skip sentinel's file_guard, as for the other ten)
+
+Default behaviour (load_all, the series runner), unchanged from test-baseline.tsv:
+COUNTS test-general-filemgmt-duplicate-resolution-contracts.R pass 88 fail 0 error 0 skip 0  (baseline 88/0/0/0)
+COUNTS test-prot-04-design.R pass 1560 fail 0 error 0 skip 4                            (baseline 1560/0/0/4)
