@@ -353,3 +353,42 @@ test_that("unavailable panels remain unavailable and malformed envelopes fail", 
         class = "saved_entity_invalid"
     )
 })
+
+test_that("KIT-095: the DA-fit envelope accepts an edgeR QL fit with the same identity checks; the limma envelope is unchanged", {
+    skip_if_not_installed("edgeR")
+    outputs <- makeSavedConsumerDiaOutputs()
+    limma_fit <- outputs$result$fit.eb
+    limma_envelope <- newSavedWorkflowDaFit(limma_fit, rownames(limma_fit$coefficients), rownames(limma_fit$design),
+        colnames(limma_fit$design))
+    # The MArrayLM envelope is byte for byte the five-field list it always was.
+    expect_identical(serialize(limma_envelope, NULL), serialize(list(schema = "da_fit_v1", fit = limma_fit,
+        feature_ids = rownames(limma_fit$coefficients), sample_ids = rownames(limma_fit$design),
+        design_columns = colnames(limma_fit$design)), NULL))
+    set.seed(10095L)
+    counts <- matrix(stats::rnbinom(60L * 6L, mu = 50, size = 5), nrow = 60L,
+        dimnames = list(sprintf("G%02d", seq_len(60L)), sprintf("S%d", seq_len(6L))))
+    pdata <- data.frame(group = factor(rep(c("A", "B"), each = 3L)), W_1 = stats::rnorm(6L), row.names = colnames(counts))
+    design <- stats::model.matrix(~ 0 + group + W_1, data = pdata)
+    dge <- edgeR::estimateDisp(edgeR::calcNormFactors(edgeR::DGEList(counts, group = pdata$group)), design, robust = TRUE)
+    fit <- edgeR::glmQLFit(dge, design, robust = TRUE)
+    envelope <- newSavedWorkflowDaFit(fit, rownames(fit$coefficients), rownames(fit$design), colnames(fit$design))
+    expect_identical(envelope, list(schema = "da_fit_v1", fit = fit, feature_ids = rownames(counts), sample_ids = colnames(counts),
+        design_columns = colnames(design), engine = "edgeR_QL"))
+    expect_true(checkSavedWorkflowConsumerPayload("da_fit", envelope))
+    expect_true(checkSavedWorkflowConsumerPayload("da_fit", limma_envelope))
+    store <- newWorkflowEntityStore(withr::local_tempdir(), "consumer-project", "TRANSCRIPTOMICS", max_cache_bytes = 67108864)
+    identity <- consumerScientificIdentity(outputs, "edger-fit")
+    reference <- saveWorkflowConsumerEntity(store, envelope, "edger-fit", identity, "da_fit", factors = list(route = "trx"))
+    hit <- resolveSavedWorkflowEntity(store, "da_fit", identity, factors = list(route = "trx"))
+    expect_identical(hit$status, "hit")
+    expect_identical(hit$value, envelope)
+    # The identity checks hold for the edgeR fit too: the features, the samples and the design columns as given.
+    expect_error(newSavedWorkflowDaFit(fit, rev(rownames(counts)), colnames(counts), colnames(design)), class = "saved_entity_invalid")
+    expect_error(newSavedWorkflowDaFit(fit, rownames(counts), rev(colnames(counts)), colnames(design)), class = "saved_entity_invalid")
+    expect_error(newSavedWorkflowDaFit(fit, rownames(counts), colnames(counts), rev(colnames(design))), class = "saved_entity_invalid")
+    expect_error(newSavedWorkflowDaFit(unclass(fit), rownames(counts), colnames(counts), colnames(design)), class = "saved_entity_invalid")
+    # An envelope whose engine is not the fit's is refused.
+    forged <- limma_envelope
+    forged$engine <- "edgeR_QL"
+    expect_error(checkSavedWorkflowConsumerPayload("da_fit", forged), class = "saved_entity_invalid")
+})

@@ -57,8 +57,9 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
 
 test_that("KIT-073: the core serves both omics from one binding each, and the omic names stay one body", {
   bindings <- omicsDeclarationBindings()
-  expect_identical(names(bindings), c("lipidomics", "metabolomics"))
-  expect_identical(vapply(bindings, `[[`, "", "prefix"), c(lipidomics = "lipid", metabolomics = "metab"))
+  # KIT-095: the transcriptomics binding is the third.
+  expect_identical(names(bindings), c("lipidomics", "metabolomics", "transcriptomics"))
+  expect_identical(vapply(bindings, `[[`, "", "prefix"), c(lipidomics = "lipid", metabolomics = "metab", transcriptomics = "trx"))
   expect_identical(runLipidReferenceOperation, runWorkflowOmicsReferenceOperation)
   expect_identical(markLipidReferenceStoreStep, markWorkflowOmicsStoreStep)
   expect_identical(commitLipidReferenceStoreStep, commitWorkflowOmicsStoreStep)

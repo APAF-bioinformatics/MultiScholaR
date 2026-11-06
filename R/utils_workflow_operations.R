@@ -200,6 +200,8 @@ newWorkflowOperationStore <- function(manager, declaration, source, identity, pa
         table = function(table) remember(saveWorkflowOwnedTable(manager$.context, table)),
         # KIT-079: a partitioned step's result, already a component checkpoint.
         checkpoint_record = function(checkpoint, label) remember(saveWorkflowOwnedCheckpoint(checkpoint, label, manager)),
+        # KIT-095: a table a partitioned product wrote itself, rooted with the product.
+        remember = remember,
         product = function(value, name, product_type) {
             if (is.null(identity)) {
                 cli::cli_abort("derived products need the operation identity", class = "workflow_operation_output")
@@ -373,7 +375,18 @@ workflowOperationDefaults <- local({
             contrasts = "input"),
         metab_da_contrast = list(formula = key("deAnalysisParameters", "formula_string"),
             qvalue = key("deAnalysisParameters", "de_q_val_thresh"), lfc = key("deAnalysisParameters", "treat_lfc_cutoff"),
-            contrast = "input", friendly_name = "input"))
+            contrast = "input", friendly_name = "input"),
+        # KIT-095: the transcriptomics declarations. `config.ini` is not edited and its legacy transcriptomics sections are
+        # not reused: the notebook's values are the module's defaults (`no_shipped_default`); the products a step depends
+        # on and the realised DA formula are taken from earlier steps (`input`).
+        trx_expression_filter = list(), trx_qc_finalize = list(), trx_reset = list(), trx_tmm_logcpm = list(),
+        trx_ruv_grid = list(logcpm = "input", ruv_mode = "no_shipped_default", percentage_min = "no_shipped_default",
+            percentage_max = "no_shipped_default", percentage_step = "no_shipped_default", k_penalty_weight = "no_shipped_default",
+            manual_k = "no_shipped_default", manual_percentage = "no_shipped_default"),
+        trx_ruvs = list(logcpm = "input", grid = "input"),
+        trx_da_contrast = list(formula = "input", qvalue = "no_shipped_default", lfc = "no_shipped_default", contrast = "input",
+            friendly_name = "input"),
+        trx_ruviii_export = list(logcpm = "input", grid = "input", ruviii_m_source = "no_shipped_default"))
 })
 
 #' A reader's label for every declared parameter (KIT-039, IM-07): one line per parameter, keyed by operation.
@@ -473,7 +486,18 @@ workflowParameterLabels <- local({
         metab_da_output = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
             lfc = "Log fold-change cutoff (treat)", contrasts = "Contrasts (input)"),
         metab_da_contrast = list(formula = "Model formula", qvalue = "Differential abundance q-value threshold",
-            lfc = "Log fold-change cutoff (treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"))
+            lfc = "Log fold-change cutoff (treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"),
+        # KIT-095: the transcriptomics declarations.
+        trx_expression_filter = list(), trx_qc_finalize = list(), trx_reset = list(), trx_tmm_logcpm = list(),
+        trx_ruv_grid = list(logcpm = "TMM logCPM (input)", ruv_mode = "RUV mode (automatic or manual)",
+            percentage_min = "Negative-control percentage grid, minimum", percentage_max = "Negative-control percentage grid, maximum",
+            percentage_step = "Negative-control percentage grid, step", k_penalty_weight = "Penalty weight on k",
+            manual_k = "Number of unwanted factors k (manual mode)", manual_percentage = "Negative-control percentage (manual mode)"),
+        trx_ruvs = list(logcpm = "TMM logCPM (input)", grid = "RUV grid result (input)"),
+        trx_da_contrast = list(formula = "Model formula (realised from the RUVs design)", qvalue = "FDR (BH) threshold",
+            lfc = "Log fold-change display threshold (no treat)", contrast = "Contrast (input)", friendly_name = "Contrast name (input)"),
+        trx_ruviii_export = list(logcpm = "TMM logCPM (input)", grid = "RUV grid result (input)",
+            ruviii_m_source = "RUVIII replicate matrix M (group or technical_replicate)"))
 })
 
 #' Register one operation.

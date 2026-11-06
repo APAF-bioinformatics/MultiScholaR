@@ -55,7 +55,9 @@ omicsRunPartitioned <- function(binding, store, on_template, label, write_assay)
     spec <- readWorkflowStateMetadata(manager, source)$data
     worker_cap <- store$worker_cap %||% (12 * 1024^3)
     source_tables <- spec$components[[binding$data_slot]]
-    template <- readWorkflowExecutionComponents(manager, source, fields = binding$design_field)
+    # KIT-095: a binding whose class refuses an object with empty assays reads its template its own way.
+    template <- if (is.function(binding$read_template)) binding$read_template(manager, source) else
+        readWorkflowExecutionComponents(manager, source, fields = binding$design_field)
     result <- suppressWarnings(suppressMessages(on_template(template)))
     tables <- source_tables
     for (assay in names(source_tables)) {
@@ -412,21 +414,23 @@ omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample
 #' Differential abundance for one contrast (KIT-076; whole matrix, product only): per assay the saved fit, the contrast
 #' half of the omic's kernel, the orchestrator's table. A failure of this contrast on an assay is recorded under
 #' `errors` and costs nothing else; store errors are not caught. The product keeps what the module's list is rebuilt
-#' from (`readWorkflowOmicsDaResults`).
+#' from (`readWorkflowOmicsDaResults`). KIT-095: the fixed settings and the design the kernel halves read are the
+#' binding's (`da_fixed`, `da_design`); lipid and metab keep the limma settings and the object's design.
 #' @noRd
 omicsDaContrastOperation <- function(binding) {
     long_table <- binding$long_table
+    da_design <- binding$da_design %||% function(object) object@design_matrix
     newOmicsOperation(binding, paste0(binding$prefix, "_da_contrast"), "whole_matrix",
         parameters = c("formula", "qvalue", "lfc", "contrast", "friendly_name"),
         product_type = paste0(binding$prefix, "-da-contrast-references"), output_class = NULL,
-        fixed = list(eBayes_trend = TRUE, eBayes_robust = TRUE),
+        fixed = binding$da_fixed %||% list(eBayes_trend = TRUE, eBayes_robust = TRUE),
         kernel = function(object, parameters, store) {
             contrast <- parameters$contrast
             accepted <- list(schema = paste0(binding$prefix, ".da_contrast_reference.v1"), source = store$source,
                 contrast = contrast, comparison = parameters$friendly_name, assays = list(), errors = list(),
                 qvalue_warnings = list(), products = list())
             assays <- methods::slot(object, binding$data_slot)
-            design <- object@design_matrix
+            design <- da_design(object)
             preflight <- tryCatch({
                 binding$da_preflight(object, data.frame(contrasts = contrast, friendly_names = parameters$friendly_name,
                     stringsAsFactors = FALSE), parameters$formula)
@@ -582,7 +586,8 @@ omicsWorkflowOperations <- function(binding) {
 #' The omics bindings the registry and the record read, by omic type.
 #' @noRd
 omicsDeclarationBindings <- function() {
-    list(lipidomics = lipidomicsDeclarationBinding, metabolomics = metabolomicsDeclarationBinding)
+    list(lipidomics = lipidomicsDeclarationBinding, metabolomics = metabolomicsDeclarationBinding,
+        transcriptomics = transcriptomicsDeclarationBinding)
 }
 
 #' The bindings' omic types (KIT-094): the session's type allowlists and routes take an omic's from its binding
@@ -1135,11 +1140,13 @@ acceptWorkflowOmicsDaManifest <- function(binding, manager, source, settings, co
     if (length(results) && all(vapply(results, function(entry) !length(entry$assays) && length(entry$errors) > 0L, logical(1)))) {
         stop(paste(unique(unlist(lapply(results, `[[`, "errors"))), collapse = "; "), call. = FALSE)
     }
+    # KIT-095: the model record is the binding's (`da_model`); lipid and metab keep the limma one.
+    model <- if (is.function(binding$da_model)) binding$da_model(parameters) else list(model = "limma",
+        formula_used = parameters$formula, eBayes_trend = TRUE, eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))
     manifest <- c(list(schema = paste0(binding$prefix, ".da_results.v2"), source = source),
         stats::setNames(list(metadata$slots[[binding$id_slot]]), binding$id_slot),
         list(sample_id = metadata$slots$sample_id, assays = metadata$assay_names, contrasts = contrasts, results = results,
-            parameters = parameters, model = list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
-                eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0))))
+            parameters = parameters, model = model))
     reference <- saveWorkflowStateValue(context, manifest, "da-result-references", codec = "rds")
     snapshot <- context$snapshot
     snapshot$da_results <- reference
@@ -1346,14 +1353,18 @@ computeWorkflowOmicsSessionExportAction <- function(manager, request, variant) {
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
 }
 
-#' The summary's integration object, written here (KIT-082). The file replaces any earlier one whole.
+#' The summary's integration object, written here (KIT-082). The file replaces any earlier one whole. KIT-095: the
+#' binding's `integration_export(manager, parameters, path)` writes it when the binding has one (the transcriptomics
+#' RUVIII matrix); lipid and metab write the state's object.
 #' @noRd
 computeWorkflowOmicsIntegrationExportAction <- function(manager, request, variant) {
+    binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
     source <- request$input_references$state
     parameters <- request$parameters
     temporary <- tempfile("omics-integration-", tmpdir = dirname(parameters$path), fileext = ".RDS")
     on.exit(unlink(temporary), add = TRUE)
-    saveRDS(manager$getState(parameters$state_name), temporary)
+    if (is.function(binding$integration_export)) binding$integration_export(manager, parameters, temporary) else
+        saveRDS(manager$getState(parameters$state_name), temporary)
     if (!file.rename(temporary, parameters$path)) cli::cli_abort("cannot write the integration object", class = "saved_entity_write")
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
 }

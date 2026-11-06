@@ -509,17 +509,19 @@ newSavedWorkflowScientificProduct <- function(value, product_type,
         status = status, value = value, provenance = provenance, reason = reason)
 }
 
-#' Wrap a real limma base/contrast fit with its tested populations.
-#' @param fit Existing MArrayLM fit.
+#' Wrap a real limma base/contrast fit, or an edgeR quasi-likelihood fit (KIT-095), with its tested populations.
+#' @param fit Existing MArrayLM fit, or an edgeR `DGEGLM` from `glmQLFit`.
 #' @param feature_ids,sample_ids,design_columns Ordered identities.
-#' @return Explicit DA-fit envelope.
+#' @return Explicit DA-fit envelope. A limma fit's is the five fields it always was; an edgeR fit's adds
+#'   `engine = "edgeR_QL"`.
 #' @noRd
 newSavedWorkflowDaFit <- function(fit, feature_ids, sample_ids, design_columns) {
     valid_ids <- function(value) is.character(value) && length(value) &&
         !anyNA(value) && !anyDuplicated(value) && all(nzchar(value))
-    coefficients <- if (inherits(fit, "MArrayLM")) fit$coefficients else NULL
-    design <- if (inherits(fit, "MArrayLM")) fit$design else NULL
-    if (!inherits(fit, "MArrayLM") || !is.matrix(coefficients) || !is.matrix(design) ||
+    supported <- inherits(fit, "MArrayLM") || inherits(fit, "DGEGLM")
+    coefficients <- if (supported) fit$coefficients else NULL
+    design <- if (supported) fit$design else NULL
+    if (!supported || !is.matrix(coefficients) || !is.matrix(design) ||
         !valid_ids(feature_ids) || !valid_ids(sample_ids) || !valid_ids(design_columns) ||
         nrow(coefficients) != length(feature_ids) || nrow(design) != length(sample_ids) ||
         !identical(rownames(coefficients), feature_ids) ||
@@ -527,8 +529,10 @@ newSavedWorkflowDaFit <- function(fit, feature_ids, sample_ids, design_columns) 
         !identical(colnames(design), design_columns)) {
         cli::cli_abort("invalid DA-fit envelope", class = "saved_entity_invalid")
     }
-    list(schema = "da_fit_v1", fit = fit, feature_ids = feature_ids,
+    envelope <- list(schema = "da_fit_v1", fit = fit, feature_ids = feature_ids,
         sample_ids = sample_ids, design_columns = design_columns)
+    if (inherits(fit, "DGEGLM")) envelope$engine <- "edgeR_QL"
+    envelope
 }
 
 #' Wrap an ordered DA result table with explicit key and contrast metadata.
@@ -591,7 +595,8 @@ checkSavedWorkflowConsumerPayload <- function(kind, object) {
             sort(c("schema", "product_type", "status", "value", "provenance", "reason"))))
             newSavedWorkflowScientificProduct(object$value, object$product_type,
                 object$provenance, object$status, object$reason) else NULL,
-        da_fit = if (is.list(object) && identical(sort(names(object)),
+        # KIT-095: an edgeR fit's envelope carries its engine; the rebuilt envelope must equal the object, engine included.
+        da_fit = if (is.list(object) && identical(sort(setdiff(names(object), "engine")),
             sort(c("schema", "fit", "feature_ids", "sample_ids", "design_columns"))))
             newSavedWorkflowDaFit(object$fit, object$feature_ids, object$sample_ids,
                 object$design_columns) else NULL,

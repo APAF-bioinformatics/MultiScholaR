@@ -162,6 +162,24 @@ readWorkflowShippedDefaults <- function(path = system.file("config", "config.ini
     out
 }
 
+#' One accepted export of the head as a record analysis (KIT-095): its operation, source, parameters with their provenance,
+#' product and the outcomes its omic binding records.
+#' @noRd
+workflowRecordExportAnalysis <- function(context, snapshot, export, shipped) {
+    entry <- tryCatch(workflowOperationEntry(export$operation), error = function(e) NULL)
+    binding <- Find(function(b) isTRUE(startsWith(export$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
+    source_state <- names(snapshot$states)[vapply(snapshot$states, function(reference)
+        identical(reference$entity_id, export$source$entity_id), logical(1))]
+    product <- stats::setNames(list(export$reference), paste0(export$operation, "_science"))
+    list(operation = export$operation, source_state = if (length(source_state)) source_state[[1L]] else NA_character_,
+        source_entity_id = export$source$entity_id %||% NA_character_, product_entity_id = export$reference$entity_id,
+        parameters = lapply(names(export$parameters), function(name) list(name = name, source = "export",
+            value = encodeWorkflowRecordValue(export$parameters[[name]]),
+            provenance = workflowParameterProvenance(entry$defaults[[name]], export$parameters[[name]], shipped))),
+        outcomes = if (is.null(binding)) list() else binding$record_outcomes(binding, context, export$operation,
+            list(data = list(products = product)), list()))
+}
+
 #' Build the analysis record from head metadata (schema `multischolar.analysis_record.v1`).
 #' @param manager On-disk DIA owner (`DIAStateAdapter`).
 #' @param now Generation time.
@@ -306,6 +324,9 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             }), recursive = FALSE, use.names = FALSE)
         }
     }
+    # KIT-095: a product-only export accepted on the head after the DA (the transcriptomics RUVIII matrix) is listed as an
+    # analysis with its parameters and the outcomes its binding records.
+    for (name in names(snapshot$exports)) analyses[[name]] <- workflowRecordExportAnalysis(context, snapshot, snapshot$exports[[name]], shipped)
     inputs <- list()
     for (name in names(snapshot$file_dependencies)) {
         dependency <- snapshot$file_dependencies[[name]]
@@ -592,14 +613,26 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         omics_binding <- Find(function(b) isTRUE(da$operation %in% paste0(b$prefix, c("_da_output", "_da_contrast"))), omicsDeclarationBindings())
         if (!is.null(omics_binding)) {
             # KIT-031/032 (KIT-073: one branch): the omics DA from the record's settings and contrasts on the replayed head.
+            # KIT-095: a binding that realises its formula from the head checks the record's against it first.
+            omics_settings <- list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc)
+            if (is.function(omics_binding$da_replay_check)) withWorkflowStateScope(manager, function() omics_binding$da_replay_check(manager, omics_settings))
             withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,
-                getWorkflowStateReference(manager),
-                list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue, treat_lfc_cutoff = settings$lfc), contrasts))
+                getWorkflowStateReference(manager), omics_settings, contrasts))
         } else {
             runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
                 treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
         }
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = da$operation %||% "DA-contrast-output"), manager)
+    }
+    # KIT-095: the exports after the DA, through their binding's replay entry with the recorded parameters.
+    for (analysis in record$analyses[setdiff(names(record$analyses %||% list()), "differential_abundance")]) {
+        binding <- Find(function(b) isTRUE(startsWith(analysis$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
+        entry <- tryCatch(workflowOperationEntry(analysis$operation), error = function(e) NULL)
+        if (is.null(binding) || is.null(entry)) cli::cli_abort("analysis {.val {analysis$operation}} cannot be replayed", class = "workflow_replay_unsupported")
+        parameters <- workflowReplayParameters(analysis$parameters, entry$parameters)
+        withWorkflowStateScope(manager, function() replayWorkflowOmicsStep(binding, manager,
+            list(operation = analysis$operation, state = manager$current_state, description = analysis$operation), parameters))
+        if (is.function(on_step)) on_step(list(state = manager$current_state, operation = analysis$operation), manager)
     }
     list(states = unlist(manager$.context$snapshot$state_history), project_root = project_root)
 }
@@ -751,13 +784,17 @@ workflowRecordReportSources <- list(
     build = list(record = c("software", "build")),
     r_version = list(record = c("software", "r_version")),
     blas = list(record = c("software", "blas")),
+    # KIT-095: the transcriptomics RUVs step's outcomes under the same names, and its mode and the RUVIII export's M source.
     ruv_applied = list(record = list(c("outcomes", "normalization-ruv", "ruv_applied"), c("outcomes", "lipid_ruv", "ruv_applied"),
-        c("outcomes", "metab_ruv", "ruv_applied"))),
-    best_k = list(record = list(c("outcomes", "normalization-ruv", "k"), c("outcomes", "lipid_ruv", "k"), c("outcomes", "metab_ruv", "k"))),
+        c("outcomes", "metab_ruv", "ruv_applied"), c("outcomes", "trx_ruvs", "ruv_applied"))),
+    best_k = list(record = list(c("outcomes", "normalization-ruv", "k"), c("outcomes", "lipid_ruv", "k"), c("outcomes", "metab_ruv", "k"),
+        c("outcomes", "trx_ruvs", "k"))),
     best_percentage = list(record = list(c("outcomes", "normalization-ruv", "negative_control_percentage"), c("outcomes", "lipid_ruv", "negative_control_percentage"),
-        c("outcomes", "metab_ruv", "negative_control_percentage"))),
+        c("outcomes", "metab_ruv", "negative_control_percentage"), c("outcomes", "trx_ruvs", "negative_control_percentage"))),
     num_neg_ctrl = list(record = list(c("outcomes", "normalization-ruv", "negative_control_count"), c("outcomes", "lipid_ruv", "negative_control_count"),
-        c("outcomes", "metab_ruv", "negative_control_count"))),
+        c("outcomes", "metab_ruv", "negative_control_count"), c("outcomes", "trx_ruvs", "negative_control_count"))),
+    ruv_mode = list(record = c("outcomes", "trx_ruvs", "ruv_mode")),
+    ruviii_m_source = list(record = c("outcomes", "trx_ruviii_export", "ruviii_m_source")),
     # KIT-031: the lipidomics template's variables (`ExtractLipidStudyParameters`): the internal-standard step, the log2
     # offset and the RUV grouping variable; its DA variables are the shared `s4_de_*` / `ui_de_*` entries (`DA`).
     itsd_applied = list(record = list(c("outcomes", "lipid_itsd_normalisation", "itsd_applied"), c("outcomes", "metab_itsd_normalisation", "itsd_applied"))),
@@ -817,7 +854,8 @@ workflowRecordReportParameters <- function(record_path, params, study_params = l
     }
     from_outcomes <- function(operation, name) {
         steps <- Filter(function(step) identical(step$operation, operation), record$steps)
-        if (!length(steps)) return(NULL)
+        # KIT-095: an export's outcomes are its analysis's.
+        if (!length(steps)) return(record$analyses[[operation]]$outcomes[[name]])
         steps[[length(steps)]]$outcomes[[name]]
     }
     file_params <- study_params[["Workflow Parameters"]][["Parameters from Final S4 Object"]] %||% list()

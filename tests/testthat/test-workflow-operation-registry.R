@@ -12,7 +12,9 @@ test_that("the registry carries the built-in operations with every fact the exec
         "peptide_intensity_filter", "peptide_log2_matrix", "peptide_protein_evidence_filter", "peptide_qvalue_filter",
         "peptide_replicate_filter", "precursor_rollup", "protein_accession_cleanup", "protein_between_sample_normalisation",
         "protein_dpc_quant", "protein_duplicate_removal", "protein_intensity_filter", "protein_iq_rollup", "protein_peptide_count_filter",
-        "protein_replicate_filter", "protein_ruv_covariates", "wfx_fixture"))
+        "protein_replicate_filter", "protein_ruv_covariates",
+        # KIT-095: the transcriptomics declarations and publication operations.
+        "trx_composite_figure", "trx_da_contrast", "trx_da_publication", "trx_da_tab_results", "trx_expression_filter", "trx_filtering_metrics", "trx_final_pca", "trx_integration_export", "trx_qc_figures", "trx_qc_finalize", "trx_reset", "trx_ruv_grid", "trx_ruv_publication", "trx_ruviii_export", "trx_ruvs", "trx_session_export", "trx_tmm_logcpm", "trx_volcano_page", "wfx_fixture"))
     # KIT-010: the protein replicate filter as an operation on the row unit with the protein completion and publication.
     replicate <- workflowActionSpec("protein_replicate_filter")
     expect_identical(replicate$input, "checkpoint")
@@ -107,7 +109,9 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         # KIT-078: what the omics figures and exports read from the matrix, in the worker.
         "lipid_qc_figures", "lipid_da_publication", "metab_qc_figures", "metab_da_publication",
         # KIT-082: what the tabs read from the whole matrix outside their steps.
-        paste0(rep(c("lipid", "metab"), each = 6L), rep(c("_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"), 2L)))))
+        paste0(rep(c("lipid", "metab"), each = 6L), rep(c("_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"), 2L)),
+        # KIT-095: the transcriptomics declarations and publication operations.
+        "trx_composite_figure", "trx_da_contrast", "trx_da_publication", "trx_da_tab_results", "trx_expression_filter", "trx_filtering_metrics", "trx_final_pca", "trx_integration_export", "trx_qc_figures", "trx_qc_finalize", "trx_reset", "trx_ruv_grid", "trx_ruv_publication", "trx_ruviii_export", "trx_ruvs", "trx_session_export", "trx_tmm_logcpm", "trx_volcano_page")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
@@ -223,6 +227,11 @@ test_that("no registered DIA kernel draws random numbers; randomness would be a 
         if (!is.null(entry$handler)) hits <- c(hits, scan(get(entry$handler, ns), entry$handler, 1L))
         if (!is.null(entry$declaration$kernel)) hits <- c(hits, scan(entry$declaration$kernel, paste0(name, ":kernel"), 1L))
     }
+    # KIT-095: the transcriptomics kernels reach KIT-093's count policy, whose text matches only in a message string
+    # ("sample(s) with a zero library"); none of its calls draws a random number.
+    parsed <- utils::getParseData(parse(text = deparse(validateTrxCounts), keep.source = TRUE))
+    expect_false(any(parsed$token == "SYMBOL_FUNCTION_CALL" & parsed$text %in% c("set.seed", "rnorm", "runif", "sample", "sample.int", "rbinom", "rpois")))
+    hits <- setdiff(hits, "validateTrxCounts")
     expect_identical(unique(hits), character(0))
     expect_gt(length(seen), 20L)
 })

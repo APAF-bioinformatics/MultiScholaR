@@ -106,7 +106,13 @@ workflowOutputDeclarations <- function() {
         producer = "runMetabReferenceDaAnalysis", operation = "metab_da_contrast", long_table = "da_metabolites_long",
         fields = c("source", "metabolite_id_column", "sample_id", "assays", "contrasts", "results", "parameters", "model"),
         products = c("da_metabolites_long", "da_contrast", "significant_counts", "qvalue_warnings"),
-        identifies = "isMetabResultManifest"))
+        identifies = "isMetabResultManifest"),
+        # KIT-095: the transcriptomics DA output, edgeR QL on the saved fit, one declaration per contrast (v2 layout; no v1).
+        `trx.da_results.v2` = list(schema = "trx.da_results.v2", version = 2L, kind = "manifest",
+        producer = "runTrxReferenceDaAnalysis", operation = "trx_da_contrast", long_table = "da_genes_long",
+        fields = c("source", "gene_id_column", "sample_id", "assays", "contrasts", "results", "parameters", "model"),
+        products = c("da_genes_long", "da_contrast", "significant_counts", "qvalue_warnings"),
+        identifies = "isTrxResultManifest"))
 }
 
 #' Resolve one declared output manifest by schema.
