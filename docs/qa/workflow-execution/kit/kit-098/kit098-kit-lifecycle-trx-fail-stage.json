@@ -1,0 +1,119 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-098",
+  "stage": "kit098-kit-lifecycle-trx-fail",
+  "date": "2026-11-06",
+  "dispatches": {
+    "trx_expression_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_qc_figures": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 608477184,
+    "phase_peak_anon_bytes": {
+      "import": 557547520,
+      "design": 580812800,
+      "expression_filter": 584167424,
+      "qc_finalize": 608477184,
+      "guard_injected": 160157696,
+      "normalisation": 160157696
+    }
+  },
+  "decision": {
+    "status": "lifecycle_failure_observed",
+    "rule": null,
+    "failing_rule": null,
+    "steps": ["import", "design", "expression_filter", "qc_finalize", "guard_injected", "normalisation"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": true,
+    "route": "transcriptomics",
+    "in_memory": false,
+    "head_rule": null
+  },
+  "member": {
+    "id": "member",
+    "corpus": "trx_screen",
+    "build": "1f5a1142352128e9529fac030425dfccbd2e4e6d043829dfa0c619bc7bb67f99",
+    "status": "journey_failed",
+    "exact": null,
+    "elapsed_seconds": 56.5,
+    "peak_bytes": 1493499904,
+    "peak_anon_bytes": 1450471424,
+    "resident_end_bytes": "NA",
+    "phase_seconds": {
+      "import": 4.63999999998487,
+      "design": 15.1000000000058,
+      "expression_filter": 14.75,
+      "qc_finalize": 7.14999999999418,
+      "guard_injected": 0.0499999999883585,
+      "normalisation": 0.259999999980209
+    },
+    "phase_peak_anon_bytes": {
+      "import": 925130752,
+      "design": 948396032,
+      "expression_filter": 1450471424,
+      "qc_finalize": 1364545536,
+      "guard_injected": 532570112,
+      "normalisation": 532570112
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "expression_filter": "complete",
+      "qc_finalize": "complete",
+      "guard_injected": "open",
+      "normalisation": "failed"
+    },
+    "max_sample_interval": 0.0600000000267755,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": {
+      "schema": 1,
+      "scope": "application",
+      "max_anon": 1450471424,
+      "max_file": 24621056,
+      "max_observation_interval": 0.0600000000000023,
+      "reason": "injected_guard_stop",
+      "current": 990670848,
+      "host_available": 36175237120
+    },
+    "failed_step": "journey_failed",
+    "error": "diagnostic Shiny session disconnected"
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": {
+      "failed_step": "normalisation",
+      "head_sha256": "99c1bca97d0b2551931f8f6bee2d48ebf0a752d58de857ca780340b84a692ef9",
+      "current_state": "trx_qc_complete",
+      "guard": {
+        "schema": 1,
+        "scope": "application",
+        "max_anon": 1450471424,
+        "max_file": 24621056,
+        "max_observation_interval": 0.0600000000000023,
+        "reason": "injected_guard_stop",
+        "current": 990670848,
+        "host_available": 36175237120
+      }
+    }
+  }
+}

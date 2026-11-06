@@ -1,2 +1,3 @@
 kit-lifecycle-trx invalid failing verifier_accepted failed_step design error diagnostic browser condition timed out 
 kit-lifecycle-trx lifecycle_complete_observed failing none failed_step none error none 
+kit-lifecycle-trx-fail lifecycle_failure_observed failing none failed_step normalisation error diagnostic Shiny session disconnected 
