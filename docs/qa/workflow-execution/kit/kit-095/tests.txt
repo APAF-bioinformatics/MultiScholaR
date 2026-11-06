@@ -1,0 +1,25 @@
+# KIT-095 targeted and dependent test files after the change (tree = 815db998 before its commit, the same files), one process per file, kit_093 library, `run1.R . tests/testthat/<file>`.
+# The changed and new files:
+COUNTS test-workflow-trx-declarations.R pass 308 fail 0 error 0 skip 0
+COUNTS test-workflow-saved-consumers.R pass 47 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-declarations.R pass 68 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-binding-steps.R pass 44 fail 4 error 0 skip 0
+  BAD test-workflow-omics-binding-steps.R :: KIT-094: the characterisation of the lists the bindings own equals the snapshot taken on the base commit
+# The dependents (grep below) and the trx kernel/renderer/design files:
+COUNTS test-workflow-execution-adapters.R pass 0 fail 0 error 0 skip 6
+COUNTS test-perf107-audit.R pass 191 fail 0 error 0 skip 1
+COUNTS test-workflow-class-declarations.R pass 181 fail 0 error 0 skip 0
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-owner.R pass 74 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-da-contrasts.R pass 138 fail 0 error 0 skip 0
+COUNTS test-workflow-analysis-record.R pass 239 fail 0 error 0 skip 0
+COUNTS test-trx-kernels.R pass 341 fail 0 error 0 skip 0
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2
+COUNTS test-trx-design.R pass 67 fail 0 error 0 skip 0
+COUNTS test-trx-publication.R pass 174 fail 0 error 0 skip 0
+COUNTS test-workflow-operation-registry.R pass 1007 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 204 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0
+COUNTS test-workflow-partitions.R pass 423 fail 0 error 0 skip 2
+COUNTS test-workflow-native-session.R pass 725 fail 0 error 0 skip 2

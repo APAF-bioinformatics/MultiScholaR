@@ -1,0 +1,15 @@
+# KIT-095 test first: the new and changed tests on the tree before any R/ change (HEAD 6a06cc87 + the test edits), kit_093 library, one process per file.
+COUNTS test-workflow-trx-declarations.R pass 10 fail 0 error 6 skip 0
+  BAD test-workflow-trx-declarations.R :: KIT-095: the journey's states and products are the KIT-040 reference's; the record is valid and replays exactly
+  BAD test-workflow-trx-declarations.R :: KIT-095: the manual mode records its mode and outcomes; skip and a manual k above the cap are refused
+  BAD test-workflow-trx-declarations.R :: KIT-095: RUVIII with technical replicates is a distinct product with its M, recorded as such
+  BAD test-workflow-trx-declarations.R :: KIT-095: the partitioned filter and logCPM equal whole on a corpus whose TMM factors are not 1; the template never calls edgeR
+  BAD test-workflow-trx-declarations.R :: KIT-095: every trx worker step and publication operation completes through the worker harness, as in process
+  BAD test-workflow-trx-declarations.R :: KIT-095: the registry shape of the transcriptomics binding, and every wrapper refuses a manager that is not the owner
+COUNTS test-workflow-saved-consumers.R pass 37 fail 0 error 1 skip 0
+  BAD test-workflow-saved-consumers.R :: KIT-095: the DA-fit envelope accepts an edgeR QL fit with the same identity checks; the limma envelope is unchanged
+COUNTS test-workflow-operation-registry.R pass 848 fail 2 error 0 skip 0
+  BAD test-workflow-operation-registry.R :: the registry carries the built-in operations with every fact the execution layer reads
+  BAD test-workflow-operation-registry.R :: unregistered or malformed operations refuse with the execution layer's class; entries are validated
+COUNTS test-workflow-omics-declarations.R pass 66 fail 2 error 0 skip 0
+  BAD test-workflow-omics-declarations.R :: KIT-073: the core serves both omics from one binding each, and the omic names stay one body

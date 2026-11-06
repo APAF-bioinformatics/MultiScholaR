@@ -1,0 +1,36 @@
+# KIT-095: the KIT-094 characterisation on the KIT-095 tree against tests/testthat/fixtures/kit094-characterisation.rds (unmodified).
+# Script: $P/kit/scripts-095/characterisation-diff.R (the test file's helpers evaluated, its tests not run), kit_093 library.
+# The four parts that differ differ only by the transcriptomics entries; the lipid and metab records are identical.
+parts identical before removal:
+report_sources          types    input_roles          steps       registry 
+         FALSE          FALSE           TRUE          FALSE          FALSE 
+       records 
+          TRUE 
+
+TRANSCRIPTOMICS before -> now:
+  reopen: NA -> transcriptomics
+  session: error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and METABOLOMICS workflow types -> TRANSCRIPTOMICS
+  route: error saved_entity_scope workflow type "TRANSCRIPTOMICS" has no native session route -> transcriptomics
+
+parts identical after removing the transcriptomics entries:
+report_sources          types    input_roles          steps       registry 
+          TRUE          FALSE           TRUE           TRUE           TRUE 
+       records 
+          TRUE 
+DIFFERENT
+
+other workflow types whose outcome text changed (the allowlist message now names TRANSCRIPTOMICS):
+  session/PROTEOMICS:
+    before: error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and METABOLOMICS workflow types
+    now:    error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS, METABOLOMICS and TRANSCRIPTOMICS workflow types
+  session/lipidomics:
+    before: error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and METABOLOMICS workflow types
+    now:    error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS, METABOLOMICS and TRANSCRIPTOMICS workflow types
+  session/STUBOMICS:
+    before: error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS and METABOLOMICS workflow types
+    now:    error saved_entity_scope the on-disk session serves the DIA, DIA_LIMPA, LFQ, TMT, LIPIDOMICS, METABOLOMICS and TRANSCRIPTOMICS workflow types
+report_sources          types    input_roles          steps       registry 
+          TRUE           TRUE           TRUE           TRUE           TRUE 
+       records 
+          TRUE 
+ALL IDENTICAL after the message's list is read without TRANSCRIPTOMICS

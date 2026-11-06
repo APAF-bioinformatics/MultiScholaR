@@ -1,0 +1,55 @@
+# KIT-095 dependents: test files naming a changed function or table (scripts-095/dependents-files.txt):
+# grep -l -E 'newSavedWorkflowDaFit|checkSavedWorkflowConsumerPayload|omicsRunPartitioned|omicsDaContrastOperation|omicsDeclarationBindings|acceptWorkflowOmicsDaManifest|IntegrationExportAction|_integration_export|newWorkflowOperationStore|workflowOperationDefaults|workflowParameterLabels|workflowOutputDeclaration|buildWorkflowAnalysisRecord|replayWorkflowAnalysisRecord|workflowRecordReportParameters|workflowRecordReportSources|omicsWorkflowTypes|workflowRoutesByType|registerBuiltinWorkflowOperations|runWorkflowOmicsReferenceDaAnalysis|workflowOperationNames' tests/testthat/*.R
+helper-workflow-omics-declarations.R
+helper-workflow-omics-worker.R
+test-perf107-audit.R
+test-workflow-analysis-record.R
+test-workflow-class-declarations.R
+test-workflow-execution-adapters.R
+test-workflow-lipid-declarations.R
+test-workflow-metab-declarations.R
+test-workflow-native-session.R
+test-workflow-omics-application-reads.R
+test-workflow-omics-binding-steps.R
+test-workflow-omics-da-contrasts.R
+test-workflow-omics-declarations.R
+test-workflow-omics-owner.R
+test-workflow-omics-worker.R
+test-workflow-operation-registry.R
+test-workflow-partitions.R
+test-workflow-prot-declarations.R
+test-workflow-saved-consumers.R
+test-workflow-trx-declarations.R
+
+# Every one was run (tests.txt); the two helpers are loaded by every file. R-side callers of the changed functions:
+R/utils_workflow_lipid_declarations.R:153:lipidDaContrastOperation <- function() omicsDaContrastOperation(lipidomicsDeclarationBinding)
+R/utils_workflow_metab_declarations.R:144:metabDaContrastOperation <- function() omicsDaContrastOperation(metabolomicsDeclarationBinding)
+R/utils_workflow_analysis_record.R:141: for (binding in omicsDeclarationBindings()) {
+R/utils_workflow_analysis_record.R:170: binding <- Find(function(b) isTRUE(startsWith(export$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
+R/utils_workflow_analysis_record.R:470: omics_roles <- sub("_$", "", vapply(omicsDeclarationBindings(), function(binding) binding$design_input_prefix, character
+R/utils_workflow_analysis_record.R:589: } else if (!is.null(omicsDeclarationBindings()[[entry$omic_type %||% ""]])) {
+R/utils_workflow_analysis_record.R:592: replayWorkflowOmicsStep(omicsDeclarationBindings()[[entry$omic_type]], manager, step, parameters)
+R/utils_workflow_analysis_record.R:613: omics_binding <- Find(function(b) isTRUE(da$operation %in% paste0(b$prefix, c("_da_output", "_da_contrast"))), omicsDecl
+R/utils_workflow_analysis_record.R:629: binding <- Find(function(b) isTRUE(startsWith(analysis$operation, paste0(b$prefix, "_"))), omicsDeclarationBindings())
+R/utils_workflow_omics_actions.R:349: accepted <- withWorkflowStateScope(manager, function() acceptWorkflowOmicsDaManifest(binding, manager, source, settings, c
+R/utils_workflow_saved_entities.R:601: newSavedWorkflowDaFit(object$fit, object$feature_ids, object$sample_ids,
+R/utils_workflow_dia_da.R:801: envelope <- newSavedWorkflowDaFit(base_fit_artifact$fit,
+R/utils_workflow_operations.R:707: for (binding in omicsDeclarationBindings()) {
+R/utils_workflow_omics_declarations.R:151: run <- omicsRunPartitioned(binding, store, function(template) filter(template, parameters), paste0(binding$prefix, "-
+R/utils_workflow_omics_declarations.R:183: run <- omicsRunPartitioned(binding, store, function(template) binding$resolve_duplicates(template)$object,
+R/utils_workflow_omics_declarations.R:245: run <- omicsRunPartitioned(binding, store, function(template) transform(template, parameters), paste0(binding$prefix,
+R/utils_workflow_omics_declarations.R:408: newSavedWorkflowDaFit(fit, features, rownames(fit$design), colnames(fit$design)),
+R/utils_workflow_omics_declarations.R:576: omicsDaOperation(binding), omicsDaContrastOperation(binding))
+R/utils_workflow_omics_declarations.R:596:omicsWorkflowTypes <- function() vapply(omicsDeclarationBindings(), function(binding) binding$omic_type, character(1))
+R/utils_workflow_omics_declarations.R:607: c("session_export", "computeWorkflowOmicsSessionExportAction"), c("integration_export", "computeWorkflowOmicsIntegrat
+R/utils_workflow_omics_declarations.R:1114: acceptWorkflowOmicsDaManifest(binding, manager, source, settings, contrasts, results)
+R/utils_workflow_omics_declarations.R:1193: binding <- omicsDeclarationBindings()[[entry$omic_type]]
+R/utils_workflow_omics_declarations.R:1217: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1230: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1243: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1263: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1273: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1284: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1310: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]
+R/utils_workflow_omics_declarations.R:1360:computeWorkflowOmicsIntegrationExportAction <- function(manager, request, variant) {
+R/utils_workflow_omics_declarations.R:1361: binding <- omicsDeclarationBindings()[[workflowActionSpec(request$operation)$omic_type]]

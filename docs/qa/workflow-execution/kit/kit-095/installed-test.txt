@@ -1,0 +1,2 @@
+MultiScholaR from /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Q1VVzp/library 
+INSTALLED test-workflow-trx-declarations.R pass 308 fail 0 error 0 skip 0
