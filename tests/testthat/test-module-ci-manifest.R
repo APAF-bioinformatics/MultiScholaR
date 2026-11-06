@@ -174,7 +174,11 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
       "MCI-026.1-transcriptomics-import-count-policy",
       "MCI-027.1-transcriptomics-design-builder",
       "MCI-028.1-transcriptomics-qc-expression-filter",
-      "MCI-029.1-transcriptomics-module-shell-stable-ids"
+      "MCI-029.1-transcriptomics-module-shell-stable-ids",
+      # KIT-101 (from KIT-097): the normalisation, DA and summary tabs.
+      "MCI-030.1-transcriptomics-normalization-ruvs",
+      "MCI-031.1-transcriptomics-da-edger-ql",
+      "MCI-032.1-transcriptomics-summary-ruviii-export"
     )
   )
   expect_true(all(vapply(trx, `[[`, character(1), "ci_lane") == "transcriptomics-unit"))

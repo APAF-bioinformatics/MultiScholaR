@@ -1345,6 +1345,82 @@
       "expected_state": {"renders_module": true},
       "expected_artifacts": [{"path": "mod_transcriptomics_ui", "schema": "module_ci_ui"}],
       "required_tests": ["module-ci-manifest", "module-ci-trx-app"]
+    },
+    {
+      "scenario_id": "MCI-030.1-transcriptomics-normalization-ruvs",
+      "ticket_id": "MCI-030",
+      "item_id": "MCI-030.1",
+      "omic": "transcriptomics",
+      "module_family": "normalization",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "operations": ["trx_tmm_logcpm", "trx_ruvs"],
+        "ruv_modes": ["automatic", "manual"],
+        "controls": "inferred_negative_controls",
+        "stages": ["raw", "tmm", "ruvs"],
+        "reference_corpus": "trx_edge_12"
+      },
+      "expected_state": {
+        "state_keys": ["trx_ruvs"],
+        "outcomes": ["mode", "grid", "k", "percentage", "controls", "scores"],
+        "refused": {"manual_k_above_cap": "the head is kept"}
+      },
+      "expected_artifacts": [{"path": "analysis_record.json", "schema": "module_ci_json"}],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-norm"]
+    },
+    {
+      "scenario_id": "MCI-031.1-transcriptomics-da-edger-ql",
+      "ticket_id": "MCI-031",
+      "item_id": "MCI-031.1",
+      "omic": "transcriptomics",
+      "module_family": "differential_abundance",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "model": "edgeR_QL",
+        "source_state": "trx_ruvs",
+        "significance_label": "FDR (BH)",
+        "treat_applied": false,
+        "contrasts": "one pairwise result per contrast line on one fit",
+        "reference_corpus": "trx_edge_12"
+      },
+      "expected_state": {
+        "analysis": "differential_abundance",
+        "long_table": "da_genes_long",
+        "columns": ["GeneID", "GeneName", "PValue", "FDR"]
+      },
+      "expected_artifacts": [{"path": "da_genes", "schema": "module_ci_table"}],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-da"]
+    },
+    {
+      "scenario_id": "MCI-032.1-transcriptomics-summary-ruviii-export",
+      "ticket_id": "MCI-032",
+      "item_id": "MCI-032.1",
+      "omic": "transcriptomics",
+      "module_family": "summary_report",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "export": "trx_ruviii_export",
+        "ruviii_m": ["group", "technical_replicate"],
+        "report_template": "transcriptomics_report.rmd",
+        "reference_corpus": "trx_edge_12"
+      },
+      "expected_state": {
+        "exports": ["trx_ruviii_export"],
+        "da_unchanged": true,
+        "refused": {"technical_replicate_without_replicates": "classed refusal"}
+      },
+      "expected_artifacts": [
+        {"path": "integration/transcriptomics_normalized_data.tsv", "schema": "module_ci_table"},
+        {"path": "Publication_tables/DA_results_transcriptomics.xlsx", "schema": "module_ci_xlsx"},
+        {"path": "QC_figures/ruviii_before_and_after.png", "schema": "module_ci_plot"}
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-summary"]
     }
   ]
 }
