@@ -1,0 +1,4 @@
+# KIT-098 correction pass (kit-lifecycle-trx attempt 1: invalid, driver_failed wait at the design step's technical replicates)
+BEFORE the correction: pass 688 fail 0 error 1 
+ - KIT-098 correction: the technical-replicate summary is matched by its header and its sample set, in any run order 
+AFTER the correction: pass 694 fail 0 error 0 

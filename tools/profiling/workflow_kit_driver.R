@@ -71,15 +71,18 @@ runKitDesignActions <- function(h, driver, design_path, prefix = "proteomics_wor
             samples <- design$sample[design$group == group & design$replicates == replicate]
             if (length(samples) > 1L) {
                 driver$get_js(h$checkpointDesignAssignmentScript(prefix, samples, replicate, prepare = TRUE))
-                expected <- sprintf(paste0("Group: %s, Biological Replicate: %s\n",
-                    "  Samples: %s\n  Technical Replicates: %s"), group, replicate,
-                    paste(samples, collapse = ", "), paste(seq_along(samples), collapse = ", "))
+                # KIT-098 correction: the builder lists a pair's runs in the design matrix's order, which is the counts file's on
+                # the transcriptomics route (kit-lifecycle-trx attempt 1 waited for design.tsv's order and timed out). Wait for
+                # the pair's header, then match its samples and replicate numbers as sets.
+                summary_id <- jsonlite::toJSON(paste0(prefix, "tech_rep_summary"), auto_unbox = TRUE)
+                header <- sprintf("Group: %s, Biological Replicate: %s\n", group, replicate)
                 h$checkpointWaitForJs(driver, sprintf(paste0("(function(){const el=document.getElementById(%s);",
-                    "return !!el && el.textContent.split('\\n\\n').includes(%s) && ",
-                    "window.shinytest2 && window.shinytest2.busy!==true;})()"),
-                    jsonlite::toJSON(paste0(prefix, "tech_rep_summary"), auto_unbox = TRUE),
-                    jsonlite::toJSON(expected, auto_unbox = TRUE)),
+                    "return !!el && el.textContent.split('\\n\\n').some(b=>b.startsWith(%s)) && ",
+                    "window.shinytest2 && window.shinytest2.busy!==true;})()"), summary_id, jsonlite::toJSON(header, auto_unbox = TRUE)),
                     timeout = h$checkpointWaitBudget(control = TRUE), stable_ms = 200)
+                shown <- driver$get_js(sprintf("document.getElementById(%s).textContent", summary_id))
+                if (!kitTechRepSummaryMatches(shown, group, replicate, samples))
+                    stop("the technical replicate summary does not show ", paste(samples, collapse = ", "), " as replicate ", replicate, " of ", group)
             }
         }
     }
@@ -92,6 +95,29 @@ runKitDesignActions <- function(h, driver, design_path, prefix = "proteomics_wor
         h$waitCheckpointStepComplete(driver, "Design", timeout = h$checkpointWaitBudget())
     } else save(paste0(prefix, "save_results"))
     list(groups = groups, contrast = paste(groups[[2L]], "vs", groups[[1L]]))
+}
+
+#' KIT-098 correction: does the builder's technical-replicate summary show `samples` as biological replicate `replicate` of
+#' `group`, with technical replicates 1..n? The runs and the numbers are compared as sets: the builder lists them in the
+#' design matrix's order.
+#' @noRd
+kitTechRepSummaryMatches <- function(text, group, replicate, samples) {
+    if (!is.character(text) || length(text) != 1L) return(FALSE)
+    header <- sprintf("Group: %s, Biological Replicate: %s", group, replicate)
+    for (block in strsplit(text, "\n\n", fixed = TRUE)[[1L]]) {
+        lines <- trimws(strsplit(block, "\n", fixed = TRUE)[[1L]])
+        if (!length(lines) || !identical(lines[[1L]], header)) next
+        field <- function(name) {
+            line <- grep(paste0("^", name, ": "), lines, value = TRUE)
+            if (length(line) != 1L) return(NULL)
+            trimws(strsplit(sub(paste0("^", name, ": "), "", line), ",", fixed = TRUE)[[1L]])
+        }
+        shown <- field("Samples")
+        numbers <- field("Technical Replicates")
+        if (!is.null(shown) && !is.null(numbers) && setequal(shown, samples) && length(shown) == length(samples) &&
+            setequal(numbers, as.character(seq_along(samples))) && length(numbers) == length(samples)) return(TRUE)
+    }
+    FALSE
 }
 
 #' Click one QC action and wait for its result text or an error notification (as the pinned helpers).

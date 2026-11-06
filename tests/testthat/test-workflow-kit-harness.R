@@ -1902,3 +1902,20 @@ test_that("KIT-098: the trx driver runs its own module ids; the lipid-or-metab s
     expect_false(any(grepl("lipid|metab", seen$ids)))
     expect_error(d$runKitTrxStep(h, driver, tempdir(), corpus, journey, list(id = "intensity")), "unknown transcriptomics step")
 })
+
+test_that("KIT-098 correction: the technical-replicate summary is matched by its header and its sample set, in any run order", {
+    d <- new.env(parent = globalenv())
+    sys.source(testthat::test_path("../../tools/profiling/workflow_kit.R"), d)
+    sys.source(testthat::test_path("../../tools/profiling/workflow_kit_driver.R"), d)
+    # The builder lists a pair's runs in the design matrix's order: the counts file's order on the transcriptomics route
+    # (kit-lifecycle-trx attempt 1 waited for design.tsv's order and timed out).
+    text <- paste("Group: RPMI, Biological Replicate: 3\n  Samples: RPMI_03_r2, RPMI_03_r1\n  Technical Replicates: 2, 1",
+        "Group: Sera, Biological Replicate: 1\n  Samples: Sera_01_r1, Sera_01_r2\n  Technical Replicates: 1, 2", sep = "\n\n")
+    expect_true(d$kitTechRepSummaryMatches(text, "RPMI", 3, c("RPMI_03_r1", "RPMI_03_r2")))
+    expect_true(d$kitTechRepSummaryMatches(text, "Sera", 1, c("Sera_01_r1", "Sera_01_r2")))
+    expect_false(d$kitTechRepSummaryMatches(text, "RPMI", 3, c("RPMI_03_r1", "RPMI_04_r2")))
+    expect_false(d$kitTechRepSummaryMatches(text, "RPMI", 1, c("RPMI_03_r1", "RPMI_03_r2")))
+    expect_false(d$kitTechRepSummaryMatches("No technical replicates assigned yet.", "RPMI", 3, c("RPMI_03_r1", "RPMI_03_r2")))
+    # The lipid and metab routes' summaries, in design.tsv's order, still match.
+    expect_true(d$kitTechRepSummaryMatches("Group: A, Biological Replicate: 1\n  Samples: s1, s2\n  Technical Replicates: 1, 2", "A", 1, c("s1", "s2")))
+})
