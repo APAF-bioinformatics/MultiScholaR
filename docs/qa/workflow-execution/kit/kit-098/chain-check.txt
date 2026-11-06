@@ -1,0 +1,21 @@
+# KIT-098 README chain check (docs/qa/workflow-execution/kit/README.md items 1-6), in process on kit_098 before the lifecycle pair
+
+1. Registry entries validate and name existing handlers: test-workflow-operation-registry.R (1007 pass, 0 fail, 0 skip; the trx_* names in
+   both name lists) and the "registry shape of the transcriptomics binding" test in test-workflow-trx-declarations.R (KIT-095). chain-tests.txt.
+2. The controller's compute helper reaches the handler: KIT-095's worker harness test ("every trx worker step and publication operation
+   completes through the worker harness, as in process"), test-workflow-trx-declarations.R 308 pass, 0 fail, 0 skip.
+3. The worker entry point dispatches the role from a frozen request: the same test; omicsWorkerRun writes request.rds and runs
+   workflowWorkerMain on it (helper-workflow-omics-worker.R), for the six compute steps and the ten publication operations.
+4. The adapters vehicle's checks: not applicable. KIT-098 binds no operation member (the lifecycle pair and the journeys are journey
+   members; the vehicle is not on their path).
+5. Completion and publication phases on the fixture: the worker harness test (item 2), every step and publication accepted.
+6. The verifier's branch compares the member's state with its oracle (chain-check.R, on the bound bindings 8930613a):
+   kitCases kit-journey-098a         accepted: route transcriptomics, oracles trx98a, in_memory FALSE, record FALSE
+   kitCases kit-journey-098b         accepted: route transcriptomics, oracles trx98b, in_memory FALSE, record FALSE
+   kitCases kit-lifecycle-trx        accepted: route transcriptomics, oracles trx98a, in_memory FALSE, record FALSE
+   kitCases kit-lifecycle-trx-fail   accepted: route transcriptomics, oracles trx98a, in_memory FALSE, record TRUE
+   098a: steps judged 8 (design,expression_filter,qc_finalize,normalisation,da,ruviii_export,report,session_export); mismatches 0
+   098a positive control: caught ruviii_export/products/trx.ruviii:5b8a84de8eb6, history
+   098b: steps judged 8 (design,expression_filter,qc_finalize,normalisation,da,ruviii_export,report,session_export); mismatches 0
+   098b positive control: caught ruviii_export/products/trx.ruviii:dc681716b6b0, history
+   CHAIN ITEM 6 OK

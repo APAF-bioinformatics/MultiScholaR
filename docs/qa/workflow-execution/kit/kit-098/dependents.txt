@@ -1,0 +1,9 @@
+== test-workflow-metab-declarations.R
+pass 259 fail 0 error 0 skip 0 66 s 
+== test-workflow-lipid-declarations.R
+pass 259 fail 0 error 0 skip 0 68 s 
+== test-workflow-analysis-record.R
+pass 243 fail 0 error 0 skip 0 167 s 
+== test-workflow-kit-harness.R
+pass 688 fail 0 error 0 skip 0 17 s 
+test-workflow-trx-declarations.R: see chain-tests.txt (308 pass, 0 fail, 0 skip)
