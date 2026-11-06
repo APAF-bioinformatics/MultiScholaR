@@ -4,3 +4,5 @@ kit-lifecycle-trx start 20:11:53 at 3bd9bbc3: AC 1, profile low-power, battery 5
 kit-lifecycle-trx end 20:15:34: AC 1, profile low-power, battery 55%, load 2.80, available 35 GiB
 kit-lifecycle-trx-fail start 20:16:12 at 7e58122c: AC 1, profile low-power, battery 56%, load 2.26, available 35 GiB
 kit-lifecycle-trx-fail end 20:17:32: AC 1, profile low-power, battery 57%, load 2.29, available 35 GiB
+kit-journey-098a start 20:17:55 at b5d2bae9: AC 1, profile low-power, battery 57%, load 1.91, available 35 GiB
+kit-journey-098a end 20:21:35: AC 1, profile low-power, battery 60%, load 2.86, available 35 GiB
