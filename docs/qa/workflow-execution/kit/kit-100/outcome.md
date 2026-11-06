@@ -1,6 +1,6 @@
 # KIT-100 outcome: on-disk (partitioned) defaults wherever not worse, 2026-11-07
 
-**The four steps the user picked now default to `partitioned`, in the worker and in process, and the record names the variant that ran. Duplicate resolution stays `whole` on both omics. The tests, dependents, `R CMD check` and the `kit_100` install are done. The three screen journeys were not run. Protocol v1.8's selector grammar accepts only ticket keys `0NN`, so `kit-journey-100a` is refused at launch. Running them needs a user decision (below).**
+**The four steps the user picked now default to `partitioned`, in the worker and in process, and the record names the variant that ran. Duplicate resolution stays `whole` on both omics. The three screen journeys are accepted and exact on `kit_100`, each recording `partitioned` on the changed steps. They ran under protocol v1.9 (the user, 2026-11-07: "1.9"), which widens ticket keys to three digits. Tests, dependents, `R CMD check` and the install are done. KIT-100 is closed.**
 
 User decision (ticket revision 2.0, 2026-11-07): "yes", widened to parity with proteomics.
 
@@ -50,20 +50,28 @@ User decision (ticket revision 2.0, 2026-11-07): "yes", widened to parity with p
 - **Scripts.** [scripts/](scripts/) (install, check, bind), with `dep.sh`, `one.R` and `char-diff.R` here.
 - **Bindings (`12190be1`, [bindings-diff.txt](bindings-diff.txt)).** `kit_100` (source `53e66b4a`) and the keys `100a` and `100b` (`094a`/`094b` on `kit_100`, against `lipid86s`/`metab86s`) and `100c` (`098a` on `kit_100` without the notebook reference, against `trx98a`). Nothing else changed except the generation timestamps; the protocol and harness hashes are unchanged. An earlier draft of this file, committed in `db70c3a2` before the bind finished, said the keys were absent. The keys are inert: the runner refuses their stage names (below).
 
-## Not run: the three screen journeys (decision needed)
+## Protocol v1.9 and the screen journeys
 
-The harness selector grammar is `0NN`. Protocol v1.8 states it in section 2 and items 3 and 7, and its section 10 binds trx journeys as `kit-journey-098[a-z]`. The regex sits at these sites:
-- `tools/profiling/run_workflow_kit.sh:86`;
-- `tools/profiling/workflow_kit_coordinator.R:18`;
-- `tools/profiling/workflow_kit.R`: lines 136, 138, 144, 148, 201, 353, 403 and 567.
+**The selector question.** Protocol v1.8 accepted only `0NN` ticket keys, so the runner refused `kit-journey-100a` at launch: no member ran and no attempt was used. The user chose amendment v1.9 on 2026-11-07 ("1.9"; `protocol.md` section 11).
+- `5bd87081`: `0[0-9]{2}` becomes `[0-9]{3}` at the ten sites (`run_workflow_kit.sh`, `workflow_kit_coordinator.R`, `workflow_kit.R`).
+- The harness test `KIT-100 (protocol v1.9)` failed before the change (`kitSelectorStage` refused `kit:journey-100a:candidate:1`). After the change the harness file passes 733/0 and `test-workflow-analysis-record.R` 239/0. The trx, lipid and metab declaration files that source the harness pass 324/0, 259/0 and 259/0 on `kit_100`.
+- While writing it, one test assertion had the gui-mode selector's id wrong (`member`, not `candidate-1`). That was existing behaviour, so the test was corrected and the code was not changed.
+- `14388cc7`: the rebind changed only `protocol_sha256` and the four harness file hashes.
 
-`kit-journey-100a` does not match it, so the runner refuses the stage before any member starts. No member was launched, and no attempt was used.
+**Journeys** (one attempt each, 1,800 s ceiling, `scripts/all.sh`; on battery in the low-power profile, not changed):
 
-There are two ways to run them, and both are outside this ticket's authority:
-1. **A protocol amendment (v1.9).** Widen the ticket number in the grammar from `0NN` to `NNN` at the sites above. Add a harness test first (a three-digit key accepted, and the existing keys unchanged), and rebind for the harness hashes. No threshold, workload or limit would change. Every later ticket (KIT-101 onwards) meets the same refusal.
-2. **Bind the members under an existing `0NN` ticket key.** That would attribute KIT-100 evidence to another ticket. Not recommended.
+| Key | Corpus | Oracle | Decision | Exact | Elapsed | Member anon peak |
+|---|---|---|---|---|---|---|
+| `100a` | lipid_screen_missing | lipid86s | accepted | yes, every step | 269 s | 1.84 GiB |
+| `100b` | metab_screen_missing | metab86s | accepted | yes, every step | 262 s | 1.87 GiB |
+| `100c` | trx_screen, 098a's settings | trx98a | accepted | yes, every step | 181 s | 1.92 GiB |
 
-Until the user decides, the acceptance item "three screen journeys accepted and exact, recording `partitioned`" is open. The code-side items are met.
+**Recorded variants ([variants.txt](variants.txt), from each member's analysis record):**
+- `lipid_log2`, `metab_log2`, `trx_expression_filter` and `trx_tmm_logcpm` ran `partitioned`;
+- both intensity filters ran `partitioned`, unchanged since KIT-089;
+- both duplicate resolutions ran `whole`, and so did every other step.
+
+The stage summaries are `kit100-kit-journey-100[abc]-stage.json`.
 
 ## Rollback
 
