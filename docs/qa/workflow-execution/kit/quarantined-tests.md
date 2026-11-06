@@ -42,4 +42,4 @@ turns each into a failure). For KIT-102 to 109 the ticket's acceptance fails, pe
 a new file-level skip, an increase in hidden blocks, a drop in tests run, or a new skip category, unless an entry here,
 **Q-23 onwards**, names the internal that the guard or seam test covered and the function or the entry-point lane
 (`tests/testthat/test-gui-entry-*.R`) that replaced it. A seam test is quarantined (skipped with its entry's reason),
-never deleted. KIT-101 itself adds no entry.
+never deleted. Q-23 and Q-24 are the KIT-101 addendum's (F-04, F-05); the family tickets continue from Q-25.

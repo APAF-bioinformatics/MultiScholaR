@@ -101,6 +101,12 @@ freeze them. The budget's one correction pass is spent, so that is not done here
 - Refusals: every tab has a messaged refusal except the summary tab (all omics: silent, `req()`-gated), the proteomics
   import (silent), the trx and protein-route QC tabs (none reachable) and enrichment (whose only step is refused).
 
+**After rebasing onto the KIT-101 addendum** (`871ed080`: the F-01 to F-05 fixes in `R/`), the suite was run once on
+the rebased tree (`1911c607`, 09:10, 463 s) against the oracles frozen from `bb87a463`'s code: the seven frozen lanes
+pass unchanged (lipid 35, metab 105, trx 29, prot_dia and prot_dia_limpa within the proteomics file's 115); the three
+unfrozen lanes fail with "no frozen oracle" (3 fail, 0 error). The addendum's fixes change no capture of these lanes.
+The check-mode baseline (`test-baseline.md`) also shows the frozen lanes passing under the installed package.
+
 **Runtime:** lanes 13 to 182 s (ceiling 900 s); the four files in parallel 481 to 500 s.
 
 **Driver limits (not defects):** under `MockShinySession`, outputs assigned a plain `reactive()` for conditional panels
