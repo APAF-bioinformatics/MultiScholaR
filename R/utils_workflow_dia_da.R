@@ -661,12 +661,27 @@ resolveDIAInteractiveVolcanoAsset <- function(manifest, contrast, qvalue) {
     rawToChar(hit$value$bytes)
 }
 
+#' Why a contrast has no interactive volcano (KIT-101 F-08): the publication's record and the DA tab's message.
+#' @noRd
+diaInteractiveVolcanoUnavailableText <- function(contrast) {
+    sprintf(paste("The interactive volcano for contrast '%s' is not available: no protein has a finite FDR and log2 fold",
+        "change (the FDR could not be estimated, for example on too few proteins). The DA tables and the static volcano",
+        "are published."), contrast)
+}
+
+#' The not-available record of one contrast's interactive volcano, beside where its page would be (KIT-101 F-08).
+#' @noRd
+diaInteractiveVolcanoUnavailablePath <- function(directory, contrast) {
+    file.path(directory, paste0(gsub("[^A-Za-z0-9_-]", "_", contrast), ".unavailable.txt"))
+}
+
 #' Export linked-expression volcano widgets from accepted result references.
 #' @param manifest Accepted DIA result manifest.
 #' @param directory Owned publication staging directory.
 #' @param annotations Existing bounded annotation table.
 #' @param qvalue Display significance threshold.
-#' @return Paths to HTML files and their portable dependency files.
+#' @return Paths to HTML files and their portable dependency files; a contrast with nothing to plot (no row with a
+#'   finite FDR and log2FC) has a not-available record with the reason instead of a page (KIT-101 F-08).
 #' @noRd
 writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, qvalue, manager = NULL) {
     target <- file.path(directory, "Interactive_Volcano_Plots")
@@ -678,8 +693,10 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         widget <- generateProtDAVolcanoPlotGlimma(manifest, contrast,
             uniprot_tbl = annotations, args_row_id = manifest$protein_id_column,
             da_q_val_thresh = qvalue)
-        if (is.null(widget)) cli::cli_abort("interactive volcano output is missing",
-            class = "saved_entity_outputs_pending")
+        if (is.null(widget)) {
+            writeLines(diaInteractiveVolcanoUnavailableText(contrast), diaInteractiveVolcanoUnavailablePath(target, contrast))
+            next
+        }
         filename <- paste0(gsub("[^A-Za-z0-9_-]", "_", contrast), ".html")
         # One self-contained file, written in R (KIT-036): saveWidget's pandoc pass over this page is the DA
         # step's memory peak (KIT-017 audit PH-01). Only the HTML belongs to the durable publication inventory.

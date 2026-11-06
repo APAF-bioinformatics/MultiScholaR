@@ -4,6 +4,35 @@ testthat::test_file(<file>, reporter = "silent")); one R process at a time; R 4.
 Base 91f3a534. "Before" = the new test block run against the unfixed R/ code (the fix's R/ diff
 reverted in the working tree, the new test in place); "After" = the same file with the fix.
 
+== F-08  tests/testthat/test-workflow-dia-products.R ==
+(Run with R_LIBS = kit_100 so the optional fastduckdb reader the file's publication tests need is
+present; without it four existing blocks of the file error on "optional fastduckdb reader is
+unavailable", an environment condition, not this change.)
+New block: "KIT-101 F-08: a DA whose FDR cannot be estimated publishes every output and records the
+interactive volcano as not available, with the reason". The file's DA fixture manifest
+(diaProductsManifest, new argument fdr_estimable = FALSE) with every fdr_qvalue NA, committed on an
+on-disk owner; then (1) the worker's publication handler computeWorkflowDaPublicationAction, (2) the
+controller's publishWorkflowDaResult on its staged files, (3) the in-process body
+produceDIADaPublication, (4) the DA tab's volcano renderer (da_server_volcano_render_handler under
+testServer).
+
+Fix: writeDIAInteractiveVolcanoOutputs writes, for a contrast with nothing to plot (the Glimma builder
+returns NULL: no row with a finite FDR and log2FC), the record
+Interactive_Volcano_Plots/<contrast>.unavailable.txt holding the reason
+(diaInteractiveVolcanoUnavailableText) instead of aborting; the record is one of the publication's
+required files. publishWorkflowDaResult requires the page or the record per contrast and saves a
+page asset only where a page exists. The DA tab's interactive volcano shows the same reason when no
+page can be built. Every other DA output is unchanged and still required; the publication copy
+carries the record with the Interactive_Volcano_Plots directory.
+
+Before the fix:
+--- <saved_entity_outputs_pending> Error in `writeDIAInteractiveVolcanoOutputs(manifest,
+    staged$publication_graphs_dir, annotations, qvalue, manager = ...)`: interactive volcano output is missing
+COUNTS test-workflow-dia-products.R pass 176 fail 0 error 1 skip 0
+
+After the fix:
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0
+
 == F-09  tests/testthat/test-module-ci-prot-dia-limpa.R ==
 New block: "KIT-101 F-09: before the peptide stage has made its state, the DIA_LIMPA protein
 sub-tabs refuse naming it". An on-disk owner holding the import's peptide state (no log2 matrix,

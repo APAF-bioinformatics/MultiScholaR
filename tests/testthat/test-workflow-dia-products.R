@@ -20,7 +20,7 @@ withDIAProductsSession <- function(manager, expr) {
     out
 }
 
-diaProductsManifest <- function(manager, contrast = "groupB-groupA", friendly = "groupB_vs_groupA") {
+diaProductsManifest <- function(manager, contrast = "groupB-groupA", friendly = "groupB_vs_groupA", fdr_estimable = TRUE) {
     object <- manager$getState()
     source <- getDIAStateReference(manager)
     ids <- object@protein_quant_table[[object@protein_id_column]]
@@ -28,6 +28,8 @@ diaProductsManifest <- function(manager, contrast = "groupB-groupA", friendly = 
         Protein.Group = ids, comparison = friendly, log2FC = stats::rnorm(length(ids)),
         raw_pvalue = stats::runif(length(ids)), fdr_qvalue = stats::runif(length(ids)),
         gene_name = paste0("G", seq_along(ids))))
+    # KIT-101 F-08: a contrast whose FDR could not be estimated (the q-value fit fails on too few p-values).
+    if (!fdr_estimable) table$fdr_qvalue <- NA_real_
     reference <- saveDIATableComponent(manager$.context, table)
     # The contrast's NumSig product as the DA declaration saves it (the publication kernel aggregates them).
     numsig <- data.frame(comparison = friendly, status = c("Up", "Down", "Not significant"),
@@ -303,6 +305,59 @@ test_that("the DA publication worker handler stages the exports, figures and pag
         expect_identical(read$manifest$source$entity_id, head$entity_id)
         expect_identical(read$resultText, diaDaStatusText(1L))
         expect_identical(read$stateReference$entity_id, head$entity_id)
+    })
+})
+
+test_that("KIT-101 F-08: a DA whose FDR cannot be estimated publishes every output and records the interactive volcano as not available, with the reason", {
+    skip_if_not_installed("Glimma")
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager <- diaProductsFixtureManager(object, withr::local_tempdir())
+    withr::defer(closeDIAStateAdapter(manager))
+    manifest <- diaProductsManifest(manager, fdr_estimable = FALSE)
+    diaProductsCommitManifest(manager, manifest)
+    head <- getDIAStateReference(manager)
+    # The worker's publication: every DA output staged, the interactive volcano as a not-available record.
+    directory <- withr::local_tempdir()
+    request <- list(operation = "da_publication", input_references = list(state = head),
+        parameters = list(annotations = NULL), directory = directory, worker_cap = 12 * 1024^3)
+    # The static volcano kernel warns that it drops the rows without an FDR (ggplot2); that is today's figure.
+    value <- suppressWarnings(suppressMessages(computeWorkflowDaPublicationAction(manager, request, "whole")))
+    reason <- diaInteractiveVolcanoUnavailableText("groupB_vs_groupA")
+    expect_match(reason, "is not available", fixed = TRUE)
+    expect_true(any(grepl("^da_output_dir/da_proteins_groupB-groupA_long_annot[.]tsv$", value$files)))
+    expect_true(any(grepl("^publication_graphs_dir/Volcano_Plots/groupB-groupA[.]png$", value$files)))
+    expect_true(any(grepl("NumSigDaMolecules/da_proteins_num_sig_da_molecules[.]tab$", value$files)))
+    expect_true(any(grepl("^publication_graphs_dir/Interactive_Volcano_Plots/groupB_vs_groupA[.]unavailable[.]txt$", value$files)))
+    expect_false(any(grepl("Interactive_Volcano_Plots/.*[.]html$", value$files)))
+    staged_record <- file.path(directory, "da-publication", "publication_graphs_dir", "Interactive_Volcano_Plots",
+        "groupB_vs_groupA.unavailable.txt")
+    expect_identical(paste(readLines(staged_record), collapse = "\n"), reason)
+    # The controller's publication completes (the DA load and the publication copy are not left pending) and saves no page.
+    root <- withr::local_tempdir()
+    request_dir <- file.path(root, "request")
+    dir.create(request_dir)
+    file.copy(file.path(directory, "da-publication"), request_dir, recursive = TRUE)
+    owner <- list(manager = manager, control = list(generation = 1L))
+    result <- list(operation = "da_publication", state_reference = head)
+    withDIAProductsSession(manager, suppressMessages(publishWorkflowDaResult(owner, list(request_dir = request_dir, root = root), result)))
+    published <- list.files(file.path(request_dir, "required-output"), recursive = TRUE)
+    expect_true(any(grepl("da_proteins_groupB-groupA_long_annot[.]tsv$", published)))
+    expect_true(any(grepl("Interactive_Volcano_Plots/groupB_vs_groupA[.]unavailable[.]txt$", published)))
+    withDIAProductsSession(manager, expect_null(resolveDIAInteractiveVolcanoAsset(manifest, "groupB_vs_groupA", 0.05)))
+    # The in-process publication body completes the same way (no annotation table is an empty one, as the DA step passes it).
+    staged <- list(da_output_dir = withr::local_tempdir(), publication_graphs_dir = withr::local_tempdir())
+    done <- withDIAProductsSession(manager, suppressWarnings(suppressMessages(produceDIADaPublication(manager, manifest,
+        data.frame(), 0.05, staged))))
+    expect_identical(done, list(completed = TRUE))
+    expect_true(file.exists(file.path(staged$publication_graphs_dir, "Interactive_Volcano_Plots", "groupB_vs_groupA.unavailable.txt")))
+    # The DA tab tells the user why the interactive volcano is absent.
+    shiny::testServer(function(input, output, session) {
+        session$userData$dia_capacity_manager <- manager
+        da_data <- shiny::reactiveValues(da_results_list = manifest, current_s4_object = object)
+        da_server_volcano_render_handler(input, output, session, session$ns, da_data, list(da_output_dir = tempdir()))
+    }, {
+        session$setInputs(volcano_contrast = "groupB_vs_groupA", da_q_val_thresh = 0.05)
+        expect_match(output$volcano_glimma$html, "is not available", fixed = TRUE)
     })
 })
 

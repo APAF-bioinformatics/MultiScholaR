@@ -24,7 +24,7 @@ da_server_volcano_render_handler <- function(input, output, session, ns, da_data
       da_q_val_thresh = input$da_q_val_thresh,
       args_row_id = diaGuiProteinKey(da_data$current_s4_object),
       output_dir = experiment_paths$da_output_dir
-    )
+    ) %||% shiny::p(diaInteractiveVolcanoUnavailableText(input$volcano_contrast)) # KIT-101 F-08: say why it is absent
   })
 
   # Render Static Volcano Plot

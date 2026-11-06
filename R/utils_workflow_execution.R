@@ -2667,10 +2667,13 @@ publishWorkflowDaResult <- function(owner, paths, result) {
                 if (length(members) && !all(file.copy(members, staged[[role]], recursive = TRUE)))
                     cli::cli_abort("cannot stage the worker's DA files", class = "saved_entity_outputs_pending")
             }
-            pages <- file.path(staged$publication_graphs_dir, "Interactive_Volcano_Plots",
-                paste0(gsub("[^A-Za-z0-9_-]", "_", manifest$contrasts$friendly_names), ".html"))
-            assertDIADaPublicationFiles(manifest, staged, pages)
-            for (i in seq_along(pages)) saveDIAInteractiveVolcanoAsset(manager, manifest, manifest$contrasts$friendly_names[[i]],
+            interactive <- file.path(staged$publication_graphs_dir, "Interactive_Volcano_Plots")
+            pages <- file.path(interactive, paste0(gsub("[^A-Za-z0-9_-]", "_", manifest$contrasts$friendly_names), ".html"))
+            # KIT-101 F-08: a contrast with nothing to plot has the not-available record instead of a page.
+            available <- file.exists(pages)
+            assertDIADaPublicationFiles(manifest, staged, ifelse(available, pages,
+                diaInteractiveVolcanoUnavailablePath(interactive, manifest$contrasts$friendly_names)))
+            for (i in which(available)) saveDIAInteractiveVolcanoAsset(manager, manifest, manifest$contrasts$friendly_names[[i]],
                 manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])))
             list(completed = TRUE)
         }, identity = diaDaPublicationIdentity(manifest))
