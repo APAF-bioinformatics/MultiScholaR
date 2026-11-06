@@ -7526,6 +7526,132 @@
       "recorded_at": "2026-11-06T19:35:13+1100",
       "route": "transcriptomics"
     },
+    "trx99l_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "33e2de097dcef3a33d2140f6915349286316cac67f204edd3e8f47106bd1685f",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_design": {
+      "step": "design",
+      "state": "trx_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "49c12f1418da517da3dbd913b52f399d04c70b3353ae69e0ea6dfcb6b1ec4dbc",
+      "rows": 60000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_expression_filter": {
+      "step": "expression_filter",
+      "state": "trx_expression_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "4b62e7e77f0cfd292a2d051b33d11b2039bd970978351208ab2e80144de7c966",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "trx_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "3ac57d4cbf4cd06a80bea28344438ae51e60b9c165058344edbf1d557187a4f1",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_normalisation": {
+      "step": "normalisation",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "0b0813f89f781e9b3f917792ef75cef9d05c3d527c49f179a828d460fb423df6",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_da": {
+      "step": "da",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "0b0813f89f781e9b3f917792ef75cef9d05c3d527c49f179a828d460fb423df6",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_ruviii_export": {
+      "step": "ruviii_export",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "0b0813f89f781e9b3f917792ef75cef9d05c3d527c49f179a828d460fb423df6",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_report": {
+      "step": "report",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "0b0813f89f781e9b3f917792ef75cef9d05c3d527c49f179a828d460fb423df6",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
+    "trx99l_session_export": {
+      "step": "session_export",
+      "state": "trx_ruvs",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99l/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ced572db13617/.workflow-entities",
+      "head_sha256": "fbab04d4240517df799d1f85dba5b8333c398870f043cdc904e95b9bcb7fbab5",
+      "entity_id": "0b0813f89f781e9b3f917792ef75cef9d05c3d527c49f179a828d460fb423df6",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:11:59+1100",
+      "route": "transcriptomics",
+      "stop_after": null
+    },
     "trx99sf_design": {
       "step": "design",
       "state": "trx_raw_data_s4",
@@ -7551,6 +7677,34 @@
       "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
       "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
       "recorded_at": "2026-11-06T21:17:20+1100",
+      "route": "transcriptomics",
+      "stop_after": "qc_finalize"
+    },
+    "trx99lf_design": {
+      "step": "design",
+      "state": "trx_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99lf/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3d15bd53bf1915/.workflow-entities",
+      "head_sha256": "6fccbf8515e608e2c14e207c39e25d5a912233d7ad9d3c740dfe115febda24a2",
+      "entity_id": "eb3457ade43a7b134a9aacef72cbef326f9fa078f10eb8d09a91a85f9c9c72de",
+      "rows": 60000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:12:59+1100",
+      "route": "transcriptomics",
+      "stop_after": "design"
+    },
+    "trx99lq_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "trx_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99lq/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3d297f37c9d493/.workflow-entities",
+      "head_sha256": "7ba54b67e280a1c60c48b8411cab8e0234bdd1b470aec5659a158f8da26829a0",
+      "entity_id": "82cd1821aa59595bb4fca9e38b1a9ed1e8137cf76687d071ccee4ea74e96cd0e",
+      "rows": 21247,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T23:14:30+1100",
       "route": "transcriptomics",
       "stop_after": "qc_finalize"
     }
@@ -35842,6 +35996,292 @@
       "trx_qc_complete",
       "trx_ruvs"
     ],
+    "trx99l_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "trx99l_design": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 60000,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 60000,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "f3f218c3e933d844af4aa47e76b8b34858bfdff6a15fbc10b2c96c4fa8c71dd1"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "77c06ef9329cf18c9b0f4ba9b3d00eee6ce2ed436df7b39e5bf509830c75628d"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "5c44ed0adec9b0a787116be4b4b9fd9e948e592677bb836afcdb710ac5730914"
+    },
+    "trx99l_expression_filter": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "77c06ef9329cf18c9b0f4ba9b3d00eee6ce2ed436df7b39e5bf509830c75628d"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        },
+        "trx.expression_filter_result:6c6d33532314": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_qc_finalize": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "77c06ef9329cf18c9b0f4ba9b3d00eee6ce2ed436df7b39e5bf509830c75628d"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_normalisation": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "9f5042b2161d62325b62e63dc1494919444680682c4e139cbc9c56d91a840189"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "6bc77c886bb965a0ffe96f4a334a46c740c1a383f424ea4433511e2e03f7461b"
+        },
+        "trx.ruvs_result:6bc77c886bb9": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "6bc77c886bb965a0ffe96f4a334a46c740c1a383f424ea4433511e2e03f7461b"
+        },
+        "trx.tmm_logcpm:87306ead0f10": {
+          "kind": "scientific_product",
+          "product_type": "trx.tmm_logcpm",
+          "sha256": "87306ead0f10d292d22621892ac001cbdfebe56998df228a56707aad11fc5917"
+        },
+        "trx.ruv_grid:b3e945edbb77": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruv_grid",
+          "sha256": "b3e945edbb77e620814127803a45e474cd37add38942707c858f889618389593"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_da": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "9f5042b2161d62325b62e63dc1494919444680682c4e139cbc9c56d91a840189"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "6bc77c886bb965a0ffe96f4a334a46c740c1a383f424ea4433511e2e03f7461b"
+        },
+        "da_fit:02356063f6c0": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "02356063f6c06444d15e80a0500a0d0f3a3539794ccaef5d978806e64198d92d"
+        },
+        "trx-da-contrast-references:260465d75306": {
+          "kind": "scientific_product",
+          "product_type": "trx-da-contrast-references",
+          "sha256": "260465d753063dd1313da53629bd93bd2aaf5944046889329708cfa3ca802e38"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_ruviii_export": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "9f5042b2161d62325b62e63dc1494919444680682c4e139cbc9c56d91a840189"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "6bc77c886bb965a0ffe96f4a334a46c740c1a383f424ea4433511e2e03f7461b"
+        },
+        "trx.ruviii:24fcebbb226f": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruviii",
+          "sha256": "24fcebbb226f62c1aeeb6a004a03677d324b0eaa79fb413de3299f9581b3dd85"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_report": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "9f5042b2161d62325b62e63dc1494919444680682c4e139cbc9c56d91a840189"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "6bc77c886bb965a0ffe96f4a334a46c740c1a383f424ea4433511e2e03f7461b"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_session_export": {
+      "class": "TranscriptomicsAssayData",
+      "rows": 21247,
+      "components": {
+        "count_data/counts": {
+          "kind": "table",
+          "rows": 21247,
+          "columns": ["GeneID", "GeneName", "RPMI_11_r2", "Sera_30_r2", "Sera_11_r1", "Sera_40_r2", "Sera_27_r1", "Sera_31_r1", "RPMI_29_r1", "RPMI_14_r1", "RPMI_18_r1", "RPMI_02_r1", "RPMI_30_r1", "RPMI_43_r1", "RPMI_05_r2", "RPMI_03_r2", "Sera_33_r1", "Sera_44_r2", "RPMI_40_r2", "RPMI_12_r1", "RPMI_16_r1", "Sera_25_r1", "RPMI_23_r1", "Sera_37_r1", "RPMI_36_r2", "Sera_01_r2", "RPMI_34_r1", "RPMI_28_r2", "Sera_37_r2", "RPMI_18_r2", "RPMI_29_r2", "RPMI_22_r2", "RPMI_12_r2", "RPMI_26_r1", "Sera_20_r1", "RPMI_31_r2", "RPMI_33_r2", "Sera_08_r2", "RPMI_42_r1", "Sera_40_r1", "RPMI_21_r2", "Sera_43_r1", "RPMI_45_r1", "RPMI_23_r2", "Sera_29_r2", "Sera_03_r1", "Sera_12_r1", "Sera_26_r2", "RPMI_30_r2", "RPMI_13_r1", "RPMI_10_r1", "RPMI_07_r2", "Sera_19_r1", "Sera_01_r1", "Sera_21_r1", "RPMI_35_r1", "Sera_38_r1", "Sera_50_r2", "Sera_10_r2", "Sera_17_r1", "Sera_45_r1", "RPMI_46_r2", "RPMI_50_r2", "Sera_08_r1", "RPMI_08_r2", "Sera_28_r1", "Sera_07_r2", "Sera_46_r2", "RPMI_49_r1", "Sera_33_r2", "Sera_29_r1", "RPMI_04_r1", "RPMI_13_r2", "RPMI_33_r1", "Sera_19_r2", "Sera_39_r2", "RPMI_37_r1", "Sera_24_r2", "Sera_43_r2", "Sera_16_r2", "RPMI_39_r1", "Sera_14_r1", "Sera_24_r1", "RPMI_01_r1", "RPMI_31_r1", "RPMI_41_r1", "RPMI_17_r1", "Sera_04_r1", "Sera_42_r1", "Sera_34_r1", "RPMI_25_r2", "Sera_31_r2", "Sera_49_r1", "Sera_05_r2", "RPMI_27_r1", "Sera_41_r1", "RPMI_06_r1", "RPMI_21_r1", "Sera_26_r1", "Sera_42_r2", "Sera_47_r2", "Sera_16_r1", "RPMI_27_r2", "RPMI_28_r1", "Sera_22_r1", "Sera_23_r2", "Sera_15_r1", "Sera_23_r1", "RPMI_37_r2", "RPMI_01_r2", "Sera_14_r2", "RPMI_09_r1", "RPMI_50_r1", "Sera_39_r1", "Sera_35_r1", "Sera_17_r2", "Sera_41_r2", "RPMI_48_r1", "Sera_32_r1", "Sera_18_r2", "Sera_06_r1", "RPMI_07_r1", "Sera_50_r1", "RPMI_46_r1", "RPMI_19_r2", "RPMI_15_r1", "Sera_03_r2", "RPMI_42_r2", "RPMI_19_r1", "RPMI_39_r2", "Sera_28_r2", "Sera_02_r1", "RPMI_47_r1", "Sera_10_r1", "RPMI_35_r2", "Sera_09_r1", "RPMI_17_r2", "Sera_47_r1", "RPMI_03_r1", "RPMI_16_r2", "RPMI_36_r1", "Sera_12_r2", "RPMI_04_r2", "Sera_32_r2", "RPMI_45_r2", "RPMI_09_r2", "RPMI_48_r2", "RPMI_49_r2", "Sera_04_r2", "RPMI_44_r1", "Sera_15_r2", "Sera_05_r1", "Sera_13_r1", "Sera_48_r2", "RPMI_34_r2", "Sera_36_r2", "Sera_20_r2", "Sera_36_r1", "Sera_49_r2", "RPMI_25_r1", "Sera_30_r1", "RPMI_38_r1", "Sera_06_r2", "Sera_22_r2", "Sera_25_r2", "Sera_34_r2", "RPMI_44_r2", "Sera_21_r2", "RPMI_15_r2", "Sera_44_r1", "Sera_35_r2", "RPMI_02_r2", "RPMI_38_r2", "RPMI_14_r2", "RPMI_22_r1", "RPMI_41_r2", "RPMI_08_r1", "RPMI_20_r1", "RPMI_20_r2", "RPMI_32_r2", "Sera_13_r2", "Sera_46_r1", "Sera_07_r1", "RPMI_06_r2", "Sera_48_r1", "RPMI_11_r1", "RPMI_43_r2", "RPMI_10_r2", "RPMI_40_r1", "Sera_09_r2", "RPMI_32_r1", "Sera_45_r2", "Sera_38_r2", "RPMI_24_r2", "RPMI_05_r1", "Sera_18_r1", "Sera_27_r2", "RPMI_47_r2", "RPMI_26_r2", "Sera_11_r2", "Sera_02_r2", "RPMI_24_r1"],
+          "sha256": "0c9f087b9ead075eb04c3c37d0ffad447162a45c3c75a6d296ec8eea49bbb098"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 200,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group", "W_1", "W_2"],
+          "sha256": "9f5042b2161d62325b62e63dc1494919444680682c4e139cbc9c56d91a840189"
+        }
+      },
+      "support": [],
+      "products": {
+        "trx_expression_filter_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.expression_filter_result",
+          "sha256": "6c6d3353231432c3d254ba27c4943dca838b8fb3d5c982620b94723801e16115"
+        },
+        "trx_ruvs_science": {
+          "kind": "scientific_product",
+          "product_type": "trx.ruvs_result",
+          "sha256": "6bc77c886bb965a0ffe96f4a334a46c740c1a383f424ea4433511e2e03f7461b"
+        }
+      },
+      "summary_sha256": "5f7be1f11a260e0fcaf1287756d83e5ff2f07df96a0531af236b0cbfcfeeb689"
+    },
+    "trx99l_history": [
+      "initial",
+      "trx_raw_data_s4",
+      "trx_expression_filtered",
+      "trx_qc_complete",
+      "trx_ruvs"
+    ],
     "trx98a_logcpm_product": {
       "product_type": "trx.tmm_logcpm",
       "fingerprint": {
@@ -35850,6 +36290,15 @@
         "sha256": "c88cf6fabfd1226d1a96dbf297b2fb81ae00443523a5dbc48824c68988bc76e5"
       },
       "from": "trx98a_normalisation/trx.tmm_logcpm:c88cf6fabfd1"
+    },
+    "trx99l_logcpm_product": {
+      "product_type": "trx.tmm_logcpm",
+      "fingerprint": {
+        "kind": "scientific_product",
+        "product_type": "trx.tmm_logcpm",
+        "sha256": "87306ead0f10d292d22621892ac001cbdfebe56998df228a56707aad11fc5917"
+      },
+      "from": "trx99l_normalisation/trx.tmm_logcpm:87306ead0f10"
     }
   },
   "corpora": {
@@ -39405,6 +39854,34 @@
           "operation": "trx_tmm_logcpm",
           "population": "trx99sq_qc_finalize",
           "oracle": "trx98a_logcpm_product",
+          "parameters": [],
+          "variants": {
+            "control": "whole",
+            "candidate": "partitioned"
+          }
+        }
+      ]
+    },
+    "099b": {
+      "control": "kit_098",
+      "candidate": "kit_098",
+      "ceiling_seconds": 1800,
+      "purpose": "recorded, uncounted (protocol v1.8 section 10.6)",
+      "pairs": [
+        {
+          "operation": "trx_expression_filter",
+          "population": "trx99lf_design",
+          "oracle": "trx99l_expression_filter",
+          "parameters": [],
+          "variants": {
+            "control": "whole",
+            "candidate": "partitioned"
+          }
+        },
+        {
+          "operation": "trx_tmm_logcpm",
+          "population": "trx99lq_qc_finalize",
+          "oracle": "trx99l_logcpm_product",
           "parameters": [],
           "variants": {
             "control": "whole",
