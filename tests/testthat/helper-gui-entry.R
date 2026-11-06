@@ -18,8 +18,9 @@
 # is masked for the lane's temporary root, timestamps, durations, hexadecimal (10 or more characters) and UUID
 # identifiers, shiny's random tabset ids and process ids;
 # sha256 is taken for .tsv/.tab/.csv/.fasta artifacts only (records, logs, RDS/qs2 stores, figures, workbooks and
-# reports carry times, paths or encoder bytes and are recorded by path); store internals under `.multischolar` are
-# counted, not listed; numbers in state digests are rounded to 10 significant digits.
+# reports carry times, paths or encoder bytes and are recorded by path); store internals (`.multischolar`,
+# `.workflow*`, duckdb, qs2) are not listed: the store is recorded as its committed entries, counted per masked entity
+# path (KIT-101 F-13); numbers in state digests are rounded to 10 significant digits.
 #
 # Oracles: tests/testdata/gui-entry/<lane>.json, written with MULTISCHOLAR_GUI_ENTRY_FREEZE=1 and the source SHA.
 # MULTISCHOLAR_GUI_ENTRY_RECORD_DIR=<dir> writes each run's record there (the determinism runs).
@@ -145,11 +146,16 @@ guiEntryOutputValue <- function(value, roots) {
   paste0("<", class(value)[[1L]], ">")
 }
 
-#' The project's artifacts: relative paths; sha256 of deterministic tables; the owner's store counted, not listed.
+#' The project's artifacts: relative paths; sha256 of deterministic tables; the owner's store by its committed entries.
+#' KIT-101 revision 2.2 (F-13): the store's raw file count varied by one to three between runs (files the store stages
+#' and releases); the store is now captured as its committed entries only, an entity directory with its `commit.json`,
+#' counted per masked entity path (store and request ids masked), so the capture is a deterministic list.
 guiEntryArtifacts <- function(base_dir, roots) {
   files <- sort(list.files(base_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE))
   store <- grepl("(^|/)\\.multischolar(/|$)|(^|/)\\.workflow|\\.duckdb|\\.qs2$|\\.wal$", files)
-  out <- list(`<store files>` = sum(store))
+  commits <- grep("(^|/)\\.workflow-entities/entities/[^/]+/commit\\.json$", files[store], value = TRUE)
+  entries <- table(vapply(dirname(commits), guiEntryMask, "", roots = roots, USE.NAMES = FALSE))
+  out <- list(`<store entries>` = as.list(stats::setNames(as.integer(entries), names(entries))))
   for (file in files[!store]) {
     key <- guiEntryMask(file, roots)
     out[[key]] <- if (grepl("\\.(tsv|tab|csv|fasta)$", file, ignore.case = TRUE)) {
