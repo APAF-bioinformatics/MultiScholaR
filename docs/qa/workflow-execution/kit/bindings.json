@@ -574,6 +574,15 @@
       "install_member": "browser-smoke.te0soO",
       "source_commit": "e6919066f1259615718c9816db882d2b91da50c1",
       "runtime_patch_bytes": 0
+    },
+    "kit_098": {
+      "ticket": "KIT-098",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.eoJzd6/library",
+      "build": "1f5a1142352128e9529fac030425dfccbd2e4e6d043829dfa0c619bc7bb67f99",
+      "exact_sum": "7edc67915efdf50e7b0a6e2b9e12e17ec00519fac48103fa45e46e4cc5f05a8c",
+      "install_member": "browser-smoke.eoJzd6",
+      "source_commit": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -36289,6 +36298,100 @@
       "fasta_file": "proteins.fasta",
       "design_file": "design.tsv",
       "design_groups": 2
+    },
+    "trx_screen": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 6000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 6000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.1,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen",
+      "expected_retained_samples": 24,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "6000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 12 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen/counts.tsv",
+          "bytes": 561541,
+          "sha256": "d9bf774f8d11f3c03d6588be05e1ee2ba92518105affe49e9f075cc29b6624a2"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen/design_matrix.tab",
+          "bytes": 453,
+          "sha256": "ca81a1277960cbb6b0510ce613795e30d2f83bf47498b206390f61c076493558"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen/truth.json",
+          "bytes": 306397,
+          "sha256": "8e0d820d096c2dfd7d08b153a784be5c17dc57072a08f3962d526c28e91e562d"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen/design.tsv",
+          "bytes": 741,
+          "sha256": "d8cf9d03ff31564e4a8a396c8a7a6a76ab50387fc4d30be1164cd4728f39307d"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv",
+      "reference_store": {
+        "path": "docs/qa/workflow-execution/kit/kit-040/reference-trx_screen.rds",
+        "corpus_manifest_sha256": "775fafb6440ff2ef30cff6722551cfa1a62f5487325e8a3799253dbd331c0e97"
+      }
     }
   },
   "lifecycle_omics": {
@@ -37744,6 +37847,96 @@
       "record": false,
       "rule": "resident_end",
       "corpus": "full"
+    },
+    "098a": {
+      "kind": "single_journey",
+      "build": "kit_098",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (protocol v1.8: recorded, uncounted)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ],
+      "notebook_reference": {
+        "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/reference-trx_screen-gui-order.rds",
+        "sha256": "8ff1202ac9206a2213d2bb03ad25374471607e13c3165ddb8895131fa1dc1e01",
+        "store": "docs/qa/workflow-execution/kit/kit-098/reference-trx_screen_gui_order.rds",
+        "store_sha256": "27e601cd1c23e3434a808e7a638a8657ce661651f12d133d1d72ec5d83ec4a85",
+        "corpus": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen-gui-order",
+        "corpus_manifest_sha256": "2e8893e625f00289a6fb05113ddc4fef947ac1a6846e2e25a5affeacce910b45",
+        "design_matrix_sha256": "f8763aaf2ee73dae6003b464e892b6bf5749ec27a5d6b70da2a4dd152410ad25",
+        "notebook_copy_sha256": "44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a",
+        "driver_sha256": "8d1a2181e1432ee6e4d375fe6a698f4372035b28fdf21c8560ea85e12ad18ba3",
+        "decision": "user 2026-11-06: Second notebook reference",
+        "ruviii": "notebook"
+      }
+    },
+    "098b": {
+      "kind": "single_journey",
+      "build": "kit_098",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98b",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (protocol v1.8: recorded, uncounted)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "technical_replicate"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ],
+      "notebook_reference": {
+        "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/reference-trx_screen-gui-order.rds",
+        "sha256": "8ff1202ac9206a2213d2bb03ad25374471607e13c3165ddb8895131fa1dc1e01",
+        "store": "docs/qa/workflow-execution/kit/kit-098/reference-trx_screen_gui_order.rds",
+        "store_sha256": "27e601cd1c23e3434a808e7a638a8657ce661651f12d133d1d72ec5d83ec4a85",
+        "corpus": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-screen-gui-order",
+        "corpus_manifest_sha256": "2e8893e625f00289a6fb05113ddc4fef947ac1a6846e2e25a5affeacce910b45",
+        "design_matrix_sha256": "f8763aaf2ee73dae6003b464e892b6bf5749ec27a5d6b70da2a4dd152410ad25",
+        "notebook_copy_sha256": "44d5f643946212c18cee10b5ebf77b1e7ebbe8d22ca37b40bafd08b5a0da652a",
+        "driver_sha256": "8d1a2181e1432ee6e4d375fe6a698f4372035b28fdf21c8560ea85e12ad18ba3",
+        "decision": "user 2026-11-06: Second notebook reference",
+        "ruviii": "direct ruv::RUVIII (KIT-093)"
+      }
     }
   },
   "lifecycle": {
@@ -37756,6 +37949,32 @@
     },
     "build": "kit_065"
   },
+  "lifecycle_trx": {
+    "ceiling_seconds": 1800,
+    "build": "kit_098",
+    "corpus": "trx_screen",
+    "oracles": "trx98a",
+    "normalisation": {
+      "ruv_mode": "automatic",
+      "auto_percentage_min": 5,
+      "auto_percentage_max": 30,
+      "auto_percentage_step": 5,
+      "k_penalty_weight": 0.05
+    },
+    "driver_settings": {
+      "da": {
+        "q_value": 0.05,
+        "treat_lfc": 1
+      },
+      "ruviii_m_source": "group"
+    },
+    "fault": {
+      "name": "guard_after_qc_finalize",
+      "after_step": "qc_finalize",
+      "failed_step": "normalisation",
+      "mechanism": "application-guard-inject.rds written after the QC finalise completes; the application monitor stops the slice (injected_guard_stop); the normalisation step, the first worker step after it, fails; the head stays trx_qc_complete"
+    }
+  },
   "harness": {
     "root": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime",
     "coordinator": "tools/profiling/workflow_kit_coordinator.R",
@@ -37763,7 +37982,7 @@
     "member": "tools/profiling/workflow_kit_member.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "0fe52c060da5a8abe0429f2fd1f54ba29ddc7cbf80a978add697fe769c31da7a",
+    "protocol_sha256": "a171e4a39d34c4a20c9922d0310451c5bf444b5d31d4a444d09bdef3e8a53c35",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
     "step_map_sha256": "755bc7e6d6670aaf16d5fe8ebc5cdbe168a28794dba46a212b4986dbee1ef3ca",
     "step_map_protein": "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
@@ -37774,15 +37993,17 @@
     "step_map_lipid_sha256": "54f8a91f078944f8c41ecdd3dafbc0a3e7848be444137b9200c543bf83d2715b",
     "step_map_metab": "docs/qa/workflow-execution/kit/kit-001/step-map-metab.json",
     "step_map_metab_sha256": "7a1640ad98ddafb350b21fd67a9d88da714e9237b49442f25b8ee5cc32256f41",
+    "step_map_trx": "docs/qa/workflow-execution/kit/kit-001/step-map-trx.json",
+    "step_map_trx_sha256": "8c53f0e4813cd2a0bd56f5d554ccd7015254c560fcadfd7218b29ac61ee6618d",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "02cdb544dc0f52f0ade762044f8ef5b6124f3efc9295aff8a00e0974d49a44ab",
-      "tools/profiling/workflow_kit_driver.R": "d5fb1a2e5becc3520cf826a2603b7d7952defc03053cb47c5e65b94132d62c08",
-      "tools/profiling/workflow_kit_coordinator.R": "c58e1b921af67797e0b768dc9c9809516cf09952f1a1f9c8e1d663fd841a0d5e",
+      "tools/profiling/workflow_kit.R": "428b2b9e231ed64ecb22d3c996b081a3c24eaeb246fc6181a722a6b0daade35a",
+      "tools/profiling/workflow_kit_driver.R": "d69813c646087c4eb57d2a7004ec2c9c294fbb730b4a1e3fa1a02cd54db322b9",
+      "tools/profiling/workflow_kit_coordinator.R": "916476b4c46b4a13227f1c53be5037edc494eb7ad5c9dc18310eab03354c108a",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
-      "tools/profiling/run_workflow_kit.sh": "fe209d6a852137a9e38faf28404c2c0abd736c7474746fccc64173bc10c323f0",
+      "tools/profiling/run_workflow_kit.sh": "30462d0825132eed423603cfd67717f1b0e45c3c62feaa402cb434aeda0725d2",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "51125079369daae82d5d724a3fc53ce151c8a2667e96890b69eaaac72f9b475c",
+      "tests/testthat/test-workflow-kit-harness.R": "d130df3fd6769b2a97f9e921f17e4da8484b7e470c7cc39dc880514b7bd8677d",
       "tests/testthat/test-workflow-execution-adapters.R": "758020ac8b928f737c12cf9faaaba3bb044bcdee1e68c1b5c2773f34bb7304af",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
