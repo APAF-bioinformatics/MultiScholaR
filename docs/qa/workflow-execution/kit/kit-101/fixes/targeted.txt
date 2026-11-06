@@ -21,3 +21,11 @@ test-workflow-ui-shared.R                       pass=51  fail=0 error=0 skip=0
 Not changed by F-03 but now visible: the saved heatmap methods markdown (save_heatmap_products) gains
 tree_cut_method none / n_clusters 4 / cut_height 10 / min_cluster_size 5 rows (NULL rows were dropped).
 The heatmap itself is unchanged with "none".
+
+== F-04 ==
+test-module-ci-lipid-summary.R                    pass=105 fail=0 error=0 skip=1 (Q-23)
+test-lipid-14a-summary-module-characterization.R  pass=131 fail=0 error=0 skip=0
+test-lipid-15-summary-module-seams.R              pass=136 fail=0 error=0 skip=0
+git grep -nw <four shell names> -- R tests: only the F-04 absence list and the quarantined MCI-023.3 body.
+(tools/refactor/manifest-lipid-summary-server-responsibilities-closeout.yml still names
+runLipidSummaryExportSessionObserverShell as a historical extraction boundary; not loaded, left untouched.)

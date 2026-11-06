@@ -1,3 +1,14 @@
+test_that("KIT-101 F-04: no dead summary observer shell is left for MCI-023 to test in place of the live handlers", {
+  dead_shells <- c(
+    "runLipidSummarySaveWorkflowArgsObserverShell",
+    "runLipidSummaryCopyToPublicationObserverShell",
+    "runLipidSummaryGenerateReportObserverShell",
+    "runLipidSummaryExportSessionObserverShell"
+  )
+  present <- dead_shells[vapply(dead_shells, exists, logical(1), envir = asNamespace("MultiScholaR"), inherits = FALSE)]
+  expect_identical(present, character())
+})
+
 test_that("MCI-023.1 summary parameters roundtrip for lipid assay branches", {
   configs <- list(
     single_pos = module_ci_lipid_summary_config("single_pos", normalization_method = "none", ruv_mode = "skip", itsd_method = "skip", da_q_cutoff = 0.1),
@@ -14,8 +25,8 @@ test_that("MCI-023.1 summary parameters roundtrip for lipid assay branches", {
     values$workflow_args_saved <- FALSE
     notifications <- character()
 
-    result <- suppressMessages(suppressWarnings(runLipidSummarySaveWorkflowArgsObserverShell(
-      inputValues = list(
+    result <- suppressMessages(suppressWarnings(handleLipidSummarySaveWorkflowArgs(
+      input = list(
         experiment_label = paste0("MCI023-", branch_name),
         description = paste("module-ci", branch_name)
       ),
@@ -32,7 +43,7 @@ test_that("MCI-023.1 summary parameters roundtrip for lipid assay branches", {
       catFn = function(...) invisible(NULL)
     )))
 
-    expect_equal(result$status, "success", info = branch_name)
+    expect_true(is.list(result), info = branch_name)
     expect_true(isTRUE(values$workflow_args_saved), info = branch_name)
     expect_true(file.exists(result$studyParamsFile), info = branch_name)
     expect_true(file.exists(result$s4Filepath), info = branch_name)
@@ -71,8 +82,8 @@ test_that("MCI-023.2 publication copy preserves required outputs and reports opt
   complete_notifications <- character()
 
   complete_result <- module_ci_lipid_summary_with_project_dirs(complete_dirs, {
-    suppressWarnings(suppressMessages(runLipidSummaryCopyToPublicationObserverShell(
-      inputValues = list(experiment_label = "MCI023-copy-complete", description = "complete artifacts"),
+    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+      input = list(experiment_label = "MCI023-copy-complete", description = "complete artifacts"),
       projectDirs = complete_dirs,
       omicType = "lipidomics",
       workflowData = complete_workflow,
@@ -89,7 +100,7 @@ test_that("MCI-023.2 publication copy preserves required outputs and reports opt
     )))
   })
 
-  expect_equal(complete_result$status, "success")
+  expect_false(is.null(complete_result))
   expect_false("optionalMissing" %in% names(complete_result))
   expect_true(isTRUE(complete_values$files_copied))
   expect_true("Publication files copied" %in% complete_notifications)
@@ -115,8 +126,8 @@ test_that("MCI-023.2 publication copy preserves required outputs and reports opt
   optional_output <- new.env(parent = emptyenv())
   optional_notifications <- character()
   optional_result <- module_ci_lipid_summary_with_project_dirs(optional_dirs, {
-    suppressWarnings(suppressMessages(runLipidSummaryCopyToPublicationObserverShell(
-      inputValues = list(experiment_label = "MCI023-copy-optional", description = "missing optional artifacts"),
+    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+      input = list(experiment_label = "MCI023-copy-optional", description = "missing optional artifacts"),
       projectDirs = optional_dirs,
       omicType = "lipidomics",
       workflowData = complete_workflow,
@@ -133,7 +144,7 @@ test_that("MCI-023.2 publication copy preserves required outputs and reports opt
     )))
   })
 
-  expect_equal(optional_result$status, "success")
+  expect_false(is.null(optional_result))
   expect_true(length(optional_result$optionalMissing) > 0L)
   expect_true("Publication files copied with optional missing artifacts" %in% optional_notifications)
   expect_true(file.exists(file.path(optional_dirs$lipidomics$results_summary_dir, "Publication_tables", "DA_results_lipidomics.xlsx")))
@@ -144,8 +155,8 @@ test_that("MCI-023.2 publication copy preserves required outputs and reports opt
   required_values$files_copied <- FALSE
   required_output <- new.env(parent = emptyenv())
   required_result <- module_ci_lipid_summary_with_project_dirs(required_dirs, {
-    suppressWarnings(suppressMessages(runLipidSummaryCopyToPublicationObserverShell(
-      inputValues = list(experiment_label = "MCI023-copy-required", description = "missing required artifacts"),
+    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+      input = list(experiment_label = "MCI023-copy-required", description = "missing required artifacts"),
       projectDirs = required_dirs,
       omicType = "lipidomics",
       workflowData = list(),
@@ -160,12 +171,13 @@ test_that("MCI-023.2 publication copy preserves required outputs and reports opt
       globalEnv = .GlobalEnv
     )))
   })
-  expect_equal(required_result$status, "error")
-  expect_match(required_result$errorMessage, "Required publication artifacts missing")
+  expect_null(required_result)
+  expect_match(as.character(required_output$copy_status), "Required publication artifacts missing")
   expect_false(isTRUE(required_values$files_copied))
 })
 
 test_that("MCI-023.3 report rendering produces deterministic push-safe outputs", {
+  skip("quarantined: Q-23 (KIT-101 F-04) runLipidSummaryGenerateReportObserverShell was dead code; the live handler handleLipidSummaryGenerateReport is covered by MCI-023.3b")
   project_dirs <- module_ci_lipid_summary_paths()
   module_ci_lipid_summary_write_template(project_dirs)
   output <- new.env(parent = emptyenv())
@@ -220,6 +232,67 @@ test_that("MCI-023.3 report rendering produces deterministic push-safe outputs",
   expect_equal(missing_output$status, "missing_output")
 })
 
+test_that("MCI-023.3b report rendering through the live handler produces deterministic push-safe outputs", {
+  project_dirs <- module_ci_lipid_summary_paths()
+  template_dir <- module_ci_lipid_summary_write_template(project_dirs)
+  output <- new.env(parent = emptyenv())
+  values <- new.env(parent = emptyenv())
+  values$files_copied <- TRUE
+  values$report_generated <- FALSE
+  values$report_path <- NULL
+  notifications <- character()
+  render_calls <- list()
+
+  handleLipidSummaryGenerateReport(
+    input = list(experiment_label = "MCI023-render", description = "render stub"),
+    values = values,
+    output = output,
+    projectDirs = project_dirs,
+    omicType = "lipidomics",
+    renderReportExistsFn = function() TRUE,
+    renderReportFn = function(omic_type, experiment_label, rmd_filename) {
+      render_calls[[length(render_calls) + 1L]] <<- list(omic_type, experiment_label, rmd_filename)
+      module_ci_lipid_summary_render_stub(project_dirs$lipidomics$results_summary_dir, rmd_filename)
+    },
+    reactiveFn = function(expr) eval(substitute(expr), envir = parent.frame()),
+    outputOptionsFn = function(...) invisible(NULL),
+    downloadHandlerFn = function(filename, content) list(filename = filename, content = content),
+    renderTextFn = function(expr) eval(substitute(expr), envir = parent.frame()),
+    withProgressFn = function(message = NULL, expr, ...) eval(substitute(expr), envir = parent.frame()),
+    incProgressFn = function(...) invisible(NULL),
+    showNotificationFn = function(message, ...) notifications <<- c(notifications, message),
+    logInfoFn = function(...) invisible(NULL),
+    catFn = function(...) invisible(NULL)
+  )
+
+  expect_identical(render_calls, list(list("lipidomics", "MCI023-render", "lipidomics_report.rmd")))
+  expect_true(isTRUE(values$report_generated))
+  expect_true(file.exists(values$report_path))
+  expect_equal(output$download_report$filename(), "lipidomics_report.html")
+  expect_true(file.exists(file.path(template_dir, "lipidomics_report.rmd")))
+  expect_true("Report generated successfully!" %in% notifications)
+
+  missing_values <- new.env(parent = emptyenv())
+  missing_values$files_copied <- TRUE
+  missing_notifications <- character()
+  handleLipidSummaryGenerateReport(
+    input = list(experiment_label = "MCI023-render-missing", description = "missing render"),
+    values = missing_values,
+    output = new.env(parent = emptyenv()),
+    projectDirs = project_dirs,
+    omicType = "lipidomics",
+    renderReportExistsFn = function() TRUE,
+    renderReportFn = function(...) file.path(project_dirs$lipidomics$results_summary_dir, "missing.html"),
+    withProgressFn = function(message = NULL, expr, ...) eval(substitute(expr), envir = parent.frame()),
+    incProgressFn = function(...) invisible(NULL),
+    showNotificationFn = function(message, ...) missing_notifications <<- c(missing_notifications, message),
+    logInfoFn = function(...) invisible(NULL),
+    catFn = function(...) invisible(NULL)
+  )
+  expect_null(missing_values$report_generated)
+  expect_true("Report generation failed - no output file created" %in% missing_notifications)
+})
+
 test_that("MCI-023.4 study/session parameter payload preserves lipid metadata", {
   config <- module_ci_lipid_summary_config("pos_neg", normalization_method = "cyclicloess", ruv_mode = "manual", da_q_cutoff = 0.01)
   workflow <- module_ci_lipid_summary_workflow(config)
@@ -263,21 +336,20 @@ test_that("MCI-023.5 summary session-state export writes a reloadable schema-val
     report_path = file.path(project_dirs$lipidomics$results_summary_dir, "lipidomics_report.html")
   )
 
-  export <- runLipidSummaryExportSessionObserverShell(
-    inputValues = list(experiment_label = "MCI023-session", description = "session export"),
+  export_path <- handleLipidSummaryExportSessionState(
+    input = list(experiment_label = "MCI023-session", description = "session export"),
     projectDirs = project_dirs,
     omicType = "lipidomics",
     values = values,
     workflowData = workflow,
-    sysDateFn = function() as.Date("2026-05-06"),
-    sysTimeFn = function() as.POSIXct("2026-05-06 10:00:00", tz = "UTC"),
+    dateFn = function() as.Date("2026-05-06"),
     showNotificationFn = function(...) invisible(NULL),
     logInfoFn = function(...) invisible(NULL)
   )
 
-  expect_equal(export$status, "success")
-  expect_true(file.exists(export$sessionExportPath))
-  loaded <- readRDS(export$sessionExportPath)
+  expect_false(is.null(export_path))
+  expect_true(file.exists(export_path))
+  loaded <- readRDS(export_path)
   expect_equal(loaded$omic_type, "lipidomics")
   expect_equal(loaded$workflow_type, "lipidomics")
   expect_equal(loaded$report_template, "lipidomics_report.rmd")
@@ -298,8 +370,8 @@ test_that("MCI-023.6 artifact scorecard covers report-facing outputs", {
   output <- new.env(parent = emptyenv())
 
   module_ci_lipid_summary_with_project_dirs(project_dirs, {
-    suppressWarnings(suppressMessages(runLipidSummaryCopyToPublicationObserverShell(
-      inputValues = list(experiment_label = "MCI023-scorecard", description = "scorecard"),
+    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+      input = list(experiment_label = "MCI023-scorecard", description = "scorecard"),
       projectDirs = project_dirs,
       omicType = "lipidomics",
       workflowData = workflow,
@@ -317,8 +389,8 @@ test_that("MCI-023.6 artifact scorecard covers report-facing outputs", {
   report_path <- module_ci_lipid_summary_render_stub(
     file.path(project_dirs$lipidomics$results_summary_dir, "Study_report")
   )
-  session_export <- runLipidSummaryExportSessionObserverShell(
-    inputValues = list(experiment_label = "MCI023-scorecard", description = "scorecard"),
+  session_export_path <- handleLipidSummaryExportSessionState(
+    input = list(experiment_label = "MCI023-scorecard", description = "scorecard"),
     projectDirs = project_dirs,
     omicType = "lipidomics",
     values = list(
@@ -334,7 +406,7 @@ test_that("MCI-023.6 artifact scorecard covers report-facing outputs", {
 
   scorecard <- module_ci_lipid_summary_scorecard(
     project_dirs = project_dirs,
-    session_export_path = session_export$sessionExportPath,
+    session_export_path = session_export_path,
     report_path = report_path
   )
 
