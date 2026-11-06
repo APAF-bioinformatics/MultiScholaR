@@ -1,0 +1,5 @@
+# kit-099b verification receipts and measures (runtime/<stage>/<member>/verification.rds, operation-receipt.rds)
+control-1   trx_expression_filter  whole       | kernel peak 1.682 GiB, slice anon 1.643 GiB, 33.8 s | oracle trx99l_expression_filter, cache hit FALSE | state TranscriptomicsAssayData rows 21247
+candidate-1 trx_expression_filter  partitioned | kernel peak 1.583 GiB, slice anon 1.530 GiB, 29.1 s | oracle trx99l_expression_filter, cache hit FALSE | state TranscriptomicsAssayData rows 21247
+control-2   trx_tmm_logcpm         whole       | kernel peak 1.343 GiB, slice anon 1.321 GiB, 28.1 s | oracle trx99l_logcpm_product, cache hit FALSE | state unchanged (product-only) | product trx.tmm_logcpm created 8d7a059b9a8a content 87306ead0f10 = oracle
+candidate-2 trx_tmm_logcpm         partitioned | kernel peak 1.316 GiB, slice anon 1.284 GiB, 23.0 s | oracle trx99l_logcpm_product, cache hit FALSE | state unchanged (product-only) | product trx.tmm_logcpm created 5fefda62b920 content 87306ead0f10 = oracle

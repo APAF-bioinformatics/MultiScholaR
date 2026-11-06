@@ -1,0 +1,79 @@
+{
+  "status": "accepted",
+  "members": {
+    "control-1": {
+      "role": "control",
+      "pair": 1,
+      "operation": "trx_expression_filter",
+      "population": "trx99lf_design",
+      "failing_rule": null,
+      "peak_bytes": 1806241792,
+      "peak_anon_bytes": 1764446208,
+      "elapsed_seconds": 33.78,
+      "batches": null
+    },
+    "candidate-1": {
+      "role": "candidate",
+      "pair": 1,
+      "operation": "trx_expression_filter",
+      "population": "trx99lf_design",
+      "failing_rule": null,
+      "peak_bytes": 1699876864,
+      "peak_anon_bytes": 1643266048,
+      "elapsed_seconds": 29.07,
+      "batches": null
+    },
+    "control-2": {
+      "role": "control",
+      "pair": 2,
+      "operation": "trx_tmm_logcpm",
+      "population": "trx99lq_qc_finalize",
+      "failing_rule": null,
+      "peak_bytes": 1442328576,
+      "peak_anon_bytes": 1418616832,
+      "elapsed_seconds": 28.09,
+      "batches": null
+    },
+    "candidate-2": {
+      "role": "candidate",
+      "pair": 2,
+      "operation": "trx_tmm_logcpm",
+      "population": "trx99lq_qc_finalize",
+      "failing_rule": null,
+      "peak_bytes": 1412554752,
+      "peak_anon_bytes": 1378832384,
+      "elapsed_seconds": 22.99,
+      "batches": null
+    }
+  },
+  "pairs": {
+    "1": {
+      "operation": "trx_expression_filter",
+      "population": "trx99lf_design",
+      "peak_ratio": 0.941113,
+      "peak_anon_ratio": 0.931321,
+      "elapsed_ratio": 0.860568,
+      "not_worse": true,
+      "reduction": true,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    },
+    "2": {
+      "operation": "trx_tmm_logcpm",
+      "population": "trx99lq_qc_finalize",
+      "peak_ratio": 0.979357,
+      "peak_anon_ratio": 0.971955,
+      "elapsed_ratio": 0.818441,
+      "not_worse": true,
+      "reduction": false,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    }
+  },
+  "failing_rule": null,
+  "promotion_authorized": false
+}
