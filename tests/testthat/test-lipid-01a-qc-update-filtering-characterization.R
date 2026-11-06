@@ -13,7 +13,7 @@ skipIfMissingLipidFilteringPublicBindings <- function() {
     }
   }
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Lipid filtering public contract binding(s) unavailable in this ref: %s",
         paste(missing, collapse = ", ")

@@ -6,6 +6,11 @@
 # deterministic synthetic data. Run this script whenever fixture formats change
 # or new lanes are added.
 #
+# KIT-101: the tenth lane, trx_screen, is written by the KIT-040 corpus recipe
+# (tools/profiling/kit_omics_corpus.R: kitOmicsRecipe("trx_screen", 3, 300),
+# withr::with_seed(20261106)), so it needs withr and digest as well; the lane's
+# manifest entry carries each file's sha256.
+#
 # Usage:
 #   source("tests/testdata/e2e/generate_fixtures.R")
 #   # or from repo root:
@@ -546,6 +551,20 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     cat("  wrote design.tsv\n")
 }
 
+# KIT-101: the transcriptomics screen lane, the KIT-040 trx_screen corpus at a
+# smaller shape (3 biological samples per group, 2 technical replicates, 300
+# genes), written by the corpus tool itself so the recipe is not copied.
+.generate_trx_screen <- function(lane, lane_dir) {
+    corpus_tool <- file.path(FIXTURE_ROOT, "..", "..", "..", "tools", "profiling", "kit_omics_corpus.R")
+    if (!file.exists(corpus_tool)) stop("the KIT-040 corpus tool is not in this source tree: ", corpus_tool)
+    corpus_env <- new.env(parent = globalenv())
+    sys.source(corpus_tool, corpus_env)
+    shape <- lane$fixture_recipe
+    recipe <- corpus_env$kitOmicsRecipe("trx_screen", as.integer(shape$biological_per_group), as.integer(shape$features))
+    corpus_env$writeKitTrxCorpus(lane_dir, recipe)
+    cat("  wrote", paste(sort(list.files(lane_dir)), collapse = ", "), "\n")
+}
+
 # ---------------------------------------------------------------------------
 # Dispatch table: import_tool -> generator function
 # ---------------------------------------------------------------------------
@@ -566,6 +585,7 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
         }
     }
     , lipidsearch = .generate_lipid_canonical
+    , trx_counts = .generate_trx_screen
 )
 
 # ---------------------------------------------------------------------------

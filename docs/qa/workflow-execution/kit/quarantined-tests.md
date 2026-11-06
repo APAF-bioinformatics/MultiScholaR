@@ -32,3 +32,14 @@ Tests that fail at the baseline for reasons outside the current work are skipped
 ## What the quarantine says about the series (for the KIT-017 closure)
 
 Five entries are not pre-series debt but expectations overtaken by KIT tickets whose regression checks ran only the files they touched: Q-01 and Q-16 (KIT-015: the module fixtures and the coordinator tests), Q-09 (KIT-008: the default variant), Q-15 (KIT-013: the globals moved onto the bus), Q-20 (KIT-011: the capacity-session functions removed). The saved-QC module-edge test (repaired here) is a sixth: KIT-013 moved the configuration onto the bus and the test kept reading the global, masked by its own `info` bug. None of this changed a scientific result; each is a test that stopped describing the code. The closure records it, and from KIT-024 on every ticket's regression check runs the whole suite once before completion (the file-by-file runner, about 45 minutes on the measurement host), so a test overtaken by a ticket is found by that ticket.
+
+## The skip rule for the GUI workover (KIT-101, for KIT-102 to 109)
+
+KIT-101 recorded the per-file baseline (`kit-101/test-baseline.tsv`, under `load_all` and under `R CMD check`'s test
+mode) and routed the silent file-level guards through the strict-skip sentinel (`tests/testthat/helper-strict-skips.R`:
+13 `R/`-path guards in 12 files, 8 namespace guards in 8 files, the three partial loads; `MULTISCHOLAR_STRICT_SKIPS=1`
+turns each into a failure). For KIT-102 to 109 the ticket's acceptance fails, per file and per skip category, on any of:
+a new file-level skip, an increase in hidden blocks, a drop in tests run, or a new skip category, unless an entry here,
+**Q-23 onwards**, names the internal that the guard or seam test covered and the function or the entry-point lane
+(`tests/testthat/test-gui-entry-*.R`) that replaced it. A seam test is quarantined (skipped with its entry's reason),
+never deleted. KIT-101 itself adds no entry.

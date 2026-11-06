@@ -1,0 +1,63 @@
+{
+  "profile": "trx_screen",
+  "synthetic": true,
+  "samples": 12,
+  "rows": 300,
+  "biological_samples": 6,
+  "technical_replicates": 2,
+  "batches": 3,
+  "assays": "counts",
+  "recipe": {
+    "kind": "trx_screen",
+    "synthetic": true,
+    "seed": 20261106,
+    "biological_per_group": 3,
+    "technical_replicates": 2,
+    "groups": ["RPMI", "Sera"],
+    "batches": ["B1", "B2", "B3"],
+    "features_per_assay": 300,
+    "assays": "counts",
+    "base_mean_meanlog": 4,
+    "base_mean_sdlog": 1.5,
+    "low_mean_fraction": 0.1,
+    "low_mean_range": [0.05, 1],
+    "batch_fraction": 0.3,
+    "batch_log2_sd": 0.5,
+    "differential_fraction": 0.1,
+    "differential_abs_log2fc": [1, 2],
+    "dispersion_scale": 0.05,
+    "dispersion_sdlog": 0.5,
+    "library_factor_range": [0.5, 2],
+    "zero_genes": 50,
+    "constant_genes": 1,
+    "constant_count": 100,
+    "gene_name_na_fraction": 0.01,
+    "gene_name_empty_fraction": 0.01,
+    "gene_name_duplicate_fraction": 0.01,
+    "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+  },
+  "expected_retained_samples": 12,
+  "notes": "300 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 6 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+  "files": {
+    "counts.tsv": {
+      "bytes": 16130,
+      "sha256": "47f5b6ce4b388f38431ce82825b6712f80155e77eea45245ae8830a065a06a8d"
+    },
+    "design_matrix.tab": {
+      "bytes": 237,
+      "sha256": "dd0286ac09c6fe2f26289bc78233c0042e73b1ebce17d2fc167cce4c4952ae88"
+    },
+    "contrast_strings.tab": {
+      "bytes": 43,
+      "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+    },
+    "design.tsv": {
+      "bytes": 393,
+      "sha256": "9437ea87a5a0175a52500e684c250f6f14c92c1f83ee4deb46c3d1652dd8dadc"
+    },
+    "truth.json": {
+      "bytes": 19448,
+      "sha256": "880a471223b8a2f09e1f7b9c903431bed13ca3367eb50183d42b4f7ed04a883a"
+    }
+  }
+}

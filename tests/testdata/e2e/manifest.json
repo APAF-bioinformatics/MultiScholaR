@@ -247,6 +247,49 @@
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": true,
       "report_export": true
+    },
+    {
+      "lane_id": "trx_screen",
+      "omic_type": "transcriptomics",
+      "workflow_type": "TRANSCRIPTOMICS",
+      "import_tool": "trx_counts",
+      "use_limpa": false,
+      "fixture_dir": "trx_screen",
+      "seed_file": "counts.tsv",
+      "assays": ["counts"],
+      "expected_contrasts": ["Sera_vs_RPMI"],
+      "report_template": "transcriptomics_report.rmd",
+      "enrichment_backend": "none",
+      "expected_exports": [
+        "DA_results_transcriptomics.xlsx",
+        "transcriptomics_normalized_data.tsv",
+        "ruviii_before_and_after.png"
+      ],
+      "sample_count": 12,
+      "group_count": 2,
+      "groups": ["RPMI", "Sera"],
+      "cross_omic_packs": [],
+      "test_filter": "^e2e-transcriptomics-screen$",
+      "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
+      "touchpoints": ["browser", "import", "design", "qc", "normalization", "da", "summary_report", "report_export"],
+      "critical_shared": false,
+      "report_export": true,
+      "fixture_recipe": {
+        "profile": "trx_screen",
+        "generator": "tools/profiling/kit_omics_corpus.R",
+        "seed": 20261106,
+        "biological_per_group": 3,
+        "technical_replicates": 2,
+        "features": 300
+      },
+      "files_sha256": {
+        "contrast_strings.tab": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b",
+        "counts.tsv": "47f5b6ce4b388f38431ce82825b6712f80155e77eea45245ae8830a065a06a8d",
+        "design_matrix.tab": "dd0286ac09c6fe2f26289bc78233c0042e73b1ebce17d2fc167cce4c4952ae88",
+        "design.tsv": "9437ea87a5a0175a52500e684c250f6f14c92c1f83ee4deb46c3d1652dd8dadc",
+        "manifest.json": "5b1e590229da677caf1674e2a513e9af64a953811d41735908cea10e56164b79",
+        "truth.json": "880a471223b8a2f09e1f7b9c903431bed13ca3367eb50183d42b4f7ed04a883a"
+      }
     }
   ]
 }

@@ -22,7 +22,7 @@ skipIfMissingProtQcProteinRefactorHelpers <- function() {
     )
   ]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only prot QC protein helper(s) not present: %s",
         paste(missing, collapse = ", ")

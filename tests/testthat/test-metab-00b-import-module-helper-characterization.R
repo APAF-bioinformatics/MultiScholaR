@@ -12,7 +12,7 @@ skipIfMissingMetabImportTargetFiles <- function() {
   )
   missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only metab import helper file(s) not present: %s",
         paste(basename(missing), collapse = ", ")
@@ -24,7 +24,7 @@ skipIfMissingMetabImportTargetFiles <- function() {
 skipIfMissingMetabImportTargetFiles()
 
 loadSelectedFunctions <- function(paths, symbols, env) {
-  for (path in paths[file.exists(paths)]) {
+  for (path in strictSkipPresent(paths)) {
     exprs <- parse(file = path, keep.source = TRUE)
 
     for (expr in exprs) {

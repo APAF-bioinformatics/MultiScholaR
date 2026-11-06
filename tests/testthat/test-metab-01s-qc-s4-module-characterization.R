@@ -8,7 +8,7 @@ skipIfMissingMetabQcS4TargetFiles <- function() {
   )
   missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only metab QC S4 helper file(s) not present: %s",
         paste(basename(missing), collapse = ", ")
@@ -20,7 +20,7 @@ skipIfMissingMetabQcS4TargetFiles <- function() {
 skipIfMissingMetabQcS4TargetFiles()
 
 loadSelectedFunctions <- function(paths, symbols, env) {
-  for (path in paths[file.exists(paths)]) {
+  for (path in strictSkipPresent(paths)) {
     exprs <- parse(file = path, keep.source = TRUE)
 
     for (expr in exprs) {

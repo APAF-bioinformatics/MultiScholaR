@@ -13,7 +13,7 @@ skipIfMissingLipidImportTargetFiles <- function() {
   )
   missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only lipid import helper file(s) not present: %s",
         paste(basename(missing), collapse = ", ")

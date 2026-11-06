@@ -11,7 +11,7 @@ skipIfMissingGeneralFilemgmtCanonicalTargetFiles <- function() {
   )
   missing <- required_paths[!file.exists(file.path(repoRoot, required_paths))]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only general filemgmt canonical file(s) not present: %s",
         paste(basename(missing), collapse = ", ")
@@ -41,7 +41,7 @@ skipIfLegacyGeneralFilemgmtDuplicatesPresent <- function() {
     )
   ]
   if (length(present) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Legacy general filemgmt duplicate(s) still present: %s",
         paste(present, collapse = ", ")

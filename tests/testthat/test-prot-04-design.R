@@ -13,7 +13,7 @@ skipIfMissingProtDesignExtractedFiles <- function() {
   )
   missing <- required_paths[!file.exists(file.path(repoRoot, required_paths))]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only prot design extracted file(s) not present: %s",
         paste(basename(missing), collapse = ", ")
@@ -25,7 +25,7 @@ skipIfMissingProtDesignExtractedFiles <- function() {
 skipIfMissingProtDesignBindings <- function(...) {
   missing <- setdiff(c(...), ls(envir = asNamespace("MultiScholaR")))
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only extracted helper(s) not present: %s",
         paste(missing, collapse = ", ")

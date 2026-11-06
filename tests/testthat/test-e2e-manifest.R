@@ -34,11 +34,11 @@
     tmp
 }
 
-test_that("read_e2e_manifest returns named list of 9 lanes", {
+test_that("read_e2e_manifest returns named list of 10 lanes", {
     manifest <- read_e2e_manifest()
 
     expect_type(manifest, "list")
-    expect_equal(length(manifest), 9L)
+    expect_equal(length(manifest), 10L)
     expect_setequal(names(manifest), c(
         "prot_dia"
         , "prot_dia_limpa"
@@ -49,6 +49,7 @@ test_that("read_e2e_manifest returns named list of 9 lanes", {
         , "metab_gc"
         , "metab_combined"
         , "lipid_canonical"
+        , "trx_screen"
     ))
     for (lane_id in names(manifest)) {
         expect_equal(manifest[[lane_id]][["lane_id"]], lane_id)
@@ -88,7 +89,8 @@ test_that("read_e2e_manifest lanes expose impact routing metadata", {
         metab_lc = "^e2e-metabolomics-lc-gc$",
         metab_gc = "^e2e-metabolomics-lc-gc$",
         metab_combined = "^e2e-metabolomics-lc-gc$",
-        lipid_canonical = "^e2e-lipidomics-canonical$"
+        lipid_canonical = "^e2e-lipidomics-canonical$",
+        trx_screen = "^e2e-transcriptomics-screen$"
     )
 
     expect_setequal(names(manifest), names(expected_filters))
@@ -176,18 +178,36 @@ test_that("all e2e fixture directories exist", {
     expected_dirs <- c(
         "prot_dia", "prot_dia_limpa", "prot_tmt", "prot_lfq"
         , "metab_lc", "metab_gc", "metab_combined", "lipid_canonical"
+        , "trx_screen"
     )
     for (d in expected_dirs) {
         expect_true(dir.exists(file.path(fixture_root, d)), info = paste("Missing dir:", d))
     }
 })
 
-test_that("all 9 e2e seed files exist", {
+test_that("all 10 e2e seed files exist", {
     manifest <- read_e2e_manifest()
     fixture_root <- testthat::test_path("..", "testdata", "e2e")
 
     for (lane in manifest) {
         seed_path <- file.path(fixture_root, lane$fixture_dir, lane$seed_file)
         expect_true(file.exists(seed_path), info = paste("Missing seed:", seed_path))
+    }
+})
+
+# KIT-101: the transcriptomics lane's fixture is the KIT-040 trx_screen recipe at 3 biological samples per group and 300
+# genes, written by generate_fixtures.R; its manifest entry carries the sha256 of every file the generator wrote.
+test_that("the trx_screen lane names its recipe and every fixture file's sha256", {
+    lane <- read_e2e_manifest()[["trx_screen"]]
+    expect_identical(lane$omic_type, "transcriptomics")
+    expect_identical(lane$import_tool, "trx_counts")
+    expect_identical(lane$report_template, "transcriptomics_report.rmd")
+    expect_identical(lane$fixture_recipe$profile, "trx_screen")
+    expect_identical(as.integer(lane$fixture_recipe$biological_per_group), 3L)
+    expect_identical(as.integer(lane$fixture_recipe$features), 300L)
+    lane_dir <- file.path(.e2e_fixture_root(), lane$fixture_dir)
+    expect_setequal(names(lane$files_sha256), list.files(lane_dir))
+    for (name in names(lane$files_sha256)) {
+        expect_identical(digest::digest(file = file.path(lane_dir, name), algo = "sha256"), lane$files_sha256[[name]], info = name)
     }
 })

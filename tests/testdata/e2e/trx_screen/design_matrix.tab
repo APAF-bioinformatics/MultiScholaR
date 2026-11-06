@@ -1,0 +1,13 @@
+Run	group	replicates
+RPMI_01_r1	RPMI	1
+RPMI_01_r2	RPMI	1
+Sera_01_r1	Sera	1
+Sera_01_r2	Sera	1
+RPMI_02_r1	RPMI	2
+RPMI_02_r2	RPMI	2
+Sera_02_r1	Sera	2
+Sera_02_r2	Sera	2
+RPMI_03_r1	RPMI	3
+RPMI_03_r2	RPMI	3
+Sera_03_r1	Sera	3
+Sera_03_r2	Sera	3

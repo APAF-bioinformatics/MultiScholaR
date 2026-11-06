@@ -8,7 +8,7 @@ skipIfMissingProtDaHeatmapSplitFile <- function() {
   required_paths <- c("R/func_prot_da_heatmap.R")
   missing <- required_paths[!file.exists(file.path(repo_root, required_paths))]
   if (length(missing) > 0) {
-    testthat::skip(
+    strictSkip(
       sprintf(
         "Target-only prot DA heatmap file(s) not present: %s",
         paste(basename(missing), collapse = ", ")
