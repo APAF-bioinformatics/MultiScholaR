@@ -399,7 +399,7 @@ test_that("the normalisation module edge writes the config_list method and RUV a
     notified <- character()
     for (pass in 1:2) {
       completed <- shiny::isolate(runProtNormNormalizationWorkflow(settings, workflow, norm, paths, "proteomics",
-        "audit", checkMemoryUsageFn = function(...) NULL, generatePostNormalizationQcFn = function(...) NULL,
+        "audit", generatePostNormalizationQcFn = function(...) NULL,
         generateRuvCorrectedQcFn = function(...) NULL, getRuvGroupingVariableFn = function() "group",
         showNotificationFn = function(message, ...) notified <<- c(notified, message),
         handleErrorFn = function(error, ...) stop(error), messageFn = function(...) NULL))

@@ -57,11 +57,7 @@ mod_prot_qc_peptide_log2_ui <- function(id) {
   )
 }
 
-runPeptideLog2ApplyStep <- function(workflowData,
-                                    calcPeptideMatrixFn = calcPeptideMatrix,
-                                    log2TransformPeptideMatrixFn = log2TransformPeptideMatrix,
-                                    logInfoFn = logger::log_info,
-                                    nowFn = Sys.time) {
+runPeptideLog2ApplyStep <- function(workflowData) {
 runDIAReferencePeptideLog2Matrix(workflowData)
 }
 

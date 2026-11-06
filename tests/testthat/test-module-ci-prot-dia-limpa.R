@@ -7,6 +7,12 @@ limpa_tab_inputs <- function(ui) {
   regmatches(html, gregexpr('id="[^"]+"', html))[[1L]]
 }
 
+test_that("KIT-101 F-05: runPeptideLog2ApplyStep takes no parameter its body never reads", {
+  fn <- runPeptideLog2ApplyStep
+  unused <- setdiff(names(formals(fn)), all.names(body(fn)))
+  expect_identical(unused, character())
+})
+
 test_that("the three DIA_LIMPA tabs are the route's QC specs and carry the inputs their servers read", {
   peptide <- getProtQcPeptideModuleSpecs("DIA_LIMPA")
   expect_identical(vapply(peptide, `[[`, character(1), "id"), c("qvalue_filter", "rollup", "log2_matrix", "accession_cleanup"))

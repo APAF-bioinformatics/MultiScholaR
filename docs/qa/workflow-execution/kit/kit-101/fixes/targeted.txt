@@ -29,3 +29,16 @@ test-lipid-15-summary-module-seams.R              pass=136 fail=0 error=0 skip=0
 git grep -nw <four shell names> -- R tests: only the F-04 absence list and the quarantined MCI-023.3 body.
 (tools/refactor/manifest-lipid-summary-server-responsibilities-closeout.yml still names
 runLipidSummaryExportSessionObserverShell as a historical extraction boundary; not loaded, left untouched.)
+
+== F-05 ==
+test-prot-05b-norm-module-contracts.R           pass=491 fail=0 error=0 skip=9
+test-module-ci-prot-dia-limpa.R                 pass=25  fail=0 error=0 skip=2
+test-workflow-saved-qc.R                        pass=120 fail=0 error=0 skip=0 warn=1 (ruv package aes_string deprecation)
+test-prot-05d-norm-module-characterization.R    pass=100 fail=0 error=0 skip=10
+test-workflow-gui-memory-lifetimes.R            pass=80  fail=0 error=0 skip=11
+Live call sites of the two functions (R/ and non-skipped tests) pass none of the removed parameters:
+R/mod_prot_norm_observer_helpers.R (the run_normalization observer; one argument line dropped, outside the
+listed write scope but the only production caller), R/mod_prot_qc_peptide_log2.R runPeptideLog2ApplyObserver
+(runApplyStepFn(workflowData = ...)), test-workflow-saved-qc.R (updated), test-prot-05b observer wiring (updated).
+The remaining injections are inside four bodies already skipped under Q-22 (recorded as Q-24).
+checkMemoryUsageFn remains a parameter of the correlation observers (not part of F-05).

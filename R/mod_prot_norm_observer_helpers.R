@@ -60,7 +60,6 @@ registerProtNormServerObservers <- function(
       experimentPaths = experimentPaths,
       omicType = omicType,
       experimentLabel = experimentLabel,
-      checkMemoryUsageFn = checkMemoryUsageFn,
       generatePostNormalizationQcFn = generatePostNormalizationQcFn,
       generateRuvCorrectedQcFn = generateRuvCorrectedQcFn,
       getRuvGroupingVariableFn = getRuvGroupingVariableFn

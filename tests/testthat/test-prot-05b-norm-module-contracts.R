@@ -14,6 +14,12 @@ skipIfMissingMultiScholaRBindings(
   "runProtNormNormalizationWorkflow"
 )
 
+test_that("KIT-101 F-05: runProtNormNormalizationWorkflow takes no parameter its body never reads", {
+  fn <- runProtNormNormalizationWorkflow
+  unused <- setdiff(names(formals(fn)), all.names(body(fn)))
+  expect_identical(unused, character())
+})
+
 test_that("buildProtNormQcImagePayload returns image payload when file exists", {
   img_path <- tempfile(fileext = ".png")
   writeLines("placeholder", img_path)
@@ -2963,7 +2969,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
         generateRuvCorrectedQcFn = generateRuvCorrectedQcFn
       )
     },
-    runNormalizationWorkflowFn = function(input, workflowData, normData, experimentPaths, omicType, experimentLabel, checkMemoryUsageFn, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn) {
+    runNormalizationWorkflowFn = function(input, workflowData, normData, experimentPaths, omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn) {
       calls$normalize <<- list(
         input = input,
         workflowData = workflowData,
@@ -2971,7 +2977,6 @@ test_that("registerProtNormServerObservers wires the observer shell through help
         experimentPaths = experimentPaths,
         omicType = omicType,
         experimentLabel = experimentLabel,
-        checkMemoryUsageFn = checkMemoryUsageFn,
         generatePostNormalizationQcFn = generatePostNormalizationQcFn,
         generateRuvCorrectedQcFn = generateRuvCorrectedQcFn,
         getRuvGroupingVariableFn = getRuvGroupingVariableFn
@@ -3037,7 +3042,8 @@ test_that("registerProtNormServerObservers wires the observer shell through help
   expect_equal(calls$design$designMatrix, "design")
   expect_equal(calls$tab_entry$selectedTab, "normalization")
   expect_equal(calls$regenerate$normData, "norm_data")
-  expect_equal(calls$normalize$checkMemoryUsageFn, "check_memory")
+  # KIT-101 F-05: the normalisation workflow no longer takes checkMemoryUsageFn (it never read it).
+  expect_false("checkMemoryUsageFn" %in% names(calls$normalize))
   expect_equal(calls$normalize$omicType, "proteomics")
   expect_equal(calls$apply$experimentLabel, "label")
   expect_equal(calls$skip$checkMemoryUsageFn, "check_memory")

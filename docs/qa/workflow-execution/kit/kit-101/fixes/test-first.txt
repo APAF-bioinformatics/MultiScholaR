@@ -75,3 +75,21 @@ RESULT pass=106 fail=1 error=0 skip=0
 After the fix (shells deleted; MCI-023.1/.2/.5/.6 repointed at the live handlers; MCI-023.3 quarantined Q-23;
 MCI-023.3b added on handleLipidSummaryGenerateReport):
 RESULT file=test-module-ci-lipid-summary.R pass=105 fail=0 error=0 skip=1
+
+== F-05  tests/testthat/test-prot-05b-norm-module-contracts.R, tests/testthat/test-module-ci-prot-dia-limpa.R ==
+New blocks (one per function): "KIT-101 F-05: <fn> takes no parameter its body never reads"
+(setdiff(names(formals(fn)), all.names(body(fn))) must be empty).
+
+Before the fix:
+test-prot-05b: ── Failure (...:20:3): `unused` actual: checkMemoryUsageFn, prepareNormalizationRunFn,
+  runBetweenSamplesStepFn, runPostNormalizationQcStepFn, applySkippedRuvStateFn, resolveRuvParametersFn,
+  applyRuvCorrectionStepFn, finalizeRuvCleanupStepFn, resolveStep6QcObjectFn, runStep6RuvQcFn ... and 4 more
+  (generateCompositeQcFigureFn, finalizeWorkflowStateFn, withProgressFn, incProgressFn)
+  RESULT pass=490 fail=1 error=0 skip=9
+test-module-ci-prot-dia-limpa: ── Failure (...:13:3): `unused` actual: calcPeptideMatrixFn,
+  log2TransformPeptideMatrixFn, logInfoFn, nowFn
+  RESULT pass=24 fail=1 error=0 skip=2
+
+After the fix:
+RESULT file=test-prot-05b-norm-module-contracts.R pass=491 fail=0 error=0 skip=9
+RESULT file=test-module-ci-prot-dia-limpa.R       pass=25  fail=0 error=0 skip=2
