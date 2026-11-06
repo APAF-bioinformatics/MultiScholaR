@@ -1,0 +1,25 @@
+# KIT-099 journeys, per step (from kit099-kit-journey-<stage>-stage.json): application (controller cgroup) and whole-slice anonymous peak in GiB, seconds
+## kit-journey-099s: accepted, exact True, corpus trx_screen, 208 s, slice peak 1.96 GiB, slice anon peak 1.93 GiB, application peak 0.72 GiB, resident end 0.93 GiB
+step                app GiB  slice GiB  seconds
+import                 0.52       0.86      4.8
+design                 0.55       0.89     15.2
+expression_filter      0.55       1.36     16.1
+qc_finalize            0.58       1.29      8.4
+normalisation          0.58       1.93     86.0
+da                     0.58       1.46     24.0
+ruviii_export          0.58       1.53     26.8
+report                 0.72       1.28     10.0
+session_export         0.58       0.93      0.3
+worker dispatches: trx_composite_figure 2/2, trx_da_contrast 1/1, trx_da_publication 1/1, trx_da_tab_results 1/1, trx_expression_filter 1/1, trx_filtering_metrics 1/1, trx_integration_export 1/1, trx_qc_figures 5/5, trx_ruv_grid 1/1, trx_ruv_publication 1/1, trx_ruviii_export 1/1, trx_ruvs 1/1, trx_tmm_logcpm 1/1
+## kit-journey-099l: accepted, exact True, corpus trx_60k_200, 706 s, slice peak 5.06 GiB, slice anon peak 5.01 GiB, application peak 1.83 GiB, resident end 1.80 GiB
+step                app GiB  slice GiB  seconds
+import                 1.08       1.42     18.4
+design                 1.08       1.43     77.4
+expression_filter      1.20       3.01     62.2
+qc_finalize            1.83       2.59     14.2
+normalisation          1.68       5.01    316.1
+da                     1.49       2.57     81.2
+ruviii_export          1.45       4.24    105.4
+report                 1.49       2.24     11.2
+session_export         1.44       1.80      0.3
+worker dispatches: trx_composite_figure 2/2, trx_da_contrast 1/1, trx_da_publication 1/1, trx_da_tab_results 1/1, trx_expression_filter 1/1, trx_filtering_metrics 1/1, trx_integration_export 1/1, trx_qc_figures 5/5, trx_ruv_grid 1/1, trx_ruv_publication 1/1, trx_ruviii_export 1/1, trx_ruvs 1/1, trx_tmm_logcpm 1/1

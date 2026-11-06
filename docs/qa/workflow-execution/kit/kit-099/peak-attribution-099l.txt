@@ -1,0 +1,20 @@
+# kit-journey-099l: whole-slice anonymous peak 5.01 GiB at 471 s into the trace; worker running then: trx_composite_figure
+operation                 seconds  slice anon GiB  app anon GiB
+trx_expression_filter        24.6            2.34          1.04
+trx_qc_figures               29.5            3.01          1.04
+trx_filtering_metrics         6.2            2.59          1.68
+trx_qc_figures               29.4            3.71          1.68
+trx_tmm_logcpm               17.5            2.47          1.68
+trx_ruv_grid                 67.1            2.72          1.49
+trx_ruvs                     45.3            3.57          1.49
+trx_qc_figures               24.7            3.38          1.49
+trx_qc_figures               24.8            3.43          1.49
+trx_ruv_publication          10.4            2.39          1.49
+trx_composite_figure         90.9            5.01          1.49
+trx_da_contrast              55.2            2.57          1.49
+trx_da_tab_results           11.2            2.26          1.49
+trx_da_publication           11.8            2.44          1.49
+trx_ruviii_export            12.3            2.45          1.45
+trx_qc_figures               27.9            3.23          1.44
+trx_composite_figure         61.8            4.24          1.44
+trx_integration_export        5.4            2.24          1.44

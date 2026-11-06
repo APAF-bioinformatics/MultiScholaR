@@ -1,0 +1,66 @@
+## kit-journey-099s 18 worker requests
+21:12:55      6.6 trx_expression_filter    complete 
+21:13:02      7.5 trx_qc_figures           complete 
+21:13:13      5.0 trx_filtering_metrics    complete 
+21:13:20      7.3 trx_qc_figures           complete 
+21:13:28      5.9 trx_tmm_logcpm           complete 
+21:13:34      7.3 trx_ruv_grid             complete 
+21:13:43     22.1 trx_ruvs                 complete 
+21:14:05      7.8 trx_qc_figures           complete 
+21:14:13      7.6 trx_qc_figures           complete 
+21:14:21      7.5 trx_ruv_publication      complete 
+21:14:29     15.0 trx_composite_figure     complete 
+21:14:45      8.1 trx_da_contrast          complete 
+21:14:54      4.8 trx_da_tab_results       complete 
+21:14:59      8.6 trx_da_publication       complete 
+21:15:10      5.0 trx_ruviii_export        complete 
+21:15:15      7.7 trx_qc_figures           complete 
+21:15:23     11.5 trx_composite_figure     complete 
+21:15:36      4.3 trx_integration_export   complete 
+# total seconds per operation
+trx_qc_figures               37.9
+trx_composite_figure         26.5
+trx_ruvs                     22.1
+trx_da_publication            8.6
+trx_da_contrast               8.1
+trx_ruv_publication           7.5
+trx_ruv_grid                  7.3
+trx_expression_filter         6.6
+trx_tmm_logcpm                5.9
+trx_ruviii_export             5.0
+trx_filtering_metrics         5.0
+trx_da_tab_results            4.8
+trx_integration_export        4.3
+## kit-journey-099l 18 worker requests
+23:41:10     24.6 trx_expression_filter    complete 
+23:41:35     29.5 trx_qc_figures           complete 
+23:42:19      6.2 trx_filtering_metrics    complete 
+23:42:28     29.4 trx_qc_figures           complete 
+23:42:57     17.5 trx_tmm_logcpm           complete 
+23:43:15     67.1 trx_ruv_grid             complete 
+23:44:24     45.3 trx_ruvs                 complete 
+23:45:09     24.7 trx_qc_figures           complete 
+23:45:34     24.8 trx_qc_figures           complete 
+23:46:00     10.4 trx_ruv_publication      complete 
+23:46:10     90.9 trx_composite_figure     complete 
+23:47:44     55.2 trx_da_contrast          complete 
+23:48:40     11.2 trx_da_tab_results       complete 
+23:48:52     11.8 trx_da_publication       complete 
+23:49:07     12.3 trx_ruviii_export        complete 
+23:49:20     27.9 trx_qc_figures           complete 
+23:49:48     61.8 trx_composite_figure     complete 
+23:50:51      5.4 trx_integration_export   complete 
+# total seconds per operation
+trx_composite_figure        152.7
+trx_qc_figures              136.3
+trx_ruv_grid                 67.1
+trx_da_contrast              55.2
+trx_ruvs                     45.3
+trx_expression_filter        24.6
+trx_tmm_logcpm               17.5
+trx_ruviii_export            12.3
+trx_da_publication           11.8
+trx_da_tab_results           11.2
+trx_ruv_publication          10.4
+trx_filtering_metrics         6.2
+trx_integration_export        5.4

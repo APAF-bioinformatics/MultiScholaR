@@ -28,3 +28,5 @@ call profile start 23:29:57 at 529428e7: AC 1, profile low-power, battery 100%, 
 call profile end 23:35:00: AC 1, profile low-power, battery 100%, load 3.03, available 25 GiB, swap used 8732 MiB
 kit-099b start 23:35:48: AC 1, profile low-power, battery 100%, load 2.29, available 25 GiB
 kit-099b end 23:38:48: AC 1, profile low-power, battery 100%, load 3.11, available 27 GiB
+kit-journey-099l start 23:39:12 at 05c33c9c: AC 1, profile low-power, battery 100%, load 2.46, available 27 GiB
+kit-journey-099l end 23:51:52: AC 1, profile low-power, battery 100%, load 3.36, available 24 GiB
