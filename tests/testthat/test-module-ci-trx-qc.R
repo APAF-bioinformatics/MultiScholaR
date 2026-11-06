@@ -108,3 +108,24 @@ test_that("MCI-028.4 the QC tab under the transcriptomics profile: the filter an
   # The finalise shows no per-assay table for the one count table.
   expect_false(grepl("assay_stats_table", tabs, fixed = TRUE))
 })
+
+test_that("KIT-101 F-11: the expression filter before any imported state refuses with a message naming what is missing", {
+  skip_if_not(workflowOwnerCapable())
+  notes <- character()
+  testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
+    notes <<- c(notes, paste0("[", type, "] ", ui))
+    invisible(NULL)
+  }, .package = "shiny")
+  paths <- list(source_dir = withr::local_tempdir())
+  suppressMessages(shiny::testServer(function(input, output, session) {
+    # The session's owner as the transcriptomics module creates it at start, before the import.
+    workflow_data <- shiny::reactiveValues(state_manager = NULL, config_list = list(), tab_status = list())
+    workflow_data$state_manager <- createWorkflowSessionOwner(workflow_data, paths, session, omic_type = "transcriptomics")
+    session$userData$owner <- workflow_data$state_manager
+    mod_trx_qc_filter_server("filter", workflow_data, "transcriptomics", "kit101")
+  }, {
+    session$setInputs(`filter-apply_filter` = 1L)
+    expect_identical(diaStateHistory(session$userData$owner), "initial")
+  }))
+  expect_identical(notes, "[warning] Please import the count data before applying the expression filter.")
+})

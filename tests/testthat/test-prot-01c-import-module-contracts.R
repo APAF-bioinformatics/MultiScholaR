@@ -1504,6 +1504,27 @@ test_that("startProtImportProcessing requires paths, marks state, and shows moda
   expect_identical(result$format, "diann")
 })
 
+test_that("KIT-101 F-11: processing without a search results or FASTA file refuses with a message", {
+  notes <- character()
+  testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
+    notes <<- c(notes, paste0("[", type, "] ", ui))
+    invisible(NULL)
+  }, .package = "shiny")
+  refuse <- function(search, fasta) {
+    notes <<- character()
+    localData <- list2env(list(processing = FALSE))
+    tryCatch(startProtImportProcessing(searchResultsPath = search, fastaPath = fasta, format = "diann",
+      localData = localData, ns = function(id) id, announceStart = function(...) stop("started"),
+      showModal = function(...) stop("modal")), shiny.silent.error = function(e) NULL)
+    expect_false(isTRUE(localData$processing))
+    notes
+  }
+  expect_identical(refuse(NULL, "/tmp/proteins.fasta"),
+    "[warning] Please choose a search results file before processing the data.")
+  expect_identical(refuse("/tmp/report.tsv", NULL), "[warning] Please choose a FASTA file before processing the data.")
+  expect_identical(refuse(NULL, NULL), "[warning] Please choose a search results file and a FASTA file before processing the data.")
+})
+
 test_that("loadProtImportConfigurationResources resolves paths and delegates config setup", {
   workflowData <- list2env(list())
   statusMessages <- character()

@@ -4137,3 +4137,25 @@ test_that("mod_prot_qc_protein_s4_server keeps both helper seams wired through t
     }
   )
 })
+
+test_that("KIT-101 F-11: the protein-route QC intensity filter refuses an out-of-range input with a message giving the reason", {
+  skip_if_not(workflowOwnerCapable())
+  root <- withr::local_tempdir()
+  manager <- newDIAStateAdapter(newWorkflowEntityStore(root, basename(root), "TMT"), WorkflowState$new(audit_enabled = FALSE))
+  withr::defer(closeDIAStateAdapter(manager))
+  manager$.context$reference_states <- TRUE
+  manager$saveState("protein_s4_initial", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")), list(), "fixture")
+  workflow_data <- list2env(list(state_manager = manager))
+  notes <- character()
+  no_op <- function(...) invisible(NULL)
+  shiny::testServer(function(input, output, session) {}, {
+    session$userData$dia_capacity_manager <- manager
+    result <- runProteinIntensityFilterApplyObserver(workflow_data, useStrictMode = FALSE, minRepsPerGroup = 1,
+      minGroups = 1, intensityCutoffPercentile = 150, output = output, proteinIntensityFilterPlot = no_op,
+      omicType = "proteomics", experimentLabel = "x", removeNotificationFn = no_op, logErrorFn = no_op,
+      showNotificationFn = function(ui, ..., type = "default") notes <<- c(notes, paste0("[", type, "] ", ui)))
+    expect_identical(result$status, "error")
+  })
+  expect_true("[error] Error applying protein intensity filter: intensity percentile must lie in [0, 100]" %in% notes)
+  expect_identical(manager$current_state, "protein_s4_initial")
+})

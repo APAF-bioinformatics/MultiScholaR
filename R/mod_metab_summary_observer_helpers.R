@@ -731,6 +731,13 @@ runMetabSummaryGenerateReportObserverShell <- function(
     project_dirs <- projectDirs
     omic_type <- omicType
 
+    # KIT-101 F-11: a refused report says why before the gate stops it.
+    if (!shiny::isTruthy(input$experiment_label)) {
+        showNotificationFn("Please enter an experiment label before generating the report.", type = "warning")
+    } else if (!isTRUE(values$files_copied)) {
+        showNotificationFn(paste("Please copy the results to the publication directory before generating the report",
+            "(Copy to Publication Directory)."), type = "warning")
+    }
     reqFn(input$experiment_label)
     reqFn(values$files_copied)
 

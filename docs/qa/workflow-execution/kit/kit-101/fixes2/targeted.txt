@@ -27,7 +27,60 @@ F-10
   dependents: git grep of runProtNormTabEntryWorkflow, shouldProtNormAutoGeneratePreQc and
   notifyProtNormNormalizationPrereqWarning in tests/ -> the two files above.
 
+F-11 (R_LIBS = kit_100)
+  test-lipid-15-summary-module-seams.R            pass 139 fail 0 error 0 skip 0  (baseline 136; +1 rev 2.1 F-04, +2 new)
+  test-module-ci-metab-summary.R                  pass 82 fail 0 error 0 skip 0   (baseline 80; +2 new)
+  test-prot-12-summary-module-contracts.R         pass 432 fail 0 error 0 skip 3  (baseline 430/3; +2 new)
+  test-prot-01c-import-module-contracts.R         pass 416 fail 0 error 0 skip 0  (baseline 410; +6 new)
+  test-module-ci-trx-qc.R                         pass 32 fail 0 error 0 skip 0   (baseline 30; +2 new)
+  test-prot-02c-qc-protein-module-contracts.R     pass 407 fail 0 error 0 skip 23 (baseline 404/23; +3 new)
+  dependents (git grep of the changed observers, startProtImportProcessing, mod_trx_qc_filter_server
+  and the summary/import module servers in tests/):
+  test-lipid-14a-summary-module-characterization.R pass 131 fail 0 error 0 skip 0 (baseline 131)
+  test-metab-05-summary-module-characterization.R  pass 161 fail 0 error 0 skip 9 (baseline 161/9)
+  test-prot-12a-summary-module-characterization.R  pass 30 fail 0 error 0 skip 2  (baseline 30/2)
+  test-prot-01d-import-module-characterization.R   pass 79 fail 0 error 0 skip 0  (baseline 79)
+  test-module-ci-lipid-summary.R                   pass 105 fail 0 error 0 skip 1 (baseline 106/0; rev 2.1 F-04: Q-23 skip, MCI-023.3b)
+  test-module-ci-prot-summary.R                    pass 70 fail 0 error 0 skip 1  (baseline 70/1)
+  test-workflow-server-shared.R                    pass 70 fail 0 error 0 skip 0  (baseline 70)
+  test-module-ci-trx-summary.R                     pass 70 fail 0 error 0 skip 0  (baseline 70)
+  test-module-ci-trx-norm.R                        pass 61 fail 0 error 0 skip 0  (baseline 61)
+  test-module-ci-trx-da.R                          pass 50 fail 0 error 0 skip 0  (baseline 50)
+  test-workflow-omics-application-reads.R          pass 230 fail 0 error 0 skip 0 (baseline 230)
+
 F-12
   load_all: test-general-filemgmt-duplicate-resolution-contracts.R pass 88 fail 0 error 0 skip 0 (baseline 88/0/0/0)
             test-prot-04-design.R pass 1560 fail 0 error 0 skip 4 (baseline 1560/0/0/4)
   check layout: both files skip at file level at their R/-path guard (were one file-level error each)
+
+Entry suite, proteomics lanes on the fixed tree (not re-frozen; the other agent freezes after both land)
+  test-gui-entry-proteomics.R pass 88 fail 30 error 0 (one run; a second run with
+  MULTISCHOLAR_GUI_ENTRY_RECORD_DIR=<scratch> gave the same counts and the records diffed below).
+  Every difference from the frozen oracles (tests/testdata/gui-entry, from bb87a463) by lane:
+  prot_dia (frozen):
+    import_refusal   F-11: now "[warning] Please choose a search results file and a FASTA file ..."
+                     (the helper declares the step a silent refusal; it must become a messaged one)
+    norm, correlation, session_export   F-10: the stale "Please complete the Quality Control ..."
+                     warning is gone; nothing else changed
+    da               F-08: DA completes ("Some contrasts used the existing BH fallback ..." warning,
+                     "completed successfully"); Interactive_Volcano_Plots/KO_vs_WT.unavailable.txt published
+    enrichment       follows F-08: runs (gprofiler2 double), head enrichment_completed
+    summary_refusal  F-11 (+ F-08 head): "[warning] Please copy the results to the publication directory ..."
+    summary_save, summary_copy, summary_report, summary_export   follow F-08: the copy succeeds
+                     ("Publication files copied", the record copied to Publication_figures), the report
+                     renders. New, not caused here: after enrichment, summary_save warns "The analysis
+                     record (analysis_record.json) was not written: component checkpoint is incomplete"
+                     and the report "The analysis record bundle was not exported: ..." (the
+                     enrichment_completed state; the TMT/LFQ lanes without enrichment write it)
+  prot_dia_limpa (frozen):
+    import_refusal   F-11 (as above)
+    qc_protein_dpc_quant, qc_protein_normalisation, qc_protein_peptide_count   F-09: the refusals
+                     name the missing state instead of "object 'parameters' not found" (the peptide
+                     stage still makes no log2 state on this fixture: F-07's richer fixtures)
+    summary_refusal, summary_report   F-11: the report refusal now messages (the copy never ran)
+  prot_tmt, prot_lfq, prot_lfq_fragpipe (unfrozen, "no frozen oracle"): records show import_refusal
+    messaged (F-11), no QC warning at norm/correlation/session_export (F-10), DA complete with the
+    unavailable record (F-08), copy and report succeed, summary_refusal messaged (F-11).
+  Not run (allowed scope): lipid_canonical, metab_lc, metab_gc, metab_combined, trx_screen are
+  expected to differ only at summary_refusal (F-11: the report refusal now messages; the helper
+  declares it silent).

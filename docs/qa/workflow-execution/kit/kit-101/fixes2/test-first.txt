@@ -81,6 +81,54 @@ COUNTS test-prot-05b-norm-module-contracts.R pass 493 fail 4 error 0 skip 9
 After the fix:
 COUNTS test-prot-05b-norm-module-contracts.R pass 497 fail 0 error 0 skip 9
 
+== F-11  six files (R_LIBS = kit_100) ==
+Each refused action now raises a notification with its reason, in the lipid/metab style for a
+precondition (type "warning", "Please ... before ..."); the existing req() gates stay after the
+message, so nothing proceeds that did not before and the injected-req seam tests are unchanged.
+  - summary tab, every omic (lipid: registerLipidSummaryGenerateReportObserver, also trx's summary;
+    metab: runMetabSummaryGenerateReportObserverShell; prot: observeProtSummaryReportGeneration):
+    "Please enter an experiment label before generating the report." /
+    "Please copy the results to the publication directory before generating the report (Copy to
+    Publication Directory)."
+  - proteomics import (startProtImportProcessing): "Please choose a search results file [and a
+    FASTA file] before processing the data." (names whichever is missing)
+  - trx QC expression filter (mod_trx_qc_filter_server), before the import (the session's owner is
+    still the pending placeholder): "Please import the count data before applying the expression
+    filter." It used to raise "[error] Error applying the expression filter: state requires explicit
+    legacy conversion (saved_entity_unsupported)".
+  - protein-route QC sub-tabs: no R change. A messaged refusal with its reason is already reachable
+    through an input (the protein intensity filter's percentile out of [0, 100], or a non-positive
+    replicate/group minimum: "[error] Error applying protein intensity filter: intensity percentile
+    must lie in [0, 100]", head unchanged). The new block records it; it passes before and after.
+    The entry suite simply has no QC refusal step on those routes (the helper is the other agent's).
+
+New blocks and their failures before the fix:
+  test-lipid-15-summary-module-seams.R "KIT-101 F-11: the lipid (and trx) report refuses with a
+    message before the publication copy or without a label": 2 failures (no notification, actual
+    character(0)); COUNTS pass 137 fail 2 error 0 skip 0
+  test-module-ci-metab-summary.R "KIT-101 F-11: the metab report refuses ...": 2 failures (none
+    raised); COUNTS pass 80 fail 2 error 0 skip 0
+  test-prot-12-summary-module-contracts.R "KIT-101 F-11: the prot report refuses ...": 2 failures;
+    COUNTS pass 430 fail 2 error 0 skip 3
+  test-prot-01c-import-module-contracts.R "KIT-101 F-11: processing without a search results or
+    FASTA file refuses with a message": 3 failures (none raised); COUNTS pass 413 fail 3 error 0 skip 0
+  test-module-ci-trx-qc.R "KIT-101 F-11: the expression filter before any imported state refuses with
+    a message naming what is missing": 1 failure,
+      - "[error] Error applying the expression filter: state requires explicit legacy conversion (saved_entity_unsupported)"
+      + "[warning] Please import the count data before applying the expression filter."
+    COUNTS pass 31 fail 1 error 0 skip 0
+  test-prot-02c-qc-protein-module-contracts.R "KIT-101 F-11: the protein-route QC intensity filter
+    refuses an out-of-range input with a message giving the reason": passes before (no defect);
+    COUNTS pass 407 fail 0 error 0 skip 23
+
+After the fix:
+  test-lipid-15-summary-module-seams.R          pass 139 fail 0 error 0 skip 0
+  test-module-ci-metab-summary.R                pass 82 fail 0 error 0 skip 0
+  test-prot-12-summary-module-contracts.R       pass 432 fail 0 error 0 skip 3
+  test-prot-01c-import-module-contracts.R       pass 416 fail 0 error 0 skip 0
+  test-module-ci-trx-qc.R                       pass 32 fail 0 error 0 skip 0
+  test-prot-02c-qc-protein-module-contracts.R   pass 407 fail 0 error 0 skip 23
+
 == F-12  test-general-filemgmt-duplicate-resolution-contracts.R, test-prot-04-design.R ==
 The test is the files themselves run in R CMD check's test layout, as test-baseline.md's check mode
 runs them: the tree's tests/ copied to <scratch>/MultiScholaR.Rcheck/tests, each file run from

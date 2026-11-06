@@ -662,6 +662,27 @@ test_that("registerLipidSummaryGenerateReportObserver keeps the observer shell h
     expect_identical(handler_args$omicType, "lipidomics")
 })
 
+test_that("KIT-101 F-11: the lipid (and trx) report refuses with a message before the publication copy or without a label", {
+    notes <- character()
+    testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
+        notes <<- c(notes, paste0("[", type, "] ", ui))
+        invisible(NULL)
+    }, .package = "shiny")
+    handled <- FALSE
+    refuse <- function(input, values) {
+        notes <<- character()
+        tryCatch(registerLipidSummaryGenerateReportObserver(input = input, values = values, output = new.env(),
+            projectDirs = list(), omicType = "lipidomics", observeEventFn = function(event, handler) force(handler),
+            handleGenerateReportFn = function(...) handled <<- TRUE), shiny.silent.error = function(e) NULL)
+        notes
+    }
+    expect_identical(refuse(list(generate_report = 1L, experiment_label = "x"), list(files_copied = FALSE)),
+        "[warning] Please copy the results to the publication directory before generating the report (Copy to Publication Directory).")
+    expect_identical(refuse(list(generate_report = 1L, experiment_label = ""), list(files_copied = TRUE)),
+        "[warning] Please enter an experiment label before generating the report.")
+    expect_false(handled)
+})
+
 test_that("handleLipidSummaryPushToGithub keeps success side effects stable", {
     output <- new.env(parent = emptyenv())
     notifications <- list()

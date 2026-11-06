@@ -2733,6 +2733,29 @@ test_that("observeProtSummaryReportGeneration stops when project-dir validation 
   expect_false(isTRUE(recorded$progressed))
 })
 
+test_that("KIT-101 F-11: the prot report refuses with a message before the publication copy or without a label", {
+  notes <- character()
+  testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
+    notes <<- c(notes, paste0("[", type, "] ", ui))
+    invisible(NULL)
+  }, .package = "shiny")
+  refuse <- function(label, copied) {
+    notes <<- character()
+    testServer(function(input, output, session) {
+      values <- shiny::reactiveValues(files_copied = copied, report_generated = FALSE)
+      observeProtSummaryReportGeneration(input = input, output = output, values = values, projectDirs = list(),
+        validateProjectDirsFn = function(...) stop("validated"), runReportProgressFn = function(...) stop("the report ran"))
+    }, {
+      session$setInputs(experiment_label = label)
+      session$setInputs(generate_report = 1)
+    })
+    notes
+  }
+  expect_identical(refuse("summary-demo", FALSE),
+    "[warning] Please copy the results to the publication directory before generating the report (Copy to Publication Directory).")
+  expect_identical(refuse("", TRUE), "[warning] Please enter an experiment label before generating the report.")
+})
+
 test_that("mod_prot_summary_server delegates report observer registration through the seam", {
   fixtureDir <- tempfile("prot-summary-report-registration-")
   dir.create(fixtureDir, recursive = TRUE)

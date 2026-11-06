@@ -168,8 +168,16 @@ observeProtSummaryReportGeneration <- function(input,
                                                omicType = "proteomics",
                                                validateProjectDirsFn = validateProtSummaryProjectDirs,
                                                runReportProgressFn = runProtSummaryReportProgress,
-                                               withProgressFn = shiny::withProgress) {
+                                               withProgressFn = shiny::withProgress,
+                                               showNotificationFn = shiny::showNotification) {
   shiny::observeEvent(input$generate_report, {
+    # KIT-101 F-11: a refused report says why before the gate stops it.
+    if (!shiny::isTruthy(input$experiment_label)) {
+      showNotificationFn("Please enter an experiment label before generating the report.", type = "warning")
+    } else if (!isTRUE(values$files_copied)) {
+      showNotificationFn(paste("Please copy the results to the publication directory before generating the report",
+        "(Copy to Publication Directory)."), type = "warning")
+    }
     shiny::req(input$experiment_label)
     shiny::req(values$files_copied)
 

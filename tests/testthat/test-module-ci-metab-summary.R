@@ -209,6 +209,21 @@ test_that("MCI-017.3 report rendering produces deterministic push-safe outputs",
   expect_equal(missing_output$status, "missing_output")
 })
 
+test_that("KIT-101 F-11: the metab report refuses with a message before the publication copy or without a label", {
+  refuse <- function(label, copied) {
+    notes <- character()
+    tryCatch(runMetabSummaryGenerateReportObserverShell(
+      inputValues = list(experiment_label = label, description = ""), projectDirs = list(), omicType = "metabolomics",
+      values = list(files_copied = copied), output = new.env(parent = emptyenv()),
+      showNotificationFn = function(ui, ..., type = "default") notes <<- c(notes, paste0("[", type, "] ", ui)),
+      withProgressFn = function(...) stop("the report ran")), shiny.silent.error = function(e) NULL)
+    notes
+  }
+  expect_identical(refuse("x", FALSE),
+    "[warning] Please copy the results to the publication directory before generating the report (Copy to Publication Directory).")
+  expect_identical(refuse("", TRUE), "[warning] Please enter an experiment label before generating the report.")
+})
+
 test_that("MCI-017.4 study/session parameter payload preserves assay and contrast metadata", {
   config <- module_ci_metab_summary_config("combined", normalization_method = "cyclicloess", ruv_mode = "manual", da_q_cutoff = 0.01)
   workflow <- module_ci_metab_summary_workflow(config)

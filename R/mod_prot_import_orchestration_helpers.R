@@ -90,7 +90,13 @@ startProtImportProcessing <- function(
     , announceStart = announceProtImportStart
     , buildProcessingModal = buildProtImportProcessingModal
     , showModal = shiny::showModal
+    , showNotification = shiny::showNotification
 ) {
+  # KIT-101 F-11: a refused import says which file is missing before the gate stops it.
+  missing <- c("a search results file", "a FASTA file")[!c(shiny::isTruthy(searchResultsPath), shiny::isTruthy(fastaPath))]
+  if (length(missing)) {
+    showNotification(sprintf("Please choose %s before processing the data.", paste(missing, collapse = " and ")), type = "warning")
+  }
   requireValue(searchResultsPath)
   requireValue(fastaPath)
 

@@ -137,6 +137,11 @@ mod_trx_qc_filter_server <- function(id, workflow_data, omic_type, experiment_la
         shown <- shiny::reactiveVal(NULL)
         shiny::observeEvent(input$apply_filter, {
             shiny::req(workflow_data$state_manager)
+            # KIT-101 F-11: before the import the session's owner is still the pending placeholder; refuse saying so.
+            if (isDIASessionOwnerPending(workflow_data$state_manager)) {
+                shiny::showNotification("Please import the count data before applying the expression filter.", type = "warning")
+                return(invisible(NULL))
+            }
             runTrxQcExpressionFilter(workflow_data, shown, output)
         })
         # The lipid intensity sub-tab's revert: the previous state selected, the display cleared.
