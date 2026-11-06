@@ -1,0 +1,12 @@
+# KIT-099 bindings diff (before: the bindings at 2f32efcb; after: the KIT-099 generator and harness)
+added /corpora/trx_60k_024
+added /corpora/trx_60k_100
+added /corpora/trx_60k_200
+added /corpora/trx_60k_400
+added /corpora/trx_60k_600
+added /corpora/trx_60k_800
+changed /harness/files/tests/testthat/test-workflow-kit-harness.R
+changed /harness/files/tools/profiling/workflow_kit.R
+added /oracles/trx98a_logcpm_product
+added /tickets/099l
+added /tickets/099s

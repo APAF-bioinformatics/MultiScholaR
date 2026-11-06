@@ -35813,7 +35813,16 @@
       "trx_expression_filtered",
       "trx_qc_complete",
       "trx_ruvs"
-    ]
+    ],
+    "trx98a_logcpm_product": {
+      "product_type": "trx.tmm_logcpm",
+      "fingerprint": {
+        "kind": "scientific_product",
+        "product_type": "trx.tmm_logcpm",
+        "sha256": "c88cf6fabfd1226d1a96dbf297b2fb81ae00443523a5dbc48824c68988bc76e5"
+      },
+      "from": "trx98a_normalisation/trx.tmm_logcpm:c88cf6fabfd1"
+    }
   },
   "corpora": {
     "full": {
@@ -37198,6 +37207,546 @@
         "path": "docs/qa/workflow-execution/kit/kit-040/reference-trx_screen.rds",
         "corpus_manifest_sha256": "775fafb6440ff2ef30cff6722551cfa1a62f5487325e8a3799253dbd331c0e97"
       }
+    },
+    "trx_60k_024": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 24,
+      "rows": 60000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 6,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 60000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.6,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-024",
+      "expected_retained_samples": 24,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "60000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 12 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-024/counts.tsv",
+          "bytes": 4730838,
+          "sha256": "31347d0f715f8cfa51202a988e4f918c0d0ac6fcd45ff9266a8752e1642b44ac"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-024/design_matrix.tab",
+          "bytes": 453,
+          "sha256": "ca81a1277960cbb6b0510ce613795e30d2f83bf47498b206390f61c076493558"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-024/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-024/truth.json",
+          "bytes": 3390552,
+          "sha256": "e8216ab3e32839c8df0c85718ab66b0637f7b1ce4292f52bf17681c1a9c81d84"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-024/design.tsv",
+          "bytes": 741,
+          "sha256": "d8cf9d03ff31564e4a8a396c8a7a6a76ab50387fc4d30be1164cd4728f39307d"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv"
+    },
+    "trx_60k_100": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 100,
+      "rows": 60000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 25,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 60000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.6,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-100",
+      "expected_retained_samples": 100,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "60000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 50 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-100/counts.tsv",
+          "bytes": 16098179,
+          "sha256": "b64da1088917c85081ef588cfa43c1c8819fde803ed0c9353e07b0901c562a64"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-100/design_matrix.tab",
+          "bytes": 1885,
+          "sha256": "273c9314caf4b87c746352a79bf3e8a048459096bac59294ef017a51a76ec53e"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-100/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-100/truth.json",
+          "bytes": 3406985,
+          "sha256": "6d9fe3156a4427579e8b0d29bdb730b18eddf1e1f09b0cd635d6ed9b297b48da"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-100/design.tsv",
+          "bytes": 3009,
+          "sha256": "e40ca93edf031a3fca900ab2d38f4478a54dad0d0868858e3637853cb1c63697"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv"
+    },
+    "trx_60k_200": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 200,
+      "rows": 60000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 50,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 60000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.6,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-200",
+      "expected_retained_samples": 200,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "60000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 100 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-200/counts.tsv",
+          "bytes": 31122618,
+          "sha256": "ac1c66dea3f7cc11f280b700619cf03f08a53a3b3df9f07107d4321e08090cf1"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-200/design_matrix.tab",
+          "bytes": 3785,
+          "sha256": "ef3e68c7563f0b5e76fc5255183bd193a6a9925b5b4dcf8e087aa2cc0d5cfcf5"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-200/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-200/truth.json",
+          "bytes": 3428728,
+          "sha256": "5ce5b92ff34a7943201755c9d6815c9bd9981f843f1f3d5e0ba497f11130aa98"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-200/design.tsv",
+          "bytes": 6009,
+          "sha256": "fe40d7c76f3fe4b3830201a3bd4af396a30ac7bc7a6683d4dc1b9b26dc7863eb"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv"
+    },
+    "trx_60k_400": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 400,
+      "rows": 60000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 100,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 60000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.6,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-400",
+      "expected_retained_samples": 400,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "60000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 200 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-400/counts.tsv",
+          "bytes": 60973382,
+          "sha256": "17374dacadf4337744062e77afac36c96903bcf7c3396d953bbd4b74ef295d8d"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-400/design_matrix.tab",
+          "bytes": 7593,
+          "sha256": "bc0d3b776aa9b24bd7cf7329ed48661a0ca86c418d49e407fc19bcfba22edf8c"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-400/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-400/truth.json",
+          "bytes": 3472245,
+          "sha256": "b73c5a178815005d235922d0ec661d5de56a09e7d99117ebabc6ce2995085932"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-400/design.tsv",
+          "bytes": 12021,
+          "sha256": "dc3f60cb439c967f4ed6aaac998f1047f43879ef0aef9c28b1bb84afd8f2eef4"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv"
+    },
+    "trx_60k_600": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 600,
+      "rows": 60000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 150,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 60000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.6,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-600",
+      "expected_retained_samples": 600,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "60000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 300 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-600/counts.tsv",
+          "bytes": 91075758,
+          "sha256": "a2970d8887227faf7e9cb1c811d612de84afac90d7d69bb760e398f0e51e7f38"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-600/design_matrix.tab",
+          "bytes": 11793,
+          "sha256": "d604f6be46229d49a307f5e8a0a1fe22ec0649cac52f111b70fb2b0b14fc4074"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-600/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-600/truth.json",
+          "bytes": 3516681,
+          "sha256": "86b31bf988edc1e00d2e7c44b4ab0e0b8bcea131fd63df695428e7f8f7f3ef2e"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-600/design.tsv",
+          "bytes": 18621,
+          "sha256": "5fcb3b47fa624b572f02e409eb92f0e397a0dd9d42bacf63233d71389ff2272f"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv"
+    },
+    "trx_60k_800": {
+      "profile": "trx_screen",
+      "synthetic": true,
+      "samples": 800,
+      "rows": 60000,
+      "recipe": {
+        "kind": "trx_screen",
+        "synthetic": true,
+        "seed": 20261106,
+        "biological_per_group": 200,
+        "technical_replicates": 2,
+        "groups": [
+          "RPMI",
+          "Sera"
+        ],
+        "batches": [
+          "B1",
+          "B2",
+          "B3"
+        ],
+        "features_per_assay": 60000,
+        "assays": "counts",
+        "base_mean_meanlog": 4,
+        "base_mean_sdlog": 1.5,
+        "low_mean_fraction": 0.6,
+        "low_mean_range": [
+          0.05,
+          1
+        ],
+        "batch_fraction": 0.3,
+        "batch_log2_sd": 0.5,
+        "differential_fraction": 0.1,
+        "differential_abs_log2fc": [
+          1,
+          2
+        ],
+        "dispersion_scale": 0.05,
+        "dispersion_sdlog": 0.5,
+        "library_factor_range": [
+          0.5,
+          2
+        ],
+        "zero_genes": 50,
+        "constant_genes": 1,
+        "constant_count": 100,
+        "gene_name_na_fraction": 0.01,
+        "gene_name_empty_fraction": 0.01,
+        "gene_name_duplicate_fraction": 0.01,
+        "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-800",
+      "expected_retained_samples": 800,
+      "report_file": "counts.tsv",
+      "format": "trx_counts",
+      "route": "transcriptomics",
+      "notes": "60000 genes, gamma-Poisson counts in notebook layout (GSE152840_gene_counts.txt columns GeneID, GeneName, runs); 400 biological samples x 2 technical replicates in 3 batches; groups RPMI/Sera; 10% of genes differential (Sera vs RPMI, |log2FC| 1-2), 30% with a batch effect; 50 all-zero genes, 1 constant gene, 1% each of NA, empty and duplicated GeneName; count columns in a seeded permutation of the design order",
+      "files": {
+        "counts.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-800/counts.tsv",
+          "bytes": 120882044,
+          "sha256": "66ea201afa148d9d2acb2ef2a36e7f408f66a7c74dde03f1ef579eee8bc0fb16"
+        },
+        "design_matrix.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-800/design_matrix.tab",
+          "bytes": 15993,
+          "sha256": "a25e8c51292eccdf0e6441f0598b8cb2d286de39b7f8993c5154790c11ac99e6"
+        },
+        "contrast_strings.tab": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-800/contrast_strings.tab",
+          "bytes": 43,
+          "sha256": "65109d89e2a58968080c1b1db3447f5daa68793ae4aac05a1357728bdeaf4e0b"
+        },
+        "truth.json": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-800/truth.json",
+          "bytes": 3561193,
+          "sha256": "57005c4a5353fee550514e23559348a5e104993f5f470f08a1fcffcf2a7dd2ca"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/trx-60k-800/design.tsv",
+          "bytes": 25221,
+          "sha256": "c07683447c4029244dc5fdf025c80c75e8403ee1a3ee0ef7295db3200328d514"
+        }
+      },
+      "generator": "tools/profiling/kit_omics_corpus.R",
+      "vendor": "trx_counts",
+      "assay_files": {
+        "counts": "counts.tsv"
+      },
+      "design_file": "design.tsv"
     }
   },
   "lifecycle_omics": {
@@ -38743,6 +39292,70 @@
         "decision": "user 2026-11-06: Second notebook reference",
         "ruviii": "direct ruv::RUVIII (KIT-093)"
       }
+    },
+    "099s": {
+      "kind": "single_journey",
+      "build": "kit_098",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (protocol v1.8: recorded, uncounted; KIT-099)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "099l": {
+      "kind": "single_journey",
+      "build": "kit_098",
+      "corpus": "trx_60k_200",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx99l",
+      "ceiling_seconds": 14400,
+      "purpose": "exactness (protocol v1.8: recorded, uncounted; KIT-099)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
     }
   },
   "lifecycle": {
@@ -38803,13 +39416,13 @@
     "step_map_trx_sha256": "8c53f0e4813cd2a0bd56f5d554ccd7015254c560fcadfd7218b29ac61ee6618d",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "428b2b9e231ed64ecb22d3c996b081a3c24eaeb246fc6181a722a6b0daade35a",
+      "tools/profiling/workflow_kit.R": "37f600bb2972c5c256581b45c3f14df668073550469c6de70eab5ec21a32afba",
       "tools/profiling/workflow_kit_driver.R": "c984e859f80915b28d549e199f58566937900cbebd444138857302df869486e7",
       "tools/profiling/workflow_kit_coordinator.R": "916476b4c46b4a13227f1c53be5037edc494eb7ad5c9dc18310eab03354c108a",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "30462d0825132eed423603cfd67717f1b0e45c3c62feaa402cb434aeda0725d2",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "35e4afd5f850600ca847b4bc02a0b7e0f6b58c82adb72e108cb2bf972ddd6384",
+      "tests/testthat/test-workflow-kit-harness.R": "dd3da76e6918e23c7e1e9ef1d669a1c1c818850ba53d8e0139ee361c1d93ae00",
       "tests/testthat/test-workflow-execution-adapters.R": "758020ac8b928f737c12cf9faaaba3bb044bcdee1e68c1b5c2773f34bb7304af",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",

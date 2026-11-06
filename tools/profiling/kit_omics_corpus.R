@@ -22,12 +22,14 @@
 #   manifest. Groups RPMI and Sera (the notebook's levels), two technical replicates per biological sample, three batches;
 #   the per-group argument gives the size and the features argument the gene count (default 6,000).
 #   `trx_fixtures <corpus> <directory>` writes the one-value count fixtures (KIT-040) derived from a corpus.
-# Usage: Rscript tools/profiling/kit_omics_corpus.R <lipid_screen|metab_screen|trx_screen> <directory> [biological samples per group] [features per assay] [internal standards per assay]
+# KIT-099: trx_screen takes a fifth argument, the declared low-count fraction (the share of genes given a base mean in
+#   low_mean_range, so that filterByExpr's retention is realistic at size); default 0.1, the KIT-040 corpus unchanged.
+# Usage: Rscript tools/profiling/kit_omics_corpus.R <lipid_screen|metab_screen|trx_screen> <directory> [biological samples per group] [features per assay] [internal standards per assay | trx: low-count fraction]
 #        Rscript tools/profiling/kit_omics_corpus.R trx_fixtures <corpus directory> <fixtures directory>
 
-kitOmicsRecipe <- function(kind, biological_per_group = 6L, features = NULL, standards = 6L, missing_features = 0) {
+kitOmicsRecipe <- function(kind, biological_per_group = 6L, features = NULL, standards = 6L, missing_features = 0, low_count_fraction = NULL) {
     stopifnot(kind %in% c("lipid_screen", "metab_screen", "trx_screen"))
-    if (kind == "trx_screen") return(kitTrxRecipe(biological_per_group, features))
+    if (kind == "trx_screen") return(kitTrxRecipe(biological_per_group, features, low_count_fraction))
     seed <- switch(kind, lipid_screen = 20261029L, metab_screen = 20261030L)
     features <- as.integer(features %||% switch(kind, lipid_screen = 200L, metab_screen = 300L))
     recipe <- list(kind = kind, synthetic = TRUE, seed = seed, biological_per_group = as.integer(biological_per_group),
@@ -193,11 +195,13 @@ writeKitMetabCorpus <- function(directory, recipe = kitOmicsRecipe("metab_screen
 }
 
 # KIT-040: the transcriptomics count corpus. Every parameter is declared here and written into the manifest and truth.json.
-kitTrxRecipe <- function(biological_per_group = 6L, features = NULL) {
+kitTrxRecipe <- function(biological_per_group = 6L, features = NULL, low_count_fraction = NULL) {
+    low_count_fraction <- low_count_fraction %||% 0.1
+    stopifnot(is.numeric(low_count_fraction), length(low_count_fraction) == 1L, low_count_fraction >= 0, low_count_fraction < 1)
     list(kind = "trx_screen", synthetic = TRUE, seed = 20261106L, biological_per_group = as.integer(biological_per_group),
         technical_replicates = 2L, groups = c("RPMI", "Sera"), batches = c("B1", "B2", "B3"),
         features_per_assay = as.integer(features %||% 6000L), assays = "counts",
-        base_mean_meanlog = 4, base_mean_sdlog = 1.5, low_mean_fraction = 0.1, low_mean_range = c(0.05, 1),
+        base_mean_meanlog = 4, base_mean_sdlog = 1.5, low_mean_fraction = low_count_fraction, low_mean_range = c(0.05, 1),
         batch_fraction = 0.3, batch_log2_sd = 0.5, differential_fraction = 0.1, differential_abs_log2fc = c(1, 2),
         dispersion_scale = 0.05, dispersion_sdlog = 0.5, library_factor_range = c(0.5, 2),
         zero_genes = 50L, constant_genes = 1L, constant_count = 100L,
@@ -321,7 +325,9 @@ if (sys.nframe() == 0L) {
         for (name in names(fixtures)) cat(name, fixtures[[name]], "\n")
         quit(save = "no")
     }
-    recipe <- kitOmicsRecipe(kind, if (length(args) > 2L) as.integer(args[[3L]]) else 6L, if (length(args) > 3L) as.integer(args[[4L]]) else NULL, if (length(args) > 4L) as.integer(args[[5L]]) else 6L, if (length(args) > 5L) as.numeric(args[[6L]]) else 0)
+    recipe <- if (kind == "trx_screen") kitOmicsRecipe(kind, if (length(args) > 2L) as.integer(args[[3L]]) else 6L, if (length(args) > 3L) as.integer(args[[4L]]) else NULL,
+        low_count_fraction = if (length(args) > 4L) as.numeric(args[[5L]]) else NULL) else
+        kitOmicsRecipe(kind, if (length(args) > 2L) as.integer(args[[3L]]) else 6L, if (length(args) > 3L) as.integer(args[[4L]]) else NULL, if (length(args) > 4L) as.integer(args[[5L]]) else 6L, if (length(args) > 5L) as.numeric(args[[6L]]) else 0)
     manifest <- switch(kind, lipid_screen = writeKitLipidCorpus(directory, recipe), metab_screen = writeKitMetabCorpus(directory, recipe), trx_screen = writeKitTrxCorpus(directory, recipe))
     cat(kind, directory, "samples", manifest$samples, "rows", manifest$rows, "\n")
     for (name in names(manifest$files)) cat("  ", name, manifest$files[[name]]$bytes, "bytes", substr(manifest$files[[name]]$sha256, 1, 12), "\n")

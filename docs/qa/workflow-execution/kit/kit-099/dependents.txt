@@ -1,0 +1,60 @@
+# KIT-099 dependents (the test files that source workflow_kit.R or kit_omics_corpus.R), devtools::load_all on kit_098's library, before the declaration commit
+tests/testthat/test-app-shell-shared.R
+tests/testthat/test-ci-impact-source-map.R
+tests/testthat/test-e2e-test-mode-integration.R
+tests/testthat/test-lipid-00b-import-module-seams.R
+tests/testthat/test-lipid-00c-import-module-characterization.R
+tests/testthat/test-lipid-01b-qc-module-contracts.R
+tests/testthat/test-lipid-01c-qc-duplicate-module-seams.R
+tests/testthat/test-lipid-01d-qc-intensity-module-seams.R
+tests/testthat/test-lipid-01e-qc-itsd-module-seams.R
+tests/testthat/test-lipid-01f-qc-s4-module-seams.R
+tests/testthat/test-lipid-01g-qc-duplicates-module-characterization.R
+tests/testthat/test-lipid-01h-qc-s4-module-characterization.R
+tests/testthat/test-lipid-01i-qc-itsd-wrapper-characterization.R
+tests/testthat/test-lipid-01j-qc-orchestrator-shared.R
+tests/testthat/test-lipid-01k-qc-intensity-shared.R
+tests/testthat/test-lipid-13a-design-module-characterization.R
+tests/testthat/test-lipid-13b-design-wrapper-characterization.R
+tests/testthat/test-lipid-13-design-builder-seams.R
+tests/testthat/test-lipid-14-design-module-seams.R
+tests/testthat/test-module-ci-fixture-integrity.R
+tests/testthat/test-module-ci-lipid-da.R
+tests/testthat/test-module-ci-lipid-design.R
+tests/testthat/test-module-ci-lipid-import.R
+tests/testthat/test-module-ci-lipid-norm.R
+tests/testthat/test-module-ci-lipid-qc.R
+tests/testthat/test-module-ci-lipid-summary.R
+tests/testthat/test-module-ci-metab-da.R
+tests/testthat/test-module-ci-metab-design.R
+tests/testthat/test-module-ci-metab-import.R
+tests/testthat/test-module-ci-metab-norm.R
+tests/testthat/test-module-ci-metab-qc.R
+tests/testthat/test-module-ci-metab-summary.R
+tests/testthat/test-module-ui-wrapper-direct-shared.R
+tests/testthat/test-omics-audit-carry-overs.R
+tests/testthat/test-omics-module-globals.R
+tests/testthat/test-perf-107.R
+tests/testthat/test-workflow-lipid-declarations.R
+tests/testthat/test-workflow-metab-declarations.R
+tests/testthat/test-workflow-omics-binding-steps.R
+tests/testthat/test-workflow-omics-declarations.R
+tests/testthat/test-workflow-server-shared.R
+tests/testthat/test-workflow-trx-declarations.R
+tests/testthat/test-workflow-ui-shared.R
+== test-trx-design.R
+pass 70 fail 0 error 0 skip 0  14 s
+== test-trx-kernels.R
+pass 373 fail 0 error 0 skip 0  100 s
+== test-trx-publication.R
+pass 174 fail 0 error 0 skip 0  87 s
+== test-workflow-analysis-record.R
+pass 239 fail 0 error 0 skip 0  222 s
+== test-workflow-lipid-declarations.R
+pass 259 fail 0 error 0 skip 0  112 s
+== test-workflow-metab-declarations.R
+pass 259 fail 0 error 0 skip 0  111 s
+== test-workflow-trx-declarations.R
+pass 308 fail 0 error 0 skip 0  186 s
+== test-workflow-kit-harness.R
+pass 719 fail 0 error 0 skip 0 

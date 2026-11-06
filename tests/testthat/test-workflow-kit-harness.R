@@ -1925,3 +1925,78 @@ test_that("KIT-098 correction: the technical-replicate summary is matched by its
     # The lipid and metab routes' summaries, in design.tsv's order, still match.
     expect_true(d$kitTechRepSummaryMatches("Group: A, Biological Replicate: 1\n  Samples: s1, s2\n  Technical Replicates: 1, 2", "A", 1, c("s1", "s2")))
 })
+
+# KIT-099: transcriptomics at size. The corpus generator's declared low-count fraction (the default corpus unchanged), the
+# operation stage of two trx pairs (a state oracle and a product oracle), and the two verifier helpers it needs: the
+# product-only operation judged on the product it created, and a cache hit in a same-build population store detected.
+test_that("KIT-099: the trx corpus takes a declared low-count fraction; the default recipe and corpus are unchanged", {
+    root <- if (exists("workflow_test_root")) workflow_test_root else here::here()
+    reference <- file.path(root, "docs/qa/workflow-execution/kit/kit-040/reference-trx_screen.rds")
+    skip_if_not(file.exists(reference), "the KIT-040 reference is not shipped (R CMD check)")
+    g <- new.env(parent = globalenv())
+    sys.source(file.path(root, "tools/profiling/kit_omics_corpus.R"), g)
+    default <- g$kitOmicsRecipe("trx_screen")
+    expect_identical(default$low_mean_fraction, 0.1)
+    expect_identical(default, g$kitOmicsRecipe("trx_screen", 6L, NULL, low_count_fraction = NULL))
+    sized <- g$kitOmicsRecipe("trx_screen", 2L, 2000L, low_count_fraction = 0.6)
+    expect_identical(sized$low_mean_fraction, 0.6)
+    expect_identical(names(sized), names(default))
+    expect_identical(sized[setdiff(names(sized), c("low_mean_fraction", "biological_per_group", "features_per_assay"))],
+        default[setdiff(names(default), c("low_mean_fraction", "biological_per_group", "features_per_assay"))])
+    expect_error(g$kitOmicsRecipe("trx_screen", 2L, 2000L, low_count_fraction = 1.2))
+    dir <- withr::local_tempdir()
+    invisible(utils::capture.output(manifest <- g$writeKitTrxCorpus(file.path(dir, "sized"), sized)))
+    truth <- jsonlite::read_json(file.path(dir, "sized", "truth.json"), simplifyVector = TRUE)
+    expect_identical(c(manifest$samples, manifest$rows), c(8L, 2000L))
+    expect_length(truth$low_mean_genes, 1200L)
+    expect_identical(jsonlite::read_json(file.path(dir, "sized", "manifest.json"))$recipe$low_mean_fraction, 0.6)
+    # The default corpus regenerates byte for byte: its manifest is the one KIT-040's notebook reference recorded.
+    invisible(utils::capture.output(g$writeKitTrxCorpus(file.path(dir, "screen"), default)))
+    expect_identical(digest::digest(file = file.path(dir, "screen", "manifest.json"), algo = "sha256"), readRDS(reference)$corpus_manifest_sha256)
+})
+
+test_that("KIT-099: a trx operation stage binds two pairs, whole against partitioned, at most 1,800 s (protocol v1.8 10.6)", {
+    h <- kitHarness()
+    b <- kitSyntheticTrxBindings(h)
+    population <- function(state) list(store = "/store/trx", head_sha256 = strrep("1", 64), entity_id = strrep("2", 64), rows = 100L,
+        state = state, route = "transcriptomics")
+    b$populations$trx99lf_design <- population("trx_raw_data_s4")
+    b$populations$trx99lq_qc_finalize <- population("trx_qc_complete")
+    b$oracles$trx99l_logcpm_product <- list(product_type = "trx.tmm_logcpm", fingerprint = list(kind = "value", product_type = "trx.tmm_logcpm", sha256 = "l"))
+    b$tickets[["099b"]] <- list(control = "kit_098", candidate = "kit_098", ceiling_seconds = 1800L, purpose = "recorded, uncounted", pairs = list(
+        list(operation = "trx_expression_filter", population = "trx99lf_design", oracle = "trx98a_expression_filter", parameters = list(),
+            variants = list(control = "whole", candidate = "partitioned")),
+        list(operation = "trx_tmm_logcpm", population = "trx99lq_qc_finalize", oracle = "trx99l_logcpm_product", parameters = list(),
+            variants = list(control = "whole", candidate = "partitioned"))))
+    cases <- h$kitCases(b, "kit-099b")
+    expect_identical(vapply(cases, `[[`, "", "selector"), c("kit:099b:control:1", "kit:099b:candidate:1", "kit:099b:control:2", "kit:099b:candidate:2"))
+    expect_identical(vapply(cases, function(x) x$variant, ""), c("whole", "partitioned", "whole", "partitioned"))
+    expect_identical(vapply(cases, `[[`, "", "oracle"), rep(c("trx98a_expression_filter", "trx99l_logcpm_product"), each = 2L))
+    expect_identical(h$kitMemberSeconds("kit-099b", b), 1800L)
+    over <- b; over$tickets[["099b"]]$ceiling_seconds <- 3600L
+    expect_error(h$kitMemberSeconds("kit-099b", over), "1,800")
+})
+
+test_that("KIT-099: a product-only operation member is judged on the one product of its type it created", {
+    h <- kitHarness()
+    oracle <- list(product_type = "trx.tmm_logcpm", fingerprint = list(kind = "value", product_type = "trx.tmm_logcpm", sha256 = "l"))
+    product <- function(type, sha) list(kind = "value", product_type = type, sha256 = sha)
+    after <- list(a = product("trx.expression_filter_result", "f"), b = product("trx.tmm_logcpm", "l"))
+    expect_length(h$kitOracleProductMismatches(after, "a", oracle), 0L)
+    expect_identical(h$kitOracleProductMismatches(list(a = after$a, b = product("trx.tmm_logcpm", "m")), "a", oracle), "products/trx.tmm_logcpm")
+    # None created (the head already held it, or the action made nothing), or two of the type: refused by count.
+    expect_identical(h$kitOracleProductMismatches(after, c("a", "b"), oracle), "products/trx.tmm_logcpm/count")
+    expect_identical(h$kitOracleProductMismatches(c(after, list(c = product("trx.tmm_logcpm", "l"))), "a", oracle), "products/trx.tmm_logcpm/count")
+})
+
+test_that("KIT-099: an operation output that the population store already held is a cache hit, not a computed run", {
+    h <- kitHarness()
+    store <- withr::local_tempdir()
+    for (id in c("e1", "e2")) {
+        dir.create(file.path(store, "entities", paste0("dia-state-", id)), recursive = TRUE)
+        saveRDS(list(kind = "scientific_product", entity_id = id), file.path(store, "entities", paste0("dia-state-", id), "descriptor.rds"))
+    }
+    expect_true(h$kitOperationCacheHit(store, "e2"))
+    expect_false(h$kitOperationCacheHit(store, "e3"))
+    expect_false(h$kitOperationCacheHit(store, character()))
+})

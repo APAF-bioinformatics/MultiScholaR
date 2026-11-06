@@ -3,3 +3,13 @@
 BEFORE (the test rewritten, workflow_kit.R unchanged): pass 694 fail 3 error 0
  - KIT-099: every trx product is judged, the trx *_science products included (KIT-098 hand-off) : failed 3
 AFTER (the regex without trx): pass 697 fail 0 error 0 skip 0
+
+## Step 2: the generator's low-count fraction, the trx operation stage, the product oracle and the cache-hit check
+BEFORE (the four tests added, generator and harness unchanged): pass 703 fail 0 error 3 skip 0 
+ - KIT-099: the trx corpus takes a declared low-count fraction; the default recipe and corpus are unchanged : failed 0 error TRUE 
+ - KIT-099: a product-only operation member is judged on the one product of its type it created : failed 0 error TRUE 
+ - KIT-099: an operation output that the population store already held is a cache hit, not a computed run : failed 0 error TRUE 
+ (the stage test passes before: kitCases and kitMemberSeconds already take any suffixed pair stage; it stays as the guard of the trx stage)
+AFTER (kit_omics_corpus.R low_count_fraction; workflow_kit.R kitOracleProductMismatches, kitOperationCacheHit and their wiring in verifyKitOperationMember): pass 719 fail 0 error 0 skip 0 
+Existing corpora: the default trx recipe regenerates the KIT-040 corpus byte for byte (manifest sha256 equal to kit-040/reference-trx_screen.rds; in the test).
+Existing bindings keys: unchanged after the regeneration except the two harness file hashes (bindings-diff.txt); KIT-084's 084p/084q/084r are byte-identical under operation_pair/operation_stage.

@@ -381,6 +381,12 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_081)) {
     b$tickets[["082f"]] <- single_082("kit_082", "metab_screen", "metabolomics", "metab82", list(da = list(q_value = 1e-300)))
 }
 
+# An operation stage of at most two `whole` against `partitioned` pairs on one build, each pair on a bound population and
+# judged against a bound oracle (KIT-084's pair_084/stage_084, generalised by KIT-099 to take any pair list; F16).
+operation_pair <- function(operation, population, oracle, parameters) list(operation = operation, population = population,
+    oracle = oracle, parameters = parameters, variants = list(control = "whole", candidate = "partitioned"))
+operation_stage <- function(build, pairs, purpose = "exactness") list(control = build, candidate = build, ceiling_seconds = 1800L,
+    purpose = purpose, pairs = pairs)
 # KIT-084: recorded, uncounted, on the declared large corpora. In-process records on the final kit_082 (lipid84, metab84)
 # and the control kit_032 (lipid84c, metab84c), each recorded by its own build's recorder, bound as <label>_<step>.
 # 084s is the small test: the final driver on kit_032 at screen size, before anything at size. 084a and 084b are the
@@ -469,10 +475,10 @@ if (!is.null(b$builds$kit_082) && !is.null(b$builds$kit_032)) {
         }
     }
     if (!is.null(b$builds$kit_084) && !is.null(b$oracles$lipid84_log2) && !is.null(b$oracles$metab84_log2)) {
-        pair_084 <- function(omic, label, step, from, to, parameters) list(operation = paste0(omic, "_", step), population = paste0(label, "_", from),
-            oracle = paste0(label, "_", to), parameters = parameters, variants = list(control = "whole", candidate = "partitioned"))
-        stage_084 <- function(step, from, to, lipid_parameters, metab_parameters) list(control = "kit_084", candidate = "kit_084", ceiling_seconds = 1800L,
-            purpose = "exactness", pairs = list(pair_084("lipid", "lipid84", step, from, to, lipid_parameters), pair_084("metab", "metab84", step, from, to, metab_parameters)))
+        pair_084 <- function(omic, label, step, from, to, parameters) operation_pair(paste0(omic, "_", step), paste0(label, "_", from),
+            paste0(label, "_", to), parameters)
+        stage_084 <- function(step, from, to, lipid_parameters, metab_parameters) operation_stage("kit_084",
+            list(pair_084("lipid", "lipid84", step, from, to, lipid_parameters), pair_084("metab", "metab84", step, from, to, metab_parameters)))
         b$tickets[["084p"]] <- stage_084("intensity_filter", "design", "intensity",
             list(lipids_intensity_cutoff_percentile = 10L, lipids_proportion_of_samples_below_cutoff = 0.5),
             list(metabolites_intensity_cutoff_percentile = 10L, metabolites_proportion_of_samples_below_cutoff = 0.5))
@@ -1052,6 +1058,100 @@ if (!is.null(b$builds$kit_098) && !is.null(b$corpora$trx_screen)) {
         normalisation = trx_norm, driver_settings = trx_settings("group"),
         fault = list(name = "guard_after_qc_finalize", after_step = "qc_finalize", failed_step = "normalisation",
             mechanism = "application-guard-inject.rds written after the QC finalise completes; the application monitor stops the slice (injected_guard_stop); the normalisation step, the first worker step after it, fails; the head stays trx_qc_complete"))
+}
+
+# KIT-099 (protocol v1.8; kit-099/declaration.md): transcriptomics at size, recorded and uncounted, on kit_098.
+# - Corpora: the trx_screen recipe at 60,000 raw genes with the declared low-count fraction 0.6, samples stepped
+#   (4 x the biological samples per group); generated once under the proof root if absent, bound by sha256. The trial
+#   points and the four sizes are these corpora.
+# - 099s: the journey small test at screen with the large configuration (098a's settings), against trx98a.
+# - 099l: the large journey on trx_60k_200, against the large in-process oracle trx99l (kit-099/oracle-record.R).
+# - 099a and 099b: the operation stages at screen and at large, each two pairs: the expression filter and TMM/logCPM,
+#   `whole` against `partitioned`. Their populations are stores recorded to the input step only (trx99sf, trx99sq at screen,
+#   trx99lf, trx99lq at large: the kit-099 recorder with a stop step), so that a same-build store never holds the measured
+#   product; each population's state equals the oracle's state by fingerprint. The filter is judged against the oracle's
+#   filtered state, TMM/logCPM against the oracle's `trx.tmm_logcpm` product (a product oracle).
+trx_sizes <- c(trx_60k_024 = 6L, trx_60k_100 = 25L, trx_60k_200 = 50L, trx_60k_400 = 100L, trx_60k_600 = 150L, trx_60k_800 = 200L)
+if (!is.null(b$corpora$trx_screen)) for (key in names(trx_sizes)) {
+    directory <- file.path(proof, "kit/corpus", gsub("_", "-", key, fixed = TRUE))
+    if (!file.exists(file.path(directory, "manifest.json"))) {
+        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_omics_corpus.R")), "trx_screen",
+            shQuote(directory), trx_sizes[[key]], 60000L, 0.6))
+        stopifnot(identical(status, 0L))
+    }
+    manifest <- jsonlite::read_json(file.path(directory, "manifest.json"))
+    stopifnot(identical(manifest$recipe$low_mean_fraction, 0.6), identical(manifest$rows, 60000L), identical(manifest$samples, 4L * trx_sizes[[key]]))
+    b$corpora[[key]] <- bind_corpus(directory, manifest, files = c("counts.tsv", "design_matrix.tab", "contrast_strings.tab", "truth.json", "design.tsv"),
+        format = "trx_counts", route = "transcriptomics")
+    b$corpora[[key]]$generator <- "tools/profiling/kit_omics_corpus.R"
+    b$corpora[[key]]$vendor <- "trx_counts"
+    b$corpora[[key]]$assay_files <- list(counts = "counts.tsv")
+    b$corpora[[key]]$design_file <- "design.tsv"
+}
+if (!is.null(b$builds$kit_098) && !is.null(b$tickets[["098a"]]) && !is.null(b$corpora$trx_60k_200)) {
+    trx_099 <- function(corpus, oracles, ceiling) utils::modifyList(b$tickets[["098a"]], list(corpus = corpus, oracles = oracles, ceiling_seconds = ceiling,
+        purpose = "exactness (protocol v1.8: recorded, uncounted; KIT-099)", notebook_reference = NULL))
+    b$tickets[["099s"]] <- trx_099("trx_screen", "trx98a", 1800L)
+    b$tickets[["099l"]] <- trx_099("trx_60k_200", "trx99l", 14400L)
+    read_record <- function(label, corpus) {
+        path <- file.path(repo, sprintf("docs/qa/workflow-execution/kit/kit-099/oracles-%s_%s.rds", label, corpus))
+        if (!file.exists(path)) return(NULL)
+        recorded <- readRDS(path)
+        stopifnot(identical(recorded$corpus, corpus), identical(recorded$route, "transcriptomics"),
+            identical(recorded$corpus_sha256, b$corpora[[corpus]]$files[[1L]]$sha256), identical(recorded$build, b$builds$kit_098$source_commit))
+        recorded
+    }
+    bind_population <- function(label, recorded, step) {
+        population <- recorded$populations[[step]]
+        b$populations[[paste0(label, "_", step)]] <<- list(step = step, state = population$state, store = recorded$store,
+            head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+            oracle_source = "in-process (protocol v1.8 section 10, under section 7.1)", build = recorded$build,
+            recorded_at = recorded$recorded_at, route = "transcriptomics", stop_after = recorded$stop_after)
+    }
+    # The large oracle: every step's population and fingerprint, and the history (as KIT-098's).
+    large <- read_record("trx99l", "trx_60k_200")
+    if (!is.null(large)) {
+        stopifnot(is.null(large$stop_after))
+        for (step in names(large$populations)) {
+            bind_population("trx99l", large, step)
+            b$oracles[[paste0("trx99l_", step)]] <- large$populations[[step]]$fingerprint
+        }
+        b$oracles$trx99l_history <- as.list(large$history)
+    }
+    # The product oracle of TMM/logCPM: the one `trx.tmm_logcpm` product attached to the normalisation step.
+    logcpm_oracle <- function(label) {
+        products <- b$oracles[[paste0(label, "_normalisation")]]$products
+        if (is.null(products)) return(NULL)
+        hit <- products[startsWith(names(products), "trx.tmm_logcpm:")]
+        stopifnot(length(hit) == 1L)
+        list(product_type = "trx.tmm_logcpm", fingerprint = hit[[1L]], from = paste0(label, "_normalisation/", names(hit)))
+    }
+    for (label in c("trx98a", "trx99l")) {
+        product <- logcpm_oracle(label)
+        if (!is.null(product)) b$oracles[[paste0(label, "_logcpm_product")]] <- product
+    }
+    # The pair populations: each recorded to its step only, its state the oracle's state by fingerprint.
+    same_state <- function(a, bb) identical(a$class, bb$class) && identical(as.integer(a$rows), as.integer(bb$rows)) &&
+        identical(lapply(a$components, `[[`, "sha256"), lapply(bb$components, `[[`, "sha256")) &&
+        identical(lapply(a$support, `[[`, "sha256"), lapply(bb$support, `[[`, "sha256")) && identical(a$summary_sha256, bb$summary_sha256)
+    for (pop in list(list(label = "trx99sf", corpus = "trx_screen", step = "design", oracle = "trx98a"),
+        list(label = "trx99sq", corpus = "trx_screen", step = "qc_finalize", oracle = "trx98a"),
+        list(label = "trx99lf", corpus = "trx_60k_200", step = "design", oracle = "trx99l"),
+        list(label = "trx99lq", corpus = "trx_60k_200", step = "qc_finalize", oracle = "trx99l"))) {
+        recorded <- read_record(pop$label, pop$corpus)
+        if (is.null(recorded) || is.null(b$oracles[[paste0(pop$oracle, "_", pop$step)]])) next
+        stopifnot(identical(recorded$stop_after, pop$step), same_state(recorded$populations[[pop$step]]$fingerprint, b$oracles[[paste0(pop$oracle, "_", pop$step)]]))
+        bind_population(pop$label, recorded, pop$step)
+    }
+    trx_pairs <- function(screen) {
+        f <- if (screen) "trx99sf_design" else "trx99lf_design"; q <- if (screen) "trx99sq_qc_finalize" else "trx99lq_qc_finalize"
+        o <- if (screen) "trx98a" else "trx99l"
+        if (is.null(b$populations[[f]]) || is.null(b$populations[[q]]) || is.null(b$oracles[[paste0(o, "_logcpm_product")]])) return(NULL)
+        list(operation_pair("trx_expression_filter", f, paste0(o, "_expression_filter"), list()),
+            operation_pair("trx_tmm_logcpm", q, paste0(o, "_logcpm_product"), list()))
+    }
+    if (!is.null(trx_pairs(TRUE))) b$tickets[["099a"]] <- operation_stage("kit_098", trx_pairs(TRUE), "lifecycle (the operation small test; recorded, uncounted)")
+    if (!is.null(trx_pairs(FALSE))) b$tickets[["099b"]] <- operation_stage("kit_098", trx_pairs(FALSE), "recorded, uncounted (protocol v1.8 section 10.6)")
 }
 
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",

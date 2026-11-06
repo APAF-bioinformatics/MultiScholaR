@@ -1795,6 +1795,22 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         stopifnot(is.numeric(batches), length(batches) == 1L, batches >= 3L)
         receipt$filter <- actual[c("rows", "samples", "design_sha256", "summary_sha256", "support_sha256")]
         receipt$batches <- batches
+    } else if (!is.null(case$oracle) && !is.null(bindings$oracles[[case$oracle]]$product_type)) {
+        # KIT-099: a product-only operation member, judged on the product it created (kitOracleProductMismatches); its head
+        # state stays the bound input state. A product its same-build population store already held is a cache hit.
+        oracle <- bindings$oracles[[case$oracle]]
+        snapshot <- api("hydrateSavedWorkflowCheckpoint")(store, readRDS(file.path(project, ".workflow-entities", "dia-state-head.rds")))
+        before <- names(kitReadHead(source_store, api)$products)
+        new_ids <- setdiff(names(snapshot$products), before)
+        memo <- new.env(parent = emptyenv())
+        products <- lapply(snapshot$products[new_ids], function(reference) kitFingerprintReference(store, reference, api, memo))
+        mismatches <- kitOracleProductMismatches(products, character(), oracle)
+        if (!identical(snapshot$current_state, case$input$state)) mismatches <- c(mismatches, "state")
+        receipt$product_cache_hit <- kitOperationCacheHit(source_store, new_ids)
+        if (isTRUE(receipt$product_cache_hit)) stop("operation member product cache hit: the population store already held ", paste(new_ids, collapse = ", "))
+        if (length(mismatches)) stop("oracle mismatch: ", paste(mismatches, collapse = ", "))
+        receipt$oracle <- case$oracle
+        receipt$product <- list(product_type = oracle$product_type, created = new_ids, sha256 = oracle$fingerprint$sha256)
     } else if (!is.null(case$oracle)) {
         # A journey oracle (KIT-005 `journey_<step>`): the member's head state, fingerprinted from its own store
         # under the current canonical form, must reproduce the oracle's components, support entries and args
@@ -1808,6 +1824,12 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
         # An inexact state is named as such in the verifier's log (KIT-014 audit PH-01: the single-member decision
         # tells an oracle mismatch from a harness refusal by this message).
         if (length(mismatches)) stop("oracle mismatch: ", paste(mismatches, collapse = ", "))
+        # KIT-099: the operation's own scientific product, looked up in the population store: a cache hit is recorded, and
+        # refuses a transcriptomics member (same-build in-process populations, protocol v1.8 section 10.1).
+        science <- checkpoint$products[[paste0(case$operation, "_science")]]$entity_id
+        receipt$product_cache_hit <- kitOperationCacheHit(source_store, science)
+        if (isTRUE(receipt$product_cache_hit) && identical(case$input$route, "transcriptomics"))
+            stop("operation member product cache hit: the population store already held ", science)
         receipt$oracle <- case$oracle
         receipt$state <- list(class = actual$class, rows = actual$rows, components = length(actual$components),
             support = length(actual$support), products_reported = names(actual$products))
@@ -1819,6 +1841,35 @@ verifyKitOperationMember <- function(receipt, owned, case, bindings, operation, 
     receipt$execution <- execution
     receipt$status <- "complete"
     receipt
+}
+
+#' KIT-099: a product-only operation (a declaration with no output class: the head state does not change, e.g.
+#' `trx_tmm_logcpm`) is judged on the product it created. Its oracle is a product oracle (`product_type` and the product's
+#' `fingerprint`, taken from the in-process oracle's attached products). Exactly one product of that type must be new to
+#' the member's head, and its content hash under the current canonical form must equal the oracle's.
+#' @param products The member head's product fingerprints, named by entity id (`kitFingerprintReference`).
+#' @param before The entity ids of the products the source head already held.
+#' @return Character vector of mismatches (empty when the created product reproduces the oracle).
+#' @noRd
+kitOracleProductMismatches <- function(products, before, oracle) {
+    created <- products[setdiff(names(products), before)]
+    created <- Filter(function(p) identical(p$product_type, oracle$product_type), created)
+    if (length(created) != 1L) return(paste0("products/", oracle$product_type, "/count"))
+    if (!identical(created[[1L]]$sha256, oracle$fingerprint$sha256)) return(paste0("products/", oracle$product_type))
+    character()
+}
+
+#' KIT-099: did an operation member's worker return a product its population store already held? A same-build
+#' population store (an in-process recording on the member's own build) can hold the measured operation's product
+#' under the same scientific identity, and `runSavedOperation` then returns it without computing, so the member
+#' would measure a cache read. The member's output entity ids are looked up among the store's entity descriptors.
+#' @return TRUE when any id is an entity of the population store.
+#' @noRd
+kitOperationCacheHit <- function(store_dir, ids) {
+    if (!length(ids)) return(FALSE)
+    descriptors <- list.files(file.path(store_dir, "entities"), pattern = "^descriptor[.]rds$", recursive = TRUE, full.names = TRUE)
+    held <- vapply(descriptors, function(path) as.character(readRDS(path)$entity_id %||% NA_character_), character(1), USE.NAMES = FALSE)
+    any(ids %in% held)
 }
 
 #' Compare one state fingerprint with a journey oracle: class, rows, every component and support entry
