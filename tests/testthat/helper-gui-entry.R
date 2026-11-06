@@ -467,6 +467,11 @@ guiEntryTrxSteps <- function(lane) {
       api$upload("import-assay1_file_std", bad)
       api$set(list(`import-process_import` = 1L))
     }),
+    guiEntryStep("qc_refusal", "qc", refusal = "message", function(api) {
+      # KIT-101 rev 2.2 (F-11): the expression filter before the count data are imported, refused with a message.
+      api$defaults(mod_trx_qc_filter_ui, "qc-filter")
+      api$set(list(`qc-filter-apply_filter` = 1L))
+    }),
     guiEntryStep("import", "import", function(api) {
       api$upload("import-assay1_file_std", file.path(api$inputs$dir, "counts.tsv"))
       api$set(list(`import-process_import` = 2L))
@@ -480,7 +485,7 @@ guiEntryTrxSteps <- function(lane) {
     }),
     guiEntryStep("qc_filter", "qc", function(api) {
       api$defaults(mod_trx_qc_filter_ui, "qc-filter")
-      api$set(list(`qc-filter-apply_filter` = 1L))
+      api$set(list(`qc-filter-apply_filter` = 2L))
     }),
     guiEntryStep("qc_finalize", "qc", function(api) {
       api$defaults(ui(mod_lipid_qc_s4_ui), "qc-s4_finalize")
@@ -505,8 +510,8 @@ guiEntryTrxSteps <- function(lane) {
       api$defaults(ui(mod_lipid_da_ui), "de")
       api$set(list(`de-run_da_analysis` = 2L))
     }),
-    guiEntryStep("summary_refusal", "summary", refusal = "silent", function(api) {
-      # The report before the publication copy: the button is gated (req) and says nothing.
+    guiEntryStep("summary_refusal", "summary", refusal = "message", function(api) {
+      # The report before the publication copy: refused with a message (KIT-101 rev 2.2, F-11; before it, silent).
       api$defaults(ui(mod_lipid_summary_ui), "summary")
       api$set(list(`summary-experiment_label` = "trx_screen"))
       api$set(list(`summary-generate_report` = 1L))
@@ -602,8 +607,8 @@ guiEntryOmicsSteps <- function(lane, short) {
       api$set(list(`de-formula_string` = "~ 0 + group", `de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 0))
       api$set(list(`de-run_da_analysis` = 1L))
     }),
-    guiEntryStep("summary_refusal", "summary", refusal = "silent", function(api) {
-      # The report before the publication copy: the button is gated (req) and says nothing.
+    guiEntryStep("summary_refusal", "summary", refusal = "message", function(api) {
+      # The report before the publication copy: refused with a message (KIT-101 rev 2.2, F-11; before it, silent).
       api$defaults(ui("summary"), "summary")
       api$set(list(`summary-experiment_label` = lane$lane_id))
       api$set(list(`summary-generate_report` = 1L))
@@ -646,9 +651,10 @@ guiEntryProtSteps <- function(lane) {
     lapply(getProtQcProteinModuleSpecs(route), function(spec) c(spec, list(group = "protein_qc", tabs = "protein_filter_tabs"))))
   qc_tabset <- if (peptide_level) "quality_control-qc_tabs_lfq" else "quality_control-qc_tabs_tmt"
   settings <- guiEntryProtQcSettings()
-  qc_step <- function(spec) {
+  qc_step <- function(spec, click = 1L, refusal = FALSE) {
     force(spec)
-    guiEntryStep(paste0("qc_", sub("_qc$", "", spec$group), "_", spec$id), "qc", function(api) {
+    id <- paste0("qc_", sub("_qc$", "", spec$group), "_", spec$id, if (refusal) "_refusal")
+    guiEntryStep(id, "qc", refusal = if (refusal) "message" else "none", function(api) {
       sub_id <- paste0("quality_control-", spec$group, "-", spec$id)
       ui_fn <- get(spec$uiFn, envir = asNamespace("MultiScholaR"))
       api$set(stats::setNames(list(if (identical(spec$group, "peptide_qc")) "Peptide QC" else "Protein QC"), qc_tabset))
@@ -657,10 +663,19 @@ guiEntryProtSteps <- function(lane) {
       rendered <- names(omicsUiInputDefaults(ui_fn(sub_id)))
       overrides <- settings[paste0(sub_id, "-", names(settings)) %in% rendered]
       if (length(overrides)) api$set(stats::setNames(overrides, paste0(sub_id, "-", names(overrides))))
+      # KIT-101 rev 2.2 (F-11): the refusal step sets an out-of-range percentile (refused with its reason).
+      if (refusal) api$set(stats::setNames(list(150), paste0(sub_id, "-proteins_intensity_cutoff_percentile")))
       actions <- grep("-apply_", guiEntryActionIds(ui_fn(sub_id)), value = TRUE)
       if (!length(actions)) stop("no apply action in ", spec$uiFn)
-      api$set(stats::setNames(list(1L), actions[[1L]]))
+      api$set(stats::setNames(list(click), actions[[1L]]))
     })
+  }
+  # The protein routes (TMT, LFQ) refuse an out-of-range protein intensity percentile before the filter runs.
+  qc_steps <- function(spec) {
+    if (!peptide_level && identical(spec$group, "protein_qc") && identical(spec$id, "intensity_filter")) {
+      return(list(qc_step(spec, 1L, refusal = TRUE), qc_step(spec, 2L)))
+    }
+    list(qc_step(spec))
   }
   import_inputs <- function(api) {
     api$defaults(mod_prot_import_ui, "setup_import")
@@ -690,8 +705,9 @@ guiEntryProtSteps <- function(lane) {
     }),
     guiEntryStep("session_export", "normalization", function(api) api$set(list(`normalization-export_filtered_session` = 2L))))
   c(list(
-    guiEntryStep("import_refusal", "setup", refusal = "silent", function(api) {
-      # The process button with the format chosen and no search results file: gated (req), no message.
+    guiEntryStep("import_refusal", "setup", refusal = "message", function(api) {
+      # The process button with the format chosen and no search results file: refused with a message (KIT-101
+      # rev 2.2, F-11; before it, silent).
       api$defaults(mod_prot_import_ui, "setup_import")
       api$set(list(`setup_import-format_override` = lane$import_tool))
       api$set(list(`setup_import-process_data` = 1L))
@@ -708,7 +724,7 @@ guiEntryProtSteps <- function(lane) {
       design$sample <- e2e_match_available_values(design$sample, api$choices("design_matrix-builder-selected_runs"))
       guiEntryDesignActions(api, design, c("KO", "WT"), prefix = "design_matrix-builder-", tech_rep = FALSE)
     })),
-    lapply(qc_specs, qc_step),
+    unlist(lapply(qc_specs, qc_steps), recursive = FALSE),
     list(guiEntryStep("da_refusal", "da", refusal = "message", function(api) {
       # The filtered session loaded before any was exported.
       api$defaults(mod_prot_da_ui, "differential_expression")
@@ -732,7 +748,8 @@ guiEntryProtSteps <- function(lane) {
         api$set(list(`enrichment_analysis-run_enrichment_analysis` = 1L))
       })),
     list(
-    guiEntryStep("summary_refusal", "session_summary", refusal = "silent", function(api) {
+    guiEntryStep("summary_refusal", "session_summary", refusal = "message", function(api) {
+      # The report before the publication copy: refused with a message (KIT-101 rev 2.2, F-11; before it, silent).
       api$defaults(mod_prot_summary_ui, "session_summary")
       api$set(list(`session_summary-experiment_label` = lane$lane_id))
       api$set(list(`session_summary-generate_report` = 1L))
