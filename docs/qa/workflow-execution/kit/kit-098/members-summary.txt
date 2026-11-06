@@ -1,0 +1,2 @@
+098a verification complete | mismatches 0 | judged 8 | history initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete,trx_ruvs | decision accepted exact TRUE in_memory FALSE | elapsed 188 s | peak 1.95 GiB | workers complete 6 of 6 
+098b verification complete | mismatches 0 | judged 8 | history initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete,trx_ruvs | decision accepted exact TRUE in_memory FALSE | elapsed 188 s | peak 1.94 GiB | workers complete 6 of 6 

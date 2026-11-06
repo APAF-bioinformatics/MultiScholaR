@@ -7,3 +7,12 @@ pass 243 fail 0 error 0 skip 0 167 s
 == test-workflow-kit-harness.R
 pass 688 fail 0 error 0 skip 0 17 s 
 test-workflow-trx-declarations.R: see chain-tests.txt (308 pass, 0 fail, 0 skip)
+# KIT-098 dependents grep: no remaining lipid-or-metab binary on the route paths (HEAD bacb0138)
+$ grep -nE "\"lipidomics\"\) \"lipid\" else \"metab\"|else \"metab\"|route %in% c\(\"lipidomics\", \"metabolomics\"\)\) paste0|bindings\$step_map_sha256\)\)" tools/profiling/workflow_kit*.R
+tools/profiling/workflow_kit.R:39:        omic <- if (identical(route, "lipidomics")) "lipid" else "metab"
+
+$ grep -n "short <- switch\|step_map <- switch\|stage <- switch" tools/profiling/workflow_kit*.R
+tools/profiling/workflow_kit_driver.R:535:    short <- switch(route, lipidomics = "lipid", metabolomics = "metab", stop("the omics import drives lipidomics or metabolomics only, not ", route))
+tools/profiling/workflow_kit_driver.R:567:    short <- switch(route, lipidomics = "lipid", metabolomics = "metab", stop("the omics steps drive lipidomics or metabolomics only, not ", route))
+tools/profiling/workflow_kit.R:225:        step_map <- switch(route, DIA = bindings$step_map_sha256, protein = bindings$harness$step_map_protein_sha256,
+tools/profiling/workflow_kit.R:708:    stage <- switch(route, lipidomics = "kit-lifecycle-lipid", metabolomics = "kit-lifecycle-metab", transcriptomics = "kit-lifecycle-trx",
