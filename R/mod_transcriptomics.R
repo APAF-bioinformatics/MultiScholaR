@@ -62,7 +62,7 @@ trxNormDaSummaryProfile <- function() {
         da_server = mod_trx_da_server, da_model_ui = trxDaModelUi, da_threshold_label = "FDR (BH) threshold:",
         da_lfc_label = "Fold-change line (display only; no test):", long_table = "da_genes_long",
         da_columns = list(id = "GeneID", label = "GeneName", pvalue = "PValue", significance = "FDR", significance_label = "FDR (BH)"),
-        da_static_volcano = trxDaStaticVolcano, da_widget = trxDaWidget, da_with_source = trxDaWithSource,
+        da_static_volcano = trxDaStaticVolcano, da_volcano_interactive = FALSE, da_widget = trxDaWidget, da_with_source = trxDaWithSource,
         da_formula = trxRealisedFormula, da_contrasts = trxDaContrastEntries, da_export = trxDaExport, da_run_reference = runTrxReferenceDaAnalysis,
         summary_export_ui = trxSummaryExportUi, summary_server = trxSummaryServer, summary_context = trxSummaryContext,
         summary_state_object = trxSummaryStateObject, summary_placeholder = "e.g., my_transcriptomics_analysis",

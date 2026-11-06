@@ -143,7 +143,8 @@ mod_lipid_da_ui <- function(id, profile = NULL) {
                                 shiny::checkboxInput(
                                     ns("volcano_interactive"),
                                     "Interactive Plot (Glimma)",
-                                    value = TRUE
+                                    # KIT-097: an omic profile may build the interactive plot only on demand.
+                                    value = profile$da_volcano_interactive %||% TRUE
                                 )
                             )
                         )

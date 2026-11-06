@@ -100,6 +100,9 @@ registerLipidDaVolcanoGlimmaOutput <- function(
         runner <- workflowOmicsManagedActions(profile$omic_type %||% "lipidomics")
         # KIT-097: an omic profile's widget (the worker's page when managed) and its source read for one display.
         if (!is.null(profile)) {
+            # The interactive plot of every gene is built only when it is asked for (KIT-097: built on the DA's completion,
+            # it hung the browser).
+            shiny::req(isTRUE(input$volcano_interactive))
             return(buildVolcanoGlimmaUiFn(
                 daResultsList = if (is.null(runner)) profile$da_with_source(daData$da_results_list, workflowData) else daData$da_results_list,
                 selectedContrast = input$volcano_contrast,
