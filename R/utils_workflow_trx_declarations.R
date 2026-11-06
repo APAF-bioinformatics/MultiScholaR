@@ -348,7 +348,9 @@ trxDaPreflight <- function(object, contrasts, formula) {
     if (!identical(formula, trxDaFormula(pdata))) {
         trxAbort(sprintf("the formula '%s' is not the head's realised one", formula), c("trx_da_formula_mismatch", "trx_error"))
     }
-    trxContrastMatrix(trxParseContrastEntry(as.character(contrasts$contrasts[[1L]])), trxDaModelMatrix(pdata, formula))
+    # KIT-093 revision 1.2 (any number of groups, pairwise contrasts): every contrast line is checked, not only the first.
+    model <- trxDaModelMatrix(pdata, formula)
+    for (entry in as.character(unlist(contrasts$contrasts))) trxContrastMatrix(trxParseContrastEntry(entry), model)
     invisible(NULL)
 }
 

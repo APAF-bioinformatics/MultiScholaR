@@ -129,7 +129,7 @@ Ticket revision 1.1 plus the consistency pass. In-process only (no journeys, no 
 - **Test harness observation:** in a whole-file run, the session export's staged file is gone by the time the sync
   runner's `done` callback runs, though it exists right after the action; the test reads it right after the action. Not
   investigated further (the shared session-export machinery, not this ticket's code).
-- **Open user decision kept:** more than two groups stay refused (KIT-093's `trx_design_groups_unsupported`).
+- **Superseded by the KIT-093 addendum (revision 1.2):** more than two groups stayed refused here; the user then chose parity across omics. Designs now take any number of groups with pairwise contrasts, and `trxDaPreflight` checks every contrast line (coordinator, 2026-11-06).
 
 ## Hand-offs
 
