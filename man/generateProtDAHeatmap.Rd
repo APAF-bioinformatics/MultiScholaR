@@ -21,7 +21,8 @@ generateProtDAHeatmap(
   tree_cut_method = "none",
   n_clusters = 4,
   cut_height = 0.5,
-  min_cluster_size = 3
+  min_cluster_size = 3,
+  show_dendrogram = TRUE
 )
 }
 \arguments{
@@ -52,6 +53,9 @@ generateProtDAHeatmap(
 \item{cut_height}{Height for heigh_cutoff method.}
 
 \item{min_cluster_size}{Minimum cluster size for dynamic method.}
+
+\item{show_dendrogram}{Logical, draw the row and column dendrograms of clustered
+dimensions (display only; clustering is unchanged). Default \code{TRUE}.}
 }
 \value{
 A list containing:

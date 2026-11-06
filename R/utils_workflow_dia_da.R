@@ -195,17 +195,17 @@ readDIAResultDisplay <- function(manifest, contrast, expression = FALSE) {
 #' Read the selected heatmap matrix and reuse clustering across render changes.
 #' @param manifest,contrast Accepted DA results and current contrast.
 #' @param parameters Existing selection, scaling and clustering settings.
-#' @param color_scheme,show_gene_names Render-only choices.
+#' @param color_scheme,show_gene_names,show_dendrogram Render-only choices.
 #' @return Original heatmap handoff from a bounded saved scientific product.
 #' @noRd
-generateDIAReferenceHeatmap <- function(manifest, contrast, parameters, color_scheme, show_gene_names) {
+generateDIAReferenceHeatmap <- function(manifest, contrast, parameters, color_scheme, show_gene_names, show_dendrogram = TRUE) {
     manager <- getDIAActiveManager()
     selected <- selectDIAContrastReference(manifest, contrast)
     identity <- diaComponentScientificIdentity(manager, manifest$source, "DA-heatmap-clustering",
         c(parameters, list(result = selected$tables$da_proteins_long$entity_id)))
     hit <- resolveSavedWorkflowEntity(manager$.context$store, "scientific_product", identity)
     if (identical(hit$status, "hit")) return(renderProtDAHeatmapProduct(hit$value$value,
-        color_scheme, show_gene_names))
+        color_scheme, show_gene_names, show_dendrogram))
     result_scope <- newWorkflowTableReadScope(manager$.context$store, selected$tables$da_proteins_long)
     on.exit(releaseWorkflowTableReadScope(result_scope), add = TRUE)
     assertWorkflowPhysicalTableScope(result_scope)
@@ -248,7 +248,7 @@ generateDIAReferenceHeatmap <- function(manifest, contrast, parameters, color_sc
         newSavedWorkflowScientificProduct(product, "dia-heatmap-clustering"),
         basename(tempfile("dia-heatmap-")), identity, "scientific_product")
     rootDIAProduct(manager, reference, list(manifest$source, selected$tables$da_proteins_long))
-    renderProtDAHeatmapProduct(product, color_scheme, show_gene_names)
+    renderProtDAHeatmapProduct(product, color_scheme, show_gene_names, show_dendrogram)
 }
 
 #' Resolve one contrast's saved tables or display products for an output consumer.

@@ -58,7 +58,8 @@ da_server_heatmap_render_handler <- function(input, output, session, ns, da_data
           tree_cut_method = input$heatmap_tree_cut_method,
           n_clusters = input$heatmap_n_clusters,
           cut_height = input$heatmap_cut_height,
-          min_cluster_size = input$heatmap_min_cluster_size
+          min_cluster_size = input$heatmap_min_cluster_size,
+          show_dendrogram = if (is.null(input$heatmap_show_dendro)) TRUE else isTRUE(input$heatmap_show_dendro)
         )
 
         if (!is.null(heatmap_result)) {

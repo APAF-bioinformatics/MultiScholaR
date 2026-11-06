@@ -513,8 +513,9 @@ test_that("KIT-101 F-02: the prot DA UI defines the volcano label inputs the ser
   label_top_n_10 <- grepl('<input id="f02-volcano_label_top_n" type="number"[^>]*value="10"', da_ui, perl = TRUE)
   expect_true(show_labels_checked)
   expect_true(label_top_n_10)
-  # The heatmap renderer has no dendrogram switch, so no input may offer one.
-  expect_false(grepl('id="f02-heatmap_show_dendro"', da_ui, fixed = TRUE))
+  # The user (2026-11-07) asked for the dendrogram checkbox connected: it is offered, checked by default.
+  show_dendro_checked <- grepl('<input id="f02-heatmap_show_dendro" type="checkbox"[^>]*checked', da_ui, perl = TRUE)
+  expect_true(show_dendro_checked)
 })
 
 test_that("MCI-009.5 DA run and export matrix preserves raw/friendly labels, intensity columns, and report metadata", {

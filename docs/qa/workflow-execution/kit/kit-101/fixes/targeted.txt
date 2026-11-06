@@ -42,3 +42,10 @@ listed write scope but the only production caller), R/mod_prot_qc_peptide_log2.R
 (runApplyStepFn(workflowData = ...)), test-workflow-saved-qc.R (updated), test-prot-05b observer wiring (updated).
 The remaining injections are inside four bodies already skipped under Q-22 (recorded as Q-24).
 checkMemoryUsageFn remains a parameter of the correlation observers (not part of F-05).
+
+## F-02 revision, after
+COUNTS test-prot-09-heatmap.R pass 13 fail 0 error 0 skip 1
+COUNTS test-module-ci-prot-da.R pass 217 fail 0 error 0 skip 1
+COUNTS test-prot-da-render-direct-shared.R pass 37 fail 0 error 0 skip 0
+COUNTS test-workflow-saved-da.R pass 116 fail 0 error 0 skip 0
+COUNTS test-optional-packages.R pass 12 fail 0 error 0 skip 0

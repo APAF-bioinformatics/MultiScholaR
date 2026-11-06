@@ -20,6 +20,8 @@
 #' @param n_clusters Number of clusters for k_clusters method.
 #' @param cut_height Height for heigh_cutoff method.
 #' @param min_cluster_size Minimum cluster size for dynamic method.
+#' @param show_dendrogram Logical, draw the row and column dendrograms of clustered
+#'   dimensions (display only; clustering is unchanged). Default `TRUE`.
 #'
 #' @return A list containing:
 #'   \item{plot}{A ComplexHeatmap object, or NULL if no data.}
@@ -48,7 +50,8 @@ generateProtDAHeatmap <- function(
   tree_cut_method = "none",
   n_clusters = 4,
   cut_height = 0.5,
-  min_cluster_size = 3
+  min_cluster_size = 3,
+  show_dendrogram = TRUE
 ) {
   if (isDIAResultManifest(da_results_list)) {
     return(generateDIAReferenceHeatmap(da_results_list, selected_contrast,
@@ -57,7 +60,7 @@ generateProtDAHeatmap <- function(
         scale_data = scale_data, da_q_val_thresh = da_q_val_thresh, qvalue_column = qvalue_column,
         log2fc_column = log2fc_column, tree_cut_method = tree_cut_method,
         n_clusters = n_clusters, cut_height = cut_height, min_cluster_size = min_cluster_size),
-      color_scheme, show_gene_names))
+      color_scheme, show_gene_names, show_dendrogram))
   }
   product <- do.call(computeProtDAHeatmapProduct, c(list(da_results_list = da_results_list,
     selected_contrast = selected_contrast), list(top_n_genes = top_n_genes, clustering_method = clustering_method,
@@ -66,7 +69,7 @@ generateProtDAHeatmap <- function(
       log2fc_column = log2fc_column, tree_cut_method = tree_cut_method,
       n_clusters = n_clusters, cut_height = cut_height, min_cluster_size = min_cluster_size)))
   if (is.null(product)) return(NULL)
-  renderProtDAHeatmapProduct(product, color_scheme, show_gene_names)
+  renderProtDAHeatmapProduct(product, color_scheme, show_gene_names, show_dendrogram)
 }
 
 #' Compute the unchanged heatmap selection, scaling and clustering independently of style.
@@ -244,10 +247,10 @@ computeProtDAHeatmapProduct <- function(
 
 #' Render the existing heatmap from selected expression and saved clustering.
 #' @param product Accepted heatmap scientific product.
-#' @param color_scheme,show_gene_names Existing render-only choices.
+#' @param color_scheme,show_gene_names,show_dendrogram Existing render-only choices.
 #' @return Existing plot and cluster handoff; no clustering is recalculated.
 #' @noRd
-renderProtDAHeatmapProduct <- function(product, color_scheme, show_gene_names) {
+renderProtDAHeatmapProduct <- function(product, color_scheme, show_gene_names, show_dendrogram = TRUE) {
   requireOptionalPackage("ComplexHeatmap", "differential-analysis heatmaps")
   requireOptionalPackage("circlize", "differential-analysis heatmaps")
   expr_matrix <- product$expr_matrix
@@ -319,6 +322,8 @@ renderProtDAHeatmapProduct <- function(product, color_scheme, show_gene_names) {
         col = color_fn,
         cluster_rows = if (is.null(row_clust)) cluster_rows else row_clust,
         cluster_columns = if (is.null(col_clust)) cluster_cols else col_clust,
+        show_row_dend = show_dendrogram,
+        show_column_dend = show_dendrogram,
         show_row_names = show_gene_names,
         row_labels = row_labels,
         show_column_names = TRUE,

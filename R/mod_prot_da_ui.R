@@ -365,6 +365,14 @@ mod_prot_da_heatmap_tab_ui <- function(ns) {
           shiny::column(
             4,
             shiny::checkboxInput(
+              ns("heatmap_show_dendro"),
+              "Show Dendrogram",
+              value = TRUE
+            )
+          ),
+          shiny::column(
+            4,
+            shiny::checkboxInput(
               ns("heatmap_show_labels"),
               "Show Gene Labels",
               value = FALSE

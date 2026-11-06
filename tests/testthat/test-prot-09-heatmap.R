@@ -89,3 +89,27 @@ test_that("generateProtDAHeatmap works with mock data", {
 })
 
 # APAF Bioinformatics | test-prot-09-heatmap.R | Approved | 2026-03-13
+
+test_that("KIT-101 F-02: the dendrogram switch reaches the plot; on by default, identical to omitting it", {
+  pqd <- new("ProteinQuantitativeData",
+    protein_quant_table = data.frame(Protein.Ids = c("P1", "P2", "P3"), S1 = c(10, 11, 12), S2 = c(10.5, 11.5, 12.5),
+      S3 = c(15, 16, 17), S4 = c(15.5, 16.5, 17.5), stringsAsFactors = FALSE),
+    design_matrix = data.frame(Run = c("S1", "S2", "S3", "S4"), Group = c("G1", "G1", "G2", "G2"), stringsAsFactors = FALSE),
+    sample_id = "Run", group_id = "Group", protein_id_column = "Protein.Ids", args = list())
+  da_results <- list(da_proteins_long = data.frame(Protein.Ids = c("P1", "P2", "P3"), comparison = rep("G2_vs_G1", 3),
+    log2FC = c(5, -5, 4), fdr_qvalue = c(0.001, 0.001, 0.001), stringsAsFactors = FALSE), theObject = pqd)
+  call <- function(...) generateProtDAHeatmap(da_results_list = da_results, selected_contrast = "G2_vs_G1", top_n_genes = 3, ...)
+  omitted <- call()
+  shown <- call(show_dendrogram = TRUE)
+  hidden <- call(show_dendrogram = FALSE)
+  for (result in list(omitted, shown, hidden)) expect_s4_class(result$plot, "Heatmap")
+  expect_true(shown$plot@row_dend_param$show)
+  expect_true(shown$plot@column_dend_param$show)
+  expect_false(hidden$plot@row_dend_param$show)
+  expect_false(hidden$plot@column_dend_param$show)
+  # Clustering is untouched by the switch; the default draws as before.
+  expect_identical(hidden$plot@row_order, shown$plot@row_order)
+  expect_identical(omitted$plot@row_dend_param, shown$plot@row_dend_param)
+  expect_identical(omitted$plot@column_dend_param, shown$plot@column_dend_param)
+})
+
