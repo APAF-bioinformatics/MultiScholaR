@@ -1,5 +1,5 @@
 # kit-099a verification receipts (runtime/kit-099a/<member>/verification.rds): the oracle, the cache-hit check (KIT-099) and what was judged
-Error in v$product$product_type : 
-  $ operator is invalid for atomic vectors
-Calls: cat -> sprintf -> sprintf
-Execution halted
+control-1   trx_expression_filter  variant whole       oracle trx98a_expression_filter   cache hit FALSE | state TranscriptomicsAssayData rows 4565 components 2 support 0
+candidate-1 trx_expression_filter  variant partitioned oracle trx98a_expression_filter   cache hit FALSE | state TranscriptomicsAssayData rows 4565 components 2 support 0
+control-2   trx_tmm_logcpm         variant whole       oracle trx98a_logcpm_product      cache hit FALSE | state unchanged (product-only) | product trx.tmm_logcpm created c6414ee46b6e content c88cf6fabfd1 = oracle
+candidate-2 trx_tmm_logcpm         variant partitioned oracle trx98a_logcpm_product      cache hit FALSE | state unchanged (product-only) | product trx.tmm_logcpm created 00ecd59343eb content c88cf6fabfd1 = oracle
