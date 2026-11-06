@@ -1,5 +1,6 @@
 # KIT-101: the offline UniProt cache for the entry-point suite's proteomics lanes. One row per accession of the e2e
-# proteomics FASTA (tests/testdata/e2e/prot_dia/proteins.fasta, shared by every proteomics fixture), in the columns
+# proteomics FASTA (tests/testdata/e2e/prot_dia/proteins.fasta: the protein universe every proteomics lane shares since
+# revision 2.2, 400 synthetic accessions written by tests/testdata/e2e/generate_fixtures.R), in the columns
 # `getUniprotAnnotations()` caches (`createEmptyUniprotTable()` plus the GO columns of the enrichment double). The design
 # step's `getUniprotAnnotationsFull()` finds this file in `<results_dir>/cache/uniprot_annotations/` and does not query
 # the network. Synthetic; deterministic (no random draws).

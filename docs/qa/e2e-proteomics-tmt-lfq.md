@@ -11,9 +11,9 @@ session without falling back to the DIA report route.
 
 | Lane | Import entry point | Fixture | Workflow | Report |
 |---|---|---|---|---|
-| `prot_tmt` | Proteome Discoverer TMT | `prot_tmt/pd_tmt_peptides.tsv` | `TMT` | `TMT_report.rmd` |
-| `prot_lfq` | MaxQuant LFQ | `prot_lfq/proteinGroups.txt` | `LFQ` | `LFQ_report.rmd` |
-| `prot_lfq_fragpipe` | FragPipe LFQ | `prot_lfq/seed_combined_protein.tsv` | `LFQ` | `LFQ_report.rmd` |
+| `prot_tmt` | Proteome Discoverer TMT | `prot_tmt_pd/pd_tmt_peptides.tsv` | `TMT` | `TMT_report.rmd` |
+| `prot_lfq` | MaxQuant LFQ | `prot_lfq_maxquant/proteinGroups.txt` | `LFQ` | `LFQ_report.rmd` |
+| `prot_lfq_fragpipe` | FragPipe LFQ | `prot_lfq_fragpipe/combined_protein.tsv` | `LFQ` | `LFQ_report.rmd` |
 
 ## Runtime Assertions
 
@@ -42,12 +42,24 @@ The TMT fixture uses peptide-export naming from Proteome Discoverer:
 `Abundance.{channel}` form so direct importer tests cover both real and reduced
 exports.
 
-The LFQ fixture directory contains both supported LFQ entry surfaces. MaxQuant is
-represented by `LFQ.intensity.{sample}` columns in `proteinGroups.txt`; FragPipe
-is represented by `{sample} MaxLFQ Intensity` columns in
-`seed_combined_protein.tsv`. Both resolve to a long protein table with
+MaxQuant is represented by `LFQ.intensity.{sample}` columns in `proteinGroups.txt`;
+FragPipe is represented by `{sample} MaxLFQ Intensity` columns in
+`combined_protein.tsv`. Both resolve to a long protein table with
 `Protein.Ids`, `Run`, and `Intensity` so downstream design, normalization, DA,
 and report modules receive the same contract.
+
+Since KIT-101 revision 2.2 (F-07), the three lanes run on synthetic fixtures in
+their own directories (`prot_tmt_pd/`, `prot_lfq_maxquant/`, `prot_lfq_fragpipe/`):
+- 400 proteins from the universe shared by the five proteomics lanes;
+- 10 samples (5 WT, 5 KO; TMT in one TMT10 plex);
+- abundances from the KIT-021 protein corpus recipe, with P00001–P00040 changed in KO,
+  so the DA's FDR can be estimated;
+- MaxQuant contaminant and decoy rows that the reader drops.
+
+`tests/testdata/e2e/generate_fixtures.R` writes them and the manifest records each
+file's sha256. The earlier six-sample files stay in `prot_tmt/` and `prot_lfq/`.
+They are read by the native-session tests and the KIT-021 lifecycle members, and
+the manifest records them under `retained_fixtures`.
 
 ## Test Entrypoint
 

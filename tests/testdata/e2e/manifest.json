@@ -19,7 +19,7 @@
         "normalized_intensities.xlsx",
         "summary_stats.xlsx"
       ],
-      "sample_count": 6,
+      "sample_count": 8,
       "group_count": 2,
       "groups": ["WT", "KO"],
       "cross_omic_packs": ["prot_metab", "prot_lipid", "triple_omic"],
@@ -27,7 +27,22 @@
       "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "enrichment", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "enrichment", "summary_report", "report_export"],
       "critical_shared": true,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "profile": "diann_precursor",
+        "generator": "tests/testdata/e2e/generate_fixtures.R",
+        "matrix": "tools/profiling/kit_protein_corpus.R kitProteinMatrix",
+        "kit_recipe": "lfq",
+        "seed": 20261108,
+        "universe_seed": 20261107,
+        "biological_per_group": 4,
+        "proteins": 400
+      },
+      "files_sha256": {
+        "design.tsv": "2736cc543b29705761f215269e4e92acbad5779528d31ea42042ee4e62ee7b58",
+        "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32",
+        "report.tsv": "fcbe5252f37d1d35652f8b652dac27fe0920acf6ba61c5015ce6d8dda36864dc"
+      }
     },
     {
       "lane_id": "prot_dia_limpa",
@@ -47,7 +62,7 @@
         "normalized_intensities.xlsx",
         "summary_stats.xlsx"
       ],
-      "sample_count": 6,
+      "sample_count": 8,
       "group_count": 2,
       "groups": ["WT", "KO"],
       "cross_omic_packs": [],
@@ -55,7 +70,22 @@
       "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "limpa_imputation", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": false,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "profile": "diann_precursor",
+        "generator": "tests/testdata/e2e/generate_fixtures.R",
+        "matrix": "tools/profiling/kit_protein_corpus.R kitProteinMatrix",
+        "kit_recipe": "lfq",
+        "seed": 20261109,
+        "universe_seed": 20261107,
+        "biological_per_group": 4,
+        "proteins": 400
+      },
+      "files_sha256": {
+        "design.tsv": "2736cc543b29705761f215269e4e92acbad5779528d31ea42042ee4e62ee7b58",
+        "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32",
+        "report.tsv": "bcf391784db0efc7d3c5c0ff178663f66af0e6d2fca87d2350c6087fe4057e2a"
+      }
     },
     {
       "lane_id": "prot_tmt",
@@ -63,7 +93,7 @@
       "workflow_type": "TMT",
       "import_tool": "pd_tmt",
       "use_limpa": false,
-      "fixture_dir": "prot_tmt",
+      "fixture_dir": "prot_tmt_pd",
       "seed_file": "pd_tmt_peptides.tsv",
       "fasta_file": "proteins.fasta",
       "assays": [null],
@@ -75,7 +105,7 @@
         "normalized_intensities.xlsx",
         "summary_stats.xlsx"
       ],
-      "sample_count": 6,
+      "sample_count": 10,
       "group_count": 2,
       "groups": ["WT", "KO"],
       "cross_omic_packs": [],
@@ -83,7 +113,22 @@
       "module_families": ["import", "design", "qc_peptide", "qc_protein", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": false,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "profile": "pd_tmt_protein",
+        "generator": "tests/testdata/e2e/generate_fixtures.R",
+        "matrix": "tools/profiling/kit_protein_corpus.R kitProteinMatrix",
+        "kit_recipe": "tmt",
+        "seed": 20261110,
+        "universe_seed": 20261107,
+        "biological_per_group": 5,
+        "proteins": 400
+      },
+      "files_sha256": {
+        "design.tsv": "fed1f2da738f786f9a0ad38d0bd81b2c3ea306dd19e645e03d092122806411ec",
+        "pd_tmt_peptides.tsv": "a73d6b8e63685857fad250ab35b5bdccdbc32251ed82d5e0a13ff8333033ccf4",
+        "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+      }
     },
     {
       "lane_id": "prot_lfq",
@@ -91,7 +136,7 @@
       "workflow_type": "LFQ",
       "import_tool": "maxquant",
       "use_limpa": false,
-      "fixture_dir": "prot_lfq",
+      "fixture_dir": "prot_lfq_maxquant",
       "seed_file": "proteinGroups.txt",
       "fasta_file": "proteins.fasta",
       "assays": [null],
@@ -103,7 +148,7 @@
         "normalized_intensities.xlsx",
         "summary_stats.xlsx"
       ],
-      "sample_count": 6,
+      "sample_count": 10,
       "group_count": 2,
       "groups": ["WT", "KO"],
       "cross_omic_packs": [],
@@ -111,7 +156,24 @@
       "module_families": ["import", "design", "qc_protein", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": false,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "profile": "maxquant_protein_groups",
+        "generator": "tests/testdata/e2e/generate_fixtures.R",
+        "matrix": "tools/profiling/kit_protein_corpus.R kitProteinMatrix",
+        "kit_recipe": "lfq",
+        "seed": 20261111,
+        "universe_seed": 20261107,
+        "biological_per_group": 5,
+        "proteins": 400,
+        "flagged_rows": 5,
+        "missing_fraction": 0
+      },
+      "files_sha256": {
+        "design.tsv": "fed1f2da738f786f9a0ad38d0bd81b2c3ea306dd19e645e03d092122806411ec",
+        "proteinGroups.txt": "99aded0f744c9280edb3e8bf3b69ccc5a61ed492a5f3f287bb65bed6764e42c6",
+        "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+      }
     },
     {
       "lane_id": "prot_lfq_fragpipe",
@@ -119,8 +181,8 @@
       "workflow_type": "LFQ",
       "import_tool": "fragpipe",
       "use_limpa": false,
-      "fixture_dir": "prot_lfq",
-      "seed_file": "seed_combined_protein.tsv",
+      "fixture_dir": "prot_lfq_fragpipe",
+      "seed_file": "combined_protein.tsv",
       "fasta_file": "proteins.fasta",
       "assays": [null],
       "expected_contrasts": ["KO_vs_WT"],
@@ -131,7 +193,7 @@
         "normalized_intensities.xlsx",
         "summary_stats.xlsx"
       ],
-      "sample_count": 6,
+      "sample_count": 10,
       "group_count": 2,
       "groups": ["WT", "KO"],
       "cross_omic_packs": [],
@@ -139,7 +201,23 @@
       "module_families": ["import", "design", "qc_protein", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": false,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "profile": "fragpipe_combined_protein",
+        "generator": "tests/testdata/e2e/generate_fixtures.R",
+        "matrix": "tools/profiling/kit_protein_corpus.R kitProteinMatrix",
+        "kit_recipe": "lfq",
+        "seed": 20261112,
+        "universe_seed": 20261107,
+        "biological_per_group": 5,
+        "proteins": 400,
+        "missing_fraction": 0
+      },
+      "files_sha256": {
+        "combined_protein.tsv": "51d590739e41eebb0ace020ea57728e38f353465a8a8e898492576cc286f6436",
+        "design.tsv": "fed1f2da738f786f9a0ad38d0bd81b2c3ea306dd19e645e03d092122806411ec",
+        "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
+      }
     },
     {
       "lane_id": "metab_lc",
@@ -166,7 +244,19 @@
       "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": true,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "generator": "none",
+        "hand_made": "hand-edited from an earlier MS-DIAL-style writer's output (assay-prefixed feature names, rows rearranged) and hand-written MS-DIAL examples (seed_*.csv); no generator writes the 'custom' import format; the committed bytes are kept because the lane's entry-point oracle is frozen on them"
+      },
+      "files_sha256": {
+        "design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310",
+        "lcms_features.tsv": "f2c96f84d38ea671ab05969f47b14c65b093532f3ee56ae9f0ee738f41c97924",
+        "lcms_neg_features.tsv": "f32cc0a3e60eed918f5fd42127eeecc43964f3b53dd248e2e40efa57f91cbf04",
+        "lcms_pos_features.tsv": "77ea1cd00bf4292bf3112c64b8466bbd371a2971fe66ef351e5318c447ec21e5",
+        "seed_lcms_neg.csv": "bb27405badf17062920d880b71d23cc384381411919023752e3e6fff9fbc4271",
+        "seed_lcms_pos.csv": "24bb76be65412946472e39a71fa11d88126ade94fe66ceb13be5d7099c567d13"
+      }
     },
     {
       "lane_id": "metab_gc",
@@ -192,7 +282,16 @@
       "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": false,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "generator": "none",
+        "hand_made": "hand-edited from an earlier MS-DIAL-style writer's output and a hand-written MS-DIAL example (seed_gcms.csv); no generator writes the 'custom' import format; the committed bytes are kept because the lane's entry-point oracle is frozen on them"
+      },
+      "files_sha256": {
+        "design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310",
+        "gcms_features.tsv": "d9ce2a2369b4bc402f35ada522134171585665456d8430237208aa34fda458e2",
+        "seed_gcms.csv": "e5b767b2287f91cda08caba16dbcdda55cea6af3c2b839098a669f3f524192b6"
+      }
     },
     {
       "lane_id": "metab_combined",
@@ -219,7 +318,20 @@
       "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": false,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "generator": "none",
+        "hand_made": "hand-edited from an earlier MS-DIAL-style writer's output (per-platform tables with a Platform column) and hand-written MS-DIAL examples (seed_*.csv); no generator writes the 'custom' import format; the committed bytes are kept because the lane's entry-point oracle is frozen on them"
+      },
+      "files_sha256": {
+        "combined_features.tsv": "bb8643c74b20bd1e3531f70223772289c79e13fa34a2e0cadbd45250112bb7c1",
+        "combined_gcms_features.tsv": "de6ca641e31b5d65d09638060e6af6a525a3a75b5929ec9458d335b3b81166f1",
+        "combined_lcms_features.tsv": "0f8093d306be1b13c249d2332be5c14f07d9e118b65075d2924793dc6e603575",
+        "design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310",
+        "seed_gcms.csv": "e5b767b2287f91cda08caba16dbcdda55cea6af3c2b839098a669f3f524192b6",
+        "seed_lcms_neg.csv": "bb27405badf17062920d880b71d23cc384381411919023752e3e6fff9fbc4271",
+        "seed_lcms_pos.csv": "24bb76be65412946472e39a71fa11d88126ade94fe66ceb13be5d7099c567d13"
+      }
     },
     {
       "lane_id": "lipid_canonical",
@@ -246,7 +358,17 @@
       "module_families": ["import", "design", "qc", "normalization", "differential_abundance", "summary_report"],
       "touchpoints": ["browser", "import", "design", "qc", "normalization", "session_export", "da", "summary_report", "report_export"],
       "critical_shared": true,
-      "report_export": true
+      "report_export": true,
+      "fixture_recipe": {
+        "generator": "none",
+        "hand_made": "hand-made LipidSearch tables (integer intensities, KO about twice WT for every lipid); the earlier generator's lipid writer wrote different values from the same recipe and was retired in KIT-101 revision 2.2; the committed bytes are kept because the lane's entry-point oracle is frozen on them"
+      },
+      "files_sha256": {
+        "design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310",
+        "lipidsearch_gcms.txt": "e2c4fa3d401fa6b1e92ab4236907e97059bdf1269024eb5a7adab7efd3e84ee4",
+        "lipidsearch_lcms_neg.txt": "14b100d399ffe23d381de9e5da4953a8e13cc07bb2916ad00abf3722cbd4d15f",
+        "lipidsearch_lcms_pos.txt": "c23154c95596cc055c5acfe9c14de4f9e2ca0d3b4821455f398595b957f8b0e4"
+      }
     },
     {
       "lane_id": "trx_screen",
@@ -291,5 +413,22 @@
         "truth.json": "880a471223b8a2f09e1f7b9c903431bed13ca3367eb50183d42b4f7ed04a883a"
       }
     }
-  ]
+  ],
+  "retained_fixtures": {
+    "note": "Files that belong to no lane. regenerated_sha256: the six-sample proteomics fixtures of the lanes before KIT-101 revision 2.2, rewritten byte for byte by their original writers in generate_fixtures.R; read by tests/testthat/test-workflow-native-session.R and by the KIT-021 lifecycle members (tools/profiling/kit_protein_corpus.R writeKitFixtureCorpus, bound in docs/qa/workflow-execution/kit/bindings.json). hand_made_sha256: earlier hand-made seed tables with no writer and no reader; kept unchanged.",
+    "regenerated_sha256": {
+      "prot_lfq/design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310",
+      "prot_lfq/proteinGroups.txt": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb",
+      "prot_lfq/proteins.fasta": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17",
+      "prot_lfq/seed_combined_protein.tsv": "3c4a154b85143dd074a1f446117aa8621763fdc4e6683b74460d3305a4420ebc",
+      "prot_tmt/design.tsv": "46a038d8823cd81c81f33cc61a086308001b985ce49753d495a9077a341f4310",
+      "prot_tmt/pd_tmt_peptides.tsv": "1cc8deec83630a67c5fa874f5b2dc635678c91e953db118929f0d9969bc872db",
+      "prot_tmt/proteins.fasta": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17"
+    },
+    "hand_made_sha256": {
+      "prot_dia/seed_report.tsv": "50efe6c85b655e82b7bda95135a30081623fe614bc8594607235dce047288c85",
+      "prot_dia_limpa/seed_report.tsv": "267375e5ed3254da60d1f7db10a47a9bdef4b4721206a234dd7d47f0bb11fe47",
+      "prot_tmt/seed_proteins.tsv": "a83151556c742ff7bf9718c947731b4348b803112bd6a95178165e5caefaf318"
+    }
+  }
 }

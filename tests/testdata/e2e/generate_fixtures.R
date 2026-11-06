@@ -2,18 +2,27 @@
 #
 # DEVELOPER TOOL — not run in CI.
 #
-# Regenerates all 9 lane fixture seed files and design.tsv from scratch using
-# deterministic synthetic data. Run this script whenever fixture formats change
-# or new lanes are added.
+# Writes every generated e2e fixture from `manifest.json` and then checks every committed fixture file against the
+# sha256 the manifest records for it (KIT-101 F-06: the generator reproduces the committed fixtures byte for byte, or
+# the manifest says which are hand-made and why). It stops with an error if any file differs.
 #
-# KIT-101: the tenth lane, trx_screen, is written by the KIT-040 corpus recipe
-# (tools/profiling/kit_omics_corpus.R: kitOmicsRecipe("trx_screen", 3, 300),
-# withr::with_seed(20261106)), so it needs withr and digest as well; the lane's
-# manifest entry carries each file's sha256.
+# - Proteomics lanes (KIT-101 revision 2.2, F-07): prot_dia, prot_dia_limpa (DIA-NN report.tsv), prot_tmt (Proteome
+#   Discoverer TMT), prot_lfq (MaxQuant proteinGroups.txt) and prot_lfq_fragpipe (FragPipe combined_protein.tsv). One
+#   synthetic protein universe (400 accessions, tryptic peptides, a matching FASTA) shared by the five lanes; each
+#   lane's protein abundances come from the KIT-021 protein corpus recipe (tools/profiling/kit_protein_corpus.R:
+#   kitProteinRecipe/kitProteinMatrix, 10% of proteins differential KO vs WT) at the lane's size and seed
+#   (`fixture_recipe` in the manifest). The DIA-NN lanes expand each protein into precursors with every column the
+#   import, the Q-value filter and the precursor rollup read.
+# - trx_screen: the KIT-040 corpus recipe (tools/profiling/kit_omics_corpus.R: kitOmicsRecipe("trx_screen", 3, 300),
+#   withr::with_seed(20261106)), written by the corpus tool itself.
+# - Hand-made lanes (`fixture_recipe$generator == "none"`: lipid_canonical, metab_lc, metab_gc, metab_combined): not
+#   written; their committed files are checked only. The manifest records why.
+# - Retained fixtures (`retained_fixtures` in the manifest): the earlier six-sample proteomics fixtures in prot_lfq/ and
+#   prot_tmt/, still read by tests/testthat/test-workflow-native-session.R and by the KIT-021 lifecycle members
+#   (tools/profiling/kit_protein_corpus.R writeKitFixtureCorpus), are rewritten by their original writers below; the
+#   hand-made seed_* files are checked only.
 #
-# Usage:
-#   source("tests/testdata/e2e/generate_fixtures.R")
-#   # or from repo root:
+# Needs jsonlite, withr and digest. Run from the repository root:
 #   Rscript tests/testdata/e2e/generate_fixtures.R
 #
 # Idempotent: running twice produces byte-identical output files.
@@ -56,8 +65,7 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     if (!file.exists(manifest_path)) {
         stop("manifest.json not found at: ", manifest_path)
     }
-    raw <- jsonlite::read_json(manifest_path, simplifyVector = FALSE)
-    stats::setNames(raw$lanes, vapply(raw$lanes, `[[`, character(1L), "lane_id"))
+    jsonlite::read_json(manifest_path, simplifyVector = FALSE)
 }
 
 # ---------------------------------------------------------------------------
@@ -76,6 +84,266 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     )
     invisible(path)
 }
+
+# ---------------------------------------------------------------------------
+# Proteomics lanes (KIT-101 revision 2.2)
+# ---------------------------------------------------------------------------
+
+#' The KIT-021 protein corpus tool (kitProteinRecipe, kitProteinMatrix), read from this source tree.
+#' @return Environment holding the tool's functions.
+#' @noRd
+kitProteinTools <- function() {
+    tool <- file.path(FIXTURE_ROOT, "..", "..", "..", "tools", "profiling", "kit_protein_corpus.R")
+    if (!file.exists(tool)) stop("the KIT-021 protein corpus tool is not in this source tree: ", tool)
+    env <- new.env(parent = globalenv())
+    sys.source(tool, env)
+    env
+}
+
+#' The protein universe shared by the five proteomics lanes: accessions, gene and entry names, the peptides a
+#' DIA-NN report observes (1 to 4 per protein, unique, tryptic) and full sequences (the observed peptides plus two
+#' unobserved ones). No random draw outside `seed`.
+#' @param proteins Number of proteins.
+#' @param seed Seed of the universe.
+#' @return List of ids, genes, entries, names, observed (list of peptides) and sequences.
+#' @noRd
+protFixtureUniverse <- function(proteins, seed) {
+    withr::with_seed(seed, {
+        residues <- strsplit("ACDEFGHILMNQSTVWY", "", fixed = TRUE)[[1L]]
+        observed <- sample(1:4, proteins, replace = TRUE, prob = c(0.15, 0.3, 0.3, 0.25))
+        per_protein <- observed + 2L
+        candidates <- vapply(seq_len(2L * sum(per_protein)), \(i) {
+            body <- paste(sample(residues, sample(6:13, 1L), replace = TRUE), collapse = "")
+            paste0(body, sample(c("K", "R"), 1L))
+        }, character(1))
+        peptides <- unique(candidates)[seq_len(sum(per_protein))]
+        by_protein <- split(peptides, rep(seq_len(proteins), per_protein))
+        list(
+            ids = sprintf("P%05d", seq_len(proteins)),
+            genes = sprintf("GENE%d", seq_len(proteins)),
+            entries = sprintf("SYN%d_HUMAN", seq_len(proteins)),
+            names = sprintf("Synthetic protein %d", seq_len(proteins)),
+            observed = lapply(seq_len(proteins), \(i) by_protein[[i]][seq_len(observed[[i]])]),
+            sequences = vapply(by_protein, \(p) paste0("M", paste(p, collapse = "")), character(1), USE.NAMES = FALSE)
+        )
+    })
+}
+
+#' The lane's protein abundance matrix from the KIT-021 recipe, with its columns in design order (WT_1..WT_n,
+#' KO_1..KO_n).
+#' @param lane Manifest lane (its `fixture_recipe` gives kit_recipe, seed, biological_per_group, proteins).
+#' @param kit The KIT-021 tool environment.
+#' @return List of design, values (linear, proteins x samples), missing (logical), differential, recipe.
+#' @noRd
+protFixtureMatrix <- function(lane, kit) {
+    shape <- lane$fixture_recipe
+    per_group <- as.integer(shape$biological_per_group)
+    recipe <- kit$kitProteinRecipe(shape$kit_recipe, samples = 2L * per_group, proteins = as.integer(shape$proteins))
+    recipe$seed <- as.integer(shape$seed)
+    if (!is.null(shape$flagged_rows)) recipe$flagged_rows <- as.integer(shape$flagged_rows)
+    # A protein-level LFQ export writes a missing value as 0, which the import keeps as a quantity (log2(0 + 1)): in
+    # development runs a ten-sample fixture lost 1 to 4 samples to the correlation filter at 2% missing, so the LFQ
+    # lanes record no missing values.
+    if (!is.null(shape$missing_fraction)) recipe$missing_fraction <- as.numeric(shape$missing_fraction)
+    m <- kit$kitProteinMatrix(recipe)
+    label <- sprintf("%s_%d", m$group, stats::ave(seq_along(m$group), m$group, FUN = seq_along))
+    groups <- unlist(lane$groups)
+    design <- data.frame(
+        sample = sprintf("%s_%d", rep(groups, each = per_group), rep(seq_len(per_group), length(groups))),
+        group = rep(groups, each = per_group),
+        stringsAsFactors = FALSE
+    )
+    at <- match(design$sample, label)
+    if (anyNA(at)) stop("lane groups differ from the KIT-021 recipe groups: ", lane$lane_id)
+    list(design = design, values = m$values[, at, drop = FALSE], missing = m$missing[, at, drop = FALSE],
+        differential = m$differential, recipe = recipe)
+}
+
+#' Write the universe as a UniProt-style FASTA.
+#' @noRd
+writeProtFixtureFasta <- function(path, universe) {
+    headers <- sprintf(">sp|%s|%s %s OS=Homo sapiens OX=9606 GN=%s PE=1 SV=1",
+        universe$ids, universe$entries, universe$names, universe$genes)
+    writeLines(as.vector(rbind(headers, universe$sequences)), path, useBytes = TRUE)
+    invisible(path)
+}
+
+#' Write the lane's design.tsv and FASTA, the files every proteomics lane has.
+#' @noRd
+writeProtFixtureCommon <- function(lane, lane_dir, universe, design) {
+    .write_tsv(design, file.path(lane_dir, "design.tsv"))
+    writeProtFixtureFasta(file.path(lane_dir, lane$fasta_file), universe)
+    cat("  wrote design.tsv,", lane$fasta_file, "\n")
+}
+
+#' A proteomics lane's inputs: the universe, the abundance matrix and the KIT-021 tool.
+#' @noRd
+protFixtureInputs <- function(lane) {
+    kit <- kitProteinTools()
+    shape <- lane$fixture_recipe
+    list(
+        universe = protFixtureUniverse(as.integer(shape$proteins), as.integer(shape$universe_seed)),
+        matrix = protFixtureMatrix(lane, kit)
+    )
+}
+
+#' DIA-NN main report (long format): one row per precursor and run, the columns the import (Protein.Group,
+#' Stripped.Sequence, Run, Precursor.Normalised), the Q-value filter (Q.Value, Global.Q.Value, Global.PG.Q.Value,
+#' Proteotypic) and the precursor rollup (Protein.Ids, Modified.Sequence, Precursor.Id, Precursor.Charge,
+#' Precursor.Quantity, Precursor.Normalised) read. A missing precursor has no row, as DIA-NN writes it. A few
+#' precursors fail the run or global q-value, a few peptides are not proteotypic and four unchanged proteins fail the
+#' global protein-group q-value, so the confidence filter removes rows.
+#' @noRd
+generateProtDiannFixture <- function(lane, lane_dir) {
+    inputs <- protFixtureInputs(lane)
+    universe <- inputs$universe
+    lm <- inputs$matrix
+    design <- lm$design
+    report <- withr::with_seed(as.integer(lane$fixture_recipe$seed) + 1L, {
+        n_obs <- lengths(universe$observed)
+        peptide <- data.frame(protein = rep(seq_along(n_obs), n_obs), sequence = unlist(universe$observed),
+            stringsAsFactors = FALSE)
+        peptide$proteotypic <- as.integer(stats::runif(nrow(peptide)) >= 0.03)
+        peptide$offset <- stats::rnorm(nrow(peptide), 0, 0.8)
+        third <- which(stats::runif(nrow(peptide)) < 0.25)
+        precursor <- peptide[c(seq_len(nrow(peptide)), third), , drop = FALSE]
+        precursor$charge <- c(rep(2L, nrow(peptide)), rep(3L, length(third)))
+        precursor <- precursor[order(precursor$protein, precursor$sequence, precursor$charge), , drop = FALSE]
+        precursor$offset <- precursor$offset + stats::rnorm(nrow(precursor), 0, 0.3)
+        precursor$global_q <- signif(stats::runif(nrow(precursor), 1e-4, 5e-3), 3)
+        precursor$global_q[stats::runif(nrow(precursor)) < 0.01] <- 0.02
+        protein_global_pg_q <- signif(stats::runif(length(n_obs), 1e-4, 2e-3), 3)
+        protein_global_pg_q[sample(which(!lm$differential), 4L)] <- 0.03
+        modified <- gsub("C", "C(UniMod:4)", precursor$sequence, fixed = TRUE)
+        run_scale <- 2^stats::rnorm(nrow(design), 0, 0.1)
+        rows <- lapply(seq_len(nrow(design)), \(s) {
+            log2_quantity <- log2(lm$values[precursor$protein, s]) + precursor$offset +
+                stats::rnorm(nrow(precursor), 0, 0.15)
+            q_value <- signif(stats::runif(nrow(precursor), 1e-4, 8e-3), 3)
+            q_value[stats::runif(nrow(precursor)) < 0.02] <- 0.03
+            pg_q_value <- signif(stats::runif(length(n_obs), 1e-4, 5e-3), 3)
+            absent <- lm$missing[precursor$protein, s] |
+                stats::runif(nrow(precursor)) < 0.03 + 0.1 * stats::plogis(17 - log2_quantity)
+            quantity <- round(2^log2_quantity, 1)
+            data.frame(
+                Run = design$sample[[s]],
+                Protein.Group = universe$ids[precursor$protein],
+                Protein.Ids = universe$ids[precursor$protein],
+                Protein.Names = universe$entries[precursor$protein],
+                Genes = universe$genes[precursor$protein],
+                Modified.Sequence = modified,
+                Stripped.Sequence = precursor$sequence,
+                Precursor.Id = paste0(modified, precursor$charge),
+                Precursor.Charge = precursor$charge,
+                Q.Value = q_value,
+                Global.Q.Value = precursor$global_q,
+                PG.Q.Value = pg_q_value[precursor$protein],
+                Global.PG.Q.Value = protein_global_pg_q[precursor$protein],
+                Proteotypic = precursor$proteotypic,
+                Precursor.Quantity = quantity,
+                Precursor.Normalised = round(quantity * run_scale[[s]], 1),
+                stringsAsFactors = FALSE
+            )[!absent, , drop = FALSE]
+        })
+        do.call(rbind, rows)
+    })
+    .write_tsv(report, file.path(lane_dir, lane$seed_file))
+    cat("  wrote", lane$seed_file, "(", nrow(report), "rows )\n")
+    writeProtFixtureCommon(lane, lane_dir, universe, design)
+}
+
+#' Proteome Discoverer TMT export: one row per protein (Annotated.Sequence, Master.Protein.Accessions) and one TMT10
+#' plex, `Abundance: F1: <channel>, <sample>`; a missing abundance is left empty, as Proteome Discoverer writes it.
+#' @noRd
+generateProtPdTmtFixture <- function(lane, lane_dir) {
+    inputs <- protFixtureInputs(lane)
+    universe <- inputs$universe
+    lm <- inputs$matrix
+    values <- lm$values
+    values[lm$missing] <- NA
+    channels <- lm$recipe$channels[seq_len(nrow(lm$design))]
+    table <- data.frame(
+        Annotated.Sequence = vapply(universe$observed, `[[`, character(1), 1L),
+        Master.Protein.Accessions = universe$ids,
+        stringsAsFactors = FALSE
+    )
+    abundances <- as.data.frame(values)
+    names(abundances) <- sprintf("Abundance: F1: %s, %s", channels, lm$design$sample)
+    table <- cbind(table, abundances)
+    .write_tsv(table, file.path(lane_dir, lane$seed_file))
+    cat("  wrote", lane$seed_file, "(", nrow(table), "rows )\n")
+    writeProtFixtureCommon(lane, lane_dir, universe, lm$design)
+}
+
+#' MaxQuant proteinGroups.txt in the dotted form the reader handles, a missing LFQ intensity written as 0, and
+#' contaminant (CON__) and decoy (REV__) rows interleaved, one of each leading the table, as the KIT-021 corpus writer
+#' lays them out (the reader drops them).
+#' @noRd
+generateProtMaxQuantFixture <- function(lane, lane_dir) {
+    inputs <- protFixtureInputs(lane)
+    universe <- inputs$universe
+    lm <- inputs$matrix
+    values <- lm$values
+    values[lm$missing] <- 0
+    table <- data.frame(Protein.IDs = universe$ids, Majority.protein.IDs = universe$ids,
+        Protein.names = universe$names, Gene.names = universe$genes, stringsAsFactors = FALSE)
+    intensities <- as.data.frame(values)
+    names(intensities) <- paste0("LFQ.intensity.", lm$design$sample)
+    table <- cbind(table, intensities)
+    table$Potential.contaminant <- ""
+    table$Reverse <- ""
+    flagged_rows <- lm$recipe$flagged_rows
+    flagged <- table[seq_len(flagged_rows), , drop = FALSE]
+    flagged$Protein.IDs <- flagged$Majority.protein.IDs <- paste0("CON__", flagged$Protein.IDs)
+    flagged$Potential.contaminant <- "+"
+    decoys <- table[seq_len(flagged_rows) + flagged_rows, , drop = FALSE]
+    decoys$Protein.IDs <- decoys$Majority.protein.IDs <- paste0("REV__", decoys$Protein.IDs)
+    decoys$Reverse <- "+"
+    table <- rbind(table, flagged, decoys)
+    table <- withr::with_seed(lm$recipe$seed + 1L, table[sample.int(nrow(table)), , drop = FALSE])
+    lead <- c(which(table$Potential.contaminant == "+")[[1L]], which(table$Reverse == "+")[[1L]])
+    table <- table[c(lead, setdiff(seq_len(nrow(table)), lead)), , drop = FALSE]
+    .write_tsv(table, file.path(lane_dir, lane$seed_file))
+    cat("  wrote", lane$seed_file, "(", nrow(table), "rows )\n")
+    writeProtFixtureCommon(lane, lane_dir, universe, lm$design)
+}
+
+#' FragPipe combined_protein.tsv: protein annotation columns and `<sample> MaxLFQ Intensity`, a missing intensity
+#' written as 0.
+#' @noRd
+generateProtFragPipeFixture <- function(lane, lane_dir) {
+    inputs <- protFixtureInputs(lane)
+    universe <- inputs$universe
+    lm <- inputs$matrix
+    values <- lm$values
+    values[lm$missing] <- 0
+    coverage <- round(100 * vapply(universe$observed, \(p) sum(nchar(p)), numeric(1)) / nchar(universe$sequences), 1)
+    table <- data.frame(
+        Protein = sprintf("sp|%s|%s", universe$ids, universe$entries),
+        `Protein ID` = universe$ids,
+        `Entry Name` = universe$entries,
+        Gene = universe$genes,
+        Length = nchar(universe$sequences),
+        Organism = "Homo sapiens",
+        `Protein Description` = universe$names,
+        `Protein Existence` = "1:Experimental evidence at protein level",
+        Coverage = coverage,
+        `Protein Probability` = 1,
+        check.names = FALSE,
+        stringsAsFactors = FALSE
+    )
+    intensities <- as.data.frame(values)
+    names(intensities) <- paste0(lm$design$sample, " MaxLFQ Intensity")
+    table <- cbind(table, intensities)
+    .write_tsv(table, file.path(lane_dir, lane$seed_file))
+    cat("  wrote", lane$seed_file, "(", nrow(table), "rows )\n")
+    writeProtFixtureCommon(lane, lane_dir, universe, lm$design)
+}
+
+# ---------------------------------------------------------------------------
+# Retained six-sample proteomics fixtures (prot_lfq/, prot_tmt/): their original writers, unchanged, so the files
+# the native-session tests and the KIT-021 lifecycle members read are reproduced byte for byte.
+# ---------------------------------------------------------------------------
 
 .write_proteomics_fasta <- function(path) {
     lines <- c(
@@ -96,10 +364,6 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     invisible(path)
 }
 
-# ---------------------------------------------------------------------------
-# Helper: build a design.tsv data.frame for a lane
-# ---------------------------------------------------------------------------
-
 .make_design <- function(lane) {
     groups <- unlist(lane$groups)
     n_per_group <- lane$sample_count %/% length(groups)
@@ -108,13 +372,7 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     data.frame(sample = samples, group = group_labels, stringsAsFactors = FALSE)
 }
 
-# ---------------------------------------------------------------------------
-# Synthetic signal helpers
-#
-# Two "DA-significant" features per lane: feature 1 is up in KO (~2x),
-# feature 2 is down in KO (~0.5x). Remaining features are near-null.
-# ---------------------------------------------------------------------------
-
+# Two "DA-significant" features: feature 1 is up in KO (~2x), feature 2 is down in KO (~0.5x).
 .base_intensities <- function(n_features, n_wt, n_ko, base_mean = 1000.0, noise_sd = 50.0) {
     set.seed(20260428L)  # reset per call for reproducibility
     wt_mat <- matrix(
@@ -134,80 +392,7 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     list(wt = round(wt_mat, 1L), ko = round(ko_mat, 1L))
 }
 
-# ---------------------------------------------------------------------------
-# Lane generators — one function per import_tool format
-# ---------------------------------------------------------------------------
-
-.generate_prot_diann <- function(lane, lane_dir) {
-    design <- .make_design(lane)
-    wt_samples <- design$sample[design$group == "WT"]
-    ko_samples <- design$sample[design$group == "KO"]
-    n_wt <- length(wt_samples)
-    n_ko <- length(ko_samples)
-
-    proteins <- data.frame(
-        Protein.Group  = c("P00001", "P00002", "P00003", "P00004", "P00005")
-        , Protein.Ids  = c("P00001", "P00002", "P00003", "P00004", "P00005")
-        , Protein.Names = c("Protein Alpha", "Protein Beta", "Protein Gamma", "Protein Delta", "Protein Epsilon")
-        , Genes        = c("GENE1", "GENE2", "GENE3", "GENE4", "GENE5")
-        , stringsAsFactors = FALSE
-    )
-    n_proteins <- nrow(proteins)
-
-    # Two precursors per protein (suffix K charge 2, R charge 3)
-    peptide_suffixes <- list(c("AK", 2L), c("VR", 3L))
-    intensities <- .base_intensities(n_proteins, n_wt, n_ko)
-
-    rows <- vector("list", n_proteins * length(peptide_suffixes) * (n_wt + n_ko))
-    row_idx <- 0L
-
-    for (s_idx in seq_len(n_wt + n_ko)) {
-        is_wt <- s_idx <= n_wt
-        sample_name <- if (is_wt) wt_samples[s_idx] else ko_samples[s_idx - n_wt]
-        grp_mat <- if (is_wt) intensities$wt else intensities$ko
-        col_idx <- if (is_wt) s_idx else s_idx - n_wt
-
-        for (p_idx in seq_len(n_proteins)) {
-            prot <- proteins[p_idx, ]
-            for (pep in peptide_suffixes) {
-                row_idx <- row_idx + 1L
-                pep_seq <- paste0("PEP", p_idx, pep[[1L]])
-                pep_id  <- paste0("PEP", p_idx, pep[[1L]], pep[[2L]])
-                rows[[row_idx]] <- data.frame(
-                    Protein.Group      = prot$Protein.Group
-                    , Protein.Ids      = prot$Protein.Ids
-                    , Protein.Names    = prot$Protein.Names
-                    , Genes            = prot$Genes
-                    , Precursor.Id     = pep_id
-                    , Modified.Sequence = pep_seq
-                    , Stripped.Sequence = pep_seq
-                    , Precursor.Charge = pep[[2L]]
-                    , Precursor.Quantity = grp_mat[p_idx, col_idx]
-                    , Q.Value          = 0.001
-                    , PG.Q.Value       = 0.001
-                    , Run              = sample_name
-                    , stringsAsFactors = FALSE
-                )
-            }
-        }
-    }
-
-    report <- do.call(rbind, rows)
-    seed_path <- file.path(lane_dir, lane$seed_file)
-    .write_tsv(report, seed_path)
-    cat("  wrote", basename(seed_path), "(", nrow(report), "rows )\n")
-
-    design_path <- file.path(lane_dir, "design.tsv")
-    .write_tsv(design, design_path)
-    cat("  wrote design.tsv\n")
-
-    if (!is.null(lane$fasta_file)) {
-        .write_proteomics_fasta(file.path(lane_dir, lane$fasta_file))
-        cat("  wrote", lane$fasta_file, "\n")
-    }
-}
-
-.generate_prot_tmt <- function(lane, lane_dir) {
+.generate_retained_prot_tmt <- function(lane, lane_dir) {
     design <- .make_design(lane)
     wt_samples <- design$sample[design$group == "WT"]
     ko_samples <- design$sample[design$group == "KO"]
@@ -263,7 +448,7 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     }
 }
 
-.generate_prot_lfq <- function(lane, lane_dir) {
+.generate_retained_prot_lfq <- function(lane, lane_dir) {
     design <- .make_design(lane)
     wt_samples <- design$sample[design$group == "WT"]
     ko_samples <- design$sample[design$group == "KO"]
@@ -328,228 +513,25 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
     }
 }
 
-.generate_metab_lc <- function(lane, lane_dir) {
-    design <- .make_design(lane)
-    wt_samples <- design$sample[design$group == "WT"]
-    ko_samples <- design$sample[design$group == "KO"]
-    n_wt <- length(wt_samples)
-    n_ko <- length(ko_samples)
+# The retained fixtures' original lane definitions (manifest entries before revision 2.2).
+.RETAINED_WRITERS <- list(
+    list(fixture_dir = "prot_tmt", import_tool = "pd_tmt", seed_file = "pd_tmt_peptides.tsv", writer = .generate_retained_prot_tmt),
+    list(fixture_dir = "prot_lfq", import_tool = "maxquant", seed_file = "proteinGroups.txt", writer = .generate_retained_prot_lfq),
+    list(fixture_dir = "prot_lfq", import_tool = "fragpipe", seed_file = "seed_combined_protein.tsv", writer = .generate_retained_prot_lfq)
+)
 
-    assay_names <- unlist(lane$assays)  # e.g. c("LCMS_Pos", "LCMS_Neg")
-    n_features_per_assay <- 3L
-
-    # mz values per platform
-    mz_pos <- c(180.0634, 132.0423, 204.0899)
-    mz_neg <- c(175.0552, 191.0556, 269.0454)
-    rt_vals <- c(2.45, 3.12, 1.87)
-    adducts_pos <- c("[M+H]+", "[M-H]-", "[M+H]+")
-    adducts_neg <- c("[M-H]-", "[M+H]+", "[M-H]-")
-
-    rows <- list()
-    feat_counter <- 0L
-
-    for (assay in assay_names) {
-        is_pos <- grepl("Pos", assay, ignore.case = TRUE)
-        intensities <- .base_intensities(n_features_per_assay, n_wt, n_ko, base_mean = 5000.0, noise_sd = 250.0)
-        mz_vals   <- if (is_pos) mz_pos else mz_neg
-        adducts   <- if (is_pos) adducts_pos else adducts_neg
-
-        for (f_idx in seq_len(n_features_per_assay)) {
-            feat_counter <- feat_counter + 1L
-            row <- data.frame(
-                Feature.Name   = sprintf("Feature_%03d", feat_counter)
-                , m.z          = mz_vals[f_idx]
-                , Retention.Time = rt_vals[f_idx]
-                , Adduct       = adducts[f_idx]
-                , stringsAsFactors = FALSE
-            )
-            for (i in seq_len(n_wt)) {
-                row[[wt_samples[i]]] <- intensities$wt[f_idx, i]
-            }
-            for (i in seq_len(n_ko)) {
-                row[[ko_samples[i]]] <- intensities$ko[f_idx, i]
-            }
-            rows[[feat_counter]] <- row
-        }
+generateRetainedFixtures <- function() {
+    for (spec in .RETAINED_WRITERS) {
+        cat("[retained ", spec$fixture_dir, "/", spec$seed_file, "]\n", sep = "")
+        lane <- list(import_tool = spec$import_tool, seed_file = spec$seed_file, fasta_file = "proteins.fasta",
+            sample_count = 6L, groups = list("WT", "KO"))
+        spec$writer(lane, file.path(FIXTURE_ROOT, spec$fixture_dir))
     }
-
-    df <- do.call(rbind, rows)
-
-    seed_path <- file.path(lane_dir, lane$seed_file)
-    .write_tsv(df, seed_path)
-    cat("  wrote", basename(seed_path), "(", nrow(df), "rows )\n")
-
-    design_path <- file.path(lane_dir, "design.tsv")
-    .write_tsv(design, design_path)
-    cat("  wrote design.tsv\n")
 }
 
-.generate_metab_gc <- function(lane, lane_dir) {
-    design <- .make_design(lane)
-    wt_samples <- design$sample[design$group == "WT"]
-    ko_samples <- design$sample[design$group == "KO"]
-    n_wt <- length(wt_samples)
-    n_ko <- length(ko_samples)
-
-    n_features <- 3L
-    intensities <- .base_intensities(n_features, n_wt, n_ko, base_mean = 10000.0, noise_sd = 300.0)
-    rt_vals     <- c(5.23, 8.67, 12.34)
-    similarity  <- c(850L, 920L, 780L)
-
-    rows <- vector("list", n_features)
-    for (f_idx in seq_len(n_features)) {
-        row <- data.frame(
-            Feature.Name    = sprintf("GC_Feature_%03d", f_idx)
-            , Retention.Time = rt_vals[f_idx]
-            , Similarity    = similarity[f_idx]
-            , stringsAsFactors = FALSE
-        )
-        for (i in seq_len(n_wt)) {
-            row[[wt_samples[i]]] <- intensities$wt[f_idx, i]
-        }
-        for (i in seq_len(n_ko)) {
-            row[[ko_samples[i]]] <- intensities$ko[f_idx, i]
-        }
-        rows[[f_idx]] <- row
-    }
-
-    df <- do.call(rbind, rows)
-
-    seed_path <- file.path(lane_dir, lane$seed_file)
-    .write_tsv(df, seed_path)
-    cat("  wrote", basename(seed_path), "(", nrow(df), "rows )\n")
-
-    design_path <- file.path(lane_dir, "design.tsv")
-    .write_tsv(design, design_path)
-    cat("  wrote design.tsv\n")
-}
-
-.generate_metab_combined <- function(lane, lane_dir) {
-    design <- .make_design(lane)
-    wt_samples <- design$sample[design$group == "WT"]
-    ko_samples <- design$sample[design$group == "KO"]
-    n_wt <- length(wt_samples)
-    n_ko <- length(ko_samples)
-
-    assay_names <- unlist(lane$assays)  # e.g. c("LCMS_Pos", "LCMS_Neg", "GCMS")
-
-    platform_meta <- list(
-        LCMS_Pos = list(mz = 180.0634, rt = 2.45, prefix = "Feature")
-        , LCMS_Neg = list(mz = 132.0423, rt = 3.12, prefix = "Feature")
-        , GCMS     = list(mz = NA_real_, rt = 5.23, prefix = "GC_Feature")
-    )
-
-    rows <- list()
-    feat_counter <- 0L
-
-    for (assay in assay_names) {
-        meta <- platform_meta[[assay]]
-        feat_counter <- feat_counter + 1L
-        intensities <- .base_intensities(1L, n_wt, n_ko, base_mean = 7000.0, noise_sd = 300.0)
-
-        row <- data.frame(
-            Feature.Name    = sprintf("%s_%03d", meta$prefix, feat_counter)
-            , Platform      = assay
-            , m.z           = meta$mz
-            , Retention.Time = meta$rt
-            , stringsAsFactors = FALSE
-        )
-        for (i in seq_len(n_wt)) {
-            row[[wt_samples[i]]] <- intensities$wt[1L, i]
-        }
-        for (i in seq_len(n_ko)) {
-            row[[ko_samples[i]]] <- intensities$ko[1L, i]
-        }
-        rows[[feat_counter]] <- row
-    }
-
-    df <- do.call(rbind, rows)
-    # Inject DA signal: row 1 up 2x, row 2 down 0.5x
-    if (nrow(df) >= 2L) {
-        ko_cols <- paste0(ko_samples)
-        df[1L, ko_cols] <- df[1L, ko_cols] * 2.0
-        df[2L, ko_cols] <- df[2L, ko_cols] * 0.5
-    }
-
-    seed_path <- file.path(lane_dir, lane$seed_file)
-    .write_tsv(df, seed_path)
-    cat("  wrote", basename(seed_path), "(", nrow(df), "rows )\n")
-
-    design_path <- file.path(lane_dir, "design.tsv")
-    .write_tsv(design, design_path)
-    cat("  wrote design.tsv\n")
-}
-
-.generate_lipid_canonical <- function(lane, lane_dir) {
-    design <- .make_design(lane)
-    wt_samples <- design$sample[design$group == "WT"]
-    ko_samples <- design$sample[design$group == "KO"]
-    n_wt <- length(wt_samples)
-    n_ko <- length(ko_samples)
-
-    write_lipidsearch_assay <- function(path, assay_def, base_mean) {
-        n_lipids <- nrow(assay_def)
-        intensities <- .base_intensities(
-            n_lipids,
-            n_wt,
-            n_ko,
-            base_mean = base_mean,
-            noise_sd = base_mean * 0.04
-        )
-
-        df <- assay_def
-        for (i in seq_len(n_wt)) {
-            df[[wt_samples[i]]] <- intensities$wt[, i]
-        }
-        for (i in seq_len(n_ko)) {
-            df[[ko_samples[i]]] <- intensities$ko[, i]
-        }
-
-        .write_tsv(df, path)
-        cat("  wrote", basename(path), "(", nrow(df), "rows )\n")
-    }
-
-    pos_lipids <- data.frame(
-        LipidName = c("PC 34:1", "PC 36:2", "PE 36:2", "PE 38:3", "TG 52:3", "TG 54:3", "TG 56:6", "SM 34:1", "SM 36:1", "CE 18:1"),
-        LipidClass = c("PC", "PC", "PE", "PE", "TG", "TG", "TG", "SM", "SM", "CE"),
-        FattyAcid = c("16:0/18:1", "18:1/18:1", "18:0/18:2", "18:1/20:2", "16:0/18:1/18:2", "18:1/18:1/18:1", "18:2/18:2/20:2", "18:1/16:0", "18:1/18:0", "18:1"),
-        IonType = c("[M+H]+", "[M+H]+", "[M+H]+", "[M+H]+", "[M+NH4]+", "[M+NH4]+", "[M+NH4]+", "[M+H]+", "[M+H]+", "[M+NH4]+"),
-        BaseRt = c(5.23, 6.82, 3.45, 4.12, 12.34, 13.56, 14.23, 4.91, 5.67, 7.23),
-        CalcMz = c(760.585, 788.616, 744.554, 770.570, 874.785, 902.816, 924.801, 703.575, 731.607, 668.632),
-        Grade = c("A", "A", "B", "B", "A", "A", "B", "A", "B", "B"),
-        stringsAsFactors = FALSE
-    )
-    neg_lipids <- data.frame(
-        LipidName = c("PI 36:2", "PI 38:4", "PS 36:1", "PS 38:4", "PG 34:1", "PG 36:2", "Cer 34:1", "Cer 42:2", "LPC 18:1", "LPE 18:0"),
-        LipidClass = c("PI", "PI", "PS", "PS", "PG", "PG", "Cer", "Cer", "LPC", "LPE"),
-        FattyAcid = c("18:0/18:2", "18:0/20:4", "18:0/18:1", "18:0/20:4", "16:0/18:1", "18:1/18:1", "d18:1/16:0", "d18:1/24:1", "18:1", "18:0"),
-        IonType = rep("[M-H]-", 10),
-        BaseRt = c(6.12, 6.94, 5.41, 5.78, 4.35, 4.89, 8.11, 9.32, 2.75, 2.98),
-        CalcMz = c(861.550, 885.550, 788.545, 810.530, 747.518, 773.534, 536.504, 648.628, 520.340, 480.309),
-        Grade = c("A", "A", "B", "B", "A", "A", "B", "B", "A", "B"),
-        stringsAsFactors = FALSE
-    )
-    gcms_lipids <- data.frame(
-        LipidName = c("FA 16:0", "FA 18:1", "FA 18:2", "MAG 18:1", "DAG 34:1", "DAG 36:2", "Cholesterol", "Campesterol", "Sitosterol", "Squalene"),
-        LipidClass = c("FA", "FA", "FA", "MAG", "DAG", "DAG", "ST", "ST", "ST", "HC"),
-        FattyAcid = c("16:0", "18:1", "18:2", "18:1", "16:0/18:1", "18:1/18:1", "27:1", "28:1", "29:1", "30:6"),
-        IonType = c("[M-H]-", "[M-H]-", "[M-H]-", "[M+NH4]+", "[M+NH4]+", "[M+NH4]+", "[M+H-H2O]+", "[M+H-H2O]+", "[M+H-H2O]+", "[M+H]+"),
-        BaseRt = c(2.11, 2.64, 2.91, 3.25, 8.35, 8.89, 10.11, 10.32, 10.75, 12.98),
-        CalcMz = c(255.233, 281.249, 279.233, 356.316, 612.556, 640.587, 369.352, 383.368, 397.383, 411.399),
-        Grade = c("A", "A", "B", "B", "A", "A", "B", "B", "A", "B"),
-        stringsAsFactors = FALSE
-    )
-
-    write_lipidsearch_assay(file.path(lane_dir, lane$seed_file), pos_lipids, base_mean = 50000.0)
-    if (!is.null(lane$assay2_file)) {
-        write_lipidsearch_assay(file.path(lane_dir, lane$assay2_file), neg_lipids, base_mean = 40000.0)
-    }
-    write_lipidsearch_assay(file.path(lane_dir, "lipidsearch_gcms.txt"), gcms_lipids, base_mean = 35000.0)
-
-    design_path <- file.path(lane_dir, "design.tsv")
-    .write_tsv(design, design_path)
-    cat("  wrote design.tsv\n")
-}
+# ---------------------------------------------------------------------------
+# Transcriptomics
+# ---------------------------------------------------------------------------
 
 # KIT-101: the transcriptomics screen lane, the KIT-040 trx_screen corpus at a
 # smaller shape (3 biological samples per group, 2 technical replicates, 300
@@ -566,50 +548,71 @@ cat("[generate_fixtures] fixture root:", FIXTURE_ROOT, "\n")
 }
 
 # ---------------------------------------------------------------------------
-# Dispatch table: import_tool -> generator function
+# Dispatch table: import_tool -> generator function. Lanes whose fixture_recipe$generator is "none" are hand-made
+# and are not written.
 # ---------------------------------------------------------------------------
 
 .GENERATORS <- list(
-    diann       = .generate_prot_diann
-    , pd_tmt    = .generate_prot_tmt
-    , maxquant  = .generate_prot_lfq
-    , fragpipe  = .generate_prot_lfq
-    , msdial    = function(lane, lane_dir) {
-        # Dispatch on lane_id for msdial variants
-        if (lane$lane_id == "metab_gc") {
-            .generate_metab_gc(lane, lane_dir)
-        } else if (lane$lane_id == "metab_combined") {
-            .generate_metab_combined(lane, lane_dir)
-        } else {
-            .generate_metab_lc(lane, lane_dir)
-        }
-    }
-    , lipidsearch = .generate_lipid_canonical
+    diann       = generateProtDiannFixture
+    , pd_tmt    = generateProtPdTmtFixture
+    , maxquant  = generateProtMaxQuantFixture
+    , fragpipe  = generateProtFragPipeFixture
     , trx_counts = .generate_trx_screen
 )
+
+# ---------------------------------------------------------------------------
+# Check: every file the manifest records has its recorded sha256.
+# ---------------------------------------------------------------------------
+
+#' Compare each recorded file's sha256 with the file on disk.
+#' @param recorded Named list: path relative to the fixture root -> sha256.
+#' @return Character vector of mismatches (empty when all match).
+#' @noRd
+checkFixtureSha256 <- function(recorded) {
+    problems <- character()
+    for (path in names(recorded)) {
+        full <- file.path(FIXTURE_ROOT, path)
+        actual <- if (file.exists(full)) digest::digest(file = full, algo = "sha256") else "<missing>"
+        if (!identical(actual, recorded[[path]])) problems <- c(problems, sprintf("%s: recorded %s, now %s", path, recorded[[path]], actual))
+    }
+    problems
+}
+
+recordedFixtureSha256 <- function(manifest) {
+    recorded <- list()
+    for (lane in manifest$lanes) {
+        for (name in names(lane$files_sha256)) recorded[[file.path(lane$fixture_dir, name)]] <- lane$files_sha256[[name]]
+    }
+    retained <- manifest$retained_fixtures
+    c(recorded, retained$regenerated_sha256, retained$hand_made_sha256)
+}
 
 # ---------------------------------------------------------------------------
 # Main generation loop
 # ---------------------------------------------------------------------------
 
 generate_all_fixtures <- function() {
-    if (!requireNamespace("jsonlite", quietly = TRUE)) {
-        stop("Package 'jsonlite' is required. Install with: install.packages('jsonlite')")
+    for (pkg in c("jsonlite", "withr", "digest")) {
+        if (!requireNamespace(pkg, quietly = TRUE)) stop("Package '", pkg, "' is required.")
     }
 
     cat("\n=== E2E Fixture Generation ===\n")
-    cat("Seed: 20260428\n\n")
 
     manifest <- .read_manifest()
-    cat("Loaded manifest with", length(manifest), "lanes.\n\n")
+    cat("Loaded manifest with", length(manifest$lanes), "lanes.\n\n")
 
     errors <- character()
 
-    for (lane in manifest) {
+    for (lane in manifest$lanes) {
         lane_id  <- lane$lane_id
         lane_dir <- file.path(FIXTURE_ROOT, lane$fixture_dir)
 
         cat("[", lane_id, "]\n", sep = "")
+
+        if (identical(lane$fixture_recipe$generator, "none")) {
+            cat("  hand-made: not written (checked below)\n")
+            next
+        }
 
         if (!dir.exists(lane_dir)) {
             dir.create(lane_dir, recursive = TRUE)
@@ -634,42 +637,23 @@ generate_all_fixtures <- function() {
         )
     }
 
+    tryCatch(generateRetainedFixtures(), error = function(e) {
+        msg <- paste0("Retained fixture writer failed: ", e$message)
+        cat("  ERROR:", msg, "\n")
+        errors <<- c(errors, msg)
+    })
+
+    cat("\n=== Checking every recorded fixture sha256 ===\n")
+    mismatches <- checkFixtureSha256(recordedFixtureSha256(manifest))
+    for (m in mismatches) cat("  MISMATCH", m, "\n")
+    errors <- c(errors, mismatches)
+    if (!length(mismatches)) cat("  all", length(recordedFixtureSha256(manifest)), "recorded files match\n")
+
     if (length(errors) > 0L) {
-        cat("\n=== GENERATION ERRORS ===\n")
-        for (err in errors) cat("  -", err, "\n")
         stop("Fixture generation completed with ", length(errors), " error(s).")
     }
 
-    cat("\n=== Validating generated fixtures ===\n")
-
-    # Validate using integrity helper (requires testthat context when sourced from tests/)
-    valid <- tryCatch({
-        # Attempt to call validate_e2e_fixtures if available
-        if (exists("validate_e2e_fixtures", mode = "function")) {
-            result <- validate_e2e_fixtures()
-            if (!result$valid) {
-                cat("Validation errors:\n")
-                for (err in result$errors) cat("  -", err, "\n")
-                FALSE
-            } else {
-                cat("All fixtures validated successfully.\n")
-                TRUE
-            }
-        } else {
-            cat("validate_e2e_fixtures() not in scope — skipping integrity check.\n")
-            cat("Run devtools::test() or source helper-e2e-fixture-integrity.R to validate.\n")
-            TRUE
-        }
-    }, error = function(e) {
-        cat("Validation skipped (no testthat context):", e$message, "\n")
-        TRUE
-    })
-
-    if (valid) {
-        cat("\n=== Fixture generation complete ===\n")
-        cat("All", length(manifest), "lanes generated from set.seed(20260428).\n")
-    }
-
+    cat("\n=== Fixture generation complete ===\n")
     invisible(NULL)
 }
 

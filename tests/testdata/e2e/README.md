@@ -1,14 +1,17 @@
 # E2E Test Fixtures
 
 Synthetic, deterministic fixture data for the MultiScholaR end-to-end test suite.
-All data is generated from `set.seed(20260428)` — no real experimental data is used.
+All data is synthetic; no real experimental data is used. `generate_fixtures.R` writes the generated lanes and
+checks every committed fixture against the sha256 recorded in `manifest.json` (KIT-101 F-06); the lanes it does not
+write are recorded there as hand-made, with the reason.
 
 ---
 
 ## Fixture Architecture
 
 Fixtures are **manifest-driven**: `manifest.json` is the single source of truth for
-all 9 workflow lanes. Each lane defines its format, sample layout, and expected outputs.
+all 10 workflow lanes (5 proteomics, 3 metabolomics, 1 lipidomics, 1 transcriptomics). Each lane defines its format,
+sample layout, and expected outputs.
 
 ```
 tests/testdata/e2e/
@@ -21,15 +24,19 @@ tests/testdata/e2e/
 │   ├── TMT_report.rmd
 │   ├── LFQ_report.rmd
 │   ├── metabolomics_report.rmd
-│   └── lipidomics_report.rmd
-├── prot_dia/                 # DIA-NN proteomics (long format, no LIMPA)
-├── prot_dia_limpa/           # DIA-NN proteomics (long format, with LIMPA)
-├── prot_tmt/                 # TMT proteomics (Proteome Discoverer format)
-├── prot_lfq/                 # LFQ proteomics (MaxQuant and FragPipe entries)
-├── metab_lc/                 # LC-MS metabolomics (MS-DIAL format, Pos+Neg)
-├── metab_gc/                 # GC-MS metabolomics (MS-DIAL format, GCMS)
+│   ├── lipidomics_report.rmd
+│   └── transcriptomics_report.rmd
+├── prot_dia/                 # DIA-NN proteomics (long format, no LIMPA): lane prot_dia
+├── prot_dia_limpa/           # DIA-NN proteomics (long format, with LIMPA): lane prot_dia_limpa
+├── prot_tmt_pd/              # TMT proteomics (Proteome Discoverer format): lane prot_tmt
+├── prot_lfq_maxquant/        # LFQ proteomics (MaxQuant proteinGroups.txt): lane prot_lfq
+├── prot_lfq_fragpipe/        # LFQ proteomics (FragPipe combined_protein.tsv): lane prot_lfq_fragpipe
+├── prot_tmt/, prot_lfq/      # retained six-sample proteomics fixtures (no lane; see below)
+├── metab_lc/                 # LC-MS metabolomics (custom format, Pos+Neg)
+├── metab_gc/                 # GC-MS metabolomics (custom format, GCMS)
 ├── metab_combined/           # Combined LC/GC metabolomics (multi-platform)
-└── lipid_canonical/          # Lipidomics (multi-assay LipidSearch results)
+├── lipid_canonical/          # Lipidomics (multi-assay LipidSearch results)
+└── trx_screen/               # Transcriptomics counts (KIT-040 trx_screen recipe)
 ```
 
 Each lane directory contains:
@@ -51,7 +58,9 @@ source("tests/testdata/e2e/generate_fixtures.R")
 Rscript tests/testdata/e2e/generate_fixtures.R
 ```
 
-**Requirements:** `jsonlite` must be installed. No other package dependencies.
+**Requirements:** `jsonlite`, `withr` and `digest`. The proteomics lanes read
+`tools/profiling/kit_protein_corpus.R` and trx_screen reads `tools/profiling/kit_omics_corpus.R` from the same
+source tree. The script stops with an error if any recorded sha256 differs after writing.
 
 After regeneration, verify integrity:
 
@@ -96,12 +105,26 @@ Each lane object:
 | `group_count`        | integer         | Number of experimental groups |
 | `groups`             | array\<string\> | Group labels (e.g. `["WT", "KO"]`) |
 | `cross_omic_packs`   | array\<string\> | Pack IDs from `cross_omic_packs.json` this lane participates in |
+| `fixture_recipe`     | object          | How the lane's files are made: the generator, seeds and shape; `"generator": "none"` with `hand_made` (the reason) for a lane the script does not write |
+| `files_sha256`       | object          | sha256 of each fixture file of the lane |
+
+Top level, `retained_fixtures` records files that belong to no lane: the earlier six-sample proteomics fixtures in
+`prot_lfq/` and `prot_tmt/` (`regenerated_sha256`, rewritten by their original writers in `generate_fixtures.R`; read
+by `tests/testthat/test-workflow-native-session.R` and by the KIT-021 lifecycle members) and the hand-made `seed_*`
+files (`hand_made_sha256`).
 
 ---
 
 ## Synthetic Signal
 
-Each lane has **2 DA-significant features** injected:
+**Proteomics (KIT-101 revision 2.2).** The five proteomics lanes share one synthetic universe of 400 proteins
+(P00001–P00400, genes GENE1–GENE400, tryptic peptides, one FASTA). Each lane's protein abundances come from the KIT-021
+protein corpus recipe (`kitProteinMatrix`) at the lane's seed: 4 (DIA) or 5 (TMT, LFQ) replicates per group, and
+P00001–P00040 (10%) with a KO effect drawn from N(0, 1.2). With this the DA's FDR can be estimated and some proteins
+are truly changed. The DIA-NN reports carry every column the import, the Q-value filter and the precursor rollup read.
+See each lane directory's README.
+
+**Lipidomics and metabolomics (hand-made).** Each lane has **2 DA-significant features**:
 
 | Feature | Direction | Effect Size |
 |---------|-----------|-------------|

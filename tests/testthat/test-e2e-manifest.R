@@ -177,6 +177,7 @@ test_that("all e2e fixture directories exist", {
     fixture_root <- testthat::test_path("..", "testdata", "e2e")
     expected_dirs <- c(
         "prot_dia", "prot_dia_limpa", "prot_tmt", "prot_lfq"
+        , "prot_tmt_pd", "prot_lfq_maxquant", "prot_lfq_fragpipe"
         , "metab_lc", "metab_gc", "metab_combined", "lipid_canonical"
         , "trx_screen"
     )
@@ -210,4 +211,48 @@ test_that("the trx_screen lane names its recipe and every fixture file's sha256"
     for (name in names(lane$files_sha256)) {
         expect_identical(digest::digest(file = file.path(lane_dir, name), algo = "sha256"), lane$files_sha256[[name]], info = name)
     }
+})
+
+# KIT-101 revision 2.2 (F-06): every lane records the sha256 of each fixture file; a lane the generator does not write
+# says why it is hand-made; the retained earlier proteomics fixtures (prot_lfq/, prot_tmt/, the seed_* files) are
+# recorded too. generate_fixtures.R checks the same records after writing.
+test_that("every lane's fixture files and the retained fixtures match their recorded sha256", {
+    raw <- jsonlite::read_json(.e2e_manifest_path(), simplifyVector = FALSE)
+    for (lane in raw$lanes) {
+        recipe <- lane$fixture_recipe
+        expect_false(is.null(recipe$generator), info = lane$lane_id)
+        if (identical(recipe$generator, "none")) expect_true(nzchar(recipe$hand_made %||% ""), info = lane$lane_id)
+        expect_true(lane$seed_file %in% names(lane$files_sha256), info = lane$lane_id)
+        lane_dir <- file.path(.e2e_fixture_root(), lane$fixture_dir)
+        for (name in names(lane$files_sha256)) {
+            expect_identical(digest::digest(file = file.path(lane_dir, name), algo = "sha256"), lane$files_sha256[[name]],
+                info = paste(lane$lane_id, name))
+        }
+    }
+    retained <- c(raw$retained_fixtures$regenerated_sha256, raw$retained_fixtures$hand_made_sha256)
+    expect_gt(length(retained), 0L)
+    for (path in names(retained)) {
+        expect_identical(digest::digest(file = file.path(.e2e_fixture_root(), path), algo = "sha256"), retained[[path]],
+            info = path)
+    }
+})
+
+# KIT-101 revision 2.2 (F-07): the proteomics lanes run on one shared synthetic universe of 400 proteins, two groups
+# (KO vs WT) and at least four replicates per group, so the DA's FDR can be estimated.
+test_that("the proteomics lanes use the shared 400-protein fixtures with two groups and four or more replicates", {
+    manifest <- read_e2e_manifest()
+    prot <- manifest[c("prot_dia", "prot_dia_limpa", "prot_tmt", "prot_lfq", "prot_lfq_fragpipe")]
+    expect_identical(unname(vapply(prot, `[[`, "", "fixture_dir")),
+        c("prot_dia", "prot_dia_limpa", "prot_tmt_pd", "prot_lfq_maxquant", "prot_lfq_fragpipe"))
+    fasta <- character()
+    for (lane in prot) {
+        recipe <- lane$fixture_recipe
+        expect_identical(as.integer(recipe$proteins), 400L, info = lane$lane_id)
+        expect_gte(as.integer(recipe$biological_per_group), 4L)
+        expect_identical(as.integer(lane$sample_count), 2L * as.integer(recipe$biological_per_group), info = lane$lane_id)
+        expect_identical(unlist(lane$groups), c("WT", "KO"), info = lane$lane_id)
+        expect_identical(unlist(lane$expected_contrasts), "KO_vs_WT", info = lane$lane_id)
+        fasta[[lane$lane_id]] <- lane$files_sha256[[lane$fasta_file]]
+    }
+    expect_length(unique(fasta), 1L)
 })

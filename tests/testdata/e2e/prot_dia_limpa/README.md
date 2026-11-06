@@ -1,47 +1,31 @@
 # prot_dia_limpa E2E Fixture
 
+Synthetic DIA-NN main report for the DIA_LIMPA lane (KIT-101 revision 2.2, F-07). It has the same layout as
+`prot_dia/report.tsv`, from its own seed. Written by `tests/testdata/e2e/generate_fixtures.R` from the lane's
+`fixture_recipe` in `manifest.json`, which also records each file's sha256.
+
 ## Data Shape
 
 | Property | Value |
 |---|---|
-| File | report.tsv |
-| Format | DIA-NN report.tsv (long format) with MNAR missing values |
-| Proteins | 6 (P00001–P00006) |
-| Samples | 6 (WT_1–3, KO_1–3) |
-| Precursors per protein | 2 |
-| Total rows | 72 |
-| Missing values (NA) | ~22 rows (~30%) |
-| FASTA | proteins.fasta (P00001–P00006 UniProt-style headers) |
+| File | `report.tsv`: DIA-NN main report, long format, one row per precursor and run |
+| Proteins | 400 (P00001–P00400, genes GENE1–GENE400); 1 to 4 observed peptides each; charge 2, some also charge 3 |
+| Runs | 8 (WT_1–WT_4, KO_1–KO_4) |
+| Rows | 8,886 (a missing precursor has no row, as DIA-NN writes it) |
+| FASTA | `proteins.fasta`: the 400-protein universe all five proteomics lanes share |
+| Design | `design.tsv` (`sample`, `group`) |
 
-## Groups
+The columns and the confidence-filter content are those described in `prot_dia/README.md`.
 
-| Sample | Group |
-|---|---|
-| WT_1, WT_2, WT_3 | WT (control) |
-| KO_1, KO_2, KO_3 | KO (treatment) |
+## Signal and missing values
 
-## Missing Value Pattern (MNAR)
+Protein abundances come from the KIT-021 protein corpus recipe (`kitProteinMatrix`, seed 20261109):
+- P00001–P00040 carry a KO effect drawn from N(0, 1.2);
+- about 8% of protein-run cells are absent;
+- a precursor is more often absent at low intensity (an MNAR component, `plogis(17 - log2 quantity)`).
 
-Missing values are concentrated in low-abundance proteins in specific conditions,
-simulating "Missing Not At Random" (MNAR) data typical of DIA proteomics:
+This gives limpa's detection-probability model missing values to work with.
 
-| Protein | Missing In | Reason |
-|---|---|---|
-| P00005 | WT_2, WT_3, all WT_3 precursors | Low abundance in WT, near LOD |
-| P00006 | All WT samples, KO_3 | MNAR: present in KO, absent in WT |
-| P00004 | WT_1 (1 precursor), WT_2 (both), KO_3 (1 precursor) | Sporadic low detection |
+## Not used by the lane
 
-## Expected Significant Proteins (KO_vs_WT)
-
-| Protein | Gene | Direction | Approx log2FC |
-|---|---|---|---|
-| P00001 | GENE1 | UP in KO | ~1.05 |
-| P00002 | GENE2 | UP in KO | ~1.02 |
-| P00005 | GENE5 | UP in KO | ~1.5 (MNAR, requires imputation) |
-| P00006 | GENE6 | UP in KO | ~Inf (MNAR, requires imputation) |
-
-## Import Function
-
-`importDIANNData()` in `R/func_prot_import_readers.R`, followed by limpa imputation.
-
-Required columns consumed: `Protein.Group`, `Stripped.Sequence`, `Run`, `Precursor.Quantity`, `Q.Value`, `PG.Q.Value`
+`seed_report.tsv` is an earlier hand-made table. It is kept, and recorded under `retained_fixtures` in the manifest.

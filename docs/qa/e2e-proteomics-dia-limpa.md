@@ -26,6 +26,13 @@ through these handoffs:
 - saves workflow arguments, copies publication artifacts, renders the report,
   downloads the report, and exports summary session state.
 
+## Fixture (KIT-101 revision 2.2)
+
+`prot_dia_limpa/report.tsv` has the layout of the `prot_dia` report (400 proteins, 8 runs, the full DIA-NN column set),
+from its own seed. Missing precursors are more frequent at low intensity, so limpa's detection-probability model has
+missing values to work with. It is written by `tests/testdata/e2e/generate_fixtures.R`, with each file's sha256
+recorded in the manifest (KIT-101 F-07). `tests/testdata/e2e/prot_dia_limpa/README.md` has the details.
+
 ## Required Evidence
 
 The test fails unless the limpa branch is observable in all of the following

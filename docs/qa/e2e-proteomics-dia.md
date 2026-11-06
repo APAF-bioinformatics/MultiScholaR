@@ -26,6 +26,16 @@ The test drives the real Shiny GUI through the production module wiring:
 - download the generated report
 - export the summary session state
 
+## Fixture (KIT-101 revision 2.2)
+
+`prot_dia/report.tsv` is a synthetic DIA-NN main report, written by `tests/testdata/e2e/generate_fixtures.R` with each
+file's sha256 recorded in the manifest. It has 400 proteins from the universe shared by the five proteomics lanes, 8
+runs (WT_1–WT_4, KO_1–KO_4), and every column the import, the Q-value filter (`Q.Value`, `Global.Q.Value`,
+`Global.PG.Q.Value`, `Proteotypic`) and the precursor rollup (`Precursor.Id`, `Modified.Sequence`,
+`Precursor.Quantity`, `Precursor.Normalised`) read. The protein abundances come from the KIT-021 recipe, with
+P00001–P00040 changed in KO, so the DA's FDR can be estimated. The earlier five-protein report lacked the confidence
+and normalised-quantity columns (KIT-101 F-07). `tests/testdata/e2e/prot_dia/README.md` has the details.
+
 ## Required Invariants
 
 The browser test asserts the following production handoffs:
