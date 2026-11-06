@@ -6,3 +6,15 @@ record trx99sq start 21:17:07 at b152138f: AC 1, profile low-power, battery 91%,
 record trx99sq end 21:17:21: AC 1, profile low-power, battery 91%, load 3.24, available 36 GiB, swap used 6708 MiB
 kit-099a start 21:33:21: AC 1, profile low-power, battery 95%, load 3.95, available 36 GiB
 kit-099a end 21:35:21: AC 1, profile low-power, battery 95%, load 3.95, available 36 GiB
+trial 24 start 21:36:13 at 6dcc8477: AC 1, profile low-power, battery 95%, load 3.33, available 36 GiB, swap used 6695 MiB
+trial 24 end 21:37:11: AC 1, profile low-power, battery 95%, load 3.25, available 36 GiB, swap used 6694 MiB
+trial 100 start 21:37:11 at 6dcc8477: AC 1, profile low-power, battery 95%, load 3.25, available 36 GiB, swap used 6694 MiB
+trial 100 end 21:39:24: AC 1, profile low-power, battery 96%, load 3.33, available 36 GiB, swap used 6690 MiB
+trial 200 start 21:39:24 at 6dcc8477: AC 1, profile low-power, battery 96%, load 3.33, available 36 GiB, swap used 6690 MiB
+trial 200 end 21:43:43: AC 1, profile low-power, battery 96%, load 2.94, available 36 GiB, swap used 6686 MiB
+trial 400 start 21:43:43 at 6dcc8477: AC 1, profile low-power, battery 96%, load 2.94, available 36 GiB, swap used 6686 MiB
+trial 400 end 21:56:43: AC 1, profile low-power, battery 98%, load 6.12, available 37 GiB, swap used 7679 MiB
+trial 600 start 21:56:43 at 6dcc8477: AC 1, profile low-power, battery 98%, load 5.87, available 37 GiB, swap used 7679 MiB
+trial 600 end 22:31:00: AC 1, profile low-power, battery 99%, load 3.52, available 35 GiB, swap used 7671 MiB
+trial 800 start 22:31:00 at 6dcc8477: AC 1, profile low-power, battery 99%, load 3.52, available 35 GiB, swap used 7671 MiB
+trial 800 end 23:07:00: AC 1, profile low-power, battery 100%, load 3.55, available 32 GiB, swap used 8758 MiB
