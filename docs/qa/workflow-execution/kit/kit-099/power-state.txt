@@ -24,3 +24,5 @@ record trx99lf start 23:12:10 at d5af3983: AC 1, profile low-power, battery 100%
 record trx99lf end 23:13:00: AC 1, profile low-power, battery 100%, load 3.69, available 32 GiB, swap used 8755 MiB
 record trx99lq start 23:13:10 at d5af3983: AC 1, profile low-power, battery 100%, load 3.73, available 32 GiB, swap used 8755 MiB
 record trx99lq end 23:14:31: AC 1, profile low-power, battery 100%, load 4.69, available 31 GiB, swap used 8752 MiB
+call profile start 23:29:57 at 529428e7: AC 1, profile low-power, battery 100%, load 2.21, available 27 GiB, swap used 8734 MiB
+call profile end 23:35:00: AC 1, profile low-power, battery 100%, load 3.03, available 25 GiB, swap used 8732 MiB

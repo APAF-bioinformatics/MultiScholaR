@@ -1,0 +1,28 @@
+## (a) pre-pass and batched phases, in process, each on a fresh copy of its pair population store 
+trx_expression_filter  whole       | pre-pass   13.7 s peak RSS  1.11 GiB | rest    8.9 s peak RSS  1.15 GiB | status computed 
+trx_expression_filter  partitioned | pre-pass   11.8 s peak RSS  1.22 GiB | rest    2.5 s peak RSS  1.14 GiB | status computed 
+trx_tmm_logcpm         whole       | pre-pass    5.6 s peak RSS  1.21 GiB | rest    7.5 s peak RSS  1.20 GiB | status computed 
+trx_tmm_logcpm         partitioned | pre-pass    5.9 s peak RSS  1.28 GiB | rest    1.2 s peak RSS  1.15 GiB | status computed 
+## (b) Rprof (interval 0.05 s, memory profiling) over the KIT-099 recorder at large (label trx99lp, ticket 099l, trx_60k_200) 
+## (b) summarised offline from the stored profile: 4155 samples at 0.05 s = 208 s of rprof.out
+call                                 seconds  share %   max R heap GiB
+runTrxReferenceRuvs                     96.1     46.3             1.06
+trxRuvGrid                              58.0     27.9             0.88
+runTrxReferenceDaAnalysis               48.7     23.4             1.06
+estimateDisp                            47.2     22.7             1.06
+trxDaFit                                45.1     21.7             1.06
+trxCancor                               31.4     15.1             0.88
+trxPrelimOrder                          26.2     12.6             0.88
+svd                                     26.1     12.6             0.96
+calcNormFactors                         24.1     11.6             1.06
+La.svd                                  17.9      8.6             0.96
+runTrxReferenceExpressionFilter         16.5      7.9             0.88
+cancor                                  15.2      7.3             0.88
+trxRuvs                                 14.1      6.8             1.03
+runTrxImportProcessing                  11.1      5.3             0.42
+RUVs                                     5.8      2.8             1.01
+runTrxReferenceRuviiiExport              2.9      1.4             1.04
+trxDaApply                               1.0      0.5             1.05
+trxImportPreview                         0.9      0.4             0.28
+cpm                                      0.1      0.0             0.67
+(whole run)                                                       1.06
