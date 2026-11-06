@@ -1,2 +1,6 @@
 kit-journey-099s start 21:12:13 at 9b884c27: AC 1, profile low-power, battery 90%, load 4.44, available 36 GiB
 kit-journey-099s end 21:16:13: AC 1, profile low-power, battery 91%, load 4.17, available 36 GiB
+record trx99sf start 21:16:37 at b152138f: AC 1, profile low-power, battery 91%, load 3.40, available 36 GiB, swap used 6708 MiB
+record trx99sf end 21:16:48: AC 1, profile low-power, battery 91%, load 3.41, available 36 GiB, swap used 6708 MiB
+record trx99sq start 21:17:07 at b152138f: AC 1, profile low-power, battery 91%, load 3.21, available 36 GiB, swap used 6708 MiB
+record trx99sq end 21:17:21: AC 1, profile low-power, battery 91%, load 3.24, available 36 GiB, swap used 6708 MiB

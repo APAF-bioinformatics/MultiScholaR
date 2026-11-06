@@ -1,0 +1,24 @@
+  base_dir                       : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle (5 items)
+  data_dir                       : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/data/transcriptomics (0 items)
+  source_dir                     : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/scripts/transcriptomics (0 items)
+  results_dir                    : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics (6 items)
+  results_summary_dir            : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results_summary/transcriptomics (4 items)
+  timestamp                      : 20261106_211641
+  time_dir                       : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/publication_graphs/filtering_qc/20261106_211641 (0 items)
+  clean_features_dir             : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/normalized_counts (0 items)
+  da_output_dir                  : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/da_genes (0 items)
+  feature_qc_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/gene_qc (0 items)
+  gene_qc_dir                    : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/gene_qc (0 items)
+  integration_dir                : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/integration (0 items)
+  normalized_counts_dir          : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/normalized_counts (0 items)
+  pathway_dir                    : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/pathway_enrichment (0 items)
+  publication_figures_dir        : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results_summary/transcriptomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results_summary/transcriptomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results_summary/transcriptomics/QC_figures (0 items)
+  raw_counts_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results/transcriptomics/count_data (0 items)
+  study_report_dir               : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/results_summary/transcriptomics/Study_report (0 items)
+  import             initial                    rows NA      1 s
+    runTests
+  design             trx_raw_data_s4            rows 6000      4 s

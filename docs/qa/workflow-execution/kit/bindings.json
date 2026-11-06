@@ -7525,6 +7525,34 @@
       "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
       "recorded_at": "2026-11-06T19:35:13+1100",
       "route": "transcriptomics"
+    },
+    "trx99sf_design": {
+      "step": "design",
+      "state": "trx_raw_data_s4",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sf/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3acb644f901712/.workflow-entities",
+      "head_sha256": "8d8734de722b1d5a5b49b8ecb8a2da6ff0ef0e2448f068fbf48a5f7cd3970506",
+      "entity_id": "251903f44f05d404dce34a635e02d22df8658c85b1963afe6f1b3de661f91cf2",
+      "rows": 6000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T21:16:47+1100",
+      "route": "transcriptomics",
+      "stop_after": "design"
+    },
+    "trx99sq_qc_finalize": {
+      "step": "qc_finalize",
+      "state": "trx_qc_complete",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx99sq/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-3ace9c3fdefcc8/.workflow-entities",
+      "head_sha256": "82dbc61498cbce2722e8fd957823d8b17a06629b9c51472b890bc2f978fa0dd3",
+      "entity_id": "45b7e0a327e1a8fa90a05400e511e4f652f538b8c9d68c601a5394405ce348b8",
+      "rows": 4565,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.8 section 10, under section 7.1)",
+      "build": "c783e97a2d67d0b0c6da5b53c98cb4f282bd8c43",
+      "recorded_at": "2026-11-06T21:17:20+1100",
+      "route": "transcriptomics",
+      "stop_after": "qc_finalize"
     }
   },
   "oracles": {
@@ -39355,6 +39383,34 @@
         "trx_ruvs",
         "trx_da_contrast",
         "trx_ruviii_export"
+      ]
+    },
+    "099a": {
+      "control": "kit_098",
+      "candidate": "kit_098",
+      "ceiling_seconds": 1800,
+      "purpose": "lifecycle (the operation small test; recorded, uncounted)",
+      "pairs": [
+        {
+          "operation": "trx_expression_filter",
+          "population": "trx99sf_design",
+          "oracle": "trx98a_expression_filter",
+          "parameters": [],
+          "variants": {
+            "control": "whole",
+            "candidate": "partitioned"
+          }
+        },
+        {
+          "operation": "trx_tmm_logcpm",
+          "population": "trx99sq_qc_finalize",
+          "oracle": "trx98a_logcpm_product",
+          "parameters": [],
+          "variants": {
+            "control": "whole",
+            "candidate": "partitioned"
+          }
+        }
       ]
     }
   },
