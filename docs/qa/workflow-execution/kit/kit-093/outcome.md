@@ -37,7 +37,7 @@ Ticket revision 1.1. Implemented 2026-11-06 on `performance-v2`. In-process test
 - **Single surviving gene:** `drop = FALSE` in the filter subsets keeps one surviving gene as a matrix, where the notebook would fail. Results are identical otherwise.
 - **Added kernel products:** `ctl_mask`, `pdata` and `pca_axis_labels` are notebook objects. `norm_factors_filtered` holds edgeR's samples table (its `norm.factors` column is the factors), because the reference product is that table.
 - **Volcano label:** the y label and subtitle say "FDR (BH)" (ticket, KIT097-F03). Labels are not compared products. The summary text keeps the notebook's wording, because it is a compared product.
-- **Open user decision:** more than two groups is refused (`trx_design_groups_unsupported`) and not implemented.
+- **Open user decision:** more than two groups was refused (`trx_design_groups_unsupported`) and not implemented. *Resolved by the user on 2026-11-06 and implemented in the addendum below (revision 1.2).*
 
 ## Limits
 
@@ -51,3 +51,21 @@ Ticket revision 1.1. Implemented 2026-11-06 on `performance-v2`. In-process test
 - **KIT-097:** the FDR (BH) rule.
 
 Rollback: `git revert` of this ticket's commits (and of the addendum's, which restores KIT-040's 70-product stores). The full KIT-040 references are kept as `$P/kit/trx-reference/reference-<corpus>.kit040-v1.rds`. Nothing was installed into any library by this ticket beyond the kit install below.
+
+## KIT-093 addendum (revision 1.2)
+
+**User decision, 2026-11-06:** "obviously i want the system to have parity across omics". Any number of groups (for example control and treatments 1-3), with DA as pairwise numerator-versus-denominator contrasts as in proteomics, lipidomics and metabolomics. No other model. Code commit `ef3b14ee`, evidence in the commit after it.
+
+- **Design:** `trx_design_groups_unsupported` is removed. Two or more distinct declared levels are accepted, each non-empty (`trx_design_group_empty` as before). Fewer than two declared levels is refused under `trx_design_invalid`.
+- **Control ranking:** `trxPrelimOrder()` runs `glmQLFTest` over every group coefficient of the `~ group` design (`coef = 2:ncol`), as proteomics' ANOVA control selection does. With two groups this is the notebook's `coef = 2`. The grid's `X_bio` already carries every group column.
+- **DA:** `trxParseContrastFile()` returns every non-header, non-empty contrast line, each checked; a one-line file gives the same string as before. `trxDaContrasts(ruvs_counts, pdata, contrast_entries)` fits once and gives one result per line, named by the entry, each in `trxDaContrast()`'s shape. `trxDaContrast()` is that call with one entry, so its products are unchanged.
+- **Test first** ([test-first-rev12.txt](test-first-rev12.txt)): run on the revision 1.1 code, the two new tests errored and the rest passed.
+- **Two-group parity unchanged** ([tests-rev12.txt](tests-rev12.txt), kit_095 library `browser-smoke.Q1VVzp`): the existing parity tests, unmodified, pass. `test-trx-kernels.R` has 373 pass (341 before plus the new test) and `test-trx-publication.R` 174 pass. Every product on the three corpora is still identical to its KIT-040 reference, the forced-failure, tie and determinism checks included.
+- **Four groups** (`test-trx-kernels.R`, a seeded fixture in the test, since KIT-040's generator builds two groups only): control and T1-T3, 3 runs each, 800 genes, with genes 1-60, 61-120 and 121-180 changing only in T1, T2 and T3 respectively. The class, filter, TMM, grid (k cap 3, no failed member), RUVs (counts identical to the filtered ones) and three pairwise contrasts from a three-line contrast file run end to end. Each contrast finds over 80% of its own genes at FDR < 0.05 and under 10% of the others. Annotation and RUVIII (4-column `M`) also run.
+- **Ranking uses all groups:** `prelim_order` equals the direct `glmQLFTest(coef = 2:4)` ordering. None of the 60 T3-only genes is among the 30% least-significant candidates or the chosen controls. With `coef = 2` alone, more than 10 of them would be candidates.
+- **Refusal becomes a positive test** (`test-trx-design.R`, 70 pass): four- and three-group designs are accepted with their declared levels, and a declared but empty fourth group is refused.
+- **Other targeted files:** `test-workflow-trx-declarations.R` (KIT-095's binding on these kernels) has 308 pass, 0 fail, 0 skip. `test-workflow-omics-owner.R` 74, `test-workflow-class-declarations.R` 181 and `test-workflow-checkpoint-dia-state.R` 174 pass (4 pre-existing quarantine skips). Every file is under 900 s; the longest takes 128 s.
+- **Dependents grep** (`validateTrxDesign`, `trxParseContrastFile`, `trxDaContrast(s)`, `trxPrelimOrder`, `trxRuvGrid`, `groups_unsupported`): the consumers are KIT-095's `R/utils_workflow_trx_declarations.R:243`, which calls trxRuvGrid, and `tests/testthat/helper-workflow-trx-declarations.R:63`, which passes `trxParseContrastFile`'s entries to `trxContrastsTable`, already vector-valued. Both are covered by the 308-pass run. KIT-095's outcome (line 132) and its `trxDaPreflight`, which checks `contrasts$contrasts[[1L]]` only, are KIT-095's to revisit; they were not edited here.
+- **R CMD check** ([check-rev12.log](check-rev12.log), HEAD `ef3b14ee`, kit_095 library): 3 WARNINGs and 3 NOTEs, the same items as before.
+- **Not done:** no new install (none was asked for). `parity-criteria.md` item 3 is marked superseded; its comparisons and criteria are unchanged.
+

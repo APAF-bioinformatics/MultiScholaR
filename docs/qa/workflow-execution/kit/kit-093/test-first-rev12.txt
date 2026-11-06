@@ -1,0 +1,7 @@
+# KIT-093 addendum (revision 1.2) test first: the new tests run on the revision 1.1 code (R/func_trx_design.R, func_trx_ruv.R, func_trx_da.R stashed), kit_095 library
+COUNTS test-trx-design.R pass 66 fail 0 error 1 skip 0
+  BAD test-trx-design.R :: KIT-093 revision 1.2: any number of groups (two or more, each non-empty) is accepted
+COUNTS test-trx-kernels.R pass 341 fail 0 error 1 skip 0
+  BAD test-trx-kernels.R :: KIT-093 revision 1.2: a four-group design runs end to end with three pairwise contrasts; the ranking uses all groups
+
+# after: tests-rev12.txt

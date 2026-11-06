@@ -35,7 +35,7 @@ Figures are compared by `layer_data()` of every layer and by their plotted data 
 
 1. `grid_failures` is an added product (the notebook drops a failed member silently).
 2. Refusals where the notebook would fabricate or crash: the design table, the count policy, the preflight classes, `trx_ruviii_replicates_invalid`.
-3. Designs with other than two groups are refused (`trx_design_groups_unsupported`): the notebook's `coef = 2` ranking defines only a two-group test.
+3. Designs with other than two groups are refused (`trx_design_groups_unsupported`): the notebook's `coef = 2` ranking defines only a two-group test. *Superseded by the KIT-093 addendum (revision 1.2, 2026-11-06): any number of groups, the ranking over every group coefficient (with two groups the notebook's `coef = 2`); the comparisons and their criteria above are unchanged.*
 4. `trxGlimmaInputs()$anno` is the notebook's `glimma_anno` reindexed to `qlf`'s feature order, as the ticket's renderer table requires. The notebook passes it in `top_genes` order, while `glimmaVolcano` binds it to the table by position in `lrt`'s order. Its reference is the derived `glimma_anno_aligned`; the notebook's own `glimma_anno` stays frozen and is not a renderer product.
 5. Products added to a kernel's output that are notebook objects, so that the next kernel or the renderer can be fed without recomputation: `ctl_mask` (trxRuviii, rmd:707-708), `pdata` (trxRuvs, `pData(set_ruvs)`, rmd:414) and `pca_axis_labels` (trxPcaStats, rmd:474, 483-484).
 
