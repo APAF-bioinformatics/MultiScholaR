@@ -534,6 +534,42 @@ test_that("runProtNormTabEntryWorkflow auto-generates pre-normalization QC when 
   expect_true(any(grepl("AUTO-TRIGGERING PRE-NORMALIZATION QC", messages, fixed = TRUE)))
 })
 
+test_that("KIT-101 F-10: the normalisation tab warns that QC is incomplete only while it is", {
+  entry <- function(state, generated, qc_status) {
+    workflow_data <- new.env(parent = emptyenv())
+    workflow_data$state_manager <- new.env(parent = emptyenv())
+    workflow_data$state_manager$current_state <- state
+    workflow_data$tab_status <- list(quality_control = qc_status)
+    norm_data <- new.env(parent = emptyenv())
+    norm_data$pre_norm_qc_generated <- generated
+    calls <- new.env(parent = emptyenv())
+    calls$warned <- 0L
+    calls$generated <- 0L
+    runProtNormTabEntryWorkflow(
+      selectedTab = "normalization",
+      workflowData = workflow_data,
+      normData = norm_data,
+      generatePreNormalizationQcFn = function() calls$generated <- calls$generated + 1L,
+      notifyInvalidStateFn = function(currentState) {
+        calls$warned <- calls$warned + 1L
+        invisible(FALSE)
+      },
+      messageFn = function(...) invisible(NULL)
+    )
+    mget(c("generated", "warned"), envir = calls)
+  }
+  # Returning to the tab after the pre-normalisation QC was generated, and every later state of the tab.
+  for (state in c("protein_replicate_filtered", "normalized", "correlation_filtered")) {
+    expect_identical(entry(state, TRUE, "complete"), list(generated = 0L, warned = 0L), info = state)
+  }
+  # QC complete on a route whose last QC state is not in the pre-QC trigger list (DIA_LIMPA).
+  expect_identical(entry("peptide_count_filtered", FALSE, "complete"), list(generated = 0L, warned = 0L))
+  # QC not complete: the warning stands (today's behaviour).
+  expect_identical(entry("intensity_filtered", FALSE, "pending"), list(generated = 0L, warned = 1L))
+  # First visit with QC complete: the pre-normalisation QC is generated, no warning (today's behaviour).
+  expect_identical(entry("protein_replicate_filtered", FALSE, "complete"), list(generated = 1L, warned = 0L))
+})
+
 test_that("regenerateProtNormQcForAestheticChange runs only the available regeneration steps", {
   calls <- character()
   capture_message <- function(text) {

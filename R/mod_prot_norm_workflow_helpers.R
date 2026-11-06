@@ -515,6 +515,12 @@ runProtNormTabEntryWorkflow <- function(
     current_state,
     normData$pre_norm_qc_generated
   )) {
+    # KIT-101 F-10: the gate is also FALSE when the pre-normalisation QC was already generated, and on a route whose
+    # last QC state is not a trigger state; neither means QC is incomplete, so warn only while it is.
+    if (shouldAutoGeneratePreQcFn(selectedTab, current_state, FALSE) ||
+        identical(workflowData$tab_status$quality_control, "complete")) {
+      return(invisible(FALSE))
+    }
     return(notifyInvalidStateFn(currentState = current_state))
   }
 

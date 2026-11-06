@@ -28,3 +28,26 @@ COUNTS test-module-ci-prot-dia-limpa.R pass 30 fail 3 error 0 skip 2
 
 After the fix:
 COUNTS test-module-ci-prot-dia-limpa.R pass 33 fail 0 error 0 skip 2
+
+== F-10  tests/testthat/test-prot-05b-norm-module-contracts.R ==
+New block: "KIT-101 F-10: the normalisation tab warns that QC is incomplete only while it is".
+runProtNormTabEntryWorkflow (the tab-entry observer's body) on the normalisation tab, the warning
+and the pre-QC generator captured.
+
+Cause (the stale read): the entry gate shouldProtNormAutoGeneratePreQc is FALSE both when the state
+is not a normalisation state and when `normData$pre_norm_qc_generated` is already TRUE; the
+workflow treated every FALSE as "QC incomplete". So every re-entry of the tab after the first
+(the entry lanes re-select the tab before each action) warned "Please complete the Quality Control
+filtering steps before accessing normalization." with QC complete. It also warned on a route whose
+last QC state is not in the trigger list (DIA_LIMPA: peptide_count_filtered) with QC complete.
+Fix: warn only when the state is not a normalisation state and tab_status$quality_control is not
+"complete"; otherwise return quietly. Generation and its trigger states are unchanged.
+
+Before the fix:
+--- Expected `entry(state, TRUE, "complete")` identical to list(generated = 0L, warned = 0L);
+    actual$warned 1, for protein_replicate_filtered, normalized and correlation_filtered (3 failures)
+--- Expected `entry("peptide_count_filtered", FALSE, "complete")` ...; actual$warned 1
+COUNTS test-prot-05b-norm-module-contracts.R pass 493 fail 4 error 0 skip 9
+
+After the fix:
+COUNTS test-prot-05b-norm-module-contracts.R pass 497 fail 0 error 0 skip 9
