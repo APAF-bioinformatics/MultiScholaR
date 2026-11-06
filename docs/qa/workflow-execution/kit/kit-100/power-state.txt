@@ -1,2 +1,4 @@
 kit-journey-100a start 06:04:01 at 14388cc7: AC 0, profile low-power, battery 94%, load 2.86, available 16 GiB
 kit-journey-100a end 06:09:21: AC 0, profile low-power, battery 92%, load 2.98, available 19 GiB
+kit-journey-100b start 06:09:24 at d58e9d22: AC 0, profile low-power, battery 92%, load 2.98, available 19 GiB
+kit-journey-100b end 06:14:24: AC 0, profile low-power, battery 90%, load 3.67, available 20 GiB
