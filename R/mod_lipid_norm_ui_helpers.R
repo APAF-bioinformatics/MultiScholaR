@@ -263,368 +263,107 @@ buildLipidNormOptionsControlPanel <- function(ns) {
     )
 }
 
-buildLipidNormQcTabsetPanel <- function(ns) {
-    shiny::column(9
-        , shiny::tabsetPanel(
-            id = ns("norm_qc_tabs")
+#' One figure tab's rows: per assay its label and the three stages' images (`<kind>_<stage>_assay<n>`).
+#' @param labels The three stages' captions.
+#' @param assays The assay rows (1 and 2 for lipidomics; KIT-097: 1 under the transcriptomics profile).
+#' @noRd
+buildLipidNormStageRows <- function(ns, kind, labels = c("Post-Filtering", "Post-Normalization", "RUV-Corrected"), assays = 1:2) {
+    stages <- c("post_filter", "post_norm", "ruv_corrected")
+    rows <- lapply(assays, function(n) shiny::tagList(
+        shiny::fluidRow(shiny::column(12, shiny::h5(shiny::textOutput(ns(sprintf("assay%d_label_%s", n, kind))), style = "margin-bottom: 5px;"))),
+        shiny::fluidRow(lapply(seq_along(stages), function(i) shiny::column(4,
+            shiny::tags$small(labels[[i]], style = "display: block; text-align: center;"),
+            shinyjqui::jqui_resizable(shiny::imageOutput(ns(sprintf("%s_%s_assay%d", kind, stages[[i]], n)), height = "300px")))))))
+    if (length(rows) > 1L) rows <- c(rows[1L], unlist(lapply(rows[-1L], function(row) list(shiny::hr(), row)), recursive = FALSE))
+    shiny::tagList(rows)
+}
 
-            # --------------------------------------------------------
-            # Tab 1: ITSD Selection (per-assay DT tables)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "ITSD Selection"
-                , icon = shiny::icon("flask")
-                , shiny::br()
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5("Internal Standard Selection per Assay", style = "text-align: center;")
-                        , shiny::helpText("Select internal standards for each assay. Pre-selected candidates are auto-detected from naming patterns (ITSD, IS, labeled compounds).")
-                        , shiny::hr()
-                        , shiny::uiOutput(ns("itsd_selection_ui"))
+#' The normalisation tab's QC panels. KIT-097: under an omic `profile` only `profile$norm_tabs` are shown (by name:
+#' `itsd`, `ruv`, `pca`, `density`, `rle`, `correlation`, `correlation_filter`, `log`), with one assay row and the profile's
+#' stage captions; `NULL` (lipidomics) shows every panel as before.
+#' @noRd
+buildLipidNormQcTabsetPanel <- function(ns, profile = NULL) {
+    assays <- if (is.null(profile)) 1:2 else 1L
+    labels <- profile$norm_stage_labels %||% c("Post-Filtering", "Post-Normalization", "RUV-Corrected")
+    figure <- function(title, icon, kind) shiny::tabPanel(title, icon = shiny::icon(icon), shiny::br(), buildLipidNormStageRows(ns, kind, labels, assays))
+    centred <- function(title, icon, heading, help, ...) shiny::tabPanel(title, icon = shiny::icon(icon), shiny::br(),
+        shiny::fluidRow(shiny::column(12, shiny::h5(heading, style = "text-align: center;"), shiny::helpText(help), shiny::hr(), ...)))
+    tabs <- list(
+        itsd = centred("ITSD Selection", "flask", "Internal Standard Selection per Assay",
+            "Select internal standards for each assay. Pre-selected candidates are auto-detected from naming patterns (ITSD, IS, labeled compounds).",
+            shiny::uiOutput(ns("itsd_selection_ui"))),
+        ruv = centred("RUV QC", "chart-line", profile$norm_ruv_heading %||% "RUV Parameter Optimization Results",
+            profile$norm_ruv_help %||% "Canonical correlation plots and optimization summary per assay. Each assay is optimized independently.",
+            shiny::uiOutput(ns("ruv_qc_ui"))),
+        pca = figure("PCA", "project-diagram", "pca"),
+        density = figure("Density", "chart-area", "density"),
+        rle = figure("RLE", "chart-bar", "rle"),
+        correlation = figure("Correlation", "th", "correlation"),
+        correlation_filter = buildLipidNormCorrelationFilterTab(ns),
+        log = shiny::tabPanel("Log", icon = shiny::icon("list-alt"), shiny::br(), shiny::fluidRow(shiny::column(12,
+            shiny::h5("Normalization Pipeline Log", style = "text-align: center;"), shiny::verbatimTextOutput(ns("norm_log"))))))
+    keep <- profile$norm_tabs %||% names(tabs)
+    shiny::column(9, do.call(shiny::tabsetPanel, c(list(id = ns("norm_qc_tabs")), unname(tabs[keep]))))
+}
+
+#' The correlation filtering panel (the lipid normalisation's final step).
+#' @noRd
+buildLipidNormCorrelationFilterTab <- function(ns) {
+    shiny::tabPanel(
+        "Correlation Filtering"
+        , icon = shiny::icon("filter")
+        , shiny::br()
+        , shiny::fluidRow(
+            shiny::column(4
+                , shiny::wellPanel(
+                    shiny::h5("Sample Correlation Filtering")
+                    , shiny::helpText("FINAL STEP: Filter samples based on their correlation with other samples in the same group. Low correlation indicates potential technical issues.")
+
+                    , shiny::sliderInput(
+                        ns("min_pearson_correlation_threshold")
+                        , "Min. Pearson Correlation Threshold:"
+                        , min = 0.0
+                        , max = 1.0
+                        , value = 0.5
+                        , step = 0.05
+                        , width = "100%"
                     )
+                    , shiny::helpText("Samples with correlation below this threshold will be flagged")
+
+                    , shiny::br()
+
+                    , shiny::actionButton(
+                        ns("apply_correlation_filter")
+                        , "Apply Correlation Filter"
+                        , class = "btn-primary"
+                        , width = "100%"
+                        , icon = shiny::icon("play")
+                    )
+
+                    , shiny::br()
+                    , shiny::br()
+
+                    , shiny::actionButton(
+                        ns("skip_correlation_filter")
+                        , "Skip Filtering & Proceed to DE"
+                        , class = "btn-info"
+                        , width = "100%"
+                        , icon = shiny::icon("forward")
+                    )
+                    , shiny::helpText("Bypass sample filtering and proceed directly to DE")
+
+                    , shiny::br()
+                    , shiny::br()
+
+                    , shiny::h5("Filter Results")
+                    , shiny::verbatimTextOutput(ns("correlation_filter_summary"))
                 )
             )
-
-            # --------------------------------------------------------
-            # Tab 2: RUV QC (per-assay stacked cancor plots)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "RUV QC"
-                , icon = shiny::icon("chart-line")
-                , shiny::br()
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5("RUV Parameter Optimization Results", style = "text-align: center;")
-                        , shiny::helpText("Canonical correlation plots and optimization summary per assay. Each assay is optimized independently.")
-                        , shiny::hr()
-                        , shiny::uiOutput(ns("ruv_qc_ui"))
-                    )
-                )
-            )
-
-            # --------------------------------------------------------
-            # Tab 3: PCA (STATIC 2-row x 3-column grid)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "PCA"
-                , icon = shiny::icon("project-diagram")
-                , shiny::br()
-                # --- Row 1: Assay 1 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay1_label_pca")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("pca_post_filter_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("pca_post_norm_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("pca_ruv_corrected_assay1"), height = "300px")
-                        )
-                    )
-                )
-                , shiny::hr()
-                # --- Row 2: Assay 2 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay2_label_pca")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("pca_post_filter_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("pca_post_norm_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("pca_ruv_corrected_assay2"), height = "300px")
-                        )
-                    )
-                )
-            )
-
-            # --------------------------------------------------------
-            # Tab 4: Density (STATIC 2-row x 3-column grid)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "Density"
-                , icon = shiny::icon("chart-area")
-                , shiny::br()
-                # --- Row 1: Assay 1 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay1_label_density")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("density_post_filter_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("density_post_norm_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("density_ruv_corrected_assay1"), height = "300px")
-                        )
-                    )
-                )
-                , shiny::hr()
-                # --- Row 2: Assay 2 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay2_label_density")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("density_post_filter_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("density_post_norm_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("density_ruv_corrected_assay2"), height = "300px")
-                        )
-                    )
-                )
-            )
-
-            # --------------------------------------------------------
-            # Tab 5: RLE (STATIC 2-row x 3-column grid)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "RLE"
-                , icon = shiny::icon("chart-bar")
-                , shiny::br()
-                # --- Row 1: Assay 1 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay1_label_rle")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("rle_post_filter_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("rle_post_norm_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("rle_ruv_corrected_assay1"), height = "300px")
-                        )
-                    )
-                )
-                , shiny::hr()
-                # --- Row 2: Assay 2 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay2_label_rle")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("rle_post_filter_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("rle_post_norm_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("rle_ruv_corrected_assay2"), height = "300px")
-                        )
-                    )
-                )
-            )
-
-            # --------------------------------------------------------
-            # Tab 6: Correlation Heatmap (STATIC 2-row x 3-column grid)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "Correlation"
-                , icon = shiny::icon("th")
-                , shiny::br()
-                # --- Row 1: Assay 1 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay1_label_correlation")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("correlation_post_filter_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("correlation_post_norm_assay1"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("correlation_ruv_corrected_assay1"), height = "300px")
-                        )
-                    )
-                )
-                , shiny::hr()
-                # --- Row 2: Assay 2 ---
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5(shiny::textOutput(ns("assay2_label_correlation")), style = "margin-bottom: 5px;")
-                    )
-                )
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::tags$small("Post-Filtering", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("correlation_post_filter_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("Post-Normalization", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("correlation_post_norm_assay2"), height = "300px")
-                        )
-                    )
-                    , shiny::column(4
-                        , shiny::tags$small("RUV-Corrected", style = "display: block; text-align: center;")
-                        , shinyjqui::jqui_resizable(
-                            shiny::imageOutput(ns("correlation_ruv_corrected_assay2"), height = "300px")
-                        )
-                    )
-                )
-            )
-
-            # --------------------------------------------------------
-            # Tab 7: Correlation Filtering (final step)
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "Correlation Filtering"
-                , icon = shiny::icon("filter")
-                , shiny::br()
-                , shiny::fluidRow(
-                    shiny::column(4
-                        , shiny::wellPanel(
-                            shiny::h5("Sample Correlation Filtering")
-                            , shiny::helpText("FINAL STEP: Filter samples based on their correlation with other samples in the same group. Low correlation indicates potential technical issues.")
-
-                            , shiny::sliderInput(
-                                ns("min_pearson_correlation_threshold")
-                                , "Min. Pearson Correlation Threshold:"
-                                , min = 0.0
-                                , max = 1.0
-                                , value = 0.5
-                                , step = 0.05
-                                , width = "100%"
-                            )
-                            , shiny::helpText("Samples with correlation below this threshold will be flagged")
-
-                            , shiny::br()
-
-                            , shiny::actionButton(
-                                ns("apply_correlation_filter")
-                                , "Apply Correlation Filter"
-                                , class = "btn-primary"
-                                , width = "100%"
-                                , icon = shiny::icon("play")
-                            )
-
-                            , shiny::br()
-                            , shiny::br()
-
-                            , shiny::actionButton(
-                                ns("skip_correlation_filter")
-                                , "Skip Filtering & Proceed to DE"
-                                , class = "btn-info"
-                                , width = "100%"
-                                , icon = shiny::icon("forward")
-                            )
-                            , shiny::helpText("Bypass sample filtering and proceed directly to DE")
-
-                            , shiny::br()
-                            , shiny::br()
-
-                            , shiny::h5("Filter Results")
-                            , shiny::verbatimTextOutput(ns("correlation_filter_summary"))
-                        )
-                    )
-                    , shiny::column(8
-                        , shiny::h5("Final Filtered Data QC", style = "text-align: center;")
-                        , shiny::helpText("QC plots for the final dataset after correlation filtering")
-                        , shinyjqui::jqui_resizable(
-                            shiny::plotOutput(ns("final_qc_plot"), height = "500px")
-                        )
-                    )
-                )
-            )
-
-            # --------------------------------------------------------
-            # Tab 8: Normalization Log
-            # --------------------------------------------------------
-            , shiny::tabPanel(
-                "Log"
-                , icon = shiny::icon("list-alt")
-                , shiny::br()
-                , shiny::fluidRow(
-                    shiny::column(12
-                        , shiny::h5("Normalization Pipeline Log", style = "text-align: center;")
-                        , shiny::verbatimTextOutput(ns("norm_log"))
-                    )
+            , shiny::column(8
+                , shiny::h5("Final Filtered Data QC", style = "text-align: center;")
+                , shiny::helpText("QC plots for the final dataset after correlation filtering")
+                , shinyjqui::jqui_resizable(
+                    shiny::plotOutput(ns("final_qc_plot"), height = "500px")
                 )
             )
         )

@@ -1,4 +1,8 @@
-registerLipidNormStaticQcImageOutputs <- function(output, renderQcImageForAssay) {
+#' @param stagePrefixes The file prefix of each stage (KIT-097: the transcriptomics stages `raw`, `tmm`, `ruvs`); the lipid
+#'   prefixes by default.
+#' @noRd
+registerLipidNormStaticQcImageOutputs <- function(output, renderQcImageForAssay,
+                                                  stagePrefixes = c(pre_norm = "pre_norm", post_norm = "post_norm", ruv_corrected = "ruv_corrected")) {
     output_specs <- list(
         pca_post_filter_assay1 = list(1, "pca", "pre_norm")
         , pca_post_norm_assay1 = list(1, "pca", "post_norm")
@@ -28,7 +32,7 @@ registerLipidNormStaticQcImageOutputs <- function(output, renderQcImageForAssay)
 
     for (output_id in names(output_specs)) {
         spec <- output_specs[[output_id]]
-        output[[output_id]] <- renderQcImageForAssay(spec[[1]], spec[[2]], spec[[3]])
+        output[[output_id]] <- renderQcImageForAssay(spec[[1]], spec[[2]], stagePrefixes[[spec[[3]]]])
     }
 
     invisible(output)
@@ -106,7 +110,8 @@ buildLipidNormQcImageRenderer <- function(
     fileExistsFn = file.exists,
     sanitizeAssayNameFn = function(assayName) {
         gsub("[^A-Za-z0-9]", "_", tolower(assayName))
-    }
+    },
+    qcDirKey = "lipid_qc_dir"
 ) {
     function(assaySlot, plotType, stagePrefix) {
         renderImageFn({
@@ -120,7 +125,7 @@ buildLipidNormQcImageRenderer <- function(
                 safe_name <- sanitizeAssayNameFn(assay_name)
                 filename <- paste0(safe_name, "_", stagePrefix, "_", plotType, ".png")
 
-                qc_dir <- experimentPaths$lipid_qc_dir
+                qc_dir <- experimentPaths[[qcDirKey]]
                 if (is.null(qc_dir)) {
                     list(src = "", alt = "QC directory not configured")
                 } else {

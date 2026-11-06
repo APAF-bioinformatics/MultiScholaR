@@ -1,0 +1,137 @@
+---
+title: "`r paste('Transcriptomics analysis for', params$workflow_name, '- report - created on', params$timestamp)`"
+author: "Your_fancy_self"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  word_document:
+    fig_caption: true
+params:
+  omic_type: "transcriptomics"
+  experiment_label: "DEFAULT_LABEL"
+  workflow_name: "Unknown Workflow"
+  timestamp: "`r format(Sys.time(), '%Y-%m-%d %H:%M:%S')`"
+mainfont: "Calibri"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r Project Setup}
+# KIT-097: the structure of the lipidomics template (its params, the paths from the global project_dirs object, the
+# figures and tables read from results_summary_dir, the analysis record overlay); the text is the transcriptomics
+# analysis's own. Every value below is read from the analysis record or from the results summary.
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+if (!exists("project_dirs", envir = .GlobalEnv) || !is.list(get("project_dirs", envir = .GlobalEnv))) {
+  stop("Global object 'project_dirs' not found or is not a list. Run MultiScholaR::setupDirectories() first.")
+}
+current_project_paths <- MultiScholaR:::getProjectPaths(omic_type = params$omic_type, experiment_label = params$experiment_label,
+  project_dirs_object_name = "project_dirs", env = .GlobalEnv)
+report_source_dir <- current_project_paths$source_dir
+report_results_summary_dir <- current_project_paths$results_summary_dir
+if (!dir.exists(report_results_summary_dir)) stop("Report results summary directory not found: ", report_results_summary_dir)
+summary_file <- function(...) file.path(report_results_summary_dir, ...)
+record_path <- file.path(report_source_dir, "analysis_record.json")
+if (!file.exists(record_path)) stop("The analysis record (analysis_record.json) is not beside study_parameters.txt: save the workflow arguments first.")
+record <- jsonlite::read_json(record_path, simplifyVector = FALSE)
+# The record overlay the lipidomics template applies (KIT-031), with no study-parameter values of its own.
+overlay <- MultiScholaR:::workflowRecordReportParameters(record_path, list(), list())
+step_outcomes <- function(operation) {
+  steps <- Filter(function(step) identical(step$operation, operation), record$steps)
+  if (length(steps)) steps[[length(steps)]]$outcomes else list()
+}
+filter_outcomes <- step_outcomes("trx_expression_filter")
+ruv <- step_outcomes("trx_ruvs")
+da <- record$analyses$differential_abundance
+model <- da$model %||% list()
+export <- record$analyses$trx_ruviii_export
+fdr_threshold <- overlay$s4_de_q_val_thresh %||% 0.05
+value <- function(x, digits = 4) if (is.null(x)) "not recorded" else if (is.numeric(x)) format(round(x, digits)) else as.character(x)
+show_figure <- function(path) if (file.exists(path)) knitr::include_graphics(path) else cat("Figure not available:", basename(path), "\n")
+```
+
+# Methods
+
+## Filtering and normalisation
+
+Genes were filtered with edgeR's filterByExpr on the TMM-scaled library sizes of the design's groups, and genes with zero variance across the samples were removed (`r value(filter_outcomes$genes_before)` genes before filtering, `r value(filter_outcomes$genes_after_filter_by_expr)` after filterByExpr, `r value(filter_outcomes$genes_after_zero_variance)` retained). TMM normalisation factors were computed with edgeR and log2 counts per million (prior count 2) were derived for the figures.
+
+## Unwanted variation (RUVs)
+
+Unwanted variation was estimated with RUVs (RUVSeq) on inferred empirical negative control genes: the least significant genes of a preliminary group-only quasi-likelihood GLM, taken at a chosen percentage of the filtered genes. They are inferred from the data, not known in advance. The selection mode was `r value(overlay$ruv_mode %||% ruv$ruv_mode)`; the grid tested `r value(ruv$percentage_min)` to `r value(ruv$percentage_max)` % in steps of `r value(ruv$percentage_step)` %, with k capped at `r value(ruv$max_acceptable_k)` and a k penalty weight of `r value(ruv$k_penalty_weight)`, choosing the maximum composite score. The chosen values were k = `r value(overlay$best_k %||% ruv$k)`, `r value(overlay$best_percentage %||% ruv$negative_control_percentage)` % of the genes, giving `r value(overlay$num_neg_ctrl %||% ruv$negative_control_count)` inferred empirical negative controls, with a separation score of `r value(ruv$separation_score)` and a composite score of `r value(ruv$composite_score)`.
+
+The RUVs factors W_1..W_k were added to the design and used as model covariates in the differential expression model; the counts themselves were not corrected. The RUVs-corrected logCPM was used for display only (PCA and RLE figures).
+
+## Differential expression
+
+Differential expression was tested with the edgeR quasi-likelihood F-test: dispersions were estimated with estimateDisp (robust = TRUE), the model was fitted with glmQLFit (robust = TRUE), and each contrast was tested with glmQLFTest on that one fit. The realised model formula was `r value(model$formula_used %||% overlay$s4_formula_string)`. P-values were adjusted with the Benjamini-Hochberg method, and genes with a false discovery rate (FDR, BH) below `r value(fdr_threshold)` were called significant. No fold-change threshold was tested; fold-change lines in the figures are visual guides.
+
+## Integration export (RUVIII)
+
+```{r ruviii-text, results = "asis"}
+if (is.null(export)) {
+  cat("No RUVIII integration export was recorded for this analysis.\n")
+} else {
+  cat(sprintf(paste("RUVIII (ruv::RUVIII) was applied to the TMM logCPM, with the RUVs inferred negative controls and k = %s, for the",
+    "integration export only, with the replicate structure M taken from the %s. The differential expression results do not use it.\n"),
+    value(export$outcomes$k), if (identical(export$outcomes$ruviii_m_source, "technical_replicate")) "technical replicates" else "group"))
+}
+```
+
+# Results
+
+## Normalisation
+
+```{r cca-panels, fig.cap = "Canonical correlation panels of the RUVs control selection."}
+show_figure(summary_file("Publication_figures", "canonical_correlation_panels.png"))
+```
+
+```{r stage-grid, fig.cap = "PCA and RLE of the raw, TMM and RUVs-corrected logCPM (the last for display only)."}
+show_figure(summary_file("QC_figures", "normalization_comparison_grid.png"))
+```
+
+## Differential expression
+
+```{r de-counts, results = "asis"}
+tables <- list.files(summary_file("Publication_tables"), pattern = "^de_results_.+\\.csv$", full.names = TRUE)
+for (path in tables) {
+  de <- utils::read.csv(path, check.names = FALSE)
+  contrast <- sub("^de_results_(.*)\\.csv$", "\\1", basename(path))
+  cat(sprintf("For %s, %d genes were up and %d down at FDR (BH) < %s, of %d tested.\n\n", contrast,
+    sum(de$FDR < fdr_threshold & de$logFC > 0), sum(de$FDR < fdr_threshold & de$logFC < 0), value(fdr_threshold), nrow(de)))
+}
+```
+
+```{r volcanoes, results = "asis"}
+for (path in list.files(summary_file("Publication_figures", "Volcano_Plots"), pattern = "\\.png$", full.names = TRUE)) {
+  cat(sprintf("![Volcano plot (-log10 FDR (BH)): %s](%s)\n\n", sub("^volcano_plot_(.*)\\.png$", "\\1", basename(path)), path))
+}
+for (path in list.files(summary_file("Publication_figures", "NumSigDeMolecules"), pattern = "\\.png$", full.names = TRUE)) {
+  cat(sprintf("![Significance summary: %s](%s)\n\n", sub("^summary_barplot_(.*)\\.png$", "\\1", basename(path)), path))
+}
+```
+
+```{r top-genes}
+top_path <- summary_file("Publication_tables", "top_de_genes.tsv")
+if (file.exists(top_path)) {
+  top <- utils::read.delim(top_path, check.names = FALSE)
+  keep <- intersect(c("comparison", "regulation", "GeneID", "DisplaySymbol", "logFC", "FDR"), names(top))
+  knitr::kable(top[, keep, drop = FALSE], digits = 4, caption = "Top up- and down-regulated genes per contrast (FDR (BH) < 0.05).")
+}
+```
+
+## Integration export
+
+```{r ruviii-figure, fig.cap = "PCA and RLE before and after RUVIII (the integration export)."}
+show_figure(summary_file("QC_figures", "ruviii_before_and_after.png"))
+```
+
+# Appendix: software
+
+```{r software}
+software <- record$software %||% list()
+rows <- Filter(function(x) is.atomic(x) && length(x) == 1L, software)
+if (length(rows)) knitr::kable(data.frame(Item = names(rows), Value = vapply(rows, as.character, ""), row.names = NULL))
+```
+
+The complete analysis record (parameters, inputs, steps and package versions) is exported beside this report as its supplementary information.

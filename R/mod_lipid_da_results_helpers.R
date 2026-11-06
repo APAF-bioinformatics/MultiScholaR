@@ -2,7 +2,9 @@ buildLipidDaSummaryStatsText <- function(
     daResults,
     selectedContrast,
     selectedAssay,
-    daQValThresh
+    daQValThresh,
+    featureNoun = "lipids",
+    significanceLabel = "Q"
 ) {
     if (is.null(daResults) || nrow(daResults) == 0) {
         return("No results available.")
@@ -26,10 +28,10 @@ buildLipidDaSummaryStatsText <- function(
 
     paste(
         c(
-            sprintf("Total lipids: %d", total),
+            sprintf("Total %s: %d", featureNoun, total),
             sprintf(
-                "Significant (Q < %.3f): %d (%.1f%%)",
-                daQValThresh, sig, 100 * sig / max(total, 1)
+                "Significant (%s < %.3f): %d (%.1f%%)",
+                significanceLabel, daQValThresh, sig, 100 * sig / max(total, 1)
             ),
             sprintf("  Up-regulated: %d", up),
             sprintf("  Down-regulated: %d", down)
@@ -44,12 +46,13 @@ buildLipidDaSummaryStatsRenderText <- function(
     selectedAssay,
     daQValThresh,
     reqFn = shiny::req,
-    buildSummaryStatsTextFn = buildLipidDaSummaryStatsText
+    buildSummaryStatsTextFn = buildLipidDaSummaryStatsText,
+    longTable = "da_lipids_long"
 ) {
     reqFn(daResultsList)
 
     buildSummaryStatsTextFn(
-        daResults = daResultsList$da_lipids_long,
+        daResults = daResultsList[[longTable]],
         selectedContrast = selectedContrast,
         selectedAssay = selectedAssay,
         daQValThresh = daQValThresh
@@ -65,12 +68,13 @@ buildLipidDaResultsTableRenderWidget <- function(
     lfcThreshold,
     tableMaxRows,
     reqFn = shiny::req,
-    buildResultsTableWidgetFn = buildLipidDaResultsTableWidget
+    buildResultsTableWidgetFn = buildLipidDaResultsTableWidget,
+    longTable = "da_lipids_long"
 ) {
     reqFn(daResultsList)
 
     buildResultsTableWidgetFn(
-        daResults = daResultsList$da_lipids_long,
+        daResults = daResultsList[[longTable]],
         selectedContrast = selectedContrast,
         selectedAssay = selectedAssay,
         tableSignificance = tableSignificance,
@@ -91,11 +95,17 @@ buildLipidDaResultsTableWidget <- function(
     datatableFactory = DT::datatable,
     formatRoundFactory = DT::formatRound,
     formatStyleFactory = DT::formatStyle,
-    styleEqualFactory = DT::styleEqual
+    styleEqualFactory = DT::styleEqual,
+    columns = NULL
 ) {
     if (is.null(daResults) || nrow(daResults) == 0) {
         return(NULL)
     }
+    # KIT-097: an omic profile's identifier, label, p-value and significance columns (lipidomics by default); the
+    # significance column keeps its name in the data and is shown under its label.
+    columns <- utils::modifyList(list(id = "lipid_id", label = "lipid_name", pvalue = "raw_pvalue", significance = "fdr_qvalue",
+        significance_label = NULL), columns %||% list())
+    significance <- columns$significance
 
     results <- daResults
 
@@ -109,12 +119,12 @@ buildLipidDaResultsTableWidget <- function(
     }
 
     if (identical(tableSignificance, "significant")) {
-        results <- results[results$fdr_qvalue < daQValThresh, ]
+        results <- results[results[[significance]] < daQValThresh, ]
     } else if (identical(tableSignificance, "up")) {
-        results <- results[results$fdr_qvalue < daQValThresh &
+        results <- results[results[[significance]] < daQValThresh &
             results$logFC > lfcThreshold, ]
     } else if (identical(tableSignificance, "down")) {
-        results <- results[results$fdr_qvalue < daQValThresh &
+        results <- results[results[[significance]] < daQValThresh &
             results$logFC < -lfcThreshold, ]
     }
 
@@ -127,13 +137,12 @@ buildLipidDaResultsTableWidget <- function(
     }
 
     displayCols <- c(
-        "lipid_id", "lipid_name", "assay", "logFC",
-        "raw_pvalue", "fdr_qvalue", "significant"
+        columns$id, columns$label, "assay", "logFC",
+        columns$pvalue, significance, "significant"
     )
     displayCols <- intersect(displayCols, colnames(results))
     results <- results[, displayCols, drop = FALSE]
-
-    datatableFactory(
+    widgetArgs <- list(
         results,
         options = list(
             pageLength = 25,
@@ -144,9 +153,14 @@ buildLipidDaResultsTableWidget <- function(
         extensions = "Buttons",
         rownames = FALSE,
         filter = "top"
-    ) |>
+    )
+    if (!is.null(columns$significance_label)) {
+        widgetArgs$colnames <- ifelse(displayCols == significance, columns$significance_label, displayCols)
+    }
+
+    do.call(datatableFactory, widgetArgs) |>
         formatRoundFactory(columns = c("logFC"), digits = 3) |>
-        formatRoundFactory(columns = c("raw_pvalue", "fdr_qvalue"), digits = 6) |>
+        formatRoundFactory(columns = c(columns$pvalue, significance), digits = 6) |>
         formatStyleFactory(
             "significant",
             backgroundColor = styleEqualFactory(
@@ -161,11 +175,12 @@ buildLipidDaResultsDownloadHandler <- function(
     downloadHandlerFactory = shiny::downloadHandler,
     currentDate = Sys.Date,
     csvWriter = utils::write.csv,
-    reqFn = shiny::req
+    reqFn = shiny::req,
+    filePrefix = "lipidomics"
 ) {
     downloadHandlerFactory(
         filename = function() {
-            paste0("lipidomics_da_results_", currentDate(), ".csv")
+            paste0(filePrefix, "_da_results_", currentDate(), ".csv")
         },
         content = function(file) {
             results <- daResultsReactive()
@@ -177,8 +192,8 @@ buildLipidDaResultsDownloadHandler <- function(
     )
 }
 
-resolveLipidDaResultsDownloadData <- function(daResultsList) {
-    daResultsList$write_download %||% daResultsList$da_lipids_long
+resolveLipidDaResultsDownloadData <- function(daResultsList, longTable = "da_lipids_long") {
+    daResultsList$write_download %||% daResultsList[[longTable]]
 }
 
 buildLipidDaResultsDownloadOutputHandler <- function(

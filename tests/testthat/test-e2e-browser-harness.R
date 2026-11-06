@@ -117,7 +117,14 @@ test_that("e2e_input_id maps all current omic module namespaces", {
     e2e_input_id("proteomics", "qc", "peptide_qc-qvalue_filter-apply_qvalue_filter"),
     "proteomics_workflow-quality_control-peptide_qc-qvalue_filter-apply_qvalue_filter"
   )
-  expect_error(e2e_input_id("transcriptomics", "import", "file"), "Unsupported omic")
+  # KIT-097 (KIT096-F13): transcriptomics is a supported omic; the unsupported case is a fictitious one.
+  transcriptomics_id <- tryCatch(e2e_input_id("transcriptomics", "import", "assay1_file"), error = function(e) conditionMessage(e))
+  expect_identical(transcriptomics_id, "transcriptomics_workflow-import-assay1_file")
+  expect_identical(
+    tryCatch(e2e_input_id("transcriptomics", "da", "run_da_analysis"), error = function(e) conditionMessage(e)),
+    "transcriptomics_workflow-de-run_da_analysis"
+  )
+  expect_error(e2e_input_id("spatialomics", "import", "file"), "Unsupported omic")
 })
 
 test_that("e2e_launch_spec supports package and app-dir launch surfaces", {

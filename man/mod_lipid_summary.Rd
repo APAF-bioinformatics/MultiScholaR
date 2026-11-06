@@ -6,18 +6,22 @@
 \alias{mod_lipid_summary_server}
 \title{Lipidomics Session Summary Module}
 \usage{
-mod_lipid_summary_ui(id)
+mod_lipid_summary_ui(id, profile = NULL)
 
 mod_lipid_summary_server(
   id,
   project_dirs,
   omic_type = "lipidomics",
   experiment_label = NULL,
-  workflow_data = NULL
+  workflow_data = NULL,
+  profile = NULL
 )
 }
 \arguments{
 \item{id, project_dirs, omic_type, experiment_label, workflow_data}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{profile}{An omic profile (KIT-097: \code{trxOmicProfile()}): its export panel, labels, test ids, integration export and
+  report template; \code{NULL}, the default, is lipidomics, unchanged.}
 }
 \description{
 A Shiny module for displaying processing summary and enabling

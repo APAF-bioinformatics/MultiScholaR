@@ -632,6 +632,10 @@ copyToResultsSummary <- function(omic_type,
         } else {
             cat("COPY: Warning - no normalized RDS files found for lipidomics\n")
         }
+    } else if (omic_type == "transcriptomics") {
+        # KIT-097: the transcriptomics output map (KIT-095's publication operations' files).
+        cat("COPY: Adding transcriptomics-specific files\n")
+        files_to_copy <- c(files_to_copy, transcriptomicsResultsSummaryFiles(current_paths))
     }
 
     # Excel files paths
@@ -643,6 +647,8 @@ copyToResultsSummary <- function(omic_type,
     openxlsx::addWorksheet(da_wb, "DA_Results_Index")
     da_index_data <- data.frame(Sheet = character(), Description = character(), stringsAsFactors = FALSE)
     da_files <- list.files(path = current_paths$da_output_dir, pattern = paste0("(da|de)_.+_long_annot\\.xlsx$"), full.names = TRUE)
+    # KIT-097: the transcriptomics DE tables are the notebook's per-contrast CSVs.
+    if (omic_type == "transcriptomics") da_files <- list.files(path = current_paths$da_output_dir, pattern = "^de_results_.+\\.csv$", full.names = TRUE)
 
     purrr::imap(da_files, \(file, idx) {
         sheet_name <- sprintf("DA_Sheet%d", idx)
@@ -650,8 +656,10 @@ copyToResultsSummary <- function(omic_type,
             stringr::str_remove("^da_") |>
             stringr::str_remove("^de_") |>
             stringr::str_remove("_long_annot\\.xlsx$")
+        if (grepl("\\.csv$", file)) base_name <- sub("^de_results_(.*)\\.csv$", "\\1", basename(file))
         da_index_data <<- rbind(da_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
-        data_content <- tryCatch(openxlsx::read.xlsx(file), error = function(e) NULL)
+        data_content <- tryCatch(if (grepl("\\.csv$", file)) utils::read.csv(file, check.names = FALSE) else openxlsx::read.xlsx(file),
+            error = function(e) NULL)
         if (!is.null(data_content)) {
             openxlsx::addWorksheet(da_wb, sheet_name)
             openxlsx::writeData(da_wb, sheet_name, data_content)
@@ -895,4 +903,27 @@ copyToResultsSummary <- function(omic_type,
     cat("--- End of copyToResultsSummary ---\n\n")
     cat("--- End of copyToResultsSummary ---\n\n")
     invisible(failed_copies)
+}
+
+#' The transcriptomics results-summary files (KIT-097's output map): KIT-095's publication operations' files by the
+#' notebook's names. The Glimma pages are store assets, not files, and are not copied.
+#' @param current_paths The experiment's paths.
+#' @return File specifications in `copyToResultsSummary`'s shape.
+#' @noRd
+transcriptomicsResultsSummaryFiles <- function(current_paths) {
+    graphs <- current_paths$publication_graphs_dir
+    qc <- current_paths$gene_qc_dir %||% current_paths$feature_qc_dir
+    da <- current_paths$da_output_dir
+    file <- function(dir, name, dest, label) list(source = file.path(dir, name), dest = dest, is_dir = FALSE, display_name = label)
+    folder <- function(name, label) list(source = file.path(graphs, name), dest = file.path("Publication_figures", name), is_dir = TRUE, display_name = label)
+    figures <- function(dir, stem, dest, label) lapply(c(".png", ".pdf"), function(ext) file(dir, paste0(stem, ext), dest, paste(label, ext)))
+    de_tables <- list.files(da, pattern = "^de_results_.+\\.csv$")
+    c(list(file(graphs, "canonical_correlation_optimization_summary.xlsx", "Publication_tables", "RUV Grid Optimization Workbook"),
+            file(qc, "ruv_normalised_log_values.tsv", "Publication_tables", "RUVs-corrected logCPM (display only)"),
+            file(da, "top_de_genes.tsv", "Publication_tables", "Top DE Genes"),
+            folder("Volcano_Plots", "Volcano Plots"), folder("NumSigDeMolecules", "Num Sig DE Molecules")),
+        figures(graphs, "canonical_correlation_panels", "Publication_figures", "CCA Panels"),
+        figures(graphs, "normalization_comparison_grid", "QC_figures", "Normalization Comparison Grid"),
+        figures(graphs, "ruviii_before_and_after", "QC_figures", "RUVIII Before and After"),
+        lapply(de_tables, function(name) file(da, name, "Publication_tables", paste("DE Results", name))))
 }

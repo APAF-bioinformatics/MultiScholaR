@@ -3,7 +3,9 @@
 #' @importFrom shiny moduleServer reactiveValues reactive observeEvent req renderUI renderPlot renderText showNotification removeNotification updateSelectInput downloadHandler observe renderPrint
 #' @importFrom DT renderDT datatable formatRound formatStyle styleEqual
 #' @importFrom logger log_info log_error log_warn
-mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label) {
+mod_lipid_da_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, profile = NULL) {
+    # KIT-097: the transcriptomics DA on this module's outputs and observers.
+    if (!is.null(profile)) return(profile$da_server(id, workflow_data, experiment_paths, omic_type, experiment_label))
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
 

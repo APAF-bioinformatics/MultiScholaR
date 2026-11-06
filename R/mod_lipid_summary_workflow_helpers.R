@@ -17,9 +17,12 @@ handleLipidSummarySaveWorkflowArgs <- function(
     filePathFn = file.path,
     timeFn = Sys.time,
     catFn = cat,
-    writeAnalysisRecordFn = writeWorkflowAnalysisRecord
+    writeAnalysisRecordFn = writeWorkflowAnalysisRecord,
+    profile = NULL
 ) {
     catFn("SESSION SUMMARY: Starting workflow args save process\n")
+    # KIT-097: an omic profile's final state (a reference) and its integration export.
+    if (!is.null(profile)) collectContextFn <- profile$summary_context
 
     summaryFailed <- function(e) {
         catFn("SESSION SUMMARY ERROR:", conditionMessage(e), "\n")
@@ -83,7 +86,7 @@ handleLipidSummarySaveWorkflowArgs <- function(
             dirCreateFn(integrationDir, recursive = TRUE, showWarnings = FALSE)
         }
 
-        s4Filename <- sprintf("%s_%s_final_s4.RDS", omicType, input$experiment_label)
+        s4Filename <- profile$integration_filename %||% sprintf("%s_%s_final_s4.RDS", omicType, input$experiment_label)
         s4Filepath <- filePathFn(integrationDir, s4Filename)
 
         finish <- function() {
@@ -113,15 +116,20 @@ handleLipidSummarySaveWorkflowArgs <- function(
         }
 
         # KIT-082: the integration object is the whole state, so a managed session's worker writes it.
-        runner <- workflowOmicsManagedActions("lipidomics")
+        if (!is.null(profile) && !isTRUE(profile$integration_ready(workflowData))) {
+            showNotificationFn(profile$integration_missing_message, type = "warning", duration = 10)
+            s4Filename <- "not written (no integration export yet)"
+            return(finish())
+        }
+        runner <- workflowOmicsManagedActions(profile$omic_type %||% "lipidomics")
         if (!is.null(runner) && !is.null(context$dataStateUsed)) {
             context$finalS4Object <- NULL
-            runner$run(list(omicsManagedProduct("lipid_integration_export", list(path = s4Filepath, state_name = context$dataStateUsed), function(result) invisible(NULL))),
+            runner$run(list(omicsManagedProduct(paste0(profile$prefix %||% "lipid", "_integration_export"), list(path = s4Filepath, state_name = context$dataStateUsed), function(result) invisible(NULL))),
                 done = finish, failed = summaryFailed)
             return(invisible(list(studyParamsFile = studyParamsFile, s4Filepath = s4Filepath, s4Filename = s4Filename)))
         }
 
-        saveRDSFn(context$finalS4Object, s4Filepath)
+        if (is.null(profile)) saveRDSFn(context$finalS4Object, s4Filepath) else profile$integration_write(workflowData, s4Filepath)
         # KIT-075: the outputs below keep this frame; the object leaves it once written.
         context$finalS4Object <- NULL
         finish()
@@ -348,7 +356,7 @@ handleLipidSummaryGenerateReport <- function(
     projectDirs,
     omicType,
     workflowData = NULL,
-    templateFilename = "lipidomics_report.rmd",
+    templateFilename = profile$report_template %||% "lipidomics_report.rmd",
     exportRecordFn = exportWorkflowAnalysisRecordBundle,
     withProgressFn = shiny::withProgress,
     showNotificationFn = shiny::showNotification,
@@ -372,8 +380,11 @@ handleLipidSummaryGenerateReport <- function(
     timeFn = Sys.time,
     basenameFn = basename,
     catFn = cat,
-    printFn = print
+    printFn = print,
+    profile = NULL
 ) {
+    # KIT-097: an omic profile's template directory in the package (`inst/reports/<dir>`).
+    templateDir <- profile$report_dir %||% "lipidomics"
     if (!omicType %in% names(projectDirs) || is.null(projectDirs[[omicType]]$base_dir)) {
         showNotificationFn(
             "Error: Project directories not properly initialized",
@@ -398,7 +409,7 @@ handleLipidSummaryGenerateReport <- function(
             dirCreateFn(dirnameFn(reportTemplatePath), recursive = TRUE, showWarnings = FALSE)
 
             templateReady <- tryCatch({
-                pkgFile <- systemFileFn("reports", "lipidomics", templateFilename, package = "MultiScholaR")
+                pkgFile <- systemFileFn("reports", templateDir, templateFilename, package = "MultiScholaR")
 
                 if (fileExistsFn(pkgFile) && pkgFile != "") {
                     catFn(sprintf("REPORT: Found template in package at: %s\n", pkgFile))
@@ -409,7 +420,7 @@ handleLipidSummaryGenerateReport <- function(
                     catFn("REPORT: Template not found in package, downloading from GitHub...\n")
 
                     templateUrl <- paste0(
-                        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/reports/lipidomics/",
+                        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/reports/", templateDir, "/",
                         templateFilename
                     )
 

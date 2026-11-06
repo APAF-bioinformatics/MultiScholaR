@@ -4,8 +4,11 @@
 #' @importFrom DT DTOutput
 #' @importFrom shinyjqui jqui_resizable
 #' @param id,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
-mod_lipid_da_ui <- function(id) {
+#' @param profile An omic profile (KIT-097: `trxOmicProfile()`): the model shown in place of the formula input, its labels and
+#'   test ids, no session load and no heatmap; `NULL`, the default, is lipidomics, unchanged.
+mod_lipid_da_ui <- function(id, profile = NULL) {
     ns <- shiny::NS(id)
+    tp <- profile$testid %||% "lipid"
 
     shiny::tagList(
         shiny::fluidRow(
@@ -17,21 +20,21 @@ mod_lipid_da_ui <- function(id) {
                 shiny::wellPanel(
                     shiny::h4("Differential Abundance Analysis")
 
-                    # Formula input
-                    , shiny::textAreaInput(
+                    # Formula input (KIT-097: an omic profile shows the model and the realised formula instead)
+                    , if (is.null(profile)) shiny::tagList(shiny::textAreaInput(
                         ns("formula_string"),
                         "Model Formula:",
                         value = "~ 0 + group",
                         height = "60px"
                     ),
-                    shiny::helpText("Formula fetched from S4 object @args if available"),
+                    shiny::helpText("Formula fetched from S4 object @args if available")) else profile$da_model_ui(ns),
                     shiny::hr()
 
                     # Analysis Parameters
                     , shiny::h5("Analysis Parameters"),
                     shiny::numericInput(
                         ns("da_q_val_thresh"),
-                        "Q-value Threshold:",
+                        profile$da_threshold_label %||% "Q-value Threshold:",
                         value = 0.05,
                         min = 0.001,
                         max = 0.2,
@@ -39,7 +42,7 @@ mod_lipid_da_ui <- function(id) {
                     ),
                     shiny::numericInput(
                         ns("treat_lfc_cutoff"),
-                        "Log Fold-Change Cutoff:",
+                        profile$da_lfc_label %||% "Log Fold-Change Cutoff:",
                         value = 0,
                         min = 0,
                         max = 2,
@@ -53,8 +56,8 @@ mod_lipid_da_ui <- function(id) {
                     shiny::helpText("Contrasts defined in design matrix"),
                     shiny::hr()
 
-                    # Load Filtered Session
-                    , testid(
+                    # Load Filtered Session (the lipid session file; not offered under an omic profile)
+                    , if (is.null(profile)) shiny::tagList(testid(
                         shiny::actionButton(
                             ns("load_filtered_session"),
                             "Load Filtered Session",
@@ -66,7 +69,7 @@ mod_lipid_da_ui <- function(id) {
                     ),
                     shiny::helpText("Load previously exported filtered data for DA analysis"),
                     shiny::br(),
-                    shiny::br()
+                    shiny::br())
 
                     # Run DA Analysis
                     , testid(
@@ -77,7 +80,7 @@ mod_lipid_da_ui <- function(id) {
                             width = "100%",
                             icon = shiny::icon("play")
                         ),
-                        "lipid-da-run"
+                        paste0(tp, "-da-run")
                     ),
                     shiny::br(),
                     shiny::br()
@@ -90,7 +93,7 @@ mod_lipid_da_ui <- function(id) {
                             class = "btn-success",
                             style = "width: 100%;"
                         ),
-                        "lipid-da-download"
+                        paste0(tp, "-da-download")
                     ),
                     shiny::hr()
 
@@ -105,7 +108,7 @@ mod_lipid_da_ui <- function(id) {
             # ================================================================
             , shiny::column(
                 9,
-                shiny::uiOutput(ns("heatmap_manual_save_warning")),
+                if (is.null(profile)) shiny::uiOutput(ns("heatmap_manual_save_warning")),
                 testid(
                 shiny::tabsetPanel(
                     id = ns("da_results_tabs")
@@ -167,9 +170,9 @@ mod_lipid_da_ui <- function(id) {
                     )
 
                     # ----------------------------------------------------------
-                    # TAB 2: HEATMAP
+                    # TAB 2: HEATMAP (not offered under an omic profile)
                     # ----------------------------------------------------------
-                    , shiny::tabPanel(
+                    , if (is.null(profile)) shiny::tabPanel(
                         "Heatmap",
                         shiny::br()
 
@@ -431,7 +434,7 @@ mod_lipid_da_ui <- function(id) {
                         , DT::DTOutput(ns("da_results_table"))
                     )
                 ),
-                "lipid-da-results-tabs"
+                paste0(tp, "-da-results-tabs")
                 )
             )
         )

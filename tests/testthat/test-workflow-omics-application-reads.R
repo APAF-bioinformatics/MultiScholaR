@@ -725,3 +725,87 @@ test_that("KIT-096: a QC tab variant that reads and holds the transcriptomics st
   expect_gt(length(materialised), 0L)
   expect_true(any(grepl("userData\\$held", probe$walk)))
 })
+
+# KIT-097: the transcriptomics normalisation, DA and summary tabs (the lipid modules under the transcriptomics profile). On a
+# managed session the application reads no count table and holds no object on the whole run (the norm displays: CCA, PCA,
+# RLE; the DA table, volcanoes and download; the RUVIII export and its figure); what it holds is the grid's score table,
+# the inferred control ids, the CCA plot data and references. In process the same tabs read the counts (the control). A
+# DA tab variant that reads and holds the state is caught by the probe and the walk (the positive control).
+trxTabsProbeJourney <- function(fixture, probe, managed, holding = FALSE) {
+  force(holding)
+  quiet <- function(...) invisible(NULL)
+  testthat::local_mocked_bindings(showNotification = quiet, removeNotification = quiet, .package = "shiny")
+  suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+    module_ci_trx_tabs_server(fixture, managed)(input, output, session)
+    if (holding) shiny::observeEvent(input[["de-run_da_analysis"]], {
+      session$userData$held <- withWorkflowStateScope(fixture$owner, function() readTrxWorkflowState(fixture$owner))
+    })
+  }, {
+    session$setInputs(`norm-ruv_mode` = "automatic", `norm-run_normalization` = 1L)
+    session$flushReact()
+    for (name in c("norm-ruv_qc_ui", "norm-cancor_plot_counts", "norm-ruv_summary_counts", "norm-ruv_table_counts", "norm-pca_post_filter_assay1",
+      "norm-pca_post_norm_assay1", "norm-pca_ruv_corrected_assay1", "norm-rle_ruv_corrected_assay1", "norm-norm_log")) try(output[[name]], silent = TRUE)
+    session$setInputs(`de-da_q_val_thresh` = 0.05, `de-treat_lfc_cutoff` = 1, `de-run_da_analysis` = 1L)
+    session$flushReact()
+    contrast <- unique(shiny::isolate(session$userData$da$da_results_list$da_genes_long$comparison))[[1L]]
+    session$setInputs(`de-volcano_contrast` = contrast, `de-volcano_assay` = "counts", `de-table_contrast` = contrast,
+      `de-table_assay` = "All", `de-table_significance` = "all", `de-table_max_rows` = 1000, `de-volcano_interactive` = FALSE)
+    for (name in c("de-da_status", "de-volcano_static", "de-da_summary_stats", "de-da_results_table")) try(output[[name]], silent = TRUE)
+    session$setInputs(`de-volcano_interactive` = TRUE)
+    try(output[["de-volcano_glimma"]], silent = TRUE)
+    session$flushReact()
+    try(output[["de-volcano_glimma"]], silent = TRUE)
+    # The download as the handler writes it (the store's DA tables a contrast at a time when managed).
+    results <- shiny::isolate(session$userData$da$da_results_list)
+    try(resolveLipidDaResultsDownloadData(results, trxOmicProfile()$long_table)(tempfile(fileext = ".csv")), silent = TRUE)
+    session$setInputs(`summary-ruviii_m_source` = "group", `summary-run_ruviii_export` = 1L)
+    session$flushReact()
+    for (name in c("summary-ruviii_status", "summary-ruviii_before_after")) try(output[[name]], silent = TRUE)
+    walked <- omicsResidencyWalk(list(session = session, workflow_data = fixture$workflow),
+      table_columns = as.character(fixture$object@design_matrix$Run))
+    probe$walk <- as.character(walked)
+    probe$walk_tables <- attr(walked, "tables")
+  }))))
+  intersect(probe$tables, omicsAssayTableIds(fixture$owner, transcriptomicsDeclarationBinding))
+}
+
+test_that("KIT-097: on a managed session the transcriptomics norm, DA and summary tabs read no count table and hold none; in process they read them", {
+  skipWithoutTrxDeclReference()
+  for (managed in c(TRUE, FALSE)) {
+    fixture <- module_ci_trx_project(module_ci_trx_corpus())
+    probe <- new.env()
+    if (managed) omicsManagedChainMocks(fixture, probe, window = FALSE) else {
+      table <- materializeWorkflowTable
+      testthat::local_mocked_bindings(materializeWorkflowTable = function(context, reference, ...) {
+        probe$tables <- c(probe$tables, reference$entity_id)
+        table(context, reference, ...)
+      }, materializeDIATable = function(context, reference, ...) {
+        probe$tables <- c(probe$tables, reference$entity_id)
+        table(context, reference, ...)
+      }, .package = "MultiScholaR")
+    }
+    materialised <- trxTabsProbeJourney(fixture, probe, managed)
+    expect_identical(fixture$owner$current_state, "trx_ruvs", info = managed)
+    expect_false(is.null(fixture$owner$.context$snapshot$exports$trx_ruviii_export), info = managed)
+    expect_length(probe$walk, 0L)
+    expect_length(probe$walk_tables, 0L)
+    if (!managed) {
+      expect_gt(length(materialised), 0L)
+      next
+    }
+    expect_length(materialised, 0L)
+    expect_true(all(c("trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_da_tab_results", "trx_volcano_page",
+      "trx_ruviii_export") %in% probe$operations), info = paste(probe$operations, collapse = " "))
+    expect_true(all(probe$statuses == "delivered"))
+  }
+})
+
+test_that("KIT-097: a DA tab variant that reads and holds the transcriptomics state is caught by the probe and the walk", {
+  skipWithoutTrxDeclReference()
+  fixture <- module_ci_trx_project(module_ci_trx_corpus())
+  probe <- new.env()
+  omicsManagedChainMocks(fixture, probe, window = FALSE)
+  materialised <- trxTabsProbeJourney(fixture, probe, managed = TRUE, holding = TRUE)
+  expect_gt(length(materialised), 0L)
+  expect_true(any(grepl("userData\\$held", probe$walk)))
+})

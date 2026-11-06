@@ -7,18 +7,22 @@
 \alias{mod_lipid_da}
 \title{Lipidomics Differential Analysis Module}
 \usage{
-mod_lipid_da_ui(id)
+mod_lipid_da_ui(id, profile = NULL)
 
 mod_lipid_da_server(
   id,
   workflow_data,
   experiment_paths,
   omic_type,
-  experiment_label
+  experiment_label,
+  profile = NULL
 )
 }
 \arguments{
 \item{id, workflow_data, experiment_paths, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{profile}{An omic profile (KIT-097: \code{trxOmicProfile()}): the model shown in place of the formula input, its labels and
+  test ids, no session load and no heatmap; \code{NULL}, the default, is lipidomics, unchanged.}
 }
 \description{
 A Shiny module for performing per-assay differential abundance

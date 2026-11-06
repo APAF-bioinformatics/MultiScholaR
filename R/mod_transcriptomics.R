@@ -30,7 +30,7 @@
 #' @return A plain list.
 #' @noRd
 trxOmicProfile <- function() {
-    list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
+    profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
         class = "TranscriptomicsAssayData", workflow_type = "TRANSCRIPTOMICS", data_format = "trx_counts",
         import_title = "Transcriptomics Data Import", formats = c("Count table (gene ID, gene name, sample counts)" = "trx_counts"),
         assay_name = "counts", id_label = "Gene ID Column", annotation_label = "Gene Name Column",
@@ -46,7 +46,30 @@ trxOmicProfile <- function() {
         state_description = "Initial TranscriptomicsAssayData S4 object created after design matrix",
         qc_title = "Transcriptomics Quality Control & Filtering", qc_tabs = trxQcTabsUi, qc_init = initializeTrxQcSubmodules,
         read_metadata = function(manager) readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager),
-        read_state = readTrxWorkflowState, register_qc_summary = registerTrxQcSummaryOutput, finalize = trxQcFinalizeCollaborators())
+        read_state = readTrxWorkflowState, register_qc_summary = registerTrxQcSummaryOutput, finalize = trxQcFinalizeCollaborators(),
+        binding = transcriptomicsDeclarationBinding, report_template = "transcriptomics_report.rmd", report_dir = "transcriptomics")
+    c(profile, trxNormDaSummaryProfile())
+}
+
+#' The normalisation, DA and summary entries of the transcriptomics profile (KIT-097).
+#' @noRd
+trxNormDaSummaryProfile <- function() {
+    list(norm_options = trxNormOptionsPanel, norm_server = mod_trx_norm_server, norm_tabs = c("ruv", "pca", "rle", "log"),
+        norm_stage_labels = c("Raw logCPM", "TMM logCPM", "RUVs-corrected logCPM (display only)"),
+        norm_ruv_heading = "RUVs Control Selection (canonical correlation)",
+        norm_ruv_help = paste("The CCA panels and the grid of percentages: the controls are inferred negative controls (the least",
+            "significant genes in a preliminary group GLM)."),
+        da_server = mod_trx_da_server, da_model_ui = trxDaModelUi, da_threshold_label = "FDR (BH) threshold:",
+        da_lfc_label = "Fold-change line (display only; no test):", long_table = "da_genes_long",
+        da_columns = list(id = "GeneID", label = "GeneName", pvalue = "PValue", significance = "FDR", significance_label = "FDR (BH)"),
+        da_static_volcano = trxDaStaticVolcano, da_widget = trxDaWidget, da_with_source = trxDaWithSource,
+        da_formula = trxRealisedFormula, da_contrasts = trxDaContrasts, da_export = trxDaExport, da_run_reference = runTrxReferenceDaAnalysis,
+        summary_export_ui = trxSummaryExportUi, summary_server = trxSummaryServer, summary_context = trxSummaryContext,
+        summary_state_object = trxSummaryStateObject, summary_placeholder = "e.g., my_transcriptomics_analysis",
+        summary_description = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export",
+        ruviii_m_choices = trxRuviiiMChoices, integration_filename = "transcriptomics_normalized_data.tsv",
+        integration_write = trxSummaryIntegrationWrite, integration_ready = trxSummaryIntegrationReady,
+        integration_missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again.")
 }
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -178,8 +201,8 @@ trxDesignObject <- function(results, columnMapping) {
 # ---------------------------------------------------------------------------------------------------------------
 
 #' @title Transcriptomics Workflow Module
-#' @description The transcriptomics workflow's import, design and QC tabs (KIT-096; normalisation, DA and the summary
-#'   follow in KIT-097).
+#' @description The transcriptomics workflow's tabs: import, design and QC (KIT-096), normalisation, DA and the summary
+#'   (KIT-097).
 #' @param id Module id (`transcriptomics_workflow` in the app).
 #' @name mod_transcriptomics
 #' @noRd
@@ -196,7 +219,10 @@ mod_transcriptomics_ui <- function(id) {
         testid(shiny::tabsetPanel(id = ns("transcriptomics_tabs"), type = "pills",
             tab(" Setup & Import", "file-import", "import", mod_lipid_import_ui(ns("import"), profile = profile)),
             tab(" Design Matrix", "th", "design", mod_lipid_design_ui(ns("design"), profile = profile)),
-            tab(" Quality Control", "check-double", "qc", mod_lipid_qc_ui(ns("qc"), profile = profile))),
+            tab(" Quality Control", "check-double", "qc", mod_lipid_qc_ui(ns("qc"), profile = profile)),
+            tab(" Normalization", "balance-scale", "norm", mod_lipid_norm_ui(ns("norm"), profile = profile)),
+            tab(" Differential Expression", "chart-line", "de", mod_lipid_da_ui(ns("de"), profile = profile)),
+            tab(" Summary & Export", "download", "summary", mod_lipid_summary_ui(ns("summary"), profile = profile))),
         "trx-workflow-tabs"))))
 }
 
@@ -205,7 +231,8 @@ mod_transcriptomics_ui <- function(id) {
 newTrxWorkflowData <- function() {
     shiny::reactiveValues(data_tbl = NULL, data_format = NULL, data_type = "transcriptomics", column_mapping = NULL,
         config_list = list(), state_manager = NULL, contrasts = list(), contrasts_tbl = NULL,
-        tab_status = list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled"),
+        tab_status = list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled", normalization = "disabled",
+            differential_analysis = "disabled", session_summary = "disabled"),
         state_update_trigger = NULL, processing_log = list())
 }
 
@@ -232,16 +259,28 @@ mod_transcriptomics_server <- function(id, project_dirs, omic_type, experiment_l
         mod_lipid_design_server("design", workflow_data, experiment_paths, volumes = NULL, qc_trigger = qc_trigger, profile = profile)
         mod_lipid_qc_server("qc", workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger, profile = profile)
         workflow_data$active_tab <- shiny::reactive(input$transcriptomics_tabs)
+        mod_lipid_norm_server("norm", workflow_data, experiment_paths, omic_type, experiment_label, profile = profile)
+        mod_lipid_da_server("de", workflow_data, experiment_paths, omic_type, experiment_label, profile = profile)
+        mod_lipid_summary_server("summary", project_dirs, omic_type, experiment_label, workflow_data, profile = profile)
         output$workflow_progress <- shiny::renderUI(render_workflow_stepper(list(
             list(name = "Import", key = "setup_import", icon = "file-import"), list(name = "Design", key = "design_matrix", icon = "th"),
-            list(name = "QC", key = "quality_control", icon = "check-double")), workflow_data$tab_status))
-        shiny::observeEvent(workflow_data$tab_status$design_matrix, {
-            status <- workflow_data$tab_status
-            if (identical(status$design_matrix, "complete") && identical(status$quality_control, "disabled")) {
-                status$quality_control <- "pending"
-                workflow_data$tab_status <- status
-            }
-        }, ignoreNULL = TRUE)
+            list(name = "QC", key = "quality_control", icon = "check-double"), list(name = "Normalize", key = "normalization", icon = "balance-scale"),
+            list(name = "DE", key = "differential_analysis", icon = "chart-line"), list(name = "Summary", key = "session_summary", icon = "download")),
+            workflow_data$tab_status))
+        # Each tab opens when the one before completes (mod_lipidomics.R's chain).
+        chain <- list(c("design_matrix", "quality_control"), c("quality_control", "normalization"), c("normalization", "differential_analysis"),
+            c("differential_analysis", "session_summary"))
+        for (link in chain) local({
+            done <- link[[1L]]
+            next_tab <- link[[2L]]
+            shiny::observeEvent(workflow_data$tab_status[[done]], {
+                status <- workflow_data$tab_status
+                if (identical(status[[done]], "complete") && identical(status[[next_tab]], "disabled")) {
+                    status[[next_tab]] <- "pending"
+                    workflow_data$tab_status <- status
+                }
+            }, ignoreNULL = TRUE)
+        })
         workflow_data
     })
 }

@@ -4,7 +4,7 @@
 # Purpose: Session state and parameter helpers for the lipid summary module
 # ============================================================================
 
-buildLipidSummaryTemplateStatus <- function(projectDirs, omicType, fileExistsFn = file.exists) {
+buildLipidSummaryTemplateStatus <- function(projectDirs, omicType, fileExistsFn = file.exists, profile = NULL) {
     if (!omicType %in% names(projectDirs)) {
         return("[WARNING] Project directories not available")
     }
@@ -14,10 +14,10 @@ buildLipidSummaryTemplateStatus <- function(projectDirs, omicType, fileExistsFn 
         "scripts",
         omicType
     )
-    lipid_template <- file.path(template_dir, "lipidomics_report.rmd")
+    lipid_template <- file.path(template_dir, profile$report_template %||% "lipidomics_report.rmd")
 
     if (fileExistsFn(lipid_template)) {
-        "Template: Lipidomics Report [OK]"
+        sprintf("Template: %s Report [OK]", profile$label %||% "Lipidomics")
     } else {
         "[WARNING] Report template will be downloaded when generating report"
     }
@@ -136,7 +136,8 @@ prepareLipidSummarySessionState <- function(
     omicType,
     values,
     timestamp,
-    workflowData = NULL
+    workflowData = NULL,
+    profile = NULL
 ) {
     sessionState <- list(
         experiment_label = inputValues$experiment_label,
@@ -154,7 +155,7 @@ prepareLipidSummarySessionState <- function(
         return(sessionState)
     }
 
-    finalS4Object <- getLipidSummaryStateObject(workflowData)
+    finalS4Object <- if (is.null(profile)) getLipidSummaryStateObject(workflowData) else profile$summary_state_object(workflowData)
     parameterPayload <- buildLipidSummaryParameterPayload(workflowData, finalS4Object)
     globalParameters <- lipidSummaryFirstNonNull(
         parameterPayload$config_list$globalParameters,
@@ -164,11 +165,11 @@ prepareLipidSummarySessionState <- function(
 
     sessionState$workflow_type <- lipidSummaryFirstNonNull(
         globalParameters$workflow_type,
-        "lipidomics"
+        profile$omic_type %||% "lipidomics"
     )
     sessionState$report_template <- lipidSummaryFirstNonNull(
         globalParameters$report_template,
-        "lipidomics_report.rmd"
+        profile$report_template %||% "lipidomics_report.rmd"
     )
     sessionState$parameter_payload <- parameterPayload
 
@@ -237,7 +238,8 @@ handleLipidSummaryExportSessionState <- function(
     logErrorFn = logger::log_error,
     skipFormatterFn = logger::skip_formatter,
     dateFn = Sys.Date,
-    buildSessionStateFn = buildLipidSummarySessionState
+    buildSessionStateFn = buildLipidSummarySessionState,
+    profile = NULL
 ) {
     tryCatch({
         sessionExportPath <- file.path(
@@ -258,7 +260,8 @@ handleLipidSummaryExportSessionState <- function(
                 omicType = omicType,
                 values = values,
                 timestamp = Sys.time(),
-                workflowData = workflowData
+                workflowData = workflowData,
+                profile = profile
             )
         }
 

@@ -92,11 +92,22 @@ registerLipidDaVolcanoGlimmaOutput <- function(
     daData,
     workflowData = NULL,
     renderUiFn = shiny::renderUI,
-    buildVolcanoGlimmaUiFn = buildLipidDaVolcanoGlimmaUi
+    buildVolcanoGlimmaUiFn = buildLipidDaVolcanoGlimmaUi,
+    profile = NULL
 ) {
     output$volcano_glimma <- renderUiFn({
         # KIT-082: the widget reads the whole matrix, so a managed session's worker writes it as a page.
-        runner <- workflowOmicsManagedActions("lipidomics")
+        runner <- workflowOmicsManagedActions(profile$omic_type %||% "lipidomics")
+        # KIT-097: an omic profile's widget (the worker's page when managed) and its source read for one display.
+        if (!is.null(profile)) {
+            return(buildVolcanoGlimmaUiFn(
+                daResultsList = if (is.null(runner)) profile$da_with_source(daData$da_results_list, workflowData) else daData$da_results_list,
+                selectedContrast = input$volcano_contrast,
+                selectedAssay = input$volcano_assay,
+                daQValThresh = input$da_q_val_thresh,
+                widgetFactory = profile$da_widget(workflowData, runner)
+            ))
+        }
         if (!is.null(runner)) {
             return(buildVolcanoGlimmaUiFn(
                 daResultsList = daData$da_results_list,

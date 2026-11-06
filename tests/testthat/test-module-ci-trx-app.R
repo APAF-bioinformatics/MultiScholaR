@@ -14,8 +14,9 @@ test_that("MCI-029.1 the app's dispatch finds the transcriptomics module, not th
 test_that("MCI-029.1 the stable ids: module, tabs, sub-modules and test ids", {
   html <- htmltools::renderTags(mod_transcriptomics_ui("transcriptomics_workflow"))$html
   expect_match(html, "id=\"transcriptomics_workflow-transcriptomics_tabs\"", fixed = TRUE)
-  for (value in c("import", "design", "qc")) expect_match(html, sprintf("data-value=\"%s\"", value), fixed = TRUE)
-  for (id in c("trx-workflow-tabs", "trx-tab-import", "trx-tab-design", "trx-tab-qc")) {
+  for (value in c("import", "design", "qc", "norm", "de", "summary")) expect_match(html, sprintf("data-value=\"%s\"", value), fixed = TRUE)
+  for (id in c("trx-workflow-tabs", "trx-tab-import", "trx-tab-design", "trx-tab-qc", "trx-tab-norm", "trx-tab-de", "trx-tab-summary",
+    "trx-norm-run", "trx-da-run", "trx-da-download", "trx-summary-ruviii-export", "trx-summary-generate-report")) {
     expect_match(html, sprintf("data-testid=\"%s\"", id), fixed = TRUE)
   }
   expect_match(html, "transcriptomics_workflow-import-process_import", fixed = TRUE)
@@ -36,7 +37,8 @@ test_that("MCI-029.1 the module server holds the bus, the session's owner and th
     expect_identical(owner$.context$omic_type, "transcriptomics")
     expect_identical(session$userData$omics_workflow_data$transcriptomics, workflow_data)
     expect_identical(shiny::isolate(workflow_data$tab_status),
-      list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled"))
+      list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled", normalization = "disabled",
+        differential_analysis = "disabled", session_summary = "disabled"))
     expect_match(paste(as.character(output$workflow_progress$html), collapse = ""), "Design")
     # The design's completion opens the QC step.
     status <- shiny::isolate(workflow_data$tab_status)
@@ -44,6 +46,14 @@ test_that("MCI-029.1 the module server holds the bus, the session's owner and th
     workflow_data$tab_status <- status
     session$flushReact()
     expect_identical(shiny::isolate(workflow_data$tab_status$quality_control), "pending")
+    # KIT-097: each later tab opens when the one before completes.
+    for (link in list(c("quality_control", "normalization"), c("normalization", "differential_analysis"), c("differential_analysis", "session_summary"))) {
+      status <- shiny::isolate(workflow_data$tab_status)
+      status[[link[[1L]]]] <- "complete"
+      workflow_data$tab_status <- status
+      session$flushReact()
+      expect_identical(shiny::isolate(workflow_data$tab_status[[link[[2L]]]]), "pending", info = link[[2L]])
+    }
     shiny::isolate(closeDIAStateAdapter(owner))
   }))
 })

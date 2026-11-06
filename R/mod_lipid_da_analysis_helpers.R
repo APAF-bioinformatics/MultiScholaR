@@ -31,7 +31,9 @@ prepareLipidDaRunAnalysisContext <- function(
     workflowData,
     notify = shiny::showNotification,
     logInfo = logger::log_info,
-    resolveCurrentStateFn = function(workflowData) readLipidWorkflowMetadata(workflowData$state_manager)
+    resolveCurrentStateFn = function(workflowData) readLipidWorkflowMetadata(workflowData$state_manager),
+    expectedClass = "LipidomicsAssayData",
+    noDataMessage = "No lipidomics data loaded. Please load a filtered session first."
 ) {
     logInfo("=== RUN DA ANALYSIS BUTTON CLICKED ===")
 
@@ -41,9 +43,9 @@ prepareLipidDaRunAnalysisContext <- function(
         currentS4 <- resolveCurrentStateFn(workflowData)
     }
 
-    if (!is.list(currentS4) || !identical(currentS4$class, "LipidomicsAssayData")) {
+    if (!is.list(currentS4) || !identical(currentS4$class, expectedClass)) {
         notify(
-            "No lipidomics data loaded. Please load a filtered session first.",
+            noDataMessage,
             type = "error",
             duration = 5
         )
@@ -180,18 +182,24 @@ executeLipidDaRunAnalysis <- function(
     experimentPaths,
     runLipidsDaFn = runLipidsDA,
     successFinalizerFn = finalizeLipidDaRunAnalysisSuccess,
-    errorFinalizerFn = finalizeLipidDaRunAnalysisError
+    errorFinalizerFn = finalizeLipidDaRunAnalysisError,
+    profile = NULL
 ) {
     tryCatch(
         {
-            # KIT-078: on the worker under a managed session, with the tables and figures.
-            runner <- workflowOmicsManagedActions("lipidomics")
+            # KIT-078: on the worker under a managed session, with the tables and figures. KIT-097: an omic profile names
+            # the binding, the realised formula, the contrasts the binding reads and the reading of the worker's export.
+            runner <- workflowOmicsManagedActions(profile$omic_type %||% "lipidomics")
             if (!is.null(runner)) {
                 manager <- workflowData$state_manager
-                runWorkflowOmicsManagedDa(lipidomicsDeclarationBinding, runner, manager, getWorkflowStateReference(manager, daData$current_state_name),
-                    list(formula_string = formulaString, da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl,
+                source <- getWorkflowStateReference(manager, daData$current_state_name)
+                settings <- list(formula_string = formulaString, da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff)
+                if (!is.null(profile)) settings$formula_string <- profile$da_formula(manager, source)
+                runWorkflowOmicsManagedDa(profile$binding %||% lipidomicsDeclarationBinding, runner, manager, source, settings,
+                    if (is.null(profile)) contrastsTbl else profile$da_contrasts(contrastsTbl),
                     deliver = function(results, export) successFinalizerFn(results = results, daData = daData, workflowData = workflowData, session = session,
-                        experimentPaths = experimentPaths, daQValThresh = daQValThresh, treatLfcCutoff = treatLfcCutoff, workerExport = export),
+                        experimentPaths = experimentPaths, daQValThresh = daQValThresh, treatLfcCutoff = treatLfcCutoff,
+                        workerExport = if (is.null(profile)) export else profile$da_export(export)),
                     failed = function(error) errorFinalizerFn(errorMessage = conditionMessage(error)),
                     invalidate = function() {
                         daData$da_results_list <- NULL
@@ -207,8 +215,10 @@ executeLipidDaRunAnalysis <- function(
             # as before (KIT-072: the owner's path is the only path).
             manager <- if (is.list(workflowData) || is.environment(workflowData)) workflowData$state_manager else NULL
             source <- getWorkflowStateReference(manager, if (is.list(daData) || is.environment(daData)) daData$current_state_name else NULL)
-            results <- runLipidReferenceDaAnalysis(manager, source, list(formula_string = formulaString,
-                da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff), contrastsTbl)$results
+            runReference <- profile$da_run_reference %||% runLipidReferenceDaAnalysis
+            results <- runReference(manager, source, list(formula_string = formulaString,
+                da_q_val_thresh = daQValThresh, treat_lfc_cutoff = treatLfcCutoff),
+                if (is.null(profile)) contrastsTbl else profile$da_contrasts(contrastsTbl))$results
 
             list(
                 status = "success",
@@ -250,7 +260,10 @@ finalizeLipidDaRunAnalysisSuccess <- function(
     logInfo = logger::log_info,
     logWarn = logger::log_warn,
     writeResultsFn = outputLipidDaResultsAllContrasts,
-    workerExport = NULL
+    workerExport = NULL,
+    longTable = "da_lipids_long",
+    singleAssay = FALSE,
+    withSourceFn = lipidDaResultsWithSource
 ) {
     daData$da_results_list <- results
     daData$analysis_complete <- TRUE
@@ -281,10 +294,12 @@ finalizeLipidDaRunAnalysisSuccess <- function(
     assayChoices <- NULL
     tableAssayChoices <- NULL
 
-    if (!is.null(results$da_lipids_long)) {
-        contrastChoices <- unique(results$da_lipids_long$friendly_name)
+    # KIT-097: an omic profile's long table; with one assay (`singleAssay`) the volcano shows it rather than "Combined".
+    long <- results[[longTable]]
+    if (!is.null(long)) {
+        contrastChoices <- unique(long$friendly_name)
         if (length(contrastChoices) == 0) {
-            contrastChoices <- unique(results$da_lipids_long$comparison)
+            contrastChoices <- unique(long$comparison)
         }
 
         updateSelectInputFn(session, "volcano_contrast",
@@ -297,15 +312,17 @@ finalizeLipidDaRunAnalysisSuccess <- function(
             choices = contrastChoices, selected = contrastChoices[1]
         )
 
-        assayChoices <- c("Combined", unique(results$da_lipids_long$assay))
+        assays <- unique(long$assay)
+        if (is.null(assays) && isTRUE(singleAssay)) assays <- names(results$significant_counts)
+        assayChoices <- c("Combined", assays)
         updateSelectInputFn(session, "volcano_assay",
-            choices = assayChoices, selected = "Combined"
+            choices = assayChoices, selected = if (isTRUE(singleAssay)) assays[[1L]] else "Combined"
         )
         updateSelectInputFn(session, "heatmap_assay",
             choices = assayChoices, selected = "Combined"
         )
 
-        tableAssayChoices <- c("All", unique(results$da_lipids_long$assay))
+        tableAssayChoices <- c("All", unique(long$assay))
         updateSelectInputFn(session, "table_assay",
             choices = tableAssayChoices, selected = "All"
         )
@@ -332,7 +349,7 @@ finalizeLipidDaRunAnalysisSuccess <- function(
                 list(status = "skipped", success = FALSE)
             } else {
                 success <- writeResultsFn(
-                    da_results_list = lipidDaResultsWithSource(results, daData, workflowData), # KIT-075: the heatmaps' source, read for the export
+                    da_results_list = withSourceFn(results, daData, workflowData), # KIT-075: the heatmaps' source, read for the export
                     da_output_dir = daOutputDir,
                     publication_graphs_dir = publicationGraphsDir,
                     da_q_val_thresh = daQValThresh,

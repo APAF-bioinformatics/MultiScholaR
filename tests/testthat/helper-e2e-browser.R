@@ -3,7 +3,7 @@
 
 .E2E_BROWSER_DEFAULT_TIMEOUT <- 30000L
 .E2E_BROWSER_DEFAULT_LOAD_TIMEOUT <- 120000L
-.E2E_VALID_OMICS <- c("proteomics", "metabolomics", "lipidomics")
+.E2E_VALID_OMICS <- c("proteomics", "metabolomics", "lipidomics", "transcriptomics")
 
 e2e_browser_dependencies_available <- function() {
   if (!requireNamespace("shinytest2", quietly = TRUE)) {
@@ -526,43 +526,50 @@ e2e_input_id <- function(omic, step, input) {
       omic,
       proteomics = "setup_import",
       metabolomics = "import",
-      lipidomics = "import"
+      lipidomics = "import",
+      transcriptomics = "import"
     ),
     design = switch(
       omic,
       proteomics = "design_matrix",
       metabolomics = "design",
-      lipidomics = "design"
+      lipidomics = "design",
+      transcriptomics = "design"
     ),
     qc = switch(
       omic,
       proteomics = "quality_control",
       metabolomics = "qc",
-      lipidomics = "qc"
+      lipidomics = "qc",
+      transcriptomics = "qc"
     ),
     norm = switch(
       omic,
       proteomics = "normalization",
       metabolomics = "norm",
-      lipidomics = "norm"
+      lipidomics = "norm",
+      transcriptomics = "norm"
     ),
     da = switch(
       omic,
       proteomics = "differential_expression",
       metabolomics = "de",
-      lipidomics = "de"
+      lipidomics = "de",
+      transcriptomics = "de"
     ),
     enrich = switch(
       omic,
       proteomics = "enrichment_analysis",
       metabolomics = "enrichment",
-      lipidomics = "enrichment"
+      lipidomics = "enrichment",
+      transcriptomics = "enrichment"
     ),
     summary = switch(
       omic,
       proteomics = "session_summary",
       metabolomics = "summary",
-      lipidomics = "summary"
+      lipidomics = "summary",
+      transcriptomics = "summary"
     ),
     stop(sprintf("Unsupported workflow step: %s", step), call. = FALSE)
   )
@@ -900,6 +907,7 @@ e2e_switch_workflow_tab <- function(driver, omic, tab_value, timeout = .E2E_BROW
     proteomics = "proteomics_workflow-workflow_tabs",
     metabolomics = "metabolomics_workflow-metabolomics_tabs",
     lipidomics = "lipidomics_workflow-lipidomics_tabs",
+    transcriptomics = "transcriptomics_workflow-transcriptomics_tabs",
     stop(sprintf("Unsupported omic: %s", omic), call. = FALSE)
   )
   ui_value <- switch(

@@ -33,12 +33,16 @@ NULL
 #' @rdname mod_lipid_summary
 #' @export
 #' @importFrom shiny NS tagList fluidPage h3 fluidRow column wellPanel h4 textInput textAreaInput actionButton icon br hr downloadButton verbatimTextOutput checkboxInput conditionalPanel textOutput
-mod_lipid_summary_ui <- function(id) {
+#' @param profile An omic profile (KIT-097: `trxOmicProfile()`): its export panel, labels, test ids, integration export and
+#'   report template; `NULL`, the default, is lipidomics, unchanged.
+mod_lipid_summary_ui <- function(id, profile = NULL) {
     ns <- shiny::NS(id)
+    tp <- profile$testid %||% "lipid"
 
     shiny::tagList(
         shiny::fluidPage(
             shiny::h3("Session Summary & Report Generation"),
+            if (!is.null(profile)) profile$summary_export_ui(ns),
 
             shiny::fluidRow(
                 # Left column: Workflow Parameters
@@ -46,15 +50,15 @@ mod_lipid_summary_ui <- function(id) {
                     shiny::wellPanel(
                         shiny::h4("Workflow Parameters"),
                         shiny::textInput(ns("experiment_label"), "Experiment Label:",
-                                        value = "", placeholder = "e.g., my_lipidomics_analysis"),
+                                        value = "", placeholder = profile$summary_placeholder %||% "e.g., my_lipidomics_analysis"),
                         shiny::textAreaInput(ns("description"), "Description:",
-                                            value = "Full lipidomics analysis workflow with normalization and DA",
+                                            value = profile$summary_description %||% "Full lipidomics analysis workflow with normalization and DA",
                                             rows = 3, resize = "vertical"),
                         shiny::br(),
                         testid(
                             shiny::actionButton(ns("save_workflow_args"), "Save Workflow Arguments",
                                                class = "btn-primary", icon = shiny::icon("save")),
-                            "lipid-summary-save-args"
+                            paste0(tp, "-summary-save-args")
                         )
                     )
                 ),
@@ -67,7 +71,7 @@ mod_lipid_summary_ui <- function(id) {
                         testid(
                             shiny::actionButton(ns("copy_to_publication"), "Copy to Publication Directory",
                                                class = "btn-info", icon = shiny::icon("copy")),
-                            "lipid-summary-copy-publication"
+                            paste0(tp, "-summary-copy-publication")
                         ),
                         shiny::br(), shiny::br(),
                         shiny::verbatimTextOutput(ns("copy_status"))
@@ -85,7 +89,7 @@ mod_lipid_summary_ui <- function(id) {
                         testid(
                             shiny::actionButton(ns("generate_report"), "Generate Report",
                                                class = "btn-success", icon = shiny::icon("file-pdf")),
-                            "lipid-summary-generate-report"
+                            paste0(tp, "-summary-generate-report")
                         ),
                         shiny::br(), shiny::br(),
                         shiny::conditionalPanel(
@@ -93,7 +97,7 @@ mod_lipid_summary_ui <- function(id) {
                             testid(
                                 shiny::downloadButton(ns("download_report"), "Download Report",
                                                      class = "btn-success"),
-                                "lipid-summary-download-report"
+                                paste0(tp, "-summary-download-report")
                             )
                         )
                     )
@@ -127,7 +131,7 @@ mod_lipid_summary_ui <- function(id) {
                         testid(
                             shiny::actionButton(ns("export_session_state"), "Export Session State (.RDS)",
                                                class = "btn-secondary", icon = shiny::icon("download")),
-                            "lipid-summary-export-state"
+                            paste0(tp, "-summary-export-state")
                         )
                     )
                 )
@@ -137,8 +141,11 @@ mod_lipid_summary_ui <- function(id) {
 }
 #' @rdname mod_lipid_summary
 #' @export
-mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics", experiment_label = NULL, workflow_data = NULL) {
+mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics", experiment_label = NULL, workflow_data = NULL, profile = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
+        # KIT-097: an omic profile's export panel, and its integration export, final state and template in the handlers.
+        if (!is.null(profile)) profile$summary_server(input, output, session, workflow_data, project_dirs[[omic_type]])
+        withProfile <- function(handler) if (is.null(profile)) handler else function(...) handler(..., profile = profile)
 
         # Bootstrap initial wrapper input/state
         values <- initializeLipidSummarySessionBootstrap(
@@ -150,7 +157,8 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
         registerLipidSummaryTemplateStatusOutput(
             output = output,
             projectDirs = project_dirs,
-            omicType = omic_type
+            omicType = omic_type,
+            buildStatusFn = withProfile(buildLipidSummaryTemplateStatus)
         )
 
         # Save workflow arguments - EXTRACT FROM FINAL S4 OBJECT
@@ -160,7 +168,8 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
             output = output,
             projectDirs = project_dirs,
             omicType = omic_type,
-            workflowData = workflow_data
+            workflowData = workflow_data,
+            handleSaveFn = withProfile(handleLipidSummarySaveWorkflowArgs)
         )
 
         # Copy files to publication directory
@@ -180,7 +189,8 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
             output = output,
             projectDirs = project_dirs,
             omicType = omic_type,
-            workflowData = workflow_data
+            workflowData = workflow_data,
+            handleGenerateReportFn = withProfile(handleLipidSummaryGenerateReport)
         )
 
         # GitHub integration
@@ -198,7 +208,8 @@ mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics",
             values = values,
             projectDirs = project_dirs,
             omicType = omic_type,
-            workflowData = workflow_data
+            workflowData = workflow_data,
+            handleExportFn = withProfile(handleLipidSummaryExportSessionState)
         )
 
         # Initialize wrapper outputs

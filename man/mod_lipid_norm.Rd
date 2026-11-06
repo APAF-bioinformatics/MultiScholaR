@@ -6,7 +6,7 @@
 \alias{mod_lipid_norm_server}
 \title{Lipidomics Normalization Module}
 \usage{
-mod_lipid_norm_ui(id)
+mod_lipid_norm_ui(id, profile = NULL)
 
 mod_lipid_norm_server(
   id,
@@ -14,11 +14,15 @@ mod_lipid_norm_server(
   experiment_paths,
   omic_type,
   experiment_label,
-  selected_tab = NULL
+  selected_tab = NULL,
+  profile = NULL
 )
 }
 \arguments{
 \item{id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{profile}{An omic profile (KIT-097: \code{trxOmicProfile()}): its options panel, QC panels and server; \code{NULL}, the
+  default, is lipidomics, unchanged.}
 }
 \description{
 A Shiny module for multi-step lipidomics normalization, harmonized with the
