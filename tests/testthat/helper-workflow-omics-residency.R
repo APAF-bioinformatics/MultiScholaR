@@ -2,7 +2,7 @@
 # reactive internals), stopping at namespaces, attached packages and the global environment; lazy and active bindings
 # are not forced. Returns the paths at which an object of one of `classes` was reached.
 
-omicsResidencyWalk <- function(roots, classes = c("LipidomicsAssayData", "MetaboliteAssayData"), max_nodes = 500000L,
+omicsResidencyWalk <- function(roots, classes = c("LipidomicsAssayData", "MetaboliteAssayData", "TranscriptomicsAssayData"), max_nodes = 500000L,
     table_columns = character()) {
   seen <- new.env(hash = TRUE, parent = emptyenv())
   hits <- character()
@@ -246,6 +246,85 @@ omicsResidencyJourney <- function(omic) {
     set(list(`summary-experiment_label` = "kit075", `summary-description` = "KIT-075 residency walk"))
     set(list(`summary-copy_to_publication` = 1L))
     walk("summary")
+  })
+  structure(acc$out, states = acc$states, tables = acc$tables, bus = acc$bus)
+}
+
+#' KIT-096: the transcriptomics journey under `testServer` on the real module server and its session owner: the import
+#' through the tab's processing helper, the design through the builder's own inputs, the QC tab's filter and finalise
+#' through theirs. A KIT-040 trx_screen corpus (3 biological samples per group, 300 genes). The walk runs after each step.
+#' @return As `omicsResidencyJourney`.
+trxResidencyJourney <- function() {
+  repo <- normalizePath(testthat::test_path("..", ".."))
+  corpus_tool <- file.path(repo, "tools", "profiling", "kit_omics_corpus.R")
+  testthat::skip_if_not(file.exists(corpus_tool), "the corpus generator is in the source tree only")
+  testthat::skip_if_not(workflowOwnerCapable())
+  testthat::skip_if_not_installed("edgeR")
+  corpus_env <- new.env(parent = globalenv())
+  sys.source(corpus_tool, corpus_env)
+  root <- withr::local_tempdir(.local_envir = parent.frame())
+  corpus_dir <- file.path(root, "corpus")
+  invisible(utils::capture.output(corpus_env$writeKitTrxCorpus(corpus_dir, corpus_env$kitOmicsRecipe("trx_screen", 3L, 300L))))
+  design_in <- utils::read.delim(file.path(corpus_dir, "design.tsv"), stringsAsFactors = FALSE, check.names = FALSE)
+  counts_file <- file.path(corpus_dir, "counts.tsv")
+  withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true", .local_envir = parent.frame())
+  project_dirs <- suppressMessages(setupDirectories(base_dir = file.path(root, "project", "kit096"), omic_types = "transcriptomics",
+    label = NULL, force = TRUE, reuse_existing = TRUE))
+  acc <- new.env(parent = emptyenv())
+  acc$out <- list()
+  acc$states <- list()
+  acc$tables <- list()
+  acc$bus <- list()
+  shiny::testServer(mod_transcriptomics_server, args = list(id = "transcriptomics_workflow", project_dirs = project_dirs,
+    omic_type = "transcriptomics", experiment_label = "kit096"), {
+    set <- function(values) do.call(session$setInputs, values)
+    walk <- function(step) {
+      walked <- omicsResidencyWalk(list(session = session, workflow_data = workflow_data), table_columns = design_in$sample)
+      acc$tables[[step]] <- attr(walked, "tables")
+      acc$out[[step]] <- as.character(walked)
+      acc$states[[step]] <- shiny::isolate(workflow_data$state_manager$current_state)
+      acc$bus[[step]] <- vapply(c("data_tbl", "data_cln"), function(field) {
+        value <- shiny::isolate(workflow_data[[field]])
+        if (is.null(value)) "empty" else if (isSavedWorkflowReference(value)) "reference" else "resident"
+      }, character(1))
+    }
+    quiet <- function(...) NULL
+    preview <- trxImportPreview(counts_file)
+    runTrxImportProcessing(workflowData = workflow_data, assay1Name = "counts", assay1Data = preview$assayData, assay1File = counts_file,
+      lipidIdCol = preview$updates$lipidId$selected, annotationCol = preview$updates$annotation$selected,
+      experimentPaths = project_dirs$transcriptomics, notify = quiet, removeNotify = quiet)
+    rm(preview)
+    session$flushReact()
+    walk("import")
+    set(list(transcriptomics_tabs = "design"))
+    builder <- function(name) paste0("design-builder-", name)
+    groups <- unique(design_in$group)
+    for (i in seq_along(groups)) {
+      set(stats::setNames(list(groups[[i]]), builder("new_factor")))
+      set(stats::setNames(list(i), builder("add_factor")))
+    }
+    for (i in seq_along(groups)) {
+      set(stats::setNames(list(design_in$sample[design_in$group == groups[[i]]], groups[[i]], "", "", 1L),
+        builder(c("selected_runs", "factor1_select", "factor2_select", "factor3_select", "replicate_start"))))
+      set(stats::setNames(list(i), builder("assign_metadata")))
+    }
+    clicks <- 0L
+    for (set_name in unique(design_in$tech_rep_group)) {
+      samples <- design_in$sample[design_in$tech_rep_group == set_name]
+      clicks <- clicks + 1L
+      set(stats::setNames(list(samples, "manual", as.integer(design_in$replicates[match(samples[[1L]], design_in$sample)])),
+        builder(c("tech_rep_samples", "tech_rep_assignment_mode", "manual_replicate_number"))))
+      set(stats::setNames(list(clicks), builder("assign_tech_reps")))
+    }
+    set(stats::setNames(list(groups[[2]], groups[[1]], "~ 0 + group"), builder(c("contrast_group1", "contrast_group2", "formula_string"))))
+    set(stats::setNames(list(1L), builder("add_contrast")))
+    set(stats::setNames(list(1L), builder("save_results")))
+    walk("design")
+    set(list(transcriptomics_tabs = "qc"))
+    set(list(`qc-filter-apply_filter` = 1L))
+    walk("filter")
+    set(list(`qc-s4_finalize-finalize_qc` = 1L))
+    walk("qc_finalize")
   })
   structure(acc$out, states = acc$states, tables = acc$tables, bus = acc$bus)
 }

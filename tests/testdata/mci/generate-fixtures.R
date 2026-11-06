@@ -491,6 +491,25 @@ generate_module_ci_fixtures <- function(root) {
   invisible(manifest)
 }
 
+# The repository holding this script (tests/testdata/mci/generate-fixtures.R), whatever the output root.
+trx_fixture_repo <- function() {
+  script <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
+  if (length(script) == 1L) file.path(dirname(script), "..", "..", "..") else "."
+}
+
+# KIT-096: the transcriptomics fixtures are KIT-040's generator's (tools/profiling/kit_omics_corpus.R), not this
+# catalog's vendor-format class matrix: a trx_screen corpus (3 biological samples per group, 300 genes) and its one-value
+# fixtures (fractional, negative, NA and a whole number written as a double), each pinned by its own manifest and
+# fixture.json hashes.
+generate_trx_fixtures <- function(root, repo = trx_fixture_repo()) {
+  corpus_env <- new.env(parent = globalenv())
+  sys.source(file.path(repo, "tools", "profiling", "kit_omics_corpus.R"), corpus_env)
+  corpus <- file.path(root, "fx", "transcriptomics", "trx_screen")
+  corpus_env$writeKitTrxCorpus(corpus, corpus_env$kitOmicsRecipe("trx_screen", 3L, 300L))
+  corpus_env$writeKitTrxFixtures(corpus, file.path(root, "fx", "transcriptomics", "fixtures"))
+  invisible(corpus)
+}
+
 args <- commandArgs(trailingOnly = TRUE)
 root <- file.path("tests", "testdata", "mci")
 if (length(args) >= 2L && identical(args[[1L]], "--root")) {
@@ -501,3 +520,4 @@ if (length(args) >= 2L && identical(args[[1L]], "--root")) {
 
 set.seed(4202L)
 generate_module_ci_fixtures(root)
+generate_trx_fixtures(root)

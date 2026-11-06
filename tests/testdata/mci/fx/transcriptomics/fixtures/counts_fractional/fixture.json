@@ -1,0 +1,9 @@
+{
+  "fixture": "counts_fractional",
+  "parent_manifest_sha256": "5b1e590229da677caf1674e2a513e9af64a953811d41735908cea10e56164b79",
+  "gene": "TRXG00001",
+  "run": "RPMI_03_r2",
+  "parent_value": "16",
+  "value": "20.37",
+  "counts_sha256": "992292f40ecc9d6c9c15d1eddd07afa386e29b6de89e3d00ba090e7faf3f5823"
+}

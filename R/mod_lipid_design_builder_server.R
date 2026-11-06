@@ -11,13 +11,16 @@
 #'   contrasts table (e.g., from "Import Existing Design").
 #' @param state_owner Optional function returning the session's state owner; the builder
 #'   then holds its tables by reference. Without it they stay plain values.
+#' @param profile An omic profile (KIT-096): its run order for a fresh design, and the level order and removed runs on
+#'   the saved result. `NULL`, the default, is lipidomics.
 #'
 #' @rdname lipidomicsDesignMatrixBuilderModule
 #' @export
 mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_mapping
                                             , existing_design_matrix = NULL
                                             , existing_contrasts = NULL
-                                            , state_owner = NULL) {
+                                            , state_owner = NULL
+                                            , profile = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
 
         # Reactive value to store the final results
@@ -37,6 +40,7 @@ mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_ma
                 , colMap = column_mapping()
                 , existingDesignMatrix = existing_design_matrix
                 , existingContrasts = existing_contrasts
+                , mixedsortFn = profile$run_order %||% gtools::mixedsort
             )
             # KIT-075: a reactive keeps its value; it keeps the tables' reference.
             state$data_cln <- saveWorkflowOwnedValue(state$data_cln, "design_builder_initial_data_cln", currentOwner())
@@ -172,6 +176,11 @@ mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_ma
             , contrasts = contrasts
             , configList = config_list
             , resultRv = function(value) {
+                # KIT-096: under a profile, the level order the user entered and the runs the user removed.
+                if (!is.null(profile)) {
+                    value$group_levels <- profile$group_levels(value$design_matrix, factors())
+                    value$excluded_runs <- removed_samples()
+                }
                 # KIT-075: the returned result carries the tables' reference.
                 value$data_cln <- saveWorkflowOwnedValue(value$data_cln, "design_builder_result_data_cln", currentOwner())
                 result_rv(value)

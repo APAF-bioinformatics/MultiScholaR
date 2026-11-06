@@ -1,0 +1,13 @@
+sample	group	batch	tech_rep_group	replicates
+RPMI_01_r1	RPMI	B1	RPMI_01	1
+RPMI_01_r2	RPMI	B1	RPMI_01	1
+Sera_01_r1	Sera	B2	Sera_01	1
+Sera_01_r2	Sera	B2	Sera_01	1
+RPMI_02_r1	RPMI	B3	RPMI_02	2
+RPMI_02_r2	RPMI	B3	RPMI_02	2
+Sera_02_r1	Sera	B1	Sera_02	2
+Sera_02_r2	Sera	B1	Sera_02	2
+RPMI_03_r1	RPMI	B2	RPMI_03	3
+RPMI_03_r2	RPMI	B2	RPMI_03	3
+Sera_03_r1	Sera	B3	Sera_03	3
+Sera_03_r2	Sera	B3	Sera_03	3

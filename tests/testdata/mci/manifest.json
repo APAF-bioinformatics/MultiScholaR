@@ -13,6 +13,7 @@
     "proteomics-unit",
     "metabolomics-unit",
     "lipidomics-unit",
+    "transcriptomics-unit",
     "browser-smoke",
     "nightly",
     "release"
@@ -1241,6 +1242,109 @@
         }
       ],
       "required_tests": ["module-ci-manifest", "module-ci-release-gate"]
+    },
+    {
+      "scenario_id": "MCI-026.1-transcriptomics-import-count-policy",
+      "ticket_id": "MCI-026",
+      "item_id": "MCI-026.1",
+      "omic": "transcriptomics",
+      "module_family": "import",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "format": "trx_counts",
+        "gene_id_col": "GeneID",
+        "gene_name_col": "GeneName",
+        "sanitize_names": false,
+        "accepted": ["trx_screen", "counts_whole_double"],
+        "refused": {"counts_na": "trx_counts_na", "counts_negative": "trx_counts_negative", "counts_fractional": "trx_counts_fractional"}
+      },
+      "expected_state": {
+        "sample_count": 12,
+        "feature_count": 300,
+        "assay_names": ["counts"],
+        "workflow_type": "TRANSCRIPTOMICS",
+        "state_keys": ["setup_import", "design_matrix", "column_mapping", "processing_log"]
+      },
+      "expected_artifacts": [
+        {"path": "data_cln_counts.tab", "schema": "module_ci_table"},
+        {"path": "column_mapping.json", "schema": "module_ci_json"},
+        {"path": "transcriptomics_import_summary.tsv", "schema": "module_ci_table"}
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-import"]
+    },
+    {
+      "scenario_id": "MCI-027.1-transcriptomics-design-builder",
+      "ticket_id": "MCI-027",
+      "item_id": "MCI-027.1",
+      "omic": "transcriptomics",
+      "module_family": "design",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "sample_id_col": "Run",
+        "group_levels": ["RPMI", "Sera"],
+        "run_order": "counts_file",
+        "technical_replicate_id": "tech_rep_group",
+        "design_cases": ["corpus_groups", "technical_replicates", "mismatched_runs", "unassigned", "duplicate", "unknown_level", "empty_group", "singleton_group", "more_than_two_groups"]
+      },
+      "expected_state": {
+        "sample_count": 12,
+        "state_keys": ["trx_raw_data_s4"],
+        "provenance_step": "design_builder",
+        "completion_text": "Design matrix and contrasts saved successfully!"
+      },
+      "expected_artifacts": [
+        {"path": "design_matrix.tab", "schema": "module_ci_table"},
+        {"path": "contrast_strings.tab", "schema": "module_ci_text"}
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-design"]
+    },
+    {
+      "scenario_id": "MCI-028.1-transcriptomics-qc-expression-filter",
+      "ticket_id": "MCI-028",
+      "item_id": "MCI-028.1",
+      "omic": "transcriptomics",
+      "module_family": "qc",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "filter": "trx_expression_filter",
+        "finalise": "trx_qc_finalize",
+        "figures_stage": "raw",
+        "reference_corpus": "trx_edge_12"
+      },
+      "expected_state": {
+        "state_keys": ["trx_expression_filtered", "trx_qc_complete"],
+        "metrics": ["genes_before", "genes_after_filter_by_expr", "genes_after_zero_variance", "library_size", "detected_genes"]
+      },
+      "expected_artifacts": [
+        {"path": "trx_raw_pca.png", "schema": "module_ci_plot"},
+        {"path": "trx_raw_rle.png", "schema": "module_ci_plot"}
+      ],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-qc", "workflow-omics-residency", "workflow-omics-application-reads"]
+    },
+    {
+      "scenario_id": "MCI-029.1-transcriptomics-module-shell-stable-ids",
+      "ticket_id": "MCI-029",
+      "item_id": "MCI-029.1",
+      "omic": "transcriptomics",
+      "module_family": "workflow_shell",
+      "runtime": "unit-contract",
+      "ci_lane": "transcriptomics-unit",
+      "fixture": {"path": "fx/transcriptomics/trx_screen/counts.tsv", "format": "tsv", "role": "count_table"},
+      "parameters": {
+        "module_id": "transcriptomics_workflow",
+        "tabs_input": "transcriptomics_tabs",
+        "tab_values": ["import", "design", "qc"],
+        "test_ids": ["trx-workflow-tabs", "trx-tab-import", "trx-tab-design", "trx-tab-qc"]
+      },
+      "expected_state": {"renders_module": true},
+      "expected_artifacts": [{"path": "mod_transcriptomics_ui", "schema": "module_ci_ui"}],
+      "required_tests": ["module-ci-manifest", "module-ci-trx-app"]
     }
   ]
 }

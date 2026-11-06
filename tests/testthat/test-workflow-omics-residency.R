@@ -78,3 +78,30 @@ for (omic in c("lipidomics", "metabolomics")) {
     }
   })
 }
+
+# KIT-096: the walk finds a held transcriptomics object and its count table (the positive control of the trx journey).
+test_that("the walk finds a held TranscriptomicsAssayData and its count table", {
+  dir <- testthat::test_path("..", "testdata", "mci", "fx", "transcriptomics", "trx_screen")
+  counts <- utils::read.delim(file.path(dir, "counts.tsv"), check.names = FALSE, stringsAsFactors = FALSE)
+  design <- utils::read.delim(file.path(dir, "design_matrix.tab"), stringsAsFactors = FALSE)
+  object <- createTranscriptomicsAssayData(list(counts = counts), design, c("RPMI", "Sera"))
+  held <- new.env(parent = emptyenv())
+  held$kept <- local({ captured <- object; function() captured })
+  expect_identical(as.character(omicsResidencyWalk(list(root = held))), "root$kept<closure>$captured")
+  values <- shiny::reactiveValues(assay = counts)
+  expect_length(attr(omicsResidencyWalk(list(root = values), table_columns = design$Run), "tables"), 1L)
+})
+
+test_that("transcriptomics: no assay object or count table is reachable after import, design, the filter and the finalise", {
+  hits <- suppressMessages(suppressWarnings(trxResidencyJourney()))
+  expect_identical(unlist(attr(hits, "states")), c(import = "initial", design = "trx_raw_data_s4", filter = "trx_expression_filtered",
+    qc_finalize = "trx_qc_complete"))
+  holder <- function(path) sub("^.*(\\$private\\$outs\\[\\[|\\.values\\$private\\$map|\\$userData\\$)", "\\1", path)
+  tables <- attr(hits, "tables")
+  for (step in names(hits)) {
+    expect(length(hits[[step]]) == 0L, sprintf("%s: assay objects reachable at\n  %s", step, paste(unique(holder(hits[[step]])), collapse = "\n  ")))
+    expect(length(tables[[step]]) == 0L, sprintf("%s: count tables reachable at\n  %s", step, paste(unique(holder(tables[[step]])), collapse = "\n  ")))
+    expect(all(attr(hits, "bus")[[step]] %in% c("reference", "empty")), sprintf("%s: the bus holds %s", step,
+      paste(names(attr(hits, "bus")[[step]]), attr(hits, "bus")[[step]], collapse = ", ")))
+  }
+})

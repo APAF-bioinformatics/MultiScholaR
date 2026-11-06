@@ -440,7 +440,6 @@ app_ui <- function(request) {
             ),
             column(
               4,
-              # Placeholder selector — no backing workflow module exists yet (finding m-2)
               testid(
                 shiny::div(
                   id = "transcriptomics_box",

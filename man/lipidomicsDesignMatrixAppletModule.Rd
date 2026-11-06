@@ -7,14 +7,15 @@
 \alias{mod_lipid_design_server}
 \title{Lipidomics Design Matrix Applet Module}
 \usage{
-mod_lipid_design_ui(id)
+mod_lipid_design_ui(id, profile = NULL)
 
 mod_lipid_design_server(
   id,
   workflow_data,
   experiment_paths,
   volumes = NULL,
-  qc_trigger = NULL
+  qc_trigger = NULL,
+  profile = NULL
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ mod_lipid_design_server(
 \item{volumes}{Optional shinyFiles volumes.}
 
 \item{qc_trigger}{Optional reactive QC trigger.}
+
+\item{profile}{An omic profile (KIT-096): its help text, the builder's run order and level order, and the design commit's collaborators. \code{NULL}, the default, is lipidomics.}
 }
 \description{
 A Shiny module that hosts the lipidomics design-matrix workflow, including

@@ -42,7 +42,8 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
     c(
       "MCI-004.1-proteomics-import-schema-smoke",
       "MCI-012.1-metabolomics-import-schema-smoke",
-      "MCI-018.1-lipidomics-import-schema-smoke"
+      "MCI-018.1-lipidomics-import-schema-smoke",
+      "MCI-026.1-transcriptomics-import-count-policy"
     )
   )
 
@@ -164,6 +165,23 @@ test_that("module CI manifest filters scenarios by omic, module, runtime, and ti
     "MCI-023.1-lipidomics-summary-report-schema-smoke"
   )
   expect_true("module-ci-lipid-summary" %in% lipid_summary[[1]]$required_tests)
+
+  # KIT-096: the transcriptomics import, design, QC and module shell, on their own lane.
+  trx <- module_ci_scenarios(manifest, omic = "transcriptomics")
+  expect_setequal(
+    module_ci_scenario_ids(trx),
+    c(
+      "MCI-026.1-transcriptomics-import-count-policy",
+      "MCI-027.1-transcriptomics-design-builder",
+      "MCI-028.1-transcriptomics-qc-expression-filter",
+      "MCI-029.1-transcriptomics-module-shell-stable-ids"
+    )
+  )
+  expect_true(all(vapply(trx, `[[`, character(1), "ci_lane") == "transcriptomics-unit"))
+  expect_identical(
+    module_ci_scenario_ids(module_ci_scenarios(manifest, ci_lane = "transcriptomics-unit")),
+    module_ci_scenario_ids(trx)
+  )
 
   cross_module <- module_ci_scenarios(
     manifest,

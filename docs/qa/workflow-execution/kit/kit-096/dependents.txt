@@ -1,0 +1,58 @@
+# KIT-096 dependents: every test file naming a parameterised lipid entry point or helper (grep below), plus the lipid and
+# metab module CI, the declaration tests, the frozen dump (test-workflow-omics-declarations.R), the KIT-094 characterisation
+# and KIT-095's binding test. No test file of these was modified.
+# grep -lE 'mod_lipid_import_ui|mod_lipid_import_server|buildLipidImportFileImportSection|buildLipidImportColumnMappingSection|buildLipidImportProcessFooterSection|buildLipidImportFormatDetectionStatus|writeLipidImportSourceArtifacts|mod_lipid_design_ui|mod_lipid_design_server|registerLipidDesignBuilderModule|runLipidDesignBuilderObserverShell|registerLipidDesignBuilderResultsObserver|mod_lipid_design_builder_server|mod_lipid_qc_ui|mod_lipid_qc_server|mod_lipid_qc_s4_ui|mod_lipid_qc_s4_server|runLipidQcS4FinalizeWorkflow|mod_lipidomics|app_ui|mod_lipid_import_ui_helpers|mod_lipid_import_server.R|mod_lipid_design_builder|mod_lipid_qc' tests/testthat/*.R
+# First pass (43 files): two failures, fixed in the one correction pass:
+#  - test-lipid-14-design-module-seams.R: its mock runBuilderObserverShell has no profile argument; the observer now passes the profile only when it is not NULL.
+#  - test-module-ci-fixture-integrity.R: generate-fixtures.R --root <tmp> looked for the corpus tool under the root; it now finds the repository from the script's path.
+  BAD test-lipid-14-design-module-seams.R :: registerLipidDesignBuilderResultsObserver keeps observer handoff stable
+  BAD test-module-ci-fixture-integrity.R :: module CI fixture generator reproduces catalog and sidecar checksums
+COUNTS test-app-shell-shared.R pass 29 fail 0 error 0 skip 0
+COUNTS test-ci-impact-source-map.R pass 19 fail 0 error 0 skip 0
+COUNTS test-e2e-test-mode-integration.R pass 63 fail 0 error 0 skip 0
+COUNTS test-lipid-00b-import-module-seams.R pass 547 fail 0 error 0 skip 0
+COUNTS test-lipid-00c-import-module-characterization.R pass 96 fail 0 error 0 skip 0
+COUNTS test-lipid-01b-qc-module-contracts.R pass 12 fail 0 error 0 skip 0
+COUNTS test-lipid-01c-qc-duplicate-module-seams.R pass 200 fail 0 error 0 skip 0
+COUNTS test-lipid-01d-qc-intensity-module-seams.R pass 86 fail 0 error 0 skip 0
+COUNTS test-lipid-01e-qc-itsd-module-seams.R pass 38 fail 0 error 0 skip 0
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 45 fail 0 error 0 skip 0
+COUNTS test-lipid-01g-qc-duplicates-module-characterization.R pass 52 fail 0 error 0 skip 0
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 3 fail 0 error 0 skip 0
+COUNTS test-lipid-01i-qc-itsd-wrapper-characterization.R pass 8 fail 0 error 0 skip 0
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 13 fail 0 error 0 skip 0
+COUNTS test-lipid-01k-qc-intensity-shared.R pass 35 fail 0 error 0 skip 0
+COUNTS test-lipid-13a-design-module-characterization.R pass 146 fail 0 error 0 skip 0
+COUNTS test-lipid-13b-design-wrapper-characterization.R pass 13 fail 0 error 0 skip 0
+COUNTS test-lipid-13-design-builder-seams.R pass 202 fail 0 error 0 skip 0
+COUNTS test-lipid-14-design-module-seams.R pass 50 fail 0 error 1 skip 0
+COUNTS test-module-ci-fixture-integrity.R pass 2558 fail 1 error 0 skip 0
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-summary.R pass 106 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 54 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-summary.R pass 80 fail 0 error 0 skip 0
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0
+COUNTS test-omics-audit-carry-overs.R pass 18 fail 0 error 0 skip 0
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0
+COUNTS test-perf-107.R pass 21 fail 0 error 0 skip 0
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-binding-steps.R pass 51 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-declarations.R pass 68 fail 0 error 0 skip 0
+COUNTS test-workflow-server-shared.R pass 70 fail 0 error 0 skip 0
+COUNTS test-workflow-trx-declarations.R pass 308 fail 0 error 0 skip 0
+COUNTS test-workflow-ui-shared.R pass 51 fail 0 error 0 skip 0
+# After the correction:
+COUNTS test-lipid-13a-design-module-characterization.R pass 146 fail 0 error 0 skip 0
+COUNTS test-lipid-13b-design-wrapper-characterization.R pass 13 fail 0 error 0 skip 0
+COUNTS test-lipid-14-design-module-seams.R pass 59 fail 0 error 0 skip 0
+COUNTS test-module-ci-fixture-integrity.R pass 2559 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0

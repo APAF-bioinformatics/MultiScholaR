@@ -1,0 +1,9 @@
+{
+  "fixture": "counts_negative",
+  "parent_manifest_sha256": "5b1e590229da677caf1674e2a513e9af64a953811d41735908cea10e56164b79",
+  "gene": "TRXG00001",
+  "run": "RPMI_03_r2",
+  "parent_value": "16",
+  "value": "-1",
+  "counts_sha256": "ccac5445dfc2418ec6e790d791f0b19bfcc821fe581037c9672ca4d146f55061"
+}

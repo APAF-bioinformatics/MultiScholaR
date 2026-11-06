@@ -6,12 +6,20 @@
 \alias{mod_lipid_qc_s4_server}
 \title{Lipidomics QC Finalization Module}
 \usage{
-mod_lipid_qc_s4_ui(id)
+mod_lipid_qc_s4_ui(id, profile = NULL)
 
-mod_lipid_qc_s4_server(id, workflow_data, omic_type, experiment_label)
+mod_lipid_qc_s4_server(
+  id,
+  workflow_data,
+  omic_type,
+  experiment_label,
+  profile = NULL
+)
 }
 \arguments{
 \item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{profile}{An omic profile (KIT-096): its summary and the finalise's collaborators. \code{NULL}, the default, is lipidomics.}
 }
 \description{
 A Shiny module for finalizing the QC step and confirming the S4 state.

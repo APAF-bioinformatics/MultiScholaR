@@ -8,6 +8,7 @@ buildLipidImportFormatDetectionStatus <- function(detectedFormat, formatConfiden
     "progenesis" = "Progenesis QI",
     "xcms" = "XCMS",
     "compound_discoverer" = "Compound Discoverer",
+    "trx_counts" = "Count table",
     "Unknown"
   )
 
@@ -556,7 +557,8 @@ writeLipidImportSourceArtifacts <- function(
   fileCopyFn = file.copy,
   dirCreateFn = dir.create,
   dirExistsFn = dir.exists,
-  fileExistsFn = file.exists
+  fileExistsFn = file.exists,
+  summaryFileName = "lipidomics_import_summary.tsv"
 ) {
   source_dir <- experimentPaths$source_dir
   if (is.null(source_dir) || !nzchar(source_dir) || !dirExistsFn(source_dir)) {
@@ -602,7 +604,7 @@ writeLipidImportSourceArtifacts <- function(
     sample_columns = paste(columnMapping$sample_columns, collapse = ","),
     stringsAsFactors = FALSE
   )
-  summary_path <- file.path(source_dir, "lipidomics_import_summary.tsv")
+  summary_path <- file.path(source_dir, summaryFileName)
   writeTableFn(summary_rows, file = summary_path, sep = "\t", row.names = FALSE, quote = FALSE)
   artifact_paths$import_summary <- summary_path
 

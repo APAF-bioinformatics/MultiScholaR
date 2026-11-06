@@ -6,12 +6,14 @@
 \alias{initializeLipidQcSubmodules}
 \title{Lipidomics Quality Control Orchestrator Module}
 \usage{
-mod_lipid_qc_ui(id)
+mod_lipid_qc_ui(id, profile = NULL)
 
 initializeLipidQcSubmodules(workflow_data, omic_type, experiment_label)
 }
 \arguments{
 \item{id, workflow_data, omic_type, experiment_label}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{profile}{An omic profile (KIT-096): its title, sub-tabs, their servers and class. \code{NULL}, the default, is lipidomics.}
 }
 \description{
 A Shiny module coordinator for the Quality Control step of the

@@ -16,7 +16,8 @@ mod_lipid_design_builder_server(
   column_mapping,
   existing_design_matrix = NULL,
   existing_contrasts = NULL,
-  state_owner = NULL
+  state_owner = NULL,
+  profile = NULL
 )
 }
 \arguments{
@@ -37,6 +38,9 @@ contrasts table (e.g., from "Import Existing Design").}
 
 \item{state_owner}{Optional function returning the session's state owner; the builder
 then holds its tables by reference. Without it they stay plain values.}
+
+\item{profile}{An omic profile (KIT-096): its run order for a fresh design, and the level order and removed runs on
+the saved result. \code{NULL}, the default, is lipidomics.}
 }
 \value{
 A reactive expression containing the saved design matrix, filtered

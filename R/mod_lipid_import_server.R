@@ -3,7 +3,7 @@
 #' @importFrom shiny moduleServer reactiveValues reactive observeEvent req renderUI renderText showNotification removeNotification updateSelectInput outputOptions
 #' @importFrom shinyFiles shinyFileChoose parseFilePaths getVolumes
 #' @importFrom logger log_info log_error log_warn
-mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes = NULL) {
+mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes = NULL, profile = NULL) {
   emitLipidImportModuleServerEntryDiagnostics(
     volumesIsNull = is.null(volumes)
   )
@@ -19,6 +19,16 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
     # Local reactive values
     local_data <- initializeLipidImportLocalData()
 
+    # KIT-096: a profile's preview loader and processing at the selection and process seams (the lipid ones otherwise).
+    assay1_selected <- if (is.null(profile)) buildLipidImportAssay1SelectedCallback else function(session, localData) {
+      buildLipidImportAssay1SelectedCallback(session, localData, runPreviewLoad = function(session, localData) {
+        handleLipidImportDataPreviewLoad(session, localData, loadPreview = profile$load_preview)
+      })
+    }
+    process_request <- if (is.null(profile)) handleLipidImportProcessRequest else function(...) {
+      handleLipidImportProcessRequest(..., processImport = profile$process_import)
+    }
+
     # Set up shinyFiles if available
     volumes <- setupLipidImportShinyFileInputs(
       useShinyFiles = use_shiny_files,
@@ -26,7 +36,8 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       output = output,
       session = session,
       localData = local_data,
-      volumes = volumes
+      volumes = volumes,
+      buildAssay1Selected = assay1_selected
     )
 
     setupLipidImportStandardFileInputs(
@@ -34,7 +45,8 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       input = input,
       output = output,
       session = session,
-      localData = local_data
+      localData = local_data,
+      buildAssay1Selected = assay1_selected
     )
 
     column_selection_reactives <- buildLipidImportColumnSelectionReactives(
@@ -62,7 +74,8 @@ mod_lipid_import_server <- function(id, workflow_data, experiment_paths, volumes
       getLipidIdCol = get_lipid_id_col,
       getAnnotationCol = get_annotation_col,
       getSampleColumns = get_sample_columns,
-      experimentPaths = experiment_paths
+      experimentPaths = experiment_paths,
+      handleProcessRequest = process_request
     )
   })
 }

@@ -7,12 +7,20 @@
 \alias{mod_lipid_import_server}
 \title{Lipidomics Import Module}
 \usage{
-mod_lipid_import_ui(id)
+mod_lipid_import_ui(id, profile = NULL)
 
-mod_lipid_import_server(id, workflow_data, experiment_paths, volumes = NULL)
+mod_lipid_import_server(
+  id,
+  workflow_data,
+  experiment_paths,
+  volumes = NULL,
+  profile = NULL
+)
 }
 \arguments{
 \item{id, workflow_data, experiment_paths, volumes}{Runtime inputs used by this function; see the usage section for accepted values.}
+
+\item{profile}{An omic profile (KIT-096, e.g. the transcriptomics profile); \code{NULL}, the default, is lipidomics.}
 }
 \description{
 A Shiny module for importing lipidomics data with vendor-format detection

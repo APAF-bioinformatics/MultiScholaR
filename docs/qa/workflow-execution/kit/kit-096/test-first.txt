@@ -1,0 +1,54 @@
+# KIT-096 test first: the new and extended test files run before any R/ change (kit_095 library, one process per file).
+# The manifest test passes before: it validates the test data (manifest.json, the fixtures), which was written with it.
+# The residency positive control passes before: it exercises the walk (a test helper), not the tabs.
+COUNTS test-module-ci-trx-import.R pass 0 fail 0 error 5 skip 0
+  BAD test-module-ci-trx-import.R :: MCI-026.1 the preview offers the count table's columns, the sample columns in file order
+  BAD test-module-ci-trx-import.R :: MCI-026.1 the import accepts the screen corpus: names and order as in the file, the owner bound to TRANSCRIPTOMICS
+  BAD test-module-ci-trx-import.R :: MCI-026.2 the import refuses each KIT-040 invalid fixture and shows KIT-093's condition class
+  BAD test-module-ci-trx-import.R :: MCI-026.2 a count table without its chosen name column, or with a non-numeric sample column, is refused by class
+  BAD test-module-ci-trx-import.R :: MCI-026.3 the import tab under the transcriptomics profile: one format, gene columns, no sanitisation, the policy stated
+--- MCI-026.1 the preview offers the count table's columns, the sample columns in file order 
+--- MCI-026.1 the import accepts the screen corpus: names and order as in the file, the owner bound to TRANSCRIPTOMICS 
+--- MCI-026.2 the import refuses each KIT-040 invalid fixture and shows KIT-093's condition class 
+--- MCI-026.2 a count table without its chosen name column, or with a non-numeric sample column, is refused by class 
+--- MCI-026.3 the import tab under the transcriptomics profile: one format, gene columns, no sanitisation, the policy stated 
+COUNTS test-module-ci-trx-design.R pass 0 fail 0 error 6 skip 0
+  BAD test-module-ci-trx-design.R :: MCI-027.1 the builder keeps the counts file's run order and names; the commit is the design state
+  BAD test-module-ci-trx-design.R :: MCI-027.1 the level order is the order the user entered
+  BAD test-module-ci-trx-design.R :: MCI-027.2 the design commit's state and provenance are those of KIT-095's journey setup
+  BAD test-module-ci-trx-design.R :: MCI-027.3 mismatched, unassigned, duplicate, unknown-level, empty and single-run groups are refused by class
+  BAD test-module-ci-trx-design.R :: MCI-027.3 removed runs leave the design and the counts; three groups are accepted with their order
+  BAD test-module-ci-trx-design.R :: MCI-027.4 the design tab under the transcriptomics profile: the shared builder ids, matching by name stated
+--- MCI-027.1 the builder keeps the counts file's run order and names; the commit is the design state 
+--- MCI-027.1 the level order is the order the user entered 
+--- MCI-027.2 the design commit's state and provenance are those of KIT-095's journey setup 
+--- MCI-027.3 mismatched, unassigned, duplicate, unknown-level, empty and single-run groups are refused by class 
+--- MCI-027.3 removed runs leave the design and the counts; three groups are accepted with their order 
+--- MCI-027.4 the design tab under the transcriptomics profile: the shared builder ids, matching by name stated 
+COUNTS test-module-ci-trx-qc.R pass 2 fail 0 error 4 skip 0
+  BAD test-module-ci-trx-qc.R :: MCI-028.1 in process the filter commits trx_expression_filtered and the finalise trx_qc_complete; the record is valid
+  BAD test-module-ci-trx-qc.R :: MCI-028.2 the QC tab's filter mask on a GUI-built design is identical to the KIT-040 reference mask
+  BAD test-module-ci-trx-qc.R :: MCI-028.3 under a managed session the metrics and figures are the worker's, and equal the in-process ones
+  BAD test-module-ci-trx-qc.R :: MCI-028.4 the QC tab under the transcriptomics profile: the filter and finalise sub-tabs, the orchestrator's class
+--- MCI-028.1 in process the filter commits trx_expression_filtered and the finalise trx_qc_complete; the record is valid 
+--- MCI-028.2 the QC tab's filter mask on a GUI-built design is identical to the KIT-040 reference mask 
+--- MCI-028.3 under a managed session the metrics and figures are the worker's, and equal the in-process ones 
+--- MCI-028.4 the QC tab under the transcriptomics profile: the filter and finalise sub-tabs, the orchestrator's class 
+COUNTS test-module-ci-trx-app.R pass 0 fail 2 error 3 skip 0
+  BAD test-module-ci-trx-app.R :: MCI-029.1 the app's dispatch finds the transcriptomics module, not the 'Module not yet implemented' fallback
+  BAD test-module-ci-trx-app.R :: MCI-029.1 the stable ids: module, tabs, sub-modules and test ids
+  BAD test-module-ci-trx-app.R :: MCI-029.1 the module server holds the bus, the session's owner and the stepper's statuses
+--- MCI-029.1 the app's dispatch finds the transcriptomics module, not the 'Module not yet implemented' fallback 
+--- MCI-029.1 the app's dispatch finds the transcriptomics module, not the 'Module not yet implemented' fallback 
+--- MCI-029.1 the app's dispatch finds the transcriptomics module, not the 'Module not yet implemented' fallback 
+--- MCI-029.1 the stable ids: module, tabs, sub-modules and test ids 
+--- MCI-029.1 the module server holds the bus, the session's owner and the stepper's statuses 
+COUNTS test-module-ci-manifest.R pass 33 fail 0 error 0 skip 0
+  BAD test-workflow-omics-application-reads.R :: KIT-096: on a managed session the transcriptomics QC tab reads no count table and holds none; in process it reads them
+  BAD test-workflow-omics-application-reads.R :: KIT-096: a QC tab variant that reads and holds the transcriptomics state is caught by the probe and the walk
+--- KIT-096: on a managed session the transcriptomics QC tab reads no count table and holds none; in process it reads them 
+--- KIT-096: a QC tab variant that reads and holds the transcriptomics state is caught by the probe and the walk 
+COUNTS test-workflow-omics-residency.R pass 84 fail 0 error 1 skip 0
+  BAD test-workflow-omics-residency.R :: transcriptomics: no assay object or count table is reachable after import, design, the filter and the finalise
+  BAD test-workflow-omics-application-reads.R :: KIT-096: on a managed session the transcriptomics QC tab reads no count table and holds none; in process it reads them
+  BAD test-workflow-omics-application-reads.R :: KIT-096: a QC tab variant that reads and holds the transcriptomics state is caught by the probe and the walk

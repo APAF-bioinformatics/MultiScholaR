@@ -9,6 +9,8 @@
 #' @param experiment_paths Paths for the current experiment.
 #' @param volumes Optional shinyFiles volumes.
 #' @param qc_trigger Optional reactive QC trigger.
+#' @param profile An omic profile (KIT-096): its help text, the builder's run order and level order, and the design commit's
+#'   collaborators. `NULL`, the default, is lipidomics.
 #'
 #' @name lipidomicsDesignMatrixAppletModule
 NULL
@@ -17,7 +19,7 @@ NULL
 #' @export
 #' @importFrom shiny NS tagList wellPanel h3 h4 p conditionalPanel div icon tags HTML fluidRow column actionButton
 #' @importFrom DT DTOutput renderDT
-mod_lipid_design_ui <- function(id) {
+mod_lipid_design_ui <- function(id, profile = NULL) {
     ns <- shiny::NS(id)
 
     shiny::tagList(
@@ -28,15 +30,16 @@ mod_lipid_design_ui <- function(id) {
                         shiny::column(8
                             , shiny::h3("Design Matrix Builder")
                         )
-                        , shiny::column(4
+                        # KIT-096: a profile has no design import (its files are the lipid import's) and its own help.
+                        , if (is.null(profile)) shiny::column(4
                             , shiny::actionButton(ns("show_import_modal"), "Import Existing Design"
                                 , icon = shiny::icon("folder-open"), class = "btn-info pull-right")
                         )
                     )
-                    , shiny::p("Use the tools below to define your experimental groups and contrasts for differential analysis. All assays (Pos/Neg modes) share the same design matrix.")
+                    , shiny::p(profile$design_help %||% "Use the tools below to define your experimental groups and contrasts for differential analysis. All assays (Pos/Neg modes) share the same design matrix.")
 
                     # Multi-assay info banner
-                    , shiny::div(
+                    , if (is.null(profile)) shiny::div(
                         class = "alert alert-info"
                         , style = "margin-top: 10px;"
                         , shiny::icon("info-circle")

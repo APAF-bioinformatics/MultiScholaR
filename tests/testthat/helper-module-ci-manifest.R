@@ -1,4 +1,4 @@
-.MODULE_CI_VALID_OMICS <- c("all", "proteomics", "metabolomics", "lipidomics")
+.MODULE_CI_VALID_OMICS <- c("all", "proteomics", "metabolomics", "lipidomics", "transcriptomics")
 .MODULE_CI_DEFAULT_RUNTIME_CLASSES <- c(
   "unit-contract",
   "module-browser",

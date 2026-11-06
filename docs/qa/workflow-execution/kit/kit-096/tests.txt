@@ -1,0 +1,8 @@
+# KIT-096 targeted tests, final tree (kit_095 library, one process per file, $P/kit/scripts-096/run-files.sh)
+COUNTS test-module-ci-manifest.R pass 33 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-app.R pass 22 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-qc.R pass 30 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 216 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0

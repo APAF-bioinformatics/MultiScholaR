@@ -70,43 +70,47 @@ buildLipidImportFileImportSection <- function(
   ns,
   useShinyFiles,
   buildAssayInputPanel = buildLipidImportAssayInputPanel,
-  buildRadioButtons = shiny::radioButtons
+  buildRadioButtons = shiny::radioButtons,
+  profile = NULL
 ) {
+  # KIT-096: a profile's formats, one assay and its help text; the lipid vendors and second assay otherwise.
+  formats <- profile$formats %||% c(
+    "MS-DIAL" = "msdial",
+    "Progenesis QI" = "progenesis",
+    "XCMS" = "xcms",
+    "Compound Discoverer" = "compound_discoverer",
+    "LipidSearch" = "lipidsearch",
+    "Other/Custom" = "custom"
+  )
+  tp <- profile$testid %||% "lipid"
   shiny::tagList(
-    shiny::h4("Step 1: Select Vendor Format"),
+    shiny::h4(if (is.null(profile)) "Step 1: Select Vendor Format" else "Step 1: Format"),
     testid(
       buildRadioButtons(
         ns("vendor_format"),
         NULL,
-        choices = c(
-          "MS-DIAL" = "msdial",
-          "Progenesis QI" = "progenesis",
-          "XCMS" = "xcms",
-          "Compound Discoverer" = "compound_discoverer",
-          "LipidSearch" = "lipidsearch",
-          "Other/Custom" = "custom"
-        ),
-        selected = "msdial",
+        choices = formats,
+        selected = if (is.null(profile)) "msdial" else formats[[1L]],
         inline = TRUE
       ),
-      "lipid-import-vendor-format"
+      if (is.null(profile)) "lipid-import-vendor-format" else paste0(tp, "-import-format")
     ),
     shiny::hr(),
     shiny::h4("Step 2: Import Data Files"),
-    shiny::p("Import one or more assay files (e.g., LCMS_Pos, LCMS_Neg, GCMS)"),
+    shiny::p(profile$import_help %||% "Import one or more assay files (e.g., LCMS_Pos, LCMS_Neg, GCMS)"),
     buildAssayInputPanel(
       ns = ns,
       assayNameInputId = "assay1_name",
       assayNameLabel = "Assay Name",
-      assayNameValue = "LCMS_Pos",
+      assayNameValue = profile$assay_name %||% "LCMS_Pos",
       shinyFilesButtonId = "assay1_file",
       standardInputId = "assay1_file_std",
       pathOutputId = "assay1_path",
       useShinyFiles = useShinyFiles,
-      nameTestId = "lipid-import-assay1-name",
-      fileTestId = "lipid-import-assay1-file"
+      nameTestId = paste0(tp, "-import-assay1-name"),
+      fileTestId = paste0(tp, "-import-assay1-file")
     ),
-    buildAssayInputPanel(
+    if (is.null(profile)) buildAssayInputPanel(
       ns = ns,
       assayNameInputId = "assay2_name",
       assayNameLabel = "Assay Name (Optional)",
@@ -123,7 +127,9 @@ buildLipidImportFileImportSection <- function(
 }
 
 # Column-mapping shell kept in the wrapper until the next staged UI wave.
-buildLipidImportColumnMappingSection <- function(ns) {
+# KIT-096: a profile names the id and name columns and has no vendor-normalised, sanitising or internal-standard controls.
+buildLipidImportColumnMappingSection <- function(ns, profile = NULL) {
+  tp <- profile$testid %||% "lipid"
   shiny::tagList(
     shiny::h4("Step 3: Column Mapping"),
     shiny::p("Configure column mappings for your data. Dropdowns are auto-populated based on detected format."),
@@ -159,10 +165,10 @@ buildLipidImportColumnMappingSection <- function(ns) {
               testid(
                 shiny::selectInput(
                   ns("lipid_id_col"),
-                  "Lipid ID Column",
+                  profile$id_label %||% "Lipid ID Column",
                   choices = NULL
                 ),
-                "lipid-import-lipid-id-col"
+                if (is.null(profile)) "lipid-import-lipid-id-col" else paste0(tp, "-import-id-col")
               )
             ),
             shiny::column(
@@ -201,10 +207,10 @@ buildLipidImportColumnMappingSection <- function(ns) {
               testid(
                 shiny::selectInput(
                   ns("annotation_col"),
-                  "Annotation Column",
+                  profile$annotation_label %||% "Annotation Column",
                   choices = NULL
                 ),
-                "lipid-import-annotation-col"
+                paste0(tp, "-import-annotation-col")
               )
             ),
             shiny::column(
@@ -246,36 +252,38 @@ buildLipidImportColumnMappingSection <- function(ns) {
           shiny::helpText("Leave blank to auto-detect numeric columns as samples")
         ),
 
-        # Exclude normalized columns checkbox
-        shiny::checkboxInput(
-          ns("exclude_norm"),
-          "Exclude Vendor-Normalized Columns",
-          value = TRUE
-        ),
-        shiny::helpText("Excludes columns ending in _Norm, _Normalized, etc."),
-
-        # Sanitization checkbox
-        testid(
+        if (is.null(profile)) shiny::tagList(
+          # Exclude normalized columns checkbox
           shiny::checkboxInput(
-            ns("sanitize_names"),
-            "Sanitize Sample Names",
+            ns("exclude_norm"),
+            "Exclude Vendor-Normalized Columns",
             value = TRUE
           ),
-          "lipid-import-sanitize"
-        ),
-        shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
+          shiny::helpText("Excludes columns ending in _Norm, _Normalized, etc."),
 
-        # Internal standard pattern
-        testid(
-          shiny::textInput(
-            ns("is_pattern"),
-            "Internal Standard Pattern (Regex)",
-            value = "",
-            placeholder = "e.g., ^IS_|_d[0-9]+$|ISTD"
+          # Sanitization checkbox
+          testid(
+            shiny::checkboxInput(
+              ns("sanitize_names"),
+              "Sanitize Sample Names",
+              value = TRUE
+            ),
+            "lipid-import-sanitize"
           ),
-          "lipid-import-is-pattern"
+          shiny::helpText("Clean sample IDs (e.g., '123-Sample!' -> 'x123_sample') for better compatibility with downstream analysis."),
+
+          # Internal standard pattern
+          testid(
+            shiny::textInput(
+              ns("is_pattern"),
+              "Internal Standard Pattern (Regex)",
+              value = "",
+              placeholder = "e.g., ^IS_|_d[0-9]+$|ISTD"
+            ),
+            "lipid-import-is-pattern"
+          ),
+          shiny::helpText("Regular expression to identify internal standards")
         ),
-        shiny::helpText("Regular expression to identify internal standards"),
         shiny::hr(),
 
         # Sample column detection
@@ -311,7 +319,8 @@ buildLipidImportColumnMappingSection <- function(ns) {
 buildLipidImportProcessFooterSection <- function(
   ns,
   buildActionButton = shiny::actionButton,
-  buildUiOutput = shiny::uiOutput
+  buildUiOutput = shiny::uiOutput,
+  profile = NULL
 ) {
   shiny::fluidRow(
     shiny::column(
@@ -324,7 +333,7 @@ buildLipidImportProcessFooterSection <- function(
           width = "100%",
           icon = shiny::icon("check")
         ),
-        "lipid-import-process"
+        paste0(profile$testid %||% "lipid", "-import-process")
       ),
       shiny::br(),
       shiny::br(),

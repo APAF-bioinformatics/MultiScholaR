@@ -309,6 +309,8 @@ Collate:
     'mod_lipid_qc_s4.R'
     'mod_lipid_summary.R'
     'mod_lipidomics.R'
+    'mod_trx_qc_filter.R'
+    'mod_transcriptomics.R'
     'mod_prot_da_ui.R'
     'mod_prot_da_validation.R'
     'mod_prot_da_handlers_init.R'

@@ -6,7 +6,7 @@
 #' @importFrom vroom vroom
 #' @importFrom shinyFiles shinyDirButton shinyDirChoose parseDirPath getVolumes
 #' @importFrom jsonlite write_json read_json
-mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
+mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL, profile = NULL) {
     message(sprintf("--- Entering mod_lipid_design_server ---"))
     message(sprintf("   mod_lipid_design_server Arg: id = %s", id))
 
@@ -90,7 +90,8 @@ mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes
         # == Module Integration =====================================================
 
         builder_results_rv <- registerLipidDesignBuilderModule(
-            workflowData = workflow_data
+            workflowData = workflow_data,
+            profile = profile
         )
 
         # == Handle Builder Results =================================================
@@ -99,7 +100,8 @@ mod_lipid_design_server <- function(id, workflow_data, experiment_paths, volumes
             builderResultsRv = builder_results_rv,
             workflowData = workflow_data,
             experimentPaths = experiment_paths,
-            qcTrigger = qc_trigger
+            qcTrigger = qc_trigger,
+            profile = profile
         )
 
         # == Previews of Saved Data =================================================

@@ -4,11 +4,17 @@ registerLipidDesignBuilderModule <- function(
     builderServerExists = exists("mod_lipid_design_builder_server"),
     builderServerFn = NULL,
     reactiveFn = shiny::reactive,
-    reactiveValFn = shiny::reactiveVal
+    reactiveValFn = shiny::reactiveVal,
+    profile = NULL
 ) {
     if (isTRUE(builderServerExists)) {
         if (is.null(builderServerFn)) {
             builderServerFn <- mod_lipid_design_builder_server
+        }
+        # KIT-096: another omic's profile reaches the builder.
+        if (!is.null(profile)) {
+            builderServer <- builderServerFn
+            builderServerFn <- function(...) builderServer(..., profile = profile)
         }
 
         return(builderServerFn(
@@ -31,8 +37,11 @@ runLipidDesignBuilderObserverShell <- function(
     workflowData,
     experimentPaths,
     qcTrigger = NULL,
-    createLipidomicsAssayDataFn = createLipidomicsAssayData
+    createLipidomicsAssayDataFn = createLipidomicsAssayData,
+    profile = NULL
 ) {
+    # KIT-096: another omic's profile supplies the validation, the object, the route, the provenance and the state name.
+    workflow_type <- profile$workflow_type %||% "LIPIDOMICS"
     shiny::showModal(shiny::modalDialog(
         title = "Processing Design Matrix"
         , shiny::div(
@@ -63,16 +72,16 @@ runLipidDesignBuilderObserverShell <- function(
 
     col_map <- workflowData$column_mapping
     formula_string <- lipidDesignResolveFormulaString(results$config_list)
-    preflight <- validateLipidDesignDaPreflight(
+    preflight <- if (is.null(profile)) validateLipidDesignDaPreflight(
         designMatrix = results$design_matrix,
         assayList = results$data_cln,
         contrastsTbl = results$contrasts_tbl,
         formulaString = formula_string,
         columnMapping = col_map,
         requireContrasts = FALSE
-    )
+    ) else profile$validate_design(results, col_map)
     if (!isTRUE(preflight$valid)) {
-        msg <- paste("Invalid lipidomics design:", paste(preflight$errors, collapse = "; "))
+        msg <- paste(sprintf("Invalid %s design:", profile$label_lower %||% "lipidomics"), paste(preflight$errors, collapse = "; "))
         logger::log_error(msg)
         shiny::showNotification(msg, type = "error", duration = 15)
         shiny::removeModal()
@@ -80,7 +89,7 @@ runLipidDesignBuilderObserverShell <- function(
     }
 
     workflowData$design_matrix <- results$design_matrix
-    bindWorkflowOmicsOwnerAtImport(workflowData, "LIPIDOMICS", workflowData$data_format)
+    bindWorkflowOmicsOwnerAtImport(workflowData, workflow_type, workflowData$data_format)
     setWorkflowOmicsBusTables(workflowData, "data_cln", held_data_cln)
     workflowData$contrasts_tbl <- results$contrasts_tbl
     workflowData$config_list <- results$config_list
@@ -139,7 +148,7 @@ runLipidDesignBuilderObserverShell <- function(
             })
         }
 
-        s4_obj <- createLipidomicsAssayDataFn(
+        s4_obj <- if (!is.null(profile)) profile$build_object(results, col_map) else createLipidomicsAssayDataFn(
             lipid_data = results$data_cln
             , design_matrix = results$design_matrix
             , lipid_id_column = col_map$lipid_id_col
@@ -161,16 +170,16 @@ runLipidDesignBuilderObserverShell <- function(
         )
 
         # KIT-070: the session owner is bound to the lipidomics route here (the import wrote files only).
-        bindWorkflowOwnerTypeAtDesign(workflowData, "LIPIDOMICS", workflowData$data_format)
+        bindWorkflowOwnerTypeAtDesign(workflowData, workflow_type, workflowData$data_format)
         # KIT-031: the design step's provenance (`design_builder`) and the workflow's inputs on the bound owner.
-        recordLipidDesignProvenance(workflowData$state_manager, s4_obj, source_dir = source_dir)
+        (profile$record_provenance %||% recordLipidDesignProvenance)(workflowData$state_manager, s4_obj, source_dir = source_dir)
 
         logger::log_info("Saving LipidomicsAssayData S4 object to state manager as 'lipid_raw_data_s4'")
         workflowData$state_manager$saveState(
-            state_name = "lipid_raw_data_s4"
+            state_name = profile$state_name %||% "lipid_raw_data_s4"
             , s4_data_object = s4_obj
             , config_object = results$config_list
-            , description = "Initial LipidomicsAssayData S4 object created after design matrix"
+            , description = profile$state_description %||% "Initial LipidomicsAssayData S4 object created after design matrix"
         )
 
         if (!is.null(qcTrigger)) {
@@ -204,8 +213,14 @@ registerLipidDesignBuilderResultsObserver <- function(
     observeEventFn = shiny::observeEvent,
     reqFn = shiny::req,
     runBuilderObserverShell = runLipidDesignBuilderObserverShell,
-    createLipidomicsAssayDataFn = createLipidomicsAssayData
+    createLipidomicsAssayDataFn = createLipidomicsAssayData,
+    profile = NULL
 ) {
+    # KIT-096: another omic's profile reaches the commit.
+    if (!is.null(profile)) {
+        runShell <- runBuilderObserverShell
+        runBuilderObserverShell <- function(...) runShell(..., profile = profile)
+    }
     observeEventFn(builderResultsRv(), {
         results <- builderResultsRv()
         reqFn(results)

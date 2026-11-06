@@ -28,6 +28,7 @@
 #'              Displays QC summary statistics and state history.
 #' @name mod_lipid_qc_s4
 #' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
+#' @param profile An omic profile (KIT-096): its summary and the finalise's collaborators. `NULL`, the default, is lipidomics.
 NULL
 
 #' @rdname mod_lipid_qc_s4
@@ -35,7 +36,7 @@ NULL
 #' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 h5 p hr div actionButton verbatimTextOutput uiOutput icon tags plotOutput
 #' @importFrom DT DTOutput
 #' @importFrom shinyjqui jqui_resizable
-mod_lipid_qc_s4_ui <- function(id) {
+mod_lipid_qc_s4_ui <- function(id, profile = NULL) {
     ns <- shiny::NS(id)
     
     shiny::tabPanel(
@@ -70,7 +71,8 @@ mod_lipid_qc_s4_ui <- function(id) {
                     , shiny::hr()
                     , shiny::uiOutput(ns("data_summary"))
                 )
-                , shiny::wellPanel(
+                # KIT-096: a profile with one table has no per-assay statistics.
+                , if (is.null(profile)) shiny::wellPanel(
                     shiny::h4("Per-Assay Statistics")
                     , shiny::hr()
                     , DT::DTOutput(ns("assay_stats_table"))
@@ -524,7 +526,8 @@ runLipidQcS4FinalizeWorkflow <- function(
     completeTabStatusFn = completeLipidQcS4TabStatus,
     getFinalizeHistoryFn = getLipidQcS4FinalizeHistory,
     reportFinalizeSuccessFn = reportLipidQcS4FinalizeSuccess,
-    reportFinalizeErrorFn = reportLipidQcS4FinalizeError
+    reportFinalizeErrorFn = reportLipidQcS4FinalizeError,
+    profile = NULL
 ) {
     tryCatch({
         currentS4 <- getFinalizeStateFn(
@@ -553,9 +556,10 @@ runLipidQcS4FinalizeWorkflow <- function(
         }
 
         # KIT-082: the tracking figure's metrics read the whole matrix, so a managed session's worker computes them.
-        runner <- workflowOmicsManagedActions("lipidomics")
+        # KIT-096: a profile's runner, metrics operation and state reader (lipidomics' otherwise).
+        runner <- workflowOmicsManagedActions(profile$omic_type %||% "lipidomics")
         if (!is.null(runner)) {
-            runner$run(list(omicsManagedProduct("lipid_filtering_metrics", list(), function(result) {
+            runner$run(list(omicsManagedProduct(paste0(profile$prefix %||% "lipid", "_filtering_metrics"), list(), function(result) {
                 updateTrackingPlotFn(
                     currentS4 = NULL
                     , omicType = omicType
@@ -573,7 +577,7 @@ runLipidQcS4FinalizeWorkflow <- function(
         }
 
         updateTrackingPlotFn(
-            currentS4 = readLipidWorkflowState(workflowData$state_manager)
+            currentS4 = (profile$read_state %||% readLipidWorkflowState)(workflowData$state_manager)
             , omicType = omicType
             , setFilterPlotFn = filterPlot
         )
@@ -590,7 +594,7 @@ runLipidQcS4FinalizeWorkflow <- function(
 #' @importFrom DT renderDT datatable
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
-mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_label) {
+mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_label, profile = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
         ns <- session$ns
 
@@ -601,26 +605,36 @@ mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
             , workflowData = workflow_data
         )
 
-        registerLipidQcS4DataSummaryOutput(
-            output = output
-            , workflowData = workflow_data
-        )
+        if (is.null(profile)) {
+            registerLipidQcS4DataSummaryOutput(
+                output = output
+                , workflowData = workflow_data
+            )
 
-        registerLipidQcS4AssayStatsOutput(
-            output = output
-            , workflowData = workflow_data
-        )
+            registerLipidQcS4AssayStatsOutput(
+                output = output
+                , workflowData = workflow_data
+            )
+        } else {
+            # KIT-096: a profile's summary, read from the state's metadata.
+            profile$register_qc_summary(output, workflow_data)
+        }
         
         # Finalize QC
         shiny::observeEvent(input$finalize_qc, {
             shiny::req(workflow_data$state_manager)
 
-            runLipidQcS4FinalizeWorkflow(
-                workflowData = workflow_data
-                , omicType = omic_type
-                , filterPlot = filter_plot
-                , output = output
-            )
+            if (is.null(profile)) {
+                runLipidQcS4FinalizeWorkflow(
+                    workflowData = workflow_data
+                    , omicType = omic_type
+                    , filterPlot = filter_plot
+                    , output = output
+                )
+            } else {
+                do.call(runLipidQcS4FinalizeWorkflow, c(list(workflowData = workflow_data, omicType = omic_type,
+                    filterPlot = filter_plot, output = output, profile = profile), profile$finalize))
+            }
         })
 
         # Render QC progress plot

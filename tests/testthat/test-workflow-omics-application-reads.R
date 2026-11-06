@@ -647,3 +647,81 @@ test_that("KIT-082: a managed DA whose tab rows cannot be read clears the tab; o
   expect_identical(told$delivered$results$rows, "reference")
   expect_true(is.function(told$delivered$results$write_download))
 })
+
+# KIT-096: the transcriptomics QC tab (the expression filter and the lipid finalise under the transcriptomics profile). On a
+# managed session the application reads no count table and holds no object: the filter, its metrics and the raw figures
+# are the worker's. In process the same tabs read the counts (the control). A variant that reads and holds the state is
+# caught by the probe and the residency walk (the positive control).
+trxProbeServer <- function(fixture, managed, holding = FALSE) {
+  force(fixture); force(managed); force(holding)
+  function(input, output, session) {
+    if (managed) {
+      runner <- installWorkflowOmicsActions(session, fixture$workflow, "transcriptomics", "kit082", fixture$paths)
+      runner$progress <- function(message) list(set = function(...) invisible(NULL), inc = function(...) invisible(NULL), close = function() invisible(NULL))
+    }
+    mod_trx_qc_filter_server("filter", fixture$workflow, "transcriptomics", "kit082")
+    mod_lipid_qc_s4_server("finalize", fixture$workflow, "transcriptomics", "kit082", profile = trxOmicProfile())
+    if (holding) shiny::observeEvent(input[["finalize-finalize_qc"]], {
+      session$userData$held <- withWorkflowStateScope(fixture$owner, function() readTrxWorkflowState(fixture$owner))
+    })
+  }
+}
+
+trxProbeJourney <- function(fixture, probe, managed, holding = FALSE) {
+  suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(trxProbeServer(fixture, managed, holding), {
+    session$setInputs(`filter-apply_filter` = 1L)
+    session$flushReact()
+    for (name in c("filter-filter_plot", "filter-raw_pca", "filter-raw_rle", "filter-sample_metrics")) try(output[[name]], silent = TRUE)
+    session$setInputs(`finalize-finalize_qc` = 1L)
+    session$flushReact()
+    for (name in c("finalize-data_summary", "finalize-state_history", "finalize-filter_plot")) try(output[[name]], silent = TRUE)
+    walked <- omicsResidencyWalk(list(session = session, workflow_data = fixture$workflow),
+      table_columns = as.character(fixture$object@design_matrix$Run))
+    probe$walk <- as.character(walked)
+    probe$walk_tables <- attr(walked, "tables")
+  }))))
+  intersect(probe$tables, omicsAssayTableIds(fixture$owner, transcriptomicsDeclarationBinding))
+}
+
+test_that("KIT-096: on a managed session the transcriptomics QC tab reads no count table and holds none; in process it reads them", {
+  skip_if_not(workflowOwnerCapable())
+  skip_if_not_installed("edgeR")
+  for (managed in c(TRUE, FALSE)) {
+    fixture <- trxDeclarationsOwner(file.path(withr::local_tempdir(), if (managed) "managed" else "in-process"), module_ci_trx_corpus())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    probe <- new.env()
+    if (managed) omicsManagedChainMocks(fixture, probe, window = FALSE) else {
+      table <- materializeWorkflowTable
+      testthat::local_mocked_bindings(materializeWorkflowTable = function(context, reference, ...) {
+        probe$tables <- c(probe$tables, reference$entity_id)
+        table(context, reference, ...)
+      }, materializeDIATable = function(context, reference, ...) {
+        probe$tables <- c(probe$tables, reference$entity_id)
+        table(context, reference, ...)
+      }, .package = "MultiScholaR")
+    }
+    materialised <- trxProbeJourney(fixture, probe, managed)
+    expect_identical(fixture$owner$current_state, "trx_qc_complete", info = managed)
+    expect_length(probe$walk, 0L)
+    expect_length(probe$walk_tables, 0L)
+    if (!managed) {
+      expect_gt(length(materialised), 0L)
+      next
+    }
+    expect_length(materialised, 0L)
+    expect_true(all(c("trx_expression_filter", "trx_qc_figures", "trx_filtering_metrics") %in% probe$operations), info = paste(probe$operations, collapse = " "))
+    expect_true(all(probe$statuses == "delivered"))
+  }
+})
+
+test_that("KIT-096: a QC tab variant that reads and holds the transcriptomics state is caught by the probe and the walk", {
+  skip_if_not(workflowOwnerCapable())
+  skip_if_not_installed("edgeR")
+  fixture <- trxDeclarationsOwner(withr::local_tempdir(), module_ci_trx_corpus())
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  probe <- new.env()
+  omicsManagedChainMocks(fixture, probe, window = FALSE)
+  materialised <- trxProbeJourney(fixture, probe, managed = TRUE, holding = TRUE)
+  expect_gt(length(materialised), 0L)
+  expect_true(any(grepl("userData\\$held", probe$walk)))
+})
