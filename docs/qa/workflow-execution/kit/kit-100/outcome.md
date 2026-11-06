@@ -47,7 +47,8 @@ User decision (ticket revision 2.0, 2026-11-07): "yes", widened to parity with p
   - Each file's skip count equals KIT-099's checkpoint.
 - **`R CMD check` ([check.log](check.log)).** `--no-tests --no-manual --no-build-vignettes`, `kit_100` library: 3 WARNINGs, 3 NOTEs, the same sections as KIT-099's baseline.
 - **Install.** `kit_100` = `$P/core/browser-smoke.2jjdqX`, from a worktree pinned at `53e66b4a` (`scripts-100/install.sh`, base library `kit_098`'s).
-- **Bindings.** Not written. The planned keys `100a` and `100b` (`094a`/`094b` on `kit_100`, against `lipid86s`/`metab86s`) and `100c` (`098a` on `kit_100` without the notebook reference, against `trx98a`) are absent from `bindings.json` (checked 2026-11-07); they are written once the selector question below is decided.
+- **Scripts.** [scripts/](scripts/) (install, check, bind), with `dep.sh`, `one.R` and `char-diff.R` here.
+- **Bindings (`12190be1`, [bindings-diff.txt](bindings-diff.txt)).** `kit_100` (source `53e66b4a`) and the keys `100a` and `100b` (`094a`/`094b` on `kit_100`, against `lipid86s`/`metab86s`) and `100c` (`098a` on `kit_100` without the notebook reference, against `trx98a`). Nothing else changed except the generation timestamps; the protocol and harness hashes are unchanged. An earlier draft of this file, committed in `db70c3a2` before the bind finished, said the keys were absent. The keys are inert: the runner refuses their stage names (below).
 
 ## Not run: the three screen journeys (decision needed)
 
@@ -66,4 +67,4 @@ Until the user decides, the acceptance item "three screen journeys accepted and 
 
 ## Rollback
 
-`git revert 53e66b4a` and the binding commit. `whole` stays selectable throughout.
+`git revert 53e66b4a` and the binding commit `12190be1`. `whole` stays selectable throughout.
