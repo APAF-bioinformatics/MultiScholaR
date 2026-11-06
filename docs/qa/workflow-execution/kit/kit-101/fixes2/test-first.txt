@@ -1,0 +1,30 @@
+KIT-101 addendum (revision 2.2): failing-first evidence for F-08 to F-12.
+Runner: Rscript kit/scripts-078/run1.R (pkgload::load_all(export_all = TRUE, helpers = TRUE), then
+testthat::test_file(<file>, reporter = "silent")); one R process at a time; R 4.6.1.
+Base 91f3a534. "Before" = the new test block run against the unfixed R/ code (the fix's R/ diff
+reverted in the working tree, the new test in place); "After" = the same file with the fix.
+
+== F-09  tests/testthat/test-module-ci-prot-dia-limpa.R ==
+New block: "KIT-101 F-09: before the peptide stage has made its state, the DIA_LIMPA protein
+sub-tabs refuse naming it". An on-disk owner holding the import's peptide state (no log2 matrix,
+no quantified protein state); the three apply observers (dpc_quant, normalisation, peptide_count)
+run with their production step functions; notifications captured.
+
+Cause: KIT-048 made the three in-process steps (runProteinDpcQuantStep, runProteinNormalisationStep,
+runProteinPeptideCountStep) call their reference runner with `parameters`, a name bound only in the
+module observer, so every unmanaged apply failed with "object 'parameters' not found" whatever the
+state. Fix: each step builds the runner's parameter list from its own arguments; the normalisation
+and peptide-count declarations name the state they need (readDIAReferenceProteinObject takes the
+refusal text; its default, used by every other caller, is unchanged). DPC already named its input.
+
+Before the fix:
+--- Expected `dpc$errorMessage` to match string "needs the log2 peptide matrix state".
+    Actual: "Error in Limpa DPC quantification: object 'parameters' not found"
+--- Expected `norm$errorMessage` to match "needs the quantified protein state ('protein_dpc_quant')".
+    Actual: "Error in between-sample normalisation: object 'parameters' not found"
+--- Expected `count$errorMessage` to match "needs the quantified protein state ('protein_dpc_quant')".
+    Actual: "Error in peptide count filter: object 'parameters' not found"
+COUNTS test-module-ci-prot-dia-limpa.R pass 30 fail 3 error 0 skip 2
+
+After the fix:
+COUNTS test-module-ci-prot-dia-limpa.R pass 33 fail 0 error 0 skip 2

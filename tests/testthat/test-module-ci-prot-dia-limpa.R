@@ -166,3 +166,36 @@ test_that("the RUV covariates observer passes the tab's mode to the route's runn
     expect_match(notes[[1L]], if (mode == "correction") "correction applied" else "appended as covariates", fixed = TRUE)
   }
 })
+
+test_that("KIT-101 F-09: before the peptide stage has made its state, the DIA_LIMPA protein sub-tabs refuse naming it", {
+  root <- withr::local_tempdir()
+  store <- newWorkflowEntityStore(root, basename(root), "DIA")
+  manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+  withr::defer(closeDIAStateAdapter(manager))
+  manager$.context$reference_states <- TRUE
+  # The import's peptide state: no log2 peptide matrix, no quantified protein state.
+  manager$saveState("raw_data_s4", makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small")), list(), "fixture")
+  workflow <- list2env(list(state_manager = manager))
+  notes <- list()
+  note <- function(message, type = "default", ...) notes[[length(notes) + 1L]] <<- list(message = message, type = type)
+  no_op <- function(...) invisible(NULL)
+  shiny::testServer(function(input, output, session) {}, {
+    session$userData$dia_capacity_manager <- manager
+    dpc <- runProteinDpcQuantApplyObserver(workflow, engine = "limpa", dpcSlope = 0.8, chunk = 1000, output = output,
+      dpcQuantPlot = no_op, omicType = "proteomics", experimentLabel = "x", showNotificationFn = note,
+      removeNotificationFn = no_op, logErrorFn = no_op)
+    norm <- runProteinNormalisationApplyObserver(workflow, normMethod = "none", output = output, normalisationPlot = no_op,
+      omicType = "proteomics", experimentLabel = "x", showNotificationFn = note, removeNotificationFn = no_op, logErrorFn = no_op)
+    count <- runProteinPeptideCountApplyObserver(workflow, minPeptides = 1, minPeptidoforms = 2, output = output,
+      peptideCountPlot = no_op, omicType = "proteomics", experimentLabel = "x", showNotificationFn = note,
+      removeNotificationFn = no_op, logErrorFn = no_op)
+    for (result in list(dpc, norm, count)) expect_identical(result$status, "error")
+    expect_match(dpc$errorMessage, "needs the log2 peptide matrix state", fixed = TRUE)
+    expect_match(norm$errorMessage, "needs the quantified protein state ('protein_dpc_quant')", fixed = TRUE)
+    expect_match(count$errorMessage, "needs the quantified protein state ('protein_dpc_quant')", fixed = TRUE)
+  })
+  # Each refusal reaches the user as a notification; the head is unchanged.
+  errors <- Filter(function(x) identical(x$type, "error"), notes)
+  expect_length(errors, 3L)
+  expect_identical(manager$current_state, "raw_data_s4")
+})

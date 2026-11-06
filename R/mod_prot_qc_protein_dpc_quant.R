@@ -77,7 +77,7 @@ runProteinDpcQuantStep <- function(workflowData, engine, dpcSlope, chunk,
                                    proteinMissingValueImputationLimpaFn = proteinMissingValueImputationLimpa,
                                    logInfoFn = logger::log_info,
                                    nowFn = Sys.time) {
-  runDIAReferenceProteinDpcQuant(workflowData, parameters)
+  runDIAReferenceProteinDpcQuant(workflowData, list(engine = engine, dpc_slope = dpcSlope, chunk = chunk))
 }
 
 updateProteinDpcQuantOutputs <- function(output, dpcQuantPlot, dpcResult, omicType, experimentLabel,

@@ -1,0 +1,10 @@
+KIT-101 addendum (revision 2.2): targeted files after each fix (load_all runner, one process at a time).
+Baseline = kit-101/test-baseline.tsv (load_all). A count rises only by the new block's expectations.
+
+F-09
+  test-module-ci-prot-dia-limpa.R      pass 33 fail 0 error 0 skip 2   (baseline 24/0/0/2; +1 the rev 2.1 F-05 block, +8 the new block)
+  test-workflow-prot-declarations.R    pass 303 fail 0 error 0 skip 2  (baseline 303/0/0/2)
+  dependents: git grep of readDIAReferenceProteinObject, computeDIAReferenceProtein{Normalisation,
+  PeptideCountFilter} and runProtein{DpcQuant,Normalisation,PeptideCount}Step in tests/ -> the two
+  files above plus test-workflow-analysis-record.R (calls the computes on protein states; the default
+  refusal text is unchanged, the changed text only applies to a non-protein state).

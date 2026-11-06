@@ -66,7 +66,7 @@ runProteinNormalisationStep <- function(workflowData, normMethod,
                                         normaliseBetweenSamplesFn = normaliseBetweenSamples,
                                         logInfoFn = logger::log_info,
                                         nowFn = Sys.time) {
-  runDIAReferenceProteinNormalisation(workflowData, parameters)
+  runDIAReferenceProteinNormalisation(workflowData, list(norm_method = normMethod))
 }
 
 updateProteinNormalisationOutputs <- function(output, normalisationPlot, normalisationResult, omicType, experimentLabel,

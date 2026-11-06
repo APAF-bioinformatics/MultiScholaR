@@ -6,11 +6,12 @@
 # carries. The GUI runs the same entry point in process; the managed worker runs it from a frozen request.
 
 #' Hydrate a saved protein state for a whole-placement kernel.
+#' @param required The refusal when the state is not a protein state (KIT-101 F-09: a step may name the state it needs).
 #' @noRd
-readDIAReferenceProteinObject <- function(manager, reference) {
+readDIAReferenceProteinObject <- function(manager, reference, required = "a protein state is required") {
     object <- readWorkflowExecutionComponents(manager, reference)
     if (!methods::is(object, "ProteinQuantitativeData"))
-        cli::cli_abort("a protein state is required", class = "workflow_execution_unsupported")
+        cli::cli_abort(required, class = "workflow_execution_unsupported")
     object
 }
 
@@ -1193,7 +1194,8 @@ computeDIAReferenceProteinNormalisation <- function(manager, reference, paramete
     variant = "whole", now_fn = Sys.time) {
     if (!identical(variant, "whole")) cli::cli_abort("unsupported protein normalisation variant", class = "workflow_execution_unsupported")
     method <- parameters$norm_method %||% "none"
-    object <- readDIAReferenceProteinObject(manager, reference)
+    object <- readDIAReferenceProteinObject(manager, reference, paste("between-sample normalisation needs the quantified",
+        "protein state ('protein_dpc_quant') that DPC Quantification makes from the log2 peptide matrix; run DPC Quantification first"))
     proteins_before <- nrow(object@protein_quant_table)
     # The kernel records its arguments under the calling name (the DIA normalisation declaration calls it through
     # the same alias).
@@ -1231,7 +1233,8 @@ computeDIAReferenceProteinPeptideCountFilter <- function(manager, reference, par
     if (!identical(variant, "whole")) cli::cli_abort("unsupported peptide count filter variant", class = "workflow_execution_unsupported")
     peptides <- parameters$num_peptides_per_protein_thresh
     forms <- parameters$num_peptidoforms_per_protein_thresh
-    object <- readDIAReferenceProteinObject(manager, reference)
+    object <- readDIAReferenceProteinObject(manager, reference, paste("the peptide count filter needs the quantified",
+        "protein state ('protein_dpc_quant') that DPC Quantification makes from the log2 peptide matrix; run DPC Quantification first"))
     if (is.null(object@args$limpa_dpc_quant_results$peptide_counts_per_protein))
         cli::cli_abort("the peptide count filter needs the DPC quantification's peptide counts", class = "workflow_execution_invalid")
     proteins_before <- nrow(object@protein_quant_table)

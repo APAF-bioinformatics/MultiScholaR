@@ -65,7 +65,8 @@ runProteinPeptideCountStep <- function(workflowData, minPeptides, minPeptidoform
                                        filterMinNumPeptidesPerProteinFn = filterMinNumPeptidesPerProtein,
                                        logInfoFn = logger::log_info,
                                        nowFn = Sys.time) {
-  runDIAReferenceProteinPeptideCountFilter(workflowData, parameters)
+  runDIAReferenceProteinPeptideCountFilter(workflowData, list(num_peptides_per_protein_thresh = minPeptides,
+    num_peptidoforms_per_protein_thresh = minPeptidoforms))
 }
 
 updateProteinPeptideCountOutputs <- function(output, peptideCountPlot, filterResult, omicType, experimentLabel,
