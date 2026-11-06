@@ -380,7 +380,10 @@ guiEntryExpectLane <- function(lane_id, ceiling = 900) {
     testthat::succeed(paste("froze", lane_id))
     return(invisible(record))
   }
-  if (!file.exists(path)) testthat::fail(paste("no frozen oracle for lane", lane_id, "at", path))
+  if (!file.exists(path)) {
+    testthat::fail(paste("no frozen oracle for lane", lane_id, "at", path))
+    return(invisible(record))
+  }
   oracle <- jsonlite::read_json(path, simplifyVector = FALSE)
   testthat::expect_identical(names(steps), names(oracle$steps), info = paste(lane_id, "step order"))
   for (id in names(oracle$steps)) {
