@@ -222,6 +222,16 @@ registerMetabDesignBuilderResultsObserver <- function(
             held_data_cln <- results$data_cln
             results$data_cln <- resolveWorkflowOwnedValue(held_data_cln, workflowData$state_manager)
 
+            # KIT-101 F-01: as lipid, both checks run before the bus is written and fail as a notification.
+            source_dir <- experimentPaths$source_dir
+            if (is.null(source_dir) || !dir.exists(source_dir)) {
+                msg <- "Could not find source directory to save files."
+                logger::log_error(msg)
+                shiny::showNotification(msg, type = "error", duration = 15)
+                shiny::removeModal()
+                return()
+            }
+
             formula_string <- results$config_list[["deAnalysisParameters"]][["formula_string"]]
             if (!metabDesignScalarString(formula_string)) {
                 formula_string <- "~ 0 + group"
@@ -235,10 +245,14 @@ registerMetabDesignBuilderResultsObserver <- function(
                 requireContrasts = FALSE
             )
             if (!isTRUE(design_preflight$valid)) {
-                stop(sprintf(
+                msg <- sprintf(
                     "Invalid metabolomics design: %s",
                     paste(design_preflight$errors, collapse = "; ")
-                ))
+                )
+                logger::log_error(msg)
+                shiny::showNotification(msg, type = "error", duration = 15)
+                shiny::removeModal()
+                return()
             }
 
             workflowData$design_matrix <- results$design_matrix
@@ -248,15 +262,6 @@ registerMetabDesignBuilderResultsObserver <- function(
             workflowData$config_list <- results$config_list
             # KIT-030: contrasts_tbl and config_list live on workflow_data only (no global copies).
             logger::log_info("Updated contrasts_tbl and config_list on workflow_data.")
-
-            source_dir <- experimentPaths$source_dir
-            if (is.null(source_dir) || !dir.exists(source_dir)) {
-                msg <- "Could not find source directory to save files."
-                logger::log_error(msg)
-                shiny::showNotification(msg, type = "error", duration = 15)
-                shiny::removeModal()
-                return()
-            }
 
             tryCatch({
                 design_matrix_path <- file.path(source_dir, "design_matrix.tab")

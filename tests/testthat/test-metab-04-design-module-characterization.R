@@ -386,6 +386,96 @@ test_that("metabolomics design builder-results seam preserves observer delegatio
   expect_identical(delegated_call$qcTrigger, qc_trigger)
 })
 
+# KIT-101 F-01: the production builder-results flow, run through the default handler.
+runMetabDesignBuilderResultsDefaultFlow <- function(results, sourceDir) {
+  ui_calls <- character()
+  notifications <- character()
+  testthat::local_mocked_bindings(
+    showModal = function(...) ui_calls <<- c(ui_calls, "showModal"),
+    removeModal = function(...) ui_calls <<- c(ui_calls, "removeModal"),
+    showNotification = function(ui, ...) {
+      notifications <<- c(notifications, ui)
+      ui_calls <<- c(ui_calls, "showNotification")
+    },
+    .package = "shiny"
+  )
+  workflow_data <- new.env(parent = emptyenv())
+  workflow_data$column_mapping <- list(sample_columns = c("Sample1", "Sample2"))
+  fakeObserveEvent <- function(eventExpr, handlerExpr, ignoreNULL) {
+    eval(substitute(handlerExpr), parent.frame())
+  }
+  outcome <- tryCatch(
+    {
+      registerMetabDesignBuilderResultsObserver(
+        builderResultsRv = function() results,
+        workflowData = workflow_data,
+        experimentPaths = list(source_dir = sourceDir),
+        observeEventFn = fakeObserveEvent,
+        reqFn = function(value) invisible(value)
+      )
+      "returned"
+    },
+    error = function(e) paste("observer error:", conditionMessage(e))
+  )
+  list(
+    outcome = outcome,
+    ui_calls = ui_calls,
+    notifications = notifications,
+    workflow_data = workflow_data
+  )
+}
+
+makeMetabDesignBuilderResults <- function(runs) {
+  list(
+    design_matrix = data.frame(
+      Run = runs,
+      group = c("Control", "Treatment"),
+      replicates = c(1L, 1L),
+      stringsAsFactors = FALSE
+    ),
+    data_cln = list(LCMS_Pos = data.frame(
+      feature = c("M1", "M2"),
+      Sample1 = c(10, 11),
+      Sample2 = c(12, 13),
+      stringsAsFactors = FALSE
+    )),
+    contrasts_tbl = NULL,
+    config_list = list(normalization = "none")
+  )
+}
+
+test_that("KIT-101 F-01: an invalid metab design notifies, closes the modal and leaves the bus unwritten", {
+  source_dir <- tempfile("metab-design-f01-")
+  dir.create(source_dir)
+  on.exit(unlink(source_dir, recursive = TRUE), add = TRUE)
+
+  run <- runMetabDesignBuilderResultsDefaultFlow(
+    makeMetabDesignBuilderResults(c("Sample1", "Sample9")),
+    source_dir
+  )
+
+  expect_identical(run$outcome, "returned")
+  expect_identical(run$ui_calls, c("showModal", "showNotification", "removeModal"))
+  expect_length(run$notifications, 1)
+  expect_match(run$notifications, "^Invalid metabolomics design: ")
+  expect_null(run$workflow_data$design_matrix)
+  expect_null(run$workflow_data$config_list)
+  expect_length(list.files(source_dir), 0)
+})
+
+test_that("KIT-101 F-01: a missing metab source directory is reported before the bus is written", {
+  run <- runMetabDesignBuilderResultsDefaultFlow(
+    makeMetabDesignBuilderResults(c("Sample1", "Sample2")),
+    file.path(tempdir(), "metab-design-f01-missing-dir")
+  )
+
+  expect_identical(run$outcome, "returned")
+  expect_identical(run$ui_calls, c("showModal", "showNotification", "removeModal"))
+  expect_identical(run$notifications, "Could not find source directory to save files.")
+  expect_null(run$workflow_data$design_matrix)
+  expect_null(run$workflow_data$config_list)
+})
+
 test_that("metabolomics design import bootstrap seam preserves volume resolution and chooser registration", {
   captured <- new.env(parent = emptyenv())
 

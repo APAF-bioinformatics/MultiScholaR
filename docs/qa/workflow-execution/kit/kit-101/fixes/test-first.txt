@@ -1,0 +1,27 @@
+KIT-101 addendum (revision 2.1): failing-first evidence for F-01 to F-05.
+Runner: Rscript, pkgload::load_all(export_all = TRUE, helpers = TRUE), then
+testthat::test_file(<file>, reporter = "summary"); one R process at a time; R 4.6.1.
+"Before" = the new test blocks run against the unfixed R/ code (base e53f7f50).
+
+== F-01  tests/testthat/test-metab-04-design-module-characterization.R ==
+New blocks:
+  "KIT-101 F-01: an invalid metab design notifies, closes the modal and leaves the bus unwritten"
+  "KIT-101 F-01: a missing metab source directory is reported before the bus is written"
+Both run the production default flow of registerMetabDesignBuilderResultsObserver
+(runBuilderResultsFlow = NULL), with shiny::showModal/removeModal/showNotification mocked.
+
+Before the fix:
+── 1. Failure (...:457:3): KIT-101 F-01 invalid design
+Expected `run$outcome` to be identical to "returned".
+- "observer error: Invalid metabolomics design: Assay 'LCMS_Pos' has sample column(s) missing from design: Sample2; Design has sample row(s) absent from assay 'LCMS_Pos': Sample9"
++ "returned"
+── 2. Failure (...:458:3): `run$ui_calls` actual "showModal"; expected "showModal" "showNotification" "removeModal"
+   (the modal stays open)
+── 3./4. Failure (...:459-460): no notification
+── 5. Failure (...:475:3): KIT-101 F-01 missing source dir
+Expected `run$workflow_data$design_matrix` to be NULL; actual is a data.frame (bus written before the source_dir check)
+── 6. Failure (...:476:3): `run$workflow_data$config_list` expected NULL; actual is a list
+RESULT pass=190 fail=6 error=0 skip=9
+
+After the fix:
+RESULT file=test-metab-04-design-module-characterization.R pass=196 fail=0 error=0 skip=9
