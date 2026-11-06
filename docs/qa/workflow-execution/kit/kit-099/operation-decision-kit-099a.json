@@ -1,0 +1,79 @@
+{
+  "status": "accepted",
+  "members": {
+    "control-1": {
+      "role": "control",
+      "pair": 1,
+      "operation": "trx_expression_filter",
+      "population": "trx99sf_design",
+      "failing_rule": null,
+      "peak_bytes": 1158553600,
+      "peak_anon_bytes": 1147965440,
+      "elapsed_seconds": 16.07,
+      "batches": null
+    },
+    "candidate-1": {
+      "role": "candidate",
+      "pair": 1,
+      "operation": "trx_expression_filter",
+      "population": "trx99sf_design",
+      "failing_rule": null,
+      "peak_bytes": 1157623808,
+      "peak_anon_bytes": 1147478016,
+      "elapsed_seconds": 16.08,
+      "batches": null
+    },
+    "control-2": {
+      "role": "control",
+      "pair": 2,
+      "operation": "trx_tmm_logcpm",
+      "population": "trx99sq_qc_finalize",
+      "failing_rule": null,
+      "peak_bytes": 1152901120,
+      "peak_anon_bytes": 1142939648,
+      "elapsed_seconds": 14.31,
+      "batches": null
+    },
+    "candidate-2": {
+      "role": "candidate",
+      "pair": 2,
+      "operation": "trx_tmm_logcpm",
+      "population": "trx99sq_qc_finalize",
+      "failing_rule": null,
+      "peak_bytes": 1150803968,
+      "peak_anon_bytes": 1140826112,
+      "elapsed_seconds": 14.55,
+      "batches": null
+    }
+  },
+  "pairs": {
+    "1": {
+      "operation": "trx_expression_filter",
+      "population": "trx99sf_design",
+      "peak_ratio": 0.999197,
+      "peak_anon_ratio": 0.999575,
+      "elapsed_ratio": 1.000622,
+      "not_worse": true,
+      "reduction": false,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    },
+    "2": {
+      "operation": "trx_tmm_logcpm",
+      "population": "trx99sq_qc_finalize",
+      "peak_ratio": 0.998181,
+      "peak_anon_ratio": 0.998151,
+      "elapsed_ratio": 1.016771,
+      "not_worse": true,
+      "reduction": false,
+      "batches": {
+        "control": null,
+        "candidate": null
+      }
+    }
+  },
+  "failing_rule": null,
+  "promotion_authorized": false
+}

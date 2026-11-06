@@ -1,0 +1,5 @@
+# kit-099a verification receipts (runtime/kit-099a/<member>/verification.rds): the oracle, the cache-hit check (KIT-099) and what was judged
+Error in v$product$product_type : 
+  $ operator is invalid for atomic vectors
+Calls: cat -> sprintf -> sprintf
+Execution halted
