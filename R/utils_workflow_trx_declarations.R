@@ -708,8 +708,9 @@ transcriptomicsDeclarationBinding <- list(
         trx_reset = "0_Reset"),
     steps = trxRouteSteps,
     worker_steps = c("trx_expression_filter", "trx_tmm_logcpm", "trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_ruviii_export"),
-    # Every step defaults to `whole` until KIT-099 decides.
-    default_variants = character(),
+    # KIT-100: the filter and TMM/logCPM default to `partitioned` (user, 2026-11-07, on KIT-099's large pairs: exact, peak
+    # .941 and .979 of `whole`); every other step to `whole`.
+    default_variants = c(trx_expression_filter = "partitioned", trx_tmm_logcpm = "partitioned"),
     publications = trxRoutePublications,
     filtering_steps = "trx_expression_filter",
     native_steps = "trx_da_contrast",
@@ -761,7 +762,7 @@ trxExpressionFilterStep <- function(description = NULL, state_name = NULL) {
 }
 
 #' Run the expression filter on the head and commit it.
-#' @param variant `whole` (the default) or `partitioned`.
+#' @param variant `whole` or `partitioned`; NULL runs the registry default (`partitioned`, KIT-100).
 #' @noRd
 runTrxReferenceExpressionFilter <- function(manager, config, description = NULL, state_name = NULL, variant = NULL) {
     step <- trxExpressionFilterStep(description, state_name)
@@ -772,7 +773,11 @@ runTrxReferenceExpressionFilter <- function(manager, config, description = NULL,
 #' A product-only step on a source, rooted in the head (a hit from a store whose head does not root it).
 #' @noRd
 trxRunProduct <- function(manager, operation, source, parameters, dependencies = list()) {
-    run <- runSavedOperation(manager, workflowOperationEntry(operation)$declaration, source, parameters, dependencies)
+    entry <- workflowOperationEntry(operation)
+    # KIT-100: a product whose default is not `whole` runs that variant in process too, as in the worker (KIT-089's rule in
+    # runWorkflowOmicsReferenceStep), so the provenance names what ran.
+    if (is.null(parameters$variant) && !identical(entry$default_variant %||% "whole", "whole")) parameters$variant <- entry$default_variant
+    run <- runSavedOperation(manager, entry$declaration, source, parameters, dependencies)
     if (is.null(manager$.context$snapshot$products[[run$reference$entity_id]])) rootWorkflowProduct(manager, run$reference, c(list(source), dependencies))
     run
 }

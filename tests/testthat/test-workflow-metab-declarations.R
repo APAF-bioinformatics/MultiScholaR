@@ -36,8 +36,8 @@ test_that("KIT-032: the metabolomics declarations are registered with the units,
         }
         # KIT-079: three steps gain a partitioned variant; `whole` stays every step's default.
         expect_identical(entry$variants, if (sub("^metab_", "", name) %in% c("intensity_filter", "log2", "duplicate_resolution")) c("whole", "partitioned") else "whole", info = name)
-        # KIT-089: the intensity filter defaults to partitioned.
-        expect_identical(entry$default_variant, if (identical(name, "metab_intensity_filter")) "partitioned" else "whole", info = name)
+        # KIT-089: the intensity filter defaults to partitioned; KIT-100: log2 too.
+        expect_identical(entry$default_variant, if (name %in% c("metab_intensity_filter", "metab_log2")) "partitioned" else "whole", info = name)
         expect_true(all(entry$parameters %in% c(names(workflowOperationDefaults[[name]]), names(entry$declaration$fixed))), info = name)
         expect_true(all(entry$parameters %in% names(workflowParameterLabels[[name]])), info = name)
     }

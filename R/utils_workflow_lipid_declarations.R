@@ -32,8 +32,9 @@ lipidomicsDeclarationBinding <- list(
     worker_steps = c("lipid_intensity_filter", "lipid_duplicate_resolution", "lipid_itsd_normalisation", "lipid_log2",
         "lipid_between_sample_normalisation", "lipid_ruv", "lipid_pearson_pairs", "lipid_pearson_selection", "lipid_da_contrast"),
     # KIT-089: the intensity filter defaults to `partitioned` (user, 2026-11-06, on KIT-084's synthetic pairs: exact, peak
-    # .77 and .81 of `whole`); every other step to `whole`.
-    default_variants = c(lipid_intensity_filter = "partitioned"),
+    # .77 and .81 of `whole`). KIT-100: log2 too (user, 2026-11-07, parity with proteomics: exact, peak .925 of `whole` in
+    # KIT-084); duplicate resolution and every other step stay `whole`.
+    default_variants = c(lipid_intensity_filter = "partitioned", lipid_log2 = "partitioned"),
     publications = omicsRoutePublications,
     # The worker's compute handler: the steps whose figures read the filtering metrics, the step whose product holds
     # native references, and the parameter naming a product the step depends on.

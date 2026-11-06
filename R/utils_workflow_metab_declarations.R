@@ -32,8 +32,9 @@ metabolomicsDeclarationBinding <- list(
     worker_steps = c("metab_intensity_filter", "metab_duplicate_resolution", "metab_itsd_normalisation", "metab_log2",
         "metab_between_sample_normalisation", "metab_ruv", "metab_pearson_pairs", "metab_pearson_selection", "metab_da_contrast"),
     # KIT-089: the intensity filter defaults to `partitioned` (user, 2026-11-06, on KIT-084's synthetic pairs: exact, peak
-    # .77 and .81 of `whole`); every other step to `whole`.
-    default_variants = c(metab_intensity_filter = "partitioned"),
+    # .77 and .81 of `whole`). KIT-100: log2 too (user, 2026-11-07, parity with proteomics: exact, peak .954 of `whole` in
+    # KIT-084); duplicate resolution and every other step stay `whole`.
+    default_variants = c(metab_intensity_filter = "partitioned", metab_log2 = "partitioned"),
     publications = omicsRoutePublications,
     # The worker's compute handler: the steps whose figures read the filtering metrics, the step whose product holds
     # native references, and the parameter naming a product the step depends on.

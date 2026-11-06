@@ -20,11 +20,12 @@ test_that("KIT-073: the omics declarations and their journeys equal the frozen d
     current$registry[[omic]][paste0(prefix, c("_qc_figures", "_composite_figure", "_da_publication",
       # KIT-082: what the tabs read from the whole matrix outside their steps.
       "_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"))] <- NULL
-    # KIT-079: three steps gain a partitioned variant, `whole` staying the default; KIT-089: except the intensity filter.
+    # KIT-079: three steps gain a partitioned variant, `whole` staying the default; KIT-089: except the intensity filter;
+    # KIT-100: and log2.
     for (step in paste0(prefix, c("_intensity_filter", "_log2", "_duplicate_resolution"))) {
       expect_identical(current$registry[[omic]][[step]]$entry$variants, c("whole", "partitioned"), info = step)
       expect_identical(current$registry[[omic]][[step]]$entry$default_variant,
-        if (identical(step, paste0(prefix, "_intensity_filter"))) "partitioned" else "whole", info = step)
+        if (step %in% paste0(prefix, c("_intensity_filter", "_log2"))) "partitioned" else "whole", info = step)
       current$registry[[omic]][[step]]$entry$variants <- "whole"
       current$registry[[omic]][[step]]$entry$default_variant <- "whole"
       current$registry[[omic]][[step]]$declaration$partitioned <- NULL

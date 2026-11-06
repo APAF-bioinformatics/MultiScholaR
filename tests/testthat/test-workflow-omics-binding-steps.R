@@ -156,6 +156,19 @@ kit095WithoutTranscriptomics <- function(current, expected) {
         stripped$types[[set]] <- vapply(stripped$types[[set]], function(text) sub("LIPIDOMICS, METABOLOMICS and TRANSCRIPTOMICS",
             "LIPIDOMICS and METABOLOMICS", text, fixed = TRUE), character(1))
     }
+    # KIT-100 (user, 2026-11-07): log2 defaults to `partitioned` on both omics. The only other allowed difference: each
+    # log2 registry default, and the variant each fixture journey's log2 step records, named here and checked to be
+    # `partitioned` before it is set back to the snapshot's `whole`.
+    kit100 <- c(lipidomics = "lipid_log2", metabolomics = "metab_log2")
+    for (omic in names(kit100)) {
+        step <- kit100[[omic]]
+        testthat::expect_identical(stripped$registry[[omic]][[step]]$default_variant, "partitioned", info = step)
+        stripped$registry[[omic]][[step]]$default_variant <- "whole"
+        at <- which(vapply(stripped$records[[omic]]$steps, function(s) identical(s$operation, step), logical(1)))
+        testthat::expect_length(at, 1L)
+        testthat::expect_identical(stripped$records[[omic]]$steps[[at]]$variant, "partitioned", info = step)
+        stripped$records[[omic]]$steps[[at]]$variant <- "whole"
+    }
     stripped
 }
 

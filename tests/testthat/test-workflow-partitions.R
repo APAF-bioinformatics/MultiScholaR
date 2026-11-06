@@ -809,8 +809,8 @@ test_that("KIT-079: the worker passes the variant, and whole stays the default; 
     for (step in c("_intensity_filter", "_log2", "_duplicate_resolution")) {
       entry <- workflowActionSpec(paste0(prefix, step))
       expect_identical(entry$variants, c("whole", "partitioned"), info = step)
-      # KIT-089: the intensity filter's default is partitioned (user, 2026-11-06).
-      expect_identical(entry$default_variant, if (step == "_intensity_filter") "partitioned" else "whole", info = step)
+      # KIT-089: the intensity filter's default is partitioned (user, 2026-11-06); KIT-100: log2 too (user, 2026-11-07).
+      expect_identical(entry$default_variant, if (step %in% c("_intensity_filter", "_log2")) "partitioned" else "whole", info = step)
     }
     itsd <- workflowActionSpec(paste0(prefix, "_itsd_normalisation"))
     expect_identical(itsd$variants, "whole")
@@ -844,7 +844,8 @@ test_that("KIT-089: the intensity filter runs partitioned by default, in the wor
     step <- omicsIntensityFilterStep(binding, 10, 0.5)
     # An unqualified launch takes the registry default; no qualification is the production path.
     expect_identical(workflowQualificationVariant(list(), step$operation), "partitioned", info = omic)
-    expect_identical(workflowQualificationVariant(list(), paste0(binding$prefix, "_log2")), "whole", info = omic)
+    # KIT-100: log2 moved to partitioned; duplicate resolution is the step that stays `whole`.
+    expect_identical(workflowQualificationVariant(list(), paste0(binding$prefix, "_duplicate_resolution")), "whole", info = omic)
     recorded <- function(owner, state) owner$.context$snapshot$step_provenance[[state]]$variant
     default_owner <- omicsTestOwner(object, "raw", omic_type = omic, config = config, env = owner_frame)$state_manager
     suppressWarnings(suppressMessages(runWorkflowOmicsReferenceStep(default_owner, step, config)))
@@ -855,9 +856,41 @@ test_that("KIT-089: the intensity filter runs partitioned by default, in the wor
     expect_identical(recorded(whole_owner, step$state_name), "whole", info = omic)
     expect_identical(omicsDeclarationsScrub(suppressWarnings(default_owner$getState(step$state_name))),
       omicsDeclarationsScrub(suppressWarnings(whole_owner$getState(step$state_name))), info = omic)
-    # A step whose default stays whole gets no variant parameter in process.
+    # A step whose default stays whole gets no variant parameter in process (KIT-100: duplicate resolution; log2 moved).
+    duplicates <- omicsDuplicateResolutionStep(binding)
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceStep(default_owner, duplicates, config)))
+    expect_identical(recorded(default_owner, duplicates$state_name), "whole", info = omic)
+  }
+})
+
+test_that("KIT-100: log2 runs partitioned by default, in the worker and in process, as whole does; duplicate resolution stays whole", {
+  skip_if_not(workflowOwnerCapable())
+  set.seed(10001)
+  samples <- sprintf("S%02d", seq_len(8))
+  assays <- function(prefix) list(first = kit079Assay(400, samples, 6, prefix), second = kit079Assay(30, samples, 0, paste0(prefix, "B")))
+  for (omic in c("lipidomics", "metabolomics")) {
+    binding <- omicsDeclarationBindings()[[omic]]
+    object <- kit079Object(omic, assays(toupper(substr(omic, 1, 1))), samples)
+    config <- list(qc = list(mode = "kit100"))
+    owner_frame <- environment()
+    # The user's decision (2026-11-07): log2 moves to partitioned; duplicate resolution stays whole; the filter is KIT-089's.
+    expect_identical(workflowQualificationVariant(list(), paste0(binding$prefix, "_log2")), "partitioned", info = omic)
+    expect_identical(workflowQualificationVariant(list(), paste0(binding$prefix, "_duplicate_resolution")), "whole", info = omic)
+    expect_identical(workflowQualificationVariant(list(), paste0(binding$prefix, "_intensity_filter")), "partitioned", info = omic)
+    recorded <- function(owner, state) owner$.context$snapshot$step_provenance[[state]]$variant
     log2 <- omicsLog2Step(binding, 1)
+    default_owner <- omicsTestOwner(object, "raw", omic_type = omic, config = config, env = owner_frame)$state_manager
     suppressWarnings(suppressMessages(runWorkflowOmicsReferenceStep(default_owner, log2, config)))
-    expect_identical(recorded(default_owner, log2$state_name), "whole", info = omic)
+    expect_identical(recorded(default_owner, log2$state_name), "partitioned", info = omic)
+    whole_owner <- omicsTestOwner(object, "raw", omic_type = omic, config = config, env = owner_frame)$state_manager
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceOperation(whole_owner, workflowOperationEntry(log2$operation)$declaration,
+      c(log2$parameters, list(variant = "whole")), log2$state_name, config, log2$description)))
+    expect_identical(recorded(whole_owner, log2$state_name), "whole", info = omic)
+    expect_identical(omicsDeclarationsScrub(suppressWarnings(default_owner$getState(log2$state_name))),
+      omicsDeclarationsScrub(suppressWarnings(whole_owner$getState(log2$state_name))), info = omic)
+    # Duplicate resolution keeps `whole` in process: no variant parameter, `whole` recorded.
+    duplicates <- omicsDuplicateResolutionStep(binding)
+    suppressWarnings(suppressMessages(runWorkflowOmicsReferenceStep(default_owner, duplicates, config)))
+    expect_identical(recorded(default_owner, duplicates$state_name), "whole", info = omic)
   }
 })

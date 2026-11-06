@@ -205,6 +205,40 @@ test_that("KIT-095: the partitioned filter and logCPM equal whole on a corpus wh
   expect_identical(workflowOperationEntry("trx_tmm_logcpm")$variants, c("whole", "partitioned"))
 })
 
+test_that("KIT-100: the expression filter and TMM/logCPM run partitioned by default, in the worker and in process, as whole does", {
+  skipWithoutTrxDeclReference()
+  reference <- trxDeclReference("trx_edge_16")
+  root <- withr::local_tempdir()
+  default <- trxDeclarationsOwner(file.path(root, "default"), reference$dir)
+  whole <- trxDeclarationsOwner(file.path(root, "whole"), reference$dir)
+  withr::defer({ closeDIAStateAdapter(default$owner); closeDIAStateAdapter(whole$owner) })
+  # The user's decision (2026-11-07): an unqualified worker launch runs the registry default; the other steps stay whole.
+  for (name in c("trx_expression_filter", "trx_tmm_logcpm")) expect_identical(workflowQualificationVariant(list(), name), "partitioned", info = name)
+  for (name in c("trx_ruv_grid", "trx_ruvs", "trx_da_contrast", "trx_ruviii_export")) expect_identical(workflowQualificationVariant(list(), name), "whole", info = name)
+  provenance <- function(fixture, state) fixture$owner$.context$snapshot$step_provenance[[state]]
+  suppressWarnings(suppressMessages(runTrxReferenceExpressionFilter(default$owner, list())))
+  suppressWarnings(suppressMessages(runTrxReferenceExpressionFilter(whole$owner, list(), variant = "whole")))
+  expect_identical(provenance(default, "trx_expression_filtered")$variant, "partitioned")
+  expect_identical(provenance(whole, "trx_expression_filtered")$variant, "whole")
+  read <- function(fixture) withWorkflowStateScope(fixture$owner, function() readTrxWorkflowState(fixture$owner))
+  expect_identical(trxAssayInputs(read(default)), trxAssayInputs(read(whole)))
+  # In process, the RUVs wrapper runs the logCPM product on its default; the RUVs state records it in `preceded_by`.
+  run <- suppressWarnings(suppressMessages(runTrxReferenceRuvs(default$owner, trxRuvGridParameters(), list())))
+  preceded <- provenance(default, "trx_ruvs")$preceded_by
+  expect_identical(vapply(preceded, `[[`, "", "operation"), c("trx_tmm_logcpm", "trx_ruv_grid"))
+  expect_identical(vapply(preceded, `[[`, "", "variant"), c("partitioned", "whole"))
+  expect_identical(provenance(default, "trx_ruvs")$variant, "whole")
+  logcpm <- withWorkflowStateScope(default$owner, function() list(samples = run$logcpm$value$samples,
+    log_cpm = trxSavedMatrix(default$owner, run$logcpm$value$log_cpm)))
+  entry <- workflowOperationEntry("trx_tmm_logcpm")
+  expected <- suppressWarnings(suppressMessages(withWorkflowStateScope(whole$owner, function() {
+    w <- runSavedOperation(whole$owner, entry$declaration, getWorkflowStateReference(whole$owner), list(variant = "whole"))
+    list(samples = w$value$samples, log_cpm = trxSavedMatrix(whole$owner, w$value$log_cpm))
+  })))
+  expect_identical(logcpm, expected)
+  expect_identical(trxDeclSha(logcpm$log_cpm), reference$store$fingerprints$sha256[reference$store$fingerprints$product == "log_cpm_tmm"])
+})
+
 #' A runner that dispatches each action to the worker harness; `staged` receives the session file the export staged.
 trxDeclSyncRunner <- function(fixture, controller, staged) {
   list(run = function(actions, done = NULL, failed = NULL) {
@@ -331,7 +365,8 @@ test_that("KIT-095: the registry shape of the transcriptomics binding, and every
   for (name in names) {
     entry <- workflowOperationEntry(name)
     expect_identical(entry$input_class, "TranscriptomicsAssayData", info = name)
-    expect_identical(entry$default_variant, "whole", info = name)
+    # KIT-100: the filter and TMM/logCPM default to partitioned (user, 2026-11-07).
+    expect_identical(entry$default_variant, if (name %in% c("trx_expression_filter", "trx_tmm_logcpm")) "partitioned" else "whole", info = name)
     expect_identical(entry$compute, if (name %in% setdiff(steps, worker)) "in_process" else "omics", info = name)
     # No transcriptomics kernel writes an `@args` section: every worker step and publication declares `section = NULL`.
     if (!identical(entry$compute, "in_process")) expect_true("section" %in% names(entry) && is.null(entry$section), info = name)

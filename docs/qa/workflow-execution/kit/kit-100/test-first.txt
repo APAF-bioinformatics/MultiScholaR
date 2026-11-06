@@ -1,0 +1,22 @@
+# KIT-100: the two new tests, run on the source with the R changes absent (before) and present (after); R_LIBS = kit_098's library
+# (browser-smoke.eoJzd6), pkgload::load_all, one test_that block each (scripts-100/one.R).
+before:
+COUNTS test-workflow-partitions.R [KIT-100: log2 runs partitioned by default, in the worker and in process, as whole does; duplicate resolution stays whole] pass 10 fail 4 error 0 skip 0
+--- expectation_failure Expected `workflowQualificationVariant(list(), paste0(binding$prefix, "_log2"))` to be identical to "partitioned".
+--- expectation_failure Expected `recorded(default_owner, log2$state_name)` to be identical to "partitioned".
+--- expectation_failure Expected `workflowQualificationVariant(list(), paste0(binding$prefix, "_log2"))` to be identical to "partitioned".
+--- expectation_failure Expected `recorded(default_owner, log2$state_name)` to be identical to "partitioned".
+COUNTS test-workflow-trx-declarations.R [KIT-100: the expression filter and TMM/logCPM run partitioned by default, in the worker and in process, as whole does] pass 12 fail 4 error 0 skip 0
+--- expectation_failure Expected `workflowQualificationVariant(list(), name)` to be identical to "partitioned".
+--- expectation_failure Expected `workflowQualificationVariant(list(), name)` to be identical to "partitioned".
+--- expectation_failure Expected `provenance(default, "trx_expression_filtered")$variant` to be identical to "partitioned".
+--- expectation_failure Expected `vapply(preceded, `[[`, "", "variant")` to be identical to `c("partitioned", "whole")`.
+after:
+COUNTS test-workflow-partitions.R [KIT-100: log2 runs partitioned by default, in the worker and in process, as whole does; duplicate resolution stays whole] pass 14 fail 0 error 0 skip 0
+COUNTS test-workflow-trx-declarations.R [KIT-100: the expression filter and TMM/logCPM run partitioned by default, in the worker and in process, as whole does] pass 16 fail 0 error 0 skip 0
+# The KIT-094 characterisation against its snapshot with the KIT-095 exception only (scripts-100/char-diff.R, after the change):
+DIFF registry/lipidomics/lipid_log2/default_variant : "partitioned" vs "whole"
+DIFF registry/metabolomics/metab_log2/default_variant : "partitioned" vs "whole"
+DIFF records/lipidomics/steps/7/variant : "partitioned" vs "whole"
+DIFF records/metabolomics/steps/7/variant : "partitioned" vs "whole"
+# These four are the only differences; the exception now names them step by step (each checked to be partitioned first).

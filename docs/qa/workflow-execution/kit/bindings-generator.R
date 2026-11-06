@@ -1154,6 +1154,16 @@ if (!is.null(b$builds$kit_098) && !is.null(b$tickets[["098a"]]) && !is.null(b$co
     if (!is.null(trx_pairs(FALSE))) b$tickets[["099b"]] <- operation_stage("kit_098", trx_pairs(FALSE), "recorded, uncounted (protocol v1.8 section 10.6)")
 }
 
+# KIT-100 (protocol v1.8; user decision 2026-11-07): log2, the transcriptomics filter and TMM/logCPM on `partitioned` by
+# default. The three screen journeys on kit_100, recorded and uncounted, against the same oracles as KIT-094 and KIT-099:
+# 100a lipid and 100b metab (screen, missing values; lipid86s, metab86s), 100c transcriptomics (098a's settings; trx98a).
+if (!is.null(b$builds$kit_100) && !is.null(b$tickets[["094a"]]) && !is.null(b$tickets[["098a"]])) {
+    kit_100 <- list(build = "kit_100", purpose = "exactness (protocol v1.8: recorded, uncounted; KIT-100)")
+    b$tickets[["100a"]] <- utils::modifyList(b$tickets[["094a"]], kit_100)
+    b$tickets[["100b"]] <- utils::modifyList(b$tickets[["094b"]], kit_100)
+    b$tickets[["100c"]] <- utils::modifyList(b$tickets[["098a"]], c(kit_100, list(notebook_reference = NULL)))
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
