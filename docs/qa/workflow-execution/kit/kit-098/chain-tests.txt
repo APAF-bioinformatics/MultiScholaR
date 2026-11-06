@@ -1,0 +1,9 @@
+== test-workflow-operation-registry.R
+pass 1007 fail 0 error 0 skip 0 13 s 
+== test-workflow-trx-declarations.R
+  qc_figures_dir                 : /tmp/RtmpS5s33R/file3637a4124cfbcc/progress/results_summary/transcriptomics/QC_figures (0 items)
+  raw_counts_dir                 : /tmp/RtmpS5s33R/file3637a4124cfbcc/progress/results/transcriptomics/count_data (0 items)
+  study_report_dir               : /tmp/RtmpS5s33R/file3637a4124cfbcc/progress/results_summary/transcriptomics/Study_report (0 items)
+------------------------------------------
+calcNormFactors has been renamed to normLibSizes
+pass 308 fail 0 error 0 skip 0 152 s 

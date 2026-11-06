@@ -1,0 +1,10 @@
+  import             initial                    rows NA      1 s
+  design             trx_raw_data_s4            rows 6000      3 s
+  expression_filter  trx_expression_filtered    rows 4565      2 s
+  qc_finalize        trx_qc_complete            rows 4565      0 s
+  normalisation      trx_ruvs                   rows 4565     18 s
+  da                 trx_ruvs                   rows 4565      4 s
+  ruviii_export      trx_ruvs                   rows 4565      2 s
+  report             trx_ruvs                   rows 4565      0 s
+  session_export     trx_ruvs                   rows 4565      0 s
+recorded trx98a trx_screen -> /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-098/oracles-trx98a_trx_screen.rds | states 9 | history initial,trx_raw_data_s4,trx_expression_filtered,trx_qc_complete,trx_ruvs | record valid TRUE | 33 s

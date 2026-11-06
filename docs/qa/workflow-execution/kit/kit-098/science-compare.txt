@@ -1,0 +1,10 @@
+design             components TRUE summary TRUE | attached trx.* products equal 0 of 0 | *_science equal 0 of 0 ()
+expression_filter  components TRUE summary TRUE | attached trx.* products equal 1 of 1 | *_science equal 1 of 1 (trx_expression_filter_science)
+qc_finalize        components TRUE summary TRUE | attached trx.* products equal 0 of 0 | *_science equal 1 of 1 (trx_expression_filter_science)
+normalisation      components TRUE summary TRUE | attached trx.* products equal 3 of 3 | *_science equal 2 of 2 (trx_expression_filter_science,trx_ruvs_science)
+da                 components TRUE summary TRUE | attached trx.* products equal 0 of 0 | *_science equal 2 of 2 (trx_expression_filter_science,trx_ruvs_science)
+trx_expression_filter_science entity 8799a78bd8c6 is a head product: TRUE 
+trx_ruvs_science entity 0c67184460e1 is a head product: TRUE 
+normalisation products: trx_expression_filter_science trx_ruvs_science trx.ruvs_result:12f1b5ad5e49 trx.ruv_grid:623a77828578 trx.tmm_logcpm:c88cf6fabfd1 
+trx_ruvs_science sha == trx.ruvs_result sha: TRUE 
+trx_expression_filter_science sha == trx.expression_filter_result sha: TRUE 

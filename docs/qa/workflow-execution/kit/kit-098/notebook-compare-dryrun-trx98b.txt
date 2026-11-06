@@ -1,0 +1,4 @@
+KIT-098 notebook comparison, ticket 098b, store /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/trx98b/project/kit_omics_lifecycle/scripts/transcriptomics/.dia-native-36979e2938ae49/.workflow-entities
+reference /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/trx-reference/reference-trx_screen-gui-order.rds (sha256 8ff1202ac9206a2213d2bb03ad25374471607e13c3165ddb8895131fa1dc1e01)
+compared 34: identical 34, not identical 0 (); excluded with a reason 66; unmapped reference products 0
+NOTEBOOK identical

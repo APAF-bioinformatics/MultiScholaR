@@ -1,0 +1,99 @@
+product	source	status	identical	note
+count_matrix_filtered	state trx_expression_filtered, trxAssayInputs()$counts	compared	TRUE	
+filter_effective_lib_size	trx.expression_filter_result $effective_lib_size	compared	TRUE	
+filter_min_sample_size	trx.expression_filter_result $min_sample_size	compared	TRUE	
+filter_median_lib_size	trx.expression_filter_result $median_lib_size	compared	TRUE	
+dge_filtered_samples	trx.tmm_logcpm $samples	compared	TRUE	
+log_cpm_tmm	trx.tmm_logcpm $log_cpm	compared	TRUE	
+ordered_features_idx	trx.ruv_grid $prelim_order	compared	TRUE	
+max_acceptable_k	trx.ruv_grid $max_acceptable_k	compared	TRUE	
+grid_members	trx.ruv_grid $grid_members (KIT-095's shape)	compared	TRUE	
+grid_cancor_data	trx.ruv_grid members' cancor_data	compared	TRUE	
+grid_control_genes	trx.ruv_grid members' control_genes	compared	TRUE	
+df_summary	trx.ruv_grid $grid_summary	compared	TRUE	
+best_res	trx.ruv_grid $best (the notebook's fields)	compared	TRUE	
+best_control_genes	trx.ruv_grid $control_genes	compared	TRUE	
+best_k	trx.ruviii $k	compared	TRUE	
+w_matrix	trx.ruvs_result $W	compared	TRUE	
+ruvs_counts	state trx_ruvs, trxAssayInputs()$counts	compared	TRUE	
+log_cpm_corrected	trx.ruvs_result $corrected	compared	TRUE	
+design_final	DA fit $design	compared	TRUE	
+fit_final	DA fit	compared	TRUE	
+design_formula_str	DA manifest $parameters$formula	compared	TRUE	
+contrast_entry	DA manifest, first result's name	compared	TRUE	
+contrasts_matrix	first contrast's applied product $contrasts_matrix	compared	TRUE	
+qlf	first contrast's applied product $qlf	compared	TRUE	
+qlf_table	first contrast's applied product $qlf$table	compared	TRUE	
+top_genes	first contrast's applied product $top_table	compared	TRUE	
+ruviii_ctl_mask	trx.ruviii $ctl_mask	compared	TRUE	
+filter_count_before	trx.expression_filter_result $counts	compared	TRUE	
+filter_count_after_filter_by_expr	trx.expression_filter_result $counts	compared	TRUE	
+filter_count_after_zero_variance	trx.expression_filter_result $counts	compared	TRUE	
+ruviii_newY	trx.ruviii $newY	compared	TRUE	
+ruviii_M	trx.ruviii $M	compared	TRUE	
+keep_expr	-	excluded	NA	not stored by the journey; the kept gene set is compared exactly through count_matrix_filtered's row names and the stage counts
+gene_vars	-	excluded	NA	not stored by the journey (as keep_expr)
+gene_vars_positive	-	excluded	NA	not stored by the journey (as keep_expr)
+log_cpm_raw	-	excluded	NA	not stored (KIT-095: trx_qc_figures computes it for stage raw)
+tt_prelim	-	excluded	NA	a notebook intermediate the journey does not produce
+dge_raw_samples	-	excluded	NA	a notebook intermediate the journey does not produce
+ruvs_counts_identical	-	excluded	NA	a notebook intermediate (KIT-093: RUVs counts equal the filtered counts; ruvs_counts compared)
+glimma_html_exists	-	excluded	NA	a file check of the notebook's render
+feature_meta	-	excluded	NA	not a head product
+top_genes_annotated	-	excluded	NA	a publication table, not a head product
+top_up	-	excluded	NA	a publication table, not a head product
+top_down	-	excluded	NA	a publication table, not a head product
+top_de_combined	-	excluded	NA	a publication table, not a head product
+pca_raw_scores	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_raw_variance	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_raw_axis_labels	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_raw_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_raw_box	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_raw_ylim	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_raw_whiskers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_raw_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_raw_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_tmm_scores	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_tmm_variance	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_tmm_axis_labels	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_tmm_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_tmm_box	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_tmm_ylim	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_tmm_whiskers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_tmm_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_tmm_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_ruvs_scores	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_ruvs_variance	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_ruvs_axis_labels	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_ruvs_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_ruvs_box	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_ruvs_ylim	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_ruvs_whiskers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_ruvs_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_ruvs_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_post_ruviii_scores	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_post_ruviii_variance	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_post_ruviii_axis_labels	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_post_ruviii_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_post_ruviii_box	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_post_ruviii_ylim	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_post_ruviii_whiskers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+pca_post_ruviii_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+rle_post_ruviii_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+cca_cancor_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+cca_cancor_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+cca_tuning_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+cca_tuning_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+cca_grid_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+cca_optimal_parameters	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+norm_grid_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+norm_grid_annotation	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+ruviii_grid_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+ruviii_grid_annotation	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+volcano_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+volcano_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+bar_layers	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+bar_data	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+glimma_anno	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+glimma_anno_aligned	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared
+summary_text	-	excluded	NA	renderer and PCA/RLE statistics outputs: a display value outside the head's products; their input matrices are compared

@@ -1,0 +1,14 @@
+# KIT-098 bindings diff: c783e97a (before KIT-098's bind) -> 6e6815a4
+added   /builds/kit_098
+added   /corpora/trx_screen
+changed /harness/files/tests/testthat/test-workflow-kit-harness.R
+changed /harness/files/tools/profiling/run_workflow_kit.sh
+changed /harness/files/tools/profiling/workflow_kit.R
+changed /harness/files/tools/profiling/workflow_kit_coordinator.R
+changed /harness/files/tools/profiling/workflow_kit_driver.R
+changed /harness/protocol_sha256
+added   /harness/step_map_trx
+added   /harness/step_map_trx_sha256
+added   /lifecycle_trx
+added   /tickets/098a
+added   /tickets/098b
