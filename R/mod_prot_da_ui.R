@@ -174,6 +174,28 @@ mod_prot_da_volcano_tab_ui <- function(ns) {
     shiny::conditionalPanel(
       condition = "input.volcano_interactive == false",
       ns = ns,
+      # KIT-101 F-02: the static renderer's label inputs, at the defaults it applied when absent.
+      shiny::fluidRow(
+        shiny::column(
+          6,
+          shiny::checkboxInput(
+            ns("volcano_show_labels"),
+            "Label Top Proteins",
+            value = TRUE
+          )
+        ),
+        shiny::column(
+          6,
+          shiny::numericInput(
+            ns("volcano_label_top_n"),
+            "Number of Labels:",
+            value = 10,
+            min = 0,
+            max = 100,
+            step = 1
+          )
+        )
+      ),
       shinyjqui::jqui_resizable(
         shiny::plotOutput(ns("volcano_plot_static"), height = "600px")
       )
@@ -340,14 +362,6 @@ mod_prot_da_heatmap_tab_ui <- function(ns) {
 
         # Additional heatmap display options
         shiny::fluidRow(
-          shiny::column(
-            4,
-            shiny::checkboxInput(
-              ns("heatmap_show_dendro"),
-              "Show Dendrogram",
-              value = TRUE
-            )
-          ),
           shiny::column(
             4,
             shiny::checkboxInput(

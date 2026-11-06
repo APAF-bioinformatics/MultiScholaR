@@ -25,3 +25,20 @@ RESULT pass=190 fail=6 error=0 skip=9
 
 After the fix:
 RESULT file=test-metab-04-design-module-characterization.R pass=196 fail=0 error=0 skip=9
+
+== F-02  tests/testthat/test-module-ci-prot-da.R ==
+New block: "KIT-101 F-02: the prot DA UI defines the volcano label inputs the server reads,
+at today's defaults, and no dead dendrogram input" (renders mod_prot_da_ui and checks the HTML).
+Decision on heatmap_show_dendro: removed, not wired. generateProtDAHeatmap (exported),
+its DIA reference path generateDIAReferenceHeatmap and renderProtDAHeatmapProduct have no
+dendrogram parameter; ComplexHeatmap draws the dendrogram whenever rows/columns are clustered.
+Wiring it would add a parameter to an exported function; the checkbox has never changed the plot.
+
+Before the fix:
+── 1. Failure (...:514:3): Expected `show_labels_checked` to be TRUE. actual FALSE
+── 2. Failure (...:515:3): Expected `label_top_n_10` to be TRUE. actual FALSE
+── 3. Failure (...:517:3): Expected grepl("id=\"f02-heatmap_show_dendro\"", ...) to be FALSE. actual TRUE
+RESULT pass=214 fail=3 error=0 skip=1
+
+After the fix:
+RESULT file=test-module-ci-prot-da.R pass=217 fail=0 error=0 skip=1

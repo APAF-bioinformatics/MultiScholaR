@@ -5,3 +5,9 @@ Dependents grep, R CMD check, install and journeys are run by the caller after t
 == F-01 ==
 test-metab-04-design-module-characterization.R  pass=196 fail=0 error=0 skip=9
 test-workflow-server-shared.R                    pass=70  fail=0 error=0 skip=0
+
+== F-02 ==
+test-module-ci-prot-da.R              pass=217 fail=0 error=0 skip=1
+test-e2e-test-mode-integration.R      pass=63  fail=0 error=0 skip=0
+test-workflow-ui-shared.R             pass=51  fail=0 error=0 skip=0
+git grep -nw heatmap_show_dendro -- R tests: only the F-02 negative assertion (tools/refactor/staging is an old staging copy, not loaded).

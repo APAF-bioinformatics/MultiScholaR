@@ -507,6 +507,16 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
   expect_identical(volcano_args$static$lfc_threshold, 1)
 })
 
+test_that("KIT-101 F-02: the prot DA UI defines the volcano label inputs the server reads, at today's defaults, and no dead dendrogram input", {
+  da_ui <- as.character(mod_prot_da_ui("f02"))
+  show_labels_checked <- grepl('<input id="f02-volcano_show_labels" type="checkbox"[^>]*checked', da_ui, perl = TRUE)
+  label_top_n_10 <- grepl('<input id="f02-volcano_label_top_n" type="number"[^>]*value="10"', da_ui, perl = TRUE)
+  expect_true(show_labels_checked)
+  expect_true(label_top_n_10)
+  # The heatmap renderer has no dendrogram switch, so no input may offer one.
+  expect_false(grepl('id="f02-heatmap_show_dendro"', da_ui, fixed = TRUE))
+})
+
 test_that("MCI-009.5 DA run and export matrix preserves raw/friendly labels, intensity columns, and report metadata", {
   skip("quarantined: Q-22 (KIT-048) the in-memory DA run is retired; the owner is the one path")
   object <- module_ci_prot_da_object()
