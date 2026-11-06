@@ -19,7 +19,7 @@
 
 baselineSkipCategory <- function(message) {
     rules <- c(
-        binding_guard = "extracted helper\\(s\\) not present|helper\\(s\\) not present|public binding|binding\\(s\\) not present",
+        binding_guard = "extracted helper\\(s\\) not present|helper\\(s\\) not present|public binding|binding\\(s\\) not present|binding\\(s\\) unavailable",
         file_guard = "file\\(s\\) not present|Target-only|duplicate\\(s\\) still present|split file",
         quarantine = "quarantin|\\bQ-[0-9]+",
         environment = "Linux|not installed|installed|capable|browser|chromote|On CRAN|not available|interactive",
