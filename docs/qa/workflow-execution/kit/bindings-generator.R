@@ -1218,6 +1218,15 @@ if (!is.null(b$builds$kit_102)) {
     }
 }
 
+# KIT-103 (the shared design tab and builder): the same six screen journeys on kit_103, recorded and uncounted.
+if (!is.null(b$builds$kit_103)) {
+    kit_103 <- list(build = "kit_103", purpose = "exactness (recorded, uncounted; KIT-103)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("103", suffix)]] <- utils::modifyList(from, kit_103)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
