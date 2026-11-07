@@ -568,6 +568,7 @@ test_that("C7 the lipid and metab objects hold today's argument mapping", {
 # ------------------------------------------------------------------------------------------------
 
 test_that("C8 the commit is today's for lipid and metab: bus, artifact bytes, state and provenance", {
+    skip("quarantined: Q-37 (KIT-103 W5) it compared the core commit with today's metab builder-results observer (registerMetabDesignBuilderResultsObserver), deleted by W5, and today's lipid commit, now the shared commit itself (W4); the comparison passed at fe1a9742 (kit-103 W2); the commit is covered by MCI-013.5, MCI-019.5, MCI-027, test-omic-design-module.R and the entry lanes' design step")
     for (omic in c("lipidomics", "metabolomics")) {
         old <- omicsDesignFixture(omic)
         new <- omicsDesignFixture(omic)
@@ -619,6 +620,7 @@ test_that("C8 the commit is today's for trx (MCI-027's corpus through the builde
 })
 
 test_that("C8 refusals come before the bus and the files; a later failure carries its message", {
+    skip("quarantined: Q-37 (KIT-103 W5) it took today's refusal text from metab's builder-results observer (registerMetabDesignBuilderResultsObserver), deleted by W5; the comparison passed at fe1a9742 (kit-103 W2); the refusals are covered by KIT-101 F-01's two tests and the W4 commit blocks in test-omic-design-module.R, and MCI-019.6")
     for (omic in c("lipidomics", "metabolomics")) {
         config <- omicsDesignTestConfig(omic)
         # A missing source directory, as today's text.

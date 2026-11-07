@@ -1,0 +1,17 @@
+KIT-103 W5 entry-point lanes (2026-11-08), against the frozen oracles in tests/testdata/gui-entry/
+(metab_{lc,gc,combined} at 1b12a7bf, trx_screen and lipid_canonical at ddf42372; none re-frozen).
+One R process per file, in sequence, load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1,
+R_LIBS=core/browser-smoke.DGpv4v/library, runner kit/scripts-078/run1.R. Each lane compares every
+step (outputs by name, including the design step's 14 outputs and the two '<error> unused arguments
+(self, name)' captures, the committed states, the artifacts and the notifications) with its oracle;
+a pass is identity.
+
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0  [152s]   metab_lc, metab_gc, metab_combined: identical (kit-101 baseline 105)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0  [37s]  trx_screen: identical (kit-101 baseline 29)
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0  [66s]       lipid_canonical: identical (kit-101 baseline 35)
+
+Metab runs the shared tab through mod_metab_design_ui/server -> metabDesignGuiConfig() =
+omicGuiConfig("metabolomics") with its function fields filled; trx through
+mod_lipid_design_ui/server(profile = trxOmicProfile()) -> lipidDesignGuiConfig(profile), now with the
+profile's design fields removed (omic_type kept). The proteomics lanes do not touch W5's files and
+were not run (W6).

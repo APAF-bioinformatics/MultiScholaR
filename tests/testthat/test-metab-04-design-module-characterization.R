@@ -1,4 +1,5 @@
 # fidelity-coverage-compare: shared
+testthat::skip("quarantined: Q-36 (KIT-103 W5) it tested the metab design tab's internals (the state, builder and builder-results seams, the import bootstrap, modal, preflight, hydration, S4, state, QC-baseline, completion and observer seams), deleted with mod_metab_design_import_helpers.R and mod_metab_design.R's registration; the tab is a wrapper over the shared frame (mod_omic_design.R) and builder over the design core, covered by test-omic-design-module.R (with KIT-101 F-01's two tests, retargeted there), test-omics-design-core.R, MCI-013 and the metab entry lanes' design step")
 library(testthat)
 
 multiScholaRNamespace <- function() {

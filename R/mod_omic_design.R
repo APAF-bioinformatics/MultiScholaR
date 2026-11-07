@@ -297,20 +297,24 @@ registerOmicsDesignFeatureImport <- function(input, output, session, workflow_da
 #' Import an exported design directory with the GUI around it (lipid's order): the modal closed,
 #' the files checked (a missing one is today's error), the working notification, the core's read
 #' and commit (`design_import$reader`, `commitOmicsDesignImport()`), the QC trigger, the design tab
-#' complete and the success text; a failure is "Error during import: <message>".
+#' complete and the success text; a failure is "Error during import: <message>". With
+#' `design_import$check_files_first` (metab, P-11) the files are checked before the modal closes,
+#' and a missing one leaves it open.
 #' @param importPath The exported design directory.
 #' @return NULL, invisibly.
 #' @noRd
 runOmicsDesignImport <- function(workflowData, experimentPaths, importPath, qcTrigger, config) {
     importConfig <- config$design$design_import
     shiny::req(importConfig)
-    shiny::removeModal()
+    checkFirst <- isTRUE(importConfig$check_files_first)
+    if (!checkFirst) shiny::removeModal()
     check <- checkOmicsDesignImportFiles(importPath)
     if (!isTRUE(check$ok)) {
         logger::log_error(check$message)
         shiny::showNotification(check$message, type = "error", duration = 10)
         return(invisible(NULL))
     }
+    if (checkFirst) shiny::removeModal()
     shiny::showNotification("Importing design files...", id = "importing_design", duration = NULL)
     tryCatch({
         imported <- importConfig$reader(importPath, config, experimentPaths$source_dir)

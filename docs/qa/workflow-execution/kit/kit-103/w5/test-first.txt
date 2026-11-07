@@ -1,0 +1,39 @@
+KIT-103 W5 test-first (2026-11-08). One R process per file, in sequence, load_all, R 4.6.1,
+MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS=core/browser-smoke.DGpv4v/library, runner kit/scripts-078/run1.R.
+Start: de2d891c (the metab design files and the trx design section unchanged since 283f5eee
+apart from F-01, which is in them).
+
+1. The files to retarget, on the old code (de2d891c, untouched):
+   COUNTS test-metab-04-design-module-characterization.R pass 196 fail 0 error 0 skip 9   (F-01 :447, :466 pass; the 9 skips are the file's own "shared coverage" skips)
+   COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0                     (MCI-013)
+   COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0                       (MCI-027)
+   COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0                    (MCI-019, .6 included)
+
+2. The tests written and retargeted first, run on the old R code (de2d891c's R/; only tests changed).
+   The W5 blocks over the public metab names pass on the old code: the frozen values (the metab
+   frame and builder UI digests, the import modal in test and app mode, the 14 output names, the two
+   status outputs' 'unused arguments (self, name)', the builder's texts, notification order and
+   mixedsort run order, P-11's file check before the modal closes, the wrapper signatures) are
+   today's. MCI-027 (trx helper :129 -> runOmicsDesignCommit with the trx configuration) and
+   MCI-019.6 (-> runOmicsDesignCommit) pass, as the shared commit exists since W4. The blocks over
+   the metab configuration fail only because metabDesignGuiConfig() does not exist yet:
+   COUNTS test-omic-design-module.R pass 131 fail 7 error 1 skip 0
+     BAD W5 the shared import under the metab configuration ...   could not find function "metabDesignGuiConfig"
+     BAD KIT-101 F-01: an invalid metab design notifies ...       outcome "observer error: could not find function \"metabDesignGuiConfig\""
+     BAD KIT-101 F-01: a missing metab source directory ...       (same)
+   COUNTS test-module-ci-metab-design.R pass 70 fail 0 error 2 skip 0
+     BAD MCI-013.4, MCI-013.5                                     could not find function "metabDesignGuiConfig"
+   COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+   COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0
+
+3. metabDesignGuiConfig() and the P-11 switch added; the old metab code still present and the shell
+   still on it. The retargeted F-01 tests pass through the shared commit with the metab
+   configuration, with identical expectations, while the original F-01 tests still pass:
+   COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0
+   COUNTS test-module-ci-metab-design.R pass 95 fail 0 error 0 skip 0     (MCI-013.4 had lost its preflight
+          expectation in the retarget; restored as expect_true(checkOmicsDesignImportFiles(...)$ok): 96 after)
+   COUNTS test-metab-04-design-module-characterization.R pass 196 fail 0 error 0 skip 9
+
+4. After W5 (the old copies deleted): targeted.txt.
+
+No defect fix was made in W5, so there is no failing-first output for a fix.

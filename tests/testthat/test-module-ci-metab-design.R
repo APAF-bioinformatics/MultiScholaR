@@ -112,90 +112,59 @@ test_that("MCI-013.4 existing-design import and browser controls preserve builde
   import_root <- module_ci_metab_design_write_import_pack(tempfile("module-ci-metab-design-import-"), payload)
   workflow <- module_ci_metab_design_workflow(payload)
 
-  preflight <- resolveMetabDesignImportPreflight(
-    input = list(import_dir = import_root),
-    resolvedVolumes = c("Project Base Dir" = import_root),
-    reqFn = function(value) invisible(value),
-    parseDirPathFn = function(roots, selection) selection
-  )
-  expect_true(preflight$ok)
-
-  artifacts <- hydrateMetabDesignImportArtifacts(
+  # KIT-103 W5: the shared design tab's import (runOmicsDesignImport over the core's file check, reader and commit,
+  # C10) under the metab configuration; the QC baseline is quiet and the notifications silent.
+  config <- metabDesignGuiConfig()
+  config$design$design_import$qc_baseline <- function(...) invisible(NULL)
+  testthat::local_mocked_bindings(removeModal = function(...) invisible(NULL),
+    removeNotification = function(...) invisible(NULL), showNotification = function(...) invisible(NULL),
+    .package = "shiny")
+  expect_true(checkOmicsDesignImportFiles(import_root)$ok)
+  # KIT-075: the commit binds the session's owner before holding the tables, which attaches to the reactive domain.
+  shiny::withReactiveDomain(omicsOwnerSession(), runOmicsDesignImport(
     workflowData = workflow,
     experimentPaths = list(source_dir = import_root),
-    importPath = preflight$importPath,
-    designFile = preflight$designFile,
-    manifestFile = preflight$manifestFile,
-    configFile = preflight$configFile,
-    readTabularFn = function(file, show_col_types = FALSE) {
-      utils::read.delim(file, sep = "\t", check.names = FALSE, stringsAsFactors = FALSE)
-    },
-    messageFn = function(...) invisible(NULL)
-  )
-  metadata <- hydrateMetabDesignImportMetadata(
-    workflowData = workflow,
-    importedDesign = artifacts$importedDesign,
-    assayList = artifacts$assayList,
-    colMapFile = preflight$colMapFile,
-    contrastFile = preflight$contrastFile,
-    messageFn = function(...) invisible(NULL)
-  )
-  # KIT-075: the state binds the session's owner before holding the tables, which attaches to the reactive domain.
-  hydrated <- shiny::withReactiveDomain(omicsOwnerSession(), hydrateMetabDesignImportWorkflowState(
-    workflowData = workflow,
-    importedDesign = artifacts$importedDesign,
-    assayList = artifacts$assayList,
-    importedContrasts = metadata$importedContrasts,
-    assignFn = function(...) invisible(NULL)
+    importPath = import_root,
+    qcTrigger = NULL,
+    config = config
   ))
 
-  expect_identical(hydrated$designMatrix$Run, payload$design_matrix$Run)
-  expect_identical(hydrated$designMatrix$group, payload$design_matrix$group)
-  expect_identical(names(hydrated$assayList), names(payload$data_cln))
-  expect_identical(metadata$columnMapping$sample_columns, payload$column_mapping$sample_columns)
-  expect_identical(metadata$importedContrasts$contrasts, payload$contrasts_tbl$contrasts)
+  expect_identical(workflow$design_matrix$Run, payload$design_matrix$Run)
+  expect_identical(workflow$design_matrix$group, payload$design_matrix$group)
+  expect_identical(names(getWorkflowOmicsBusTables(workflow, "data_cln")), names(payload$data_cln))
+  expect_identical(workflow$column_mapping$sample_columns, payload$column_mapping$sample_columns)
+  expect_identical(workflow$contrasts_tbl$contrasts, payload$contrasts_tbl$contrasts)
 
-  output <- new.env(parent = emptyenv())
+  # KIT-103 W5: the shared frame's import modal in test mode; its directory input and confirm button carry the
+  # metab test ids.
   captured <- new.env(parent = emptyenv())
-  registerMetabDesignImportModalShell(
-    input = list(show_import_modal = 1, import_dir = import_root),
-    output = output,
-    session = list(ns = function(id) paste0("metab-design-", id)),
-    resolvedVolumes = c("Project Base Dir" = import_root),
-    observeEventFn = function(eventExpr, handlerExpr, ...) {
-      eval(substitute(handlerExpr), parent.frame())
-      invisible(NULL)
-    },
-    showModalFn = function(ui) {
-      captured$modal <- ui
-      invisible(NULL)
-    },
-    modalDialogFn = function(...) list(...),
-    paragraphFn = function(...) paste(...),
-    helpTextFn = function(...) paste(...),
-    dirButtonFn = function(id, label, title) {
-      captured$dir_button <- list(id = id, label = label, title = title, testid = "metab-design-import-dir")
-      list(kind = "dirButton", id = id, label = label, title = title, testid = "metab-design-import-dir")
-    },
-    verbatimTextOutputFn = function(id, placeholder = FALSE) {
-      list(kind = "verbatim", id = id, placeholder = placeholder)
-    },
-    tagListFn = function(...) list(...),
-    modalButtonFn = function(label) list(kind = "modalButton", label = label),
-    actionButtonFn = function(inputId, label, class = NULL) {
-      captured$action_button <- list(inputId = inputId, label = label, class = class, testid = "metab-design-import-confirm")
-      list(kind = "actionButton", inputId = inputId, label = label, class = class, testid = "metab-design-import-confirm")
-    },
-    renderTextFn = function(expr) eval(substitute(expr), parent.frame()),
-    parseDirPathFn = function(roots, selection) selection
-  )
+  testthat::local_mocked_bindings(testid = function(tag, id) {
+    html <- as.character(tag)
+    if (grepl("metab-design-import_dir", html, fixed = TRUE)) captured$dir_button <- list(testid = id)
+    if (grepl("metab-design-confirm_import", html, fixed = TRUE)) captured$action_button <- list(testid = id)
+    shiny::tagAppendAttributes(tag, "data-testid" = id)
+  })
+  buildOmicsDesignImportModal(ns = function(id) paste0("metab-design-", id), config = config, testMode = TRUE)
   expect_identical(captured$dir_button$testid, "metab-design-import-dir")
   expect_identical(captured$action_button$testid, "metab-design-import-confirm")
 })
 
 test_that("MCI-013.5 design artifacts preserve expected filenames and serialized state", {
   payload <- module_ci_metab_design_payload(layout = "lc_pair")
-  source_dir <- module_ci_metab_design_write_import_pack(tempfile("module-ci-metab-design-source-"), payload)
+  paths <- module_ci_metab_design_paths()
+  workflow <- module_ci_metab_design_workflow(payload)
+  # KIT-103 W5: the artifacts are the shared design tab's commit's (runOmicsDesignCommit over commitOmicsDesign,
+  # whose files are writeOmicsDesignArtifacts') under the metab configuration, as KIT-103 W4 did for MCI-019.5.
+  shiny::withReactiveDomain(shiny::MockShinySession$new(), {
+    runOmicsDesignCommit(
+      results = payload,
+      workflowData = workflow,
+      experimentPaths = paths,
+      qcTrigger = NULL,
+      config = metabDesignGuiConfig()
+    )
+  })
+  source_dir <- paths$source_dir
 
   expected_files <- c(
     "design_matrix.tab",

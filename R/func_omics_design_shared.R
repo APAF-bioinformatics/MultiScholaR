@@ -788,3 +788,56 @@ lipidDesignGuiConfig <- function(profile = NULL) {
     config$design <- design
     config
 }
+
+# ------------------------------------------------------------------------------------------------
+# The metab wrappers (KIT-103 W5).
+# ------------------------------------------------------------------------------------------------
+
+#' D6. Metab's validators under their names, as one-line wrappers over the shared family with the
+#' metab rules, for their callers outside the design tab (the metab DA observer; KIT-106 retargets
+#' it). Signatures as mod_metab_design_validation.R at de2d891c.
+#' @noRd
+validateMetabDesignAlignment <- function(designMatrix, assayList, columnMapping = NULL, sampleIdCol = "Run",
+                                         groupCol = "group", requireGroups = TRUE, requireReplicates = TRUE) {
+    validateOmicsDesignAlignment(designMatrix, assayList, omicsDesignRules("metabolomics"),
+        columnMapping = columnMapping, sampleIdCol = sampleIdCol, groupCol = groupCol, requireGroups = requireGroups,
+        requireReplicates = requireReplicates)
+}
+
+#' D6. See `validateMetabDesignAlignment`.
+#' @noRd
+validateMetabDesignContrasts <- function(designMatrix, contrastsTbl, formulaString = "~ 0 + group", allowEmpty = FALSE) {
+    validateOmicsDesignContrasts(designMatrix, contrastsTbl, omicsDesignRules("metabolomics"),
+        formulaString = formulaString, allowEmpty = allowEmpty)
+}
+
+#' D6. See `validateMetabDesignAlignment`.
+#' @noRd
+validateMetabDesignDaPreflight <- function(designMatrix, assayList, contrastsTbl = NULL, formulaString = "~ 0 + group",
+                                           columnMapping = NULL, sampleIdCol = "Run", groupCol = "group",
+                                           requireContrasts = TRUE) {
+    validateOmicsDesignDaPreflight(designMatrix, assayList, omicsDesignRules("metabolomics"),
+        contrastsTbl = contrastsTbl, formulaString = formulaString, columnMapping = columnMapping,
+        sampleIdCol = sampleIdCol, groupCol = groupCol, requireContrasts = requireContrasts)
+}
+
+#' The configuration the metab design wrappers run the shared design tab with. Until KIT-103 W7
+#' wires the configuration's design function fields, the missing ones are filled with the core's
+#' (the values W7 wires; once they are wired this changes nothing): `validate` (the save preflight),
+#' `build_object` (`metabDesignObject`), the import's `reader`, `record_design_file` (FALSE: the
+#' provenance takes the owner's source directory, P-14) and `check_files_first` (TRUE: metab checks
+#' the import's files before it closes the modal, P-11).
+#' @return An omic GUI configuration.
+#' @noRd
+metabDesignGuiConfig <- function() {
+    config <- omicGuiConfig("metabolomics")
+    design <- config$design
+    design$validate <- design$validate %||%
+        function(results, columnMapping) validateOmicsDesignSave(results, columnMapping, "metabolomics")
+    design$build_object <- design$build_object %||% metabDesignObject
+    design$design_import$reader <- design$design_import$reader %||% readOmicsDesignImport
+    design$design_import$record_design_file <- design$design_import$record_design_file %||% FALSE
+    design$design_import$check_files_first <- design$design_import$check_files_first %||% TRUE
+    config$design <- design
+    config
+}

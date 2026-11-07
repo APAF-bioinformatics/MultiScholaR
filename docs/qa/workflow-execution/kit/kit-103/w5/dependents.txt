@@ -1,0 +1,48 @@
+KIT-103 W5 dependents grep (2026-11-08), across R/, tests/, tools/ and inst/ (tools/refactor/ excluded
+by the ticket's rule).
+
+Deleted files (3): R/mod_metab_design_builder_server.R, R/mod_metab_design_import_helpers.R,
+R/mod_metab_design_validation.R. Deleted sections: mod_metab_design.R:148-399 (the state outputs,
+the builder registration and the builder-results commit), mod_transcriptomics.R's design section
+(:64-114 at de2d891c) and the profile's eight design fields.
+
+Deleted names (21): metabDesignScalarString, metabDesignNonSamplePatterns,
+metabDesignSampleColumnsForAssay, metabDesignContrastExpression, metabDesignFriendlyContrastName,
+normaliseMetabDesignContrastsTable, metabDesignContrastTerms, initializeMetabDesignImportBootstrap,
+registerMetabDesignImportModalShell, resolveMetabDesignImportPreflight,
+hydrateMetabDesignImportArtifacts, hydrateMetabDesignImportMetadata,
+hydrateMetabDesignImportWorkflowState, createMetabDesignImportedS4Object,
+saveMetabDesignImportedS4State, initializeMetabDesignImportedQcBaseline,
+completeMetabDesignImportedPostCheckpoint, registerMetabDesignImportObserverShell,
+registerMetabDesignStateOutputs, registerMetabDesignBuilderModule,
+registerMetabDesignBuilderResultsObserver.
+Kept as wrappers: mod_metab_design_{ui,server,builder_ui,builder_server},
+registerMetabDesignPreviewOutputs, validateMetabDesign{Alignment,Contrasts,DaPreflight} (D6, in
+func_omics_design_shared.R). The trx copies of trxDesignGroupLevels, trxConditionText,
+trxDesignCheck and trxDesignObject are deleted from mod_transcriptomics.R; the names stay defined
+in func_trx_design.R (W2), so their callers (mod_trx_qc_filter.R:125, mod_trx_norm.R:162,206,
+mod_trx_summary.R:68, lipidDesignGuiConfig) are unchanged.
+
+Names: hits by file
+    368 tests/testthat/test-metab-04-design-module-characterization.R   whole file quarantined (Q-36)
+      9 tests/testthat/test-omics-design-core.R   :85 runTodayMetabDesignCommit (called only by the two Q-37 blocks),
+                                                 :118, :223 inside Q-35 blocks, :571, :623 the Q-37 skip texts,
+                                                 :711-721 runTodayDesignImport (called only by Q-35 blocks)
+    R/, tools/, inst/: none.
+
+The trx profile's eight design fields: no reader remains (grep design_help, validate_design,
+profile$run_order etc.; the frame reads omicGuiConfig("transcriptomics")$design since W4).
+
+Paths: hits outside tools/refactor/ are provenance comments (R/utils_omic_gui_config.R,
+R/utils_workflow_omics_design.R, R/func_omics_design_shared.R, R/func_trx_design.R, R/func_trx_counts.R,
+R/utils_workflow_omics_import.R, R/mod_omic_workflow.R, tests' comments) and the allow-list entry
+tests/testthat/test-omics-module-globals.R:47 (a deleted file only removes hits; passes 14/0).
+
+Callers whose callee changed, run as dependents (targeted.txt): test-module-ci-metab-da.R (D6,
+mod_metab_da_observer_helpers.R:312), test-module-ui-wrapper-direct-shared.R (mod_metab_design_ui),
+test-workflow-{ui,server}-shared.R and test-app-shell-shared.R (the shell's registry),
+test-workflow-metab-declarations.R, test-module-ci-trx-{import,qc,norm,da,summary,app}.R
+(helper-module-ci-trx-tabs.R, trxOmicProfile()), test-lipid-13a (its live block),
+test-ci-impact-source-map.R, test-omics-module-globals.R, and the entry lanes.
+
+Result: no live caller of a deleted name or path remains.

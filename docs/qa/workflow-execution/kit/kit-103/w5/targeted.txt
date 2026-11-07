@@ -1,0 +1,39 @@
+KIT-103 W5 targeted and dependent tests (2026-11-08). One R process per file, in sequence,
+load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS=core/browser-smoke.DGpv4v/library, runner
+kit/scripts-078/run1.R. (The runner's counts do not record a file-level skip: the Q-36 file shows
+0/0/0/0.)
+
+New and retargeted
+COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0  [12s]         (W4's 76 + W5's metab blocks and F-01 x2, retargeted)
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0  [8s]       (MCI-013; .4/.5 retargeted; baseline 96)
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0  [9s]      (MCI-019; .6 retargeted; baseline 109)
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0  [15s]        (MCI-027; helper :129 retargeted; baseline 71)
+
+Design core and configuration
+COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10  [11s]          (8 blocks Q-35 + 2 blocks Q-37; was 99/8 at W4)
+COUNTS test-omic-gui-config.R pass 480 fail 0 error 0 skip 0  [7s]             (the W1 trx block frozen to literals; was 478)
+COUNTS test-trx-design.R pass 70 fail 0 error 0 skip 0  [5s]
+
+Quarantined
+COUNTS test-metab-04-design-module-characterization.R pass 0 fail 0 error 0 skip 0  [4s]   (file skip, Q-36; 196/9 before)
+
+Shell and dependents (dependents.txt)
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0  [5s]
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0  [5s]
+COUNTS test-app-shell-shared.R pass 29 fail 0 error 0 skip 0  [6s]
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0  [5s]
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0  [16s]   (MCI-016.6 warns "1 files/objects/directories
+       failed to copy correctly"; the same warning at de2d891c, 142/0: pre-existing, outside the design)
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0  [42s]
+COUNTS test-ci-impact-source-map.R pass 19 fail 0 error 0 skip 0  [5s]
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0  [4s]
+COUNTS test-lipid-13a-design-module-characterization.R pass 2 fail 0 error 0 skip 17  [5s]   (as W4: 17 Q-32)
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0  [6s]
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0  [31s]
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0  [57s]
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0  [69s]
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0  [92s]
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0  [28s]
+
+Entry lanes: entry-suite.txt (metab_lc, metab_gc, metab_combined, trx_screen, lipid_canonical identical).
+No R CMD check, install, journeys or e2e in W5 (the ticket's W7 runs).

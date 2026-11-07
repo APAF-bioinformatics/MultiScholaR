@@ -266,12 +266,17 @@ test_that("MCI-019.6 DA preflight catches lipid formula, contrast, and assay/des
   invalid_results <- payload
   invalid_results$data_cln <- drifted_payload$data_cln
 
+  # KIT-103 W5: the shared design tab's commit (runOmicsDesignCommit) under the lipid configuration; the object
+  # builder refuses, so a design that reached it would fail here.
+  config <- lipidDesignGuiConfig()
+  config$design$build_object <- function(...) stop("invalid design should not create S4 state")
   shiny::withReactiveDomain(shiny::MockShinySession$new(), {
-    expect_null(runLipidDesignBuilderObserverShell(
+    expect_null(runOmicsDesignCommit(
       results = invalid_results,
       workflowData = invalid_workflow,
       experimentPaths = paths,
-      createLipidomicsAssayDataFn = function(...) stop("invalid design should not create S4 state")
+      qcTrigger = NULL,
+      config = config
     ))
   })
   expect_null(invalid_workflow$design_matrix)

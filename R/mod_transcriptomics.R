@@ -27,18 +27,14 @@
 
 #' The transcriptomics profile of the lipid design, QC, normalisation, DA and summary modules: labels, test-id prefix,
 #' the binding's readers and wrappers, and the collaborators each module takes at its seams. The import is the shared
-#' feature-table panel under `omicGuiConfig("transcriptomics")` (KIT-102), which the profile's `omic_type` selects.
+#' feature-table panel under `omicGuiConfig("transcriptomics")` (KIT-102), which the profile's `omic_type` selects. So is
+#' the design tab (KIT-103 W5): its eight design fields left the profile for `omicGuiConfig("transcriptomics")$design`,
+#' and its design functions (`trxDesignGroupLevels`, `trxDesignCheck`, `trxDesignObject`) are in func_trx_design.R.
 #' @return A plain list.
 #' @noRd
 trxOmicProfile <- function() {
     profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
         class = "TranscriptomicsAssayData", workflow_type = "TRANSCRIPTOMICS",
-        design_help = paste("Samples are matched to the count columns by sample name only, in the counts file's order; there",
-            "is no positional mapping. Each group needs at least two samples. The order in which you add the factor levels is",
-            "the group level order the analysis uses."),
-        run_order = identity, group_levels = trxDesignGroupLevels, validate_design = trxDesignCheck, build_object = trxDesignObject,
-        record_provenance = recordTrxDesignProvenance, state_name = "trx_raw_data_s4",
-        state_description = "Initial TranscriptomicsAssayData S4 object created after design matrix",
         qc_title = "Transcriptomics Quality Control & Filtering", qc_tabs = trxQcTabsUi, qc_init = initializeTrxQcSubmodules,
         read_metadata = function(manager) readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager),
         read_state = readTrxWorkflowState, register_qc_summary = registerTrxQcSummaryOutput, finalize = trxQcFinalizeCollaborators(),
@@ -65,57 +61,6 @@ trxNormDaSummaryProfile <- function() {
         ruviii_m_choices = trxRuviiiMChoices, integration_filename = "transcriptomics_normalized_data.tsv",
         integration_write = trxSummaryIntegrationWrite, integration_ready = trxSummaryIntegrationReady,
         integration_missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again.")
-}
-
-# ---------------------------------------------------------------------------------------------------------------
-# Design: the level order, KIT-093's validation at save, the design state.
-# ---------------------------------------------------------------------------------------------------------------
-
-#' The group level order the user entered: the assigned groups ordered by the positions of their factor levels in the
-#' builder's factor list (the order they were added); a group of several factors by each factor in turn.
-#' @noRd
-trxDesignGroupLevels <- function(design, factors) {
-    assigned <- !is.na(design$group) & design$group != ""
-    groups <- unique(design$group[assigned])
-    first <- design[match(groups, design$group), , drop = FALSE]
-    position <- function(column) if (column %in% names(first)) match(first[[column]], factors) else rep(NA_integer_, length(groups))
-    groups[order(position("factor1"), position("factor2"), position("factor3"), seq_along(groups))]
-}
-
-#' A refusal's text as the tab shows it: the message and its class.
-#' @noRd
-trxConditionText <- function(error) {
-    text <- conditionMessage(error)
-    class <- class(error)[[1L]]
-    if (grepl(class, text, fixed = TRUE)) text else sprintf("%s (%s)", text, class)
-}
-
-#' KIT-093's design validation at save, by name only, against every imported count column except the runs the user
-#' removed (an unassigned run is a count column outside the design), with at least two runs per group (RUVs and RUVIII
-#' need replicates). Returns the lipid preflight's shape.
-#' @noRd
-trxDesignCheck <- function(results, columnMapping) {
-    runs <- setdiff(columnMapping$sample_columns, results$excluded_runs)
-    tryCatch({
-        levels <- results$group_levels %||% trxDesignGroupLevels(results$design_matrix, character())
-        checked <- validateTrxDesign(runs, results$design_matrix, levels)
-        sizes <- table(checked$group)
-        small <- names(sizes)[sizes < 2L]
-        if (length(small)) {
-            trxAbort(sprintf("group(s) with fewer than two samples: %s", paste(small, collapse = ", ")),
-                c("trx_design_group_singleton", "trx_design_invalid", "trx_error"))
-        }
-        list(valid = TRUE, errors = character())
-    }, trx_error = function(error) list(valid = FALSE, errors = trxConditionText(error)))
-}
-
-#' The design state's object: the builder's count table and design, the recorded level order, the chosen id and name
-#' columns, and the builder's `tech_rep_group` as the technical replicates.
-#' @noRd
-trxDesignObject <- function(results, columnMapping) {
-    createTranscriptomicsAssayData(results$data_cln, results$design_matrix, results$group_levels,
-        roles = list(gene_id_column = columnMapping$lipid_id_col, annotation_id_column = columnMapping$annotation_col,
-            technical_replicate_id = "tech_rep_group"))
 }
 
 # ---------------------------------------------------------------------------------------------------------------

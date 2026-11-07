@@ -126,9 +126,10 @@ module_ci_trx_commit <- function(fixture, result) {
     invisible(NULL)
   }, showModal = function(...) invisible(NULL), removeModal = function(...) invisible(NULL), .package = "shiny")
   qc <- shiny::reactiveVal(NULL)
-  shiny::withReactiveDomain(fixture$session, runLipidDesignBuilderObserverShell(results = result,
+  # KIT-103 W5: the shared design tab's commit (runOmicsDesignCommit) with the trx configuration.
+  shiny::withReactiveDomain(fixture$session, runOmicsDesignCommit(results = result,
     workflowData = fixture$workflow, experimentPaths = fixture$paths, qcTrigger = function(value) seen$qc <- value,
-    profile = trxOmicProfile()))
+    config = lipidDesignGuiConfig(trxOmicProfile())))
   list(notes = seen$notes, qc = seen$qc)
 }
 

@@ -397,21 +397,28 @@ test_that("run_order is required with no default; each required design field is 
 })
 
 test_that("the trx design values equal trxOmicProfile()'s eight design fields today (design 4.12)", {
-    profile <- trxOmicProfile()
+    # KIT-103 W5 removed the eight fields from the profile; their values at 283f5eee are frozen here
+    # (mod_transcriptomics.R:36-41 then; group_levels, validate and build_object are the
+    # func_trx_design.R copies, W2).
     design <- omicGuiConfig("transcriptomics")$design
-    fields <- c(help = "design_help", run_order = "run_order", group_levels = "group_levels",
-        validate = "validate_design", build_object = "build_object",
-        record_provenance = "record_provenance", state_name = "state_name",
-        state_description = "state_description")
-    # group_levels, validate and build_object are still defined in mod_transcriptomics.R at W1; the
-    # configuration holds them once W7 wires the core copies (W2), and then they are compared too.
+    frozen <- list(help = paste("Samples are matched to the count columns by sample name only, in the counts file's",
+            "order; there is no positional mapping. Each group needs at least two samples. The order in which you add",
+            "the factor levels is the group level order the analysis uses."),
+        run_order = identity, group_levels = trxDesignGroupLevels, validate = trxDesignCheck,
+        build_object = trxDesignObject, record_provenance = recordTrxDesignProvenance, state_name = "trx_raw_data_s4",
+        state_description = "Initial TranscriptomicsAssayData S4 object created after design matrix")
+    # group_levels, validate and build_object join the configuration when W7 wires them, and then they
+    # are compared too.
     deferred <- c("group_levels", "validate", "build_object")
-    for (field in names(fields)) {
+    for (field in names(frozen)) {
         if (field %in% deferred && !field %in% names(design)) next
-        expect_identical(design[[field]], profile[[fields[[field]]]], info = field)
+        expect_identical(design[[field]], frozen[[field]], info = field)
     }
+    expect_false(any(c("design_help", "run_order", "group_levels", "validate_design", "build_object",
+        "record_provenance", "state_name", "state_description") %in% names(trxOmicProfile())))
     expect_true(design$record_excluded_runs)
-    expect_identical(design$label_lower, profile$label_lower)
+    expect_identical(design$label_lower, "transcriptomics")
+    expect_identical(trxOmicProfile()$omic_type, "transcriptomics")
 })
 
 test_that("the DIA binding adaptor's design entries call today's core functions", {

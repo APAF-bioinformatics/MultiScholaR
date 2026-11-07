@@ -1,0 +1,11 @@
+file	lines_before_de2d891c	lines_after_w5	note
+R/mod_metab_design_builder_server.R	866	0	deleted (the builder closure; the shared builder mod_omic_design_builder.R over the core; its exported wrapper moved to mod_metab_design_builder_ui.R)
+R/mod_metab_design_import_helpers.R	587	0	deleted (C10 in the core; the feature-table import plugin in mod_omic_design.R, with the P-11 switch)
+R/mod_metab_design_validation.R	463	0	deleted (C1 in the core; D6 metab validator wrappers in func_omics_design_shared.R)
+R/mod_metab_design.R	494	74	exported wrappers (ui, registerMetabDesignPreviewOutputs) and the server wrapper; the commit and builder registration (:148-399) deleted
+R/mod_metab_design_builder_ui.R	284	92	exported wrappers (builder ui and server), roxygen namespace tags kept
+metab design family (5 files)	2694	166	-2528
+R/mod_transcriptomics.R	142	87	the profile's eight design fields and the design section (:64-114 at de2d891c; :70-119 at 283f5eee) deleted; omic_type kept
+R/func_omics_design_shared.R	790	843	+53: D6 metab validator wrappers and metabDesignGuiConfig (the W7 stop-gap)
+R/mod_omic_design.R	332	336	+4: runOmicsDesignImport's `design_import$check_files_first` switch (metab P-11)
+net R/ (these files)	3958	1432	-2526
