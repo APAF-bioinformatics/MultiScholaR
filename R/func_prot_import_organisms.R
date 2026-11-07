@@ -199,3 +199,96 @@ analyzeOrganismDistribution <- function(protein_ids, organism_mapping) {
   return(distribution)
 }
 
+prepareProtImportOrganismSelectionChoices <- function(organismDistribution) {
+  valid_organisms <- organismDistribution |>
+    dplyr::filter(!is.na(taxon_id) & organism_name != "[Unmatched/Unknown]")
+
+  if (nrow(valid_organisms) == 0) {
+    return(NULL)
+  }
+
+  choices <- stats::setNames(
+    as.character(valid_organisms$taxon_id)
+    , paste0(
+        valid_organisms$organism_name
+        , " (Taxon: ", valid_organisms$taxon_id, ") - "
+        , valid_organisms$protein_count, " proteins ("
+        , valid_organisms$percentage, "%)"
+      )
+  )
+
+  list(
+    validOrganisms = valid_organisms
+    , choices = choices
+    , selectedTaxon = as.character(valid_organisms$taxon_id[1])
+  )
+}
+
+filterProtImportDataToOrganism <- function(
+    workflowData
+    , organismMapping
+    , selectedTaxon
+    , organismName
+    , normalizeUniprot = normalizeUniprotAccession
+    , cleanAcc = clean_acc
+    , logInfo = logger::log_info
+    , showNotification = shiny::showNotification
+) {
+  logInfo("Filtering data to selected organism only...")
+
+  organism_proteins <- organismMapping |>
+    dplyr::filter(taxon_id == selectedTaxon) |>
+    dplyr::pull(uniprot_acc)
+
+  organism_proteins_clean <- unique(normalizeUniprot(organism_proteins, remove_isoform = TRUE))
+  protein_col <- workflowData$column_mapping$protein_col
+
+  table <- getDIAOwnedPayload(workflowData, "data_tbl")
+  if (is.null(protein_col) || is.null(table)) {
+    return(invisible(NULL))
+  }
+
+  original_count <- nrow(table)
+
+  filterByOrganism <- function(proteinIds) {
+    ids <- unlist(strsplit(as.character(proteinIds), ";"))
+    ids_clean <- cleanAcc(trimws(ids))
+    any(ids_clean %in% organism_proteins_clean)
+  }
+
+  keep_rows <- sapply(table[[protein_col]], filterByOrganism)
+  table <- table[keep_rows, ]
+  workflowData <- setDIAOwnedPayload(workflowData, "data_tbl", table)
+
+  if (!is.null(workflowData$data_cln)) {
+    cleaned <- getDIAOwnedPayload(workflowData, "data_cln")
+    keep_rows_cln <- sapply(cleaned[[protein_col]], filterByOrganism)
+    workflowData <- setDIAOwnedPayload(workflowData, "data_cln", cleaned[keep_rows_cln, ])
+  }
+
+  filtered_count <- nrow(table)
+  removed_count <- original_count - filtered_count
+
+  logInfo(sprintf(
+    "Filtered data: kept %d rows, removed %d rows (%.1f%%)"
+    , filtered_count
+    , removed_count
+    , (removed_count / original_count) * 100
+  ))
+
+  showNotification(
+    sprintf(
+      "Filtered to %s: kept %d rows, removed %d rows"
+      , organismName
+      , filtered_count
+      , removed_count
+    )
+    , type = "message"
+    , duration = 5
+  )
+
+  invisible(list(
+    filtered_count = filtered_count
+    , removed_count = removed_count
+  ))
+}

@@ -259,3 +259,96 @@ processFastaFile <- function(fasta_file_path, uniprot_search_results = NULL, uni
     ))
   }
 }
+
+processProtImportFastaData <- function(
+    workflowData
+    , fastaPath
+    , organismName
+    , experimentPaths = NULL
+    , processFasta = processFastaFile
+    , saveRds = saveRDS
+    , logInfo = logger::log_info
+    , logWarn = logger::log_warn
+    , dirExists = dir.exists
+    , dirCreate = dir.create
+    , tempdirFn = tempdir
+) {
+  logInfo("Processing FASTA file...")
+
+  uniprot_mapping <- if (!is.null(workflowData$uniprot_mapping)) {
+    workflowData$uniprot_mapping
+  } else {
+    NULL
+  }
+
+  uniparc_mapping <- if (!is.null(workflowData$uniparc_mapping)) {
+    workflowData$uniparc_mapping
+  } else {
+    NULL
+  }
+
+  logInfo("Checking experiment_paths...")
+  if (!is.null(experimentPaths) && !is.null(experimentPaths$results_dir)) {
+    fasta_meta_file <- file.path(
+      experimentPaths$results_dir,
+      "cache",
+      "aa_seq_tbl.RDS"
+    )
+    cache_dir <- file.path(experimentPaths$results_dir, "cache")
+  } else {
+    logWarn("experiment_paths not properly initialized, using temp directory for cache")
+    cache_dir <- file.path(tempdirFn(), "proteomics_cache")
+    fasta_meta_file <- file.path(cache_dir, "aa_seq_tbl.RDS")
+  }
+
+  if (!dirExists(cache_dir)) {
+    dirCreate(cache_dir, recursive = TRUE)
+  }
+
+  tryCatch({
+    fasta_result <- processFasta(
+      fasta_file_path = fastaPath,
+      uniprot_search_results = uniprot_mapping,
+      uniparc_search_results = uniparc_mapping,
+      fasta_meta_file = fasta_meta_file,
+      organism_name = organismName
+    )
+
+    aa_seq_tbl_final <- fasta_result$aa_seq_tbl_final
+    fasta_metadata <- fasta_result$fasta_metadata
+
+    workflowData$aa_seq_tbl_final <- aa_seq_tbl_final
+    workflowData$fasta_metadata <- fasta_metadata
+
+    if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
+      scripts_aa_seq_path <- file.path(experimentPaths$source_dir, "aa_seq_tbl_final.RDS")
+      saveRds(aa_seq_tbl_final, scripts_aa_seq_path)
+      logInfo(sprintf("Saved aa_seq_tbl_final to scripts directory: %s", scripts_aa_seq_path))
+
+      fasta_metadata_path <- file.path(experimentPaths$source_dir, "fasta_metadata.RDS")
+      saveRds(fasta_metadata, fasta_metadata_path)
+      logInfo(sprintf("Saved FASTA metadata to scripts directory: %s", fasta_metadata_path))
+      logInfo(sprintf("FASTA Format: %s, Sequences: %d", fasta_metadata$fasta_format, fasta_metadata$num_sequences))
+    }
+
+    logInfo(sprintf("FASTA file processed successfully. Found %d sequences", nrow(aa_seq_tbl_final)))
+
+    invisible(list(
+      success = TRUE,
+      cacheDir = cache_dir,
+      fastaMetaFile = fasta_meta_file
+    ))
+  }, error = function(e) {
+    logWarn(paste("Error processing FASTA file:", e$message))
+    logWarn("Continuing without FASTA processing - protein ID conversion will be skipped")
+    workflowData$aa_seq_tbl_final <- NULL
+    workflowData$fasta_metadata <- NULL
+
+    invisible(list(
+      success = FALSE,
+      cacheDir = cache_dir,
+      fastaMetaFile = fasta_meta_file,
+      error = e$message
+    ))
+  })
+}

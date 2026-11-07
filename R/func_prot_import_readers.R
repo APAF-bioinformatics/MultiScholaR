@@ -79,6 +79,9 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
 #' @export
 importSpectronautData <- function(filepath, quantity_type = "pg") {
   data <- vroom::vroom(filepath, show_col_types = FALSE)
+  # KIT-102 parity: a text-numeric quantity column is read as numbers; other text is left as it is (P-05).
+  data <- coerceOmicsNumericLikeColumns(data,
+    intersect(if (quantity_type == "pg") "PG.Quantity" else "PEP.Quantity", names(data)))
   
   data_type <- if (quantity_type == "pg") "protein" else "peptide"
   
@@ -345,4 +348,61 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
       qvalue_col = "Q.value"  # If Perseus was used
     )
   ))
+}
+
+# ----------------------------------------------------------------------------
+# importProteomicsData
+# ----------------------------------------------------------------------------
+#' Read a proteomics search-results file with the reader for its format.
+#' @param format One of "diann", "spectronaut", "fragpipe", "maxquant" or "pd_tmt".
+#' @param path The search-results file.
+#' @param options Reader options as a list: `use_precursor_norm` (DIA-NN), `quantity_type` (Spectronaut),
+#'   `use_maxlfq` (FragPipe), `use_lfq` and `filter_contaminants` (MaxQuant). A missing option takes the
+#'   GUI's default.
+#' @param readers The reader for each format, by format name; replaceable in tests.
+#' @param logError Error logger.
+#' @return The reader's result: `data`, `data_type` and `column_mapping`. A failure is re-signalled as
+#'   "Failed to import data: <reason>".
+#' @noRd
+importProteomicsData <- function(
+    format
+    , path
+    , options = list()
+    , readers = list(
+        diann = importDIANNData
+        , spectronaut = importSpectronautData
+        , fragpipe = importFragPipeData
+        , maxquant = importMaxQuantData
+        , pd_tmt = importProteomeDiscovererTMTData
+      )
+    , logError = logger::log_error
+) {
+  tryCatch({
+    switch(format,
+      "diann" = readers$diann(
+        filepath = path,
+        use_precursor_norm = options$use_precursor_norm %||% TRUE
+      ),
+      "spectronaut" = readers$spectronaut(
+        filepath = path,
+        quantity_type = options$quantity_type %||% "pg"
+      ),
+      "fragpipe" = readers$fragpipe(
+        filepath = path,
+        use_maxlfq = options$use_maxlfq %||% TRUE
+      ),
+      "maxquant" = readers$maxquant(
+        filepath = path,
+        use_lfq = options$use_lfq %||% TRUE,
+        filter_contaminants = options$filter_contaminants %||% TRUE
+      ),
+      "pd_tmt" = readers$pd_tmt(
+        filepath = path
+      ),
+      stop("Unsupported format: ", format)
+    )
+  }, error = function(e) {
+    logError(paste("Error in data import function:", e$message))
+    stop("Failed to import data: ", e$message)
+  })
 }

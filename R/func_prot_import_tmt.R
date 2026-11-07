@@ -151,6 +151,10 @@ importProteomeDiscovererTMTData <- function(filepath) {
                     length(abundance_cols), paste(head(abundance_cols, 5), collapse = ", ")))
     log_info(sprintf("Found %d abundance columns to pivot", length(abundance_cols)))
 
+    # KIT-102 parity: text-numeric abundance columns (Excel cells stored as text) are read as numbers before
+    # the pivot, so a mix of text and numeric columns pivots and the F-26 step applies; other text is left (P-05).
+    data <- coerceOmicsNumericLikeColumns(data, abundance_cols)
+
     # Pivot the uniquely named columns
     message(sprintf("      Step: Pivoting %d columns to long format...", length(abundance_cols)))
     log_info("Pivoting data to long format...")
