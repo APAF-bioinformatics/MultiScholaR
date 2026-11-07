@@ -1,0 +1,29 @@
+# KIT-102 W1 targeted tests, after the implementation (R/utils_omic_gui_config.R, the proteomicsDiaBinding
+# adaptor in R/utils_workflow_prot_declarations.R, DESCRIPTION Collate + utils_omic_gui_config.R).
+# Base c1041c56 (origin/performance-v2), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence; runner kit/scripts-078/run1.R
+# (verbose); R_LIBS = core/browser-smoke.rvol2q/library. Recorded 2026-11-08. No R CMD check, no install.
+# Baseline column: docs/qa/workflow-execution/kit/kit-101/test-baseline.tsv, mode load_all.
+
+COUNTS test-omic-gui-config.R pass 249 fail 0 error 0 skip 0
+exit=0 elapsed=7s     (new file; test-first: 0 pass, 7 of 7 blocks error, see test-first.txt)
+
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2
+exit=0 elapsed=81s    (baseline: passed 303, failed 0, error blocks 0, skipped 2 (quarantine), warnings 20;
+                       this run: the same 20 warnings, "Unknown or uninitialised column: `core_utilisation`")
+
+COUNTS test-workflow-omics-binding-steps.R pass 57 fail 0 error 0 skip 0
+exit=0 elapsed=41s    (baseline: passed 57, failed 0, skipped 0)
+
+# Falsifiability probe of the srcref check (one load_all process, scratch script, not a test file):
+# the walker finds R/mod_*.R functions in trxOmicProfile() (mod_transcriptomics.R, mod_trx_qc_filter.R,
+# mod_trx_norm.R, mod_trx_da.R, mod_trx_summary.R) and none in the four configurations:
+#   proteomics      10 functions: func_prot_import_detection.R utils_workflow_dia_sessions.R
+#                   utils_workflow_dia_state.R utils_workflow_prot_declarations.R
+#   lipidomics      40 functions: func_lipid_import_detection.R func_lipid_import_readers.R
+#                   utils_workflow_dia_sessions.R utils_workflow_lipid_declarations.R utils_workflow_omics_declarations.R
+#   metabolomics    39 functions: func_metab_import_detection.R func_metab_import.R utils_workflow_dia_sessions.R
+#                   utils_workflow_metab_declarations.R utils_workflow_omics_declarations.R
+#   transcriptomics 26 functions: func_lipid_import_detection.R utils_omic_gui_config.R
+#                   utils_workflow_dia_sessions.R utils_workflow_trx_declarations.R
+# A refusal reads: "omic GUI configuration field shell$tabs[[2]]$testid is missing."

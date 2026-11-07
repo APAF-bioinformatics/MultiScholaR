@@ -1295,3 +1295,28 @@ runDIAReferenceProteinPeptideCountFilter <- function(workflow, parameters) {
         values = value$config[c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh")])
     finishDIAReferenceProteinStep(workflow, value)
 }
+
+#' The DIA binding adaptor (KIT-102; kit-101 design 2.2): proteomics' binding-shaped list for the shared GUI
+#' layer. It holds only what the shared shell and import call; KIT-103 to 108 add their entries. Each entry calls
+#' today's core function by name (the declaration bindings' idiom), because this file collates before
+#' `utils_workflow_dia_sessions.R` and `utils_workflow_dia_state.R`. `import_metadata` calls back-references #1
+#' and #2, which KIT-102 W3 moves into `utils_workflow_dia_sessions.R` with their names kept.
+#' @noRd
+proteomicsDiaBinding <- list(
+    omic_type = "proteomics",
+    # The workflow types an import produces (`workflowTypeForImportFormat`, utils_workflow_dia_sessions.R:804-812).
+    routes = c("DIA", "DIA_LIMPA", "TMT", "LFQ"),
+    route_for_format = function(...) workflowTypeForImportFormat(...),
+    # The session owner (`createDIASessionOwner`, utils_workflow_dia_sessions.R:902; mod_proteomics.R:266).
+    owner = function(...) createDIASessionOwner(...),
+    # The DIA readers (`readDIAStateMetadata`, utils_workflow_dia_state.R:237).
+    read_state = function(manager, reference = NULL) readDIAStateMetadata(manager, reference),
+    read_metadata = function(manager, reference = NULL) readDIAStateMetadata(manager, reference),
+    # The bounded import record (mod_prot_import_processing_helpers.R:114, :145 at KIT-102 W1).
+    import_metadata = list(
+        record = function(manager, table, result, reference) {
+            recordDIAImportMetadata(manager, table, result, reference)
+        },
+        read = function(manager) getDIAImportMetadata(manager)
+    )
+)

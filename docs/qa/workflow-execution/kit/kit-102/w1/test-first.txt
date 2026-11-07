@@ -1,0 +1,29 @@
+# KIT-102 W1 test-first: tests/testthat/test-omic-gui-config.R before the implementation
+# HEAD c1041c56 (origin/performance-v2), R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1
+# runner: kit/scripts-078/run1.R <tree> <file> v (verbose); R_LIBS = core/browser-smoke.rvol2q/library
+# recorded 2026-11-08. Expected: every block errors, because omicGuiConfig, validateOmicGuiConfig and
+# proteomicsDiaBinding do not exist yet. Observed: 7 of 7 blocks error, 0 pass.
+
+COUNTS test-omic-gui-config.R pass 0 fail 0 error 7 skip 0
+  BAD test-omic-gui-config.R :: each omic's configuration validates, with the shell, binding and import groups
+  BAD test-omic-gui-config.R :: the shell keys, runners and panels are today's per omic
+  BAD test-omic-gui-config.R :: removing a required field, or giving it the wrong type, is refused by class
+  BAD test-omic-gui-config.R :: the runner, the references and the tab and status keys are checked
+  BAD test-omic-gui-config.R :: no function in any configuration is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD test-omic-gui-config.R :: the trx shell and import values equal trxOmicProfile()'s fields today (design 4.12)
+  BAD test-omic-gui-config.R :: the DIA binding adaptor answers with today's core functions
+--- each omic's configuration validates, with the shell, binding and import groups
+ Error in `omicGuiConfig(omic)`: could not find function "omicGuiConfig"
+--- the shell keys, runners and panels are today's per omic
+ Error in `omicGuiConfig("proteomics")`: could not find function "omicGuiConfig"
+--- removing a required field, or giving it the wrong type, is refused by class
+ Error in `omicGuiConfig(omic)`: could not find function "omicGuiConfig"
+--- the runner, the references and the tab and status keys are checked
+ Error in `omicGuiConfig("lipidomics")`: could not find function "omicGuiConfig"
+--- no function in any configuration is defined in an R/mod_*.R file (srcref, under load_all)
+ Error in `eval(code, test_env)`: object 'omicGuiConfig' not found
+--- the trx shell and import values equal trxOmicProfile()'s fields today (design 4.12)
+ Error in `omicGuiConfig("transcriptomics")`: could not find function "omicGuiConfig"
+--- the DIA binding adaptor answers with today's core functions
+ Error in `eval(code, test_env)`: object 'proteomicsDiaBinding' not found
+exit=0 elapsed=7s file=tests/testthat/test-omic-gui-config.R
