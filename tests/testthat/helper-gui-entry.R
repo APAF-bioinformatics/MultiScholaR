@@ -72,20 +72,32 @@ guiEntryMask <- function(text, roots = character()) {
 }
 
 #' A content digest that ignores environments and functions and rounds numbers, so that it depends on the data only.
-guiEntryCanonical <- function(x, depth = 0L) {
+#' KIT-101 rev 2.2 (F-22, the third correction): inside an htmlwidget (plotly) object, the widget's random ids are not
+#' data: a list name or a character value that is a hexadecimal id (6 or more characters), and the value of an `id`,
+#' `elementId` or `cur_data` field, are read as `<ID>`.
+guiEntryCanonical <- function(x, depth = 0L, widget = FALSE) {
   if (depth > 12L) return("<deep>")
   if (is.null(x)) return(NULL)
   if (is.environment(x) || is.function(x) || inherits(x, "R6")) return(paste0("<", class(x)[[1L]], ">"))
+  widget <- widget || inherits(x, "htmlwidget")
   if (isS4(x)) {
     slots <- methods::slotNames(x)
-    return(c(list(`<class>` = class(x)[[1L]]), stats::setNames(lapply(slots, function(s) guiEntryCanonical(methods::slot(x, s), depth + 1L)), slots)))
+    return(c(list(`<class>` = class(x)[[1L]]), stats::setNames(lapply(slots, function(s) guiEntryCanonical(methods::slot(x, s), depth + 1L, widget)), slots)))
   }
   if (is.data.frame(x)) {
     x <- as.data.frame(x, stringsAsFactors = FALSE)
-    return(list(`<names>` = names(x), `<rows>` = nrow(x), `<cols>` = lapply(x, function(col) guiEntryCanonical(col, depth + 1L))))
+    return(list(`<names>` = names(x), `<rows>` = nrow(x), `<cols>` = lapply(x, function(col) guiEntryCanonical(col, depth + 1L, widget))))
   }
   if (is.factor(x)) return(list(`<levels>` = levels(x), `<codes>` = as.integer(x)))
-  if (is.list(x)) return(lapply(unclass(x), function(el) guiEntryCanonical(el, depth + 1L)))
+  if (is.list(x)) {
+    out <- lapply(unclass(x), function(el) guiEntryCanonical(el, depth + 1L, widget))
+    if (widget && !is.null(names(out))) {
+      ids <- names(out) %in% c("id", "elementId", "cur_data")
+      out[ids] <- lapply(out[ids], function(el) if (is.character(el)) "<ID>" else el)
+      names(out) <- ifelse(grepl("^[0-9a-f]{6,}$", names(out)), "<ID>", names(out))
+    }
+    return(out)
+  }
   if (is.numeric(x)) {
     out <- signif(as.numeric(x), 10L)
     if (!is.null(dim(x))) out <- list(`<dim>` = dim(x), `<dimnames>` = dimnames(x), `<values>` = out)
@@ -94,6 +106,7 @@ guiEntryCanonical <- function(x, depth = 0L) {
   }
   if (inherits(x, c("POSIXt", "Date", "difftime"))) return("<time>")
   if (is.character(x) || is.logical(x)) {
+    if (widget && is.character(x)) x[grepl("^[0-9a-f]{6,}$", x)] <- "<ID>"
     if (!is.null(dim(x))) return(list(`<dim>` = dim(x), `<values>` = as.vector(x)))
     return(x)
   }
@@ -154,7 +167,12 @@ guiEntryArtifacts <- function(base_dir, roots) {
   files <- sort(list.files(base_dir, recursive = TRUE, all.files = TRUE, no.. = TRUE))
   store <- grepl("(^|/)\\.multischolar(/|$)|(^|/)\\.workflow|\\.duckdb|\\.qs2$|\\.wal$", files)
   commits <- grep("(^|/)\\.workflow-entities/entities/[^/]+/commit\\.json$", files[store], value = TRUE)
-  entries <- table(vapply(dirname(commits), guiEntryMask, "", roots = roots, USE.NAMES = FALSE))
+  # F-22: a store or request id's whole random suffix is masked (a hex run shorter than 10 escaped the text mask).
+  entry_path <- function(path) {
+    parts <- strsplit(guiEntryMask(path, roots), "/", fixed = TRUE)[[1L]]
+    paste(sub("-(<HEX>|[0-9a-f]{4,})$", "-<ID>", parts), collapse = "/")
+  }
+  entries <- table(vapply(dirname(commits), entry_path, "", USE.NAMES = FALSE))
   out <- list(`<store entries>` = as.list(stats::setNames(as.integer(entries), names(entries))))
   for (file in files[!store]) {
     key <- guiEntryMask(file, roots)
