@@ -25,6 +25,7 @@ library(testthat)
     e2e_complete_project_setup(driver, case_id, project_root, timeout = 60000L)
     e2e_wait_for_selector(driver, "prot-tab-setup", timeout = 60000L)
     e2e_assert_project_dirs_exist(paths)
+    guiEntryInstallUniprotCache(paths)
 
     e2e_upload_lane_inputs(driver, lane)
     e2e_click_process_import(driver, "proteomics")
@@ -46,6 +47,7 @@ library(testthat)
 
     e2e_complete_prot_design_from_manifest(driver, lane, timeout = 120000L)
     e2e_wait_for_step_status(driver, "proteomics", "design_matrix", "complete", timeout = 120000L)
+    e2e_assert_no_uniprot_network(driver)
     e2e_wait_for_step_status(driver, "proteomics", "quality_control", "complete", timeout = 120000L)
     e2e_assert_step_statuses(
       driver,

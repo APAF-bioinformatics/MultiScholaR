@@ -608,6 +608,19 @@ e2e_proteomics_project_paths <- function(project_dir, experiment_label) {
   )
 }
 
+# KIT-101 F-28: the proteomics lanes run offline (W2: no network in any lane). Each lane places the entry suite's
+# UniProt cache (guiEntryInstallUniprotCache, helper-gui-entry.R) before its import; this asserts that the design step
+# read it and did not query UniProt.
+e2e_assert_no_uniprot_network <- function(driver) {
+  messages <- as.character(unlist(driver$get_logs(), use.names = FALSE))
+  testthat::expect_true(
+    any(grepl("Cache hit, loading from cache", messages, fixed = TRUE)) &&
+      !any(grepl("Fetching UniProt annotations", messages, fixed = TRUE)),
+    info = "the design step must read the installed UniProt cache and not query the UniProt REST API"
+  )
+  invisible(driver)
+}
+
 e2e_metabolomics_project_paths <- function(project_dir, experiment_label) {
   base_dir <- e2e_project_base_dir(project_dir, experiment_label)
   list(

@@ -533,6 +533,22 @@ test_that("console and notification assertions flag driver-visible failures", {
   expect_failure(e2e_assert_no_console_errors(error_driver))
 })
 
+test_that("proteomics lanes read the installed UniProt cache instead of the network (KIT-101 F-28)", {
+  paths <- list(results_dir = file.path(withr::local_tempdir(), "results", "proteomics"))
+  target <- guiEntryInstallUniprotCache(paths)
+  cache <- readRDS(file.path(target, "uniprot_annotations.RDS"))
+  expect_setequal(cache$Entry, sprintf("P%05d", 1:400))
+
+  offline_driver <- new_fake_e2e_driver(logs = list(list(location = "shiny", level = "stderr",
+    message = "   DEBUG66: Cache hit, loading from cache")))
+  expect_success(e2e_assert_no_uniprot_network(offline_driver))
+
+  network_driver <- new_fake_e2e_driver(logs = list(
+    list(location = "shiny", level = "stderr", message = "   DEBUG66: Cache miss, calling directUniprotDownload..."),
+    list(location = "shiny", level = "stderr", message = "Fetching UniProt annotations...")))
+  expect_failure(e2e_assert_no_uniprot_network(network_driver))
+})
+
 test_that("failure artifact capture writes actionable debug files", {
   withr::with_envvar(
     c(MULTISCHOLAR_E2E_ARTIFACT_DIR = tempfile("e2e-artifacts-"))

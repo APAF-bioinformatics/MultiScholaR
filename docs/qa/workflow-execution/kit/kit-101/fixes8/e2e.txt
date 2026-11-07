@@ -27,3 +27,31 @@ once.
 
 Artifacts of this run: <worktree>/tests/testthat/_e2e_artifacts/E2E-005-prot_tmt-pd_tmt (browser-logs.json,
 screenshot.png, dom.html; gitignored, not committed); full logs in the agent scratchpad (e2e-tmt.log, e2e-dia.log).
+
+---------------------------------------------------------------------------------------------------------------------
+Addendum: offline proteomics lanes (coordinator's go, harness-only; no R/ change in this step).
+
+Change: each proteomics e2e lane (test-e2e-proteomics-dia.R, -dia-limpa.R, -enrichment.R, -tmt-lfq.R) calls
+guiEntryInstallUniprotCache(paths) right after e2e_assert_project_dirs_exist(paths), before the import. That places the
+entry suite's committed cache, tests/testdata/gui-entry/uniprot/uniprot_annotations.RDS (400 rows, P00001..P00400,
+synthetic gene names and GO columns), at <project>/results/proteomics/cache/uniprot_annotations/. Coverage: every
+proteomics e2e FASTA (prot_dia, prot_dia_limpa, prot_tmt(_pd), prot_lfq(_maxquant), prot_lfq_fragpipe) has 0
+accessions missing from the cache, so no empty-table fill-in was needed. After the design step completes, the new
+helper e2e_assert_no_uniprot_network(driver) (helper-e2e-browser.R) asserts that the app log has
+"Cache hit, loading from cache" and no "Fetching UniProt annotations".
+
+Test first (test-e2e-browser-harness.R, new block "proteomics lanes read the installed UniProt cache instead of the
+network"): the installed cache covers P00001..P00400; the assertion passes on a cache-hit log and fails on a cache-miss
+log. Applied to the recorded real logs of both earlier failing TMT runs (suite run and the F-28 rerun), the assertion
+fails (network detected). Harness file: 124 pass, 0 fail (baseline 120 + 1 browser smoke skip in the suite; +3 new).
+
+The four proteomics e2e files once each, offline (same runner, worktree source, 1,800 s ceiling each):
+| file | result | wall |
+|---|---|---|
+| test-e2e-proteomics-tmt-lfq.R | pass 153, fail 0, error 0, skip 0 | 178 s |
+| test-e2e-proteomics-dia.R | pass 42, fail 0, error 0, skip 0 | 176 s |
+| test-e2e-proteomics-dia-limpa.R | pass 12, fail 0, error 0, skip 1 (by design at QC, as before) | 25 s |
+| test-e2e-proteomics-enrichment.R | pass 98, fail 0, error 0, skip 0 | 367 s |
+Each count is the previous passing count plus the new no-network assertion per lane (TMT/LFQ 150+3, DIA 41+1,
+DIA_LIMPA 11+1, enrichment 96+2). The lanes now see the entry suite's annotations (synthetic gene names) instead of the
+empty table UniProt returned for the synthetic accessions; DA statistics do not read annotations.
