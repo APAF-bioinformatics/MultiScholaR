@@ -1185,6 +1185,26 @@ if (!is.null(b$builds$kit_101) && !is.null(b$tickets[["094a"]]) && !is.null(b$ti
     b$tickets[["101m"]] <- utils::modifyList(b$tickets[["065m"]], kit_101)
     if (!is.null(b$tickets[["065l"]])) b$tickets[["101l"]] <- utils::modifyList(b$tickets[["065l"]], kit_101)
     if (!is.null(b$tickets[["065t"]])) b$tickets[["101t"]] <- utils::modifyList(b$tickets[["065t"]], kit_101)
+    # The kit-065 LFQ and TMT fixture records cannot be re-fingerprinted under v1.7 (protocol 9.3): their stores no
+    # longer exist (kit-101/refingerprint.txt). They are listed unavailable; 101l and 101t verify against in-process
+    # records of the same fixtures on kit_101 (protocol v1.5 item 1), bound as lfq101_fixture and tmt101_fixture. Every
+    # state field of those records equals kit-065's (kit-101/fixture-oracles-cross-build.txt); only result products differ.
+    for (key in c("lfq_fixture", "tmt_fixture")) {
+        oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit/kit-101", paste0("oracles-", key, ".rds"))
+        if (is.null(b$corpora[[key]]) || !file.exists(oracle_file)) next
+        recorded <- readRDS(oracle_file)
+        stopifnot(identical(recorded$corpus, key), identical(recorded$corpus_sha256, b$corpora[[key]]$files[[1L]]$sha256))
+        prefix <- sub("_fixture$", "101_fixture", key)
+        for (step in names(recorded$populations)) {
+            population <- recorded$populations[[step]]
+            b$populations[[paste0(prefix, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
+                head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
+                oracle_source = "in-process (protocol v1.5; same build, KIT-101)", build = recorded$build, recorded_at = recorded$recorded_at)
+            b$oracles[[paste0(prefix, "_", step)]] <- population$fingerprint
+        }
+        ticket <- if (identical(key, "lfq_fixture")) "101l" else "101t"
+        if (!is.null(b$tickets[[ticket]])) b$tickets[[ticket]]$oracles <- prefix
+    }
 }
 
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",

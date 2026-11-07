@@ -1,0 +1,22 @@
+lfq_fixture import state fields identical | products only-065:  only-101:  
+lfq_fixture design state fields identical | products only-065:  only-101:  
+lfq_fixture accession state fields identical | products only-065:  only-101:  
+lfq_fixture protein_intensity state fields identical | products only-065:  only-101:  
+lfq_fixture duplicates state fields identical | products only-065:  only-101:  
+lfq_fixture protein_replicate state fields identical | products only-065:  only-101:  
+lfq_fixture normalisation_ruv state fields identical | products only-065: dia-normalization-ruv:24e3fcff28c9 only-101: dia-normalization-ruv:d18bb3e34dfa 
+lfq_fixture correlation state fields identical | products only-065: dia-pearson-selection:fda5de309c3e only-101: dia-pearson-selection:7f6c80472e99 
+lfq_fixture session_export state fields identical | products only-065:  only-101:  
+lfq_fixture da state fields identical | products only-065: dia-contrast-references:4d96aa35c59e only-101: dia-contrast-references:fbd758b5576a 
+lfq_fixture report state fields identical | products only-065:  only-101:  
+tmt_fixture import state fields identical | products only-065:  only-101:  
+tmt_fixture design state fields identical | products only-065:  only-101:  
+tmt_fixture accession state fields identical | products only-065:  only-101:  
+tmt_fixture protein_intensity state fields identical | products only-065:  only-101:  
+tmt_fixture duplicates state fields identical | products only-065:  only-101:  
+tmt_fixture protein_replicate state fields identical | products only-065:  only-101:  
+tmt_fixture normalisation_ruv state fields identical | products only-065: dia-normalization-ruv:9f3575dd4aa5 only-101: dia-normalization-ruv:491cb35dea57 
+tmt_fixture correlation state fields identical | products only-065: dia-pearson-selection:1d0bfe05ba66 only-101: dia-pearson-selection:1ff8acde5dd5 
+tmt_fixture session_export state fields identical | products only-065:  only-101:  
+tmt_fixture da state fields identical | products only-065: dia-contrast-references:fec91212c35b only-101: dia-contrast-references:9cb6a447bcf9 
+tmt_fixture report state fields identical | products only-065:  only-101:  
