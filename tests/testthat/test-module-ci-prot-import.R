@@ -106,7 +106,10 @@ test_that("MCI-004.3 MaxQuant LFQ matrix covers LFQ detection, flags, missing ge
     expected_quantity_col = "Intensity"
   )
   expect_false(any(grepl("^CON__|^REV__", imported$data$Protein.Ids)))
-  expect_true(any(imported$data$Intensity == 0))
+  # KIT-101 F-18 (user, 2026-11-07): inverted. The fixture's 0 cell (P001 / WT_1, "not quantified" in MaxQuant)
+  # reads as NA; this block once expected the 0 to survive, which encoded the defect.
+  expect_false(any(imported$data$Intensity == 0, na.rm = TRUE))
+  expect_true(is.na(imported$data$Intensity[imported$data$Protein.Ids == "P001" & imported$data$Run == "WT_1"]))
   expect_true("Gene.names" %in% names(imported$data))
 
   duplicates <- module_ci_prot_make_maxquant(variant = "duplicate_accessions")

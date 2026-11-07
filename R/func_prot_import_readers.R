@@ -198,8 +198,9 @@ importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
       dplyr::mutate(
         Run = gsub("\\s+(MaxLFQ\\s+)?Intensity$", "", Run, ignore.case = TRUE)
       ) |>
-      # Ensure Intensity is numeric
-      dplyr::mutate(Intensity = as.numeric(Intensity)) |>
+      # Ensure Intensity is numeric. FragPipe writes 0 where a protein was not quantified in a sample: that is a
+      # missing value, not a quantity (KIT-101 F-18; kept, the design step's log2(x + 1) made it a log2 value of 0).
+      dplyr::mutate(Intensity = dplyr::na_if(as.numeric(Intensity), 0)) |>
       # Rename protein ID column to standardized name
       dplyr::rename(Protein.Ids = !!rlang::sym(protein_id_col))
   }, error = function(e) {
@@ -324,7 +325,9 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
       ) |>
       dplyr::mutate(
         Run = sub("^(LFQ\\.intensity\\.|Intensity\\.)", "", Run),
-        Intensity = as.numeric(Intensity)
+        # MaxQuant writes 0 where a protein group was not quantified in an experiment: a missing value, not a
+        # quantity (KIT-101 F-18).
+        Intensity = dplyr::na_if(as.numeric(Intensity), 0)
       ) |>
       dplyr::rename(Protein.Ids = !!rlang::sym(protein_col))
   }, error = function(e) {

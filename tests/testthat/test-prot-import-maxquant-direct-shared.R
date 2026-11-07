@@ -155,3 +155,35 @@ test_that("importMaxQuantData reads genuine MaxQuant output with spaced column n
     c("LFQ.intensity.A B", "Intensity.A B", "Potential.contaminant", "Reverse", "Other col")
   )
 })
+
+test_that("KIT-101 F-18: the MaxQuant and FragPipe readers read a 0 intensity (not quantified) as NA", {
+  # MaxQuant and FragPipe write 0 where a protein was not quantified in a sample. The reader turns that 0 into NA,
+  # as an empty field already reads; a 0 kept as a value became log2(0 + 1) = 0 at the design step.
+  maxquant <- tempfile(fileext = ".txt")
+  writeLines(c(
+    paste("Protein IDs", "Gene names", "LFQ intensity WT_1", "LFQ intensity WT_2", "LFQ intensity KO_1",
+      "LFQ intensity KO_2", "Potential contaminant", "Reverse", sep = "\t"),
+    paste("P00001", "G1", "1000", "0", "1200", "1100", "", "", sep = "\t"),
+    paste("P00002", "G2", "2000", "", "2100", "1900", "", "", sep = "\t"),
+    paste("P00003", "G3", "3000", "3100", "2900", "3050", "", "", sep = "\t")), maxquant)
+  fragpipe <- tempfile(fileext = ".tsv")
+  writeLines(c(
+    paste("Protein", "Protein ID", "Gene", "WT_1 MaxLFQ Intensity", "WT_2 MaxLFQ Intensity", "KO_1 MaxLFQ Intensity",
+      "KO_2 MaxLFQ Intensity", sep = "\t"),
+    paste("sp|P00001|A", "P00001", "G1", "1000", "0", "1200", "1100", sep = "\t"),
+    paste("sp|P00002|B", "P00002", "G2", "2000", "", "2100", "1900", sep = "\t"),
+    paste("sp|P00003|C", "P00003", "G3", "3000", "3100", "2900", "3050", sep = "\t")), fragpipe)
+
+  readers <- list(maxquant = suppressMessages(importMaxQuantData(maxquant)),
+    fragpipe = suppressMessages(importFragPipeData(fragpipe)))
+  for (imported in readers) {
+    data <- as.data.frame(imported$data)
+    cell <- function(protein, run) data$Intensity[data$Protein.Ids == protein & data$Run == run]
+    expect_true(is.na(cell("P00001", "WT_2")))
+    expect_true(is.na(cell("P00002", "WT_2")))
+    expect_false(any(data$Intensity == 0, na.rm = TRUE))
+    expect_identical(sum(is.na(data$Intensity)), 2L)
+    expect_equal(cell("P00001", "WT_1"), 1000)
+    expect_equal(cell("P00003", "KO_2"), 3050)
+  }
+})

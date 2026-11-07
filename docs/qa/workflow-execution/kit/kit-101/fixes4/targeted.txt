@@ -1,0 +1,25 @@
+KIT-101 fixes4: targeted files and dependents (git grep -l of the changed function names in tests/), after each fix.
+pkgload::load_all, R 4.6.1, R_LIBS = kit_100 library; one R process per file, one at a time. No R CMD check, no install,
+no journeys (not in this item's scope).
+
+== F-18 (importMaxQuantData, importFragPipeData) ==
+git grep -l "importMaxQuantData\|importFragPipeData" tests/ -> the four test files below (+ tests/testdata/e2e/prot_lfq/README.md, not a test)
+  test-prot-import-maxquant-direct-shared.R   pass 36  fail 0 error 0 skip 0   (7 s)
+  test-module-ci-prot-import.R                pass 91  fail 0 error 0 skip 0   (8 s)
+  test-prot-01-import.R                       pass 15  fail 0 error 0 skip 1   (7 s; the skip is pre-existing)
+  test-workflow-native-session.R              pass 733 fail 0 error 0 skip 2   (591 s; skips pre-existing)
+
+Synthetic corpora zero counts (aggregate, quantity columns only; the KC real datasets and kc-lfq-dotted were not read):
+  kit corpus lfq-300/proteinGroups.txt           8100 rows x 300 LFQ columns: 194,668 cells "0" (8.01%), 0 empty
+  kit corpus lfq-fixture/proteinGroups.txt       30 cells, 0 zeros
+  e2e prot_lfq/proteinGroups.txt                 30 cells, 0 zeros
+  e2e prot_lfq/seed_combined_protein.tsv         30 cells, 0 zeros
+  e2e prot_lfq_maxquant/proteinGroups.txt        4100 cells, 0 zeros
+  e2e prot_lfq_fragpipe/combined_protein.tsv     4000 cells, 0 zeros
+  kit corpus tmt-300/pd_proteins.tsv             2,400,000 Abundance cells, 0 zeros, 48,011 empty
+  kit corpus tmt-fixture/pd_tmt_peptides.tsv     30 cells, 0 zeros
+  e2e prot_tmt_pd/pd_tmt_peptides.tsv            4000 cells, 0 zeros, 97 empty
+  e2e prot_tmt/{pd_tmt_peptides,seed_proteins}.tsv  0 zeros
+So of the bound kit oracles only KIT-021 lfq_300_* (corpus lfq_300) change. lfq_fixture / lfq48_fixture /
+lfq65_fixture (KIT-021/048/065 lifecycle), the TMT populations and the e2e LFQ lanes carry no zeros and are unchanged.
+KIT-054 kc_lfq (and the 054l kc_lfq_dotted legacy lane) are real data, not inspected; their zeros are likely.

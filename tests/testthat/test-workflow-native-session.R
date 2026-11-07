@@ -1282,6 +1282,62 @@ test_that("KIT-020: a MaxQuant import on an owner records its inputs and metadat
     expect_identical(reopened$manager$current_state, "protein_s4_initial")
 })
 
+test_that("KIT-101 F-18: on the LFQ route a 0 written for a missing cell reaches the protein object as NA, not a large negative value", {
+    # The diagnosis (kit-101/diagnosis/f18_trace.R) at small size: MaxQuant and FragPipe write 0 for "not
+    # quantified". Before the fix the design step's log2(x + 1) made it 0 and cyclic loess moved it to about -5.
+    set.seed(18)
+    samples <- c("WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3")
+    ids <- sprintf("P%05d", 1:40)
+    values <- matrix(round(2^stats::rnorm(240, 20, 1), 1), 40, 6, dimnames = list(ids, samples))
+    zero <- matrix(FALSE, 40, 6, dimnames = dimnames(values))
+    zero[cbind(c(3, 7, 11, 15, 19, 23, 27, 31, 35, 39), c(1, 2, 3, 4, 5, 6, 1, 2, 3, 4))] <- TRUE
+    values[zero] <- 0
+    design <- data.frame(Run = samples, group = rep(c("WT", "KO"), each = 3L), replicates = rep(1:3, 2L),
+        stringsAsFactors = FALSE)
+    root <- withr::local_tempdir()
+    fasta <- file.path(root, "proteins.fasta")
+    writeLines(paste0(">sp|", ids, "|PROT", seq_along(ids), "\nMPEPTIDEK"), fasta)
+    maxquant <- data.frame(Protein.IDs = ids, Gene.names = paste0("G", seq_along(ids)), check.names = FALSE)
+    for (s in samples) maxquant[[paste0("LFQ.intensity.", s)]] <- values[, s]
+    maxquant$Potential.contaminant <- ""
+    maxquant$Reverse <- ""
+    fragpipe <- data.frame(Protein = paste0("sp|", ids, "|PROT"), `Protein ID` = ids, Gene = paste0("G", seq_along(ids)),
+        check.names = FALSE)
+    for (s in samples) fragpipe[[paste(s, "MaxLFQ Intensity")]] <- values[, s]
+    routes <- list(maxquant = list(file = file.path(root, "proteinGroups.txt"), table = maxquant, role = "maxquant_report",
+        reader = importMaxQuantData), fragpipe = list(file = file.path(root, "combined_protein.tsv"), table = fragpipe,
+        role = "fragpipe_report", reader = importFragPipeData))
+    for (format in names(routes)) {
+        route <- routes[[format]]
+        utils::write.table(route$table, route$file, sep = "\t", quote = FALSE, row.names = FALSE, na = "")
+        workflow <- new.env(parent = emptyenv())
+        workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
+        workflow$config_list <- list(globalParameters = list(workflow_type = "LFQ"))
+        initializeDIANativeImport(workflow, makeDIANativeGuiPaths(withr::local_tempdir()), makeDIANativeFixtureSession(),
+            format, "iq")
+        manager <- workflow$state_manager
+        withDIAStateScope(manager, function() {
+            registerDIAInputFiles(manager, stats::setNames(c(route$file, fasta), c(route$role, "fasta")))
+            imported <- suppressMessages(route$reader(route$file))
+            applyProtImportResultToWorkflow(workflow, imported, format, fasta,
+                logInfo = function(...) NULL, showNotification = function(...) NULL)
+            completeDIAInputFiles(manager)
+            workflow$design_matrix <- design
+            buildProtDesignStateCheckpoint(workflow, "LFQ", "Import")
+        })
+        initial <- manager$getState("protein_s4_initial")
+        closeDIAStateAdapter(manager)
+        table <- initial@protein_quant_table
+        m <- as.matrix(table[match(ids, table$Protein.Ids), samples])
+        expect_identical(which(is.na(m)), which(zero), label = paste(format, "NA cells of protein_s4_initial"))
+        expect_false(any(m == 0, na.rm = TRUE), label = paste(format, "any log2 value of 0"))
+        normalised <- suppressMessages(normaliseBetweenSamples(initial, normalisation_method = "cyclicloess"))
+        n <- as.matrix(normalised@protein_quant_table[match(ids, normalised@protein_quant_table$Protein.Ids), samples])
+        expect_identical(which(is.na(n)), which(zero), label = paste(format, "NA cells after cyclic loess"))
+        expect_gt(min(n, na.rm = TRUE), 15)
+    }
+})
+
 
 test_that("KIT-044: native archives round-trip between the GNU tar path and the R fallback with equal member hashes", {
     skip_if_not(workflowOwnerCapable())

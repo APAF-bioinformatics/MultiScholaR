@@ -1,0 +1,30 @@
+KIT-101 fixes4: tests that fail before the fix and pass after it (F-18, F-23). User, 2026-11-07: F-18 "Fix + re-record";
+F-23 "Fix F-23; keep default". Tree: kit-101-fixes4 from origin/performance-v2 f6e9cd01. R 4.6.1, pkgload::load_all,
+R_LIBS = kit_100 library (browser-smoke.2jjdqX). One R process at a time; one test_that block per run (testthat desc).
+
+== F-18: a 0 intensity in MaxQuant / FragPipe is "not quantified" and is read as NA ==
+Fix: R/func_prot_import_readers.R, importFragPipeData and importMaxQuantData:
+  Intensity = dplyr::na_if(as.numeric(Intensity), 0)
+
+1. tests/testthat/test-prot-import-maxquant-direct-shared.R
+   "KIT-101 F-18: the MaxQuant and FragPipe readers read a 0 intensity (not quantified) as NA"
+   (3 proteins x 4 samples per reader; one "0" cell and one empty cell)
+   before: pass 6 fail 6   (both readers: the "0" cell read as 0; 1 NA instead of 2; any(Intensity == 0) TRUE)
+   after:  pass 6 of 6 in the block; whole file pass 36 fail 0
+
+2. tests/testthat/test-module-ci-prot-import.R MCI-004.3 (inverted; it expected the fixture's 0 cell to survive,
+   `expect_true(any(imported$data$Intensity == 0))`, which encoded the defect)
+   now: no Intensity == 0, and P001 / WT_1 (the fixture's 0) is NA
+   before: pass 16 fail 2  ("Expected any(imported$data$Intensity == 0, na.rm = TRUE) to be FALSE ... actual TRUE";
+                            "Expected is.na(...) to be TRUE ... actual FALSE")
+   after:  whole file pass 91 fail 0
+
+3. tests/testthat/test-workflow-native-session.R (route level; f18_trace.R's idea at small size)
+   "KIT-101 F-18: on the LFQ route a 0 written for a missing cell reaches the protein object as NA, not a large
+   negative value"
+   40 proteins x 6 samples, 10 cells written as 0; for MaxQuant and FragPipe: the owner import
+   (initializeDIANativeImport, applyProtImportResultToWorkflow), the design checkpoint (buildProtDesignStateCheckpoint,
+   log2(x + 1)), protein_s4_initial read back through the owner, then normaliseBetweenSamples(cyclicloess).
+   before: pass 0 fail 8   protein_s4_initial had no NA cells (expected the 10 zero cells) and held log2 values of 0;
+                           after cyclic loess the minimum was -11.9 (expected > 15), on both readers
+   after:  pass 8 of 8; whole file pass 733 fail 0 skip 2
