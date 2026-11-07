@@ -69,8 +69,36 @@ Records without a result-class state, which is every record that could be built 
 
 The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start only after the design, and the observer is created without `ignoreInit`, so it runs an earlier click when it starts.
 
-| F-18 | proteomics LFQ imports (MaxQuant `proteinGroups.txt`, FragPipe `combined_protein.tsv`; `R/func_prot_import_readers.R`) | Zero intensities appear to be kept as quantities rather than treated as missing. With 2% to 8% zeros in a synthetic fixture, the correlation filter dropped 1 to 4 of 10 samples. MaxQuant and FragPipe write 0 for "not quantified", so a zero kept as a value distorts every downstream step. Scientific; **not yet confirmed by diagnosis**. | Lane `prot_lfq` or `prot_lfq_fragpipe` with zeros in the intensity columns. | KIT-102 (import) | open (scientific; decision needed) |
-| F-19 | DIA_LIMPA route DA (lane `prot_dia_limpa`, new fixture) | 41 proteins at q < 0.05, of which only 18 are among the 40 planted changes. Every other route has at most 1 false positive on the same synthetic universe. The route ran RUV-III covariates (k = 2) on 8 samples. It is unknown whether the fault is the fixture, limpa/DPC on synthetic peptides, or the RUV step. Scientific; **not yet diagnosed**. | Lane `prot_dia_limpa` on the revision 2.2 fixture. | KIT-105 / KIT-106 | open (scientific; decision needed) |
+| F-18 | proteomics LFQ imports (MaxQuant `proteinGroups.txt`, FragPipe `combined_protein.tsv`; `R/func_prot_import_readers.R`) | Zero intensities appear to be kept as quantities rather than treated as missing. With 2% to 8% zeros in a synthetic fixture, the correlation filter dropped 1 to 4 of 10 samples. MaxQuant and FragPipe write 0 for "not quantified", so a zero kept as a value distorts every downstream step. Scientific; **not yet confirmed by diagnosis**. | Lane `prot_lfq` or `prot_lfq_fragpipe` with zeros in the intensity columns. | KIT-102 (import) | fixing (user: fix + re-record; diagnosis `bba662dc`) |
+| F-19 | DIA_LIMPA route DA (lane `prot_dia_limpa`, new fixture) | 41 proteins at q < 0.05, of which only 18 are among the 40 planted changes. Every other route has at most 1 false positive on the same synthetic universe. The route ran RUV-III covariates (k = 2) on 8 samples. It is unknown whether the fault is the fixture, limpa/DPC on synthetic peptides, or the RUV step. Scientific; **not yet diagnosed**. | Lane `prot_dia_limpa` on the revision 2.2 fixture. | KIT-105 / KIT-106 | fixing: fixture (both DIA-NN lanes, user); caveats to KIT-114 |
 | F-20 | proteomics normalisation tab, DIA_LIMPA route | F-10 residual: after the limpa protein QC completes (head `peptide_count_filtered`), the tab still warns "Please complete the Quality Control filtering steps...". | Lane `prot_dia_limpa`, step `norm`. | KIT-105 | open |
 | F-21 | `tests/testthat/helper-e2e-browser.R:675` (`e2e_assert_prot_filtered_session_artifacts`) | The e2e harness looks for the legacy `filtered_session_data_latest.rds`, but the native export writes `filtered_session_*_native-export-*.msdia.tar`. Every proteomics browser lane (DIA, enrichment, TMT, LFQ, FragPipe) reaches the normalisation export and then fails on this check. | Any e2e proteomics lane on the revision 2.2 fixtures. | test harness | open |
-| F-22 | entry suite (`guiEntryCanonical`) | Two captures are not yet stable. (a) `prot_dia`'s `enrichment_completed` digest: plotly objects carry random 14-hex widget ids as list names. (b) `prot_tmt`'s store entries: a request id ending in 9 hex characters escapes the 10-hex mask. Without a fix these two lanes cannot be frozen. | Double run of `prot_dia` and `prot_tmt`. | KIT-101 (a third correction; needs approval) | open (decision needed) |
+| F-22 | entry suite (`guiEntryCanonical`) | Two captures are not yet stable. (a) `prot_dia`'s `enrichment_completed` digest: plotly objects carry random 14-hex widget ids as list names. (b) `prot_tmt`'s store entries: a request id ending in 9 hex characters escapes the 10-hex mask. Without a fix these two lanes cannot be frozen. | Double run of `prot_dia` and `prot_tmt`. | KIT-101 (a third correction; needs approval) | fixing (third correction approved) |
+
+## Diagnosis (`bba662dc`, [diagnosis/](diagnosis/)) and the user's decisions, 2026-11-07
+
+**F-18, confirmed.** No step on the LFQ route turns a 0 into NA.
+- **Mechanism:** the readers apply `as.numeric` only. The design checkpoint applies `log2(x + 1)` (`mod_prot_design_state_helpers.R:69-76`), so 0 becomes 0. Cyclic loess then turns those 0s into values from -4.5 to -15.5, which limma treats as measurements.
+- **Effect** (synthetic, 8% missing written as 0 vs written empty):
+  - MaxQuant: 1 of 40 planted changes found, against 16. The correlation filter drops 3 samples.
+  - FragPipe: all five WT samples dropped, and DA fails.
+- **Semantics:** MaxQuant and FragPipe write 0 for "not quantified". Perseus and other importers convert 0 to NA. DIA_LIMPA already maps values ≤ 0 to NA.
+- **Oracles recorded with zeros kept:** KIT-021 `lfq_300` (8.01% of cells are 0), and very likely KIT-054 `kc_lfq` (real data, not inspected). MCI-004.3 expects a 0 to survive the import.
+- **Decision ("Fix + re-record"):**
+  - `dplyr::na_if(..., 0)` in `importMaxQuantData` and `importFragPipeData`, with a test that fails first, and MCI-004.3 inverted;
+  - re-record the synthetic `lfq_300` oracles under new names, keeping the old ones as history;
+  - annotate the KIT-054 real-data oracles as recorded before the fix; real data is re-run at the final real-data gate;
+  - put missing values back into the LFQ lane fixtures.
+
+**F-19, mixed cause** (each factor isolated one at a time; the GUI result reproduced exactly):
+- **Fixture:** `kitProteinMatrix`'s per-sample loading gives KO − WT = −0.30 log2 at this seed. The generator writes `Precursor.Normalised` without removing it, as real DIA-NN output would. DIA_LIMPA normalises with `none`, so null proteins carry logFC ≈ −0.27, and the unnormalised true matrix alone gives 10 false positives.
+  - Centring gives 4 false positives with dpcDE, and 2 on the DIA route (cyclic loess).
+  - RUV-III covariates add about 9 to 11 (W uncorrelated with group; 20 controls at n = 8).
+  - `qvalue()` is more liberal than BH: 41 calls against 23.
+- **Decision ("Both DIA-NN lanes"):** `Precursor.Normalised` is written with the per-run loading removed, for the prot_dia and prot_dia_limpa fixtures. Both lanes are then frozen.
+
+| F-23 | DIA_LIMPA between-sample normalisation (`normaliseBetweenSamples` on the protein object; `dpcDE`) | A normalisation chosen on DIA_LIMPA changes only `protein_quant_table`, but the DA (`dpcDE`) fits `limpa_dpc_quant_results$quantified_elist`. So a chosen normalisation has no effect on the DA results: cyclic loess changed the table by up to 0.51 and the DA calls were unchanged (27/15/12 both ways). Found by the F-19 diagnosis (`diagnosis/f19_norm_check.R`). | `f19_norm_check.R` on the prot_dia_limpa fixture. | KIT-105 | fixing (user: "Fix F-23; keep default"); the default stays `none`, so no current output changes |
+
+**Statistical caveats → KIT-114** (user: "Ticket both"): (a) the DA q column uses `qvalue()`, which is more liberal than BH at small n; (b) RUV correction mode gave 88 false positives at n = 8 on this fixture.
+
+**Process note:** the diagnosis agent used a read-only `pgrep -f` once in a wait loop, against the host rule. It stopped and waited on its output files instead.
