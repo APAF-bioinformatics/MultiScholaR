@@ -1207,6 +1207,17 @@ if (!is.null(b$builds$kit_101) && !is.null(b$tickets[["094a"]]) && !is.null(b$ti
     }
 }
 
+# KIT-102 (the shared shell and import): the six screen journeys on kit_102, recorded and uncounted, against the
+# oracles KIT-101 verified: 102a lipid (lipid86s), 102b metab (metab86s), 102c trx (trx98a), 102m DIA_LIMPA
+# (limpa65_screen, v1.7), 102l LFQ (lfq101_fixture), 102t TMT (tmt101_fixture).
+if (!is.null(b$builds$kit_102)) {
+    kit_102 <- list(build = "kit_102", purpose = "exactness (recorded, uncounted; KIT-102)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("102", suffix)]] <- utils::modifyList(from, kit_102)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
