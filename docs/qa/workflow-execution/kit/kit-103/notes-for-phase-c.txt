@@ -1,0 +1,45 @@
+# KIT-103 notes for phases C and D (W4, W5, W6), from the W1, W2 and W3 reports (2026-11-08; the lead's copy)
+
+## The design core (W2)
+- **Builder commit:** commitOmicsDesign(workflowData, results, sourceDir, config).
+  - It raises omics_design_refused (missing source_dir, or a failed preflight, with the 'Invalid <label_lower> design: ...' text) before any bus write.
+  - It raises omics_design_save_failed, carrying the original message, after the bus write.
+- **The GUI's side of the commit:**
+  - **On error:** show paste('Error saving design matrix results:', msg), logger::log_error the refusal (the core no longer logs it), and remove the modal.
+  - **On success:** qcTrigger(TRUE), tab_status$design_matrix = 'complete', and the notification 'Design matrix and contrasts saved successfully!'.
+- **Import:** checkOmicsDesignImportFiles(importPath), then readOmicsDesignImport(importPath, config, sourceDir), then commitOmicsDesignImport(workflowData, imported, sourceDir, config).
+  - **Lipid's GUI order:** remove the modal; check the files; show 'Importing design files...' (id importing_design); run read and commit in tryCatch, prefixing errors with 'Error during import: ' at duration 15.
+  - **On success:** qcTrigger, tab_status, remove the notification, then 'Design imported successfully! Loaded %d assays with %d samples.' (n_assays and n_samples from commitOmicsDesignImport).
+  - **Metab** runs the file check before removing the modal (P-11; keep).
+- **Builder pieces:**
+  - buildOmicsDesignInitialState returns data_cln as a plain assay list; the module wraps it with saveWorkflowOwnedValue as today (KIT-075). It reads existingContrasts on both paths, so the reactive dependency is unchanged.
+  - The C4 append, apply and rename functions.
+  - buildOmicsDesignSavePayload(..., idKey = config$design$id_mapping_key).
+  - buildOmicsDesignBulkRenameMap keeps shiny::req in range mode.
+  - When record_excluded_runs is TRUE (trx), add group_levels = design$group_levels(design_matrix, factors()) and excluded_runs to the result.
+  - The reset-state and display formatters stay with the module.
+- **D6 wrappers** (one-liners). Example: validateLipidDesignAlignment(designMatrix, assayList, columnMapping = NULL, sampleIdCol = "Run", groupCol = "group", requireGroups = TRUE, requireReplicates = TRUE) calls validateOmicsDesignAlignment(designMatrix, assayList, omicsDesignRules("lipidomics"), ...). The same pattern applies to Contrasts and DaPreflight.
+- **Config wiring for the lead at W7:**
+  - lipid validate = function(results, columnMapping) validateOmicsDesignSave(results, columnMapping, "lipidomics"); metab likewise with "metabolomics";
+  - build_object = lipidDesignObject / metabDesignObject;
+  - design_import$reader = readOmicsDesignImport;
+  - design_import$record_design_file = TRUE for lipid, FALSE for metab (a new lgl1 field);
+  - trx group_levels = trxDesignGroupLevels, validate = trxDesignCheck, build_object = trxDesignObject. The func_trx_design.R copies win only after W5 deletes the mod_transcriptomics.R copies.
+- **test-omics-design-core.R:** the blocks that compare with today's functions need a Q row (Q-31 onward) or literals once W4 and W5 delete those functions: C1 validator, C1 save preflight, C2, C3 discovery and initial state, C4, C5 payload, the C3-C5 session, C8 lipid/metab and trx commits, C8 refusals, the two C10 comparisons, and the W2-finding assertion on today's failure. These stay live: C3 run order, C5 saved columns, C7, C8 artifacts, C10 reader.
+
+## The proteomics core (W3)
+- **Moved, with names kept, into R/utils_workflow_dia_state.R:** applyProtDesign{Bulk,Single}RenameUpdate(s), buildProtDesignSaveResultsPayload, buildDIAReferenceDesignState, buildProtDesignInitialState, buildProtDesignSaveResultsContrastsTable, transformProtDesignSampleNames and buildProtDesignStateCheckpoint. W6 calls them unchanged.
+- **Still in mod_ files for W6:** createProtDesignInitialStateReactive, registerProtDesignInitialStateSyncObserver, runProtDesignSaveResultsObserverShell, createProtDesignBuilderState, completeProtDesignPostCheckpoint and hydrateProtDesignImportedFastaSidecar (now GUI wrappers over the core annotation functions).
+- **annotation_step** is a named list, list(uniprot = retrieveProtDesignUniprotAnnotations, fasta = processProtDesignImportedFasta). The lead changes the schema from ref_or_null to a named list of refs at W7.
+- **test-prot-04-design.R's file guard** requires R/mod_prot_design_{builder_action,builder_display,builder_server,builder_state,import}_helpers.R. Deleting any of them strict-skips the whole file, so its Q row must cover that.
+
+## The config (W1)
+- **The frame reads:** help, multi_assay_banner, no_data_text, preview_text, preview_assays and testids[['import_existing']]. It shows the import button only when design_import is not NULL.
+- **The builder reads:** multi_assay_note (the first of three HTML pieces), matrix_heading, builder_texts and testids[['replicate_start']]. The replicate label is paste('Starting replicate number for', n, builder_texts[['replicate_suffix']]).
+- **Run order:** comes from config$design$run_order (required, no default). Drop the lipid builder's `profile$run_order %||% gtools::mixedsort` fallback.
+- **W6:** diff prot's builder-server renders against the shared ones, and report any other text difference to add to builder_texts.
+
+## Process
+- **Give each parallel agent its own scratch folder.** W2 and W3 collided in the shared scratchpad. Use .../scratchpad/kit-103-wN/.
+- **testServer masking:** keep the builder's local name design_matrix (helper-module-ci-trx-tabs.R:78 reads it), and use no shadowing locals in module frames.
+- **Byte identity:** the entry oracles capture data_available and design_matrix_exists as '<error> unused arguments (self, name)'. The shared frame must reproduce even these.
