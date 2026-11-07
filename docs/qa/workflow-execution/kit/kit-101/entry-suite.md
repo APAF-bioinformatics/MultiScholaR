@@ -113,3 +113,83 @@ The check-mode baseline (`test-baseline.md`) also shows the frozen lanes passing
 (`design-data_available`, `import-file_loaded`, `summary-report_ready`, ...) read as `<error> unused arguments (self,
 name)`; the value is deterministic and frozen as such. Inputs rendered by `renderUI` get no browser default unless the
 lane sets them (the proteomics format options and the trx RUVIII `M` are set explicitly).
+
+## Revision 2.2 (2026-11-07): new proteomics fixtures, the store capture (F-13), the F-11 refusal kinds; phase 1, not frozen
+
+**What changed in the suite.**
+- **Fixtures (F-07).** The five proteomics lanes run on the new synthetic fixtures (`kit-101/fixtures.txt`): 400
+  proteins, 4 (DIA) or 5 (TMT, LFQ) replicates per group, and a planted KO effect.
+- **Store capture (F-13, the approved second correction).** `guiEntryArtifacts` no longer counts the owner's store
+  files (`<store files>`). It records the store's committed entries (`<store entries>`): each entity directory that has
+  a `commit.json`, counted per masked entity path.
+- **F-11 refusal kinds (coordinator, after the R fixes on `ba019048`).**
+  - The proteomics `import_refusal` and every lane's `summary_refusal` are now messaged refusals.
+  - The protein routes (TMT, LFQ) have a new step, `qc_protein_intensity_filter_refusal`: a percentile of 150 is
+    refused with "intensity percentile must lie in [0, 100]".
+  - The trx lane has no QC refusal (see the findings below).
+
+**Runs** (all on `origin/performance-v2` `ba019048` plus this work, load_all, R 4.6.1, kit_100 library):
+- **Interrupted, not counted (pre-reboot).** A first determinism double run on `e0a05f84` (before the rebase) completed.
+  A second one on `83160cc9` was killed by a host reboot. The reboot also wiped the scratch records of both. This was an
+  instrumentation interruption, not a budget attempt. The completed pre-rebase double run had shown 9 of 10 lanes
+  identical and prot_dia unstable in the same capture as below.
+- **Verification (each proteomics lane once, in parallel, HEAD `2cfe18a1`).** Every lane reaches import, QC,
+  normalisation, DA, enrichment (prot_dia only) and the summary/report. DA tables (`fdr_qvalue`):
+
+  | lane | proteins in DA | samples | FDR non-NA | q < 0.05 | of which planted (P00001–P00040) |
+  |---|---|---|---|---|---|
+  | prot_dia | 385 | 8 | 385 | 15 | 15 |
+  | prot_dia_limpa | 393 | 8 | 393 | 41 | 18 |
+  | prot_tmt | 400 | 10 | 400 | 19 | 18 |
+  | prot_lfq | 400 | 10 | 400 | 17 | 16 |
+  | prot_lfq_fragpipe | 400 | 10 | 400 | 24 | 23 |
+
+  prot_dia enrichment (gprofiler2 through the doubles) gives 10 terms (5 up, 5 down).
+- **Determinism, runs A and B (HEAD `2cfe18a1`, the four files in parallel).**
+  - 8 of 10 lanes are identical: prot_dia_limpa, prot_lfq, prot_lfq_fragpipe, lipid_canonical, metab_lc, metab_gc,
+    metab_combined and trx_screen (at `2cfe18a1` the trx lane still had its pre-import QC refusal).
+  - After the trx lane correction (`26f09136`), runs C and D of the trx file are identical too.
+  - Lane runtimes: 43 to 369 s (ceiling 900 s). Test-file wall times: 48 to 929 s.
+- **Unstable after the F-13 correction (named, not corrected: the correction budget is spent).**
+  - **prot_dia**, `states/enrichment_completed`: the state's content digest, 6 captures (the steps from `enrichment`
+    to `summary_export`). The `EnrichmentResults` state holds plotly objects (`enrichment_plotly`). Their random
+    widget ids (14-hex names under `x$visdat`, `x$cur_data` and the `attrs` keys) differ between runs. The volatile
+    mask applies to text, not to list names inside a state digest. A diagnosis probe before the reboot showed this
+    as the only difference between two runs. The same capture was unstable in the pre-rebase double run.
+  - **prot_tmt**, `artifacts/<store entries>`: 14 captures (from `norm` to `summary_copy`). In run A, one committed
+    `dia-qc-product-` entry's request id ended in only 9 hex characters (`e2d23a8b9`). The 10-character hex mask did
+    not hide it, so it was listed under its own name instead of being counted with the masked entries (8 against 9).
+    The pre-rebase double run had prot_tmt identical, so this is intermittent: it depends on the length of a random
+    id.
+- **Against the frozen oracles.**
+  - lipid_canonical, metab_lc, metab_gc, metab_combined and trx_screen (C/D) differ only in the store capture
+    (`<store files>` replaced by `<store entries>`, every step) and in `summary_refusal` (the F-11 message).
+  - prot_dia and prot_dia_limpa differ from `import_refusal` on, in every step: new fixtures, the F-11 import message,
+    and the run now reaching the Q-value filter, rollup, DA, enrichment and report.
+  - prot_tmt, prot_lfq and prot_lfq_fragpipe have no frozen oracle.
+
+**Findings from these runs** (`R/` untouched here):
+- trx QC refusal before the import. The expression filter's F-11 message (`mod_trx_qc_filter.R`) is not reachable
+  through `mod_transcriptomics_server`:
+  - the QC sub-module servers start only after the design (`mod_lipid_qc_server`, `qc_trigger`), so a click before
+    the import reaches no observer;
+  - when the filter observer is created later (no `ignoreInit`), it runs the earlier click. In run A the filter was
+    applied at the design step (head `trx_expression_filtered`), before the lane's own filter step.
+  The trx lane therefore has no QC refusal step.
+- prot_dia (F-15, being fixed elsewhere). After enrichment, `summary_save` warns "The analysis record
+  (analysis_record.json) was not written: component checkpoint is incomplete", and `summary_report` warns that the
+  analysis record bundle was not exported. Captured as is.
+- prot_dia_limpa, normalisation tab. The tab still warns "Please complete the Quality Control filtering steps before
+  accessing normalization." on `norm_refusal`, `norm`, `correlation` and `session_export` after the limpa protein QC
+  completes (head `peptide_count_filtered`). The F-10 fix does not cover the DIA_LIMPA route.
+- prot_dia_limpa, DA. 41 proteins have q < 0.05, but only 18 of them are among the 40 planted changes. The route ran
+  normalisation with RUV-III covariates (k = 2, 8 samples). The other routes found 15 to 23 planted proteins, with at
+  most 1 false positive.
+- MaxQuant/FragPipe zeros. The import keeps a 0 intensity as a quantity (`log2(0 + 1)`). The LFQ fixtures therefore
+  carry no missing values (`kit-101/fixtures.txt`).
+
+**F-14.** The ticket's experiment budget says "6 in parallel, the KIT-099 checkpoint's settings", but the KIT-099
+checkpoint ran 8 in parallel (`head -1 kit-099/suite.txt`). The number for the checkpoint's settings is therefore 8.
+The per-file baseline (`test-baseline.md`) ran 6 in parallel, and stands as recorded.
+
+**Not frozen** (phase 1). The freeze waits for F-15, and for a decision on the two unstable captures above.

@@ -1,0 +1,73 @@
+KIT-101 revision 2.2: the proteomics fixtures (F-07) and the generator's reproduction record (F-06)
+=================================================================================================
+
+Tree: kit-101-fixtures from origin/performance-v2 91f3a534 (R/, inst/, DESCRIPTION unchanged by this work). R 4.6.1.
+
+1. Fixtures (F-07). tests/testdata/e2e/generate_fixtures.R writes them; manifest.json gives each lane's recipe and the
+   sha256 of every file. All five lanes share one synthetic universe: 400 proteins P00001-P00400, genes GENE1-GENE400,
+   1 to 4 observed tryptic peptides each, universe seed 20261107, one FASTA (sha256 identical in every lane). Protein
+   abundances come from the KIT-021 recipe (tools/profiling/kit_protein_corpus.R kitProteinRecipe/kitProteinMatrix):
+   P00001-P00040 (10%) carry a KO effect drawn from N(0, 1.2), with residual SD 0.4.
+
+   lane               dir                 file                   samples   rows   bytes (lane)  notes
+   prot_dia           prot_dia            report.tsv             4+4       8,989  ~1.34 MB      DIA-NN, 16 columns, seed 20261108
+   prot_dia_limpa     prot_dia_limpa      report.tsv             4+4       8,886  ~1.32 MB      DIA-NN, seed 20261109
+   prot_tmt           prot_tmt_pd         pd_tmt_peptides.tsv    5+5       400    ~0.10 MB      PD TMT10 (one plex), 2% empty, seed 20261110
+   prot_lfq           prot_lfq_maxquant   proteinGroups.txt      5+5       410    ~0.11 MB      +5 CON__ +5 REV__ rows, seed 20261111
+   prot_lfq_fragpipe  prot_lfq_fragpipe   combined_protein.tsv   5+5       400    ~0.15 MB      seed 20261112
+
+   DIA-NN columns: Run, Protein.Group, Protein.Ids, Protein.Names, Genes, Modified.Sequence, Stripped.Sequence,
+   Precursor.Id, Precursor.Charge, Q.Value, Global.Q.Value, PG.Q.Value, Global.PG.Q.Value, Proteotypic,
+   Precursor.Quantity, Precursor.Normalised. This is the set the import (importDIANNData), the Q-value filter
+   (srlQvalueProteotypicPeptideCleanHelper, diann_main_report, func_prot_qc_peptide_confidence_filters.R) and the rollup
+   (rollUpPrecursorToPeptideHelper) read. The filter has rows to remove: prot_dia has 188 rows with Q.Value > 0.01, 128
+   with Global.Q.Value > 0.01, 86 with Global.PG.Q.Value > 0.01 (4 unchanged proteins) and 350 non-proteotypic rows.
+
+   UniProt double: tests/testdata/gui-entry/uniprot/build.R, rebuilt from prot_dia/proteins.fasta (400 accessions,
+   gene names, constant GO columns as before). The gprofiler/clusterProfiler doubles are unchanged.
+
+   Placement. The lanes' fixtures replace the files in place in prot_dia/ and prot_dia_limpa/. For prot_tmt, prot_lfq
+   and prot_lfq_fragpipe they are in new directories, because the six-sample files in prot_tmt/ and prot_lfq/ are still
+   read by:
+   - tests/testthat/test-workflow-native-session.R (KIT-020/042 blocks: prot_lfq/proteinGroups.txt, prot_tmt/pd_tmt_peptides.tsv, values such as log2(1019.8 + 1));
+   - tools/profiling/kit_protein_corpus.R writeKitFixtureCorpus;
+   - the KIT-021 lifecycle members bound in docs/qa/workflow-execution/kit/bindings.json.
+   Those files are unchanged, and the manifest records them under retained_fixtures.
+
+   Development finding (fixture choice, not a code change): MaxQuant and FragPipe write a missing intensity as 0, and
+   the import keeps it as a quantity (log2(0 + 1) = 0). In development runs the ten-sample LFQ fixtures lost samples to
+   the correlation filter: 3 at the recipe's 8% missing, and 1 (MaxQuant) and 4 (FragPipe) at 2%. FragPipe then had 0
+   significant proteins. The two LFQ lanes therefore record missing_fraction 0. TMT (missing left empty, read as NA)
+   kept all 10 samples at 2%.
+
+2. Generator reproduction (F-06). `Rscript tests/testdata/e2e/generate_fixtures.R` writes:
+   - the generated lanes: the five proteomics lanes, and trx_screen through the KIT-040 tool;
+   - the retained prot_lfq/ and prot_tmt/ files, through their original writers, kept verbatim.
+   It then checks every sha256 the manifest records: 51 files, all match. It stops with an error on any mismatch.
+
+   Two consecutive runs gave byte-identical output (sha256sum over every fixture file), and `git status` showed no
+   change to any committed lipid, metab, trx, prot_lfq or prot_tmt file.
+
+   Not reproduced, kept, and recorded with the reason:
+   - lipid_canonical (3 LipidSearch tables and the design): hand-made tables with integer intensities. The earlier
+     writer's output from the same recipe differs, so the writer is removed.
+   - metab_lc, metab_gc, metab_combined: hand-edited tables and hand-written MS-DIAL seed_*.csv examples. No writer
+     exists for the custom import format.
+   - prot_dia/seed_report.tsv, prot_dia_limpa/seed_report.tsv, prot_tmt/seed_proteins.tsv: hand-made. No reader.
+   The entry-point oracles of the lipid and metab lanes are frozen on these bytes, so the bytes stay. The manifest
+   records the reasons in each lane's fixture_recipe$hand_made and in retained_fixtures$note.
+
+3. Pins, test-first. Changed or added in test-e2e-manifest.R:
+   - expected directories now include prot_tmt_pd, prot_lfq_maxquant and prot_lfq_fragpipe;
+   - every lane's and every retained file's sha256 is checked;
+   - the proteomics lanes have 400 proteins, at least 4 per group, two groups, KO_vs_WT, and one shared FASTA.
+   Results:
+   - on the HEAD tree before the change (git archive 91f3a534 plus the new test file): pass 139, fail 24, error 1. The
+     three new or changed blocks fail.
+   - after: test-e2e-manifest.R pass 237, fail 0; test-e2e-fixture-integrity.R pass 1, fail 0.
+
+4. On the fixed code (origin/performance-v2 ba019048 + this work, HEAD 2cfe18a1). Every proteomics entry lane reaches
+   import, QC, normalisation, DA, enrichment (prot_dia) and the summary/report on these fixtures. FDR is non-NA for
+   every protein in the DA (385, 393, 400, 400 and 400 proteins). Proteins at q < 0.05: 15, 41, 19, 17 and 24, of
+   which 15, 18, 18, 16 and 23 are planted. Table, determinism and findings: entry-suite.md, "Revision 2.2". After the
+   rebase: test-e2e-manifest.R pass 237, test-e2e-fixture-integrity.R pass 1, and the generator matches all 51 records.
