@@ -63,7 +63,7 @@ The evidence is in [fixes2/test-first.txt](fixes2/test-first.txt) and [fixes2/ta
 Records without a result-class state, which is every record that could be built before, are unchanged. A test fails first; the record, design and earlier steps are identical to the pre-enrichment record; 24 targeted files give 0 failures. On `prot_dia`, `analysis_record.json` and the report bundle are now written.
 
 | F-16 | `runDIAReferenceEnrichment` (proteomics enrichment) | The enrichment state carries no step provenance. The analysis record lists it as a legacy step: `validateWorkflowAnalysisRecord` reports "legacy step: enrichment_completed" as incomplete, and a replay of a `prot_dia` record that includes enrichment stops there (`workflow_replay_unsupported`). Found by the F-15 fix. | Build and validate the record on lane `prot_dia` after enrichment. | KIT-107 | passed to KIT-107 (user, 2026-11-07: "f16 pass to kit-107") |
-| F-17 | the trx QC filter (`mod_trx_qc_filter.R`), lane `trx_screen` | A click on the expression filter before import reaches no observer and is replayed when the design is saved, so the filter runs without a fresh request. Found by the fixtures agent (`26f09136`, which dropped that refusal step from the lane). | Lane `trx_screen`: click the filter before import, then save the design. | KIT-104 / KIT-110 | fixing (user, 2026-11-07: "f17 fix now") |
+| F-17 | the trx QC filter (`mod_trx_qc_filter.R`), lane `trx_screen` | A click on the expression filter before import reaches no observer and is replayed when the design is saved, so the filter runs without a fresh request. Found by the fixtures agent (`26f09136`, which dropped that refusal step from the lane). | Lane `trx_screen`: click the filter before import, then save the design. | KIT-104 / KIT-110 | **fixed** `dfabe0b3` |
 
 ## Revision 2.2, phase 1 (fixtures report, 2026-11-07)
 
@@ -71,8 +71,8 @@ The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start
 
 | F-18 | proteomics LFQ imports (MaxQuant `proteinGroups.txt`, FragPipe `combined_protein.tsv`; `R/func_prot_import_readers.R`) | Zero intensities appear to be kept as quantities rather than treated as missing. With 2% to 8% zeros in a synthetic fixture, the correlation filter dropped 1 to 4 of 10 samples. MaxQuant and FragPipe write 0 for "not quantified", so a zero kept as a value distorts every downstream step. Scientific; **not yet confirmed by diagnosis**. | Lane `prot_lfq` or `prot_lfq_fragpipe` with zeros in the intensity columns. | KIT-102 (import) | fixing (user: fix + re-record; diagnosis `bba662dc`) |
 | F-19 | DIA_LIMPA route DA (lane `prot_dia_limpa`, new fixture) | 41 proteins at q < 0.05, of which only 18 are among the 40 planted changes. Every other route has at most 1 false positive on the same synthetic universe. The route ran RUV-III covariates (k = 2) on 8 samples. It is unknown whether the fault is the fixture, limpa/DPC on synthetic peptides, or the RUV step. Scientific; **not yet diagnosed**. | Lane `prot_dia_limpa` on the revision 2.2 fixture. | KIT-105 / KIT-106 | fixing: fixture (both DIA-NN lanes, user); caveats to KIT-114 |
-| F-20 | proteomics normalisation tab, DIA_LIMPA route | F-10 residual: after the limpa protein QC completes (head `peptide_count_filtered`), the tab still warns "Please complete the Quality Control filtering steps...". | Lane `prot_dia_limpa`, step `norm`. | KIT-105 | open |
-| F-21 | `tests/testthat/helper-e2e-browser.R:675` (`e2e_assert_prot_filtered_session_artifacts`) | The e2e harness looks for the legacy `filtered_session_data_latest.rds`, but the native export writes `filtered_session_*_native-export-*.msdia.tar`. Every proteomics browser lane (DIA, enrichment, TMT, LFQ, FragPipe) reaches the normalisation export and then fails on this check. | Any e2e proteomics lane on the revision 2.2 fixtures. | test harness | open |
+| F-20 | proteomics normalisation tab, DIA_LIMPA route | F-10 residual: after the limpa protein QC completes (head `peptide_count_filtered`), the tab still warns "Please complete the Quality Control filtering steps...". | Lane `prot_dia_limpa`, step `norm`. | KIT-105 | **fixed** `7ff973a3` |
+| F-21 | `tests/testthat/helper-e2e-browser.R:675` (`e2e_assert_prot_filtered_session_artifacts`) | The e2e harness looks for the legacy `filtered_session_data_latest.rds`, but the native export writes `filtered_session_*_native-export-*.msdia.tar`. Every proteomics browser lane (DIA, enrichment, TMT, LFQ, FragPipe) reaches the normalisation export and then fails on this check. | Any e2e proteomics lane on the revision 2.2 fixtures. | test harness | **fixed** `cd342970` (e2e evidence `01b60213`) |
 | F-22 | entry suite (`guiEntryCanonical`) | Two captures are not yet stable. (a) `prot_dia`'s `enrichment_completed` digest: plotly objects carry random 14-hex widget ids as list names. (b) `prot_tmt`'s store entries: a request id ending in 9 hex characters escapes the 10-hex mask. Without a fix these two lanes cannot be frozen. | Double run of `prot_dia` and `prot_tmt`. | KIT-101 (a third correction; needs approval) | fixing (third correction approved) |
 
 ## Diagnosis (`bba662dc`, [diagnosis/](diagnosis/)) and the user's decisions, 2026-11-07
@@ -102,3 +102,20 @@ The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start
 **Statistical caveats → KIT-114** (user: "Ticket both"): (a) the DA q column uses `qvalue()`, which is more liberal than BH at small n; (b) RUV correction mode gave 88 false positives at n = 8 on this fixture.
 
 **Process note:** the diagnosis agent used a read-only `pgrep -f` once in a wait loop, against the host rule. It stopped and waited on its output files instead.
+
+## Fixes, revision 2.3 ([fixes3/](fixes3/)), 2026-11-07
+
+- **F-17:** the server notes the click value present when it starts, and its observer ignores that value. `ignoreInit = TRUE` was tried first and rejected: it also drops a first click made in the same flush as the start, which broke MCI-028.1/.2/.3 and the F-11 block (recorded). The brief's premise that lipid and metab use `ignoreInit` was wrong; they don't.
+- **F-20:** the DIA_LIMPA route never writes `tab_status$quality_control = "complete"`. `mod_prot_qc_server` marks QC complete only at `protein_replicate_filtered`, and the limpa protein stage ends at `peptide_count_filtered`. On DIA_LIMPA, a head at `peptide_count_filtered` or `ruv_covariates` now counts as QC complete for the warning. Nothing else is written.
+- **F-21:** the assertion reads the latest-session pointer, checks its schema and status and the archive's name, size and sha256, and checks that the summary names the same archive. Two negative cases each fail exactly one check.
+- **The e2e proteomics browser lanes on the revision 2.2 fixtures** (package from source):
+
+| Lane | Result | Time |
+|---|---|---|
+| DIA | 41 passed, 0 failed | 259 s |
+| enrichment (gprofiler2 and clusterProfiler) | 96 passed, 0 failed | 526 s |
+| TMT, LFQ and FragPipe | 150 passed, 0 failed | 369 s |
+| DIA_LIMPA | 11 passed, 1 skip (no browser QC path yet, by design) | 61 s |
+
+| F-24 | lipid and metab QC apply observers (`mod_lipid_qc_intensity_server_helpers.R:127`, `mod_metab_qc_intensity.R:358`); the trx revert observer | The same class as F-17: a click made before the server starts can be run when it starts. Found while fixing F-17; not reproduced through the public servers yet. | Construct the F-17 test on the lipid and metab QC intensity servers. | KIT-104 | open (decision needed) |
+| F-25 | `tests/testthat/test-e2e-proteomics-dia-limpa.R`, the checks after the export | They still expect legacy fields (`use_limpa`, `current_s4_object@args`, `workflow_type` 'DIA'). They are not reachable while the lane skips at QC, and will fail once a limpa browser QC path exists. | Read the lane file after its QC skip. | KIT-104 | open |
