@@ -467,8 +467,11 @@ guiEntryTrxSteps <- function(lane) {
       api$upload("import-assay1_file_std", bad)
       api$set(list(`import-process_import` = 1L))
     }),
-    guiEntryStep("qc_refusal", "qc", refusal = "message", function(api) {
-      # KIT-101 rev 2.2 (F-11): the expression filter before the count data are imported, refused with a message.
+    guiEntryStep("qc_refusal", "qc", refusal = "silent", function(api) {
+      # KIT-101 rev 2.2 (F-11): the expression filter before the count data are imported. The filter's message
+      # (mod_trx_qc_filter.R) is not reachable through mod_transcriptomics_server: the QC sub-module servers start
+      # only after the design (mod_lipid_qc_server's qc_trigger), so before the import the click reaches no observer.
+      # Recorded as today's behaviour, a silent refusal (development run on ba019048 + 83160cc9: no notification).
       api$defaults(mod_trx_qc_filter_ui, "qc-filter")
       api$set(list(`qc-filter-apply_filter` = 1L))
     }),
