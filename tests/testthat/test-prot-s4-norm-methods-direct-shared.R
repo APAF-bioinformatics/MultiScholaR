@@ -168,3 +168,61 @@ test_that("protein S4 normalisation methods preserve switch routing and RUV help
   expect_identical(ruv_corrected@protein_quant_table$Protein.Ids, c("P1", "P2"))
   expect_equal(ruv_corrected@protein_quant_table$S1, c(10, 20))
 })
+
+test_that("KIT-101 F-23: a between-sample normalisation on a DIA_LIMPA object reaches the quantified EList dpcDE fits; none leaves it byte-identical", {
+  skip_if_not_installed("limpa")
+  skip_if_not_installed("limma")
+  ids <- sprintf("P%02d", 1:60)
+  samples <- paste0("S", 1:6)
+  set.seed(23)
+  E <- matrix(stats::rnorm(360, 20, 1.5), 60, 6, dimnames = list(ids, samples))
+  E <- sweep(E, 2, c(0, 0.3, -0.2, 0.5, -0.4, 0.1), "+")
+  nobs <- matrix(2L, 60, 6, dimnames = dimnames(E))
+  nobs[c(5, 70, 200)] <- 0L
+  se <- matrix(0.2, 60, 6, dimnames = dimnames(E))
+  elist <- methods::new("EList", list(E = E, genes = data.frame(NPrec = rep(2L, 60L), PropObs = rep(1, 60L), row.names = ids),
+    other = list(standard.error = se, n.observations = nobs)))
+  table <- data.frame(Protein.Ids = ids, as.data.frame(E, check.names = FALSE), check.names = FALSE, stringsAsFactors = FALSE)
+  rownames(table) <- NULL
+  design <- data.frame(Run = samples, group = rep(c("A", "B"), each = 3L), replicates = rep(1:3, 2L), stringsAsFactors = FALSE)
+  object <- ProteinQuantitativeData(protein_quant_table = table, protein_id_column = "Protein.Ids",
+    protein_id_table = data.frame(Protein.Ids = ids, stringsAsFactors = FALSE), design_matrix = design,
+    sample_id = "Run", group_id = "group", technical_replicate_id = "replicates",
+    args = list(limpa_dpc_quant_results = list(quantified_elist = elist, standard_errors = se, n_observations = nobs)))
+  normalise <- function(method) {
+    out <- NULL
+    invisible(utils::capture.output(out <- suppressMessages(normaliseBetweenSamples(object, normalisation_method = method))))
+    out
+  }
+
+  # The default (none): the DPC results, the EList and its E are byte-identical to the input.
+  none <- normalise("none")
+  expect_identical(serialize(none@args$limpa_dpc_quant_results$quantified_elist$E, NULL), serialize(E, NULL))
+  expect_identical(none@args$limpa_dpc_quant_results, object@args$limpa_dpc_quant_results)
+
+  # A chosen method: the EList's E is normalised as the protein table is, and nothing else in the results changes.
+  cyclic <- normalise("cyclicloess")
+  results <- cyclic@args$limpa_dpc_quant_results
+  normalised_E <- results$quantified_elist$E
+  expect_false(isTRUE(all.equal(normalised_E, E)))
+  expect_equal(normalised_E, limma::normalizeCyclicLoess(E))
+  table_after <- as.matrix(cyclic@protein_quant_table[match(ids, cyclic@protein_quant_table$Protein.Ids), samples])
+  expect_equal(unname(normalised_E[ids, samples]), unname(table_after))
+  expect_identical(results$quantified_elist$other, elist$other)
+  expect_identical(results$quantified_elist$genes, elist$genes)
+  expect_identical(results$standard_errors, se)
+  expect_identical(results$n_observations, nobs)
+
+  # The DA's dpcDE branch receives the normalised E.
+  captured <- new.env(parent = emptyenv())
+  testthat::local_mocked_bindings(dpcDE = function(y, design, plot = TRUE, ...) {
+    captured$E <- y$E
+    limma::lmFit(y$E, design)
+  }, .package = "limpa")
+  result <- suppressMessages(differentialAbundanceAnalysis(cyclic,
+    contrasts_tbl = data.frame(contrasts = "B_vs_A=groupB-groupA", stringsAsFactors = FALSE),
+    formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0, eBayes_trend = FALSE, eBayes_robust = FALSE,
+    args_row_id = "Protein.Ids", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))
+  expect_identical(result$da_model$model, "dpcDE")
+  expect_equal(captured$E, normalised_E[, samples])
+})

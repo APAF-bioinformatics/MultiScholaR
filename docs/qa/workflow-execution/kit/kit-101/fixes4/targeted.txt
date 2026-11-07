@@ -23,3 +23,27 @@ Synthetic corpora zero counts (aggregate, quantity columns only; the KC real dat
 So of the bound kit oracles only KIT-021 lfq_300_* (corpus lfq_300) change. lfq_fixture / lfq48_fixture /
 lfq65_fixture (KIT-021/048/065 lifecycle), the TMT populations and the e2e LFQ lanes carry no zeros and are unchanged.
 KIT-054 kc_lfq (and the 054l kc_lfq_dotted legacy lane) are real data, not inspected; their zeros are likely.
+
+== F-23 (normaliseBetweenSamples, ProteinQuantitativeData) ==
+Dependents: git grep -l "normaliseBetweenSamples\|limpa_dpc_quant_results\|quantified_elist" tests/testthat/, protein
+files (the lipid / metab / peptide files call their own methods, untouched).
+  test-prot-s4-norm-methods-direct-shared.R       pass 11   fail 0 skip 1  (9 s)
+  test-prot-07d-da-model-stats-shared.R           pass 62   fail 0 skip 1  (12 s)
+  test-module-ci-prot-dia-limpa.R                 pass 33   fail 0 skip 2  (10 s)
+  test-prot-05b-norm-module-contracts.R           pass 497  fail 0 skip 9  (10 s)
+  test-prot-05d-norm-module-characterization.R    pass 100  fail 0 skip 10 (14 s)
+  test-module-ci-prot-norm.R                      pass 60   fail 0 skip 4  (7 s)
+  test-prot-ruv-sweep-imputation.R                pass 18   fail 0 skip 0  (11 s)
+  test-prot-04-design.R                           pass 1560 fail 0 skip 4  (13 s)
+  test-prot-s4-qc-direct-shared.R                 pass 72   fail 0 skip 0  (14 s)
+  test-workflow-prot-declarations.R               pass 303  fail 0 skip 2  (133 s)
+  test-workflow-saved-consumers.R                 pass 47   fail 0 skip 0  (9 s)
+  test-workflow-saved-exports.R                   pass 276  fail 0 skip 4  (35 s)
+  test-workflow-saved-installed.R                 pass 0    fail 0 skip 1  (8 s; needs an install)
+  test-workflow-saved-qc.R                        pass 120  fail 0 skip 0  (46 s)
+  test-workflow-native-session.R                  run under F-18 (733 pass); F-23 touches only objects carrying the
+                                                  DPC EList with a method other than none
+All skips pre-existing (quarantine or environment). Not run: test-e2e-proteomics-dia-limpa.R (an e2e lane; e2e is
+another agent's area; DIA_LIMPA runs with none, which this fix leaves untouched).
+Oracles: none change. The DIA_LIMPA default is none; with none the method skips the EList block and leaves the results untouched, so the
+owned args digest is unchanged and the checkpoint reuses the saved reference (checkpointDIAOwnedArgs).

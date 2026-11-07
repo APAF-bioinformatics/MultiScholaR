@@ -97,6 +97,29 @@ setMethod(
       as.data.frame() |>
       rownames_to_column(protein_id_column)
 
+    # KIT-101 F-23: on the DIA_LIMPA route the DA (dpcDE) fits the DPC quantification's EList, not the protein table,
+    # so a chosen method is applied to the EList's E as well, with the same normaliser. The standard errors and
+    # observation counts are kept as quantified (as the RUV-III correction mode keeps them). `none` leaves the
+    # results untouched.
+    limpa_results <- theObject@args$limpa_dpc_quant_results
+    if (!identical(normalisation_method, "none") && is.list(limpa_results) &&
+        !is.null(limpa_results$quantified_elist)) {
+      normaliser <- switch(normalisation_method,
+        cyclicloess = "normalizeCyclicLoess",
+        quantile = "normalizeQuantiles",
+        scale = "normalizeMedianAbsValues"
+      )
+      if (!is.null(normaliser)) {
+        elist_matrix <- limpa_results$quantified_elist$E
+        elist_matrix[!is.finite(elist_matrix)] <- NA
+        normalised_elist_matrix <- resolveProtLimmaNormalizer(normaliser)(elist_matrix)
+        normalised_elist_matrix[!is.finite(normalised_elist_matrix)] <- NA
+        dimnames(normalised_elist_matrix) <- dimnames(limpa_results$quantified_elist$E)
+        limpa_results$quantified_elist$E <- normalised_elist_matrix
+        theObject@args$limpa_dpc_quant_results <- limpa_results
+      }
+    }
+
     theObject <- cleanDesignMatrix(theObject)
 
     updated_object <- theObject

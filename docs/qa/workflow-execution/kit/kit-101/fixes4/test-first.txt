@@ -28,3 +28,23 @@ Fix: R/func_prot_import_readers.R, importFragPipeData and importMaxQuantData:
    before: pass 0 fail 8   protein_s4_initial had no NA cells (expected the 10 zero cells) and held log2 values of 0;
                            after cyclic loess the minimum was -11.9 (expected > 15), on both readers
    after:  pass 8 of 8; whole file pass 733 fail 0 skip 2
+
+== F-23: a between-sample normalisation chosen on DIA_LIMPA reaches the EList dpcDE fits; default none unchanged ==
+Fix: R/func_prot_s4_norm_methods.R, normaliseBetweenSamples (ProteinQuantitativeData): when the method is not
+"none" and args$limpa_dpc_quant_results$quantified_elist is present, the same limma normaliser (normalizeCyclicLoess,
+normalizeQuantiles, normalizeMedianAbsValues) is applied to the EList's E. other$standard.error,
+other$n.observations, genes and the results' standard_errors / n_observations copies are kept as quantified.
+
+4. tests/testthat/test-prot-s4-norm-methods-direct-shared.R
+   "KIT-101 F-23: a between-sample normalisation on a DIA_LIMPA object reaches the quantified EList dpcDE fits; none
+   leaves it byte-identical"
+   (60 proteins x 6 samples with per-sample loading shifts; DPC EList with standard errors and observation counts)
+   - none: serialize(E) byte-identical and the whole limpa_dpc_quant_results identical to the input;
+   - cyclicloess: E differs from the input, equals limma::normalizeCyclicLoess(E) and the normalised protein table;
+     other, genes, standard_errors, n_observations identical;
+   - differentialAbundanceAnalysis on the normalised object: model dpcDE, and the E it hands dpcDE (limpa::dpcDE
+     mocked to capture y$E) is the normalised E.
+   before: pass 8 fail 3   ("Expected isTRUE(all.equal(normalised_E, E)) to be FALSE ... actual TRUE"; E not equal to
+                           normalizeCyclicLoess(E); E not equal to the normalised protein table). The none
+                           assertions passed before, as they must.
+   after:  pass 11 of 11; whole file pass 11 fail 0 skip 1 (the skip is quarantined Q-18, pre-existing)
