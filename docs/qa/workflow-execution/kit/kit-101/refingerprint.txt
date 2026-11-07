@@ -1,0 +1,22 @@
+# KIT-101: the kit-065 protein oracle records re-fingerprinted under protocol v1.7 (kit-101/refingerprint.R, KIT-092's method; the v1.6 harness is workflow_kit.R at 9dbf531d). 2026-11-07T22:59:50+11:00
+## oracles-limpa_screen.rds on browser-smoke.InuLC5
+  oracles-limpa_screen.rds design       component peptide_data (result_table) re-hashed: 0050bf2251c9 -> e46bd871f6ea
+  oracles-limpa_screen.rds correlation  was dia-pearson-selection:993995f35b25
+  oracles-limpa_screen.rds correlation  now dia-pearson-selection:97df6bb7da17
+  oracles-limpa_screen.rds ruv_covariates was ruv_covariates_science
+  oracles-limpa_screen.rds ruv_covariates was dia-ruv-covariates:2026fa35158d
+  oracles-limpa_screen.rds ruv_covariates now ruv_covariates_science
+  oracles-limpa_screen.rds ruv_covariates now dia-ruv-covariates:ec692084410d
+  oracles-limpa_screen.rds session_export was ruv_covariates_science
+  oracles-limpa_screen.rds session_export now ruv_covariates_science
+  oracles-limpa_screen.rds da           was ruv_covariates_science
+  oracles-limpa_screen.rds da           was dia-contrast-references:9e333dca4c08
+  oracles-limpa_screen.rds da           now ruv_covariates_science
+  oracles-limpa_screen.rds da           now dia-contrast-references:26db117abaed
+  oracles-limpa_screen.rds report       was ruv_covariates_science
+  oracles-limpa_screen.rds report       now ruv_covariates_science
+ORACLE oracles-limpa_screen.rds store .workflow-entities head d56bf208b115 | steps 14 | v1.6 recomputation equal to the record | result_table components re-hashed 1 | products changed 7 | from faaedef65c36 to c4a5f80f5b32 | 20 s
+## oracles-lfq_fixture.rds on browser-smoke.InuLC5
+ORACLE oracles-lfq_fixture.rds UNAVAILABLE store missing: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-3b8ad572d18545/.workflow-entities 
+## oracles-tmt_fixture.rds on browser-smoke.InuLC5
+ORACLE oracles-tmt_fixture.rds UNAVAILABLE store missing: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/tmt_fixture/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-3b944e4b7d0fc3/.workflow-entities 
