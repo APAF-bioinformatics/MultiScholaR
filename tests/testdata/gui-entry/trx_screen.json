@@ -1,6 +1,6 @@
 {
   "lane": "trx_screen",
-  "source_sha": "e989e93eda32bc0b11468b922582181d205db7a8",
+  "source_sha": "ddf42372e7054b1027430178a0e873a496baf6bb",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
   "frozen": "2026-11-07",
@@ -100,7 +100,9 @@
         "transcriptomics_workflow-workflow_progress": "<ui> 46262e4e7a9bd0f111a96a668c078c7d83a79031f9bb5c0fea2bf6219fa1a39c"
       },
       "artifacts": {
-        "<store files>": 9
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 2
+        }
       },
       "notifications": [
         {
@@ -213,7 +215,9 @@
         "transcriptomics_workflow-workflow_progress": "<ui> e51da5beccc72bc5c6cc73ca4bb582e81f6bd2fc9b18aed56f0a5c00257605d8"
       },
       "artifacts": {
-        "<store files>": 24,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 7
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/data_cln_counts.tab": "dbf9c574e26bc83b6a854287e79279f6daef475239ac700744fdeae1506d93aa",
@@ -326,7 +330,9 @@
         "transcriptomics_workflow-workflow_progress": "<ui> e51da5beccc72bc5c6cc73ca4bb582e81f6bd2fc9b18aed56f0a5c00257605d8"
       },
       "artifacts": {
-        "<store files>": 24,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 7
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/data_cln_counts.tab": "dbf9c574e26bc83b6a854287e79279f6daef475239ac700744fdeae1506d93aa",
@@ -451,7 +457,10 @@
         "transcriptomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 45,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 12,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/config.ini": "<present>",
@@ -606,7 +615,12 @@
         "transcriptomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 66,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 17,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/config.ini": "<present>",
@@ -736,7 +750,12 @@
         "transcriptomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 72,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 19,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/config.ini": "<present>",
@@ -866,7 +885,12 @@
         "transcriptomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 72,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 19,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/config.ini": "<present>",
@@ -1001,7 +1025,13 @@
         "transcriptomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 81,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 20,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "scripts/transcriptomics/assay_manifest.txt": "<present>",
         "scripts/transcriptomics/column_mapping.json": "<present>",
         "scripts/transcriptomics/config.ini": "<present>",
@@ -1141,7 +1171,15 @@
         "transcriptomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 123,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 29,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "results/transcriptomics/gene_qc/ruv_normalised_log_values.tsv": "4d4118f8b42e85345f078d1b8a452d4f207ba1fcda16d3a10e2aa339c50b0acf",
         "results/transcriptomics/gene_qc/trx_raw_pca.png": "<present>",
         "results/transcriptomics/gene_qc/trx_raw_rle.png": "<present>",
@@ -1288,7 +1326,18 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 150,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 34,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",
         "results/transcriptomics/da_genes/top_de_genes.tsv": "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27",
@@ -1336,7 +1385,7 @@
     "summary_refusal": {
       "step": "summary_refusal",
       "tab": "summary",
-      "kind": "silent_refusal",
+      "kind": "refusal",
       "head": "trx_ruvs",
       "history": [
         "initial",
@@ -1450,7 +1499,18 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 150,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 34,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",
         "results/transcriptomics/da_genes/top_de_genes.tsv": "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27",
@@ -1480,11 +1540,16 @@
         "scripts/transcriptomics/manifest.json": "<present>",
         "scripts/transcriptomics/transcriptomics_import_summary.tsv": "40e66e4bad1217ddbe23fe67e5cfe5f06ea476dc7cb9fcde07de591a1df0c139"
       },
-      "notifications": [],
+      "notifications": [
+        {
+          "type": "warning",
+          "message": "Please copy the results to the publication directory before generating the report (Copy to Publication Directory)."
+        }
+      ],
       "refusal_check": {
         "head_unchanged": true,
         "history_unchanged": true,
-        "refused": false
+        "refused": true
       }
     },
     "summary_ruviii": {
@@ -1604,7 +1669,19 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 162,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruviii_export-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",
         "results/transcriptomics/da_genes/top_de_genes.tsv": "605111e573e3ed7348992ef2169e7b787f5d5528fc7777d8d1ac9270995e5a27",
@@ -1757,7 +1834,19 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 162,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruviii_export-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "integration/transcriptomics_normalized_data.tsv": "0f500346cc4d785e371b025ee80488a7bb403b303f326fe82331fbd638d2fd57",
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",
@@ -1923,7 +2012,19 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 162,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruviii_export-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "integration/transcriptomics_normalized_data.tsv": "0f500346cc4d785e371b025ee80488a7bb403b303f326fe82331fbd638d2fd57",
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",
@@ -2105,7 +2206,19 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 162,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruviii_export-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "integration/transcriptomics_normalized_data.tsv": "0f500346cc4d785e371b025ee80488a7bb403b303f326fe82331fbd638d2fd57",
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",
@@ -2296,7 +2409,19 @@
         "transcriptomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 162,
+        "<store entries>": {
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruviii_export-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>": 1,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>": 1
+        },
         "integration/transcriptomics_normalized_data.tsv": "0f500346cc4d785e371b025ee80488a7bb403b303f326fe82331fbd638d2fd57",
         "results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv": "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
         "results/transcriptomics/da_genes/ruv_optimization_summary.txt": "<present>",

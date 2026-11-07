@@ -1,6 +1,6 @@
 {
   "lane": "lipid_canonical",
-  "source_sha": "e989e93eda32bc0b11468b922582181d205db7a8",
+  "source_sha": "ddf42372e7054b1027430178a0e873a496baf6bb",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
   "frozen": "2026-11-07",
@@ -103,7 +103,9 @@
         "lipidomics_workflow-workflow_progress": "<ui> 46262e4e7a9bd0f111a96a668c078c7d83a79031f9bb5c0fea2bf6219fa1a39c"
       },
       "artifacts": {
-        "<store files>": 9
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 2
+        }
       },
       "notifications": [
         {
@@ -219,7 +221,9 @@
         "lipidomics_workflow-workflow_progress": "<ui> e51da5beccc72bc5c6cc73ca4bb582e81f6bd2fc9b18aed56f0a5c00257605d8"
       },
       "artifacts": {
-        "<store files>": 24,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 7
+        },
         "scripts/lipidomics/assay_manifest.txt": "<present>",
         "scripts/lipidomics/column_mapping.json": "<present>",
         "scripts/lipidomics/data_cln_LCMS_Neg.tab": "c29eca7b6499bf0be752842b7ad35b656b090b3c8462f3f54aa02793c87f444d",
@@ -337,7 +341,9 @@
         "lipidomics_workflow-workflow_progress": "<ui> e51da5beccc72bc5c6cc73ca4bb582e81f6bd2fc9b18aed56f0a5c00257605d8"
       },
       "artifacts": {
-        "<store files>": 24,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 7
+        },
         "scripts/lipidomics/assay_manifest.txt": "<present>",
         "scripts/lipidomics/column_mapping.json": "<present>",
         "scripts/lipidomics/data_cln_LCMS_Neg.tab": "c29eca7b6499bf0be752842b7ad35b656b090b3c8462f3f54aa02793c87f444d",
@@ -473,7 +479,10 @@
         "lipidomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 48,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 12,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3
+        },
         "scripts/lipidomics/assay_manifest.txt": "<present>",
         "scripts/lipidomics/column_mapping.json": "<present>",
         "scripts/lipidomics/config.ini": "<present>",
@@ -615,7 +624,14 @@
         "lipidomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 156,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 31,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 7,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 7,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -767,7 +783,15 @@
         "lipidomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 264,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 50,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 14,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 14,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -930,7 +954,15 @@
         "lipidomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 264,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 50,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 14,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 14,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -1097,7 +1129,15 @@
         "lipidomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 354,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 66,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 21,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 21,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -1262,7 +1302,15 @@
         "lipidomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 354,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 66,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 21,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 21,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/lipidomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -1434,7 +1482,15 @@
         "lipidomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 450,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 82,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 29,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 29,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/lipidomics/lipid_qc/lcms_neg_pre_norm_correlation.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_pre_norm_density.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_pre_norm_pca.png": "<present>",
@@ -1620,7 +1676,18 @@
         "lipidomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 633,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 116,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 8,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 38,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 39,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_correlation.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_density.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_pca.png": "<present>",
@@ -1814,7 +1881,20 @@
         "lipidomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 657,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 122,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 8,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 38,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 39,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_correlation.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_density.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_pca.png": "<present>",
@@ -2012,7 +2092,20 @@
         "lipidomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 661,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 123,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 8,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 38,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 39,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_correlation.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_density.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_pca.png": "<present>",
@@ -2210,7 +2303,20 @@
         "lipidomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 661,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 123,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 8,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 38,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 39,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_correlation.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_density.png": "<present>",
         "results/lipidomics/lipid_qc/lcms_neg_post_norm_pca.png": "<present>",
@@ -2412,7 +2518,23 @@
         "lipidomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 787,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 144,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 10,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>": 2,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 44,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 48,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv": "5db7cf3e45016716598a1c845487c05a310a2bba8d1cfa7743dcf70921591e49",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/lipidomics/da_lipids/de_posmode_lipids_groupKO-groupWT_long_annot.tsv": "8865666deb615a13ff2ad297b8aabc0303f0308d0d13ec474e8cf4f4b58f2d59",
@@ -2502,7 +2624,7 @@
     "summary_refusal": {
       "step": "summary_refusal",
       "tab": "summary",
-      "kind": "silent_refusal",
+      "kind": "refusal",
       "head": "lipid_correlation_filtered",
       "history": [
         "initial",
@@ -2633,7 +2755,23 @@
         "lipidomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 787,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 144,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 10,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>": 2,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 44,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 48,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv": "5db7cf3e45016716598a1c845487c05a310a2bba8d1cfa7743dcf70921591e49",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/lipidomics/da_lipids/de_posmode_lipids_groupKO-groupWT_long_annot.tsv": "8865666deb615a13ff2ad297b8aabc0303f0308d0d13ec474e8cf4f4b58f2d59",
@@ -2705,11 +2843,16 @@
         "scripts/lipidomics/lipidomics_import_summary.tsv": "880815d0166a06fc0a87db149afbbcd25d373f57ce17c62d3f998450b1cdae88",
         "scripts/lipidomics/manifest.json": "<present>"
       },
-      "notifications": [],
+      "notifications": [
+        {
+          "type": "warning",
+          "message": "Please copy the results to the publication directory before generating the report (Copy to Publication Directory)."
+        }
+      ],
       "refusal_check": {
         "head_unchanged": true,
         "history_unchanged": true,
-        "refused": false
+        "refused": true
       }
     },
     "summary_save": {
@@ -2846,7 +2989,23 @@
         "lipidomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 787,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 144,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 10,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>": 2,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 44,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 48,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "integration/lipidomics_lipid_canonical_final_s4.RDS": "<present>",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv": "5db7cf3e45016716598a1c845487c05a310a2bba8d1cfa7743dcf70921591e49",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx": "<present>",
@@ -3067,7 +3226,23 @@
         "lipidomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 787,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 144,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 10,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>": 2,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 44,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 48,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "integration/lipidomics_lipid_canonical_final_s4.RDS": "<present>",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv": "5db7cf3e45016716598a1c845487c05a310a2bba8d1cfa7743dcf70921591e49",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx": "<present>",
@@ -3318,7 +3493,23 @@
         "lipidomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 787,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 144,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 10,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>": 2,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 44,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 48,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "integration/lipidomics_lipid_canonical_final_s4.RDS": "<present>",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv": "5db7cf3e45016716598a1c845487c05a310a2bba8d1cfa7743dcf70921591e49",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx": "<present>",
@@ -3579,7 +3770,23 @@
         "lipidomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 787,
+        "<store entries>": {
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 144,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 10,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>": 2,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_between_sample_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_duplicate_resolution-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_intensity_filter-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_itsd_normalisation-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_log2-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_pairs-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/lipid_pearson_selection-<ID>": 1,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 44,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 48,
+          "scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 4
+        },
         "integration/lipidomics_lipid_canonical_final_s4.RDS": "<present>",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.tsv": "5db7cf3e45016716598a1c845487c05a310a2bba8d1cfa7743dcf70921591e49",
         "results/lipidomics/da_lipids/de_negmode_lipids_groupKO-groupWT_long_annot.xlsx": "<present>",

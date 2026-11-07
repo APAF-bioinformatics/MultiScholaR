@@ -1,6 +1,6 @@
 {
   "lane": "metab_gc",
-  "source_sha": "e989e93eda32bc0b11468b922582181d205db7a8",
+  "source_sha": "ddf42372e7054b1027430178a0e873a496baf6bb",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
   "frozen": "2026-11-07",
@@ -102,7 +102,9 @@
         "metabolomics_workflow-workflow_progress": "<ui> 46262e4e7a9bd0f111a96a668c078c7d83a79031f9bb5c0fea2bf6219fa1a39c"
       },
       "artifacts": {
-        "<store files>": 9
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 2
+        }
       },
       "notifications": [
         {
@@ -217,7 +219,9 @@
         "metabolomics_workflow-workflow_progress": "<ui> e51da5beccc72bc5c6cc73ca4bb582e81f6bd2fc9b18aed56f0a5c00257605d8"
       },
       "artifacts": {
-        "<store files>": 24,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 7
+        },
         "scripts/metabolomics/assay_manifest.txt": "<present>",
         "scripts/metabolomics/column_mapping.json": "<present>",
         "scripts/metabolomics/data_cln_GCMS.tab": "04c024fc7d7765359a2600f4a209f58998237a910eb9e5cfe7f93ce4521cc086",
@@ -332,7 +336,9 @@
         "metabolomics_workflow-workflow_progress": "<ui> e51da5beccc72bc5c6cc73ca4bb582e81f6bd2fc9b18aed56f0a5c00257605d8"
       },
       "artifacts": {
-        "<store files>": 24,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 7
+        },
         "scripts/metabolomics/assay_manifest.txt": "<present>",
         "scripts/metabolomics/column_mapping.json": "<present>",
         "scripts/metabolomics/data_cln_GCMS.tab": "04c024fc7d7765359a2600f4a209f58998237a910eb9e5cfe7f93ce4521cc086",
@@ -465,7 +471,10 @@
         "metabolomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 45,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 12,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2
+        },
         "scripts/metabolomics/assay_manifest.txt": "<present>",
         "scripts/metabolomics/column_mapping.json": "<present>",
         "scripts/metabolomics/config.ini": "<present>",
@@ -604,7 +613,14 @@
         "metabolomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 150,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 31,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 2,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 7,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 7,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1
+        },
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -753,7 +769,15 @@
         "metabolomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 255,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 50,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 14,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 14,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1
+        },
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -913,7 +937,15 @@
         "metabolomics_workflow-workflow_progress": "<ui> 60587ab7bcec9ff3f5c827446ec9b1d5fc95a6cc8bc3655c875d929479f9b04b"
       },
       "artifacts": {
-        "<store files>": 255,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 50,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 14,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 14,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1
+        },
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -1077,7 +1109,15 @@
         "metabolomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 345,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 66,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 21,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 21,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1
+        },
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -1239,7 +1279,15 @@
         "metabolomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 345,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 66,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 21,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 21,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1
+        },
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_combined_plots.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_cv_distribution.png": "<present>",
         "results/metabolomics/publication_graphs/filtering_qc/<TIME>/2_Intensity_Filtered_detected_per_sample.png": "<present>",
@@ -1406,7 +1454,15 @@
         "metabolomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 393,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 74,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 3,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 25,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 25,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 1
+        },
         "results/metabolomics/metabolite_qc/gcms_pre_norm_correlation.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_pre_norm_density.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_pre_norm_pca.png": "<present>",
@@ -1583,7 +1639,18 @@
         "metabolomics_workflow-workflow_progress": "<ui> be59ecaa15ca47ad6b99ee5c4ae9d797f133826d6b23ee0f3d3627698ba39294"
       },
       "artifacts": {
-        "<store files>": 522,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 100,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 30,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 31,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/metabolomics/metabolite_qc/gcms_post_norm_correlation.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_density.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_pca.png": "<present>",
@@ -1764,7 +1831,20 @@
         "metabolomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 546,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 106,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 30,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 31,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/metabolomics/metabolite_qc/gcms_post_norm_correlation.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_density.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_pca.png": "<present>",
@@ -1949,7 +2029,20 @@
         "metabolomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 550,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 107,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 30,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 31,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/metabolomics/metabolite_qc/gcms_post_norm_correlation.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_density.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_pca.png": "<present>",
@@ -2134,7 +2227,20 @@
         "metabolomics_workflow-workflow_progress": "<ui> 6f8079ca6843c41e6572b37c7d4452f88405ce4e1041c669be30aedf0a4b3513"
       },
       "artifacts": {
-        "<store files>": 550,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 107,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 5,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 30,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 31,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/metabolomics/metabolite_qc/gcms_post_norm_correlation.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_density.png": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_pca.png": "<present>",
@@ -2323,7 +2429,23 @@
         "metabolomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 619,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 119,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 33,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 35,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv": "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_correlation.png": "<present>",
@@ -2396,7 +2518,7 @@
     "summary_refusal": {
       "step": "summary_refusal",
       "tab": "summary",
-      "kind": "silent_refusal",
+      "kind": "refusal",
       "head": "metab_correlation_filtered",
       "history": [
         "initial",
@@ -2524,7 +2646,23 @@
         "metabolomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 619,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 119,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 33,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 35,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv": "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx": "<present>",
         "results/metabolomics/metabolite_qc/gcms_post_norm_correlation.png": "<present>",
@@ -2579,11 +2717,16 @@
         "scripts/metabolomics/metab_filtered_session_summary.txt": "<present>",
         "scripts/metabolomics/metabolomics_import_summary.tsv": "10b669d8f4413a8c5055f6e140085b59dca97b1616296380794946b00bca698d"
       },
-      "notifications": [],
+      "notifications": [
+        {
+          "type": "warning",
+          "message": "Please copy the results to the publication directory before generating the report (Copy to Publication Directory)."
+        }
+      ],
       "refusal_check": {
         "head_unchanged": true,
         "history_unchanged": true,
-        "refused": false
+        "refused": true
       }
     },
     "summary_save": {
@@ -2717,7 +2860,23 @@
         "metabolomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 619,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 119,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 33,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 35,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "integration/metabolomics_metab_gc_final_s4.RDS": "<present>",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv": "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx": "<present>",
@@ -2918,7 +3077,23 @@
         "metabolomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 619,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 119,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 33,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 35,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "integration/metabolomics_metab_gc_final_s4.RDS": "<present>",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv": "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx": "<present>",
@@ -3133,7 +3308,23 @@
         "metabolomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 619,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 119,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 33,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 35,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "integration/metabolomics_metab_gc_final_s4.RDS": "<present>",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv": "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx": "<present>",
@@ -3358,7 +3549,23 @@
         "metabolomics_workflow-workflow_progress": "<ui> b7d6e42ad8395c74bb20044b93ec087ed5aa5a34585f4ec81f7a4ff50f666340"
       },
       "artifacts": {
-        "<store files>": 619,
+        "<store entries>": {
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 119,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_between_sample_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_duplicate_resolution-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_intensity_filter-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_itsd_normalisation-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_log2-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_pairs-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/metab_pearson_selection-<ID>": 1,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>": 33,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>": 35,
+          "scripts/metabolomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2
+        },
         "integration/metabolomics_metab_gc_final_s4.RDS": "<present>",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv": "c107aaa8ae2f86df7e3e99e6ec014aba96bdda9cef8918652be1ecd044e993ce",
         "results/metabolomics/da_metabolites/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx": "<present>",
