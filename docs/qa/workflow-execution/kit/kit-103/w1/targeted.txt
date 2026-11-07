@@ -1,0 +1,40 @@
+# KIT-103 W1 targeted tests, after the implementation (R/utils_omic_gui_config.R: the design group and its
+# validator; R/utils_workflow_prot_declarations.R: proteomicsDiaBinding$design; tests/testthat/test-omic-gui-config.R).
+# Base 3c657c14 (origin/performance-v2), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence; runner kit/scripts-078/run1.R
+# (verbose); R_LIBS = core/browser-smoke.DGpv4v/library. Recorded 2026-11-08. No R CMD check, no install.
+# Reference column: KIT-102 W7 (kit-102/w7/targeted.txt), the counts at 3c657c14's R/.
+
+COUNTS test-omic-gui-config.R pass 478 fail 0 error 0 skip 0
+exit=0 elapsed=13s    (KIT-102 W7: 249; test-first: 247 pass, 7 of 10 blocks fail, see test-first.txt)
+
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2
+exit=0 elapsed=128s   (KIT-102 W7: 303 / 0 / 0 / 2 (quarantine))
+
+COUNTS test-workflow-omics-binding-steps.R pass 57 fail 0 error 0 skip 0
+exit=0 elapsed=70s    (KIT-102 W7: 57 / 0 / 0 / 0)
+
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0
+exit=0 elapsed=10s    (KIT-102 W7: 204 / 0 / 0 / 0)
+
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+exit=0 elapsed=9s     (KIT-102 W7: 178 / 0 / 0 / 0)
+
+# Probe (one load_all process, scratch script, not a test file):
+# - Every design text in the configs is found verbatim in today's design files (no_data_text, preview_text,
+#   builder_texts, testids, multi_assay_note, matrix_heading, help, state names and descriptions, the import's
+#   id and annotation candidates and state description). The prot contrast note holds a newline that the source
+#   writes as "\n"; it is identical to formatProtDesignContrastFactorsInfo("~ 0 + group"), and the three other
+#   contrast texts to format{Prot,Lipid}DesignContrastFactorsInfo.
+# - The srcref walker would catch a deferred field: validateLipidDesignDaPreflight, validateMetabDesignDaPreflight
+#   (mod_*_design_validation.R), trxDesignCheck, trxDesignObject, trxDesignGroupLevels (mod_transcriptomics.R),
+#   buildProtDesignStateCheckpoint, buildDIAReferenceDesignState, buildProtDesignInitialState (mod_prot_design_*)
+#   all have a mod_ source file. The design groups (with the adaptor's design entries) hold:
+#     proteomics      5 functions: utils_workflow_dia_state.R utils_workflow_prot_declarations.R
+#     lipidomics      3 functions: func_lipid_qc.R utils_workflow_lipid_declarations.R (+ gtools::mixedsort)
+#     metabolomics    3 functions: func_metab_qc.R utils_workflow_metab_declarations.R (+ gtools::mixedsort)
+#     transcriptomics 2 functions: utils_workflow_trx_declarations.R (+ base::identity)
+# - A refusal reads: "omic GUI configuration field design$run_order is missing."
+# - Parse-data back-references (the KIT-102 W7 method): 31. The one added is buildProtDesignInitialState, which the
+#   adaptor's initial_state calls by name (mod_prot_design_builder_state_helpers.R); W3 moves it with #3, after
+#   which the count is 29 as the ticket expects.

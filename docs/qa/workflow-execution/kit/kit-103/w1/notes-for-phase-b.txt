@@ -1,0 +1,102 @@
+# KIT-103 W1 notes for phases B to E (from the W1 agent, 2026-11-08)
+
+## What W1 added
+- `omicGuiConfig(<omic>)$design` for the four omics (R/utils_omic_gui_config.R), validated by
+  `validateOmicGuiDesign` / `validateOmicGuiDesignImport` (class `omic_gui_config_invalid`).
+- `proteomicsDiaBinding$design` (R/utils_workflow_prot_declarations.R): `initial_state(manager, data,
+  config_list, column_mapping)`, `rename(manager, reference, rename)`, `subset(manager, reference, samples,
+  strip_parser = FALSE)` and `commit = "prot_hook"`. The config's `design$commit` must equal it.
+- Required for every omic: module_id, help, formula_default, run_order (a function, no default),
+  run_order_rule (`mixedsort` / `input`), record_provenance, state_name, state_description (one string, or
+  one per route for prot), data_adapter (`wide_assay_list` / `dia_long`), design_import (NULL or a list),
+  commit (`shared` / `prot_hook`), builder_ui (`shared` / `proteomics`), record_excluded_runs, label_lower,
+  multi_assay_banner, no_data_text, preview_text, preview_assays, testids (possibly empty), builder_texts
+  (save_success, no_assignment, contrast_group_prefix, contrast_as_is, replicate_suffix).
+- Conditionally required: id_mapping_key (wide_assay_list); multi_assay_note and matrix_heading (builder_ui
+  shared); design_import$plugin and $import_dir_path (`req` / `empty`); for the feature_table plugin also
+  id_candidates (id, annotation), qc_baseline, preflight, state_description.
+
+## Fields deferred for the lead to wire at W7 (absent now: their functions are in R/mod_*.R)
+They are optional in the schema (`design_optional`, `design_import_optional`) and checked when present.
+At W7 the lead adds them and moves them into the required schema (as KIT-102 W7 did for the import).
+- lipidomics: `validate` (the D6 core wrapper `validateLipidDesignDaPreflight`, W2/W4),
+  `build_object` (`lipidDesignObject`, W2), `design_import$reader` (C10, W2).
+- metabolomics: `validate` (`validateMetabDesignDaPreflight` core wrapper, W2/W5), `build_object`
+  (`metabDesignObject`, W2), `design_import$reader` (C10, W2).
+- transcriptomics: `group_levels` (`trxDesignGroupLevels`), `validate` (`trxDesignCheck`), `build_object`
+  (`trxDesignObject`), all copied by W2 into R/func_trx_design.R. The W1 trx-versus-profile test compares
+  them to `trxOmicProfile()` as soon as they are present, so W7 needs no test edit for that; W5 freezes the
+  test to literals when it removes the profile fields.
+- proteomics: `build_object` (`buildProtDesignStateCheckpoint`, moved by W3), `annotation_step` (W3).
+  `annotation_step` is typed as one function (`ref_or_null`, design 4.5), but W3 makes two core functions
+  (the UniProt retrieval and the imported-FASTA processing). The lead decides at W7: one entry point that
+  W3 provides, or a named list (`refs`, uniprot/fasta) with the schema changed to match.
+- Already present and NULL (not deferred): prot `validate` (D7), `group_levels` for prot, lipid and metab.
+
+## W2 (design core for lipid, metab, trx)
+- Run order: `config$design$run_order` (lipid, metab `gtools::mixedsort`; trx `identity`), fresh designs
+  only. The lipid builder's `profile$run_order %||% gtools::mixedsort` default
+  (mod_lipid_design_builder_server.R:43) must not survive into the shared code: run_order is required.
+- The refusal text is "Invalid <design$label_lower> design: " + errors joined by "; " (lipid
+  mod_lipid_design_builder_helpers.R:84; metab mod_metab_design.R:248; trx through the lipid commit). The
+  other commit texts are identical for the three omics and are not configuration: "Could not find source
+  directory to save files.", "Error saving design matrix results: ", "Design matrix and contrasts saved
+  successfully!".
+- State: `state_name`, `state_description`, `record_provenance` (called with source_dir, and design_file
+  on import).
+- Import (C10): `design_import$id_candidates` (the column-mapping inference when column_mapping.json is
+  absent; the id key is `design$id_mapping_key`), `$qc_baseline` (updateLipidFiltering /
+  updateMetaboliteFiltering, called with step_name "1_Raw_Data" and omics_type = label_lower),
+  `$state_description` ("<Class> S4 object created from imported design"), and `$preflight`: lipid TRUE
+  (refusal "Invalid lipidomics design import: ...", mod_lipid_design_import_helpers.R:293-305), metab FALSE
+  (the metab import runs no DA preflight today; keep it that way, see findings).
+- The non-sample patterns of C1 are not configuration; W2 keeps both lists exactly in the core.
+- Report the names to wire (validate wrappers, objects, reader, trx copies) in the W2 report.
+
+## W3 (proteomics design core)
+- The adaptor calls `buildDIAReferenceDesignState` and `buildProtDesignInitialState` by name, so moving
+  them (names kept) needs no adaptor edit. Until W3 moves them, `buildProtDesignInitialState` is called from
+  a core file (the adaptor), so the parse-data back-reference count is 31 at W1 (30 at 3c657c14); after W3
+  it is 29 as the ticket expects (#3 and its callee both in the core).
+- `rename`/`subset` wrap `transformDIADesignTable` exactly as mod_prot_design_builder_action_helpers.R:76, :95
+  and mod_prot_design_builder_state_helpers.R:62-63 call it; the caller computes `strip_parser`
+  (`length(getDIAImportMetadata(manager)$numeric_columns) > 0L`).
+- Report the core names for `annotation_step` and confirm `buildProtDesignStateCheckpoint` for build_object.
+
+## W4 / W5 / W6 rendering values (each omic byte-identical)
+- Frame: `help`, `multi_assay_banner` (lipid, metab TRUE; trx, prot FALSE; the banner text is the shared
+  frame's own), `no_data_text`, `preview_text`, `preview_assays` (prot FALSE: no "Assays Included"), the
+  import button only when `design_import` is not NULL, with test id `testids[["import_existing"]]` when
+  present (prot only).
+- The feature-table import modal's test-mode substitutions use `testids[["import_dir"]]` and
+  `testids[["import_confirm"]]`; `design_import$import_dir_path` is `req` (lipid, metab) or `empty` (prot:
+  renders "" in test mode until a path is typed).
+- Builder: `multi_assay_note` is the first of the three HTML pieces (the other two are shared);
+  `matrix_heading`; trx keeps lipid's word in both ("lipidomics", "- Lipidomics"). The replicate input label
+  is paste("Starting replicate number for", <n>, builder_texts[["replicate_suffix"]]), with
+  `testids[["replicate_start"]]` on it for prot. `record_excluded_runs` (trx) adds `excluded_runs` and
+  `group_levels` to the builder's result.
+- Not configuration, for W6 to keep inside the proteomics plugins: the UniProt progress script at the top of
+  the prot frame (mod_prot_design.R:58-65), the prot processing modal's extra line ("This may take a moment
+  for large datasets."), the prot commit's own source-dir text ("Could not find the source directory to save
+  files. Check experiment paths."). W6 should diff prot's builder-server renders against the shared ones and
+  report any further text difference for the lead to add to `builder_texts`.
+
+## Design-versus-code differences (the config follows the code)
+- Proteomics has a design help text (mod_prot_design.R:82); design 4.5 said none.
+- Proteomics' `formula_default` is "~ 0 + group" as design 4.11 gives it, but no prot code reads a default
+  (its formula comes from config.ini; no save preflight, D7).
+- Proteomics' `state_name`/`state_description` are per route (design 4.11 shape), the others one string.
+- `design_import` is a list with `plugin` for every omic that has the button (design 4.11 wrote an id).
+- `label_lower` duplicates `shell$label_lower` (the ticket lists it in the design group); the test pins
+  them equal.
+
+## Observations for the lead (no change made; proposed parked rows)
+- The metab design import runs no DA preflight; the lipid import refuses an invalid imported design
+  (mod_lipid_design_import_helpers.R:293-305). Kept as `design_import$preflight` FALSE/TRUE. Proposed
+  parked row (same shape as P-10): keep (recommended for the GUI series) or add the preflight to the metab
+  import (refuses at import a design that today fails later).
+- Trx's builder shows lipid's words ("This lipidomics workflow supports multiple assays", "Current Design
+  Matrix (All Samples) - Lipidomics"), because it renders the lipid builder UI. Kept byte-identical per the
+  contract (`multi_assay_note`, `matrix_heading`). Proposed parked row: change trx's two texts (visible,
+  not scientific; changes the trx UI digest and the e2e/entry captures if they read them).

@@ -1297,10 +1297,13 @@ runDIAReferenceProteinPeptideCountFilter <- function(workflow, parameters) {
 }
 
 #' The DIA binding adaptor (KIT-102; kit-101 design 2.2): proteomics' binding-shaped list for the shared GUI
-#' layer. It holds only what the shared shell and import call; KIT-103 to 108 add their entries. Each entry calls
-#' today's core function by name (the declaration bindings' idiom), because this file collates before
-#' `utils_workflow_dia_sessions.R` and `utils_workflow_dia_state.R`. `import_metadata` calls back-references #1
-#' and #2, which KIT-102 W3 moves into `utils_workflow_dia_sessions.R` with their names kept.
+#' layer. It holds only what the shared shell, import and design call; KIT-104 to 108 add their entries. Each
+#' entry calls today's core function by name (the declaration bindings' idiom), because this file collates
+#' before `utils_workflow_dia_sessions.R` and `utils_workflow_dia_state.R`. `import_metadata` calls
+#' back-references #1 and #2, which KIT-102 W3 moved into `utils_workflow_dia_sessions.R` with their names kept.
+#' `design` (KIT-103 W1, the `dia_long` data adapter) calls back-reference #3 `buildDIAReferenceDesignState` and
+#' its callee `buildProtDesignInitialState`, which KIT-103 W3 moves beside `transformDIADesignTable` with their
+#' names kept.
 #' @noRd
 proteomicsDiaBinding <- list(
     omic_type = "proteomics",
@@ -1318,5 +1321,27 @@ proteomicsDiaBinding <- list(
             recordDIAImportMetadata(manager, table, result, reference)
         },
         read = function(manager) getDIAImportMetadata(manager)
+    ),
+    design = list(
+        # The builder's two initial states (`createProtDesignInitialStateReactive`,
+        # mod_prot_design_builder_server_helpers.R:171-196): a DIA table reference through #3, in the
+        # owner's scope; a plain table (the standalone applet) through `buildProtDesignInitialState`.
+        initial_state = function(manager, data, config_list, column_mapping) {
+            if (isSavedWorkflowReference(data)) {
+                return(withDIAStateScope(manager, function() {
+                    buildDIAReferenceDesignState(manager, data, config_list, column_mapping)
+                }))
+            }
+            buildProtDesignInitialState(dataTbl = data, configList = config_list, columnMapping = column_mapping)
+        },
+        # The renames and the save's subset act on the DIA-owned long table (`transformDIADesignTable`,
+        # utils_workflow_dia_state.R:996; mod_prot_design_builder_action_helpers.R:76, :95;
+        # mod_prot_design_builder_state_helpers.R:62-63).
+        rename = function(manager, reference, rename) transformDIADesignTable(manager, reference, rename = rename),
+        subset = function(manager, reference, samples, strip_parser = FALSE) {
+            transformDIADesignTable(manager, reference, samples = samples, strip_parser = strip_parser)
+        },
+        # Proteomics keeps its own commit (`runProtDesignBuilderSaveFlow`, mod_prot_design_builder_helpers.R:53).
+        commit = "prot_hook"
     )
 )

@@ -11,6 +11,12 @@
 # `protImportPanelUi` in mod_prot_import_ui.R). `import$preview` and `import$process` are the core's
 # (`utils_workflow_omics_import.R`, `func_trx_counts.R`, `func_prot_import_*.R`); trx adds its count
 # policy as `import$check`.
+#
+# KIT-103 W1 adds the `design` group (design 4.5) with the values the design tab and builder have at
+# HEAD 3c657c14 (unchanged in R/ since 283f5eee), with their file:line. The function fields whose
+# functions are still in R/mod_*.R (`validate`, `build_object`, trx `group_levels`,
+# `annotation_step`, `design_import$reader`) are optional and absent until KIT-103 W7 wires the
+# core copies (W2, W3) and makes them required, as KIT-102 W7 did for the import.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -18,7 +24,7 @@
 
 #' The shared GUI layer's configuration of one omic, validated.
 #' @param omic_type One of `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
-#' @return A plain list with the groups `shell`, `binding` and `import`.
+#' @return A plain list with the groups `shell`, `binding`, `import` and `design`.
 #' @noRd
 omicGuiConfig <- function(omic_type) {
     builders <- list(proteomics = omicGuiConfigProteomics, lipidomics = omicGuiConfigLipidomics,
@@ -43,15 +49,17 @@ omicGuiConfig <- function(omic_type) {
 validateOmicGuiConfig <- function(config) {
     if (!is.list(config)) omicGuiConfigAbort("config", "must be a list")
     schema <- omicGuiConfigSchema()
-    groups <- c(shell = "named_list", binding = "named_list", import = "named_list")
+    groups <- c(shell = "named_list", binding = "named_list", import = "named_list",
+        design = "named_list")
     checkOmicGuiFields(config, groups)
     validateOmicGuiShell(config$shell, schema)
     validateOmicGuiBinding(config$binding, config$shell$omic_type, schema)
     validateOmicGuiImport(config$import, schema)
+    validateOmicGuiDesign(config$design, config, schema)
     invisible(config)
 }
 
-#' The contract's fields and their types (design 4.2 to 4.4), by group. The type codes are
+#' The contract's fields and their types (design 4.2 to 4.5), by group. The type codes are
 #' `omicGuiFieldHasType`'s.
 #' @noRd
 omicGuiConfigSchema <- function() {
@@ -81,7 +89,27 @@ omicGuiConfigSchema <- function() {
             notification_id = "chr1", refusal_prefix = "chr1", summary_file = "chr1",
             count_key = "chr1"),
         second_assay = c(second_assay_columns = "lgl1", readers = "refs"),
-        assay_names = c(rule = "chr1", path_pattern = "chr1", messages = "named_chr")
+        assay_names = c(rule = "chr1", path_pattern = "chr1", messages = "named_chr"),
+        # KIT-103: `run_order` is required and has no shared default.
+        design = c(module_id = "chr1", help = "chr1", formula_default = "chr1", run_order = "ref",
+            run_order_rule = "chr1", record_provenance = "ref", state_name = "by_route",
+            state_description = "by_route", data_adapter = "chr1",
+            design_import = "named_list_or_null", commit = "chr1", builder_ui = "chr1",
+            record_excluded_runs = "lgl1", label_lower = "chr1", multi_assay_banner = "lgl1",
+            no_data_text = "chr1", preview_text = "chr1", preview_assays = "lgl1",
+            testids = "named_chr0", builder_texts = "named_chr"),
+        design_optional = c(group_levels = "ref_or_null", validate = "ref_or_null",
+            build_object = "ref", annotation_step = "ref_or_null"),
+        design_wide = c(id_mapping_key = "chr1"),
+        design_shared_builder = c(multi_assay_note = "chr1", matrix_heading = "chr1"),
+        builder_texts = c(save_success = "chr1", no_assignment = "chr1",
+            contrast_group_prefix = "chr1", contrast_as_is = "chr1", replicate_suffix = "chr1"),
+        design_import = c(plugin = "chr1", import_dir_path = "chr1"),
+        design_import_feature_table = c(id_candidates = "named_list", qc_baseline = "ref",
+            preflight = "lgl1", state_description = "chr1"),
+        design_import_optional = c(reader = "ref"),
+        id_candidates = c(id = "chr", annotation = "chr"),
+        dia_design = c(initial_state = "ref", rename = "ref", subset = "ref", commit = "chr1")
     )
 }
 
@@ -135,6 +163,57 @@ validateOmicGuiImport <- function(import, schema) {
     invisible(import)
 }
 
+#' The design group: its fields and choices; a per-route state names every route; the wide-table
+#' adapter needs the column-mapping key, the shared builder UI its texts, and the `dia_long` adapter
+#' the DIA adaptor's design entries with the same commit hook.
+#' @noRd
+validateOmicGuiDesign <- function(design, config, schema) {
+    checkOmicGuiFields(design, schema$design, "design")
+    checkOmicGuiFields(design, schema$design_optional, "design", required = FALSE)
+    checkOmicGuiChoice(design$run_order_rule, "design$run_order_rule", c("mixedsort", "input"))
+    checkOmicGuiChoice(design$data_adapter, "design$data_adapter", c("wide_assay_list", "dia_long"))
+    checkOmicGuiChoice(design$commit, "design$commit", c("shared", "prot_hook"))
+    checkOmicGuiChoice(design$builder_ui, "design$builder_ui", c("shared", "proteomics"))
+    checkOmicGuiFields(design$builder_texts, schema$builder_texts, "design$builder_texts")
+    for (field in c("state_name", "state_description")) {
+        value <- design[[field]]
+        if (length(value) > 1L && !setequal(names(value), config$shell$routes)) {
+            omicGuiConfigAbort(paste0("design$", field), "must name each of the omic's routes")
+        }
+    }
+    if (identical(design$builder_ui, "shared")) {
+        checkOmicGuiFields(design, schema$design_shared_builder, "design")
+    }
+    if (identical(design$data_adapter, "wide_assay_list")) {
+        checkOmicGuiFields(design, schema$design_wide, "design")
+    } else {
+        adaptor <- config$binding$binding$design
+        checkOmicGuiFields(adaptor, schema$dia_design, "binding$binding$design")
+        if (!identical(design$commit, adaptor$commit)) {
+            omicGuiConfigAbort("design$commit", "must be the DIA adaptor's commit hook")
+        }
+    }
+    if (!is.null(design$design_import)) validateOmicGuiDesignImport(design$design_import, schema)
+    invisible(design)
+}
+
+#' The import-existing-design plugin: the feature table's reader values, or proteomics' own panel.
+#' @noRd
+validateOmicGuiDesignImport <- function(design_import, schema) {
+    path <- "design$design_import"
+    checkOmicGuiFields(design_import, schema$design_import, path)
+    checkOmicGuiChoice(design_import$plugin, paste0(path, "$plugin"),
+        c("feature_table", "proteomics"))
+    checkOmicGuiChoice(design_import$import_dir_path, paste0(path, "$import_dir_path"),
+        c("req", "empty"))
+    if (!identical(design_import$plugin, "feature_table")) return(invisible(design_import))
+    checkOmicGuiFields(design_import, schema$design_import_feature_table, path)
+    checkOmicGuiFields(design_import, schema$design_import_optional, path, required = FALSE)
+    checkOmicGuiFields(design_import$id_candidates, schema$id_candidates,
+        paste0(path, "$id_candidates"))
+    invisible(design_import)
+}
+
 #' Check the fields a schema names: present (when required) and of their type.
 #' @param values The list holding the fields.
 #' @param schema Named character vector: field name to type code.
@@ -156,8 +235,10 @@ checkOmicGuiFields <- function(values, schema, path = NULL, required = TRUE) {
 }
 
 #' Whether a value has a schema type: `chr1` one non-empty string; `chr1_or_null`; `chr` a
-#' non-empty character vector; `chr0` a character vector; `named_chr`; `lgl1`; `ref` a function;
-#' `refs` a named list of functions; `list` a non-empty list; `named_list`.
+#' non-empty character vector; `chr0` a character vector; `named_chr`; `named_chr0` a possibly
+#' empty named character vector; `by_route` one non-empty string, or non-empty strings named by
+#' route; `lgl1`; `ref` a function; `ref_or_null`; `refs` a named list of functions; `list` a
+#' non-empty list; `named_list`; `named_list_or_null`.
 #' @noRd
 omicGuiFieldHasType <- function(value, type) {
     is_chr <- is.character(value) && !anyNA(value)
@@ -170,12 +251,17 @@ omicGuiFieldHasType <- function(value, type) {
         chr = is_chr && length(value) >= 1L,
         chr0 = is_chr,
         named_chr = is_chr && length(value) >= 1L && named,
+        named_chr0 = is_chr && named,
+        by_route = is_chr && length(value) >= 1L && all(nzchar(value)) &&
+            (length(value) == 1L || named),
         lgl1 = is.logical(value) && length(value) == 1L && !is.na(value),
         ref = is.function(value),
+        ref_or_null = is.null(value) || is.function(value),
         refs = is.list(value) && length(value) >= 1L && named &&
             all(vapply(value, is.function, logical(1))),
         list = is.list(value) && length(value) >= 1L,
-        named_list = is.list(value) && named))
+        named_list = is.list(value) && named,
+        named_list_or_null = is.null(value) || (is.list(value) && named)))
 }
 
 #' @noRd
@@ -270,6 +356,53 @@ omicGuiFeatureStatusModes <- function() {
         annotation_custom = c(success = "found", empty = "optional", case = "insensitive"))
 }
 
+#' The design tab of lipid, metab and trx: one frame (mod_lipid_design_ui.R; the same in
+#' mod_metab_design.R:43-111) and one builder whose UI differs only in the omic word
+#' (mod_lipid_design_builder_ui.R:218, :246; mod_metab_design_builder_ui.R:245, :273), with the
+#' same texts in their servers. Trx renders the lipid frame and builder under its profile.
+#' @param builder_word The omic word in the builder UI (trx: lipid's).
+#' @noRd
+omicGuiFeatureDesign <- function(prefix, label_lower, builder_word, id_mapping_key) {
+    list(module_id = "design",
+        # mod_lipid_design_validation.R:5; metab inline (mod_metab_design.R:235-238)
+        formula_default = "~ 0 + group", label_lower = label_lower,
+        data_adapter = "wide_assay_list", id_mapping_key = id_mapping_key, commit = "shared",
+        builder_ui = "shared",
+        # mod_lipid_design_ui.R:85, :63, :73-74 (mod_metab_design.R:105, :83, :93-94)
+        no_data_text = paste(" Please complete the 'Import' step first. The builder will appear",
+            "once data is available."),
+        preview_text = "This section shows the design matrix and contrasts saved to the workflow.",
+        preview_assays = TRUE,
+        # mod_lipid_design_server.R:47, :50, :57 (mod_metab_design.R:430, :441); trx has no import
+        testids = c(import_dir = paste0(prefix, "-design-import-dir"),
+            import_confirm = paste0(prefix, "-design-import-confirm")),
+        multi_assay_note = paste0("<b>Multi-Assay Note:</b> This ", builder_word,
+            " workflow supports multiple assays "),
+        matrix_heading = paste0("Current Design Matrix (All Samples) - ",
+            paste0(toupper(substr(builder_word, 1L, 1L)), substring(builder_word, 2L))),
+        # mod_lipid_design_builder_state_helpers.R:621, :626; mod_lipid_design_builder_display_helpers.R
+        # :41, :43, :132 (mod_metab_design_builder_server.R:783, :859, :493, :495)
+        builder_texts = c(save_success = "Design saved successfully!",
+            no_assignment = "No samples have been assigned to groups.",
+            contrast_group_prefix = paste("Note: Contrasts will use 'group' prefix based on",
+                "formula: ~ 0 + group"),
+            contrast_as_is = "Note: Contrasts will use group names as-is",
+            replicate_suffix = "selected samples:"))
+}
+
+#' The import-existing-design values of lipid and metab (mod_lipid_design_import_helpers.R;
+#' mod_metab_design_import_helpers.R): the column-mapping inference when `column_mapping.json` is
+#' absent, the QC baseline, whether the import runs the DA preflight, and the state's description.
+#' The output `import_dir_path` waits for a path (`req`). The reader moves in KIT-103 W2.
+#' @noRd
+omicGuiFeatureDesignImport <- function(annotation_candidates, qc_baseline, preflight, class) {
+    list(plugin = "feature_table", import_dir_path = "req",
+        id_candidates = list(id = c("Peak ID", "Alignment ID", "Alignment.ID", "peak id",
+            "alignment id"), annotation = annotation_candidates),
+        qc_baseline = qc_baseline, preflight = preflight,
+        state_description = paste(class, "S4 object created from imported design"))
+}
+
 #' The lipid assay-name rule and messages (lipid `processing`:443-468; now
 #' `validateOmicsImportAssayNames()`): a second name needs a second file and the reverse. Trx runs
 #' the same rule (`processing`:652).
@@ -302,7 +435,8 @@ omicGuiConfigProteomics <- function() {
         binding = list(binding = proteomicsDiaBinding, runner = "dia_managed_step",
             owner = createDIASessionOwner, read_state = readDIAStateMetadata,
             read_metadata = readDIAStateMetadata),
-        import = omicGuiProteomicsImport())
+        import = omicGuiProteomicsImport(),
+        design = omicGuiProteomicsDesign())
 }
 
 #' The proteomics shell (mod_proteomics.R): no header; the icon as `tabPanel`'s argument
@@ -368,6 +502,60 @@ omicGuiProteomicsImport <- function() {
         success_text = "Data import successful!")
 }
 
+#' The proteomics design tab (mod_prot_design.R) over the `dia_long` adapter (the DIA adaptor's
+#' `design` entries), with its own builder UI (`mod_prot_design_builder_ui`, back-reference #4),
+#' its own import panel and its own commit (`runProtDesignBuilderSaveFlow`). `build_object`
+#' (`buildProtDesignStateCheckpoint`) and `annotation_step` (the UniProt and FASTA steps) move in
+#' KIT-103 W3.
+#' @noRd
+omicGuiProteomicsDesign <- function() {
+    list(module_id = "design_matrix",
+        # mod_prot_design.R:82
+        help = paste("Use the tools below to define your experimental groups and the contrasts for",
+            "differential analysis. Alternatively, import an existing design from a previous",
+            "analysis."),
+        # No save-time preflight reads it (D7); the builder's contrast note names it
+        # (mod_prot_design_builder_display_helpers.R:400-406).
+        formula_default = "~ 0 + group",
+        # mod_prot_design_builder_state_helpers.R:348
+        run_order = gtools::mixedsort, run_order_rule = "mixedsort", group_levels = NULL,
+        validate = NULL,
+        # utils_workflow_dia_state.R:742, called in buildProtDesignStateCheckpoint
+        # (mod_prot_design_state_helpers.R:15, :98)
+        record_provenance = setDIAStepProvenance,
+        # mod_prot_design_state_helpers.R:19-21, :90-91, by route (`workflowType`)
+        state_name = c(DIA = "raw_data_s4", DIA_LIMPA = "raw_data_s4", TMT = "protein_s4_initial",
+            LFQ = "protein_s4_initial"),
+        state_description = c(DIA = "Initial Peptide S4 object created after design matrix.",
+            DIA_LIMPA = "Initial Peptide S4 object created after design matrix.",
+            TMT = "Initial Protein S4 object created from TMT data after design matrix.",
+            LFQ = "Initial Protein S4 object created from LFQ data after design matrix."),
+        data_adapter = "dia_long",
+        # mod_prot_design_import_helpers.R:564-573: in test mode `import_dir_path` renders "" until
+        # a path is typed.
+        design_import = list(plugin = "proteomics", import_dir_path = "empty"),
+        commit = "prot_hook", builder_ui = "proteomics", record_excluded_runs = FALSE,
+        label_lower = "proteomics", multi_assay_banner = FALSE,
+        # mod_prot_design.R:117, :98, :101-107
+        no_data_text = paste(" Please complete the 'Setup & Import' step first. The builder will",
+            "appear here once data is available."),
+        preview_text = paste("This section shows the design matrix and contrasts that have been",
+            "saved to the workflow."),
+        preview_assays = FALSE,
+        # mod_prot_design.R:78; mod_prot_design_builder_action_helpers.R:7
+        testids = c(import_existing = "prot-design-import-existing",
+            replicate_start = "prot-design-replicate-start"),
+        # mod_prot_design_builder_state_helpers.R:109, :122; mod_prot_design_builder_display_helpers.R
+        # :403, :405; mod_prot_design_builder_action_helpers.R:4
+        builder_texts = c(save_success = "Design saved successfully. You can close this builder.",
+            no_assignment = paste("No samples have been assigned to groups. Please assign metadata",
+                "before saving."),
+            contrast_group_prefix = paste0("Note: Contrasts will use 'group' prefix (e.g., ",
+                "groupGA_Control-groupGA_Elevated)\nbased on current formula: ~ 0 + group"),
+            contrast_as_is = "Note: Contrasts will use group names as-is (e.g., GA_Control-GA_Elevated)",
+            replicate_suffix = "selected runs:"))
+}
+
 # ------------------------------------------------------------------------------------------------
 # Lipidomics.
 # ------------------------------------------------------------------------------------------------
@@ -380,7 +568,29 @@ omicGuiConfigLipidomics <- function() {
             " Differential Analysis", omicGuiFeatureBus("lipid", "lipid_assay_data")),
         binding = omicGuiFeatureBinding(lipidomicsDeclarationBinding, readLipidWorkflowState,
             readLipidWorkflowMetadata),
-        import = omicGuiLipidImport())
+        import = omicGuiLipidImport(),
+        design = omicGuiLipidDesign())
+}
+
+#' The lipid design tab (mod_lipid_design_*.R). `validate` (`validateLipidDesignDaPreflight`) and
+#' `build_object` (the inline `createLipidomicsAssayData` call) move in KIT-103 W2.
+#' @noRd
+omicGuiLipidDesign <- function() {
+    c(omicGuiFeatureDesign("lipid", "lipidomics", "lipidomics", "lipid_id_col"), list(
+        # mod_lipid_design_ui.R:39
+        help = paste("Use the tools below to define your experimental groups and contrasts for",
+            "differential analysis. All assays (Pos/Neg modes) share the same design matrix."),
+        # mod_lipid_design_builder_server.R:43; mod_lipid_design_builder_state_helpers.R:298, :395
+        run_order = gtools::mixedsort, run_order_rule = "mixedsort", group_levels = NULL,
+        # utils_workflow_lipid_declarations.R:211; mod_lipid_design_builder_helpers.R:175-183
+        record_provenance = recordLipidDesignProvenance, state_name = "lipid_raw_data_s4",
+        state_description = "Initial LipidomicsAssayData S4 object created after design matrix",
+        # mod_lipid_design_ui.R:42-49; the builder's removed runs are not returned
+        # (mod_lipid_design_builder_server.R:180-183)
+        record_excluded_runs = FALSE, multi_assay_banner = TRUE,
+        # mod_lipid_design_import_helpers.R:230, :388 (func_lipid_qc.R:134), :293-305, :383
+        design_import = omicGuiFeatureDesignImport(c("Lipid name", "Lipid.name", "Name", "name"),
+            updateLipidFiltering, preflight = TRUE, class = "LipidomicsAssayData")))
 }
 
 #' The lipid panel (the provenance abbreviations are the file header's).
@@ -446,7 +656,29 @@ omicGuiConfigMetabolomics <- function() {
             omicGuiFeatureBus("metabolite", "metabolite_assay_data")),
         binding = omicGuiFeatureBinding(metabolomicsDeclarationBinding, readMetabWorkflowState,
             readMetabWorkflowMetadata),
-        import = omicGuiMetabImport())
+        import = omicGuiMetabImport(),
+        design = omicGuiMetabDesign())
+}
+
+#' The metab design tab (mod_metab_design*.R). `validate` (`validateMetabDesignDaPreflight`) and
+#' `build_object` (the inline `createMetaboliteAssayData` call) move in KIT-103 W2.
+#' @noRd
+omicGuiMetabDesign <- function() {
+    c(omicGuiFeatureDesign("metab", "metabolomics", "metabolomics", "metabolite_id_col"), list(
+        # mod_metab_design.R:59
+        help = paste("Use the tools below to define your experimental groups and contrasts for",
+            "differential analysis. All assays (Pos/Neg modes) share the same design matrix."),
+        # mod_metab_design_builder_server.R:237
+        run_order = gtools::mixedsort, run_order_rule = "mixedsort", group_levels = NULL,
+        # utils_workflow_metab_declarations.R:193; mod_metab_design.R:341-351
+        record_provenance = recordMetabDesignProvenance, state_name = "metab_raw_data_s4",
+        state_description = "Initial MetaboliteAssayData S4 object created after design matrix",
+        # mod_metab_design.R:62-68
+        record_excluded_runs = FALSE, multi_assay_banner = TRUE,
+        # mod_metab_design_import_helpers.R:250, :433 (func_metab_qc.R:268), :424; the import runs
+        # no DA preflight
+        design_import = omicGuiFeatureDesignImport(c("Metabolite name", "Metabolite.name", "Name",
+            "name"), updateMetaboliteFiltering, preflight = FALSE, class = "MetaboliteAssayData")))
 }
 
 #' The metab panel (the provenance abbreviations are the file header's). Its ids, labels and
@@ -519,7 +751,30 @@ omicGuiConfigTranscriptomics <- function() {
             function(manager, reference = NULL) {
                 readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager, reference)
             }),
-        import = omicGuiTrxImport())
+        import = omicGuiTrxImport(),
+        design = omicGuiTrxDesign())
+}
+
+#' The trx design tab: the lipid frame and builder under `trxOmicProfile()`'s design fields
+#' (mod_transcriptomics.R:36-41; design 4.12). `group_levels` (`trxDesignGroupLevels`), `validate`
+#' (`trxDesignCheck`) and `build_object` (`trxDesignObject`) move in KIT-103 W2.
+#' @noRd
+omicGuiTrxDesign <- function() {
+    design <- c(omicGuiFeatureDesign("trx", "transcriptomics", "lipidomics", "lipid_id_col"), list(
+        # mod_transcriptomics.R:36-38
+        help = paste("Samples are matched to the count columns by sample name only, in the counts",
+            "file's order; there is no positional mapping. Each group needs at least two samples.",
+            "The order in which you add the factor levels is the group level order the analysis",
+            "uses."),
+        # mod_transcriptomics.R:39-41
+        run_order = identity, run_order_rule = "input",
+        record_provenance = recordTrxDesignProvenance, state_name = "trx_raw_data_s4",
+        state_description = "Initial TranscriptomicsAssayData S4 object created after design matrix",
+        # The removed runs on the result (mod_lipid_design_builder_server.R:180-183); no banner and
+        # no import button under a profile (mod_lipid_design_ui.R:34, :42).
+        record_excluded_runs = TRUE, multi_assay_banner = FALSE, design_import = NULL))
+    design$testids <- character()
+    design
 }
 
 #' The trx panel: at c1041c56 the lipid panel under the trx profile (`ui` with the profile, the

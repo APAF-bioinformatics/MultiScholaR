@@ -1,0 +1,31 @@
+# KIT-103 W1 test-first: tests/testthat/test-omic-gui-config.R with the design-group tests, before the implementation
+# HEAD 3c657c14 (origin/performance-v2), R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1
+# runner: kit/scripts-078/run1.R <tree> <file> v (verbose); R_LIBS = core/browser-smoke.DGpv4v/library
+# recorded 2026-11-08. Expected: the four new blocks fail (no design group, no adaptor design entries) and the three
+# KIT-102 blocks extended by W1 fail (the group list, the required-field loop over `design`, the srcref walk of the
+# design group); the three KIT-102 blocks W1 does not touch pass. Observed: 7 of 10 blocks fail, 3 pass.
+
+COUNTS test-omic-gui-config.R pass 247 fail 147 error 3 skip 0
+  BAD test-omic-gui-config.R :: each omic's configuration validates, with the shell, binding, import and design groups
+  BAD test-omic-gui-config.R :: removing a required field, or giving it the wrong type, is refused by class
+  BAD test-omic-gui-config.R :: no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD test-omic-gui-config.R :: the design group holds today's values per omic
+  BAD test-omic-gui-config.R :: run_order is required with no default; each required design field is refused by class
+  BAD test-omic-gui-config.R :: the trx design values equal trxOmicProfile()'s eight design fields today (design 4.12)
+  BAD test-omic-gui-config.R :: the DIA binding adaptor's design entries call today's core functions
+# The first message of each failing block (150 non-passing expectations in all):
+--- each omic's configuration validates, with the shell, binding, import and design groups
+ Expected `names(config)` to be identical to `c("shell", "binding", "import", "design")`.
+--- removing a required field, or giving it the wrong type, is refused by class
+ Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>.
+--- no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+ Expected `length(design)` > 0L.
+--- the design group holds today's values per omic
+ Expected `design[[omic]]$module_id` to be identical to `tab[[1L]]$module_id`.
+--- run_order is required with no default; each required design field is refused by class
+ Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>.
+--- the trx design values equal trxOmicProfile()'s eight design fields today (design 4.12)
+ Expected `design[[field]]` to be identical to `profile[[fields[[field]]]]`.  (help: `actual` is NULL)
+--- the DIA binding adaptor's design entries call today's core functions
+ Expected `entries$commit` to be identical to "prot_hook".
+ Error in `eval_bare(expr, quo_get_env(quo))`: attempt to apply non-function
