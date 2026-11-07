@@ -179,6 +179,7 @@ test_that("runProtDesignSaveResultsObserverShell preserves the save-results succ
 })
 
 test_that("runProtDesignResetConfirmationObserverShell preserves the reset flow", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skip_if_not(
     exists("runProtDesignResetConfirmationObserverShell", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -302,6 +303,7 @@ test_that("runProtDesignResetConfirmationObserverShell preserves the reset flow"
 })
 
 test_that("formatProtDesignTechRepSummary preserves empty and grouped summaries", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("formatProtDesignTechRepSummary")
 
   empty_design <- data.frame(
@@ -385,6 +387,7 @@ test_that("createProtDesignBuilderState preserves mutable builder shells", {
 })
 
 test_that("createProtDesignMutableStateShells preserves mutable aliases", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("createProtDesignMutableStateShells")
 
   builder_state <- list(
@@ -412,6 +415,7 @@ test_that("createProtDesignMutableStateShells preserves mutable aliases", {
 })
 
 test_that("createProtDesignDataTableProxy preserves the default proxy id", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("createProtDesignDataTableProxy")
 
   proxy_calls <- list()
@@ -500,6 +504,7 @@ test_that("createProtDesignInitialStateReactive preserves deferred bootstrap sem
 })
 
 test_that("completeProtDesignBuilderServerBootstrap preserves proxy bootstrap fan-out", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("completeProtDesignBuilderServerBootstrap")
 
   call_log <- character()
@@ -554,6 +559,7 @@ test_that("completeProtDesignBuilderServerBootstrap preserves proxy bootstrap fa
 })
 
 test_that("runProtDesignBuilderServerEntryShell preserves module entry wiring", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("runProtDesignBuilderServerEntryShell")
 
   call_log <- character()
@@ -592,6 +598,7 @@ test_that("runProtDesignBuilderServerEntryShell preserves module entry wiring", 
 })
 
 test_that("buildProtDesignAvailableFactorsDisplay preserves empty and populated displays", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("buildProtDesignAvailableFactorsDisplay")
 
   expect_equal(
@@ -605,6 +612,7 @@ test_that("buildProtDesignAvailableFactorsDisplay preserves empty and populated 
 })
 
 test_that("applyProtDesignFactorAppendReset preserves unique append semantics", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("applyProtDesignFactorAppendReset")
 
   updated <- applyProtDesignFactorAppendReset(
@@ -722,6 +730,7 @@ test_that("buildProtDesignSaveResults helpers preserve formatted payload constru
 })
 
 test_that("showProtDesignResetConfirmationModal preserves the modal shell", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("showProtDesignResetConfirmationModal")
 
   modal <- showProtDesignResetConfirmationModal(
@@ -765,6 +774,7 @@ test_that("showProtDesignResetConfirmationModal preserves the modal shell", {
 })
 
 test_that("removed-sample and contrast formatting helpers preserve display behavior", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skipIfMissingProtDesignBinding("applyProtDesignRemovedSamplesUpdate")
   skipIfMissingProtDesignBinding("formatProtDesignRemovedSamplesDisplay")
   skipIfMissingProtDesignBinding("formatProtDesignContrastFactorsInfo")
@@ -881,6 +891,7 @@ test_that("buildProtDesignInitialState preserves builder bootstrap defaults", {
 })
 
 test_that("initializeProtDesignBuilderServerState preserves builder state wiring order", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skip_if_not(
     exists("initializeProtDesignBuilderServerState", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -936,6 +947,7 @@ test_that("initializeProtDesignBuilderServerState preserves builder state wiring
 })
 
 test_that("registerProtDesignBuilderServerShells preserves top-level registration fan-out", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skip_if_not(
     exists("registerProtDesignBuilderServerShells", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -979,6 +991,7 @@ test_that("registerProtDesignBuilderServerShells preserves top-level registratio
 })
 
 test_that("runProtDesignBuilderModuleServerShell preserves bootstrap ordering", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skip_if_not(
     exists("runProtDesignBuilderModuleServerShell", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -1024,6 +1037,7 @@ test_that("runProtDesignBuilderModuleServerShell preserves bootstrap ordering", 
 })
 
 test_that("buildProtDesignDefinedContrastsDisplay preserves formatted grouped contrasts", {
+  skip("quarantined: Q-47 (KIT-103 W6) it characterised a proteomics builder seam (an observer, display, state or registration helper), deleted; the builder is the shared builder server over the dia_long adapter, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   skip_if_not(
     exists("buildProtDesignDefinedContrastsDisplay", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )

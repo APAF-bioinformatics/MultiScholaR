@@ -23,7 +23,9 @@
 # (`commitOmicsDesign()`, `readOmicsDesignImport()`, `commitOmicsDesignImport()`,
 # utils_workflow_omics_design.R); the frame keeps the modal, the notifications, the QC trigger and
 # the tab status (KIT-102's split). Every id, test id, text and notification is the omic's today.
-# Proteomics' import plugin and commit hook (`proteomics`, `prot_hook`) are KIT-103 W6's. Recorded
+# Proteomics (KIT-103 W6) runs on the same frame with its own plugins (`protDesignServerPlugins()`,
+# mod_prot_design.R): its import panel (`proteomics`), its builder UI over the `dia_long` adapter,
+# and its own commit (`prot_hook`), with its UniProt progress handler in the UI. Recorded
 # divergences from conventions/R-shiny.md: the wellPanel layout, the shinyFiles fallback to a text
 # input in test mode, the in-process commit, and the two status outputs assigned a `reactive`
 # (their client-side conditions read them; under testServer they read as an error, which the entry
@@ -58,7 +60,10 @@ mod_omic_design_ui <- function(id, config) {
     validateOmicGuiConfig(config)
     ns <- shiny::NS(id)
     design <- config$design
-    shiny::tagList(shiny::fluidRow(shiny::column(12, shiny::wellPanel(
+    shiny::tagList(
+        # Proteomics' commit hook reports its UniProt step's progress to this handler (KIT-103 W6).
+        if (identical(design$commit, "prot_hook")) protDesignUniprotProgressScript(),
+        shiny::fluidRow(shiny::column(12, shiny::wellPanel(
         shiny::fluidRow(
             shiny::column(8, shiny::h3("Design Matrix Builder")),
             if (!is.null(design$design_import)) shiny::column(4, omicsDesignTestid(
@@ -103,37 +108,73 @@ mod_omic_design_ui <- function(id, config) {
 #' @noRd
 mod_omic_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL, config) {
     validateOmicGuiConfig(config)
-    import_server <- omicsDesignImportPluginServer(config)
+    plugins <- omicsDesignServerPlugins(config)
     shiny::moduleServer(id, function(input, output, session) {
-        import_server(input, output, session, workflow_data, experiment_paths, volumes, qc_trigger, config)
-
-        output$data_available <- shiny::reactive({
-            !is.null(workflow_data$data_tbl) && !is.null(workflow_data$config_list)
-        })
-        shiny::outputOptions(output, "data_available", suspendWhenHidden = FALSE)
-        output$design_matrix_exists <- shiny::reactive({
-            !is.null(workflow_data$design_matrix)
-        })
-        shiny::outputOptions(output, "design_matrix_exists", suspendWhenHidden = FALSE)
-
-        # KIT-075: the tables are read per use and never cached (a function, not a reactive).
-        builder_results <- mod_omic_design_builder_server("builder",
-            data_tbl = function() getWorkflowOmicsBusTables(workflow_data, "data_tbl"),
-            config_list = shiny::reactive(workflow_data$config_list),
-            column_mapping = shiny::reactive(workflow_data$column_mapping),
-            existing_design_matrix = shiny::reactive(workflow_data$design_matrix),
-            existing_contrasts = shiny::reactive(workflow_data$contrasts_tbl),
-            state_owner = function() shiny::isolate(workflow_data$state_manager), config = config)
-
-        shiny::observeEvent(builder_results(), {
-            results <- builder_results()
-            shiny::req(results)
-            runOmicsDesignCommit(results, workflow_data, experiment_paths, qc_trigger, config)
-        }, ignoreNULL = TRUE)
-
-        registerOmicsDesignPreviewOutputs(output, workflow_data, config)
-        invisible(builder_results)
+        registerOmicsDesignServer(input, output, session, workflow_data, experiment_paths, volumes, qc_trigger,
+            config, plugins)
     })
+}
+
+#' The design tab's server inside its module session (`mod_omic_design_server`; proteomics'
+#' `registerProtDesignServerShells`), in today's order.
+#' @param plugins The tab's plugins (`omicsDesignServerPlugins()`).
+#' @return The builder's results (a reactiveVal), invisibly.
+#' @noRd
+registerOmicsDesignServer <- function(input, output, session, workflow_data, experiment_paths, volumes, qc_trigger,
+                                      config, plugins = omicsDesignServerPlugins(config)) {
+    plugins$import(input, output, session, workflow_data, experiment_paths, volumes, qc_trigger, config)
+
+    output$data_available <- shiny::reactive({
+        !is.null(workflow_data$data_tbl) && !is.null(workflow_data$config_list)
+    })
+    shiny::outputOptions(output, "data_available", suspendWhenHidden = FALSE)
+    output$design_matrix_exists <- shiny::reactive({
+        !is.null(workflow_data$design_matrix)
+    })
+    shiny::outputOptions(output, "design_matrix_exists", suspendWhenHidden = FALSE)
+
+    builder_results <- plugins$builder(workflow_data, config)
+    plugins$commit(builder_results, workflow_data, experiment_paths, session, qc_trigger, config)
+    plugins$previews(output, workflow_data, config)
+    invisible(builder_results)
+}
+
+#' The design tab's plugins by its configuration: the import plugin (`design_import$plugin`), the
+#' builder (`data_adapter`), the commit's observer (`commit`) and the previews. Proteomics'
+#' (`proteomics`, `dia_long`, `prot_hook`) are `protDesignServerPlugins()`'.
+#' @return A list of functions: `import(input, output, session, workflow_data, experiment_paths,
+#'   volumes, qc_trigger, config)`, `builder(workflow_data, config)` (the results reactiveVal),
+#'   `commit(builder_results, workflow_data, experiment_paths, session, qc_trigger, config)` and
+#'   `previews(output, workflow_data, config)`.
+#' @noRd
+omicsDesignServerPlugins <- function(config) {
+    proteomics <- protDesignServerPlugins()
+    list(
+        import = omicsDesignImportPluginServer(config),
+        builder = switch(config$design$data_adapter,
+            wide_assay_list = function(workflow_data, config) {
+                # KIT-075: the tables are read per use and never cached (a function, not a reactive).
+                mod_omic_design_builder_server("builder",
+                    data_tbl = function() getWorkflowOmicsBusTables(workflow_data, "data_tbl"),
+                    config_list = shiny::reactive(workflow_data$config_list),
+                    column_mapping = shiny::reactive(workflow_data$column_mapping),
+                    existing_design_matrix = shiny::reactive(workflow_data$design_matrix),
+                    existing_contrasts = shiny::reactive(workflow_data$contrasts_tbl),
+                    state_owner = function() shiny::isolate(workflow_data$state_manager), config = config)
+            },
+            # The DIA table's provider, read by reference (KIT-075/082).
+            dia_long = proteomics$builder),
+        commit = switch(config$design$commit,
+            shared = function(builder_results, workflow_data, experiment_paths, session, qc_trigger, config) {
+                shiny::observeEvent(builder_results(), {
+                    results <- builder_results()
+                    shiny::req(results)
+                    runOmicsDesignCommit(results, workflow_data, experiment_paths, qc_trigger, config)
+                }, ignoreNULL = TRUE)
+            },
+            # Proteomics' own commit, on the result's reference (KIT-075/082).
+            prot_hook = proteomics$commit),
+        previews = registerOmicsDesignPreviewOutputs)
 }
 
 #' The saved-results previews: the design, the contrasts and (when configured) the assays.
@@ -184,18 +225,21 @@ omicsDesignSaveFailed <- function(message) {
 #' (`commitOmicsDesign()`), then the QC trigger, the design tab complete and the success
 #' notification. A refusal (`omics_design_refused`) shows its text; a failure after the bus write
 #' (`omics_design_save_failed`) shows "Error saving design matrix results: <message>". Both remove
-#' the modal and leave the QC trigger and the tab status alone.
+#' the modal and leave the QC trigger and the tab status alone. Proteomics' commit (`prot_hook`) is
+#' its own, as today: `runProtDesignBuilderObserverShell` (the bus, `runProtDesignBuilderSaveFlow`,
+#' the UniProt post-step, the DIA reclamation).
 #' @param results The builder's result.
 #' @param workflowData The workflow bus.
 #' @param experimentPaths The project paths (`source_dir`).
 #' @param qcTrigger Optional QC trigger.
 #' @param config An omic GUI configuration with its design function fields.
-#' @return NULL, invisibly.
+#' @param session The design tab's session (proteomics' UniProt progress messages).
+#' @return NULL, invisibly (proteomics: its save flow's result).
 #' @noRd
-runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigger, config) {
-    if (!identical(config$design$commit, "shared")) {
-        cli::cli_abort("the {.val {config$design$commit}} design commit is not wired yet (KIT-103 W6).",
-            class = "omic_gui_config_invalid")
+runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigger, config,
+                                 session = shiny::getDefaultReactiveDomain()) {
+    if (identical(config$design$commit, "prot_hook")) {
+        return(runProtDesignBuilderObserverShell(results, workflowData, experimentPaths, session, qcTrigger))
     }
     shiny::showModal(omicsDesignProcessingModal())
     committed <- tryCatch(commitOmicsDesign(workflowData, results, experimentPaths$source_dir, config),
@@ -222,21 +266,22 @@ runOmicsDesignCommit <- function(results, workflowData, experimentPaths, qcTrigg
 # The import-existing-design plugin.
 # ------------------------------------------------------------------------------------------------
 
-#' The import plugin's server by `design$design_import$plugin`: `feature_table` (lipid, metab).
-#' A wide-table omic without an import (trx) registers it too, as today's lipid tab did under a
-#' profile (its `import_dir_path` output is recorded by the entry oracles); with no button it
-#' cannot be reached. Proteomics' own import (`proteomics`) is KIT-103 W6's.
+#' The import plugin's server by `design$design_import$plugin`: `feature_table` (lipid, metab) or
+#' `proteomics` (its own panel with the FASTA and organism sidecars, `protDesignServerPlugins()`;
+#' in test mode its `import_dir_path` renders "" until a path is typed, `import_dir_path = "empty"`).
+#' A wide-table omic without an import (trx) registers the feature-table plugin too, as today's
+#' lipid tab did under a profile (its `import_dir_path` output is recorded by the entry oracles);
+#' with no button it cannot be reached.
 #' @return A function `(input, output, session, workflow_data, experiment_paths, volumes,
 #'   qc_trigger, config)`.
 #' @noRd
 omicsDesignImportPluginServer <- function(config) {
     plugin <- config$design$design_import$plugin
     if (is.null(plugin) && identical(config$design$data_adapter, "wide_assay_list")) plugin <- "feature_table"
-    if (!identical(plugin, "feature_table")) {
-        cli::cli_abort("the {.val {plugin}} design import plugin is not wired yet (KIT-103 W6).",
-            class = "omic_gui_config_invalid")
-    }
-    registerOmicsDesignFeatureImport
+    switch(plugin %||% "none",
+        feature_table = registerOmicsDesignFeatureImport,
+        proteomics = protDesignServerPlugins()$import,
+        cli::cli_abort("the {.val {plugin}} design import plugin is unknown.", class = "omic_gui_config_invalid"))
 }
 
 #' The import's volumes: the given ones (or the system's), with the project's base directory first

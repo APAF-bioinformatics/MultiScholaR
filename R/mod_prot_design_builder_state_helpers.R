@@ -49,133 +49,22 @@ runProtDesignSaveResultsObserverShell <- function(
     finalResult
 }
 
-registerProtDesignSaveResultsObserver <- function(
-    input,
-    designMatrix,
-    removedSamples,
-    dataCln,
-    contrastData,
-    configList,
-    resultRv,
-    observeEventFn = shiny::observeEvent,
-    runSaveResultsObserverShell = runProtDesignSaveResultsObserverShell
-) {
-    observeEventFn(input$save_results, {
-        withDIAStateScope(getDIAActiveManager(), function() {
-        runSaveResultsObserverShell(
-            designMatrix = designMatrix(),
-            currentRemovedSamples = removedSamples(),
-            dataCln = getDIAReactiveReference(dataCln),
-            contrastData = contrastData(),
-            configList = configList(),
-            formulaString = input$formula_string,
-            resultSetter = resultRv
-        )
-        })
-    })
-}
-
-showProtDesignResetConfirmationModal <- function(
-    resetScope,
-    nsFn = identity,
-    showModalFn = shiny::showModal,
-    modalDialogFn = shiny::modalDialog,
-    htmlFn = shiny::HTML,
-    tagListFn = shiny::tagList,
-    modalButtonFn = shiny::modalButton,
-    actionButtonFn = shiny::actionButton
-) {
-    showModalFn(modalDialogFn(
+#' The proteomics builder's reset confirmation (its text adds "This action cannot be undone."); the
+#' `dia_long` adapter's `reset_modal` (KIT-103 W6). The shared builder shows it.
+#' @noRd
+protDesignResetModal <- function(resetScope, ns) {
+    shiny::modalDialog(
         title = "Confirm Reset",
-        htmlFn(paste0(
+        shiny::HTML(paste0(
             "<p>This will revert <strong>", resetScope,
             "</strong> to their initial state. This action cannot be undone.</p>"
         )),
-        footer = tagListFn(
-            modalButtonFn("Cancel"),
-            actionButtonFn(nsFn("confirm_reset"), "Reset", class = "btn-danger")
+        footer = shiny::tagList(
+            shiny::modalButton("Cancel"),
+            shiny::actionButton(ns("confirm_reset"), "Reset", class = "btn-danger")
         ),
         easyClose = TRUE
-    ))
-}
-
-registerProtDesignResetRequestObserver <- function(
-    input,
-    session,
-    observeEventFn = shiny::observeEvent,
-    showResetConfirmationModalFn = showProtDesignResetConfirmationModal
-) {
-    observeEventFn(input$reset_changes, {
-        showResetConfirmationModalFn(
-            resetScope = input$reset_scope,
-            nsFn = session$ns
-        )
-    })
-}
-
-runProtDesignResetConfirmationObserverShell <- function(
-    scope,
-    initialState,
-    designMatrix,
-    dataClnReactive,
-    removedSamples,
-    factors,
-    groups,
-    contrasts,
-    session,
-    applyResetStateFn = applyProtDesignResetState,
-    removeModalFn = shiny::removeModal,
-    showNotificationFn = shiny::showNotification,
-    updateTextInputFn = shiny::updateTextInput
-) {
-    applyResetStateFn(
-        scope = scope,
-        initialState = initialState,
-        designMatrixGetter = designMatrix,
-        designMatrixSetter = designMatrix,
-        dataClnSetter = dataClnReactive,
-        currentRemovedSamples = removedSamples(),
-        removedSamplesSetter = removedSamples,
-        factorsSetter = factors,
-        groupsSetter = groups,
-        contrastsSetter = contrasts,
-        updateFormulaFn = function(value) {
-            updateTextInputFn(session, "formula_string", value = value)
-        }
     )
-
-    removeModalFn()
-    showNotificationFn(paste("Reset of", scope, "completed."), type = "message")
-
-    invisible(NULL)
-}
-
-registerProtDesignResetConfirmationObserver <- function(
-    input,
-    initialState,
-    designMatrix,
-    dataClnReactive,
-    removedSamples,
-    factors,
-    groups,
-    contrasts,
-    session,
-    observeEventFn = shiny::observeEvent,
-    runResetConfirmationObserverShell = runProtDesignResetConfirmationObserverShell
-) {
-    observeEventFn(input$confirm_reset, {
-        runResetConfirmationObserverShell(
-            scope = input$reset_scope,
-            initialState = initialState(),
-            designMatrix = designMatrix,
-            dataClnReactive = dataClnReactive,
-            removedSamples = removedSamples,
-            factors = factors,
-            groups = groups,
-            contrasts = contrasts,
-            session = session
-        )
-    })
 }
 
 applyProtDesignResetState <- function(

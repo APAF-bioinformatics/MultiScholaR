@@ -1,0 +1,15 @@
+file	lines_before_de2d891c	lines_after_w6	note
+R/mod_prot_design.R	214	158	mod_prot_design_ui and registerProtDesignServerShells are wrappers over the shared tab; protDesignServerPlugins (import panel, builder, commit hook, previews); the UniProt progress script; mod_prot_design_server unchanged
+R/mod_prot_design_builder_action_helpers.R	330	50	the 10 observer and display copies deleted; applyProtDesignMetadataAssignment (integer replicates) and applyProtDesignTechRepAssignment (prot texts) for the dia_long adapter
+R/mod_prot_design_builder_display_helpers.R	408	0	deleted (the shared builder's outputs and input syncs)
+R/mod_prot_design_builder_helpers.R	230	205	registerProtDesignPreviewOutputs a wrapper over the shared previews; the commit hook (persist, hydrate, save flow, observer) kept
+R/mod_prot_design_builder_server.R	24	22	exported wrapper over mod_omic_design_builder_server (back-reference #5)
+R/mod_prot_design_builder_server_helpers.R	648	194	the 13 registration shells deleted; createProtDesignBuilderState, createProtDesignInitialStateReactive, registerProtDesignInitialStateSyncObserver kept; registerProtDesignCheckpointReader (the peptide checkpoint's design reader, moved out of the deleted initializeProtDesignBuilderServerState)
+R/mod_prot_design_builder_state_helpers.R	239	128	the save and reset observer copies deleted; runProtDesignSaveResultsObserverShell, applyProtDesignResetState, applyProtDesignRemovedSamplesUpdate kept; protDesignResetModal
+R/mod_prot_design_builder_ui.R	278	278	unchanged (the proteomics builder-UI plugin, back-reference #4)
+R/mod_prot_design_import_helpers.R	668	668	unchanged (the proteomics import plugin)
+R/mod_prot_design_state_helpers.R	97	97	unchanged
+proteomics design family (10 files at de2d891c)	3136	1800	-1336 (3537 at 283f5eee before W3's moves)
+R/mod_omic_design.R	332	377	+45: registerOmicsDesignServer, omicsDesignServerPlugins, the proteomics import plugin and prot_hook branches, the progress script slot
+R/mod_omic_design_builder.R	575	664	+89: the adapter contract (holders, initial state, start, scope, read, edits, reset, save, keep) for wide_assay_list and dia_long
+net R/ (these files)	4043	2841	-1202

@@ -20,8 +20,9 @@
 # (mod_lipid_design_builder_{server,state_helpers,action_helpers,display_helpers,helpers}.R at
 # 616e1147), its observers and outputs created in the same order, over the design core
 # (func_omics_design_shared.R: C3 initial state, C4 edits, C5 payload). The data reach it through
-# the configured adapter (`config$design$data_adapter`): `wide_assay_list` here; the `dia_long`
-# call points (initial state, rename, save, start) are KIT-103 W6's. testServer masking (KIT-102
+# the configured adapter (`config$design$data_adapter`): `wide_assay_list` (lipid, metab, trx) or,
+# from KIT-103 W6, `dia_long` (proteomics: its DIA references, initial state, owner sync, renames,
+# texts and save kept by name; its builder UI stays its own plugin). testServer masking (KIT-102
 # W4): the module function keeps its reactive named `design_matrix` (MCI-027 reads it) and holds no
 # other local name that a test's own variables would meet; the configuration is read outside it.
 # The `DEBUG66` console messages are not kept (KIT-103 D5). Recorded divergence from
@@ -169,30 +170,119 @@ omicsDesignBuilderTabs <- function(ns) {
 # The data adapter.
 # ------------------------------------------------------------------------------------------------
 
-#' The builder's data calls by the configured adapter. `wide_assay_list` (lipid, metab, trx): the
-#' core's initial state, rename and payload over a list of wide assay tables, with nothing to start.
-#' `dia_long` (proteomics' DIA references) is KIT-103 W6's.
-#' @return A list of functions: `initial_state(assayList, configList, colMap, existingDesignMatrix,
-#'   existingContrasts)`, `rename(designMatrix, assayList, sampleNames, renameMap)`,
-#'   `save(designMatrix, removedSamples, dataCln, colMap, contrastData, configList, formulaString)`
-#'   and `on_start` (NULL).
+#' The builder's data calls by the configured adapter: `wide_assay_list` (lipid, metab, trx) or
+#' `dia_long` (proteomics, `omicsDesignDiaLongAdapter()`).
+#' @return A list of functions:
+#'   - `holders(currentOwner)`: the saved result's and the working tables' holders (`result`,
+#'     `data_cln`, each with a `reactiveVal`'s get/set contract);
+#'   - `initial_state(dataTbl, configList, columnMapping, existingDesignMatrix, existingContrasts,
+#'     currentOwner)`: the initial state's reactive;
+#'   - `on_start(input, session, dataTbl, initialState, state)`: the observer that loads the initial
+#'     state into the builder's values and sample inputs;
+#'   - `scope(operation)`: runs an edit or the save in the data owner's scope;
+#'   - `read_data(holder)`: the working tables as the edits and the save take them;
+#'   - `rename(designMatrix, data, sampleNames, renameMap)`, `assign_metadata(...)` and
+#'     `tech_reps(...)` (C4's signatures);
+#'   - `reset_modal(resetScope, ns)`, `reset(scope, initialState, state, updateFormula)`;
+#'   - `save(designMatrix, removedSamples, data, colMap, contrastData, configList, formulaString)`:
+#'     the payload, or NULL when no run is assigned;
+#'   - `keep_result(value, owner)`: the payload as the result holder keeps it.
 #' @noRd
 omicsDesignBuilderAdapter <- function(config) {
-    if (!identical(config$design$data_adapter, "wide_assay_list")) {
-        cli::cli_abort("the {.val {config$design$data_adapter}} design adapter is not wired yet (KIT-103 W6).",
-            class = "omic_gui_config_invalid")
-    }
+    switch(config$design$data_adapter,
+        wide_assay_list = omicsDesignWideAdapter(config),
+        dia_long = omicsDesignDiaLongAdapter(),
+        cli::cli_abort("the {.val {config$design$data_adapter}} design adapter is unknown.",
+            class = "omic_gui_config_invalid"))
+}
+
+#' `wide_assay_list` (lipid, metab, trx): the core's initial state, edits and payload over a list
+#' of wide assay tables, held by reference in the owner when there is one (KIT-075).
+#' @noRd
+omicsDesignWideAdapter <- function(config) {
     list(
-        initial_state = function(assayList, configList, colMap, existingDesignMatrix, existingContrasts) {
-            buildOmicsDesignInitialState(assayList, configList, colMap, config,
-                existingDesignMatrix = existingDesignMatrix, existingContrasts = existingContrasts)
+        holders = function(currentOwner) {
+            list(result = shiny::reactiveVal(NULL), data_cln = omicsBuilderTableVal("design_builder_data_cln", currentOwner))
         },
+        initial_state = function(dataTbl, configList, columnMapping, existingDesignMatrix, existingContrasts,
+                                 currentOwner) {
+            shiny::reactive({
+                shiny::req(dataTbl())
+                shiny::req(configList())
+                state <- buildOmicsDesignInitialState(dataTbl(), configList(), columnMapping(), config,
+                    existingDesignMatrix = existingDesignMatrix, existingContrasts = existingContrasts)
+                # KIT-075: a reactive keeps its value; it keeps the tables' reference.
+                state$data_cln <- saveWorkflowOwnedValue(state$data_cln, "design_builder_initial_data_cln", currentOwner())
+                state
+            })
+        },
+        on_start = registerOmicsDesignInitialState,
+        scope = function(operation) operation(),
+        read_data = function(holder) holder(),
         rename = applyOmicsDesignSampleRenameMap,
+        assign_metadata = applyOmicsDesignMetadataAssignment,
+        tech_reps = applyOmicsDesignTechRepAssignment,
+        reset_modal = omicsDesignResetModal,
+        reset = applyOmicsDesignResetState,
         save = function(designMatrix, removedSamples, dataCln, colMap, contrastData, configList, formulaString) {
             buildOmicsDesignSavePayload(designMatrix, removedSamples, dataCln, colMap, contrastData, configList,
                 formulaString, idKey = config$design$id_mapping_key)
         },
-        on_start = NULL)
+        keep_result = function(value, owner) {
+            # KIT-075: the returned result carries the tables' reference.
+            value$data_cln <- saveWorkflowOwnedValue(value$data_cln, "design_builder_result_data_cln", owner)
+            value
+        })
+}
+
+#' `dia_long` (proteomics; the DIA adaptor's design entries): the long peptide or protein table
+#' held as a DIA reference and read only by the owner's transforms (KIT-075/082). Today's
+#' proteomics builder pieces, names kept: the saved holders (`createProtDesignBuilderState`), the
+#' two initial-state paths (`createProtDesignInitialStateReactive`: a DIA reference through
+#' `buildDIAReferenceDesignState`, a plain table through `buildProtDesignInitialState`), the owner
+#' replacement and restore (`registerProtDesignInitialStateSyncObserver`) with the checkpoint's
+#' design reader, the renames (`applyProtDesign*RenameUpdate*`), the integer replicate numbers and
+#' the technical-replicate and reset texts, and the save's DIA handling
+#' (`runProtDesignSaveResultsObserverShell`). The edits and the save run in the owner's scope.
+#' @noRd
+omicsDesignDiaLongAdapter <- function() {
+    list(
+        holders = function(currentOwner) {
+            builder <- createProtDesignBuilderState()
+            list(result = builder$resultRv, data_cln = builder$dataClnReactive)
+        },
+        initial_state = function(dataTbl, configList, columnMapping, existingDesignMatrix, existingContrasts,
+                                 currentOwner) {
+            createProtDesignInitialStateReactive(dataTbl, configList, columnMapping)
+        },
+        on_start = function(input, session, dataTbl, initialState, state) {
+            registerProtDesignInitialStateSyncObserver(input, session, initialState, dataTbl,
+                designMatrix = state$design_matrix, dataClnReactive = state$data_cln, groups = state$groups,
+                factors = state$factors, contrasts = state$contrasts, removedSamples = state$removed_samples,
+                resultRv = state$result)
+            registerProtDesignCheckpointReader(input, session, state)
+        },
+        scope = function(operation) withDIAStateScope(getDIAActiveManager(), operation),
+        read_data = getDIAReactiveReference,
+        rename = function(designMatrix, dataCln, sampleNames, renameMap) {
+            renamed <- applyProtDesignBulkRenameUpdates(designMatrix, dataCln, names(renameMap), unname(renameMap))
+            list(designMatrix = renamed$designMatrix, assayList = renamed$dataCln, sampleNames = sampleNames)
+        },
+        assign_metadata = applyProtDesignMetadataAssignment,
+        tech_reps = applyProtDesignTechRepAssignment,
+        reset_modal = protDesignResetModal,
+        reset = function(scope, initialState, state, updateFormula) {
+            applyProtDesignResetState(scope, initialState, state$design_matrix, state$design_matrix, state$data_cln,
+                state$removed_samples(), state$removed_samples, state$factors, state$groups,
+                state$contrasts, updateFormula)
+        },
+        save = function(designMatrix, removedSamples, dataCln, colMap, contrastData, configList, formulaString) {
+            # The builder shows the texts and keeps the result.
+            runProtDesignSaveResultsObserverShell(designMatrix, removedSamples, dataCln, contrastData, configList,
+                formulaString, resultSetter = function(value) invisible(NULL),
+                showNotification = function(...) invisible(NULL))
+        },
+        keep_result = function(value, owner) value)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -295,16 +385,22 @@ applyOmicsDesignResetState <- function(scope, initialState, state, updateFormula
 
 #' The shared design builder's server.
 #' @param id Module id.
-#' @param data_tbl A function (or reactive) returning the assay tables, read per use (KIT-075).
+#' @param data_tbl A function (or reactive) returning the assay tables, read per use (KIT-075). For
+#'   `dia_long`, the table's provider with its `dia_reference` attribute (`registerProtDesignBuilderModule`),
+#'   or a plain reactive (the standalone applet).
 #' @param config_list,column_mapping Reactives of the workflow configuration and column mapping.
 #' @param existing_design_matrix,existing_contrasts Optional reactives of an existing design (an
-#'   imported one) and its contrasts: a design with an assigned group is the initial state.
+#'   imported one) and its contrasts: a design with an assigned group is the initial state
+#'   (`wide_assay_list` only).
 #' @param state_owner Optional function returning the session's state owner; the builder then holds
-#'   its tables by reference (KIT-075). Without it they stay plain values.
+#'   its tables by reference (KIT-075). Without it they stay plain values. (`dia_long` reads the
+#'   session's DIA owner itself.)
 #' @param config An omic GUI configuration (`omicGuiConfig()`): the run order, the id key, the texts,
 #'   the level order and excluded runs (`record_excluded_runs`, `group_levels`).
 #' @return A reactiveVal holding the saved result (`design_matrix`, `data_cln` held by reference,
-#'   `contrasts_tbl`, `config_list`; with `group_levels` and `excluded_runs` when configured).
+#'   `contrasts_tbl`, `config_list`; with `group_levels` and `excluded_runs` when configured). For
+#'   `dia_long`, proteomics' saved holder, whose result names the table by `data_reference` under a
+#'   DIA owner.
 #' @noRd
 mod_omic_design_builder_server <- function(id, data_tbl, config_list, column_mapping, existing_design_matrix = NULL,
                                            existing_contrasts = NULL, state_owner = NULL, config) {
@@ -314,25 +410,19 @@ mod_omic_design_builder_server <- function(id, data_tbl, config_list, column_map
     record_excluded_runs <- isTRUE(config$design$record_excluded_runs)
     group_levels <- config$design$group_levels
     shiny::moduleServer(id, function(input, output, session) {
-        # Reactive value to store the final results
-        result_rv <- shiny::reactiveVal(NULL)
-
         # KIT-075: the builder's table lists are held by reference in the owner (plain without one).
         currentOwner <- function() if (is.function(state_owner)) state_owner()
 
-        initial_state <- shiny::reactive({
-            shiny::req(data_tbl())
-            shiny::req(config_list())
-            state <- adapter$initial_state(data_tbl(), config_list(), column_mapping(), existing_design_matrix,
-                existing_contrasts)
-            # KIT-075: a reactive keeps its value; it keeps the tables' reference.
-            state$data_cln <- saveWorkflowOwnedValue(state$data_cln, "design_builder_initial_data_cln", currentOwner())
-            state
-        })
+        # The final result's and the working tables' holders (the adapter's).
+        holders <- adapter$holders(currentOwner)
+        result_rv <- holders$result
+
+        initial_state <- adapter$initial_state(data_tbl, config_list, column_mapping, existing_design_matrix,
+            existing_contrasts, currentOwner)
 
         # Reactive values for the current, mutable state (MCI-027 reads `design_matrix` by name).
         design_matrix <- shiny::reactiveVal()
-        data_cln_reactive <- omicsBuilderTableVal("design_builder_data_cln", currentOwner)
+        data_cln_reactive <- holders$data_cln
         sample_names_reactive <- shiny::reactiveVal()
         groups <- shiny::reactiveVal()
         factors <- shiny::reactiveVal()
@@ -342,17 +432,14 @@ mod_omic_design_builder_server <- function(id, data_tbl, config_list, column_map
         registerOmicsDesignBuilderObservers(input, output, session, data_tbl, initial_state, column_mapping,
             config_list, list(design_matrix = design_matrix, data_cln = data_cln_reactive,
                 sample_names = sample_names_reactive, groups = groups, factors = factors, contrasts = contrasts,
-                removed_samples = removed_samples),
+                removed_samples = removed_samples, result = result_rv),
             adapter, builder_texts, replicate_testid, function(value) {
                 # The level order the user entered and the runs the user removed (trx).
                 if (record_excluded_runs) {
                     value$group_levels <- group_levels(value$design_matrix, factors())
                     value$excluded_runs <- removed_samples()
                 }
-                # KIT-075: the returned result carries the tables' reference.
-                value$data_cln <- saveWorkflowOwnedValue(value$data_cln, "design_builder_result_data_cln",
-                    currentOwner())
-                result_rv(value)
+                result_rv(adapter$keep_result(value, currentOwner()))
             })
 
         result_rv
@@ -362,38 +449,39 @@ mod_omic_design_builder_server <- function(id, data_tbl, config_list, column_map
 #' The builder's observers and outputs, created in today's order: the initial state, the sample
 #' and factor dropdowns, the design table, the summaries, the adjacent outputs, the rename,
 #' metadata, technical-replicate, contrast and removal edits, the reset and the save.
-#' @param state The builder's reactive values (as `applyOmicsDesignResetState`).
+#' @param state The builder's reactive values (as `applyOmicsDesignResetState`) and the result's
+#'   holder (`result`).
 #' @param setResult The function taking the saved payload.
 #' @noRd
 registerOmicsDesignBuilderObservers <- function(input, output, session, dataTbl, initialState, columnMapping,
                                                 configList, state, adapter, builderTexts, replicateTestid,
                                                 setResult) {
-    registerOmicsDesignInitialState(input, session, dataTbl, initialState, state)
+    adapter$on_start(input, session, dataTbl, initialState, state)
     proxyDataTable <- DT::dataTableProxy("data_table")
     registerOmicsDesignSelectionInputs(input, session, state)
     registerOmicsDesignOutputs(input, output, session, proxyDataTable, state, builderTexts, replicateTestid)
     registerOmicsDesignEdits(input, session, state, adapter)
     shiny::observeEvent(input$reset_changes, {
-        shiny::showModal(omicsDesignResetModal(input$reset_scope, session$ns))
+        shiny::showModal(adapter$reset_modal(input$reset_scope, session$ns))
     })
     shiny::observeEvent(input$confirm_reset, {
         scope <- input$reset_scope
-        applyOmicsDesignResetState(scope, initialState(), state, function(value) {
+        adapter$reset(scope, initialState(), state, function(value) {
             shiny::updateTextInput(session, "formula_string", value = value)
         })
         shiny::removeModal()
         shiny::showNotification(paste("Reset of", scope, "completed."), type = "message")
     })
-    shiny::observeEvent(input$save_results, {
-        finalResult <- adapter$save(state$design_matrix(), state$removed_samples(), state$data_cln(), columnMapping(),
-            state$contrasts(), configList(), input$formula_string)
+    shiny::observeEvent(input$save_results, adapter$scope(function() {
+        finalResult <- adapter$save(state$design_matrix(), state$removed_samples(), adapter$read_data(state$data_cln),
+            columnMapping(), state$contrasts(), configList(), input$formula_string)
         if (is.null(finalResult)) {
             shiny::showNotification(builderTexts[["no_assignment"]], type = "warning")
             return(NULL)
         }
         setResult(finalResult)
         shiny::showNotification(builderTexts[["save_success"]], type = "message", duration = 5)
-    })
+    }))
     invisible(NULL)
 }
 
@@ -526,21 +614,22 @@ registerOmicsDesignOutputs <- function(input, output, session, proxyDataTable, s
 #' @noRd
 registerOmicsDesignEdits <- function(input, session, state, adapter) {
     applyRename <- function(renameMap) {
-        renamed <- adapter$rename(state$design_matrix(), state$data_cln(), state$sample_names(), renameMap)
+        renamed <- adapter$rename(state$design_matrix(), adapter$read_data(state$data_cln), state$sample_names(),
+            renameMap)
         state$design_matrix(renamed$designMatrix)
         state$data_cln(renamed$assayList)
         state$sample_names(renamed$sampleNames)
     }
-    shiny::observeEvent(input$rename_sample, {
+    shiny::observeEvent(input$rename_sample, adapter$scope(function() {
         shiny::req(input$sample_to_rename, input$new_sample_name)
         applyRename(stats::setNames(input$new_sample_name, input$sample_to_rename))
         shiny::updateTextInput(session, "new_sample_name", value = "")
-    })
-    shiny::observeEvent(input$bulk_rename, {
+    }))
+    shiny::observeEvent(input$bulk_rename, adapter$scope(function() {
         shiny::req(input$samples_to_transform)
         applyRename(buildOmicsDesignBulkRenameMap(input$samples_to_transform, input$transform_mode,
             input$range_start, input$range_end))
-    })
+    }))
     shiny::observeEvent(input$add_factor, {
         shiny::req(input$new_factor)
         state$factors(appendOmicsDesignFactorName(state$factors(), input$new_factor))
@@ -548,14 +637,14 @@ registerOmicsDesignEdits <- function(input, session, state, adapter) {
     })
     shiny::observeEvent(input$assign_metadata, {
         shiny::req(input$selected_runs, input$factor1_select)
-        updatedDesignMatrix <- applyOmicsDesignMetadataAssignment(state$design_matrix(), input$selected_runs,
+        updatedDesignMatrix <- adapter$assign_metadata(state$design_matrix(), input$selected_runs,
             input$factor1_select, input$factor2_select, input$factor3_select, input$replicate_start)
         state$design_matrix(updatedDesignMatrix)
         state$groups(listOmicsDesignAssignedGroups(updatedDesignMatrix))
     })
     shiny::observeEvent(input$assign_tech_reps, {
         shiny::req(input$tech_rep_samples)
-        assignment <- applyOmicsDesignTechRepAssignment(state$design_matrix(), input$tech_rep_samples,
+        assignment <- adapter$tech_reps(state$design_matrix(), input$tech_rep_samples,
             input$tech_rep_assignment_mode, input$manual_replicate_number)
         if (isTRUE(assignment$ok)) state$design_matrix(assignment$designMatrix)
         shiny::showNotification(assignment$message, type = assignment$type)

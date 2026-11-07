@@ -32,12 +32,13 @@ test_that("MCI-005.1 builder matrix preserves every imported sample exactly once
 })
 
 test_that("MCI-005.2 contrast matrix covers valid, reversed, invalid, duplicate, and empty contrast states", {
+  # KIT-103 W6: the proteomics builder's contrast edit is the shared builder's (C4).
   contrasts <- NULL
-  contrasts <- applyProtDesignContrastAppend(contrasts, "KO", "WT")
-  contrasts <- applyProtDesignContrastAppend(contrasts, "WT", "KO")
-  contrasts_after_duplicate <- applyProtDesignContrastAppend(contrasts, "KO", "WT")
-  contrasts_after_invalid <- applyProtDesignContrastAppend(contrasts_after_duplicate, "KO", "KO")
-  contrasts_after_empty <- applyProtDesignContrastAppend(contrasts_after_invalid, "", "WT")
+  contrasts <- appendOmicsDesignContrast(contrasts, "KO", "WT")
+  contrasts <- appendOmicsDesignContrast(contrasts, "WT", "KO")
+  contrasts_after_duplicate <- appendOmicsDesignContrast(contrasts, "KO", "WT")
+  contrasts_after_invalid <- appendOmicsDesignContrast(contrasts_after_duplicate, "KO", "KO")
+  contrasts_after_empty <- appendOmicsDesignContrast(contrasts_after_invalid, "", "WT")
 
   expect_equal(nrow(contrasts), 2L)
   expect_identical(contrasts_after_duplicate, contrasts)

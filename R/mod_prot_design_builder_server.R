@@ -14,11 +14,9 @@
 #' @rdname designMatrixBuilderModule
 #' @export
 mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_mapping) {
-    runProtDesignBuilderServerEntryShell(
-        id = id,
-        dataTbl = data_tbl,
-        configList = config_list,
-        columnMapping = column_mapping
-    )
+    # KIT-103 W6: back-reference #5, a wrapper over the shared builder server with the proteomics
+    # configuration (the `dia_long` adapter); `.runDesignMatrixApplet` calls it with plain reactives.
+    mod_omic_design_builder_server(id, data_tbl, config_list, column_mapping,
+        config = omicGuiConfig("proteomics"))
 }
 

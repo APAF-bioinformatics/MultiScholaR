@@ -145,35 +145,10 @@ runProtDesignBuilderObserverShell <- function(
   )
 }
 
-registerProtDesignPreviewOutputs <- function(
-    output,
-    workflowData,
-    reactiveFn = shiny::reactive,
-    outputOptionsFn = shiny::outputOptions,
-    renderDT = DT::renderDT,
-    reqFn = shiny::req
-) {
-  output$data_available <- reactiveFn({
-    !is.null(workflowData$data_tbl) && !is.null(workflowData$config_list)
-  })
-  outputOptionsFn(output, "data_available", suspendWhenHidden = FALSE)
-
-  output$design_matrix_exists <- reactiveFn({
-    !is.null(workflowData$design_matrix)
-  })
-  outputOptionsFn(output, "design_matrix_exists", suspendWhenHidden = FALSE)
-
-  output$design_matrix_preview <- renderDT({
-    reqFn(workflowData$design_matrix)
-    workflowData$design_matrix
-  }, options = list(pageLength = 5, scrollX = TRUE))
-
-  output$contrasts_preview <- renderDT({
-    reqFn(workflowData$contrasts_tbl)
-    workflowData$contrasts_tbl
-  }, options = list(pageLength = 5, scrollX = TRUE))
-
-  invisible(output)
+# KIT-103 W6: the saved-results previews are the shared design tab's (the status outputs are the
+# frame's); kept by name as `registerProtDesignServerShells`' default preview registration.
+registerProtDesignPreviewOutputs <- function(output, workflowData) {
+  registerOmicsDesignPreviewOutputs(output, workflowData, omicGuiConfig("proteomics"))
 }
 
 registerProtDesignBuilderModule <- function(

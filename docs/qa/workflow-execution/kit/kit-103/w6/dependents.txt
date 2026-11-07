@@ -1,0 +1,43 @@
+KIT-103 W6 dependents grep (2026-11-08): the 46 deleted function names and the deleted file
+R/mod_prot_design_builder_display_helpers.R, word-matched across R/, tests/, tools/ and inst/.
+
+Deleted names (46): applyProtDesignContrastAppend applyProtDesignFactorAppendReset
+buildProtDesignAvailableFactorsDisplay buildProtDesignDefinedContrastsDisplay buildProtDesignReplicateInputs
+completeProtDesignBuilderServerBootstrap createProtDesignDataTableProxy createProtDesignMutableStateShells
+formatProtDesignContrastFactorsInfo formatProtDesignRangePreview formatProtDesignRemovedSamplesDisplay
+formatProtDesignTechRepSummary initializeProtDesignBuilderServerState registerProtDesignActionObserverShells
+registerProtDesignAddContrastObserver registerProtDesignAddFactorObserver registerProtDesignAssignMetadataObserver
+registerProtDesignAssignTechRepsObserver registerProtDesignAvailableFactorsDisplayOutput
+registerProtDesignBuilderServerShells registerProtDesignBulkRenameObserver registerProtDesignContrastFactorsInfoOutput
+registerProtDesignDataTableOutput registerProtDesignDataTableProxyRefreshObserver
+registerProtDesignDefinedContrastsDisplayOutput registerProtDesignEventObserverShells
+registerProtDesignFactorGroupSyncObserver registerProtDesignFactorMetadataObserverShells
+registerProtDesignInputSyncObserverShells registerProtDesignRangePreviewOutput
+registerProtDesignRemovedSamplesDisplayOutput registerProtDesignRemoveSamplesObserver
+registerProtDesignRenameObserverShells registerProtDesignRenameSampleObserver registerProtDesignRenderOutputShells
+registerProtDesignReplicateInputsOutput registerProtDesignResetAndSaveObserverShells
+registerProtDesignResetConfirmationObserver registerProtDesignResetRequestObserver
+registerProtDesignSampleSelectionSyncObserver registerProtDesignSaveResultsObserver
+registerProtDesignTechRepSummaryOutput runProtDesignBuilderModuleServerShell runProtDesignBuilderServerEntryShell
+runProtDesignResetConfirmationObserverShell showProtDesignResetConfirmationModal
+
+Kept by name (the DIA memory/session tests and the diagnostic call them): createProtDesignBuilderState,
+createProtDesignInitialStateReactive, registerProtDesignInitialStateSyncObserver,
+runProtDesignSaveResultsObserverShell, applyProtDesignResetState, applyProtDesignRemovedSamplesUpdate,
+registerProtDesignBuilderModule, registerProtDesignBuilderResultsObserver, runProtDesignBuilderObserverShell,
+runProtDesignBuilderSaveFlow, persistProtDesignBuilderArtifacts, hydrateProtDesignBuilderResults,
+registerProtDesignPreviewOutputs (now a wrapper), completeProtDesignPostCheckpoint, the import helpers
+(runProtDesignImportConfirmationFlow and its registrations), and W3's moves.
+
+Hits (file: count):
+  R/utils_omic_gui_config.R: 2           provenance comments citing mod_prot_design_builder_display_helpers.R
+                                         lines (:518, :548); the lead's file (config values unchanged)
+  DESCRIPTION: Collate still lists mod_prot_design_builder_display_helpers.R (the lead's, W7)
+  tests/testthat/test-prot-04-design.R: 121    every block naming a deleted function carries the Q-46 skip
+                                               (114 blocks); the two guard comments name the deleted file/binding
+  tests/testthat/test-prot-04a-design-module-characterization.R: 49   in Q-47 (14) or Q-22 (4) skipped blocks
+  tests/testthat/test-workflow-gui-memory-lifetimes.R: 6   the Q-22 skipped body (:234-), a record row only
+  tools/refactor/** (staging copies, manifests, handover notes): excluded by the ticket's rule
+
+Empty apart from the quarantined files, the Q-22 skipped body, tools/refactor/, the lead's config comments
+and Collate.

@@ -1,0 +1,21 @@
+KIT-103 W6 entry-point lanes (2026-11-08), against the frozen oracles in tests/testdata/gui-entry/
+(not re-frozen). One R process per file, in sequence, load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1,
+R_LIBS=core/browser-smoke.DGpv4v/library, runner kit/scripts-078/run1.R. Each lane compares every step
+(outputs by name, including the design step's outputs and the two '<error> unused arguments (self,
+name)' captures, the committed states, the artifacts and the notifications) with its oracle; a pass
+is identity.
+
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0  [680s]
+  prot_dia, prot_dia_limpa, prot_tmt, prot_lfq, prot_lfq_fragpipe: identical (KIT-102: 187/0/0/0)
+
+The proteomics design step now runs on the shared design tab (registerOmicsDesignServer, through
+mod_prot_design_server -> registerProtDesignServerShells) and the shared builder server with the
+dia_long adapter (mod_prot_design_builder_server), the builder UI being proteomics' own plugin.
+
+Because W6 changed the shared builder's adapter contract and the frame's structure, the two wide-table
+lanes on these modules were rerun as well (metab is W5's):
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0  [63s]       lipid_canonical: identical
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0  [38s]  trx_screen: identical
+
+Stop rule: not triggered. The five proteomics lanes and the DIA session and memory set
+(targeted.txt) are identical with proteomics on the shared builder server.

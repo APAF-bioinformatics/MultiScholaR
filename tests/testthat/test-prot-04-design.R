@@ -6,9 +6,9 @@
 repoRoot <- normalizePath(file.path("..", ".."), mustWork = TRUE)
 
 skipIfMissingProtDesignExtractedFiles <- function() {
+  # Q-46 (KIT-103 W6): mod_prot_design_builder_display_helpers.R is deleted; its blocks carry the Q-46 skip.
   required_paths <- c(
     "R/mod_prot_design_builder_action_helpers.R",
-    "R/mod_prot_design_builder_display_helpers.R",
     "R/mod_prot_design_builder_server_helpers.R",
     "R/mod_prot_design_builder_state_helpers.R",
     "R/mod_prot_design_import_helpers.R"
@@ -38,10 +38,10 @@ skipIfMissingProtDesignBindings <- function(...) {
 
 skipIfMissingProtDesignExtractedFiles()
 
+# Q-46 (KIT-103 W6): runProtDesignBuilderServerEntryShell is deleted; its blocks carry the Q-46 skip.
 skipIfMissingProtDesignBindings(
   "resolveProtDesignImportArtifacts",
-  "runProtDesignImportConfirmationFlow",
-  "runProtDesignBuilderServerEntryShell"
+  "runProtDesignImportConfirmationFlow"
 )
 
 test_that("ProteinQuantitativeData constructor works", {
@@ -963,6 +963,7 @@ test_that("runProtDesignBuilderObserverShell shows the processing modal and dele
 })
 
 test_that("formatProtDesignTechRepSummary reports when no technical replicates are assigned", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   dm <- data.frame(
     Run = c("S1", "S2"),
     group = c("GroupA", "GroupA"),
@@ -978,6 +979,7 @@ test_that("formatProtDesignTechRepSummary reports when no technical replicates a
 })
 
 test_that("formatProtDesignTechRepSummary groups assigned technical replicates by group and replicate", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   dm <- data.frame(
     Run = c("S1", "S2", "S3"),
     group = c("GroupA", "GroupA", "GroupB"),
@@ -997,6 +999,7 @@ test_that("formatProtDesignTechRepSummary groups assigned technical replicates b
 })
 
 test_that("registerProtDesignTechRepSummaryOutput wires the tech-replicate summary render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
   current_design_matrix <- data.frame(
@@ -1043,6 +1046,7 @@ test_that("registerProtDesignTechRepSummaryOutput wires the tech-replicate summa
 })
 
 test_that("registerProtDesignRemovedSamplesDisplayOutput wires the removed-samples render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
 
@@ -1077,6 +1081,7 @@ test_that("registerProtDesignRemovedSamplesDisplayOutput wires the removed-sampl
 })
 
 test_that("registerProtDesignRangePreviewOutput wires the range-preview render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
   input <- list(
@@ -1128,6 +1133,7 @@ test_that("registerProtDesignRangePreviewOutput wires the range-preview render s
 })
 
 test_that("registerProtDesignAvailableFactorsDisplayOutput wires the available-factors render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
 
@@ -1162,6 +1168,7 @@ test_that("registerProtDesignAvailableFactorsDisplayOutput wires the available-f
 })
 
 test_that("registerProtDesignDefinedContrastsDisplayOutput wires the defined-contrasts render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
   contrast_data <- data.frame(
@@ -1215,6 +1222,7 @@ test_that("registerProtDesignDefinedContrastsDisplayOutput wires the defined-con
 })
 
 test_that("registerProtDesignContrastFactorsInfoOutput wires the contrast-info render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
 
@@ -1249,6 +1257,7 @@ test_that("registerProtDesignContrastFactorsInfoOutput wires the contrast-info r
 })
 
 test_that("registerProtDesignDataTableOutput wires the data-table render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
   design_matrix <- data.frame(
@@ -1316,6 +1325,7 @@ test_that("registerProtDesignDataTableOutput wires the data-table render shell",
 })
 
 test_that("registerProtDesignDataTableProxyRefreshObserver wires the proxy-refresh observer shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   design_matrix <- data.frame(
     Run = c("Run1", "Run2", "Run3"),
@@ -1387,6 +1397,7 @@ test_that("registerProtDesignDataTableProxyRefreshObserver wires the proxy-refre
 })
 
 test_that("registerProtDesignSampleSelectionSyncObserver wires the sample-selection sync observer shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input <- list(
     sample_to_rename = "Run2",
@@ -1492,6 +1503,7 @@ test_that("registerProtDesignSampleSelectionSyncObserver wires the sample-select
 })
 
 test_that("registerProtDesignFactorGroupSyncObserver wires the factor/group sync observer shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input <- list(
     factor1_select = "Condition",
@@ -1883,6 +1895,7 @@ test_that("createProtDesignBuilderState seeds mutable builder reactive shells", 
 })
 
 test_that("createProtDesignMutableStateShells exposes the mutable builder state aliases", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   builder_state <- list(
     resultRv = function(value) value,
     designMatrix = function(value) value,
@@ -1924,6 +1937,7 @@ test_that("createProtDesignMutableStateShells exposes the mutable builder state 
 })
 
 test_that("initializeProtDesignBuilderServerState wires the builder-state setup seam in order", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   data_tbl_calls <- 0L
   config_list_calls <- 0L
@@ -2027,6 +2041,7 @@ test_that("initializeProtDesignBuilderServerState wires the builder-state setup 
 })
 
 test_that("createProtDesignDataTableProxy seeds the default builder proxy id", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   proxy_calls <- list()
 
   proxy <- createProtDesignDataTableProxy(
@@ -2041,6 +2056,7 @@ test_that("createProtDesignDataTableProxy seeds the default builder proxy id", {
 })
 
 test_that("registerProtDesignRenderOutputShells wires the builder output registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     formula_string = "~ 0 + group",
@@ -2152,6 +2168,7 @@ test_that("registerProtDesignRenderOutputShells wires the builder output registr
 })
 
 test_that("registerProtDesignInputSyncObserverShells wires the input sync registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     sample_to_rename = "S1",
@@ -2210,6 +2227,7 @@ test_that("registerProtDesignInputSyncObserverShells wires the input sync regist
 })
 
 test_that("registerProtDesignResetAndSaveObserverShells wires the reset/save registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     reset_changes = 1,
@@ -2326,6 +2344,7 @@ test_that("registerProtDesignResetAndSaveObserverShells wires the reset/save reg
 })
 
 test_that("registerProtDesignEventObserverShells wires the event observer registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     rename_sample = 1,
@@ -2458,6 +2477,7 @@ test_that("registerProtDesignEventObserverShells wires the event observer regist
 })
 
 test_that("registerProtDesignEventObserverShells passes callback seeds opaquely through the registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   initial_state_calls <- 0L
   design_matrix_calls <- 0L
@@ -2592,6 +2612,7 @@ test_that("registerProtDesignEventObserverShells passes callback seeds opaquely 
 })
 
 test_that("registerProtDesignBuilderServerShells wires the top-level builder registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(reset_builder = 1)
   output_env <- new.env(parent = emptyenv())
@@ -2703,6 +2724,7 @@ test_that("registerProtDesignBuilderServerShells wires the top-level builder reg
 })
 
 test_that("registerProtDesignBuilderServerShells passes callback seeds opaquely through the top-level registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   initial_state_calls <- 0L
   design_matrix_calls <- 0L
@@ -2887,6 +2909,7 @@ test_that("createProtDesignInitialStateReactive defers the builder initial-state
 })
 
 test_that("completeProtDesignBuilderServerBootstrap wires the remaining proxy bootstrap and registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   fake_input <- list(reset_builder = 1)
   fake_output <- structure(list(), class = "shinyoutput")
@@ -2939,6 +2962,7 @@ test_that("completeProtDesignBuilderServerBootstrap wires the remaining proxy bo
 })
 
 test_that("runProtDesignBuilderModuleServerShell wires the remaining builder module-server shell in order", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   fake_input <- list(reset_builder = 1)
   fake_output <- structure(list(), class = "shinyoutput")
@@ -2999,6 +3023,7 @@ test_that("runProtDesignBuilderModuleServerShell wires the remaining builder mod
 })
 
 test_that("runProtDesignBuilderServerEntryShell wires the remaining public builder moduleServer entry shell in order", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   data_tbl <- function() data.frame(Run = "S1", stringsAsFactors = FALSE)
   config_list <- function() list(globalParameters = list(workflow = "design"))
@@ -3038,6 +3063,7 @@ test_that("runProtDesignBuilderServerEntryShell wires the remaining public build
 })
 
 test_that("mod_prot_design_builder_server wires the public builder entry seam in order", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   data_tbl <- function() data.frame(Run = "S1", stringsAsFactors = FALSE)
   config_list <- function() list(globalParameters = list(workflow = "design"))
@@ -3070,6 +3096,7 @@ test_that("mod_prot_design_builder_server wires the public builder entry seam in
 })
 
 test_that("mod_prot_design_builder_server passes callback seeds opaquely through the public builder entry seam", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   data_tbl_calls <- 0L
   config_list_calls <- 0L
@@ -3121,6 +3148,7 @@ test_that("mod_prot_design_builder_server passes callback seeds opaquely through
 })
 
 test_that("registerProtDesignRenameObserverShells wires the rename registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     rename_sample = 1,
@@ -3173,6 +3201,7 @@ test_that("registerProtDesignRenameObserverShells wires the rename registration 
 })
 
 test_that("registerProtDesignFactorMetadataObserverShells wires the factor and metadata registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     add_factor = 1,
@@ -3225,6 +3254,7 @@ test_that("registerProtDesignFactorMetadataObserverShells wires the factor and m
 })
 
 test_that("registerProtDesignActionObserverShells wires the action observer registration fan-out", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   input_values <- list(
     assign_tech_reps = 1,
@@ -3288,6 +3318,7 @@ test_that("registerProtDesignActionObserverShells wires the action observer regi
 })
 
 test_that("registerProtDesignReplicateInputsOutput wires the replicate-input render shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   output <- new.env(parent = emptyenv())
   input <- list(selected_runs = c("Run1", "Run2", "Run3"))
@@ -3333,6 +3364,7 @@ test_that("registerProtDesignReplicateInputsOutput wires the replicate-input ren
 })
 
 test_that("buildProtDesignDefinedContrastsDisplay reports when no contrasts are defined", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   display <- buildProtDesignDefinedContrastsDisplay(
     contrastData = NULL,
     formulaString = "~ group"
@@ -3345,6 +3377,7 @@ test_that("buildProtDesignDefinedContrastsDisplay reports when no contrasts are 
 })
 
 test_that("buildProtDesignDefinedContrastsDisplay formats friendly names and group-prefixed contrasts", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   contrast_data <- data.frame(
     contrast_name = c("GA.Control.vs.GA.Elevated", "GB.Control.vs.GB.Elevated"),
     numerator = c("GA_Control", "GB_Control"),
@@ -3371,6 +3404,7 @@ test_that("buildProtDesignDefinedContrastsDisplay formats friendly names and gro
 })
 
 test_that("buildProtDesignAvailableFactorsDisplay reports when no factors are defined", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   display <- buildProtDesignAvailableFactorsDisplay(character(0))
 
   expect_equal(
@@ -3380,6 +3414,7 @@ test_that("buildProtDesignAvailableFactorsDisplay reports when no factors are de
 })
 
 test_that("buildProtDesignAvailableFactorsDisplay renders a comma-separated factor list", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   display <- buildProtDesignAvailableFactorsDisplay(c("Condition", "Batch", "Timepoint"))
 
   expect_equal(
@@ -3389,6 +3424,7 @@ test_that("buildProtDesignAvailableFactorsDisplay renders a comma-separated fact
 })
 
 test_that("applyProtDesignFactorAppendReset appends a trimmed unique factor and clears the input", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   updated <- applyProtDesignFactorAppendReset(
     currentFactors = c("Condition", "Batch"),
     newFactorInput = "  Timepoint  "
@@ -3399,6 +3435,7 @@ test_that("applyProtDesignFactorAppendReset appends a trimmed unique factor and 
 })
 
 test_that("applyProtDesignFactorAppendReset ignores blanks and duplicates but still clears the input", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   blank_update <- applyProtDesignFactorAppendReset(
     currentFactors = c("Condition", "Batch"),
     newFactorInput = "   "
@@ -3415,6 +3452,7 @@ test_that("applyProtDesignFactorAppendReset ignores blanks and duplicates but st
 })
 
 test_that("registerProtDesignAddFactorObserver registers the add-factor handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   current_factors <- c("Condition", "Batch")
   updated_factors <- c("Condition", "Batch", "Timepoint")
@@ -3501,6 +3539,7 @@ test_that("registerProtDesignAddFactorObserver registers the add-factor handoff 
 })
 
 test_that("registerProtDesignAssignMetadataObserver registers the metadata-assignment handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   current_design_matrix <- data.frame(
     Run = c("Run1", "Run2", "Run3"),
@@ -3599,6 +3638,7 @@ test_that("registerProtDesignAssignMetadataObserver registers the metadata-assig
 })
 
 test_that("registerProtDesignAssignTechRepsObserver registers the tech-replicate handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   current_design_matrix <- data.frame(
     Run = c("Run1", "Run2", "Run3", "Run4"),
@@ -3685,6 +3725,7 @@ test_that("registerProtDesignAssignTechRepsObserver registers the tech-replicate
 })
 
 test_that("applyProtDesignContrastAppend adds a new unique contrast row", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   updated <- applyProtDesignContrastAppend(
     currentContrasts = data.frame(
       contrast_name = "GA_Control.vs.GA_Elevated",
@@ -3705,6 +3746,7 @@ test_that("applyProtDesignContrastAppend adds a new unique contrast row", {
 })
 
 test_that("applyProtDesignContrastAppend ignores blank, duplicate, and self contrasts", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   existing <- data.frame(
     contrast_name = "GA_Control.vs.GA_Elevated",
     numerator = "GA_Control",
@@ -3734,6 +3776,7 @@ test_that("applyProtDesignContrastAppend ignores blank, duplicate, and self cont
 })
 
 test_that("registerProtDesignAddContrastObserver registers the add-contrast handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   current_contrasts <- data.frame(
     contrast_name = "GA_Control.vs.GA_Elevated",
@@ -3798,6 +3841,7 @@ test_that("registerProtDesignAddContrastObserver registers the add-contrast hand
 })
 
 test_that("registerProtDesignRemoveSamplesObserver registers the remove-samples handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   current_removed_samples <- c("Run0")
   updated_removed_samples <- c("Run0", "Run2", "Run5")
@@ -4096,6 +4140,7 @@ test_that("runProtDesignSaveResultsObserverShell stores the result payload and s
 })
 
 test_that("registerProtDesignSaveResultsObserver registers the save-results handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   input <- list(
     save_results = 1,
@@ -4159,6 +4204,7 @@ test_that("registerProtDesignSaveResultsObserver registers the save-results hand
 })
 
 test_that("showProtDesignResetConfirmationModal builds the reset confirmation modal shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   modal <- showProtDesignResetConfirmationModal(
     resetScope = "removed_samples",
     nsFn = function(id) paste0("builder-", id),
@@ -4203,6 +4249,7 @@ test_that("showProtDesignResetConfirmationModal builds the reset confirmation mo
 })
 
 test_that("registerProtDesignResetRequestObserver registers the reset-request modal shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   input <- list(
     reset_changes = 1,
@@ -4237,6 +4284,7 @@ test_that("registerProtDesignResetRequestObserver registers the reset-request mo
 })
 
 test_that("runProtDesignResetConfirmationObserverShell applies the reset flow and closes the modal", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   design_matrix_value <- data.frame(Run = "ResetSample1", stringsAsFactors = FALSE)
 
@@ -4355,6 +4403,7 @@ test_that("runProtDesignResetConfirmationObserverShell applies the reset flow an
 })
 
 test_that("registerProtDesignResetConfirmationObserver registers the reset-confirmation handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   input <- list(
     confirm_reset = 1,
@@ -4588,6 +4637,7 @@ test_that("applyProtDesignRemovedSamplesUpdate clears removed samples on reset",
 })
 
 test_that("formatProtDesignRemovedSamplesDisplay reports when no samples are removed", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   expect_identical(
     formatProtDesignRemovedSamplesDisplay(character(0)),
     "No samples have been removed."
@@ -4595,6 +4645,7 @@ test_that("formatProtDesignRemovedSamplesDisplay reports when no samples are rem
 })
 
 test_that("formatProtDesignRemovedSamplesDisplay counts and mixed-sorts removed samples", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   expect_identical(
     formatProtDesignRemovedSamplesDisplay(c("Sample10", "Sample2", "Sample1")),
     paste(
@@ -4606,6 +4657,7 @@ test_that("formatProtDesignRemovedSamplesDisplay counts and mixed-sorts removed 
 })
 
 test_that("formatProtDesignContrastFactorsInfo reports prefixed group contrasts for grouped formulas", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   expect_identical(
     formatProtDesignContrastFactorsInfo("~ 0 + group"),
     paste(
@@ -4617,6 +4669,7 @@ test_that("formatProtDesignContrastFactorsInfo reports prefixed group contrasts 
 })
 
 test_that("formatProtDesignContrastFactorsInfo reports as-is contrasts for non-grouped formulas", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   expect_identical(
     formatProtDesignContrastFactorsInfo("~ condition + batch"),
     "Note: Contrasts will use group names as-is (e.g., GA_Control-GA_Elevated)"
@@ -4624,6 +4677,7 @@ test_that("formatProtDesignContrastFactorsInfo reports as-is contrasts for non-g
 })
 
 test_that("buildProtDesignReplicateInputs wires the replicate_start numeric input for selected runs", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   numeric_input <- buildProtDesignReplicateInputs(
     selectedRuns = c("Sample1", "Sample2", "Sample3"),
     nsFn = function(id) paste0("builder-", id),
@@ -4650,6 +4704,7 @@ test_that("buildProtDesignReplicateInputs wires the replicate_start numeric inpu
 })
 
 test_that("formatProtDesignRangePreview renders the first selected sample preview", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   preview <- formatProtDesignRangePreview(
     selectedSamples = c("SampleA_T1_Rep1", "SampleB_T2_Rep1"),
     rangeStart = 2,
@@ -4667,6 +4722,7 @@ test_that("formatProtDesignRangePreview renders the first selected sample previe
 })
 
 test_that("formatProtDesignRangePreview reports extraction errors", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   preview <- formatProtDesignRangePreview(
     selectedSamples = "SampleA_T1_Rep1",
     rangeStart = 4,
@@ -4816,6 +4872,7 @@ test_that("applyProtDesignSingleRenameUpdate rewrites both design and data table
 })
 
 test_that("registerProtDesignRenameSampleObserver registers the single-rename handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   current_design_matrix <- data.frame(
     Run = c("SampleA_T1_Rep1", "SampleB_T2_Rep1"),
@@ -4941,6 +4998,7 @@ test_that("registerProtDesignRenameSampleObserver registers the single-rename ha
 })
 
 test_that("registerProtDesignBulkRenameObserver registers the bulk-rename handoff shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- list()
   current_design_matrix <- data.frame(
     Run = c("SampleA_T1_Rep1", "SampleB_T2_Rep1", "SampleC_T3_Rep1"),
@@ -5079,6 +5137,7 @@ test_that("registerProtDesignBulkRenameObserver registers the bulk-rename handof
 })
 
 test_that("registerProtDesignPreviewOutputs wires availability flags and preview renders", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$data_tbl <- data.frame(Run = "S1", stringsAsFactors = FALSE)
   workflow_data$config_list <- list(globalParameters = list())
@@ -5421,6 +5480,7 @@ test_that("registerProtDesignBuilderResultsObserver registers the builder handof
 })
 
 test_that("registerProtDesignServerShells wires the wrapper shell seam in order", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -5505,6 +5565,7 @@ test_that("registerProtDesignServerShells wires the wrapper shell seam in order"
 })
 
 test_that("registerProtDesignServerShells passes callback seeds opaquely through the wrapper shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -5608,6 +5669,7 @@ test_that("registerProtDesignServerShells passes callback seeds opaquely through
 })
 
 test_that("registerProtDesignServerShells forwards NULL optional inputs through the wrapper shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -5690,6 +5752,7 @@ test_that("registerProtDesignServerShells forwards NULL optional inputs through 
 })
 
 test_that("registerProtDesignServerShells uses the current default callback seeds from the wrapper environment", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -5781,6 +5844,7 @@ test_that("registerProtDesignServerShells uses the current default callback seed
 })
 
 test_that("mod_prot_design_server wires the wrapper helper seams in order", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -5855,6 +5919,7 @@ test_that("mod_prot_design_server wires the wrapper helper seams in order", {
 })
 
 test_that("mod_prot_design_server forwards the wrapper entry id into moduleServer and returns its result", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -5949,6 +6014,7 @@ test_that("mod_prot_design_server forwards the wrapper entry id into moduleServe
 })
 
 test_that("mod_prot_design_server forwards NULL optional inputs through the wrapper seams", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -6020,6 +6086,7 @@ test_that("mod_prot_design_server forwards NULL optional inputs through the wrap
 })
 
 test_that("mod_prot_design_server preserves bootstrap import handoff objects across wrapper seams", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -6106,6 +6173,7 @@ test_that("mod_prot_design_server preserves bootstrap import handoff objects acr
 })
 
 test_that("mod_prot_design_server reuses moduleServer IO objects across wrapper seams", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -6191,6 +6259,7 @@ test_that("mod_prot_design_server reuses moduleServer IO objects across wrapper 
 })
 
 test_that("mod_prot_design_server forwards the exact qc trigger callback through observer seams", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -6274,6 +6343,7 @@ test_that("mod_prot_design_server forwards the exact qc trigger callback through
 })
 
 test_that("mod_prot_design_server passes callback seeds opaquely through wrapper seams", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -6422,6 +6492,7 @@ test_that("mod_prot_design_server uses the current default wrapper shell helper 
 })
 
 test_that("mod_prot_design_server keeps the wrapper entry logging ordered around the module shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -6536,6 +6607,7 @@ test_that("mod_prot_design_server keeps the wrapper entry logging ordered around
 })
 
 test_that("mod_prot_design_ui renders the builder module when it is available", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -6562,6 +6634,7 @@ test_that("mod_prot_design_ui renders the builder module when it is available", 
 })
 
 test_that("mod_prot_design_ui falls back when the builder module is unavailable", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -6614,6 +6687,7 @@ test_that("mod_prot_design_ui preserves the import and preview wrapper scaffold"
 })
 
 test_that("mod_prot_design_ui preserves namespaced wrapper bindings for non-default ids", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -6650,6 +6724,7 @@ test_that("mod_prot_design_ui preserves namespaced wrapper bindings for non-defa
 })
 
 test_that("mod_prot_design_ui keeps the fallback scaffold namespaced for non-default ids", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -6683,6 +6758,7 @@ test_that("mod_prot_design_ui keeps the fallback scaffold namespaced for non-def
 })
 
 test_that("mod_prot_design_ui keeps the default fallback scaffold single-instance and namespaced", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -6730,6 +6806,7 @@ test_that("mod_prot_design_ui keeps the default fallback scaffold single-instanc
 })
 
 test_that("mod_prot_design_ui keeps non-default wrapper ids fully namespaced", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -6776,6 +6853,7 @@ test_that("mod_prot_design_ui keeps progress-handler hooks global while wrapper 
 })
 
 test_that("mod_prot_design_ui preserves conditional-panel output bindings", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7039,6 +7117,7 @@ test_that("mod_prot_design_ui keeps the wrapper shell single-instance for the de
 })
 
 test_that("mod_prot_design_ui keeps the saved-results preview headings ordered for the default wrapper id", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7082,6 +7161,7 @@ test_that("mod_prot_design_ui keeps the saved-results preview headings ordered f
 })
 
 test_that("mod_prot_design_server passes the exact volumes callback seed opaquely into bootstrap", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   call_log <- character()
   workflow_data <- shiny::reactiveValues(
     data_tbl = data.frame(Run = "S1", stringsAsFactors = FALSE),
@@ -7161,6 +7241,7 @@ test_that("mod_prot_design_server passes the exact volumes callback seed opaquel
 })
 
 test_that("mod_prot_design_ui keeps the embedded builder binding single-instance for non-default ids", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7206,6 +7287,7 @@ test_that("mod_prot_design_ui keeps the embedded builder binding single-instance
 })
 
 test_that("mod_prot_design_ui forwards the exact namespaced builder id into the embedded module", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   observed_builder_ids <- character()
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
@@ -7237,6 +7319,7 @@ test_that("mod_prot_design_ui forwards the exact namespaced builder id into the 
 })
 
 test_that("mod_prot_design_ui keeps the embedded builder binding single-instance for the default wrapper id", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7283,6 +7366,7 @@ test_that("mod_prot_design_ui keeps the embedded builder binding single-instance
 })
 
 test_that("mod_prot_design_ui keeps default builder-enabled conditional bindings namespaced", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7342,6 +7426,7 @@ test_that("mod_prot_design_ui keeps default builder-enabled conditional bindings
 })
 
 test_that("mod_prot_design_ui keeps non-default builder-enabled conditional bindings on the shared empty namespace prefix", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7402,6 +7487,7 @@ test_that("mod_prot_design_ui keeps non-default builder-enabled conditional bind
 })
 
 test_that("mod_prot_design_ui keeps default builder-missing conditional bindings on the shared empty namespace prefix", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -7450,6 +7536,7 @@ test_that("mod_prot_design_ui keeps default builder-missing conditional bindings
 })
 
 test_that("mod_prot_design_ui keeps non-default builder-missing conditional bindings on the shared empty namespace prefix", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -7785,6 +7872,7 @@ test_that("mod_prot_design_ui emits the shared progress script ahead of the non-
 })
 
 test_that("mod_prot_design_ui emits the shared progress script ahead of the default fallback shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -7841,6 +7929,7 @@ test_that("mod_prot_design_ui emits the shared progress script ahead of the defa
 })
 
 test_that("mod_prot_design_ui emits the shared progress script ahead of the non-default fallback shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -7899,6 +7988,7 @@ test_that("mod_prot_design_ui emits the shared progress script ahead of the non-
 })
 
 test_that("mod_prot_design_ui emits the shared progress script ahead of the default builder shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -7963,6 +8053,7 @@ test_that("mod_prot_design_ui emits the shared progress script ahead of the defa
 })
 
 test_that("mod_prot_design_ui keeps the default builder guidance paragraph ordered ahead of the embedded builder shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8029,6 +8120,7 @@ test_that("mod_prot_design_ui keeps the default builder guidance paragraph order
 })
 
 test_that("mod_prot_design_ui keeps the non-default builder guidance paragraph ordered ahead of the embedded builder shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8096,6 +8188,7 @@ test_that("mod_prot_design_ui keeps the non-default builder guidance paragraph o
 })
 
 test_that("mod_prot_design_ui keeps the non-default fallback builder guidance paragraph ordered ahead of the fallback shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -8157,6 +8250,7 @@ test_that("mod_prot_design_ui keeps the non-default fallback builder guidance pa
 })
 
 test_that("mod_prot_design_ui keeps the default fallback builder guidance paragraph ordered ahead of the fallback shell", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -8352,6 +8446,7 @@ test_that("mod_prot_design_ui keeps the non-default preview guidance paragraph o
 })
 
 test_that("mod_prot_design_ui keeps the non-default fallback preview guidance paragraph ordered ahead of the saved previews", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -8420,6 +8515,7 @@ test_that("mod_prot_design_ui keeps the non-default fallback preview guidance pa
 })
 
 test_that("mod_prot_design_ui keeps the default fallback preview guidance paragraph ordered ahead of the saved previews", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -8490,6 +8586,7 @@ test_that("mod_prot_design_ui keeps the default fallback preview guidance paragr
 })
 
 test_that("mod_prot_design_ui keeps the default wrapper heading single-instance and ordered ahead of the fallback body", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -8546,6 +8643,7 @@ test_that("mod_prot_design_ui keeps the default wrapper heading single-instance 
 })
 
 test_that("mod_prot_design_ui keeps the default wrapper heading single-instance and ordered ahead of the builder body", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8616,6 +8714,7 @@ test_that("mod_prot_design_ui keeps the default wrapper heading single-instance 
 })
 
 test_that("mod_prot_design_ui keeps the non-default wrapper heading single-instance and ordered ahead of the builder body", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8686,6 +8785,7 @@ test_that("mod_prot_design_ui keeps the non-default wrapper heading single-insta
 })
 
 test_that("mod_prot_design_ui keeps the non-default wrapper heading single-instance and ordered ahead of the fallback body", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -8743,6 +8843,7 @@ test_that("mod_prot_design_ui keeps the non-default wrapper heading single-insta
 })
 
 test_that("mod_prot_design_ui keeps the non-default wrapper heading single-instance and ordered ahead of the saved-preview guidance", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8819,6 +8920,7 @@ test_that("mod_prot_design_ui keeps the non-default wrapper heading single-insta
 })
 
 test_that("mod_prot_design_ui keeps the non-default saved-results preview headings ordered ahead of the preview tables", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8891,6 +8993,7 @@ test_that("mod_prot_design_ui keeps the non-default saved-results preview headin
 })
 
 test_that("mod_prot_design_ui keeps the default saved-results preview headings ordered ahead of the preview tables", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -8963,6 +9066,7 @@ test_that("mod_prot_design_ui keeps the default saved-results preview headings o
 })
 
 test_that("mod_prot_design_ui keeps the default wrapper heading single-instance and ordered ahead of the saved-preview guidance", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -9042,6 +9146,7 @@ test_that("mod_prot_design_ui keeps the default wrapper heading single-instance 
 })
 
 test_that("mod_prot_design_ui keeps the default wrapper heading ordered ahead of the fallback preview guidance", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -9130,6 +9235,7 @@ test_that("mod_prot_design_ui keeps the default wrapper heading ordered ahead of
 })
 
 test_that("mod_prot_design_ui keeps the non-default wrapper heading ordered ahead of the fallback preview guidance", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -9219,6 +9325,7 @@ test_that("mod_prot_design_ui keeps the non-default wrapper heading ordered ahea
 })
 
 test_that("mod_prot_design_ui keeps the non-default saved-preview scaffold ordered ahead of the empty-state alert", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -9329,6 +9436,7 @@ test_that("mod_prot_design_ui keeps the non-default saved-preview scaffold order
 })
 
 test_that("mod_prot_design_ui keeps the default saved-preview scaffold ordered ahead of the empty-state alert", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -9439,6 +9547,7 @@ test_that("mod_prot_design_ui keeps the default saved-preview scaffold ordered a
 })
 
 test_that("mod_prot_design_ui keeps the non-default fallback saved-preview scaffold ordered ahead of the empty-state alert", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -9543,6 +9652,7 @@ test_that("mod_prot_design_ui keeps the non-default fallback saved-preview scaff
 })
 
 test_that("mod_prot_design_ui keeps the default preview divider between the builder shell and preview heading", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -9615,6 +9725,7 @@ test_that("mod_prot_design_ui keeps the default preview divider between the buil
 })
 
 test_that("mod_prot_design_ui keeps the non-default preview divider between the builder shell and preview heading", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -9687,6 +9798,7 @@ test_that("mod_prot_design_ui keeps the non-default preview divider between the 
 })
 
 test_that("mod_prot_design_ui keeps the default fallback preview divider between the fallback shell and preview heading", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_without_builder <- mod_prot_design_ui
   environment(ui_without_builder) <- list2env(
     list(
@@ -9753,6 +9865,7 @@ test_that("mod_prot_design_ui keeps the default fallback preview divider between
 })
 
 test_that("mod_prot_design_ui keeps the default saved-preview content behind the design-matrix-exists binding", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(
@@ -9835,6 +9948,7 @@ test_that("mod_prot_design_ui keeps the default saved-preview content behind the
 })
 
 test_that("mod_prot_design_ui keeps the non-default saved-preview content behind the design-matrix-exists binding", {
+  skip("quarantined: Q-46 (KIT-103 W6) it tested the proteomics design builder's or design tab's own seams (its observer, display, state and registration helpers, deleted, or the wrappers' internal hand-offs and mocks); the builder is the shared builder server over the dia_long adapter and the tab the shared design tab, covered by test-prot-04b-design-server-shared.R and the five proteomics entry lanes' design step")
   ui_with_builder <- mod_prot_design_ui
   environment(ui_with_builder) <- list2env(
     list(

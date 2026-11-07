@@ -1,0 +1,33 @@
+KIT-103 W6 test-first (2026-11-08). One R process per file, load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+R_LIBS=core/browser-smoke.DGpv4v/library, runner kit/scripts-078/run1.R.
+
+The new and retargeted tests were written first and run on the unchanged proteomics design files
+(de2d891c, the phase D start; W3's moves already in), before any R/ file changed. Every frozen value
+in them was recorded on that code (scratch scripts record.R, record2.R, record3.R):
+
+  COUNTS test-prot-04b-design-server-shared.R pass 47 fail 0 error 0 skip 0
+    (the KIT-101 block, 8, and three W6 blocks, 39:
+     - the proteomics frame and builder-plugin UI digests;
+     - the builder over a DIA reference: refusal, factors, metadata (integer replicates), the three
+       technical-replicate texts, contrast notes, removal, single and bulk rename, save (result names,
+       design/data/contrast/config digests, data_reference), reset modal digest and its texts, the
+       notification order, zero hydrates through the edits, renames and save, no working records;
+     - the frame under testServer: its 14 output names, the two '<error> unused arguments (self, name)'
+       status captures, import_dir_path "" in test mode, and the prot_hook commit's source-directory
+       refusal: the bus written first, the processing modal kept, the QC trigger and tab untouched)
+  COUNTS test-applets-direct-shared.R pass 19 fail 0 error 0 skip 0
+    (+1 block: the applet's builder UI digest; the server with plain reactiveVals and no owner fills the
+     sample inputs in the fresh design's mixedsort order and refuses an empty save with today's text)
+  COUNTS test-module-ci-prot-design.R pass 11 fail 0 error 0 skip 5
+    (MCI-005.2 retargeted from applyProtDesignContrastAppend to the shared appendOmicsDesignContrast,
+     expectations unchanged; .1 and .3-.6 are Q-22 as before)
+
+After the change, unchanged files, same counts (targeted.txt):
+  COUNTS test-prot-04b-design-server-shared.R pass 47 fail 0 error 0 skip 0
+  COUNTS test-applets-direct-shared.R pass 19 fail 0 error 0 skip 0
+  COUNTS test-module-ci-prot-design.R pass 11 fail 0 error 0 skip 5
+
+Found while recording (no fix here; F103-03, parked P-15): without a DIA owner the proteomics builder
+cannot rename or save. transformDIADesignTable needs an owner since KIT-048 (Q-22 retired the in-memory
+path), so the standalone applet's save errors ("invalid saved-entity \"input\"") and ends its session.
+The applet block therefore pins the start and the refusal only. The same holds before and after W6.

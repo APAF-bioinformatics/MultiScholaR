@@ -52,75 +52,58 @@ NULL
 #' @importFrom shiny NS tagList wellPanel h3 p conditionalPanel div icon tags HTML
 #' @importFrom DT DTOutput renderDT
 mod_prot_design_ui <- function(id) {
-  ns <- shiny::NS(id)
-  
-  shiny::tagList(
-    # JavaScript handler for UniProt progress updates
+  # KIT-103 W6: a wrapper over the shared design tab with the proteomics configuration (its own
+  # builder UI as the `proteomics` plugin, back-reference #4).
+  mod_omic_design_ui(id, omicGuiConfig("proteomics"))
+}
+
+#' The design tab's handler for the UniProt annotation progress (`completeProtDesignPostCheckpoint`
+#' sends `updateUniprotProgress`); the shared tab renders it first for the `prot_hook` commit.
+#' @noRd
+protDesignUniprotProgressScript <- function() {
     shiny::tags$script(shiny::HTML("
       Shiny.addCustomMessageHandler('updateUniprotProgress', function(message) {
         $('#uniprot_progress_bar').css('width', message.percent + '%');
         $('#uniprot_progress_bar').text(message.percent + '%');
         $('#uniprot_progress_text').text(message.text);
       });
-    ")),
-    
-    shiny::fluidRow(
-      shiny::column(12,
-        shiny::wellPanel(
-        shiny::fluidRow(
-          shiny::column(8,
-            shiny::h3("Design Matrix Builder")
-          ),
-          shiny::column(4,
-            testid(
-              shiny::actionButton(ns("show_import_modal"), "Import Existing Design",
-                                  icon = shiny::icon("folder-open"), class = "btn-info pull-right"),
-              "prot-design-import-existing"
-            )
-          )
-        ),
-        shiny::p("Use the tools below to define your experimental groups and the contrasts for differential analysis. Alternatively, import an existing design from a previous analysis."),
-        
-        # Conditional panel to show the builder only when data is available
-        shiny::conditionalPanel(
-          condition = paste0("output['", ns("data_available"), "']"),
-          # Embed the design matrix builder UI directly
-          # Using mod_prot_design_builder_ui
-          if (exists("mod_prot_design_builder_ui")) {
-            mod_prot_design_builder_ui(ns("builder"))
-          } else {
-            shiny::div("Design builder module not loaded")
-          },
-          
-          # Add a section for previewing the saved results
-          shiny::hr(),
-          shiny::h3("Saved Results Preview"),
-          shiny::p("This section shows the design matrix and contrasts that have been saved to the workflow."),
-              shiny::conditionalPanel(
-                condition = paste0("output['", ns("design_matrix_exists"), "']"),
-                shiny::wellPanel(
-                  shiny::h4("Current Design Matrix"),
-                  DT::DTOutput(ns("design_matrix_preview")),
-                  shiny::br(),
-                  shiny::h4("Defined Contrasts"),
-                  DT::DTOutput(ns("contrasts_preview"))
-            )
-          )
-        ),
-        
-        # Conditional panel to show a message if data is not available
-        shiny::conditionalPanel(
-          condition = paste0("!output['", ns("data_available"), "']"),
-          shiny::div(
-            class = "alert alert-info",
-            shiny::icon("info-circle"),
-            " Please complete the 'Setup & Import' step first. The builder will appear here once data is available."
-          )
-        )
-      )
-    )
-    )
-  )
+    "))
+}
+
+#' The proteomics plugins of the shared design tab's server (`registerOmicsDesignServer()`): its
+#' own import panel (FASTA and organism sidecars; `runProtDesignImportConfirmationFlow`), the
+#' builder over the DIA table's provider (`registerProtDesignBuilderModule`, the `dia_long`
+#' adapter), its own commit (`registerProtDesignBuilderResultsObserver` ->
+#' `runProtDesignBuilderSaveFlow`, the UniProt post-step and the DIA reclamation) and the previews.
+#' The arguments are `registerProtDesignServerShells`' injectable steps.
+#' @return A list of the frame's plugin functions (`import`, `builder`, `commit`, `previews`).
+#' @noRd
+protDesignServerPlugins <- function(
+    initializeImportBootstrap = initializeProtDesignImportBootstrap,
+    registerImportModalShell = registerProtDesignImportModalShell,
+    registerImportConfirmationObserver = registerProtDesignImportConfirmationObserver,
+    registerPreviewOutputs = registerProtDesignPreviewOutputs,
+    registerBuilderModule = registerProtDesignBuilderModule,
+    registerBuilderResultsObserver = registerProtDesignBuilderResultsObserver
+) {
+  list(
+    import = function(input, output, session, workflow_data, experiment_paths, volumes, qc_trigger, config) {
+      importBootstrap <- initializeImportBootstrap(input = input, session = session,
+        experimentPaths = experiment_paths, volumes = volumes)
+      registerImportModalShell(input = input, output = output, session = session,
+        resolvedVolumes = importBootstrap$resolvedVolumes, importFastaPath = importBootstrap$importFastaPath)
+      registerImportConfirmationObserver(input = input, resolvedVolumes = importBootstrap$resolvedVolumes,
+        importFastaPath = importBootstrap$importFastaPath, workflowData = workflow_data,
+        experimentPaths = experiment_paths, session = session, qcTrigger = qc_trigger)
+    },
+    builder = function(workflow_data, config) registerBuilderModule(workflowData = workflow_data),
+    commit = function(builder_results, workflow_data, experiment_paths, session, qc_trigger, config) {
+      registerBuilderResultsObserver(builderResultsRv = builder_results, workflowData = workflow_data,
+        experimentPaths = experiment_paths, session = session, qcTrigger = qc_trigger)
+    },
+    previews = function(output, workflow_data, config) {
+      registerPreviewOutputs(output = output, workflowData = workflow_data)
+    })
 }
 
 #' @rdname designMatrixAppletModule
@@ -147,51 +130,12 @@ registerProtDesignServerShells <- function(
     registerBuilderModule = registerProtDesignBuilderModule,
     registerBuilderResultsObserver = registerProtDesignBuilderResultsObserver
 ) {
-  importBootstrap <- initializeImportBootstrap(
-    input = input,
-    session = session,
-    experimentPaths = experimentPaths,
-    volumes = volumes
-  )
-  resolvedVolumes <- importBootstrap$resolvedVolumes
-  importFastaPath <- importBootstrap$importFastaPath
-
-  registerImportModalShell(
-    input = input,
-    output = output,
-    session = session,
-    resolvedVolumes = resolvedVolumes,
-    importFastaPath = importFastaPath
-  )
-
-  registerImportConfirmationObserver(
-    input = input,
-    resolvedVolumes = resolvedVolumes,
-    importFastaPath = importFastaPath,
-    workflowData = workflowData,
-    experimentPaths = experimentPaths,
-    session = session,
-    qcTrigger = qcTrigger
-  )
-
-  registerPreviewOutputs(
-    output = output,
-    workflowData = workflowData
-  )
-
-  builderResultsRv <- registerBuilderModule(
-    workflowData = workflowData
-  )
-
-  registerBuilderResultsObserver(
-    builderResultsRv = builderResultsRv,
-    workflowData = workflowData,
-    experimentPaths = experimentPaths,
-    session = session,
-    qcTrigger = qcTrigger
-  )
-
-  invisible(builderResultsRv)
+  # KIT-103 W6: the shared design tab's server under the proteomics configuration, its plugins
+  # built from these steps.
+  registerOmicsDesignServer(input, output, session, workflowData, experimentPaths, volumes, qcTrigger,
+    omicGuiConfig("proteomics"), plugins = protDesignServerPlugins(initializeImportBootstrap,
+      registerImportModalShell, registerImportConfirmationObserver, registerPreviewOutputs,
+      registerBuilderModule, registerBuilderResultsObserver))
 }
 
 mod_prot_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
