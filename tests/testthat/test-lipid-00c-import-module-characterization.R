@@ -36,6 +36,7 @@ test_that("mod_lipid_import_server preserves the wrapper wiring contract", {
 })
 
 test_that("buildLipidImportAssayInputPanel preserves shinyFiles and standard-upload wiring", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("buildLipidImportAssayInputPanel", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -81,6 +82,7 @@ test_that("buildLipidImportAssayInputPanel preserves shinyFiles and standard-upl
 })
 
 test_that("buildLipidImportFileImportSection and footer preserve UI wiring", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("buildLipidImportFileImportSection", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("buildLipidImportProcessFooterSection", envir = asNamespace("MultiScholaR"), inherits = FALSE)
@@ -115,6 +117,7 @@ test_that("buildLipidImportFileImportSection and footer preserve UI wiring", {
 })
 
 test_that("buildLipidImportColumnMappingSection and module shell preserve layout wiring", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("buildLipidImportColumnMappingSection", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("buildLipidImportModulePanel", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
@@ -175,6 +178,7 @@ test_that("buildLipidImportColumnMappingSection and module shell preserve layout
 })
 
 test_that("lipid import format and column helpers preserve detection and fallback behavior", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("buildLipidImportFormatDetectionStatus", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("buildLipidImportColumnValidationStatus", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
@@ -249,6 +253,7 @@ test_that("lipid import format and column helpers preserve detection and fallbac
 })
 
 test_that("lipid import workflow helpers preserve workflow commit and setup finalization", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("applyLipidImportResultToWorkflow", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("finalizeLipidImportSetupState", envir = asNamespace("MultiScholaR"), inherits = FALSE)
@@ -316,6 +321,7 @@ test_that("lipid import workflow helpers preserve workflow commit and setup fina
 })
 
 test_that("lipid import sample-name sanitation and assay assembly preserve helper behavior", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("sanitizeLipidImportSampleNames", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("assembleLipidImportAssayList", envir = asNamespace("MultiScholaR"), inherits = FALSE)
@@ -371,6 +377,7 @@ test_that("lipid import sample-name sanitation and assay assembly preserve helpe
 })
 
 test_that("runLipidImportProcessing preserves success and failure cleanup behavior", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("runLipidImportProcessing", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -468,6 +475,7 @@ test_that("runLipidImportProcessing preserves success and failure cleanup behavi
 })
 
 test_that("lipid import preview and status helpers preserve format and display branches", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("loadLipidImportAssayPreview", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("buildLipidImportValidationSummary", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
@@ -584,6 +592,7 @@ test_that("lipid import preview and status helpers preserve format and display b
 })
 
 test_that("lipid import selection and process helpers preserve event handling behavior", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("handleLipidImportFileSelection", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("handleLipidImportProcessRequest", envir = asNamespace("MultiScholaR"), inherits = FALSE)
@@ -665,6 +674,7 @@ test_that("lipid import selection and process helpers preserve event handling be
 })
 
 test_that("lipid import output render helpers preserve forwarded payloads", {
+  skip("quarantined: Q-26 (KIT-102 W5) the lipid import internal this block tested was deleted; the shared feature-table panel (mod_omic_import_feature_table.R) and the core (utils_workflow_omics_import.R) replace it, covered by MCI-018 and the lipid_canonical entry lane import step")
   skip_if_not(
     exists("handleLipidImportValidationSummaryRender", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("handleLipidImportSampleColumnsDisplayRender", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&

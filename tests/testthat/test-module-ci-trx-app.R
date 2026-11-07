@@ -85,10 +85,15 @@ test_that("MCI-029.2 the module in process: import, design, QC, normalisation an
   suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(mod_transcriptomics_server, args = list(id = "transcriptomics_workflow",
     project_dirs = project_dirs, omic_type = "transcriptomics", experiment_label = "kit097"), {
     set <- function(values) do.call(session$setInputs, values)
-    preview <- trxImportPreview(file.path(dir, "counts.tsv"))
-    runTrxImportProcessing(workflowData = workflow_data, assay1Name = "counts", assay1Data = preview$assayData, assay1File = file.path(dir, "counts.tsv"),
-      lipidIdCol = preview$updates$lipidId$selected, annotationCol = preview$updates$annotation$selected,
-      experimentPaths = project_dirs$transcriptomics, notify = quiet, removeNotify = quiet)
+    # KIT-102 W5: the shared feature-table panel's preview and processing, then the frame's completion.
+    trx_config <- omicGuiConfig("transcriptomics")
+    preview <- omicImportFeatureTablePreview(file.path(dir, "counts.tsv"), trx_config)
+    processOmicImportFeatureTable(workflow_data, list(assay1_name = "counts", assay1_data = preview$assay_data,
+      assay1_file = file.path(dir, "counts.tsv"), vendor_format = "trx_counts", detected_format = preview$detected_format,
+      id_col = preview$updates$id$selected, annotation_col = preview$updates$annotation$selected,
+      experiment_paths = project_dirs$transcriptomics), trx_config,
+      complete = function(...) completeOmicImport(workflow_data, trx_config, notify = FALSE),
+      showNotification = quiet, removeNotification = quiet)
     session$flushReact()
     builder <- function(name) paste0("design-builder-", name)
     for (i in 1:2) set(stats::setNames(list(c("RPMI", "Sera")[[i]], i), builder(c("new_factor", "add_factor"))))

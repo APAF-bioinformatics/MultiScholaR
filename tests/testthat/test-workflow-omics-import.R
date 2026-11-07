@@ -166,6 +166,7 @@ compareTrxImport <- function(counts_file, info) {
 # ------------------------------------------------------------------------------------------------
 
 test_that("I1 the header reader is today's default reader (lipid and metab)", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     lipid_default <- eval(formals(loadLipidImportAssayPreview)$readHeaders)
     metab_default <- eval(formals(prepareMetabImportAssaySelectionState)$readHeadersFn)
     paths <- module_ci_lipid_import_paths()
@@ -186,6 +187,7 @@ test_that("I1 the header reader is today's default reader (lipid and metab)", {
 })
 
 test_that("I2 the feature-table preview is today's lipid and metab preview", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     paths <- module_ci_lipid_import_paths()
     lipid_files <- c(
         lipidsearch = module_ci_lipid_write_table(module_ci_lipid_lipidsearch_assay(),
@@ -238,6 +240,7 @@ test_that("I2 the feature-table preview is today's lipid and metab preview", {
 })
 
 test_that("I2 the trx preview is today's trxImportPreview", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     for (dir in c(module_ci_trx_corpus(), module_ci_trx_fixture("counts_negative"))) {
         old <- trxImportPreview(file.path(dir, "counts.tsv"))
         new <- previewTrxCountsImport(file.path(dir, "counts.tsv"))
@@ -258,6 +261,7 @@ test_that("I2 the trx preview is today's trxImportPreview", {
 # ------------------------------------------------------------------------------------------------
 
 test_that("I3, I4 the sample and column resolution is today's (lipid and metab)", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     custom <- module_ci_lipid_custom_assay(sample_prefix = "sample")
     custom$Sample_normalized <- 1
     import_result <- list(sample_columns = c("Sample A", "QC-01", "Sample_normalized"))
@@ -302,6 +306,7 @@ test_that("I3, I4 the sample and column resolution is today's (lipid and metab)"
 # ------------------------------------------------------------------------------------------------
 
 test_that("I5 to I13 the lipid import is today's on the MCI-018 matrix", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     skip_if_not(workflowOwnerCapable())
     paths <- module_ci_lipid_import_paths()
     for (case in list(
@@ -367,6 +372,7 @@ test_that("I5 to I13 the lipid import is today's on the MCI-018 matrix", {
 })
 
 test_that("I5 to I13 the metab import is today's on the MCI-012 matrix", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     skip_if_not(workflowOwnerCapable())
     paths <- module_ci_metab_import_paths()
     valid <- module_ci_metab_custom_assay()
@@ -409,6 +415,7 @@ test_that("I5 to I13 the metab import is today's on the MCI-012 matrix", {
 })
 
 test_that("I5 to I13 the trx import is today's on the MCI-026 corpus and fixtures", {
+    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
     skip_if_not(workflowOwnerCapable())
     for (dir in c(module_ci_trx_corpus(), module_ci_trx_fixture("counts_whole_double"),
         module_ci_trx_fixture("counts_na"), module_ci_trx_fixture("counts_negative"),
@@ -462,6 +469,7 @@ test_that("coerceOmicsNumericLikeColumns converts only numeric-like text and fac
     numeric_only <- table[c("id", "number")]
     expect_identical(rlang::obj_address(coerceOmicsNumericLikeColumns(numeric_only, "number")),
         rlang::obj_address(numeric_only))
+    skip("quarantined: Q-30 (KIT-102 W5) the cross-check below compared with metab's pre-KIT-102 conversion functions, deleted by W5")
     # The rule is metab's (metabImportValuesAreNumericLike,
     # coerceMetabImportWorkflowPayloadSamples).
     for (column in names(table)) {

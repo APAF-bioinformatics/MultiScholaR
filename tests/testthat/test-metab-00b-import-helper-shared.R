@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-28 (KIT-102 W5) the metab import split files (mod_metab_import_{column,display,processing,server}_helpers.R) were deleted; their resolvers and checks are the core's (utils_workflow_omics_import.R)")
 # fidelity-coverage-compare: shared
 library(testthat)
 

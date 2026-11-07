@@ -166,41 +166,44 @@ module_ci_lipid_import_run <- function(assay,
   notifications <- list()
   removed_notifications <- character()
   error_messages <- character()
+  notify <- function(message, type = NULL, id = NULL, duration = NULL) {
+    notifications[[length(notifications) + 1L]] <<- list(
+      message = message,
+      type = type,
+      id = id,
+      duration = duration
+    )
+    invisible(NULL)
+  }
 
+  # KIT-102 W5: the import tab's processing is the shared feature-table panel's (the core import, then the commit and
+  # the frame's completion), under the lipidomics configuration.
   # KIT-075: the import binds the session's owner, which attaches to the reactive domain.
-  result <- shiny::withReactiveDomain(omicsOwnerSession(), runLipidImportProcessing(
-    workflowData = workflow,
-    assay1Name = assay_name,
-    assay1Data = assay,
-    assay1File = assay_file,
-    assay2File = assay2_file,
-    assay2Name = assay2_name,
-    vendorFormat = vendor_format,
-    detectedFormat = detected_format,
-    lipidIdCol = lipid_id_col,
-    annotationCol = annotation_col,
-    sampleColumns = sample_cols,
-    isPattern = is_pattern,
-    sanitizeNames = sanitize_names,
-    experimentPaths = paths,
-    notify = function(message, type = NULL, id = NULL, duration = NULL) {
-      notifications[[length(notifications) + 1L]] <<- list(
-        message = message,
-        type = type,
-        id = id,
-        duration = duration
-      )
-      invisible(NULL)
-    },
-    removeNotify = function(id) {
+  config <- omicGuiConfig("lipidomics")
+  run <- shiny::withReactiveDomain(omicsOwnerSession(), processOmicImportFeatureTable(
+    workflow,
+    request = list(assay1_name = assay_name, assay1_data = assay, assay1_file = assay_file, assay2_file = assay2_file,
+      assay2_name = assay2_name, vendor_format = vendor_format, detected_format = detected_format,
+      id_col = lipid_id_col, annotation_col = annotation_col, sample_columns = sample_cols,
+      sanitize_names = sanitize_names, is_pattern = is_pattern, experiment_paths = paths),
+    config = config,
+    complete = function(...) completeOmicImport(workflow, config, showNotification = notify),
+    showNotification = notify,
+    removeNotification = function(id) {
       removed_notifications <<- c(removed_notifications, id)
       invisible(NULL)
     },
     logError = function(message) {
       error_messages <<- c(error_messages, message)
       invisible(NULL)
-    }
+    },
+    logInfo = function(...) invisible(NULL)
   ))
+  # The pre-KIT-102 processing's result: NULL on a refusal, else its success list.
+  result <- if (identical(run$status, "success")) {
+    list(status = "success", assayList = run$payload$assays, sampleColumns = run$payload$sample_columns,
+      validationResult = run$payload$validation, artifactResult = run$payload$artifacts)
+  }
 
   list(
     result = result,
@@ -213,7 +216,8 @@ module_ci_lipid_import_run <- function(assay,
 }
 
 module_ci_lipid_preview <- function(path) {
-  loadLipidImportAssayPreview(path)
+  # KIT-102 W5: the core's preview (snake_case keys) under the lipidomics configuration.
+  omicImportFeatureTablePreview(path, omicGuiConfig("lipidomics"))
 }
 
 module_ci_lipid_import_artifacts <- function(paths, assay_names) {

@@ -14,8 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# KIT-096: the transcriptomics workflow module (import, design, QC). The tabs are the lipid import, design-builder and QC
-# modules under the transcriptomics profile (`trxOmicProfile()`), which supplies the omic's collaborators at the seams those
+# KIT-096: the transcriptomics workflow module (import, design, QC). The tabs are the shared import (KIT-102) and the
+# lipid design-builder and QC modules under the transcriptomics profile (`trxOmicProfile()`), which supplies the omic's collaborators at the seams those
 # modules already take; nothing is copied. The tabs hold state references only (KIT-075) and run on the managed runner, or
 # the binding's wrappers in process (KIT-078). Recorded divergence from conventions/R-shiny.md: the shinydashboard and
 # wellPanel shell, the managed runner in place of ExtendedTask and the import's fileInput fallback are kept, to match the
@@ -25,19 +25,14 @@
 # The profile.
 # ---------------------------------------------------------------------------------------------------------------
 
-#' The transcriptomics profile of the lipid import, design and QC modules: labels, test-id prefix, the count table's
-#' format, the binding's readers and wrappers, and the collaborators each module takes at its seams.
+#' The transcriptomics profile of the lipid design, QC, normalisation, DA and summary modules: labels, test-id prefix,
+#' the binding's readers and wrappers, and the collaborators each module takes at its seams. The import is the shared
+#' feature-table panel under `omicGuiConfig("transcriptomics")` (KIT-102), which the profile's `omic_type` selects.
 #' @return A plain list.
 #' @noRd
 trxOmicProfile <- function() {
     profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
-        class = "TranscriptomicsAssayData", workflow_type = "TRANSCRIPTOMICS", data_format = "trx_counts",
-        import_title = "Transcriptomics Data Import", formats = c("Count table (gene ID, gene name, sample counts)" = "trx_counts"),
-        assay_name = "counts", id_label = "Gene ID Column", annotation_label = "Gene Name Column",
-        import_help = paste("One delimited count table: a gene ID column, a gene name column and one column per sample, named",
-            "exactly as in the design. Counts must be whole numbers: a missing, negative or fractional count is refused, with",
-            "no rounding. Sample names are kept as they are in the file."),
-        load_preview = trxImportPreview, process_import = runTrxImportProcessing,
+        class = "TranscriptomicsAssayData", workflow_type = "TRANSCRIPTOMICS",
         design_help = paste("Samples are matched to the count columns by sample name only, in the counts file's order; there",
             "is no positional mapping. Each group needs at least two samples. The order in which you add the factor levels is",
             "the group level order the analysis uses."),
@@ -70,79 +65,6 @@ trxNormDaSummaryProfile <- function() {
         ruviii_m_choices = trxRuviiiMChoices, integration_filename = "transcriptomics_normalized_data.tsv",
         integration_write = trxSummaryIntegrationWrite, integration_ready = trxSummaryIntegrationReady,
         integration_missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again.")
-}
-
-# ---------------------------------------------------------------------------------------------------------------
-# Import: the count table, the count policy, the processing at the lipid import's seams.
-# ---------------------------------------------------------------------------------------------------------------
-
-#' The import tab's preview of a count table, in the shape of `loadLipidImportAssayPreview`: read as the notebook reads
-#' it (vroom), the id and name columns proposed (`GeneID`, `GeneName` when present), every other column a sample.
-#' @noRd
-trxImportPreview <- function(assay1File) {
-    data <- vroom::vroom(assay1File, show_col_types = FALSE, progress = FALSE)
-    # The reader's lazy problems pointer is not a value the session can hold by reference.
-    attr(data, "problems") <- NULL
-    headers <- names(data)
-    id <- if ("GeneID" %in% headers) "GeneID" else headers[[1L]]
-    name <- if ("GeneName" %in% headers) "GeneName" else setdiff(headers, id)[[1L]]
-    list(headers = headers, detectedFormat = "trx_counts", formatConfidence = 1,
-        importResult = list(data = data, sample_columns = setdiff(headers, c(id, name))), assayData = data,
-        updates = list(lipidId = list(choices = headers, selected = id), annotation = list(choices = headers, selected = name),
-            isPattern = NULL))
-}
-
-#' KIT-093's count policy at import on every column but the id and name columns. A refusal keeps KIT-093's class and
-#' names it in its message, which the tab shows.
-#' @return `assayList`, unchanged, when it passes.
-#' @noRd
-checkTrxImportCounts <- function(assayList, idCol, annotationCol) {
-    table <- assayList[[1L]]
-    if (!lipidImportScalarString(annotationCol)) trxAbort("a gene name column is required (trx_counts_invalid)", c("trx_counts_invalid", "trx_error"))
-    absent <- setdiff(c(idCol, annotationCol), names(table))
-    if (length(absent)) {
-        trxAbort(sprintf("the count table lacks the column(s) %s (trx_counts_invalid)", paste(absent, collapse = ", ")),
-            c("trx_counts_invalid", "trx_error"))
-    }
-    withCallingHandlers(validateTrxCounts(as.data.frame(table)[setdiff(names(table), c(idCol, annotationCol))]),
-        trx_counts_invalid = function(error) trxAbort(sprintf("%s (%s)", conditionMessage(error), class(error)[[1L]]),
-            setdiff(class(error), c("rlang_error", "error", "condition"))))
-    invisible(assayList)
-}
-
-#' The lipid import's validation under the count policy: the policy first (its class shown), then the mapping checks.
-#' @noRd
-trxValidateImport <- function(assayList, lipidIdCol, annotationCol, sampleColumns) {
-    checkTrxImportCounts(assayList, lipidIdCol, annotationCol)
-    validation <- validateLipidImportProcessingState(assayList, lipidIdCol, sampleColumns)
-    if (!isTRUE(validation$valid)) {
-        trxAbort(sprintf("Invalid transcriptomics import: %s (trx_counts_invalid)", paste(validation$errors, collapse = "; ")),
-            c("trx_counts_invalid", "trx_error"))
-    }
-    validation
-}
-
-#' The import tab's processing (the lipid processing with the transcriptomics collaborators): one count table, its samples
-#' every column but the id and name columns, no sanitisation, the owner bound to `TRANSCRIPTOMICS`.
-#' @param ... The lipid request's other arguments (formats, pattern, sanitisation, second assay) are not used; the
-#'   notification and log functions pass through.
-#' @noRd
-runTrxImportProcessing <- function(workflowData, assay1Name, assay1Data, lipidIdCol, annotationCol, assay1File = NULL,
-                                   experimentPaths = NULL, ...) {
-    passed <- list(...)
-    passed <- passed[intersect(names(passed), c("notify", "removeNotify", "logError"))]
-    sampleColumns <- setdiff(names(assay1Data), c(lipidIdCol, annotationCol))
-    apply <- function(workflowData, ...) {
-        applyLipidImportResultToWorkflow(workflowData, ..., workflowType = "TRANSCRIPTOMICS")
-        workflowData$data_type <- "transcriptomics"
-    }
-    do.call(runLipidImportProcessing, c(list(workflowData = workflowData, assay1Name = assay1Name, assay1Data = assay1Data,
-        assay1File = assay1File, assay2File = NULL, assay2Name = "", vendorFormat = "trx_counts", detectedFormat = "trx_counts",
-        lipidIdCol = lipidIdCol, annotationCol = annotationCol, sampleColumns = sampleColumns, isPattern = "", sanitizeNames = FALSE,
-        experimentPaths = experimentPaths,
-        validateImportState = function(assayList, lipidIdCol, sampleColumns) trxValidateImport(assayList, lipidIdCol, annotationCol, sampleColumns),
-        writeImportArtifacts = function(...) writeLipidImportSourceArtifacts(..., summaryFileName = "transcriptomics_import_summary.tsv"),
-        applyResultToWorkflow = apply), passed))
 }
 
 # ---------------------------------------------------------------------------------------------------------------

@@ -119,40 +119,33 @@ module_ci_metab_import_run <- function(assay,
   }
   notifications <- list()
   logs <- character()
+  notify <- function(message, ...) {
+    notifications[[length(notifications) + 1L]] <<- list(message = message, ...)
+    invisible(NULL)
+  }
+  quiet <- function(...) invisible(NULL)
+  # KIT-102 W5: the import tab's processing is the shared feature-table panel's (the core import, then the commit and
+  # the frame's completion), under the metabolomics configuration. Its result is `list(status, payload)` or
+  # `list(status = "error", error)`.
   # KIT-075: the import binds the session's owner, which attaches to the reactive domain.
-  result <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabImportProcessing(
-    assay1Data = assay,
-    assay1Name = assay_name,
-    assay1File = assay_file,
-    assay2File = assay2_file,
-    assay2Name = assay2_name,
-    vendorFormat = vendor_format,
-    detectedFormat = detected_format,
-    sanitizeNames = sanitize_names,
-    isPattern = is_pattern,
-    getMetaboliteIdColFn = function() metabolite_col,
-    getAnnotationColFn = function() annotation_col,
-    getSampleColumnsFn = function() sample_cols,
-    workflowData = workflow,
-    experimentPaths = paths,
-    reqFn = function(value) {
-      if (is.null(value)) {
-        stop("required value missing")
-      }
-      invisible(value)
-    },
-    showNotificationFn = function(message, ...) {
-      notifications[[length(notifications) + 1L]] <<- list(message = message, ...)
-      invisible(NULL)
-    },
-    logInfoFn = function(message) {
+  config <- omicGuiConfig("metabolomics")
+  result <- shiny::withReactiveDomain(omicsOwnerSession(), processOmicImportFeatureTable(
+    workflow,
+    request = list(assay1_name = assay_name, assay1_data = assay, assay1_file = assay_file, assay2_file = assay2_file,
+      assay2_name = assay2_name, vendor_format = vendor_format, detected_format = detected_format,
+      id_col = metabolite_col, annotation_col = annotation_col, sample_columns = sample_cols,
+      sanitize_names = sanitize_names, is_pattern = is_pattern, experiment_paths = paths),
+    config = config,
+    complete = function(...) completeOmicImport(workflow, config, notify = FALSE),
+    showNotification = notify,
+    removeNotification = quiet,
+    logError = quiet,
+    logInfo = function(message) {
       logs <<- c(logs, message)
       invisible(NULL)
-    },
-    finalizeFeedbackFn = function(status, error = NULL) {
-      invisible(list(status = status, error = if (is.null(error)) NULL else conditionMessage(error)))
     }
   ))
+  if (identical(result$status, "success")) result$artifactResult <- result$payload$artifacts
   list(
     result = result,
     workflow = workflow,

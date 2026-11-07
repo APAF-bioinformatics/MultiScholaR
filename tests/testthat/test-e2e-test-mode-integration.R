@@ -108,60 +108,41 @@ test_that("mod_lipid_import_ui in test mode exposes browser-upload controls", {
   )
 })
 
+# KIT-102 W5: the lipid and metab imports are the shared feature-table panel. An upload through the module's
+# `assay1_file_std` input: the path rendered, and the preview run (the file's columns shown).
+e2eFeatureTableUpload <- function(server, file_name) {
+  path <- file.path(withr::local_tempdir(.local_envir = parent.frame()), file_name)
+  utils::write.table(data.frame(Feature.Name = c("M1", "M2"), WT_1 = c(1, 2), KO_1 = c(3, 4)), path, sep = "\t",
+    row.names = FALSE, quote = FALSE)
+  seen <- new.env(parent = emptyenv())
+  withr::with_options(list(multischolar.test_mode = TRUE), suppressMessages(shiny::testServer(server,
+    args = list(workflow_data = shiny::reactiveValues(tab_status = list()), experiment_paths = list()), {
+      session$setInputs(assay1_file_std = data.frame(name = file_name, datapath = path, stringsAsFactors = FALSE))
+      seen$path <- output$assay1_path
+      seen$columns <- output$available_columns_display
+    })))
+  list(datapath = path, path = seen$path, columns = seen$columns)
+}
+
 test_that("standard metabolomics file input assigns upload datapath and triggers preview", {
-  local_data <- new.env(parent = emptyenv())
-  output <- new.env(parent = emptyenv())
-  callback_path <- NULL
-
-  result <- handleMetabImportStandardAssayFileSelection(
-    fileInput = data.frame(datapath = "/tmp/metab.tsv"),
-    localData = local_data,
-    localField = "assay1_file",
-    output = output,
-    outputId = "assay1_path",
-    onSelected = function(path) callback_path <<- path,
-    renderTextFn = function(value) value
-  )
-
-  expect_identical(result, "/tmp/metab.tsv")
-  expect_identical(local_data$assay1_file, "/tmp/metab.tsv")
-  expect_identical(output$assay1_path, "/tmp/metab.tsv")
-  expect_identical(callback_path, "/tmp/metab.tsv")
+  expect_identical(omicImportStandardFilePath(data.frame(datapath = "/tmp/metab.tsv")), "/tmp/metab.tsv")
+  upload <- e2eFeatureTableUpload(mod_metab_import_server, "metab.tsv")
+  expect_identical(upload$path, upload$datapath)
+  expect_identical(upload$columns, "Feature.Name, WT_1, KO_1")
 })
 
 test_that("standard lipidomics file input assigns upload datapath and triggers preview", {
-  selected_path <- NULL
-  rendered_path <- NULL
-  callback_called <- FALSE
-
-  result <- handleLipidImportStandardFileSelection(
-    fileInput = data.frame(datapath = "/tmp/lipid.tsv"),
-    assignSelectedPath = function(path) selected_path <<- path,
-    setRenderedPath = function(value) rendered_path <<- value,
-    onSelected = function() callback_called <<- TRUE,
-    assignAssayPath = function(selectedPath, assignSelectedPath, setRenderedPath, onSelected = NULL) {
-      assignSelectedPath(selectedPath)
-      setRenderedPath(selectedPath)
-      onSelected()
-      selectedPath
-    }
-  )
-
-  expect_identical(result, "/tmp/lipid.tsv")
-  expect_identical(selected_path, "/tmp/lipid.tsv")
-  expect_identical(rendered_path, "/tmp/lipid.tsv")
-  expect_true(callback_called)
+  expect_identical(omicImportStandardFilePath(data.frame(datapath = "/tmp/lipid.tsv")), "/tmp/lipid.tsv")
+  upload <- e2eFeatureTableUpload(mod_lipid_import_server, "lipid.tsv")
+  expect_identical(upload$path, upload$datapath)
+  expect_identical(upload$columns, "Feature.Name, WT_1, KO_1")
 })
 
 test_that("lipidomics shinyFiles probe is disabled in test mode", {
   withr::with_options(
     list(multischolar.test_mode = TRUE)
     , {
-      result <- probeLipidImportShinyFilesAvailability(
-        requireNamespaceFn = function(...) TRUE,
-        emitMessage = function(...) NULL
-      )
-      expect_false(result)
+      expect_false(omicImportUsesShinyFiles())
     }
   )
 })

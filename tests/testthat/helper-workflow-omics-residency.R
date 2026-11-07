@@ -161,26 +161,21 @@ omicsResidencyJourney <- function(omic) {
         if (is.null(value)) "empty" else if (isSavedWorkflowReference(value)) "reference" else "resident"
       }, character(1))
     }
-    # Import, through the processing helper the tab's process_import calls.
-    if (identical(omic, "lipidomics")) {
-      preview <- loadLipidImportAssayPreview(assays[[1]], logInfo = quiet)
-      columns <- resolveLipidImportSampleColumns(preview$assayData, preview$importResult, "lipidsearch", sampleColsPattern = "",
-        excludeNormalized = TRUE)
-      runLipidImportProcessing(workflowData = workflow_data, assay1Name = names(assays)[[1]], assay1Data = preview$assayData,
-        assay1File = assays[[1]], assay2File = assays[[2]], assay2Name = names(assays)[[2]], vendorFormat = "lipidsearch",
-        detectedFormat = preview$detectedFormat, lipidIdCol = preview$updates$lipidId$selected,
-        annotationCol = preview$updates$annotation$selected, sampleColumns = columns, isPattern = preview$updates$isPattern %||% "",
-        sanitizeNames = FALSE, experimentPaths = paths, notify = quiet, removeNotify = quiet)
-    } else {
-      selection <- prepareMetabImportAssaySelectionState(assay1File = assays[[1]])
-      assay1 <- selection$importResult$data
-      runMetabImportProcessing(assay1Data = assay1, assay1Name = names(assays)[[1]], assay1File = assays[[1]], assay2File = assays[[2]],
-        assay2Name = names(assays)[[2]], vendorFormat = "msdial", detectedFormat = selection$formatInfo$format, sanitizeNames = FALSE,
-        isPattern = selection$isPattern %||% "", getMetaboliteIdColFn = function() selection$selectedMetaboliteId,
-        getAnnotationColFn = function() selection$selectedAnnotation,
-        getSampleColumnsFn = function() resolveMetabImportSampleColumns(assay1, "msdial", "", selection$importResult),
-        workflowData = workflow_data, experimentPaths = paths, showNotificationFn = quiet, logInfoFn = quiet)
-    }
+    # Import, through the processing the tab's process_import calls (KIT-102 W5: the shared feature-table panel's, the
+    # core import then the frame's completion).
+    import_config <- omicGuiConfig(omic)
+    preview <- omicImportFeatureTablePreview(assays[[1]], import_config)
+    vendor <- if (identical(omic, "lipidomics")) "lipidsearch" else "msdial"
+    exclude <- if (identical(omic, "lipidomics")) OMICS_IMPORT_NORMALISED_COLUMNS
+    processOmicImportFeatureTable(workflow_data, list(assay1_name = names(assays)[[1]], assay1_data = preview$assay_data,
+      assay1_file = assays[[1]], assay2_file = assays[[2]], assay2_name = names(assays)[[2]], vendor_format = vendor,
+      detected_format = preview$detected_format, id_col = preview$updates$id$selected,
+      annotation_col = preview$updates$annotation$selected,
+      sample_columns = resolveOmicsImportSampleColumns(preview$assay_data, vendor, "", preview$import_result, exclude),
+      is_pattern = preview$updates$is_pattern %||% "", sanitize_names = FALSE, experiment_paths = paths), import_config,
+      complete = function(...) completeOmicImport(workflow_data, import_config, notify = FALSE),
+      showNotification = quiet, removeNotification = quiet, logInfo = quiet)
+    rm(preview)
     session$flushReact()
     walk("import")
     # Design, through the builder's own inputs (the driver's actions; KIT-032's recorder for the metab builder).
@@ -289,10 +284,15 @@ trxResidencyJourney <- function() {
       }, character(1))
     }
     quiet <- function(...) NULL
-    preview <- trxImportPreview(counts_file)
-    runTrxImportProcessing(workflowData = workflow_data, assay1Name = "counts", assay1Data = preview$assayData, assay1File = counts_file,
-      lipidIdCol = preview$updates$lipidId$selected, annotationCol = preview$updates$annotation$selected,
-      experimentPaths = project_dirs$transcriptomics, notify = quiet, removeNotify = quiet)
+    # KIT-102 W5: the shared feature-table panel's preview and processing, then the frame's completion.
+    import_config <- omicGuiConfig("transcriptomics")
+    preview <- omicImportFeatureTablePreview(counts_file, import_config)
+    processOmicImportFeatureTable(workflow_data, list(assay1_name = "counts", assay1_data = preview$assay_data,
+      assay1_file = counts_file, vendor_format = "trx_counts", detected_format = preview$detected_format,
+      id_col = preview$updates$id$selected, annotation_col = preview$updates$annotation$selected,
+      experiment_paths = project_dirs$transcriptomics), import_config,
+      complete = function(...) completeOmicImport(workflow_data, import_config, notify = FALSE),
+      showNotification = quiet, removeNotification = quiet, logInfo = quiet)
     rm(preview)
     session$flushReact()
     walk("import")

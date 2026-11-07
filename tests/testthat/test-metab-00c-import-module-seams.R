@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-29 (KIT-102 W5) it sources mod_metab_import_server_helpers.R, deleted; the module server is the shared import frame and feature-table panel (mod_omic_import.R, mod_omic_import_feature_table.R)")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

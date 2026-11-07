@@ -155,23 +155,30 @@ test_that("BUG-17: the metabolomics Glimma volcano keeps every feature when ever
 # BUG-23: sapply in subscript and sum contexts returns a list on empty input and aborts; vapply does not.
 # ---------------------------------------------------------------------------
 test_that("BUG-23: the sample-column resolvers accept an assay table with no columns", {
+  # KIT-102 W5: lipid's and metab's resolvers are the core's one (lipid's with the normalised-column exclusion).
   ns <- omicsAuditNamespace()
   empty <- data.frame()
-  lipid <- get("resolveLipidImportSampleColumns", envir = ns, inherits = FALSE)
-  metab <- get("resolveMetabImportSampleColumns", envir = ns, inherits = FALSE)
-  expect_identical(lipid(empty, vendorFormat = "lipidsearch"), character(0))
-  expect_identical(metab(empty, vendorFormat = "msdial"), character(0))
+  resolve <- get("resolveOmicsImportSampleColumns", envir = ns, inherits = FALSE)
+  expect_identical(resolve(empty, "lipidsearch", exclude_pattern = OMICS_IMPORT_NORMALISED_COLUMNS), character(0))
+  expect_identical(resolve(empty, "msdial"), character(0))
 })
 
 test_that("BUG-23: the lipidomics import finaliser logs an empty assay list", {
+  # KIT-102 W5: the finaliser's processing log is the core's (describeOmicsImport) and its log line the shared panel's
+  # commit (commitOmicImportFeatureTable); the bus setter is stubbed, as the workflow has no owner.
   ns <- omicsAuditNamespace()
-  record <- get("finalizeLipidImportSetupState", envir = ns, inherits = FALSE)
+  describe <- get("describeOmicsImport", envir = ns, inherits = FALSE)
+  record <- get("commitOmicImportFeatureTable", envir = ns, inherits = FALSE)
+  log <- describe(list(), "lipidsearch", "lipid_id", character(0), "n_lipids", NULL, timestamp = 0)
+  expect_identical(log$n_assays, 0L)
+  expect_length(log$n_lipids, 0L)
   workflow <- new.env(parent = emptyenv())
   workflow$processing_log <- list()
   workflow$tab_status <- list(design_matrix = "disabled")
+  testthat::local_mocked_bindings(setWorkflowOmicsBusTables = function(...) invisible(NULL), .package = "MultiScholaR")
   logged <- character()
-  record(workflow, assayList = list(), detectedFormat = "lipidsearch", lipidIdCol = "lipid_id",
-    sampleColumns = character(0), now = function() 0, logInfo = function(m) logged <<- c(logged, m))
+  record(workflow, list(assays = list(), data_format = "lipidsearch", column_mapping = list(), processing_log = log),
+    omicGuiConfig("lipidomics"), logInfo = function(m) logged <<- c(logged, m))
   expect_identical(logged, "Lipidomics import complete: 0 assays, 0 total lipids")
 })
 

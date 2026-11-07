@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-25 (KIT-102 W5) the lipid import seam helpers (mod_lipid_import_{ui,processing,selection,output}_helpers.R) were deleted; the import is the shared feature-table panel (mod_omic_import_feature_table.R) over the core (utils_workflow_omics_import.R)")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

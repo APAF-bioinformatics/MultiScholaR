@@ -4,13 +4,14 @@
 
 test_that("MCI-026.1 the preview offers the count table's columns, the sample columns in file order", {
   truth <- module_ci_trx_truth()
-  preview <- trxImportPreview(file.path(module_ci_trx_corpus(), "counts.tsv"))
-  expect_identical(preview$detectedFormat, "trx_counts")
-  expect_identical(preview$updates$lipidId$selected, "GeneID")
+  # KIT-102 W5: the shared panel's preview under the transcriptomics configuration (the core's snake_case keys).
+  preview <- omicImportFeatureTablePreview(file.path(module_ci_trx_corpus(), "counts.tsv"), omicGuiConfig("transcriptomics"))
+  expect_identical(preview$detected_format, "trx_counts")
+  expect_identical(preview$updates$id$selected, "GeneID")
   expect_identical(preview$updates$annotation$selected, "GeneName")
-  expect_identical(preview$updates$lipidId$choices, c("GeneID", "GeneName", truth$column_order))
-  expect_identical(preview$importResult$sample_columns, truth$column_order)
-  expect_null(preview$updates$isPattern)
+  expect_identical(preview$updates$id$choices, c("GeneID", "GeneName", truth$column_order))
+  expect_identical(preview$import_result$sample_columns, truth$column_order)
+  expect_null(preview$updates$is_pattern)
 })
 
 test_that("MCI-026.1 the import accepts the screen corpus: names and order as in the file, the owner bound to TRANSCRIPTOMICS", {

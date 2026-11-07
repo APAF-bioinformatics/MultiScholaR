@@ -34,31 +34,32 @@ test_that("MCI-012.2 MS-DIAL-style import matrix preserves metadata and edge int
   paths <- module_ci_metab_import_paths()
   assay_file <- module_ci_metab_write_table(assay, file.path(paths$raw_dir, "msdial_positive.tsv"))
 
-  selected <- prepareMetabImportAssaySelectionState(assay_file)
-  expect_identical(selected$formatInfo$format, "msdial")
-  expect_identical(selected$selectedMetaboliteId, "Peak ID")
-  expect_identical(selected$selectedAnnotation, "Name")
-  expect_setequal(selected$importResult$sample_columns, c("WT_1", "WT_2", "KO_1", "KO_2"))
-  expect_false("Total Score" %in% selected$importResult$sample_columns)
+  # KIT-102 W5: the core's preview under the metabolomics configuration.
+  selected <- omicImportFeatureTablePreview(assay_file, omicGuiConfig("metabolomics"))
+  expect_identical(selected$detected_format, "msdial")
+  expect_identical(selected$updates$id$selected, "Peak ID")
+  expect_identical(selected$updates$annotation$selected, "Name")
+  expect_setequal(selected$import_result$sample_columns, c("WT_1", "WT_2", "KO_1", "KO_2"))
+  expect_false("Total Score" %in% selected$import_result$sample_columns)
 
   validation <- validateMetabColumnMapping(
-    data = selected$importResult$data,
+    data = selected$import_result$data,
     metabolite_id_column = "Peak ID",
-    sample_columns = selected$importResult$sample_columns
+    sample_columns = selected$import_result$sample_columns
   )
   expect_true(validation$valid)
   expect_true(any(grepl("duplicate metabolite IDs", validation$warnings, fixed = TRUE)))
 
   run <- module_ci_metab_import_run(
-    assay = selected$importResult$data,
+    assay = selected$import_result$data,
     paths = paths,
     assay_name = "LCMS_Pos",
     assay_file = assay_file,
     vendor_format = "msdial",
-    detected_format = selected$formatInfo$format,
+    detected_format = selected$detected_format,
     metabolite_col = "Peak ID",
     annotation_col = "Name",
-    sample_cols = selected$importResult$sample_columns
+    sample_cols = selected$import_result$sample_columns
   )
 
   expect_identical(run$result$status, "success")
@@ -208,4 +209,30 @@ test_that("MCI-012.6 import artifacts and state digest payload are complete", {
   expect_true(digest_payload$processing_log$artifacts$written)
   expect_true(length(digest_payload$processing_log$artifacts$source_copies) >= 1L)
   expect_true(file.exists(digest_payload$processing_log$artifacts$source_copies[[1]]))
+})
+
+test_that("MCI-012.7 a successful import opens the Design step (KIT-102 unification, failed first)", {
+  skip_if_not(workflowOwnerCapable())
+  withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+  root <- withr::local_tempdir()
+  project_dirs <- suppressMessages(setupDirectories(base_dir = file.path(root, "project"), omic_types = "metabolomics",
+    label = NULL, force = TRUE, reuse_existing = TRUE))
+  assay_file <- module_ci_metab_write_table(module_ci_metab_custom_assay(), file.path(root, "lcms_pos.tsv"))
+  quiet <- function(...) invisible(NULL)
+  testthat::local_mocked_bindings(showNotification = quiet, removeNotification = quiet, .package = "shiny")
+  seen <- new.env(parent = emptyenv())
+  suppressMessages(shiny::testServer(mod_metabolomics_server, args = list(id = "metabolomics_workflow",
+    project_dirs = project_dirs, omic_type = "metabolomics", experiment_label = "mci012"), {
+    seen$before <- shiny::isolate(workflow_data$tab_status)
+    session$setInputs(`import-vendor_format` = "custom", `import-assay1_name` = "LCMS_Pos", `import-assay2_name` = "",
+      `import-sanitize_names` = FALSE, `import-is_pattern` = "", `import-metabolite_id_col_custom` = "Feature.Name",
+      `import-annotation_col_custom` = "Annotation", `import-sample_cols_pattern` = "^(WT|KO)_")
+    session$setInputs(`import-assay1_file_std` = data.frame(name = basename(assay_file), size = file.size(assay_file),
+      type = "", datapath = assay_file, stringsAsFactors = FALSE))
+    session$setInputs(`import-process_import` = 1L)
+    seen$after <- shiny::isolate(workflow_data$tab_status)
+  }))
+  expect_identical(seen$before$design_matrix, "disabled")
+  expect_identical(seen$after$setup_import, "complete")
+  expect_identical(seen$after$design_matrix, "pending")
 })

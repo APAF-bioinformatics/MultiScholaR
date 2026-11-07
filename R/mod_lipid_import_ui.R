@@ -8,29 +8,14 @@
 #' @param profile An omic profile (KIT-096, e.g. the transcriptomics profile); `NULL`, the default, is lipidomics.
 NULL
 
+# KIT-102 W5: a thin wrapper over the shared import frame (mod_omic_import.R) and its feature-table panel
+# (mod_omic_import_feature_table.R), under `omicGuiConfig(profile$omic_type %||% "lipidomics")`. The `profile` argument
+# stays for the frozen entry suite (KIT-109 removes it).
+
 #' @rdname mod_lipid_import
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 h4 h5 p hr br radioButtons selectInput textInput actionButton uiOutput verbatimTextOutput icon tags conditionalPanel helpText div
 #' @importFrom shinyjs useShinyjs disable enable
 mod_lipid_import_ui <- function(id, profile = NULL) {
-  ns <- shiny::NS(id)
-
-  # Check if shinyFiles is available and we are not in test mode
-  use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()
-
-  if (is.null(profile)) {
-    return(buildLipidImportUiShell(
-      ns = ns,
-      useShinyFiles = use_shiny_files
-    ))
-  }
-
-  # KIT-096: another omic's profile supplies its sections and header at the shell's seams.
-  buildLipidImportUiShell(ns = ns, useShinyFiles = use_shiny_files, buildModulePanel = function(ns, useShinyFiles) {
-    buildLipidImportModulePanel(ns, useShinyFiles,
-      buildFileImportSection = function(ns, useShinyFiles) buildLipidImportFileImportSection(ns, useShinyFiles, profile = profile),
-      buildColumnMappingSection = function(ns) buildLipidImportColumnMappingSection(ns, profile = profile),
-      buildProcessFooterSection = function(ns) buildLipidImportProcessFooterSection(ns, profile = profile),
-      buildHeader = function(...) shiny::h3(profile$import_title))
-  })
+  mod_omic_import_ui(id, omicGuiConfig(profile$omic_type %||% "lipidomics"))
 }

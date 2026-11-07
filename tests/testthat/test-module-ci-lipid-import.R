@@ -13,20 +13,20 @@ test_that("MCI-018.1 LipidSearch matrix preserves routing, mappings, and boundar
     assay_file <- module_ci_lipid_write_table(case$assay, file.path(paths$raw_dir, paste0(case_name, ".txt")))
     preview <- module_ci_lipid_preview(assay_file)
 
-    expect_identical(preview$detectedFormat, "lipidsearch", info = case_name)
-    expect_setequal(preview$importResult$sample_columns, module_ci_lipid_sample_cols())
-    expect_false("BatchFlag" %in% preview$importResult$sample_columns, info = case_name)
+    expect_identical(preview$detected_format, "lipidsearch", info = case_name)
+    expect_setequal(preview$import_result$sample_columns, module_ci_lipid_sample_cols())
+    expect_false("BatchFlag" %in% preview$import_result$sample_columns, info = case_name)
 
     run <- module_ci_lipid_import_run(
-      assay = preview$importResult$data,
+      assay = preview$import_result$data,
       paths = paths,
       assay_name = case$assay_name,
       assay_file = assay_file,
       vendor_format = "lipidsearch",
-      detected_format = preview$detectedFormat,
+      detected_format = preview$detected_format,
       lipid_id_col = "LipidName",
       annotation_col = case$annotation_col,
-      sample_cols = preview$importResult$sample_columns
+      sample_cols = preview$import_result$sample_columns
     )
 
     expect_identical(run$result$status, "success", info = case_name)
@@ -52,21 +52,21 @@ test_that("MCI-018.2 MS-DIAL matrix preserves annotation, duplicate, and intensi
   assay_file <- module_ci_lipid_write_table(msdial, file.path(paths$raw_dir, "msdial_positive.tsv"))
 
   preview <- module_ci_lipid_preview(assay_file)
-  expect_identical(preview$detectedFormat, "msdial")
-  expect_identical(preview$updates$lipidId$selected, "Peak ID")
+  expect_identical(preview$detected_format, "msdial")
+  expect_identical(preview$updates$id$selected, "Peak ID")
   expect_identical(preview$updates$annotation$selected, "Name")
-  expect_setequal(preview$importResult$sample_columns, module_ci_lipid_sample_cols())
-  expect_false("Total Score" %in% preview$importResult$sample_columns)
+  expect_setequal(preview$import_result$sample_columns, module_ci_lipid_sample_cols())
+  expect_false("Total Score" %in% preview$import_result$sample_columns)
 
   run <- module_ci_lipid_import_run(
-    assay = preview$importResult$data,
+    assay = preview$import_result$data,
     paths = paths,
     assay_file = assay_file,
     vendor_format = "msdial",
-    detected_format = preview$detectedFormat,
+    detected_format = preview$detected_format,
     lipid_id_col = "Peak ID",
     annotation_col = "Name",
-    sample_cols = preview$importResult$sample_columns
+    sample_cols = preview$import_result$sample_columns
   )
 
   expect_identical(run$result$status, "success")
@@ -79,14 +79,14 @@ test_that("MCI-018.2 MS-DIAL matrix preserves annotation, duplicate, and intensi
   no_annotation_file <- module_ci_lipid_write_table(no_annotation, file.path(paths$raw_dir, "msdial_no_annotation.tsv"))
   no_annotation_preview <- module_ci_lipid_preview(no_annotation_file)
   no_annotation_run <- module_ci_lipid_import_run(
-    assay = no_annotation_preview$importResult$data,
+    assay = no_annotation_preview$import_result$data,
     paths = module_ci_lipid_import_paths(),
     assay_file = no_annotation_file,
     vendor_format = "msdial",
-    detected_format = no_annotation_preview$detectedFormat,
+    detected_format = no_annotation_preview$detected_format,
     lipid_id_col = "Peak ID",
     annotation_col = "",
-    sample_cols = no_annotation_preview$importResult$sample_columns
+    sample_cols = no_annotation_preview$import_result$sample_columns
   )
 
   expect_identical(no_annotation_run$result$status, "success")
@@ -94,34 +94,38 @@ test_that("MCI-018.2 MS-DIAL matrix preserves annotation, duplicate, and intensi
 })
 
 test_that("MCI-018.3 custom and vendor override matrix preserves fallback behavior", {
+  # KIT-102 W5: the column and sample resolution and the preview are the core's (utils_workflow_omics_import.R).
   custom <- module_ci_lipid_custom_assay(sample_prefix = "sample")
   expect_identical(
-    resolveLipidImportEffectiveColumn(custom, "custom", "ignored", "LIPID_ID"),
+    resolveOmicsImportColumn(names(custom), "custom", "ignored", "LIPID_ID"),
     "lipid_id"
   )
   expect_identical(
-    resolveLipidImportSampleColumns(custom, vendorFormat = "custom", sampleColsPattern = "^sample", excludeNormalized = TRUE),
+    resolveOmicsImportSampleColumns(custom, "custom", "^sample", exclude_pattern = OMICS_IMPORT_NORMALISED_COLUMNS),
     c("Sample A", "Sample B")
   )
 
   fallback_called <- character()
-  fallback_preview <- loadLipidImportAssayPreview(
-    assay1File = "unknown_vendor.tsv",
-    readHeaders = function(path) c("lipid_id", "annotation", "WT_1"),
-    detectFormat = function(headers, filename) list(format = "unsupported_vendor", confidence = 0.11),
-    importMsdial = function(path) {
-      fallback_called <<- c(fallback_called, path)
-      list(
-        data = data.frame(lipid_id = "L1", annotation = "PC", WT_1 = 10),
-        detected_columns = list(lipid_id = "lipid_id", annotation = "annotation"),
-        sample_columns = "WT_1",
-        is_pattern = NA_character_
-      )
-    },
-    importLipidSearch = function(...) stop("LipidSearch fallback should not be used")
-  )
-  expect_identical(fallback_preview$detectedFormat, "unsupported_vendor")
-  expect_identical(fallback_called, "unknown_vendor.tsv")
+  unknown_vendor <- file.path(module_ci_lipid_import_paths()$raw_dir, "unknown_vendor.tsv")
+  writeLines(c("lipid_id\tannotation\tWT_1", "L1\tPC\t10"), unknown_vendor)
+  import <- utils::modifyList(omicGuiConfig("lipidomics")$import, list(
+    detect = function(headers, filename) list(format = "unsupported_vendor", confidence = 0.11),
+    readers = list(
+      default = function(path) {
+        fallback_called <<- c(fallback_called, path)
+        list(
+          data = data.frame(lipid_id = "L1", annotation = "PC", WT_1 = 10),
+          detected_columns = list(lipid_id = "lipid_id", annotation = "annotation"),
+          sample_columns = "WT_1",
+          is_pattern = NA_character_
+        )
+      },
+      lipidsearch = function(...) stop("LipidSearch fallback should not be used")
+    )
+  ))
+  fallback_preview <- previewOmicsImport(unknown_vendor, import)
+  expect_identical(fallback_preview$detected_format, "unsupported_vendor")
+  expect_identical(fallback_called, unknown_vendor)
 
   mismatch <- module_ci_lipid_import_run(
     assay = module_ci_lipid_msdial_assay(),
@@ -201,19 +205,21 @@ test_that("MCI-018.4 multi-assay routing matrix preserves assay2 parity and reje
   expect_null(empty$result)
   expect_null(getWorkflowOmicsBusTables(empty$workflow, "data_tbl"))
 
+  # KIT-102 W5: the second assay's reader is chosen by the format in the core's assembly.
   reader_calls <- character()
-  reader <- resolveLipidImportSecondAssayReader(
-    "lipidsearch",
-    importMsdial = function(...) {
+  readers <- list(
+    default = function(...) {
       reader_calls <<- c(reader_calls, "msdial")
       list(data = data.frame())
     },
-    importLipidSearch = function(...) {
+    lipidsearch = function(...) {
       reader_calls <<- c(reader_calls, "lipidsearch")
       list(data = data.frame())
     }
   )
-  callLipidImportSecondAssayReader(reader, "assay2.txt", lipidIdCol = "LipidName", annotationCol = "LipidClass")
+  assembleOmicsImportAssays("LCMS_Pos", primary, "assay2.txt", "LCMS_Neg",
+    import = list(second_assay = TRUE, readers = readers, second_assay_columns = TRUE), format = "lipidsearch",
+    id_col = "LipidName", annotation_col = "LipidClass")
   expect_identical(reader_calls, "lipidsearch")
 })
 
@@ -249,13 +255,13 @@ test_that("MCI-018.5 invalid input matrix fails before downstream state advances
   malformed_path <- module_ci_lipid_write_malformed(file.path(malformed_paths$raw_dir, "malformed.tsv"))
   malformed_preview <- module_ci_lipid_preview(malformed_path)
   malformed_run <- module_ci_lipid_import_run(
-    assay = malformed_preview$importResult$data,
+    assay = malformed_preview$import_result$data,
     paths = malformed_paths,
     assay_file = malformed_path,
     vendor_format = "custom",
-    detected_format = malformed_preview$detectedFormat,
+    detected_format = malformed_preview$detected_format,
     lipid_id_col = "LipidName",
-    sample_cols = malformed_preview$importResult$sample_columns
+    sample_cols = malformed_preview$import_result$sample_columns
   )
   expect_null(malformed_run$result)
   expect_null(getWorkflowOmicsBusTables(malformed_run$workflow, "data_tbl"))

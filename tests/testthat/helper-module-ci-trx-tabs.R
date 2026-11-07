@@ -28,17 +28,27 @@ module_ci_trx_fixture_owner <- function(env = parent.frame()) {
 
 #' The import tab's processing on a count file, its notifications and errors captured.
 module_ci_trx_import <- function(fixture, counts_file, id_col = NULL, name_col = NULL) {
-  preview <- trxImportPreview(counts_file)
+  # KIT-102 W5: the shared feature-table panel's preview and processing under the transcriptomics configuration. The
+  # result is the pre-KIT-102 processing's: NULL on a refusal, else its success list.
+  config <- omicGuiConfig("transcriptomics")
+  preview <- omicImportFeatureTablePreview(counts_file, config)
   seen <- new.env(parent = emptyenv())
   seen$notes <- list()
   seen$errors <- character()
-  result <- shiny::withReactiveDomain(fixture$session, runTrxImportProcessing(
-    workflowData = fixture$workflow, assay1Name = "counts", assay1Data = preview$assayData, assay1File = counts_file,
-    lipidIdCol = id_col %||% preview$updates$lipidId$selected, annotationCol = name_col %||% preview$updates$annotation$selected,
-    sampleColumns = preview$importResult$sample_columns, vendorFormat = "trx_counts", detectedFormat = preview$detectedFormat,
-    isPattern = NULL, sanitizeNames = NULL, assay2File = NULL, assay2Name = NULL, experimentPaths = fixture$paths,
-    notify = function(message, type = NULL, ...) seen$notes <- c(seen$notes, list(list(message = message, type = type))),
-    removeNotify = function(...) invisible(NULL), logError = function(message) seen$errors <- c(seen$errors, message)))
+  notify <- function(message, type = NULL, ...) seen$notes <- c(seen$notes, list(list(message = message, type = type)))
+  run <- shiny::withReactiveDomain(fixture$session, processOmicImportFeatureTable(fixture$workflow,
+    request = list(assay1_name = "counts", assay1_data = preview$assay_data, assay1_file = counts_file,
+      id_col = id_col %||% preview$updates$id$selected, annotation_col = name_col %||% preview$updates$annotation$selected,
+      sample_columns = preview$import_result$sample_columns, vendor_format = "trx_counts",
+      detected_format = preview$detected_format, is_pattern = NULL, sanitize_names = NULL, assay2_file = NULL,
+      assay2_name = NULL, experiment_paths = fixture$paths),
+    config = config, complete = function(...) completeOmicImport(fixture$workflow, config, showNotification = notify),
+    showNotification = notify, removeNotification = function(...) invisible(NULL),
+    logError = function(message) seen$errors <- c(seen$errors, message), logInfo = function(...) invisible(NULL)))
+  result <- if (identical(run$status, "success")) {
+    list(status = "success", assayList = run$payload$assays, sampleColumns = run$payload$sample_columns,
+      validationResult = run$payload$validation, artifactResult = run$payload$artifacts)
+  }
   list(result = result, preview = preview, notes = seen$notes, errors = seen$errors)
 }
 
