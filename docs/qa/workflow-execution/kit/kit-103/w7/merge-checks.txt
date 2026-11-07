@@ -1,0 +1,134 @@
+KIT-103 W7 merge checks (2026-11-08), on f0e90318 (origin/performance-v2 e48756bc + the W7 wiring commit).
+Scripts (scratch, not committed): backrefs.R (Collate; parse-data back-references, the KIT-102 W7 method),
+deleted_names.R (top-level function names defined in R/ at each work item's parent and absent at its commit and now),
+dependents.R (the grep, each test hit classified by its enclosing test_that block's or file's quarantine skip).
+
+1. Collate
+COLLATE entries 374, R files 374, duplicates 0
+COLLATE missing from Collate: none
+COLLATE listed but absent: none
+COLLATE set equal to R/*.R: TRUE
+(W7 removed mod_prot_design_builder_display_helpers.R, deleted by W6. W2 had added func_omics_design_shared.R and
+utils_workflow_omics_design.R; W4 added mod_omic_design.R and mod_omic_design_builder.R.)
+
+2. The dependents grep
+The deleted names, from parse data (deleted_names.R), and the deleted paths:
+  W4 5d077268: 67 names; 7 files R/mod_lipid_design_{builder_action_helpers,builder_display_helpers,builder_helpers,
+     builder_state_helpers,import_helpers,preview_helpers,validation}.R
+  W5 c56d1c64: 21 names; 3 files R/mod_metab_design_{builder_server,import_helpers,validation}.R
+  W6 adad5fc0: 46 names; 1 file R/mod_prot_design_builder_display_helpers.R
+  W7 f0e90318: 3 names: lipidDesignGuiConfig, metabDesignGuiConfig (the stop-gaps), runLipidDesignBuilderObserverShell
+  (The counts equal w4/w5/w6 dependents.txt: 67, 21, 46.)
+Matching: whole words for the names; fixed strings for the paths. Searched R/, tests/, tools/ (tools/refactor/
+excluded), inst/ and DESCRIPTION.
+
+## Hits in tests, by file and where they sit
+    116 test-lipid-13-design-builder-seams.R                 file skip Q-31
+     65 test-lipid-13a-design-module-characterization.R      inside Q-32 blocks
+     14 test-lipid-13b-design-wrapper-characterization.R     inside the Q-33 block
+     22 test-lipid-14-design-module-seams.R                  file skip Q-34
+     25 test-omics-design-core.R                             inside Q-35 blocks
+      4 test-omics-design-core.R                             inside Q-37 blocks (including runLipidDesignBuilderObserverShell)
+      6 test-omics-design-core.R                             top level: runTodayMetabDesignCommit and runTodayDesignImport,
+                                                             called only by the Q-35/Q-37 blocks (as at W4/W5)
+    369 test-metab-04-design-module-characterization.R       file skip Q-36
+    121 test-prot-04-design.R                                inside Q-46 blocks
+      2 test-prot-04-design.R                                top level: the two commented guard lines (Q-46)
+     49 test-prot-04a-design-module-characterization.R       inside Q-47 blocks
+      6 test-workflow-gui-memory-lifetimes.R                 inside the Q-22 skipped body (a record row only)
+These test hits are live code that does not read a deleted name:
+      1 test-ci-impact-source-map.R:22                       a path string the CI impact map routes; no file is read
+                                                             (as at W4)
+      2 test-omics-module-globals.R:47                       allow-list entries; a deleted file only removes hits (as at W4)
+      1 test-omic-design-module.R:159                        W7's comment on the retargeted W4 commit block
+
+## Hits in R/, tools/ (outside tools/refactor/), inst/ and DESCRIPTION
+Code: none. DESCRIPTION: none (the Collate entry is removed).
+Comments, as provenance at a named revision (no live reference):
+      7 R/func_omics_design_shared.R    (the file header names the source revision, "as at 70af7bb4"; the D6
+                                         wrappers' notes are "at 616e1147" and "at de2d891c")
+      3 R/utils_workflow_omics_design.R (the file header, "as at 70af7bb4")
+      1 R/mod_metab_design_builder_ui.R (it names the deleted builder server's closure)
+     18 R/utils_omic_gui_config.R       (the design group's file:line notes. W7 states in the file header and in each
+                                         design function's doc that they are provenance at 3c657c14.)
+
+Result: empty, apart from the quarantined files and blocks (Q-22, Q-31 to Q-37, Q-46, Q-47), tools/refactor/, the
+two pre-existing live path strings recorded at W4, and provenance comments.
+
+3. The parse-data back-reference count
+These are the functions defined at top level in R/mod_*.R that appear as a SYMBOL or SYMBOL_FUNCTION_CALL in
+R/utils_workflow_*.R or R/func_*.R. Names also defined in those core files are excluded.
+Count: 29. It was 30 at KIT-102 W7 (1b12a7bf). The one that left is #3, buildDIAReferenceDesignState: W3 moved it,
+with its callee buildProtDesignInitialState, into utils_workflow_dia_state.R. #4 and #5
+(mod_prot_design_builder_ui, mod_prot_design_builder_server <- func_general_applets.R) remain as the exported wrappers,
+by design.
+  .formatPeptideRollupSummary (defined in mod_prot_qc_peptide_rollup.R) <- utils_workflow_dia_qc_rollup.R
+  .peptideImputationAuditSummary (defined in mod_prot_qc_peptide_impute.R) <- utils_workflow_dia_qc_rollup.R
+  .proteinCleanupActiveKey (defined in mod_prot_qc_protein_cleanup.R) <- utils_workflow_prot_declarations.R
+  buildLipidNormCompositeFromFilesGenerator (defined in mod_lipid_norm_support_helpers.R) <- utils_workflow_lipid_declarations.R
+  buildLipidNormFinalQcPcaPlot (defined in mod_lipid_norm_support_helpers.R) <- utils_workflow_lipid_declarations.R
+  buildMetabNormFinalQcPcaPlot (defined in mod_metab_norm_session_helpers.R) <- utils_workflow_metab_declarations.R
+  buildProtNormCorrelationPlot (defined in mod_prot_norm_qc_support_helpers.R) <- utils_workflow_dia_products.R
+  buildProtNormDensityPlot (defined in mod_prot_norm_qc_support_helpers.R) <- utils_workflow_dia_products.R
+  buildProtNormExportSummaryContent (defined in mod_prot_norm_session_helpers.R) <- utils_workflow_dia_sessions.R
+  buildProtNormQcPlotProduct (defined in mod_prot_norm_qc_generation_helpers.R) <- utils_workflow_dia_products.R
+  buildProtNormSkippedRuvResult (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+  finalizeProtNormWorkflowState (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+  generateMetabNormCompositeFromFiles (defined in mod_metab_norm_render_helpers.R) <- utils_workflow_metab_declarations.R
+  generateProtNormCompositeQcFigure (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+  mod_prot_design_builder_server (defined in mod_prot_design_builder_server.R) <- func_general_applets.R
+  mod_prot_design_builder_ui (defined in mod_prot_design_builder_ui.R) <- func_general_applets.R
+  normaliseProtDaContrastsTable (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+  resolveMetabDuplicateAssayData (defined in mod_metab_qc_duplicates_server_helpers.R) <- utils_workflow_metab_declarations.R
+  resolveProtNormCorrelationResultFilenames (defined in mod_prot_norm_correlation_helpers.R) <- utils_workflow_dia_products.R
+  resolveProtRuvParameters (defined in mod_prot_norm_ruv_helpers.R) <- utils_workflow_dia_products.R
+  runMetabNormCompositeQcFigureStep (defined in mod_metab_norm_pipeline_helpers.R) <- utils_workflow_metab_declarations.R
+  saveProtNormCorrelationResults (defined in mod_prot_norm_correlation_helpers.R) <- utils_workflow_dia_sessions.R
+  saveProtNormExportMetadataFiles (defined in mod_prot_norm_session_helpers.R) <- utils_workflow_dia_sessions.R
+  stripProtNormQcPlotOwners (defined in mod_prot_norm_qc_generation_helpers.R) <- utils_workflow_dia_da.R, utils_workflow_dia_products.R, utils_workflow_dia_sessions.R, utils_workflow_omics_declarations.R
+  validateLipidDaAnalysisPreflight (defined in mod_lipid_da_analysis_helpers.R) <- func_lipid_da_model.R, utils_workflow_lipid_declarations.R
+  validateProtDaFilteredSession (defined in mod_prot_da_validation.R) <- utils_workflow_dia_sessions.R
+  validateProtDaModelAndContrasts (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+  validateProtNormRuvK (defined in mod_prot_norm_ruv_helpers.R) <- func_prot_norm_optimization_helpers.R, func_prot_s4_norm_methods.R
+  writeLipidNormCompositeFigure (defined in mod_lipid_norm_workflow_helpers.R) <- utils_workflow_lipid_declarations.R
+
+4. The design group wiring (f0e90318)
+  lipidomics      validate = function(results, columnMapping) validateOmicsDesignSave(results, columnMapping,
+                  "lipidomics"); build_object = lipidDesignObject; group_levels = NULL; design_import$reader =
+                  readOmicsDesignImport, record_design_file = TRUE, check_files_first = FALSE
+  metabolomics    validate = ... validateOmicsDesignSave(..., "metabolomics"); build_object = metabDesignObject;
+                  group_levels = NULL; design_import$reader = readOmicsDesignImport, record_design_file = FALSE,
+                  check_files_first = TRUE (P-11)
+  transcriptomics group_levels = trxDesignGroupLevels; validate = trxDesignCheck; build_object = trxDesignObject;
+                  design_import = NULL
+  proteomics      build_object = buildProtDesignStateCheckpoint; annotation_step = list(uniprot =
+                  retrieveProtDesignUniprotAnnotations, fasta = processProtDesignImportedFasta); validate = NULL (D7);
+                  group_levels = NULL
+  Schema: design requires group_levels and validate (ref_or_null) and build_object (ref). design_optional holds only
+  annotation_step, now of type refs (was ref_or_null). design_import_feature_table requires reader (ref),
+  record_design_file (lgl1) and check_files_first (lgl1). design_import_optional is removed.
+  Under load_all, the srcref test ("no configuration function is defined in an R/mod_*.R file") passes. No wired
+  function is defined in R/mod_*.R.
+  The stop-gaps lipidDesignGuiConfig and metabDesignGuiConfig are deleted. The wrappers now call omicGuiConfig(): the
+  lipid wrappers call omicGuiConfig(profile$omic_type %||% "lipidomics"), so the trx profile still selects trx.
+  (e) proteomicsDiaBinding$design$initial_state was left as it is. The dia_long adapter does not read it: it calls
+  createProtDesignInitialStateReactive (mod_prot_design_builder_server_helpers.R). That function reaches the same core
+  functions as the binding entry (buildDIAReferenceDesignState for a DIA reference, otherwise
+  buildProtDesignInitialState). The configuration cannot name it because it is defined in R/mod_*.R. Only the validator
+  checks the binding entry; it is otherwise unused.
+
+5. Test first (W7's changes; one process per file, load_all, strict skips, run1.R)
+On e48756bc's R/ with the W7 test edits (the configuration not yet wired):
+  COUNTS test-omic-gui-config.R pass 486 fail 34 error 0 skip 0
+  COUNTS test-omic-design-module.R pass 112 fail 14 error 2 skip 0
+  COUNTS test-omics-design-core.R pass 46 fail 0 error 2 skip 10
+  COUNTS test-module-ci-lipid-design.R pass 74 fail 6 error 2 skip 0
+  COUNTS test-module-ci-metab-design.R pass 74 fail 4 error 1 skip 0
+  COUNTS test-module-ci-trx-design.R pass 16 fail 0 error 5 skip 0
+After the change (f0e90318):
+  COUNTS test-omic-gui-config.R pass 522 fail 0 error 0 skip 0      (W5: 480; +42 W7 wiring and refusal expectations)
+  COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0   (W5: 143)
+  COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10    (W5: 52/10)
+  COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0  (W5: 109)
+  COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0   (W5: 96)
+  COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0     (W5: 71)
