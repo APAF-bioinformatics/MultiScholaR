@@ -1,0 +1,31 @@
+KIT-103 W4 test-first (2026-11-08). One R process per file, load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+R_LIBS=core/browser-smoke.DGpv4v/library, runner kit/scripts-078/run1.R.
+
+1. The retargeted MCI-019 file on the old code (616e1147; the lipid design files are unchanged
+   since 283f5eee), before its targets changed:
+   COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0
+
+2. The new tests/testthat/test-omic-design-module.R, written before the implementation was run,
+   copied onto a clean extract of 616e1147 (git archive) and run there. The six blocks over the
+   public lipid names pass on the old code: the frozen values (UI digests, the frame's 14 output
+   names, the two status outputs' '<error> unused arguments (self, name)', the builder texts and
+   notification order, the commit's modal/notification order for success and both refusals, the
+   builder's masking-free names and its run order, the wrapper signatures) are today's. The four
+   blocks over the shared modules fail, as the functions do not exist yet:
+   COUNTS test-omic-design-module.R pass 55 fail 0 error 4 skip 0
+     BAD W4 the shared frame, builder, import modal and reset modal render today's bytes from the configuration
+         Error: could not find function "mod_omic_design_ui"
+     BAD W4 the shared commit: a failure after the bus write is today's text, after the modal is removed
+         Error: could not find function "lipidDesignGuiConfig"
+     BAD W4 the import plugin: test mode reads the typed path; the confirmation runs the shared import
+         Error: Can't find binding for `runOmicsDesignImport`
+     BAD W4 the shared import (MCI-019.4's path): the bus, the texts in order, and a missing design file
+         Error: could not find function "lipidDesignGuiConfig"
+
+3. After W4 (this commit's tree):
+   COUNTS test-omic-design-module.R pass 76 fail 0 error 0 skip 0
+   COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0   (MCI-019.4/.5 retargeted, expectations unchanged)
+
+No defect fix was made in W4, so there is no failing-first output for a fix. The factor3 candidate
+(ticket: existing-design initial state reads factor1/factor2 only) was not reproduced by a test in
+this item and is left as today's (the core's buildOmicsDesignInitialState keeps it).

@@ -1,0 +1,42 @@
+KIT-103 W4 targeted and dependent tests (2026-11-08). One R process per file, in sequence,
+load_all, MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS=core/browser-smoke.DGpv4v/library, runner
+kit/scripts-078/run1.R. (The runner's counts do not record a file-level skip: the Q-31 and Q-34
+files show 0/0/0/0.)
+
+New and retargeted
+COUNTS test-omic-design-module.R pass 76 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0            (MCI-019; .4/.5 retargeted; baseline 109)
+
+Design core (W2) with the Q-35 skip lines
+COUNTS test-omics-design-core.R pass 99 fail 0 error 0 skip 8                  (8 blocks Q-35; the C3-C5 builder session now compares the shared builder with the core)
+
+Quarantined seam files
+COUNTS test-lipid-13-design-builder-seams.R pass 0 fail 0 error 0 skip 0      (file skip, Q-31; baseline 49 blocks / 202)
+COUNTS test-lipid-13a-design-module-characterization.R pass 2 fail 0 error 0 skip 17  (17 blocks Q-32; 1 live block; baseline 18 / 146)
+COUNTS test-lipid-13b-design-wrapper-characterization.R pass 0 fail 0 error 0 skip 1  (Q-33; baseline 1 / 13)
+COUNTS test-lipid-14-design-module-seams.R pass 0 fail 0 error 0 skip 0       (file skip, Q-34; baseline 9 / 59)
+
+Configuration and shell
+COUNTS test-omic-gui-config.R pass 478 fail 0 error 0 skip 0  [15s]
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0  [11s]
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0  [9s]
+COUNTS test-app-shell-shared.R pass 29 fail 0 error 0 skip 0  [9s]
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0  [9s]
+
+Trx design (trx renders the lipid tab under its profile)
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0              (MCI-027; baseline 71)
+COUNTS test-trx-design.R pass 70 fail 0 error 0 skip 0  [10s]
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0  [54s]
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0  [51s]
+
+Dependents (dependents.txt)
+COUNTS test-ci-impact-source-map.R pass 19 fail 0 error 0 skip 0  [10s]
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0  [9s]
+COUNTS test-lipid-01b-qc-module-contracts.R pass 12 fail 0 error 0 skip 0  [7s]
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 45 fail 0 error 0 skip 0  [9s]
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 3 fail 0 error 0 skip 0  [13s]
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 13 fail 0 error 0 skip 0  [7s]
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0  [35s]
+
+Entry lanes: entry-suite.txt (lipid_canonical, trx_screen identical).
+No R CMD check, install, journeys or e2e in W4 (the ticket's W7 runs).

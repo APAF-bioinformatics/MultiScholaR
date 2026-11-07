@@ -1,0 +1,17 @@
+file	lines_before_616e1147	lines_after_w4	note
+R/mod_lipid_design_builder_action_helpers.R	428	0	deleted (C4 in the core; observers in mod_omic_design_builder.R)
+R/mod_lipid_design_builder_display_helpers.R	366	0	deleted (formatters and outputs in mod_omic_design_builder.R)
+R/mod_lipid_design_builder_helpers.R	236	0	deleted (builder slot and commit GUI side in mod_omic_design.R)
+R/mod_lipid_design_builder_state_helpers.R	658	0	deleted (C3, C5 in the core; reset and save in mod_omic_design_builder.R)
+R/mod_lipid_design_import_helpers.R	449	0	deleted (C10 in the core; plugin in mod_omic_design.R)
+R/mod_lipid_design_preview_helpers.R	31	0	deleted (previews in mod_omic_design.R)
+R/mod_lipid_design_validation.R	483	0	deleted (C1 in the core; D6 wrappers in func_omics_design_shared.R)
+R/mod_lipid_design_builder_server.R	194	29	exported wrapper
+R/mod_lipid_design_builder_ui.R	257	35	exported wrapper
+R/mod_lipid_design_server.R	115	25	exported wrapper; runLipidDesignBuilderObserverShell kept as a one-line wrapper until W5
+R/mod_lipid_design_ui.R	92	26	exported wrapper
+lipid design family (11 files)	3309	115	-3194
+R/mod_omic_design.R	0	332	new: the shared design tab (frame, import plugin, commit GUI side, previews)
+R/mod_omic_design_builder.R	0	575	new: the shared builder (UI and server)
+R/func_omics_design_shared.R	730	790	+60: D6 lipid validator wrappers and lipidDesignGuiConfig
+net R/ (these files)	4039	1812	-2227

@@ -1,0 +1,13 @@
+KIT-103 W4 entry-point lanes (2026-11-08), against the frozen oracles in tests/testdata/gui-entry/
+(lipid_canonical and trx_screen at ddf42372; not re-frozen). One R process per file, in sequence,
+load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS=core/browser-smoke.DGpv4v/library,
+runner kit/scripts-078/run1.R. Each lane compares every step (outputs by name, including the design
+step's 14 outputs and the two '<error> unused arguments (self, name)' captures, the committed
+states, the artifacts and the notifications) with its oracle; a pass is identity.
+
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0  [104s]   lipid_canonical: identical (kit-101 baseline 35)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0  [62s]  trx_screen: identical (kit-101 baseline 29)
+
+Trx runs the shared tab through mod_lipid_design_ui/server(profile = trxOmicProfile()) ->
+lipidDesignGuiConfig(profile) = omicGuiConfig("transcriptomics") with the trx function fields filled.
+The metab and proteomics lanes do not touch W4's files and were not run (W5, W6).

@@ -61,6 +61,7 @@ setLipidDesignInputs <- function(session, ...) {
 }
 
 test_that("lipid design import bootstrap, modal, and preview helpers preserve shell wiring", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skipIfMissingLipidDesignBindings(
     "initializeLipidDesignImportBootstrap",
     "buildLipidDesignImportModal",
@@ -184,6 +185,7 @@ test_that("lipid design import bootstrap, modal, and preview helpers preserve sh
 })
 
 test_that("lipid design import confirmation helper preserves failure and success paths", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skipIfMissingLipidDesignBindings("runLipidDesignImportConfirmationShell")
 
   run_import_shell <- getLipidDesignBinding("runLipidDesignImportConfirmationShell")
@@ -335,6 +337,7 @@ test_that("lipid design import confirmation helper preserves failure and success
 })
 
 test_that("lipid design builder and observer helpers preserve outer server handoff", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skipIfMissingLipidDesignBindings(
     "runLipidDesignBuilderObserverShell",
     "registerLipidDesignBuilderResultsObserver",
@@ -455,6 +458,7 @@ test_that("mod_lipid_design_builder_server preserves the empty save-results publ
 })
 
 test_that("buildLipidDesignInitialState preserves fresh initialization", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("buildLipidDesignInitialState", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -493,6 +497,7 @@ test_that("buildLipidDesignInitialState preserves fresh initialization", {
 })
 
 test_that("buildLipidDesignInitialState preserves existing-design reuse", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("buildLipidDesignInitialState", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -547,6 +552,7 @@ test_that("buildLipidDesignInitialState preserves existing-design reuse", {
 })
 
 test_that("runLipidDesignInitialStateShell preserves state hydration", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("runLipidDesignInitialStateShell", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -647,6 +653,7 @@ test_that("runLipidDesignInitialStateShell preserves state hydration", {
 })
 
 test_that("registerLipidDesignSummaryOutputShells preserves render handoff", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("registerLipidDesignSummaryOutputShells", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -690,6 +697,7 @@ test_that("registerLipidDesignSummaryOutputShells preserves render handoff", {
 })
 
 test_that("registerLipidDesignAdjacentOutputShells preserves render handoff", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("registerLipidDesignAdjacentOutputShells", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -760,6 +768,7 @@ test_that("registerLipidDesignAdjacentOutputShells preserves render handoff", {
 })
 
 test_that("runLipidDesignSaveResultsShell preserves the empty-design warning path", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("runLipidDesignSaveResultsShell", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -803,6 +812,7 @@ test_that("runLipidDesignSaveResultsShell preserves the empty-design warning pat
 })
 
 test_that("runLipidDesignSaveResultsShell preserves the save-results success path", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("runLipidDesignSaveResultsShell", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -869,6 +879,7 @@ test_that("runLipidDesignSaveResultsShell preserves the save-results success pat
 })
 
 test_that("runLipidDesignResetConfirmationShell preserves the reset flow", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("runLipidDesignResetConfirmationShell", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -947,6 +958,7 @@ test_that("runLipidDesignResetConfirmationShell preserves the reset flow", {
 })
 
 test_that("applyLipidDesignSampleRenameMap preserves rename propagation", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("applyLipidDesignSampleRenameMap", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -977,6 +989,7 @@ test_that("applyLipidDesignSampleRenameMap preserves rename propagation", {
 })
 
 test_that("buildLipidDesignBulkRenameMap preserves supported transforms", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("buildLipidDesignBulkRenameMap", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -1029,6 +1042,7 @@ test_that("buildLipidDesignBulkRenameMap preserves supported transforms", {
 })
 
 test_that("applyLipidDesignResetState preserves the all-scope reset behavior", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("applyLipidDesignResetState", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -1119,6 +1133,7 @@ test_that("applyLipidDesignResetState preserves the all-scope reset behavior", {
 })
 
 test_that("getLipidDesignSampleColumns preserves empty, numeric, and explicit selection behavior", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("getLipidDesignSampleColumns", envir = asNamespace("MultiScholaR"), inherits = FALSE)
   )
@@ -1170,6 +1185,7 @@ test_that("getLipidDesignSampleColumns preserves empty, numeric, and explicit se
 })
 
 test_that("buildLipidDesignSaveResults helpers preserve non-group-prefix contrast formatting", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("buildLipidDesignSaveResultsDataList", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("buildLipidDesignSaveResultsContrastsTable", envir = asNamespace("MultiScholaR"), inherits = FALSE)
@@ -1213,6 +1229,7 @@ test_that("buildLipidDesignSaveResults helpers preserve non-group-prefix contras
 })
 
 test_that("registerLipidDesignContrastManagementShells and sample removal preserve observer handoff", {
+  skip("quarantined: Q-32 (KIT-103 W4) the lipid design internal this block tested was deleted; the shared design tab (mod_omic_design.R, mod_omic_design_builder.R) and the design core (func_omics_design_shared.R, utils_workflow_omics_design.R) replace it, covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019 and the lipid_canonical entry lane's design step")
   skip_if_not(
     exists("registerLipidDesignContrastManagementShells", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
       exists("registerLipidDesignSampleRemovalShells", envir = asNamespace("MultiScholaR"), inherits = FALSE)

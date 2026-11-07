@@ -728,3 +728,63 @@ buildOmicsDesignSavePayload <- function(designMatrix, removedSamples = character
         contrasts_tbl = buildOmicsDesignSaveContrastsTable(contrastData, formulaString),
         config_list = configList)
 }
+
+# ------------------------------------------------------------------------------------------------
+# The lipid wrappers (KIT-103 W4).
+# ------------------------------------------------------------------------------------------------
+
+#' D6. Lipid's validators under their names, as one-line wrappers over the shared family with the
+#' lipid rules, for their callers outside the design tab (the lipid DA analysis and QC; KIT-104 and
+#' KIT-106 retarget them). Signatures as mod_lipid_design_validation.R at 616e1147.
+#' @noRd
+validateLipidDesignAlignment <- function(designMatrix, assayList, columnMapping = NULL, sampleIdCol = "Run",
+                                         groupCol = "group", requireGroups = TRUE, requireReplicates = TRUE) {
+    validateOmicsDesignAlignment(designMatrix, assayList, omicsDesignRules("lipidomics"), columnMapping = columnMapping,
+        sampleIdCol = sampleIdCol, groupCol = groupCol, requireGroups = requireGroups,
+        requireReplicates = requireReplicates)
+}
+
+#' D6. See `validateLipidDesignAlignment`.
+#' @noRd
+validateLipidDesignContrasts <- function(designMatrix, contrastsTbl, formulaString = "~ 0 + group", allowEmpty = FALSE) {
+    validateOmicsDesignContrasts(designMatrix, contrastsTbl, omicsDesignRules("lipidomics"),
+        formulaString = formulaString, allowEmpty = allowEmpty)
+}
+
+#' D6. See `validateLipidDesignAlignment`.
+#' @noRd
+validateLipidDesignDaPreflight <- function(designMatrix, assayList, contrastsTbl = NULL, formulaString = "~ 0 + group",
+                                           columnMapping = NULL, sampleIdCol = "Run", groupCol = "group",
+                                           requireContrasts = TRUE) {
+    validateOmicsDesignDaPreflight(designMatrix, assayList, omicsDesignRules("lipidomics"), contrastsTbl = contrastsTbl,
+        formulaString = formulaString, columnMapping = columnMapping, sampleIdCol = sampleIdCol, groupCol = groupCol,
+        requireContrasts = requireContrasts)
+}
+
+#' The configuration the lipid design wrappers run the shared design tab with: lipid's, or the
+#' profile's omic (trx, `trxOmicProfile()`). Until KIT-103 W7 wires the configuration's design
+#' function fields, the missing ones are filled with the core's (the values W7 wires; once they are
+#' wired this changes nothing): lipid `validate` (the save preflight), `build_object`
+#' (`lipidDesignObject`), the import's `reader` and `record_design_file`; trx `group_levels`,
+#' `validate` and `build_object` (func_trx_design.R).
+#' @param profile An omic profile, or NULL for lipidomics.
+#' @return An omic GUI configuration.
+#' @noRd
+lipidDesignGuiConfig <- function(profile = NULL) {
+    omic_type <- profile$omic_type %||% "lipidomics"
+    config <- omicGuiConfig(omic_type)
+    design <- config$design
+    if (identical(omic_type, "transcriptomics")) {
+        design$group_levels <- design$group_levels %||% trxDesignGroupLevels
+        design$validate <- design$validate %||% trxDesignCheck
+        design$build_object <- design$build_object %||% trxDesignObject
+    } else {
+        design$validate <- design$validate %||%
+            function(results, columnMapping) validateOmicsDesignSave(results, columnMapping, "lipidomics")
+        design$build_object <- design$build_object %||% lipidDesignObject
+        design$design_import$reader <- design$design_import$reader %||% readOmicsDesignImport
+        design$design_import$record_design_file <- design$design_import$record_design_file %||% TRUE
+    }
+    config$design <- design
+    config
+}

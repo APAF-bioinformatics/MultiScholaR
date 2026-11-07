@@ -1,0 +1,33 @@
+KIT-103 W4 dependents grep (2026-11-08), across R/, tests/, tools/ and inst/.
+
+Deleted files (7): R/mod_lipid_design_{builder_helpers,builder_action_helpers,builder_display_helpers,
+builder_state_helpers,import_helpers,preview_helpers,validation}.R.
+
+Deleted names (67): every function those files defined, except the three D6 validators
+(validateLipidDesign{Alignment,Contrasts,DaPreflight}, now one-line wrappers in
+func_omics_design_shared.R) and runLipidDesignBuilderObserverShell (kept as a one-line wrapper in
+mod_lipid_design_server.R over runOmicsDesignCommit for its callers MCI-019.6, MCI-027's helper
+helper-module-ci-trx-tabs.R:129 and test-omics-design-core.R, until W5 retargets the trx helper).
+
+Names: hits by file
+    113 tests/testthat/test-lipid-13-design-builder-seams.R        quarantined whole file (Q-31)
+     63 tests/testthat/test-lipid-13a-design-module-characterization.R  17 blocks quarantined (Q-32); the one live block calls the public builder only
+     24 tests/testthat/test-omics-design-core.R                   all in the 8 Q-35-skipped blocks, or in runTodayDesignImport (line 699), called only by them
+     19 tests/testthat/test-lipid-14-design-module-seams.R         quarantined whole file (Q-34)
+     13 tests/testthat/test-lipid-13b-design-wrapper-characterization.R  quarantined (Q-33)
+      1 R/func_omics_design_shared.R                              a provenance comment (W2's header of C2)
+    tools/refactor/** (manifests, handovers, staging copies)       excluded by the ticket's rule
+
+Paths: hits outside tools/refactor/
+    R/utils_omic_gui_config.R:367,383,393,583,585,591   provenance comments (file:line at W1; lead's file)
+    R/utils_workflow_omics_design.R:8-9, R/func_omics_design_shared.R:5-7,738   provenance comments
+    tests/testthat/test-lipid-13-design-builder-seams.R:4-6, test-lipid-14-design-module-seams.R:4-6   source() lines behind the Q-31 / Q-34 file skips
+    tests/testthat/test-ci-impact-source-map.R:22   a path string routed by the CI impact map (no file read); passes (19/0)
+    tests/testthat/test-omics-module-globals.R:47   an allow-list entry; a deleted file only removes hits; passes (14/0)
+
+Callers whose callee changed (D6 wrappers, the public wrappers, the trx profile path), run as dependents:
+test-lipid-01b/01f/01h/01j (mod_lipid_qc_s4.R:383), test-module-ci-lipid-da.R (mod_lipid_da_analysis_helpers.R:88-89),
+test-module-ci-trx-{design,qc,app}.R (helper-module-ci-trx-tabs.R), test-module-ui-wrapper-direct-shared.R,
+test-workflow-{ui,server}-shared.R, test-app-shell-shared.R. Results in targeted.txt.
+
+Result: no live caller of a deleted name or path remains.

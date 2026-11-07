@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-34 (KIT-103 W4) it sources mod_lipid_design_{preview,builder,import}_helpers.R, deleted; the frame is the shared design tab (mod_omic_design.R), covered by test-omic-design-module.R, MCI-019.4/.5 and the lipid_canonical entry lane's design step")
 library(testthat)
 
 source(test_path("..", "..", "R", "mod_lipid_design_preview_helpers.R"), local = environment())

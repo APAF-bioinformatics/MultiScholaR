@@ -114,27 +114,24 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
   import_root <- module_ci_lipid_design_write_import_pack(tempfile("module-ci-lipid-design-import-"), payload)
   workflow <- module_ci_lipid_design_workflow(payload)
   qc_value <- FALSE
-  assigned_names <- character()
+  globals_before <- ls(globalenv(), all.names = TRUE)
 
+  # KIT-103 W4: the shared design tab's import (runOmicsDesignImport over the core reader and commit, C10) under
+  # the lipid configuration; the QC baseline is quiet, as the old shell's injected one was.
+  config <- lipidDesignGuiConfig()
+  config$design$design_import$qc_baseline <- function(...) invisible(NULL)
+  testthat::local_mocked_bindings(removeModal = function(...) invisible(NULL),
+    removeNotification = function(...) invisible(NULL), showNotification = function(...) invisible(NULL),
+    .package = "shiny")
   # KIT-072: the import confirms onto the session's pending owner, which the design step binds to the route.
-  shiny::withReactiveDomain(omicsOwnerSession(), runLipidDesignImportConfirmationShell(
+  shiny::withReactiveDomain(omicsOwnerSession(), runOmicsDesignImport(
     workflowData = workflow,
     experimentPaths = list(source_dir = import_root),
     importPath = import_root,
     qcTrigger = function(value) qc_value <<- value,
-    removeModalFn = function() invisible(NULL),
-    removeNotificationFn = function(...) invisible(NULL),
-    showNotificationFn = function(...) invisible(NULL),
-    readConfigFileFn = function(file) module_ci_lipid_design_config(),
-    vroomFn = function(path, show_col_types = FALSE) {
-      utils::read.delim(path, sep = "\t", check.names = FALSE, stringsAsFactors = FALSE)
-    },
-    readJsonFn = function(path, simplifyVector = TRUE) {
-      jsonlite::read_json(path, simplifyVector = simplifyVector)
-    },
-    assignFn = function(name, value, envir) assigned_names <<- c(assigned_names, name),
-    updateLipidFilteringFn = function(...) invisible(NULL)
+    config = config
   ))
+  assigned_names <- setdiff(ls(globalenv(), all.names = TRUE), globals_before)
 
   expect_identical(workflow$design_matrix$Run, payload$design_matrix$Run)
   expect_identical(workflow$design_matrix$group, payload$design_matrix$group)
@@ -146,24 +143,24 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
   # KIT-030: the imported config and contrasts live on workflow_data only; no global copies.
   expect_false(any(c("config_list", "contrasts_tbl") %in% assigned_names))
 
+  # KIT-103 W4: the shared frame's import modal (the browser's chooser, not test mode's text input).
   captured <- new.env(parent = emptyenv())
-  modal <- buildLipidDesignImportModal(
-    ns = function(id) paste0("lipid-design-", id),
-    modalDialogFn = function(..., title = NULL, footer = NULL, easyClose = TRUE) list(title = title, body = list(...), footer = footer, easyClose = easyClose),
-    paragraphFn = function(...) paste(...),
-    helpTextFn = function(...) paste(...),
-    dirButtonFn = function(id, label, title) {
-      captured$dir_button <- list(id = id, label = label, title = title)
-      list(kind = "dirButton", id = id, label = label, title = title)
-    },
-    verbatimTextOutputFn = function(id, placeholder = FALSE) list(kind = "verbatim", id = id, placeholder = placeholder),
-    tagListFn = function(...) list(...),
-    modalButtonFn = function(label) list(kind = "modalButton", label = label),
-    actionButtonFn = function(inputId, label, class = NULL) {
+  testthat::local_mocked_bindings(
+    modalDialog = function(..., title = NULL, footer = NULL, easyClose = TRUE) list(title = title, body = list(...), footer = footer, easyClose = easyClose),
+    actionButton = function(inputId, label, class = NULL, ...) {
       captured$action_button <- list(inputId = inputId, label = label, class = class)
-      list(kind = "actionButton", inputId = inputId, label = label, class = class)
-    }
+      shiny::tags$button(id = inputId, label)
+    },
+    .package = "shiny"
   )
+  testthat::local_mocked_bindings(
+    shinyDirButton = function(id, label, title, ...) {
+      captured$dir_button <- list(id = id, label = label, title = title)
+      shiny::tags$button(id = id, label)
+    },
+    .package = "shinyFiles"
+  )
+  modal <- buildOmicsDesignImportModal(ns = function(id) paste0("lipid-design-", id), config = config, testMode = FALSE)
   expect_identical(modal$title, "Import Existing Design Matrix")
   expect_identical(captured$dir_button$id, "lipid-design-import_dir")
   expect_identical(captured$action_button$inputId, "lipid-design-confirm_import")
@@ -175,12 +172,15 @@ test_that("MCI-019.5 design artifacts preserve expected lipid filenames and seri
   workflow <- module_ci_lipid_design_workflow(payload)
   qc_value <- FALSE
 
+  # KIT-103 W4: the shared design tab's commit (runOmicsDesignCommit over commitOmicsDesign, whose artifacts are
+  # writeOmicsDesignArtifacts') under the lipid configuration.
   shiny::withReactiveDomain(shiny::MockShinySession$new(), {
-    runLipidDesignBuilderObserverShell(
+    runOmicsDesignCommit(
       results = payload,
       workflowData = workflow,
       experimentPaths = paths,
-      qcTrigger = function(value) qc_value <<- value
+      qcTrigger = function(value) qc_value <<- value,
+      config = lipidDesignGuiConfig()
     )
   })
 

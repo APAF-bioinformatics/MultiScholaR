@@ -105,6 +105,7 @@ omicsDesignFixture <- function(omic_type, layout = "lc_pair", ...) {
 # ------------------------------------------------------------------------------------------------
 
 test_that("C1 the shared validator is today's lipid and metab validator, labels and messages included", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     families <- list(
         lipidomics = list(rules = omicsDesignRules("lipidomics"), alignment = validateLipidDesignAlignment,
             contrasts = validateLipidDesignContrasts, preflight = validateLipidDesignDaPreflight,
@@ -216,6 +217,7 @@ test_that("C1 the save preflight is today's commit preflight (lipid, metab)", {
 # ------------------------------------------------------------------------------------------------
 
 test_that("C2 the formula resolution is today's (lipid's function, metab's inline rule)", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     metab_inline <- function(config_list) {
         formula_string <- config_list[["deAnalysisParameters"]][["formula_string"]]
         if (!metabDesignScalarString(formula_string)) formula_string <- "~ 0 + group"
@@ -242,6 +244,7 @@ test_that("C2 the formula resolution is today's (lipid's function, metab's inlin
 # ------------------------------------------------------------------------------------------------
 
 test_that("C3 the sample discovery and initial state are today's (lipid, trx, metab)", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     samples <- c("WT_2", "KO_10", "WT_1", "KO_2")
     lipid_assays <- module_ci_lipid_design_assays("lc_pair", samples = samples)
     metab_assays <- module_ci_metab_design_assays("lc_pair", samples = samples)
@@ -350,6 +353,7 @@ test_that("C5 the saved assay columns follow the design's run order", {
 # ------------------------------------------------------------------------------------------------
 
 test_that("C4 the design edits are today's lipid pure functions", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     samples <- c("WT_1", "WT_2", "WT_3", "KO_1", "KO_2", "KO_3")
     assays <- module_ci_lipid_design_assays("lc_pair", samples = samples)
     design <- buildOmicsDesignInitialState(assays, list(), module_ci_lipid_design_column_mapping(samples),
@@ -418,6 +422,7 @@ test_that("C4 the design edits are today's lipid pure functions", {
 # ------------------------------------------------------------------------------------------------
 
 test_that("C5 the save payload is today's lipid payload", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     samples <- c("WT_1", "WT_2", "KO_1", "KO_2")
     assays <- module_ci_lipid_design_assays("lc_pair", samples = samples)
     design <- module_ci_lipid_design_matrix("two_group")
@@ -752,6 +757,7 @@ omicsDesignImportCase <- function(omic, edit = identity) {
 }
 
 test_that("C10 the design import is today's for lipid and metab: bus, state, provenance, baseline and texts", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     omicsDesignPlainReads()
     edits <- list(
         full = identity,
@@ -793,6 +799,7 @@ test_that("C10 the design import is today's for lipid and metab: bus, state, pro
 })
 
 test_that("C10 the import's refusals are today's texts and write nothing", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     omicsDesignPlainReads()
     edits <- list(
         no_design = function(root) unlink(file.path(root, "design_matrix.tab")),
@@ -869,6 +876,7 @@ test_that("C10 the reader infers the column mapping as today, by the omic's id k
 })
 
 test_that("W2 finding: the design import holds vroom's tables (today's fails: 'payload contains a nonportable resource')", {
+    skip("quarantined: Q-35 (KIT-103 W4) it compared the core with today's lipid design functions, deleted by W4 (and metab's, which W5 deletes); the comparison passed at fe1a9742 (kit-103 W2); the core is covered by the live blocks of this file, test-omic-design-module.R, MCI-013, MCI-019, MCI-027 and the entry lanes")
     for (omic in c("lipidomics", "metabolomics")) {
         root <- omicsDesignImportCase(omic)
         # Today: the owner refuses the tables' live parser pointer when they are held (KIT-075).

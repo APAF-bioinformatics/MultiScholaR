@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-31 (KIT-103 W4) it sources mod_lipid_design_builder_{display,action,state}_helpers.R, deleted; the builder is the shared builder (mod_omic_design_builder.R) over the design core (func_omics_design_shared.R), covered by test-omic-design-module.R, test-omics-design-core.R, MCI-019, MCI-027 and the lipid_canonical and trx_screen entry lanes' design step")
 library(testthat)
 
 source(test_path("..", "..", "R", "mod_lipid_design_builder_display_helpers.R"), local = environment())

@@ -3,6 +3,7 @@ library(testthat)
 library(shiny)
 
 test_that("lipid design server preserves module registration handoff", {
+  skip("quarantined: Q-33 (KIT-103 W4) it tested the lipid design server's hand-off to its six helpers (initializeLipidDesignImportBootstrap ... registerLipidDesignPreviewOutputs), deleted; the server is a wrapper over the shared frame (mod_omic_design_server), whose outputs and order are covered by test-omic-design-module.R and the lipid_canonical entry lane")
   namespace <- asNamespace("MultiScholaR")
   skip_if_not(
     exists("mod_lipid_design_server", envir = namespace, inherits = FALSE),
