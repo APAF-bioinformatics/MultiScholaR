@@ -1,0 +1,40 @@
+KIT-102 W5 targeted tests (2026-11-08), on the W5 tree (base 5539a182). One R process per file, sequentially:
+kit/scripts-078/run1.R, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1,
+R_LIBS=core/browser-smoke.rvol2q/library.
+
+The work item's tests and retargets
+COUNTS test-module-ci-metab-import.R pass 91 fail 0 error 0 skip 0      (MCI-012, incl. the new MCI-012.7 unification test; failed first, test-first.txt)
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0     (MCI-018; one vroom parsing warning in MCI-018.5's malformed-file preview, the reader's, as before)
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0        (MCI-026)
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0           (MCI-029)
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0        (uses module_ci_trx_import)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0
+COUNTS test-e2e-test-mode-integration.R pass 61 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0    (helper-workflow-omics-residency.R retargeted; 161 s)
+COUNTS test-metab-00d-import-module-characterization.R pass 24 fail 0 error 0 skip 0   (kept; no expectation changed: it pins no design_matrix)
+COUNTS test-lipid-00c-import-module-characterization.R pass 7 fail 0 error 0 skip 10   (10 internal blocks skip under Q-26)
+
+Quarantined whole files (first line testthat::skip naming the Q id; under strict skips they report no tests, not an error)
+COUNTS test-lipid-00b-import-module-seams.R pass 0 fail 0 error 0 skip 0                  (Q-25)
+COUNTS test-metab-00b-import-module-helper-characterization.R pass 0 fail 0 error 0 skip 0 (Q-27)
+COUNTS test-metab-00b-import-helper-shared.R pass 0 fail 0 error 0 skip 0                  (Q-28)
+COUNTS test-metab-00c-import-module-seams.R pass 0 fail 0 error 0 skip 0                   (Q-29)
+
+Dependents (the grep's files and the shared shell's tests)
+COUNTS test-workflow-omics-import.R pass 24 fail 0 error 0 skip 8       (7 comparison blocks and the metab cross-check skip under Q-30)
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   (353 s)
+COUNTS test-ci-impact-e2e.R pass 10 fail 0 error 0 skip 0
+
+Expected failure, for the lead to retarget (not W5's file)
+COUNTS test-omic-gui-config.R pass 242 fail 7 error 0 skip 0
+  BAD :: the trx shell and import values equal trxOmicProfile()'s fields today (design 4.12)
+  The seven expectations read the trx profile's import-only fields W5 deleted (import_title, formats, data_format,
+  import_help, assay_name, id_label, annotation_label); `profile$<field>` is now NULL. The configuration's values are
+  unchanged ('Transcriptomics Data Import', 'trx_counts', the help text, 'counts', 'Gene ID Column', 'Gene Name Column').
+
+Rendered UI, byte for byte (htmltools::renderTags, test and production mode), base tree 5539a182 against W5:
+mod_lipid_import_ui("import"), mod_metab_import_ui("import"), mod_lipid_import_ui("import", profile = trxOmicProfile())
+and the three shells mod_{lipidomics,metabolomics,transcriptomics}_ui: all 12 identical (the shells after masking
+shiny's random tabset ids). The metab panel was already in the lipid panel's layout; its markup did not change.

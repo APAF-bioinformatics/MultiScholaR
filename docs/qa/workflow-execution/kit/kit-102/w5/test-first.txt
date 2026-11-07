@@ -1,0 +1,16 @@
+KIT-102 W5 test-first (2026-11-08). Tree: origin/performance-v2 5539a182 plus the new test only
+(tests/testthat/test-module-ci-metab-import.R MCI-012.7), before any W5 source change.
+Runner: kit/scripts-078/run1.R, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1,
+R_LIBS=core/browser-smoke.rvol2q/library.
+
+COUNTS test-module-ci-metab-import.R pass 90 fail 1 error 0 skip 0
+  BAD test-module-ci-metab-import.R :: MCI-012.7 a successful import opens the Design step (KIT-102 unification, failed first)
+--- MCI-012.7 a successful import opens the Design step (KIT-102 unification, failed first)
+ Expected `seen$after$design_matrix` to be identical to "pending".
+Differences:
+`actual`:   "disabled"
+`expected`: "pending"
+
+The import itself succeeded (log: "Metabolomics import complete: 1 assays, 3 total metabolites";
+setup_import "complete"); only the Design step stayed disabled. After W5 the same test passes
+(targeted.txt).

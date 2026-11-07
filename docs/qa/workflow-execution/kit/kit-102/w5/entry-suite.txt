@@ -1,0 +1,28 @@
+KIT-102 W5 entry-point suite, verify only (2026-11-08; no re-freeze). W5 tree on base 5539a182. One R process per
+file, sequentially: kit/scripts-078/run1.R, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1,
+R_LIBS=core/browser-smoke.rvol2q/library, MULTISCHOLAR_GUI_ENTRY_RECORD_DIR set; frozen oracles
+tests/testdata/gui-entry/*.json unchanged.
+
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0        64 s
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0   37 s
+COUNTS test-gui-entry-metabolomics.R pass 99 fail 6 error 0 skip 0      155 s
+  BAD :: KIT-101 entry lane metab_lc / metab_gc / metab_combined (2 expectations each: the steps import and design_refusal)
+
+Every record against its oracle, path by path (JSON round trip, as guiEntryExpectLane compares):
+LANE lipid_canonical: 0 differing paths
+LANE trx_screen: 0 differing paths
+LANE metab_lc: 2 differing paths
+  metab_lc/import/tab_status/design_matrix: oracle="disabled" record="pending"
+  metab_lc/design_refusal/tab_status/design_matrix: oracle="disabled" record="pending"
+LANE metab_gc: 2 differing paths
+  metab_gc/import/tab_status/design_matrix: oracle="disabled" record="pending"
+  metab_gc/design_refusal/tab_status/design_matrix: oracle="disabled" record="pending"
+LANE metab_combined: 2 differing paths
+  metab_combined/import/tab_status/design_matrix: oracle="disabled" record="pending"
+  metab_combined/design_refusal/tab_status/design_matrix: oracle="disabled" record="pending"
+
+Attribution: all six are the unification (metab import opens the Design step, KIT-102 D2). Every other capture is
+identical: heads, histories, state digests, artifacts and their sha256, notifications, and every output, including the
+shell's workflow_progress (render_workflow_stepper, func_general_applets.R:56-57, maps "disabled" to "pending", so the
+stepper is the same either way and the capture the ticket expected to change did not). Within the expected set; nothing else differs.
+The metab lanes need the lead's re-freeze (budget step 3).

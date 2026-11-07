@@ -1,0 +1,184 @@
+# KIT-102 W5 dependents grep (2026-11-08): word match of the 121 deleted function names (the functions
+# defined in the nine deleted files, plus trxImportPreview, trxValidateImport and runTrxImportProcessing from
+# mod_transcriptomics.R's import section) and of the nine deleted file paths, across R/ tests/ tools/ inst/
+# (tools/refactor/ excluded). checkTrxImportCounts is not deleted: its func_trx_counts.R copy stays (W2).
+
+## Names: hits per file
+R/func_trx_counts.R:2
+R/utils_omic_gui_config.R:3
+R/utils_workflow_omics_import.R:9
+tests/testthat/test-lipid-00c-import-module-characterization.R:58
+tests/testthat/test-lipid-00b-import-module-seams.R:217
+tests/testthat/test-metab-00b-import-module-helper-characterization.R:106
+tests/testthat/test-metab-00b-import-helper-shared.R:13
+tests/testthat/test-metab-00c-import-module-seams.R:7
+tests/testthat/test-workflow-omics-import.R:18
+
+## Names in R/: every hit is a comment (provenance notes in W1's and W2's files)
+R/func_trx_counts.R:42:# mod_transcriptomics.R (`trxImportPreview`, `checkTrxImportCounts`, :82-111). The import itself is
+R/func_trx_counts.R:47:#' a sample (`trxImportPreview`).
+R/utils_omic_gui_config.R:267:#' The lipid assay-name rule and messages (`validateLipidImportAssayNames`,
+R/utils_omic_gui_config.R:517:#' mod_lipid_import_processing_helpers.R (trx imports through `runLipidImportProcessing`, trx:139).
+R/utils_omic_gui_config.R:526:        # One format, reported with full confidence (trxImportPreview, trx:89).
+R/utils_workflow_omics_import.R:14:#' (`resolveLipidImportSampleColumns`, mod_lipid_import_processing_helpers.R:107).
+R/utils_workflow_omics_import.R:42:#' validation (`validateLipidImportProcessingState`, mod_lipid_import_processing_helpers.R:479);
+R/utils_workflow_omics_import.R:43:#' trx refuses it with its count-policy class (`trxValidateImport`, mod_transcriptomics.R:115) and
+R/utils_workflow_omics_import.R:45:#' runs `validateMetabImportWorkflowPayload` (mod_metab_import_processing_helpers.R:114).
+R/utils_workflow_omics_import.R:111:#' and the columns it proposes (`loadLipidImportAssayPreview`,
+R/utils_workflow_omics_import.R:112:#' `prepareMetabImportAssaySelectionState`).
+R/utils_workflow_omics_import.R:139:#' not matching it (`resolveLipidImportSampleColumns`, `resolveMetabImportSampleColumns`).
+R/utils_workflow_omics_import.R:258:#' trimmed, is empty, NA or a finite number (`metabImportValuesAreNumericLike`).
+R/utils_workflow_omics_import.R:377:#' omic's summary file (`writeLipidImportSourceArtifacts`, `writeMetabImportSourceArtifacts`).
+
+## Names in test-workflow-omics-import.R: inside the Q-30 blocks, or comments
+76:# Today's lipid import (runLipidImportProcessing, through the MCI-018 helper) and the core.
+108:# Today's metab import (runMetabImportProcessing, through the MCI-012 helper) and the core.
+142:# Today's trx import (runTrxImportProcessing, through the MCI-026 helper) and the core.
+170:    lipid_default <- eval(formals(loadLipidImportAssayPreview)$readHeaders)
+171:    metab_default <- eval(formals(prepareMetabImportAssaySelectionState)$readHeadersFn)
+205:        old <- suppressWarnings(loadLipidImportAssayPreview(lipid_files[[name]],
+225:        old <- suppressWarnings(prepareMetabImportAssaySelectionState(metab_files[[name]]))
+242:test_that("I2 the trx preview is today's trxImportPreview", {
+245:        old <- trxImportPreview(file.path(dir, "counts.tsv"))
+280:                resolveLipidImportSampleColumns(custom, case$result, case$vendor,
+285:            resolveMetabImportSampleColumns(custom, case$vendor, case$pattern, case$result),
+292:            expect_identical(new, resolveLipidImportEffectiveColumn(custom, vendor, "selected",
+295:                resolveMetabImportColumnName(headers, custom_name)
+347:        old <- sanitizeLipidImportSampleNames(assays, samples, sanitize,
+473:    # The rule is metab's (metabImportValuesAreNumericLike,
+474:    # coerceMetabImportWorkflowPayloadSamples).
+477:            metabImportValuesAreNumericLike(table[[column]]), info = column)
+480:    payload <- coerceMetabImportWorkflowPayloadSamples(list(assayList = list(a = small),
+
+## The other test files with hits are the quarantined Q-25 (lipid-00b), Q-26 (lipid-00c blocks), Q-27, Q-28 (metab-00b x2) and Q-29 (metab-00c)
+
+## Deleted file paths (files mentioning them)
+R/utils_omic_gui_config.R
+R/utils_workflow_omics_import.R
+tests/testthat/test-lipid-00b-import-module-seams.R
+tests/testthat/test-metab-00b-import-module-helper-characterization.R
+tests/testthat/test-metab-00b-import-helper-shared.R
+tests/testthat/test-metab-00c-import-module-seams.R
+
+## The deleted names
+applyLipidImportPreviewToModuleState
+applyLipidImportResultToWorkflow
+applyMetabImportAssaySelectionState
+applyMetabImportWorkflowPayload
+assembleLipidImportAssayList
+buildLipidImportAssay1SelectedCallback
+buildLipidImportAssayInputPanel
+buildLipidImportColumnMapping
+buildLipidImportColumnMappingSection
+buildLipidImportColumnSelectionReactives
+buildLipidImportColumnValidationStatus
+buildLipidImportFileImportSection
+buildLipidImportFormatDetectionStatus
+buildLipidImportModulePanel
+buildLipidImportProcessFooterSection
+buildLipidImportStatusDisplay
+buildLipidImportUiShell
+buildLipidImportValidationSummary
+buildMetabImportAnnotationStatus
+buildMetabImportAvailableColumnsDisplay
+buildMetabImportCustomAnnotationStatus
+buildMetabImportCustomMetaboliteIdStatus
+buildMetabImportFormatDetectionStatus
+buildMetabImportMetaboliteIdStatus
+buildMetabImportSampleColumnsDisplay
+buildMetabImportStatus
+buildMetabImportValidationSummary
+buildMetabImportWorkflowPayload
+callLipidImportSecondAssayReader
+coerceMetabImportWorkflowPayloadSamples
+emitLipidImportModuleServerEntryDiagnostics
+finalizeLipidImportSetupState
+finalizeMetabImportAssaySelectionError
+finalizeMetabImportProcessingFeedback
+formatLipidImportColumnPreviewText
+handleLipidImportAnnotationStatusRender
+handleLipidImportAssayFileSelectionEvent
+handleLipidImportAssayPathRender
+handleLipidImportAvailableColumnsDisplayRender
+handleLipidImportCustomAnnotationStatusRender
+handleLipidImportCustomLipidIdStatusRender
+handleLipidImportDataImportError
+handleLipidImportDataPreviewLoad
+handleLipidImportFileSelection
+handleLipidImportFormatDetectionStatusRender
+handleLipidImportLipidIdStatusRender
+handleLipidImportProcessRequest
+handleLipidImportSampleColumnsDisplayRender
+handleLipidImportSelectedAssayPathAssignment
+handleLipidImportStandardFileSelection
+handleLipidImportStatusRender
+handleLipidImportValidationSummaryRender
+handleMetabImportAssayFileSelection
+handleMetabImportStandardAssayFileSelection
+initializeLipidImportLocalData
+lipidImportFunctionAcceptsArg
+lipidImportScalarString
+lipidImportScalarValue
+loadLipidImportAssayPreview
+metabImportFunctionAcceptsArg
+metabImportServerFunctionAcceptsArg
+metabImportValuesAreNumericLike
+prepareLipidImportShinyFileVolumes
+prepareMetabImportAssaySelectionState
+probeLipidImportShinyFilesAvailability
+registerLipidImportAnnotationStatusOutput
+registerLipidImportAssayFileSelectionObserver
+registerLipidImportAvailableColumnsDisplayOutput
+registerLipidImportCustomAnnotationStatusOutput
+registerLipidImportCustomLipidIdStatusOutput
+registerLipidImportFileLoadedOutput
+registerLipidImportFormatDetectionStatusOutput
+registerLipidImportLipidIdStatusOutput
+registerLipidImportModuleOutputs
+registerLipidImportProcessObserver
+registerLipidImportSampleColumnsDisplayOutput
+registerLipidImportShinyFileInputs
+registerLipidImportStandardFileInputs
+registerLipidImportStatusOutput
+registerLipidImportValidationSummaryOutput
+resolveLipidImportAnnotationColumn
+resolveLipidImportEffectiveColumn
+resolveLipidImportLipidIdColumn
+resolveLipidImportSampleColumns
+resolveLipidImportSecondAssayReader
+resolveLipidImportSelectedSampleColumns
+resolveMetabImportColumnName
+resolveMetabImportSampleColumns
+runLipidImportProcessing
+runMetabImportAssaySelection
+runMetabImportModuleServerEntryShell
+runMetabImportModuleServerPublicWrapper
+runMetabImportModuleServerShell
+runMetabImportProcessing
+runTrxImportProcessing
+sanitizeLipidImportSampleNames
+setupLipidImportAssayFileChooser
+setupLipidImportShinyFileInputs
+setupLipidImportStandardFileInputs
+setupMetabImportAnnotationStatusOutput
+setupMetabImportAssaySelectionCallback
+setupMetabImportAvailableColumnsDisplayOutput
+setupMetabImportColumnAccessors
+setupMetabImportCustomAnnotationStatusOutput
+setupMetabImportCustomMetaboliteIdStatusOutput
+setupMetabImportFileLoadedOutput
+setupMetabImportFormatDetectionStatusOutput
+setupMetabImportMetaboliteIdStatusOutput
+setupMetabImportProcessingObserver
+setupMetabImportSampleColumnsDisplayOutput
+setupMetabImportShinyFiles
+setupMetabImportStandardFileInputs
+setupMetabImportStatusOutput
+setupMetabImportValidationSummaryOutput
+trxImportPreview
+trxValidateImport
+validateLipidImportAssayNames
+validateLipidImportProcessingState
+validateMetabImportWorkflowPayload
+writeLipidImportSourceArtifacts
+writeMetabImportSourceArtifacts
