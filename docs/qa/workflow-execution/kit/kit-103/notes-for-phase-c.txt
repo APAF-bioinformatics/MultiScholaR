@@ -43,3 +43,25 @@
 - **Give each parallel agent its own scratch folder.** W2 and W3 collided in the shared scratchpad. Use .../scratchpad/kit-103-wN/.
 - **testServer masking:** keep the builder's local name design_matrix (helper-module-ci-trx-tabs.R:78 reads it), and use no shadowing locals in module frames.
 - **Byte identity:** the entry oracles capture data_available and design_matrix_exists as '<error> unused arguments (self, name)'. The shared frame must reproduce even these.
+
+## From W4, for phase D (2026-11-08)
+- **The shared modules:**
+  - mod_omic_design_ui/server(id, workflow_data, experiment_paths, volumes, qc_trigger, config);
+  - mod_omic_design_builder_ui(id, config) and mod_omic_design_builder_server(id, data_tbl, config_list, column_mapping, existing_design_matrix, existing_contrasts, state_owner, config);
+  - adapters: omicsDesignBuilderAdapter (wide_assay_list now; dia_long aborts until W6), omicsDesignImportPluginServer ('feature_table' now; 'proteomics' for W6), runOmicsDesignCommit (prot_hook branch for W6). All abort with omic_gui_config_invalid until filled.
+- **Config stop-gap:** lipidDesignGuiConfig(profile) in func_omics_design_shared.R fills each missing function field with %||% until W7 wires omicGuiConfig. W5 can add a metab equivalent: validate = validateOmicsDesignSave('metabolomics'), build_object = metabDesignObject, reader = readOmicsDesignImport, record_design_file FALSE. W7 deletes both.
+- **W5, metab:**
+  - runOmicsDesignImport implements lipid's order (removeModal first). Metab (P-11) checks the files before removeModal and needs one switch (a config flag or an argument); that is the only GUI-order difference.
+  - registerMetabDesignPreviewOutputs is exported and can wrap registerOmicsDesignPreviewOutputs(output, workflowData, config).
+  - Compare metab's frame and builder UI digests first, as test-omic-design-module.R does for lipid.
+- **W5, trx:**
+  - Retarget helper-module-ci-trx-tabs.R:129 to runOmicsDesignCommit(result, workflow, paths, qcTrigger, <trx config>). runLipidDesignBuilderObserverShell can then go, but retarget MCI-019.6 the same way first.
+  - When the profile's 8 design fields are deleted, keep omic_type (the wrappers use it).
+- **W6, proteomics:**
+  - Fill the dia_long branch (initial_state, rename, save, on_start), the 'proteomics' import plugin and the prot_hook branch.
+  - omicsDesignBuilderSlotUi already switches builder_ui = 'proteomics' to mod_prot_design_builder_ui(ns('builder')).
+  - The prot frame needs import_dir_path '' instead of '<req>' (design_import$import_dir_path = 'empty'). registerOmicsDesignFeatureImport does not implement it.
+  - The frame's preview_assays = FALSE already drops the 'Assays Included' block.
+  - Builder internals are not kept by name: any prot test driving the builder through the shared server must use inputs.
+- **testServer masking:** the builder's outer locals are adapter, builder_texts, replicate_testid, record_excluded_runs, group_levels and config. Do not add locals named after test variables; test-omic-design-module.R checks a list of them.
+- **Quarantine ids:** Q-31 to Q-35 are taken by W4. W5 drafts Q-36 to Q-45 and W6 drafts Q-46 to Q-55; the lead writes the rows.
