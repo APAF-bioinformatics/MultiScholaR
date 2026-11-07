@@ -1,0 +1,48 @@
+# KIT-102 notes for phase C (W5, W6), from the W2, W3 and W4 reports (2026-11-08; the lead's copy)
+
+## From W4 (the frame and the shell)
+- **Frame source-panel registry** (`omicImportSourcePanel` in R/mod_omic_import.R). Functions are looked up by name when called:
+  - feature_table: ui 'omicImportFeatureTableUi', server 'omicImportFeatureTableServer', design_status 'open_if_disabled';
+  - proteomics: ui 'protImportPanelUi', server 'protImportPanelServer', design_status 'pending'.
+
+  W5 defines the feature_table names and W6 the proteomics names.
+- **Panel contract:** ui(ns, config) returns the tags inside the well panel, after the h3 title. The frame supplies useShinyjs, fluidRow, column(12), wellPanel and h3(config$import$title), byte-identical to today's three import UIs.
+- **Panel server call:** server(input, output, session, workflow_data =, experiment_paths =, volumes =, config =, complete =), inside the frame's moduleServer. The panel's ids sit in the frame's namespace, and the frame adds no DOM id.
+- **complete(notify = TRUE)** is completeOmicImport. In one tab_status write it sets the first tab's key to 'complete' and the second tab's key to 'pending': only when that is 'disabled' for the feature table, and unconditionally for proteomics. It then shows config$import$success_text.
+  - The panel removes its own working notification before calling complete.
+  - W6 can pass notify = FALSE while waiting for the organism choice.
+- **testServer masking:** under testServer, the frame's module frame holds `complete`, and its parent holds id, workflow_data, experiment_paths, volumes, config and panel. MCI tests that read the old import module's locals in testServer expressions will see this frame instead; retarget them or keep the names. Keep module frames free of local names that shadow test variables (W4's entry-suite run 1 failed on this).
+- **The shell** keeps calling mod_lipid_import_server, mod_metab_import_server and mod_prot_import_server, so wrappers over the frame need no shell edit.
+- **Unification:** metab is still identical today. W5 opens Design by calling the frame's completion helper (the metab lanes change only as the ticket states).
+
+## From W2 (the feature-table core)
+- **preview:** lipid and metab use previewOmicsImport(path, import = config$import); trx uses previewTrxCountsImport(path, import = NULL). Both return list(headers, detected_format, format_confidence, import_result, assay_data, updates = list(id, annotation, is_pattern)).
+- **process:** importOmicsTables(request, config = omicGuiConfig(...)).
+  - Request fields: assay1_name, assay1_data, assay1_file, assay2_file, assay2_name, vendor_format, detected_format, id_col, annotation_col, sample_columns (ignored for trx), sanitize_names, is_pattern, experiment_paths.
+  - It returns list(assays, sample_columns, data_format, column_mapping, processing_log, validation, artifacts, sanitized).
+  - A refusal is an error of class omics_import_invalid carrying today's message, without the GUI's 'Error: ' prefix. Trx refusals also carry trx_counts_* classes.
+- **The core does not notify, log or commit.** The panel keeps:
+  - the 'Processing imported data...' notification (config notification_id);
+  - the success text;
+  - 'Sample names sanitized for R compatibility.' when payload$sanitized is TRUE (today lipid shows it before validation, metab after success; keep each omic's behaviour);
+  - the error notification paste('Error:', conditionMessage(e));
+  - the logger lines.
+- **Commit (the panel):**
+  - bindWorkflowOmicsOwnerAtImport(workflow, route, data_format);
+  - setWorkflowOmicsBusTables(workflow, 'data_tbl', payload$assays);
+  - data_format and data_type (trx 'transcriptomics');
+  - column_mapping;
+  - processing_log$setup_import = payload$processing_log;
+  - then complete().
+- **Preview keys are snake_case.** In the MCI-018 and MCI-026.1 retargets, map updates$lipidId to updates$id, detectedFormat to detected_format, and importResult to import_result.
+- **Column getters:** resolveOmicsImportColumn(headers, vendor_format, selected, custom) and resolveOmicsImportSampleColumns(assay_data, vendor_format, pattern, import_result, exclude_pattern). Lipid's exclude_norm passes OMICS_IMPORT_NORMALISED_COLUMNS.
+- **Refusal shape:** today metab returns list(status='error') and lipid returns NULL; the core signals an error. MCI-012's run$result$status checks need a wrapper.
+- **checkTrxImportCounts** is defined twice until W5 deletes the copy in R/mod_transcriptomics.R; the func_trx_counts.R copy stays. trxImportPreview is replaced by previewTrxCountsImport.
+- **Draft Q rows:** the blocks in test-workflow-omics-import.R that compare against today's functions (I1, I2, I2 trx, I3/I4, I5–I13, and the metab cross-check) need frozen expectations or Q rows once W5 deletes the old functions.
+
+## From W3 (the proteomics core)
+- **process:** importProteomicsData(format, path, options, readers, logError). The options use the reader argument names: use_precursor_norm, quantity_type, use_maxlfq, use_lfq, filter_contaminants.
+- **preview:** readProtImportHeaders, before detectProteomicsFormat.
+- **Left in the GUI for W6:** analyzeProtImportMixedSpeciesData, buildProtImportOrganismDistributionTable, buildProtImportOrganismSelectionModal, confirmProtImportOrganismSelection, storeProtImportConfiguration, resolveProtImportOptionalUploadPath, resolveProtImportInputFilename, the detection state helpers, and loadProtImportConfigurationResources (it drives the modal's status text; moving it would add a back-reference).
+- **The process_data observer** (mod_prot_import_server_helpers.R) is untouched, with releaseDIAWorkingReference in the same order. W6 keeps it.
+- **Parked P-07:** clean_acc is undefined, so the organism filter errors; do not fix it.
