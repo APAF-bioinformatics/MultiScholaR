@@ -1,0 +1,36 @@
+KIT-101 addendum (revision 2.3): failing-first evidence for F-17, F-20 and F-21.
+Runner: Rscript kit/scripts-078/run1.R (pkgload::load_all(export_all = TRUE, helpers = TRUE), then
+testthat::test_file(<file>, reporter = "silent")); R_LIBS = the kit_100 library (dependencies only; the package is
+loaded from the worktree source); one R process at a time; R 4.6.1. Base df5cbe67 (origin/performance-v2).
+"Before" = the new test block run against the unfixed code; "After" = the same file with the fix.
+
+== F-17  tests/testthat/test-module-ci-trx-qc.R ==
+New block: "KIT-101 F-17: a filter click made before the QC sub-modules start is not run when they start". The QC
+orchestrator as the transcriptomics module starts it (mod_lipid_qc_server under trxOmicProfile(), with the design's
+trigger) on an owner holding trx_raw_data_s4; the workflow's state manager is unset (before the design, the tab has
+no state and the sub-modules wait for the trigger). The filter is clicked (apply_filter = 1), then the design is
+saved (state manager set, trigger TRUE). The history must not gain trx_expression_filtered; a second click then runs
+the filter.
+
+Cause: mod_trx_qc_filter_server is started only at the design (qc_trigger); its observeEvent(input$apply_filter) is
+created then and its first run reads the click value already present, so it ran the earlier click.
+
+Fix: the server records the click value present when it starts and its observer ignores that value; a later click
+runs the filter as before. No message is shown (lipid and metab show none either).
+Not used: ignoreInit = TRUE (the dispatch's suggestion). It also drops the first click of a server that is started
+and clicked within the same reactive flush, which is how MCI-028.1/.2/.3 and the F-11 block drive the module:
+with it those four blocks failed ("The test referenced an output that hasn't been defined yet:
+output$filter-filter_results"; COUNTS pass 12 fail 1 error 3). Note: the lipid and metab QC apply observers are
+also created without ignoreInit (mod_lipid_qc_intensity_server_helpers.R:127, mod_metab_qc_intensity.R:358) and
+start at the same trigger; not changed here (outside the finding).
+
+Before the fix:
+--- KIT-101 F-17: a filter click made before the QC sub-modules start is not run when they start
+ Expected `owner$getHistory()` to be identical to `c("initial", "trx_raw_data_s4")`.
+Differences:
+`actual`:   "initial" "trx_raw_data_s4" "trx_expression_filtered"
+`expected`: "initial" "trx_raw_data_s4"
+COUNTS test-module-ci-trx-qc.R pass 33 fail 1 error 0 skip 0
+
+After the fix:
+COUNTS test-module-ci-trx-qc.R pass 34 fail 0 error 0 skip 0

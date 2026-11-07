@@ -129,3 +129,29 @@ test_that("KIT-101 F-11: the expression filter before any imported state refuses
   }))
   expect_identical(notes, "[warning] Please import the count data before applying the expression filter.")
 })
+
+test_that("KIT-101 F-17: a filter click made before the QC sub-modules start is not run when they start", {
+  skip_if_not(workflowOwnerCapable())
+  skip_if_not_installed("edgeR")
+  fixture <- trxDeclarationsOwner(withr::local_tempdir(), module_ci_trx_corpus())
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  owner <- fixture$owner
+  workflow <- fixture$workflow
+  # Before the design the QC tab has no state, so its sub-modules wait for the design's trigger (mod_lipid_qc_server).
+  workflow$state_manager <- NULL
+  suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+    session$userData$trigger <- shiny::reactiveVal(NULL)
+    mod_lipid_qc_server("qc", workflow, fixture$paths, "transcriptomics", "kit101", session$userData$trigger,
+      profile = trxOmicProfile())
+  }, {
+    session$setInputs(`qc-filter-apply_filter` = 1L)
+    # The design is saved: the state exists and the trigger starts the sub-modules.
+    workflow$state_manager <- owner
+    session$userData$trigger(TRUE)
+    session$flushReact()
+    expect_identical(owner$getHistory(), c("initial", "trx_raw_data_s4"))
+    # A click after the start runs the filter.
+    session$setInputs(`qc-filter-apply_filter` = 2L)
+    expect_identical(owner$getHistory(), c("initial", "trx_raw_data_s4", "trx_expression_filtered"))
+  }))))
+})
