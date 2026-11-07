@@ -1,0 +1,26 @@
+KIT-103 W7 budget run 2: the entry-point suite, verify (2026-11-08), on f0e90318 (R/ unchanged since).
+The four test-gui-entry-*.R files ran in parallel, one R process each, under load_all, R 4.6.1,
+MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true and R_LIBS=core/browser-smoke.DGpv4v/library, through the runner
+tools/testing/test-baseline.R file, with a sleep lock held. They ran against the frozen oracles in
+tests/testdata/gui-entry/: metab_{lc,gc,combined} as re-frozen at 1b12a7bf, the other seven at ddf42372. No lane was
+re-frozen. Ceilings: 900 s per lane and 4500 s per file. The longest file was proteomics, 817 s for its five lanes.
+
+Each lane compares every step with its oracle:
+- the outputs by name, including the design step's 14 outputs, the renderUI digests and texts, and the two
+  '<error> unused arguments (self, name)' captures;
+- the committed states;
+- the artifacts;
+- the notifications.
+A pass means the lane is identical to its oracle.
+
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0 file_skip FALSE [46s]    trx_screen
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0 file_skip FALSE [79s]         lipid_canonical
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0 file_skip FALSE [173s]     metab_lc, metab_gc, metab_combined
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0 file_skip FALSE [817s]       prot_dia, prot_dia_limpa, prot_tmt, prot_lfq, prot_lfq_fragpipe
+
+Blocks run = static blocks in every file (1, 3, 5, 1). The 10 lanes ran, with 0 failures, errors or skips.
+Counts equal KIT-101/102 and W5/W6: 29, 35, 105, 187.
+Decision: all 10 lanes identical to their oracles. Met.
+The ticket's Simulation Setup pre-check (trx_screen and prot_tmt alone) was not repeated at W7. W6 (prot) and W5/W6
+(trx) ran those lanes on the shared design module through both adapters (w5/, w6/ entry-suite.txt), and the brief
+for W7 declared runs 1 to 3 only.

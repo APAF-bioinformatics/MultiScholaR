@@ -1,0 +1,67 @@
+KIT-103 W7 budget run 1: the targeted set (2026-11-08), on f0e90318 (R/ unchanged since). One R process per file, in
+sequence. load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true, R_LIBS=core/browser-smoke.DGpv4v/library.
+Runner tools/testing/test-baseline.R file (timeout 1800 s per file), with a sleep lock held. The ceiling was 2 h for the
+set; the run took about 26 min.
+
+Files: 46. These are every work item's targeted and test-first files (w1..w6, 51 files) minus the five in run 3 (the DIA
+design session and memory set, in memory-session.txt). The set includes:
+- the retargeted MCI files;
+- test-omic-gui-config.R, test-workflow-{ui,server}-shared.R and test-applets-direct-shared.R;
+- the dependents of W4-W7: test-app-shell-shared.R, test-module-ui-wrapper-direct-shared.R, the D6 callers' files, and
+  the MCI-027 files through helper-module-ci-trx-tabs.R.
+The entry suite is run 2 (entry-suite.txt).
+
+TOTAL files 46 pass 4459 fail 0 error 0 skip 171; file-level skips 3: Q-31, Q-34 and Q-36, the whole-file quarantines.
+Skips by entry: Q-22 14 (MCI-005 5, test-prot-04 3, test-prot-04a 4, prot declarations 2), Q-31 1, Q-32 17, Q-33 1,
+Q-34 1, Q-35 8, Q-36 1, Q-37 2, Q-46 114, Q-47 14, and 1 fixture skip in test-prot-04 (a Git LFS snapshot pointer, as
+before). There is no new skip category and no new skip reason against W4-W6.
+Against the W4-W6 runs, every file's counts are unchanged except test-omic-gui-config.R: 480 -> 522, from the
+W7 wiring expectations (merge-checks.txt section 5).
+
+COUNTS test-applets-direct-shared.R pass 19 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-app-shell-shared.R pass 29 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-ci-impact-source-map.R pass 19 fail 0 error 0 skip 0 file_skip FALSE [9s]
+COUNTS test-e2e-test-mode-integration.R pass 61 fail 0 error 0 skip 0 file_skip FALSE [9s]
+COUNTS test-lipid-01b-qc-module-contracts.R pass 12 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 45 fail 0 error 0 skip 0 file_skip FALSE [7s]
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 3 fail 0 error 0 skip 0 file_skip FALSE [12s]
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 13 fail 0 error 0 skip 0 file_skip FALSE [7s]
+COUNTS test-lipid-13a-design-module-characterization.R pass 2 fail 0 error 0 skip 17 file_skip FALSE [8s]
+COUNTS test-lipid-13b-design-wrapper-characterization.R pass 0 fail 0 error 0 skip 1 file_skip FALSE [6s]
+COUNTS test-lipid-13-design-builder-seams.R pass 0 fail 0 error 0 skip 0 file_skip TRUE [7s]
+COUNTS test-lipid-14-design-module-seams.R pass 0 fail 0 error 0 skip 0 file_skip TRUE [6s]
+COUNTS test-metab-04-design-module-characterization.R pass 0 fail 0 error 0 skip 0 file_skip TRUE [7s]
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0 file_skip FALSE [35s]
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0 file_skip FALSE [13s]
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0 file_skip FALSE [28s]
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0 file_skip FALSE [13s]
+COUNTS test-module-ci-prot-design.R pass 11 fail 0 error 0 skip 5 file_skip FALSE [6s]
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0 file_skip FALSE [45s]
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0 file_skip FALSE [110s]
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0 file_skip FALSE [27s]
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0 file_skip FALSE [11s]
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0 file_skip FALSE [94s]
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0 file_skip FALSE [47s]
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0 file_skip FALSE [151s]
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0 file_skip FALSE [21s]
+COUNTS test-omic-gui-config.R pass 522 fail 0 error 0 skip 0 file_skip FALSE [15s]
+COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10 file_skip FALSE [23s]
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-prot-04a-design-module-characterization.R pass 109 fail 0 error 0 skip 18 file_skip FALSE [8s]
+COUNTS test-prot-04b-design-server-shared.R pass 47 fail 0 error 0 skip 0 file_skip FALSE [15s]
+COUNTS test-prot-04c-peptide-plot-density-ggplot-shared.R pass 21 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-prot-04-design.R pass 488 fail 0 error 0 skip 118 file_skip FALSE [11s]
+COUNTS test-prot-04d-peptide-s4-normalization-characterization.R pass 112 fail 0 error 0 skip 0 file_skip FALSE [10s]
+COUNTS test-prot-04e-peptide-s4-missingness-limpa-characterization.R pass 51 fail 0 error 0 skip 0 file_skip FALSE [9s]
+COUNTS test-prot-design-core.R pass 32 fail 0 error 0 skip 0 file_skip FALSE [12s]
+COUNTS test-prot-import-core.R pass 35 fail 0 error 0 skip 0 file_skip FALSE [12s]
+COUNTS test-trx-design.R pass 70 fail 0 error 0 skip 0 file_skip FALSE [8s]
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0 file_skip FALSE [77s]
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0 file_skip FALSE [79s]
+COUNTS test-workflow-omics-binding-steps.R pass 57 fail 0 error 0 skip 0 file_skip FALSE [77s]
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2 file_skip FALSE [134s]
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0 file_skip FALSE [9s]
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0 file_skip FALSE [90s]
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0 file_skip FALSE [5s]
+DONE 2026-11-08T08:03:43+11:00
