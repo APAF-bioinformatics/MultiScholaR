@@ -34,3 +34,27 @@ COUNTS test-module-ci-trx-qc.R pass 33 fail 1 error 0 skip 0
 
 After the fix:
 COUNTS test-module-ci-trx-qc.R pass 34 fail 0 error 0 skip 0
+
+== F-20  tests/testthat/test-prot-05b-norm-module-contracts.R ==
+New block: "KIT-101 F-20: on the DIA_LIMPA route the tab recognises the completed protein QC". The tab-entry
+workflow (runProtNormTabEntryWorkflow) entered with the route DIA_LIMPA, the QC tab status as the route leaves it
+("pending" or "in_progress"), and the head at the protein QC's last state (peptide_count_filtered) or the tab's
+RUV covariates state (ruv_covariates): no warning, no pre-normalisation QC generation. Kept: a DIA_LIMPA head
+before the end of the protein QC (protein_dpc_quant, protein_normalised) warns; the DIA route is unchanged.
+
+Cause: F-10 (1ecd454c) stops the warning when the QC tab status is "complete", but the DIA_LIMPA route never writes
+that status: mod_prot_qc_server marks QC complete when protein_replicate_filtered is reached, and the limpa protein
+stage ends at peptide_count_filtered. Neither that state nor ruv_covariates is in the tab's trigger-state list.
+
+Fix: on the DIA_LIMPA route a head at peptide_count_filtered or ruv_covariates counts as QC complete for the warning.
+Nothing else changes (no QC generation, no tab-status write).
+
+Before the fix (4 failures, one per state and status):
+--- Expected `entry("peptide_count_filtered", status)` to be identical to `list(generated = 0L, warned = 0L)`.
+  `actual$warned`: 1   `expected$warned`: 0   (pending; and again for in_progress)
+--- Expected `entry("ruv_covariates", status)` to be identical to `list(generated = 0L, warned = 0L)`.
+  `actual$warned`: 1   `expected$warned`: 0   (pending; and again for in_progress)
+COUNTS test-prot-05b-norm-module-contracts.R pass 500 fail 4 error 0 skip 9
+
+After the fix:
+COUNTS test-prot-05b-norm-module-contracts.R pass 504 fail 0 error 0 skip 9

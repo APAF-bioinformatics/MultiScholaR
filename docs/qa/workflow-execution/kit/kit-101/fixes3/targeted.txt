@@ -5,3 +5,11 @@ Dependents (grep mod_trx_qc_filter_server / initializeTrxQcSubmodules / trxOmicP
 COUNTS test-module-ci-trx-qc.R pass 34 fail 0 error 0 skip 0
 COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
 COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0
+
+== F-20 (R/mod_prot_norm_workflow_helpers.R) ==
+Dependents (grep runProtNormTabEntryWorkflow; the prot normalisation and DIA_LIMPA module files):
+COUNTS test-prot-05b-norm-module-contracts.R pass 504 fail 0 error 0 skip 9
+COUNTS test-prot-05c-norm-module-seams.R pass 53 fail 0 error 0 skip 0
+COUNTS test-prot-05d-norm-module-characterization.R pass 100 fail 0 error 0 skip 10
+COUNTS test-module-ci-prot-dia-limpa.R pass 33 fail 0 error 0 skip 2
+COUNTS test-module-ci-prot-norm.R pass 60 fail 0 error 0 skip 4

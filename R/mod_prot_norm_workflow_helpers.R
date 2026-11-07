@@ -517,7 +517,11 @@ runProtNormTabEntryWorkflow <- function(
   )) {
     # KIT-101 F-10: the gate is also FALSE when the pre-normalisation QC was already generated, and on a route whose
     # last QC state is not a trigger state; neither means QC is incomplete, so warn only while it is.
-    if (shouldAutoGeneratePreQcFn(selectedTab, current_state, FALSE) ||
+    # KIT-101 F-20: the DIA_LIMPA route's protein QC ends at peptide_count_filtered without writing the QC tab status;
+    # that state (the tab's normalisation input) and the tab's RUV covariates state after it mean QC is complete.
+    limpa_qc_complete <- identical(workflowData$state_manager$workflow_type, "DIA_LIMPA") &&
+      isTRUE(current_state %in% c("peptide_count_filtered", "ruv_covariates"))
+    if (shouldAutoGeneratePreQcFn(selectedTab, current_state, FALSE) || limpa_qc_complete ||
         identical(workflowData$tab_status$quality_control, "complete")) {
       return(invisible(FALSE))
     }
