@@ -1,0 +1,32 @@
+# KIT-102 W4 entry-point suite, verify against the frozen oracles (tests/testdata/gui-entry/*.json; nothing re-frozen).
+# The four test-gui-entry-*.R files one R process at a time (W4's instruction; the ticket's parallel run is the lead's),
+# pkgload::load_all (Collate extended locally), MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, kit/scripts-078/run1.R.
+# Expected for W4: all 10 lanes identical. W4 does not route metab's import through the frame's completion helper
+# (that is W5's wiring), so metab still leaves Design disabled and its three lanes stay identical too.
+
+## Run 1, on the first cut of the shell server: every lane errored at its first step (not a capture difference).
+COUNTS test-gui-entry-transcriptomics.R pass 0 fail 0 error 1 skip 0
+COUNTS test-gui-entry-lipidomics.R pass 0 fail 0 error 1 skip 0
+COUNTS test-gui-entry-metabolomics.R pass 0 fail 0 error 3 skip 0
+COUNTS test-gui-entry-proteomics.R pass 0 fail 0 error 5 skip 0
+  each: "Error: attempt to apply non-function" at helper-gui-entry.R:355 (`step$run(api)`).
+  Cause (W4's own code, not a pre-existing defect): testServer evaluates the caller's expression with the module
+  function's frame and its parent as a data mask. The first cut kept its working values as locals there (`steps`,
+  `context`, `tab`, `extra`, `shell`, `omics_runner`); `steps` (the stepper's) shadowed the lane runner's own `steps`.
+  Fix: the module function keeps only the pre-KIT-102 names (workflow_data, experiment_paths, qc_trigger,
+  selected_tab; parent: the arguments and `config`); the rest runs in `startOmicWorkflow()`. Guard added to
+  test-workflow-server-shared.R (the frame's and its parent's names, for all four omics).
+
+## Run 2, on the corrected shell: all 10 lanes identical to their oracles, 0 failures, errors or skips.
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0
+  seconds 37 exit 0
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0
+  seconds 65 exit 0
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0
+  seconds 160 exit 0
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0
+  seconds 708 exit 0
+
+Lane seconds (ceiling 900): trx_screen 33.2, lipid_canonical 60.7, metab_lc 59.6, metab_gc 43.1, metab_combined 52.5,
+prot_dia 221.0, prot_dia_limpa 152.7, prot_tmt 108.6, prot_lfq 111.9, prot_lfq_fragpipe 109.3.
+Differences against the oracles: none.

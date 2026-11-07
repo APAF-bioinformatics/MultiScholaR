@@ -202,38 +202,13 @@ trxDesignObject <- function(results, columnMapping) {
 
 #' @title Transcriptomics Workflow Module
 #' @description The transcriptomics workflow's tabs: import, design and QC (KIT-096), normalisation, DA and the summary
-#'   (KIT-097).
+#'   (KIT-097). KIT-102: the shared shell (mod_omic_workflow.R) under the transcriptomics configuration; its tabs are the
+#'   lipid modules under `trxOmicProfile()` (the component registry, `omicGuiComponents`).
 #' @param id Module id (`transcriptomics_workflow` in the app).
 #' @name mod_transcriptomics
 #' @noRd
 mod_transcriptomics_ui <- function(id) {
-    ns <- shiny::NS(id)
-    profile <- trxOmicProfile()
-    tab <- function(title, icon, value, ui) {
-        shiny::tabPanel(title = shiny::tagList(shiny::icon(icon), title), value = value,
-            shiny::div(`data-testid` = paste0("trx-tab-", value), ui))
-    }
-    shiny::tagList(shiny::fluidRow(shiny::column(12,
-        shiny::h2(shiny::icon("chart-line"), " Transcriptomics Workflow", style = "margin-bottom: 20px;"),
-        shiny::uiOutput(ns("workflow_progress")),
-        testid(shiny::tabsetPanel(id = ns("transcriptomics_tabs"), type = "pills",
-            tab(" Setup & Import", "file-import", "import", mod_lipid_import_ui(ns("import"), profile = profile)),
-            tab(" Design Matrix", "th", "design", mod_lipid_design_ui(ns("design"), profile = profile)),
-            tab(" Quality Control", "check-double", "qc", mod_lipid_qc_ui(ns("qc"), profile = profile)),
-            tab(" Normalization", "balance-scale", "norm", mod_lipid_norm_ui(ns("norm"), profile = profile)),
-            tab(" Differential Expression", "chart-line", "de", mod_lipid_da_ui(ns("de"), profile = profile)),
-            tab(" Summary & Export", "download", "summary", mod_lipid_summary_ui(ns("summary"), profile = profile))),
-        "trx-workflow-tabs"))))
-}
-
-#' The bus of the transcriptomics tabs.
-#' @noRd
-newTrxWorkflowData <- function() {
-    shiny::reactiveValues(data_tbl = NULL, data_format = NULL, data_type = "transcriptomics", column_mapping = NULL,
-        config_list = list(), state_manager = NULL, contrasts = list(), contrasts_tbl = NULL,
-        tab_status = list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled", normalization = "disabled",
-            differential_analysis = "disabled", session_summary = "disabled"),
-        state_update_trigger = NULL, processing_log = list())
+    mod_omic_workflow_ui(id, omicGuiConfig("transcriptomics"))
 }
 
 #' @rdname mod_transcriptomics
@@ -241,46 +216,5 @@ newTrxWorkflowData <- function() {
 #' @return The module's bus.
 #' @noRd
 mod_transcriptomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
-    shiny::moduleServer(id, function(input, output, session) {
-        workflow_data <- newTrxWorkflowData()
-        registerWorkflowOmicsBus(session, omic_type, workflow_data)
-        if (!omic_type %in% names(project_dirs)) {
-            logger::log_error(paste("No directory information found for", omic_type))
-            return()
-        }
-        experiment_paths <- project_dirs[[omic_type]]
-        # The session's state owner from the start, bound to the route at the import; the managed runner when the
-        # application is managed (mod_lipidomics.R's install).
-        workflow_data$state_manager <- createWorkflowSessionOwner(workflow_data, experiment_paths, session, omic_type = omic_type)
-        installWorkflowOmicsActions(session, workflow_data, omic_type, experiment_label, experiment_paths)
-        profile <- trxOmicProfile()
-        qc_trigger <- shiny::reactiveVal(NULL)
-        mod_lipid_import_server("import", workflow_data, experiment_paths, volumes = NULL, profile = profile)
-        mod_lipid_design_server("design", workflow_data, experiment_paths, volumes = NULL, qc_trigger = qc_trigger, profile = profile)
-        mod_lipid_qc_server("qc", workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger, profile = profile)
-        workflow_data$active_tab <- shiny::reactive(input$transcriptomics_tabs)
-        mod_lipid_norm_server("norm", workflow_data, experiment_paths, omic_type, experiment_label, profile = profile)
-        mod_lipid_da_server("de", workflow_data, experiment_paths, omic_type, experiment_label, profile = profile)
-        mod_lipid_summary_server("summary", project_dirs, omic_type, experiment_label, workflow_data, profile = profile)
-        output$workflow_progress <- shiny::renderUI(render_workflow_stepper(list(
-            list(name = "Import", key = "setup_import", icon = "file-import"), list(name = "Design", key = "design_matrix", icon = "th"),
-            list(name = "QC", key = "quality_control", icon = "check-double"), list(name = "Normalize", key = "normalization", icon = "balance-scale"),
-            list(name = "DE", key = "differential_analysis", icon = "chart-line"), list(name = "Summary", key = "session_summary", icon = "download")),
-            workflow_data$tab_status))
-        # Each tab opens when the one before completes (mod_lipidomics.R's chain).
-        chain <- list(c("design_matrix", "quality_control"), c("quality_control", "normalization"), c("normalization", "differential_analysis"),
-            c("differential_analysis", "session_summary"))
-        for (link in chain) local({
-            done <- link[[1L]]
-            next_tab <- link[[2L]]
-            shiny::observeEvent(workflow_data$tab_status[[done]], {
-                status <- workflow_data$tab_status
-                if (identical(status[[done]], "complete") && identical(status[[next_tab]], "disabled")) {
-                    status[[next_tab]] <- "pending"
-                    workflow_data$tab_status <- status
-                }
-            }, ignoreNULL = TRUE)
-        })
-        workflow_data
-    })
+    mod_omic_workflow_server(id, project_dirs, omic_type, experiment_label, volumes, omicGuiConfig("transcriptomics"))
 }

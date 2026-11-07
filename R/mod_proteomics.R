@@ -28,162 +28,8 @@
 #' @importFrom DT DTOutput
 #' @export
 mod_proteomics_ui <- function(id) {
-  ns <- shiny::NS(id)
-
-  # Create workflow progress section (stepper component has its own styling)
-  workflow_progress_section <- shiny::fluidRow(
-    shiny::column(
-      12,
-      shiny::uiOutput(ns("workflow_progress"))
-    )
-  )
-
-  # Create setup import tab
-  # Using mod_prot_import_ui
-  if (exists("mod_prot_import_ui")) {
-    setup_import_content <- mod_prot_import_ui(ns("setup_import"))
-  } else {
-    setup_import_content <- shiny::div("Import module not loaded")
-  }
-
-  # Create design matrix tab
-  # Using mod_prot_design_ui
-  if (exists("mod_prot_design_ui")) {
-    design_matrix_content <- mod_prot_design_ui(ns("design_matrix"))
-  } else {
-    design_matrix_content <- shiny::div("Design matrix module not loaded")
-  }
-
-  # Create QC tab
-  # Using mod_prot_qc_ui
-  if (exists("mod_prot_qc_ui")) {
-    qc_content <- mod_prot_qc_ui(ns("quality_control"))
-  } else {
-    qc_content <- shiny::div("QC module not loaded")
-  }
-
-  # Create Normalization tab
-  # Using mod_prot_norm_ui
-  if (exists("mod_prot_norm_ui")) {
-    norm_content <- mod_prot_norm_ui(ns("normalization"))
-  } else {
-    norm_content <- shiny::div("Normalization module not loaded")
-  }
-
-  # Create DE tab
-  # Using mod_prot_da_ui
-  if (exists("mod_prot_da_ui")) {
-    de_content <- mod_prot_da_ui(ns("differential_expression"))
-  } else {
-    de_content <- shiny::div("DE module not loaded")
-  }
-
-  # Create Enrichment tab
-  # Using mod_prot_enrich_ui
-  if (exists("mod_prot_enrich_ui")) {
-    enrich_content <- mod_prot_enrich_ui(ns("enrichment_analysis"))
-  } else {
-    enrich_content <- shiny::div("Enrichment module not loaded")
-  }
-
-  # Create Session Summary tab
-  # Using mod_prot_summary_ui
-  if (exists("mod_prot_summary_ui")) {
-    session_content <- mod_prot_summary_ui(ns("session_summary"))
-  } else {
-    session_content <- shiny::div("Session Summary module not loaded")
-  }
-
-  # Now build the complete tagList
-  shiny::tagList(
-    # Workflow progress indicator
-    workflow_progress_section,
-    shiny::wellPanel(
-      shiny::h4("DIA peptide checkpoints"),
-      shiny::actionButton(ns("save_peptide_checkpoint"), "Save peptide checkpoint"),
-      if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
-        shinyFiles::shinyFilesButton(ns("peptide_checkpoint_file"), "Choose checkpoint",
-          "Choose a peptide checkpoint", multiple = FALSE)
-      } else {
-        shiny::fileInput(ns("peptide_checkpoint_upload"), "Checkpoint archive", accept = ".msdia.tar")
-      },
-      shiny::actionButton(ns("open_peptide_checkpoint"), "Open peptide checkpoint"),
-      shiny::helpText("Save the selected peptide stage and its history. Open a checkpoint to resume peptide QC."),
-      shiny::verbatimTextOutput(ns("peptide_checkpoint_status"))
-    ),
-
-    # Main tabset for workflow steps
-    testid(
-      shiny::tabsetPanel(
-        id = ns("workflow_tabs"),
-        type = "pills",
-
-        # Tab 1: Setup and Data Import
-        shiny::tabPanel(
-          "Setup & Import",
-          value = "setup",
-          icon = shiny::icon("upload"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-setup", setup_import_content)
-        ),
-
-        # Tab 2: Design Matrix
-        shiny::tabPanel(
-          "Design Matrix",
-          value = "design",
-          icon = shiny::icon("table"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-design", design_matrix_content)
-        ),
-
-        # Tab 3: Quality Control
-        shiny::tabPanel(
-          "Quality Control",
-          value = "qc",
-          icon = shiny::icon("chart-line"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-qc", qc_content)
-        ),
-
-        # Tab 4: Normalization
-        shiny::tabPanel(
-          "Normalization",
-          value = "normalization",
-          icon = shiny::icon("balance-scale"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-normalization", norm_content)
-        ),
-
-        # Tab 5: Differential Expression
-        shiny::tabPanel(
-          "Differential Expression",
-          value = "da",
-          icon = shiny::icon("chart-bar"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-da", de_content)
-        ),
-
-        # Tab 6: Enrichment Analysis
-        shiny::tabPanel(
-          "Enrichment Analysis",
-          value = "enrichment",
-          icon = shiny::icon("network-wired"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-enrichment", enrich_content)
-        ),
-
-        # Tab 7: Session Summary & Report Generation
-        shiny::tabPanel(
-          "Session Summary & Report",
-          value = "session_summary",
-          icon = shiny::icon("file-export"),
-          shiny::br(),
-          shiny::div(`data-testid` = "prot-tab-session-summary", session_content)
-        )
-      ),
-      "prot-workflow-tabs"
-    )
-  )
+  # KIT-102: the shared shell (mod_omic_workflow.R) under the proteomics configuration.
+  mod_omic_workflow_ui(id, omicGuiConfig("proteomics"))
 }
 
 #' Proteomics Workflow Server
@@ -200,276 +46,104 @@ mod_proteomics_ui <- function(id) {
 #' @importFrom logger log_info log_error
 #' @export
 mod_proteomics_server <- function(id, project_dirs, omic_type, experiment_label, volumes = NULL) {
-  shiny::moduleServer(id, function(input, output, session) {
-    # Initialize reactive values to share data between tabs
-    workflow_data <- reactiveValues(
-      # Data objects
-      data_tbl = NULL,
-      fasta_file_path = NULL,
-      config_list = NULL,
-      taxon_id = NULL,
-      organism_name = NULL,
-      design_matrix = NULL,
-      data_cln = NULL,
-      contrasts_tbl = NULL,
+  # KIT-102: the shared shell (mod_omic_workflow.R) under the proteomics configuration.
+  mod_omic_workflow_server(id, project_dirs, omic_type, experiment_label, volumes, omicGuiConfig("proteomics"))
+}
 
-      # KIT-048: the state owner is created on the project's store once the experiment paths are known (below);
-      # proteomics has no in-memory path.
-      state_manager = NULL,
+# ------------------------------------------------------------------------------------------------
+# The shell's proteomics extras (component `peptide_checkpoint`, omicGuiComponents): the DIA peptide-checkpoint panel
+# with its save and open, the native-restore QC trigger and the aa_seq_tbl_final resume, moved unchanged from the
+# pre-KIT-102 mod_proteomics_ui/server. They live in the shell's namespace.
+# ------------------------------------------------------------------------------------------------
 
-      # Legacy S4 object slots (can be deprecated later)
-      peptide_data = NULL,
-      protein_log2_quant = NULL,
-      protein_data = NULL,
-      ruv_normalised_for_da_analysis_obj = NULL,
-      da_analysis_results_list = NULL,
-      uniprot_dat_cln = NULL,
-      enrichment_results = NULL,
-
-      # Status tracking
-      tab_status = list(
-        setup_import = "pending",
-        design_matrix = "disabled",
-        quality_control = "disabled",
-        normalization = "disabled",
-        differential_expression = "disabled",
-        enrichment_analysis = "disabled",
-        session_summary = "disabled"
-      ),
-
-      # Initialize state update trigger
-      state_update_trigger = NULL,
-
-      # Processing logs
-      processing_log = list()
-    )
-    # The proteomics bus owns the filtering-progress tracker and the design/annotation payloads
-    # that used to live in the global environment (KIT-013); helpers find it through the session.
-    session$userData$workflow_data <- workflow_data
-
-    # Reactive trigger for initializing QC modules
-    qc_trigger <- reactiveVal(NULL)
-    shiny::observeEvent(workflow_data$native_session_restored, {
-      qc_trigger(TRUE)
-    }, ignoreNULL = TRUE)
-
-    # Get paths for this proteomics experiment
-    paths_key <- omic_type
-
-    if (!paths_key %in% names(project_dirs)) {
-      log_error(paste("No directory information found for", paths_key))
-      return()
-    }
-
-    experiment_paths <- project_dirs[[paths_key]]
-    # KIT-048: the session's state owner from the start, bound to the route at import.
-    workflow_data$state_manager <- createDIASessionOwner(workflow_data, experiment_paths, session)
-    checkpoint_status <- shiny::reactiveVal("")
-    output$peptide_checkpoint_status <- shiny::renderText(checkpoint_status())
-    checkpoint_volumes <- NULL
+#' The peptide-checkpoint panel.
+#' @param ns The shell's namespace function.
+#' @noRd
+protPeptideCheckpointUi <- function(ns) {
+  shiny::wellPanel(
+    shiny::h4("DIA peptide checkpoints"),
+    shiny::actionButton(ns("save_peptide_checkpoint"), "Save peptide checkpoint"),
     if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
-      checkpoint_volumes <- shinyFiles::getVolumes()
-      shinyFiles::shinyFileChoose(input, "peptide_checkpoint_file", roots = checkpoint_volumes,
-        session = session, filetypes = "tar")
-    }
-    shiny::observeEvent(input$save_peptide_checkpoint, {
-      tryCatch({
-        published <- saveDIAPeptideCheckpoint(workflow_data, session, experiment_paths)
-        checkpoint_status(paste("Checkpoint saved:", published$archive_path))
-      }, error = function(error) {
-        checkpoint_status(paste("Checkpoint save failed:", conditionMessage(error)))
-        logger::log_error(paste("Peptide checkpoint save failed:", conditionMessage(error)))
-      })
+      shinyFiles::shinyFilesButton(ns("peptide_checkpoint_file"), "Choose checkpoint",
+        "Choose a peptide checkpoint", multiple = FALSE)
+    } else {
+      shiny::fileInput(ns("peptide_checkpoint_upload"), "Checkpoint archive", accept = ".msdia.tar")
+    },
+    shiny::actionButton(ns("open_peptide_checkpoint"), "Open peptide checkpoint"),
+    shiny::helpText("Save the selected peptide stage and its history. Open a checkpoint to resume peptide QC."),
+    shiny::verbatimTextOutput(ns("peptide_checkpoint_status"))
+  )
+}
+
+#' The extras' server: the native-restore QC trigger, the checkpoint save and open, and the aa_seq_tbl_final resume.
+#' @param input,output,session The shell's.
+#' @param context The shell's context: `workflow_data`, `experiment_paths` and `qc_trigger`.
+#' @noRd
+protPeptideCheckpointServer <- function(input, output, session, context) {
+  workflow_data <- context$workflow_data
+  experiment_paths <- context$experiment_paths
+  qc_trigger <- context$qc_trigger
+  shiny::observeEvent(workflow_data$native_session_restored, {
+    qc_trigger(TRUE)
+  }, ignoreNULL = TRUE)
+
+  checkpoint_status <- shiny::reactiveVal("")
+  output$peptide_checkpoint_status <- shiny::renderText(checkpoint_status())
+  checkpoint_volumes <- NULL
+  if (requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()) {
+    checkpoint_volumes <- shinyFiles::getVolumes()
+    shinyFiles::shinyFileChoose(input, "peptide_checkpoint_file", roots = checkpoint_volumes,
+      session = session, filetypes = "tar")
+  }
+  shiny::observeEvent(input$save_peptide_checkpoint, {
+    tryCatch({
+      published <- saveDIAPeptideCheckpoint(workflow_data, session, experiment_paths)
+      checkpoint_status(paste("Checkpoint saved:", published$archive_path))
+    }, error = function(error) {
+      checkpoint_status(paste("Checkpoint save failed:", conditionMessage(error)))
+      logger::log_error(paste("Peptide checkpoint save failed:", conditionMessage(error)))
     })
-    shiny::observeEvent(input$open_peptide_checkpoint, {
-      tryCatch({
-        path <- NULL
-        if (!is.null(checkpoint_volumes) && !is.null(input$peptide_checkpoint_file)) {
-          selected <- shinyFiles::parseFilePaths(checkpoint_volumes, input$peptide_checkpoint_file)
-          if (nrow(selected) == 1L) path <- as.character(selected$datapath[[1L]])
-        } else path <- input$peptide_checkpoint_upload$datapath
-        if (is.null(path) || !file.exists(path)) stop("choose a peptide checkpoint first")
-        state <- openDIAPeptideCheckpoint(path, workflow_data, session, experiment_paths)
-        status <- workflow_data$tab_status
-        status$setup_import <- "complete"
-        status$design_matrix <- "complete"
-        status$quality_control <- "in_progress"
-        workflow_data$tab_status <- status
-        shiny::updateTabsetPanel(session, "workflow_tabs", selected = "qc")
-        checkpoint_status(paste("Checkpoint opened:", state))
-      }, error = function(error) {
-        checkpoint_status(paste("Checkpoint open failed:", conditionMessage(error)))
-        logger::log_error(paste("Peptide checkpoint open failed:", conditionMessage(error)))
-      })
-    })
-    # The on-disk DIA state manager is attached at import (initializeDIANativeImport, KIT-011); the
-    # capacity-trial session of the PERF era is gone.
-
-    # Load aa_seq_tbl_final from scripts directory if resuming session
-    if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
-      aa_seq_file_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
-      if (file.exists(aa_seq_file_path)) {
-        log_info("Loading existing aa_seq_tbl_final from scripts directory for session resumption")
-        tryCatch(
-          {
-            aa_seq_tbl_final <- readRDS(aa_seq_file_path)
-            workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
-            log_info(sprintf("Successfully loaded aa_seq_tbl_final with %d sequences", nrow(aa_seq_tbl_final)))
-          },
-          error = function(e) {
-            log_warn(paste("Error loading aa_seq_tbl_final:", e$message))
-          }
-        )
-      }
-    }
-
-    # Tab 1: Setup & Import
-    # Using mod_prot_import_server
-    if (exists("mod_prot_import_server")) {
-      mod_prot_import_server("setup_import", workflow_data, experiment_paths, volumes = NULL)
-    }
-
-    # Tab 2: Design Matrix
-    # Using mod_prot_design_server
-    if (exists("mod_prot_design_server")) {
-      mod_prot_design_server("design_matrix", workflow_data, experiment_paths, volumes = NULL, qc_trigger = qc_trigger)
-    }
-
-    # Tab 3: Quality Control
-    # Using mod_prot_qc_server
-    if (exists("mod_prot_qc_server")) {
-      mod_prot_qc_server("quality_control", workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = qc_trigger)
-    }
-
-    # Create reactive for selected tab to pass to normalization module
-    selected_tab <- reactive({
-      input$workflow_tabs
-    })
-
-    # Expose active tab via workflow_data for state digest (task-008/011)
-    workflow_data$active_tab <- selected_tab
-
-    # Tab 4: Normalization
-    # Using mod_prot_norm_server
-    if (exists("mod_prot_norm_server")) {
-      mod_prot_norm_server("normalization", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
-    }
-
-    # Tab 5: Differential Expression
-    # Using mod_prot_da_server
-    if (exists("mod_prot_da_server")) {
-      mod_prot_da_server("differential_expression", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
-    }
-
-    # Tab 6: Enrichment Analysis
-    # Using mod_prot_enrich_server
-    if (exists("mod_prot_enrich_server")) {
-      mod_prot_enrich_server("enrichment_analysis", workflow_data, experiment_paths, omic_type, experiment_label, selected_tab)
-    }
-
-    # Tab 7: Session Summary & Report Generation
-    # Using mod_prot_summary_server
-    if (exists("mod_prot_summary_server")) {
-      mod_prot_summary_server("session_summary", project_dirs, omic_type, experiment_label, workflow_data)
-    }
-
-    # Workflow progress indicator using shared stepper component
-    output$workflow_progress <- shiny::renderUI({
-      # Define proteomics workflow steps (7 steps)
-      steps <- list(
-        list(name = "Import", key = "setup_import", icon = "upload"),
-        list(name = "Design", key = "design_matrix", icon = "table"),
-        list(name = "QC", key = "quality_control", icon = "chart-line"),
-        list(name = "Normalize", key = "normalization", icon = "balance-scale"),
-        list(name = "DE", key = "differential_expression", icon = "chart-bar"),
-        list(name = "Enrich", key = "enrichment_analysis", icon = "network-wired"),
-        list(name = "Summary", key = "session_summary", icon = "file-export")
-      )
-
-      render_workflow_stepper(steps, workflow_data$tab_status)
-    })
-
-    # Helper to properly update tab_status (nested list assignment doesn't trigger reactivity)
-    update_tab_status <- function(key, value) {
-      updated <- workflow_data$tab_status
-      updated[[key]] <- value
-      workflow_data$tab_status <- updated
-    }
-
-    observeEvent(workflow_data$tab_status$design_matrix,
-      {
-        # Enable QC tab after design matrix is complete
-        if (workflow_data$tab_status$design_matrix == "complete") {
-          workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
-          log_info(paste("Workflow server: Design matrix complete. Workflow type:", workflow_type))
-
-          if (workflow_type %in% c("TMT", "LFQ")) {
-            if (!identical(workflow_data$tab_status$quality_control, "complete")) {
-              # For TMT and LFQ (protein-level workflows), bypass QC and go straight to Normalization
-              log_info(sprintf("%s workflow detected, bypassing QC tab.", workflow_type))
-              updated <- workflow_data$tab_status
-              updated$quality_control <- "complete"
-              if (identical(updated$normalization, "disabled")) {
-                updated$normalization <- "pending"
-              }
-              workflow_data$tab_status <- updated
-            }
-          } else {
-            if (identical(workflow_data$tab_status$quality_control, "disabled")) {
-              # For DIA (peptide-level workflow), proceed to QC tab as normal
-              update_tab_status("quality_control", "pending")
-            }
-          }
-        }
-      },
-      ignoreNULL = TRUE
-    )
-
-    observeEvent(workflow_data$tab_status$quality_control,
-      {
-        # Enable normalization tab after QC is complete
-        if (workflow_data$tab_status$quality_control == "complete" &&
-            identical(workflow_data$tab_status$normalization, "disabled")) {
-          update_tab_status("normalization", "pending")
-        }
-      },
-      ignoreNULL = TRUE
-    )
-
-    observeEvent(workflow_data$tab_status$normalization,
-      {
-        # Enable DE tab after normalization is complete
-        if (workflow_data$tab_status$normalization == "complete" &&
-            identical(workflow_data$tab_status$differential_expression, "disabled")) {
-          update_tab_status("differential_expression", "pending")
-        }
-      },
-      ignoreNULL = TRUE
-    )
-
-    observeEvent(workflow_data$tab_status$differential_expression,
-      {
-        # Enable enrichment analysis tab after DE is complete
-        if (workflow_data$tab_status$differential_expression == "complete" &&
-            identical(workflow_data$tab_status$enrichment_analysis, "disabled")) {
-          update_tab_status("enrichment_analysis", "pending")
-        }
-      },
-      ignoreNULL = TRUE
-    )
-
-    observeEvent(workflow_data$tab_status$enrichment_analysis,
-      {
-        # Enable session summary after enrichment is complete
-        if (workflow_data$tab_status$enrichment_analysis == "complete" &&
-            identical(workflow_data$tab_status$session_summary, "disabled")) {
-          update_tab_status("session_summary", "pending")
-        }
-      },
-      ignoreNULL = TRUE
-    )
-
-    # Return workflow data for potential use by parent module
-    return(workflow_data)
   })
+  shiny::observeEvent(input$open_peptide_checkpoint, {
+    tryCatch({
+      path <- NULL
+      if (!is.null(checkpoint_volumes) && !is.null(input$peptide_checkpoint_file)) {
+        selected <- shinyFiles::parseFilePaths(checkpoint_volumes, input$peptide_checkpoint_file)
+        if (nrow(selected) == 1L) path <- as.character(selected$datapath[[1L]])
+      } else path <- input$peptide_checkpoint_upload$datapath
+      if (is.null(path) || !file.exists(path)) stop("choose a peptide checkpoint first")
+      state <- openDIAPeptideCheckpoint(path, workflow_data, session, experiment_paths)
+      status <- workflow_data$tab_status
+      status$setup_import <- "complete"
+      status$design_matrix <- "complete"
+      status$quality_control <- "in_progress"
+      workflow_data$tab_status <- status
+      shiny::updateTabsetPanel(session, "workflow_tabs", selected = "qc")
+      checkpoint_status(paste("Checkpoint opened:", state))
+    }, error = function(error) {
+      checkpoint_status(paste("Checkpoint open failed:", conditionMessage(error)))
+      logger::log_error(paste("Peptide checkpoint open failed:", conditionMessage(error)))
+    })
+  })
+  # The on-disk DIA state manager is attached at import (initializeDIANativeImport, KIT-011); the
+  # capacity-trial session of the PERF era is gone.
+
+  # Load aa_seq_tbl_final from scripts directory if resuming session
+  if (!is.null(experiment_paths) && !is.null(experiment_paths$source_dir)) {
+    aa_seq_file_path <- file.path(experiment_paths$source_dir, "aa_seq_tbl_final.RDS")
+    if (file.exists(aa_seq_file_path)) {
+      log_info("Loading existing aa_seq_tbl_final from scripts directory for session resumption")
+      tryCatch(
+        {
+          aa_seq_tbl_final <- readRDS(aa_seq_file_path)
+          workflow_data$aa_seq_tbl_final <- aa_seq_tbl_final
+          log_info(sprintf("Successfully loaded aa_seq_tbl_final with %d sequences", nrow(aa_seq_tbl_final)))
+        },
+        error = function(e) {
+          log_warn(paste("Error loading aa_seq_tbl_final:", e$message))
+        }
+      )
+    }
+  }
+  invisible(NULL)
 }

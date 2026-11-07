@@ -1,0 +1,33 @@
+# KIT-102 W4 targeted tests (2026-11-08), on the final W4 change (branch kit-102-w4 from performance-v2 60334e4b).
+# One R process per file, in sequence: pkgload::load_all (DESCRIPTION Collate extended locally with mod_omic_workflow.R
+# and mod_omic_import.R, not committed), MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, kit/scripts-078/run1.R.
+# Files: W4's two test files; the dependents of the four shells (grep of mod_<omic>_ui/server, newTrxWorkflowData and
+# the shells' ids across tests/): test-app-shell-shared.R, test-module-ci-trx-app.R (MCI-029, the trx app),
+# test-workflow-omics-residency.R and test-workflow-omics-application-reads.R (helper-workflow-omics-residency.R drives
+# mod_{lipidomics,metabolomics,transcriptomics}_server); W1's test-omic-gui-config.R (the configs the shell reads).
+#
+# A first targeted run (same files, all passing) was on the first cut of the server, which kept its working values as
+# locals of the module function; the entry-point suite then failed every lane at its first step (see entry-suite.txt).
+# The run below is on the corrected server, with the frame-names guard added to test-workflow-server-shared.R.
+
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+  seconds 5 exit 0
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0
+  seconds 6 exit 0
+COUNTS test-app-shell-shared.R pass 29 fail 0 error 0 skip 0
+  seconds 5 exit 0
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+  seconds 28 exit 0
+COUNTS test-omic-gui-config.R pass 249 fail 0 error 0 skip 0
+  seconds 6 exit 0
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0
+  seconds 159 exit 0
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0
+  seconds 348 exit 0
+
+# Frame markup check (scratch script, not a test): today's import UI's well-panel body given to the frame as its panel
+# UI renders the same HTML, head and dependencies as today's module, for each omic:
+lipidomics frame-vs-today html identical: TRUE; head identical: TRUE; deps identical: TRUE
+metabolomics frame-vs-today html identical: TRUE; head identical: TRUE; deps identical: TRUE
+transcriptomics frame-vs-today html identical: TRUE; head identical: TRUE; deps identical: TRUE
+proteomics frame-vs-today html identical: TRUE; head identical: TRUE; deps identical: TRUE

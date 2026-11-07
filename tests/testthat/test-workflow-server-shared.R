@@ -573,3 +573,229 @@ test_that("metabolomics workflow server wires modules, status progression, and l
   expect_equal(launcher_capture$server_calls[[1]]$omic_type, "metabolomics")
   expect_equal(launcher_capture$server_calls[[1]]$experiment_label, "Metabolomics Test")
 })
+
+# KIT-102 W4: the shared shell (`mod_omic_workflow_server`) and the import frame (`mod_omic_import_server`).
+
+# Each omic's tab servers, in today's call order: the stub name's tab and the module id.
+workflowTabServers <- function(omic) {
+  switch(omic,
+    proteomics = c(import = "setup_import", design = "design_matrix", qc = "quality_control", norm = "normalization",
+      da = "differential_expression", enrich = "enrichment_analysis", summary = "session_summary"),
+    c(import = "import", design = "design", qc = "qc", norm = "norm", da = "de", summary = "summary"))
+}
+
+# Stub every tab server of an omic (the recording stub, with the call order), the owner and the stepper.
+localWorkflowServerStubs <- function(omic, captured, .local_envir = parent.frame()) {
+  module <- c(proteomics = "prot", lipidomics = "lipid", metabolomics = "metab", transcriptomics = "lipid")[[omic]]
+  captured$calls <- list()
+  captured$order <- character()
+  stubs <- lapply(names(workflowTabServers(omic)), function(tab) {
+    force(tab)
+    function(id, ...) {
+      captured$calls[[tab]] <- list(id = id, args = list(...))
+      captured$order <- c(captured$order, tab)
+      invisible(NULL)
+    }
+  })
+  names(stubs) <- paste0("mod_", module, "_", names(workflowTabServers(omic)), "_server")
+  owner <- function(workflow_data, experiment_paths, session, ...) {
+    captured$owner_args <- list(...)
+    makeWorkflowStateStub("DIA")$new(FALSE)
+  }
+  localNamespaceBindings(asNamespace("MultiScholaR"), c(stubs, list(createWorkflowSessionOwner = owner,
+    createDIASessionOwner = owner, render_workflow_stepper = makeWorkflowStepperStub)), .local_envir = .local_envir)
+  testthat::local_mocked_bindings(log_info = function(...) invisible(NULL), log_warn = function(...) invisible(NULL),
+    log_error = function(...) invisible(NULL), .package = "logger", .env = .local_envir)
+}
+
+workflowProjectDirs <- function(omic) {
+  stats::setNames(list(list(base_dir = tempfile("w4-base-"), source_dir = tempfile("w4-source-"),
+    results_dir = tempfile("w4-results-"))), omic)
+}
+
+argNames <- function(args) if (is.null(names(args))) rep("", length(args)) else names(args)
+
+test_that("KIT-102 W4: each shell calls its tab servers in today's order with today's exact arguments", {
+  # The argument names by position, as each pre-KIT-102 shell passed them (mod_lipidomics.R:207-263,
+  # mod_proteomics.R:328-374, mod_transcriptomics.R:258-264); "" is a positional argument.
+  feature <- list(import = c("", "", "volumes"), design = c("", "", "volumes", "qc_trigger"), qc = c("", "", "", "", ""),
+    norm = c("", "", "", "", "selected_tab"), da = c("", "", "", ""), summary = c("", "", "", ""))
+  shapes <- list(lipidomics = feature, metabolomics = feature,
+    transcriptomics = c(lapply(feature[c("import", "design", "qc")], c, "profile"), list(norm = c("", "", "", "", "profile")),
+      lapply(feature[c("da", "summary")], c, "profile")),
+    proteomics = list(import = c("", "", "volumes"), design = c("", "", "volumes", "qc_trigger"),
+      qc = c("", "", "", "", "qc_trigger"), norm = c("", "", "", "", ""), da = c("", "", "", "", ""),
+      enrich = c("", "", "", "", ""), summary = c("", "", "", "")))
+  for (omic in names(shapes)) {
+    captured <- new.env(parent = emptyenv())
+    localWorkflowServerStubs(omic, captured)
+    project_dirs <- workflowProjectDirs(omic)
+    server <- get(paste0("mod_", omic, "_server"), envir = asNamespace("MultiScholaR"))
+    testServer(server, args = list(project_dirs = project_dirs, omic_type = omic, experiment_label = "w4-demo"), {
+      tabs <- workflowTabServers(omic)
+      # testServer masks a caller's expression with the module frame and its parent: the shell holds no name the
+      # pre-KIT-102 shells did not (a new local shadowed the entry-point suite's `steps`).
+      before <- c("input", "output", "session", "ns", "workflow_data", "paths_key", "experiment_paths", "qc_trigger", "selected_tab", "update_tab_status",
+        "checkpoint_status", "checkpoint_volumes", "aa_seq_file_path", "aa_seq_tbl_final", "profile", "chain", "link")
+      expect_identical(setdiff(ls(session$env, all.names = TRUE), before), character(), info = omic)
+      expect_identical(setdiff(ls(parent.env(session$env), all.names = TRUE),
+        c("id", "project_dirs", "omic_type", "experiment_label", "volumes", "config")), character(), info = omic)
+      expect_identical(captured$order, names(tabs), info = omic)
+      expect_identical(vapply(captured$calls[names(tabs)], `[[`, character(1), "id"), tabs, info = omic)
+      expect_identical(lapply(captured$calls[names(tabs)], function(call) argNames(call$args)), shapes[[omic]], info = omic)
+      for (tab in setdiff(names(tabs), "summary")) {
+        expect_identical(captured$calls[[tab]]$args[[1L]], workflow_data, info = paste(omic, tab))
+        expect_identical(captured$calls[[tab]]$args[[2L]], project_dirs[[omic]], info = paste(omic, tab))
+      }
+      summary <- captured$calls$summary$args
+      expect_identical(unname(summary[1:4]), list(project_dirs, omic, "w4-demo", workflow_data), info = omic)
+      expect_null(captured$calls$import$args$volumes)
+      expect_identical(captured$calls$qc$args[[3L]], omic)
+      expect_identical(captured$calls$qc$args[[4L]], "w4-demo")
+      qc_trigger <- captured$calls$qc$args$qc_trigger %||% captured$calls$qc$args[[5L]]
+      expect_identical(captured$calls$design$args$qc_trigger, qc_trigger, info = omic)
+      expect_s3_class(qc_trigger, "reactiveVal")
+      if (identical(omic, "transcriptomics")) {
+        for (tab in names(tabs)) expect_identical(captured$calls[[tab]]$args$profile, trxOmicProfile(), info = tab)
+      }
+      selected <- switch(omic, proteomics = captured$calls$norm$args[[5L]], transcriptomics = NULL,
+        captured$calls$norm$args$selected_tab)
+      do.call(session$setInputs, stats::setNames(list("qc"), omicGuiConfig(omic)$shell$tabset_id))
+      if (!is.null(selected)) expect_identical(selected(), "qc", info = omic)
+      expect_identical(workflow_data$active_tab(), "qc", info = omic)
+      if (identical(omic, "proteomics")) {
+        expect_identical(captured$calls$da$args[[5L]], selected)
+        expect_identical(captured$calls$enrich$args[[5L]], selected)
+        # The owner is the DIA alias with its default omic; the native-restore QC trigger is kept.
+        expect_identical(captured$owner_args, list())
+        expect_null(qc_trigger())
+        workflow_data$native_session_restored <- Sys.time()
+        session$flushReact()
+        expect_true(qc_trigger())
+      } else {
+        expect_identical(captured$owner_args, list(omic_type = omic), info = omic)
+      }
+    })
+  }
+})
+
+test_that("KIT-102 W4: the shared shell builds the bus, the statuses, the registration and the chain from the configuration", {
+  captured <- new.env(parent = emptyenv())
+  localWorkflowServerStubs("lipidomics", captured)
+  config <- omicGuiConfig("lipidomics")
+  # Three tabs only: the chain is derived from the configured tabs.
+  config$shell$tabs <- config$shell$tabs[1:3]
+  testServer(mod_omic_workflow_server, args = list(project_dirs = workflowProjectDirs("lipidomics"),
+    omic_type = "lipidomics", experiment_label = "w4-demo", config = config), {
+    expect_identical(captured$order, c("import", "design", "qc"))
+    expect_identical(shiny::isolate(workflow_data$tab_status),
+      list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled"))
+    expect_identical(shiny::isolate(workflow_data$data_type), "lipid")
+    expect_true("lipid_assay_data" %in% names(shiny::isolate(shiny::reactiveValuesToList(workflow_data))))
+    expect_identical(session$userData$omics_workflow_data$lipidomics, workflow_data)
+    expect_null(session$userData$workflow_data)
+    markup <- renderSharedOutput(output$workflow_progress)
+    expect_match(markup, "Import|Design|QC", fixed = TRUE)
+    status <- workflow_data$tab_status
+    status$design_matrix <- "complete"
+    workflow_data$tab_status <- status
+    session$flushReact()
+    expect_identical(shiny::isolate(workflow_data$tab_status$quality_control), "pending")
+    # A later tab is not reopened.
+    status <- workflow_data$tab_status
+    status$quality_control <- "complete"
+    workflow_data$tab_status <- status
+    session$flushReact()
+    expect_identical(names(shiny::isolate(workflow_data$tab_status)), c("setup_import", "design_matrix", "quality_control"))
+  })
+
+  captured <- new.env(parent = emptyenv())
+  localWorkflowServerStubs("proteomics", captured)
+  testServer(mod_omic_workflow_server, args = list(project_dirs = workflowProjectDirs("proteomics"),
+    omic_type = "proteomics", experiment_label = "w4-demo", config = omicGuiConfig("proteomics")), {
+    expect_identical(session$userData$workflow_data, workflow_data)
+    expect_null(session$userData$omics_workflow_data)
+    expect_identical(shiny::isolate(workflow_data$tab_status), list(setup_import = "pending", design_matrix = "disabled",
+      quality_control = "disabled", normalization = "disabled", differential_expression = "disabled",
+      enrichment_analysis = "disabled", session_summary = "disabled"))
+  })
+
+  # Missing project paths: the bus is registered, nothing else starts (today's early return).
+  captured <- new.env(parent = emptyenv())
+  localWorkflowServerStubs("metabolomics", captured)
+  testServer(mod_omic_workflow_server, args = list(project_dirs = list(), omic_type = "metabolomics",
+    experiment_label = "w4-demo", config = omicGuiConfig("metabolomics")), {
+    expect_identical(session$userData$omics_workflow_data$metabolomics, workflow_data)
+    expect_identical(captured$order, character())
+    expect_null(shiny::isolate(workflow_data$state_manager))
+  })
+})
+
+test_that("KIT-102 W4: the import frame runs the panel's server in its own session and offers the completion helper", {
+  seen <- new.env(parent = emptyenv())
+  notes <- new.env(parent = emptyenv())
+  notes$shown <- list()
+  panel_server <- function(input, output, session, workflow_data, experiment_paths, volumes, config, complete) {
+    seen$ns <- session$ns("vendor_format")
+    seen$args <- list(workflow_data = workflow_data, experiment_paths = experiment_paths, volumes = volumes,
+      omic = config$shell$omic_type)
+    seen$complete <- complete
+    "panel-result"
+  }
+  # The panels are phase C's (KIT-102 W5, W6): their servers are injected through the panel registry.
+  panels <- omicImportSourcePanel
+  local_mocked_bindings(omicImportSourcePanel = function(source_panel) {
+    utils::modifyList(panels(source_panel), list(server = panel_server))
+  }, .package = "MultiScholaR")
+  local_mocked_bindings(showNotification = function(ui, action = NULL, duration = 5, closeButton = TRUE, id = NULL,
+    type = "default", session = NULL) {
+    notes$shown[[length(notes$shown) + 1L]] <- list(ui = ui, type = type)
+    invisible(id)
+  }, .package = "shiny")
+  newBus <- function(design) shiny::reactiveValues(tab_status = list(setup_import = "pending", design_matrix = design,
+    quality_control = "disabled"))
+
+  # Feature table (metab): import completes and Design opens in the same write (the KIT-102 unification).
+  bus <- newBus("disabled")
+  seen$writes <- 0L
+  testServer(mod_omic_import_server, args = list(id = "import", workflow_data = bus, experiment_paths = list(base_dir = "b"),
+    volumes = NULL, config = omicGuiConfig("metabolomics")), {
+    expect_identical(seen$ns, "import-vendor_format")
+    expect_identical(seen$args, list(workflow_data = bus, experiment_paths = list(base_dir = "b"), volumes = NULL,
+      omic = "metabolomics"))
+    expect_identical(session$getReturned(), "panel-result")
+    shiny::observe({
+      bus$tab_status
+      seen$writes <- seen$writes + 1L
+    })
+    session$flushReact()
+    before <- seen$writes
+    seen$complete()
+    session$flushReact()
+    expect_identical(shiny::isolate(bus$tab_status),
+      list(setup_import = "complete", design_matrix = "pending", quality_control = "disabled"))
+    expect_identical(seen$writes - before, 1L)
+    expect_identical(notes$shown, list(list(ui = "Data imported successfully!", type = "message")))
+  })
+
+  # Feature table: a Design step already past `disabled` is left as it is (lipid's rule today).
+  notes$shown <- list()
+  bus <- newBus("complete")
+  testServer(mod_omic_import_server, args = list(id = "import", workflow_data = bus, experiment_paths = list(),
+    volumes = NULL, config = omicGuiConfig("lipidomics")), {
+    seen$complete(notify = FALSE)
+    expect_identical(shiny::isolate(bus$tab_status$design_matrix), "complete")
+    expect_identical(shiny::isolate(bus$tab_status$setup_import), "complete")
+    expect_identical(notes$shown, list())
+  })
+
+  # Proteomics: Design is set pending unconditionally (completeProtImportSuccessState today), its own success text.
+  bus <- newBus("complete")
+  testServer(mod_omic_import_server, args = list(id = "setup_import", workflow_data = bus, experiment_paths = list(),
+    volumes = NULL, config = omicGuiConfig("proteomics")), {
+    expect_identical(seen$ns, "setup_import-vendor_format")
+    seen$complete()
+    expect_identical(shiny::isolate(bus$tab_status$design_matrix), "pending")
+    expect_identical(notes$shown, list(list(ui = "Data import successful!", type = "message")))
+  })
+})

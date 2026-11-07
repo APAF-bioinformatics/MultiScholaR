@@ -1,0 +1,32 @@
+# KIT-102 W4 test-first (2026-11-08)
+# The two W4 test files with the W4 tests added, run on HEAD 60334e4b (performance-v2; before the shared shell and
+# frame). One R process per file: pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, kit/scripts-078/run1.R.
+# The regression guards pass on HEAD (the byte-identical UIs with stubbed tabs; each shell's tab-server order and exact
+# arguments, the proteomics native-restore QC trigger); the tests of the new shell, registry and frame fail.
+# One guard first failed on HEAD through a test defect (it compared trx's summary arguments with their names; trx passes
+# `profile =`): fixed in the test (`unname`), then the guard passed on HEAD, as below.
+# Added later: the shell frame-names guard (in "each shell calls its tab servers ..."). Its failing-first evidence is
+# the entry-point suite's run 1 on W4's first cut (entry-suite.txt): a module-frame local shadowed the lane runner's
+# `steps` under testServer's data mask. The guard passes on the corrected shell; the pre-KIT-102 names it allows are
+# the old shells' own.
+
+## test-workflow-ui-shared.R
+COUNTS test-workflow-ui-shared.R pass 55 fail 0 error 3 skip 0
+  BAD test-workflow-ui-shared.R :: KIT-102 W4: the shared shell renders each omic's tabs from its configuration
+  BAD test-workflow-ui-shared.R :: KIT-102 W4: the component registry resolves every configured tab and refuses an unknown id
+  BAD test-workflow-ui-shared.R :: KIT-102 W4: the import frame renders the title and the configured source panel, with no DOM id of its own
+--- KIT-102 W4: the shared shell renders each omic's tabs from its configuration
+ Error in `mod_omic_workflow_ui("w", omicGuiConfig(omic))`: could not find function "mod_omic_workflow_ui"
+--- KIT-102 W4: the component registry resolves every configured tab and refuses an unknown id
+ Error in `omicGuiComponent(id)`: could not find function "omicGuiComponent"
+--- KIT-102 W4: the import frame renders the title and the configured source panel, with no DOM id of its own
+ Error in `eval(code, test_env)`: object 'omicImportSourcePanel' not found
+
+## test-workflow-server-shared.R
+COUNTS test-workflow-server-shared.R pass 169 fail 0 error 2 skip 0
+  BAD test-workflow-server-shared.R :: KIT-102 W4: the shared shell builds the bus, the statuses, the registration and the chain from the configuration
+  BAD test-workflow-server-shared.R :: KIT-102 W4: the import frame runs the panel's server in its own session and offers the completion helper
+--- KIT-102 W4: the shared shell builds the bus, the statuses, the registration and the chain from the configuration
+ Error in `eval(code, test_env)`: object 'mod_omic_workflow_server' not found
+--- KIT-102 W4: the import frame runs the panel's server in its own session and offers the completion helper
+ Error in `eval(code, test_env)`: object 'omicImportSourcePanel' not found
