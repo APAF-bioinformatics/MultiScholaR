@@ -648,7 +648,9 @@ runMetabQcS4ServerBody <- function(
     })
 
     # Finalize QC
+    clickAfterStart <- qcClickAfterStart(input, "finalize_qc") # KIT-101 F-24
     observeEventFn(input$finalize_qc, {
+        if (!clickAfterStart()) return(invisible(NULL))
         reqFn(workflowData$state_manager)
 
         runFinalizeWorkflowFn(

@@ -355,7 +355,9 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
         filter_stats <- shiny::reactiveVal(NULL)
         
         # Apply intensity filter
+        applyAfterStart <- qcClickAfterStart(input, "apply_filter") # KIT-101 F-24
         shiny::observeEvent(input$apply_filter, {
+            if (!applyAfterStart()) return(invisible(NULL))
             shiny::req(workflow_data$state_manager)
             
             shiny::showNotification(
@@ -432,7 +434,9 @@ mod_metab_qc_intensity_server <- function(id, workflow_data, omic_type, experime
         })
         
         # Revert filter
+        revertAfterStart <- qcClickAfterStart(input, "revert_filter") # KIT-101 F-24
         shiny::observeEvent(input$revert_filter, {
+            if (!revertAfterStart()) return(invisible(NULL))
             tryCatch({
                 history <- workflow_data$state_manager$getHistory()
                 if (length(history) > 1) {

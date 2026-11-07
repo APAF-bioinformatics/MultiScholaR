@@ -621,7 +621,9 @@ mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_labe
         }
         
         # Finalize QC
+        clickAfterStart <- qcClickAfterStart(input, "finalize_qc") # KIT-101 F-24
         shiny::observeEvent(input$finalize_qc, {
+            if (!clickAfterStart()) return(invisible(NULL))
             shiny::req(workflow_data$state_manager)
 
             if (is.null(profile)) {

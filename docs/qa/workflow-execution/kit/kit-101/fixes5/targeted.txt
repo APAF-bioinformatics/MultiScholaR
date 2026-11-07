@@ -1,0 +1,51 @@
+KIT-101 addendum (revision 2.3): targeted files after the F-24 fix (runner as in test-first.txt, one R process at a
+time). Changed: R/mod_lipid_qc_intensity_server_helpers.R (qcClickAfterStart; the intensity apply and revert
+helpers, the revert also the trx revert), R/mod_lipid_qc_duplicates_server_helpers.R, R/mod_lipid_qc_s4.R (also the
+trx finalise), R/mod_metab_qc_intensity.R, R/mod_metab_qc_duplicates_server.R, R/mod_metab_qc_s4_server_helpers.R,
+R/mod_trx_qc_filter.R (F-17's inline lines now the helper).
+
+Dependents: git grep -l in tests/ for the changed functions, their servers and orchestrators
+(register*Observer, mod_lipid_qc_{intensity,duplicates,s4}_server, mod_metab_qc_{intensity,duplicates,s4}_server,
+runMetabQcS4ServerBody, mod_trx_qc_filter_server, initialize*QcSubmodules, mod_lipid_qc_server, mod_metab_qc_server,
+trxOmicProfile()) and the changed file names (the characterization files load them by path).
+
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 64 fail 0 error 0 skip 0
+COUNTS test-lipid-01-qc-filtering-helpers.R pass 86 fail 0 error 0 skip 0
+COUNTS test-lipid-01b-qc-module-contracts.R pass 12 fail 0 error 0 skip 0
+COUNTS test-lipid-01c-qc-duplicate-module-seams.R pass 200 fail 0 error 0 skip 0
+COUNTS test-lipid-01d-qc-intensity-module-seams.R pass 86 fail 0 error 0 skip 0
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 45 fail 0 error 0 skip 0
+COUNTS test-lipid-01g-qc-duplicates-module-characterization.R pass 52 fail 0 error 0 skip 0
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 3 fail 0 error 0 skip 0
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 13 fail 0 error 0 skip 0
+COUNTS test-lipid-01k-qc-intensity-shared.R pass 35 fail 0 error 0 skip 0
+COUNTS test-metab-01o-qc-module-characterization.R pass 10 fail 0 error 0 skip 0
+COUNTS test-metab-01p-qc-duplicates-module-characterization.R pass 228 fail 0 error 0 skip 1
+COUNTS test-metab-01q-qc-intensity-module-characterization.R pass 130 fail 0 error 0 skip 1
+COUNTS test-metab-01s-qc-s4-module-characterization.R pass 191 fail 0 error 0 skip 0
+COUNTS test-metab-01t-qc-s4-module-characterization.R pass 57 fail 0 error 0 skip 0
+COUNTS test-metab-01u-qc-duplicates-module-characterization.R pass 50 fail 0 error 0 skip 0
+COUNTS test-metab-01w-qc-orchestrator-shared.R pass 13 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
+COUNTS test-omics-audit-carry-overs.R pass 18 fail 0 error 0 skip 0
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0
+COUNTS test-workflow-server-shared.R pass 70 fail 0 error 0 skip 0
+
+The entry lanes (helper-gui-entry.R; they click every QC button after the design step, so no click precedes a start):
+                                      fixed                       base 5e938700 (same files, R/ at base)
+COUNTS test-gui-entry-lipidomics.R      pass 15 fail 20 error 0     pass 15 fail 20 error 0
+COUNTS test-gui-entry-metabolomics.R    pass 45 fail 60 error 0     pass 45 fail 60 error 0
+COUNTS test-gui-entry-transcriptomics.R pass 13 fail 16 error 0     pass 13 fail 16 error 0
+Every one of the 96 failures, before and after, is the step's artifact key "<store entries>" against the frozen
+oracle's "<store files>" (the F-13 correction; the oracles are not yet re-frozen on this base). The failure messages,
+temp paths and times masked, are identical between base and fix (diff 0 lines in each file). Limit: run1.R prints the
+first 900 characters of each message, so a QC-step difference past that point would not show here; the re-freeze
+(another agent) will compare the full captures.

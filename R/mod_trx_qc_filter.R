@@ -136,9 +136,9 @@ mod_trx_qc_filter_server <- function(id, workflow_data, omic_type, experiment_la
     shiny::moduleServer(id, function(input, output, session) {
         shown <- shiny::reactiveVal(NULL)
         # KIT-101 F-17: the server starts after the design; a click made before it started is not run then.
-        click_at_start <- shiny::isolate(input$apply_filter)
+        clickAfterStart <- qcClickAfterStart(input, "apply_filter")
         shiny::observeEvent(input$apply_filter, {
-            if (identical(input$apply_filter, click_at_start)) return(invisible(NULL))
+            if (!clickAfterStart()) return(invisible(NULL))
             shiny::req(workflow_data$state_manager)
             # KIT-101 F-11: before the import the session's owner is still the pending placeholder; refuse saying so.
             if (isDIASessionOwnerPending(workflow_data$state_manager)) {

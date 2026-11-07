@@ -1,0 +1,77 @@
+KIT-101 addendum (revision 2.3): failing-first evidence for F-24 (user, 2026-11-07: "fix or queue fix for both"; fixed
+now, as F-17).
+Runner: Rscript kit/scripts-078/run1.R (pkgload::load_all(export_all = TRUE, helpers = TRUE), then
+testthat::test_file(<file>, reporter = "silent")); R_LIBS = the kit_100 library (dependencies only; the package is
+loaded from the worktree source); one R process at a time; R 4.6.1. Base 5e938700 (origin/performance-v2).
+"Before" = the new test blocks run against the unfixed code; "After" = the same files with the fix.
+
+== The sites ==
+Every QC sub-tab observer in lipid, metab and trx that applies or reverts a QC step is created when the QC
+orchestrator starts its sub-modules (the design's qc_trigger, or the state-detected start). Each was driven as F-17's
+block drives the trx filter: the orchestrator (mod_lipid_qc_server; mod_metab_qc_server; mod_lipid_qc_server under
+trxOmicProfile()) with the design's trigger, the workflow's state manager unset before the design, the head at the
+design's state (initial, <omic>_raw_data_s4). The button is clicked (1) before the trigger; the design is saved
+(state manager set, trigger TRUE); then clicked again (2).
+
+ site                                                        observer                                           reproduced
+ lipid  intensity apply    qc-intensity-apply_filter         mod_lipid_qc_intensity_server_helpers.R (register*) yes
+ lipid  intensity revert   qc-intensity-revert_filter        mod_lipid_qc_intensity_server_helpers.R (register*) yes
+ lipid  duplicates resolve qc-duplicates-resolve_duplicates  mod_lipid_qc_duplicates_server_helpers.R (register*) yes
+ lipid  duplicates revert  qc-duplicates-revert_duplicates   mod_lipid_qc_duplicates_server_helpers.R (register*) yes
+ lipid  finalise           qc-s4_finalize-finalize_qc        mod_lipid_qc_s4.R                                  yes
+ metab  intensity apply    qc-intensity-apply_filter         mod_metab_qc_intensity.R                           yes
+ metab  intensity revert   qc-intensity-revert_filter        mod_metab_qc_intensity.R                           yes
+ metab  duplicates resolve qc-duplicates-resolve_duplicates  mod_metab_qc_duplicates_server.R                   yes
+ metab  duplicates revert  qc-duplicates-revert_duplicates   mod_metab_qc_duplicates_server.R                   yes
+ metab  finalise           qc-s4_finalize-finalize_qc        mod_metab_qc_s4_server_helpers.R                   yes
+ trx    revert             qc-filter-revert_filter           the lipid intensity revert helper                  yes
+ trx    finalise           qc-s4_finalize-finalize_qc        mod_lipid_qc_s4.R under the profile                yes
+ trx    filter apply       qc-filter-apply_filter            F-17 (dfabe0b3), already fixed                     (F-17)
+
+Not changed (outside the apply/revert class; recorded): lipid and metab "Detect duplicates" (detect_duplicates) and
+"Analyze internal standards" (analyze_is). They also run an earlier click when the sub-modules start (seen on the base
+with the same drive), but they commit no state: they fill the tab's display only.
+
+Cause: as F-17. The sub-module servers start at the design; each observeEvent is created then without ignoreInit, and
+its first run reads the click value already present, so a click made before the start runs at the design: a revert
+drops the design's state (history back to "initial"), a finalise marks QC complete, an apply or resolve commits its
+state, none of them requested after the start.
+
+Fix: F-17's rule, now one small helper used by every site (F-17's inline lines replaced): qcClickAfterStart(input, id)
+records the button's value when the server starts and the observer ignores that value; a later click runs as before.
+ignoreInit = TRUE is not used (F-17: it also drops a first click made in the same flush as the start). The helper
+records a value only from a live Shiny input: the register* seams are called by their tests with a plain list holding
+the click and a stub observeEvent that runs the handler at once, which is not a click before a start.
+
+Before the fix (one expectation per site fails: the state at the start; every "click after the start" passes):
+--- KIT-101 F-24: a lipid QC apply or revert click made before the QC sub-modules start is not run when they start
+ intensity-apply_filter         `actual$history`: "initial" "lipid_raw_data_s4" "lipid_intensity_filtered"
+ intensity-revert_filter        `actual$history`: "initial"
+ duplicates-resolve_duplicates  `actual$history`: "initial" "lipid_raw_data_s4" "lipid_duplicates_resolved"
+ duplicates-revert_duplicates   `actual$history`: "initial"
+ s4_finalize-finalize_qc        `actual$history`: "initial" "lipid_raw_data_s4" "lipid_qc_complete"; `actual$qc`: "complete"
+ (expected at the start: history "initial" "lipid_raw_data_s4", qc "pending")
+COUNTS test-module-ci-lipid-qc.R pass 63 fail 5 error 0 skip 0
+--- KIT-101 F-24: a metab QC apply or revert click made before the QC sub-modules start is not run when they start
+ intensity-apply_filter         `actual$history`: "initial" "metab_raw_data_s4" "metab_intensity_filtered"
+ intensity-revert_filter        `actual$history`: "initial"
+ duplicates-resolve_duplicates  `actual$history`: "initial" "metab_raw_data_s4" "metab_duplicates_resolved"
+ duplicates-revert_duplicates   `actual$history`: "initial"
+ s4_finalize-finalize_qc        `actual$history`: "initial" "metab_raw_data_s4" "metab_qc_complete"; `actual$qc`: "complete"
+ (expected at the start: history "initial" "metab_raw_data_s4", qc "pending")
+COUNTS test-module-ci-metab-qc.R pass 59 fail 5 error 0 skip 0
+--- KIT-101 F-24: a trx QC revert or finalise click made before the QC sub-modules start is not run when they start
+ filter-revert_filter           `actual$history`: "initial"
+ s4_finalize-finalize_qc        `actual$history`: "initial" "trx_raw_data_s4" "trx_qc_complete"; `actual$qc`: "complete"
+ (expected at the start: history "initial" "trx_raw_data_s4", qc "pending")
+COUNTS test-module-ci-trx-qc.R pass 36 fail 2 error 0 skip 0
+
+After the fix:
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 64 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0 (the F-17 block and MCI-028.1/.2/.3 included)
+
+Reach: reproduced through the public servers under testServer (as F-17 and the entry lanes drive them). Not shown in
+a browser (no e2e in this item): before the design the QC tab renders only its "complete the Design Matrix step"
+notice when the state has no metadata, so whether a browser can click these buttons before the start is not
+established here.

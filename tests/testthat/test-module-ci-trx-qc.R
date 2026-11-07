@@ -155,3 +155,37 @@ test_that("KIT-101 F-17: a filter click made before the QC sub-modules start is 
     expect_identical(owner$getHistory(), c("initial", "trx_raw_data_s4", "trx_expression_filtered"))
   }))))
 })
+
+test_that("KIT-101 F-24: a trx QC revert or finalise click made before the QC sub-modules start is not run when they start", {
+  skip_if_not(workflowOwnerCapable())
+  skip_if_not_installed("edgeR")
+  design <- c("initial", "trx_raw_data_s4")
+  after_click <- list(`filter-revert_filter` = list(history = "initial", qc = "pending"),
+    `s4_finalize-finalize_qc` = list(history = c(design, "trx_qc_complete"), qc = "complete"))
+  for (button in names(after_click)) {
+    fixture <- trxDeclarationsOwner(withr::local_tempdir(), module_ci_trx_corpus())
+    owner <- fixture$owner
+    workflow <- fixture$workflow
+    # As in the F-17 block: before the design the QC tab has no state, so its sub-modules wait for the design's trigger.
+    workflow$state_manager <- NULL
+    out <- new.env(parent = emptyenv())
+    suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+      session$userData$trigger <- shiny::reactiveVal(NULL)
+      mod_lipid_qc_server("qc", workflow, fixture$paths, "transcriptomics", "kit101", session$userData$trigger,
+        profile = trxOmicProfile())
+    }, {
+      click <- function(value) do.call(session$setInputs, stats::setNames(list(value), paste0("qc-", button)))
+      click(1L)
+      workflow$state_manager <- owner
+      session$userData$trigger(TRUE)
+      session$flushReact()
+      out$at_start <- list(history = owner$getHistory(), qc = workflow$tab_status$quality_control)
+      click(2L)
+      out$after_click <- list(history = owner$getHistory(), qc = workflow$tab_status$quality_control)
+    }))))
+    closeDIAStateAdapter(owner)
+    expect_identical(out$at_start, list(history = design, qc = "pending"), info = button)
+    # A click after the start runs as before.
+    expect_identical(out$after_click, after_click[[button]], info = button)
+  }
+})

@@ -42,7 +42,9 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
         })
         
         # Resolve duplicates
+        resolveAfterStart <- qcClickAfterStart(input, "resolve_duplicates") # KIT-101 F-24
         shiny::observeEvent(input$resolve_duplicates, {
+            if (!resolveAfterStart()) return(invisible(NULL))
             runMetabDuplicateResolutionObserver(
                 workflowData = workflow_data
                 , omicType = omic_type
@@ -54,7 +56,9 @@ mod_metab_qc_duplicates_server <- function(id, workflow_data, omic_type, experim
         })
         
         # Revert
+        revertAfterStart <- qcClickAfterStart(input, "revert_duplicates") # KIT-101 F-24
         shiny::observeEvent(input$revert_duplicates, {
+            if (!revertAfterStart()) return(invisible(NULL))
             runMetabDuplicateRevertObserverShell(
                 runRevertFn = function() {
                     revertMetabDuplicateResolution(

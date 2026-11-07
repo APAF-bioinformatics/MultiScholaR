@@ -67,6 +67,21 @@ registerLipidIntensityFilterPlotOutput <- function(
     output
 }
 
+#' Whether a QC sub-tab's button holds a click made after its server started (KIT-101 F-17, F-24).
+#'
+#' The QC sub-module servers start at the design; a click made before then is already in the input when the server
+#' starts, and its observer's first run would run it. Called when the server starts, this records the click value then
+#' present; the returned function is FALSE for that value only, so a later click runs as before (`ignoreInit` would also
+#' drop a first click made in the same flush as the start). Only a live input can hold an earlier click.
+#' @param input The sub-module's input.
+#' @param id The button's input id.
+#' @return A function of no arguments: TRUE when the button's value is not the one present at the start.
+#' @noRd
+qcClickAfterStart <- function(input, id) {
+    at_start <- if (shiny::is.reactivevalues(input)) shiny::isolate(input[[id]])
+    function() !identical(input[[id]], at_start)
+}
+
 registerLipidIntensityRevertObserver <- function(
     input,
     workflowData,
@@ -79,7 +94,9 @@ registerLipidIntensityRevertObserver <- function(
     logErrorFn = logger::log_error,
     showNotificationFn = shiny::showNotification
 ) {
+    clickAfterStart <- qcClickAfterStart(input, "revert_filter")
     observeEventFn(input$revert_filter, {
+        if (!clickAfterStart()) return(invisible(NULL))
         tryCatch({
             history <- workflowData$state_manager$getHistory()
             if (length(history) > 1) {
@@ -124,7 +141,9 @@ registerLipidIntensityApplyFilterObserver <- function(
     lipidIntensityFilteringFn = lipidIntensityFiltering,
     updateLipidFilteringFn = updateLipidFiltering
 ) {
+    clickAfterStart <- qcClickAfterStart(input, "apply_filter")
     observeEventFn(input$apply_filter, {
+        if (!clickAfterStart()) return(invisible(NULL))
         reqFn(workflowData$state_manager)
 
         showNotificationFn(

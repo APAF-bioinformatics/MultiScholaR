@@ -414,7 +414,9 @@ registerLipidDuplicateResolveObserver <- function(
     removeNotificationFn = shiny::removeNotification,
     workingNotificationId = "lipid_dup_resolve_working"
 ) {
+    clickAfterStart <- qcClickAfterStart(input, "resolve_duplicates") # KIT-101 F-24
     observeEventFn(input$resolve_duplicates, {
+        if (!clickAfterStart()) return(invisible(NULL))
         reqFn(workflowData$state_manager)
 
         showNotificationFn(
@@ -496,7 +498,9 @@ registerLipidDuplicateRevertObserver <- function(
     logErrorFn = logger::log_error,
     showNotificationFn = shiny::showNotification
 ) {
+    clickAfterStart <- qcClickAfterStart(input, "revert_duplicates") # KIT-101 F-24
     observeEventFn(input$revert_duplicates, {
+        if (!clickAfterStart()) return(invisible(NULL))
         tryCatch({
             revertResult <- handleRevertFn(
                 workflowData = workflowData

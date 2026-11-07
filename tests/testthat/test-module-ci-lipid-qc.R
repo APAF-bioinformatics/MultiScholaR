@@ -300,3 +300,46 @@ test_that("MCI-020.6 browser smoke exposes every lipid QC tab control", {
   expect_match(ui_fragments$finalize, "finalize_qc", fixed = TRUE)
   expect_match(ui_fragments$finalize, "assay_stats_table", fixed = TRUE)
 })
+
+#' KIT-101 F-24: the QC tab as the design leaves it (initial, lipid_raw_data_s4). `button` is clicked (1) before the
+#' design's trigger starts the sub-modules (before the design the tab has no state: the state manager is unset), then
+#' clicked again (2) after the start. Returns the owner's history and the QC status at the start and after the click.
+lipidQcClickBeforeStart <- function(button) {
+  workflow <- module_ci_lipid_qc_workflow()
+  owner <- workflow$state_manager
+  selectWorkflowStateReference(owner, "lipid_raw_data_s4")
+  workflow$state_manager <- NULL
+  out <- new.env(parent = emptyenv())
+  suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+    session$userData$trigger <- shiny::reactiveVal(NULL)
+    mod_lipid_qc_server("qc", workflow, list(), "lipidomics", "kit101", session$userData$trigger)
+  }, {
+    click <- function(value) do.call(session$setInputs, stats::setNames(list(value), paste0("qc-", button)))
+    session$setInputs(`qc-intensity-intensity_cutoff_percentile` = 10L, `qc-intensity-proportion_below_cutoff` = 0.5)
+    click(1L)
+    workflow$state_manager <- owner
+    session$userData$trigger(TRUE)
+    session$flushReact()
+    out$at_start <- list(history = owner$getHistory(), qc = workflow$tab_status$quality_control)
+    click(2L)
+    out$after_click <- list(history = owner$getHistory(), qc = workflow$tab_status$quality_control)
+  }))))
+  as.list(out)
+}
+
+test_that("KIT-101 F-24: a lipid QC apply or revert click made before the QC sub-modules start is not run when they start", {
+  design <- c("initial", "lipid_raw_data_s4")
+  after_click <- list(
+    `intensity-apply_filter` = list(history = c(design, "lipid_intensity_filtered"), qc = "pending"),
+    `intensity-revert_filter` = list(history = "initial", qc = "pending"),
+    `duplicates-resolve_duplicates` = list(history = c(design, "lipid_duplicates_resolved"), qc = "pending"),
+    `duplicates-revert_duplicates` = list(history = "initial", qc = "pending"),
+    `s4_finalize-finalize_qc` = list(history = c(design, "lipid_qc_complete"), qc = "complete")
+  )
+  for (button in names(after_click)) {
+    out <- lipidQcClickBeforeStart(button)
+    expect_identical(out$at_start, list(history = design, qc = "pending"), info = button)
+    # A click after the start runs as before.
+    expect_identical(out$after_click, after_click[[button]], info = button)
+  }
+})
