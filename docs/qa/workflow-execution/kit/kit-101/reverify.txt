@@ -1,0 +1,16 @@
+## kit-journey-101m on kit_101 (browser-smoke.rvol2q)
+REVERIFY kit-journey-101m | recorded rejected (oracle_mismatch) exact FALSE | v1.7 accepted exact TRUE in_memory FALSE | oracle mismatches 0 | additional products 12 | operation identity products 8 | canonical form differences  | judged steps import,design,qvalue,rollup,peptide_log2,peptide_accession,dpc_quant,protein_normalisation_limpa,peptide_count,correlation,ruv_covariates,session_export,da,report | 12 s
+## kit-journey-101l on kit_101 (browser-smoke.rvol2q)
+ALIAS lfq65_fixture: 11 oracle steps judged against lfq101_fixture (scratch bindings only)
+Error: identical(operation$binding, case$binding) is not TRUE
+Execution halted
+## kit-journey-101t on kit_101 (browser-smoke.rvol2q)
+ALIAS tmt65_fixture: 11 oracle steps judged against tmt101_fixture (scratch bindings only)
+Error: identical(operation$binding, case$binding) is not TRUE
+Execution halted
+## kit-journey-101l on kit_101 (browser-smoke.rvol2q)
+ALIAS lfq65_fixture: 11 oracle steps judged against lfq101_fixture; ticket 101l keeps its launch key (scratch bindings only)
+REVERIFY kit-journey-101l | recorded rejected (oracle_mismatch) exact FALSE | v1.7 accepted exact TRUE in_memory FALSE | oracle mismatches 0 | additional products 17 | operation identity products 4 | canonical form differences  | judged steps import,design,accession,protein_intensity,duplicates,protein_replicate,normalisation_ruv,correlation,session_export,da,report | 18 s
+## kit-journey-101t on kit_101 (browser-smoke.rvol2q)
+ALIAS tmt65_fixture: 11 oracle steps judged against tmt101_fixture; ticket 101t keeps its launch key (scratch bindings only)
+REVERIFY kit-journey-101t | recorded rejected (oracle_mismatch) exact FALSE | v1.7 accepted exact TRUE in_memory FALSE | oracle mismatches 0 | additional products 17 | operation identity products 4 | canonical form differences  | judged steps import,design,accession,protein_intensity,duplicates,protein_replicate,normalisation_ruv,correlation,session_export,da,report | 18 s
