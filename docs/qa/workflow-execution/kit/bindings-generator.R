@@ -96,6 +96,9 @@ b$corpora$screen$note <- "screen corpus v2: eight samples of the calibration rec
 # e2e fixtures copied as the screen lifecycle corpora of the protein route. Generated once under the proof root.
 protein_corpora <- list(
     lfq_300 = list(dir = "lfq-300", kind = "lfq", report = "proteinGroups.txt", format = "maxquant"),
+    # KIT-101 F-27: lfq_300's recipe and seed with intensity-dependent missingness (same 8% of cells; a complete
+    # high-abundance core, so RUV-III has controls observed in every sample).
+    lfq_300_mnar = list(dir = "lfq-300-mnar", kind = "lfq", report = "proteinGroups.txt", format = "maxquant", missingness = "mnar"),
     tmt_300 = list(dir = "tmt-300", kind = "tmt", report = "pd_proteins.tsv", format = "pd_tmt"),
     lfq_fixture = list(dir = "lfq-fixture", kind = "lfq_fixture", report = "proteinGroups.txt", format = "maxquant"),
     tmt_fixture = list(dir = "tmt-fixture", kind = "tmt_fixture", report = "pd_tmt_peptides.tsv", format = "pd_tmt"))
@@ -103,7 +106,8 @@ for (key in names(protein_corpora)) {
     spec <- protein_corpora[[key]]
     directory <- file.path(proof, "kit/corpus", spec$dir)
     if (!file.exists(file.path(directory, "manifest.json"))) {
-        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_protein_corpus.R")), spec$kind, shQuote(directory)))
+        status <- system2(file.path(R.home("bin"), "Rscript"), c(shQuote(file.path(repo, "tools/profiling/kit_protein_corpus.R")), spec$kind, shQuote(directory),
+            if (!is.null(spec$missingness)) c("300", "8000", spec$missingness)))
         stopifnot(identical(status, 0L))
     }
     manifest <- jsonlite::read_json(file.path(directory, "manifest.json"))
@@ -884,6 +888,10 @@ redact_columns <- function(value) {
     value
 }
 oracle_dirs <- c(stats::setNames(rep("kit-021", length(protein_corpora)), names(protein_corpora)), kc_lfq = "kit-054")
+oracle_dirs[["lfq_300_mnar"]] <- "kit-101"   # KIT-101 F-27: the realistic-missingness corpus records into kit-101/
+# KIT-101 F-27: these oracles were recorded before F-18 made a MaxQuant 0 intensity missing.
+recorded_before <- c(lfq_300 = "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0",
+    kc_lfq = "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0")
 for (key in names(oracle_dirs)) {
     if (is.null(b$corpora[[key]])) next
     oracle_file <- file.path(repo, "docs/qa/workflow-execution/kit", oracle_dirs[[key]], paste0("oracles-", key, ".rds"))
@@ -895,6 +903,7 @@ for (key in names(oracle_dirs)) {
         b$populations[[paste0(key, "_", step)]] <- list(step = step, state = population$state, store = recorded$store,
             head_sha256 = recorded$head_sha256, entity_id = population$entity_id, rows = population$rows, parameters = NULL,
             oracle_source = "in-process (protocol v1.5)", build = recorded$build, recorded_at = recorded$recorded_at)
+        if (key %in% names(recorded_before)) b$populations[[paste0(key, "_", step)]]$recorded_before <- recorded_before[[key]]
         b$oracles[[paste0(key, "_", step)]] <- if (isTRUE(b$corpora[[key]]$sensitive)) redact_columns(population$fingerprint) else population$fingerprint
     }
 }

@@ -1,0 +1,45 @@
+KIT-101 F-27, part B: the realistic-missingness LFQ corpus lfq-300-mnar.
+
+Tool: tools/profiling/kit_protein_corpus.R, kitProteinRecipe("lfq", missingness = "mnar") (CLI: `lfq <dir> 300 8000 mnar`).
+Recipe: lfq_300's recipe and seed (20261020; 300 samples WT/KO, 8,000 proteins, 10% differential, 50 contaminant + 50
+decoy rows, 8% missing fraction) plus missingness = "mnar", mnar_slope = 1. The intensities, design, fasta and row
+order are lfq_300's; only which cells are missing differs. Each protein's missing probability is
+plogis(a - 1 * (mean log2 intensity of the protein - grand mean)), with a solved (uniroot) so the mean probability is
+0.08; the same uniform draws as the random recipe are compared with it. Missing cells are written as 0, as MaxQuant does.
+
+Written: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300-mnar/
+  proteinGroups.txt  21614398 bytes  sha256 4d58de10617eef07a70cb0d064c1e28fc04d6ef1dd281d3cdc856552cdd394bb
+  design.tsv             4129 bytes  sha256 094f18939826bcf2d2de62f82ced255a2374ac0cf7f6a1eae70f5385b85a19fb (= lfq-300)
+  proteins.fasta      1245786 bytes  sha256 1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb (= lfq-300)
+  manifest.json                      sha256 db4adb6f58dd545274516d8f1c934eeab5144a034f6205f886c6cd3c217c1a63
+
+Measured on the written proteinGroups.txt (contaminants and decoys dropped, 0 read as missing; the mask equals the
+generator's):
+  cells missing: 8.007% (lfq-300: 8.008%)
+  proteins observed in all 300 samples: 1508 of 8000 (18.9%) (lfq-300: 0)
+  missing % by quartile of the protein's true mean log2 intensity (Q1 lowest): Q1 27.040, Q2 3.880, Q3 0.953, Q4 0.156
+    (lfq-300: 8.046, 8.001, 8.036, 7.950)
+  complete proteins by quartile: Q1 0, Q2 0, Q3 184, Q4 1324
+
+RUV control rule (getNegCtrlProtAnovaHelper on the raw log2 matrix, group WT/KO, q > 0.05, qvalue; the journey applies
+the import filters and normalisation first, so this approximates the sets the sweep chooses):
+  1%: 80 controls, 13 observed in every sample
+  5%: 400 controls, 66 observed in every sample
+  10%: 800 controls, 138 observed in every sample
+  20%: 1600 controls, 301 observed in every sample
+  50%: 4000 controls, 757 observed in every sample
+On lfq-300 every count is 0 (no protein is complete), which is F-27's refusal. Here every percentage of the default
+1-20% sweep has at least 13 complete controls, more than any k the elbow chose in the lfq_300 re-record (k = 2).
+
+lfq-300 unchanged: the default recipe regenerated into a scratch directory gives
+  proteinGroups.txt a89baaa3345a2b601d2e89810fa83595d02ae1164868edd82e9aa0a0cd4b06c4
+  design.tsv        094f18939826bcf2d2de62f82ced255a2374ac0cf7f6a1eae70f5385b85a19fb
+  proteins.fasta    1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb
+equal to the sha256 bound in bindings.json, and a manifest.json equal byte for byte to the bound corpus's
+(7e08ea235d2bd43081a2395e89608c84f319c9f825ea361948b0b0510cf2f622). The bound corpus was not overwritten.
+
+Binding (docs/qa/workflow-execution/kit/bindings-generator.R; bindings.json not regenerated here): corpus key
+lfq_300_mnar (dir lfq-300-mnar, kind lfq, report proteinGroups.txt, format maxquant; generated with `300 8000 mnar`
+only if the directory is absent); oracle_dirs lfq_300_mnar = kit-101, so kit-101/oracles-lfq_300_mnar.rds binds as
+lfq_300_mnar_<step>. The lfq_300 and kc_lfq populations carry recorded_before = "KIT-101 F-18 (8a2a3581): a 0
+intensity was kept as log2 0".

@@ -6,13 +6,28 @@
 # Each corpus directory gets design.tsv (sample, group, batch), proteins.fasta and manifest.json with sha256 sums.
 # The design names the runs as the import sanitises them (janitor::make_clean_names, the GUI's default): lowercase,
 # non-alphanumerics to "_", an "x" before a leading digit (a TMT run "126_WT_001" is "x126_wt_001").
-# Usage: Rscript tools/profiling/kit_protein_corpus.R <lfq|tmt|lfq_fixture|tmt_fixture> <directory> [samples] [proteins]
+# KIT-101 F-27: `missingness = "mnar"` (LFQ) keeps the recipe's values and missing fraction but makes a cell's chance of
+# being missing fall with its protein's mean log2 intensity (logistic, `mnar_slope` per log2 unit), so the most abundant
+# proteins are observed in every sample as in a real MaxQuant export. The default ("random") is unchanged, byte for byte.
+# Usage: Rscript tools/profiling/kit_protein_corpus.R <lfq|tmt|lfq_fixture|tmt_fixture> <directory> [samples] [proteins] [random|mnar]
 
-kitProteinRecipe <- function(kind, samples = 300L, proteins = 8000L) {
+kitProteinRecipe <- function(kind, samples = 300L, proteins = 8000L, missingness = "random") {
     seed <- switch(kind, lfq = 20261020L, tmt = 20261021L, stop("kind: lfq | tmt"))
-    list(kind = kind, synthetic = TRUE, seed = seed, samples = as.integer(samples), proteins = as.integer(proteins),
+    recipe <- list(kind = kind, synthetic = TRUE, seed = seed, samples = as.integer(samples), proteins = as.integer(proteins),
         groups = c("WT", "KO"), differential_fraction = 0.1, missing_fraction = if (kind == "lfq") 0.08 else 0.02,
         flagged_rows = if (kind == "lfq") 50L else 0L, channels = c("126", "127N", "127C", "128N", "128C", "129N", "129C", "130N", "130C", "131"))
+    if (identical(missingness, "random")) return(recipe)
+    stopifnot(identical(missingness, "mnar"), identical(kind, "lfq"))
+    c(recipe, list(missingness = "mnar", mnar_slope = 1))
+}
+
+# Per-protein missing probability: logistic in the protein's mean log2 intensity, its intercept solved so the mean
+# probability equals the recipe's missing fraction.
+kitMnarProbability <- function(log2_values, recipe) {
+    centred <- rowMeans(log2_values) - mean(log2_values)
+    gap <- function(intercept) mean(stats::plogis(intercept - recipe$mnar_slope * centred)) - recipe$missing_fraction
+    intercept <- stats::uniroot(gap, c(-50, 50), tol = 1e-12)$root
+    stats::plogis(intercept - recipe$mnar_slope * centred)
 }
 
 kitProteinMatrix <- function(recipe) {
@@ -29,7 +44,12 @@ kitProteinMatrix <- function(recipe) {
             matrix(batch_effect[batch], nrow = p, ncol = n, byrow = TRUE) + matrix(sample_scale, nrow = p, ncol = n, byrow = TRUE) +
             matrix(stats::rnorm(p * n, 0, 0.4), nrow = p, ncol = n)
         values <- round(2^log2, 1)
-        missing <- matrix(stats::runif(p * n) < recipe$missing_fraction, nrow = p, ncol = n)
+        missing <- if (identical(recipe$missingness, "mnar")) {
+            # The same uniform draws as the random recipe, compared with each protein's own probability.
+            matrix(stats::runif(p * n), nrow = p, ncol = n) < kitMnarProbability(log2, recipe)
+        } else {
+            matrix(stats::runif(p * n) < recipe$missing_fraction, nrow = p, ncol = n)
+        }
         list(values = values, missing = missing, group = group, batch = batch, differential = differential)
     })
 }
@@ -85,9 +105,14 @@ writeKitLfqCorpus <- function(directory, recipe = kitProteinRecipe("lfq")) {
     design <- data.frame(sample = janitor::make_clean_names(samples), group = m$group, batch = m$batch, stringsAsFactors = FALSE)
     utils::write.table(design, file.path(directory, "design.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
     kitWriteFasta(file.path(directory, "proteins.fasta"), ids, genes)
+    notes <- sprintf("%d protein groups + %d contaminant and %d decoy rows interleaved, one of each leading the table (dropped by the reader); %.0f%% missing written as 0; %d%% of proteins differential (KO vs WT)",
+        p, recipe$flagged_rows, recipe$flagged_rows, 100 * recipe$missing_fraction, round(100 * recipe$differential_fraction))
+    if (identical(recipe$missingness, "mnar")) {
+        notes <- sprintf("%s; missingness intensity-dependent (logistic in the protein's mean log2 intensity, slope %g per log2 unit): %.2f%% of cells missing, %d proteins observed in every sample",
+            notes, recipe$mnar_slope, 100 * mean(m$missing), sum(rowSums(m$missing) == 0L))
+    }
     kitWriteManifest(directory, recipe, file.path(directory, c("proteinGroups.txt", "design.tsv", "proteins.fasta")), nrow(table), n,
-        notes = sprintf("%d protein groups + %d contaminant and %d decoy rows interleaved, one of each leading the table (dropped by the reader); %.0f%% missing written as 0; %d%% of proteins differential (KO vs WT)",
-            p, recipe$flagged_rows, recipe$flagged_rows, 100 * recipe$missing_fraction, round(100 * recipe$differential_fraction)))
+        notes = notes)
 }
 
 writeKitTmtCorpus <- function(directory, recipe = kitProteinRecipe("tmt")) {
@@ -137,10 +162,11 @@ writeKitFixtureCorpus <- function(directory, kind, repo = normalizePath(".")) {
 
 if (sys.nframe() == 0L) {
     args <- commandArgs(TRUE)
-    if (length(args) < 2L) stop("usage: kit_protein_corpus.R <lfq|tmt|lfq_fixture|tmt_fixture> <directory> [samples] [proteins]")
+    if (length(args) < 2L) stop("usage: kit_protein_corpus.R <lfq|tmt|lfq_fixture|tmt_fixture> <directory> [samples] [proteins] [random|mnar]")
     kind <- args[[1L]]; directory <- args[[2L]]
     manifest <- switch(kind,
-        lfq = writeKitLfqCorpus(directory, kitProteinRecipe("lfq", if (length(args) > 2L) as.integer(args[[3L]]) else 300L, if (length(args) > 3L) as.integer(args[[4L]]) else 8000L)),
+        lfq = writeKitLfqCorpus(directory, kitProteinRecipe("lfq", if (length(args) > 2L) as.integer(args[[3L]]) else 300L, if (length(args) > 3L) as.integer(args[[4L]]) else 8000L,
+            if (length(args) > 4L) args[[5L]] else "random")),
         tmt = writeKitTmtCorpus(directory, kitProteinRecipe("tmt", if (length(args) > 2L) as.integer(args[[3L]]) else 300L, if (length(args) > 3L) as.integer(args[[4L]]) else 8000L)),
         lfq_fixture = writeKitFixtureCorpus(directory, "lfq"), tmt_fixture = writeKitFixtureCorpus(directory, "tmt"),
         stop("kind: lfq | tmt | lfq_fixture | tmt_fixture"))
