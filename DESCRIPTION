@@ -419,6 +419,8 @@ Collate:
     'utils_workflow_dia_state.R'
     'utils_workflow_dia_sessions.R'
     'utils_omic_gui_config.R'
+    'mod_omic_workflow.R'
+    'mod_omic_import.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,
