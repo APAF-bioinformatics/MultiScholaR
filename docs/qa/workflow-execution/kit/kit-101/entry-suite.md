@@ -210,3 +210,50 @@ checkpoint ran 8 in parallel (`head -1 kit-099/suite.txt`). The number for the c
 The per-file baseline (`test-baseline.md`) ran 6 in parallel, and stands as recorded.
 
 **Not frozen** (phase 1). The freeze waits for F-15, and for a decision on the two unstable captures above.
+
+## Revision 2.2, phase 2a (2026-11-07): F-19 fixture fix, LFQ missing values, F-22; not frozen
+
+Base: `origin/performance-v2` `7e8c7875` (the F-08 to F-12, F-15, F-17, F-18, F-20, F-21, F-23 and F-26 fixes). Work
+on top of it:
+- `4325329b`, the fixtures (`fixtures.txt` points 1 and 2 still hold for everything else):
+  - **F-19, both DIA-NN lanes.** `Precursor.Normalised` now has each run's loading removed: each run is centred on its
+    median log2 quantity, with a residual run error of SD 0.1. `Precursor.Quantity` stays raw and byte-identical to
+    before. On prot_dia_limpa the per-run median log2 normalised values are now KO 20.17, 19.94, 20.03, 20.18 and
+    WT 20.08, 20.08, 20.13, 20.10; before, they were 19.95 to 20.14 (KO) against 20.14 to 20.48 (WT).
+  - **F-18 follow-up.** The MaxQuant and FragPipe lanes carry the KIT-021 recipe's about 8% missing values again,
+    written as 0 (336 of 4,100 MaxQuant cells). The generator matches all 51 records.
+- `aa629c09`, F-22, the third correction (approved):
+  - `guiEntryCanonical` reads an htmlwidget/plotly object's random ids as `<ID>`: hex list names and values, and the
+    `id`, `elementId` and `cur_data` fields. A check on two plots with the same data gave equal digests, and changed
+    data still changed the digest.
+  - The store entries mask a store or request id's whole random suffix (`-<ID>`).
+
+**Verification (each proteomics lane once, HEAD `aa629c09`).** Every lane reaches import, QC, normalisation, DA,
+enrichment (prot_dia: 10 terms) and the summary/report. The LFQ lanes keep all 10 samples. The F-15 warnings are gone
+from prot_dia. Planted recall against the 40 planted proteins (P00001–P00040):
+
+| lane | proteins in DA | samples | FDR non-NA | q < 0.05 | planted | false positives | BH < 0.05 (false positives) |
+|---|---|---|---|---|---|---|---|
+| prot_dia | 385 | 8 | 385 | 15 | 15 | 0 | 15 (0) |
+| prot_dia_limpa | 393 | 8 | 393 | 19 | 15 | 4 | 16 (1) |
+| prot_tmt | 400 | 10 | 400 | 19 | 18 | 1 | 19 (1) |
+| prot_lfq | 400 | 10 | 400 | 17 | 16 | 1 | 17 (1) |
+| prot_lfq_fragpipe | 400 | 10 | 400 | 25 | 24 | 1 | 23 (1) |
+
+prot_dia_limpa now matches the F-19 diagnosis's centred variants: f1 gave 19 / 15 / 4 and f2 gave 22 / 16 / 6.
+Before the fix it gave 41 / 18 / 23.
+
+**Determinism, runs A and B** (HEAD `aa629c09`, the four files in parallel): **all 10 lanes identical.** Lanes ran 49
+to 373 s (ceiling 900 s). Test-file wall times were 55 to 1,130 s; the proteomics file in run B shared the host with
+other work. The two captures that were unstable in phase 1 are now stable: prot_dia `states/enrichment_completed` and
+prot_tmt `<store entries>`.
+
+**Against the frozen oracles:**
+- lipid_canonical, metab_lc, metab_gc, metab_combined and trx_screen differ only in the store capture and in
+  `summary_refusal` (the F-11 message).
+- prot_dia and prot_dia_limpa differ from `import_refusal` on.
+- prot_tmt, prot_lfq and prot_lfq_fragpipe have no frozen oracle.
+
+**Tests.** test-e2e-manifest.R: pass 237. test-e2e-fixture-integrity.R: pass 1.
+
+Not frozen: waiting for F-24 (the lipid/metab/trx QC observers).
