@@ -1181,6 +1181,268 @@ buildProtDesignInitialState <- function(
     )
 }
 
+buildProtDesignSaveResultsContrastsTable <- function(
+    contrastData,
+    formulaString
+) {
+    if (is.null(contrastData) || nrow(contrastData) == 0) {
+        return(NULL)
+    }
+
+    formulaUsesGroupPrefix <- grepl("~ *0 *\\+ *group", formulaString)
+
+    contrastInfo <- lapply(seq_len(nrow(contrastData)), function(i) {
+        friendlyName <- gsub("\\.", "_", contrastData$contrast_name[i])
+        friendlyName <- gsub("\\.vs\\.", "_minus_", friendlyName)
+
+        contrastString <- if (formulaUsesGroupPrefix) {
+            paste0(
+                "group", contrastData$numerator[i],
+                "-group", contrastData$denominator[i]
+            )
+        } else {
+            paste0(
+                contrastData$numerator[i],
+                "-", contrastData$denominator[i]
+            )
+        }
+
+        list(
+            friendly_name = friendlyName,
+            contrast_string = contrastString,
+            full_format = paste0(friendlyName, "=", contrastString)
+        )
+    })
+
+    data.frame(
+        contrasts = vapply(contrastInfo, `[[`, character(1), "contrast_string"),
+        friendly_names = vapply(contrastInfo, `[[`, character(1), "friendly_name"),
+        full_format = vapply(contrastInfo, `[[`, character(1), "full_format"),
+        stringsAsFactors = FALSE
+    )
+}
+
+buildProtDesignSaveResultsPayload <- function(
+    designMatrix,
+    currentRemovedSamples = character(0),
+    dataCln,
+    contrastData,
+    configList,
+    formulaString
+) {
+    designMatrixFinal <- designMatrix |>
+        dplyr::filter(!is.na(group) & group != "") |>
+        dplyr::filter(!Run %in% currentRemovedSamples) |>
+        # group + replicates uniquely identifies a biological sample for
+        # downstream technical-replicate grouping.
+        dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+
+    if (nrow(designMatrixFinal) == 0) {
+        return(NULL)
+    }
+
+    assignedRuns <- designMatrixFinal$Run
+    dataClnFinal <- transformDIADesignTable(getDIAActiveManager(), dataCln, samples = assignedRuns,
+        strip_parser = length(getDIAImportMetadata(getDIAActiveManager())$numeric_columns) > 0L)
+
+    configListFinal <- configList
+    configListFinal[["deAnalysisParameters"]][["formula_string"]] <- formulaString
+
+    list(
+        design_matrix = designMatrixFinal,
+        data_cln = dataClnFinal,
+        contrasts_tbl = buildProtDesignSaveResultsContrastsTable(
+            contrastData = contrastData,
+            formulaString = formulaString
+        ),
+        config_list = configListFinal
+    )
+}
+
+transformProtDesignSampleNames <- function(
+    selectedSamples,
+    transformMode,
+    rangeStart = NULL,
+    rangeEnd = NULL,
+    extractExperimentFn = extract_experiment,
+    reqFn = shiny::req
+) {
+    vapply(selectedSamples, function(sampleName) {
+        if (transformMode == "range") {
+            reqFn(rangeStart, rangeEnd)
+            return(extractExperimentFn(
+                sampleName,
+                mode = "range",
+                start = rangeStart,
+                end = rangeEnd
+            ))
+        }
+
+        if (transformMode == "before_underscore") {
+            return(extractExperimentFn(sampleName, mode = "start"))
+        }
+
+        if (transformMode == "after_underscore") {
+            return(extractExperimentFn(sampleName, mode = "end"))
+        }
+
+        stop("Unsupported transform mode: ", transformMode, call. = FALSE)
+    }, character(1), USE.NAMES = FALSE)
+}
+
+applyProtDesignBulkRenameUpdates <- function(
+    designMatrix,
+    dataCln,
+    selectedSamples,
+    newNames
+) {
+    updatedDesignMatrix <- designMatrix
+    updatedDataCln <- dataCln
+
+    for (i in seq_along(selectedSamples)) {
+        originalName <- selectedSamples[[i]]
+        newName <- newNames[[i]]
+        updatedDesignMatrix$Run[updatedDesignMatrix$Run == originalName] <- newName
+    }
+    updatedDataCln <- transformDIADesignTable(getDIAActiveManager(), dataCln,
+        rename = stats::setNames(newNames, selectedSamples))
+
+    list(
+        designMatrix = updatedDesignMatrix,
+        dataCln = updatedDataCln
+    )
+}
+
+applyProtDesignSingleRenameUpdate <- function(
+    designMatrix,
+    dataCln,
+    originalName,
+    newName
+) {
+    updatedDesignMatrix <- designMatrix
+    updatedDataCln <- dataCln
+
+    updatedDesignMatrix$Run[updatedDesignMatrix$Run == originalName] <- newName
+    updatedDataCln <- transformDIADesignTable(getDIAActiveManager(), dataCln,
+        rename = stats::setNames(newName, originalName))
+
+    list(
+        designMatrix = updatedDesignMatrix,
+        dataCln = updatedDataCln
+    )
+}
+
+buildProtDesignStateCheckpoint <- function(
+    workflowData,
+    workflowType,
+    actionLabel,
+    validateColumnMapping = FALSE
+) {
+  workflowData$design_matrix <- workflowData$design_matrix |>
+    dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
+  logger::log_info("Created tech_rep_group column for proper technical replicate identification")
+
+  if (workflowType %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level; KIT-048: the owner is the one path
+    checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
+      workflowData$design_matrix, workflowData$config_list)
+    # KIT-025; KIT-038: the design step declares the three design roles it binds, with their values.
+    setDIAStepProvenance(workflowData$state_manager, "design_builder",
+      parameter_names = c("sample_id", "group_id", "technical_replicate_id"),
+      values = list(sample_id = checkpoint$slots$sample_id, group_id = checkpoint$slots$group_id,
+        technical_replicate_id = checkpoint$slots$technical_replicate_id))
+    commitDIAReferenceState(workflowData$state_manager, "raw_data_s4", checkpoint,
+      checkpoint$slots$args, "Initial Peptide S4 object created after design matrix.")
+    return("raw_data_s4")
+  }
+
+  if (workflowType %in% c("TMT", "LFQ")) {
+    logger::log_info(sprintf("%s workflow: Reshaping protein data from long to wide format for S4 creation.", workflowType))
+
+    if (validateColumnMapping) {
+      if (is.null(workflowData$column_mapping$protein_col) ||
+          is.null(workflowData$column_mapping$run_col) ||
+          is.null(workflowData$column_mapping$quantity_col)) {
+        stop(sprintf("Missing required column mappings for %s data reshape. Cannot proceed.", workflowType))
+      }
+
+      requiredCols <- c(
+        workflowData$column_mapping$protein_col,
+        workflowData$column_mapping$run_col,
+        workflowData$column_mapping$quantity_col
+      )
+      missingCols <- requiredCols[!requiredCols %in% names(getDIAOwnedPayload(workflowData, "data_cln"))]
+      if (length(missingCols) > 0) {
+        stop(paste("Missing required columns in data_cln:", paste(missingCols, collapse = ", ")))
+      }
+    }
+
+    proteinQuantTableWide <- getDIAOwnedPayload(workflowData, "data_cln") |>
+      tidyr::pivot_wider(
+        id_cols = !!sym(workflowData$column_mapping$protein_col),
+        names_from = !!sym(workflowData$column_mapping$run_col),
+        values_from = !!sym(workflowData$column_mapping$quantity_col)
+      )
+
+    logger::log_info(sprintf(
+      "%s %s: Pivoted data from %d rows (long) to %d rows (wide)",
+      workflowType,
+      actionLabel,
+      nrow(getDIAOwnedPayload(workflowData, "data_cln")),
+      nrow(proteinQuantTableWide)
+    ))
+    logger::log_info(sprintf(
+      "%s %s: Wide format has %d protein rows, %d sample columns",
+      workflowType,
+      actionLabel,
+      nrow(proteinQuantTableWide),
+      ncol(proteinQuantTableWide) - 1
+    ))
+
+    logger::log_info(sprintf("%s %s: Applying log2 transformation to abundance values...", workflowType, actionLabel))
+
+    proteinIdCol <- workflowData$column_mapping$protein_col
+    proteinQuantTableWide <- proteinQuantTableWide |>
+      dplyr::mutate(
+        dplyr::across(
+          -!!sym(proteinIdCol),
+          ~ log2(.x + 1)
+        )
+      )
+
+    logger::log_info(sprintf("%s %s: Log2 transformation completed", workflowType, actionLabel))
+
+    s4Object <- ProteinQuantitativeData(
+      protein_quant_table = proteinQuantTableWide,
+      protein_id_column = workflowData$column_mapping$protein_col,
+      protein_id_table = proteinQuantTableWide |> dplyr::distinct(!!sym(workflowData$column_mapping$protein_col)),
+      design_matrix = workflowData$design_matrix,
+      sample_id = "Run",
+      group_id = "group",
+      technical_replicate_id = "tech_rep_group",
+      args = workflowData$config_list
+    )
+    stateName <- "protein_s4_initial"
+    description <- sprintf("Initial Protein S4 object created from %s data after design matrix.", workflowType)
+  } else {
+    stop("Unknown workflow_type in designMatrixAppletServer: ", workflowType)
+  }
+
+  logger::log_info(paste("Saving S4 object to R6 state manager as:", stateName))
+  # KIT-038: on an owner (KIT-020) the protein-level design step records its fixed transform.
+  setDIAStepProvenance(workflowData$state_manager, "design_builder",
+    fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
+  saveDIAOwnerState(workflowData$state_manager, 
+    state_name = stateName,
+    s4_data_object = s4Object,
+    config_object = workflowData$config_list,
+    description = description
+  )
+
+  .capture_checkpoint(s4Object, "cp04", "design_matrix")
+
+  stateName
+}
+
 #' Stream the required cleaned-data TSV from the accepted table.
 #' @param manager,reference Current owner and table.
 #' @param path Existing design artifact destination.

@@ -342,3 +342,49 @@ getUniprotAnnotationsFull <- function(data_tbl,
   })
 }
 
+#' The design step's UniProt annotation (KIT-103 W3), without its GUI.
+#' @description The cache directory, the retrieval and the scripts-directory copy that
+#'   `completeProtDesignPostCheckpoint` ran inline; its modal, progress messages and notifications stay there.
+#' @param manager Current owner (the workflow's state manager).
+#' @param dataCln Accepted assay table reference.
+#' @param proteinColumn Declared protein identifier column; NULL is refused with today's message.
+#' @param taxonId Taxonomic ID, passed through unchanged.
+#' @param resultsDir Experiment results directory, or NULL for the session's temporary cache.
+#' @param sourceDir Experiment scripts directory, or NULL to skip the `uniprot_dat_cln.RDS` copy.
+#' @param progressCallback Optional `function(current, total)`.
+#' @return The UniProt annotation table.
+#' @noRd
+retrieveProtDesignUniprotAnnotations <- function(manager, dataCln, proteinColumn, taxonId,
+    resultsDir = NULL, sourceDir = NULL, progressCallback = NULL) {
+    if (is.null(proteinColumn)) {
+        stop("Protein column not found in column_mapping. Cannot get annotations.")
+    }
+
+    cacheDir <- if (!is.null(resultsDir)) {
+        file.path(resultsDir, "cache")
+    } else {
+        file.path(tempdir(), "proteomics_cache")
+    }
+
+    uniprotCacheDir <- file.path(cacheDir, "uniprot_annotations")
+    if (!dir.exists(uniprotCacheDir)) {
+        dir.create(uniprotCacheDir, recursive = TRUE)
+    }
+
+    uniprotDatCln <- getUniprotAnnotationsFull(
+        data_tbl = readDIAAnnotationIdentifiers(manager, dataCln, proteinColumn),
+        protein_id_column = proteinColumn,
+        cache_dir = uniprotCacheDir,
+        taxon_id = taxonId,
+        progress_callback = progressCallback
+    )
+
+    if (!is.null(sourceDir)) {
+        scriptsUniprotPath <- file.path(sourceDir, "uniprot_dat_cln.RDS")
+        saveRDS(uniprotDatCln, scriptsUniprotPath)
+        log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scriptsUniprotPath))
+    }
+
+    uniprotDatCln
+}
+

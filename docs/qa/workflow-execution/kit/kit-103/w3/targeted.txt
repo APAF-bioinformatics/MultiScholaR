@@ -1,0 +1,62 @@
+# KIT-103 W3 targeted tests, after the implementation (back-reference #3 and its callee moved first; then the save
+# payload, the rename edits and the state checkpoint, names kept, beside transformDIADesignTable; the UniProt and
+# imported-FASTA annotation computations as core functions). Base 70af7bb4 (origin/performance-v2, W1 e82f72a9),
+# R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in
+# sequence; runner kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.DGpv4v/library. Recorded 2026-11-08.
+# No R CMD check, no install, no journeys, no e2e. No DESCRIPTION change: W3 adds no file.
+# Baseline column: docs/qa/workflow-execution/kit/kit-101/test-baseline.tsv (load_all) unless stated.
+
+COUNTS test-prot-design-core.R pass 32 fail 0 error 0 skip 0
+exit=0 elapsed=13s    (new file; test-first: 3 of 5 blocks fail or error, see test-first.txt)
+COUNTS test-prot-04-design.R pass 1560 fail 0 error 0 skip 4
+exit=0 elapsed=15s    (baseline: passed 1560, skipped 4)
+COUNTS test-prot-04a-design-module-characterization.R pass 194 fail 0 error 0 skip 4
+exit=0 elapsed=9s     (baseline: passed 194, skipped 4)
+COUNTS test-prot-04b-design-server-shared.R pass 8 fail 0 error 0 skip 0
+exit=0 elapsed=7s     (baseline: passed 8)
+COUNTS test-prot-04c-peptide-plot-density-ggplot-shared.R pass 21 fail 0 error 0 skip 0
+exit=0 elapsed=9s     (baseline: passed 21)
+COUNTS test-prot-04d-peptide-s4-normalization-characterization.R pass 112 fail 0 error 0 skip 0
+exit=0 elapsed=10s    (baseline: passed 112, the same 2 warnings)
+COUNTS test-prot-04e-peptide-s4-missingness-limpa-characterization.R pass 51 fail 0 error 0 skip 0
+exit=0 elapsed=9s     (baseline: passed 51)
+COUNTS test-module-ci-prot-design.R pass 11 fail 0 error 0 skip 5
+exit=0 elapsed=8s     (baseline: passed 11, skipped 5)
+COUNTS test-workflow-checkpoint-dia-state.R pass 174 fail 0 error 0 skip 4
+exit=0 elapsed=31s    (baseline: passed 174, skipped 4 (quarantine))
+COUNTS test-workflow-gui-memory-lifetimes.R pass 80 fail 0 error 0 skip 11
+exit=0 elapsed=12s    (baseline: passed 80, skipped 11)
+COUNTS test-perf107-audit.R pass 191 fail 0 error 0 skip 1
+exit=0 elapsed=26s    (baseline: passed 191, skipped 1)
+COUNTS test-perf107-checkpoints.R pass 38 fail 0 error 0 skip 1
+exit=0 elapsed=24s    (baseline: passed 38, skipped 1)
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2
+exit=0 elapsed=138s   (baseline: passed 303, skipped 2; the same 20 `core_utilisation` warnings)
+COUNTS test-applets-direct-shared.R pass 15 fail 0 error 0 skip 0
+exit=0 elapsed=8s     (baseline: passed 15)
+COUNTS test-omic-gui-config.R pass 478 fail 0 error 0 skip 0
+exit=0 elapsed=14s    (W1's file at e82f72a9: passed 478; the adaptor's design entries resolve the moved names)
+COUNTS test-prot-import-core.R pass 35 fail 0 error 0 skip 0
+exit=0 elapsed=13s    (KIT-102 W3: passed 35; a dependent of func_prot_annotation_fasta_processing_helpers.R)
+COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2
+exit=0 elapsed=654s   (baseline: 734 expectations, passed 725 with 7 warnings counted apart, skipped 2; this runner
+                       counts differently; KIT-102 W3 with the same runner: 733 / 0 / 0 / 2)
+
+# Dependents grep (R/, tests/, tools/, inst/; tools/refactor excluded) for the eight moved names and the two new
+# core names: every caller resolves the kept names through the namespace. Tests naming them: test-prot-04,
+# test-prot-04a, test-module-ci-prot-design (+ helper), test-workflow-gui-memory-lifetimes, test-workflow-native-session,
+# test-perf107-{audit,checkpoints}, test-workflow-checkpoint-dia-state, test-omic-gui-config: all run above.
+# tools/profiling/workflow_checkpoint_gui_diagnostic.R traces buildProtDesignStateCheckpoint and
+# completeProtDesignPostCheckpoint by name (names kept, unchanged). The only test reading a W3 file by path is
+# test-prot-04-design.R's file guard (R/mod_prot_design_*_helpers.R, all still present). R/utils_omic_gui_config.R
+# names buildProtDesignStateCheckpoint (W1's comment / deferred field); R/utils_workflow_prot_declarations.R calls
+# buildDIAReferenceDesignState and buildProtDesignInitialState by name: no edit needed.
+
+# Back-reference count (design section 5's parse-data method, scratch script: top-level functions of R/mod_*.R
+# referenced as a call or symbol in R/utils_workflow_*.R or R/func_*.R): 31 at 70af7bb4 (W1's adaptor added
+# buildProtDesignInitialState); 29 after commit 1 and after commit 2. #3 buildDIAReferenceDesignState and its callee
+# buildProtDesignInitialState are gone; #4 and #5 (the exported builder UI/server, func_general_applets.R) remain by
+# design; no moved or new function references an R/mod_*.R function.
+
+# Pure-move check: in the diff of R/ every removed line reappears as an added line, apart from one section comment
+# in utils_workflow_dia_state.R, the two new core functions and their two call sites.

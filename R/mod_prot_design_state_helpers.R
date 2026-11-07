@@ -1,114 +1,3 @@
-buildProtDesignStateCheckpoint <- function(
-    workflowData,
-    workflowType,
-    actionLabel,
-    validateColumnMapping = FALSE
-) {
-  workflowData$design_matrix <- workflowData$design_matrix |>
-    dplyr::mutate(tech_rep_group = paste(group, replicates, sep = "_"))
-  logger::log_info("Created tech_rep_group column for proper technical replicate identification")
-
-  if (workflowType %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level; KIT-048: the owner is the one path
-    checkpoint <- newDIAPeptideCheckpoint(workflowData$state_manager, workflowData$data_cln,
-      workflowData$design_matrix, workflowData$config_list)
-    # KIT-025; KIT-038: the design step declares the three design roles it binds, with their values.
-    setDIAStepProvenance(workflowData$state_manager, "design_builder",
-      parameter_names = c("sample_id", "group_id", "technical_replicate_id"),
-      values = list(sample_id = checkpoint$slots$sample_id, group_id = checkpoint$slots$group_id,
-        technical_replicate_id = checkpoint$slots$technical_replicate_id))
-    commitDIAReferenceState(workflowData$state_manager, "raw_data_s4", checkpoint,
-      checkpoint$slots$args, "Initial Peptide S4 object created after design matrix.")
-    return("raw_data_s4")
-  }
-
-  if (workflowType %in% c("TMT", "LFQ")) {
-    logger::log_info(sprintf("%s workflow: Reshaping protein data from long to wide format for S4 creation.", workflowType))
-
-    if (validateColumnMapping) {
-      if (is.null(workflowData$column_mapping$protein_col) ||
-          is.null(workflowData$column_mapping$run_col) ||
-          is.null(workflowData$column_mapping$quantity_col)) {
-        stop(sprintf("Missing required column mappings for %s data reshape. Cannot proceed.", workflowType))
-      }
-
-      requiredCols <- c(
-        workflowData$column_mapping$protein_col,
-        workflowData$column_mapping$run_col,
-        workflowData$column_mapping$quantity_col
-      )
-      missingCols <- requiredCols[!requiredCols %in% names(getDIAOwnedPayload(workflowData, "data_cln"))]
-      if (length(missingCols) > 0) {
-        stop(paste("Missing required columns in data_cln:", paste(missingCols, collapse = ", ")))
-      }
-    }
-
-    proteinQuantTableWide <- getDIAOwnedPayload(workflowData, "data_cln") |>
-      tidyr::pivot_wider(
-        id_cols = !!sym(workflowData$column_mapping$protein_col),
-        names_from = !!sym(workflowData$column_mapping$run_col),
-        values_from = !!sym(workflowData$column_mapping$quantity_col)
-      )
-
-    logger::log_info(sprintf(
-      "%s %s: Pivoted data from %d rows (long) to %d rows (wide)",
-      workflowType,
-      actionLabel,
-      nrow(getDIAOwnedPayload(workflowData, "data_cln")),
-      nrow(proteinQuantTableWide)
-    ))
-    logger::log_info(sprintf(
-      "%s %s: Wide format has %d protein rows, %d sample columns",
-      workflowType,
-      actionLabel,
-      nrow(proteinQuantTableWide),
-      ncol(proteinQuantTableWide) - 1
-    ))
-
-    logger::log_info(sprintf("%s %s: Applying log2 transformation to abundance values...", workflowType, actionLabel))
-
-    proteinIdCol <- workflowData$column_mapping$protein_col
-    proteinQuantTableWide <- proteinQuantTableWide |>
-      dplyr::mutate(
-        dplyr::across(
-          -!!sym(proteinIdCol),
-          ~ log2(.x + 1)
-        )
-      )
-
-    logger::log_info(sprintf("%s %s: Log2 transformation completed", workflowType, actionLabel))
-
-    s4Object <- ProteinQuantitativeData(
-      protein_quant_table = proteinQuantTableWide,
-      protein_id_column = workflowData$column_mapping$protein_col,
-      protein_id_table = proteinQuantTableWide |> dplyr::distinct(!!sym(workflowData$column_mapping$protein_col)),
-      design_matrix = workflowData$design_matrix,
-      sample_id = "Run",
-      group_id = "group",
-      technical_replicate_id = "tech_rep_group",
-      args = workflowData$config_list
-    )
-    stateName <- "protein_s4_initial"
-    description <- sprintf("Initial Protein S4 object created from %s data after design matrix.", workflowType)
-  } else {
-    stop("Unknown workflow_type in designMatrixAppletServer: ", workflowType)
-  }
-
-  logger::log_info(paste("Saving S4 object to R6 state manager as:", stateName))
-  # KIT-038: on an owner (KIT-020) the protein-level design step records its fixed transform.
-  setDIAStepProvenance(workflowData$state_manager, "design_builder",
-    fixed = list(pivot = "protein x run", transform = "log2(x + 1)"))
-  saveDIAOwnerState(workflowData$state_manager, 
-    state_name = stateName,
-    s4_data_object = s4Object,
-    config_object = workflowData$config_list,
-    description = description
-  )
-
-  .capture_checkpoint(s4Object, "cp04", "design_matrix")
-
-  stateName
-}
-
 completeProtDesignPostCheckpoint <- function(
     workflowData,
     experimentPaths,
@@ -138,22 +27,6 @@ completeProtDesignPostCheckpoint <- function(
   ))
 
   tryCatch({
-    proteinColumn <- workflowData$column_mapping$protein_col
-    if (is.null(proteinColumn)) {
-      stop("Protein column not found in column_mapping. Cannot get annotations.")
-    }
-
-    cacheDir <- if (!is.null(experimentPaths) && !is.null(experimentPaths$results_dir)) {
-      file.path(experimentPaths$results_dir, "cache")
-    } else {
-      file.path(tempdir(), "proteomics_cache")
-    }
-
-    uniprotCacheDir <- file.path(cacheDir, "uniprot_annotations")
-    if (!dir.exists(uniprotCacheDir)) {
-      dir.create(uniprotCacheDir, recursive = TRUE)
-    }
-
     progressUpdater <- function(current, total) {
       tryCatch({
         percent <- round((current / total) * 100)
@@ -166,21 +39,18 @@ completeProtDesignPostCheckpoint <- function(
       })
     }
 
-    uniprotDatCln <- getUniprotAnnotationsFull(
-      data_tbl = readDIAAnnotationIdentifiers(workflowData$state_manager, workflowData$data_cln, proteinColumn),
-      protein_id_column = proteinColumn,
-      cache_dir = uniprotCacheDir,
-      taxon_id = workflowData$taxon_id,
-      progress_callback = progressUpdater
+    # KIT-103 W3: the computation is the core's annotation step.
+    uniprotDatCln <- retrieveProtDesignUniprotAnnotations(
+      manager = workflowData$state_manager,
+      dataCln = workflowData$data_cln,
+      proteinColumn = workflowData$column_mapping$protein_col,
+      taxonId = workflowData$taxon_id,
+      resultsDir = experimentPaths$results_dir,
+      sourceDir = experimentPaths$source_dir,
+      progressCallback = progressUpdater
     )
 
     workflowData$uniprot_dat_cln <- uniprotDatCln
-
-    if (!is.null(experimentPaths) && !is.null(experimentPaths$source_dir)) {
-      scriptsUniprotPath <- file.path(experimentPaths$source_dir, "uniprot_dat_cln.RDS")
-      saveRDS(uniprotDatCln, scriptsUniprotPath)
-      log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scriptsUniprotPath))
-    }
     log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprotDatCln)))
     shiny::removeModal()
     shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")

@@ -113,24 +113,8 @@ hydrateProtDesignImportedFastaSidecar <- function(
     logger::log_info("Processing FASTA file for accession cleanup...")
 
     tryCatch({
-      cacheDir <- if (!is.null(resultsDir)) {
-        file.path(resultsDir, "cache")
-      } else {
-        file.path(tempdir(), "proteomics_cache")
-      }
-
-      if (!dir.exists(cacheDir)) {
-        dir.create(cacheDir, recursive = TRUE)
-      }
-
-      fastaMetaFile <- file.path(cacheDir, "aa_seq_tbl.RDS")
-      fastaResult <- processFastaFile(
-        fasta_file_path = fastaPath,
-        uniprot_search_results = NULL,
-        uniparc_search_results = NULL,
-        fasta_meta_file = fastaMetaFile,
-        organism_name = organismName
-      )
+      # KIT-103 W3: the computation is the core's annotation step.
+      fastaResult <- processProtDesignImportedFasta(fastaPath, resultsDir = resultsDir, organismName = organismName)
 
       aaSeqTblFinal <- fastaResult$aa_seq_tbl_final
       fastaMetadata <- fastaResult$fasta_metadata

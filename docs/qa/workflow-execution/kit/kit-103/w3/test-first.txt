@@ -1,0 +1,49 @@
+# KIT-103 W3 test-first: tests/testthat/test-prot-design-core.R before the implementation
+# HEAD 70af7bb4 (origin/performance-v2, includes W1 e82f72a9), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1; runner kit/scripts-078/run1.R <tree> <file> v; R_LIBS = core/browser-smoke.DGpv4v/library.
+# Recorded 2026-11-08.
+# The three pinned digests (the UniProt table, aa_seq_tbl_final and the FASTA metadata without its timestamp) were
+# recorded at this commit by a scratch probe through today's GUI functions (completeProtDesignPostCheckpoint with
+# the offline UniProt double, helper-gui-entry.R guiEntryInstallUniprotCache; hydrateProtDesignImportedFastaSidecar
+# on tests/testdata/e2e/prot_tmt/proteins.fasta). The same values hold in the probe's two runs.
+# Expected to fail first:
+#   - the location block (the eight design functions are still in R/mod_prot_design_*.R; the two annotation core
+#     functions are absent);
+#   - the UniProt block, at the core function (absent); its GUI-path expectations pass on the pinned digest;
+#   - the FASTA block, at the core function (absent); its GUI-path expectations pass on the pinned digests.
+# Expected to pass at base (guards): back-reference #3 (prepareDIAGUIReferences calls buildDIAReferenceDesignState
+# once, by name, and settles design_initial and the design file dependency) and the run order (a fresh proteomics
+# design is mixedsort on the plain-table and the DIA-reference paths).
+# Observed: 3 of 5 blocks fail or error, 2 pass, as expected.
+
+COUNTS test-prot-design-core.R pass 24 fail 1 error 2 skip 0
+  BAD test-prot-design-core.R :: the moved design functions are defined in the proteomics core files, with their names kept
+  BAD test-prot-design-core.R :: the design step's UniProt annotation is unchanged through the offline UniProt double
+  BAD test-prot-design-core.R :: the imported-FASTA annotation step is unchanged
+--- the moved design functions are defined in the proteomics core files, with their names kept
+ Expected `found` to be identical to `protDesignCoreDefinitions`.
+Differences:
+actual vs expected
+- buildDIAReferenceDesignState"mod_prot_design_builder_server_helpers.R"
++ buildDIAReferenceDesignState"utils_workflow_dia_state.R"
+- buildProtDesignInitialState"mod_prot_design_builder_state_helpers.R"
++ buildProtDesignInitialState"utils_workflow_dia_state.R"
+- buildProtDesignSaveResultsContrastsTable"mod_prot_design_builder_state_helpers.R"
++ buildProtDesignSaveResultsContrastsTable"utils_workflow_dia_state.R"
+- buildProtDesignSaveResultsPayload"mod_prot_design_builder_state_helpers.R"
++ buildProtDesignSaveResultsPayload"utils_workflow_dia_state.R"
+- transformProtDesignSampleNames"mod_prot_design_builder_action_helpers.R"
++ transformProtDesignSampleNames"utils_workflow_dia_state.R"
+- applyProtDesignBulkRenameUpdates"mod_prot_design_builder_action_helpers.R"
++ applyProtDesignBulkRenameUpdate   (message truncated at 900 characters by the runner)
+--- the design step's UniProt annotation is unchanged through the offline UniProt double
+ Error in `retrieveProtDesignUniprotAnnotations(manager, source, "Protein.Group", 9606, resultsDir = paths$results_dir,
+ sourceDir = paths$source_dir, progressCallback = ...)`: could not find function "retrieveProtDesignUniprotAnnotations"
+--- the imported-FASTA annotation step is unchanged
+ Error in `processProtDesignImportedFasta(fasta, resultsDir = results_dir, organismName = "Homo sapiens")`: could not
+ find function "processProtDesignImportedFasta"
+
+# After the first move alone (commit 1: buildDIAReferenceDesignState and buildProtDesignInitialState), the same
+# file: pass 24 fail 1 error 2; the location diff no longer lists those two (back-reference #3's caller block
+# passes through the moved function), the other six and the two annotation functions still differ.
+# After all moves (commit 2): pass 32 fail 0 error 0 skip 0 (targeted.txt).

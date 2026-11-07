@@ -352,3 +352,32 @@ processProtImportFastaData <- function(
     ))
   })
 }
+
+#' The design import's FASTA processing (KIT-103 W3), without its GUI.
+#' @description The cache directory and `processFastaFile` call that `hydrateProtDesignImportedFastaSidecar`
+#'   ran inline; its sidecar copies, logging and notifications stay there.
+#' @param fastaPath The imported FASTA file.
+#' @param resultsDir Experiment results directory, or NULL for the session's temporary cache.
+#' @param organismName Organism name passed to `processFastaFile`.
+#' @return `processFastaFile`'s result (`aa_seq_tbl_final`, `fasta_metadata`).
+#' @noRd
+processProtDesignImportedFasta <- function(fastaPath, resultsDir = NULL, organismName = NULL) {
+    cacheDir <- if (!is.null(resultsDir)) {
+        file.path(resultsDir, "cache")
+    } else {
+        file.path(tempdir(), "proteomics_cache")
+    }
+
+    if (!dir.exists(cacheDir)) {
+        dir.create(cacheDir, recursive = TRUE)
+    }
+
+    fastaMetaFile <- file.path(cacheDir, "aa_seq_tbl.RDS")
+    processFastaFile(
+        fasta_file_path = fastaPath,
+        uniprot_search_results = NULL,
+        uniparc_search_results = NULL,
+        fasta_meta_file = fastaMetaFile,
+        organism_name = organismName
+    )
+}
