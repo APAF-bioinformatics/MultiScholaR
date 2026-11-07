@@ -117,7 +117,7 @@ The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start
 | TMT, LFQ and FragPipe | 150 passed, 0 failed | 369 s |
 | DIA_LIMPA | 11 passed, 1 skip (no browser QC path yet, by design) | 61 s |
 
-| F-24 | lipid and metab QC apply observers (`mod_lipid_qc_intensity_server_helpers.R:127`, `mod_metab_qc_intensity.R:358`); the trx revert observer | The same class as F-17: a click made before the server starts can be run when it starts. Found while fixing F-17; not reproduced through the public servers yet. | Construct the F-17 test on the lipid and metab QC intensity servers. | KIT-104 | fixing (user, 2026-11-07: "fix or queue fix for both"; fixed now, as F-17) |
+| F-24 | lipid and metab QC apply observers (`mod_lipid_qc_intensity_server_helpers.R:127`, `mod_metab_qc_intensity.R:358`); the trx revert observer | The same class as F-17: a click made before the server starts can be run when it starts. Found while fixing F-17; not reproduced through the public servers yet. | Construct the F-17 test on the lipid and metab QC intensity servers. | KIT-104 | **fixed** `321c2294` (12 sites); 2 display-only sites queued to KIT-104 |
 | F-25 | `tests/testthat/test-e2e-proteomics-dia-limpa.R`, the checks after the export | They still expect legacy fields (`use_limpa`, `current_s4_object@args`, `workflow_type` 'DIA'). They are not reachable while the lane skips at QC, and will fail once a limpa browser QC path exists. | Read the lane file after its QC skip. | KIT-104 | queued to KIT-104 (user, 2026-11-07; not reachable until a limpa browser QC path exists) |
 
 ## Fixes, F-18 and F-23 ([fixes4/](fixes4/)), 2026-11-07
@@ -137,3 +137,7 @@ The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start
 
 **F-26 fixed** ([fixes6/f26.txt](fixes6/f26.txt)): in `importProteomeDiscovererTMTData`, a numeric 0 abundance is read as NA after the pivot, as the LFQ readers now do. A test fails first (2 failures); after the fix, the TMT direct test passes 27/0, MCI import 91/0, and prot-01 15/0. No corpus or lane has a TMT zero, so no oracle changes.
 **F-23 caveat** (user: "Keep, note caveat"): quantile and scale are approximate on DIA_LIMPA. Moving its normalisation to the precursor level is added to KIT-114 as item (c).
+
+**F-24 fixed (`321c2294`, [fixes5/](fixes5/)).** Twelve apply, revert and finalise sites were reproduced through the public QC orchestrators and fixed with one helper, `qcClickAfterStart`, which also replaces F-17's inline lines. The sites are lipid and metab intensity apply/revert, duplicates resolve/revert and finalise, and trx revert and finalise. Before the fix the tests failed: lipid 5, metab 5, trx 2. After it: lipid 68/0, metab 64/0, trx 38/0, every dependent 0 failures, and the entry lanes unchanged.
+- **Not changed:** lipid and metab *Detect duplicates* and *Analyze internal standards* also run a click made before the sub-modules start, but they commit no state and only fill the display. They are queued to KIT-104, which rebuilds the QC shell.
+- **Reachability:** a browser click before the start was not shown. The reproduction was through `testServer`, as for F-17.
