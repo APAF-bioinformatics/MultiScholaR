@@ -188,6 +188,23 @@ lane sets them (the proteomics format options and the trx RUVIII `M` are set exp
 - MaxQuant/FragPipe zeros. The import keeps a 0 intensity as a quantity (`log2(0 + 1)`). The LFQ fixtures therefore
   carry no missing values (`kit-101/fixtures.txt`).
 
+**E2E proteomics browser lanes, once each** (HEAD `26f09136`/`e5d04531`, R/ equal to `ba019048`; the KIT-097/W5 way:
+`CHROMOTE_CHROME=/usr/bin/brave`, the kit_100 library, ceiling 1,800 s per file, one attempt):
+
+| file | lanes | result | seconds | failed step |
+|---|---|---|---|---|
+| test-e2e-proteomics-dia.R | prot_dia | pass 13, error 1 | 267 | after the normalisation export: `e2e_assert_prot_filtered_session_artifacts` (helper-e2e-browser.R:675), `filtered_session_data_latest.rds` does not exist |
+| test-e2e-proteomics-dia-limpa.R | prot_dia_limpa | pass 11, skip 1 | 92 | skips at the QC stage by design (`e2e_run_prot_dia_limpa_qc`: "no browser path to drive yet") |
+| test-e2e-proteomics-enrichment.R | prot_dia (gprofiler2, clusterProfiler) | pass 14, error 2 | 456 | the same session-artifact assertion, before the DA and enrichment |
+| test-e2e-proteomics-tmt-lfq.R | prot_tmt, prot_lfq, prot_lfq_fragpipe | pass 48, error 3 | 311 | the same session-artifact assertion, after the normalisation export |
+
+- **The DIA lanes now get past the Q-value filter and the rollup.** Import, design, every peptide and protein QC step,
+  normalisation and the export all run in the browser, so F-07's blocker is gone.
+- **Every lane then stops at one harness check.** The check expects the legacy filtered-session file. The native export
+  writes `filtered_session_<time>_native-export-<hex>.msdia.tar` instead, as the entry lanes record.
+- **This is a stale assertion in `tests/testthat/helper-e2e-browser.R`, which is outside this work's scope.** The same
+  failure occurred in a complete pre-rebase run on `e0a05f84`.
+
 **F-14.** The ticket's experiment budget says "6 in parallel, the KIT-099 checkpoint's settings", but the KIT-099
 checkpoint ran 8 in parallel (`head -1 kit-099/suite.txt`). The number for the checkpoint's settings is therefore 8.
 The per-file baseline (`test-baseline.md`) ran 6 in parallel, and stands as recorded.
