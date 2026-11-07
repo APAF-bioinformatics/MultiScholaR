@@ -1,0 +1,35 @@
+# KIT-103 W2 targeted tests, after the implementation (R/func_omics_design_shared.R, R/utils_workflow_omics_design.R
+# (new); lipidDesignObject / metabDesignObject in R/utils_workflow_{lipid,metab}_declarations.R; the four trx copies in
+# R/func_trx_design.R; tests/testthat/test-omics-design-core.R (new)). Base 70af7bb4, R 4.6.1, pkgload::load_all
+# (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence; runner
+# kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.DGpv4v/library. Recorded 2026-11-08. No R CMD check, no install,
+# no journeys, no e2e. DESCRIPTION Collate had the two new files added locally for load_all
+# ('func_omics_design_shared.R' after 'func_omics_da_shared.R'; 'utils_workflow_omics_design.R' after
+# 'utils_workflow_omics_import.R'); that edit is not committed (the lead owns Collate).
+# Set: W2's test file; the lipid, metab and trx design tests and MCI design files; the three declaration files and the
+# configuration test; the dependents grep of every touched name and file (trxDesignGroupLevels, trxConditionText,
+# trxDesignCheck, trxDesignObject, func_trx_design, utils_workflow_{lipid,metab}_declarations, the new names and files
+# across tests/, tools/, inst/): only test-module-ci-trx-design.R, in the set. Reference: kit-102/skips-load_all.tsv
+# (W1's targeted.txt for the configuration test).
+
+COUNTS test-omics-design-core.R pass 946 fail 0 error 0 skip 0          (new; test first: 0 / 17 errors, test-first.txt)
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0     (KIT-102: 109)
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0      (KIT-102: 96)
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0        (KIT-102: 71)
+COUNTS test-trx-design.R pass 70 fail 0 error 0 skip 0                  (KIT-102: 70)
+COUNTS test-omic-gui-config.R pass 478 fail 0 error 0 skip 0            (W1: 478)
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0 (KIT-102: 259)
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0 (KIT-102: 259)
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0  (KIT-102: 324)
+COUNTS test-lipid-13-design-builder-seams.R pass 202 fail 0 error 0 skip 0 (KIT-102: 202)
+COUNTS test-lipid-13a-design-module-characterization.R pass 146 fail 0 error 0 skip 0 (KIT-102: 146)
+COUNTS test-lipid-13b-design-wrapper-characterization.R pass 13 fail 0 error 0 skip 0 (KIT-102: 13)
+COUNTS test-lipid-14-design-module-seams.R pass 59 fail 0 error 0 skip 0 (KIT-102: 59)
+COUNTS test-metab-04-design-module-characterization.R pass 196 fail 0 error 0 skip 9 (KIT-102: 196 passed, 9 skips, the
+                                                                         existing quarantine)
+
+# test-omics-design-core.R iterations (one correction pass): run 1 after the implementation 821 pass / 77 fail / 1 error:
+# test inputs (an out-of-bounds bulk-rename range warned in both; a NULL factor2 fails in both), the owner record's
+# commit times and the trx source's import_sources directory in the comparison helpers, and the W2 finding A (today's
+# and the core's vroom reads refused by the owner). Run 2: 943 / 1 (metab's drifted import fails at the object in both,
+# after the bus, as today; the block's expectation corrected). Run 3: 946 / 0. Final run on the committed tree: 946 / 0.

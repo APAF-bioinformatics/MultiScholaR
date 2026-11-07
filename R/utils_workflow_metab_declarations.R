@@ -194,6 +194,26 @@ recordMetabDesignProvenance <- function(manager, object, source_dir = NULL, desi
     recordWorkflowOmicsDesignProvenance(metabolomicsDeclarationBinding, manager, object, source_dir, design_file)
 }
 
+#' The design state's object (KIT-103 C7): the `MetaboliteAssayData` of a builder result or an imported
+#' design, with today's argument mapping (the builder commit and the import, each at 70af7bb4): the
+#' mapping's id column, its annotation and internal-standard pattern when set (else NA), the
+#' `Run`, `group` and `tech_rep_group` roles and the configuration as `args`. The shape of a
+#' configuration's `design$build_object(results, columnMapping)`.
+#' @param results A list with `data_cln`, `design_matrix` (with `tech_rep_group`) and `config_list`.
+#' @param columnMapping The column mapping.
+#' @noRd
+metabDesignObject <- function(results, columnMapping) {
+    annotation <- columnMapping$annotation_col
+    if (is.null(annotation) || is.na(annotation) || !nzchar(annotation)) annotation <- NA_character_
+    pattern <- columnMapping$is_pattern
+    if (is.null(pattern) || is.na(pattern)) pattern <- NA_character_
+    createMetaboliteAssayData(metabolite_data = results$data_cln, design_matrix = results$design_matrix,
+        metabolite_id_column = columnMapping$metabolite_id_col,
+        annotation_id_column = annotation, sample_id = "Run", group_id = "group",
+        technical_replicate_id = "tech_rep_group", database_identifier_type = "Unknown",
+        internal_standard_regex = pattern, args = results$config_list)
+}
+
 #' @noRd
 runMetabReferenceDaAnalysis <- function(manager, source, settings, contrasts) {
     runWorkflowOmicsReferenceDaAnalysis(metabolomicsDeclarationBinding, manager, source, settings, contrasts)

@@ -1,0 +1,61 @@
+# KIT-103 W2 test first, 2026-11-08, HEAD 70af7bb4 (origin/performance-v2: W1 e82f72a9 + parked P-11/P-12),
+# before R/func_omics_design_shared.R and R/utils_workflow_omics_design.R existed.
+# R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process, runner
+# kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.DGpv4v/library.
+
+# 1. tests/testthat/test-omics-design-core.R: every block fails, the core functions are absent.
+COUNTS test-omics-design-core.R pass 0 fail 0 error 17 skip 0
+  BAD :: C1 the shared validator is today's lipid and metab validator, labels and messages included
+  BAD :: C1 the save preflight is today's commit preflight (lipid, metab)
+  BAD :: C2 the formula resolution is today's (lipid's function, metab's inline rule)
+  BAD :: C3 the sample discovery and initial state are today's (lipid, trx, metab)
+  BAD :: C3 the run order per omic: mixedsort for lipid and metab, input order for trx, file order for an imported design
+  BAD :: C5 the saved assay columns follow the design's run order
+  BAD :: C4 the design edits are today's lipid pure functions
+  BAD :: C5 the save payload is today's lipid payload
+  BAD :: C3 to C5 a builder session through the core gives today's result (lipid, metab, trx)
+  BAD :: C7 the lipid and metab objects hold today's argument mapping
+  BAD :: C8 the commit is today's for lipid and metab: bus, artifact bytes, state and provenance
+  BAD :: C8 the commit is today's for trx (MCI-027's corpus through the builder)
+  BAD :: C8 refusals come before the bus and the files; a later failure carries its message
+  BAD :: C8 the artifacts are today's seven files, without contrasts or a column mapping
+  BAD :: C10 the design import is today's for lipid and metab: bus, state, provenance, baseline and texts
+  BAD :: C10 the import's refusals are today's texts and write nothing
+  BAD :: C10 the reader infers the column mapping as today, by the omic's id key and candidates
+  (messages: could not find function "omicsDesignRules", "resolveOmicsDesignFormula", "buildOmicsDesignInitialState",
+   "buildOmicsDesignSavePayload", "appendOmicsDesignContrast", "commitOmicsDesign", "writeOmicsDesignArtifacts",
+   "validateOmicsDesignSave", "lipidDesignObject"; object 'lipidDesignObject' not found in the test configuration)
+
+# 2. Defect found on the way (W2 finding A, proposed F103-NN): "Import Existing Design" fails for lipid and metab
+#    whenever the files are read with vroom, today's default reader (MCI-019.4 and MCI-013.4 inject read.delim, so no
+#    test saw it). The owner refuses vroom's live parser pointer (the `problems` attribute) when the import holds the
+#    tables (setWorkflowOmicsBusTables, KIT-075), after config_list, column_mapping, design_matrix and contrasts_tbl
+#    were already written. Probe on today's code (scratch probe, load_all, HEAD 70af7bb4, the MCI-019 import pack):
+class: spec_tbl_df,tbl_df,tbl,data.frame
+problems typeof: externalptr
+check vroom: payload contains a nonportable resource
+today lipid import notes: Importing design files... | Error during import: payload contains a nonportable resource
+history: initial
+bus design null: FALSE column_mapping null: FALSE
+#    The first implemented run (before readOmicsDesignTable existed) failed the C10 comparison the same way on both
+#    sides: core$error 'Error during import: payload contains a nonportable resource' (lipid and metab, 6 cases each).
+#    The fix (readOmicsDesignTable: drop the `problems` attribute; values and column types are vroom's) is pinned by
+#    "W2 finding: the design import holds vroom's tables", which also asserts today's failure text (targeted.txt).
+
+# 3. The ticket's known candidate (existing-design factor levels from factor1 and factor2 only): reproduced, NOT fixed.
+#    Adding factor3's levels changes the factor list the trx builder passes to trxDesignGroupLevels at save, so the
+#    recorded trx level order (object@args$group_levels) can change: a recorded-state change, parked (proposal below).
+1. today's lipid existing-design factors: A,B,x,y (factor3 levels p,q absent)
+   core (unchanged by W2): A,B,x,y
+   trx level order, factors f1+f2: B_x_q,A_x_p,A_x_q ; f1+f2+f3: B_x_q,A_x_q,A_x_p
+
+# 4. Divergence on a failure path (W2 finding B): today's metab import writes config_list (and, when present,
+#    column_mapping) while it is still reading; a later read failure leaves them replaced. Lipid writes nothing until
+#    every file is read and the preflight passed. The core reads first, then commits, as lipid. Probe on today's code:
+2. today's metabolomics import, empty manifest: 'Error during import: assay_manifest.txt is empty. No assays to load.'; config_list after: replaced by the import's config.ini
+2. today's lipidomics import, empty manifest: 'Error during import: assay_manifest.txt is empty. No assays to load.'; config_list after: unchanged
+#    The texts are identical; the core leaves the bus unchanged for both (C10 refusal block). Not a recorded state.
+
+# 5. The trx copies (C7): the four functions in R/func_trx_design.R are text-identical to R/mod_transcriptomics.R's
+#    (diff of the two sections from "The group level order" to trxDesignObject: no difference). Until W5 deletes the
+#    mod_transcriptomics.R copies, that file is later in Collate and its definitions are the ones loaded.
