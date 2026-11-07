@@ -103,6 +103,30 @@ test_that("a store without provenance or inputs gives legacy steps and reports t
     expect_true("no inputs recorded" %in% check$incomplete)
 })
 
+test_that("KIT-101 F-15: a completed enrichment state on the head is recorded and the earlier steps and design are unchanged", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    now <- as.POSIXct("2026-11-07 10:00:00", tz = "UTC")
+    before <- buildWorkflowAnalysisRecord(manager, now)
+    # As the proteomics enrichment module commits it: the declared result class, checkpointed on the adapter.
+    results <- methods::new("EnrichmentResults", contrasts = tibble::tibble(contrasts = "groupB-groupA"),
+        enrichment_data = list(`groupB-groupA` = list(up = data.frame(term_id = "GO:0008150", p_value = 0.01))),
+        enrichment_plots = list(), enrichment_plotly = list(), enrichment_summaries = list())
+    manager$saveState("enrichment_completed", results, list(q_cutoff = 0.05), "fixture enrichment")
+    expect_identical(manager$current_state, "enrichment_completed")
+    reads <- manager$.context$full_s4_reads
+    after <- buildWorkflowAnalysisRecord(manager, now)
+    expect_identical(manager$.context$full_s4_reads, reads)
+    expect_true(validateWorkflowAnalysisRecord(after)$valid)
+    expect_identical(vapply(after$steps, `[[`, "", "state"), unlist(manager$.context$snapshot$state_history))
+    expect_identical(after$steps[seq_along(before$steps)], before$steps)
+    expect_identical(after$steps[[length(after$steps)]]$description, "fixture enrichment")
+    expect_false(is.null(before$design))
+    expect_identical(after$design, before$design)
+    expect_identical(after[setdiff(names(after), "steps")], before[setdiff(names(before), "steps")])
+})
+
 test_that("the summary page writes analysis_record.json after study_parameters.txt for an on-disk owner", {
     calls <- character()
     record_args <- NULL

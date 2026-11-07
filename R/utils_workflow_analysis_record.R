@@ -198,7 +198,8 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
     records <- lapply(stats::setNames(history, history), function(state) {
         reference <- snapshot$states[[state]]
         if (is.null(reference)) return(NULL)
-        tryCatch(readWorkflowStateMetadata(manager, reference), saved_entity_unsupported = function(e) {
+        # KIT-101 F-15: every declared class, so a result-class state (the proteomics `enrichment_completed`) is read too.
+        tryCatch(readComponentMetadata(manager, reference), saved_entity_unsupported = function(e) {
             # The `initial` placeholder is a small record with no data; a state stored as a whole legacy object is
             # not hydrated here and is listed without its arguments.
             if (identical(state, "initial")) resolveWorkflowStateValue(context, reference) else list(legacy_object = TRUE)
@@ -279,7 +280,9 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             parameters = parameters, products = Filter(Negate(is.null), products),
             stored_as_object = isTRUE(record$legacy_object))
     }
-    last <- if (length(history)) records[[history[[length(history)]]]] else NULL
+    # KIT-101 F-15: the design is the last assay state's; a result-class state after it (the enrichment) carries none.
+    assay_history <- Filter(function(state) !isTRUE(records[[state]]$data$class %in% workflowDeclaredClassNames("result")), history)
+    last <- if (length(assay_history)) records[[assay_history[[length(assay_history)]]]] else NULL
     design <- NULL
     if (!is.null(last$data$components$design_matrix)) {
         rows <- materializeWorkflowTable(context, last$data$components$design_matrix)

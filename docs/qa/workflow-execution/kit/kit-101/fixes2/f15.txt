@@ -1,0 +1,84 @@
+KIT-101 addendum revision 2.2: F-15 (user, 2026-11-07: "of course fix it")
+Base: origin/performance-v2 ba019048. Runner: pkgload::load_all with R_LIBS=<browser-smoke library>, R 4.6.1, one R process at a time.
+
+Diagnosis
+  Raised by readComponentMetadata (R/utils_workflow_dia_state.R) when the checkpoint's class is not in the
+  accepted list. buildWorkflowAnalysisRecord (R/utils_workflow_analysis_record.R) read every state in the
+  history through readWorkflowStateMetadata, which accepts only the declared ASSAY classes.
+  The proteomics enrichment commits `enrichment_completed` with manager$saveState(..., EnrichmentResults, ...).
+  On the reference-state owner, an S4 value is checkpointed by checkpointWorkflowExecutionResult and committed
+  by commitWorkflowReferenceState. That is the same path every other committed state takes, giving a complete
+  dia.component_checkpoint.v2 of the declared RESULT class `EnrichmentResults` (KIT-003). A result class
+  requires no assay or design component (workflowClassRequiredComponents), so the checkpoint is complete for
+  its declaration. The state carries everything its declaration requires, and restoring it
+  (restoreProtEnrichResultsFromState, test-workflow-dia-products.R) works.
+  The DA commits no state (a manifest only), so `enrichment_completed` is the only result-class state a head
+  can carry. The builder's assay-only read was therefore wrong for this state. Before F-08 was fixed, DA failed
+  and enrichment never ran, so the path was never reached.
+  Changing the enrichment commit was rejected: making it an assay checkpoint would change the enrichment
+  product and its restore.
+
+Fix (R/utils_workflow_analysis_record.R, buildWorkflowAnalysisRecord only)
+  1. The per-state read uses readComponentMetadata(manager, reference), which accepts every declared class.
+     For an assay-class state this is the same function with the same checks, so its record is unchanged.
+  2. The record's `design` is taken from the last state whose checkpoint is not a declared result class,
+     because the enrichment state has no design. Every record that could be built before had no
+     result-class state, so its `design` source is unchanged.
+
+Test first (tests/testthat/test-workflow-analysis-record.R, new block
+  "KIT-101 F-15: a completed enrichment state on the head is recorded and the earlier steps and design are unchanged")
+  The analysis-record fixture: build the record, commit `enrichment_completed` (EnrichmentResults) as the
+  module does, build again. Checks: no assay is hydrated, the record is valid, there is one step per state,
+  the earlier steps are identical, the design is identical (and not NULL), and every other top-level field
+  is identical.
+  Before the fix:
+    COUNTS test-workflow-analysis-record.R pass 1 fail 0 error 1 skip 0
+    <saved_entity_corrupt/rlang_error/error/condition>
+    Error in `readComponentMetadata(manager, reference, classes = workflowDeclaredClassNames("assay"))`: component checkpoint is incomplete
+  After the fix:
+    COUNTS test-workflow-analysis-record.R pass 9 fail 0 error 0 skip 0 (that block only)
+
+Targeted files after the fix (whole files)
+  test-workflow-analysis-record.R                    pass 248  fail 0 error 0 skip 0
+  test-workflow-dia-products.R                       pass 189  fail 0 error 0 skip 0
+  test-workflow-native-session.R                     pass 725  fail 0 error 0 skip 2
+  test-workflow-kit-harness.R                        pass 733  fail 0 error 0 skip 0
+  test-workflow-prot-declarations.R                  pass 303  fail 0 error 0 skip 2
+  test-workflow-lipid-declarations.R                 pass 259  fail 0 error 0 skip 0
+  test-workflow-metab-declarations.R                 pass 259  fail 0 error 0 skip 0
+  test-workflow-trx-declarations.R                   pass 324  fail 0 error 0 skip 0
+  test-workflow-omics-binding-steps.R                pass 57   fail 0 error 0 skip 0
+  test-workflow-omics-da-contrasts.R                 pass 138  fail 0 error 0 skip 0
+  test-workflow-omics-owner.R                        pass 74   fail 0 error 0 skip 0
+  test-workflow-omics-worker.R                       pass 283  fail 0 error 0 skip 0
+  test-lipid-14a-summary-module-characterization.R   pass 131  fail 0 error 0 skip 0
+  test-lipid-15-summary-module-seams.R               pass 139  fail 0 error 0 skip 0
+  test-metab-05-summary-module-characterization.R    pass 161  fail 0 error 0 skip 9
+  test-module-ci-trx-da.R                            pass 50   fail 0 error 0 skip 0
+  test-module-ci-trx-design.R                        pass 71   fail 0 error 0 skip 0
+  test-module-ci-trx-norm.R                          pass 61   fail 0 error 0 skip 0
+  test-module-ci-trx-qc.R                            pass 32   fail 0 error 0 skip 0
+  test-module-ci-trx-summary.R                       pass 70   fail 0 error 0 skip 0
+  test-prot-11a-enrichment-module-characterization.R pass 143  fail 0 error 0 skip 0
+  test-prot-11-enrichment-module-contracts.R         pass 1258 fail 0 error 0 skip 0
+  test-prot-12a-summary-module-characterization.R    pass 30   fail 0 error 0 skip 2
+  test-module-ci-prot-summary.R                      pass 70   fail 0 error 0 skip 1
+  (the record and replay files from `git grep -l 'analysis_record\|AnalysisRecord' tests/testthat`, without the two
+  trx e2e journeys, plus the enrichment and summary files)
+
+Entry lanes (test-gui-entry-proteomics.R, one run, records to scratch; not re-frozen)
+  pass 88 fail 30 error 0. These are the same counts as the fixes2 run on 07f72722: the frozen-oracle
+  mismatches are the known F-08/F-10/F-11 differences.
+  prot_dia, head enrichment_completed:
+    summary_save   notifications: "Saved Integration artifact", "Study parameters saved successfully".
+                   The "analysis record ... not written" warning is gone, and scripts/proteomics/analysis_record.json
+                   is present.
+    summary_report notifications: "DIANN_report.rmd template copied from package", "Report generated successfully!".
+                   The "record bundle was not exported" warning is gone, and Study_report/analysis_record.{json,docx,xlsx}
+                   are present.
+  The other routes have no enrichment state, so their records are built exactly as before.
+
+Limit (not changed here)
+  No step provenance is recorded for the enrichment state (runDIAReferenceEnrichment sets none), so the record
+  lists it as a `legacy` step. validateWorkflowAnalysisRecord reports "legacy step: enrichment_completed" under
+  incomplete, and a replay of such a record stops at that step (workflow_replay_unsupported).
