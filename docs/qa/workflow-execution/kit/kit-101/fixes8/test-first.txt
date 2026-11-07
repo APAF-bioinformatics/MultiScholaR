@@ -1,0 +1,20 @@
+KIT-101 F-28: test first.
+
+Test: tests/testthat/test-prot-annotation-ensembl-full-direct-shared.R, "getUniprotAnnotationsFull preserves Ensembl
+conversion merge behavior and minimal fallback output" (fallback block: getUniprotAnnotations stubbed to stop()).
+The assertion on the old minimal schema (Protein.Ids, UNIPROT_GENENAME) is replaced by
+  expect_identical(fallback_result, createEmptyUniprotTable())
+  expect_true(all(c("Entry", "gene_names") %in% names(fallback_result)))
+
+Runner: NOT_CRAN=true R_LIBS=<kit_101 library> Rscript kit/scripts-078/run1.R . <file> (worktree source, load_all).
+
+Before the fix (source at a68872ef + the test change):
+  COUNTS test-prot-annotation-ensembl-full-direct-shared.R pass 36 fail 2 error 0 skip 0
+  (both new expectations fail: actual has Protein.Ids/UNIPROT_GENENAME, no Entry/gene_names)
+
+After the fix (R/func_prot_annotation_uniprot_full_helpers.R: the error handler returns createEmptyUniprotTable()):
+  COUNTS test-prot-annotation-ensembl-full-direct-shared.R pass 38 fail 0 error 0 skip 0
+
+Dependents (grep getUniprotAnnotationsFull in tests/): helper-gui-entry.R (offline cache double, does not reach the
+fallback), test-prot-04a-design-module-characterization.R (stubs the function):
+  COUNTS test-prot-04a-design-module-characterization.R pass 194 fail 0 error 0 skip 4

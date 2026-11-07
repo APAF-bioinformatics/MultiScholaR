@@ -1,0 +1,41 @@
+KIT-101 F-28: diagnosis of the e2e TMT/LFQ lane failure (pass 99, error 3) on the final KIT-101 run.
+
+Failing run: kit/scripts-101/e2e-test-e2e-proteomics-tmt-lfq.R.log (suite worktree at d49dfb6a); artifacts
+kit/scratch-101-suite/tests/testthat/_e2e_artifacts/E2E-005-{prot_tmt-pd_tmt, prot_lfq-maxquant,
+prot_lfq_fragpipe-fragpipe}/browser-logs.json (the app process's stdout/stderr). All three sub-lanes fail the same way.
+
+Package used by the app process: the worktree source, not the installed kit_101 build. e2e_launch_spec's run_app
+surface runs pkgload::load_all() of the project directory; R_LIBS (kit_101 library) supplies the dependencies only.
+
+Chain in each app log:
+1. Design step, getUniprotAnnotationsFull -> getUniprotAnnotations -> directUniprotDownload queries the live UniProt
+   REST API in chunks of 25 accessions. The early chunks return HTTP 200 with 0 rows (synthetic accessions P00001..),
+   then one chunk fails with curl_error_operation_timedout (TMT: imap index 2; MaxQuant: index 6; FragPipe: index 5).
+2. getUniprotAnnotationsFull's error handler logs "Returning minimal annotation table due to error" and returns
+   data.frame(Protein.Ids = <400 ids>, UNIPROT_GENENAME = NA). That table has rows but neither `Entry` nor `gene_names`.
+3. DA: outputDaResultsAllContrasts joins any non-empty uniprot_tbl with join_by(uniprot_acc_cleaned == Entry) ->
+   "*** ERROR in DA analysis: Join columns in `y` must be present in the data." The DA publication is left pending.
+4. Session summary: copyToResultsSummary / report refuse with "da outputs are pending; retry that action"
+   (assertWorkflowExportReady), so the download handler errors and shinytest2 reports
+   "Download from '#proteomics_workflow-session_summary-download_report' failed".
+
+Why it passed at 01b60213 (fixes3/e2e.txt, 150/0): every UniProt chunk answered (200, 0 rows), so
+getUniprotAnnotations took its own failure branch, createEmptyUniprotTable() (Entry, From, gene_names,
+Protein_existence, Protein_names, annotation_score; 0 rows), and the DA writers skip or satisfy the join. The DIA,
+DIA-limpa and enrichment lanes in the same run were not hit by a timeout. The failure is therefore not caused by
+F-18/F-23/F-24/F-26/F-27 or the 775a8f98 fixtures (no NA, report template or render step is reached); it is a
+network timeout that exposes a product defect: when UniProt is unreachable, the fallback annotation table has a
+different schema from every other annotation table, and DA cannot run at all.
+
+Classification: GUI/plumbing defect (annotation fallback schema). Annotations are display metadata joined onto the DA
+exports (gene names); the DA statistics do not read them. The fixed fallback returns the same empty table the inner
+function already returns on a failed download, i.e. exactly the table the passing runs used. No scientific result,
+threshold or method changes. methodology_change = false.
+
+Fix: R/func_prot_annotation_uniprot_full_helpers.R, getUniprotAnnotationsFull's error handler returns
+createEmptyUniprotTable() (not cached, so a later retry fetches again). The existing unit test that pinned the old
+minimal schema (test-prot-annotation-ensembl-full-direct-shared.R, fallback block) now asserts the empty-table schema.
+
+Not changed (recorded only): the e2e browser lanes still query live UniProt (the gui-entry lanes use an offline cache
+double, helper-gui-entry.R guiEntryInstallUniprotCache); a timeout no longer fails the lane, but the lane still makes
+network calls during the design step.

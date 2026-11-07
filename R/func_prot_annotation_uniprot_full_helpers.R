@@ -334,16 +334,11 @@ getUniprotAnnotationsFull <- function(data_tbl,
     print(str(e))
     cat(sprintf("Error in getUniProtAnnotation: %s\n", e$message))
     
-    # Return a minimal data frame if annotation fails
-    cat("Returning minimal annotation table due to error\n")
-    
-    minimal_annotations <- data.frame(
-      Protein.Ids = cleaned_proteins,
-      UNIPROT_GENENAME = NA_character_,
-      stringsAsFactors = FALSE
-    )
-    
-    return(minimal_annotations)
+    # KIT-101 F-28: the empty annotation table getUniprotAnnotations returns when its download fails
+    # (columns Entry, gene_names, ...), which the DA exports join on; it is not cached, so a retry fetches again.
+    cat("Returning empty annotation table due to error\n")
+
+    return(createEmptyUniprotTable())
   })
 }
 

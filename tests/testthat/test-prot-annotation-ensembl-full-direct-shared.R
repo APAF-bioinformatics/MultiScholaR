@@ -299,6 +299,9 @@ test_that("getUniprotAnnotationsFull preserves Ensembl conversion merge behavior
     taxon_id = 9606
   ))
 
-  expect_identical(fallback_result$Protein.Ids, c("ENSP000001", "ENSP000002"))
-  expect_true(all(is.na(fallback_result$UNIPROT_GENENAME)))
+  # KIT-101 F-28: a failed retrieval (e.g. a UniProt network timeout) returns the same empty table as
+  # getUniprotAnnotations' own failure branch, so the DA joins on `Entry`/`gene_names` see "no annotations"
+  # instead of a table without the join column ("Join columns in `y` must be present in the data").
+  expect_identical(fallback_result, createEmptyUniprotTable())
+  expect_true(all(c("Entry", "gene_names") %in% names(fallback_result)))
 })

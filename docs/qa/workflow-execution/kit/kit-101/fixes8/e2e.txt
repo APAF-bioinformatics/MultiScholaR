@@ -1,0 +1,29 @@
+KIT-101 F-28: e2e lanes after the fix, one attempt each.
+
+Runner: NOT_CRAN=true CHROMOTE_CHROME=/usr/bin/brave R_LIBS=<kit_101 library, core/browser-smoke.rvol2q/library>
+systemd-inhibit --what=idle:sleep --mode=block timeout 1800 Rscript kit/scripts-078/run1.R . <file>, from a worktree at
+origin/performance-v2 (a68872ef) plus the F-28 change. Both processes run the worktree source (run1.R load_all; the
+app by e2e_launch_spec's run_app surface, pkgload::load_all); the kit_101 library supplies dependencies only.
+
+| file | result | wall | note |
+|---|---|---|---|
+| test-e2e-proteomics-tmt-lfq.R | pass 113, fail 0, error 1, skip 0 | 00:15:05-00:21:32 (387 s) | MaxQuant LFQ and FragPipe LFQ pass through DA, report download (LFQ_report.rmd) and export; PD TMT errors |
+| test-e2e-proteomics-dia.R | pass 41, fail 0, error 0, skip 0 | 00:22:04-00:26:50 (286 s) | no regression |
+
+PD TMT error (a different step from the F-28 failure): "app_wait_for_idle: An error occurred while waiting for Shiny to be
+stable". The harness clicked design_matrix-builder-save_results at 00:15:27 and waited up to 120,000 ms for idle; the app
+was still inside the design step's live UniProt download (directUniprotDownload, chunk 12 of 16 when the wait expired
+at ~00:17:27; chunks of 25 accessions at ~10 s each). No product error was logged. This is the e2e lanes' live-network
+dependency (UniProt REST) showing as latency instead of a timeout; the F-28 fallback cannot help because the request
+had not failed yet. Not fixed here: the one correction pass for this work item is spent (AGENTS.md); the proposed next
+bounded action is a harness change, below.
+
+Proposed next action (test harness only, no R/ change, no methodology change): before the design step, the e2e
+proteomics lanes place an annotation cache at <project>/results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS
+(the same mechanism as the gui-entry lanes' guiEntryInstallUniprotCache, helper-gui-entry.R), holding
+createEmptyUniprotTable() (what UniProt returns today for the synthetic accessions P00001..P00400, i.e. what the
+passing runs used). getUniprotAnnotations then reads the cache and makes no network call. Then rerun the TMT/LFQ file
+once.
+
+Artifacts of this run: <worktree>/tests/testthat/_e2e_artifacts/E2E-005-prot_tmt-pd_tmt (browser-logs.json,
+screenshot.png, dom.html; gitignored, not committed); full logs in the agent scratchpad (e2e-tmt.log, e2e-dia.log).
