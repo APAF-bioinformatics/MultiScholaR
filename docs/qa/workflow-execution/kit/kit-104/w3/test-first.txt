@@ -1,0 +1,26 @@
+# KIT-104 W3 test-first: tests/testthat/test-prot-qc-core.R before the moves
+# HEAD 5f8cb531 (origin/performance-v2, W1 included), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1; runner kit/scripts-078/run1.R <tree> <file> v;
+# R_LIBS = core/browser-smoke.yODoyT/library. Recorded 2026-11-08.
+# The three pinned digests (the precursor-rollup handoff and the imputation handoff of
+# buildDIAReferencePeptideHandoff without the qc timestamp, on the "small" checkpoint recipe of
+# test-workflow-checkpoint-dia-state.R; computeDIAReferenceAccessionCleanup's compute contract on the "small"
+# protein recipe with a fixed now_fn) were recorded at this commit by a first run of the same file with
+# placeholder digests; the same values held in two runs.
+# Expected to fail first: the location block (the three functions are still in R/mod_prot_qc_*.R).
+# Expected to pass at base (guards): #7 and #8 exported; each caller reaches its callee by name (call counts
+# 1, 1, 2) and its output equals the pinned digest; the legacy rollup wording; the active-key resolver's
+# declared, inferred and refused cases.
+# Observed: 1 of 6 blocks fails, 5 pass, as expected.
+
+COUNTS test-prot-qc-core.R pass 17 fail 1 error 0 skip 0
+  BAD test-prot-qc-core.R :: back-references #6 to #8 are defined in the proteomics core files, with their names kept
+--- back-references #6 to #8 are defined in the proteomics core files, with their names kept
+ Expected `found` to be identical to `protQcCoreDefinitions`.
+Differences:
+    actual                          | expected
+[1] "mod_prot_qc_peptide_rollup.R"  - "utils_workflow_dia_qc_rollup.R"     [1]
+[2] "mod_prot_qc_peptide_impute.R"  - "utils_workflow_dia_qc_rollup.R"     [2]
+[3] "mod_prot_qc_protein_cleanup.R" - "utils_workflow_prot_declarations.R" [3]
+
+# After the moves: pass 18 fail 0 error 0 skip 0 (targeted.txt).

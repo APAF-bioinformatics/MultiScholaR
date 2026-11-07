@@ -205,6 +205,31 @@ computeDIAReferenceAccessionCleanup <- function(manager, reference, parameters, 
         accession_cleanup_results = results, cleanupApplied = applied)
 }
 
+# KIT-104 W3: back-reference #8, moved unchanged (name and roxygen tags kept) from mod_prot_qc_protein_cleanup.R;
+# computeDIAReferenceAccessionCleanup calls it.
+#' @rdname mod_prot_qc_protein_cleanup
+#' @export
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot textOutput
+#' @importFrom logger log_info log_error
+#' @importFrom grid grid.draw
+.proteinCleanupActiveKey <- function(proteinObject) {
+  declaredKey <- tryCatch(
+    proteinObject@protein_id_column,
+    error = function(...) character()
+  )
+  if (length(declaredKey) == 1L &&
+      declaredKey %in% names(proteinObject@protein_quant_table)) {
+    return(declaredKey)
+  }
+
+  candidates <- c("Protein.Group", "Protein.Ids", "Protein.IDs", "protein_id")
+  inferredKey <- candidates[candidates %in% names(proteinObject@protein_quant_table)][1]
+  if (length(inferredKey) == 0L || is.na(inferredKey)) {
+    stop("No active protein identity column is available.", call. = FALSE)
+  }
+  inferredKey
+}
+
 #' Protein intensity (missing-value) filter on a saved protein state (KIT-015, whole matrix, audit A2): the
 #' cutoffs from `updateMissingValueParameters` (flexible) or zero (strict), the percentile, then the
 #' unchanged `removeRowsWithMissingValuesPercent` kernel (dataset-wide quantile) through its alias.
@@ -269,9 +294,9 @@ computeDIAReferenceProteinIntensityFilter <- function(manager, reference, parame
         text = text, field = "filteredS4", qc_name = "intensity_filter", qc = qc)
 }
 
-#' The duplicate-protein resolution kernel, extracted verbatim from `runProteinDuplicateRemovalStep`
-#' (KIT-015, audit A5): the duplicated protein ids, then one row per protein id with every numeric column
-#' aggregated by `aggregation_fn(x, na.rm = TRUE)`.
+#' The duplicate-protein resolution kernel, extracted verbatim from the duplicate-removal sub-tab
+#' (`R/mod_prot_qc_protein_dedup.R`; KIT-015, audit A5): the duplicated protein ids, then one row per
+#' protein id with every numeric column aggregated by `aggregation_fn(x, na.rm = TRUE)`.
 #' @param table Wide protein table.
 #' @param protein_id_column Grouping column (the active protein key).
 #' @param aggregation_fn Aggregation function (`mean`, `median`, ...).

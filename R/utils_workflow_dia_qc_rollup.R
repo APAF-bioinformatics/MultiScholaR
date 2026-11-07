@@ -921,6 +921,90 @@ buildDIAReferencePeptideHandoff <- function(checkpoint, section, parameters, pro
     list(config = config, qc = qc, qc_name = name, text = text, description = description)
 }
 
+# KIT-104 W3: back-references #7 and #6, moved unchanged (names and roxygen tags kept) from
+# mod_prot_qc_peptide_impute.R and mod_prot_qc_peptide_rollup.R; buildDIAReferencePeptideHandoff calls both.
+#' @rdname mod_prot_qc_peptide_impute
+#' @export
+#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
+#' @importFrom logger log_info log_error
+#' @importFrom grid grid.draw
+.peptideImputationAuditSummary <- function(imputed_s4,
+                                           proportion_missing_values,
+                                           exclusion_column = NULL) {
+  component <- isDIAComponentCheckpoint(imputed_s4)
+  section <- tryCatch(
+    if (component) imputed_s4$slots$args$peptideMissingValueImputation else
+      imputed_s4@args$peptideMissingValueImputation,
+    error = function(error) NULL
+  )
+  if (!is.list(section)) {
+    section <- list()
+  }
+  summary <- section$imputation_summary
+  if (!is.list(summary)) {
+    summary <- list()
+  }
+  value_or <- function(value, fallback) {
+    if (is.null(value) || length(value) == 0L) fallback else value
+  }
+  imputed_count <- if (component) summary$imputed_rows %||% NA_integer_ else if ("is_imputed" %in% names(imputed_s4@peptide_data)) {
+    sum(imputed_s4@peptide_data$is_imputed %in% TRUE)
+  } else {
+    NA_integer_
+  }
+
+  list(
+    status = value_or(summary$status, "applied"),
+    skip_reason = value_or(summary$skip_reason, NULL),
+    quantity_column = value_or(summary$quantity_column, value_or(section$quantity_column, NA_character_)),
+    imputed_value_column = value_or(summary$imputed_value_column, value_or(section$imputed_value_column, NA_character_)),
+    eligibility_denominator = value_or(
+      summary$eligibility_denominator,
+      "distinct_design_runs_in_technical_replicate_group"
+    ),
+    eligibility_operator = value_or(summary$eligibility_operator, "<="),
+    maximum_missing_fraction = value_or(summary$maximum_missing_fraction, proportion_missing_values),
+    exclusion_source = value_or(
+      summary$exclusion_source,
+      if (is.null(exclusion_column)) "none" else paste0("design_column:", exclusion_column)
+    ),
+    excluded_runs = value_or(summary$excluded_runs, character(0)),
+    observed_rows = value_or(summary$observed_rows, NA_integer_),
+    missing_not_imputed_rows = value_or(summary$missing_not_imputed_rows, NA_integer_),
+    imputed_rows = value_or(summary$imputed_rows, as.integer(imputed_count)),
+    input_rows = value_or(summary$input_rows, NA_integer_),
+    output_rows = value_or(summary$output_rows, if (component) imputed_s4$dimensions$rows else nrow(imputed_s4@peptide_data))
+  )
+}
+
+.formatPeptideRollupSummary <- function(summary) {
+  if (is.null(summary)) {
+    return("Rollup audit: unavailable for this legacy result")
+  }
+
+  paste(
+    sprintf("Aggregation: %s", summary$aggregation_rule),
+    sprintf("Active protein key: %s", summary$active_protein_key),
+    sprintf("Precursor identity: %s", summary$precursor_identity_mode),
+    sprintf("Input precursor rows: %d", summary$input_precursor_rows),
+    sprintf("Unique precursor identities: %d", summary$unique_precursor_identities),
+    sprintf("Output stripped-peptide identities: %d", summary$output_stripped_peptide_identities),
+    sprintf(
+      "Raw partial/all-missing outputs: %d / %d",
+      summary$raw_partial_missing_outputs,
+      summary$raw_all_missing_outputs
+    ),
+    sprintf(
+      "Normalised partial/all-missing outputs: %d / %d",
+      summary$normalised_partial_missing_outputs,
+      summary$normalised_all_missing_outputs
+    ),
+    sprintf("Frozen identification evidence: %s", summary$frozen_identification_evidence),
+    sprintf("Protein.Ids provenance: %s", summary$protein_ids_provenance),
+    sep = "\n"
+  )
+}
+
 #' Stream the exact IQ input population, aliases and compatibility confidence values.
 #' @param manager,reference Current owner and peptide table descriptor.
 #' @param path Existing required IQ TSV destination.

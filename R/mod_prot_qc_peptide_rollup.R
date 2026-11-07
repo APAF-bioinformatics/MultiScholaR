@@ -70,34 +70,6 @@ mod_prot_qc_peptide_rollup_ui <- function(id) {
   object@args$rollUpPrecursorToPeptide$rollup_summary
 }
 
-.formatPeptideRollupSummary <- function(summary) {
-  if (is.null(summary)) {
-    return("Rollup audit: unavailable for this legacy result")
-  }
-
-  paste(
-    sprintf("Aggregation: %s", summary$aggregation_rule),
-    sprintf("Active protein key: %s", summary$active_protein_key),
-    sprintf("Precursor identity: %s", summary$precursor_identity_mode),
-    sprintf("Input precursor rows: %d", summary$input_precursor_rows),
-    sprintf("Unique precursor identities: %d", summary$unique_precursor_identities),
-    sprintf("Output stripped-peptide identities: %d", summary$output_stripped_peptide_identities),
-    sprintf(
-      "Raw partial/all-missing outputs: %d / %d",
-      summary$raw_partial_missing_outputs,
-      summary$raw_all_missing_outputs
-    ),
-    sprintf(
-      "Normalised partial/all-missing outputs: %d / %d",
-      summary$normalised_partial_missing_outputs,
-      summary$normalised_all_missing_outputs
-    ),
-    sprintf("Frozen identification evidence: %s", summary$frozen_identification_evidence),
-    sprintf("Protein.Ids provenance: %s", summary$protein_ids_provenance),
-    sep = "\n"
-  )
-}
-
 runPeptideRollupApplyStep <- function(workflowData,
                                       rollupFn = rollUpPrecursorToPeptide,
                                       logInfoFn = logger::log_info,

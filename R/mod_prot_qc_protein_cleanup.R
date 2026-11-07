@@ -91,29 +91,6 @@ mod_prot_qc_protein_cleanup_ui <- function(id) {
   )
 }
 
-#' @rdname mod_prot_qc_protein_cleanup
-#' @export
-#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot textOutput
-#' @importFrom logger log_info log_error
-#' @importFrom grid grid.draw
-.proteinCleanupActiveKey <- function(proteinObject) {
-  declaredKey <- tryCatch(
-    proteinObject@protein_id_column,
-    error = function(...) character()
-  )
-  if (length(declaredKey) == 1L &&
-      declaredKey %in% names(proteinObject@protein_quant_table)) {
-    return(declaredKey)
-  }
-
-  candidates <- c("Protein.Group", "Protein.Ids", "Protein.IDs", "protein_id")
-  inferredKey <- candidates[candidates %in% names(proteinObject@protein_quant_table)][1]
-  if (length(inferredKey) == 0L || is.na(inferredKey)) {
-    stop("No active protein identity column is available.", call. = FALSE)
-  }
-  inferredKey
-}
-
 runProteinAccessionCleanupStep <- function(workflowData,
                                            delimiter,
                                            aggregationMethod,

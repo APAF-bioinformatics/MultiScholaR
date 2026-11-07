@@ -74,60 +74,6 @@ mod_prot_qc_peptide_impute_ui <- function(id) {
   )
 }
 
-#' @rdname mod_prot_qc_peptide_impute
-#' @export
-#' @importFrom shiny moduleServer reactiveVal observeEvent req showNotification removeNotification renderText renderPlot
-#' @importFrom logger log_info log_error
-#' @importFrom grid grid.draw
-.peptideImputationAuditSummary <- function(imputed_s4,
-                                           proportion_missing_values,
-                                           exclusion_column = NULL) {
-  component <- isDIAComponentCheckpoint(imputed_s4)
-  section <- tryCatch(
-    if (component) imputed_s4$slots$args$peptideMissingValueImputation else
-      imputed_s4@args$peptideMissingValueImputation,
-    error = function(error) NULL
-  )
-  if (!is.list(section)) {
-    section <- list()
-  }
-  summary <- section$imputation_summary
-  if (!is.list(summary)) {
-    summary <- list()
-  }
-  value_or <- function(value, fallback) {
-    if (is.null(value) || length(value) == 0L) fallback else value
-  }
-  imputed_count <- if (component) summary$imputed_rows %||% NA_integer_ else if ("is_imputed" %in% names(imputed_s4@peptide_data)) {
-    sum(imputed_s4@peptide_data$is_imputed %in% TRUE)
-  } else {
-    NA_integer_
-  }
-
-  list(
-    status = value_or(summary$status, "applied"),
-    skip_reason = value_or(summary$skip_reason, NULL),
-    quantity_column = value_or(summary$quantity_column, value_or(section$quantity_column, NA_character_)),
-    imputed_value_column = value_or(summary$imputed_value_column, value_or(section$imputed_value_column, NA_character_)),
-    eligibility_denominator = value_or(
-      summary$eligibility_denominator,
-      "distinct_design_runs_in_technical_replicate_group"
-    ),
-    eligibility_operator = value_or(summary$eligibility_operator, "<="),
-    maximum_missing_fraction = value_or(summary$maximum_missing_fraction, proportion_missing_values),
-    exclusion_source = value_or(
-      summary$exclusion_source,
-      if (is.null(exclusion_column)) "none" else paste0("design_column:", exclusion_column)
-    ),
-    excluded_runs = value_or(summary$excluded_runs, character(0)),
-    observed_rows = value_or(summary$observed_rows, NA_integer_),
-    missing_not_imputed_rows = value_or(summary$missing_not_imputed_rows, NA_integer_),
-    imputed_rows = value_or(summary$imputed_rows, as.integer(imputed_count)),
-    input_rows = value_or(summary$input_rows, NA_integer_),
-    output_rows = value_or(summary$output_rows, if (component) imputed_s4$dimensions$rows else nrow(imputed_s4@peptide_data))
-  )
-}
-
 runPeptideImputationStep <- function(workflow_data,
                                      proportionMissingValues,
                                      exclusionColumn = NULL,
