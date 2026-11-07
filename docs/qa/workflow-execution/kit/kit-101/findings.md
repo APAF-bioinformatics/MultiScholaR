@@ -133,4 +133,7 @@ The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start
   - Approximate for quantile and scale, whose SEs strictly should be rescaled.
   - limpa's documented normalisation point is the precursor matrix before DPC (DIA-NN `Precursor.Normalised`).
 
-| F-26 | `importProteomeDiscovererTMTData` (`R/func_prot_import_tmt.R`) | Latent, as F-18: a literal 0 abundance would be kept as log2 0 (no 0 to NA step; the TMT design branch applies `log2(x + 1)`). Proteome Discoverer normally leaves missing abundances empty, and every synthetic TMT corpus and lane has 0 zeros. Found by the F-18 fix. | Construct a PD table with a 0 abundance. | KIT-102 | open (decision needed) |
+| F-26 | `importProteomeDiscovererTMTData` (`R/func_prot_import_tmt.R`) | Latent, as F-18: a literal 0 abundance would be kept as log2 0 (no 0 to NA step; the TMT design branch applies `log2(x + 1)`). Proteome Discoverer normally leaves missing abundances empty, and every synthetic TMT corpus and lane has 0 zeros. Found by the F-18 fix. | Construct a PD table with a 0 abundance. | KIT-102 | **fixed** (see the F-26 fix line below; user: "Fix now") |
+
+**F-26 fixed** ([fixes6/f26.txt](fixes6/f26.txt)): in `importProteomeDiscovererTMTData`, a numeric 0 abundance is read as NA after the pivot, as the LFQ readers now do. A test fails first (2 failures); after the fix, the TMT direct test passes 27/0, MCI import 91/0, and prot-01 15/0. No corpus or lane has a TMT zero, so no oracle changes.
+**F-23 caveat** (user: "Keep, note caveat"): quantile and scale are approximate on DIA_LIMPA. Moving its normalisation to the precursor level is added to KIT-114 as item (c).

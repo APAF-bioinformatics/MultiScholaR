@@ -1,0 +1,16 @@
+# F-26 test first (2026-11-07)
+before:
+COUNTS test-prot-import-tmt-direct-shared.R pass 25 fail 2 error 0 skip 0
+  BAD test-prot-import-tmt-direct-shared.R :: KIT-101 F-26: a 0 abundance (not quantified) is read as NA, like an empty cell
+--- KIT-101 F-26: a 0 abundance (not quantified) is read as NA, like an empty cell 
+ Expected `any(values$Abundance %in% 0)` to be FALSE.
+--
+--- KIT-101 F-26: a 0 abundance (not quantified) is read as NA, like an empty cell 
+ Expected `is.na(cell("P2", "126_Sample_A"))` to be TRUE.
+
+after:
+COUNTS test-prot-import-tmt-direct-shared.R pass 27 fail 0 error 0 skip 0
+COUNTS test-module-ci-prot-import.R pass 91 fail 0 error 0 skip 0
+COUNTS test-prot-01-import.R pass 15 fail 0 error 0 skip 1
+
+Not rerun: test-workflow-native-session.R (591 s); every TMT corpus and lane has 0 zero abundances, so its TMT members cannot change.

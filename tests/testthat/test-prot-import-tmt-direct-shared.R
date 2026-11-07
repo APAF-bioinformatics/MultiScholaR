@@ -44,6 +44,28 @@ test_that("importProteomeDiscovererTMTData reshapes a single delimited export", 
   )
 })
 
+test_that("KIT-101 F-26: a 0 abundance (not quantified) is read as NA, like an empty cell", {
+  input_path <- tempfile(fileext = ".tsv")
+  writePdDelimited(
+    input_path,
+    data.frame(
+      Accession = c("P1", "P2", "P3"),
+      Description = c("protein 1", "protein 2", "protein 3"),
+      `Abundance: F1: 126, Sample_A` = c(10, 0, 30),
+      `Abundance: F2: 127N, Sample_B` = c(11, 21, NA),
+      check.names = FALSE
+    )
+  )
+  imported <- suppressMessages(suppressWarnings(importProteomeDiscovererTMTData(input_path)))
+  values <- imported$data
+  cell <- function(protein, run) values$Abundance[values$Protein.Ids == protein & values$Run == run]
+  expect_false(any(values$Abundance %in% 0))
+  expect_true(is.na(cell("P2", "126_Sample_A")))
+  expect_true(is.na(cell("P3", "127N_Sample_B")))
+  expect_equal(cell("P1", "126_Sample_A"), 10)
+  expect_equal(cell("P2", "127N_Sample_B"), 21)
+})
+
 test_that("importProteomeDiscovererTMTData accepts peptide-export accession and simplified abundance names", {
   input_path <- tempfile(fileext = ".tsv")
   writePdDelimited(

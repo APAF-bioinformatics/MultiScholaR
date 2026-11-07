@@ -167,6 +167,10 @@ importProteomeDiscovererTMTData <- function(filepath) {
       stop("Failed to pivot data: ", e$message, call. = FALSE)
     })
     
+    # KIT-101 F-26: Proteome Discoverer writes 0 for "not quantified"; read it as missing, as the
+    # MaxQuant and FragPipe readers do (F-18), instead of a log2 0 after the design checkpoint.
+    if (is.numeric(long_data$Abundance)) long_data$Abundance <- dplyr::na_if(long_data$Abundance, 0)
+
     message(sprintf("      Step: Pivot complete. Pivoted to %d rows", nrow(long_data)))
     log_info(sprintf("Pivoted to %d rows", nrow(long_data)))
     
