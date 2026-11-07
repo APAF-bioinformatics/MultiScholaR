@@ -10,7 +10,7 @@ guiConfigRequired <- list(
         "tab_style", "routes", "tabs", "bus", "bus_registration"),
     binding = c("binding", "runner", "owner", "read_state", "read_metadata"),
     import = c("source_panel", "title", "formats", "default_format", "detect", "help",
-        "success_text")
+        "success_text", "preview", "process")
 )
 
 # The feature-table panel's fields (lipid, metab, trx).
@@ -155,12 +155,20 @@ test_that("the trx shell and import values equal trxOmicProfile()'s fields today
         expect_identical(config$shell[[field]], profile[[field]], info = field)
     }
     expect_identical(config$shell$routes, profile$workflow_type)
-    expect_identical(config$import$title, profile$import_title)
-    expect_identical(config$import$formats, profile$formats)
-    expect_identical(config$import$default_format, profile$data_format)
-    expect_identical(config$import$help, profile$import_help)
-    for (field in c("assay_name", "id_label", "annotation_label")) {
-        expect_identical(config$import[[field]], profile[[field]], info = field)
+    # KIT-102 W5 removed the profile's import-only fields; their values (mod_transcriptomics.R:34-39
+    # at c1041c56) are pinned here as literals, unchanged.
+    expect_identical(config$import$title, "Transcriptomics Data Import")
+    expect_identical(config$import$formats,
+        c("Count table (gene ID, gene name, sample counts)" = "trx_counts"))
+    expect_identical(config$import$default_format, "trx_counts")
+    expect_identical(config$import$help, paste("One delimited count table: a gene ID column, a",
+        "gene name column and one column per sample, named exactly as in the design. Counts must",
+        "be whole numbers: a missing, negative or fractional count is refused, with no rounding.",
+        "Sample names are kept as they are in the file."))
+    expected <- c(assay_name = "counts", id_label = "Gene ID Column",
+        annotation_label = "Gene Name Column")
+    for (field in names(expected)) {
+        expect_identical(config$import[[field]], expected[[field]], info = field)
     }
     expect_identical(config$binding$binding, profile$binding)
     expect_identical(config$binding$read_state, profile$read_state)

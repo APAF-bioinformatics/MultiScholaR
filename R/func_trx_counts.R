@@ -38,13 +38,14 @@ validateTrxCounts <- function(counts) {
     counts
 }
 
-# KIT-102 W2: the transcriptomics import's preview and count check, moved into the core from
-# mod_transcriptomics.R (`trxImportPreview`, `checkTrxImportCounts`, :82-111). The import itself is
-# `importOmicsTables()` (utils_workflow_omics_import.R) with `checkTrxImportCounts` as its `check`.
+# KIT-102 W2: the transcriptomics import's preview and count check, moved into the core from the
+# import section of mod_transcriptomics.R (:82-111 at c1041c56). The import itself is
+# `importOmicsTables()` (utils_workflow_omics_import.R) with `checkTrxImportCounts` as its `check`
+# (`omicGuiConfig("transcriptomics")$import`).
 
 #' The import's preview of a count table, in `previewOmicsImport()`'s shape: read as the notebook reads
 #' it (vroom), the id and name columns proposed (`GeneID`, `GeneName` when present), every other column
-#' a sample (`trxImportPreview`).
+#' a sample (as the trx import's preview at c1041c56).
 #' @param path The count table.
 #' @param import The omic's `config$import`; not used (the count table has one format and reader).
 #' @noRd

@@ -7,11 +7,7 @@
 # against frozen values (notes for phase C).
 
 omicsImportConfig <- function(omic_type) {
-    config <- omicGuiConfig(omic_type)
-    # The lead wires the trx `check` plugin into the configuration (W1 notes); set it here until
-    # then.
-    if (identical(omic_type, "transcriptomics")) config$import$check <- checkTrxImportCounts
-    config
+    omicGuiConfig(omic_type)
 }
 
 omicsImportRequest <- function(assay, paths, assay_file, assay_name = "LCMS_Pos",

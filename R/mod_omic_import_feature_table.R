@@ -25,30 +25,16 @@
 # decision D4), under the existing-code scope rule of conventions/R.md.
 
 # ------------------------------------------------------------------------------------------------
-# The configuration's plugins.
+# The preview.
 # ------------------------------------------------------------------------------------------------
 
-#' The configuration with its import plugins: `import$preview` (default `previewOmicsImport`) and,
-#' for transcriptomics, `import$preview = previewTrxCountsImport` and the count policy
-#' `import$check = checkTrxImportCounts` while the configuration does not carry them yet.
-#' @noRd
-omicImportFeatureTablePlugins <- function(config) {
-    import <- config$import
-    trx <- identical(config$shell$omic_type, "transcriptomics")
-    if (is.null(import$preview)) import$preview <- if (trx) previewTrxCountsImport else previewOmicsImport
-    if (is.null(import$check) && trx) import$check <- checkTrxImportCounts
-    config$import <- import
-    config
-}
-
-#' The preview of a first assay file, by the configuration's preview plugin.
+#' The preview of a first assay file, by the configuration's preview (`config$import$preview`).
 #' @param path The assay file.
 #' @param config An omic GUI configuration (`omicGuiConfig()`).
 #' @return The preview (`previewOmicsImport()`'s shape).
 #' @noRd
 omicImportFeatureTablePreview <- function(path, config) {
-    import <- omicImportFeatureTablePlugins(config)$import
-    import$preview(path, import = import)
+    config$import$preview(path, import = config$import)
 }
 
 #' Whether the import offers native file pickers: shinyFiles is installed and the app is not in
@@ -352,7 +338,7 @@ omicImportStatusDisplay <- function(workflow_data) {
 # The processing and the commit.
 # ------------------------------------------------------------------------------------------------
 
-#' Process an import: the working notification, the core import (`importOmicsTables()`), the
+#' Process an import: the working notification, the core import (`config$import$process`), the
 #' sanitising notice, the commit to the bus, then the frame's completion helper. A refusal or a
 #' reader error is logged and shown as `Error: <message>`; nothing is committed.
 #' @param workflow_data The workflow bus.
@@ -365,11 +351,10 @@ processOmicImportFeatureTable <- function(workflow_data, request, config, comple
                                           showNotification = shiny::showNotification,
                                           removeNotification = shiny::removeNotification,
                                           logError = logger::log_error, logInfo = logger::log_info) {
-    config <- omicImportFeatureTablePlugins(config)
     working <- config$import$notification_id
     showNotification("Processing imported data...", id = working, duration = NULL)
     tryCatch({
-        payload <- importOmicsTables(request, config)
+        payload <- config$import$process(request, config)
         if (isTRUE(payload$sanitized)) {
             logInfo(sprintf("Sanitized %d sample column names.", length(payload$sample_columns)))
             showNotification("Sample names sanitized for R compatibility.", type = "message")

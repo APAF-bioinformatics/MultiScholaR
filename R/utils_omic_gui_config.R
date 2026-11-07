@@ -1,10 +1,16 @@
 # KIT-102 W1: the omic GUI configuration contract (kit-101 design 4.1 to 4.4, values 4.11) and its
 # validator. One plain list per omic with the groups `shell`, `binding` and `import`. It holds data,
 # references to core functions (`utils_workflow_*`, `func_*`) and component ids, never a server
-# or UI function. Every value is today's, with the file:line it comes from (HEAD c1041c56).
-# `import$preview`, `import$process` and `import$check` are not set yet: today's functions live in
-# `R/mod_*.R`, and KIT-102 phase B moves them into the core first. Nothing calls these
-# configurations yet.
+# or UI function. Every value is the one the GUI had at HEAD c1041c56 (before KIT-102), with the
+# file:line it comes from there. KIT-102 W5 deleted the lipid and metab import helper files and the
+# trx import section; in the provenance notes, `ui`, `processing`, `selection` and `output` are the
+# lipid import's UI, processing, selection and output helper files at c1041c56 (for metab, `ui` is
+# mod_metab_import_ui.R and `processing` and `display` its processing and display helper files) and
+# `trx` is mod_transcriptomics.R at c1041c56. The values now render through the frame
+# (mod_omic_import.R) and its source panels (mod_omic_import_feature_table.R,
+# `protImportPanelUi` in mod_prot_import_ui.R). `import$preview` and `import$process` are the core's
+# (`utils_workflow_omics_import.R`, `func_trx_counts.R`, `func_prot_import_*.R`); trx adds its count
+# policy as `import$check`.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -62,10 +68,10 @@ omicGuiConfigSchema <- function() {
         dia_binding = c(omic_type = "chr1", routes = "chr", route_for_format = "ref", owner = "ref",
             read_state = "ref", read_metadata = "ref", import_metadata = "refs"),
         import = c(source_panel = "chr1", title = "chr1", formats = "named_chr",
-            default_format = "chr1", detect = "ref", help = "chr", success_text = "chr1"),
+            default_format = "chr1", detect = "ref", help = "chr", success_text = "chr1",
+            preview = "ref", process = "ref"),
         import_optional = c(route_choice = "named_chr", default_route = "chr1", aux_inputs = "chr0",
-            testids = "named_chr", validate_mapping = "ref", check = "ref", preview = "ref",
-            process = "ref"),
+            testids = "named_chr", validate_mapping = "ref", check = "ref"),
         feature_table = c(format_heading = "chr1", assay_name = "chr1", id_label = "chr1",
             id_custom_label = "chr1", id_custom_placeholder = "chr1", annotation_label = "chr1",
             annotation_custom_placeholder = "chr1", second_assay = "lgl1", id_mapping_key = "chr1",
@@ -252,10 +258,10 @@ omicGuiFeatureBinding <- function(binding, read_state, read_metadata) {
         read_state = read_state, read_metadata = read_metadata)
 }
 
-#' The feature-table panel's column status displays, the same for lipid, metab and trx today: the
-#' builder's success and empty modes, and whether a custom name matches case-insensitively
-#' (mod_lipid_import_output_helpers.R:384, :398-399, :413-415, :429-431;
-#' mod_metab_import_display_helpers.R:63-195).
+#' The feature-table panel's column status displays, the same for lipid, metab and trx: the
+#' builder's success and empty modes, and whether a custom name matches case-insensitively (lipid
+#' `output`:384, :398-399, :413-415, :429-431; metab `display`:63-195; now
+#' mod_omic_import_feature_table.R).
 #' @noRd
 omicGuiFeatureStatusModes <- function() {
     list(id = c(success = "unique_ids"),
@@ -264,9 +270,9 @@ omicGuiFeatureStatusModes <- function() {
         annotation_custom = c(success = "found", empty = "optional", case = "insensitive"))
 }
 
-#' The lipid assay-name rule and messages (`validateLipidImportAssayNames`,
-#' mod_lipid_import_processing_helpers.R:443-468): a second name needs a second file and the
-#' reverse. Trx runs the same rule through the lipid processing (:652).
+#' The lipid assay-name rule and messages (lipid `processing`:443-468; now
+#' `validateOmicsImportAssayNames()`): a second name needs a second file and the reverse. Trx runs
+#' the same rule (`processing`:652).
 #' @noRd
 omicGuiLipidAssayNames <- function() {
     list(rule = "require_pair", path_pattern = "[/\\\\]",
@@ -276,8 +282,7 @@ omicGuiLipidAssayNames <- function() {
             duplicate = "Duplicate lipidomics assay names are not allowed"))
 }
 
-#' The lipid panel's column ids (mod_lipid_import_ui_helpers.R:167, :188, :176, :196); trx
-#' renders them too.
+#' The lipid panel's column ids (lipid `ui`:167, :188, :176, :196); trx renders them too.
 #' @noRd
 omicGuiLipidColumnIds <- function() {
     list(inputs = c(id_col = "lipid_id_col", id_col_custom = "lipid_id_col_custom"),
@@ -336,10 +341,10 @@ omicGuiProteomicsShell <- function() {
         extras = "peptide_checkpoint")
 }
 
-#' The proteomics source panel's data (mod_prot_import_ui.R; the panel keeps its own UI): the
-#' title (:22), the format override (:55-61) and DIA-NN route (:64-68) choices, the step headings
-#' (:27, :71, :106), the FASTA, organism and mapping inputs (:71-160), the test ids (:29, :73,
-#' :204) and the success text (mod_prot_import_processing_helpers.R:401).
+#' The proteomics source panel's data: the title (the frame, mod_omic_import.R), and the format
+#' override and DIA-NN route choices, the step headings, the auxiliary inputs and the test ids that
+#' `protImportPanelUi` (mod_prot_import_ui.R) renders; the success text is the one
+#' `completeProtImportSuccessState` shows (mod_prot_import_processing_helpers.R).
 #' @noRd
 omicGuiProteomicsImport <- function() {
     list(source_panel = "proteomics", title = "Setup & Import Data",
@@ -352,6 +357,9 @@ omicGuiProteomicsImport <- function() {
         default_route = "DIA",
         # func_prot_import_detection.R:14
         detect = detectProteomicsFormat,
+        # The header read and the reading by format (func_prot_import_detection.R,
+        # func_prot_import_readers.R); the source panel calls them in its own order.
+        preview = readProtImportHeaders, process = importProteomicsData,
         help = c(search = "Step 1: Import Searched Data File", fasta = "Step 2: Import FASTA File",
             organism = "Step 3: Organism Information"),
         aux_inputs = c("fasta", "organism", "mapping_files"),
@@ -375,8 +383,7 @@ omicGuiConfigLipidomics <- function() {
         import = omicGuiLipidImport())
 }
 
-#' The lipid panel. `ui` is mod_lipid_import_ui_helpers.R, `processing` is
-#' mod_lipid_import_processing_helpers.R, `selection` is mod_lipid_import_selection_helpers.R.
+#' The lipid panel (the provenance abbreviations are the file header's).
 #' @noRd
 omicGuiLipidImport <- function() {
     c(omicGuiLipidColumnIds(), list(source_panel = "feature_table",
@@ -389,6 +396,8 @@ omicGuiLipidImport <- function() {
         default_format = "msdial",
         # selection:23
         detect = detectLipidomicsFormat,
+        # The core's preview and import (utils_workflow_omics_import.R).
+        preview = previewOmicsImport, process = importOmicsTables,
         # ui:100, :105, :168, :189, :191, :210, :233
         help = "Import one or more assay files (e.g., LCMS_Pos, LCMS_Neg, GCMS)",
         assay_name = "LCMS_Pos", id_label = "Lipid ID Column", id_custom_label = "Lipid ID Column",
@@ -400,7 +409,7 @@ omicGuiLipidImport <- function() {
         second_assay = TRUE,
         readers = list(default = importLipidMSDIALData, lipidsearch = importLipidSearchData),
         second_assay_columns = TRUE,
-        # processing:470-472; ui:255-285 (in order); mod_lipid_import_output_helpers.R:5
+        # processing:470-472; ui:255-285 (in order); output:5
         id_mapping_key = "lipid_id_col",
         aux_inputs = c("exclude_norm", "sanitize_names", "is_pattern"),
         validate_mapping = validateLipidColumnMapping,
@@ -440,9 +449,8 @@ omicGuiConfigMetabolomics <- function() {
         import = omicGuiMetabImport())
 }
 
-#' The metab panel. `ui` is mod_metab_import_ui.R, `processing` is
-#' mod_metab_import_processing_helpers.R, `display` is mod_metab_import_display_helpers.R. Its ids,
-#' labels and messages stay metab's; its layout becomes the shared panel's (KIT-102 contract).
+#' The metab panel (the provenance abbreviations are the file header's). Its ids, labels and
+#' messages stay metab's; its layout is the shared panel's (KIT-102 contract).
 #' @noRd
 omicGuiMetabImport <- function() {
     list(source_panel = "feature_table",
@@ -454,6 +462,8 @@ omicGuiMetabImport <- function() {
         default_format = "msdial",
         # processing:323
         detect = detectMetabolomicsFormat,
+        # The core's preview and import (utils_workflow_omics_import.R).
+        preview = previewOmicsImport, process = importOmicsTables,
         # ui:50, :62, :176, :195, :197, :215, :236
         help = "Import one or more assay files (e.g., LCMS_Pos, LCMS_Neg, GCMS)",
         assay_name = "LCMS_Pos", id_label = "Metabolite ID Column",
@@ -497,9 +507,9 @@ omicGuiMetabImport <- function() {
 # Transcriptomics.
 # ------------------------------------------------------------------------------------------------
 
-#' The transcriptomics configuration: today's `trxOmicProfile()` fields
-#' (mod_transcriptomics.R:32-49) and the lipid panel's values it renders under that profile
-#' (design 4.12).
+#' The transcriptomics configuration: `trxOmicProfile()`'s fields at c1041c56
+#' (mod_transcriptomics.R:32-49; KIT-102 W5 removed the import-only ones) and the lipid panel's
+#' values it rendered under that profile (design 4.12).
 #' @noRd
 omicGuiConfigTranscriptomics <- function() {
     list(shell = omicGuiFeatureShell("transcriptomics", "trx", "Transcriptomics", "chart-line",
@@ -512,9 +522,8 @@ omicGuiConfigTranscriptomics <- function() {
         import = omicGuiTrxImport())
 }
 
-#' The trx panel: the lipid panel under the profile. `trx` is mod_transcriptomics.R, `ui` is
-#' mod_lipid_import_ui_helpers.R with the profile, `processing` is
-#' mod_lipid_import_processing_helpers.R (trx imports through `runLipidImportProcessing`, trx:139).
+#' The trx panel: at c1041c56 the lipid panel under the trx profile (`ui` with the profile, the
+#' lipid `processing` called from trx:139); now the shared feature-table panel.
 #' @noRd
 omicGuiTrxImport <- function() {
     c(omicGuiLipidColumnIds(), list(source_panel = "feature_table",
@@ -523,8 +532,10 @@ omicGuiTrxImport <- function() {
         # trx:34-35
         formats = c("Count table (gene ID, gene name, sample counts)" = "trx_counts"),
         default_format = "trx_counts",
-        # One format, reported with full confidence (trxImportPreview, trx:89).
+        # One format, reported with full confidence (trx:89; now `previewTrxCountsImport()`).
         detect = function(headers, filename = NULL) list(format = "trx_counts", confidence = 1),
+        # The count table's preview and the count policy (func_trx_counts.R); the core's import.
+        preview = previewTrxCountsImport, process = importOmicsTables, check = checkTrxImportCounts,
         # trx:37-39, :36; ui:189, :191, :233 (the lipid texts, unchanged under the profile)
         help = paste("One delimited count table: a gene ID column, a gene name column and one",
             "column per sample, named exactly as in the design. Counts must be whole numbers: a",
@@ -535,7 +546,7 @@ omicGuiTrxImport <- function() {
         annotation_custom_placeholder = "e.g., Lipid_Name",
         # ui:113; trxDesignObject reads `lipid_id_col` (trx:195); ui:255
         second_assay = FALSE, id_mapping_key = "lipid_id_col", aux_inputs = character(),
-        # mod_lipid_import_output_helpers.R:5; trx:117
+        # output:5; trx:117
         validate_mapping = validateLipidColumnMapping,
         # ui:96, :110-111, :171, :213, :336
         testids = c(vendor_format = "trx-import-format", assay1_name = "trx-import-assay1-name",

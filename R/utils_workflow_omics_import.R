@@ -4,14 +4,14 @@
 # sanitising, the numeric-like conversion, validation, the column mapping, the artifacts and the
 # processing log. `importOmicsTables()` runs them in order and returns the payload, or signals a
 # classed condition with today's message. The GUI keeps the notifications and the commit to the bus.
-# Moved from `R/mod_lipid_import_{selection,processing}_helpers.R`,
-# `R/mod_metab_import_{processing,column}_helpers.R` and `R/mod_transcriptomics.R`; the trx count
-# policy and preview are in `R/func_trx_counts.R`. Recorded divergence from conventions/R.md: the
+# Moved from the lipid import's selection and processing helper files, metab's processing and
+# column helper files and the import section of `R/mod_transcriptomics.R` (as at c1041c56; KIT-102
+# W5 deleted them); the trx count policy and preview are in `R/func_trx_counts.R`. Recorded divergence from conventions/R.md: the
 # per-omic validation messages are held here by omic type (`omicsImportRules()`), as the
 # configuration does not carry them yet.
 
 #' The columns the lipid import's "exclude normalised" option drops from the sample columns
-#' (`resolveLipidImportSampleColumns`, mod_lipid_import_processing_helpers.R:107).
+#' (`resolveOmicsImportSampleColumns()`; the lipid processing helpers' rule at c1041c56).
 #' @noRd
 OMICS_IMPORT_NORMALISED_COLUMNS <- "_norm(ali[sz]ed|allized)?$|normalized"
 
@@ -38,11 +38,10 @@ omicsImportAbort <- function(message, class = character()) {
     rlang::abort(message, class = c(class, "omics_import_invalid"))
 }
 
-#' The per-omic validation rules and messages (each omic's today). Lipid and trx run the lipid
-#' validation (`validateLipidImportProcessingState`, mod_lipid_import_processing_helpers.R:479);
-#' trx refuses it with its count-policy class (`trxValidateImport`, mod_transcriptomics.R:115) and
-#' takes every column but the id and name columns as samples (mod_transcriptomics.R:134). Metab
-#' runs `validateMetabImportWorkflowPayload` (mod_metab_import_processing_helpers.R:114).
+#' The per-omic validation rules and messages (each omic's at c1041c56). Lipid and trx run the
+#' lipid validation; trx refuses it with its count-policy class and takes every column but the id
+#' and name columns as samples (mod_transcriptomics.R:115, :134 at c1041c56). Metab runs its own
+#' payload validation. All three now run through `validateOmicsImportTables()`.
 #' @param omic_type `lipidomics`, `metabolomics` or `transcriptomics`.
 #' @return A list: `messages`, `assay_prefix` (mapping errors and warnings prefixed by the assay),
 #'   `unique` (errors and warnings de-duplicated), `numeric_like` (the numeric check is
@@ -108,8 +107,7 @@ readOmicsImportHeaders <- function(path) {
 }
 
 #' I2. The feature-table preview of a first assay: headers, the detected format, the format's reader
-#' and the columns it proposes (`loadLipidImportAssayPreview`,
-#' `prepareMetabImportAssaySelectionState`).
+#' and the columns it proposes (the lipid and metab previews at c1041c56).
 #' @param path The assay file.
 #' @param import The omic's `config$import` (`detect`, `readers`, `id_mapping_key`).
 #' @return A list: `headers`, `detected_format`, `format_confidence`, `import_result` (the
@@ -136,7 +134,7 @@ previewOmicsImport <- function(path, import) {
 
 #' I3. The sample columns: for a custom format, the columns matching the pattern (when any match);
 #' else the reader's sample columns, or the numeric columns; then, given `exclude_pattern`, those
-#' not matching it (`resolveLipidImportSampleColumns`, `resolveMetabImportSampleColumns`).
+#' not matching it (the lipid and metab sample-column rules at c1041c56).
 #' @param exclude_pattern NULL, or `OMICS_IMPORT_NORMALISED_COLUMNS` for lipid's option.
 #' @noRd
 resolveOmicsImportSampleColumns <- function(assay_data, vendor_format, pattern = NULL,
@@ -255,7 +253,7 @@ sanitizeOmicsImportSampleNames <- function(assays, sample_columns, sanitize) {
 # ------------------------------------------------------------------------------------------------
 
 #' Whether values are numeric-like: numeric and finite or NA; or text (or factor) whose every value,
-#' trimmed, is empty, NA or a finite number (`metabImportValuesAreNumericLike`).
+#' trimmed, is empty, NA or a finite number (metab's rule at c1041c56).
 #' @noRd
 omicsImportValuesAreNumericLike <- function(values) {
     if (is.numeric(values)) return(all(is.na(values) | is.finite(values)))
@@ -374,7 +372,7 @@ buildOmicsImportColumnMapping <- function(id_key, id_col, annotation_col, sample
 
 #' I11. The import's source artifacts in `experiment_paths$source_dir`: each assay as
 #' `data_cln_<assay>.tab`, the manifest, the column mapping, copies of the source files and the
-#' omic's summary file (`writeLipidImportSourceArtifacts`, `writeMetabImportSourceArtifacts`).
+#' omic's summary file (the lipid and metab source artifacts at c1041c56).
 #' @param source_files A named list of source paths; NULL entries are skipped.
 #' @param summary_file `config$import$summary_file`.
 #' @return A list: `written`, and `paths` and `source_copies`; or `written = FALSE` with a reason.
