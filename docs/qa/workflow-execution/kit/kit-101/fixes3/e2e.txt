@@ -1,0 +1,24 @@
+KIT-101 addendum (revision 2.3): the e2e proteomics browser lanes once each after F-21 (HEAD 66ad65ba: F-17, F-20, F-21).
+Runner: NOT_CRAN=true CHROMOTE_CHROME=/usr/bin/brave R_LIBS=<kit_100 library> timeout 1800 Rscript
+kit/scripts-078/run1.R . <file>, under systemd-inhibit --what=idle:sleep; one attempt per file; one file at a time.
+Package: the worktree source for both processes (the test process by run1.R's load_all; the app process by
+e2e_launch_spec's run_app surface, pkgload::load_all of the project directory). The kit_100 library supplies the
+dependencies only, so its stale MultiScholaR build (before F-08..F-15) is not used.
+
+| file | lanes | result | seconds | failed step |
+|---|---|---|---|---|
+| test-e2e-proteomics-dia.R | prot_dia | pass 41, fail 0, error 0, skip 0 | 259 | none |
+| test-e2e-proteomics-dia-limpa.R | prot_dia_limpa | pass 11, fail 0, error 0, skip 1 | 61 | none; skips at the QC stage by design (e2e_run_prot_dia_limpa_qc: no browser path yet), as in phase 1 |
+| test-e2e-proteomics-enrichment.R | prot_dia (gprofiler2, clusterProfiler) | pass 96, fail 0, error 0, skip 0 | 526 | none |
+| test-e2e-proteomics-tmt-lfq.R | prot_tmt, prot_lfq, prot_lfq_fragpipe | pass 150, fail 0, error 0, skip 0 | 369 | none |
+
+Every lane that phase 1 (f1df3f93) stopped at the session-artifact check now passes through to the DA, the
+enrichment and the report.
+
+Instrumentation failures, not attempts (the lane never ran): (1) the first DIA launch used /usr/bin/time, which this
+host lacks (exit 127 before R started); (2) the second ran without NOT_CRAN=true and skipped in 5 s (the KIT-097
+recipe, kit/scripts-097/e2e.sh, sets it). Seconds above are from a date-based wrapper.
+
+Not reached and not changed: test-e2e-proteomics-dia-limpa.R's checks after its export (session_data$use_limpa,
+current_s4_object@args, workflow_type "DIA") are legacy-export fields; the native summary reports the route as
+DIA_LIMPA and carries no S4 object. They stay unreachable while the lane skips at QC.
