@@ -35,6 +35,11 @@ Protein abundances come from the KIT-021 protein corpus recipe (`tools/profiling
 
 Each precursor adds a fixed offset and run noise (SD 0.15).
 
+`Precursor.Quantity` is raw and keeps the recipe's per-sample loading. `Precursor.Normalised` removes that loading as
+DIA-NN's cross-run normalisation would (KIT-101 F-19): each run is centred on its median log2 quantity, with a small
+residual run error (SD 0.1 log2). Before F-19 the normalised column kept the loading, which at seed 20261109 differed
+by -0.30 log2 between KO and WT.
+
 ## Not used by the lane
 
 `seed_report.tsv` is an earlier hand-made table. It is kept, and recorded under `retained_fixtures` in the manifest.

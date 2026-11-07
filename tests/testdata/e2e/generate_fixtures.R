@@ -141,10 +141,6 @@ protFixtureMatrix <- function(lane, kit) {
     recipe <- kit$kitProteinRecipe(shape$kit_recipe, samples = 2L * per_group, proteins = as.integer(shape$proteins))
     recipe$seed <- as.integer(shape$seed)
     if (!is.null(shape$flagged_rows)) recipe$flagged_rows <- as.integer(shape$flagged_rows)
-    # A protein-level LFQ export writes a missing value as 0, which the import keeps as a quantity (log2(0 + 1)): in
-    # development runs a ten-sample fixture lost 1 to 4 samples to the correlation filter at 2% missing, so the LFQ
-    # lanes record no missing values.
-    if (!is.null(shape$missing_fraction)) recipe$missing_fraction <- as.numeric(shape$missing_fraction)
     m <- kit$kitProteinMatrix(recipe)
     label <- sprintf("%s_%d", m$group, stats::ave(seq_along(m$group), m$group, FUN = seq_along))
     groups <- unlist(lane$groups)
@@ -193,6 +189,10 @@ protFixtureInputs <- function(lane) {
 #' Precursor.Quantity, Precursor.Normalised) read. A missing precursor has no row, as DIA-NN writes it. A few
 #' precursors fail the run or global q-value, a few peptides are not proteotypic and four unchanged proteins fail the
 #' global protein-group q-value, so the confidence filter removes rows.
+#' Precursor.Quantity is the raw quantity and keeps the recipe's per-sample loading (kitProteinMatrix sample_scale).
+#' Precursor.Normalised removes that loading as DIA-NN's cross-run normalisation would (KIT-101 F-19): each run is
+#' centred on its median log2 Precursor.Quantity, to the median of the run medians, with a small residual run error
+#' (run_scale, SD 0.1 log2).
 #' @noRd
 generateProtDiannFixture <- function(lane, lane_dir) {
     inputs <- protFixtureInputs(lane)
@@ -241,11 +241,16 @@ generateProtDiannFixture <- function(lane, lane_dir) {
                 Global.PG.Q.Value = protein_global_pg_q[precursor$protein],
                 Proteotypic = precursor$proteotypic,
                 Precursor.Quantity = quantity,
-                Precursor.Normalised = round(quantity * run_scale[[s]], 1),
+                Precursor.Normalised = NA_real_,
                 stringsAsFactors = FALSE
             )[!absent, , drop = FALSE]
         })
-        do.call(rbind, rows)
+        report <- do.call(rbind, rows)
+        # F-19: the per-run loading removed (median centring of each run), the residual run error kept.
+        run_median <- tapply(log2(report$Precursor.Quantity), report$Run, stats::median)
+        shift <- stats::median(run_median) - run_median[report$Run]
+        report$Precursor.Normalised <- round(report$Precursor.Quantity * 2^shift * run_scale[match(report$Run, design$sample)], 1)
+        report
     })
     .write_tsv(report, file.path(lane_dir, lane$seed_file))
     cat("  wrote", lane$seed_file, "(", nrow(report), "rows )\n")

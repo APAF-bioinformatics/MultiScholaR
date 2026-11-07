@@ -26,6 +26,8 @@ Protein abundances come from the KIT-021 protein corpus recipe (`kitProteinMatri
 
 This gives limpa's detection-probability model missing values to work with.
 
+`Precursor.Normalised` has each run's loading removed (median centring, KIT-101 F-19); see `prot_dia/README.md`.
+
 ## Not used by the lane
 
 `seed_report.tsv` is an earlier hand-made table. It is kept, and recorded under `retained_fixtures` in the manifest.

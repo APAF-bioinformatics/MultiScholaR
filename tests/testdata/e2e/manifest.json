@@ -41,7 +41,7 @@
       "files_sha256": {
         "design.tsv": "2736cc543b29705761f215269e4e92acbad5779528d31ea42042ee4e62ee7b58",
         "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32",
-        "report.tsv": "fcbe5252f37d1d35652f8b652dac27fe0920acf6ba61c5015ce6d8dda36864dc"
+        "report.tsv": "dd4b01aad6205600a45632811a86ea0eb6e6e8695c1e0c7a5a1c61c1e80bf0e8"
       }
     },
     {
@@ -84,7 +84,7 @@
       "files_sha256": {
         "design.tsv": "2736cc543b29705761f215269e4e92acbad5779528d31ea42042ee4e62ee7b58",
         "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32",
-        "report.tsv": "bcf391784db0efc7d3c5c0ff178663f66af0e6d2fca87d2350c6087fe4057e2a"
+        "report.tsv": "81f61cc63321d35b5cf6649c4c3537334347b68905281d3287db5467a7027a79"
       }
     },
     {
@@ -166,12 +166,11 @@
         "universe_seed": 20261107,
         "biological_per_group": 5,
         "proteins": 400,
-        "flagged_rows": 5,
-        "missing_fraction": 0
+        "flagged_rows": 5
       },
       "files_sha256": {
         "design.tsv": "fed1f2da738f786f9a0ad38d0bd81b2c3ea306dd19e645e03d092122806411ec",
-        "proteinGroups.txt": "99aded0f744c9280edb3e8bf3b69ccc5a61ed492a5f3f287bb65bed6764e42c6",
+        "proteinGroups.txt": "4d94c48aecdd6d3d533fe8e21464d37befa3ea2638fbf622acb0a02cf0d2b04e",
         "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
       }
     },
@@ -210,11 +209,10 @@
         "seed": 20261112,
         "universe_seed": 20261107,
         "biological_per_group": 5,
-        "proteins": 400,
-        "missing_fraction": 0
+        "proteins": 400
       },
       "files_sha256": {
-        "combined_protein.tsv": "51d590739e41eebb0ace020ea57728e38f353465a8a8e898492576cc286f6436",
+        "combined_protein.tsv": "ed74ebd578b75dc3ea6d0be42aaa77bf370468ab4afc28a8004c9ab4e285c8a8",
         "design.tsv": "fed1f2da738f786f9a0ad38d0bd81b2c3ea306dd19e645e03d092122806411ec",
         "proteins.fasta": "beb40a412d8850ad734fefee5747a9f54ce5b94097cfc4414e25a358634a0b32"
       }
