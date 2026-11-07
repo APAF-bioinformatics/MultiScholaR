@@ -1075,6 +1075,112 @@ transformDIADesignTable <- function(manager, reference, samples = NULL, rename =
     result
 }
 
+# --- Proteomics design data (KIT-103 W3: moved unchanged from R/mod_prot_design_*.R, names kept) ---
+
+#' Initialize the private DIA design from bounded metadata and immutable data.
+#' @param manager Current session owner.
+#' @param reference Imported-table reference.
+#' @param config_list,column_mapping Existing configuration and mapped columns.
+#' @return Initial design metadata with an explicit data reference, never an assay.
+#' @noRd
+buildDIAReferenceDesignState <- function(manager, reference, config_list, column_mapping) {
+    context <- manager$.context
+    validateSavedWorkflowReference(context$store, reference, payload = FALSE)
+    metadata <- getDIAImportMetadata(manager)
+    if (!identical(metadata$reference_id, reference$entity_id) ||
+        !identical(metadata$column_mapping, column_mapping)) {
+        if (isWorkflowTableReference(reference)) {
+            cli::cli_abort("saved import metadata is missing or mismatched", class = "saved_entity_corrupt")
+        }
+        # Older validated native sessions have no import summary. Derive it once,
+        # in this operation, rather than forcing future metadata events to read.
+        table <- resolveDIAOwnedValue(reference, manager)
+        metadata <- recordDIAImportMetadata(manager, table,
+            list(data = table, data_type = "peptide", column_mapping = column_mapping), reference)
+        table <- NULL
+    }
+    initial <- context$snapshot$design_initial
+    if (!identical(initial$source_reference, reference) ||
+        !identical(initial$column_mapping, column_mapping)) {
+        cleaned_reference <- reference
+        if (length(metadata$needs_numeric)) {
+            cleaned_reference <- transformDIADesignTable(manager, reference,
+                numeric_columns = metadata$needs_numeric, strip_parser = TRUE)
+        }
+        initial <- list(source_reference = reference, column_mapping = column_mapping,
+            data_reference = cleaned_reference)
+        snapshot <- context$snapshot
+        snapshot$design_initial <- initial
+        # KIT-026: the GUI-built design has no input file; the head names the table it was built on.
+        snapshot$file_dependencies$design <- list(role = "design_builder", entity_id = cleaned_reference$entity_id)
+        publishDIAStateHead(context, snapshot)
+        releaseDIAReplacedOwner(manager, reference, cleaned_reference)
+    }
+    state <- buildProtDesignInitialState(metadata$samples, config_list, list())
+    state["data_cln"] <- list(NULL)
+    state$data_reference <- initial$data_reference
+    state$sample_metadata <- metadata$samples
+    state
+}
+
+buildProtDesignInitialState <- function(
+    dataTbl,
+    configList,
+    columnMapping
+) {
+    dataCln <- dataTbl
+    quantityColumns <- unique(Filter(
+        Negate(is.null),
+        list(
+            columnMapping$norm_quantity_col,
+            columnMapping$raw_quantity_col,
+            columnMapping$quantity_col
+        )
+    ))
+
+    for (columnName in quantityColumns) {
+        if (columnName %in% names(dataCln)) {
+            dataCln <- dataCln |>
+                dplyr::mutate(
+                    !!rlang::sym(columnName) := as.numeric(!!rlang::sym(columnName))
+                )
+        }
+    }
+
+    designMatrixRaw <- tibble::tibble(
+        Run = dataCln |>
+            dplyr::distinct(Run) |>
+            dplyr::select(Run) |>
+            dplyr::pull(Run) |>
+            gtools::mixedsort(),
+        group = NA_character_,
+        factor1 = NA_character_,
+        factor2 = NA_character_,
+        factor3 = NA_character_,
+        batch = NA_character_,
+        replicates = NA_integer_,
+        tech_reps = NA_integer_
+    )
+
+    list(
+        design_matrix = designMatrixRaw,
+        data_cln = dataCln,
+        groups = unique(
+            designMatrixRaw$group[
+                !is.na(designMatrixRaw$group) & designMatrixRaw$group != ""
+            ]
+        ),
+        factors = character(0),
+        formula = configList[["deAnalysisParameters"]][["formula_string"]],
+        contrasts = data.frame(
+            contrast_name = character(),
+            numerator = character(),
+            denominator = character(),
+            stringsAsFactors = FALSE
+        )
+    )
+}
+
 #' Stream the required cleaned-data TSV from the accepted table.
 #' @param manager,reference Current owner and table.
 #' @param path Existing design artifact destination.

@@ -196,52 +196,6 @@ createProtDesignInitialStateReactive <- function(
     })
 }
 
-#' Initialize the private DIA design from bounded metadata and immutable data.
-#' @param manager Current session owner.
-#' @param reference Imported-table reference.
-#' @param config_list,column_mapping Existing configuration and mapped columns.
-#' @return Initial design metadata with an explicit data reference, never an assay.
-#' @noRd
-buildDIAReferenceDesignState <- function(manager, reference, config_list, column_mapping) {
-    context <- manager$.context
-    validateSavedWorkflowReference(context$store, reference, payload = FALSE)
-    metadata <- getDIAImportMetadata(manager)
-    if (!identical(metadata$reference_id, reference$entity_id) ||
-        !identical(metadata$column_mapping, column_mapping)) {
-        if (isWorkflowTableReference(reference)) {
-            cli::cli_abort("saved import metadata is missing or mismatched", class = "saved_entity_corrupt")
-        }
-        # Older validated native sessions have no import summary. Derive it once,
-        # in this operation, rather than forcing future metadata events to read.
-        table <- resolveDIAOwnedValue(reference, manager)
-        metadata <- recordDIAImportMetadata(manager, table,
-            list(data = table, data_type = "peptide", column_mapping = column_mapping), reference)
-        table <- NULL
-    }
-    initial <- context$snapshot$design_initial
-    if (!identical(initial$source_reference, reference) ||
-        !identical(initial$column_mapping, column_mapping)) {
-        cleaned_reference <- reference
-        if (length(metadata$needs_numeric)) {
-            cleaned_reference <- transformDIADesignTable(manager, reference,
-                numeric_columns = metadata$needs_numeric, strip_parser = TRUE)
-        }
-        initial <- list(source_reference = reference, column_mapping = column_mapping,
-            data_reference = cleaned_reference)
-        snapshot <- context$snapshot
-        snapshot$design_initial <- initial
-        # KIT-026: the GUI-built design has no input file; the head names the table it was built on.
-        snapshot$file_dependencies$design <- list(role = "design_builder", entity_id = cleaned_reference$entity_id)
-        publishDIAStateHead(context, snapshot)
-        releaseDIAReplacedOwner(manager, reference, cleaned_reference)
-    }
-    state <- buildProtDesignInitialState(metadata$samples, config_list, list())
-    state["data_cln"] <- list(NULL)
-    state$data_reference <- initial$data_reference
-    state$sample_metadata <- metadata$samples
-    state
-}
-
 initializeProtDesignBuilderServerState <- function(
     input,
     session,
