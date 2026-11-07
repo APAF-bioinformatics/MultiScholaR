@@ -1,0 +1,101 @@
+KIT-102 W7 budget run 1: the targeted set (2026-11-08 02:49-03:11, 21.5 min of the 2 h ceiling), on 1b12a7bf.
+One R process per file, in sequence: kit/scripts-078/run1.R (verbose), pkgload::load_all (export_all, helpers),
+MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, R_LIBS=core/browser-smoke.rvol2q/library, under systemd-inhibit idle:sleep.
+Set: every work item's tests (w1..w6 targeted.txt), the retargeted MCI files, the quarantined files, and the dependents
+of the names W7 touched (omicGuiConfig, the feature-table panel's preview and process, the core preview/import functions,
+the proteomics header read and reader). The four test-gui-entry-*.R files are runs 2 and 3 (../entry-suite.md).
+Base columns: kit-101/test-baseline.tsv, mode load_all (NA: a file new in KIT-102).
+
+Test first (W7 part 1): test-omic-gui-config.R with preview and process added to the test's required import fields,
+before the configuration carried them: pass 242 fail 15 (blocks "each omic's configuration validates ...", "removing a
+required field, or giving it the wrong type, is refused by class", and the 7 known trx-profile failures W5 left).
+After the wiring and the trx-profile retarget: pass 257 fail 0.
+
+ file                                                   pass fail error skip
+ test-omic-gui-config.R                                  257 0    0      0  
+ test-workflow-omics-import.R                             24 0    0      8  
+ test-module-ci-lipid-import.R                           173 0    0      0  
+ test-module-ci-metab-import.R                            91 0    0      0  
+ test-module-ci-trx-import.R                              96 0    0      0  
+ test-module-ci-trx-app.R                                 48 0    0      0  
+ test-module-ci-trx-design.R                              71 0    0      0  
+ test-module-ci-prot-import.R                            107 0    0      0  
+ test-module-ci-prot-design.R                             11 0    0      5  
+ test-metab-00d-import-module-characterization.R          24 0    0      0  
+ test-lipid-00c-import-module-characterization.R           7 0    0     10  
+ test-lipid-00b-import-module-seams.R                      0 0    0      0  
+ test-metab-00b-import-module-helper-characterization.R    0 0    0      0  
+ test-metab-00b-import-helper-shared.R                     0 0    0      0  
+ test-metab-00c-import-module-seams.R                      0 0    0      0  
+ test-omics-audit-carry-overs.R                           20 0    0      0  
+ test-e2e-test-mode-integration.R                         61 0    0      0  
+ test-ci-impact-e2e.R                                     10 0    0      0  
+ test-app-shell-shared.R                                  29 0    0      0  
+ test-workflow-ui-shared.R                               178 0    0      0  
+ test-workflow-server-shared.R                           204 0    0      0  
+ test-prot-import-core.R                                  35 0    0      0  
+ test-prot-01-import.R                                    15 0    0      1  
+ test-prot-01b-import-detection-characterization.R         8 0    0      0  
+ test-prot-01c-import-module-contracts.R                 427 0    0      0  
+ test-prot-01d-import-module-characterization.R           79 0    0      0  
+ test-prot-import-maxquant-direct-shared.R                36 0    0      0  
+ test-prot-import-tmt-direct-shared.R                     27 0    0      0  
+ test-trx-design.R                                        70 0    0      0  
+ test-workflow-prot-declarations.R                       303 0    0      2  
+ test-workflow-omics-binding-steps.R                      57 0    0      0  
+ test-workflow-operation-registry.R                     1007 0    0      0  
+ test-workflow-checkpoint-dia-state.R                    174 0    0      4  
+ test-workflow-gui-memory-lifetimes.R                     80 0    0     11  
+ test-workflow-native-session.R                          733 0    0      2  
+ test-perf107-audit.R                                    191 0    0      1  
+ test-workflow-omics-residency.R                          97 0    0      0  
+ test-workflow-omics-application-reads.R                 230 0    0      0  
+ elapsed base_pass base_fail base_err base_skip base_file_skip
+ 7s        NA      NA        NA       NA           NA         
+ 4s        NA      NA        NA       NA           NA         
+ 10s      173       0         0        0        FALSE         
+ 9s        88       0         0        0        FALSE         
+ 7s        96       0         0        0        FALSE         
+ 27s       48       0         0        0        FALSE         
+ 16s       71       0         0        0        FALSE         
+ 5s        90       0         0        0        FALSE         
+ 4s        11       0         0        5        FALSE         
+ 4s        24       0         0        0        FALSE         
+ 5s        96       0         0        0        FALSE         
+ 4s       547       0         0        0        FALSE         
+ 4s       337       0         0        0        FALSE         
+ 4s        33       0         0        0        FALSE         
+ 4s        36       0         0        0        FALSE         
+ 7s        18       0         0        0        FALSE         
+ 5s        63       0         0        0        FALSE         
+ 5s        10       0         0        0        FALSE         
+ 5s        29       0         0        0        FALSE         
+ 5s        51       0         0        0        FALSE         
+ 5s        70       0         0        0        FALSE         
+ 7s        NA      NA        NA       NA           NA         
+ 4s        15       0         0        1        FALSE         
+ 4s         8       0         0        0        FALSE         
+ 9s       410       0         0        0        FALSE         
+ 6s        79       0         0        0        FALSE         
+ 5s        24       0         0        0        FALSE         
+ 4s        22       0         0        0        FALSE         
+ 5s        70       0         0        0        FALSE         
+ 82s      303       0         0        2        FALSE         
+ 41s       57       0         0        0        FALSE         
+ 10s     1007       0         0        0        FALSE         
+ 18s      174       0         0        4        FALSE         
+ 7s        80       0         0       11        FALSE         
+ 412s     725       0         0        2        FALSE         
+ 16s      191       0         0        1        FALSE         
+ 163s      97       0         0        0        FALSE         
+ 346s     230       0         0        0        FALSE         
+
+TOTAL 38 files: pass 4980 fail 0 error 0 skip 44
+
+Every exit 0; no failing or erroring block. Skips: test-workflow-omics-import.R 8 (Q-30) and test-lipid-00c 10 (Q-26);
+every other skip count equals the KIT-101 baseline. The whole-file quarantines Q-25, Q-27, Q-28 and Q-29 report no tests
+under strict skips, not an error. Each count equals the latest earlier work item's run of the same file (W2 to W6
+targeted.txt), except test-omic-gui-config.R (+8: W7's required preview/process expectations) and
+test-workflow-omics-import.R (the W5 state, 24 pass 8 skip, after W7 removed the trx check fallback). Against the
+KIT-101 baseline, test-e2e-test-mode-integration.R runs 61 against 63 (W5's retarget of its three blocks; for the lead's
+skip comparison, budget run 8).

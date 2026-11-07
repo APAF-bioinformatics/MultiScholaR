@@ -1,0 +1,72 @@
+KIT-102 W7 merge checks (2026-11-08), on 1b12a7bf (origin/performance-v2 1c81c8c4 + the W7 wiring commit).
+Scripts (scratch, not committed): merge_checks.R (Collate; parse-data back-references), deps.sh (the grep),
+removed_names.R (top-level function names defined in R/ at c1041c56 and absent now).
+
+1. Collate
+COLLATE entries 381, R files 381, duplicates 0
+COLLATE missing from Collate: none
+COLLATE listed but absent: none
+
+2. The dependents grep
+Word match (grep -rnwF) of the 121 deleted names (w5/dependents.txt, "The deleted names") and fixed-string match of the
+9 deleted paths (R/mod_lipid_import_{ui,selection,processing,output}_helpers.R,
+R/mod_metab_import_{column,display,processing,registration,server}_helpers.R), across R/ tests/ tools/ inst/,
+tools/refactor/ excluded.
+The whole KIT-102 removal set, c1041c56..HEAD, is those 121 names plus newTrxWorkflowData (W4, db6ffd27): 0 hits.
+
+## Names: hits per file
+    217 tests/testthat/test-lipid-00b-import-module-seams.R                    Q-25 (whole file)
+     58 tests/testthat/test-lipid-00c-import-module-characterization.R         Q-26 (the 10 internal blocks)
+     13 tests/testthat/test-metab-00b-import-helper-shared.R                   Q-28 (whole file)
+    106 tests/testthat/test-metab-00b-import-module-helper-characterization.R  Q-27 (whole file)
+      7 tests/testthat/test-metab-00c-import-module-seams.R                    Q-29 (whole file)
+     18 tests/testthat/test-workflow-omics-import.R                            Q-30 (inside the Q-30 blocks, and the
+                                                                               three comments above the compare*
+                                                                               helpers only those blocks call)
+## Paths: hits per file
+      8 tests/testthat/test-lipid-00b-import-module-seams.R                    Q-25
+      4 tests/testthat/test-metab-00b-import-helper-shared.R                   Q-28
+     10 tests/testthat/test-metab-00b-import-module-helper-characterization.R  Q-27
+      2 tests/testthat/test-metab-00c-import-module-seams.R                    Q-29
+## Hits in R/, tools/ (outside tools/refactor/) and inst/: none
+(W5 left 14 comment hits in R/utils_workflow_omics_import.R, R/func_trx_counts.R and R/utils_omic_gui_config.R; W7
+reworded them to the current functions or to c1041c56 provenance.)
+omicImportFeatureTablePlugins (W5's stop-gap, deleted by W7): 0 hits in R/ tests/ tools/ inst/.
+Result: empty apart from the quarantined files (Q-25 to Q-30) and tools/refactor/.
+
+3. The parse-data back-reference count
+Functions defined at top level in R/mod_*.R and appearing as a SYMBOL or SYMBOL_FUNCTION_CALL in R/utils_workflow_*.R
+or R/func_*.R (names also defined in those core files excluded).
+Count: 30 (c1041c56, same script: 32). The two that left are back-references #1 and #2, getDIAImportMetadata and
+recordDIAImportMetadata (defined at c1041c56 in mod_prot_import_processing_helpers.R; moved by W3, 0a3141c4, into
+utils_workflow_dia_sessions.R). The other 30 are unchanged from c1041c56 (KIT-103 to 106):
+  .formatPeptideRollupSummary (defined in mod_prot_qc_peptide_rollup.R) <- utils_workflow_dia_qc_rollup.R
+  .peptideImputationAuditSummary (defined in mod_prot_qc_peptide_impute.R) <- utils_workflow_dia_qc_rollup.R
+  .proteinCleanupActiveKey (defined in mod_prot_qc_protein_cleanup.R) <- utils_workflow_prot_declarations.R
+  buildDIAReferenceDesignState (defined in mod_prot_design_builder_server_helpers.R) <- utils_workflow_dia_sessions.R
+  buildLipidNormCompositeFromFilesGenerator (defined in mod_lipid_norm_support_helpers.R) <- utils_workflow_lipid_declarations.R
+  buildLipidNormFinalQcPcaPlot (defined in mod_lipid_norm_support_helpers.R) <- utils_workflow_lipid_declarations.R
+  buildMetabNormFinalQcPcaPlot (defined in mod_metab_norm_session_helpers.R) <- utils_workflow_metab_declarations.R
+  buildProtNormCorrelationPlot (defined in mod_prot_norm_qc_support_helpers.R) <- utils_workflow_dia_products.R
+  buildProtNormDensityPlot (defined in mod_prot_norm_qc_support_helpers.R) <- utils_workflow_dia_products.R
+  buildProtNormExportSummaryContent (defined in mod_prot_norm_session_helpers.R) <- utils_workflow_dia_sessions.R
+  buildProtNormQcPlotProduct (defined in mod_prot_norm_qc_generation_helpers.R) <- utils_workflow_dia_products.R
+  buildProtNormSkippedRuvResult (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+  finalizeProtNormWorkflowState (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+  generateMetabNormCompositeFromFiles (defined in mod_metab_norm_render_helpers.R) <- utils_workflow_metab_declarations.R
+  generateProtNormCompositeQcFigure (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+  mod_prot_design_builder_server (defined in mod_prot_design_builder_server.R) <- func_general_applets.R
+  mod_prot_design_builder_ui (defined in mod_prot_design_builder_ui.R) <- func_general_applets.R
+  normaliseProtDaContrastsTable (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+  resolveMetabDuplicateAssayData (defined in mod_metab_qc_duplicates_server_helpers.R) <- utils_workflow_metab_declarations.R
+  resolveProtNormCorrelationResultFilenames (defined in mod_prot_norm_correlation_helpers.R) <- utils_workflow_dia_products.R
+  resolveProtRuvParameters (defined in mod_prot_norm_ruv_helpers.R) <- utils_workflow_dia_products.R
+  runMetabNormCompositeQcFigureStep (defined in mod_metab_norm_pipeline_helpers.R) <- utils_workflow_metab_declarations.R
+  saveProtNormCorrelationResults (defined in mod_prot_norm_correlation_helpers.R) <- utils_workflow_dia_sessions.R
+  saveProtNormExportMetadataFiles (defined in mod_prot_norm_session_helpers.R) <- utils_workflow_dia_sessions.R
+  stripProtNormQcPlotOwners (defined in mod_prot_norm_qc_generation_helpers.R) <- utils_workflow_dia_da.R, utils_workflow_dia_products.R, utils_workflow_dia_sessions.R, utils_workflow_omics_declarations.R
+  validateLipidDaAnalysisPreflight (defined in mod_lipid_da_analysis_helpers.R) <- func_lipid_da_model.R, utils_workflow_lipid_declarations.R
+  validateProtDaFilteredSession (defined in mod_prot_da_validation.R) <- utils_workflow_dia_sessions.R
+  validateProtDaModelAndContrasts (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+  validateProtNormRuvK (defined in mod_prot_norm_ruv_helpers.R) <- func_prot_norm_optimization_helpers.R, func_prot_s4_norm_methods.R
+  writeLipidNormCompositeFigure (defined in mod_lipid_norm_workflow_helpers.R) <- utils_workflow_lipid_declarations.R
