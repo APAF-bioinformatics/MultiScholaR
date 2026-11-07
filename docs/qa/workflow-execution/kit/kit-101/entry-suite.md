@@ -257,3 +257,61 @@ prot_tmt `<store entries>`.
 **Tests.** test-e2e-manifest.R: pass 237. test-e2e-fixture-integrity.R: pass 1.
 
 Not frozen: waiting for F-24 (the lipid/metab/trx QC observers).
+
+## Revision 2.2, phase 2b (2026-11-07): the freeze
+
+Tree `ddf42372`: `origin/performance-v2` with the F-08 to F-12, F-15, F-17, F-18, F-20, F-21, F-23, F-24 and F-26 fixes,
+plus this work (the revision 2.2 fixtures, the F-13 and F-22 captures and the F-11 refusal kinds). load_all, R 4.6.1,
+the kit_100 library. The four files ran in parallel in each run.
+
+| run | what | result |
+|---|---|---|
+| A, B (21:20, 21:40) | determinism | all 10 lanes identical. Also identical to phase 2a's run A on `aa629c09`, so F-24 changes no capture |
+| freeze (21:58) | `MULTISCHOLAR_GUI_ENTRY_FREEZE=1` writes the oracles | every lane's record identical to runs A and B; oracles committed in `05ecdcb4` with `source_sha` `ddf42372` |
+| verify (22:13, HEAD `05ecdcb4`) | the four files on the frozen oracles | proteomics 187, lipidomics 35, metabolomics 105, transcriptomics 29 passes; 0 fail, 0 error, 0 skip |
+| strict (22:27, HEAD `05ecdcb4`) | the same under `MULTISCHOLAR_STRICT_SKIPS=1` | proteomics 187, lipidomics 35, metabolomics 105, transcriptomics 29 passes; 0 fail, 0 error, 0 skip (proteomics file 891 s) |
+
+| lane | deterministic (A = B = freeze) | frozen | steps | lane seconds (freeze run) |
+|---|---|---|---|---|
+| prot_dia | yes | yes | 29 | 304 |
+| prot_dia_limpa | yes | yes | 24 | 170 |
+| prot_tmt | yes | yes (first time) | 21 | 121 |
+| prot_lfq | yes | yes (first time) | 21 | 122 |
+| prot_lfq_fragpipe | yes | yes (first time) | 21 | 132 |
+| lipid_canonical | yes | yes | 20 | 98 |
+| metab_lc | yes | yes | 20 | 95 |
+| metab_gc | yes | yes | 20 | 60 |
+| metab_combined | yes | yes | 20 | 72 |
+| trx_screen | yes | yes | 16 | 53 |
+
+**Differences from the previous oracles** (frozen from `e989e93e`), attributed to findings:
+- lipid_canonical, metab_lc, metab_gc, metab_combined, trx_screen:
+  - every step's store capture changed: `<store files>` was replaced by `<store entries>` (F-13), with the request-id
+    suffixes masked (F-22);
+  - `summary_refusal` is now a messaged refusal, whose notification reads "Please copy the results to the publication
+    directory..." (F-11).
+  - Nothing else changed. F-17 (trx filter early click) and F-24 (lipid/metab/trx QC early clicks) were expected to
+    change no capture, and none changed: the lanes make no early click.
+- prot_dia and prot_dia_limpa: every capture from `import` on. These lanes were not attributable step by step to one
+  finding, because the inputs changed:
+  - **New fixtures (F-07, F-19).** 400 proteins and 8 runs, with the DIA-NN confidence columns and a normalised
+    `Precursor.Normalised`. These change outputs, artifact digests, state digests, heads and histories from the design
+    step on. The Q-value filter and rollup now commit `qvalue_filtered` and `precursor_rollup`; before, they refused.
+  - **F-11:** `import_refusal` is messaged ("Please choose a search results file and a FASTA file..."), and so is
+    `summary_refusal`.
+  - **F-08:** the DA publishes (no `saved_entity_outputs_pending`). DA, enrichment (prot_dia) and the publication copy
+    then reach their outputs: `tab_status` changes from `da` (prot_dia) and from `correlation` (prot_dia_limpa).
+  - **F-15:** `summary_save` and `summary_report` write the analysis record, with no warning.
+  - **F-10 and F-20:** the normalisation tab no longer warns that QC is incomplete, on the DIA and the DIA_LIMPA route
+    respectively.
+  - **F-09:** the DIA_LIMPA protein sub-tabs commit `protein_dpc_quant`, `protein_normalised` and
+    `peptide_count_filtered`.
+  - **F-23:** expected to change nothing, and nothing changed: the route default stays `none`.
+  - **F-13 and F-22:** the store capture, as for the other lanes.
+- prot_tmt, prot_lfq, prot_lfq_fragpipe: no previous oracle. They are frozen on the new fixtures, with:
+  - the F-11 import and summary messages;
+  - the protein-intensity refusal step (percentile 150);
+  - F-18: the MaxQuant and FragPipe readers read a 0 as NA, so the LFQ lanes keep all 10 samples with about 8%
+    missing values;
+  - F-26 changes no capture: the TMT fixture writes a missing abundance as empty, not 0.
+- F-12 (check-mode guards) and F-21 (e2e session-artifact check) are outside the entry suite and change no capture.
