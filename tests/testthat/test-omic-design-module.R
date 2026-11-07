@@ -57,9 +57,9 @@ test_that("W4 the design tab's UI through the lipid wrappers is today's bytes (l
 })
 
 test_that("W4 the shared frame, builder, import modal and reset modal render today's bytes from the configuration", {
-    expect_identical(omicDesignUiDigest(mod_omic_design_ui("design", lipidDesignGuiConfig())),
+    expect_identical(omicDesignUiDigest(mod_omic_design_ui("design", omicGuiConfig("lipidomics"))),
         omicDesignFrozen$lipid_frame)
-    expect_identical(omicDesignUiDigest(mod_omic_design_ui("design", lipidDesignGuiConfig(trxOmicProfile()))),
+    expect_identical(omicDesignUiDigest(mod_omic_design_ui("design", omicGuiConfig("transcriptomics"))),
         omicDesignFrozen$trx_frame)
     expect_identical(omicDesignUiDigest(mod_omic_design_builder_ui("builder", omicGuiConfig("lipidomics"))),
         omicDesignFrozen$builder)
@@ -67,7 +67,7 @@ test_that("W4 the shared frame, builder, import modal and reset modal render tod
     expect_identical(omicDesignUiDigest(mod_omic_design_builder_ui("builder", omicGuiConfig("transcriptomics"))),
         omicDesignFrozen$builder)
     ns <- shiny::NS("design")
-    config <- lipidDesignGuiConfig()
+    config <- omicGuiConfig("lipidomics")
     expect_identical(omicDesignUiDigest(buildOmicsDesignImportModal(ns, config, testMode = TRUE)),
         omicDesignFrozen$modal_test)
     expect_identical(omicDesignUiDigest(buildOmicsDesignImportModal(ns, config, testMode = FALSE)),
@@ -155,15 +155,18 @@ test_that("W4 the builder's texts, refusal and save are today's (lipid)", {
         "note[message|5|]: Design saved successfully!"))
 })
 
-test_that("W4 the commit's GUI side is today's through the lipid wrapper: success and the two refusals", {
+test_that("W4 the commit's GUI side is today's under the lipid configuration: success and the two refusals", {
+    # KIT-103 W7: retargeted from the lipid wrapper (runLipidDesignBuilderObserverShell, deleted) to the
+    # shared commit it called, with the same configuration; expectations unchanged.
+    config <- omicGuiConfig("lipidomics")
     # Success: the modal, then removed, then the success text; the QC trigger and the tab complete.
     fixture <- list(payload = module_ci_lipid_design_payload(layout = "lc_pair"), paths = module_ci_lipid_design_paths())
     workflow <- module_ci_lipid_design_workflow(fixture$payload)
     seen <- omicDesignCaptureEvents()
     qc <- NULL
-    shiny::withReactiveDomain(shiny::MockShinySession$new(), runLipidDesignBuilderObserverShell(
+    shiny::withReactiveDomain(shiny::MockShinySession$new(), runOmicsDesignCommit(
         results = fixture$payload, workflowData = workflow, experimentPaths = fixture$paths,
-        qcTrigger = function(value) qc <<- value))
+        qcTrigger = function(value) qc <<- value, config = config))
     expect_identical(seen$events, c("modal", "remove_modal",
         "note[message|5|]: Design matrix and contrasts saved successfully!"))
     expect_true(qc)
@@ -173,9 +176,10 @@ test_that("W4 the commit's GUI side is today's through the lipid wrapper: succes
     # A missing source directory: the text, then the modal removed; nothing written.
     workflow <- module_ci_lipid_design_workflow(fixture$payload)
     seen <- omicDesignCaptureEvents()
-    shiny::withReactiveDomain(shiny::MockShinySession$new(), runLipidDesignBuilderObserverShell(
+    shiny::withReactiveDomain(shiny::MockShinySession$new(), runOmicsDesignCommit(
         results = fixture$payload, workflowData = workflow,
-        experimentPaths = list(source_dir = file.path(tempdir(), "kit103-absent")), qcTrigger = function(value) stop("no")))
+        experimentPaths = list(source_dir = file.path(tempdir(), "kit103-absent")), qcTrigger = function(value) stop("no"),
+        config = config))
     expect_identical(seen$events, c("modal", "note[error|15|]: Could not find source directory to save files.",
         "remove_modal"))
     expect_null(workflow$design_matrix)
@@ -187,8 +191,8 @@ test_that("W4 the commit's GUI side is today's through the lipid wrapper: succes
     workflow <- module_ci_lipid_design_workflow(fixture$payload)
     paths <- module_ci_lipid_design_paths()
     seen <- omicDesignCaptureEvents()
-    shiny::withReactiveDomain(shiny::MockShinySession$new(), runLipidDesignBuilderObserverShell(
-        results = drifted, workflowData = workflow, experimentPaths = paths))
+    shiny::withReactiveDomain(shiny::MockShinySession$new(), runOmicsDesignCommit(
+        results = drifted, workflowData = workflow, experimentPaths = paths, qcTrigger = NULL, config = config))
     expect_length(seen$events, 3L)
     expect_identical(seen$events[c(1L, 3L)], c("modal", "remove_modal"))
     expect_match(seen$events[[2L]], "^note\\[error\\|15\\|\\]: Invalid lipidomics design: Assay 'LCMS_Pos' ")
@@ -201,7 +205,7 @@ test_that("W4 the shared commit: a failure after the bus write is today's text, 
     payload <- module_ci_lipid_design_payload(layout = "lc_pair")
     workflow <- module_ci_lipid_design_workflow(payload)
     paths <- module_ci_lipid_design_paths()
-    config <- lipidDesignGuiConfig()
+    config <- omicGuiConfig("lipidomics")
     config$design$build_object <- function(results, columnMapping) stop("object refused")
     seen <- omicDesignCaptureEvents()
     qc <- NULL
@@ -239,7 +243,7 @@ test_that("W4 the shared import (MCI-019.4's path): the bus, the texts in order,
     payload <- module_ci_lipid_design_payload(layout = "combined")
     import_root <- module_ci_lipid_design_write_import_pack(tempfile("omic-design-import-"), payload)
     workflow <- module_ci_lipid_design_workflow(payload)
-    config <- lipidDesignGuiConfig()
+    config <- omicGuiConfig("lipidomics")
     config$design$design_import$qc_baseline <- function(...) invisible(NULL)
     seen <- omicDesignCaptureEvents()
     qc <- NULL
@@ -395,7 +399,7 @@ test_that("W5 the shared import under the metab configuration: the bus, the stat
     payload <- module_ci_metab_design_payload(layout = "combined")
     import_root <- module_ci_metab_design_write_import_pack(tempfile("omic-design-metab-import-"), payload)
     workflow <- module_ci_metab_design_workflow(payload)
-    config <- metabDesignGuiConfig()
+    config <- omicGuiConfig("metabolomics")
     config$design$design_import$qc_baseline <- function(...) invisible(NULL)
     seen <- omicDesignCaptureEvents()
     qc <- NULL
@@ -434,7 +438,7 @@ runMetabDesignBuilderResultsDefaultFlow <- function(results, sourceDir) {
         workflowData = workflow_data,
         experimentPaths = list(source_dir = sourceDir),
         qcTrigger = NULL,
-        config = metabDesignGuiConfig()
+        config = omicGuiConfig("metabolomics")
       )
       "returned"
     },

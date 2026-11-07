@@ -22,5 +22,5 @@ NULL
 mod_lipid_design_ui <- function(id, profile = NULL) {
     # KIT-103 W4: the shared design tab (mod_omic_design.R) under the lipid configuration, or the
     # profile's omic (trx) under its own.
-    mod_omic_design_ui(id, lipidDesignGuiConfig(profile))
+    mod_omic_design_ui(id, omicGuiConfig(profile$omic_type %||% "lipidomics"))
 }

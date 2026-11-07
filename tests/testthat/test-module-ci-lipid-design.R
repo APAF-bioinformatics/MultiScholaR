@@ -118,7 +118,7 @@ test_that("MCI-019.4 existing-design import and browser controls preserve lipid 
 
   # KIT-103 W4: the shared design tab's import (runOmicsDesignImport over the core reader and commit, C10) under
   # the lipid configuration; the QC baseline is quiet, as the old shell's injected one was.
-  config <- lipidDesignGuiConfig()
+  config <- omicGuiConfig("lipidomics")
   config$design$design_import$qc_baseline <- function(...) invisible(NULL)
   testthat::local_mocked_bindings(removeModal = function(...) invisible(NULL),
     removeNotification = function(...) invisible(NULL), showNotification = function(...) invisible(NULL),
@@ -180,7 +180,7 @@ test_that("MCI-019.5 design artifacts preserve expected lipid filenames and seri
       workflowData = workflow,
       experimentPaths = paths,
       qcTrigger = function(value) qc_value <<- value,
-      config = lipidDesignGuiConfig()
+      config = omicGuiConfig("lipidomics")
     )
   })
 
@@ -268,7 +268,7 @@ test_that("MCI-019.6 DA preflight catches lipid formula, contrast, and assay/des
 
   # KIT-103 W5: the shared design tab's commit (runOmicsDesignCommit) under the lipid configuration; the object
   # builder refuses, so a design that reached it would fail here.
-  config <- lipidDesignGuiConfig()
+  config <- omicGuiConfig("lipidomics")
   config$design$build_object <- function(...) stop("invalid design should not create S4 state")
   shiny::withReactiveDomain(shiny::MockShinySession$new(), {
     expect_null(runOmicsDesignCommit(

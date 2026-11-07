@@ -13,10 +13,16 @@
 # policy as `import$check`.
 #
 # KIT-103 W1 adds the `design` group (design 4.5) with the values the design tab and builder have at
-# HEAD 3c657c14 (unchanged in R/ since 283f5eee), with their file:line. The function fields whose
-# functions are still in R/mod_*.R (`validate`, `build_object`, trx `group_levels`,
-# `annotation_step`, `design_import$reader`) are optional and absent until KIT-103 W7 wires the
-# core copies (W2, W3) and makes them required, as KIT-102 W7 did for the import.
+# HEAD 3c657c14 (unchanged in R/ since 283f5eee), with their file:line there. KIT-103 W4 to W6
+# deleted most of those design files (the lipid design helpers, mod_metab_design_builder_server.R,
+# mod_metab_design_import_helpers.R, mod_metab_design_validation.R, the design section of
+# mod_transcriptomics.R and mod_prot_design_builder_display_helpers.R), so the design group's
+# file:line notes are provenance at 3c657c14; the values now render through the shared design tab
+# and builder (mod_omic_design.R, mod_omic_design_builder.R). KIT-103 W7 wired the function fields
+# to the core (`func_omics_design_shared.R`, `func_trx_design.R`, the declaration files,
+# `utils_workflow_dia_state.R` and the proteomics annotation files) and made the ones every omic
+# carries required (`validate`, `build_object`, `group_levels`; the feature-table import's
+# `reader`, `record_design_file` and `check_files_first`), as KIT-102 W7 did for the import.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -97,17 +103,17 @@ omicGuiConfigSchema <- function() {
             design_import = "named_list_or_null", commit = "chr1", builder_ui = "chr1",
             record_excluded_runs = "lgl1", label_lower = "chr1", multi_assay_banner = "lgl1",
             no_data_text = "chr1", preview_text = "chr1", preview_assays = "lgl1",
-            testids = "named_chr0", builder_texts = "named_chr"),
-        design_optional = c(group_levels = "ref_or_null", validate = "ref_or_null",
-            build_object = "ref", annotation_step = "ref_or_null"),
+            testids = "named_chr0", builder_texts = "named_chr", group_levels = "ref_or_null",
+            validate = "ref_or_null", build_object = "ref"),
+        design_optional = c(annotation_step = "refs"),
         design_wide = c(id_mapping_key = "chr1"),
         design_shared_builder = c(multi_assay_note = "chr1", matrix_heading = "chr1"),
         builder_texts = c(save_success = "chr1", no_assignment = "chr1",
             contrast_group_prefix = "chr1", contrast_as_is = "chr1", replicate_suffix = "chr1"),
         design_import = c(plugin = "chr1", import_dir_path = "chr1"),
         design_import_feature_table = c(id_candidates = "named_list", qc_baseline = "ref",
-            preflight = "lgl1", state_description = "chr1"),
-        design_import_optional = c(reader = "ref"),
+            preflight = "lgl1", state_description = "chr1", reader = "ref",
+            record_design_file = "lgl1", check_files_first = "lgl1"),
         id_candidates = c(id = "chr", annotation = "chr"),
         dia_design = c(initial_state = "ref", rename = "ref", subset = "ref", commit = "chr1")
     )
@@ -208,7 +214,6 @@ validateOmicGuiDesignImport <- function(design_import, schema) {
         c("req", "empty"))
     if (!identical(design_import$plugin, "feature_table")) return(invisible(design_import))
     checkOmicGuiFields(design_import, schema$design_import_feature_table, path)
-    checkOmicGuiFields(design_import, schema$design_import_optional, path, required = FALSE)
     checkOmicGuiFields(design_import$id_candidates, schema$id_candidates,
         paste0(path, "$id_candidates"))
     invisible(design_import)
@@ -356,10 +361,11 @@ omicGuiFeatureStatusModes <- function() {
         annotation_custom = c(success = "found", empty = "optional", case = "insensitive"))
 }
 
-#' The design tab of lipid, metab and trx: one frame (mod_lipid_design_ui.R; the same in
-#' mod_metab_design.R:43-111) and one builder whose UI differs only in the omic word
+#' The design tab of lipid, metab and trx (at 3c657c14): one frame (mod_lipid_design_ui.R; the same
+#' in mod_metab_design.R:43-111) and one builder whose UI differs only in the omic word
 #' (mod_lipid_design_builder_ui.R:218, :246; mod_metab_design_builder_ui.R:245, :273), with the
-#' same texts in their servers. Trx renders the lipid frame and builder under its profile.
+#' same texts in their servers. Trx rendered the lipid frame and builder under its profile. Since
+#' KIT-103 W4/W5 they are the shared frame and builder (mod_omic_design.R, mod_omic_design_builder.R).
 #' @param builder_word The omic word in the builder UI (trx: lipid's).
 #' @noRd
 omicGuiFeatureDesign <- function(prefix, label_lower, builder_word, id_mapping_key) {
@@ -391,16 +397,22 @@ omicGuiFeatureDesign <- function(prefix, label_lower, builder_word, id_mapping_k
 }
 
 #' The import-existing-design values of lipid and metab (mod_lipid_design_import_helpers.R;
-#' mod_metab_design_import_helpers.R): the column-mapping inference when `column_mapping.json` is
-#' absent, the QC baseline, whether the import runs the DA preflight, and the state's description.
-#' The output `import_dir_path` waits for a path (`req`). The reader moves in KIT-103 W2.
+#' mod_metab_design_import_helpers.R at 3c657c14): the column-mapping inference when
+#' `column_mapping.json` is absent, the QC baseline, whether the import runs the DA preflight, and
+#' the state's description. The output `import_dir_path` waits for a path (`req`). The reader is
+#' the core's (`readOmicsDesignImport`, KIT-103 W2). `record_design_file`: whether the provenance
+#' records the imported design file (lipid) or the owner's source directory (metab, P-14).
+#' `check_files_first`: whether the files are checked before the modal closes (metab, P-11).
 #' @noRd
-omicGuiFeatureDesignImport <- function(annotation_candidates, qc_baseline, preflight, class) {
+omicGuiFeatureDesignImport <- function(annotation_candidates, qc_baseline, preflight, class,
+                                       record_design_file, check_files_first) {
     list(plugin = "feature_table", import_dir_path = "req",
         id_candidates = list(id = c("Peak ID", "Alignment ID", "Alignment.ID", "peak id",
             "alignment id"), annotation = annotation_candidates),
         qc_baseline = qc_baseline, preflight = preflight,
-        state_description = paste(class, "S4 object created from imported design"))
+        state_description = paste(class, "S4 object created from imported design"),
+        reader = readOmicsDesignImport, record_design_file = record_design_file,
+        check_files_first = check_files_first)
 }
 
 #' The lipid assay-name rule and messages (lipid `processing`:443-468; now
@@ -505,8 +517,9 @@ omicGuiProteomicsImport <- function() {
 #' The proteomics design tab (mod_prot_design.R) over the `dia_long` adapter (the DIA adaptor's
 #' `design` entries), with its own builder UI (`mod_prot_design_builder_ui`, back-reference #4),
 #' its own import panel and its own commit (`runProtDesignBuilderSaveFlow`). `build_object`
-#' (`buildProtDesignStateCheckpoint`) and `annotation_step` (the UniProt and FASTA steps) move in
-#' KIT-103 W3.
+#' (`buildProtDesignStateCheckpoint`) and `annotation_step` (the UniProt and FASTA steps) are the
+#' core's (KIT-103 W3, utils_workflow_dia_state.R and the proteomics annotation files). File:line
+#' notes are at 3c657c14; mod_prot_design_builder_display_helpers.R was deleted by KIT-103 W6.
 #' @noRd
 omicGuiProteomicsDesign <- function() {
     list(module_id = "design_matrix",
@@ -515,7 +528,7 @@ omicGuiProteomicsDesign <- function() {
             "differential analysis. Alternatively, import an existing design from a previous",
             "analysis."),
         # No save-time preflight reads it (D7); the builder's contrast note names it
-        # (mod_prot_design_builder_display_helpers.R:400-406).
+        # (mod_prot_design_builder_display_helpers.R:400-406 at 3c657c14).
         formula_default = "~ 0 + group",
         # mod_prot_design_builder_state_helpers.R:348
         run_order = gtools::mixedsort, run_order_rule = "mixedsort", group_levels = NULL,
@@ -523,6 +536,11 @@ omicGuiProteomicsDesign <- function() {
         # utils_workflow_dia_state.R:742, called in buildProtDesignStateCheckpoint
         # (mod_prot_design_state_helpers.R:15, :98)
         record_provenance = setDIAStepProvenance,
+        # KIT-103 W3: the design state's checkpoint (utils_workflow_dia_state.R) and the annotation
+        # step (func_prot_annotation_uniprot_full_helpers.R, func_prot_annotation_fasta_processing_helpers.R).
+        build_object = buildProtDesignStateCheckpoint,
+        annotation_step = list(uniprot = retrieveProtDesignUniprotAnnotations,
+            fasta = processProtDesignImportedFasta),
         # mod_prot_design_state_helpers.R:19-21, :90-91, by route (`workflowType`)
         state_name = c(DIA = "raw_data_s4", DIA_LIMPA = "raw_data_s4", TMT = "protein_s4_initial",
             LFQ = "protein_s4_initial"),
@@ -546,7 +564,7 @@ omicGuiProteomicsDesign <- function() {
         testids = c(import_existing = "prot-design-import-existing",
             replicate_start = "prot-design-replicate-start"),
         # mod_prot_design_builder_state_helpers.R:109, :122; mod_prot_design_builder_display_helpers.R
-        # :403, :405; mod_prot_design_builder_action_helpers.R:4
+        # :403, :405; mod_prot_design_builder_action_helpers.R:4 (all at 3c657c14)
         builder_texts = c(save_success = "Design saved successfully. You can close this builder.",
             no_assignment = paste("No samples have been assigned to groups. Please assign metadata",
                 "before saving."),
@@ -572,8 +590,9 @@ omicGuiConfigLipidomics <- function() {
         design = omicGuiLipidDesign())
 }
 
-#' The lipid design tab (mod_lipid_design_*.R). `validate` (`validateLipidDesignDaPreflight`) and
-#' `build_object` (the inline `createLipidomicsAssayData` call) move in KIT-103 W2.
+#' The lipid design tab (mod_lipid_design_*.R at 3c657c14). `validate` is the core's save preflight
+#' (`validateOmicsDesignSave`, as `validateLipidDesignDaPreflight` was called) and `build_object` the
+#' core's object (`lipidDesignObject`, the inline `createLipidomicsAssayData` call), KIT-103 W2.
 #' @noRd
 omicGuiLipidDesign <- function() {
     c(omicGuiFeatureDesign("lipid", "lipidomics", "lipidomics", "lipid_id_col"), list(
@@ -585,12 +604,17 @@ omicGuiLipidDesign <- function() {
         # utils_workflow_lipid_declarations.R:211; mod_lipid_design_builder_helpers.R:175-183
         record_provenance = recordLipidDesignProvenance, state_name = "lipid_raw_data_s4",
         state_description = "Initial LipidomicsAssayData S4 object created after design matrix",
+        validate = function(results, columnMapping) {
+            validateOmicsDesignSave(results, columnMapping, "lipidomics")
+        },
+        build_object = lipidDesignObject,
         # mod_lipid_design_ui.R:42-49; the builder's removed runs are not returned
         # (mod_lipid_design_builder_server.R:180-183)
         record_excluded_runs = FALSE, multi_assay_banner = TRUE,
         # mod_lipid_design_import_helpers.R:230, :388 (func_lipid_qc.R:134), :293-305, :383
         design_import = omicGuiFeatureDesignImport(c("Lipid name", "Lipid.name", "Name", "name"),
-            updateLipidFiltering, preflight = TRUE, class = "LipidomicsAssayData")))
+            updateLipidFiltering, preflight = TRUE, class = "LipidomicsAssayData",
+            record_design_file = TRUE, check_files_first = FALSE)))
 }
 
 #' The lipid panel (the provenance abbreviations are the file header's).
@@ -660,8 +684,9 @@ omicGuiConfigMetabolomics <- function() {
         design = omicGuiMetabDesign())
 }
 
-#' The metab design tab (mod_metab_design*.R). `validate` (`validateMetabDesignDaPreflight`) and
-#' `build_object` (the inline `createMetaboliteAssayData` call) move in KIT-103 W2.
+#' The metab design tab (mod_metab_design*.R at 3c657c14). `validate` is the core's save preflight
+#' (`validateOmicsDesignSave`, as `validateMetabDesignDaPreflight` was called) and `build_object` the
+#' core's object (`metabDesignObject`, the inline `createMetaboliteAssayData` call), KIT-103 W2.
 #' @noRd
 omicGuiMetabDesign <- function() {
     c(omicGuiFeatureDesign("metab", "metabolomics", "metabolomics", "metabolite_id_col"), list(
@@ -673,12 +698,17 @@ omicGuiMetabDesign <- function() {
         # utils_workflow_metab_declarations.R:193; mod_metab_design.R:341-351
         record_provenance = recordMetabDesignProvenance, state_name = "metab_raw_data_s4",
         state_description = "Initial MetaboliteAssayData S4 object created after design matrix",
+        validate = function(results, columnMapping) {
+            validateOmicsDesignSave(results, columnMapping, "metabolomics")
+        },
+        build_object = metabDesignObject,
         # mod_metab_design.R:62-68
         record_excluded_runs = FALSE, multi_assay_banner = TRUE,
         # mod_metab_design_import_helpers.R:250, :433 (func_metab_qc.R:268), :424; the import runs
         # no DA preflight
         design_import = omicGuiFeatureDesignImport(c("Metabolite name", "Metabolite.name", "Name",
-            "name"), updateMetaboliteFiltering, preflight = FALSE, class = "MetaboliteAssayData")))
+            "name"), updateMetaboliteFiltering, preflight = FALSE, class = "MetaboliteAssayData",
+            record_design_file = FALSE, check_files_first = TRUE)))
 }
 
 #' The metab panel (the provenance abbreviations are the file header's). Its ids, labels and
@@ -755,9 +785,10 @@ omicGuiConfigTranscriptomics <- function() {
         design = omicGuiTrxDesign())
 }
 
-#' The trx design tab: the lipid frame and builder under `trxOmicProfile()`'s design fields
-#' (mod_transcriptomics.R:36-41; design 4.12). `group_levels` (`trxDesignGroupLevels`), `validate`
-#' (`trxDesignCheck`) and `build_object` (`trxDesignObject`) move in KIT-103 W2.
+#' The trx design tab: at 3c657c14 the lipid frame and builder under `trxOmicProfile()`'s design
+#' fields (mod_transcriptomics.R:36-41; design 4.12; KIT-103 W5 removed them from the profile).
+#' `group_levels` (`trxDesignGroupLevels`), `validate` (`trxDesignCheck`) and `build_object`
+#' (`trxDesignObject`) are func_trx_design.R's (KIT-103 W2).
 #' @noRd
 omicGuiTrxDesign <- function() {
     design <- c(omicGuiFeatureDesign("trx", "transcriptomics", "lipidomics", "lipid_id_col"), list(
@@ -770,6 +801,7 @@ omicGuiTrxDesign <- function() {
         run_order = identity, run_order_rule = "input",
         record_provenance = recordTrxDesignProvenance, state_name = "trx_raw_data_s4",
         state_description = "Initial TranscriptomicsAssayData S4 object created after design matrix",
+        group_levels = trxDesignGroupLevels, validate = trxDesignCheck, build_object = trxDesignObject,
         # The removed runs on the result (mod_lipid_design_builder_server.R:180-183); no banner and
         # no import button under a profile (mod_lipid_design_ui.R:34, :42).
         record_excluded_runs = TRUE, multi_assay_banner = FALSE, design_import = NULL))

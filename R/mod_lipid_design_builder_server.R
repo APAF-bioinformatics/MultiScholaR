@@ -25,5 +25,5 @@ mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_ma
     # the profile's omic (trx) under its own.
     mod_omic_design_builder_server(id, data_tbl, config_list, column_mapping,
         existing_design_matrix = existing_design_matrix, existing_contrasts = existing_contrasts,
-        state_owner = state_owner, config = lipidDesignGuiConfig(profile))
+        state_owner = state_owner, config = omicGuiConfig(profile$omic_type %||% "lipidomics"))
 }

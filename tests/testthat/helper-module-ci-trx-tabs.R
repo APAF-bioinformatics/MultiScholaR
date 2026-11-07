@@ -129,7 +129,7 @@ module_ci_trx_commit <- function(fixture, result) {
   # KIT-103 W5: the shared design tab's commit (runOmicsDesignCommit) with the trx configuration.
   shiny::withReactiveDomain(fixture$session, runOmicsDesignCommit(results = result,
     workflowData = fixture$workflow, experimentPaths = fixture$paths, qcTrigger = function(value) seen$qc <- value,
-    config = lipidDesignGuiConfig(trxOmicProfile())))
+    config = omicGuiConfig("transcriptomics")))
   list(notes = seen$notes, qc = seen$qc)
 }
 

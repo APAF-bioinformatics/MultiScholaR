@@ -11,13 +11,14 @@ guiConfigRequired <- list(
     binding = c("binding", "runner", "owner", "read_state", "read_metadata"),
     import = c("source_panel", "title", "formats", "default_format", "detect", "help",
         "success_text", "preview", "process"),
-    # KIT-103 W1 (design 4.5 and the ticket's rendering fields). The function fields still in
-    # R/mod_*.R at W1 (validate, build_object, trx group_levels, annotation_step, the import reader)
-    # are optional until W7.
+    # KIT-103 W1 (design 4.5 and the ticket's rendering fields). KIT-103 W7 wired the core's
+    # function fields; every omic carries validate, build_object and group_levels (NULL where the
+    # omic has none). Only proteomics has an annotation step, so it stays optional.
     design = c("module_id", "help", "formula_default", "run_order", "run_order_rule",
         "record_provenance", "state_name", "state_description", "data_adapter", "design_import",
         "commit", "builder_ui", "record_excluded_runs", "label_lower", "multi_assay_banner",
-        "no_data_text", "preview_text", "preview_assays", "testids", "builder_texts")
+        "no_data_text", "preview_text", "preview_assays", "testids", "builder_texts",
+        "group_levels", "validate", "build_object")
 )
 
 guiConfigBuilderTexts <- c("save_success", "no_assignment", "contrast_group_prefix",
@@ -325,6 +326,34 @@ test_that("the design group holds today's values per omic", {
         c("Metabolite name", "Metabolite.name", "Name", "name"))
     expect_identical(design$lipidomics$design_import$state_description,
         "LipidomicsAssayData S4 object created from imported design")
+    # KIT-103 W7: the function fields are the core's (W2, W3), wired.
+    expect_identical(design$lipidomics$build_object, lipidDesignObject)
+    expect_identical(design$metabolomics$build_object, metabDesignObject)
+    expect_identical(design$transcriptomics$build_object, trxDesignObject)
+    expect_identical(design$proteomics$build_object, buildProtDesignStateCheckpoint)
+    expect_identical(design$transcriptomics$group_levels, trxDesignGroupLevels)
+    expect_identical(design$transcriptomics$validate, trxDesignCheck)
+    testthat::local_mocked_bindings(validateOmicsDesignSave = function(results, columnMapping, omicType) {
+        list(results = results, columnMapping = columnMapping, omicType = omicType)
+    })
+    for (omic in c("lipidomics", "metabolomics")) {
+        expect_true(is.function(design[[omic]]$validate), info = omic)
+        if (is.function(design[[omic]]$validate)) {
+            expect_identical(design[[omic]]$validate("results", "mapping"),
+                list(results = "results", columnMapping = "mapping", omicType = omic), info = omic)
+        }
+        expect_identical(design[[omic]]$design_import$reader, readOmicsDesignImport, info = omic)
+    }
+    expect_true(isTRUE(design$lipidomics$design_import$record_design_file))
+    expect_identical(design$metabolomics$design_import$record_design_file, FALSE)
+    # Metab checks the import's files before the modal closes (P-11); lipid after.
+    expect_identical(design$lipidomics$design_import$check_files_first, FALSE)
+    expect_true(isTRUE(design$metabolomics$design_import$check_files_first))
+    expect_identical(design$proteomics$annotation_step, list(uniprot = retrieveProtDesignUniprotAnnotations,
+        fasta = processProtDesignImportedFasta))
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        expect_false("annotation_step" %in% names(design[[omic]]), info = omic)
+    }
 })
 
 test_that("run_order is required with no default; each required design field is refused by class", {
@@ -345,12 +374,18 @@ test_that("run_order is required with no default; each required design field is 
         bad$design[[field]] <- "other"
         expectGuiConfigRefused(bad, paste0("design$", field))
     }
-    # The function fields still optional at W1 are checked when present.
+    # The function fields are checked by type; the optional annotation step when present.
     for (field in c("validate", "build_object", "group_levels", "annotation_step")) {
         bad <- lipid
         bad$design[[field]] <- "a function name"
         expectGuiConfigRefused(bad, paste0("design$", field))
     }
+    bad <- prot
+    bad$design$annotation_step$fasta <- "processProtDesignImportedFasta"
+    expectGuiConfigRefused(bad, "design$annotation_step")
+    bad <- prot
+    bad$design$annotation_step <- unname(bad$design$annotation_step)
+    expectGuiConfigRefused(bad, "design$annotation_step")
     # The builder's texts.
     for (field in guiConfigBuilderTexts) {
         bad <- lipid
@@ -374,7 +409,8 @@ test_that("run_order is required with no default; each required design field is 
     bad <- lipid
     bad$design$design_import$import_dir_path <- "blank"
     expectGuiConfigRefused(bad, "design$design_import$import_dir_path")
-    for (field in c("id_candidates", "qc_baseline", "preflight", "state_description")) {
+    for (field in c("id_candidates", "qc_baseline", "preflight", "state_description", "reader",
+        "record_design_file", "check_files_first")) {
         removed <- lipid
         removed$design$design_import[[field]] <- NULL
         expectGuiConfigRefused(removed, paste0("design$design_import$", field))
@@ -382,6 +418,11 @@ test_that("run_order is required with no default; each required design field is 
     bad <- lipid
     bad$design$design_import$reader <- "a function name"
     expectGuiConfigRefused(bad, "design$design_import$reader")
+    for (field in c("record_design_file", "check_files_first")) {
+        bad <- lipid
+        bad$design$design_import[[field]] <- NA
+        expectGuiConfigRefused(bad, paste0("design$design_import$", field))
+    }
     removed <- lipid
     removed$design$design_import$id_candidates$annotation <- NULL
     expectGuiConfigRefused(removed, "design$design_import$id_candidates$annotation")
@@ -399,7 +440,7 @@ test_that("run_order is required with no default; each required design field is 
 test_that("the trx design values equal trxOmicProfile()'s eight design fields today (design 4.12)", {
     # KIT-103 W5 removed the eight fields from the profile; their values at 283f5eee are frozen here
     # (mod_transcriptomics.R:36-41 then; group_levels, validate and build_object are the
-    # func_trx_design.R copies, W2).
+    # func_trx_design.R functions, W2, wired by W7).
     design <- omicGuiConfig("transcriptomics")$design
     frozen <- list(help = paste("Samples are matched to the count columns by sample name only, in the counts file's",
             "order; there is no positional mapping. Each group needs at least two samples. The order in which you add",
@@ -407,11 +448,7 @@ test_that("the trx design values equal trxOmicProfile()'s eight design fields to
         run_order = identity, group_levels = trxDesignGroupLevels, validate = trxDesignCheck,
         build_object = trxDesignObject, record_provenance = recordTrxDesignProvenance, state_name = "trx_raw_data_s4",
         state_description = "Initial TranscriptomicsAssayData S4 object created after design matrix")
-    # group_levels, validate and build_object join the configuration when W7 wires them, and then they
-    # are compared too.
-    deferred <- c("group_levels", "validate", "build_object")
     for (field in names(frozen)) {
-        if (field %in% deferred && !field %in% names(design)) next
         expect_identical(design[[field]], frozen[[field]], info = field)
     }
     expect_false(any(c("design_help", "run_order", "group_levels", "validate_design", "build_object",

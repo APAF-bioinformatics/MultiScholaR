@@ -42,9 +42,9 @@ validateTrxDesign <- function(sample_columns, design, group_levels, sample_id = 
 }
 
 # KIT-103 W2 (C7): the design's level order, KIT-093's validation at save, the refusal text and the design state's
-# object, copied with their names from R/mod_transcriptomics.R (70af7bb4) for the shared design core and the trx
-# configuration. KIT-103 W5 deletes the R/mod_transcriptomics.R copies; until then they are defined twice, as KIT-102
-# did with `checkTrxImportCounts`.
+# object, moved with their names from R/mod_transcriptomics.R (70af7bb4) for the shared design core and the trx
+# configuration (`omicGuiConfig("transcriptomics")$design`). KIT-103 W5 deleted the R/mod_transcriptomics.R copies, so
+# these are the only definitions.
 
 #' The group level order the user entered: the assigned groups ordered by the positions of their factor levels in the
 #' builder's factor list (the order they were added); a group of several factors by each factor in turn.

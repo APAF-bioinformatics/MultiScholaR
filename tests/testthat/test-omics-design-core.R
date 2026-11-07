@@ -7,25 +7,9 @@
 # call today's `R/mod_*` design functions; when KIT-103 W4/W5 delete them, those blocks are
 # quarantined or kept against frozen values (as KIT-102 did for the import core).
 
-# The configuration with the function fields KIT-103 W7 wires (until then they are absent).
+# The configuration, with the function fields KIT-103 W7 wired.
 omicsDesignTestConfig <- function(omic_type) {
-    config <- omicGuiConfig(omic_type)
-    design <- config$design
-    if (identical(omic_type, "transcriptomics")) {
-        design$group_levels <- design$group_levels %||% trxDesignGroupLevels
-        design$validate <- design$validate %||% trxDesignCheck
-        design$build_object <- design$build_object %||% trxDesignObject
-    } else {
-        design$validate <- design$validate %||%
-            function(results, columnMapping) validateOmicsDesignSave(results, columnMapping, omic_type)
-        design$build_object <- design$build_object %||%
-            switch(omic_type, lipidomics = lipidDesignObject, metabolomics = metabDesignObject)
-        design$design_import$reader <- design$design_import$reader %||% readOmicsDesignImport
-        design$design_import$record_design_file <- design$design_import$record_design_file %||%
-            identical(omic_type, "lipidomics")
-    }
-    config$design <- design
-    validateOmicGuiConfig(config)
+    validateOmicGuiConfig(omicGuiConfig(omic_type))
 }
 
 quietDesign <- function(...) invisible(NULL)

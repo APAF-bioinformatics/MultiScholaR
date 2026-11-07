@@ -114,7 +114,7 @@ test_that("MCI-013.4 existing-design import and browser controls preserve builde
 
   # KIT-103 W5: the shared design tab's import (runOmicsDesignImport over the core's file check, reader and commit,
   # C10) under the metab configuration; the QC baseline is quiet and the notifications silent.
-  config <- metabDesignGuiConfig()
+  config <- omicGuiConfig("metabolomics")
   config$design$design_import$qc_baseline <- function(...) invisible(NULL)
   testthat::local_mocked_bindings(removeModal = function(...) invisible(NULL),
     removeNotification = function(...) invisible(NULL), showNotification = function(...) invisible(NULL),
@@ -161,7 +161,7 @@ test_that("MCI-013.5 design artifacts preserve expected filenames and serialized
       workflowData = workflow,
       experimentPaths = paths,
       qcTrigger = NULL,
-      config = metabDesignGuiConfig()
+      config = omicGuiConfig("metabolomics")
     )
   })
   source_dir <- paths$source_dir

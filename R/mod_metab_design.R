@@ -18,7 +18,7 @@
 # mod_metab_design.R
 # ============================================================================
 # Purpose: the metabolomics design tab's exported names. KIT-103 W5: thin wrappers over the shared
-# design tab (mod_omic_design.R) under the metab configuration (`metabDesignGuiConfig()`); the
+# design tab (mod_omic_design.R) under the metab configuration (`omicGuiConfig("metabolomics")`); the
 # import, commit, builder registration and previews are the shared frame's.
 # ============================================================================
 
@@ -41,7 +41,7 @@ NULL
 #' @importFrom DT DTOutput renderDT
 mod_metab_design_ui <- function(id) {
     # KIT-103 W5: the shared design tab (mod_omic_design.R) with the metab texts.
-    mod_omic_design_ui(id, metabDesignGuiConfig())
+    mod_omic_design_ui(id, omicGuiConfig("metabolomics"))
 }
 
 #' @rdname metabolomicsDesignMatrixAppletModule
@@ -62,7 +62,7 @@ registerMetabDesignPreviewOutputs <- function(
     # KIT-103 W5: the shared previews (registerOmicsDesignPreviewOutputs) under the metab
     # configuration. `renderDt`, `renderText` and `req` stay in the signature for its callers and
     # are not used: the previews are shiny's.
-    registerOmicsDesignPreviewOutputs(output, workflowData, metabDesignGuiConfig())
+    registerOmicsDesignPreviewOutputs(output, workflowData, omicGuiConfig("metabolomics"))
 }
 
 #' The metab design tab's server: the shared design tab (mod_omic_design.R) under the metab
@@ -70,5 +70,5 @@ registerMetabDesignPreviewOutputs <- function(
 #' @noRd
 mod_metab_design_server <- function(id, workflow_data, experiment_paths, volumes = NULL, qc_trigger = NULL) {
     mod_omic_design_server(id, workflow_data, experiment_paths, volumes = volumes, qc_trigger = qc_trigger,
-        config = metabDesignGuiConfig())
+        config = omicGuiConfig("metabolomics"))
 }

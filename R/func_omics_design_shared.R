@@ -761,34 +761,6 @@ validateLipidDesignDaPreflight <- function(designMatrix, assayList, contrastsTbl
         requireContrasts = requireContrasts)
 }
 
-#' The configuration the lipid design wrappers run the shared design tab with: lipid's, or the
-#' profile's omic (trx, `trxOmicProfile()`). Until KIT-103 W7 wires the configuration's design
-#' function fields, the missing ones are filled with the core's (the values W7 wires; once they are
-#' wired this changes nothing): lipid `validate` (the save preflight), `build_object`
-#' (`lipidDesignObject`), the import's `reader` and `record_design_file`; trx `group_levels`,
-#' `validate` and `build_object` (func_trx_design.R).
-#' @param profile An omic profile, or NULL for lipidomics.
-#' @return An omic GUI configuration.
-#' @noRd
-lipidDesignGuiConfig <- function(profile = NULL) {
-    omic_type <- profile$omic_type %||% "lipidomics"
-    config <- omicGuiConfig(omic_type)
-    design <- config$design
-    if (identical(omic_type, "transcriptomics")) {
-        design$group_levels <- design$group_levels %||% trxDesignGroupLevels
-        design$validate <- design$validate %||% trxDesignCheck
-        design$build_object <- design$build_object %||% trxDesignObject
-    } else {
-        design$validate <- design$validate %||%
-            function(results, columnMapping) validateOmicsDesignSave(results, columnMapping, "lipidomics")
-        design$build_object <- design$build_object %||% lipidDesignObject
-        design$design_import$reader <- design$design_import$reader %||% readOmicsDesignImport
-        design$design_import$record_design_file <- design$design_import$record_design_file %||% TRUE
-    }
-    config$design <- design
-    config
-}
-
 # ------------------------------------------------------------------------------------------------
 # The metab wrappers (KIT-103 W5).
 # ------------------------------------------------------------------------------------------------
@@ -819,25 +791,4 @@ validateMetabDesignDaPreflight <- function(designMatrix, assayList, contrastsTbl
     validateOmicsDesignDaPreflight(designMatrix, assayList, omicsDesignRules("metabolomics"),
         contrastsTbl = contrastsTbl, formulaString = formulaString, columnMapping = columnMapping,
         sampleIdCol = sampleIdCol, groupCol = groupCol, requireContrasts = requireContrasts)
-}
-
-#' The configuration the metab design wrappers run the shared design tab with. Until KIT-103 W7
-#' wires the configuration's design function fields, the missing ones are filled with the core's
-#' (the values W7 wires; once they are wired this changes nothing): `validate` (the save preflight),
-#' `build_object` (`metabDesignObject`), the import's `reader`, `record_design_file` (FALSE: the
-#' provenance takes the owner's source directory, P-14) and `check_files_first` (TRUE: metab checks
-#' the import's files before it closes the modal, P-11).
-#' @return An omic GUI configuration.
-#' @noRd
-metabDesignGuiConfig <- function() {
-    config <- omicGuiConfig("metabolomics")
-    design <- config$design
-    design$validate <- design$validate %||%
-        function(results, columnMapping) validateOmicsDesignSave(results, columnMapping, "metabolomics")
-    design$build_object <- design$build_object %||% metabDesignObject
-    design$design_import$reader <- design$design_import$reader %||% readOmicsDesignImport
-    design$design_import$record_design_file <- design$design_import$record_design_file %||% FALSE
-    design$design_import$check_files_first <- design$design_import$check_files_first %||% TRUE
-    config$design <- design
-    config
 }

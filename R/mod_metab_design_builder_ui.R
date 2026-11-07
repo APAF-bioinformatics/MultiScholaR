@@ -88,5 +88,5 @@ mod_metab_design_builder_server <- function(id, data_tbl, config_list, column_ma
     # KIT-103 W5: the shared builder (mod_omic_design_builder.R) under the metab configuration.
     mod_omic_design_builder_server(id, data_tbl, config_list, column_mapping,
         existing_design_matrix = existing_design_matrix, existing_contrasts = existing_contrasts,
-        state_owner = state_owner, config = metabDesignGuiConfig())
+        state_owner = state_owner, config = omicGuiConfig("metabolomics"))
 }
