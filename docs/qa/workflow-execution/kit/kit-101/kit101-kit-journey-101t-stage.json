@@ -1,0 +1,124 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-101",
+  "stage": "kit101-kit-journey-101t",
+  "date": "2026-11-07",
+  "dispatches": {
+    "da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_accession_cleanup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_duplicate_removal": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_replicate_filter": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 1206984704,
+    "phase_peak_anon_bytes": {
+      "import": 571985920,
+      "design": 579637248,
+      "accession": 680554496,
+      "protein_intensity": 680730624,
+      "duplicates": 684023808,
+      "protein_replicate": 684060672,
+      "normalisation_ruv": 1206984704,
+      "correlation": 1121071104,
+      "session_export": 712802304,
+      "da": 712970240,
+      "report": 785190912
+    }
+  },
+  "decision": {
+    "status": "rejected",
+    "rule": "exactness_and_completion",
+    "failing_rule": "oracle_mismatch",
+    "steps": ["import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "protein",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "tmt_fixture",
+    "build": "3e3c2c00f002b3cc156e4e63b633bc1e7439c33efc0f5b03dc0681a755af51d8",
+    "status": "complete",
+    "exact": false,
+    "elapsed_seconds": 125.250000000002,
+    "peak_bytes": 1883725824,
+    "peak_anon_bytes": 1827909632,
+    "resident_end_bytes": 1125945344,
+    "phase_seconds": {
+      "import": 5.34000000000015,
+      "design": 12.2199999999993,
+      "accession": 8.42000000000189,
+      "protein_intensity": 7.87000000000262,
+      "duplicates": 6.34000000000015,
+      "protein_replicate": 7.11000000000058,
+      "normalisation_ruv": 25.7299999999996,
+      "correlation": 5.84999999999854,
+      "session_export": 2.04999999999927,
+      "da": 13.4099999999999,
+      "report": 2.06000000000131
+    },
+    "phase_peak_anon_bytes": {
+      "import": 939577344,
+      "design": 947228672,
+      "accession": 1336406016,
+      "protein_intensity": 1372815360,
+      "duplicates": 1373024256,
+      "protein_replicate": 1379889152,
+      "normalisation_ruv": 1578201088,
+      "correlation": 1492287488,
+      "session_export": 1084100608,
+      "da": 1827909632,
+      "report": 1156407296
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0600000000013097,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": "normalisation_ruv/products/normalization_science",
+    "populations": null,
+    "oracle_mismatches": "normalisation_ruv/products/normalization_science",
+    "canonical_form_differences": [],
+    "files": 255,
+    "failure": null
+  }
+}
