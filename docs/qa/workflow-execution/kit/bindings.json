@@ -592,6 +592,15 @@
       "install_member": "browser-smoke.2jjdqX",
       "source_commit": "53e66b4a9a01cd829b71aaa6e241f56ea66f0cf1",
       "runtime_patch_bytes": 0
+    },
+    "kit_101": {
+      "ticket": "KIT-101",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.rvol2q/library",
+      "build": "3e3c2c00f002b3cc156e4e63b633bc1e7439c33efc0f5b03dc0681a755af51d8",
+      "exact_sum": "cd9594002e1613aa15a814d6227d306d12ada9c06f563eba0300fec21ebd55ae",
+      "install_member": "browser-smoke.rvol2q",
+      "source_commit": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -6711,7 +6720,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_design": {
       "step": "design",
@@ -6723,7 +6733,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_accession": {
       "step": "accession",
@@ -6735,7 +6746,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_protein_intensity": {
       "step": "protein_intensity",
@@ -6747,7 +6759,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_duplicates": {
       "step": "duplicates",
@@ -6759,7 +6772,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_protein_replicate": {
       "step": "protein_replicate",
@@ -6771,7 +6785,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_normalisation_ruv": {
       "step": "normalisation_ruv",
@@ -6783,7 +6798,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_correlation": {
       "step": "correlation",
@@ -6795,7 +6811,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_session_export": {
       "step": "session_export",
@@ -6807,7 +6824,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "lfq_300_da": {
       "step": "da",
@@ -6819,7 +6837,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "88df93148eeef1521933daf9baf4bd567f168c5c",
-      "recorded_at": "2026-10-21T08:58:09+1100"
+      "recorded_at": "2026-10-21T08:58:09+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "tmt_300_import": {
       "step": "import",
@@ -7191,7 +7210,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_design": {
       "step": "design",
@@ -7203,7 +7223,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_accession": {
       "step": "accession",
@@ -7215,7 +7236,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_protein_intensity": {
       "step": "protein_intensity",
@@ -7227,7 +7249,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_duplicates": {
       "step": "duplicates",
@@ -7239,7 +7262,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_protein_replicate": {
       "step": "protein_replicate",
@@ -7251,7 +7275,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_normalisation_ruv": {
       "step": "normalisation_ruv",
@@ -7263,7 +7288,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_correlation": {
       "step": "correlation",
@@ -7275,7 +7301,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_session_export": {
       "step": "session_export",
@@ -7287,7 +7314,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "kc_lfq_da": {
       "step": "da",
@@ -7299,7 +7327,8 @@
       "parameters": null,
       "oracle_source": "in-process (protocol v1.5)",
       "build": "cc661b14e924fb57e6dab42c2be6926e3a4b53ff",
-      "recorded_at": "2026-10-21T14:26:37+1100"
+      "recorded_at": "2026-10-21T14:26:37+1100",
+      "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
     "trx98a_import": {
       "step": "import",
@@ -36742,6 +36771,54 @@
         },
         "proteins.fasta": {
           "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300/proteins.fasta",
+          "bytes": 1245786,
+          "sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb"
+        }
+      },
+      "generator": "tools/profiling/kit_protein_corpus.R",
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv"
+    },
+    "lfq_300_mnar": {
+      "profile": "lfq",
+      "synthetic": true,
+      "samples": 300,
+      "rows": 8100,
+      "recipe": {
+        "kind": "lfq",
+        "synthetic": true,
+        "seed": 20261020,
+        "samples": 300,
+        "proteins": 8000,
+        "groups": [
+          "WT",
+          "KO"
+        ],
+        "differential_fraction": 0.1,
+        "missing_fraction": 0.08,
+        "flagged_rows": 50,
+        "missingness": "mnar",
+        "mnar_slope": 1
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300-mnar",
+      "expected_retained_samples": 300,
+      "report_file": "proteinGroups.txt",
+      "format": "maxquant",
+      "route": "protein",
+      "notes": "8000 protein groups + 50 contaminant and 50 decoy rows interleaved, one of each leading the table (dropped by the reader); 8% missing written as 0; 10% of proteins differential (KO vs WT); missingness intensity-dependent (logistic in the protein's mean log2 intensity, slope 1 per log2 unit): 8.01% of cells missing, 1508 proteins observed in every sample",
+      "files": {
+        "proteinGroups.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300-mnar/proteinGroups.txt",
+          "bytes": 21614398,
+          "sha256": "4d58de10617eef07a70cb0d064c1e28fc04d6ef1dd281d3cdc856552cdd394bb"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300-mnar/design.tsv",
+          "bytes": 4129,
+          "sha256": "094f18939826bcf2d2de62f82ced255a2374ac0cf7f6a1eae70f5385b85a19fb"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-300-mnar/proteins.fasta",
           "bytes": 1245786,
           "sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb"
         }
