@@ -1,0 +1,134 @@
+KIT-101 revision 2.3: F-18 diagnosis (LFQ zeros). User, 2026-11-07: "Diagnose first". No code changed.
+Tree: kit-101-diag from origin/performance-v2 df5cbe67. load_all, R 4.6.1, R_LIBS = kit_100 (browser-smoke.2jjdqX).
+One R process at a time. Script: f18_trace.R (this directory). Run once over all four arms. The DA call of the
+prot_lfq_fragpipe "zero" arm then failed (the lane's own DA failed the same way, see below). One bounded correction
+was made: the DA call now tolerates failure, and the two FragPipe arms were rerun with F18_ARMS (same fixtures, same
+code). The real KC datasets and their outputs were not opened.
+
+VERDICT: CONFIRMED. Neither reader, nor anything after it on the LFQ route, turns a 0 into NA. The design step
+applies log2(x + 1), so a 0 becomes a log2 value of 0 (about 20 log2 units below the data). Normalisation then moves
+it to large negative values. The correlation filter and the DA see it as a real measurement.
+
+1. Where a zero goes (production code, traced)
+   Part A: readers on a tiny constructed table (3 proteins x 4 samples, one "0" cell and one empty cell):
+     MaxQuant  P00001/WT_2 (file '0') -> 0 | P00002/WT_2 (file empty) -> NA
+     FragPipe  P00001/WT_2 (file '0') -> 0 | P00002/WT_2 (file empty) -> NA
+     the design step's transform, log2(.x + 1): 0 -> 0, NA -> NA
+   Code sites:
+   - R/func_prot_import_readers.R importMaxQuantData (pivot_longer + `Intensity = as.numeric(Intensity)`) and
+     importFragPipeData (`dplyr::mutate(Intensity = as.numeric(Intensity))`): no 0 -> NA.
+   - R/mod_prot_import_processing_helpers.R applyProtImportResultToWorkflow: data_tbl -> data_cln unchanged
+     (prepareDIAParserTable only materialises readr diagnostics).
+   - R/mod_prot_design_state_helpers.R:69-76 buildProtDesignStateCheckpoint (TMT and LFQ): pivot_wider, then
+     `~ log2(.x + 1)`. This is the only log step. It is recorded as provenance `transform = "log2(x + 1)"`.
+   - Protein QC: removeRowsWithMissingValuesPercentHelper (R/func_prot_qc_filtering_helpers.R) counts a cell as
+     "missing" when it is NA or <= the percentile threshold. A 0 is counted that way for the row decision only. The
+     value is never changed.
+   - R/func_prot_s4_norm_methods.R normaliseBetweenSamples: only non-finite values become NA. A 0 is finite, so
+     cyclicloess fits through it.
+   - Correlation filter and DA (limma) use the normalised values as they are.
+   - log2(0) is never applied on this route. The +1 offset turns a 0 into a finite 0 instead of -Inf. (A -Inf would
+     have been set to NA by the non-finite guards.)
+
+   Part B: the entry-suite lane driver (helper-gui-entry.R; mod_proteomics_server under testServer; lane QC
+   settings) on the prot_lfq (MaxQuant) and prot_lfq_fragpipe lanes. Fixtures were written by the committed generator
+   at the KIT-021 recipe's own missing_fraction 0.08 (the committed lane fixtures use 0). The two arms differ only in
+   how a missing cell is written: "zero" (0, as the tools write it) or "empty" (read as NA). Each run stops after the
+   DA, and every committed state is read through the owner (manager$getState). Tracer: the first non-planted protein
+   with exactly one missing cell.
+
+   MaxQuant (410 rows; 336 missing cells), tracer P00041 / KO_3 (true value 1296649.3, log2 20.31):
+     state                        zero arm                                   empty arm
+     import (data_cln)            0      (325 cells == 0 after flag drop)    NA (325 NA)
+     protein_s4_initial           0      (cells == 0: 325, min 0.00)         NA (min 12.50)
+     protein_accession_cleaned    0                                          NA
+     protein_intensity_filtered   0      (400 proteins kept)                 NA (400 kept)
+     duplicates_removed           0                                          NaN (NA; the aggregation's mean of nothing)
+     protein_replicate_filtered   0                                          NaN
+     normalized (cyclicloess)     -4.5411 (cells == 0: 0, min -12.53)        NA (min 12.77)
+     correlation_filtered         sample removed (7 of 10 samples left)      NA (10 of 10 samples)
+     samples removed (r < 0.5)    wt_5, ko_2, ko_3                           none
+     DA q<0.05 / planted / FP     3 / 1 of 40 / 2                            17 / 16 of 40 / 1
+
+   FragPipe (400 rows; 308 missing cells), tracer P00042 / KO_3 (true value 604858.8, log2 19.21):
+     import (data_cln)            0      (308 == 0)                          NA (308 NA)
+     protein_s4_initial ... protein_replicate_filtered: 0                    NA / NaN
+     normalized (cyclicloess)     -5.378 (min -15.51)                        NA (min 11.60)
+     correlation_filtered         -5.378; 5 of 10 samples left               NA; 10 of 10
+     samples removed              wt_1, wt_2, wt_3, wt_4, wt_5 (all of WT)   none
+     DA                           fails: "Invalid DA formula: contrasts can  25 / 24 of 40 / 1
+                                  be applied only to factors with 2 or more
+                                  levels" (the lane's DA step raised the same
+                                  error notification)
+
+   So, at 8% zeros: MaxQuant loses 3 samples and finds 1 planted change (with 2 false positives) instead of 16.
+   FragPipe loses a whole group and has no DA. Writing the same cells as empty fields (NA) gives results in line
+   with the other routes. This reproduces and goes beyond the fixtures-work claim ("1-4 of 10 samples dropped").
+
+2. What 0 means in these columns (the semantics this relies on)
+   - MaxQuant proteinGroups.txt "LFQ intensity <exp>" / "Intensity <exp>": MaxQuant writes 0 when the protein group
+     was not quantified in that experiment. The usual downstream practice treats 0 as missing (Perseus: log transform,
+     then 0 -> NaN; the MaxLFQ/DEP-style R importers convert 0 to NA). This is well established in the field, but I
+     did not re-verify it against MaxQuant's own documentation in this session (I found no page that states it).
+   - FragPipe combined_protein.tsv "<sample> MaxLFQ Intensity" / "<sample> Intensity" (IonQuant): 0 when the
+     protein was not quantified in that sample. External evidence found this session: the autonomics Bioconductor
+     package's FragPipe reader applies zero_to_na() to the MaxLFQ and Intensity assays before log2
+     (https://rdrr.io/github/bhagwataditya/autonomics/src/R/3.4_read_fragpipe.R). FragPipe's own docs pages I could
+     reach (tutorial_perseus, FragPipe-Analyst) do not state the rule explicitly. Confidence: high that 0 means "not
+     quantified" for MaxLFQ (a MaxLFQ ratio-derived intensity is never truly 0), and medium on the citation.
+   - A true intensity of exactly 0 is not a measurement either tool reports for a quantified protein.
+
+3. Parity with the other omics and routes
+   - DIA (DIA-NN): a missing precursor has no row, so it is absent rather than 0. On DIA_LIMPA, the log2 peptide
+     matrix maps values <= 0 to NA (log2TransformPeptideMatrix, R/func_pept_s4_norm_methods.R:115; declaration fixed
+     `nonpositive_to_na = TRUE`). The DIA (IQ) route's handling of a literal 0 in Precursor.Normalised was not traced
+     in this diagnosis (iq's preprocessing applies a log2 intensity cutoff, I believe, but that is unverified here).
+   - TMT (Proteome Discoverer): PD leaves a missing abundance empty, so it reads as NA. A literal 0 would take the
+     same design step log2(x + 1) as LFQ and be kept (no 0 -> NA in importProteomeDiscovererTMTData). This is the
+     same latent behaviour, but PD does not normally write 0.
+   - Lipidomics and metabolomics: logTransformAssays uses log2(x + offset), offset 1 by default
+     (R/func_lipid_s4_normalization_methods.R:586, R/func_metab_s4_transformation_methods.R:117). Its documentation
+     says "Zeros in the data are handled by adding a small offset", so zeros are kept as quantities by design. Only
+     some QC summaries exclude Intensity > 0 (CV, counts). No import converts 0 -> NA. That is the same behaviour as
+     the LFQ route, and whether it is right for MS-DIAL/LipidSearch zeros is a separate question. It is not part of
+     F-18.
+   So the LFQ route matches lipid/metab (zeros kept) and differs from DIA/DIA_LIMPA (zeros or absences are missing).
+
+4. Were the KIT-021 / KIT-054 LFQ oracles produced with zeros present?
+   Aggregate counts of the synthetic corpora only (Part C; sha256 prefixes match bindings.json):
+     lfq_300 (KIT-021 counted member and oracles)   8100 rows x 300 LFQ columns: 194,668 cells == "0" (8.01%)
+     lfq_fixture (KIT-021/048/065 lifecycle members, = e2e prot_lfq/proteinGroups.txt)   30 cells, 0 zeros
+     e2e prot_lfq/seed_combined_protein.tsv          0 zeros
+     e2e prot_lfq_maxquant/proteinGroups.txt         0 zeros (lane fixture, missing_fraction 0)
+     e2e prot_lfq_fragpipe/combined_protein.tsv      0 zeros
+   So yes: the KIT-021 lfq_300 oracles (populations lfq_300_*, the DA tables cross-checked against the control
+   build) were recorded with 8% zeros kept as log2 0. The kit corpus writer documents this ("8% missing written as
+   0"). The fixture-based LFQ oracles (lfq_fixture, lfq48_fixture, lfq65_fixture) carry no zeros.
+   KIT-054 (kc_lfq, real data): not inspected, per the data rule. Its committed outcome reports "51.8% of intensities
+   missing". MaxQuant writes those as 0, so the KIT-054 oracles almost certainly include zeros-as-quantities, but
+   that is an inference, not a measurement.
+
+5. Scientific impact and smallest fix candidate (not implemented)
+   Impact: every MaxQuant/FragPipe LFQ analysis with any not-quantified cell carries 0 values about 20 log2 units
+   below the data. Cyclicloess pulls them to between -5 and -15. They dominate the Pearson correlations, so samples
+   are removed for the wrong reason, and they inflate variance or fake fold changes in limma. At 8% zeros on the
+   synthetic fixture, the LFQ DA collapses (MaxQuant: 3 calls, 1 true) or cannot run (FragPipe). Real LFQ exports
+   (KIT-054: about 52% missing) are affected more.
+   Smallest fix candidate: convert 0 to NA at the two readers, where the tool semantics are known. One change in
+   each pivot, for example `Intensity = dplyr::na_if(as.numeric(Intensity), 0)`, in importMaxQuantData and in
+   importFragPipeData. The design step's log2(x + 1) stays as it is (it then never sees a 0). Alternative (broader,
+   not recommended as the smallest): treat 0 as NA in buildProtDesignStateCheckpoint for TMT and LFQ. That would also
+   cover a PD 0.
+   What it would change:
+   - Tests: tests/testthat/test-module-ci-prot-import.R MCI-004.3 pins the current behaviour
+     (`expect_true(any(imported$data$Intensity == 0))`, from module_ci_prot_make_maxquant's 0 cell) and would need
+     its expectation inverted. Reader tests in test-prot-import-maxquant-direct-shared.R, test-prot-01-import.R and
+     test-workflow-native-session.R use no zeros in the cells they assert (check when fixing).
+   - Oracles: KIT-021 lfq_300 populations and DA tables (lfq_300_*; 8% zeros). KIT-054 kc_lfq oracles (real data,
+     zeros likely). These are historical records of completed tickets: re-recording versus annotating them is a
+     user decision.
+   - Unchanged: the entry-suite lanes prot_lfq and prot_lfq_fragpipe (fixtures have no zeros, so the oracles do not
+     change); lfq_fixture / lfq48 / lfq65 journeys; prot_tmt (PD empties); the DIA lanes. After a fix, the LFQ lane
+     fixtures could carry the recipe's 8% missing again (fixture/oracle change, the user's choice).
+   Confidence: high on the mechanism and its effect on this synthetic data (traced through the production states).
+   Medium on the external semantics citation.

@@ -1,0 +1,103 @@
+KIT-101 revision 2.3: F-19 diagnosis (DIA_LIMPA false positives). User, 2026-11-07: "Diagnose first". No code changed.
+Tree: kit-101-diag from origin/performance-v2 df5cbe67. load_all, R 4.6.1, R_LIBS = kit_100 (browser-smoke.2jjdqX).
+One R process at a time. Scripts in this directory:
+  f19_fixture.R     the fixture's ground truth from the committed generator (no package code)
+  f19_pipeline.R    phase 1: the entry-suite lane prot_dia_limpa (and the DIA route on the same fixture) through
+                    the production step functions, every committed state dumped; phase 2: DA variants on those
+                    states through the DA declaration's kernel (differentialAbundanceAnalysis, dpcDE branch)
+  f19_norm_check.R  whether a between-sample normalisation chosen on the DIA_LIMPA route reaches its DA
+Each script ran once. No retry was needed.
+
+VERDICT: MIXED. The main cause is a fixture artefact: an unnormalised, group-imbalanced sample loading shift. It hits
+a route property: the DIA_LIMPA route does no between-sample normalisation by default, and in fact cannot, see 4.
+RUV-III covariates (k = 1 or 2) and the qvalue() pi0 estimate then roughly double the false positives
+(a statistical property at n = 8). limpa/DPC itself is not the cause.
+
+1. The GUI result is reproduced exactly
+   Lane prot_dia_limpa (20 steps, 138 s). History: raw_data_s4 > qvalue_filtered > precursor_rollup > log2_matrix >
+   peptide_accession_cleaned > protein_dpc_quant > protein_normalised (method none) > peptide_count_filtered >
+   correlation_filtered > ruv_covariates. The GUI's own DA file da_proteins_groupKO-groupWT_long_annot.tsv has 393
+   rows, 41 at q < 0.05, 18 planted, 23 false positives. The committed ruv_covariates state through the DA kernel
+   gives the same: 41 / 18 / 23. RUV sweep: best k 2 at 5% (20 control proteins, none planted). A recomputed k = 2 W
+   equals the GUI state's W (max abs diff 0).
+
+2. Variants (393 proteins; 40 planted P00001-P00040; q = fdr_qvalue as the DA writes it (qvalue(), BH fallback);
+   BH = fdr_value_bh_adjustment; "null p<0.05" = non-planted proteins with raw p < 0.05, expected about 18 of 353)
+   variant                                                      model  sig planted FP | BH sig FP | median logFC null | null p<0.05
+   GUI state ruv_covariates (k=2 covariates)                    dpcDE   41   18     23 |  23   10  |  -0.260 |  62
+   (a)  no RUV                                                  dpcDE   27   15     12 |  24   11  |  -0.267 |  51
+   (b)  RUV k=1 covariates                                      dpcDE   39   18     21 |  24   10  |  -0.268 |  62
+   (c)  RUV k=2 covariates (recomputed = GUI)                   dpcDE   41   18     23 |  23   10  |  -0.260 |  62
+   (c') RUV k=2 correction mode (E <- RUV-III newY)             dpcDE  112   24     88 |  70   48  |  -0.258 | 106
+   (d1) limpa DPC matrix, plain limma (no dpcDE weights)        limma   26   14     12 |  17    5  |  -0.255 |  45
+   (d2) plain mean of log2 peptides per protein, limma          limma   18   12      6 |  15    3  |  -0.307 |  43
+   (f1) median-centred DPC matrix, no RUV                       dpcDE   19   15      4 |  18    3  |   0.096 |  28
+   (f2) median-centred, RUV k=2 covariates (own sweep: k 2, 5%) dpcDE   22   16      6 |  20    5  |   0.108 |  30
+   (f4) plain peptide mean, median-centred, limma               limma   16   15      1 |  12    0  |   0.015 |  23
+   (e)  DIA route (IQ MaxLFQ, cyclicloess) on the same fixture  limma   18   16      2 |  18    2  |   0.003 |  28
+        (the DIA lane's own DA file: 391 rows, 18 / 16 / 2: identical)
+   Reading:
+   - Every unnormalised variant (a, b, c, c', d1, d2) shows a common logFC shift of about -0.26 to -0.31 on the
+     null proteins and 43-106 null proteins at p < 0.05. Centring (f1, f4) or the DIA route's cyclicloess (e)
+     removes the shift and brings false positives to 1-4 (BH 0-3).
+   - limpa/DPC is not the cause: plain limma on the DPC matrix (d1) and a plain peptide mean (d2) show the same
+     shift. Centred dpcDE (f1: 4 FP) is close to the centred plain mean (f4: 1 FP).
+   - RUV covariates add false positives on top: 12 -> 21 (k=1) -> 23 (k=2) unnormalised; 4 -> 6 centred. W is
+     uncorrelated with group (r = 0.008, 0.026). W1 is about -24.5 in every sample (the control proteins' level),
+     so the factors carry little real unwanted variation on this synthetic data, and the eBayes fit loses df at n = 8.
+   - The q column (qvalue() pi0 < 1) is more liberal than BH in every unnormalised variant (41 vs 23 for the GUI
+     state). That doubles the visible false positives once the null p-values are inflated by the shift.
+   - RUV-III correction mode (KIT-056; the matrix is replaced by newY with the DPC standard errors kept and no df
+     correction) is much worse: 112 calls, 88 false positives. Not used by the lane, but a statistical hazard of the
+     mode at small n (the k factors' degrees of freedom are not removed from the limma fit).
+
+3. The fixture (f19_fixture.R; the generator reproduces report.tsv byte for byte, sha256 bcf39178...)
+   - kitProteinMatrix (tools/profiling/kit_protein_corpus.R) adds a per-sample loading term sample_scale ~ N(0, 0.25).
+     At seed 20261109 with 4 + 4 samples, the draws are WT -0.050, 0.418, 0.258, -0.003 and KO -0.129, -0.061,
+     -0.302, -0.098. Mean KO - WT = -0.303 log2: a loading difference confounded with the group by chance.
+   - generateProtDiannFixture writes Precursor.Normalised = Precursor.Quantity x run_scale (run_scale ~ 2^N(0, 0.1);
+     KO - WT -0.016). Real DIA-NN Precursor.Normalised is DIA-NN's own cross-run normalisation, so a loading
+     difference like this would be largely removed. The fixture's "normalised" column is not normalised.
+     Per-run median log2 Precursor.Normalised: WT 20.25 20.48 20.39 20.14, KO 19.95 19.86 19.74 20.14. The DPC EList
+     per-sample medians: KO - WT = -0.365.
+   - Oracle analyses on the true protein matrix (limma, BH): unnormalised 27 sig / 17 planted / 10 FP (median null
+     logFC -0.299); median-centred 19 / 19 / 0. The fixture alone produces about 10 false positives for any
+     unnormalised analysis.
+   - The other parts of the fixture are not the cause: peptides per protein 1:66, 2:130, 3:105, 4:99. Precursor
+     missingness is similar by group (non-planted WT 11.8%, KO 12.6%; planted 13.5% / 14.5%). 274 of 3200
+     protein-run cells have no precursor. Non-planted proteins get no group-correlated noise: residual N(0, 0.4)
+     iid, precursor offsets fixed across runs.
+   - The other lanes (prot_dia, TMT, LFQ) come from the same recipe with other seeds. They normalise (cyclicloess),
+     so a chance loading imbalance there does not reach the DA.
+
+4. A latent defect found on the way (f19_norm_check.R)
+   On DIA_LIMPA, the protein QC "Between-Sample Normalisation" step (computeDIAReferenceProteinNormalisation ->
+   normaliseBetweenSamples) changes only protein_quant_table. The DA's dpcDE branch (R/func_prot_da_model_methods.R
+   ~367-392) fits args$limpa_dpc_quant_results$quantified_elist, whose E nothing updates. Measured on the pre-RUV
+   state: cyclicloess changes the protein table (max abs diff 0.510), the EList E is unchanged (identical), and the
+   DA calls are the same (27 / 15 / 12 both ways). So choosing a normalisation on this route has no effect on its DA.
+   The route default (config.ini [limpaProteinNormalisation] method=none, "the limpa script's choice") hides this.
+   (Not checked: which matrix the route's QC plots read. Anything that reads protein_quant_table would show a
+   normalised matrix while the DA fits an unnormalised one.)
+
+5. Conclusion and smallest fix candidates (not implemented)
+   - Cause: mixed. (i) A fixture artefact: the DIA-NN fixture's Precursor.Normalised carries a -0.30 log2
+     group-confounded loading difference that real DIA-NN normalisation would remove. (ii) A genuine route property:
+     DIA_LIMPA does no between-sample normalisation (default none), and a chosen one cannot reach dpcDE (defect,
+     section 4). (iii) A statistical property: RUV-III covariates at n = 8 with 20 controls and qvalue()'s pi0 add
+     false positives once the null is shifted.
+   - Fixture candidate (changes only the prot_dia_limpa lane): write Precursor.Normalised with the per-run loading
+     removed (for example Precursor.Quantity / 2^(sample_scale + run log-shift), DIA-NN-like). Measured proxy: f1/f2
+     (centred) give 4-6 FP and 15-16 planted (BH 3-5). Limit the change to the DIA_LIMPA lane or both DIA-NN lanes.
+     Changing the shared generator for both changes prot_dia's fixture and its oracle too (the user decides the scope).
+     Re-freeze prot_dia_limpa (and prot_dia if included).
+   - Code candidate for the section 4 defect (smallest): when normaliseBetweenSamples runs on an object that carries
+     limpa_dpc_quant_results$quantified_elist, apply the same per-sample normalisation to E (or have the limpa
+     normalisation step write the normalised matrix into E, as the RUV correction mode already does with newY). With
+     the default "none" it changes no current output or oracle. Whether the route's default should become a
+     normalisation (for example median or cyclicloess on E) is a separate scientific decision for the user. That
+     would change the prot_dia_limpa lane and every DIA_LIMPA journey oracle recorded with method none (KIT-041 to
+     KIT-065).
+   - RUV correction mode false positives (c'): record as a statistical caveat or ticket. No fix proposed here.
+   Confidence: high (GUI result reproduced exactly; each factor isolated by one change at a time; ground truth from
+   the generator).
