@@ -408,6 +408,7 @@ Collate:
     'utils_workflow_omics_declarations.R'
     'utils_workflow_omics_figures.R'
     'utils_workflow_omics_actions.R'
+    'utils_workflow_omics_import.R'
     'utils_workflow_lipid_declarations.R'
     'utils_workflow_metab_declarations.R'
     'utils_workflow_trx_declarations.R'
