@@ -6840,6 +6840,138 @@
       "recorded_at": "2026-10-21T08:58:09+1100",
       "recorded_before": "KIT-101 F-18 (8a2a3581): a 0 intensity was kept as log2 0"
     },
+    "lfq_300_mnar_import": {
+      "step": "import",
+      "state": "initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "d41bb1ebd4413527bf223340f4f3ae5b527e9b16962b015ef772319f65844adf",
+      "rows": null,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_design": {
+      "step": "design",
+      "state": "protein_s4_initial",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "a9c85beb890d03dcfb3a821649176f49de0942c171d87343503364a9c96e0fe7",
+      "rows": 8000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_accession": {
+      "step": "accession",
+      "state": "protein_accession_cleaned",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "dfaeb5508f3371fded09da7d4d4786e72e7ba1330c1f0e949b3bb886f57263c3",
+      "rows": 8000,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_protein_intensity": {
+      "step": "protein_intensity",
+      "state": "protein_intensity_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "a5e83d34482336842d5eba8277ffec064c5c72f6edc5b5ebf69beb5903997ecf",
+      "rows": 7879,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_duplicates": {
+      "step": "duplicates",
+      "state": "duplicates_removed",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "bd91f0bb5d11c15de6d0c23344b53581471ce1f193f07c8a4111d81634be2de3",
+      "rows": 7879,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_protein_replicate": {
+      "step": "protein_replicate",
+      "state": "protein_replicate_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "2b5f0cb409e858ecdf1c547e7aa3d1e9e5b683d7f879f6e25a81980ccbfb2ccd",
+      "rows": 7879,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_normalisation_ruv": {
+      "step": "normalisation_ruv",
+      "state": "ruv_corrected",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "7445fb86a4ae3b52e40685327d06ceba947186b59c5ee5a00ebda6fa0bf5b4bd",
+      "rows": 7808,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_correlation": {
+      "step": "correlation",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "4c5986161de22726def05831f09bf379ddd9a023dcd39d556c98a4feb0e6181c",
+      "rows": 7808,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_session_export": {
+      "step": "session_export",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "4c5986161de22726def05831f09bf379ddd9a023dcd39d556c98a4feb0e6181c",
+      "rows": 7808,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_da": {
+      "step": "da",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "35ab0f768427b8217b852b58f3c4ccf1ab4361f9d122885d8ab17e4e8b398a51",
+      "rows": 7808,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
+    "lfq_300_mnar_report": {
+      "step": "report",
+      "state": "correlation_filtered",
+      "store": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/oracles/lfq_300_mnar/dia_baseline_smoke/scripts/proteomics_dia_baseline_smoke/.dia-native-f1c6958edd5f2/.workflow-entities",
+      "head_sha256": "39d55c048a0980d9d02341355be222abf4729ba09315c45fbd3e6fe124a6b58b",
+      "entity_id": "35ab0f768427b8217b852b58f3c4ccf1ab4361f9d122885d8ab17e4e8b398a51",
+      "rows": 7808,
+      "parameters": null,
+      "oracle_source": "in-process (protocol v1.5)",
+      "build": "23558bbef33daf363ae34fa71f8f3fb023c30b05",
+      "recorded_at": "2026-11-07T22:33:32+1100"
+    },
     "tmt_300_import": {
       "step": "import",
       "state": "initial",
@@ -33844,6 +33976,442 @@
       },
       "summary_sha256": "919173993a8556a5927884f8aef14c412e17f83e9a89f7ef9e4a81f5c82ab9b9"
     },
+    "lfq_300_mnar_import": {
+      "class": null,
+      "rows": "NA",
+      "components": [],
+      "support": [],
+      "products": [],
+      "summary_sha256": null,
+      "empty": true
+    },
+    "lfq_300_mnar_design": {
+      "class": "ProteinQuantitativeData",
+      "rows": 8000,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "10f4eb28a5b20c79f84c2e97b1331eb14a1ef17e46e0142e7ac5919d29b3a9ae"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "fec33e0e746fed1f531ff4d0faa733cbce9cd7d6484214775522131b451655ab"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": "Protein.Ids",
+          "sha256": "50f3d831fc92a4e48251443ef1c9d6b84eeb41a2efccfa89a555326e248bd208"
+        }
+      },
+      "support": [],
+      "products": [],
+      "summary_sha256": "5ab4cd52dfe84d21c6feb5e3e3904ca38509797b3883be2ccad042b2ef382035"
+    },
+    "lfq_300_mnar_accession": {
+      "class": "ProteinQuantitativeData",
+      "rows": 8000,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "0bd6831e5c032757e2a531a08cfb0e2bd35b83042dfc55a94697bd70c85ea13e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "fec33e0e746fed1f531ff4d0faa733cbce9cd7d6484214775522131b451655ab"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        }
+      },
+      "products": [],
+      "summary_sha256": "fe62263f3421346de77a4f1d5d91a352706bbca7d42346820946284e5371d12d",
+      "fasta_sha256": "1400b0a35720ec648d9fcb8176452d47a6527cd7b52df529ef1a799a147ef0eb",
+      "fasta_matches_input": true
+    },
+    "lfq_300_mnar_protein_intensity": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7879,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7879,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "92e0eb93011c536346335a31e4299f38706d9d30792fca654a36112eb1301d9e"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        }
+      },
+      "products": [],
+      "summary_sha256": "619627fa5b645d4b42c31a67769617e973748ab232dd15babc0d9baaade34421"
+    },
+    "lfq_300_mnar_duplicates": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7879,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7879,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "8ae38a31ac45b0e7a754f8b3fc534574830cd6bf8a0803c84797e294a121432d"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        }
+      },
+      "products": [],
+      "summary_sha256": "87212eea5ba2519afd153c0cc5c3be208512c5caab1c1166b9cea9d11ed1734a"
+    },
+    "lfq_300_mnar_protein_replicate": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7879,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7879,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "8ae38a31ac45b0e7a754f8b3fc534574830cd6bf8a0803c84797e294a121432d"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        }
+      },
+      "products": [],
+      "summary_sha256": "a837c07a2f51619394ca616ee0e7b9bd2d039a1470570f4584b830dda9dc4074"
+    },
+    "lfq_300_mnar_normalisation_ruv": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7808,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7808,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "93399da4c629eebb56a59a408ad588876d52766eedee92ce631b1267cd5fc5a0"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "7bde562647fab5f8297e937ab963c6878becefb85ce82fe08493ff2db83544c2"
+        }
+      },
+      "products": {
+        "normalization_science": {
+          "kind": "scientific_product",
+          "product_type": "dia-normalization-ruv",
+          "sha256": "1d8cc250dad7b235784ac4947c33bae9757bbb8ab5562ad0a3fa1dc1c96a7f66"
+        },
+        "dia-normalization-ruv:1d8cc250dad7": {
+          "kind": "scientific_product",
+          "product_type": "dia-normalization-ruv",
+          "sha256": "1d8cc250dad7b235784ac4947c33bae9757bbb8ab5562ad0a3fa1dc1c96a7f66"
+        }
+      },
+      "summary_sha256": "84c6c14296c13d0b1f5f108bbdd26093e9507a921399f73dd4c757be125e6a4c"
+    },
+    "lfq_300_mnar_correlation": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7808,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7808,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "93399da4c629eebb56a59a408ad588876d52766eedee92ce631b1267cd5fc5a0"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "7bde562647fab5f8297e937ab963c6878becefb85ce82fe08493ff2db83544c2"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 22350,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "c030fa4ec43b4c3324245c8e6ff98ab49a60b04c81d37cbc5d0b8ac3c2868e78"
+        }
+      },
+      "products": {
+        "dia-pearson-pairs:20111ac1172b": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-pairs",
+          "sha256": "20111ac1172baaa0460070fc235e8ad1bbdc31fcee788cd930856a2de4eb7a79"
+        },
+        "dia-pearson-selection:69ed70df1363": {
+          "kind": "scientific_product",
+          "product_type": "dia-pearson-selection",
+          "sha256": "69ed70df13636eddcb80a5092da246f116d2595b3b8a0ba175636ab64be93de8"
+        },
+        "dia_normalization_pca:d3c27f8cfe92": {
+          "kind": "scientific_product",
+          "product_type": "dia_normalization_pca",
+          "sha256": "d3c27f8cfe9231c947addf13e2a86559217e7cf543042b95ec2e51bfeab7a4d5"
+        }
+      },
+      "summary_sha256": "2be572a86c5c881c9d383cad820c473f91c0fea32fa8c21efd08ee7a8f008abf"
+    },
+    "lfq_300_mnar_session_export": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7808,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7808,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "93399da4c629eebb56a59a408ad588876d52766eedee92ce631b1267cd5fc5a0"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "7bde562647fab5f8297e937ab963c6878becefb85ce82fe08493ff2db83544c2"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 22350,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "c030fa4ec43b4c3324245c8e6ff98ab49a60b04c81d37cbc5d0b8ac3c2868e78"
+        }
+      },
+      "products": [],
+      "summary_sha256": "2be572a86c5c881c9d383cad820c473f91c0fea32fa8c21efd08ee7a8f008abf"
+    },
+    "lfq_300_mnar_da": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7808,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7808,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "93399da4c629eebb56a59a408ad588876d52766eedee92ce631b1267cd5fc5a0"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "7bde562647fab5f8297e937ab963c6878becefb85ce82fe08493ff2db83544c2"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 22350,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "c030fa4ec43b4c3324245c8e6ff98ab49a60b04c81d37cbc5d0b8ac3c2868e78"
+        }
+      },
+      "products": {
+        "da_fit:2dfeb18843df": {
+          "kind": "da_fit",
+          "product_type": null,
+          "sha256": "2dfeb18843dffaa31faf3fdcdc4e7b62b8089a1356414a5c120eaf855190bac1"
+        },
+        "dia_contrast_results:8216fb582e90": {
+          "kind": "scientific_product",
+          "product_type": "dia_contrast_results",
+          "sha256": "8216fb582e908af9669880ca63e22477a81287d698a3509bad7f36b837070550"
+        },
+        "dia-contrast-references:953b2a86e371": {
+          "kind": "scientific_product",
+          "product_type": "dia-contrast-references",
+          "sha256": "953b2a86e371d5100e6162c5c2e938e5c322e5eb03d840172cb1c06fad05f51e"
+        }
+      },
+      "summary_sha256": "2be572a86c5c881c9d383cad820c473f91c0fea32fa8c21efd08ee7a8f008abf"
+    },
+    "lfq_300_mnar_report": {
+      "class": "ProteinQuantitativeData",
+      "rows": 7808,
+      "components": {
+        "protein_quant_table": {
+          "kind": "table",
+          "rows": 7808,
+          "columns": ["Protein.Ids", "wt_001", "ko_001", "wt_002", "ko_002", "wt_003", "ko_003", "wt_004", "ko_004", "wt_005", "ko_005", "wt_006", "ko_006", "wt_007", "ko_007", "wt_008", "ko_008", "wt_009", "ko_009", "wt_010", "ko_010", "wt_011", "ko_011", "wt_012", "ko_012", "wt_013", "ko_013", "wt_014", "ko_014", "wt_015", "ko_015", "wt_016", "ko_016", "wt_017", "ko_017", "wt_018", "ko_018", "wt_019", "ko_019", "wt_020", "ko_020", "wt_021", "ko_021", "wt_022", "ko_022", "wt_023", "ko_023", "wt_024", "ko_024", "wt_025", "ko_025", "wt_026", "ko_026", "wt_027", "ko_027", "wt_028", "ko_028", "wt_029", "ko_029", "wt_030", "ko_030", "wt_031", "ko_031", "wt_032", "ko_032", "wt_033", "ko_033", "wt_034", "ko_034", "wt_035", "ko_035", "wt_036", "ko_036", "wt_037", "ko_037", "wt_038", "ko_038", "wt_039", "ko_039", "wt_040", "ko_040", "wt_041", "ko_041", "wt_042", "ko_042", "wt_043", "ko_043", "wt_044", "ko_044", "wt_045", "ko_045", "wt_046", "ko_046", "wt_047", "ko_047", "wt_048", "ko_048", "wt_049", "ko_049", "wt_050", "ko_050", "wt_051", "ko_051", "wt_052", "ko_052", "wt_053", "ko_053", "wt_054", "ko_054", "wt_055", "ko_055", "wt_056", "ko_056", "wt_057", "ko_057", "wt_058", "ko_058", "wt_059", "ko_059", "wt_060", "ko_060", "wt_061", "ko_061", "wt_062", "ko_062", "wt_063", "ko_063", "wt_064", "ko_064", "wt_065", "ko_065", "wt_066", "ko_066", "wt_067", "ko_067", "wt_068", "ko_068", "wt_069", "ko_069", "wt_070", "ko_070", "wt_071", "ko_071", "wt_072", "ko_072", "wt_073", "ko_073", "wt_074", "ko_074", "wt_075", "ko_075", "wt_076", "ko_076", "wt_077", "ko_077", "wt_078", "ko_078", "wt_079", "ko_079", "wt_080", "ko_080", "wt_081", "ko_081", "wt_082", "ko_082", "wt_083", "ko_083", "wt_084", "ko_084", "wt_085", "ko_085", "wt_086", "ko_086", "wt_087", "ko_087", "wt_088", "ko_088", "wt_089", "ko_089", "wt_090", "ko_090", "wt_091", "ko_091", "wt_092", "ko_092", "wt_093", "ko_093", "wt_094", "ko_094", "wt_095", "ko_095", "wt_096", "ko_096", "wt_097", "ko_097", "wt_098", "ko_098", "wt_099", "ko_099", "wt_100", "ko_100", "wt_101", "ko_101", "wt_102", "ko_102", "wt_103", "ko_103", "wt_104", "ko_104", "wt_105", "ko_105", "wt_106", "ko_106", "wt_107", "ko_107", "wt_108", "ko_108", "wt_109", "ko_109", "wt_110", "ko_110", "wt_111", "ko_111", "wt_112", "ko_112", "wt_113", "ko_113", "wt_114", "ko_114", "wt_115", "ko_115", "wt_116", "ko_116", "wt_117", "ko_117", "wt_118", "ko_118", "wt_119", "ko_119", "wt_120", "ko_120", "wt_121", "ko_121", "wt_122", "ko_122", "wt_123", "ko_123", "wt_124", "ko_124", "wt_125", "ko_125", "wt_126", "ko_126", "wt_127", "ko_127", "wt_128", "ko_128", "wt_129", "ko_129", "wt_130", "ko_130", "wt_131", "ko_131", "wt_132", "ko_132", "wt_133", "ko_133", "wt_134", "ko_134", "wt_135", "ko_135", "wt_136", "ko_136", "wt_137", "ko_137", "wt_138", "ko_138", "wt_139", "ko_139", "wt_140", "ko_140", "wt_141", "ko_141", "wt_142", "ko_142", "wt_143", "ko_143", "wt_144", "ko_144", "wt_145", "ko_145", "wt_146", "ko_146", "wt_147", "ko_147", "wt_148", "ko_148", "wt_149", "ko_149", "wt_150", "ko_150"],
+          "sha256": "93399da4c629eebb56a59a408ad588876d52766eedee92ce631b1267cd5fc5a0"
+        },
+        "design_matrix": {
+          "kind": "table",
+          "rows": 300,
+          "columns": ["Run", "group", "factor1", "factor2", "factor3", "batch", "replicates", "tech_reps", "tech_rep_group"],
+          "sha256": "3975d424d438203f3c11bb4d845d5af58f971bd1daae28abaf2dd2eb8087d2e1"
+        },
+        "protein_id_table": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["Protein.Ids", "Protein.Ids_list"],
+          "sha256": "94639f0799fb429cd5b141871a6091a787a3e47bdcfad85b53c268b5ddcc9ef6"
+        }
+      },
+      "support": {
+        "chooseBestProteinAccessionFn/seqinr_obj": {
+          "kind": "table",
+          "rows": 8000,
+          "columns": ["accession", "uniprot_acc", "cleaned_acc", "gene_name", "protein", "attributes", "protein_evidence", "status", "is_isoform", "isoform_num", "annotation_score", "seq", "seq_length", "description"],
+          "sha256": "6dd0a0a81570647d5f5cc682ac2610c797fcea9aa826b5fe7989335e6edb89d1"
+        },
+        "ruvIII_C_VaryingFn/ctrl": {
+          "kind": "checkpoint",
+          "product_type": null,
+          "sha256": "7bde562647fab5f8297e937ab963c6878becefb85ce82fe08493ff2db83544c2"
+        },
+        "filterSamplesFn/pearson_correlation_per_pair": {
+          "kind": "table",
+          "rows": 22350,
+          "columns": ["Run.x", "Run.y", "pearson_correlation", "group"],
+          "sha256": "c030fa4ec43b4c3324245c8e6ff98ab49a60b04c81d37cbc5d0b8ac3c2868e78"
+        }
+      },
+      "products": [],
+      "summary_sha256": "2be572a86c5c881c9d383cad820c473f91c0fea32fa8c21efd08ee7a8f008abf"
+    },
     "tmt_300_import": {
       "class": null,
       "rows": "NA",
@@ -40039,6 +40607,105 @@
         "trx_da_contrast",
         "trx_ruviii_export"
       ]
+    },
+    "101a": {
+      "kind": "single_journey",
+      "build": "kit_101",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-101)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "101b": {
+      "kind": "single_journey",
+      "build": "kit_101",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-101)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "101c": {
+      "kind": "single_journey",
+      "build": "kit_101",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-101)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "101m": {
+      "kind": "single_journey",
+      "build": "kit_101",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-101)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "101l": {
+      "kind": "single_journey",
+      "build": "kit_101",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq65_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-101)"
+    },
+    "101t": {
+      "kind": "single_journey",
+      "build": "kit_101",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt65_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-101)"
     }
   },
   "lifecycle": {
