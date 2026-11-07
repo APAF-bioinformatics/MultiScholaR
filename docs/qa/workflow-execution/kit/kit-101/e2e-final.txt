@@ -1,0 +1,9 @@
+# KIT-101 e2e lanes at d49dfb6a on browser-smoke.rvol2q 2026-11-07T23:44:56+11:00
+COUNTS test-e2e-lipidomics-canonical.R pass 88 fail 0 error 0 skip 0 exit 0 wall 78s
+COUNTS test-e2e-metabolomics-lc-gc.R pass 190 fail 0 error 0 skip 0 exit 0 wall 175s
+COUNTS test-e2e-transcriptomics-screen.R pass 14 fail 0 error 0 skip 0 exit 0 wall 55s
+COUNTS test-e2e-proteomics-dia.R pass 41 fail 0 error 0 skip 0 exit 0 wall 293s
+COUNTS test-e2e-proteomics-dia-limpa.R pass 11 fail 0 error 0 skip 1 exit 0 wall 75s
+COUNTS test-e2e-proteomics-enrichment.R pass 96 fail 0 error 0 skip 0 exit 0 wall 494s
+COUNTS test-e2e-proteomics-tmt-lfq.R pass 99 fail 0 error 3 skip 0 exit 0 wall 353s
+DONE
