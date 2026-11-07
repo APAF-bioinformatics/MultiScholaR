@@ -9,24 +9,28 @@
 #' @importFrom shinyjs useShinyjs disable enable
 #' @export
 mod_prot_import_ui <- function(id) {
-  ns <- shiny::NS(id)
-  
+  # KIT-102 W6: the shared import frame (shinyjs, the well panel and its title) around the proteomics panel.
+  mod_omic_import_ui(id, omicGuiConfig("proteomics"))
+}
+
+#' The proteomics import source panel's UI: the tags inside the frame's well panel, after its title (the frame's
+#' panel contract, R/mod_omic_import.R). The choices, headings and test ids are `config$import`'s.
+#' @param ns The import module's namespace function.
+#' @param config `omicGuiConfig("proteomics")`.
+#' @noRd
+protImportPanelUi <- function(ns, config) {
+  import <- config$import
+
   # Check if shinyFiles is available and we are not in test mode
   use_shiny_files <- requireNamespace("shinyFiles", quietly = TRUE) && !is_test_mode()
-  
+
   shiny::tagList(
-    shinyjs::useShinyjs(),  # Enable shinyjs for dynamic UI control
-    shiny::fluidRow(
-    shiny::column(12,
-      shiny::wellPanel(
-        shiny::h3("Setup & Import Data"),
-        
         # Data import section
         shiny::fluidRow(
           shiny::column(6,
-            shiny::h4("Step 1: Import Searched Data File"),
+            shiny::h4(import$help[["search"]]),
             shiny::div(
-              `data-testid` = "prot-import-search-results-file",
+              `data-testid` = import$testids[["search_results_file"]],
               if (use_shiny_files) {
                 shiny::tagList(
                   shinyFiles::shinyFilesButton(
@@ -52,25 +56,19 @@ mod_prot_import_ui <- function(id) {
             # Manual format override option
             shiny::radioButtons(ns("format_override"),
                         "Override detected format:",
-                        choices = c("Auto-detect" = "auto",
-                                  "DIA-NN" = "diann",
-                                  "Spectronaut DIA" = "spectronaut",
-                                  "FragPipe LFQ" = "fragpipe",
-                                  "MaxQuant LFQ" = "maxquant",
-                                  "Proteome Discoverer TMT" = "pd_tmt"),
-                        selected = "auto",
+                        choices = import$formats,
+                        selected = import$default_format,
                         inline = TRUE),
             # KIT-049/KIT-046: the two DIA-NN workflows named at the entry point; the choice is the workflow type.
             shiny::radioButtons(ns("dia_route"),
                         "DIA-NN workflow (choose before import):",
-                        choices = c("DIA, iq MaxLFQ (optional replicate-mean imputation)" = "DIA",
-                                    "DIA with imputation leveraging limpa (Li et al. 2025)" = "DIA_LIMPA"),
-                        selected = "DIA", inline = FALSE),
+                        choices = import$route_choice,
+                        selected = import$default_route, inline = FALSE),
             shiny::helpText("Native DIA-IQ sessions keep this route fixed until a new project/import. Other formats are unchanged."),
             
-            shiny::h4("Step 2: Import FASTA File"),
+            shiny::h4(import$help[["fasta"]]),
             shiny::div(
-              `data-testid` = "prot-import-fasta-file",
+              `data-testid` = import$testids[["fasta_file"]],
               if (use_shiny_files) {
                 shiny::tagList(
                   shinyFiles::shinyFilesButton(
@@ -103,7 +101,7 @@ mod_prot_import_ui <- function(id) {
               shiny::helpText("Check this if your FASTA contains proteins from multiple species (e.g., spiked-in standards, contaminants)")
             ),
             
-            shiny::h4("Step 3: Organism Information"),
+            shiny::h4(import$help[["organism"]]),
             shiny::div(
               id = ns("organism_inputs_container"),
               shiny::numericInput(ns("taxon_id"), 
@@ -201,7 +199,7 @@ mod_prot_import_ui <- function(id) {
                           "Process Imported Data",
                           class = "btn-success",
                           width = "100%")
-              , "prot-import-process"
+              , import$testids[["process"]]
             ),
             shiny::br(),
             shiny::br(),
@@ -209,8 +207,5 @@ mod_prot_import_ui <- function(id) {
             shiny::uiOutput(ns("data_summary"))
           )
         )
-      )
-    )
-  )
   )
 }

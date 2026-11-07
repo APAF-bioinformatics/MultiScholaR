@@ -1,0 +1,22 @@
+# KIT-102 W6 dependents grep (2026-11-08), over R/ tests/ tools/ inst/.
+# W6 deletes no file and removes or renames no name. Names whose body or signature changed:
+#   mod_prot_import_ui (now the frame around protImportPanelUi), mod_prot_import_server (now the frame around
+#   protImportPanelServer), completeProtImportSuccessState (gains `complete`, default the frame's helper).
+# New names: protImportPanelUi, protImportPanelServer (the frame's registry, R/mod_omic_import.R:70, names them).
+# Command: grep -rnE "mod_prot_import_ui|mod_prot_import_server|completeProtImportSuccessState|protImportPanelUi|
+#          protImportPanelServer" R tests tools inst
+#
+# Outside tools/refactor/ (historical staging, not loaded) and the W6 files themselves, the callers are:
+#   R/mod_omic_import.R:70                      the frame's panel registry (protImportPanelUi/Server by name)
+#   R/mod_omic_workflow.R (registry, by name)   mod_prot_import_ui/server via omicGuiComponent("prot_import")
+#   R/mod_prot_import_orchestration_helpers.R:212, R/mod_prot_import_server_helpers.R:225
+#                                               completeProtImportSuccessState as an injectable default (W6 files)
+#   tests/testthat/helper-gui-entry.R:698,728   mod_prot_import_ui defaults (the entry suite; entry-suite.txt)
+#   tests/testthat/test-e2e-test-mode-integration.R  mod_prot_import_ui HTML (no browser)       63/0 (targeted.txt)
+#   tests/testthat/test-workflow-ui-shared.R:115,148 mod_prot_import_ui                         178/0
+#   tests/testthat/test-workflow-server-shared.R:162,268 stubs of mod_prot_import_server; :792 the frame  204/0
+#   tests/testthat/test-workflow-gui-memory-lifetimes.R  registerProtImportObservers' default completion  80/0, skip 11
+#   tests/testthat/helper-module-ci-prot-import.R, test-module-ci-prot-import.R, test-prot-01c, test-prot-01d
+#                                               W6's own test files                              all pass
+# No tools/profiling or inst/ file names any of these. Nothing is quarantined by W6.
+# Result: empty apart from callers that ran and passed, and tools/refactor/.

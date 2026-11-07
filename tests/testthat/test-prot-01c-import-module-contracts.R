@@ -2029,6 +2029,95 @@ test_that("completeProtImportSuccessState marks setup complete and closes the mo
   expect_true(any(grepl("Rows: 2, Proteins: 2, Format: diann", messages, fixed = TRUE)))
 })
 
+test_that("KIT-102 W6: completeProtImportSuccessState writes the statuses through the frame's completion helper", {
+  for (waiting in c(FALSE, TRUE)) {
+    workflowData <- list2env(list(
+      tab_status = list(setup_import = "pending", design_matrix = "disabled", quality_control = "disabled"),
+      processing_log = list(setup_import = list(n_proteins = 2L))
+    ))
+    localData <- list2env(list(processing = TRUE, waiting_for_organism_selection = waiting))
+    events <- character()
+
+    result <- completeProtImportSuccessState(
+      workflowData = workflowData,
+      localData = localData,
+      dataImportResult = mockImportResult(),
+      format = "diann",
+      complete = function(notify = TRUE) {
+        events <<- c(events, paste0("complete:notify=", notify))
+        completeOmicImport(workflowData, omicGuiConfig("proteomics"), "pending", notify,
+          showNotification = function(...) events <<- c(events, "frame-notification"))
+      },
+      removeModal = function() events <<- c(events, "removeModal"),
+      showNotification = function(message, type = "default", duration = NULL) {
+        events <<- c(events, paste0("notification:", message, ":", type))
+      },
+      messageFn = function(...) invisible(NULL)
+    )
+
+    expected_status <- list(setup_import = "complete", design_matrix = "pending", quality_control = "disabled")
+    expect_identical(result, expected_status)
+    expect_identical(workflowData$tab_status, expected_status)
+    expect_false(localData$processing)
+    # One status write (the helper's, without its notification), then today's modal close and notification.
+    expect_identical(events, if (waiting) {
+      "complete:notify=FALSE"
+    } else {
+      c("complete:notify=FALSE", "removeModal", "notification:Data import successful!:message")
+    })
+  }
+})
+
+test_that("KIT-102 W6: mod_prot_import_server imports on the frame and completes through its helper once", {
+  fixture <- makeImportFixture(withConfig = FALSE)
+  on.exit(unlink(fixture$rootDir, recursive = TRUE, force = TRUE), add = TRUE)
+  workflowData <- makeWorkflowData()
+  frameCalls <- list()
+  frameComplete <- completeOmicImport
+  local_mocked_bindings(completeOmicImport = function(workflow_data, config, design_status = "open_if_disabled",
+                                                      notify = TRUE, ...) {
+    frameCalls[[length(frameCalls) + 1L]] <<- list(omic = config$shell$omic_type, design_status = design_status,
+      notify = notify)
+    frameComplete(workflow_data, config, design_status, notify, ...)
+  }, .package = "MultiScholaR")
+
+  withCleanGlobalObjects(c("aa_seq_tbl_final", "config_list"), {
+    serverUnderTest <- localProtImportPanelOverrides(list(
+      requireNamespace = function(package, quietly = FALSE) {
+        !identical(package, "shinyFiles") && base::requireNamespace(package, quietly = quietly)
+      },
+      importDIANNData = function(filepath, use_precursor_norm = TRUE) mockImportResult(),
+      processFastaFile = function(...) mockFastaResult(),
+      system.file = function(...) "",
+      download.file = function(...) stop("offline test fallback"),
+      getDefaultProteomicsConfig = function() list(generalParameters = list(min_peptides_per_protein = 3)),
+      .capture_checkpoint = function(...) invisible(NULL)
+    ))
+
+    testServer(serverUnderTest, args = list(workflow_data = workflowData, experiment_paths = fixture$experimentPaths,
+      volumes = NULL), {
+      session$setInputs(
+        search_results_standard = makeFileInput(fixture$searchResultsPath),
+        fasta_file_standard = makeFileInput(fixture$fastaPath),
+        format_override = "diann",
+        diann_use_precursor_norm = TRUE,
+        sanitize_names = FALSE,
+        mixed_species_fasta = FALSE,
+        taxon_id = 9606,
+        organism_name = "Homo sapiens",
+        capture_checkpoints = FALSE
+      )
+      session$flushReact()
+      session$setInputs(process_data = 1)
+      session$flushReact()
+
+      expect_identical(frameCalls, list(list(omic = "proteomics", design_status = "pending", notify = FALSE)))
+      expect_identical(workflowData$tab_status$setup_import, "complete")
+      expect_identical(workflowData$tab_status$design_matrix, "pending")
+    })
+  })
+})
+
 test_that("resetProtImportWorkflowStateOnError clears import state and marks setup incomplete", {
   workflowData <- list2env(list(
     data_tbl = data.frame(x = 1),
@@ -2281,8 +2370,7 @@ test_that("mod_prot_import_server stores successful import side effects", {
   configStub <- getDefaultProteomicsConfig()
 
   withCleanGlobalObjects(c("aa_seq_tbl_final", "config_list"), {
-    serverUnderTest <- makeFunctionWithOverrides(
-      mod_prot_import_server,
+    serverUnderTest <- localProtImportPanelOverrides(
       list(
         requireNamespace = function(package, quietly = FALSE) {
           if (identical(package, "shinyFiles")) {
@@ -2369,8 +2457,7 @@ test_that("mod_prot_import_server falls back to default config when optional fil
   )
 
   withCleanGlobalObjects(c("aa_seq_tbl_final", "config_list"), {
-    serverUnderTest <- makeFunctionWithOverrides(
-      mod_prot_import_server,
+    serverUnderTest <- localProtImportPanelOverrides(
       list(
         requireNamespace = function(package, quietly = FALSE) {
           if (identical(package, "shinyFiles")) {
@@ -2452,8 +2539,7 @@ test_that("mod_prot_import_server cleans workflow state after unsupported format
     session_summary = "disabled"
   )
 
-  serverUnderTest <- makeFunctionWithOverrides(
-    mod_prot_import_server,
+  serverUnderTest <- localProtImportPanelOverrides(
     list(
       requireNamespace = function(package, quietly = FALSE) {
         if (identical(package, "shinyFiles")) {

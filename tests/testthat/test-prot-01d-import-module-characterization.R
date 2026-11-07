@@ -737,8 +737,7 @@ test_that("mod_prot_import_server preserves successful import side effects", {
   config_stub <- getDefaultProteomicsConfig()
 
   withProtImportCharacterizationGlobals(c("aa_seq_tbl_final", "config_list"), {
-    server_under_test <- makeProtImportCharacterizationOverrides(
-      mod_prot_import_server,
+    server_under_test <- localProtImportPanelOverrides(
       list(
         requireNamespace = function(package, quietly = FALSE) {
           if (identical(package, "shinyFiles")) {
@@ -841,8 +840,7 @@ test_that("mod_prot_import_server preserves unsupported-format cleanup behavior"
     session_summary = "disabled"
   )
 
-  server_under_test <- makeProtImportCharacterizationOverrides(
-    mod_prot_import_server,
+  server_under_test <- localProtImportPanelOverrides(
     list(
       requireNamespace = function(package, quietly = FALSE) {
         if (identical(package, "shinyFiles")) {

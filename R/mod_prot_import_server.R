@@ -19,8 +19,22 @@
 mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes = NULL) {
   message(sprintf("--- Entering mod_prot_import_server ---"))
   message(sprintf("   mod_prot_import_server Arg: id = %s", id))
-  
-  shiny::moduleServer(id, function(input, output, session) {
+  # KIT-102 W6: the shared import frame runs the proteomics panel (protImportPanelServer) in its module session.
+  mod_omic_import_server(id, workflow_data, experiment_paths, volumes = volumes, config = omicGuiConfig("proteomics"))
+}
+
+#' The proteomics import source panel's server: today's import module body, called by the import frame inside its
+#' moduleServer (the frame's panel contract, R/mod_omic_import.R). Success writes the statuses through the frame's
+#' `complete` (completeProtImportSuccessState).
+#' @param input,output,session The frame's module session.
+#' @param workflow_data The workflow bus.
+#' @param experiment_paths The experiment's project paths.
+#' @param volumes shinyFiles volumes.
+#' @param config `omicGuiConfig("proteomics")`.
+#' @param complete The frame's completion helper.
+#' @noRd
+protImportPanelServer <- function(input, output, session, workflow_data, experiment_paths, volumes, config,
+                                  complete) {
     message(sprintf("   mod_prot_import_server Step: Inside moduleServer function"))
 
     local_data <- createProtImportLocalData()
@@ -90,7 +104,7 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       systemFileFn = system.file,
       resolveFilenameFn = resolveProtImportInputFilename,
       finalizeSetupStateFn = finalizeProtImportSetupState,
-      completeSuccessStateFn = completeProtImportSuccessState,
+      completeSuccessStateFn = function(...) completeProtImportSuccessState(..., complete = complete),
       logInfo = log_info,
       logError = log_error,
       logWarn = log_warn,
@@ -104,5 +118,4 @@ mod_prot_import_server <- function(id, workflow_data, experiment_paths, volumes 
       session = session,
       activeFormatReactive = import_paths$activeFormat
     )
-  })
 }

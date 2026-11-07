@@ -1,0 +1,47 @@
+# KIT-102 W6 test-first (2026-11-08)
+# The final W6 test files run on the base implementation: HEAD 5539a182 (origin/performance-v2) with the three
+# changed R files checked out from HEAD (R/mod_prot_import_ui.R, R/mod_prot_import_server.R,
+# R/mod_prot_import_processing_helpers.R). One R process per file: pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+# R 4.6.1, kit/scripts-078/run1.R, R_LIBS core/browser-smoke.rvol2q/library.
+#
+# New W6 tests (fail first, for the reason they test):
+#   - "the proteomics import UI is the shared frame with the proteomics panel": no protImportPanelUi on HEAD.
+#   - "completeProtImportSuccessState writes the statuses through the frame's completion helper": HEAD takes no
+#     `complete` (unused argument).
+#   - "mod_prot_import_server imports on the frame and completes through its helper once": no
+#     protImportPanelServer on HEAD (the helper that drives the module through the frame stubs it).
+# Retargeted (expectations unchanged; they error on HEAD only because the panel server they stub does not exist
+# yet): the three mod_prot_import_server blocks in test-prot-01c and the two in test-prot-01d. They replaced names in
+# the old module's enclosure (makeFunctionWithOverrides / makeProtImportCharacterizationOverrides on
+# mod_prot_import_server); the frame calls the panel server by name, so they now replace the same names in
+# protImportPanelServer's enclosure (localProtImportPanelOverrides, helper-module-ci-prot-import.R).
+#
+# Baseline on HEAD before any W6 edit: test-module-ci-prot-import.R pass 91, test-prot-01c 416, test-prot-01d 79
+# (W3 targeted.txt; the same counts here minus the blocks above).
+
+COUNTS test-module-ci-prot-import.R pass 92 fail 0 error 1 skip 0
+  BAD test-module-ci-prot-import.R :: KIT-102 W6: the proteomics import UI is the shared frame with the proteomics panel, as today's
+--- KIT-102 W6: the proteomics import UI is the shared frame with the proteomics panel, as today's
+ Error in `eval(code, test_env)`: object 'protImportPanelUi' not found
+
+COUNTS test-prot-01c-import-module-contracts.R pass 381 fail 0 error 5 skip 0
+  BAD test-prot-01c-import-module-contracts.R :: KIT-102 W6: completeProtImportSuccessState writes the statuses through the frame's completion helper
+  BAD test-prot-01c-import-module-contracts.R :: KIT-102 W6: mod_prot_import_server imports on the frame and completes through its helper once
+  BAD test-prot-01c-import-module-contracts.R :: mod_prot_import_server stores successful import side effects            (retarget)
+  BAD test-prot-01c-import-module-contracts.R :: mod_prot_import_server falls back to default config when optional files are absent   (retarget)
+  BAD test-prot-01c-import-module-contracts.R :: mod_prot_import_server cleans workflow state after unsupported format failure   (retarget)
+--- KIT-102 W6: completeProtImportSuccessState writes the statuses through the frame's completion helper
+ Error in `completeProtImportSuccessState(..., complete = function(notify = TRUE) {...}, ...)`: unused argument (complete = ...)
+--- KIT-102 W6: mod_prot_import_server imports on the frame and completes through its helper once
+ Error in `localProtImportPanelOverrides(list(...))`: object 'protImportPanelServer' not found
+--- (each retarget) Error in `localProtImportPanelOverrides(list(...))`: object 'protImportPanelServer' not found
+
+COUNTS test-prot-01d-import-module-characterization.R pass 49 fail 0 error 2 skip 0
+  BAD test-prot-01d-import-module-characterization.R :: mod_prot_import_server preserves successful import side effects   (retarget)
+  BAD test-prot-01d-import-module-characterization.R :: mod_prot_import_server preserves unsupported-format cleanup behavior   (retarget)
+
+# After the implementation (targeted.txt): test-module-ci-prot-import.R 107/0, test-prot-01c 427/0, test-prot-01d 79/0.
+# The UI is byte-identical: renderTags(mod_prot_import_ui("proteomics_workflow-setup_import"))$html md5 before and
+# after, in test mode 26bd6bf341b7cc56b6ededc29594148e and in production (shinyFiles) mode
+# d2475e367b184f054c87fe954cec2190, dependencies font-awesome@6.5.2 in both; buildProtImportFormatSpecificOptionsUi
+# ("diann") 9a05c219071c504557da0c1ecabd5595 before and after.

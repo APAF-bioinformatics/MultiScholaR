@@ -196,14 +196,15 @@ completeProtImportSuccessState <- function(
     , localData
     , dataImportResult
     , format
+    , complete = function(notify) completeOmicImport(workflowData, omicGuiConfig("proteomics"),
+        omicImportSourcePanel("proteomics")$design_status, notify)
     , removeModal = shiny::removeModal
     , showNotification = shiny::showNotification
     , messageFn = message
 ) {
-  updated_status <- workflowData$tab_status
-  updated_status$setup_import <- "complete"
-  updated_status$design_matrix <- "pending"
-  workflowData$tab_status <- updated_status
+  # KIT-102 W6: the import frame's completion helper makes today's single write (setup_import complete, design_matrix
+  # pending). Its notification is not used: the modal closes and the success text shows below, after the log lines.
+  updated_status <- complete(notify = FALSE)
 
   messageFn("========================================")
   messageFn("[mod_prot_import] Data import completed successfully!")

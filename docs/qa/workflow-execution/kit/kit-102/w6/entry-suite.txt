@@ -1,0 +1,11 @@
+# KIT-102 W6 entry-point suite, verify against the frozen oracles (tests/testdata/gui-entry/prot_*.json; nothing
+# re-frozen). tests/testthat/test-gui-entry-proteomics.R, one R process, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+# R 4.6.1, kit/scripts-078/run1.R, R_LIBS core/browser-smoke.rvol2q/library, a systemd-inhibit sleep lock held.
+# Tree: 5539a182 + the W6 change (uncommitted at run time; the committed W6 tree is the same files).
+# Expected: all five proteomics lanes identical (prot_dia, prot_dia_limpa, prot_tmt, prot_lfq, prot_lfq_fragpipe).
+# The suite compares every captured step with its oracle; any difference fails the lane.
+
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0
+exit=0 elapsed=727s   (W4's run on the same base: pass 187, 708 s; ceiling 4,500 s per file)
+
+Result: the five proteomics lanes are identical to their oracles. 0 failures, errors or skips.

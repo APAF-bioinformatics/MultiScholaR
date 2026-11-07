@@ -324,3 +324,14 @@ module_ci_prot_apply_import_state <- function(imported, format, fasta_path = mod
 
   list(workflow_data = workflow_data, checkpoints = checkpoints, artifact_dir = artifact_dir)
 }
+
+# KIT-102 W6: mod_prot_import_server is a wrapper over the shared import frame, which calls the proteomics panel
+# server (protImportPanelServer) by name. The module tests that replaced names in the old module's enclosure replace
+# them in the panel server's instead: the panel server, with `replacements` in its enclosure, stands in for the
+# namespace's until the calling test ends. Returns the public module server, to run under testServer.
+localProtImportPanelOverrides <- function(replacements, env = parent.frame()) {
+  panel <- protImportPanelServer
+  environment(panel) <- list2env(replacements, parent = environment(protImportPanelServer))
+  testthat::local_mocked_bindings(protImportPanelServer = panel, .package = "MultiScholaR", .env = env)
+  mod_prot_import_server
+}

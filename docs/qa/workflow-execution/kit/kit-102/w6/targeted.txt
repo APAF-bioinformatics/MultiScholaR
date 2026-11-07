@@ -1,0 +1,29 @@
+# KIT-102 W6 targeted tests, after the implementation. Base 5539a182 (origin/performance-v2), R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence;
+# runner kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.rvol2q/library. Recorded 2026-11-08.
+# No R CMD check, no install, no journeys, no e2e lanes. Baselines: W3's targeted.txt (the same base files).
+
+COUNTS test-prot-01-import.R pass 15 fail 0 error 0 skip 1
+exit=0 elapsed=5s     (baseline: passed 15, skipped 1 (fixture))
+COUNTS test-prot-01b-import-detection-characterization.R pass 8 fail 0 error 0 skip 0
+exit=0 elapsed=4s     (baseline: passed 8)
+COUNTS test-prot-01c-import-module-contracts.R pass 427 fail 0 error 0 skip 0
+exit=0 elapsed=9s     (baseline: passed 416; +11 from the two W6 blocks; namespace guard :12-16 passes)
+COUNTS test-prot-01d-import-module-characterization.R pass 79 fail 0 error 0 skip 0
+exit=0 elapsed=7s     (baseline: passed 79; the two module-server blocks retargeted, expectations unchanged)
+COUNTS test-module-ci-prot-import.R pass 107 fail 0 error 0 skip 0
+exit=0 elapsed=5s     (baseline: passed 91; +16 from the W6 UI block)
+COUNTS test-prot-import-core.R pass 35 fail 0 error 0 skip 0
+exit=0 elapsed=7s     (W3: passed 35)
+COUNTS test-workflow-gui-memory-lifetimes.R pass 80 fail 0 error 0 skip 11
+exit=0 elapsed=7s     (baseline: passed 80, skipped 11; registerProtImportObservers' release-before-FASTA block passes)
+COUNTS test-workflow-checkpoint-dia-state.R pass 174 fail 0 error 0 skip 4
+exit=0 elapsed=18s    (baseline: passed 174, skipped 4 (quarantine))
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0
+exit=0 elapsed=5s     (W4: the frame's proteomics completion block passes)
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+exit=0 elapsed=5s     (dependent: mod_prot_import_ui)
+COUNTS test-e2e-test-mode-integration.R pass 63 fail 0 error 0 skip 0
+exit=0 elapsed=6s     (dependent: mod_prot_import_ui in test and production mode; HTML only, no browser)
+COUNTS test-omic-gui-config.R pass 249 fail 0 error 0 skip 0
+exit=0 elapsed=6s     (W1: the proteomics configuration the panel reads)

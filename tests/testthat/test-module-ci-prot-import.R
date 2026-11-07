@@ -205,3 +205,31 @@ test_that("MCI-004.6 import artifact and state assertions gate downstream design
   expect_true(dir.exists(file.path(state$artifact_dir, "results")))
   expect_true(dir.exists(file.path(state$artifact_dir, "scripts")))
 })
+
+test_that("KIT-102 W6: the proteomics import UI is the shared frame with the proteomics panel, as today's", {
+  old_option <- getOption("multischolar.test_mode", FALSE)
+  on.exit(options(multischolar.test_mode = old_option), add = TRUE)
+  config <- omicGuiConfig("proteomics")
+  expect_identical(omicImportSourcePanel(config$import$source_panel)$ui, "protImportPanelUi")
+  expect_true(is.function(protImportPanelUi))
+  expect_true(is.function(protImportPanelServer))
+
+  for (test_mode in c(TRUE, FALSE)) {
+    options(multischolar.test_mode = test_mode)
+    module <- htmltools::renderTags(mod_prot_import_ui("proteomics_workflow-setup_import"))
+    frame <- htmltools::renderTags(mod_omic_import_ui("proteomics_workflow-setup_import", config))
+    expect_identical(module$html, frame$html)
+    expect_identical(module$dependencies, frame$dependencies)
+    # The panel's tags sit inside the frame's well panel, after its title (compared without the indentation).
+    panel <- htmltools::renderTags(protImportPanelUi(shiny::NS("proteomics_workflow-setup_import"), config))
+    squash <- function(html) gsub("\\s+", " ", gsub(">\\s+<", "><", html))
+    expect_true(grepl(paste0("<h3>Setup &amp; Import Data</h3>", squash(panel$html), "</div>"), squash(module$html),
+      fixed = TRUE))
+    for (testid in config$import$testids) {
+      expect_match(module$html, sprintf("data-testid=\"%s\"", testid), fixed = TRUE)
+    }
+  }
+  # The entry suite calls the format options builder by name (helper-gui-entry.R:699).
+  expect_match(as.character(buildProtImportFormatSpecificOptionsUi("diann", shiny::NS("x"))),
+    "x-diann_use_precursor_norm", fixed = TRUE)
+})
