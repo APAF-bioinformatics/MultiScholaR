@@ -1,0 +1,13 @@
+# KIT-103: controller phase peaks (GiB) for the design and import phases, against KIT-102. A rise above 10% would be a finding.
+a import  0.511 0.510 -0.3%
+a design  0.528 0.526 -0.3%
+b import  0.516 0.510 -1.2%
+b design  0.529 0.528 -0.2%
+c import  0.522 0.522 -0.1%
+c design  0.541 0.542 +0.2%
+m import  0.726 0.726 +0.0%
+m design  0.866 0.867 +0.2%
+l import  0.532 0.528 -0.7%
+l design  0.541 0.539 -0.5%
+t import  0.533 0.528 -0.8%
+t design  0.541 0.539 -0.5%
