@@ -672,22 +672,37 @@ e2e_seed_report_template <- function(lane, project_base_dir) {
   e2e_assert_file_nonempty(dest)
 }
 
+# KIT-101 F-21: the proteomics session export is the native archive (runDIANativeSessionExport), not the legacy
+# filtered_session_data_latest.rds. The archive the latest pointer names exists, is non-empty and has the pointer's
+# bytes and sha256; the export's summary names the same archive. `session_data` holds the summary's data fields.
 e2e_assert_prot_filtered_session_artifacts <- function(project_base_dir) {
   source_dir <- file.path(project_base_dir, "scripts", "proteomics")
-  latest <- file.path(source_dir, "filtered_session_data_latest.rds")
+  latest <- file.path(source_dir, "filtered_session_latest.json")
   summary <- file.path(source_dir, "filtered_session_summary.txt")
 
   e2e_assert_file_nonempty(latest)
   e2e_assert_file_nonempty(summary)
 
-  session_data <- readRDS(latest)
-  testthat::expect_true("r6_current_state_name" %in% names(session_data))
-  testthat::expect_true("r6_complete_states" %in% names(session_data))
-  testthat::expect_true("r6_state_history" %in% names(session_data))
-  testthat::expect_gt(length(session_data$r6_complete_states), 0)
-  testthat::expect_true(session_data$r6_current_state_name %in% names(session_data$r6_complete_states))
+  pointer <- jsonlite::read_json(latest)
+  testthat::expect_identical(pointer$schema, "multischolar.dia_native_latest.v1")
+  testthat::expect_identical(pointer$status, "complete")
+  testthat::expect_match(pointer$archive, "^filtered_session_[0-9]{8}_[0-9]{6}_native-export-[A-Za-z0-9_-]+[.]msdia[.]tar$")
+  archive <- file.path(source_dir, pointer$archive)
+  e2e_assert_file_nonempty(archive)
+  testthat::expect_equal(file.info(archive)$size, as.numeric(pointer$bytes))
+  testthat::expect_identical(digest::digest(file = archive, algo = "sha256"), pointer$sha256)
 
-  invisible(list(latest = latest, summary = summary, session_data = session_data))
+  lines <- readLines(summary, warn = FALSE)
+  field <- function(label) {
+    pattern <- paste0("^(- )?", label, ": ")
+    sub(pattern, "", grep(pattern, lines, value = TRUE)[1L])
+  }
+  testthat::expect_identical(field("Session File"), pointer$archive)
+  session_data <- list(workflow_type = field("Workflow Type"), report_template = field("Report Template"),
+    final_protein_count = as.integer(field("Proteins")), final_sample_count = as.integer(field("Samples")),
+    limpa_applied = identical(field("limpa DPC-Quant"), "yes"))
+
+  invisible(list(archive = archive, latest = latest, summary = summary, session_data = session_data))
 }
 
 e2e_assert_metab_filtered_session_artifacts <- function(project_base_dir, expected_assays = NULL) {

@@ -58,3 +58,33 @@ COUNTS test-prot-05b-norm-module-contracts.R pass 500 fail 4 error 0 skip 9
 
 After the fix:
 COUNTS test-prot-05b-norm-module-contracts.R pass 504 fail 0 error 0 skip 9
+
+== F-21  tests/testthat/test-e2e-browser-harness.R ==
+Changed block: "project path and filtered-session artifact assertions validate DIA handoff files". Its fixture is
+now the export's files as the native export writes them (runDIANativeSessionExport / publishDIANativeSession):
+filtered_session_<time>_native-export-<id>.msdia.tar, the latest pointer filtered_session_latest.json (schema,
+status, archive, bytes, sha256), and filtered_session_summary.txt written by the production summary builder
+(buildProtNormExportSummaryContent) naming the archive. The assertion must pass and return the archive and the
+summary's data fields; a pointer whose sha256 differs from the archive's bytes, and a summary naming another
+archive, must each fail exactly one check.
+
+Cause: e2e_assert_prot_filtered_session_artifacts (helper-e2e-browser.R) read the legacy
+filtered_session_data_latest.rds, which the native export (KIT-048) no longer writes.
+
+Fix: the assertion reads the latest pointer; checks its schema and status, the archive name's pattern, that the
+archive exists and is non-empty, that its size and sha256 equal the pointer's, and that the summary's
+"Session File:" is the same archive (what the export step reports: its notification and summary name it). It
+returns session_data from the summary's data fields (workflow type, report template, protein and sample counts,
+limpa flag) for the lanes' existing checks.
+
+Before the fix (the block's final text, the helper at HEAD a9e3f50b):
+--- Expected `e2e_assert_prot_filtered_session_artifacts(paths$base_dir)` not to throw any errors.
+    Actually got a <expectation_failure> with message: Expected `file.exists(path)` to be TRUE.
+--- Expected `out$archive` to be identical to `archive`. `actual` is NULL
+--- Expected `out$session_data[...]` to be identical to `list(workflow_type = "DIA", ...)`. `actual` is NULL
+--- Error in `gzfile(file, "rb")`: cannot open the connection
+    (cannot open compressed file '.../scripts/proteomics/filtered_session_data_latest.rds')
+COUNTS test-e2e-browser-harness.R pass 103 fail 3 error 1 skip 1
+
+After the fix:
+COUNTS test-e2e-browser-harness.R pass 120 fail 0 error 0 skip 1

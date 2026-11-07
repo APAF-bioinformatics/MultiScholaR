@@ -271,16 +271,40 @@ test_that("project path and filtered-session artifact assertions validate DIA ha
   seeded <- e2e_seed_report_template(lane, paths$base_dir)
   expect_true(file.exists(seeded))
 
-  saveRDS(
-    list(
-      r6_current_state_name = "correlation_filtered",
-      r6_complete_states = list(correlation_filtered = list(marker = TRUE)),
-      r6_state_history = c("protein_replicate_filtered", "correlation_filtered")
-    ),
-    file.path(paths$source_dir, "filtered_session_data_latest.rds")
-  )
-  writeLines("Filtered Session Data Export Summary", file.path(paths$source_dir, "filtered_session_summary.txt"))
-  expect_no_error(e2e_assert_prot_filtered_session_artifacts(paths$base_dir))
+  # KIT-101 F-21: the export's files as the native export writes them (runDIANativeSessionExport): the archive, the
+  # latest pointer with its bytes and sha256, and the summary naming the archive.
+  archive_name <- "filtered_session_20261107_120000_native-export-5f2c1a9e.msdia.tar"
+  archive <- file.path(paths$source_dir, archive_name)
+  writeBin(as.raw(seq_len(64L)), archive)
+  write_pointer <- function(sha256) {
+    jsonlite::write_json(list(schema = "multischolar.dia_native_latest.v1", status = "complete", archive = archive_name,
+      bytes = 64, sha256 = sha256), file.path(paths$source_dir, "filtered_session_latest.json"), auto_unbox = TRUE, pretty = TRUE)
+  }
+  write_summary <- function(name) {
+    writeLines(buildProtNormExportSummaryContent(list(final_protein_count = 412L, final_sample_count = 8L,
+      normalization_method = "cyclicloess", ruv_mode = "skip", workflow_type = "DIA", report_template = "DIANN_report.rmd"),
+      name, timeFn = function() as.POSIXct("2026-11-07 12:00:00", tz = "UTC")), file.path(paths$source_dir, "filtered_session_summary.txt"))
+  }
+  write_pointer(digest::digest(file = archive, algo = "sha256"))
+  write_summary(archive_name)
+  out <- expect_no_error(e2e_assert_prot_filtered_session_artifacts(paths$base_dir))
+  expect_identical(out$archive, archive)
+  expect_identical(out$session_data[c("workflow_type", "final_protein_count", "final_sample_count")],
+    list(workflow_type = "DIA", final_protein_count = 412L, final_sample_count = 8L))
+  # Bytes that differ from the pointer's sha256, and a summary that names another archive, each fail exactly one check.
+  failures <- function(code) {
+    n <- 0L
+    withCallingHandlers(code, expectation = function(e) {
+      if (inherits(e, "expectation_failure")) n <<- n + 1L
+      invokeRestart("muffle_expectation")
+    })
+    n
+  }
+  write_pointer(strrep("0", 64L))
+  expect_identical(failures(e2e_assert_prot_filtered_session_artifacts(paths$base_dir)), 1L)
+  write_pointer(digest::digest(file = archive, algo = "sha256"))
+  write_summary("filtered_session_20261107_115900_native-export-0a0a0a0a.msdia.tar")
+  expect_identical(failures(e2e_assert_prot_filtered_session_artifacts(paths$base_dir)), 1L)
 })
 
 test_that("browser harness waits for persisted R6 workflow states", {
