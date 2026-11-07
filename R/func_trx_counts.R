@@ -37,3 +37,48 @@ validateTrxCounts <- function(counts) {
     }
     counts
 }
+
+# KIT-102 W2: the transcriptomics import's preview and count check, moved into the core from
+# mod_transcriptomics.R (`trxImportPreview`, `checkTrxImportCounts`, :82-111). The import itself is
+# `importOmicsTables()` (utils_workflow_omics_import.R) with `checkTrxImportCounts` as its `check`.
+
+#' The import's preview of a count table, in `previewOmicsImport()`'s shape: read as the notebook reads
+#' it (vroom), the id and name columns proposed (`GeneID`, `GeneName` when present), every other column
+#' a sample (`trxImportPreview`).
+#' @param path The count table.
+#' @param import The omic's `config$import`; not used (the count table has one format and reader).
+#' @noRd
+previewTrxCountsImport <- function(path, import = NULL) {
+    data <- vroom::vroom(path, show_col_types = FALSE, progress = FALSE)
+    # The reader's lazy problems pointer is not a value the session can hold by reference.
+    attr(data, "problems") <- NULL
+    headers <- names(data)
+    id <- if ("GeneID" %in% headers) "GeneID" else headers[[1L]]
+    name <- if ("GeneName" %in% headers) "GeneName" else setdiff(headers, id)[[1L]]
+    list(headers = headers, detected_format = "trx_counts", format_confidence = 1,
+        import_result = list(data = data, sample_columns = setdiff(headers, c(id, name))), assay_data = data,
+        updates = list(id = list(choices = headers, selected = id),
+            annotation = list(choices = headers, selected = name), is_pattern = NULL))
+}
+
+#' KIT-093's count policy at import on every column but the id and name columns: the `check` plugin of
+#' the transcriptomics import. A refusal keeps KIT-093's class and names it in its message, which the
+#' tab shows.
+#' @param assayList The assembled assays (one count table).
+#' @return `assayList`, invisibly and unchanged, when it passes.
+#' @noRd
+checkTrxImportCounts <- function(assayList, idCol, annotationCol) {
+    table <- assayList[[1L]]
+    if (!omicsImportScalarString(annotationCol)) {
+        trxAbort("a gene name column is required (trx_counts_invalid)", c("trx_counts_invalid", "trx_error"))
+    }
+    absent <- setdiff(c(idCol, annotationCol), names(table))
+    if (length(absent)) {
+        trxAbort(sprintf("the count table lacks the column(s) %s (trx_counts_invalid)", paste(absent, collapse = ", ")),
+            c("trx_counts_invalid", "trx_error"))
+    }
+    withCallingHandlers(validateTrxCounts(as.data.frame(table)[setdiff(names(table), c(idCol, annotationCol))]),
+        trx_counts_invalid = \(error) trxAbort(sprintf("%s (%s)", conditionMessage(error), class(error)[[1L]]),
+            setdiff(class(error), c("rlang_error", "error", "condition"))))
+    invisible(assayList)
+}

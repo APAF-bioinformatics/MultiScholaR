@@ -1,0 +1,24 @@
+# KIT-102 W2 targeted run, 2026-11-08, on the W2 tree (base 60334e4b), R 4.6.1, load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+# one R process per file (kit/scripts-078/run1.R). DESCRIPTION Collate had utils_workflow_omics_import.R added locally
+# (after utils_workflow_omics_actions.R) for load_all; that line is not committed (the lead owns Collate).
+# Set: W2's test file; the dependents grep of every touched name and file (checkTrxImportCounts, trxImportPreview,
+# validateTrxCounts, func_trx_counts, utils_workflow_omics_import): MCI-026 and MCI-029 (trx import, trx app),
+# test-trx-design (validateTrxCounts), test-workflow-operation-registry (parses validateTrxCounts), the residency
+# and application-reads files (helper-workflow-omics-residency.R calls trxImportPreview); W1's config test; and the
+# MCI-018 and MCI-012 import files whose fixtures the comparisons use.
+COUNTS test-workflow-omics-import.R pass 400 fail 0 error 0 skip 0   (final state; first pass of the loop: 397, before the F102-01 block)
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+COUNTS test-trx-design.R pass 70 fail 0 error 0 skip 0
+COUNTS test-workflow-operation-registry.R pass 1007 fail 0 error 0 skip 0
+COUNTS test-omic-gui-config.R pass 249 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0   (one pre-existing warning in MCI-018.5, file untouched)
+COUNTS test-module-ci-metab-import.R pass 88 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0
+# Moved checkTrxImportCounts (R/func_trx_counts.R) against today's (R/mod_transcriptomics.R, which wins in Collate
+# until W5 deletes it), sourced side by side on the MCI-026 corpus and fixtures x {GeneName, "", Absent, NULL} and the
+# "note = x" table: 17 of 17 outcomes identical (class and message).
+# After the rebase onto origin/performance-v2 (W3 at 8a20c98f, e344df4c), Collate line added locally again:
+COUNTS test-workflow-omics-import.R pass 400 fail 0 error 0 skip 0
+COUNTS test-prot-import-core.R pass 35 fail 0 error 0 skip 0   (W3's readers call coerceOmicsNumericLikeColumns; the signature agrees)

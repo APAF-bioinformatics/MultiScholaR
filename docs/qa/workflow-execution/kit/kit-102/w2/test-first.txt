@@ -1,0 +1,22 @@
+# KIT-102 W2 test first, 2026-11-08, HEAD 60334e4b (W1 165ef779 + notes), before R/utils_workflow_omics_import.R existed
+# 1. tests/testthat/test-workflow-omics-import.R, load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1 (kit/scripts-078/run1.R): every block fails, the core functions are absent
+COUNTS test-workflow-omics-import.R pass 58 fail 45 error 9 skip 0
+  BAD test-workflow-omics-import.R :: I1 the header reader is today's default reader (lipid and metab)
+  BAD test-workflow-omics-import.R :: I2 the feature-table preview is today's lipid and metab preview
+  BAD test-workflow-omics-import.R :: I2 the trx preview is today's trxImportPreview
+  BAD test-workflow-omics-import.R :: I3, I4 the sample and column resolution is today's (lipid and metab)
+  BAD test-workflow-omics-import.R :: I5 to I13 the lipid import is today's on the MCI-018 matrix
+  BAD test-workflow-omics-import.R :: I5 to I13 the metab import is today's on the MCI-012 matrix
+  BAD test-workflow-omics-import.R :: I5 to I13 the trx import is today's on the MCI-026 corpus and fixtures
+  BAD test-workflow-omics-import.R :: the import adds no copy of an assay that needs no conversion (scoping risk 4)
+  BAD test-workflow-omics-import.R :: coerceOmicsNumericLikeColumns converts only numeric-like text and factor columns
+  BAD test-workflow-omics-import.R :: parity: lipid text-numeric sample columns are converted, not refused (failed first)
+  BAD test-workflow-omics-import.R :: parity: trx converts text-numeric counts before its count policy (failed first)
+# 2. today's behaviour on the parity inputs (the old functions, HEAD)
+lipid custom_assay(numeric_as_character = TRUE) via runLipidImportProcessing: result NULL = TRUE 
+   Error processing import: Invalid lipidomics import: Assay 'LCMS_Pos' has non-numeric sample columns: WT_1, WT_2, KO_1, KO_2 
+trx S1 = c("12", "3") via runTrxImportProcessing: result NULL = TRUE 
+   Error processing import: counts must be numeric (trx_counts_invalid) 
+# The parity blocks pass after the change (targeted.txt): the lipid fixture is converted, trx "12" passes, "-1" is trx_counts_negative, "x" trx_counts_invalid.
+# 3. F102-01 (found while implementing): today's metab validation runs before the conversion; on the block's input (7 of 12 sample cells empty text) it gives no missing-value warning, the core gives 'High proportion of missing values: 58.3%'
+# F102-01 today: metab text-numeric with 7 of 12 empty sample cells via runMetabImportProcessing: status success ; validation warnings: character(0)
