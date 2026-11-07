@@ -1,0 +1,9 @@
+# KIT-102: import-phase controller peak (controller.phase_peak_anon_bytes.import, GiB) against KIT-101's journeys. A rise above 10% would be a finding.
+key  kit-101  kit-102  change
+a    0.511    0.511    +0.0%
+b    0.511    0.516    +0.9%
+c    0.522    0.522    -0.0%
+m    0.726    0.726    +0.0%
+l    0.533    0.532    -0.1%
+t    0.533    0.533    -0.0%
+# All within 1%: the shared import adds no assay copy.
