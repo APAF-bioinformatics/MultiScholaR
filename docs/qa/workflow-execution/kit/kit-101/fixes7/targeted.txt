@@ -1,0 +1,58 @@
+KIT-101 F-27: targeted and dependent tests, one R process per file (pkgload::load_all of the worktree,
+kit/scripts-078/run1.R), on 12a55735 plus the F-27 changes. Not installed; R CMD check not run (message-only change,
+corpus tooling and generator outside the package).
+
+Changed sites (messages only):
+- R/func_prot_norm_optimization_helpers.R: new ruvNoValidPercentageMessage(); findBestNegCtrlPercentage's refusal
+  (reached through resolveProtRuvParameters / resolveProtNormRuvParameters for LFQ, TMT and DIA) uses it.
+- R/func_lipid_norm_ruv_optimization_helpers.R (runLipidPerAssayRuvOptimization) and R/func_metab_norm.R
+  (runPerAssayRuvOptimization): the assay's `error` uses it.
+- R/func_prot_s4_norm_methods.R, R/func_lipid_s4_ruv_methods.R, R/func_metab_s4_ruv_methods.R (ruvIII_C_Varying):
+  the refusal already named the cause; its hint now adds "filter for completeness first, or run normalisation
+  without RUV". Same condition classes.
+- Not changed: findBestNegCtrlPercentageCapped (limpa route) and the peptide sweep, which have no complete-control
+  skip rule, so their refusals cannot have this cause.
+
+Targeted (the new blocks):
+  COUNTS test-prot-ruv-sweep-imputation.R pass 25 fail 0 error 0 skip 0
+  COUNTS test-workflow-omics-ruv-complete-controls.R pass 28 fail 0 error 0 skip 0
+
+Dependents (git grep in tests/testthat for the sweeps, resolveProtRuvParameters, ruvIII_C_Varying, the refusal texts
+and the condition classes):
+  COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0
+  COUNTS test-lipid-12b-norm-ruv-helpers-shared.R pass 77 fail 0 error 0 skip 0
+  COUNTS test-lipid-12-norm-module-contracts.R pass 707 fail 0 error 0 skip 0
+  COUNTS test-metab-03b-norm-module-helper-characterization.R pass 876 fail 0 error 0 skip 3
+  COUNTS test-metab-03d-norm-module-characterization.R pass 55 fail 0 error 0 skip 1
+  COUNTS test-metab-04-ruv-optimization.R pass 53 fail 0 error 0 skip 0
+  COUNTS test-metab-norm-standalone-shared.R pass 21 fail 0 error 0 skip 0
+  COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0
+  COUNTS test-prot-04d-peptide-s4-normalization-characterization.R pass 112 fail 0 error 0 skip 0
+  COUNTS test-prot-norm-optimization-direct-shared.R pass 74 fail 0 error 0 skip 0
+  COUNTS test-workflow-omics-ruv-cancor-once.R pass 16 fail 0 error 0 skip 0
+  COUNTS test-general-filemgmt-config-contracts.R pass 52 fail 0 error 0 skip 0
+  COUNTS test-general-filemgmt-config-direct-shared.R pass 33 fail 0 error 0 skip 0
+  COUNTS test-lipid-09-s4-normalization-methods.R pass 39 fail 0 error 0 skip 0
+  COUNTS test-lipid-12c-ruv-s4-characterization.R pass 47 fail 0 error 0 skip 0
+  COUNTS test-metab-03a-ruviii-c-varying-characterization.R pass 20 fail 0 error 0 skip 0
+  COUNTS test-prot-05b-norm-module-contracts.R pass 504 fail 0 error 0 skip 9
+  COUNTS test-prot-05d-norm-module-characterization.R pass 100 fail 0 error 0 skip 10
+  COUNTS test-prot-06-ruv.R pass 35 fail 0 error 0 skip 1
+  COUNTS test-prot-ruv-replicate-structure.R pass 21 fail 0 error 0 skip 0
+  COUNTS test-prot-s4-norm-methods-direct-shared.R pass 11 fail 0 error 0 skip 1
+  COUNTS test-prot-s4-qc-direct-shared.R pass 72 fail 0 error 0 skip 0
+  COUNTS test-workflow-lipid-declarations.R pass 186 fail 0 error 1 skip 0   (environment, as at baseline)
+  COUNTS test-workflow-metab-declarations.R pass 186 fail 0 error 1 skip 0   (environment, as at baseline)
+  COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2
+  COUNTS test-workflow-ruv-pearson-diagnostic.R pass 301 fail 0 error 1 skip 6   (environment, as at baseline)
+  COUNTS test-workflow-saved-qc.R pass 120 fail 0 error 0 skip 0
+
+The three errors are the same on the unchanged baseline (git archive 12a55735, same runner, same inst/duckdb and
+src objects): the two journey blocks stop at "optional fastduckdb reader is unavailable" under load_all, and the
+ruv-pearson block "explicit native launch" needs an installed MultiScholaR beside the source tree
+(normalizePath(<parent>/MultiScholaR)). None of them reaches the changed code.
+
+Corpus tooling: tests/testthat/test-e2e-manifest.R checks recorded sha256 only; tests/testdata/e2e/generate_fixtures.R
+calls kitProteinRecipe/kitProteinMatrix without `missingness`, which takes the unchanged random branch. The
+default lfq-300 recipe regenerated into a scratch directory has the bound sha256 for all three files and the same
+manifest.json (see corpus-lfq-300-mnar.txt).

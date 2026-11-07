@@ -67,3 +67,20 @@ for (omic in names(controlCases())) {
     expect_true(isTRUE(result$one$success))
   })
 }
+
+# KIT-101 F-27: the lipid and metabolite sweeps name the same cause and remedies as proteomics' refusal.
+for (omic in names(controlCases())) {
+  test_that(paste(omic, "sweep with no complete control reports the cause and the remedies"), {
+    case <- controlCases()[[omic]]
+    object <- case$make(list(one = controlAssay("feature", 21L, complete_features = 0L)))
+    local_mocked_bindings(findBestKElbow = function(...) 2L, .package = "MultiScholaR")
+    result <- controlSweep(case, object)
+    expect_true(all(result$one$optimization_results$status == "skipped_k_exceeds_complete_controls"))
+    expect_false(isTRUE(result$one$success))
+    feature <- if (identical(omic, "lipid")) "lipids" else "metabolites"
+    expect_match(result$one$error, "No valid percentage found", fixed = TRUE)
+    expect_match(result$one$error, paste("RUV-III needs control", feature, "observed in every sample"), fixed = TRUE)
+    expect_match(result$one$error, "only 0 were (k = 2)", fixed = TRUE)
+    expect_match(result$one$error, "Filter for completeness first, lower k, or run normalisation without RUV", fixed = TRUE)
+  })
+}

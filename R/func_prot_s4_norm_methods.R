@@ -247,7 +247,7 @@ setMethod(
     complete_controls <- sum(ruvCompleteControlRows(theObject)[which(ctrl)], na.rm = TRUE)
     if (k > complete_controls) {
       cli::cli_abort(c("RUV-III cannot estimate {k} factor{?s} from {complete_controls} control protein{?s} observed in every sample",
-        i = "choose a smaller k or a larger control set"), class = "prot_ruv_insufficient_controls")
+        i = "choose a smaller k or a larger control set, filter for completeness first, or run normalisation without RUV"), class = "prot_ruv_insufficient_controls")
     }
 
     # Replicate sets: technical replicates when the design has them, else the grouping variable.

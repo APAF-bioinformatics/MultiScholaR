@@ -788,7 +788,7 @@ setMethod(
             complete_controls <- sum(colSums(!is.finite(Y_final[, which(ctrl_logical_assay), drop = FALSE])) == 0L)
             if (k_assay > complete_controls) {
                 cli::cli_abort(c("RUV-III cannot estimate {k_assay} factor{?s} from {complete_controls} control{?s} observed in every sample of assay {.val {assay_name}}.",
-                    i = "choose a smaller k or a larger control set"), class = "omics_ruv_insufficient_controls")
+                    i = "choose a smaller k or a larger control set, filter for completeness first, or run normalisation without RUV"), class = "omics_ruv_insufficient_controls")
             }
 
             # --- Call RUVIII_C_Varying ---

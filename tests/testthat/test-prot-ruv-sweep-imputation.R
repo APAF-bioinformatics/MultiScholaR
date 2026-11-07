@@ -70,3 +70,25 @@ test_that("a percentage whose elbow k exceeds its complete controls is skipped, 
     expect_true(all(viable$optimization_results$status == "ok"))
     expect_identical(viable$best_k, 1L)
 })
+
+# KIT-101 F-27 (user, 2026-11-07: "Message now, method later"): when every percentage is skipped because fewer
+# proteins than k are observed in every sample, the refusal names that cause and what the user can do.
+test_that("a sweep with no complete control protein refuses with the cause and the remedies", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    normalized <- suppressMessages(normaliseBetweenSamples(object, normalisation_method = "quantile"))
+    samples <- normalized@design_matrix[[normalized@sample_id]]
+    # Every protein misses one value: no protein is observed in every sample.
+    for (i in seq_len(nrow(normalized@protein_quant_table))) normalized@protein_quant_table[i, samples[[1L + i %% length(samples)]]] <- NA_real_
+    expect_identical(sum(ruvCompleteControlRows(normalized)), 0L)
+    settings <- list(ruv_mode = "automatic", auto_percentage_min = 40, auto_percentage_max = 42,
+        separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE)
+    refusal <- tryCatch(suppressWarnings(suppressMessages(resolveProtRuvParameters(normalized, settings, "group"))),
+        error = function(error) error)
+    expect_true(inherits(refusal, "error"))
+    text <- conditionMessage(refusal)
+    expect_match(text, "No valid percentage found", fixed = TRUE)
+    expect_match(text, "RUV-III needs control proteins observed in every sample", fixed = TRUE)
+    expect_match(text, "at every control percentage tried", fixed = TRUE)
+    expect_match(text, "only 0 were", fixed = TRUE)
+    expect_match(text, "Filter for completeness first, lower k, or run normalisation without RUV", fixed = TRUE)
+})

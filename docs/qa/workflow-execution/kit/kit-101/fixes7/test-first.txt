@@ -1,0 +1,37 @@
+KIT-101 F-27, part A (message now, method later): the RUV sweep's refusal names its cause and the remedies.
+Base: origin/performance-v2 at 12a55735. One R process per file (pkgload::load_all of the worktree, kit/scripts-078/run1.R).
+
+New blocks (written before the change):
+- tests/testthat/test-prot-ruv-sweep-imputation.R
+  "a sweep with no complete control protein refuses with the cause and the remedies": the small checkpoint
+  recipe, quantile-normalised, every protein missing one value (0 proteins observed in every sample);
+  resolveProtRuvParameters (automatic, 40-42%) -> findBestNegCtrlPercentage; no mock (the elbow k is the sweep's own).
+- tests/testthat/test-workflow-omics-ruv-complete-controls.R
+  "<metab|lipid> sweep with no complete control reports the cause and the remedies": a 300-feature assay with no
+  complete feature, elbow k mocked to 2; runPerAssayRuvOptimization / runLipidPerAssayRuvOptimization.
+
+Before the change (12a55735 + the new blocks only):
+  COUNTS test-prot-ruv-sweep-imputation.R pass 21 fail 4 error 0 skip 0
+    BAD :: a sweep with no complete control protein refuses with the cause and the remedies
+    (the refusal was "No valid percentage found. Please check your data and parameters."; the cause, "only 0 were"
+    and the remedies were absent; "No valid percentage found" matched)
+  COUNTS test-workflow-omics-ruv-complete-controls.R pass 22 fail 6 error 0 skip 0
+    BAD :: metab sweep with no complete control reports the cause and the remedies
+    BAD :: lipid sweep with no complete control reports the cause and the remedies
+    (error was "No valid percentage found")
+
+After the change:
+  COUNTS test-prot-ruv-sweep-imputation.R pass 25 fail 0 error 0 skip 0
+  COUNTS test-workflow-omics-ruv-complete-controls.R pass 28 fail 0 error 0 skip 0
+
+The refusal now reads (the prot test case, printed by resolveProtRuvParameters):
+  No valid percentage found: RUV-III needs control proteins observed in every sample; at every control percentage
+  tried (40-42%), only 0 were (k = 2). Filter for completeness first, lower k, or run normalisation without RUV.
+When only some percentages were skipped for that cause it says "at N of the M control percentages tried"; ranges
+are shown where the counts or k differ across percentages. Lipid and metabolite say "control lipids" /
+"control metabolites" in the assay's `error` (shown in the combined RUV table as "Failed: <error>").
+
+Unchanged: any sweep with no percentage skipped for this cause keeps its exact old refusal (proteomics
+"No valid percentage found. Please check your data and parameters.", lipid/metab "No valid percentage found");
+the decision, the trace and every computed value are untouched (the counts are recomputed in the refusal path only,
+by the same expression as the skip rule). The successful path executes no new code.

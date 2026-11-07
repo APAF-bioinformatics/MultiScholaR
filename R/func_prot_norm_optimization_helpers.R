@@ -351,6 +351,36 @@ ruvCompleteControlRows <- function(theObject) {
   rowSums(!is.finite(values)) == 0L
 }
 
+#' The refusal of an RUV percentage sweep that found no valid percentage (KIT-101 F-27)
+#'
+#' When percentages were skipped because their elbow k exceeded the controls observed in every sample
+#' (KIT-005), the refusal names that cause and what the user can do; otherwise it is `NULL` and the caller
+#' keeps its existing refusal. Message only: the sweep's decision is unchanged.
+#' @param percentages,status,best_k Per tested percentage, from the sweep's trace.
+#' @param complete_controls Per tested percentage, the controls observed in every sample (NA where not counted).
+#' @param feature_label Plural feature noun, e.g. `"proteins"`.
+#' @return A single string, or `NULL` when no percentage was skipped for that cause.
+#' @noRd
+ruvNoValidPercentageMessage <- function(percentages, status, best_k, complete_controls, feature_label) {
+  skipped <- status %in% "skipped_k_exceeds_complete_controls"
+  if (!any(skipped)) {
+    return(NULL)
+  }
+  spanText <- \(x) {
+    x <- range(x, na.rm = TRUE)
+    if (x[[1L]] == x[[2L]]) format(x[[1L]]) else paste0(x[[1L]], "-", x[[2L]])
+  }
+  tried <- if (all(skipped)) {
+    "at every control percentage tried"
+  } else {
+    sprintf("at %d of the %d control percentages tried", sum(skipped), length(skipped))
+  }
+  sprintf(paste0("No valid percentage found: RUV-III needs control %s observed in every sample; %s (%s%%), ",
+    "only %s were (k = %s). Filter for completeness first, lower k, or run normalisation without RUV."),
+    feature_label, tried, spanText(percentages[skipped]), spanText(complete_controls[skipped]),
+    spanText(best_k[skipped]))
+}
+
 #' The technical replicate block of a design, from the object's one declaration (KIT-035)
 #'
 #' The protein object declares its technical replicate column once (`technical_replicate_id`, set by the design
@@ -953,7 +983,13 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     )
 
   if (nrow(valid_df) == 0L) {
-    stop("No valid percentage found. Please check your data and parameters.")
+    complete_counts <- vapply(all_results, \(r) {
+      if (!identical(r$status, "skipped_k_exceeds_complete_controls")) return(NA_integer_)
+      sum(complete_rows[which(r$control_genes_index)], na.rm = TRUE)
+    }, integer(1L))
+    refusal <- ruvNoValidPercentageMessage(results$percentage_requested, results$status, results$best_k,
+      complete_counts, "proteins")
+    stop(if (is.null(refusal)) "No valid percentage found. Please check your data and parameters." else refusal)
   }
 
   best_percentage <- valid_df$percentage_requested[[1L]]

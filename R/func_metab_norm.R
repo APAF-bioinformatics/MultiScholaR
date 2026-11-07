@@ -680,6 +680,13 @@ runPerAssayRuvOptimization <- function(
 
             if (nrow(valid_df) == 0L) {
                 logger::log_warn(paste("RUV: no valid percentage for assay:", assay_name))
+                refusal <- ruvNoValidPercentageMessage(optimization_results$percentage_requested
+                    , optimization_results$status
+                    , optimization_results$best_k
+                    , vapply(assay_pct_rows, function(row) {
+                        if (identical(row$status, "skipped_k_exceeds_complete_controls")) omicsRuvCompleteControlCount(complete_rows, row$ctrl_indices) else NA_integer_
+                    }, integer(1L))
+                    , "metabolites")
                 return(list(
                     success                  = FALSE
                     , best_k                 = NA_integer_
@@ -691,7 +698,7 @@ runPerAssayRuvOptimization <- function(
                     , separation_score       = NA_real_
                     , composite_score        = NA_real_
                     , optimization_results   = optimization_results
-                    , error                  = "No valid percentage found"
+                    , error                  = refusal %||% "No valid percentage found"
                 ))
             }
 
