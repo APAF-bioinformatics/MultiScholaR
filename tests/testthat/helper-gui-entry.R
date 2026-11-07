@@ -450,6 +450,10 @@ guiEntryReadDesign <- function(api) {
   utils::read.delim(file.path(api$inputs$dir, "design.tsv"), stringsAsFactors = FALSE, check.names = FALSE)
 }
 
+# KIT-101 rev 2.2: the trx lane has no QC refusal. The expression filter's F-11 message is not reachable through
+# mod_transcriptomics_server: the QC sub-module servers start only after the design (mod_lipid_qc_server's
+# qc_trigger), so a click before the import reaches no observer, and the filter observer, created later without
+# ignoreInit, then runs that earlier click at the design (development run on 2cfe18a1).
 guiEntryTrxSteps <- function(lane) {
   profile <- trxOmicProfile()
   ui <- function(fn) function(id) fn(id, profile = profile)
@@ -467,14 +471,6 @@ guiEntryTrxSteps <- function(lane) {
       api$upload("import-assay1_file_std", bad)
       api$set(list(`import-process_import` = 1L))
     }),
-    guiEntryStep("qc_refusal", "qc", refusal = "silent", function(api) {
-      # KIT-101 rev 2.2 (F-11): the expression filter before the count data are imported. The filter's message
-      # (mod_trx_qc_filter.R) is not reachable through mod_transcriptomics_server: the QC sub-module servers start
-      # only after the design (mod_lipid_qc_server's qc_trigger), so before the import the click reaches no observer.
-      # Recorded as today's behaviour, a silent refusal (development run on ba019048 + 83160cc9: no notification).
-      api$defaults(mod_trx_qc_filter_ui, "qc-filter")
-      api$set(list(`qc-filter-apply_filter` = 1L))
-    }),
     guiEntryStep("import", "import", function(api) {
       api$upload("import-assay1_file_std", file.path(api$inputs$dir, "counts.tsv"))
       api$set(list(`import-process_import` = 2L))
@@ -488,7 +484,7 @@ guiEntryTrxSteps <- function(lane) {
     }),
     guiEntryStep("qc_filter", "qc", function(api) {
       api$defaults(mod_trx_qc_filter_ui, "qc-filter")
-      api$set(list(`qc-filter-apply_filter` = 2L))
+      api$set(list(`qc-filter-apply_filter` = 1L))
     }),
     guiEntryStep("qc_finalize", "qc", function(api) {
       api$defaults(ui(mod_lipid_qc_s4_ui), "qc-s4_finalize")
