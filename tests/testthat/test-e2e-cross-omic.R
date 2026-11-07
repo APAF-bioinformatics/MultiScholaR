@@ -177,7 +177,8 @@ test_that("load_cross_omic_fixture preserves lane metadata fields", {
     prot_lane <- fixture$lanes[["prot_dia"]]
     expect_equal(prot_lane$omic_type, "proteomics")
     expect_equal(prot_lane$import_tool, "diann")
-    expect_equal(prot_lane$sample_count, 6L)
+    # KIT-101 F-07: the richer prot_dia fixture has 8 samples (4 per group; was 6).
+    expect_equal(prot_lane$sample_count, 8L)
 })
 
 # ---- Cross-reference: manifest cross_omic_packs fields ----
