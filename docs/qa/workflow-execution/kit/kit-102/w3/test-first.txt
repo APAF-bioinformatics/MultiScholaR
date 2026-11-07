@@ -1,0 +1,66 @@
+# KIT-102 W3 test-first: tests/testthat/test-prot-import-core.R before the implementation
+# HEAD 60334e4b (origin/performance-v2, includes W1 165ef779), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1; runner kit/scripts-078/run1.R <tree> <file> v; R_LIBS = core/browser-smoke.rvol2q/library.
+# Recorded 2026-11-08.
+# Expected to fail first:
+#   - the location block (P1 to P6 are still in R/mod_prot_import_*; importProteomicsData is absent);
+#   - importProteomicsData (absent);
+#   - the PD-TMT parity (text abundances stay character, a text "0" stays "0"; a numeric/text mix breaks the pivot);
+#   - the PD-TMT P-05 block (an all-text file with one non-numeric column imports as character today; after the
+#     change its numeric-like column is converted and the pivot refuses the mix: an import that fails either way);
+#   - the Spectronaut parity (PG.Quantity and PEP.Quantity stay character).
+# Expected to pass at base (guards): back-reference #1 (prepareDIAGUIReferences records the import metadata),
+# back-reference #2 (transformDIADesignTable reads the samples from the import metadata, no assay scan), and the
+# DIA-NN, FragPipe and MaxQuant digests, which were recorded at this commit.
+# Observed: 5 of 8 blocks fail or error, 3 pass, as expected.
+
+COUNTS test-prot-import-core.R pass 18 fail 6 error 2 skip 0
+  BAD test-prot-import-core.R :: P1 to P6 are defined in the proteomics core files, with their names kept
+  BAD test-prot-import-core.R :: importProteomicsData reads by format with the options as a list; the GUI name delegates to it
+  BAD test-prot-import-core.R :: PD-TMT parity: text-numeric Excel abundances import as doubles and a text 0 is NA (F-26)
+  BAD test-prot-import-core.R :: PD-TMT leaves a non-numeric abundance column unconverted (P-05), so the pivot refuses the mix
+  BAD test-prot-import-core.R :: Spectronaut parity: a character, numeric-like quantity column is converted to doubles
+--- P1 to P6 are defined in the proteomics core files, with their names kept
+ Expected `found` to be identical to `protImportCoreDefinitions`.
+Differences:
+actual vs expected
+- readProtImportParquetSchema"mod_prot_import_detection_helpers.R"
++ readProtImportParquetSchema"func_prot_import_detection.R"
+- readProtImportHeaders"mod_prot_import_detection_helpers.R"
++ readProtImportHeaders"func_prot_import_detection.R"
+- importProteomicsDataNA
++ importProteomicsData"func_prot_import_readers.R"
+- sanitizeProtImportTable"mod_prot_import_processing_helpers.R"
++ sanitizeProtImportTable"utils_workflow_dia_sessions.R"
+- describeProtImportData"mod_prot_import_processing_helpers.R"
++ describeProtImportData"utils_workflow_dia_sessions.R"
+- recordDIAImportMetadata"mod_prot_import_processing_helpers.R"
++ recordDIAImportMetadata"utils_workflow_dia_sessions.R"
+- getDIAImportMetadata"mod_prot_import_processing_helpers.R"
++ getDIAImportMetadata"utils_workflow_dia_sessions.R"
+- process   (truncated by the runner at 900 characters)
+--- importProteomicsData reads by format with the options as a list; the GUI name delegates to it
+ Error in `importProteomicsData(format, "report.tsv", list(), readers = readers)`: could not find function "importProteomicsData"
+--- PD-TMT parity: text-numeric Excel abundances import as doubles and a text 0 is NA (F-26)
+ Expected `text$data$Abundance` to have type "double".
+Actual type: "character"
+--- PD-TMT parity: text-numeric Excel abundances import as doubles and a text 0 is NA (F-26)
+ Expected `text$data$Abundance` to be identical to `c(10, 5.5, NA, NA)`.
+Differences:
+`actual` is a character vector ('10', '5.5', '0', NA)
+`expected` is a double vector (10, 5.5, NA, NA)
+--- PD-TMT parity: text-numeric Excel abundances import as doubles and a text 0 is NA (F-26)
+ Error: Failed to pivot data: Can't combine `126_Sample_A` <double> and `127N_Sample_B` <character>.
+--- PD-TMT leaves a non-numeric abundance column unconverted (P-05), so the pivot refuses the mix
+ Expected `suppressMessages(importProteomeDiscovererTMTData(path))` to throw a error.
+--- Spectronaut parity: a character, numeric-like quantity column is converted to doubles
+ Expected `protein$data$PG.Quantity` to be identical to `c(12.5, 3, NA)`.
+Differences:
+`actual` is a character vector ('12.5', ' 3', '')
+`expected` is a double vector (12.5, 3, NA)
+--- Spectronaut parity: a character, numeric-like quantity column is converted to doubles
+ Expected `peptide$data$PEP.Quantity` to be identical to `c(4, NA, 0.5)`.
+Differences:
+`actual` is a character vector ('4', NA, '0.5')
+`expected` is a double vector (4, NA, 0.5)
+exit=0 elapsed=7s file=tests/testthat/test-prot-import-core.R

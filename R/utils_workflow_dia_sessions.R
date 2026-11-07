@@ -1083,6 +1083,86 @@ stageDIAGUIReferenceOwner <- function(native, experiment_paths) {
     manager
 }
 
+#' Apply the existing run-name mapping before a durable GUI handoff.
+#' @param table Imported table; all non-Run values and attributes are retained.
+#' @param run_col Configured run column.
+#' @param make_clean_names Existing sanitizer, injectable for parity tests.
+#' @return Table and number of unique names; NULL count means no run column.
+#' @noRd
+sanitizeProtImportTable <- function(table, run_col, make_clean_names = janitor::make_clean_names) {
+    if (is.null(run_col) || !run_col %in% names(table)) return(list(data = table, count = NULL))
+    original <- unique(as.character(table[[run_col]]))
+    mapping <- stats::setNames(make_clean_names(original), original)
+    table[[run_col]] <- mapping[as.character(table[[run_col]])]
+    list(data = table, count = length(original))
+}
+
+#' Describe import results without retaining the source table in the summary.
+#' @param result Existing public import result.
+#' @return Small counts used by the existing setup log and completion message.
+#' @noRd
+describeProtImportData <- function(result) {
+    count <- function(column) {
+        if (is.null(column) || !column %in% names(result$data)) return(NA)
+        length(unique(result$data[[column]]))
+    }
+    list(n_rows = nrow(result$data), n_runs = count(result$column_mapping$run_col),
+        n_proteins = count(result$column_mapping$protein_col),
+        n_peptides = count(result$column_mapping$peptide_col))
+}
+
+#' Store bounded import/design metadata beside its immutable source reference.
+#' @param manager Active DIA manager.
+#' @param table Sanitized imported table, already validated for persistence.
+#' @param result Original import result; used only to preserve original counts.
+#' @param reference Committed imported-table reference.
+#' @return Bounded metadata, with no abundance columns or parser pointers.
+#' @noRd
+recordDIAImportMetadata <- function(manager, table, result, reference) {
+    mapping <- result$column_mapping
+    columns <- intersect(c(mapping$run_col, "Batch"), names(table))
+    samples <- dplyr::distinct(table[, columns, drop = FALSE])
+    samples <- structure(lapply(samples, identity), names = names(samples), class = "data.frame",
+        row.names = .set_row_names(nrow(samples)))
+    quantities <- unique(Filter(Negate(is.null), mapping[c("norm_quantity_col", "raw_quantity_col", "quantity_col")]))
+    quantities <- unlist(quantities, use.names = FALSE)
+    quantities <- quantities[quantities %in% names(table)]
+    metadata <- list(data = NULL, reference_id = reference$entity_id, data_type = result$data_type,
+        column_mapping = mapping, import_summary = describeProtImportData(result),
+        samples = samples, numeric_columns = quantities,
+        needs_numeric = quantities[vapply(table[quantities], function(column)
+            !is.double(column) || !is.null(attributes(column)), logical(1))],
+        protein_ids = if (!is.null(mapping$protein_col) && mapping$protein_col %in% names(table))
+            unique(table[[mapping$protein_col]]) else NULL)
+    if (as.numeric(object.size(metadata)) > manager$.context$store$max_metadata_bytes) {
+        cli::cli_abort("DIA import metadata exceeds its bounded allowance", class = "saved_entity_limit")
+    }
+    snapshot <- manager$.context$snapshot
+    snapshot$import_metadata <- saveDIAStateValue(manager$.context, metadata,
+        "import-metadata", codec = "rds")
+    publishDIAStateHead(manager$.context, snapshot)
+    manager$.context$import_metadata_cache <- list(reference = snapshot$import_metadata, value = metadata)
+    metadata
+}
+
+#' Read the bounded import summary without reading its source assay.
+#' @param manager Current DIA owner.
+#' @return Metadata or NULL; only this immutable bounded record is retained.
+#' @noRd
+getDIAImportMetadata <- function(manager) {
+    context <- manager$.context
+    reference <- context$snapshot$import_metadata
+    if (is.null(reference)) return(NULL)
+    cached <- context$import_metadata_cache
+    if (identical(cached$reference, reference)) return(cached$value)
+    metadata <- resolveDIAStateValue(context, reference)
+    if (as.numeric(object.size(metadata)) > context$store$max_metadata_bytes) {
+        cli::cli_abort("DIA import metadata exceeds its bounded allowance", class = "saved_entity_limit")
+    }
+    context$import_metadata_cache <- list(reference = reference, value = metadata)
+    metadata
+}
+
 #' Prepare immutable GUI roots before adoption or a resident checkpoint export.
 #' @param manager,workflow_data Staged owner and current GUI values.
 #' @return Named saved GUI roots.
