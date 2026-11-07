@@ -1173,6 +1173,20 @@ if (!is.null(b$builds$kit_100) && !is.null(b$tickets[["094a"]]) && !is.null(b$ti
     b$tickets[["100c"]] <- utils::modifyList(b$tickets[["098a"]], c(kit_100, list(notebook_reference = NULL)))
 }
 
+# KIT-101 (the GUI workover's baseline ticket; its fixes F-01..F-27): the screen journeys on the final kit_101 build,
+# recorded and uncounted, against the oracles the earlier tickets bound: 101a lipid (lipid86s), 101b metab (metab86s),
+# 101c transcriptomics (trx98a, 098a's settings), and the proteomics screen routes 101m DIA_LIMPA (limpa65_screen),
+# 101l LFQ (lfq65_fixture, no zero intensities) and 101t TMT (tmt65_fixture).
+if (!is.null(b$builds$kit_101) && !is.null(b$tickets[["094a"]]) && !is.null(b$tickets[["098a"]]) && !is.null(b$tickets[["065m"]])) {
+    kit_101 <- list(build = "kit_101", purpose = "exactness (recorded, uncounted; KIT-101)")
+    b$tickets[["101a"]] <- utils::modifyList(b$tickets[["094a"]], kit_101)
+    b$tickets[["101b"]] <- utils::modifyList(b$tickets[["094b"]], kit_101)
+    b$tickets[["101c"]] <- utils::modifyList(b$tickets[["098a"]], c(kit_101, list(notebook_reference = NULL)))
+    b$tickets[["101m"]] <- utils::modifyList(b$tickets[["065m"]], kit_101)
+    if (!is.null(b$tickets[["065l"]])) b$tickets[["101l"]] <- utils::modifyList(b$tickets[["065l"]], kit_101)
+    if (!is.null(b$tickets[["065t"]])) b$tickets[["101t"]] <- utils::modifyList(b$tickets[["065t"]], kit_101)
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
