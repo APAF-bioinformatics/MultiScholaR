@@ -23,6 +23,15 @@
 # `utils_workflow_dia_state.R` and the proteomics annotation files) and made the ones every omic
 # carries required (`validate`, `build_object`, `group_levels`; the feature-table import's
 # `reader`, `record_design_file` and `check_files_first`), as KIT-102 W7 did for the import.
+#
+# KIT-104 W1 adds the `qc` group (design 4.6) with the values the QC tab and its sub-tabs have at
+# HEAD b423b764 (R/ unchanged since f0e90318, the QC files since 321c2294), with their file:line
+# there: the title, the tabset, the groups of sub-tabs (a component id each: the shared sub-tabs
+# `omic_qc_*`, trx's filter plugin and proteomics' plugins, `mod_<component>_ui/server`), the start
+# and completion, the tracking figure, the ITSD analysis, the finalise's per-omic differences, and
+# the texts and notification ids the shared sub-tabs render per omic. Fields whose functions are
+# still in R/mod_*.R (trx's `filtering_figure`; every `finalize_alignment`, which W2 writes) are
+# absent and optional until KIT-104 W8 wires them.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -30,7 +39,7 @@
 
 #' The shared GUI layer's configuration of one omic, validated.
 #' @param omic_type One of `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
-#' @return A plain list with the groups `shell`, `binding`, `import` and `design`.
+#' @return A plain list with the groups `shell`, `binding`, `import`, `design` and `qc`.
 #' @noRd
 omicGuiConfig <- function(omic_type) {
     builders <- list(proteomics = omicGuiConfigProteomics, lipidomics = omicGuiConfigLipidomics,
@@ -56,12 +65,13 @@ validateOmicGuiConfig <- function(config) {
     if (!is.list(config)) omicGuiConfigAbort("config", "must be a list")
     schema <- omicGuiConfigSchema()
     groups <- c(shell = "named_list", binding = "named_list", import = "named_list",
-        design = "named_list")
+        design = "named_list", qc = "named_list")
     checkOmicGuiFields(config, groups)
     validateOmicGuiShell(config$shell, schema)
     validateOmicGuiBinding(config$binding, config$shell$omic_type, schema)
     validateOmicGuiImport(config$import, schema)
     validateOmicGuiDesign(config$design, config, schema)
+    validateOmicGuiQc(config$qc, config$shell$routes, schema)
     invisible(config)
 }
 
@@ -115,7 +125,32 @@ omicGuiConfigSchema <- function() {
             preflight = "lgl1", state_description = "chr1", reader = "ref",
             record_design_file = "lgl1", check_files_first = "lgl1"),
         id_candidates = c(id = "chr", annotation = "chr"),
-        dia_design = c(initial_state = "ref", rename = "ref", subset = "ref", commit = "chr1")
+        dia_design = c(initial_state = "ref", rename = "ref", subset = "ref", commit = "chr1"),
+        # KIT-104 W1 (design 4.6). `complete_state` and `itsd` are NULL where the omic has none.
+        qc = c(title = "chr1", tabset_id = "by_route", groups = "list", auto_init = "lgl1",
+            complete_state = "route_map_or_null", itsd = "named_list_or_null", texts = "named_chr0",
+            notification_ids = "named_chr0"),
+        # Required at KIT-104 W8, once their functions are in the core (absent until then).
+        qc_optional = c(filtering_figure = "ref", finalize_alignment = "ref"),
+        qc_group = c(id = "chr1_or_null", title = "chr1_or_null", component = "chr1_or_null",
+            tabs = "list"),
+        qc_tab = c(id = "chr1", title = "chr1", component = "chr1", routes = "chr",
+            needs_paths = "lgl1"),
+        # Required with the shared finalise sub-tab.
+        qc_finalize = c(finalize_zero_rows = "lgl1", finalize_opens_norm = "lgl1",
+            finalize_per_assay = "lgl1"),
+        qc_itsd = c(name_columns = "chr", metrics = "ref", quant = "ref", tip = "chr1"),
+        # The texts and the notification ids each shared sub-tab renders, by its component.
+        qc_texts = list(
+            omic_qc_intensity = c("intensity_heading", "intensity_help", "intensity_proportion_help",
+                "intensity_original_label", "intensity_working", "intensity_result_heading",
+                "intensity_total", "intensity_success", "intensity_error"),
+            omic_qc_duplicates = c("duplicates_help", "duplicates_none"),
+            omic_qc_itsd = "itsd_pattern_help",
+            omic_qc_finalize = c("finalize_total_label", "finalize_id_label", "finalize_total",
+                "finalize_no_assays", "finalize_no_design")),
+        qc_notifications = c(omic_qc_intensity = "intensity", omic_qc_duplicates = "duplicates",
+            omic_qc_itsd = "itsd")
     )
 }
 
@@ -219,6 +254,75 @@ validateOmicGuiDesignImport <- function(design_import, schema) {
     invisible(design_import)
 }
 
+#' The qc group (design 4.6): its fields; per-route values naming the omic's routes; the groups of
+#' sub-tabs; and what the shared sub-tabs on them need (the finalise fields, the ITSD analysis, the
+#' texts and the notification ids).
+#' @param routes The omic's routes (`shell$routes`).
+#' @noRd
+validateOmicGuiQc <- function(qc, routes, schema) {
+    checkOmicGuiFields(qc, schema$qc, "qc")
+    checkOmicGuiFields(qc, schema$qc_optional, "qc", required = FALSE)
+    if (length(qc$tabset_id) > 1L && !setequal(names(qc$tabset_id), routes)) {
+        omicGuiConfigAbort("qc$tabset_id", "must name each of the omic's routes")
+    }
+    if (!all(names(qc$complete_state) %in% routes)) {
+        omicGuiConfigAbort("qc$complete_state", "must name only the omic's routes")
+    }
+    components <- validateOmicGuiQcGroups(qc$groups, routes, schema)
+    if ("omic_qc_finalize" %in% components) {
+        checkOmicGuiFields(qc, schema$qc_finalize, "qc")
+        if (qc$finalize_per_assay) checkOmicGuiFields(qc$texts, c(finalize_count_column = "chr1"), "qc$texts")
+    }
+    if ("omic_qc_itsd" %in% components) {
+        if (is.null(qc$itsd)) omicGuiConfigAbort("qc$itsd", "is required by the ITSD sub-tab")
+        checkOmicGuiFields(qc$itsd, schema$qc_itsd, "qc$itsd")
+    }
+    for (component in intersect(components, names(schema$qc_texts))) {
+        keys <- schema$qc_texts[[component]]
+        checkOmicGuiFields(qc$texts, stats::setNames(rep("chr1", length(keys)), keys), "qc$texts")
+    }
+    for (component in intersect(components, names(schema$qc_notifications))) {
+        checkOmicGuiFields(qc$notification_ids,
+            stats::setNames("chr1", schema$qc_notifications[[component]]), "qc$notification_ids")
+    }
+    invisible(qc)
+}
+
+#' The QC groups: one unnamed group of flat tabs (lipid, metab, trx), or named groups rendered by
+#' their group plugins (proteomics); tab ids unique within a group, tab routes the omic's.
+#' @return The components the groups' tabs name.
+#' @noRd
+validateOmicGuiQcGroups <- function(groups, routes, schema) {
+    for (i in seq_along(groups)) {
+        path <- sprintf("qc$groups[[%d]]", i)
+        checkOmicGuiFields(groups[[i]], schema$qc_group, path)
+        if (!is.null(groups[[i]]$id) && (is.null(groups[[i]]$title) || is.null(groups[[i]]$component))) {
+            omicGuiConfigAbort(path, "is a named group, so it needs a title and a component")
+        }
+        tabs <- groups[[i]]$tabs
+        for (j in seq_along(tabs)) {
+            checkOmicGuiFields(tabs[[j]], schema$qc_tab, sprintf("%s$tabs[[%d]]", path, j))
+            if (!all(tabs[[j]]$routes %in% routes)) {
+                omicGuiConfigAbort(sprintf("%s$tabs[[%d]]$routes", path, j), "must name only the omic's routes")
+            }
+        }
+        ids <- vapply(tabs, `[[`, character(1), "id")
+        if (anyDuplicated(ids)) {
+            omicGuiConfigAbort(paste0(path, "$tabs$id"),
+                sprintf("must be unique within the group (repeated: %s)", ids[anyDuplicated(ids)]))
+        }
+    }
+    unnamed <- vapply(groups, function(group) is.null(group$id), logical(1))
+    if (any(unnamed) && length(groups) > 1L) {
+        omicGuiConfigAbort("qc$groups", "may hold an unnamed group only as its one group")
+    }
+    ids <- unlist(lapply(groups, `[[`, "id"))
+    if (anyDuplicated(ids)) {
+        omicGuiConfigAbort("qc$groups$id", sprintf("must be unique (repeated: %s)", ids[anyDuplicated(ids)]))
+    }
+    unique(unlist(lapply(groups, function(group) vapply(group$tabs, `[[`, character(1), "component"))))
+}
+
 #' Check the fields a schema names: present (when required) and of their type.
 #' @param values The list holding the fields.
 #' @param schema Named character vector: field name to type code.
@@ -242,7 +346,8 @@ checkOmicGuiFields <- function(values, schema, path = NULL, required = TRUE) {
 #' Whether a value has a schema type: `chr1` one non-empty string; `chr1_or_null`; `chr` a
 #' non-empty character vector; `chr0` a character vector; `named_chr`; `named_chr0` a possibly
 #' empty named character vector; `by_route` one non-empty string, or non-empty strings named by
-#' route; `lgl1`; `ref` a function; `ref_or_null`; `refs` a named list of functions; `list` a
+#' route; `route_map_or_null` NULL, or non-empty strings named by route (a route not named has no
+#' value); `lgl1`; `ref` a function; `ref_or_null`; `refs` a named list of functions; `list` a
 #' non-empty list; `named_list`; `named_list_or_null`.
 #' @noRd
 omicGuiFieldHasType <- function(value, type) {
@@ -259,6 +364,8 @@ omicGuiFieldHasType <- function(value, type) {
         named_chr0 = is_chr && named,
         by_route = is_chr && length(value) >= 1L && all(nzchar(value)) &&
             (length(value) == 1L || named),
+        route_map_or_null = is.null(value) ||
+            (is_chr && length(value) >= 1L && all(nzchar(value)) && !is.null(names(value)) && named),
         lgl1 = is.logical(value) && length(value) == 1L && !is.na(value),
         ref = is.function(value),
         ref_or_null = is.null(value) || is.function(value),
@@ -415,6 +522,63 @@ omicGuiFeatureDesignImport <- function(annotation_candidates, qc_baseline, prefl
         check_files_first = check_files_first)
 }
 
+#' One QC sub-tab: its module id, title and component (`mod_<component>_ui/server`), the routes it
+#' shows on, and whether its server takes the experiment paths (proteomics' protein specs).
+#' @noRd
+omicGuiQcTab <- function(id, title, component, routes, needs_paths = FALSE) {
+    list(id = id, title = title, component = component, routes = routes, needs_paths = needs_paths)
+}
+
+#' The QC sub-tabs of lipid and metab: one unnamed group of the four shared sub-tabs, under today's
+#' module ids and titles (mod_lipid_qc.R:58-84, :120-125, the titles at mod_lipid_qc_intensity.R:41,
+#' mod_lipid_qc_duplicates.R:42, mod_lipid_qc_itsd.R:41, mod_lipid_qc_s4.R:43; the same in
+#' mod_metab_qc.R:53-80, :116-121 and the metab sub-tab UIs).
+#' @noRd
+omicGuiFeatureQcGroups <- function(route) {
+    list(list(id = NULL, title = NULL, component = NULL, tabs = list(
+        omicGuiQcTab("intensity", "Intensity Filter", "omic_qc_intensity", route),
+        omicGuiQcTab("duplicates", "Duplicate Resolution", "omic_qc_duplicates", route),
+        omicGuiQcTab("itsd", "Internal Standards", "omic_qc_itsd", route),
+        omicGuiQcTab("s4_finalize", "Finalize QC", "omic_qc_finalize", route))))
+}
+
+#' The texts of lipid's and metab's QC sub-tabs, which differ only in the feature noun and the class
+#' (lipid at b423b764: mod_lipid_qc_intensity.R:46, :47, :70; mod_lipid_qc_intensity_server_helpers.R
+#' :22, :150, :202, :219, :235, :263; mod_lipid_qc_duplicates.R:48;
+#' mod_lipid_qc_duplicates_server_helpers.R:26; mod_lipid_qc_itsd.R:57; mod_lipid_qc_s4.R:191, :203,
+#' :251, :325, :366, :372. Metab: mod_metab_qc_intensity.R:46, :47, :70, :131, :364, :256, :265,
+#' :310, :429; mod_metab_qc_duplicates_ui.R:24; mod_metab_qc_duplicates_ui_helpers.R:57;
+#' mod_metab_qc_itsd_ui.R:25; mod_metab_qc_s4_server_helpers.R:60, :72, :194, :292, :338, :344).
+#' `%d` stands for today's counts, in today's order.
+#' @param noun The feature noun (`lipid`, `metabolite`).
+#' @noRd
+omicGuiFeatureQcTexts <- function(noun, class) {
+    capitalised <- paste0(toupper(substr(noun, 1L, 1L)), substring(noun, 2L))
+    plural <- paste0(noun, "s")
+    c(intensity_heading = paste(capitalised, "Intensity Filter Parameters"),
+        intensity_help = sprintf(paste("Filter %s based on intensity thresholds. %ss with low intensities",
+            "across many samples will be removed."), plural, capitalised),
+        intensity_proportion_help = sprintf(paste("Remove %s where this proportion of samples are below the",
+            "intensity threshold (default: 0.5)"), plural),
+        intensity_original_label = sprintf("Original %s:", plural),
+        intensity_working = sprintf("Applying %s intensity filter...", noun),
+        intensity_result_heading = paste(capitalised, "Intensity Filter Applied Successfully"),
+        intensity_total = sprintf("Total: %%d -> %%d %s (removed %%d)", plural),
+        intensity_success = sprintf("Intensity filter applied: %%d %s retained", plural),
+        intensity_error = sprintf("Error applying %s intensity filter:", noun),
+        duplicates_help = sprintf(paste("Identify and resolve duplicate %s IDs within each assay. Duplicates",
+            "are resolved by keeping the feature with the highest average intensity across samples."), noun),
+        duplicates_none = sprintf("All %s IDs are unique. No resolution needed.", noun),
+        itsd_pattern_help = sprintf(paste("Regular expression to identify internal standards in %s IDs.",
+            "Leave empty to use pattern from S4 object."), noun),
+        finalize_total_label = sprintf("Total %ss:", capitalised),
+        finalize_id_label = sprintf("%s ID Column:", capitalised),
+        finalize_count_column = paste0(capitalised, "s"),
+        finalize_total = sprintf("Total %s retained: %%d", plural),
+        finalize_no_assays = sprintf("Current %s object has no assay data to finalize.", class),
+        finalize_no_design = sprintf("Current %s object has no design matrix rows to finalize.", class))
+}
+
 #' The lipid assay-name rule and messages (lipid `processing`:443-468; now
 #' `validateOmicsImportAssayNames()`): a second name needs a second file and the reverse. Trx runs
 #' the same rule (`processing`:652).
@@ -448,7 +612,61 @@ omicGuiConfigProteomics <- function() {
             owner = createDIASessionOwner, read_state = readDIAStateMetadata,
             read_metadata = readDIAStateMetadata),
         import = omicGuiProteomicsImport(),
-        design = omicGuiProteomicsDesign())
+        design = omicGuiProteomicsDesign(),
+        qc = omicGuiProteomicsQc())
+}
+
+#' The proteomics QC tab (mod_prot_qc.R, mod_prot_qc_peptide.R, mod_prot_qc_protein.R at b423b764):
+#' the peptide and protein groups, rendered by their group plugins `mod_prot_qc_{peptide,protein}`,
+#' each tab one of the 17 sub-tab plugins with the routes it shows on. The tabs per route are
+#' today's spec tables (`getProtQcPeptideModuleSpecs`, :28-84; `getProtQcProteinModuleSpecs`,
+#' :27-87): a tab's component is its `uiFn`/`serverFn` stem; `needs_paths` is the protein specs'
+#' `needsExperimentPaths` (the peptide runner passes the paths by name when it has them, :96-103).
+#' TMT and LFQ show the protein group only (mod_prot_qc.R:98-133). The sub-tabs start on the
+#' design's trigger only (:150-201); QC completes on `protein_replicate_filtered` (:204-216), which
+#' the DIA_LIMPA route never reaches (P-16, fixed by KIT-104 W7).
+#' @noRd
+omicGuiProteomicsQc <- function() {
+    peptide <- function(id, title, stem, routes) {
+        omicGuiQcTab(id, title, paste0("prot_qc_peptide_", stem), routes)
+    }
+    protein <- function(id, title, stem, routes) {
+        omicGuiQcTab(id, title, paste0("prot_qc_protein_", stem), routes, needs_paths = TRUE)
+    }
+    dia <- c("DIA", "DIA_LIMPA")
+    common <- c("DIA", "TMT", "LFQ")
+    list(title = "Quality Control & Filtering", # mod_prot_qc.R:43
+        # mod_prot_qc.R:121, :130 (TMT, LFQ), :138 (DIA, DIA_LIMPA)
+        tabset_id = c(DIA = "qc_tabs_lfq", DIA_LIMPA = "qc_tabs_lfq", TMT = "qc_tabs_tmt",
+            LFQ = "qc_tabs_tmt"),
+        groups = list(
+            # mod_prot_qc.R:140; mod_prot_qc_peptide.R:32-38 (DIA_LIMPA), :40-83 (DIA)
+            list(id = "peptide_qc", title = "Peptide QC", component = "prot_qc_peptide", tabs = list(
+                peptide("qvalue_filter", "Q-Value Filter", "qvalue", dia),
+                peptide("protein_peptide_filter", "Protein Evidence", "protein", "DIA"),
+                peptide("rollup", "Precursor Rollup", "rollup", dia),
+                peptide("intensity_filter", "Intensity Filter", "intensity", "DIA"),
+                peptide("sample_filter", "Sample Quality", "sample", "DIA"),
+                peptide("replicate_filter", "Replicate Filter", "replicate", "DIA"),
+                peptide("imputation", "Imputation", "impute", "DIA"),
+                peptide("log2_matrix", "Log2 Matrix", "log2", "DIA_LIMPA"),
+                peptide("accession_cleanup", "Peptide Accession Cleanup", "accession", "DIA_LIMPA"))),
+            # mod_prot_qc.R:123, :131, :141; mod_prot_qc_protein.R:27-35 (DIA), :37-68, :73-79
+            # (DIA_LIMPA)
+            list(id = "protein_qc", title = "Protein QC", component = "prot_qc_protein", tabs = list(
+                protein("rollup", "IQ Protein Rollup", "rollup", "DIA"),
+                protein("cleanup", "Accession Cleanup", "cleanup", common),
+                protein("intensity_filter", "Protein Intensity Filter", "intensity", common),
+                protein("duplicate_removal", "Duplicate Removal", "dedup", common),
+                protein("replicate_filter", "Protein Replicate Filter", "replicate", common),
+                protein("dpc_quant", "DPC Quantification", "dpc_quant", "DIA_LIMPA"),
+                protein("normalisation", "Between-Sample Normalisation", "normalisation", "DIA_LIMPA"),
+                protein("peptide_count", "Peptide Count Filter", "peptide_count", "DIA_LIMPA")))),
+        auto_init = FALSE,
+        complete_state = c(DIA = "protein_replicate_filtered", TMT = "protein_replicate_filtered",
+            LFQ = "protein_replicate_filtered"),
+        itsd = NULL, texts = stats::setNames(character(), character()),
+        notification_ids = stats::setNames(character(), character()))
 }
 
 #' The proteomics shell (mod_proteomics.R): no header; the icon as `tabPanel`'s argument
@@ -587,7 +805,38 @@ omicGuiConfigLipidomics <- function() {
         binding = omicGuiFeatureBinding(lipidomicsDeclarationBinding, readLipidWorkflowState,
             readLipidWorkflowMetadata),
         import = omicGuiLipidImport(),
-        design = omicGuiLipidDesign())
+        design = omicGuiLipidDesign(),
+        qc = omicGuiLipidQc())
+}
+
+#' The lipid QC tab (mod_lipid_qc*.R at b423b764). `itsd` holds the inline analysis's entries
+#' (mod_lipid_qc_itsd.R): the name columns tried after the id and annotation columns (:257-263), the
+#' metrics kernel with its id-column argument (:282-287), the quant getter (:305) and the refusal's
+#' tip (:337).
+#' @noRd
+omicGuiLipidQc <- function() {
+    list(title = "Lipid Quality Control & Filtering", # mod_lipid_qc.R:45
+        tabset_id = "lipid_qc_tabs", # mod_lipid_qc.R:120
+        groups = omicGuiFeatureQcGroups("LIPIDOMICS"),
+        # Started on the trigger or when the state's class is the binding's (mod_lipid_qc.R:129-159).
+        auto_init = TRUE, complete_state = NULL,
+        # mod_lipid_qc_intensity_server_helpers.R:142; mod_lipid_qc_s4.R:450 (func_lipid_qc.R:134)
+        filtering_figure = updateLipidFiltering,
+        itsd = list(name_columns = c("Lipid name", "Name", "lipid"),
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+                getLipidInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
+                    lipid_id_col = id_col, sample_id_col = sample_id_col)
+            },
+            quant = getLipidQuantData,
+            tip = "Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')"),
+        # Any zero-row assay is refused (mod_lipid_qc_s4.R:365); normalisation opens (:420-436); a
+        # per-assay table (:75-79).
+        finalize_zero_rows = TRUE, finalize_opens_norm = TRUE, finalize_per_assay = TRUE,
+        texts = omicGuiFeatureQcTexts("lipid", "LipidomicsAssayData"),
+        # mod_lipid_qc_intensity_server_helpers.R:151; mod_lipid_qc_duplicates_server_helpers.R:373,
+        # :415; mod_lipid_qc_itsd.R:223
+        notification_ids = c(intensity = "lipid_intensity_filter_working",
+            duplicates = "lipid_dup_resolve_working", itsd = "is_analysis_working"))
 }
 
 #' The lipid design tab (mod_lipid_design_*.R at 3c657c14). `validate` is the core's save preflight
@@ -681,7 +930,37 @@ omicGuiConfigMetabolomics <- function() {
         binding = omicGuiFeatureBinding(metabolomicsDeclarationBinding, readMetabWorkflowState,
             readMetabWorkflowMetadata),
         import = omicGuiMetabImport(),
-        design = omicGuiMetabDesign())
+        design = omicGuiMetabDesign(),
+        qc = omicGuiMetabQc())
+}
+
+#' The metab QC tab (mod_metab_qc*.R at b423b764). `itsd` holds `analyzeMetabQcItsdData`'s entries
+#' (mod_metab_qc_itsd.R): the name columns (`metabQcItsdColumns`, :36-44), the metrics kernel with
+#' its id-column argument (:102-107), the quant getter (:125) and the refusal's tip (:157).
+#' @noRd
+omicGuiMetabQc <- function() {
+    list(title = "Metabolite Quality Control & Filtering", # mod_metab_qc.R:44
+        tabset_id = "metab_qc_tabs", # mod_metab_qc.R:116
+        groups = omicGuiFeatureQcGroups("METABOLOMICS"),
+        # Started on the trigger or when the state's class is the binding's (mod_metab_qc.R:125-167).
+        auto_init = TRUE, complete_state = NULL,
+        # mod_metab_qc_intensity.R:206; mod_metab_qc_s4_server_helpers.R:398 (func_metab_qc.R:268)
+        filtering_figure = updateMetaboliteFiltering,
+        itsd = list(name_columns = c("Metabolite name", "Name", "metabolite"),
+            metrics = function(assay_data, is_pattern, id_col, sample_id_col) {
+                getInternalStandardMetrics(assay_data = assay_data, is_pattern = is_pattern,
+                    metabolite_id_col = id_col, sample_id_col = sample_id_col)
+            },
+            quant = getMetaboliteQuantData,
+            tip = "Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')"),
+        # Only an empty assay list is refused (mod_metab_qc_s4_server_helpers.R:335-339); only
+        # `quality_control` is set (:368-378); a per-assay table (mod_metab_qc_s4.R:73-77).
+        finalize_zero_rows = FALSE, finalize_opens_norm = FALSE, finalize_per_assay = TRUE,
+        texts = omicGuiFeatureQcTexts("metabolite", "MetaboliteAssayData"),
+        # mod_metab_qc_intensity.R:365; mod_metab_qc_duplicates_server_helpers.R:418;
+        # mod_metab_qc_itsd.R:402
+        notification_ids = c(intensity = "metab_intensity_filter_working",
+            duplicates = "metab_dup_resolve_working", itsd = "is_analysis_working"))
 }
 
 #' The metab design tab (mod_metab_design*.R at 3c657c14). `validate` is the core's save preflight
@@ -782,7 +1061,33 @@ omicGuiConfigTranscriptomics <- function() {
                 readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager, reference)
             }),
         import = omicGuiTrxImport(),
-        design = omicGuiTrxDesign())
+        design = omicGuiTrxDesign(),
+        qc = omicGuiTrxQc())
+}
+
+#' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under `trxOmicProfile()`'s QC
+#' fields (mod_transcriptomics.R:38-41; mod_trx_qc_filter.R): the expression-filter plugin and the
+#' shared finalise with one table. `filtering_figure` (`trxQcFilteringFigure`, mod_trx_qc_filter.R
+#' :55) is added at W8, once W2 has moved it into func_trx_qc_plots.R.
+#' @noRd
+omicGuiTrxQc <- function() {
+    list(title = "Transcriptomics Quality Control & Filtering", # mod_transcriptomics.R:38
+        tabset_id = "trx_qc_tabs", # mod_trx_qc_filter.R:179
+        # mod_trx_qc_filter.R:179-180, the titles at :77 and mod_lipid_qc_s4.R:43
+        groups = list(list(id = NULL, title = NULL, component = NULL, tabs = list(
+            omicGuiQcTab("filter", "Expression Filter", "trx_qc_filter", "TRANSCRIPTOMICS"),
+            omicGuiQcTab("s4_finalize", "Finalize QC", "omic_qc_finalize", "TRANSCRIPTOMICS")))),
+        # The lipid orchestrator's class check under the profile (mod_lipid_qc.R:151-158).
+        auto_init = TRUE, complete_state = NULL, itsd = NULL,
+        # Any zero-row assay is refused (mod_trx_qc_filter.R:226); lipid's tab status opens
+        # normalisation (mod_lipid_qc_s4.R:420-436); one table, no per-assay table (:75).
+        finalize_zero_rows = TRUE, finalize_opens_norm = TRUE, finalize_per_assay = FALSE,
+        # mod_trx_qc_filter.R:202-203, :212, :227 (one refusal for both checks)
+        texts = c(finalize_total_label = "Total Genes:", finalize_id_label = "Gene ID Column:",
+            finalize_total = "Total genes retained: %d",
+            finalize_no_assays = "Current TranscriptomicsAssayData object has no genes or no design rows to finalize.",
+            finalize_no_design = "Current TranscriptomicsAssayData object has no genes or no design rows to finalize."),
+        notification_ids = stats::setNames(character(), character()))
 }
 
 #' The trx design tab: at 3c657c14 the lipid frame and builder under `trxOmicProfile()`'s design

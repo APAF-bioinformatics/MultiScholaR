@@ -18,7 +18,12 @@ guiConfigRequired <- list(
         "record_provenance", "state_name", "state_description", "data_adapter", "design_import",
         "commit", "builder_ui", "record_excluded_runs", "label_lower", "multi_assay_banner",
         "no_data_text", "preview_text", "preview_assays", "testids", "builder_texts",
-        "group_levels", "validate", "build_object")
+        "group_levels", "validate", "build_object"),
+    # KIT-104 W1 (design 4.6 and the ticket's rendering fields). `complete_state` and `itsd` are
+    # NULL where the omic has none; the finalise fields and the function fields whose functions are
+    # still in R/mod_*.R are checked by their own blocks below.
+    qc = c("title", "tabset_id", "groups", "auto_init", "complete_state", "itsd", "texts",
+        "notification_ids")
 )
 
 guiConfigBuilderTexts <- c("save_success", "no_assignment", "contrast_group_prefix",
@@ -46,10 +51,10 @@ guiConfigFunctions <- function(x) {
     unlist(lapply(x, guiConfigFunctions), recursive = FALSE)
 }
 
-test_that("each omic's configuration validates, with the shell, binding, import and design groups", {
+test_that("each omic's configuration validates, with the shell, binding, import, design and qc groups", {
     for (omic in guiConfigOmics) {
         config <- omicGuiConfig(omic)
-        expect_identical(names(config), c("shell", "binding", "import", "design"), info = omic)
+        expect_identical(names(config), c("shell", "binding", "import", "design", "qc"), info = omic)
         expect_identical(config$shell$omic_type, omic, info = omic)
         expect_identical(config$binding$binding$omic_type, omic, info = omic)
         expect_identical(validateOmicGuiConfig(config), config, info = omic)
@@ -162,6 +167,11 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         expect_gt(length(design), 0L)
         design_files <- unlist(lapply(design, utils::getSrcFilename))
         expect_false(any(startsWith(design_files, "mod_")), info = paste(omic, "design"))
+        # KIT-104 W1: the qc group. Lipid and metab carry functions now (the tracking figure and the
+        # ITSD kernels); trx's and the finalise alignments arrive with W2 and W8.
+        qc_files <- as.character(unlist(lapply(guiConfigFunctions(config$qc), utils::getSrcFilename)))
+        if (omic %in% c("lipidomics", "metabolomics")) expect_gt(length(qc_files), 0L)
+        expect_false(any(startsWith(qc_files, "mod_")), info = paste(omic, "qc"))
     }
 })
 
@@ -488,4 +498,266 @@ test_that("the DIA binding adaptor's design entries call today's core functions"
     expect_identical(subset[c("samples", "rename", "strip_parser")],
         list(samples = c("S1", "S2"), rename = NULL, strip_parser = TRUE))
     expect_identical(entries$subset("manager", reference, "S1")$strip_parser, FALSE)
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-104 W1: the qc group (kit-101 design 4.6) and what the shared QC sub-tabs render per omic.
+# ------------------------------------------------------------------------------------------------
+
+guiConfigQcGroupFields <- c("id", "title", "component", "tabs")
+guiConfigQcTabFields <- c("id", "title", "component", "routes", "needs_paths")
+guiConfigQcFinalize <- c("finalize_zero_rows", "finalize_opens_norm", "finalize_per_assay")
+guiConfigQcItsd <- c("name_columns", "metrics", "quant", "tip")
+# The texts and the notification ids each shared sub-tab renders, by its component.
+guiConfigQcTexts <- list(
+    omic_qc_intensity = c("intensity_heading", "intensity_help", "intensity_proportion_help",
+        "intensity_original_label", "intensity_working", "intensity_result_heading", "intensity_total",
+        "intensity_success", "intensity_error"),
+    omic_qc_duplicates = c("duplicates_help", "duplicates_none"),
+    omic_qc_itsd = "itsd_pattern_help",
+    omic_qc_finalize = c("finalize_total_label", "finalize_id_label", "finalize_total",
+        "finalize_no_assays", "finalize_no_design"))
+guiConfigQcNotifications <- c(omic_qc_intensity = "intensity", omic_qc_duplicates = "duplicates",
+    omic_qc_itsd = "itsd")
+
+# A group's tabs on a route.
+guiConfigQcTabs <- function(group, route) Filter(function(tab) route %in% tab$routes, group$tabs)
+
+# A group's tabs on a route in the shape of today's proteomics spec tables (getProtQc*ModuleSpecs).
+guiConfigQcSpecs <- function(group, route) {
+    lapply(guiConfigQcTabs(group, route), function(tab) {
+        c(list(id = tab$id, title = tab$title, uiFn = paste0("mod_", tab$component, "_ui"),
+            serverFn = paste0("mod_", tab$component, "_server")),
+            if (isTRUE(tab$needs_paths)) list(needsExperimentPaths = TRUE))
+    })
+}
+
+test_that("the qc group holds today's values per omic", {
+    configs <- lapply(stats::setNames(guiConfigOmics, guiConfigOmics), omicGuiConfig)
+    qc <- lapply(configs, `[[`, "qc")
+    # mod_prot_qc.R:43; mod_lipid_qc.R:45; mod_metab_qc.R:44; mod_transcriptomics.R:38 (qc_title).
+    expect_identical(vapply(qc, `[[`, "", "title"), c(proteomics = "Quality Control & Filtering",
+        lipidomics = "Lipid Quality Control & Filtering",
+        metabolomics = "Metabolite Quality Control & Filtering",
+        transcriptomics = "Transcriptomics Quality Control & Filtering"))
+    # mod_lipid_qc.R:120; mod_metab_qc.R:116; mod_trx_qc_filter.R:179; mod_prot_qc.R:121, :130, :138.
+    expect_identical(qc$lipidomics$tabset_id, "lipid_qc_tabs")
+    expect_identical(qc$metabolomics$tabset_id, "metab_qc_tabs")
+    expect_identical(qc$transcriptomics$tabset_id, "trx_qc_tabs")
+    expect_identical(qc$proteomics$tabset_id, c(DIA = "qc_tabs_lfq", DIA_LIMPA = "qc_tabs_lfq",
+        TMT = "qc_tabs_tmt", LFQ = "qc_tabs_tmt"))
+    expect_identical(vapply(qc, `[[`, TRUE, "auto_init"), c(proteomics = FALSE, lipidomics = TRUE,
+        metabolomics = TRUE, transcriptomics = TRUE))
+    # QC completes on protein_replicate_filtered (mod_prot_qc.R:204-216), which DIA_LIMPA never
+    # reaches (P-16, W7); the other omics' finalise tab completes QC.
+    expect_identical(qc$proteomics$complete_state, c(DIA = "protein_replicate_filtered",
+        TMT = "protein_replicate_filtered", LFQ = "protein_replicate_filtered"))
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        expect_true("complete_state" %in% names(qc[[omic]]), info = omic)
+        expect_null(qc[[omic]]$complete_state, info = omic)
+    }
+    # One unnamed group of flat tabs for lipid, metab and trx; the sub-tab module ids, titles and
+    # components; the omic's one route.
+    feature_tabs <- list(
+        lipidomics = c(intensity = "Intensity Filter", duplicates = "Duplicate Resolution",
+            itsd = "Internal Standards", s4_finalize = "Finalize QC"),
+        metabolomics = c(intensity = "Intensity Filter", duplicates = "Duplicate Resolution",
+            itsd = "Internal Standards", s4_finalize = "Finalize QC"),
+        transcriptomics = c(filter = "Expression Filter", s4_finalize = "Finalize QC"))
+    components <- list(lipidomics = c("omic_qc_intensity", "omic_qc_duplicates", "omic_qc_itsd",
+        "omic_qc_finalize"), transcriptomics = c("trx_qc_filter", "omic_qc_finalize"))
+    components$metabolomics <- components$lipidomics
+    for (omic in names(feature_tabs)) {
+        groups <- qc[[omic]]$groups
+        expect_length(groups, 1L)
+        expect_null(groups[[1L]]$id)
+        expect_null(groups[[1L]]$title)
+        expect_null(groups[[1L]]$component)
+        tabs <- groups[[1L]]$tabs
+        expect_identical(vapply(tabs, `[[`, "", "id"), names(feature_tabs[[omic]]), info = omic)
+        expect_identical(vapply(tabs, `[[`, "", "title"), unname(feature_tabs[[omic]]), info = omic)
+        expect_identical(vapply(tabs, `[[`, "", "component"), components[[omic]], info = omic)
+        for (tab in tabs) {
+            expect_identical(tab$routes, configs[[omic]]$shell$routes, info = omic)
+            expect_false(tab$needs_paths, info = omic)
+        }
+    }
+    # Proteomics: the peptide and protein groups, rendered by their group plugins.
+    groups <- qc$proteomics$groups
+    expect_identical(vapply(groups, `[[`, "", "id"), c("peptide_qc", "protein_qc"))
+    expect_identical(vapply(groups, `[[`, "", "title"), c("Peptide QC", "Protein QC"))
+    expect_identical(vapply(groups, `[[`, "", "component"), c("prot_qc_peptide", "prot_qc_protein"))
+    # The finalise: lipid refuses any zero-row assay and opens normalisation; metab neither; trx as
+    # lipid, with one table (design 4.6; D2, D3).
+    finalize <- function(omic) unlist(qc[[omic]][guiConfigQcFinalize])
+    expect_identical(finalize("lipidomics"), c(finalize_zero_rows = TRUE, finalize_opens_norm = TRUE,
+        finalize_per_assay = TRUE))
+    expect_identical(finalize("metabolomics"), c(finalize_zero_rows = FALSE,
+        finalize_opens_norm = FALSE, finalize_per_assay = TRUE))
+    expect_identical(finalize("transcriptomics"), c(finalize_zero_rows = TRUE,
+        finalize_opens_norm = TRUE, finalize_per_assay = FALSE))
+    expect_false(any(c(guiConfigQcFinalize, "filtering_figure", "finalize_alignment") %in%
+        names(qc$proteomics)))
+    # The tracking figure: the core's (trx's arrives with W2's move of trxQcFilteringFigure).
+    expect_identical(qc$lipidomics$filtering_figure, updateLipidFiltering)
+    expect_identical(qc$metabolomics$filtering_figure, updateMetaboliteFiltering)
+    # The ITSD analysis: lipid and metab only.
+    expect_identical(qc$lipidomics$itsd$name_columns, c("Lipid name", "Name", "lipid"))
+    expect_identical(qc$metabolomics$itsd$name_columns, c("Metabolite name", "Name", "metabolite"))
+    expect_identical(qc$lipidomics$itsd$quant, getLipidQuantData)
+    expect_identical(qc$metabolomics$itsd$quant, getMetaboliteQuantData)
+    expect_identical(qc$lipidomics$itsd$tip,
+        "Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')")
+    expect_identical(qc$metabolomics$itsd$tip,
+        "Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')")
+    for (omic in c("proteomics", "transcriptomics")) {
+        expect_true("itsd" %in% names(qc[[omic]]), info = omic)
+        expect_null(qc[[omic]]$itsd, info = omic)
+    }
+    # The metrics entry calls the omic's kernel with its id-column argument.
+    testthat::local_mocked_bindings(
+        getLipidInternalStandardMetrics = function(assay_data, is_pattern, lipid_id_col, sample_id_col,
+            sample_columns = NULL) list("lipid", assay_data, is_pattern, lipid_id_col, sample_id_col),
+        getInternalStandardMetrics = function(assay_data, is_pattern, metabolite_id_col, sample_id_col,
+            sample_columns = NULL) list("metab", assay_data, is_pattern, metabolite_id_col, sample_id_col))
+    expect_identical(qc$lipidomics$itsd$metrics("assay", "^IS_", "Name", "Run"),
+        list("lipid", "assay", "^IS_", "Name", "Run"))
+    expect_identical(qc$metabolomics$itsd$metrics("assay", "^IS_", "Name", "Run"),
+        list("metab", "assay", "^IS_", "Name", "Run"))
+    # The texts and notification ids: every key its sub-tabs need, and today's values.
+    for (omic in guiConfigOmics) {
+        used <- unlist(lapply(qc[[omic]]$groups, function(group) vapply(group$tabs, `[[`, "", "component")))
+        expect_true(all(unlist(guiConfigQcTexts[intersect(used, names(guiConfigQcTexts))]) %in%
+            names(qc[[omic]]$texts)), info = omic)
+        expect_setequal(names(qc[[omic]]$notification_ids),
+            unname(guiConfigQcNotifications[intersect(used, names(guiConfigQcNotifications))]))
+    }
+    expect_length(qc$proteomics$texts, 0L)
+    expect_identical(qc$lipidomics$notification_ids, c(intensity = "lipid_intensity_filter_working",
+        duplicates = "lipid_dup_resolve_working", itsd = "is_analysis_working"))
+    expect_identical(qc$metabolomics$notification_ids, c(intensity = "metab_intensity_filter_working",
+        duplicates = "metab_dup_resolve_working", itsd = "is_analysis_working"))
+    expect_identical(qc$lipidomics$texts[["intensity_total"]], "Total: %d -> %d lipids (removed %d)")
+    expect_identical(qc$metabolomics$texts[["intensity_success"]],
+        "Intensity filter applied: %d metabolites retained")
+    expect_identical(qc$metabolomics$texts[["duplicates_none"]],
+        "All metabolite IDs are unique. No resolution needed.")
+    expect_identical(qc$lipidomics$texts[["finalize_no_assays"]],
+        "Current LipidomicsAssayData object has no assay data to finalize.")
+    expect_identical(qc$transcriptomics$texts[["finalize_total"]], "Total genes retained: %d")
+    expect_identical(qc$transcriptomics$texts[["finalize_id_label"]], "Gene ID Column:")
+    # Trx has one refusal for both checks (mod_trx_qc_filter.R:227).
+    expect_identical(qc$transcriptomics$texts[["finalize_no_assays"]],
+        "Current TranscriptomicsAssayData object has no genes or no design rows to finalize.")
+    expect_identical(qc$transcriptomics$texts[["finalize_no_design"]],
+        qc$transcriptomics$texts[["finalize_no_assays"]])
+})
+
+test_that("proteomics' QC groups per route are today's spec tables (getProtQc{Peptide,Protein}ModuleSpecs)", {
+    groups <- omicGuiConfig("proteomics")$qc$groups
+    names(groups) <- vapply(groups, `[[`, "", "id")
+    for (route in c("DIA", "DIA_LIMPA")) {
+        expect_identical(guiConfigQcSpecs(groups$peptide_qc, route), getProtQcPeptideModuleSpecs(route),
+            info = route)
+    }
+    # TMT and LFQ render the protein group only (mod_prot_qc.R:98-133).
+    for (route in c("TMT", "LFQ")) expect_length(guiConfigQcTabs(groups$peptide_qc, route), 0L)
+    for (route in c("DIA", "DIA_LIMPA", "TMT", "LFQ")) {
+        expect_identical(guiConfigQcSpecs(groups$protein_qc, route),
+            getProtQcProteinModuleSpecs(workflowType = route), info = route)
+    }
+    # Each plugin's module exists under its stem; so do trx's filter and the group plugins.
+    stems <- c(unlist(lapply(groups, function(group) vapply(group$tabs, `[[`, "", "component"))),
+        "trx_qc_filter", vapply(groups, `[[`, "", "component"))
+    for (stem in stems) {
+        for (side in c("_ui", "_server")) {
+            expect_true(exists(paste0("mod_", stem, side), mode = "function"), info = stem)
+        }
+    }
+})
+
+test_that("each qc field, required or conditional, is refused by class when missing or mistyped", {
+    lipid <- omicGuiConfig("lipidomics")
+    prot <- omicGuiConfig("proteomics")
+    trx <- omicGuiConfig("transcriptomics")
+    # The finalise fields are required with a finalise tab; proteomics has none.
+    for (field in guiConfigQcFinalize) {
+        removed <- lipid
+        removed$qc[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("qc$", field))
+        mistyped <- lipid
+        mistyped$qc[[field]] <- NA
+        expectGuiConfigRefused(mistyped, paste0("qc$", field))
+    }
+    # The texts and notification ids each tab's component renders.
+    for (component in names(guiConfigQcTexts)) {
+        for (key in guiConfigQcTexts[[component]]) {
+            removed <- lipid
+            removed$qc$texts <- removed$qc$texts[names(removed$qc$texts) != key]
+            expectGuiConfigRefused(removed, paste0("qc$texts$", key))
+        }
+    }
+    for (key in guiConfigQcNotifications) {
+        removed <- lipid
+        removed$qc$notification_ids <- removed$qc$notification_ids[names(removed$qc$notification_ids) != key]
+        expectGuiConfigRefused(removed, paste0("qc$notification_ids$", key))
+    }
+    removed <- trx
+    removed$qc$texts <- removed$qc$texts[names(removed$qc$texts) != "finalize_total"]
+    expectGuiConfigRefused(removed, "qc$texts$finalize_total")
+    # The ITSD tab needs the analysis entries.
+    bad <- lipid
+    bad$qc["itsd"] <- list(NULL)
+    expectGuiConfigRefused(bad, "qc$itsd")
+    for (field in guiConfigQcItsd) {
+        removed <- lipid
+        removed$qc$itsd[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("qc$itsd$", field))
+        mistyped <- lipid
+        mistyped$qc$itsd[field] <- list(42L)
+        expectGuiConfigRefused(mistyped, paste0("qc$itsd$", field))
+    }
+    # The groups and their tabs.
+    for (field in guiConfigQcGroupFields) {
+        removed <- prot
+        removed$qc$groups[[2L]][[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("qc$groups[[2]]$", field))
+    }
+    for (field in guiConfigQcTabFields) {
+        removed <- lipid
+        removed$qc$groups[[1L]]$tabs[[3L]][[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("qc$groups[[1]]$tabs[[3]]$", field))
+        mistyped <- lipid
+        mistyped$qc$groups[[1L]]$tabs[[3L]][field] <- list(42L)
+        expectGuiConfigRefused(mistyped, paste0("qc$groups[[1]]$tabs[[3]]$", field))
+    }
+    bad <- lipid
+    bad$qc$groups[[1L]]$tabs[[2L]]$id <- "intensity"
+    expectGuiConfigRefused(bad, "qc$groups[[1]]$tabs$id")
+    bad <- lipid
+    bad$qc$groups[[1L]]$tabs[[2L]]$routes <- "DIA"
+    expectGuiConfigRefused(bad, "qc$groups[[1]]$tabs[[2]]$routes")
+    bad <- prot
+    bad$qc$groups[[2L]]$id <- "peptide_qc"
+    expectGuiConfigRefused(bad, "qc$groups$id")
+    # An unnamed group is the only group.
+    bad <- prot
+    bad$qc$groups[[1L]]["id"] <- list(NULL)
+    expectGuiConfigRefused(bad, "qc$groups")
+    # Per-route values name the omic's routes.
+    bad <- prot
+    bad$qc$tabset_id <- bad$qc$tabset_id[c("DIA", "TMT")]
+    expectGuiConfigRefused(bad, "qc$tabset_id")
+    bad <- prot
+    bad$qc$complete_state <- c(bad$qc$complete_state, GENOMICS = "protein_replicate_filtered")
+    expectGuiConfigRefused(bad, "qc$complete_state")
+    bad <- prot
+    bad$qc$auto_init <- NA
+    expectGuiConfigRefused(bad, "qc$auto_init")
+    # The function fields are checked by type when present (the deferred ones are absent until W8).
+    for (field in c("filtering_figure", "finalize_alignment")) {
+        bad <- lipid
+        bad$qc[[field]] <- "a function name"
+        expectGuiConfigRefused(bad, paste0("qc$", field))
+    }
 })

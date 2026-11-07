@@ -1,0 +1,70 @@
+# KIT-104 W1 test-first: the tests written before the implementation, run on the start commit.
+# HEAD b423b764 (origin/performance-v2; R/ unchanged), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner kit/scripts-078/run1.R <tree> <file> v;
+# R_LIBS = core/browser-smoke.yODoyT/library. Recorded 2026-11-08.
+
+## tests/testthat/test-omic-qc-module.R (new)
+# (b) identity and (d) ITSD capture were frozen from this commit and pass here. (a)'s lipid control and metab's
+# run-absent case pass here. (a) metab/trx parity and (c) F-24 fail here; they are gated by `omicQcPending()`
+# (skipped unless MULTISCHOLAR_KIT104_PENDING=1) until the phase that lands them.
+
+# Default (as the lead's targeted run sees it):
+COUNTS test-omic-qc-module.R pass 24 fail 0 error 0 skip 4
+#   skipped: (a) metab parity (until W6), (a) trx parity (until W6), (c) lipid F-24 (until W5), (c) metab F-24 (until W6)
+
+# MULTISCHOLAR_KIT104_PENDING=1 (the fail-before record):
+COUNTS test-omic-qc-module.R pass 24 fail 20 error 0 skip 0
+  BAD test-omic-qc-module.R :: (a) parity: metab refuses a design the alignment check refuses, with no commit (fails before)
+  BAD test-omic-qc-module.R :: (a) parity: trx refuses a misaligned design at finalise, with no commit (fails before)
+  BAD test-omic-qc-module.R :: (c) F-24: a lipid Detect duplicates or Analyze internal standards click before the start is not run
+  BAD test-omic-qc-module.R :: (c) F-24: a metab Detect duplicates or Analyze internal standards click before the start is not run
+# What fails, and why it is the defect under test:
+# (a) metab, a blank group assignment (design run S1's group NA; MetaboliteAssayData's validity accepts it):
+#     history gains metab_qc_complete, quality_control "complete", the only notification is
+#     "[message] QC complete! Proceed to Normalization." (no refusal). Lipid refuses the same design with
+#     "Error finalizing QC: Current LipidomicsAssayData object has assay/design mismatch: Design matrix group
+#     column 'group' contains blank assignments." (the control, passes).
+# (a) trx, both cases (a design run S_absent absent from the counts; run 1's group NA): history gains
+#     trx_qc_complete, quality_control "complete", "[message] QC complete! Proceed to Normalization." The trx
+#     finalise reads the metadata only (mod_trx_qc_filter.R:221-241), so no check sees the design.
+# (c) lipid and metab, both buttons: the click made before the start runs when the sub-modules start
+#     (at_start = "[warning] Detection complete: 4 duplicate IDs found", or
+#     "[default] Analyzing internal standards..." + "[message] Found 4 internal standards"), and the second
+#     click shows them again (after_click has them twice). F-24's display-only sites: detect_duplicates
+#     (mod_lipid_qc_duplicates_server_helpers.R:340; mod_metab_qc_duplicates_server.R:16) and analyze_is
+#     (mod_lipid_qc_itsd.R:218; mod_metab_qc_itsd.R:397) have no qcClickAfterStart guard.
+# First message per failing expectation (20 in all):
+--- (a) parity: metab ... :: Expected `out$after` to be identical to `out$before`. (actual adds "metab_qc_complete")
+--- (a) parity: metab ... :: Expected `identical(out$qc, "complete")` to be FALSE.
+--- (a) parity: metab ... :: Expected `errors` to have length 1. Actual length: 0.
+--- (a) parity: metab ... :: Expected `any(grepl(text, errors, fixed = TRUE))` to be TRUE.
+--- (a) parity: trx ... (run, group: 4 each) :: as metab, the history adds "trx_qc_complete"
+--- (c) F-24: lipid ... (2 buttons x 2) :: Expected `out$at_start` to be identical to `character()`;
+    Expected `out$after_click` to be identical to `omicQcDisplayOnly[[button]]`.
+--- (c) F-24: metab ... (2 buttons x 2) :: the same.
+
+# Finding (premise of the ticket's (a), metab): "a design run that is absent from the assay" is refused by metab
+# today, not committed. readMetabWorkflowShell rebuilds the object, whose class validity refuses it:
+# "Error finalizing QC: invalid class "MetaboliteAssayData" object: 1: Sample columns in assays do not exactly match
+# unique sample IDs ('Run') in `design_matrix`. ... 2: Samples in design_matrix missing from assay columns: S_absent".
+# Lipid refuses it the same way (validity, before its alignment check). So the run-absent case is kept as a passing
+# block for lipid and metab, and metab's fail-before case is a misalignment only the alignment check refuses (a blank
+# group, `validateOmicsDesignAlignment`'s group check, which lipid's finalise applies today). Trx fails before on both.
+
+## tests/testthat/test-omic-gui-config.R (the qc group's blocks added, three KIT-102/103 blocks extended)
+COUNTS test-omic-gui-config.R pass 522 fail 101 error 2 skip 0
+  BAD test-omic-gui-config.R :: each omic's configuration validates, with the shell, binding, import, design and qc groups
+  BAD test-omic-gui-config.R :: removing a required field, or giving it the wrong type, is refused by class
+  BAD test-omic-gui-config.R :: no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD test-omic-gui-config.R :: the qc group holds today's values per omic
+  BAD test-omic-gui-config.R :: proteomics' QC groups per route are today's spec tables (getProtQc{Peptide,Protein}ModuleSpecs)
+  BAD test-omic-gui-config.R :: each qc field, required or conditional, is refused by class when missing or mistyped
+# First message of each failing block:
+--- each omic's ... :: Expected `names(config)` to be identical to `c("shell", "binding", "import", "design", "qc")`.
+--- removing a required field ... :: Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>.
+--- no configuration function ... :: Expected `length(qc_files)` > 0L.
+--- the qc group holds today's values per omic :: Error in `vapply(qc, `[[`, "", "title")`: values must be length 1
+--- proteomics' QC groups per route ... :: Error in `names(groups) <- ...`: attempt to set an attribute on NULL
+--- each qc field ... :: Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>.
+# The other KIT-102/103 blocks pass. (The srcref block's qc line was made NULL-safe before this run:
+# `as.character(unlist(...))`; a first run errored on `startsWith(NULL, ...)` instead of failing.)

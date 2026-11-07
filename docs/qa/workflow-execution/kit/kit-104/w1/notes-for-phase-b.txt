@@ -1,0 +1,115 @@
+# KIT-104 W1 notes for phases B to E (from the W1 agent, 2026-11-08)
+
+## What W1 added
+- `omicGuiConfig(<omic>)$qc` for the four omics (R/utils_omic_gui_config.R), validated by `validateOmicGuiQc` /
+  `validateOmicGuiQcGroups` (class `omic_gui_config_invalid`). Every value is today's (b423b764), with its file:line in
+  the builders' comments; a probe found every title, tab id, tab title, tabset id, text, notification id, completion
+  state and ITSD value verbatim in today's QC files (lipid 35, metab 35, trx 11, prot 44 values).
+- Required for every omic: `title`; `tabset_id` (one string, or one per route: prot `qc_tabs_lfq` DIA/DIA_LIMPA,
+  `qc_tabs_tmt` TMT/LFQ); `groups`; `auto_init`; `complete_state` (NULL, or a route map naming only the omic's routes:
+  prot DIA, TMT, LFQ `protein_replicate_filtered`; a route not named has none, DIA_LIMPA today); `itsd` (NULL or a list);
+  `texts` and `notification_ids` (named character vectors, possibly empty).
+- `groups`: a list of `{id, title, component, tabs}`; lipid, metab and trx have ONE unnamed group (id, title and
+  component NULL: flat tabs in the tabset); prot has `peptide_qc` "Peptide QC" `prot_qc_peptide` and `protein_qc`
+  "Protein QC" `prot_qc_protein`. A named group needs a title and a component; an unnamed group must be the only one;
+  group ids unique. `component` on a group is an addition to design 4.6: it names the group plugin
+  (`mod_prot_qc_{peptide,protein}_ui/server`) the shell renders for the group.
+- `tabs`: `{id, title, component, routes, needs_paths}`; tab ids unique within a group; routes the omic's. A tab shows
+  on a route when the route is in its `routes`; a group shows on a route when it has a tab there (prot's peptide group
+  has none on TMT/LFQ).
+- Conditionally required, by the components the tabs name:
+  - `omic_qc_finalize`: `finalize_zero_rows`, `finalize_opens_norm`, `finalize_per_assay` (lgl1); the texts
+    `finalize_total_label`, `finalize_id_label`, `finalize_total`, `finalize_no_assays`, `finalize_no_design`, plus
+    `finalize_count_column` when `finalize_per_assay` is TRUE.
+  - `omic_qc_intensity`: texts `intensity_heading`, `intensity_help`, `intensity_proportion_help`,
+    `intensity_original_label`, `intensity_working`, `intensity_result_heading`, `intensity_total`,
+    `intensity_success`, `intensity_error`; notification id `intensity`.
+  - `omic_qc_duplicates`: texts `duplicates_help`, `duplicates_none`; notification id `duplicates`.
+  - `omic_qc_itsd`: text `itsd_pattern_help`; notification id `itsd`; `itsd` non-NULL with `name_columns` (chr),
+    `metrics` (ref), `quant` (ref), `tip` (chr1).
+- Optional now, checked by type when present: `filtering_figure`, `finalize_alignment` (see "Deferred").
+
+## Component ids (a decision for W5/W8; change the config values if W5 names the modules otherwise)
+- The rule is the shell's: a component id `x` is `mod_x_ui/mod_x_server`, looked up by name at call time.
+- Shared sub-tabs: `omic_qc_intensity`, `omic_qc_duplicates`, `omic_qc_itsd`, `omic_qc_finalize`, i.e. W5 would name
+  its modules `mod_omic_qc_{intensity,duplicates,itsd,finalize}_{ui,server}` in R/mod_omic_qc_tabs.R. They do not
+  exist yet (the config test checks only prot's and trx's stems exist).
+- Trx's filter plugin: `trx_qc_filter` (the stem of `mod_trx_qc_filter_ui/server`, which keep their signatures; the
+  ticket's prose calls the registry entry `trx_filter`).
+- Proteomics: the 17 sub-tab stems (`prot_qc_peptide_qvalue`, ..., `prot_qc_protein_peptide_count`) and the two group
+  stems `prot_qc_peptide`, `prot_qc_protein`.
+- The tab `id` is the module id under the tab (DOM `qc-<id>-...`): `intensity`, `duplicates`, `itsd`, `s4_finalize`,
+  `filter`, and prot's spec ids. Titles are the tabPanel titles.
+
+## Deferred for the lead to wire at W8 (absent now: their functions are in R/mod_*.R or do not exist yet)
+- trx `filtering_figure` = `trxQcFilteringFigure` once W2 has copied it into R/func_trx_qc_plots.R. Note its signature
+  `(counts, metrics)` differs from lipid's/metab's `updateLipidFiltering`/`updateMetaboliteFiltering(theObject,
+  step_name, ..., omics_type, return_grid, overwrite, metrics)`; the finalise calls trx's as
+  `trxQcFilteringFigure(NULL, metrics %||% trxFilteringMetrics(state))` (mod_trx_qc_filter.R:234-237). W5/W6 decide
+  whether the field takes one shape (an adaptor in the config, like `itsd$metrics`) or the shared finalise branches.
+- `finalize_alignment` for every omic with a finalise: lipid and metab `function(shell)
+  omicsQcFinalizeAlignment(shell, "<omic>")` (W2, D11), trx `trxDesignAlignment` (W2, D10). Proteomics has none (P-17).
+- At W8 move `filtering_figure` and `finalize_alignment` from `qc_optional` into the finalise's required set
+  (`qc_finalize` in `omicGuiConfigSchema()`), and add them to the test's `guiConfigQcFinalize` list. The srcref block
+  already walks `config$qc`, so a wired function defined in R/mod_*.R fails it.
+
+## W2 (QC core) inputs from the config
+- `itsd$metrics(assay_data, is_pattern, id_col, sample_id_col)`: an adaptor in the config over
+  `getLipidInternalStandardMetrics(lipid_id_col =)` / `getInternalStandardMetrics(metabolite_id_col =)`; `itsd$quant` is
+  `getLipidQuantData` / `getMetaboliteQuantData`; `itsd$name_columns` are tried after the id and annotation columns,
+  in order (lipid `unique(c(lipid_id_col, annotation_id_col, "Lipid name", "Name", "lipid"))`, mod_lipid_qc_itsd.R
+  :257-263; metab `metabQcItsdColumns`). The refusal is
+  `paste0("No internal standards found. Pattern: ", p, "\nColumns searched: ", <cols in the first assay>, "\n", tip)`.
+  The class, data slot and id slot come from the binding (`class`, `data_slot`, `id_slot`).
+- Lipid's inline analysis errors on a NULL `input$is_pattern` (`nzchar(NULL)`: "argument is of length zero",
+  mod_lipid_qc_itsd.R:237); metab's treats NULL as empty. Only a test session leaves the input NULL (the browser sends
+  ""), so it is not a user-facing defect; the generalised analysis takes metab's handling (no result changes).
+- `validateWorkflowOmicsQcFinalize`: the class, zero-row, design-row texts are `texts$finalize_no_assays` /
+  `finalize_no_design` (trx: one text for both); the class refusal and the "No <Class> object available." summary text
+  derive from the binding's class.
+- D11's alignment text "Current <Class> object has assay/design mismatch: " + errors joined by "; ".
+
+## W5/W6 (shared sub-tabs) rendering values
+- Texts that are the same for lipid and metab stay in the shared sub-tab code, not the config: the results-text
+  skeletons ("Duplicate Resolution Complete", "Strategy: Keep feature with highest average
+  intensity", "Per-Assay Results:", "Internal Standard Analysis Complete", "QC Finalization Complete", "Processing
+  History:", "You can now proceed to the Normalization tab."), "State saved as: '<state>'", "Resolving duplicate
+  features...", "Analyzing internal standards...", "Found %d internal standards", "Detection complete: %d duplicate IDs
+  found", "Duplicates resolved: %d rows removed", "Reverted to previous state: ", "Reverted successfully",
+  "QC complete! Proceed to Normalization.", the error prefixes "Error reverting:", "Error detecting duplicates:",
+  "Error resolving duplicates:", "Error analyzing internal standards:", "Error finalizing QC:", and the ITSD CV
+  thresholds and plot labels.
+- `%d` in a text stands for today's counts in today's order (e.g. `intensity_total` original, filtered, removed).
+- Trx's finalise summary (registerTrxQcSummaryOutput, mod_trx_qc_filter.R:192-207) has no "Number of Assays" row and
+  reads the metadata (Total Genes = sum(assay_rows), Number of Samples = nrow(design), Experimental Groups, Gene ID
+  Column, Sample ID Column); its results text (trxQcFinalizeText, :211-216) has no "Number of assays" line.
+- Metab's resolution summary prints "  No assay statistics available" for an empty stats list
+  (mod_metab_qc_duplicates_server_helpers.R:57-58); lipid's has no such branch.
+
+## W7 (proteomics on the shell)
+- `getProtQcPeptideModuleSpecs(route)` today returns the DIA list for any route but DIA_LIMPA (TMT, LFQ, NULL), and
+  `getProtQcProteinModuleSpecs(NULL)` the DIA list. The config's peptide group has no tabs on TMT/LFQ (it is not
+  shown there), so building the spec functions from the config must keep those defaults (the D9 identity test is for
+  DIA, DIA_LIMPA, TMT and LFQ: peptide DIA/DIA_LIMPA, protein all four).
+- `needs_paths` is the protein specs' `needsExperimentPaths` (TRUE for all 8 protein tabs, absent on the peptide
+  specs); the config test rebuilds the specs as `c(list(id, title, uiFn, serverFn), if (needs_paths)
+  list(needsExperimentPaths = TRUE))` and compares them with `expect_identical`.
+- P-16 (lead decision): add `DIA_LIMPA = "peptide_count_filtered"` to `complete_state` (a route map; the validator
+  accepts any subset of the routes) and update the config test's expected value.
+- test-omic-qc-module.R (b) renders prot's tab with `workflow_data = reactiveValues(state_manager = list(workflow_type =
+  <route>))` (test-perf107-audit.R's construction) and `qc_trigger` NULL: the shell must render the tabset from the
+  route alone (no metadata read) and register no output but `qc-dynamic_qc_tabs` before the trigger.
+
+## The gated blocks in test-omic-qc-module.R (remove the `omicQcPending()` line when the phase lands)
+- W5: "(c) F-24: a lipid Detect duplicates or Analyze internal standards click ..." (`omicQcPending("W5")`).
+- W6: "(a) parity: metab ...", "(a) parity: trx ...", "(c) F-24: a metab ..." (`omicQcPending("W6")`).
+- Run them before with MULTISCHOLAR_KIT104_PENDING=1. After W6 the file has no skip left.
+- (a) expects for metab D11's exact text ("Error finalizing QC: Current MetaboliteAssayData object has assay/design
+  mismatch: Design matrix group column 'group' contains blank assignments."); for trx only "Error finalizing QC: "
+  holding the absent run "S_absent" or "outside the declared levels" (validateTrxDesign's messages), so either the
+  shell read's class validity or the alignment may refuse. Every case requires no commit and QC not complete.
+- (b) freezes the registered output names of the started tab: the shared shell and sub-tabs must register exactly
+  these (14 lipid/metab, 8 trx). The id lists are in w1/identity-ids.txt.
+- (d) records the plot data by mocking `ggplot2::ggplot` and telling the CV data (column `cv_status`) from the
+  intensity data (column `IS_ID`): `omicsItsdCvPlot`/`omicsItsdIntensityPlot` must call `ggplot2::ggplot` with today's
+  data frames (tibbles; `is_id` reordered by `stats::reorder`, with its `scores` attribute).
