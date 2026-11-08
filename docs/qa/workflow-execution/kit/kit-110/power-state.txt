@@ -1,2 +1,4 @@
 kit-journey-110a start 00:03:51 at 8f8a0276: AC 1, profile low-power, battery 100%, load 2.14, available 26 GiB
 kit-journey-110a end 00:07:31: AC 1, profile low-power, battery 100%, load 2.00, available 26 GiB
+kit-journey-110b start 00:07:34 at 07afac01: AC 1, profile low-power, battery 100%, load 2.00, available 26 GiB
+kit-journey-110b end 00:11:14: AC 1, profile low-power, battery 100%, load 2.15, available 26 GiB
