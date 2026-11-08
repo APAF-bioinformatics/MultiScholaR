@@ -566,8 +566,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "18718ca7e8dc19cb278104f17e926b39a4fed1c3e4da6849abd58f74fb9ba00d",
             provenance = "e5742a3192359a1dcb99c39a6776d7dfc81dcd2ef7ef37d78336723d9722c711",
             normdata = "a1e8493f5e12162b1d94c08c2995c23fcdc9c9deece0d43cc697982c9c3975ec",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "168bd32fe90bada9a2bdc262834b45c767c081475a5683c0aee201d46310b7b5",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "42d09557af7dc50f2f25ce4e50d26dde6f24f737f258e34817e263b99a428111",
             final_pca = list(),
             annotations = NULL,
@@ -583,8 +583,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "18718ca7e8dc19cb278104f17e926b39a4fed1c3e4da6849abd58f74fb9ba00d",
             provenance = "e5742a3192359a1dcb99c39a6776d7dfc81dcd2ef7ef37d78336723d9722c711",
             normdata = "a1e8493f5e12162b1d94c08c2995c23fcdc9c9deece0d43cc697982c9c3975ec",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "168bd32fe90bada9a2bdc262834b45c767c081475a5683c0aee201d46310b7b5",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "42d09557af7dc50f2f25ce4e50d26dde6f24f737f258e34817e263b99a428111",
             final_pca = list(),
             annotations = NULL,
@@ -615,8 +615,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "61f40c879fcabd7fd12ac7ab2434bb680513f0d441aa67b0a04f1cbe65f2a040",
             provenance = "5a589b9c8122fd31678616579327660b75dc8cba51ef1938b2fa8a4d414dacb7",
             normdata = "a1e8493f5e12162b1d94c08c2995c23fcdc9c9deece0d43cc697982c9c3975ec",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "1cfa99b8bcf8de32b177068e75bf057617d7e7d23f564d96ef264f48846f6740",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "7aeee0129a88196d778d76329d167a0f4d89d90f224e097b75a6bfe2752f4de4",
             final_pca = list(
                 list(
@@ -664,8 +664,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "5fdeff360d4eb520f3e5526f0bd93ce3356c1b0cde259d712fb4f57bd43329c7",
             provenance = "8310d5ce05971ad3ea733765495f8c50de6da6b45f952e96f3cf4aa36ba4bc73",
             normdata = "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "1cfa99b8bcf8de32b177068e75bf057617d7e7d23f564d96ef264f48846f6740",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "ef1c5f8b2a20b5698b201bcf7759ce9a68f30e32bc726ecb6ab2a4898aa84c10",
             final_pca = list(
                 list(
@@ -688,8 +688,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "5fdeff360d4eb520f3e5526f0bd93ce3356c1b0cde259d712fb4f57bd43329c7",
             provenance = "8310d5ce05971ad3ea733765495f8c50de6da6b45f952e96f3cf4aa36ba4bc73",
             normdata = "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "1cfa99b8bcf8de32b177068e75bf057617d7e7d23f564d96ef264f48846f6740",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "ef1c5f8b2a20b5698b201bcf7759ce9a68f30e32bc726ecb6ab2a4898aa84c10",
             final_pca = list(),
             annotations = NULL,
@@ -705,8 +705,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "5fdeff360d4eb520f3e5526f0bd93ce3356c1b0cde259d712fb4f57bd43329c7",
             provenance = "8310d5ce05971ad3ea733765495f8c50de6da6b45f952e96f3cf4aa36ba4bc73",
             normdata = "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "1cfa99b8bcf8de32b177068e75bf057617d7e7d23f564d96ef264f48846f6740",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "6fba3782e9caa36e4caea859ca2e25678d9a52b91f619319d98a7c5f0f390339",
             final_pca = list(),
             annotations = NULL,
@@ -736,8 +736,8 @@ omicNormFrozen[["lipid"]][["skip"]] <- list(
             states = "6933f8e4ed8fd73cf488b5f74f4ee27c6dc9ffc8054dfec7e9ac8e3d3a9f1ff3",
             provenance = "32e9ecb92dd79a4f63e102e94d532f30d8481d24293e6cd855e0afc8237a0042",
             normdata = "c9f2bad45bdd42f860944e6ab72e30ef2424745eb1ed20edb74b2519746cca49",
-            images = "444e5507149e44bd8baef2cfed53ed67a1cad83e09eac6bd2601146de73425fa",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "1cfa99b8bcf8de32b177068e75bf057617d7e7d23f564d96ef264f48846f6740",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "e3e065ae81eb10a9501d1d228c4a33e0a10fb9437014859b302b82992200ae98",
             final_pca = list(),
             annotations = NULL,
@@ -1032,8 +1032,8 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
             states = "c974c0dfdc29c9567fd76dae509a47f5d552f274a0936dcb64c793ede3636ce3",
             provenance = "a01af382e056b5e26bff87332f81543caae071eea65fecb9e7b4c97d3e897ab2",
             normdata = "d73553f170cf0ca694467a4ff6e7a214cd714c4e50778c6182bb0b4964d8070e",
-            images = "9bf4b4e7a5510441e772ebf40ae02ff6c3d2b5de3e3d7f490ca5dbd6421576cd",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "45543d7e025cd734bf76e1f34192064ed900a2c5eaa0189911b31cc95a3ff0c7",
             final_pca = list(
                 list(
@@ -1084,8 +1084,8 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
             states = "8d48d9b982b994d92c7880fab1bf91e7ee4efcc7dd0075ee92295181dc19e643",
             provenance = "f668e5302b5b7e4078dacca6434d9e7b1a7f7ca66e19c5184d5e07aa57507d6d",
             normdata = "d73553f170cf0ca694467a4ff6e7a214cd714c4e50778c6182bb0b4964d8070e",
-            images = "9bf4b4e7a5510441e772ebf40ae02ff6c3d2b5de3e3d7f490ca5dbd6421576cd",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "1177c9e8abd01576c6c612424de3869d6a8b4b7b48136fe6c57107219bff690b",
             final_pca = list(
                 list(
@@ -1121,8 +1121,8 @@ omicNormFrozen[["lipid"]][["manual"]] <- list(
             states = "7d8d63b94ea2195c066e7eb612ede33010b3f932e4e9a861210731f23a921dd2",
             provenance = "8657461e52e8cea6d8d4a5a77edb6b773dbddcdc5c0cfd47aeb8906d7a7537c2",
             normdata = "a1e8493f5e12162b1d94c08c2995c23fcdc9c9deece0d43cc697982c9c3975ec",
-            images = "9bf4b4e7a5510441e772ebf40ae02ff6c3d2b5de3e3d7f490ca5dbd6421576cd",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "c64a1c2a13649637d602c3406a6f3865984a274768deb19baab9285e6bb1b398",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "85a94a38f2772cc2511058d2c8a727218e5e1a551b49579ca208147a0bf02523",
             final_pca = list(),
             annotations = c("No data [6]", "No data [6]"),
@@ -1308,8 +1308,8 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             states = "a11e397e3b5f7858bc3332997d4a69feac0ea516be79f166935a5fa6ddf1f4c1",
             provenance = "6e252e3853d400fa0823e4620e4853880059bb61dab8d9e07e7e6dc3a14c6bc0",
             normdata = "b2502fa3988a015890ef4adc797513da5d000e55d29c5edb15068f6ebdd557ac",
-            images = "9bf4b4e7a5510441e772ebf40ae02ff6c3d2b5de3e3d7f490ca5dbd6421576cd",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977",
             final_pca = list(
                 list(
@@ -1346,8 +1346,8 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             states = "a11e397e3b5f7858bc3332997d4a69feac0ea516be79f166935a5fa6ddf1f4c1",
             provenance = "6e252e3853d400fa0823e4620e4853880059bb61dab8d9e07e7e6dc3a14c6bc0",
             normdata = "b2502fa3988a015890ef4adc797513da5d000e55d29c5edb15068f6ebdd557ac",
-            images = "9bf4b4e7a5510441e772ebf40ae02ff6c3d2b5de3e3d7f490ca5dbd6421576cd",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977",
             final_pca = list(),
             annotations = NULL,
@@ -1363,8 +1363,8 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
             states = "a11e397e3b5f7858bc3332997d4a69feac0ea516be79f166935a5fa6ddf1f4c1",
             provenance = "6e252e3853d400fa0823e4620e4853880059bb61dab8d9e07e7e6dc3a14c6bc0",
             normdata = "b2502fa3988a015890ef4adc797513da5d000e55d29c5edb15068f6ebdd557ac",
-            images = "9bf4b4e7a5510441e772ebf40ae02ff6c3d2b5de3e3d7f490ca5dbd6421576cd",
-            labels = "9fe14361c6e1f852bcd61de977b4b5561b888af7a995fe52b7381dc11c02f0bf",
+            images = "422c5931e587d69abdb910d0a29b9e5c5e70bf48f9de038b1d8dbea73f03c50b",
+            labels = "aaf4247ea00fa60b9ef6d876a18a08971175b031209ba32ca975b9e31310635f",
             outputs = "258a56a356180f82d13f062eadee6255a15a19455795ef22ef16b2884fd8c977",
             final_pca = list(),
             annotations = "Error: kit105: the final PCA is refused [4]",
@@ -1616,7 +1616,6 @@ test_that("F105-01: each metab QC image slot and assay label shows its own assay
 })
 
 test_that("F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)", {
-    omicNormPending("the F105-01 fix (the shared frame's stage-grid registrars, W4, or an earlier fix)")
     skip_if_not(workflowOwnerCapable())
     expectOmicNormSlots("lipid")
 })

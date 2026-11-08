@@ -92,6 +92,8 @@ buildLipidNormAssayLabelRenderer <- function(
     renderTextFn = shiny::renderText
 ) {
     function(assaySlot) {
+        # Bind this output's own slot now: the registrars call this in a loop (F105-01).
+        force(assaySlot)
         renderTextFn({
             if (!is.null(normData$assay_names) && length(normData$assay_names) >= assaySlot) {
                 paste("Assay:", normData$assay_names[[assaySlot]])
@@ -114,6 +116,10 @@ buildLipidNormQcImageRenderer <- function(
     qcDirKey = "lipid_qc_dir"
 ) {
     function(assaySlot, plotType, stagePrefix) {
+        # Bind this output's own spec now: the registrars call this in a loop (F105-01).
+        force(assaySlot)
+        force(plotType)
+        force(stagePrefix)
         renderImageFn({
             normData$plot_refresh_trigger
             assay_names <- normData$assay_names
