@@ -1,0 +1,18 @@
+# KIT-105 phase B merge (lead, 2026-11-08), tree f8d4c5fc (W3 49aa97ce + Collate 28afdcd4 + W2 f8d4c5fc, on F105-01 65bd16db)
+# one process per file, load_all, MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS=kit_104 (xocrNB), run1.R
+Collate: 370/370 (utils_workflow_dia_norm.R added at 28afdcd4); W2 added no file
+Back-references (parse-data method): 6 (25 -> 12 after W3 -> 6 after W2); the target
+  the six left: validateLipidDaAnalysisPreflight, normaliseProtDaContrastsTable, validateProtDaFilteredSession, validateProtDaModelAndContrasts (KIT-106); mod_prot_design_builder_server/_ui (#4, #5)
+W2 and W3 stop rules: not fired. Draft quarantine rows from phase B: none (Q-86..Q-94 unused so far)
+
+COUNTS test-omic-gui-config.R pass 941 fail 0 error 0 skip 0 exit 0 pb 13s
+COUNTS test-omic-norm-module.R pass 482 fail 0 error 0 skip 0 exit 0 pb 112s
+COUNTS test-omics-norm-core.R pass 217 fail 0 error 0 skip 0 exit 0 pb 252s
+COUNTS test-prot-norm-core.R pass 57 fail 0 error 0 skip 0 exit 0 pb 54s
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0 exit 0 pb 47s
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0 exit 0 pb 37s
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0 exit 0 pb 73s
+COUNTS test-prot-05b-norm-module-contracts.R pass 502 fail 0 error 0 skip 9 exit 0 pb 7s
+COUNTS test-prot-05c-norm-module-seams.R pass 53 fail 0 error 0 skip 0 exit 0 pb 5s
+COUNTS test-prot-05d-norm-module-characterization.R pass 100 fail 0 error 0 skip 10 exit 0 pb 11s
+(test-omic-norm-module.R 482/0/0/0: the F105-01 gate block now runs; 469/0/0/1 before F105-01)
