@@ -1254,6 +1254,15 @@ if (!is.null(b$builds$kit_110)) {
     }
 }
 
+# KIT-106 (the shared DA tab; the interactive volcano on demand): the same six screen journeys on kit_106.
+if (!is.null(b$builds$kit_106)) {
+    kit_106 <- list(build = "kit_106", purpose = "exactness (recorded, uncounted; KIT-106)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("106", suffix)]] <- utils::modifyList(from, kit_106)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
