@@ -28,3 +28,19 @@
 - **The DIA_LIMPA e2e lane** now passes 79/0/0/0. It waits on R6 states, not on the QC tab status.
 - **Quarantine ids:** W5 drafts Q-56 to Q-65, W6 Q-66 to Q-79, W7 Q-80 to Q-85. The lead writes the rows.
 - **Scratch folders:** each agent uses .../scratchpad/kit-104-wN/.
+
+## From W5, for phase D (2026-11-08)
+- **The shared shell and sub-tabs:** mod_omic_qc.R and mod_omic_qc_tabs.R; the registry is omicQcComponents(); the shared revert is registerOmicQcRevertObserver(input, output, id, workflow_data, results_output, clear, label).
+- **trx today:** the shared shell runs with trx's tabset, but uses profile$qc_init and the profile finalise while those fields exist. Once W6 deletes the profile's qc_tabs, qc_init, register_qc_summary and finalize fields (and read_metadata, read_state and class once unused), the lipid wrappers fall through to the shared path.
+- **Dead after W6, in lipid files; W6 is authorised to remove them:**
+  - runLipidQcS4FinalizeWorkflow, reportLipidQcS4FinalizeSuccess and registerLipidQcS4ProfileFinalize (mod_lipid_qc_s4.R);
+  - the profile branch in mod_lipid_qc_server;
+  - registerLipidIntensityRevertObserver (mod_lipid_qc_intensity.R). Replace trx's call with registerOmicQcRevertObserver.
+- **The trx finalise:**
+  - runOmicQcFinalize reads readWorkflowOmicsShell(binding, ..., "features") and draws through config$qc$filtering_figure(theObject=, step_name="4_QC_Complete", omics_type=, return_grid=, overwrite=, metrics=).
+  - trx needs the F104-04 structural shell, through a read hook, and an adaptor for trxQcFilteringFigure(counts, metrics). W6 is authorised to make the small edit to mod_omic_qc_tabs.R for this, a config read hook being preferred.
+  - The summary and text are already identical to trx's (registerOmicQcFinalizeSummary with finalize_per_assay = FALSE, and omicQcFinalizeText).
+- **metab:** the wrappers mirror lipid's: mod_metab_qc_*_ui/server call mod_omic_qc_*(..., omicGuiConfig("metabolomics")). Wire metab's finalize_alignment as lipid's is. Check metab's UI digests (its separate ITSD UI file) against the shared UIs before deleting anything.
+- **Test helpers:** drop the metab branch in omicsTabJourney and omicsAppJourney (metab clicks the top-level resolve_duplicates; lipid clicks the namespaced one). Retarget the metab audit case to startOmicQcSubtabs.
+- **W7, proteomics:** mod_prot_qc_server becomes mod_omic_qc_server(..., omicGuiConfig("proteomics")); the W5 blocks already prove render, start and completion parity. P-16: add DIA_LIMPA = "peptide_count_filtered" to complete_state. getProtQc*ModuleSpecs can read omicGuiConfig("proteomics")$qc$groups.
+- **Config edits in phase D:** W6 edits only the metab and trx qc entries in R/utils_omic_gui_config.R; W7 only the proteomics complete_state. On a rebase conflict, keep both hunks.
