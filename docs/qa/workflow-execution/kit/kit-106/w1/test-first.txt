@@ -1,0 +1,82 @@
+# KIT-106 W1 test-first: tests/testthat/test-omic-da-module.R (new) and the da blocks of test-omic-gui-config.R,
+# written first and frozen on the start commit.
+# Start commit b75561de (origin/performance-v2; R/ unchanged since 46ec9e01), extracted with `git archive` into the
+# W1 scratch folder (kit-106-w1/start-tree). R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner kit/scripts-078/run1.R (verbose);
+# R_LIBS = core/browser-smoke.r5uUT0/library (kit_110). Recorded 2026-11-09 by the W1 agent.
+
+## How the values were frozen
+# MULTISCHOLAR_KIT106_W1_DUMP=<file> writes (a)'s UI parts and each case's captures as R code. Two dump runs of the
+# whole file on the start tree, in separate processes at once, gave byte-identical files (cmp; 274,694 bytes); the
+# first was pasted between the OMIC_DA_FROZEN_UI and OMIC_DA_FROZEN markers. An earlier pair differed only in Save
+# Heatmap's output directory (a temporary path in the recorded call); the calls are masked since. The frozen file
+# then ran in two more processes (below), each identical to the frozen values.
+# Masked or left out as process-local: temporary roots and directories, dates and times (the download's file name,
+# the session's export time), hexadecimal ids, store entity paths (counted per masked path, as the entry suite does),
+# a DA manifest's store references (its rows digest keeps schema, columns, contrasts, parameters and model only),
+# terminal styling and non-ASCII bullets in messages (cli's differ between a UTF-8 console and check's).
+
+## (a) Identity: the four UIs (mod_lipid_da_ui("de"), mod_metab_da_ui("de"), mod_lipid_da_ui("de", profile =
+## trxOmicProfile()), mod_prot_da_ui("differential_expression") under MULTISCHOLAR_TEST_MODE=true), the `checked`
+## attribute of volcano_interactive masked: HTML digest, input and output ids, test ids, tab titles, labels, help
+## texts, choice lists, defaults (volcano_interactive's left out). 36 parts + 1.
+
+## (b) In process, (b-managed) and their expectations per case (2 + one per captured field and step)
+# Each step captures: outputs, values (volcano_glimma not read for lipid, metab and trx; read for proteomics),
+# calls (the static volcano, heatmap, Save Heatmap and table kernels with their scalar arguments and a data digest),
+# notes ("[type duration id] message", "remove <id>"), updates (selector updates), tab_status, history, states,
+# tab (reactive values: names and references), rows (the long tables' digests), files (project files, table
+# digests), operations (managed: the worker's operations in the step), errors (a set error or an unhandled observer
+# error); the download step adds the file name and its bytes' digest.
+#   lipid_refusals 28 (load_missing, run_no_data: no owner on the bus)
+#   lipid_mismatch 15, lipid_reordered 15 (the session file's assay names LCMS_Pos/LCMS_Neg; GCMS/LCMS_Pos)
+#   lipid_no_contrasts 15, lipid_invalid_preflight 15
+#   lipid_main 159 (start, load, run, select, tree_k, tree_height, tree_dynamic, save_heatmap, table_down,
+#     table_limit, table_combined, download)
+#   lipid_no_friendly 28 (the reference DA's long table without friendly_name)
+#   metab_*: the same cases and counts as lipid's (28, 15, 15, 15, 15, 159, 28)
+#   trx_refusals 54 (run_no_data, norm, run_no_contrasts, run_invalid), trx_main 94 (norm, run, select, table_down,
+#     table_limit, table_combined, download)
+#   prot_refusals 28 (load_missing, run_no_data), prot_load 28 (the legacy export adopted by the DIA owner, then run)
+#   prot_main 211 (start, open, run, select, volcano_unticked, volcano_ticked, volcano_labels, tree_k, tree_height,
+#     tree_dynamic, tree_none, dendrogram_off, save_heatmap, table_down, table_limit, download)
+#   prot_invalid_preflight 28, prot_no_contrasts 28 (open, run)
+#   (b-managed) lipid_managed 28, metab_managed 28 (run, select), trx_managed 41 (norm, run, select)
+# (c) 4 blocks from the same captures: the refusal order, the assay check, the table filter, D2's returned values.
+
+## Result on the start tree (b75561de's R/), the frozen file
+COUNTS test-omic-da-module.R pass 1183 fail 0 error 0 skip 0 exit=0 elapsed=179s
+## Result on the W1 tree (the da group added to R/utils_omic_gui_config.R; no DA module changed)
+COUNTS test-omic-da-module.R pass 1183 fail 0 error 0 skip 0 exit=0 elapsed=183s
+
+## test-omic-gui-config.R: the da blocks, the da member of guiConfigRequired, the validates block (:54) and the
+## srcref block extended to da. Written first: on the start tree (no da group) they fail; on the W1 tree they pass.
+COUNTS test-omic-gui-config.R pass 1065 fail 98 error 2 skip 0   (start tree)
+  BAD each omic's configuration validates, with the shell, binding, import, design, qc, norm and da groups
+  BAD removing a required field, or giving it the wrong type, is refused by class
+  BAD no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD KIT-106 W1 (D1): the da group holds each omic's DA tab values at the start commit
+  BAD KIT-106 W1 (D8): each da field, required or conditional, is refused by class when missing or mistyped
+COUNTS test-omic-gui-config.R pass 1393 fail 0 error 0 skip 0   (W1 tree)
+
+## The configuration's dependents on the W1 tree (every config is built and validated at each tab's start)
+COUNTS test-omic-design-module.R pass 146 fail 0 error 0 skip 0 exit=0 elapsed=13s
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0 exit=0 elapsed=5s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0 exit=0 elapsed=5s
+COUNTS test-omic-norm-module.R pass 547 fail 0 error 0 skip 0 exit=0 elapsed=145s
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0 exit=0 elapsed=49s
+
+## Observed on the start commit while writing the captures (proposed findings, not fixed: outside W1's files)
+# - Proteomics' in-process DA success never removes its "Running differential abundance analysis..." notice
+#   (id da_working, duration NULL): the success path returns at mod_prot_da_handlers_run_analysis.R:60, inside
+#   tryCatch, before the removal at :72. Managed sessions remove it first (:49-50). prot_main/prot_load "run".
+# - Proteomics' cluster summary shows a trailing "NULL" ("No clusters defined. ... heatmap.NULL") whenever tree
+#   cutting is set and no clusters exist, its default state (mod_prot_da_render_heatmap.R:104-105: cat() then
+#   return() inside renderPrint, which prints the visible NULL).
+# - Proteomics' "Download All Results" writes a placeholder line ("Differential expression results would be
+#   packaged here") into DA_results_<date>.zip (mod_prot_da_render_table.R:151-160).
+# - Lipid and metab: Run DA on an owner whose head is `initial` raises in the observer ("state requires explicit
+#   legacy conversion", readWorkflowOmicsMetadata) instead of the "No ... data loaded" refusal; the refusal shows only
+#   without an owner. Not reachable through the shell's tab gating; recorded from a scratch probe, not frozen.
+# - Fixture only: MCI-009's design matrix and quant table carry row names, which the DIA reference DA refuses
+#   ("`.data` must be a data frame without row names"); W1's proteomics fixture drops them.

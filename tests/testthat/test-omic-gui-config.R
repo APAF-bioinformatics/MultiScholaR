@@ -23,7 +23,11 @@ guiConfigRequired <- list(
     # NULL where the omic has none; the finalise fields, required with a finalise tab, are checked by
     # their own blocks below (KIT-104 W8 made its function fields required there).
     qc = c("title", "tabset_id", "groups", "auto_init", "complete_state", "itsd", "texts",
-        "notification_ids")
+        "notification_ids"),
+    # KIT-106 W1 (D8, and the fields every omic carries); the conditional and optional ones are checked
+    # by the da blocks below.
+    da = c("module_id", "status_key", "testids", "model", "threshold", "lfc", "columns", "summary", "tabs",
+        "assays", "table_filter", "views", "texts", "download")
 )
 
 guiConfigBuilderTexts <- c("save_success", "no_assignment", "contrast_group_prefix",
@@ -51,10 +55,10 @@ guiConfigFunctions <- function(x) {
     unlist(lapply(x, guiConfigFunctions), recursive = FALSE)
 }
 
-test_that("each omic's configuration validates, with the shell, binding, import, design, qc and norm groups", {
+test_that("each omic's configuration validates, with the shell, binding, import, design, qc, norm and da groups", {
     for (omic in guiConfigOmics) {
         config <- omicGuiConfig(omic)
-        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm"), info = omic)
+        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm", "da"), info = omic)
         expect_identical(config$shell$omic_type, omic, info = omic)
         expect_identical(config$binding$binding$omic_type, omic, info = omic)
         expect_identical(validateOmicGuiConfig(config), config, info = omic)
@@ -178,6 +182,11 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         # KIT-110 W3: trx's too (its run and reset handlers, utils_workflow_trx_norm.R).
         if (omic %in% c("lipidomics", "metabolomics", "transcriptomics")) expect_gt(length(norm_files), 0L)
         expect_false(any(startsWith(norm_files, "mod_")), info = paste(omic, "norm"))
+        # KIT-106 W1 (D8): the da group (the managed and in-process DA, the plots and the readers; a function still in an
+        # R/mod_*.R file is wired only when it moves to the core).
+        da_files <- as.character(unlist(lapply(guiConfigFunctions(config$da), utils::getSrcFilename)))
+        expect_gt(length(da_files), 0L)
+        expect_false(any(startsWith(da_files, "mod_")), info = paste(omic, "da"))
     }
 })
 
@@ -1139,4 +1148,242 @@ test_that("KIT-110 W3 (D8): the validator requires a norm field with the tab or 
     bad <- trx
     bad$norm$panels <- bad$norm$panels[c("ruv_grid", "tmm_logcpm", "actions")]
     expectGuiConfigRefused(bad, "norm$panels")
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-106 W1: the da group (D1) and its validator (D8), written from the ticket's table at the start
+# commit b75561de.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the start commit", {
+    configs <- lapply(stats::setNames(guiConfigOmics, guiConfigOmics), function(omic) omicGuiConfig(omic)$da)
+    lipid <- configs$lipidomics
+    metab <- configs$metabolomics
+    trx <- configs$transcriptomics
+    prot <- configs$proteomics
+    # The tab and status key: the shell's DA tab's, for every omic.
+    for (omic in guiConfigOmics) {
+        tab <- Filter(function(tab) tab$component %in% c("lipid_da", "metab_da", "trx_da", "prot_da"),
+            omicGuiConfig(omic)$shell$tabs)[[1L]]
+        expect_identical(c(configs[[omic]]$module_id, configs[[omic]]$status_key), c(tab$module_id, tab$status_key), info = omic)
+    }
+    expect_identical(c(lipid$module_id, lipid$status_key), c("de", "differential_analysis"))
+    expect_identical(c(prot$module_id, prot$status_key), c("differential_expression", "differential_expression"))
+    expect_identical(prot$status_keys, c("differential_abundance", "enrichment_analysis"))
+    # The test ids (trx has no load section).
+    for (prefix in c("lipid", "metab", "prot")) {
+        da <- list(lipid = lipid, metab = metab, prot = prot)[[prefix]]
+        expect_identical(da$testids, c(load_session = paste0(prefix, "-da-load-session"), run = paste0(prefix, "-da-run"),
+            download = paste0(prefix, "-da-download"), results_tabs = paste0(prefix, "-da-results-tabs")), info = prefix)
+    }
+    expect_identical(trx$testids, c(run = "trx-da-run", download = "trx-da-download", results_tabs = "trx-da-results-tabs"))
+    # The model: the formula input (lipid, metab, proteomics), or trx's model shown with its realised formula.
+    for (da in list(lipid, metab)) {
+        expect_identical(da$model, list(editable = TRUE, label = "Model Formula:", default = "~ 0 + group",
+            help = "Formula fetched from S4 object @args if available"))
+    }
+    expect_identical(prot$model$help, "Formula fetched from S4 object @args")
+    expect_false(trx$model$editable)
+    expect_identical(trx$model[c("heading", "output")], list(heading = "Model", output = "formula_display"))
+    expect_identical(trx$model$formula, trxRealisedFormula)
+    # The threshold and fold-change inputs: today's values; trx's labels, and its fold change is not tested.
+    numbers <- list(value = 0.05, min = 0.001, max = 0.2, step = 0.005)
+    for (da in configs) expect_identical(da$threshold[names(numbers)], numbers)
+    for (da in configs) expect_identical(da$lfc[c("value", "min", "max", "step")], list(value = 0, min = 0, max = 2, step = 0.1))
+    expect_identical(c(lipid$threshold$label, metab$threshold$label, prot$threshold$label), rep("Q-value Threshold:", 3))
+    expect_identical(c(lipid$lfc$label, metab$lfc$label, prot$lfc$label), rep("Log Fold-Change Cutoff:", 3))
+    expect_identical(trx$threshold$label, "FDR (BH) threshold:")
+    expect_identical(trx$lfc$label, "Fold-change line (display only; no test):")
+    expect_identical(vapply(configs, function(da) da$lfc$tested, TRUE),
+        c(proteomics = TRUE, lipidomics = TRUE, metabolomics = TRUE, transcriptomics = FALSE))
+    # The table's columns, the summary and the nouns.
+    expect_identical(lipid$columns, list(id = "lipid_id", label = "lipid_name", fold_change = "logFC", pvalue = "raw_pvalue",
+        significance = "fdr_qvalue"))
+    expect_identical(metab$columns[c("id", "label")], list(id = "metabolite_id", label = "metabolite_name"))
+    expect_identical(trx$columns, list(id = "GeneID", label = "GeneName", fold_change = "logFC", pvalue = "PValue",
+        significance = "FDR", significance_label = "FDR (BH)"))
+    expect_identical(prot$columns, list(id_slot = "protein_id_column", fold_change = "log2FC", pvalue = "raw_pvalue",
+        significance = "fdr_qvalue"))
+    expect_identical(lapply(configs, `[[`, "summary"), list(proteomics = list(noun = "genes", significance_label = "q"),
+        lipidomics = list(noun = "lipids", significance_label = "Q"), metabolomics = list(noun = "metabolites", significance_label = "Q"),
+        transcriptomics = list(noun = "genes", significance_label = "FDR (BH)")))
+    expect_identical(lipid$nouns, c(top_n = "Top N Lipids:", scaling = "Row (lipid) scaling", labels = "Show Lipid Labels",
+        cluster = "lipids"))
+    expect_identical(metab$nouns, c(top_n = "Top N Metabolites:", scaling = "Row (metabolite) scaling",
+        labels = "Show Metabolite Labels", cluster = "metabolites"))
+    expect_identical(prot$nouns, c(top_n = "Top N Genes:", scaling = "Row (gene) scaling", labels = "Show Gene Labels",
+        label_top = "Label Top Proteins", cluster = "proteins"))
+    expect_null(trx$nouns)
+    # The tabs, the assay and table-filter rules.
+    expect_identical(lipid$tabs, c(volcano = "Volcano Plot", heatmap = "Heatmap", table = "DA Results Table"))
+    expect_identical(trx$tabs, c(volcano = "Volcano Plot", table = "DA Results Table"))
+    expect_identical(vapply(configs, `[[`, "", "assays"),
+        c(proteomics = "none", lipidomics = "multi", metabolomics = "multi", transcriptomics = "single"))
+    expect_identical(vapply(configs, `[[`, "", "table_filter"),
+        c(proteomics = "store_page", lipidomics = "all_only", metabolomics = "all_or_combined", transcriptomics = "all_only"))
+    # The views: the static volcano, the heatmap with its tree-cut defaults, the table's defaults.
+    expect_identical(lipid$views$static_volcano, list(output = "volcano_static", plot = generateLipidDAVolcanoStatic,
+        show_labels = TRUE, n_labels = 15))
+    expect_identical(metab$views$static_volcano$plot, generateMetabDAVolcanoStatic)
+    expect_identical(trx$views$static_volcano, list(output = "volcano_static", show_labels = TRUE, n_labels = 15))
+    expect_identical(prot$views$static_volcano, list(output = "volcano_plot_static", plot = generateProtDAVolcanoStatic,
+        show_labels = TRUE, n_labels = 10))
+    expect_identical(lipid$views$heatmap, list(kernel = generateLipidDAHeatmap, labels_argument = "show_lipid_names",
+        tree_cut = list(default = "none", n_clusters = 4, cut_height = 10, min_cluster_size = 5), save_prefix = "lipid_",
+        save_note = TRUE))
+    expect_identical(metab$views$heatmap[c("kernel", "labels_argument", "save_prefix", "save_note")],
+        list(kernel = generateMetabDAHeatmap, labels_argument = "show_metabolite_names", save_prefix = "metab_", save_note = TRUE))
+    expect_identical(metab$views$heatmap$tree_cut, lipid$views$heatmap$tree_cut)
+    expect_identical(prot$views$heatmap, list(kernel = generateProtDAHeatmap, labels_argument = "show_gene_names",
+        tree_cut = list(default = "k_clusters", n_clusters = 4, cut_height = 0.5, min_cluster_size = 3), save_prefix = "prot_",
+        save_note = FALSE))
+    expect_null(trx$views$heatmap)
+    for (da in configs) expect_identical(da$views$table, list(significance = "significant", max_rows = 1000))
+    # The run (proteomics: its plugin), the source, the session load and the preflight.
+    for (da in list(lipid, metab, trx)) expect_identical(da$run$managed, runWorkflowOmicsManagedDa)
+    expect_identical(c(lipid$run$in_process, metab$run$in_process, trx$run$in_process),
+        c(runLipidReferenceDaAnalysis, runMetabReferenceDaAnalysis, runTrxReferenceDaAnalysis))
+    expect_identical(lipid$source, list(read_metadata = readLipidWorkflowMetadata, class = "LipidomicsAssayData",
+        no_data = "No lipidomics data loaded. Please load a filtered session first."))
+    expect_identical(metab$source$read_metadata, readMetabWorkflowMetadata)
+    expect_identical(trx$source, list(class = "TranscriptomicsAssayData",
+        no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."))
+    expect_identical(lipid$session_load, list(file = "lipid_filtered_session_data_latest.rds", assay_rule = "setequal",
+        assay_omic_type = "lipidomics",
+        assay_message = "Loaded lipid session assay_names do not match S4 lipid_data assays: session [%s], S4 [%s]"))
+    expect_identical(metab$session_load, list(file = "metab_filtered_session_data_latest.rds", assay_rule = "identical",
+        assay_message = "Session assay_names do not match current_s4_object assays: session=%s; object=%s"))
+    expect_null(trx$session_load)
+    expect_identical(c(lipid$preflight_first, metab$preflight_first, trx$preflight_first), c(FALSE, TRUE, FALSE))
+    expect_identical(metab$preflight, validateMetabDesignDaPreflight)
+    # The texts, the download and proteomics' plugins.
+    for (da in list(lipid, metab)) {
+        expect_identical(da$texts, c(status_ready = "Data loaded. Ready to run analysis.",
+            status_waiting = "Waiting for data.\nClick 'Load Filtered Session' to begin.",
+            contrasts_none = "No contrasts defined.\nLoad a filtered session or define contrasts in the design tab."))
+    }
+    expect_identical(trx$texts[c("status_ready", "status_waiting")], rep("Ready. The DA runs on the normalised (RUVs) state.", 2) |>
+        stats::setNames(c("status_ready", "status_waiting")))
+    expect_identical(prot$texts, c(status_waiting = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+        contrasts_none = "No contrasts available.\nComplete normalization and\ncorrelation filtering first."))
+    expect_identical(prot$status_text, diaDaStatusText)
+    expect_identical(lapply(configs, `[[`, "download"), list(proteomics = list(stem = "DA_results_", extension = "zip"),
+        lipidomics = list(stem = "lipidomics_da_results_", extension = "csv"),
+        metabolomics = list(stem = "metabolomics_da_results_", extension = "csv"),
+        transcriptomics = list(stem = "transcriptomics_da_results_", extension = "csv")))
+    expect_identical(prot$plugins, c(init = "da_server_init_handlers", load = "da_server_load_session_handler",
+        run = "da_server_run_analysis_handler", archive = "prot_da_session_archive"))
+    expect_null(lipid$plugins)
+    # Each named plugin handler is today's server's (the archive chooser is W5's to name).
+    for (handler in prot$plugins[c("init", "load", "run")]) expect_true(is.function(get(handler, envir = asNamespace("MultiScholaR"))))
+})
+
+test_that("KIT-106 W1 (D8): each da field, required or conditional, is refused by class when missing or mistyped; the optional ones by type", {
+    lipid <- omicGuiConfig("lipidomics")
+    trx <- omicGuiConfig("transcriptomics")
+    prot <- omicGuiConfig("proteomics")
+    refused <- function(config, path, value = NULL, mistyped = list(NA)) {
+        parts <- strsplit(path, "$", fixed = TRUE)[[1L]]
+        removed <- config
+        removed[["da"]][[parts]] <- NULL
+        expectGuiConfigRefused(removed, paste0("da$", path))
+        bad <- config
+        bad[["da"]][[parts]] <- mistyped[[1L]]
+        expectGuiConfigRefused(bad, paste0("da$", path))
+    }
+    # The always-required fields' members.
+    for (path in c("model$editable", "model$help", "model$label", "model$default", "threshold$label", "threshold$value",
+        "threshold$min", "threshold$max", "threshold$step", "lfc$label", "lfc$value", "lfc$tested", "columns$fold_change",
+        "columns$pvalue", "columns$significance", "summary$noun", "summary$significance_label", "views$static_volcano",
+        "views$table", "views$static_volcano$output", "views$static_volcano$show_labels", "views$static_volcano$n_labels",
+        "views$table$significance", "views$table$max_rows", "download$stem", "download$extension")) {
+        refused(lipid, path)
+    }
+    for (path in c("model$heading", "model$output")) refused(trx, path)
+    for (key in c("status_waiting", "contrasts_none")) {
+        bad <- lipid
+        bad$da$texts <- bad$da$texts[names(bad$da$texts) != key]
+        expectGuiConfigRefused(bad, paste0("da$texts$", key))
+    }
+    # The choices and the tabs from the frame's set in its order.
+    for (field in c("assays", "table_filter")) {
+        bad <- lipid
+        bad$da[[field]] <- "every"
+        expectGuiConfigRefused(bad, paste0("da$", field))
+    }
+    bad <- lipid
+    bad$da$tabs <- rev(bad$da$tabs)
+    expectGuiConfigRefused(bad, "da$tabs")
+    bad <- lipid
+    bad$da$tabs <- bad$da$tabs[c("heatmap", "table")]
+    expectGuiConfigRefused(bad, "da$tabs")
+    bad <- lipid
+    bad$da$tabs <- c(bad$da$tabs, summary = "Summary")
+    expectGuiConfigRefused(bad, "da$tabs")
+    # The identifier column, by its name or by the object's slot (one of the two).
+    bad <- lipid
+    bad$da$columns$id <- NULL
+    expectGuiConfigRefused(bad, "da$columns")
+    bad <- prot
+    bad$da$columns$id <- "uniprot_acc"
+    expectGuiConfigRefused(bad, "da$columns")
+    # The heatmap view with the heatmap tab: required for lipid and proteomics; trx has neither, and validates.
+    for (config in list(lipid, prot)) {
+        for (path in c("views$heatmap", "views$heatmap$kernel", "views$heatmap$labels_argument", "views$heatmap$tree_cut",
+            "views$heatmap$save_prefix", "views$heatmap$save_note", "views$heatmap$tree_cut$default",
+            "views$heatmap$tree_cut$n_clusters", "views$heatmap$tree_cut$cut_height", "views$heatmap$tree_cut$min_cluster_size")) {
+            refused(config, path)
+        }
+    }
+    bad <- lipid
+    bad$da$views$heatmap$tree_cut$default <- "always"
+    expectGuiConfigRefused(bad, "da$views$heatmap$tree_cut$default")
+    with_tab <- trx
+    with_tab$da$tabs <- c(volcano = "Volcano Plot", heatmap = "Heatmap", table = "DA Results Table")
+    expectGuiConfigRefused(with_tab, "da$views$heatmap")
+    with_tab$da$views$heatmap <- lipid$da$views$heatmap
+    expect_identical(validateOmicGuiConfig(with_tab), with_tab)
+    # The session load with the load section (its test id), unless the load plugin renders it.
+    for (path in c("session_load", "session_load$file", "session_load$assay_rule", "session_load$assay_message")) refused(lipid, path)
+    bad <- lipid
+    bad$da$session_load$assay_rule <- "subset"
+    expectGuiConfigRefused(bad, "da$session_load$assay_rule")
+    with_load <- trx
+    with_load$da$testids[["load_session"]] <- "trx-da-load-session"
+    expectGuiConfigRefused(with_load, "da$session_load")
+    expect_null(prot$da$session_load)
+    # The run and the source, unless a plugin replaces them.
+    for (path in c("run", "run$managed", "run$in_process", "source", "source$class", "source$no_data")) {
+        refused(lipid, path)
+        refused(trx, path)
+    }
+    without_plugins <- prot
+    without_plugins$da$plugins <- without_plugins$da$plugins[c("load", "archive")]
+    expectGuiConfigRefused(without_plugins, "da$run")
+    without_plugins$da$run <- lipid$da$run
+    expectGuiConfigRefused(without_plugins, "da$source")
+    without_plugins$da$source <- lipid$da$source
+    expect_identical(validateOmicGuiConfig(without_plugins), without_plugins)
+    bad <- prot
+    bad$da$plugins[["export"]] <- "prot_da_export"
+    expectGuiConfigRefused(bad, "da$plugins")
+    # The optional fields, checked by type when present (the function fields W2 wires among them).
+    optional <- list(lipid = c("status_keys", "nouns", "status_text", "preflight", "preflight_first", "contrast_entries",
+        "contrast_entry", "plugins", "model$text", "model$formula", "views$static_volcano$plot", "run$export_report",
+        "source$read_metadata", "session_load$assay_omic_type", "columns$label", "columns$significance_label",
+        "texts$status_ready"))
+    for (path in optional$lipid) {
+        parts <- strsplit(path, "$", fixed = TRUE)[[1L]]
+        removed <- lipid
+        bad <- lipid
+        if (identical(path, "texts$status_ready")) {
+            removed$da$texts <- removed$da$texts[names(removed$da$texts) != "status_ready"]
+            bad$da$texts[["status_ready"]] <- ""
+        } else {
+            removed[["da"]][[parts]] <- NULL
+            bad[["da"]][[parts]] <- if (identical(path, "plugins")) list(NA) else NA
+        }
+        expect_identical(validateOmicGuiConfig(removed), removed, info = path)
+        expectGuiConfigRefused(bad, paste0("da$", path))
+    }
 })

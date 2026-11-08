@@ -52,6 +52,18 @@
 # requires a field only with the tab or panel that uses it (KIT-110 D8): the ITSD table with the
 # `itsd` tab; the correlation, skip-correlation flags, final PCA and managed-correlation notice with
 # the `correlation_filter` tab; the export with the `export` panel.
+#
+# KIT-106 W1 adds the `da` group (design 4.8, the ticket's D1 and D8) for all four omics, with the
+# values the DA tabs have at the KIT-106 start commit b75561de (R/ unchanged since 46ec9e01), with
+# their file:line there: the tab and status key, the test ids, the model (the formula input, or trx's
+# model shown), the threshold and fold-change inputs, the table's columns, the summary, the nouns, the
+# results tabs, the assay and table-filter rules, the views (static volcano, heatmap, table), the run
+# and its source, the session load and its assay check, the refusal order (`preflight_first`), the
+# texts, the download and proteomics' plugins (init, load, run, archive). Function fields are the
+# core's; those still in an R/mod_*.R file at the start commit (lipid's preflight, trx's model text,
+# static volcano, source read, contrast entries and export report) are wired when W2 moves them.
+# `testids`, `summary`, `tabs` and `table_filter` are required with D8's always-required fields, as
+# every omic carries them.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -59,7 +71,7 @@
 
 #' The shared GUI layer's configuration of one omic, validated.
 #' @param omic_type One of `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
-#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc` and `norm`.
+#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc`, `norm` and `da`.
 #' @noRd
 omicGuiConfig <- function(omic_type) {
     builders <- list(proteomics = omicGuiConfigProteomics, lipidomics = omicGuiConfigLipidomics,
@@ -85,7 +97,7 @@ validateOmicGuiConfig <- function(config) {
     if (!is.list(config)) omicGuiConfigAbort("config", "must be a list")
     schema <- omicGuiConfigSchema()
     groups <- c(shell = "named_list", binding = "named_list", import = "named_list",
-        design = "named_list", qc = "named_list", norm = "named_list_or_null")
+        design = "named_list", qc = "named_list", norm = "named_list_or_null", da = "named_list")
     checkOmicGuiFields(config, groups)
     validateOmicGuiShell(config$shell, schema)
     validateOmicGuiBinding(config$binding, config$shell$omic_type, schema)
@@ -93,6 +105,7 @@ validateOmicGuiConfig <- function(config) {
     validateOmicGuiDesign(config$design, config, schema)
     validateOmicGuiQc(config$qc, config$shell$routes, schema)
     if (!is.null(config$norm)) validateOmicGuiNorm(config$norm, schema)
+    validateOmicGuiDa(config$da, schema)
     invisible(config)
 }
 
@@ -214,7 +227,41 @@ omicGuiConfigSchema <- function() {
                 percentage_step = "num1", k_penalty_weight = "num1", percentage = "num1", k = "num1"),
             actions = character(), export = c(button = "chr1")),
         # The QC tabs a frame can show, in their order.
-        norm_plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log")
+        norm_plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log"),
+        # KIT-106 W1 (design 4.8, D1, D8): the DA tab. These always; `views$heatmap` with the heatmap tab;
+        # `session_load` with the load section (its test id) unless the `load` plugin renders it; `run` unless the
+        # `run` plugin is present; `source` unless the `init` plugin is present; the rest by type when present.
+        da = c(module_id = "chr1", status_key = "chr1", testids = "named_chr", model = "named_list",
+            threshold = "named_list", lfc = "named_list", columns = "named_list", summary = "named_list",
+            tabs = "named_chr", assays = "chr1", table_filter = "chr1", views = "named_list", texts = "named_chr",
+            download = "named_list"),
+        da_optional = c(status_keys = "chr", nouns = "named_chr", status_text = "ref", preflight = "ref",
+            preflight_first = "lgl1", contrast_entries = "ref", contrast_entry = "ref", plugins = "named_chr"),
+        # `editable`: the formula input (its label, default and help); otherwise the model shown (its heading,
+        # output and help), with its text and realised formula by type when present.
+        da_model = c(editable = "lgl1", help = "chr"),
+        da_model_editable = c(label = "chr1", default = "chr1"),
+        da_model_shown = c(heading = "chr1", output = "chr1"),
+        da_model_optional = c(text = "ref", formula = "ref"),
+        da_input = c(label = "chr1", value = "num1", min = "num1", max = "num1", step = "num1"),
+        da_lfc = c(tested = "lgl1"),
+        # The table's columns: an omic that names its identifier by the object's slot (`id_slot`) has no `id`.
+        da_columns = c(fold_change = "chr1", pvalue = "chr1", significance = "chr1"),
+        da_columns_optional = c(id = "chr1", label = "chr1", id_slot = "chr1", significance_label = "chr1"),
+        da_summary = c(noun = "chr1", significance_label = "chr1"),
+        da_tabs = c("volcano", "heatmap", "table"),
+        da_texts = c(status_waiting = "chr1", contrasts_none = "chr1"),
+        da_texts_optional = c(status_ready = "chr1"),
+        da_static_volcano = c(output = "chr1", show_labels = "lgl1", n_labels = "num1"),
+        da_heatmap = c(kernel = "ref", labels_argument = "chr1", tree_cut = "named_list", save_prefix = "chr1",
+            save_note = "lgl1"),
+        da_tree_cut = c(default = "chr1", n_clusters = "num1", cut_height = "num1", min_cluster_size = "num1"),
+        da_table = c(significance = "chr1", max_rows = "num1"),
+        da_download = c(stem = "chr1", extension = "chr1"),
+        da_run = c(managed = "ref", in_process = "ref"),
+        da_source = c(class = "chr1", no_data = "chr1"),
+        da_session_load = c(file = "chr1", assay_rule = "chr1", assay_message = "chr1"),
+        da_plugins = c("init", "load", "run", "archive")
     )
 }
 
@@ -439,6 +486,71 @@ validateOmicGuiNorm <- function(norm, schema) {
     checkOmicGuiFields(norm$testids, schema$norm_testids[setdiff(names(schema$norm_testids), needed)], "norm$testids",
         required = FALSE)
     invisible(norm)
+}
+
+#' The da group (KIT-106 D1, D8): its fields; the model, editable or shown; the threshold and fold-change
+#' inputs; the table's columns, the summary, the results tabs from the frame's set in its order, the assay
+#' and table-filter rules, the views, texts and download; the heatmap view with the heatmap tab; the
+#' session load with the load section unless a plugin renders it; the run and the source unless a plugin
+#' replaces them; the optional fields by type.
+#' @noRd
+validateOmicGuiDa <- function(da, schema) {
+    checkOmicGuiFields(da, schema$da, "da")
+    checkOmicGuiFields(da, schema$da_optional, "da", required = FALSE)
+    checkOmicGuiFields(da$model, schema$da_model, "da$model")
+    checkOmicGuiFields(da$model, if (da$model$editable) schema$da_model_editable else schema$da_model_shown, "da$model")
+    checkOmicGuiFields(da$model, schema$da_model_optional, "da$model", required = FALSE)
+    checkOmicGuiFields(da$threshold, schema$da_input, "da$threshold")
+    checkOmicGuiFields(da$lfc, c(schema$da_input, schema$da_lfc), "da$lfc")
+    checkOmicGuiFields(da$columns, schema$da_columns, "da$columns")
+    checkOmicGuiFields(da$columns, schema$da_columns_optional, "da$columns", required = FALSE)
+    if (is.null(da$columns[["id"]]) == is.null(da$columns[["id_slot"]])) {
+        omicGuiConfigAbort("da$columns", "must name the identifier by its column (`id`) or by the object's slot (`id_slot`)")
+    }
+    checkOmicGuiFields(da$summary, schema$da_summary, "da$summary")
+    tabs <- names(da$tabs)
+    if (anyDuplicated(tabs) || !all(c("volcano", "table") %in% tabs) || !all(tabs %in% schema$da_tabs) ||
+        is.unsorted(match(tabs, schema$da_tabs))) {
+        omicGuiConfigAbort("da$tabs", sprintf("must name the volcano and table tabs (and the heatmap's) once each, in their order (%s)",
+            paste(schema$da_tabs, collapse = ", ")))
+    }
+    checkOmicGuiChoice(da$assays, "da$assays", c("multi", "single", "none"))
+    checkOmicGuiChoice(da$table_filter, "da$table_filter", c("all_only", "all_or_combined", "store_page"))
+    checkOmicGuiFields(da$views, c(static_volcano = "named_list", table = "named_list"), "da$views")
+    checkOmicGuiFields(da$views$static_volcano, schema$da_static_volcano, "da$views$static_volcano")
+    checkOmicGuiFields(da$views$static_volcano, c(plot = "ref"), "da$views$static_volcano", required = FALSE)
+    checkOmicGuiFields(da$views$table, schema$da_table, "da$views$table")
+    if ("heatmap" %in% tabs) {
+        checkOmicGuiFields(da$views, c(heatmap = "named_list"), "da$views")
+        checkOmicGuiFields(da$views$heatmap, schema$da_heatmap, "da$views$heatmap")
+        checkOmicGuiFields(da$views$heatmap$tree_cut, schema$da_tree_cut, "da$views$heatmap$tree_cut")
+        checkOmicGuiChoice(da$views$heatmap$tree_cut$default, "da$views$heatmap$tree_cut$default",
+            c("none", "k_clusters", "height_cutoff", "dynamic"))
+    }
+    checkOmicGuiFields(da$texts, schema$da_texts, "da$texts")
+    checkOmicGuiFields(da$texts, schema$da_texts_optional, "da$texts", required = FALSE)
+    checkOmicGuiFields(da$download, schema$da_download, "da$download")
+    plugins <- names(da$plugins)
+    if (!all(plugins %in% schema$da_plugins)) {
+        omicGuiConfigAbort("da$plugins", sprintf("must name only the plugins %s", paste(schema$da_plugins, collapse = ", ")))
+    }
+    if ("load_session" %in% names(da$testids) && !"load" %in% plugins) {
+        checkOmicGuiFields(da, c(session_load = "named_list"), "da")
+        checkOmicGuiFields(da$session_load, schema$da_session_load, "da$session_load")
+        checkOmicGuiFields(da$session_load, c(assay_omic_type = "chr1"), "da$session_load", required = FALSE)
+        checkOmicGuiChoice(da$session_load$assay_rule, "da$session_load$assay_rule", c("setequal", "identical"))
+    }
+    if (!"run" %in% plugins) {
+        checkOmicGuiFields(da, c(run = "named_list"), "da")
+        checkOmicGuiFields(da$run, schema$da_run, "da$run")
+        checkOmicGuiFields(da$run, c(export_report = "ref"), "da$run", required = FALSE)
+    }
+    if (!"init" %in% plugins) {
+        checkOmicGuiFields(da, c(source = "named_list"), "da")
+        checkOmicGuiFields(da$source, schema$da_source, "da$source")
+        checkOmicGuiFields(da$source, c(read_metadata = "ref"), "da$source", required = FALSE)
+    }
+    invisible(da)
 }
 
 #' Check the fields a schema names: present (when required) and of their type.
@@ -750,6 +862,49 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
         managed_correlation_notify = managed_correlation_notify)
 }
 
+#' The DA tab of lipid and metab at the KIT-106 start commit (b75561de; the DA files unchanged since
+#' 35f855bd for lipid and 0aee1526 for metab): one layout written twice (mod_lipid_da_ui.R:9-444,
+#' mod_metab_da.R:38-523), differing in the test-id prefix, the nouns and the per-omic values of design
+#' D7. Shared: the tab and status key (mod_lipid_da_analysis_helpers.R:272; mod_metab_da_observer_helpers.R:671),
+#' the formula input and its help (mod_lipid_da_ui.R:24-30), the threshold and fold-change inputs
+#' (:35-50), the tabs (:120, :177, :373), the static volcano's labels (mod_lipid_da_display_helpers.R:
+#' 137-138; mod_metab_da_display_helpers.R:436-437), the heatmap's tree-cut defaults (mod_lipid_da_ui.R:
+#' 310-331; mod_metab_da.R:333-366, KIT-101 F-03) and save note (mod_lipid_da.R:74-87;
+#' mod_metab_da_registration_helpers.R:40), the table's defaults (mod_lipid_da_ui.R:399-420), the status and
+#' contrasts texts (mod_lipid_da_display_helpers.R:29-40; mod_metab_da_display_helpers.R:278-329) and the
+#' managed DA (utils_workflow_omics_actions.R:521, called at mod_lipid_da_analysis_helpers.R:198,
+#' mod_metab_da_observer_helpers.R:722).
+#' @param prefix The test-id prefix (`lipid`, `metab`).
+#' @param values The per-omic values: `columns`, `summary`, `nouns`, `table_filter`, `static_volcano`
+#'   (the plot), `heatmap` (its kernel, its label argument and save prefix), `run_in_process`, `source`,
+#'   `session_load`, `preflight_first`, `download` (the file stem).
+#' @noRd
+omicGuiFeatureDa <- function(prefix, values) {
+    list(module_id = "de", status_key = "differential_analysis",
+        testids = c(load_session = paste0(prefix, "-da-load-session"), run = paste0(prefix, "-da-run"),
+            download = paste0(prefix, "-da-download"), results_tabs = paste0(prefix, "-da-results-tabs")),
+        model = list(editable = TRUE, label = "Model Formula:", default = "~ 0 + group",
+            help = "Formula fetched from S4 object @args if available"),
+        threshold = list(label = "Q-value Threshold:", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
+        lfc = list(label = "Log Fold-Change Cutoff:", value = 0, min = 0, max = 2, step = 0.1, tested = TRUE),
+        columns = values$columns, summary = values$summary, nouns = values$nouns,
+        tabs = c(volcano = "Volcano Plot", heatmap = "Heatmap", table = "DA Results Table"),
+        assays = "multi", table_filter = values$table_filter,
+        views = list(
+            static_volcano = list(output = "volcano_static", plot = values$static_volcano, show_labels = TRUE, n_labels = 15),
+            heatmap = list(kernel = values$heatmap$kernel, labels_argument = values$heatmap$labels_argument,
+                tree_cut = list(default = "none", n_clusters = 4, cut_height = 10, min_cluster_size = 5),
+                save_prefix = values$heatmap$save_prefix, save_note = TRUE),
+            table = list(significance = "significant", max_rows = 1000)),
+        run = list(managed = runWorkflowOmicsManagedDa, in_process = values$run_in_process),
+        source = values$source, session_load = values$session_load,
+        preflight_first = values$preflight_first,
+        texts = c(status_ready = "Data loaded. Ready to run analysis.",
+            status_waiting = "Waiting for data.\nClick 'Load Filtered Session' to begin.",
+            contrasts_none = "No contrasts defined.\nLoad a filtered session or define contrasts in the design tab."),
+        download = list(stem = values$download, extension = "csv"))
+}
+
 #' The lipid assay-name rule and messages (lipid `processing`:443-468; now
 #' `validateOmicsImportAssayNames()`): a second name needs a second file and the reverse. Trx runs
 #' the same rule (`processing`:652).
@@ -786,7 +941,53 @@ omicGuiConfigProteomics <- function() {
         design = omicGuiProteomicsDesign(),
         qc = omicGuiProteomicsQc(),
         # KIT-105 D3 (P-20): proteomics keeps its own normalisation frame until KIT-111.
-        norm = NULL)
+        norm = NULL,
+        da = omicGuiProteomicsDa())
+}
+
+#' The proteomics DA tab at b75561de (mod_prot_da_*.R; KIT-106 D5): the tab and status key (mod_proteomics.R, the
+#' shell's tab), the keys the run plugin also writes (utils_workflow_dia_da.R:451-452), the test ids
+#' (mod_prot_da_ui.R:33, :98, :112, :125), the formula input and its help (:45-52), the threshold and fold-change
+#' inputs (:57-71), the table's columns (the object's `protein_id_column`; mod_prot_da_render_table.R:28, :61-71) and
+#' its summary (:103-149), the nouns (mod_prot_da_ui.R:183, :227, :254, :377; mod_prot_da_render_heatmap.R:117), the
+#' tabs (mod_prot_da_ui.R:138, :208, :436), no assay selectors, the table paged from the store
+#' (mod_prot_da_render_table.R:12-28), the static volcano with its label inputs' defaults (mod_prot_da_render_volcano.R:
+#' 32-44), the heatmap (generateProtDAHeatmap, which routes a DA manifest to generateDIAReferenceHeatmap,
+#' func_prot_da_heatmap.R:56-57; mod_prot_da_render_heatmap.R:31-99), its tree-cut defaults (mod_prot_da_ui.R:306-362)
+#' and save prefix (mod_prot_da_render_heatmap.R:152), no save note (P-25), the status and contrasts texts and the
+#' completed status (mod_prot_da_handlers_init.R:320-335; `diaDaStatusText`, utils_workflow_dia_da.R:441), the
+#' download (mod_prot_da_render_table.R:151-160). The init, load, run and archive steps are plugins (D5): each is the
+#' handler today's server calls (mod_prot_da_server.R:36-45) or the archive chooser (mod_prot_da_ui.R:80-88).
+#' @noRd
+omicGuiProteomicsDa <- function() {
+    list(module_id = "differential_expression", status_key = "differential_expression",
+        status_keys = c("differential_abundance", "enrichment_analysis"),
+        testids = c(load_session = "prot-da-load-session", run = "prot-da-run", download = "prot-da-download",
+            results_tabs = "prot-da-results-tabs"),
+        model = list(editable = TRUE, label = "Model Formula:", default = "~ 0 + group",
+            help = "Formula fetched from S4 object @args"),
+        threshold = list(label = "Q-value Threshold:", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
+        lfc = list(label = "Log Fold-Change Cutoff:", value = 0, min = 0, max = 2, step = 0.1, tested = TRUE),
+        columns = list(id_slot = "protein_id_column", fold_change = "log2FC", pvalue = "raw_pvalue",
+            significance = "fdr_qvalue"),
+        summary = list(noun = "genes", significance_label = "q"),
+        nouns = c(top_n = "Top N Genes:", scaling = "Row (gene) scaling", labels = "Show Gene Labels",
+            label_top = "Label Top Proteins", cluster = "proteins"),
+        tabs = c(volcano = "Volcano Plot", heatmap = "Heatmap", table = "DA Results Table"),
+        assays = "none", table_filter = "store_page",
+        views = list(
+            static_volcano = list(output = "volcano_plot_static", plot = generateProtDAVolcanoStatic, show_labels = TRUE,
+                n_labels = 10),
+            heatmap = list(kernel = generateProtDAHeatmap, labels_argument = "show_gene_names",
+                tree_cut = list(default = "k_clusters", n_clusters = 4, cut_height = 0.5, min_cluster_size = 3),
+                save_prefix = "prot_", save_note = FALSE),
+            table = list(significance = "significant", max_rows = 1000)),
+        status_text = diaDaStatusText,
+        texts = c(status_waiting = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
+            contrasts_none = "No contrasts available.\nComplete normalization and\ncorrelation filtering first."),
+        download = list(stem = "DA_results_", extension = "zip"),
+        plugins = c(init = "da_server_init_handlers", load = "da_server_load_session_handler",
+            run = "da_server_run_analysis_handler", archive = "prot_da_session_archive"))
 }
 
 #' The proteomics QC tab (mod_prot_qc.R, mod_prot_qc_peptide.R, mod_prot_qc_protein.R at b423b764):
@@ -982,7 +1183,38 @@ omicGuiConfigLipidomics <- function() {
         import = omicGuiLipidImport(),
         design = omicGuiLipidDesign(),
         qc = omicGuiLipidQc(),
-        norm = omicGuiLipidNorm())
+        norm = omicGuiLipidNorm(),
+        da = omicGuiLipidDa())
+}
+
+#' The lipid DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
+#' (mod_lipid_da_results_helpers.R:106), the summary's noun and label (:6-7), the nouns (mod_lipid_da_ui.R:195,
+#' :222, :301; mod_lipid_da_display_helpers.R:239), the table filter where only "All" means every assay
+#' (mod_lipid_da_results_helpers.R:20, :117), the static volcano and heatmap kernels (mod_lipid_da_display_helpers.R:
+#' 121-140, :158, :173) and the heatmap's save prefix (mod_lipid_da_export_helpers.R:74), the in-process reference DA
+#' (mod_lipid_da_analysis_helpers.R:218), the source and its no-data text (:34-36), the session file and assay check:
+#' a set comparison, for a lipidomics session only (mod_lipid_da_session_helpers.R:56-64, :227), the preflight after
+#' the running notice (mod_lipid_da_analysis_helpers.R:139-157), the download's stem (mod_lipid_da_results_helpers.R:
+#' 173-193). The preflight (`validateLipidDaAnalysisPreflight`, mod_lipid_da_analysis_helpers.R:84) is wired when W2
+#' moves it to the core.
+#' @noRd
+omicGuiLipidDa <- function() {
+    omicGuiFeatureDa("lipid", list(
+        columns = list(id = "lipid_id", label = "lipid_name", fold_change = "logFC", pvalue = "raw_pvalue",
+            significance = "fdr_qvalue"),
+        summary = list(noun = "lipids", significance_label = "Q"),
+        nouns = c(top_n = "Top N Lipids:", scaling = "Row (lipid) scaling", labels = "Show Lipid Labels", cluster = "lipids"),
+        table_filter = "all_only",
+        static_volcano = generateLipidDAVolcanoStatic,
+        heatmap = list(kernel = generateLipidDAHeatmap, labels_argument = "show_lipid_names", save_prefix = "lipid_"),
+        run_in_process = runLipidReferenceDaAnalysis,
+        source = list(read_metadata = readLipidWorkflowMetadata, class = "LipidomicsAssayData",
+            no_data = "No lipidomics data loaded. Please load a filtered session first."),
+        session_load = list(file = "lipid_filtered_session_data_latest.rds", assay_rule = "setequal",
+            assay_omic_type = "lipidomics",
+            assay_message = "Loaded lipid session assay_names do not match S4 lipid_data assays: session [%s], S4 [%s]"),
+        preflight_first = FALSE,
+        download = "lipidomics_da_results_"))
 }
 
 #' The lipid normalisation tab (mod_lipid_norm_*.R at 9a98e765; the shared values are
@@ -1135,7 +1367,38 @@ omicGuiConfigMetabolomics <- function() {
         import = omicGuiMetabImport(),
         design = omicGuiMetabDesign(),
         qc = omicGuiMetabQc(),
-        norm = omicGuiMetabNorm())
+        norm = omicGuiMetabNorm(),
+        da = omicGuiMetabDa())
+}
+
+#' The metab DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
+#' (mod_metab_da_display_helpers.R:131-143), the summary's noun and label (:93-99), the nouns (mod_metab_da.R:222,
+#' :249, :328; mod_metab_da_display_helpers.R:224), the table filter where "All" and "Combined" mean every assay and a
+#' missing `comparison` or `friendly_name` column matches nothing (:13-29), the static volcano and heatmap kernels
+#' (:423-440, :480, :491). In mod_metab_da_observer_helpers.R: the heatmap's save prefix (:37), the in-process
+#' reference DA (:739), the source and its no-data text (:303, :309, :337), the session file and assay check, in
+#' order (:448, :789-803), the preflight before the running notice (:306-382, :384-424; `validateMetabDesignDaPreflight`,
+#' func_omics_design_shared.R:788) and the download's stem (:264).
+#' @noRd
+omicGuiMetabDa <- function() {
+    da <- omicGuiFeatureDa("metab", list(
+        columns = list(id = "metabolite_id", label = "metabolite_name", fold_change = "logFC", pvalue = "raw_pvalue",
+            significance = "fdr_qvalue"),
+        summary = list(noun = "metabolites", significance_label = "Q"),
+        nouns = c(top_n = "Top N Metabolites:", scaling = "Row (metabolite) scaling", labels = "Show Metabolite Labels",
+            cluster = "metabolites"),
+        table_filter = "all_or_combined",
+        static_volcano = generateMetabDAVolcanoStatic,
+        heatmap = list(kernel = generateMetabDAHeatmap, labels_argument = "show_metabolite_names", save_prefix = "metab_"),
+        run_in_process = runMetabReferenceDaAnalysis,
+        source = list(read_metadata = readMetabWorkflowMetadata, class = "MetaboliteAssayData",
+            no_data = "No metabolomics data loaded. Please load a filtered session first."),
+        session_load = list(file = "metab_filtered_session_data_latest.rds", assay_rule = "identical",
+            assay_message = "Session assay_names do not match current_s4_object assays: session=%s; object=%s"),
+        preflight_first = TRUE,
+        download = "metabolomics_da_results_"))
+    da$preflight <- validateMetabDesignDaPreflight
+    da
 }
 
 #' The metab normalisation tab (mod_metab_norm*.R at 9a98e765; the shared values are
@@ -1295,7 +1558,47 @@ omicGuiConfigTranscriptomics <- function() {
         import = omicGuiTrxImport(),
         design = omicGuiTrxDesign(),
         qc = omicGuiTrxQc(),
-        norm = omicGuiTrxNorm())
+        norm = omicGuiTrxNorm(),
+        da = omicGuiTrxDa())
+}
+
+#' The trx DA tab at b75561de: lipid's tab under the profile's DA entries (mod_transcriptomics.R:49-53, mod_trx_da.R).
+#' No load section (mod_lipid_da_ui.R:60) and no heatmap (:176); the test ids by the profile's prefix (:11). The model
+#' shown in place of the formula input, its text and the realised formula of the managed settings (mod_trx_da.R:24-39;
+#' mod_lipid_da_analysis_helpers.R:197); the threshold and display-only fold-change labels (mod_transcriptomics.R:49-50;
+#' the binding's `da_fixed`, utils_workflow_trx_declarations.R:722); the columns (mod_transcriptomics.R:51); the
+#' summary (mod_trx_da.R:157); one assay, on which the volcano opens (:123); the static volcano (:74-78); the in-process
+#' reference DA (mod_transcriptomics.R:53); the source's class and no-data text (mod_trx_da.R:129-130); the texts
+#' (:51-54, and lipid's contrasts text); the download's stem (:167). Wired when W2 moves them from mod_trx_da.R: the
+#' model text (`trxDaModelText`), the static volcano (`trxDaStaticVolcano`), the source read (`trxDaReadMetadata`), the
+#' contrast entries (`trxDaContrastEntries`, `trxDaContrastEntry`) and the export report (`trxDaExport`).
+#' @noRd
+omicGuiTrxDa <- function() {
+    list(module_id = "de", status_key = "differential_analysis",
+        testids = c(run = "trx-da-run", download = "trx-da-download", results_tabs = "trx-da-results-tabs"),
+        model = list(editable = FALSE, heading = "Model", output = "formula_display",
+            help = c("edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the",
+                "one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors",
+                "W_1..W_k as covariates. No fold-change test is applied."),
+            formula = trxRealisedFormula),
+        threshold = list(label = "FDR (BH) threshold:", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
+        lfc = list(label = "Fold-change line (display only; no test):", value = 0, min = 0, max = 2, step = 0.1,
+            tested = FALSE),
+        columns = list(id = "GeneID", label = "GeneName", fold_change = "logFC", pvalue = "PValue", significance = "FDR",
+            significance_label = "FDR (BH)"),
+        summary = list(noun = "genes", significance_label = "FDR (BH)"),
+        tabs = c(volcano = "Volcano Plot", table = "DA Results Table"),
+        assays = "single", table_filter = "all_only",
+        views = list(static_volcano = list(output = "volcano_static", show_labels = TRUE, n_labels = 15),
+            table = list(significance = "significant", max_rows = 1000)),
+        run = list(managed = runWorkflowOmicsManagedDa, in_process = runTrxReferenceDaAnalysis),
+        source = list(class = "TranscriptomicsAssayData",
+            no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."),
+        preflight_first = FALSE,
+        texts = c(status_ready = "Ready. The DA runs on the normalised (RUVs) state.",
+            status_waiting = "Ready. The DA runs on the normalised (RUVs) state.",
+            contrasts_none = "No contrasts defined.\nLoad a filtered session or define contrasts in the design tab."),
+        download = list(stem = "transcriptomics_da_results_", extension = "csv"))
 }
 
 #' The trx normalisation tab (KIT-110): `trxNormOptionsPanel`, `mod_trx_norm_server` and the profile's

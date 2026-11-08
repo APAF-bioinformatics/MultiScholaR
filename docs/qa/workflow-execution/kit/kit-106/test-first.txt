@@ -1,0 +1,40 @@
+# KIT-106 test-first: the before half of every retargeted or guarding test, on the start commit, unchanged.
+# Start commit b75561de (origin/performance-v2; R/ unchanged since 46ec9e01), extracted with `git archive` into the
+# W1 scratch folder (kit-106-w1/start-tree), so the tests ran on the start commit's tree exactly. R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner
+# kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.r5uUT0/library (kit_110). Recorded 2026-11-09 by the
+# W1 agent (W1 delegated by the lead).
+
+## The retargeted MCI blocks (MCI-009, 016, 022, 029, 031)
+COUNTS test-module-ci-prot-da.R pass 217 fail 0 error 0 skip 1 exit=0 elapsed=8s
+# (the 1 skip is Q-22's quarantined block, test-module-ci-prot-da.R:522, as in kit-105/skips-load_all.tsv:190)
+COUNTS test-module-ci-metab-da.R pass 142 fail 0 error 0 skip 0 exit=0 elapsed=20s
+COUNTS test-module-ci-lipid-da.R pass 139 fail 0 error 0 skip 0 exit=0 elapsed=25s
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0 exit=0 elapsed=35s
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0 exit=0 elapsed=82s
+
+## The F-03 parity guard (metab tree cut, D12)
+COUNTS test-metab-da-heatmap-shared.R pass 18 fail 0 error 0 skip 0 exit=0 elapsed=9s
+
+## The Facts retarget list (the DA lines of these files; helper-workflow-omics-worker.R:216, :229 through
+## test-workflow-omics-worker.R and test-workflow-omics-application-reads.R, its two users)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0 exit=0 elapsed=44s
+COUNTS test-module-ci-metab-norm.R pass 153 fail 0 error 0 skip 0 exit=0 elapsed=44s
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0 exit=0 elapsed=323s
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0 exit=0 elapsed=380s
+COUNTS test-workflow-omics-da-contrasts.R pass 138 fail 0 error 0 skip 0 exit=0 elapsed=92s
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0 exit=0 elapsed=25s
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0 exit=0 elapsed=42s
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0 exit=0 elapsed=44s
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0 exit=0 elapsed=41s
+
+## The entry-point suite against its frozen oracles (the four files in parallel, under systemd-inhibit --what=sleep;
+## ceilings 900 s per lane, 4,500 s per file). Each lane's expectations compare its whole record with its oracle, so a
+## pass is "identical".
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0 exit=0 elapsed=47s
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0 exit=0 elapsed=84s
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0 exit=0 elapsed=197s
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0 exit=0 elapsed=768s
+# All 10 lanes identical to their oracles (the KIT-110 counts: trx 29, lipid 35, metab 105, proteomics 187).
+
+## W1's own tests (written first): see w1/test-first.txt.
