@@ -1,0 +1,9 @@
+/frozen | 2026-11-08 -> 2026-11-09
+/source_sha | e76e1e14f167d168a9659ba9d8f796dbc656cc70 -> 39cfe7af4007ec7d523af1426b0333c07f9eb7e2
+/steps/da/outputs/lipidomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_copy/outputs/lipidomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_export/outputs/lipidomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_refusal/outputs/lipidomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_report/outputs/lipidomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_save/outputs/lipidomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+DIFFERENCES 8

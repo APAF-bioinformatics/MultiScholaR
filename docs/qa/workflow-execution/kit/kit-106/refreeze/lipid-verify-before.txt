@@ -1,0 +1,2 @@
+COUNTS test-gui-entry-lipidomics.R pass 29 fail 6 error 0 skip 0
+  BAD test-gui-entry-lipidomics.R :: KIT-101 entry lane lipid_canonical: two LipidSearch assays
