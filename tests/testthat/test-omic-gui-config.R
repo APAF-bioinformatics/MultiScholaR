@@ -1321,10 +1321,13 @@ test_that("KIT-106 W1 (D8): each da field, required or conditional, is refused b
         "threshold$min", "threshold$max", "threshold$step", "lfc$label", "lfc$value", "lfc$tested", "columns$fold_change",
         "columns$pvalue", "columns$significance", "summary$noun", "summary$significance_label", "views$static_volcano",
         "views$table", "views$static_volcano$output", "views$static_volcano$show_labels", "views$static_volcano$n_labels",
-        "views$table$significance", "views$table$max_rows", "download$stem", "download$extension")) {
+        "views$table$significance", "views$table$max_rows", "download$stem", "download$extension",
+        # KIT-106 W6: required since the W2 merge wired them for every omic that uses them.
+        "views$static_volcano$plot", "source$read_metadata")) {
         refused(lipid, path)
     }
-    for (path in c("model$heading", "model$output")) refused(trx, path)
+    # KIT-106 W6: a shown model's text and realised formula are required (trx's).
+    for (path in c("model$heading", "model$output", "model$text", "model$formula")) refused(trx, path)
     for (key in c("status_waiting", "contrasts_none")) {
         bad <- lipid
         bad$da$texts <- bad$da$texts[names(bad$da$texts) != key]
@@ -1394,8 +1397,8 @@ test_that("KIT-106 W1 (D8): each da field, required or conditional, is refused b
     expectGuiConfigRefused(bad, "da$plugins")
     # The optional fields, checked by type when present (the function fields W2 wires among them).
     optional <- list(lipid = c("status_keys", "nouns", "status_text", "preflight", "preflight_first", "contrast_entries",
-        "contrast_entry", "plugins", "model$text", "model$formula", "views$static_volcano$plot", "run$export_report",
-        "source$read_metadata", "session_load$assay_omic_type", "columns$label", "columns$significance_label",
+        "contrast_entry", "plugins", "model$text", "model$formula", "run$export_report",
+        "session_load$assay_omic_type", "columns$label", "columns$significance_label",
         "texts$status_ready"))
     for (path in optional$lipid) {
         parts <- strsplit(path, "$", fixed = TRUE)[[1L]]

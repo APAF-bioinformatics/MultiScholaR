@@ -1,0 +1,6 @@
+# KIT-106 W6: the da function fields wired since the W2 merge become required (D8): views$static_volcano$plot, source$read_metadata (without the init plugin), and a shown model's text and formula.
+# test-omic-gui-config.R with the new refusals, old validator:
+COUNTS test-omic-gui-config.R pass 1402 fail 4 error 0 skip 0
+  BAD test-omic-gui-config.R :: KIT-106 W1 (D8): each da field, required or conditional, is refused by class when missing or mistyped; the optional ones by type
+# new validator:
+COUNTS test-omic-gui-config.R pass 1406 fail 0 error 0 skip 0

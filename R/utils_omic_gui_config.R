@@ -499,7 +499,8 @@ validateOmicGuiDa <- function(da, schema) {
     checkOmicGuiFields(da, schema$da_optional, "da", required = FALSE)
     checkOmicGuiFields(da$model, schema$da_model, "da$model")
     checkOmicGuiFields(da$model, if (da$model$editable) schema$da_model_editable else schema$da_model_shown, "da$model")
-    checkOmicGuiFields(da$model, schema$da_model_optional, "da$model", required = FALSE)
+    # KIT-106 W6: a shown model's text and realised formula are required (trx's, wired at the W2 merge).
+    checkOmicGuiFields(da$model, schema$da_model_optional, "da$model", required = !isTRUE(da$model$editable))
     checkOmicGuiFields(da$threshold, schema$da_input, "da$threshold")
     checkOmicGuiFields(da$lfc, c(schema$da_input, schema$da_lfc), "da$lfc")
     checkOmicGuiFields(da$columns, schema$da_columns, "da$columns")
@@ -518,7 +519,8 @@ validateOmicGuiDa <- function(da, schema) {
     checkOmicGuiChoice(da$table_filter, "da$table_filter", c("all_only", "all_or_combined", "store_page"))
     checkOmicGuiFields(da$views, c(static_volcano = "named_list", table = "named_list"), "da$views")
     checkOmicGuiFields(da$views$static_volcano, schema$da_static_volcano, "da$views$static_volcano")
-    checkOmicGuiFields(da$views$static_volcano, c(plot = "ref"), "da$views$static_volcano", required = FALSE)
+    # KIT-106 W6: every omic's static volcano names its kernel (trx's wired at the W2 merge).
+    checkOmicGuiFields(da$views$static_volcano, c(plot = "ref"), "da$views$static_volcano")
     checkOmicGuiFields(da$views$table, schema$da_table, "da$views$table")
     if ("heatmap" %in% tabs) {
         checkOmicGuiFields(da$views, c(heatmap = "named_list"), "da$views")
@@ -549,7 +551,8 @@ validateOmicGuiDa <- function(da, schema) {
     if (!"init" %in% plugins) {
         checkOmicGuiFields(da, c(source = "named_list"), "da")
         checkOmicGuiFields(da$source, schema$da_source, "da$source")
-        checkOmicGuiFields(da$source, c(read_metadata = "ref"), "da$source", required = FALSE)
+        # KIT-106 W6: the source read is required with the frame's own init (trx's wired at the W2 merge).
+        checkOmicGuiFields(da$source, c(read_metadata = "ref"), "da$source")
     }
     invisible(da)
 }
