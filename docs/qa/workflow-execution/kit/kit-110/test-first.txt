@@ -1,0 +1,47 @@
+# KIT-110 test-first: the before half of every retargeted or guarding test, on the start commit, unchanged.
+# HEAD d5244ffe (R/ unchanged since 98da5939). R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file (two sequences in parallel); runner kit/scripts-078/run1.R;
+# R_LIBS = core/browser-smoke.KA61uA/library (kit_105). Recorded 2026-11-08 by the W2 agent (W1 delegated by the lead).
+
+## W1 (a) (and (b), (c), F105-*, W4, W5 blocks): the trx UI digest is among W1 (a)'s
+COUNTS test-omic-norm-module.R pass 525 fail 0 error 0 skip 0
+exit=0 elapsed=156s
+
+## W1 (b-trx) (new; kit-110/w1/test-first.txt)
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0
+exit=0 elapsed=49s
+
+## MCI-029 to MCI-032
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+exit=0 elapsed=39s
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+exit=0 elapsed=60s
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
+exit=0 elapsed=69s
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
+exit=0 elapsed=108s
+
+## The publications and declarations
+COUNTS test-trx-publication.R pass 174 fail 0 error 0 skip 0
+exit=0 elapsed=31s
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0
+exit=0 elapsed=83s
+
+## The entry suite's trx lane (trx_screen, against its oracle as re-frozen at a2b9b41d)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0
+exit=0 elapsed=37s
+
+## trx_screen alone with traces (the Simulation Setup's method) on the start commit's names
+# Harness record (instrumentation, not results): kit-105/lifecycle/lifecycle.R as committed fails before the lane runs
+# ("Error in identical(self$running[[self$current_file]]$context, context): attempt to use zero-length variable name"):
+# its ListReporter is never given a current file (start_file), so add_result fails on the first expectation. The
+# ListReporter version was written after KIT-105's runs and never run there (kit-105/entry-suite.md). A copy with
+# `multi$start_file()`/`multi$end_file()` around the test (the only change) was used, from the W2 agent's scratch
+# folder; the committed kit-105 script is unchanged (not in W2's scope). Rerun once with the repaired copy:
+LANE trx_screen identical_to_oracle=TRUE elapsed=32s
+CALLS mod_trx_norm_server 1
+CALLS runTrxNormalisation 2
+CALLS resetTrxNormalisation 0
+CALLS runTrxNormPublicationsInProcess 1
+CALLS runTrxPublicationInProcess 8
+# (runTrxPublicationInProcess 8: the norm step's 5, the DA publication 1, the RUVIII figures 2.)

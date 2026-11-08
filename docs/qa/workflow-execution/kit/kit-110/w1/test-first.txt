@@ -1,0 +1,32 @@
+# KIT-110 W1 test-first: tests/testthat/test-trx-norm-module.R (new), (b-trx), frozen on the start commit.
+# HEAD d5244ffe (origin/performance-v2; R/ unchanged since 98da5939, `git diff --quiet HEAD -- R` held). R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner
+# kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.KA61uA/library (kit_105). Recorded 2026-11-08.
+
+## How the values were frozen
+# MULTISCHOLAR_KIT110_W1_DUMP=<file> writes each case's captures as R code. Two dump runs in separate processes on
+# d5244ffe gave byte-identical files (cmp); the first was pasted between the TRX_NORM_W1_FROZEN markers.
+
+## The cases (each its own MCI-030 fixture, module_ci_trx_project(module_ci_trx_corpus()); the tab mounted through
+## mod_lipid_norm_server("norm", ..., "transcriptomics", ..., profile = trxOmicProfile()) in testServer)
+# in process:
+#   automatic_reset  run (automatic) -> reset after the run
+#   manual           run (manual, k 2, 10 %)
+#   reset_refused    reset before any run -> run (manual, k 4 above the cap of 3 for 12 samples; refused)
+# managed (omicsManagedChainMocks, the runner installed as MCI-030.3 does):
+#   managed          run (automatic): operations trx_qc_figures, trx_tmm_logcpm, trx_ruv_grid, trx_ruvs, trx_qc_figures,
+#                    trx_qc_figures, trx_ruv_publication, trx_composite_figure
+#   managed_refused  run (manual, k 4): operations trx_qc_figures, trx_tmm_logcpm, trx_ruv_grid; the worker refuses
+# Each step captures: the registered output names (34 before the grid has results, 37 after), each output's value
+# (image slots as the QC file their bytes match plus alt; labels; the log with times masked; ruv_qc_ui's HTML digest;
+# ruv_summary_counts; ruv_table_counts' digest; the cancor plot's kind), the normData flags and the states their
+# references name, the cancor plot's class, the history, the state digests, the record's trx_ruvs outcomes (digest),
+# tab_status, the notifications as "[type duration] message", the new log lines, the files under gene_qc_dir and
+# publication_graphs_dir, and (managed) the operations dispatched in the step.
+# Recorded while writing: in one managed session, a run after a refused run is refused by the in-test worker
+# ("worker failed: native reference roots contain a live payload"): the chain mocks run the worker in this process.
+# The managed refusal therefore has its own session. Not a product defect claim; noted for the lead.
+
+## Result on d5244ffe (the start commit's R/)
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0
+exit=0 elapsed=49s
