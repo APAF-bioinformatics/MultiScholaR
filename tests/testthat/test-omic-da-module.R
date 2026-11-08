@@ -2488,7 +2488,18 @@ omicDaW1Frozen[["metab_no_friendly"]] <- list(
             heatmap_manual_save_warning = "<ui> b49e16f946860932c7dd705a255211e9526ac5c4a85467ed0a5fd32b6e9e4d48",
             heatmap_plot = "<error> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found",
             volcano_static = "<error> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found"),
+        # KIT-106 W4, D4 (lead decision 2026-11-09, re-frozen once): the in-process export is the publication runner, which
+        # reads the head's accepted manifest, not the tab's list; the case mocks friendly_name out of the tab's list only.
+        # Was the two table widgets alone; now the export's 4 static volcano and 4 heatmap calls, then the table widgets.
         calls = c(
+            "generateMetabDAVolcanoStatic(selected_contrast=groupKO-groupWT, selected_assay=LCMS_Pos, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateMetabDAHeatmap(selected_contrast=groupKO-groupWT, selected_assay=LCMS_Pos, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_metabolite_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "generateMetabDAVolcanoStatic(selected_contrast=groupRES-groupWT, selected_assay=LCMS_Pos, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateMetabDAHeatmap(selected_contrast=groupRES-groupWT, selected_assay=LCMS_Pos, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_metabolite_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "generateMetabDAVolcanoStatic(selected_contrast=groupKO-groupWT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateMetabDAHeatmap(selected_contrast=groupKO-groupWT, selected_assay=GCMS, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_metabolite_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "generateMetabDAVolcanoStatic(selected_contrast=groupRES-groupWT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateMetabDAHeatmap(selected_contrast=groupRES-groupWT, selected_assay=GCMS, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_metabolite_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
             "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 16x7 <HEX>",
             "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 8x7 <HEX>"),
         notes = c(
@@ -2514,23 +2525,48 @@ omicDaW1Frozen[["metab_no_friendly"]] <- list(
             da_results_list = "<list: contrasts_results,da_metabolites_long,per_assay_results,significant_counts,qvalue_warnings,da_q_val_thresh,treat_lfc_cutoff,failed_contrasts>",
             formula_from_s4 = "<NULL>"),
         rows = c(da_metabolites_long = "24x22 aa6b404d253370a5"),
+        # KIT-106 W4, D4 (lead decision 2026-11-09, re-frozen once): the in-process export is the publication runner, which
+        # reads the head's accepted manifest, not the tab's list; the case mocks friendly_name out of the tab's list only.
+        # Was 4 TSVs (their friendly_name-less tables), their XLSX and NumSigDE; now the TSVs with friendly_name, every
+        # volcano and heatmap figure, and the store's figure entities with their roots (omics-figure 11,
+        # omics-figure-asset 19, dia-state 13 -> 43; kit-106/w4/w1-refreeze.md).
         files = c(
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "13",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "43",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>` = "2",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>` = "2",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>` = "2",
-            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "3e3c6fc5d8d3c979b055d3c20ac40196fa1d5e9559e3d0094564d616cb421712",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "8182dd547c4ecf1bfcd64eede3d2ca7fed28796be30db143270b4e1938b81f4a",
             `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "a717b83eaa50cbfe1da2c6f173204e476507406d34669f63e690693d7dd6cbcb",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "751ac64ceb5f2d1bb8602c40f16806d39341ff1e4c25cdf5b9e31fb66604cfce",
             `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv` = "5aa0397dfea01933f4c75f1baa67c7d456f3245c414e0e531a53d6a6927644a8",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv` = "cc3b4d6c4323e14b01e7caa7f564239f0dccf2816bee6c3c4d191ad2d90b273b",
             `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.tsv` = "5197cc3c9a90f81bba25e5cf83feb93eae5ddfa6091efc97876bccea812a1bef",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.tsv` = "b557e8c011c4f6809ca4d940a91686b44fdc3ed0b2af331174826e78ff3dcb7b",
             `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
             `publication_graphs/NumSigDeMolecules/metabolites_num_sig_barplot.png` = "<present>",
             `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
-            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx` = "<present>"),
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
         operations = NULL,
         errors = c(
             "<unhandled> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found",
@@ -4119,54 +4155,23 @@ omicDaW1Frozen[["metab_managed"]] <- list(
         calls = c(
             "generateMetabDAVolcanoStatic(selected_contrast=RES_vs_WT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
             "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 6x7 <HEX>"),
-        notes = c(
-            "[default NULL metabolomics_action_working] Applying metabolomics step ...",
-            "remove metabolomics_action_working"),
+        # KIT-106 W4, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
+        # 2026-11-06), so the managed page is not requested at select. Was the page action's two notices
+        # ("[default NULL metabolomics_action_working] Applying metabolomics step ...", "remove metabolomics_action_working"); now none.
+        notes = character(0),
         updates = character(0),
         tab_status = "<unchanged>",
         history = "<unchanged>",
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        files = c(
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "15",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>` = "2",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>` = "2",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>` = "2",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
-            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "8182dd547c4ecf1bfcd64eede3d2ca7fed28796be30db143270b4e1938b81f4a",
-            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "751ac64ceb5f2d1bb8602c40f16806d39341ff1e4c25cdf5b9e31fb66604cfce",
-            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv` = "cc3b4d6c4323e14b01e7caa7f564239f0dccf2816bee6c3c4d191ad2d90b273b",
-            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.tsv` = "b557e8c011c4f6809ca4d940a91686b44fdc3ed0b2af331174826e78ff3dcb7b",
-            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
-            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_barplot.png` = "<present>",
-            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
-            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx` = "<present>",
-            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
-        operations = "metab_volcano_page",
+        # KIT-106 W4, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
+        # 2026-11-06), so the managed page is not requested at select. Was the run step's files with the page's store
+        # entries added (omics-volcano-html 1; dia-state 14 -> 15); now "<unchanged>" (kit-106/w4/w1-refreeze.md).
+        files = "<unchanged>",
+        # KIT-106 W4, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
+        # 2026-11-06), so the managed page is not requested at select. Was "metab_volcano_page"; now none.
+        operations = character(0),
         errors = character(0)))
 
 omicDaW1Frozen[["trx_managed"]] <- list(
