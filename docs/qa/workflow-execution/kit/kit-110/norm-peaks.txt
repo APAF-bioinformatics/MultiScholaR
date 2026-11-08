@@ -1,0 +1,18 @@
+# KIT-110: controller phase peaks (GiB) for the normalisation phases, KIT-105 then KIT-110. A rise above 10% would be a finding.
+a normalisation                0.594 0.591 -0.6%
+a correlation                  0.594 0.591 -0.6%
+a session_export               0.769 0.756 -1.7%
+b normalisation                0.585 0.579 -1.1%
+b correlation                  0.585 0.581 -0.8%
+b session_export               0.618 0.627 +1.6%
+c normalisation                0.574 0.575 +0.1%
+m correlation                  0.932 0.932 +0.0%
+m ruv_covariates               0.873 0.873 +0.0%
+m session_export               0.878 0.878 +0.0%
+l normalisation_ruv            1.121 1.123 +0.1%
+l correlation                  1.041 1.043 +0.1%
+l session_export               0.657 0.658 +0.1%
+t normalisation_ruv            1.121 1.122 +0.0%
+t correlation                  1.042 1.042 -0.0%
+t session_export               0.662 0.660 -0.3%
+DECISION every phase within +10% of KIT-105
