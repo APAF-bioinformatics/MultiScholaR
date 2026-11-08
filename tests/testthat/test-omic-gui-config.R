@@ -795,8 +795,11 @@ guiConfigNormRequired <- c("module_id", "panels", "plot_tabs", "stage_labels", "
 guiConfigNormPanels <- list(aesthetics = character(), itsd = "aggregation", log2 = "offset",
     between_sample = c("methods", "default"), ruv_iii = c("modes", "default", "percentage", "k", "noun"),
     actions = character(), export = "button")
-# Optional until W6 wires them (their functions are in R/mod_*.R today, or not yet written).
+# Wired to the core by KIT-105 W4 for lipid and metab, and optional until W6 makes them required.
 guiConfigNormDeferred <- list(run = "in_process", correlation = "in_process", export = c("collect", "save"))
+guiConfigNormWired <- c(run.in_process = "runWorkflowOmicsInProcessNormalisation",
+    correlation.in_process = "runWorkflowOmicsInProcessCorrelation", export.collect = "collectWorkflowOmicsNormSession",
+    export.save = "saveWorkflowOmicsNormSessionArtifacts")
 
 test_that("the norm group holds today's values for lipid and metab and is NULL for trx and proteomics", {
     configs <- lapply(stats::setNames(guiConfigOmics, guiConfigOmics), omicGuiConfig)
@@ -917,7 +920,7 @@ test_that("each norm field, required or conditional, is refused by class when mi
     bad$norm$assay_slots <- 1.5
     expectGuiConfigRefused(bad, "norm$assay_slots")
     # The managed functions are required; the in-process twins and the export's collector and saver
-    # are optional until W6, and checked by type when present.
+    # are wired to the core (W4), optional until W6, and checked by type when present.
     for (field in c("run", "correlation")) {
         removed <- lipid
         removed$norm[[field]]$managed <- NULL
@@ -925,7 +928,14 @@ test_that("each norm field, required or conditional, is refused by class when mi
     }
     for (field in names(guiConfigNormDeferred)) {
         for (entry in guiConfigNormDeferred[[field]]) {
-            expect_false(entry %in% names(lipid$norm[[field]]), info = paste(field, entry))
+            for (omic in c("lipidomics", "metabolomics")) {
+                expect_identical(omicGuiConfig(omic)$norm[[field]][[entry]],
+                    get(guiConfigNormWired[[paste(field, entry, sep = ".")]], envir = asNamespace("MultiScholaR")),
+                    info = paste(omic, field, entry))
+            }
+            unwired <- lipid
+            unwired$norm[[field]][[entry]] <- NULL
+            expect_identical(validateOmicGuiConfig(unwired), unwired, info = paste(field, entry))
             bad <- lipid
             bad$norm[[field]][[entry]] <- "a function name"
             expectGuiConfigRefused(bad, paste0("norm$", field, "$", entry))

@@ -50,12 +50,20 @@ omicsSessionInput <- function() {
 quietFn <- function(...) invisible(NULL)
 progressFn <- function(message = NULL, value = NULL, expr) expr
 
+#' KIT-105 W4: the lipid export through the shared frame's handler (mod_omic_norm.R), with shiny's progress and
+#' notifications bound to quiet doubles; an error notification raises, as the handler's injected error log did.
+omicsSessionLipidExport <- function(workflow, source_dir, norm) {
+  testthat::local_mocked_bindings(withProgress = progressFn, incProgress = quietFn,
+    showNotification = function(ui, ..., type = "default") if (identical(type, "error")) stop(ui) else invisible(NULL),
+    .package = "shiny")
+  exportOmicNormSession(omicsSessionInput(), workflow, list(source_dir = source_dir), "Owner test", norm, quietFn,
+    omicGuiConfig("lipidomics"))
+}
+
 omicsSessionExport <- function(case, workflow, source_dir) {
   norm <- omicsSessionNormData(case)
   if (identical(case$omic, "lipidomics")) {
-    handleLipidNormExportSession(omicsSessionInput(), workflow, list(source_dir = source_dir), "Owner test", norm,
-      addLog = quietFn, reqFn = identity, showNotificationFn = quietFn, withProgressFn = progressFn,
-      incProgressFn = quietFn, logInfoFn = quietFn, logWarnFn = quietFn, logErrorFn = function(message) stop(message))
+    omicsSessionLipidExport(workflow, source_dir, norm)
   } else {
     runMetabNormExportSessionWorkflow(workflow, norm, omicsSessionInput(), "Owner test", source_dir,
       withProgressFn = progressFn, incProgressFn = quietFn, logInfoFn = quietFn)
@@ -183,9 +191,7 @@ for (omic in c("lipidomics", "metabolomics")) {
     norm <- omicsSessionNormData(case)
     testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) runner, .package = "MultiScholaR")
     if (identical(case$omic, "lipidomics")) {
-      handleLipidNormExportSession(omicsSessionInput(), workflow, list(source_dir = source_dir), "Owner test", norm,
-        addLog = quietFn, reqFn = identity, showNotificationFn = quietFn, withProgressFn = progressFn,
-        incProgressFn = quietFn, logInfoFn = quietFn, logWarnFn = quietFn, logErrorFn = function(message) stop(message))
+      omicsSessionLipidExport(workflow, source_dir, norm)
     } else {
       dispatchMetabNormExportSession(workflow, norm, omicsSessionInput(), list(source_dir = source_dir), "Owner test",
         resolveSourceDirFn = function(paths) paths$source_dir,

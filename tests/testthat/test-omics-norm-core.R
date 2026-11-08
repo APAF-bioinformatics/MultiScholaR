@@ -5,6 +5,7 @@
 # collector and saver (utils_workflow_saved_exports.R), and the bindings' `composite_figure` and `final_pca`. The RUV
 # kernels are the MCI lanes' stubs; every other kernel is real. Today's module copies stay until W4/W5 delete them;
 # then the "today" sides of these blocks are quarantined with them.
+# KIT-105 W4 deleted the lipid copies: the lipid halves are quarantined (Q-86 to Q-89); the metab halves stay live until W5.
 
 normCoreSpec <- function(omic) {
     switch(omic,
@@ -142,6 +143,7 @@ normCoreRun <- function(omic, scenario, core) {
     withr::local_seed(20261108L)
     suppressWarnings(suppressMessages(if (!core) {
         if (identical(omic, "lipid")) {
+            # Read only by the quarantined lipid block (Q-88): handleLipidNormRunNormalization was deleted by KIT-105 W4.
             handleLipidNormRunNormalization(input, workflow, paths, spec$omic_type, norm_data, log,
                 getPlotAestheticsFn = function() aesthetics)
         } else {
@@ -200,7 +202,13 @@ test_that("the W2 core functions are defined in their core files, in the namespa
     }
 })
 
-test_that("writeWorkflowOmicsNormComposite is lipid's and metab's composite step: files, labels, log and returned fields", {
+# KIT-105 W4: each comparison block that covered lipid and metab is split into a lipid block and a metab block, with the
+# expectations unchanged; each expectation that reads only the core stays in the live (metab) block. The lipid blocks'
+# "today" side called the lipid module functions W4 deleted, so they are quarantined (Q-86 to Q-89,
+# docs/qa/workflow-execution/kit/quarantined-tests.md); the metab blocks stay live until W5.
+
+test_that("writeWorkflowOmicsNormComposite is lipid's composite step: files, labels, log and returned fields (lipid)", {
+    testthat::skip("quarantined: Q-86 (KIT-105 W4) it compares the core with writeLipidNormCompositeFigure and buildLipidNormCompositeFromFilesGenerator, deleted with mod_lipid_norm_{workflow,support}_helpers.R; the lipid tab draws the core's writeWorkflowOmicsNormComposite and omicsNormCompositeFromFiles, covered by test-omic-norm-module.R (b) and (c) (the composite with a missing file) and the lipid_canonical norm step")
     qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
     normCoreWritePngs(qc)
     # A missing cell: the composite is still written, the cell blank (W1 (c)).
@@ -208,55 +216,74 @@ test_that("writeWorkflowOmicsNormComposite is lipid's and metab's composite step
     for (mode in c("skip", "automatic")) {
         lipid <- normCoreComposite(function(out, log) writeLipidNormCompositeFigure(qc, normCoreAssays, mode, "lipidomics",
             buildLipidNormCompositeFromFilesGenerator(), output_dir = out, addLog = log))
-        metab <- normCoreComposite(function(out, log) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc), normCoreAssays, mode,
-            "metabolomics", addLogFn = log, generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = out))
         core_lipid <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, mode, "lipidomics",
             output_dir = out, addLog = log))
-        core_metab <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, mode, "metabolomics",
-            output_dir = out, addLog = log))
         expect_identical(core_lipid[c("log", "labels", "files", "png")], lipid[c("log", "labels", "files", "png")], info = mode)
-        expect_identical(core_metab[c("log", "labels", "files", "png")], metab[c("log", "labels", "files", "png")], info = mode)
         expect_true(isTRUE(lipid$value$compositeSaved))
         expect_identical(core_lipid$value[names(lipid$value)], lipid$value, info = mode)
-        # Metab's extra fields: the core returns the superset (D7).
-        expect_identical(core_metab$value, metab$value, info = mode)
-        expect_identical(core_lipid$value[setdiff(names(core_lipid$value), "qcDir")], core_metab$value[setdiff(names(core_metab$value), "qcDir")])
         expect_identical(lipid$files, c("lipidomics_composite_QC_figure.pdf", "lipidomics_composite_QC_figure.png",
             "lipidomics_composite_QC_figure.rds"))
     }
     # No QC directory: nothing is drawn and nothing is written.
     lipid <- normCoreComposite(function(out, log) writeLipidNormCompositeFigure(NULL, normCoreAssays, "skip", "lipidomics",
         buildLipidNormCompositeFromFilesGenerator(), output_dir = out, addLog = log))
-    metab <- normCoreComposite(function(out, log) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = NULL), normCoreAssays, "skip",
-        "metabolomics", addLogFn = log, generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = out))
     core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(NULL, normCoreAssays, "skip", "lipidomics",
         output_dir = out, addLog = log))
     expect_identical(core$value[names(lipid$value)], lipid$value)
-    expect_identical(core$value, metab$value)
     expect_identical(core[c("log", "files")], lipid[c("log", "files")])
     # The figure's write failing: the warning in the log and the message returned.
     refuse <- function(...) stop("kit105 w2: the figure is refused")
     lipid <- normCoreComposite(function(out, log) writeLipidNormCompositeFigure(qc, normCoreAssays, "skip", "lipidomics",
         buildLipidNormCompositeFromFilesGenerator(), output_dir = out, addLog = log, savePlotFn = refuse, logWarnFn = function(...) NULL))
+    core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, "skip", "metabolomics",
+        output_dir = out, addLog = log, savePlotFn = refuse, logWarnFn = function(...) NULL))
+    expect_identical(core$value[names(lipid$value)], lipid$value)
+    expect_identical(core$log, lipid$log)
+})
+
+test_that("writeWorkflowOmicsNormComposite is metab's composite step: files, labels, log and returned fields (metab)", {
+    qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
+    normCoreWritePngs(qc)
+    # A missing cell: the composite is still written, the cell blank (W1 (c)).
+    unlink(file.path(qc, "lcms_pos_post_norm_density.png"))
+    for (mode in c("skip", "automatic")) {
+        metab <- normCoreComposite(function(out, log) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc), normCoreAssays, mode,
+            "metabolomics", addLogFn = log, generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = out))
+        core_lipid <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, mode, "lipidomics",
+            output_dir = out, addLog = log))
+        core_metab <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, mode, "metabolomics",
+            output_dir = out, addLog = log))
+        expect_identical(core_metab[c("log", "labels", "files", "png")], metab[c("log", "labels", "files", "png")], info = mode)
+        # Metab's extra fields: the core returns the superset (D7).
+        expect_identical(core_metab$value, metab$value, info = mode)
+        expect_identical(core_lipid$value[setdiff(names(core_lipid$value), "qcDir")], core_metab$value[setdiff(names(core_metab$value), "qcDir")])
+    }
+    # No QC directory: nothing is drawn and nothing is written.
+    metab <- normCoreComposite(function(out, log) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = NULL), normCoreAssays, "skip",
+        "metabolomics", addLogFn = log, generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = out))
+    core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(NULL, normCoreAssays, "skip", "lipidomics",
+        output_dir = out, addLog = log))
+    expect_identical(core$value, metab$value)
+    # The figure's write failing: the warning in the log and the message returned.
+    refuse <- function(...) stop("kit105 w2: the figure is refused")
     metab <- normCoreComposite(function(out, log) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc), normCoreAssays, "skip",
         "metabolomics", addLogFn = log, generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, savePlotFn = refuse,
         logWarnFn = function(...) NULL, outputDir = out))
     core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, "skip", "metabolomics",
         output_dir = out, addLog = log, savePlotFn = refuse, logWarnFn = function(...) NULL))
-    expect_identical(core$value[names(lipid$value)], lipid$value)
     expect_identical(core$value, metab$value)
-    expect_identical(core$log, lipid$log)
     expect_identical(core$log[[2L]], "Warning: Could not generate composite QC figure: kit105 w2: the figure is refused")
 })
 
-test_that("omicsNormCompositeFromFiles is lipid's and metab's composite from files: the plot, its size and its labels", {
-    qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
+#' The composite-from-files comparison's inputs: one assay's files (one absent), its row labels and column titles, and a
+#' drawing that records the annotation labels.
+normCoreCompositeFromFilesCase <- function(qc) {
     normCoreWritePngs(qc, "LCMS_Pos")
     files <- file.path(qc, sprintf("lcms_pos_%s_%s.png", c("pre_norm", "post_norm", "ruv_corrected"), rep(c("pca", "density"), each = 3)))
     files[[2L]] <- file.path(qc, "absent.png")
     rows <- list(lcms_pos_pca = c("a)", "b)", "c)"), lcms_pos_density = c("d)", "e)", "f)"))
     columns <- c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
-    draw <- function(generate) {
+    function(generate) {
         labels <- character()
         annotate <- ggplot2::annotate
         testthat::local_mocked_bindings(annotate = function(geom, x = NULL, y = NULL, ..., label = NULL, size = NULL) {
@@ -266,8 +293,19 @@ test_that("omicsNormCompositeFromFiles is lipid's and metab's composite from fil
         result <- suppressMessages(generate(files, 3, rows, columns))
         list(size = c(result$width, result$height), labels = labels, png = normCorePlotPng(result$plot))
     }
+}
+
+test_that("omicsNormCompositeFromFiles is lipid's composite from files: the plot, its size and its labels (lipid)", {
+    testthat::skip("quarantined: Q-86 (KIT-105 W4) it compares the core with buildLipidNormCompositeFromFilesGenerator, deleted with mod_lipid_norm_support_helpers.R; the lipid tab and its binding draw the core's omicsNormCompositeFromFiles, covered by the metab block below (the same core), test-workflow-omics-figures.R (KIT-079) and the lipid_canonical norm step")
+    draw <- normCoreCompositeFromFilesCase(withr::local_tempdir(pattern = "kit105-w2-qc-"))
     core <- draw(omicsNormCompositeFromFiles)
     expect_identical(core, draw(buildLipidNormCompositeFromFilesGenerator()))
+})
+
+test_that("omicsNormCompositeFromFiles is metab's composite from files: the plot, its size and its labels (metab)", {
+    qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
+    draw <- normCoreCompositeFromFilesCase(qc)
+    core <- draw(omicsNormCompositeFromFiles)
     expect_identical(core, draw(generateMetabNormCompositeFromFiles))
     expect_identical(core$size, c(13, 14))
     # No file and no column titles: no composite, with the same warning.
@@ -278,7 +316,8 @@ test_that("omicsNormCompositeFromFiles is lipid's and metab's composite from fil
         "No valid plot sections to combine")
 })
 
-test_that("omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder; metab's binding keeps its error placeholder", {
+test_that("omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder (lipid)", {
+    testthat::skip("quarantined: Q-87 (KIT-105 W4) it compares the core with buildLipidNormFinalQcPcaPlot, deleted with mod_lipid_norm_support_helpers.R; the lipid tab and its binding draw the core's omicsNormFinalQcPcaPlot, covered by the metab block below (the core through both bindings), test-omic-norm-module.R (b) and (c) (the final QC plot and the final PCA failing)")
     for (omic in c("lipid", "metab")) {
         spec <- normCoreSpec(omic)
         for (layout in c("combined", "lc")) {
@@ -286,15 +325,33 @@ test_that("omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder; metab's bind
             object <- suppressMessages(suppressWarnings(logTransformAssays(spec$object(layout = layout, positive_only = TRUE), offset = 1)))
             core <-suppressMessages(suppressWarnings(omicsNormFinalQcPcaPlot(object, "group", "batch")))
             lipid <- suppressMessages(suppressWarnings(buildLipidNormFinalQcPcaPlot(object, "group", "batch")))
-            metab <- suppressMessages(suppressWarnings(buildMetabNormFinalQcPcaPlot(object, "group", "batch")))
             expect_identical(class(core), class(lipid), info = paste(omic, layout))
             if (inherits(core, "patchwork")) {
                 expect_identical(normCorePlotPng(core), normCorePlotPng(lipid), info = paste(omic, layout))
-                expect_identical(normCorePlotPng(core), normCorePlotPng(metab), info = paste(omic, layout))
             } else {
                 expect_identical(core$data, lipid$data, info = paste(omic, layout))
-                expect_identical(core$data, metab$data, info = paste(omic, layout))
                 expect_identical(core$labels, lipid$labels, info = paste(omic, layout))
+            }
+        }
+    }
+    # The PCA failing (D7): lipid's builder raises.
+    testthat::local_mocked_bindings(plotPca = function(...) stop("kit105 w2: the PCA is refused"), .package = "MultiScholaR")
+    object <- module_ci_metab_norm_object(positive_only = TRUE)
+    expect_error(buildLipidNormFinalQcPcaPlot(object, "group", "batch"), "kit105 w2: the PCA is refused")
+})
+
+test_that("omicsNormFinalQcPcaPlot is metab's final-QC PCA builder; metab's binding keeps its error placeholder (metab)", {
+    for (omic in c("lipid", "metab")) {
+        spec <- normCoreSpec(omic)
+        for (layout in c("combined", "lc")) {
+            # The PCA of a normalised state (the final QC plot's); the raw fixture has no PCA (W1's observation).
+            object <- suppressMessages(suppressWarnings(logTransformAssays(spec$object(layout = layout, positive_only = TRUE), offset = 1)))
+            core <-suppressMessages(suppressWarnings(omicsNormFinalQcPcaPlot(object, "group", "batch")))
+            metab <- suppressMessages(suppressWarnings(buildMetabNormFinalQcPcaPlot(object, "group", "batch")))
+            if (inherits(core, "patchwork")) {
+                expect_identical(normCorePlotPng(core), normCorePlotPng(metab), info = paste(omic, layout))
+            } else {
+                expect_identical(core$data, metab$data, info = paste(omic, layout))
             }
             # Through the bindings, the managed path's builder (the worker's `final_pca`).
             through <- suppressMessages(suppressWarnings(spec$binding$final_pca(object, "group", "batch")))
@@ -303,11 +360,10 @@ test_that("omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder; metab's bind
     }
     expect_true("omicsNormFinalQcPcaPlot" %in% all.names(body(lipidomicsDeclarationBinding$final_pca)))
     expect_true("omicsNormFinalQcPcaPlot" %in% all.names(body(metabolomicsDeclarationBinding$final_pca)))
-    # The PCA failing (D7): lipid's builder and the core raise; metab's binding returns metab's placeholder.
+    # The PCA failing (D7): the core raises; metab's binding returns metab's placeholder.
     testthat::local_mocked_bindings(plotPca = function(...) stop("kit105 w2: the PCA is refused"), .package = "MultiScholaR")
     object <- module_ci_metab_norm_object(positive_only = TRUE)
     expect_error(omicsNormFinalQcPcaPlot(object, "group", "batch"), "kit105 w2: the PCA is refused")
-    expect_error(buildLipidNormFinalQcPcaPlot(object, "group", "batch"), "kit105 w2: the PCA is refused")
     expect_error(lipidomicsDeclarationBinding$final_pca(module_ci_lipid_norm_object(positive_only = TRUE), "group", "batch"),
         "kit105 w2: the PCA is refused")
     placeholder <- metabolomicsDeclarationBinding$final_pca(object, "group", "batch")
@@ -318,7 +374,8 @@ test_that("omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder; metab's bind
     expect_identical(normCorePlotPng(placeholder), normCorePlotPng(today))
 })
 
-test_that("the bindings' composite_figure gives today's product through the core", {
+test_that("the lipid binding's composite_figure gives today's product through the core (lipid)", {
+    testthat::skip("quarantined: Q-86 (KIT-105 W4) it compares the binding's composite_figure with writeLipidNormCompositeFigure, deleted with mod_lipid_norm_workflow_helpers.R; the binding calls the core (asserted by the metab block below), covered by the lipid journeys' managed composite (test-workflow-omics-worker.R)")
     qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
     normCoreWritePngs(qc, "LCMS_Pos")
     for (mode in c("skip", "manual")) {
@@ -328,6 +385,13 @@ test_that("the bindings' composite_figure gives today's product through the core
         # Lipid's step returned `compositeSaved` (and `errorMessage`), what the worker reads; the core returns the superset.
         expect_identical(through_lipid$value[names(lipid$value)], lipid$value, info = mode)
         expect_identical(through_lipid[c("files", "png", "labels")], lipid[c("files", "png", "labels")], info = mode)
+    }
+})
+
+test_that("the metab binding's composite_figure gives today's product through the core (metab)", {
+    qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
+    normCoreWritePngs(qc, "LCMS_Pos")
+    for (mode in c("skip", "manual")) {
         metab <- normCoreComposite(function(out, log) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc), "LCMS_Pos", mode,
             "metabolomics", generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = out))
         through_metab <- normCoreComposite(function(out, log) metabolomicsDeclarationBinding$composite_figure(qc, out, "LCMS_Pos", mode))
@@ -337,24 +401,35 @@ test_that("the bindings' composite_figure gives today's product through the core
     expect_true("writeWorkflowOmicsNormComposite" %in% all.names(body(metabolomicsDeclarationBinding$composite_figure)))
 })
 
-test_that("runWorkflowOmicsInProcessNormalisation is lipid's and metab's in-process sequence: states, provenance, normData, log", {
+test_that("runWorkflowOmicsInProcessNormalisation is lipid's in-process sequence: states, provenance, normData, log (lipid)", {
+    testthat::skip("quarantined: Q-88 (KIT-105 W4) its \"today\" side is handleLipidNormRunNormalization, deleted with mod_lipid_norm_workflow_helpers.R; the lipid tab runs the core's runWorkflowOmicsInProcessNormalisation, covered by test-omic-norm-module.R (b) (the three runs), MCI-021.1 to .3 and the lipid_canonical norm step")
     runs <- list()
-    for (omic in c("lipid", "metab")) {
-        for (scenario in c("skip", "manual", "automatic", "error")) {
-            today <- normCoreRun(omic, scenario, core = FALSE)
-            core <- normCoreRun(omic, scenario, core = TRUE)
-            for (field in names(today)) expect_identical(core[[field]], today[[field]], info = paste(omic, scenario, field))
-            runs[[paste(omic, scenario)]] <- core
-        }
-        # What the scenarios exercised (so that an empty run cannot pass).
-        expect_true(any(grepl("ITSD features selected", runs[[paste(omic, "manual")]]$log)), info = omic)
+    for (scenario in c("skip", "manual", "automatic", "error")) {
+        today <- normCoreRun("lipid", scenario, core = FALSE)
+        core <- normCoreRun("lipid", scenario, core = TRUE)
+        for (field in names(today)) expect_identical(core[[field]], today[[field]], info = paste("lipid", scenario, field))
+        runs[[paste("lipid", scenario)]] <- core
     }
+    # What the scenarios exercised (so that an empty run cannot pass).
+    expect_true(any(grepl("ITSD features selected", runs[["lipid manual"]]$log)), info = "lipid")
     automatic <- runs[["lipid automatic"]]
     expect_identical(automatic$history, c("initial", "lipid_qc_complete", "lipid_itsd_norm", "lipid_log2", "lipid_normalized",
         "lipid_ruv_corrected"))
     expect_identical(automatic$notes, "[message] Normalization pipeline complete!")
     expect_false("lcms_pos_post_norm_density.png" %in% automatic$qc_files)
     expect_true("lipidomics_composite_QC_figure.png" %in% automatic$qc_files)
+})
+
+test_that("runWorkflowOmicsInProcessNormalisation is metab's in-process sequence: states, provenance, normData, log (metab)", {
+    runs <- list()
+    for (scenario in c("skip", "manual", "automatic", "error")) {
+        today <- normCoreRun("metab", scenario, core = FALSE)
+        core <- normCoreRun("metab", scenario, core = TRUE)
+        for (field in names(today)) expect_identical(core[[field]], today[[field]], info = paste("metab", scenario, field))
+        runs[[paste("metab", scenario)]] <- core
+    }
+    # What the scenarios exercised (so that an empty run cannot pass).
+    expect_true(any(grepl("ITSD features selected", runs[["metab manual"]]$log)), info = "metab")
     expect_identical(runs[["metab skip"]]$slots[["ruv_corrected_obj"]], "metab_normalized")
     error <- runs[["metab error"]]
     expect_identical(error$notes[[1L]], "[error] Error: kit105 w2: the RUV optimisation is refused")
@@ -377,88 +452,102 @@ normCoreExportFixture <- function(omic) {
         export = omicGuiConfig(spec$omic_type)$norm$export)
 }
 
-test_that("collectWorkflowOmicsNormSession is lipid's and metab's session list: fields, order, counts (P-18)", {
-    for (omic in c("lipid", "metab")) {
-        fixture <- normCoreExportFixture(omic)
-        today <- function() {
-            if (identical(omic, "lipid")) {
-                buildLipidNormExportSessionData(fixture$workflow, fixture$norm_data, fixture$input, "kit105", exportTimestamp = normCoreTime)
-            } else {
-                buildMetabNormExportSessionData(fixture$workflow, fixture$norm_data, fixture$input, "kit105", exportTimestamp = normCoreTime)
-            }
-        }
-        core <- function() collectWorkflowOmicsNormSession(fixture$spec$binding, fixture$workflow, fixture$norm_data, fixture$input,
-            "kit105", fixture$export, normCoreTime)
-        in_process <- core()
-        expect_identical(in_process, today(), info = omic)
-        expect_identical(names(in_process)[[21L]], fixture$export$counts_field)
-        expect_true(isS4(in_process$current_s4_object))
-        # P-18, per omic: lipid counts the design's samples among the columns, metab the columns less the id and
-        # annotation columns.
-        expect_identical(vapply(in_process$feature_counts, function(counts) as.integer(counts$samples), 1L),
-            stats::setNames(if (identical(omic, "lipid")) c(4L, 4L) else c(5L, 5L), normCoreAssays), info = omic)
-        # A managed session: the head's shell, and no state in the list.
-        local({
-            testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) list(), .package = "MultiScholaR")
-            managed <- core()
-            expect_identical(managed, today(), info = omic)
-            expect_null(managed$current_s4_object)
-            expect_true("current_s4_object" %in% names(managed))
-        })
-    }
+#' One omic's collector comparison (`today`: the omic's builder): the in-process list, the counts field's place, the
+#' samples count rule (P-18) and the managed list.
+normCoreCollectCase <- function(omic, today) {
+    fixture <- normCoreExportFixture(omic)
+    core <- function() collectWorkflowOmicsNormSession(fixture$spec$binding, fixture$workflow, fixture$norm_data, fixture$input,
+        "kit105", fixture$export, normCoreTime)
+    in_process <- core()
+    expect_identical(in_process, today(fixture), info = omic)
+    expect_identical(names(in_process)[[21L]], fixture$export$counts_field)
+    expect_true(isS4(in_process$current_s4_object))
+    # P-18, per omic: lipid counts the design's samples among the columns, metab the columns less the id and
+    # annotation columns.
+    expect_identical(vapply(in_process$feature_counts, function(counts) as.integer(counts$samples), 1L),
+        stats::setNames(if (identical(omic, "lipid")) c(4L, 4L) else c(5L, 5L), normCoreAssays), info = omic)
+    # A managed session: the head's shell, and no state in the list.
+    local({
+        testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) list(), .package = "MultiScholaR")
+        managed <- core()
+        expect_identical(managed, today(fixture), info = omic)
+        expect_null(managed$current_s4_object)
+        expect_true("current_s4_object" %in% names(managed))
+    })
+}
+
+test_that("collectWorkflowOmicsNormSession is lipid's session list: fields, order, counts (P-18) (lipid)", {
+    testthat::skip("quarantined: Q-89 (KIT-105 W4) it compares the core with buildLipidNormExportSessionData, deleted with mod_lipid_norm_workflow_helpers.R; the lipid tab collects through the core's collectWorkflowOmicsNormSession, covered by test-omic-norm-module.R (b) (the export's session-RDS fields and counts), MCI-021.5 and .6, test-workflow-omics-sessions.R and the lipid_canonical session_export step")
+    normCoreCollectCase("lipid", function(fixture) {
+        buildLipidNormExportSessionData(fixture$workflow, fixture$norm_data, fixture$input, "kit105", exportTimestamp = normCoreTime)
+    })
 })
 
-test_that("saveWorkflowOmicsNormSessionArtifacts is lipid's and metab's savers: files, bytes, summary, log and progress", {
+test_that("collectWorkflowOmicsNormSession is metab's session list: fields, order, counts (P-18) (metab)", {
+    normCoreCollectCase("metab", function(fixture) {
+        buildMetabNormExportSessionData(fixture$workflow, fixture$norm_data, fixture$input, "kit105", exportTimestamp = normCoreTime)
+    })
+})
+
+#' One omic's saver comparison (`today(session, dir, log, progress)`: the omic's savers): the files, their bytes, the
+#' summary, the log and the progress.
+normCoreSaveCase <- function(omic, today) {
     request <- list(request_id = "dia-export-kit105w2", timestamp = "20261108_120000")
-    for (omic in c("lipid", "metab")) {
-        fixture <- normCoreExportFixture(omic)
-        session <- collectWorkflowOmicsNormSession(fixture$spec$binding, fixture$workflow, fixture$norm_data, fixture$input, "kit105",
-            fixture$export, normCoreTime)
-        run <- function(save) {
-            dir <- tempfile(paste0("kit105-w2-export-", omic, "-"))
-            dir.create(dir)
-            on.exit(unlink(dir, recursive = TRUE), add = TRUE)
-            acc <- new.env(parent = emptyenv())
-            acc$log <- character()
-            acc$progress <- character()
-            log <- function(message) acc$log <- c(acc$log, gsub(dir, "<DIR>", message, fixed = TRUE))
-            progress <- function(amount, detail) acc$progress <- c(acc$progress, paste(amount, detail))
-            value <- save(dir, log, progress)
-            files <- sort(list.files(dir, recursive = TRUE, all.files = TRUE))
-            rds <- files[grepl("\\.(rds|RDS)$", files)]
-            text <- files[grepl("\\.(txt|json)$", files)]
-            list(value = rapply(value, function(x) gsub(dir, "<DIR>", x, fixed = TRUE), classes = "character", how = "replace"),
-                files = files, rds = lapply(stats::setNames(file.path(dir, rds), rds), readRDS),
-                # The journal's completion time is the clock's.
-                text = lapply(stats::setNames(file.path(dir, text), text), function(path) {
-                    gsub("\"completed_at\": *\"[^\"]*\"", "\"completed_at\":\"<TIME>\"", gsub(dir, "<DIR>", readLines(path, warn = FALSE), fixed = TRUE))
-                }),
-                log = acc$log, progress = acc$progress)
-        }
-        today <- run(function(dir, log, progress) {
-            if (identical(omic, "lipid")) return(saveLipidNormExportArtifacts(session, dir, request, logInfoFn = log))
-            # runMetabNormExportSessionWorkflow's saveFn (mod_metab_norm_session_helpers.R:741-756), with the summary's
-            # time fixed.
-            files <- saveMetabNormExportSessionRdsFiles(sessionData = session, sourceDir = dir, logInfoFn = log,
-                incProgressFn = function(amount, detail) progress(amount, detail), publicationRequest = request)
-            progress(0.1, "Saving metadata files...")
-            saveMetabNormExportMetadataFiles(sessionData = session, sourceDir = dir, logInfoFn = log)
-            progress(0.2, "Creating summary...")
-            saveMetabNormExportSummaryFile(sessionData = session, sourceDir = dir, sessionFilename = files$sessionFilename,
-                timeFn = function() normCoreTime, logInfoFn = log)
-            files
-        })
-        core <- run(function(dir, log, progress) {
-            saveWorkflowOmicsNormSessionArtifacts(fixture$spec$binding, session, dir, request, fixture$export,
-                advance = if (identical(omic, "metab")) progress, summaryTime = normCoreTime, logInfoFn = log)
-        })
-        for (field in c("files", "rds", "text", "log", "progress")) expect_identical(core[[field]], today[[field]], info = paste(omic, field))
-        expect_identical(core$value[names(today$value)], today$value, info = omic)
-        summary <- core$text[[paste0(fixture$export$prefix, "filtered_session_summary.txt")]]
-        expect_identical(summary[[1L]], paste(if (identical(omic, "lipid")) "Lipidomics" else "Metabolomics",
-            "Normalized Session Data Export Summary"))
-        expect_true(paste0(fixture$export$prefix, "ruv_optimization_results.RDS") %in% core$files)
+    fixture <- normCoreExportFixture(omic)
+    session <- collectWorkflowOmicsNormSession(fixture$spec$binding, fixture$workflow, fixture$norm_data, fixture$input, "kit105",
+        fixture$export, normCoreTime)
+    run <- function(save) {
+        dir <- tempfile(paste0("kit105-w2-export-", omic, "-"))
+        dir.create(dir)
+        on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+        acc <- new.env(parent = emptyenv())
+        acc$log <- character()
+        acc$progress <- character()
+        log <- function(message) acc$log <- c(acc$log, gsub(dir, "<DIR>", message, fixed = TRUE))
+        progress <- function(amount, detail) acc$progress <- c(acc$progress, paste(amount, detail))
+        value <- save(dir, log, progress)
+        files <- sort(list.files(dir, recursive = TRUE, all.files = TRUE))
+        rds <- files[grepl("\\.(rds|RDS)$", files)]
+        text <- files[grepl("\\.(txt|json)$", files)]
+        list(value = rapply(value, function(x) gsub(dir, "<DIR>", x, fixed = TRUE), classes = "character", how = "replace"),
+            files = files, rds = lapply(stats::setNames(file.path(dir, rds), rds), readRDS),
+            # The journal's completion time is the clock's.
+            text = lapply(stats::setNames(file.path(dir, text), text), function(path) {
+                gsub("\"completed_at\": *\"[^\"]*\"", "\"completed_at\":\"<TIME>\"", gsub(dir, "<DIR>", readLines(path, warn = FALSE), fixed = TRUE))
+            }),
+            log = acc$log, progress = acc$progress)
     }
+    today_run <- run(function(dir, log, progress) today(session, dir, request, log, progress))
+    core <- run(function(dir, log, progress) {
+        saveWorkflowOmicsNormSessionArtifacts(fixture$spec$binding, session, dir, request, fixture$export,
+            advance = if (identical(omic, "metab")) progress, summaryTime = normCoreTime, logInfoFn = log)
+    })
+    for (field in c("files", "rds", "text", "log", "progress")) expect_identical(core[[field]], today_run[[field]], info = paste(omic, field))
+    expect_identical(core$value[names(today_run$value)], today_run$value, info = omic)
+    summary <- core$text[[paste0(fixture$export$prefix, "filtered_session_summary.txt")]]
+    expect_identical(summary[[1L]], paste(if (identical(omic, "lipid")) "Lipidomics" else "Metabolomics",
+        "Normalized Session Data Export Summary"))
+    expect_true(paste0(fixture$export$prefix, "ruv_optimization_results.RDS") %in% core$files)
+}
+
+test_that("saveWorkflowOmicsNormSessionArtifacts is lipid's saver: files, bytes, summary, log and progress (lipid)", {
+    testthat::skip("quarantined: Q-89 (KIT-105 W4) it compares the core with saveLipidNormExportArtifacts, deleted with mod_lipid_norm_workflow_helpers.R; the lipid tab saves through the core's saveWorkflowOmicsNormSessionArtifacts, covered by test-omic-norm-module.R (b) (the export's files and summary text), MCI-021.5 and .6, test-workflow-omics-sessions.R and the lipid_canonical session_export step")
+    normCoreSaveCase("lipid", function(session, dir, request, log, progress) saveLipidNormExportArtifacts(session, dir, request, logInfoFn = log))
+})
+
+test_that("saveWorkflowOmicsNormSessionArtifacts is metab's savers: files, bytes, summary, log and progress (metab)", {
+    normCoreSaveCase("metab", function(session, dir, request, log, progress) {
+        # runMetabNormExportSessionWorkflow's saveFn (mod_metab_norm_session_helpers.R:741-756), with the summary's
+        # time fixed.
+        files <- saveMetabNormExportSessionRdsFiles(sessionData = session, sourceDir = dir, logInfoFn = log,
+            incProgressFn = function(amount, detail) progress(amount, detail), publicationRequest = request)
+        progress(0.1, "Saving metadata files...")
+        saveMetabNormExportMetadataFiles(sessionData = session, sourceDir = dir, logInfoFn = log)
+        progress(0.2, "Creating summary...")
+        saveMetabNormExportSummaryFile(sessionData = session, sourceDir = dir, sessionFilename = files$sessionFilename,
+            timeFn = function() normCoreTime, logInfoFn = log)
+        files
+    })
     # Without a publication request the saver refuses, as both savers do.
     fixture <- normCoreExportFixture("lipid")
     expect_error(saveWorkflowOmicsNormSessionArtifacts(fixture$spec$binding, list(), tempdir(), NULL, fixture$export),

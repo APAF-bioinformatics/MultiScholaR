@@ -273,7 +273,8 @@ for (omic in c("lipidomics", "metabolomics")) local({
     output <- new.env()
     norm <- list(assay_names = assays)
     if (identical(omic, "lipidomics")) {
-      expect_no_error(suppressWarnings(registerLipidNormItsdTableOutputs(output, fixture$workflow, norm, observeFn = function(code) eval(substitute(code), parent.frame()), reqFn = identity)))
+      # KIT-105 W4: the shared frame's ITSD tables (mod_omic_norm_panels.R), the observer's body called directly.
+      expect_no_error(suppressWarnings(omicNormItsdTables(output, fixture$workflow, norm, omicGuiConfig("lipidomics"))))
     } else {
       expect_no_error(suppressWarnings(runMetabNormItsdSelectionTableObserverShell(norm, fixture$workflow, output, reqFn = identity)))
     }
@@ -352,15 +353,16 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
       shiny::observeEvent(input$detect, probe$detected <- list(totalDuplicates = detectWorkflowOmicsDuplicates(lipidomicsDeclarationBinding,
         workflow$state_manager)$total))
       shiny::observeEvent(input$finalize, runOmicQcFinalize(workflow, omic, filter_plot, output, config))
-      registerLipidNormItsdTableOutputs(output, workflow, norm)
+      # KIT-105 W4: the shared normalisation frame's ITSD tables, final QC plot and export (mod_omic_norm*.R).
+      shiny::observe(omicNormItsdTables(output, workflow, norm, config))
       mod_lipid_qc_itsd_server("itsd", workflow, omic, "kit082")
-      output$final_qc <- buildLipidNormFinalQcPlotRenderer(norm, function(...) list(color_var = "group", shape_var = NULL), workflow)()
+      output$final_qc <- omicNormFinalQcPlot(norm, function(...) list(color_var = "group", shape_var = NULL), workflow, config)
       # The test's DA holder is not reactive, so its outputs are registered once it holds the results.
       session$userData$register_da_outputs <- function() {
         registerLipidDaVolcanoGlimmaOutput(output, input, da, workflow)
         registerLipidDaHeatmapPlotOutput(output, input, da, workflow)
       }
-      shiny::observeEvent(input$export_session, handleLipidNormExportSession(input, workflow, paths, "kit082", norm, addLog = quiet))
+      shiny::observeEvent(input$export_session, exportOmicNormSession(input, workflow, paths, "kit082", norm, quiet, config))
       shiny::observeEvent(input$save_args, handleLipidSummarySaveWorkflowArgs(input, values, output, dirs, omic, workflow))
     } else {
       # KIT-104 W6: the shared sub-tabs' summary, detection and finalise under metab's configuration.

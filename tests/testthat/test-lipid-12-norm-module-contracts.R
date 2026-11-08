@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-95 (KIT-105 W4) it sources the six lipid norm helper files W4 deleted (mod_lipid_norm_{server,runtime,observer,support,ui,workflow}_helpers.R; its file guard names them) and tests their 69 seams; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps")
 library(testthat)
 suppressPackageStartupMessages(library(shiny))
 

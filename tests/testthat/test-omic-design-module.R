@@ -519,3 +519,24 @@ test_that("W5 the metab design wrappers keep their signatures", {
     expect_identical(names(formals(validateMetabDesignDaPreflight)), c("designMatrix", "assayList", "contrastsTbl",
         "formulaString", "columnMapping", "sampleIdCol", "groupCol", "requireContrasts"))
 })
+
+# KIT-105 W4: the masking check extended to the shared normalisation frame (R/mod_omic_norm*.R). testServer evaluates a
+# test's code over the module's frame, so a frame local named after a variable the norm tests read inside testServer
+# (test-omic-norm-module.R's omicNormDrive) would be read in its place.
+test_that("KIT-105 W4 the normalisation frame keeps its returned reactive values and no name that masks a test's own variables", {
+    skip_if_not(workflowOwnerCapable())
+    test_names <- c("spec", "root", "source_dir", "paths", "workflow", "log", "acc", "ruv_results", "stubs", "plot_pca",
+        "qc_kernel", "annotate", "tab", "steps", "step", "set", "read", "capture", "ctx", "norm_data", "defaults",
+        "apply_updates", "field", "i", "pending", "values", "manager", "nd", "log_lines", "new_log", "notes", "qc_files",
+        "pngs", "encoded", "out_names", "others", "files", "record", "slots", "value", "fixture", "managed", "result")
+    object <- module_ci_lipid_norm_object(positive_only = TRUE)
+    bus <- module_ci_lipid_norm_workflow(object)
+    shiny::testServer(mod_lipid_norm_server, args = list(id = "norm", workflow_data = bus, experiment_paths = list(),
+        omic_type = "lipidomics", experiment_label = "kit105"), {
+        module_names <- c(ls(session$env, all.names = TRUE), ls(parent.env(session$env), all.names = TRUE))
+        expect_identical(intersect(module_names, test_names), character())
+        session$flushReact()
+        expect_true(shiny::is.reactivevalues(session$returned))
+        expect_identical(shiny::isolate(session$returned$assay_names), c("LCMS_Pos", "GCMS"))
+    })
+})

@@ -203,12 +203,14 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
     daData <- list2env(list(current_state_name = NULL, analysis_complete = FALSE))
     session$userData$probe_da <- daData
     if (identical(omic, "lipidomics")) {
-      normData <- createLipidNormReactiveState()
+      # KIT-105 W4: the shared normalisation frame's state and its run and correlation actions (mod_omic_norm*.R).
+      normData <- omicNormReactiveState()
       session$userData$probe_norm <- normData
       mod_lipid_qc_intensity_server("intensity", workflow, omic, "kit078")
       mod_lipid_qc_duplicates_server("duplicates", workflow, omic, "kit078")
-      registerLipidNormRunNormalizationObserver(input, workflow, paths, omic, normData, addLog, aesthetics, function(...) NULL)
-      registerLipidNormApplyCorrelationFilterObserver(input, workflow, normData, addLog)
+      norm_config <- omicGuiConfig("lipidomics")
+      shiny::observeEvent(input$run_normalization, runOmicNormPipeline(input, workflow, paths, normData, addLog, aesthetics, norm_config))
+      shiny::observeEvent(input$apply_correlation_filter, applyOmicNormCorrelation(input, workflow, normData, addLog, norm_config))
       shiny::observeEvent(input$run_da, {
         daData$current_state_name <- workflow$state_manager$current_state
         executeLipidDaRunAnalysis(NULL, workflow$contrasts_tbl, "~ 0 + group", 0.05, 0, daData, workflow, session, paths)

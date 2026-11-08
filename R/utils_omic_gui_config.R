@@ -698,9 +698,12 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
         ruv_heading = "RUV Parameter Optimization Results",
         ruv_help = paste("Canonical correlation plots and optimization summary per assay. Each assay is optimized",
             "independently."),
-        run = list(managed = runWorkflowOmicsManagedNormalisation),
-        correlation = list(managed = runWorkflowOmicsManagedCorrelation),
-        pre_qc_on_entry = TRUE, export = export, itsd_table = itsd_table,
+        # KIT-105 W4 wired the in-process twins and the export's collector and saver (the core's; optional until W6).
+        run = list(managed = runWorkflowOmicsManagedNormalisation, in_process = runWorkflowOmicsInProcessNormalisation),
+        correlation = list(managed = runWorkflowOmicsManagedCorrelation, in_process = runWorkflowOmicsInProcessCorrelation),
+        pre_qc_on_entry = TRUE,
+        export = c(export, list(collect = collectWorkflowOmicsNormSession, save = saveWorkflowOmicsNormSessionArtifacts)),
+        itsd_table = itsd_table,
         testids = c(method = paste0(prefix, "-norm-method"), ruv_mode = paste0(prefix, "-norm-ruv-mode"),
             run = paste0(prefix, "-norm-run"), export = paste0(prefix, "-norm-export-session")),
         skip_correlation_flags = skip_correlation_flags, final_pca = final_pca)

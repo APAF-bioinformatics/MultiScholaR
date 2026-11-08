@@ -198,13 +198,17 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
   norm_data$post_norm_obj <- object
   norm_data$normalization_complete <- TRUE
   workflow <- module_ci_lipid_norm_workflow(object)
+  # KIT-105 W4: the shared frame's correlation handlers (mod_omic_norm.R) under the lipid configuration; they notify
+  # through shiny by name, so the notifications are bound to quiet doubles here.
+  config <- omicGuiConfig("lipidomics")
+  testthat::local_mocked_bindings(showNotification = function(...) invisible(NULL), removeNotification = function(...) invisible(NULL),
+    .package = "shiny")
 
-  skip_state <- handleLipidNormSkipCorrelationFilter(
+  skip_state <- skipOmicNormCorrelation(
     workflowData = workflow,
     normData = norm_data,
     addLog = function(...) invisible(NULL),
-    reqFn = function(value) value,
-    showNotificationFn = function(...) invisible(NULL)
+    config = config
   )
   expect_true(skip_state)
   expect_true(norm_data$correlation_filtering_complete)
@@ -221,16 +225,12 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
     case_norm_data <- module_ci_lipid_norm_data(object)
     case_norm_data$normalization_complete <- TRUE
     case_norm_data$post_norm_obj <- object
-    suppressWarnings(suppressMessages(handleLipidNormApplyCorrelationFilter(
+    suppressWarnings(suppressMessages(applyOmicNormCorrelation(
       input = module_ci_lipid_norm_input(correlation_threshold = 0.75),
       workflowData = case_workflow,
       normData = case_norm_data,
       addLog = function(...) invisible(NULL),
-      reqFn = function(value) value,
-      showNotificationFn = function(...) invisible(NULL),
-      removeNotificationFn = function(...) invisible(NULL),
-      logInfoFn = function(...) invisible(NULL),
-      logErrorFn = function(...) invisible(NULL)
+      config = config
     ))) -> result
     list(result = result, workflow = case_workflow, norm_data = case_norm_data)
   }
@@ -277,16 +277,12 @@ test_that("MCI-021.4 correlation filtering matrix covers skip, pass/fail, bounda
   invalid_norm_data$normalization_complete <- TRUE
   invalid_norm_data$post_norm_obj <- object
   testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(...) 1, .package = "MultiScholaR")
-  invalid_state <- handleLipidNormApplyCorrelationFilter(
+  invalid_state <- applyOmicNormCorrelation(
     input = module_ci_lipid_norm_input(correlation_threshold = 0.75),
     workflowData = invalid_workflow,
     normData = invalid_norm_data,
     addLog = function(...) invisible(NULL),
-    reqFn = function(value) value,
-    showNotificationFn = function(...) invisible(NULL),
-    removeNotificationFn = function(...) invisible(NULL),
-    logInfoFn = function(...) invisible(NULL),
-    logErrorFn = function(...) invisible(NULL)
+    config = config
   )
   expect_false(invalid_state)
   expect_false(invalid_norm_data$correlation_filtering_complete)

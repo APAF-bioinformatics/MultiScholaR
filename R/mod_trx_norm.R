@@ -214,17 +214,17 @@ resetTrxNormalisation <- function(workflowData, normData, addLog) {
 #' @noRd
 mod_trx_norm_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
-        normData <- createLipidNormReactiveState()
+        normData <- omicNormReactiveState()
         # One count table; its figures are the worker's trx_<stage>_<kind>.png in the gene QC directory.
         normData$assay_names <- "counts"
-        addLog <- buildLipidNormAddLog(normData)
-        registerLipidNormStaticQcImageOutputs(output, buildLipidNormQcImageRenderer(normData, experiment_paths,
+        addLog <- omicNormAddLog(normData)
+        registerOmicNormQcImageOutputs(output, omicNormQcImageRenderer(normData, experiment_paths,
             sanitizeAssayNameFn = function(assay_name) "trx", qcDirKey = "gene_qc_dir"),
             stagePrefixes = c(pre_norm = "raw", post_norm = "tmm", ruv_corrected = "ruvs"))
-        registerLipidNormAssayLabelOutputs(output, buildLipidNormAssayLabelRenderer(normData))
-        registerLipidNormLogOutput(output, buildLipidNormLogRenderer(normData))
-        registerLipidNormRuvQcOutput(output, buildLipidNormRuvQcUiRenderer(normData, session$ns))
-        registerLipidNormRuvCancorOutputs(output, normData)
+        registerOmicNormAssayLabelOutputs(output, omicNormAssayLabelRenderer(normData))
+        registerOmicNormLogOutput(output, omicNormLogRenderer(normData))
+        registerOmicNormRuvQcOutput(output, omicNormRuvQcUiRenderer(normData, session$ns))
+        registerOmicNormRuvCancorOutputs(output, normData)
         shiny::observeEvent(input$run_normalization, {
             shiny::req(workflow_data$state_manager)
             runTrxNormalisation(input, workflow_data, experiment_paths, normData, addLog)

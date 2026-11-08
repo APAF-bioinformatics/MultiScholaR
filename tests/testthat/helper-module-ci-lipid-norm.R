@@ -375,40 +375,33 @@ module_ci_lipid_norm_run_pipeline <- function(input = module_ci_lipid_norm_input
   if (!identical(normalise_untransformed_fn, normaliseUntransformedData)) kernels$normaliseUntransformedData <- normalise_untransformed_fn
   if (!identical(log_transform_fn, logTransformAssays)) kernels$logTransformAssays <- log_transform_fn
   if (!identical(between_sample_fn, normaliseBetweenSamples)) kernels$normaliseBetweenSamples <- between_sample_fn
+  # KIT-105 W4: the in-process sequence is the core's (runWorkflowOmicsInProcessNormalisation), which draws the QC
+  # figures through the binding by name, so the lane's no-op figures are bound there too.
+  kernels$generateLipidQcPlots <- function(...) invisible(NULL)
   do.call(testthat::local_mocked_bindings, c(kernels, list(.package = "MultiScholaR", .env = environment())))
-  result <- handleLipidNormRunNormalization(
-    input = input,
-    workflowData = workflow,
-    experimentPaths = list(
-      lipid_qc_dir = tempfile("mci-021-lipid-qc-"),
-      source_dir = tempfile("mci-021-lipid-source-"),
-      export_dir = tempfile("mci-021-lipid-export-")
-    ),
-    omicType = "lipidomics",
+  paths <- list(
+    lipid_qc_dir = tempfile("mci-021-lipid-qc-"),
+    source_dir = tempfile("mci-021-lipid-source-"),
+    export_dir = tempfile("mci-021-lipid-export-")
+  )
+  settings <- c(omicNormRunSettings(input, list(color_var = "group", shape_var = "batch"), norm_data, paths,
+    lipidomicsDeclarationBinding), list(experiment_paths = paths))
+  result <- runWorkflowOmicsInProcessNormalisation(
+    binding = lipidomicsDeclarationBinding,
+    manager = workflow$state_manager,
+    settings = settings,
     normData = norm_data,
+    config = workflow$config_list,
     addLog = function(message) {
       logs <<- c(logs, message)
       invisible(logs)
     },
-    getPlotAestheticsFn = function() list(color_var = "group", shape_var = "batch"),
-    reqFn = function(value) value,
-    withProgressFn = module_ci_lipid_norm_progress,
-    incProgressFn = function(...) invisible(NULL),
-    generateLipidQcPlotsFn = function(...) invisible(NULL),
-    buildLipidItsdSelectionTableFn = itsd_table_fn,
-    compactFn = function(.x) Filter(Negate(is.null), .x),
-    imapFn = function(.x, .f) {
-      out <- lapply(names(.x), function(name) .f(.x[[name]], name))
-      names(out) <- names(.x)
-      out
-    },
-    generateCompositeFromFilesFn = function(...) NULL,
-    savePlotFn = function(...) invisible(NULL),
-    dirExistsFn = function(path) TRUE,
-    filePathFn = file.path,
-    showNotificationFn = function(...) invisible(NULL),
-    logWarnFn = function(...) invisible(NULL),
-    logErrorFn = function(...) invisible(NULL)
+    advance = function(detail) invisible(NULL),
+    notify = function(...) invisible(NULL),
+    finish = function() invisible(NULL),
+    itsd_table = function(assay_data, id_col, annotation_cols) {
+      itsd_table_fn(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols)
+    }
   )
 
   list(result = result, workflow = workflow, norm_data = norm_data, logs = logs)
@@ -460,7 +453,13 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
     module_ci_lipid_norm_ruv_results(object, mode = variant)
   }
 
-  artifacts <- handleLipidNormExportSession(
+  # KIT-105 W4: the shared frame's export (the core's collector and saver), with shiny's progress and notifications bound
+  # to quiet doubles; an error notification raises, as the handler's injected error log did. The session's export time
+  # is the clock's (the lane read none of it).
+  testthat::local_mocked_bindings(withProgress = module_ci_lipid_norm_progress, incProgress = function(...) invisible(NULL),
+    showNotification = function(ui, ..., type = "default") if (identical(type, "error")) stop(ui) else invisible(NULL),
+    .package = "shiny")
+  artifacts <- exportOmicNormSession(
     input = module_ci_lipid_norm_input(
       norm_method = "quantile",
       ruv_mode = variant,
@@ -472,14 +471,7 @@ module_ci_lipid_norm_export_variant <- function(variant = c("skip", "manual", "a
     experimentLabel = paste("MCI-021", variant),
     normData = norm_data,
     addLog = function(...) invisible(NULL),
-    reqFn = function(value) value,
-    showNotificationFn = function(...) invisible(NULL),
-    withProgressFn = module_ci_lipid_norm_progress,
-    incProgressFn = function(...) invisible(NULL),
-    getTimeFn = function() as.POSIXct("2026-05-05 12:00:00", tz = "UTC"),
-    logInfoFn = function(...) invisible(NULL),
-    logWarnFn = function(...) invisible(NULL),
-    logErrorFn = function(message) stop(message)
+    config = omicGuiConfig("lipidomics")
   )
 
   latest_file <- file.path(source_dir, "lipid_filtered_session_data_latest.rds")

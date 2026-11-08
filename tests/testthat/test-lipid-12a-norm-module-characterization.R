@@ -199,6 +199,7 @@ test_that("mod_lipid_norm_server preserves selected-tab pre-QC error logging beh
 })
 
 test_that("lipid norm UI helpers preserve the generated control and QC shell", {
+  testthat::skip("quarantined: Q-96 (KIT-105 W4) it drives the lipid norm helper functions W4 deleted with mod_lipid_norm_{ui,runtime,observer,support,workflow}_helpers.R; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps; blocks 1-3 stay live")
   skipIfMissingMultiScholaRBindings(
     "buildLipidNormOptionsControlPanel",
     "buildLipidNormQcTabsetPanel"
@@ -220,6 +221,7 @@ test_that("lipid norm UI helpers preserve the generated control and QC shell", {
 })
 
 test_that("lipid norm runtime helpers wire startup and server orchestration layers", {
+  testthat::skip("quarantined: Q-96 (KIT-105 W4) it drives the lipid norm helper functions W4 deleted with mod_lipid_norm_{ui,runtime,observer,support,workflow}_helpers.R; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps; blocks 1-3 stay live")
   skipIfMissingMultiScholaRBindings(
     "createLipidNormReactiveState",
     "createLipidNormStartupRuntime",
@@ -423,6 +425,7 @@ test_that("lipid norm runtime helpers wire startup and server orchestration laye
 })
 
 test_that("lipid norm observer helpers preserve assay and pre-QC behavior", {
+  testthat::skip("quarantined: Q-96 (KIT-105 W4) it drives the lipid norm helper functions W4 deleted with mod_lipid_norm_{ui,runtime,observer,support,workflow}_helpers.R; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps; blocks 1-3 stay live")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skipIfMissingMultiScholaRBindings(
     "registerLipidNormDesignDrivenChoiceObserver",
@@ -588,6 +591,7 @@ test_that("lipid norm observer helpers preserve assay and pre-QC behavior", {
 })
 
 test_that("lipid norm support helpers preserve output registration and composite behavior", {
+  testthat::skip("quarantined: Q-96 (KIT-105 W4) it drives the lipid norm helper functions W4 deleted with mod_lipid_norm_{ui,runtime,observer,support,workflow}_helpers.R; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps; blocks 1-3 stay live")
   skipIfMissingMultiScholaRBindings(
     "registerLipidNormStaticQcImageOutputs",
     "registerLipidNormAssayLabelOutputs",
@@ -634,6 +638,7 @@ test_that("lipid norm support helpers preserve output registration and composite
 })
 
 test_that("lipid norm workflow helpers preserve normalization, export, reset, and correlation paths", {
+  testthat::skip("quarantined: Q-96 (KIT-105 W4) it drives the lipid norm helper functions W4 deleted with mod_lipid_norm_{ui,runtime,observer,support,workflow}_helpers.R; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps; blocks 1-3 stay live")
   skipIfMissingMultiScholaRBindings(
     "handleLipidNormRunNormalization",
     "handleLipidNormExportSession",

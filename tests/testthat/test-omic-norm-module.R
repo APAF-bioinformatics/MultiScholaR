@@ -403,7 +403,8 @@ omicNormDrive <- function(omic, steps) {
             })
         for (step in names(steps)) steps[[step]](ctx)
     }))))
-    list(captures = acc$captures, extra = acc$extra, choices = lapply(log$choices, as.character), slots = acc$slots)
+    list(captures = acc$captures, extra = acc$extra, choices = lapply(log$choices, as.character), slots = acc$slots,
+        after = acc$after)
 }
 
 #' The export's session RDS and summary as the step left them.
@@ -524,6 +525,8 @@ omicNormScenarioSteps <- function(scenario) {
                 ctx$keep("skip_correlation_failing", list(at_commit = held$at_commit, errors = held$errors,
                     session_closed = ctx$closed(), history = as.character(ctx$workflow$state_manager$getHistory()),
                     tab_status = vapply(ctx$workflow$tab_status, as.character, ""), notes = ctx$notes()))
+                # KIT-105 W4 (F105-02): the tab's flags after the refused commit, read by the F105-02 block only.
+                ctx$acc$after <- ctx$flags()
             }))
 }
 
@@ -1373,6 +1376,10 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
     extra = list(
         final_plot = "<plot>",
         final_plot_failing = "<plot>",
+        # Re-frozen once by KIT-105 W4 for F105-02 (the frame catches the refused commit). At 9a98e765 the error was
+        # unhandled: `errors` held "Error in commitWorkflowReferenceState: kit105: the store commit is refused",
+        # `session_closed` was TRUE and `notes` was character(0). `at_commit` (D7: lipid sets its flags before the
+        # commit), `history` and `tab_status` are unchanged.
         skip_correlation_failing = list(
             at_commit = c(
                 normalization_complete = "TRUE", ruv_complete = "TRUE",
@@ -1381,15 +1388,15 @@ omicNormFrozen[["lipid"]][["automatic"]] <- list(
                 post_itsd_obj = "lipid_itsd_norm", post_log2_obj = "lipid_log2",
                 post_norm_obj = "lipid_normalized", ruv_corrected_obj = "lipid_ruv_corrected",
                 correlation_filtered_obj = "lipid_ruv_corrected"),
-            errors = "Error in commitWorkflowReferenceState: kit105: the store commit is refused",
-            session_closed = TRUE,
+            errors = character(0),
+            session_closed = FALSE,
             history = c(
                 "initial", "lipid_qc_complete", "lipid_itsd_norm", "lipid_log2", "lipid_normalized",
                 "lipid_ruv_corrected"),
             tab_status = c(
                 setup_import = "complete", design_matrix = "complete", quality_control = "complete",
                 normalization = "pending", differential_analysis = "locked"),
-            notes = character(0))),
+            notes = "[error] Error: kit105: the store commit is refused")),
     choices = list(
         `norm-color_variable` = c("group", "batch"),
         `norm-shape_variable` = c("group", "batch"),
@@ -1618,4 +1625,46 @@ test_that("F105-01: each metab QC image slot and assay label shows its own assay
 test_that("F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)", {
     skip_if_not(workflowOwnerCapable())
     expectOmicNormSlots("lipid")
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-105 W4: the lipid tab on the shared frame (R/mod_omic_norm.R, R/mod_omic_norm_panels.R).
+# ------------------------------------------------------------------------------------------------
+
+test_that("W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R", {
+    expect_true("mod_omic_norm_ui" %in% all.names(body(mod_lipid_norm_ui)))
+    expect_true("mod_omic_norm_server" %in% all.names(body(mod_lipid_norm_server)))
+    # D4: the trx profile's branches stay (KIT-110).
+    expect_true("norm_options" %in% all.names(body(mod_lipid_norm_ui)))
+    expect_true("norm_server" %in% all.names(body(mod_lipid_norm_server)))
+    files <- c(mod_omic_norm_ui = "mod_omic_norm.R", mod_omic_norm_server = "mod_omic_norm.R",
+        skipOmicNormCorrelation = "mod_omic_norm.R", omicNormQcTabset = "mod_omic_norm_panels.R",
+        registerOmicNormQcImageOutputs = "mod_omic_norm_panels.R")
+    for (name in names(files)) {
+        fn <- get0(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)
+        expect_true(is.function(fn), info = name)
+        # Source references are kept under load_all only.
+        if (is.function(fn) && !is.null(utils::getSrcref(fn))) {
+            expect_identical(basename(utils::getSrcFilename(fn, full.names = TRUE)), files[[name]], info = name)
+        }
+    }
+})
+
+# F105-02: an error in skip-correlation's store commit was unhandled, so shiny ended the session. The frame catches it,
+# shows an error notification and puts the tab's flags back; the history and tab_status are unchanged. Lipid sets its
+# flags before the commit (D7), so they were TRUE at the commit. Fails on 9a98e765 (the session is closed). Metab gets
+# the fix when it joins the frame (W5).
+test_that("F105-02: lipid skip-correlation with the store commit refused notifies and keeps the session and the state (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    run <- omicNormScenario("lipid", "automatic")
+    failing <- run$extra$skip_correlation_failing
+    expect_false(failing$session_closed)
+    expect_identical(failing$errors, character())
+    expect_identical(failing$notes, "[error] Error: kit105: the store commit is refused")
+    expect_identical(failing$history, c("initial", "lipid_qc_complete", "lipid_itsd_norm", "lipid_log2", "lipid_normalized",
+        "lipid_ruv_corrected"))
+    expect_identical(failing$tab_status[["normalization"]], "pending")
+    expect_identical(failing$at_commit[["correlation_filtering_complete"]], "TRUE")
+    expect_identical(run$after[c("correlation_filtering_complete", "correlation_filtered_obj", "ruv_corrected_obj")],
+        c(correlation_filtering_complete = "FALSE", correlation_filtered_obj = "<NULL>", ruv_corrected_obj = "lipid_ruv_corrected"))
 })

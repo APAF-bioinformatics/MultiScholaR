@@ -372,21 +372,29 @@ test_that("KIT-079: the composite reads its PNGs as native rasters, and the figu
     graphics::plot(stats::rnorm(40), stats::rnorm(40))
     grDevices::dev.off()
   }
-  # The shipped readers hand the grob a native raster.
+  # The shipped readers hand the grob a native raster. KIT-105 W4: lipid's composite is the core's
+  # (omicsNormCompositeFromFiles), which calls grid::rasterGrob and png::readPNG by name, so they are bound in their
+  # namespaces here.
   seen <- character()
-  capture <- function(image, ...) { seen <<- c(seen, class(image)[[1L]]); grid::rasterGrob(image, ...) }
-  buildLipidNormCompositeFromFilesGenerator(rasterGrobFn = capture)(plot_files = files, ncol = 2, column_labels = c("a", "b"))
+  raster_grob <- grid::rasterGrob
+  read_png <- png::readPNG
+  capture <- function(image, ...) { seen <<- c(seen, class(image)[[1L]]); raster_grob(image, ...) }
+  local({
+    testthat::local_mocked_bindings(rasterGrob = capture, .package = "grid")
+    omicsNormCompositeFromFiles(plotFiles = files, ncol = 2, columnLabels = c("a", "b"))
+  })
   loadMetabNormImageAsPlot(files[[1L]], rasterGrobFn = capture)
   expect_identical(unique(seen), "nativeRaster")
   render <- function(reader, name) {
-    composite <- buildLipidNormCompositeFromFilesGenerator(readPngFn = reader)(plot_files = files, ncol = 2, column_labels = c("a", "b"))
+    testthat::local_mocked_bindings(readPNG = function(source, native = FALSE, info = FALSE) reader(source), .package = "png")
+    composite <- omicsNormCompositeFromFiles(plotFiles = files, ncol = 2, columnLabels = c("a", "b"))
     target <- file.path(root, name)
     dir.create(target)
     savePlot(composite$plot, target, "composite", width = composite$width, height = composite$height, dpi = 100, limitsize = FALSE)
     target
   }
-  double <- render(png::readPNG, "double")
-  native <- render(function(path) png::readPNG(path, native = TRUE), "native")
+  double <- render(read_png, "double")
+  native <- render(function(path) read_png(path, native = TRUE), "native")
   expect_identical(digest::digest(file = file.path(native, "composite.png"), algo = "sha256"),
     digest::digest(file = file.path(double, "composite.png"), algo = "sha256"))
   # The read itself: 4 bytes a pixel against 32 (the .rds compresses, so it shows this only on real figures).

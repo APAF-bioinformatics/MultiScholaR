@@ -467,6 +467,17 @@ runWorkflowOmicsManagedCorrelation <- function(binding, runner, group, threshold
     invisible(TRUE)
 }
 
+#' The correlation filter in process (KIT-105 W4), the twin of `runWorkflowOmicsManagedCorrelation`, from the lipid tab's
+#' in-process branch (`handleLipidNormApplyCorrelationFilter`, mod_lipid_norm_workflow_helpers.R:746-748 at f8d4c5fc): the
+#' pairs and the selection committed on the head (`runWorkflowOmicsReferenceCorrelation`). A failure is raised for the tab.
+#' @param deliver `function(correlations, reference)`, the tab's completion.
+#' @noRd
+runWorkflowOmicsInProcessCorrelation <- function(binding, manager, group, threshold, config, deliver) {
+    correlation <- runWorkflowOmicsReferenceCorrelation(binding, manager, group, threshold, config)
+    deliver(correlation$correlations, correlation$reference)
+    invisible(TRUE)
+}
+
 #' The DA on the worker: one action per contrast on the shared fits, the manifest accepted on the head, then the tables and
 #' figures in one action (`runWorkflowOmicsReferenceDaAnalysis`, and the tab's export, in process).
 #' @param manager The session owner.

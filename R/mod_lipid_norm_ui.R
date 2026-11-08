@@ -15,22 +15,16 @@ NULL
 #' @importFrom shinyjqui jqui_resizable
 #' @importFrom DT dataTableOutput
 mod_lipid_norm_ui <- function(id, profile = NULL) {
-    ns <- shiny::NS(id)
-
-    shiny::tagList(
-        shiny::wellPanel(
-            shiny::fluidRow(
-                # ================================================================
-                # LEFT PANEL (width = 3): All normalization controls
-                # ================================================================
-                if (is.null(profile)) buildLipidNormOptionsControlPanel(ns) else profile$norm_options(ns)
-
-                # ================================================================
-                # RIGHT PANEL (width = 9): QC Visualization Tabs
-                # ================================================================
-                # KIT-097: the profile is passed only when there is one (the lipid call is unchanged).
-                , if (is.null(profile)) buildLipidNormQcTabsetPanel(ns) else buildLipidNormQcTabsetPanel(ns, profile = profile)
-            )
-        )
-    )
+    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R) under the lipid configuration.
+    norm <- omicGuiConfig("lipidomics")$norm
+    if (is.null(profile)) return(mod_omic_norm_ui(id, norm))
+    # KIT-097 (KIT-105 D4, until KIT-110): the profile's options panel, and the frame's tabset with the profile's tabs, stage
+    # captions and RUV texts, one assay row.
+    norm$panels <- profile$norm_options
+    norm$plot_tabs <- profile$norm_tabs %||% norm$plot_tabs
+    norm$stage_labels <- profile$norm_stage_labels %||% norm$stage_labels
+    norm$assay_slots <- 1L
+    norm$ruv_heading <- profile$norm_ruv_heading %||% norm$ruv_heading
+    norm$ruv_help <- profile$norm_ruv_help %||% norm$ruv_help
+    mod_omic_norm_ui(id, norm)
 }
