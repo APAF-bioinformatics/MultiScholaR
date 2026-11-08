@@ -1,0 +1,39 @@
+lifecycle-prot_dia: INFO [2026-11-09 05:39:20] --- Processing setup for omic type: proteomics ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia (5 items)
+  data_dir                       : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/scripts/proteomics (0 items)
+  results_dir                    : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics (6 items)
+  results_summary_dir            : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results_summary/proteomics (4 items)
+  timestamp                      : 20261109_053920
+  time_dir                       : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/publication_graphs/filtering_qc/20261109_053920 (0 items)
+  clean_features_dir             : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/integration (0 items)
+  pathway_dir                    : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-106/RtmpV2CxUm/gui-entry-prot_dia-1738c61e3c015b/project/prot_dia/data/UniProt (0 items)
+------------------------------------------
+
+ERROR [2026-11-09 05:41:57] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+..........................................
+══ DONE ════════════════════════════════════════════════════════════════════════
+🧿 Your tests look perfect 🧿
+LANE prot_dia identical_to_oracle=TRUE elapsed=327s
+CALLS mod_omic_da_server 1
+CALLS da_server_load_session_handler 1
+CALLS da_server_run_analysis_handler 1
+CALLS runDIAReferenceDaAnalysis 1
+CALLS validateProtDaFilteredSession 1
+CALLS normaliseProtDaContrastsTable 3
