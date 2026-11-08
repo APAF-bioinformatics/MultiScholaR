@@ -100,6 +100,142 @@ startWorkflowManagedSessionExport <- function(manager, runner, workflowData, nor
     invisible(TRUE)
 }
 
+#' The lipidomics or metabolomics session list the normalisation export writes (KIT-105 W2, from
+#' `buildLipidNormExportSessionData`, `buildMetabNormExportSessionData` and `collectMetabNormFeatureCountsPerAssay`; the
+#' fields of every build since the modules' first export, in their order).
+#' @param binding The omic's binding.
+#' @param workflowData The tab's bus; `state_manager` is the owner.
+#' @param normData The normalisation tab's reactive values.
+#' @param input The tab's inputs.
+#' @param experimentLabel The experiment label.
+#' @param export The omic's `norm$export`: `counts_field` names the bus's feature counts the list carries; `samples` is
+#'   how an assay's samples are counted (P-18): `design`, the design's samples among its columns (lipid), or `columns`,
+#'   its columns less the id and annotation columns (metab).
+#' @param exportTimestamp The export time.
+#' @return The session list. `current_s4_object` is the head's state as the owner hydrates it; NULL on a managed session,
+#'   whose worker serialises the state (KIT-082), and whose counts read the head's shell.
+#' @noRd
+collectWorkflowOmicsNormSession <- function(binding, workflowData, normData, input, experimentLabel, export, exportTimestamp = Sys.time()) {
+    manager <- workflowData$state_manager
+    current_state_name <- manager$current_state
+    managed <- !is.null(workflowOmicsManagedActions(binding$omic_type))
+    current_s4 <- if (managed) readWorkflowOmicsShell(binding, manager, current_state_name, "features") else manager$getState(current_state_name)
+    feature_counts <- NULL
+    if (!is.null(current_s4) && inherits(current_s4, binding$class)) {
+        assays <- methods::slot(current_s4, binding$data_slot)
+        id_col <- methods::slot(current_s4, binding$id_slot)
+        by_design <- identical(export$samples, "design")
+        design_samples <- if (by_design) as.character(current_s4@design_matrix[[current_s4@sample_id]])
+        feature_counts <- purrr::map(names(assays), function(assay_name) {
+            assay_data <- assays[[assay_name]]
+            if (is.null(assay_data)) return(list(features = 0, samples = 0))
+            n_features <- attr(current_s4, "feature_counts")[[assay_name]] %||% length(unique(assay_data[[id_col]]))
+            n_samples <- if (by_design) {
+                length(intersect(colnames(assay_data), design_samples))
+            } else {
+                ncol(assay_data) - length(c(id_col, current_s4@annotation_id_column))
+            }
+            list(features = n_features, samples = n_samples)
+        }) |> purrr::set_names(names(assays))
+    }
+    c(list(
+        r6_current_state_name = current_state_name, current_s4_object = if (!managed) current_s4,
+        contrasts_tbl = workflowData$contrasts_tbl, design_matrix = workflowData$design_matrix, config_list = workflowData$config_list,
+        itsd_selections = normData$itsd_selections, ruv_optimization_results = normData$ruv_optimization_results,
+        correlation_results = normData$correlation_results, assay_names = normData$assay_names,
+        export_timestamp = exportTimestamp, omic_type = binding$omic_type, experiment_label = experimentLabel,
+        normalization_method = input$norm_method, ruv_mode = input$ruv_mode, itsd_applied = input$apply_itsd,
+        itsd_aggregation = if (isTRUE(input$apply_itsd)) input$itsd_aggregation else NA, log_offset = input$log_offset,
+        correlation_threshold = input$min_pearson_correlation_threshold, ruv_grouping_variable = input$ruv_grouping_variable,
+        feature_counts = feature_counts),
+        stats::setNames(list(workflowData[[export$counts_field]]), export$counts_field),
+        list(qc_params = workflowData$qc_params, normalization_complete = normData$normalization_complete,
+            ruv_complete = normData$ruv_complete, correlation_filtering_complete = normData$correlation_filtering_complete))
+}
+
+#' The normalisation export's files under the owner's publication request (KIT-105 W2, from `saveLipidNormExportArtifacts`
+#' and metab's `saveMetabNormExportSessionRdsFiles`, `saveMetabNormExportMetadataFiles` and `saveMetabNormExportSummaryFile`;
+#' KIT-071, the KIT-042/043 pattern): the session RDS pair published by `runWorkflowLegacyExport` (the journal and
+#' `export_complete_<id>.json` are the manifest), then the three metadata RDS files and the summary text, named and laid
+#' out as every build before.
+#' @param binding The omic's binding (the summary's title).
+#' @param sessionData The session list.
+#' @param sourceDir The project source directory.
+#' @param publicationRequest The owner's request (`request_id`, `timestamp`); required.
+#' @param export The omic's `norm$export` (`prefix`).
+#' @param advance Optional `function(amount, detail)`: metab's tab steps its progress display through the files; lipid's
+#'   passes none.
+#' @param summaryTime The summary's export time: the session's (lipid); metab's tab passes the time the summary is written.
+#' @return The file names and paths, under both namings the tabs read, and the publication receipt.
+#' @noRd
+saveWorkflowOmicsNormSessionArtifacts <- function(binding, sessionData, sourceDir, publicationRequest, export, advance = NULL,
+    summaryTime = sessionData$export_timestamp, saveRdsFn = saveRDS, writeLinesFn = writeLines, logInfoFn = logger::log_info,
+    logWarnFn = logger::log_warn) {
+    if (is.null(publicationRequest)) cli::cli_abort("the session export needs the owner's publication request", class = "saved_entity_scope")
+    step <- function(amount, detail) if (is.function(advance)) advance(amount, detail)
+    prefix <- export$prefix
+    step(0.3, "Saving to file...")
+    session_filename <- sprintf("%sfiltered_session_data_%s.rds", prefix, publicationRequest$timestamp)
+    session_filepath <- file.path(sourceDir, session_filename)
+    latest_filename <- paste0(prefix, "filtered_session_data_latest.rds")
+    latest_filepath <- file.path(sourceDir, latest_filename)
+    publication <- runWorkflowLegacyExport(sessionData, sourceDir, publicationRequest$request_id, publicationRequest$timestamp,
+        serializeFn = saveRdsFn, prefix = prefix)
+    logInfoFn(sprintf("*** EXPORT: Session data saved to: %s ***", session_filepath))
+    step(0.1, "Creating latest version...")
+    logInfoFn(sprintf("*** EXPORT: Latest version saved to: %s ***", latest_filepath))
+
+    step(0.1, "Saving metadata files...")
+    tryCatch({
+        save_metadata <- function(value, name) {
+            saveRdsFn(value, file.path(sourceDir, paste0(prefix, name, ".RDS")))
+            logInfoFn(sprintf("*** EXPORT: Saved %s%s.RDS ***", prefix, name))
+        }
+        if (!is.null(sessionData$ruv_optimization_results) && length(sessionData$ruv_optimization_results) > 0) {
+            save_metadata(sessionData$ruv_optimization_results, "ruv_optimization_results")
+        }
+        if (!is.null(sessionData$itsd_selections) && length(sessionData$itsd_selections) > 0) {
+            save_metadata(sessionData$itsd_selections, "itsd_selections")
+        }
+        if (!is.null(sessionData$qc_params)) save_metadata(sessionData$qc_params, "qc_params")
+    }, error = function(e) {
+        logWarnFn(sprintf("*** WARNING: Some metadata files could not be saved: %s ***", e$message))
+    })
+
+    step(0.2, "Creating summary...")
+    ruv_summary_lines <- ""
+    for (assay_name in names(sessionData$ruv_optimization_results)) {
+        result <- sessionData$ruv_optimization_results[[assay_name]]
+        if (!is.null(result) && isTRUE(result$success)) {
+            ruv_summary_lines <- paste0(ruv_summary_lines, sprintf("\n  %s: k=%d, %%=%.1f, controls=%d", assay_name, result$best_k,
+                result$best_percentage, sum(result$control_genes_index, na.rm = TRUE)))
+        }
+    }
+    if (ruv_summary_lines == "") ruv_summary_lines <- "\n  (RUV skipped or not applied)"
+    feature_summary_lines <- ""
+    for (assay_name in names(sessionData$feature_counts)) {
+        counts <- sessionData$feature_counts[[assay_name]]
+        feature_summary_lines <- paste0(feature_summary_lines, sprintf("\n  %s: %d features, %d samples", assay_name, counts$features,
+            counts$samples))
+    }
+    title <- paste0(toupper(substr(binding$omic_type, 1L, 1L)), substring(binding$omic_type, 2L))
+    summary_content <- sprintf(
+        "%s Normalized Session Data Export Summary\n===================================================\n\nExport Timestamp: %s\nSession File: %s\n\nData Summary:%s\n\nNormalization Parameters:\n- Method: %s\n- ITSD applied: %s\n- ITSD aggregation: %s\n- Log2 offset: %s\n- RUV mode: %s\n- RUV grouping variable: %s\n- Correlation threshold: %s\n\nRUV Optimization Results (per-assay):%s\n\nContrasts:\n%s\n\nThis data is ready for differential expression analysis.\nUse 'Load Filtered Session' in the DE tab to import.\n",
+        title, format(summaryTime, "%Y-%m-%d %H:%M:%S"), session_filename, feature_summary_lines, sessionData$normalization_method,
+        ifelse(isTRUE(sessionData$itsd_applied), "Yes", "No"),
+        ifelse(is.na(sessionData$itsd_aggregation), "N/A", sessionData$itsd_aggregation),
+        sessionData$log_offset, sessionData$ruv_mode, sessionData$ruv_grouping_variable,
+        ifelse(is.null(sessionData$correlation_threshold), "N/A", sessionData$correlation_threshold), ruv_summary_lines,
+        if (!is.null(sessionData$contrasts_tbl)) paste(sessionData$contrasts_tbl$friendly_names, collapse = "\n") else "None defined")
+    summary_filepath <- file.path(sourceDir, paste0(prefix, "filtered_session_summary.txt"))
+    writeLinesFn(summary_content, summary_filepath)
+    logInfoFn(sprintf("*** EXPORT: Summary saved to: %s ***", summary_filepath))
+
+    list(session_filename = session_filename, session_filepath = session_filepath, sessionFilename = session_filename,
+        sessionFilepath = session_filepath, latestFilename = latest_filename, latestFilepath = latest_filepath,
+        summaryFilepath = summary_filepath, publication = publication)
+}
+
 #' DIA name of `runWorkflowOwnedSessionExport` (KIT-074): the alias the proteomics modules, the harness and the tests keep.
 #' @param ... The arguments of `runWorkflowOwnedSessionExport`.
 #' @return What `runWorkflowOwnedSessionExport` returns.

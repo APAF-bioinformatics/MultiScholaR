@@ -237,8 +237,7 @@ omicsManualItsdFeatureIds <- function(selections, candidates, addLog = function(
     if (length(selected)) selected
 }
 
-#' The normalisation tab's pipeline on the worker (`handleLipidNormRunNormalization` and `runMetabNormNormalizationPipeline`
-#' run it in process): the QC figures, ITSD, log2, between-sample normalisation, the figures, RUV-III and its figures, the
+#' The normalisation tab's pipeline on the worker (`runWorkflowOmicsInProcessNormalisation` runs it in process): the QC figures, ITSD, log2, between-sample normalisation, the figures, RUV-III and its figures, the
 #' composite, one managed action each under one progress display. `normData` holds each step's state reference as in process.
 #' @param binding The omic's binding.
 #' @param runner The omic's runner.
@@ -338,6 +337,118 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         failed(error)
     })
     invisible(TRUE)
+}
+
+#' The normalisation tab's pipeline in process (KIT-105 W2), the twin of `runWorkflowOmicsManagedNormalisation`, from
+#' `handleLipidNormRunNormalization` and metab's `runMetabNormNormalizationPipelineShell`, which ran the same sequence: the
+#' QC figures of the state read for this action, ITSD, log2 and between-sample normalisation through the
+#' `runWorkflowOmicsReference*` wrappers, the figures of the committed state, RUV-III and its figures, then the composite.
+#' `normData` holds each step's state reference (KIT-075). The tab logs the start and holds the progress display; this
+#' core calls no Shiny UI function (D9).
+#' @param binding The omic's binding.
+#' @param manager The session owner.
+#' @param settings The managed twin's settings, with `experiment_paths` (the QC figures' paths). `itsd_feature_ids` is not
+#'   read: the manual ITSD selection is resolved from selection tables rebuilt from the state read for this action (D8).
+#' @param normData The tab's reactive values.
+#' @param config The states' configuration.
+#' @param addLog The tab's log.
+#' @param advance `function(detail)`, one step of the progress display.
+#' @param notify `function(message, type)`, the tab's notification of a failure.
+#' @param finish Function run after the composite: the tab's completion.
+#' @param itsd_table `function(assay_data, id_col, annotation_cols)`, the ITSD selection table (`norm$itsd_table`).
+#' @return TRUE, or FALSE after a failure (logged and notified), invisibly.
+#' @noRd
+runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, normData, config, addLog, advance, notify, finish,
+    itsd_table) {
+    figures <- function(object, stage, done) {
+        binding$qc_plots(theObject = object, experiment_paths = settings$experiment_paths, stage = stage,
+            grouping_variable = settings$grouping_variable, shape_variable = settings$shape_variable)
+        addLog(done)
+    }
+    tryCatch({
+        current <- readWorkflowOmicsState(binding, manager)
+        shiny::req(current)
+        advance("Capturing pre-normalization state...")
+        normData$post_filter_obj <- getWorkflowStateReference(manager)
+        addLog("Post-filtering state captured")
+        figures(current, "post_filter", "Pre-normalization QC plots generated")
+        advance("Applying ITSD normalization...")
+        if (isTRUE(settings$apply_itsd)) {
+            addLog(paste("Applying ITSD normalization (aggregation:", settings$itsd_aggregation, ")"))
+            feature_ids <- NULL
+            selections <- normData$itsd_selections
+            if (any(vapply(selections, function(rows) length(rows) > 0, logical(1)))) {
+                id_col <- methods::slot(current, binding$id_slot)
+                annotation_col <- methods::slot(current, "annotation_id_column")
+                feature_ids <- purrr::compact(purrr::imap(selections, function(rows, assay) {
+                    if (is.null(rows) || length(rows) == 0) return(NULL)
+                    assay_data <- methods::slot(current, binding$data_slot)[[assay]]
+                    if (is.null(assay_data)) return(NULL)
+                    ids <- itsd_table(assay_data, id_col, annotation_col)$feature_id[rows]
+                    addLog(paste("Assay", assay, ":", length(ids), "ITSD features selected"))
+                    ids
+                }))
+                if (length(feature_ids) == 0) feature_ids <- NULL
+            }
+            current <- NULL
+            normData$post_itsd_obj <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation,
+                feature_ids, config)$reference
+            addLog("ITSD normalization complete")
+        } else {
+            addLog("ITSD normalization skipped")
+        }
+        current <- NULL
+        advance("Applying log2 transformation...")
+        addLog(paste("Applying log2 transformation (offset:", settings$log_offset, ")"))
+        normData$post_log2_obj <- runWorkflowOmicsReferenceLog2(binding, manager, settings$log_offset, config)$reference
+        addLog("Log2 transformation complete")
+        advance("Applying between-sample normalization...")
+        if (settings$norm_method != "none") addLog(paste("Applying between-sample normalization (method:", settings$norm_method, ")"))
+        normData$post_norm_obj <- runWorkflowOmicsReferenceBetweenSampleNormalisation(binding, manager, settings$norm_method, config)$reference
+        addLog("Between-sample normalization complete")
+        normData$normalization_complete <- TRUE
+        figures(readWorkflowOmicsState(binding, manager, normData$post_norm_obj), "post_norm", "Post-normalization QC plots generated")
+        advance("Running RUV-III batch correction...")
+        if (!identical(settings$ruv_mode, "skip")) {
+            addLog(paste("Running RUV-III (mode:", settings$ruv_mode, ")"))
+            ruv <- runWorkflowOmicsReferenceRuv(binding, manager, settings$ruv_parameters, config)
+            normData$ruv_optimization_results <- ruv$optimisation
+            addLog(paste("RUV optimization complete. Best k per assay:",
+                paste(names(ruv$value$best_k), "=", unlist(ruv$value$best_k), collapse = ", ")))
+            normData$ruv_corrected_obj <- ruv$reference
+            normData$ruv_complete <- TRUE
+            addLog("RUV-III correction applied")
+            advance("Generating RUV QC plots...")
+            figures(readWorkflowOmicsState(binding, manager, normData$ruv_corrected_obj), "ruv_corrected", "RUV QC plots generated")
+        } else {
+            addLog("RUV-III skipped")
+            normData$ruv_corrected_obj <- normData$post_norm_obj
+            normData$ruv_complete <- TRUE
+        }
+        writeWorkflowOmicsNormComposite(settings$qc_dir, settings$assay_names, settings$ruv_mode, binding$omic_type, addLog = addLog)
+        finish()
+        invisible(TRUE)
+    }, error = function(e) {
+        message <- conditionMessage(e)
+        addLog(paste("ERROR:", message))
+        logger::log_error(paste("Normalization pipeline error:", message))
+        notify(paste("Error:", message), type = "error")
+        invisible(FALSE)
+    })
+}
+
+#' The final-QC PCA (KIT-105 W2; lipid's `buildLipidNormFinalQcPcaPlot`, D7): one assay's plot, or the assays' plots in a
+#' column. A failure is raised for the tab or the worker to present; metab's binding wraps it in metab's placeholder.
+#' @param object The state to draw.
+#' @param color,shape The grouping and shape variables.
+#' @return A ggplot or a patchwork.
+#' @noRd
+omicsNormFinalQcPcaPlot <- function(object, color, shape) {
+    pca_plots <- plotPca(object, grouping_variable = color, shape_variable = shape, title = "Final QC - PCA")
+    if (is.list(pca_plots) && length(pca_plots) > 1) return(patchwork::wrap_plots(pca_plots, ncol = 1))
+    if (is.list(pca_plots) && length(pca_plots) == 1) return(pca_plots[[1]])
+    if (inherits(pca_plots, "ggplot")) return(pca_plots)
+    ggplot2::ggplot() + ggplot2::theme_void()
 }
 
 #' The correlation filter on the worker: the pairs, then the selection on them (`runWorkflowOmicsReferenceCorrelation`).

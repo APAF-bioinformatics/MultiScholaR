@@ -169,3 +169,139 @@ writeWorkflowOmicsFigure <- function(path, render, omic_type, content, figure, a
     rootWorkflowProduct(manager, reference, list(product))
     path
 }
+
+#' The normalisation tab's composite QC figure (KIT-105 W2, from `writeLipidNormCompositeFigure` and
+#' `runMetabNormCompositeQcFigureStep`, which drew the same grid): per assay and kind (pca, density, rle, correlation), a
+#' row of the pre-normalisation, post-normalisation and, unless RUV was skipped, RUV-corrected files, assembled from the
+#' files only (no matrix). KIT-078: a worker reads the published files and stages the figure in `output_dir`; in process
+#' it is written beside them.
+#' @param qc_dir The QC directory the per-assay files are in.
+#' @param assay_names The assays, in the order of their rows.
+#' @param ruv_mode `skip` draws two columns; any other mode three.
+#' @param omic_type The omic, which names the figure (`<omic_type>_composite_QC_figure`).
+#' @param output_dir Where the figure is written; `qc_dir` when NULL.
+#' @param addLog The tab's log.
+#' @param generateCompositeFn,savePlotFn,dirExistsFn,logWarnFn The composite's generator, renderer and checks.
+#' @return `list(qcDir, ncolComposite, columnLabels, allPlotFiles, allRowLabels, logEntry, compositeSaved)`, with
+#'   `errorMessage` before `compositeSaved` on a failure (metab's fields; lipid read `compositeSaved` and `errorMessage`).
+#' @noRd
+writeWorkflowOmicsNormComposite <- function(qc_dir, assay_names, ruv_mode, omic_type, output_dir = qc_dir,
+    addLog = function(entry) invisible(entry), generateCompositeFn = omicsNormCompositeFromFiles, savePlotFn = savePlot,
+    dirExistsFn = dir.exists, logWarnFn = logger::log_warn) {
+    log_entry <- "Generating composite QC figure..."
+    addLog(log_entry)
+    empty <- list(qcDir = qc_dir, ncolComposite = NULL, columnLabels = NULL, allPlotFiles = character(0), allRowLabels = list(),
+        logEntry = log_entry)
+    tryCatch({
+        if (is.null(qc_dir) || !dirExistsFn(qc_dir) || is.null(assay_names)) return(c(empty, list(compositeSaved = FALSE)))
+        ncol_composite <- if (identical(ruv_mode, "skip")) 2 else 3
+        stages <- c("pre_norm", "post_norm", "ruv_corrected")[seq_len(ncol_composite)]
+        column_labels <- c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")[seq_len(ncol_composite)]
+        all_plot_files <- c()
+        all_row_labels <- list()
+        label_counter <- 1L
+        for (assay_name in assay_names) {
+            safe_name <- gsub("[^A-Za-z0-9]", "_", tolower(assay_name))
+            for (plot_type in c("pca", "density", "rle", "correlation")) {
+                all_plot_files <- c(all_plot_files, file.path(qc_dir, sprintf("%s_%s_%s.png", safe_name, stages, plot_type)))
+                all_row_labels[[sprintf("%s_%s", safe_name, plot_type)]] <- sprintf("%s)", letters[label_counter + seq_len(ncol_composite) - 1L])
+                label_counter <- label_counter + ncol_composite
+            }
+        }
+        composite <- generateCompositeFn(all_plot_files, ncol_composite, all_row_labels, column_labels)
+        if (!is.null(composite)) {
+            writeWorkflowOmicsCompositeFigure(composite$plot, output_dir %||% qc_dir, paste0(omic_type, "_composite_QC_figure"),
+                width = composite$width, height = composite$height, plot_files = all_plot_files,
+                labels = list(rows = all_row_labels, columns = column_labels), omic_type = omic_type, savePlotFn = savePlotFn)
+            addLog(sprintf("Composite QC figure saved to: %s", file.path(qc_dir, "composite_QC_figure")))
+        }
+        list(qcDir = qc_dir, ncolComposite = ncol_composite, columnLabels = column_labels, allPlotFiles = all_plot_files,
+            allRowLabels = all_row_labels, logEntry = log_entry, compositeSaved = !is.null(composite))
+    }, error = function(e) {
+        message <- conditionMessage(e)
+        addLog(paste("Warning: Could not generate composite QC figure:", message))
+        logWarnFn(paste("Composite QC generation failed:", message))
+        c(empty, list(errorMessage = message, compositeSaved = FALSE))
+    })
+}
+
+#' The composite from its per-assay files (KIT-105 W2, from lipid's `buildLipidNormCompositeFromFilesGenerator` and
+#' metab's `generateMetabNormCompositeFromFiles`, line for line the same): a row of column titles, then per row its
+#' labels above its images; a row none of whose files exists is left out.
+#' @param plotFiles The files, row by row.
+#' @param ncol The columns.
+#' @param rowLabels Each row's labels, named by row; `a)`, `b)`, ... when NULL.
+#' @param columnLabels The column titles, drawn when there is one per column.
+#' @return `list(plot, width, height)` in inches, or NULL (with a warning) when there is nothing to draw.
+#' @noRd
+omicsNormCompositeFromFiles <- function(plotFiles, ncol = 3, rowLabels = NULL, columnLabels = NULL) {
+    text_plot <- function(title, x, size, hjust, bottom, ...) {
+        ggplot2::ggplot() +
+            ggplot2::annotate("text", x = x, y = 0.5, label = title, size = size, ..., hjust = hjust) +
+            ggplot2::xlim(0, 1) +
+            ggplot2::theme_void() +
+            ggplot2::theme(plot.margin = ggplot2::margin(5, 5, bottom, 5), panel.background = ggplot2::element_blank())
+    }
+    label_plot <- function(title) text_plot(title, 0, 5, 0, 5)
+    title_plot <- function(title) text_plot(title, 0.5, 6, 0.5, 10, fontface = "bold")
+    image_plot <- function(path) {
+        if (is.na(path) || !file.exists(path)) return(ggplot2::ggplot() + ggplot2::theme_void())
+        tryCatch({
+            # KIT-079: a native raster, 4 bytes a pixel against 32 for an array of doubles; the rendered figure is byte-identical.
+            grob <- grid::rasterGrob(png::readPNG(path, native = TRUE), interpolate = TRUE)
+            ggplot2::ggplot() + ggplot2::annotation_custom(grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) + ggplot2::theme_void()
+        }, error = function(e) {
+            logger::log_warn(sprintf("[generateCompositeFromFiles] Could not load image: %s", path))
+            ggplot2::ggplot() + ggplot2::theme_void()
+        })
+    }
+    logger::log_info(sprintf("[generateCompositeFromFiles] Generating composite from %d files...", length(plotFiles)))
+    for (package in c("patchwork", "ggplot2", "png")) {
+        if (!requireNamespace(package, quietly = TRUE)) {
+            warning(paste(package, "package required for composite generation"))
+            return(NULL)
+        }
+    }
+    tryCatch({
+        n_files <- length(plotFiles)
+        if (is.null(rowLabels)) {
+            n_rows <- n_files / ncol
+            rowLabels <- split(paste0(letters[seq_len(n_files)], ")"), rep(seq_len(n_rows), each = ncol))
+            names(rowLabels) <- paste0("row", seq_len(n_rows))
+        }
+        plot_sections <- list()
+        height_values <- c()
+        if (!is.null(columnLabels) && length(columnLabels) == ncol) {
+            plot_sections <- append(plot_sections, list(patchwork::wrap_plots(lapply(columnLabels, title_plot), ncol = ncol)))
+            height_values <- c(height_values, 0.2)
+            logger::log_info("[generateCompositeFromFiles] Added column titles")
+        }
+        row_names <- names(rowLabels)
+        for (i in seq_along(row_names)) {
+            row_files <- plotFiles[((i - 1) * ncol + 1):min(i * ncol, n_files)]
+            if (any(!is.na(row_files) & vapply(row_files, function(path) !is.na(path) && file.exists(path), logical(1)))) {
+                plot_sections <- append(plot_sections, list(
+                    patchwork::wrap_plots(lapply(rowLabels[[row_names[i]]], label_plot), ncol = ncol),
+                    patchwork::wrap_plots(lapply(row_files, image_plot), ncol = ncol)))
+                height_values <- c(height_values, 0.1, 1)
+                logger::log_info(sprintf("[generateCompositeFromFiles] Added row: %s", row_names[i]))
+            } else {
+                logger::log_info(sprintf("[generateCompositeFromFiles] Skipping empty row: %s", row_names[i]))
+            }
+        }
+        if (length(plot_sections) == 0) {
+            warning("No valid plot sections to combine")
+            return(NULL)
+        }
+        logger::log_info("[generateCompositeFromFiles] Combining plot sections...")
+        combined_plot <- patchwork::wrap_plots(plot_sections, ncol = 1) + patchwork::plot_layout(heights = height_values)
+        plot_width <- 4 + (ncol * 3)
+        plot_height <- 4 + (length(height_values) * 2)
+        rm(plot_sections)
+        gc()
+        list(plot = combined_plot, width = plot_width, height = plot_height)
+    }, error = function(e) {
+        logger::log_error(paste("[generateCompositeFromFiles] Error:", e$message))
+        NULL
+    })
+}

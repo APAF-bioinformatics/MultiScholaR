@@ -91,12 +91,15 @@ metabolomicsDeclarationBinding <- list(
     # KIT-078: what the worker reads from the matrix for the step's figures and files.
     qc_dir_role = "metabolite_qc_dir",
     qc_plots = function(...) generateMetabQcPlots(...),
-    composite_figure = function(qc_dir, output_dir, assay_names, ruv_mode) runMetabNormCompositeQcFigureStep(list(metabolite_qc_dir = qc_dir), assay_names, ruv_mode,
-        "metabolomics", generateCompositeFromFilesFn = generateMetabNormCompositeFromFiles, outputDir = output_dir),
+    composite_figure = function(qc_dir, output_dir, assay_names, ruv_mode) writeWorkflowOmicsNormComposite(qc_dir, assay_names, ruv_mode, "metabolomics",
+        output_dir = output_dir),
     filtering_metrics = function(object) computeMetabFilteringMetrics(object),
     da_export = function(...) outputMetabDaResultsAllContrasts(...),
     # KIT-082: what the tabs show from the whole matrix.
-    final_pca = function(object, color, shape) buildMetabNormFinalQcPcaPlot(object, color, shape),
+    # D7 (KIT-105): metab's builder showed a failure in the plot; lipid's raised it for the worker to report.
+    final_pca = function(object, color, shape) tryCatch(omicsNormFinalQcPcaPlot(object, color, shape), error = function(e) {
+        ggplot2::ggplot() + ggplot2::annotate("text", x = 0.5, y = 0.5, label = paste("Error:", e$message), size = 4) + ggplot2::theme_void()
+    }),
     volcano_widget = function(...) generateMetabDAVolcanoPlotGlimma(...)
 )
 

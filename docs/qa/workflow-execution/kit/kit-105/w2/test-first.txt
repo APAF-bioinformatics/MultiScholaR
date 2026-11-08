@@ -1,0 +1,19 @@
+# KIT-105 W2 test first: tests/testthat/test-omics-norm-core.R (new), written before the normalisation core existed and
+# run on the start tree: HEAD aa79fe3f (origin/performance-v2, W1), R/ unchanged. R 4.6.1, pkgload::load_all (export_all,
+# helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process; runner kit/scripts-078/run1.R (verbose); R_LIBS =
+# core/browser-smoke.xocrNB/library. Recorded 2026-11-08.
+
+COUNTS test-omics-norm-core.R pass 4 fail 8 error 6 skip 0
+# Every block fails (8 of 8). The passing expectations are today's sides of the comparisons.
+  BAD :: the W2 core functions are defined in their core files, in the namespace
+  BAD :: writeWorkflowOmicsNormComposite is lipid's and metab's composite step: files, labels, log and returned fields
+  BAD :: omicsNormCompositeFromFiles is lipid's and metab's composite from files: the plot, its size and its labels
+  BAD :: omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder; metab's binding keeps its error placeholder
+  BAD :: the bindings' composite_figure gives today's product through the core
+  BAD :: runWorkflowOmicsInProcessNormalisation is lipid's and metab's in-process sequence: states, provenance, normData, log
+  BAD :: collectWorkflowOmicsNormSession is lipid's and metab's session list: fields, order, counts (P-18)
+  BAD :: saveWorkflowOmicsNormSessionArtifacts is lipid's and metab's savers: files, bytes, summary, log and progress
+# First message per block: is.function(fn) FALSE for the six W2 names; 'could not find function' for
+# writeWorkflowOmicsNormComposite, omicsNormFinalQcPcaPlot, runWorkflowOmicsInProcessNormalisation (after today's run
+# completed), collectWorkflowOmicsNormSession (2 blocks); object 'omicsNormCompositeFromFiles' not found; the bindings'
+# composite_figure bodies do not name writeWorkflowOmicsNormComposite (lipid and metab).

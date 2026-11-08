@@ -1,0 +1,42 @@
+# KIT-105 W2 targeted set, on the W2 tree (aa79fe3f + the W2 change). R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, sequentially; runner kit/scripts-078/run1.R; R_LIBS =
+# core/browser-smoke.xocrNB/library. Recorded 2026-11-08.
+
+# The W2 test (test-omics-norm-core.R). First implemented run: 185 pass, 3 fail, 1 error. All four were test-side, each
+# corrected without narrowing the claim:
+#   - omicsNormCompositeFromFiles: the test built its file names as <assay>_<kind>_<stage>.png (the files are
+#     <assay>_<stage>_<kind>.png), so every row was empty for all three generators alike; the size expectation caught it.
+#   - omicsNormFinalQcPcaPlot: plotPca errors on the raw MCI fixture (W1's observation: no pre-normalisation PCA there);
+#     the block now draws the log2 state, as the final QC plot does after a run.
+#   - the bindings' composite_figure: lipid's step returned only `compositeSaved` (and `errorMessage`), which is what
+#     the worker reads; the core returns metab's superset (D7), so lipid is compared on its own fields.
+COUNTS test-omics-norm-core.R pass 217 fail 0 error 0 skip 0
+
+COUNTS test-omic-norm-module.R pass 469 fail 0 error 0 skip 1            # W1's (a)-(c) unchanged; the skip is the F105-01 pending gate (W1: 469/0/0/1)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   # W1: 230/0/0/0 (binding$final_pca in process, :301)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0             # the managed composite_figure and final_pca on the worker
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0
+COUNTS test-omic-gui-config.R pass 941 fail 0 error 0 skip 0
+
+# Dependents grep (tests/, tools/ excluding tools/refactor/, inst/: the re-pointed binding entries and every function the
+# W2 core was moved from). The module copies are not deleted in W2, so the seam files still reach them.
+COUNTS test-workflow-omics-declarations.R pass 68 fail 0 error 0 skip 0
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
+COUNTS test-workflow-operation-registry.R pass 1007 fail 0 error 0 skip 0
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0
+COUNTS test-lipid-12-norm-module-contracts.R pass 707 fail 0 error 0 skip 0
+COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0
+COUNTS test-metab-03b-norm-module-helper-characterization.R pass 876 fail 0 error 0 skip 3   # three KIT-072 quarantine skips (pre-existing)
+COUNTS test-metab-03d-norm-module-characterization.R pass 55 fail 0 error 0 skip 1           # the extracted-helper guard (pre-existing, kit-104/w8)
+# Not run (no dependency): test-prot-05b/05d name `QC_composite_figure`, proteomics' own normData field.
+
+# Parse-data back-references (kit-104-w3/backrefs.R): 25 -> 19. Gone: writeLipidNormCompositeFigure,
+# buildLipidNormCompositeFromFilesGenerator, buildLipidNormFinalQcPcaPlot (lipid :103-108), runMetabNormCompositeQcFigureStep,
+# generateMetabNormCompositeFromFiles, buildMetabNormFinalQcPcaPlot (metab :94-99): #23 to #28.
