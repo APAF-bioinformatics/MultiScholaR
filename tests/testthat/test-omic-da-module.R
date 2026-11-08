@@ -4439,3 +4439,163 @@ test_that("(c, D2) the value each DA server returns today: lipid its outputs, me
     expect_identical(omicDaW1Case("prot_refusals")$returned, paste0("reactivevalues: analysis_complete,contrasts_available,",
         "current_col_clusters,current_row_clusters,current_s4_object,da_results_list,formula_from_s4,volcano_plot_identity"))
 })
+
+# ------------------------------------------------------------------------------------------------
+# W3 (D3, F106-05): the shared frame (R/mod_omic_da.R, R/mod_omic_da_panels.R) for lipid and trx, written before
+# it (kit-106/w3/test-first.txt). The interactive volcano is unticked in the UI, `<req>` until ticked, then the
+# binding's `<prefix>_volcano_page` (in process and managed); the tab's reactive values hold no state, widget or
+# page bytes. F106-05: an owner whose head is its initial state is refused as no data.
+# ------------------------------------------------------------------------------------------------
+
+#' The paths in a tab's reactive values to a state (an omic's assay data object, or a state owner), a widget, a tag or
+#' raw bytes. The heatmap's last drawing (`current_heatmap_plot`, the plot Save Heatmap writes; W1 (b) pins it) is left
+#' out; so are the model fits the in-process kernel's list carries (trx's edgeR `qlf`), which are not states.
+omicDaW3Heavy <- function(values) {
+    found <- character()
+    states <- c(lipidomicsDeclarationBinding$class, metabolomicsDeclarationBinding$class, transcriptomicsDeclarationBinding$class)
+    walk <- function(x, path) {
+        state <- isS4(x) && any(vapply(states, function(class) methods::is(x, class), logical(1)))
+        if (state || inherits(x, c("DIAStateAdapter", "htmlwidget", "shiny.tag", "shiny.tag.list")) || is.raw(x)) {
+            found <<- c(found, path)
+        } else if (is.list(x) && !is.data.frame(x)) {
+            for (i in seq_along(x)) walk(x[[i]], paste0(path, "$", if (is.null(names(x))) i else names(x)[[i]]))
+        }
+    }
+    if (!shiny::is.reactivevalues(values)) return("<not reactive values>")
+    fields <- shiny::isolate(shiny::reactiveValuesToList(values))
+    for (name in setdiff(names(fields), "current_heatmap_plot")) walk(fields[[name]], name)
+    found
+}
+
+#' Drive a DA tab to its completion and its interactive volcano: the UI's defaults (as the browser sends them),
+#' `run(put)`, the selection, the volcano read unticked, then ticked (a managed page is read again after the flush that
+#' delivers it). The page actions (`computeWorkflowOmicsVolcanoPageAction`, in process or in the worker) are counted.
+omicDaW3Volcano <- function(setup, run, select) {
+    log <- new.env(parent = emptyenv())
+    log$notes <- character()
+    log$updates <- character()
+    log$pending <- list()
+    omicDaW1InstallDoubles(log)
+    seen <- new.env(parent = emptyenv())
+    seen$pages <- character()
+    page_action <- get("computeWorkflowOmicsVolcanoPageAction", envir = asNamespace("MultiScholaR"))
+    testthat::local_mocked_bindings(computeWorkflowOmicsVolcanoPageAction = function(manager, request, variant) {
+        seen$pages <- c(seen$pages, request$operation)
+        page_action(manager, request, variant)
+    }, .package = "MultiScholaR")
+    out <- new.env(parent = emptyenv())
+    mount <- setup$server(new.env(parent = emptyenv()))
+    prefix <- paste0(setup$ns, "-")
+    suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(mount, {
+        flush_updates <- function() {
+            for (k in seq_len(20L)) {
+                if (!length(log$pending)) return(invisible())
+                queued <- log$pending
+                log$pending <- list()
+                sent <- stats::setNames(lapply(queued, `[[`, "value"), vapply(queued, `[[`, "", "id"))
+                do.call(session$setInputs, sent[!duplicated(names(sent), fromLast = TRUE)])
+            }
+        }
+        put <- function(inputs) {
+            names(inputs) <- ifelse(startsWith(names(inputs), "norm-"), names(inputs), paste0(prefix, names(inputs)))
+            do.call(session$setInputs, inputs)
+            session$flushReact()
+            flush_updates()
+        }
+        glimma <- function() tryCatch(paste(as.character(output[[paste0(prefix, "volcano_glimma")]]$html), collapse = ""),
+            error = function(e) if (inherits(e, c("shiny.silent.error", "shiny.output.cancel"))) "<req>" else paste("<error>", conditionMessage(e)))
+        ui_defaults <- omicsUiInputDefaults(setup$ui("x"))
+        names(ui_defaults) <- sub("^x-", "", names(ui_defaults))
+        put(ui_defaults)
+        run(put)
+        put(select)
+        out$unticked <- glimma()
+        out$pages_unticked <- seen$pages
+        put(list(volcano_interactive = TRUE))
+        for (k in seq_len(3L)) {
+            out$ticked <- glimma()
+            if (grepl("<iframe", out$ticked, fixed = TRUE)) break
+            session$flushReact()
+        }
+        out$pages <- seen$pages
+        out$heavy <- omicDaW3Heavy(session$userData$da)
+        out$notes <- log$notes
+    }))))
+    as.list(out)
+}
+
+omicDaW3FeatureRun <- function(put) {
+    put(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0))
+    put(list(run_da_analysis = 1L))
+}
+
+omicDaW3TrxRun <- function(put) {
+    put(list(`norm-ruv_mode` = "automatic"))
+    put(list(`norm-run_normalization` = 1L))
+    put(list(da_q_val_thresh = 0.05, treat_lfc_cutoff = 0))
+    put(list(run_da_analysis = 1L))
+}
+
+test_that("(W3, D3) lipid's and trx's DA UIs have the interactive volcano unticked", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    for (ui in list(lipid = mod_lipid_da_ui("de"), trx = mod_lipid_da_ui("de", profile = trxOmicProfile()))) {
+        html <- as.character(htmltools::renderTags(ui)$html)
+        expect_match(html, "<input id=\"de-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
+        expect_false(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))
+        expect_false(omicsUiInputDefaults(ui)[["de-volcano_interactive"]])
+    }
+})
+
+test_that("(W3) the shared frame's trx UI is W1 (a)'s trx UI", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    expect_true(exists("mod_omic_da_ui", envir = asNamespace("MultiScholaR"), inherits = FALSE))
+    if (!exists("mod_omic_da_ui", envir = asNamespace("MultiScholaR"), inherits = FALSE)) return(invisible())
+    parts <- omicDaW1UiParts(mod_omic_da_ui("de", omicGuiConfig("transcriptomics")$da))
+    for (part in names(omicDaW1FrozenUi$trx)) expect_identical(parts[[part]], omicDaW1FrozenUi$trx[[part]], info = part)
+})
+
+test_that("(W3, D3) lipid in process: the volcano is <req> until ticked, then the lipid_volcano_page iframe; the tab holds no state, widget or page", {
+    testthat::skip_if_not_installed("Glimma")
+    setup <- omicDaW1FeatureSetup("lipid", session_file = FALSE)
+    out <- omicDaW3Volcano(setup, omicDaW3FeatureRun, list(volcano_contrast = "KO_vs_WT", volcano_assay = "LCMS_Pos"))
+    expect_identical(out$unticked, "<req>")
+    expect_identical(out$pages_unticked, character())
+    expect_match(out$ticked, "<iframe", fixed = TRUE)
+    expect_identical(out$pages, "lipid_volcano_page")
+    expect_identical(out$heavy, character())
+})
+
+test_that("(W3, D3) lipid managed: the volcano is <req> until ticked, then the worker's lipid_volcano_page iframe; the tab holds no state, widget or page", {
+    testthat::skip_if_not_installed("Glimma")
+    setup <- omicDaW1FeatureSetup("lipid", session_file = FALSE, managed = TRUE)
+    out <- omicDaW3Volcano(setup, omicDaW3FeatureRun, list(volcano_contrast = "KO_vs_WT", volcano_assay = "LCMS_Pos"))
+    expect_identical(out$unticked, "<req>")
+    expect_identical(out$pages_unticked, character())
+    expect_match(out$ticked, "<iframe", fixed = TRUE)
+    expect_identical(out$pages, "lipid_volcano_page")
+    expect_identical(out$heavy, character())
+})
+
+test_that("(W3, D3) trx in process: the volcano is <req> until ticked, then the trx_volcano_page iframe of the contrast's entry; the tab holds no state, widget or page", {
+    testthat::skip_if_not_installed("Glimma")
+    setup <- omicDaW1TrxSetup()
+    out <- omicDaW3Volcano(setup, omicDaW3TrxRun, list(volcano_assay = "counts"))
+    expect_identical(out$unticked, "<req>")
+    expect_identical(out$pages_unticked, character())
+    expect_match(out$ticked, "<iframe", fixed = TRUE)
+    expect_match(out$ticked, "Interactive volcano Sera_vs_RPMI", fixed = TRUE)
+    expect_identical(out$pages, "trx_volcano_page")
+    expect_identical(out$heavy, character())
+})
+
+test_that("(W3, F106-05) lipid: Run DA on an owner whose head is its initial state is refused as no data", {
+    setup <- omicDaW1FeatureSetup("lipid", state = FALSE, session_file = FALSE)
+    omicsTestOwner(workflow = setup$bus(), omic_type = "lipidomics", experiment_paths = list(source_dir = file.path(setup$roots, "source")))
+    run <- omicDaW1Drive(setup, list(run_no_data = function(ctx) {
+        ctx$set(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)
+        ctx$set(run_da_analysis = 1L)
+    }))$captures$run_no_data
+    expect_identical(run$errors, character())
+    expect_identical(run$notes, "[error 5 -] No lipidomics data loaded. Please load a filtered session first.")
+    expect_identical(run$tab_status[["differential_analysis"]], "pending")
+})
