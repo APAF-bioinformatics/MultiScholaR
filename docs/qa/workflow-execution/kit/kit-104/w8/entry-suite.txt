@@ -1,0 +1,49 @@
+KIT-104 W8 run 2, the entry-point suite (2026-11-08). load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1,
+R_LIBS = core/browser-smoke.yODoyT/library, runner kit/scripts-078/run1.R, MULTISCHOLAR_GUI_ENTRY_RECORD_DIR set (scratch)
+so each lane's record could be compared capture by capture with its oracle (kit-104-w7/compare.R, the JSON round trip
+guiEntryExpectLane compares). Ceilings: 900 s per lane (the suite's expect_lt), 4,500 s per file. Under
+systemd-inhibit --what=idle:sleep. Tree: 8b7f3eae (the W8 code commit).
+
+1. Verify: the four test-gui-entry-*.R files in parallel, against the oracles at 8b7f3eae (2026-11-08T13:58:38 to
+   14:10:29).
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0     [47s]
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0          [82s]
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0       [181s]
+COUNTS test-gui-entry-proteomics.R pass 173 fail 14 error 0 skip 0        [711s]
+  BAD KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route      (P-16, expected)
+
+Per lane (record vs oracle, every step; order identical in every lane):
+  trx_screen          16 steps, 0 differ   IDENTICAL
+  lipid_canonical     20 steps, 0 differ   IDENTICAL
+  metab_lc            20 steps, 0 differ   IDENTICAL
+  metab_gc            20 steps, 0 differ   IDENTICAL
+  metab_combined      20 steps, 0 differ   IDENTICAL
+  prot_dia            29 steps, 0 differ   IDENTICAL
+  prot_tmt            21 steps, 0 differ   IDENTICAL
+  prot_lfq            21 steps, 0 differ   IDENTICAL
+  prot_lfq_fragpipe   21 steps, 0 differ   IDENTICAL
+  prot_dia_limpa      24 steps, 14 differ  the comparison output is line for line identical to w7/p16-diff.txt's lane
+                                           section (diff empty): 32 captures, tab_status$quality_control,
+                                           tab_status$normalization and the workflow_progress stepper, from
+                                           qc_protein_peptide_count on. Nothing else differs.
+The parity check (W6) changed no capture of any lane (parity.md, section 1).
+
+2. Re-freeze prot_dia_limpa only, once (2026-11-08, ended 14:14:42). freeze.R (scratchpad kit-104-w8): load_all,
+   MULTISCHOLAR_GUI_ENTRY_FREEZE=1, testthat::test_file(test-gui-entry-proteomics.R, desc = "KIT-101 entry lane
+   prot_dia_limpa: DIA-NN, the DIA_LIMPA route"), so only that block ran and only its oracle was written.
+FREEZE test-gui-entry-proteomics.R blocks 1 pass 13 fail 0 error 0 skip 0
+  - The oracle header: source_sha 8b7f3eae5b1dd5e2a9dcf0a9ac25bcc74f93b240, load_all, R 4.6.1, frozen 2026-11-08.
+  - sha256 of tests/testdata/gui-entry/*.json before and after: only prot_dia_limpa.json changed
+    (c25c4cbe60bd011b22513e8e7f805f51f3f44eb0a95f798d549031cec5265344 ->
+     fbfad090a929449d2a03bfafcbe0e7455ddc3ef0a13856a810f27637291a75b4). The other nine files are byte-identical.
+  - The new oracle against the old (ddf42372) one: exactly the 32 P-16 captures (the comparison output is identical to
+    w7/p16-diff.txt's lane section), step order identical.
+  - The step 1 record against the new oracle: 0 steps differ (deterministic).
+
+3. Verify against the new oracles, once: test-gui-entry-proteomics.R (the only file whose oracles changed; the other
+   three files' oracles are unchanged and passed in step 1), 2026-11-08T14:15:14 to 14:33:10.
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0
+  prot_dia, prot_tmt, prot_lfq, prot_lfq_fragpipe, prot_dia_limpa: 0 steps differ each.
+
+Decision: all 10 lanes identical to their oracles, with 0 failures, errors or skips, after the one re-freeze that
+parity.md records (P-16). No other lane changed.

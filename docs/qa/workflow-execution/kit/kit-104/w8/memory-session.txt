@@ -1,0 +1,13 @@
+KIT-104 W8 run 3, the DIA session and memory set (2026-11-08T14:33:32 to 14:44:44; ceiling 1 h). The run 1 method:
+tools/testing/test-baseline.R file load_all, one R process per file, one file at a time, MULTISCHOLAR_STRICT_SKIPS=1,
+R 4.6.1, R_LIBS = core/browser-smoke.yODoyT/library, per-file timeout 1,800 s, under systemd-inhibit
+--what=idle:sleep. Files unchanged. Tree: 8b7f3eae plus the re-frozen prot_dia_limpa oracle (not read by these files).
+
+file                                    passed  failed  error  skipped  declared  seconds
+test-workflow-native-session.R             733       0      0        2     733/2      583
+test-perf107-audit.R                       191       0      0        1     191/1       24
+test-perf107-checkpoints.R                  38       0      0        1      38/1       23
+test-workflow-checkpoint-dia-state.R       174       0      0        4     174/4       31
+test-workflow-gui-memory-lifetimes.R        80       0      0       11     80/11       11
+
+No file-level skip. Decision: each file's passed and skipped counts equal the declared counts.

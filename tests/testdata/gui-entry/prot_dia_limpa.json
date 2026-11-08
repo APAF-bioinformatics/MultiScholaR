@@ -1,9 +1,9 @@
 {
   "lane": "prot_dia_limpa",
-  "source_sha": "ddf42372e7054b1027430178a0e873a496baf6bb",
+  "source_sha": "8b7f3eae5b1dd5e2a9dcf0a9ac25bcc74f93b240",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
-  "frozen": "2026-11-07",
+  "frozen": "2026-11-08",
   "steps": {
     "import_refusal": {
       "step": "import_refusal",
@@ -1621,8 +1621,8 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
-        "normalization": "disabled",
+        "quality_control": "complete",
+        "normalization": "pending",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
@@ -1719,7 +1719,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
       },
       "artifacts": {
         "<store entries>": {
@@ -1869,8 +1869,8 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
-        "normalization": "disabled",
+        "quality_control": "complete",
+        "normalization": "pending",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
@@ -1967,7 +1967,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
       },
       "artifacts": {
         "<store entries>": {
@@ -2122,8 +2122,8 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
-        "normalization": "disabled",
+        "quality_control": "complete",
+        "normalization": "pending",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
@@ -2220,7 +2220,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
       },
       "artifacts": {
         "<store entries>": {
@@ -2371,8 +2371,8 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
-        "normalization": "disabled",
+        "quality_control": "complete",
+        "normalization": "pending",
         "differential_expression": "disabled",
         "enrichment_analysis": "disabled",
         "session_summary": "disabled"
@@ -2469,7 +2469,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+        "proteomics_workflow-workflow_progress": "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
       },
       "artifacts": {
         "<store entries>": {
@@ -2622,7 +2622,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "pending",
         "enrichment_analysis": "disabled",
@@ -2722,7 +2722,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+        "proteomics_workflow-workflow_progress": "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
       },
       "artifacts": {
         "<store entries>": {
@@ -2891,7 +2891,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "pending",
         "enrichment_analysis": "disabled",
@@ -2993,7 +2993,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+        "proteomics_workflow-workflow_progress": "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
       },
       "artifacts": {
         "<store entries>": {
@@ -3176,7 +3176,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "pending",
         "enrichment_analysis": "disabled",
@@ -3278,7 +3278,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+        "proteomics_workflow-workflow_progress": "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
       },
       "artifacts": {
         "<store entries>": {
@@ -3469,7 +3469,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "pending",
         "enrichment_analysis": "disabled",
@@ -3571,7 +3571,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+        "proteomics_workflow-workflow_progress": "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
       },
       "artifacts": {
         "<store entries>": {
@@ -3762,7 +3762,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "complete",
         "enrichment_analysis": "pending",
@@ -3865,7 +3865,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+        "proteomics_workflow-workflow_progress": "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
       },
       "artifacts": {
         "<store entries>": {
@@ -4074,7 +4074,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "complete",
         "enrichment_analysis": "pending",
@@ -4177,7 +4177,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+        "proteomics_workflow-workflow_progress": "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
       },
       "artifacts": {
         "<store entries>": {
@@ -4387,7 +4387,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "complete",
         "enrichment_analysis": "pending",
@@ -4490,7 +4490,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+        "proteomics_workflow-workflow_progress": "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
       },
       "artifacts": {
         "<store entries>": {
@@ -4702,7 +4702,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "complete",
         "enrichment_analysis": "pending",
@@ -4806,7 +4806,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+        "proteomics_workflow-workflow_progress": "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
       },
       "artifacts": {
         "<store entries>": {
@@ -5030,7 +5030,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "complete",
         "enrichment_analysis": "pending",
@@ -5135,7 +5135,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+        "proteomics_workflow-workflow_progress": "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
       },
       "artifacts": {
         "<store entries>": {
@@ -5368,7 +5368,7 @@
       "tab_status": {
         "setup_import": "complete",
         "design_matrix": "complete",
-        "quality_control": "pending",
+        "quality_control": "complete",
         "normalization": "complete",
         "differential_expression": "complete",
         "enrichment_analysis": "pending",
@@ -5473,7 +5473,7 @@
         "proteomics_workflow-setup_import-format_specific_options": "<ui> b982a383328f3842ef593b4b1edf09797252a685a2c1beec444a657cde4887ea",
         "proteomics_workflow-setup_import-import_status": "<ui> be77ea881764f7e3f621fc1293e5d4d4f596f4dce0c354f9b59e5fa0553584e5",
         "proteomics_workflow-setup_import-organism_dist_table": "<req>",
-        "proteomics_workflow-workflow_progress": "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+        "proteomics_workflow-workflow_progress": "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
       },
       "artifacts": {
         "<store entries>": {
