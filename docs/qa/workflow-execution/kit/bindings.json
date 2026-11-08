@@ -637,6 +637,15 @@
       "install_member": "browser-smoke.KA61uA",
       "source_commit": "98da5939ea056d55f0737ed927d8a930b52bf83f",
       "runtime_patch_bytes": 0
+    },
+    "kit_110": {
+      "ticket": "KIT-110",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.r5uUT0/library",
+      "build": "95a095e9728389819cd07d959185a4715e640105c2ec458cdbe0fc1c1443b5d2",
+      "exact_sum": "02d9fe90a784bcc96bb0ba412d1394f9ea95a3d5ee2b58f0b418cf2754b65c93",
+      "install_member": "browser-smoke.r5uUT0",
+      "source_commit": "c1079dc7cc073840a2202edc0e564b534c06d0a3",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -40070,7 +40079,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-11-08",
+        "date": "2026-11-09",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -42224,6 +42233,105 @@
       "oracles": "tmt101_fixture",
       "ceiling_seconds": 1800,
       "purpose": "exactness (recorded, uncounted; KIT-105)"
+    },
+    "110a": {
+      "kind": "single_journey",
+      "build": "kit_110",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-110)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "110b": {
+      "kind": "single_journey",
+      "build": "kit_110",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-110)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "110c": {
+      "kind": "single_journey",
+      "build": "kit_110",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-110)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "110m": {
+      "kind": "single_journey",
+      "build": "kit_110",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-110)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "110l": {
+      "kind": "single_journey",
+      "build": "kit_110",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-110)"
+    },
+    "110t": {
+      "kind": "single_journey",
+      "build": "kit_110",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-110)"
     }
   },
   "lifecycle": {
