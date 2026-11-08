@@ -1,0 +1,17 @@
+
+Paths for Omics Label: 'metabolomics' (Type: metabolomics)
+  timestamp                      : 20261108_194253
+------------------------------------------
+ERROR [2026-11-08 19:42:56] Error processing import: Metabolomics import requires non-empty assay names.
+ERROR [2026-11-08 19:43:25] Error analyzing internal standards: No internal standards found. Pattern: ^ITSD|_d[0-9]+$
+Columns searched: Feature.Name
+Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')
+x Subscript `annotation_cols[1]` must be a location, not a character `NA`.
+...................................
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE metab_combined identical_to_oracle=FALSE elapsed=116s
+CALLS runWorkflowOmicsInProcessNormalisation 1
+CALLS runWorkflowOmicsInProcessCorrelation 1
+CALLS collectWorkflowOmicsNormSession 1
+CALLS saveWorkflowOmicsNormSessionArtifacts 1
+CALLS mod_omic_norm_server 1

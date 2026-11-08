@@ -1,0 +1,11 @@
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  timestamp                      : 20261108_194457
+------------------------------------------
+
+ERROR [2026-11-08 19:46:48] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+.....................................
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE prot_dia_limpa identical_to_oracle=FALSE elapsed=257s
+CALLS runProtNormTabEntryWorkflow 23
+CALLS runDIAReferenceLimpaNormalisationPassThrough 1
