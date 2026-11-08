@@ -1264,12 +1264,13 @@ if (!is.null(b$builds$kit_106)) {
 }
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
-# volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b).
-if (!is.null(b$builds$kit_106c)) {
-    kit_106c <- list(build = "kit_106c", purpose = "exactness after the correction pass (recorded, uncounted; KIT-106)")
+# volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
+# kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
+if (!is.null(b$builds$kit_906)) {
+    kit_906 <- list(build = "kit_906", purpose = "exactness after the correction pass (recorded, uncounted; KIT-106)")
     for (pair in list(c("x", "a"), c("y", "b"))) {
         from <- b$tickets[[paste0("101", pair[[2L]])]]
-        if (!is.null(from)) b$tickets[[paste0("106", pair[[1L]])]] <- utils::modifyList(from, kit_106c)
+        if (!is.null(from)) b$tickets[[paste0("106", pair[[1L]])]] <- utils::modifyList(from, kit_906)
     }
 }
 
