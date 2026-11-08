@@ -1,0 +1,38 @@
+# KIT-107 test-first: the before half of every retargeted or guarding test, on the start commit, unchanged.
+# Start commit 8e7294b6 (origin/performance-v2; R/ unchanged since b9820d9e), extracted with `git archive` into the
+# W1 scratch folder (kit-107-w1/start-tree); the start tree's own R/ and tests/ ran, so the tests ran on the start
+# commit exactly. R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process
+# per file; runner kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.J57eHO/library (the KIT-106 corrected
+# build); TMPDIR on disk. Recorded 2026-11-09 by the W1 agent (W1 delegated by the lead).
+
+## MCI-009 (MCI-009.6 is retargeted at W3) and MCI-010 (MCI-010.1 to .5 kept; MCI-010.6 quarantined at W3)
+COUNTS test-module-ci-prot-da.R pass 217 fail 0 error 0 skip 1 exit=0 elapsed=11s
+# (the 1 skip is Q-22's quarantined block, test-module-ci-prot-da.R:523)
+COUNTS test-module-ci-prot-enrich.R pass 92 fail 0 error 0 skip 1 exit=0 elapsed=9s
+# (the 1 skip is Q-02's quarantined block, MCI-010.2, test-module-ci-prot-enrich.R:46)
+
+## The seam files (quarantine candidates Q-163, Q-164 at W3)
+COUNTS test-prot-11-enrichment-module-contracts.R pass 1258 fail 0 error 0 skip 0 exit=0 elapsed=25s
+COUNTS test-prot-11a-enrichment-module-characterization.R pass 143 fail 0 error 0 skip 0 exit=0 elapsed=12s
+
+## The KIT-016 and KIT-024 tests, and the analysis record (F-16's replay blocks are added at W2)
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0 exit=0 elapsed=61s
+COUNTS test-workflow-analysis-record.R pass 248 fail 0 error 0 skip 0 exit=0 elapsed=189s
+
+## The guards that run without a browser (run 1's kernel guard and the wrapper and shell stubs by exported name)
+COUNTS test-general-enrichment-shared.R pass 104 fail 0 error 0 skip 2 exit=0 elapsed=17s
+# (the 2 skips are Q-03's quarantined blocks, test-general-enrichment-shared.R:195, :1126)
+COUNTS test-e2e-enrichment-doubles.R pass 34 fail 0 error 0 skip 0 exit=0 elapsed=13s
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0 exit=0 elapsed=9s
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0 exit=0 elapsed=10s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0 exit=0 elapsed=19s
+
+## The proteomics entry lanes against their frozen oracles (the file alone, under systemd-inhibit --what=sleep;
+## ceilings 900 s per lane, 4,500 s per file). Each lane's expectations compare its whole record with its oracle, so a
+## pass is "identical". Other test processes ran alongside, so the wall time is longer than KIT-106's 768 s.
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0 exit=0 elapsed=1185s
+# Lane starts (log): prot_dia 10:08:41, prot_dia_limpa 10:16:30, prot_tmt 10:21:06, prot_lfq 10:23:20,
+# prot_lfq_fragpipe 10:25:43; each lane under its 900 s ceiling. All five lanes identical (KIT-106's count, 187).
+
+## Shown failing on the start commit by the item that writes them: F-16's tests 1 to 3 (W2, W4), F107-01's and
+## F107-02's (W3). W1's own tests (written first): see w1/test-first.txt; the defect probes: w1/defect-probes.txt.

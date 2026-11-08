@@ -64,6 +64,17 @@
 # static volcano, source read, contrast entries and export report) are wired when W2 moves them.
 # `testids`, `summary`, `tabs` and `table_filter` are required with D8's always-required fields, as
 # every omic carries them.
+#
+# KIT-107 W1 adds the `enrichment` group (design 4.9, the ticket's D1 and D9): proteomics' enrichment
+# tab at the KIT-107 start commit 8e7294b6 (R/ unchanged since b9820d9e; the ten enrichment module
+# files since 3880ddb0), with each value's file:line there: the tab, its status key and value, the
+# declaration and its run, the DA source, the identifier column, the cutoffs, the correction, the
+# excluded IEA flag, the taxon and its prefill, the result services, the organism filter's toggle and
+# the completed state's name. Lipid, metab and trx carry `enrichment = NULL` (no enrichment tab). The
+# function fields whose functions are still in R/mod_prot_enrich_*.R at the start commit
+# (`organism`, `annotation`, `kernel`, and the organism filter's `mapping` and `apply`) are optional
+# and absent until the W2 merge wires them; W4 makes them required. The declared parameters and the
+# background are the declaration's, not repeated here; labels and help texts stay in the markup (D1).
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -71,7 +82,8 @@
 
 #' The shared GUI layer's configuration of one omic, validated.
 #' @param omic_type One of `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
-#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc`, `norm` and `da`.
+#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc`, `norm`, `da` and
+#'   `enrichment`.
 #' @noRd
 omicGuiConfig <- function(omic_type) {
     builders <- list(proteomics = omicGuiConfigProteomics, lipidomics = omicGuiConfigLipidomics,
@@ -97,7 +109,8 @@ validateOmicGuiConfig <- function(config) {
     if (!is.list(config)) omicGuiConfigAbort("config", "must be a list")
     schema <- omicGuiConfigSchema()
     groups <- c(shell = "named_list", binding = "named_list", import = "named_list",
-        design = "named_list", qc = "named_list", norm = "named_list_or_null", da = "named_list")
+        design = "named_list", qc = "named_list", norm = "named_list_or_null", da = "named_list",
+        enrichment = "named_list_or_null")
     checkOmicGuiFields(config, groups)
     validateOmicGuiShell(config$shell, schema)
     validateOmicGuiBinding(config$binding, config$shell$omic_type, schema)
@@ -106,6 +119,7 @@ validateOmicGuiConfig <- function(config) {
     validateOmicGuiQc(config$qc, config$shell$routes, schema)
     if (!is.null(config$norm)) validateOmicGuiNorm(config$norm, schema)
     validateOmicGuiDa(config$da, schema)
+    if (!is.null(config$enrichment)) validateOmicGuiEnrichment(config$enrichment, schema)
     invisible(config)
 }
 
@@ -261,7 +275,28 @@ omicGuiConfigSchema <- function() {
         da_run = c(managed = "ref", in_process = "ref"),
         da_source = c(class = "chr1", no_data = "chr1"),
         da_session_load = c(file = "chr1", assay_rule = "chr1", assay_message = "chr1"),
-        da_plugins = c("init", "load", "run", "archive")
+        da_plugins = c("init", "load", "run", "archive"),
+        # KIT-107 W1 (design 4.9, D1, D9): the enrichment tab, checked when the omic has the group. The function
+        # fields still in R/mod_*.R at the start commit (`organism`, `annotation`, `kernel`) are optional until the
+        # W2 merge wires them, then checked whole when present; `organism_filter` is NULL or its toggle's bus key
+        # (`mixed_species_from`), with its `mapping` and `apply` optional likewise.
+        enrichment = c(module_id = "chr1", status_key = "chr1", tab_value = "chr1", operation = "ref", run = "ref",
+            da_source = "named_list", id_column = "named_list", cutoffs = "named_list", correction = "named_list",
+            exclude_iea = "lgl1", taxon = "named_list", services = "chr", organism_filter = "named_list_or_null",
+            state_name = "chr1"),
+        enrichment_optional = c(organism = "named_list", annotation = "named_list", kernel = "named_list"),
+        enrichment_da_source = c(manifest = "ref", components = "chr", read = "ref"),
+        enrichment_id_column = c(slot = "chr1", default = "chr1", gprofiler_override = "chr1"),
+        enrichment_cutoffs = c("up", "down", "q"),
+        enrichment_cutoff = c(value = "num1", min = "num1", max = "num1", step = "num1"),
+        enrichment_correction = c(choices = "named_chr", selected = "chr1"),
+        enrichment_taxon = c(default = "chr1", prefill_from = "chr1"),
+        enrichment_services = c("gprofiler2", "clusterprofiler", "stringdb"),
+        enrichment_organism = c(supported = "ref", method = "ref"),
+        enrichment_annotation = c(resolve = "ref", match = "ref"),
+        enrichment_kernel = c(select = "ref", test_double = "ref"),
+        enrichment_organism_filter = c(mixed_species_from = "chr1"),
+        enrichment_organism_filter_optional = c(mapping = "ref", apply = "ref")
     )
 }
 
@@ -555,6 +590,45 @@ validateOmicGuiDa <- function(da, schema) {
         checkOmicGuiFields(da$source, c(read_metadata = "ref"), "da$source")
     }
     invisible(da)
+}
+
+#' The enrichment group (KIT-107 D1, D9): its fields and types; the DA source, the identifier column; the three
+#' cutoffs (`up`, `down`, `q`), each with its four numbers; the correction's choice among its choices; the taxon;
+#' the result services from the tab's set (`gprofiler2`, `clusterprofiler`, `stringdb`); the organism filter, NULL or
+#' its fields; and the optional function groups, whole when present.
+#' @noRd
+validateOmicGuiEnrichment <- function(enrichment, schema) {
+    checkOmicGuiFields(enrichment, schema$enrichment, "enrichment")
+    checkOmicGuiFields(enrichment, schema$enrichment_optional, "enrichment", required = FALSE)
+    checkOmicGuiFields(enrichment$da_source, schema$enrichment_da_source, "enrichment$da_source")
+    checkOmicGuiFields(enrichment$id_column, schema$enrichment_id_column, "enrichment$id_column")
+    if (!setequal(names(enrichment$cutoffs), schema$enrichment_cutoffs) || length(enrichment$cutoffs) != 3L) {
+        omicGuiConfigAbort("enrichment$cutoffs", sprintf("must name exactly the cutoffs %s",
+            paste(schema$enrichment_cutoffs, collapse = ", ")))
+    }
+    for (cutoff in schema$enrichment_cutoffs) {
+        checkOmicGuiFields(enrichment$cutoffs[[cutoff]], schema$enrichment_cutoff, paste0("enrichment$cutoffs$", cutoff))
+    }
+    checkOmicGuiFields(enrichment$correction, schema$enrichment_correction, "enrichment$correction")
+    checkOmicGuiChoice(enrichment$correction$selected, "enrichment$correction$selected",
+        unname(enrichment$correction$choices))
+    checkOmicGuiFields(enrichment$taxon, schema$enrichment_taxon, "enrichment$taxon")
+    services <- enrichment$services
+    if (anyDuplicated(services) || !all(services %in% schema$enrichment_services)) {
+        omicGuiConfigAbort("enrichment$services", sprintf("must name result services among %s, once each",
+            paste(schema$enrichment_services, collapse = ", ")))
+    }
+    if (!is.null(enrichment$organism_filter)) {
+        checkOmicGuiFields(enrichment$organism_filter, schema$enrichment_organism_filter, "enrichment$organism_filter")
+        checkOmicGuiFields(enrichment$organism_filter, schema$enrichment_organism_filter_optional,
+            "enrichment$organism_filter", required = FALSE)
+    }
+    for (group in names(schema$enrichment_optional)) {
+        if (!is.null(enrichment[[group]])) {
+            checkOmicGuiFields(enrichment[[group]], schema[[paste0("enrichment_", group)]], paste0("enrichment$", group))
+        }
+    }
+    invisible(enrichment)
 }
 
 #' Check the fields a schema names: present (when required) and of their type.
@@ -946,7 +1020,47 @@ omicGuiConfigProteomics <- function() {
         qc = omicGuiProteomicsQc(),
         # KIT-105 D3 (P-20): proteomics keeps its own normalisation frame until KIT-111.
         norm = NULL,
-        da = omicGuiProteomicsDa())
+        da = omicGuiProteomicsDa(),
+        enrichment = omicGuiProteomicsEnrichment())
+}
+
+#' The proteomics enrichment tab at 8e7294b6 (mod_prot_enrich*.R; KIT-107 D1): the tab, its status key and value
+#' (the shell's tab, utils_omic_gui_config.R:1080-1081 at the start commit, module id = status key; the run's
+#' status write, mod_prot_enrich_state_helpers.R:264-276; the tab observer's test,
+#' mod_prot_enrich_registration_helpers.R:336), the
+#' declaration and its run (`diaEnrichmentOperation`, `runDIAReferenceEnrichment`; utils_workflow_dia_da.R:539-559,
+#' :572-601), the DA source (the manifest test, utils_workflow_dia_da.R:115; the source state's components the run
+#' hydrates, mod_prot_enrich_analysis_helpers.R:533-534; the DA tables' reader, func_general_s4_objects.R:164-196), the
+#' identifier column (the object's slot, its default and g:Profiler's gene-name override,
+#' mod_prot_enrich_analysis_helpers.R:1-21), the cutoffs (mod_prot_enrich.R:53-60, :63-70, :73-80), the correction
+#' (:144-152), the excluded IEA flag (not an input; mod_prot_enrich_analysis_helpers.R:41), the taxon and its prefill
+#' from the bus (mod_prot_enrich.R:83-88; mod_prot_enrich_registration_helpers.R:81-108), the result tabs
+#' (mod_prot_enrich.R:161-376; STRING-DB the placeholder), the organism filter's toggle and the bus key that switches
+#' it on (mod_prot_enrich.R:93-99; mod_prot_enrich_registration_helpers.R:110-153) and the completed state
+#' (mod_prot_enrich_state_helpers.R:227). The W2 merge wires the function fields whose functions are in
+#' R/mod_prot_enrich_*.R at the start commit: `organism` (`buildProtEnrichSupportedOrganisms`,
+#' mod_prot_enrich_observer_helpers.R:164-181; `resolveProtEnrichAnalysisMethod`, mod_prot_enrich_execution_helpers.R:
+#' 206-236), `annotation` (`resolveProtEnrichUniprotAnnotations`, `resolveProtEnrichAnnotationMatching`,
+#' mod_prot_enrich_input_helpers.R:599-717, :719-774), `organism_filter$mapping` and `$apply`
+#' (`resolveProtEnrichOrganismMapping`, `applyProtEnrichOrganismFilter`, :1-180, :182-274) and `kernel`
+#' (`resolveProtEnrichProcessEnrichmentsFn`, `runProtEnrichDeterministicProcessEnrichments`,
+#' mod_prot_enrich_execution_helpers.R:196-204, :126-194).
+#' @noRd
+omicGuiProteomicsEnrichment <- function() {
+    cutoff <- function(value, min, max, step) list(value = value, min = min, max = max, step = step)
+    list(module_id = "enrichment_analysis", status_key = "enrichment_analysis", tab_value = "enrichment",
+        operation = diaEnrichmentOperation, run = runDIAReferenceEnrichment,
+        da_source = list(manifest = isDIAResultManifest, components = c("design_matrix", "protein_id_table"),
+            read = createDAResultsForEnrichment),
+        id_column = list(slot = "protein_id_column", default = "uniprot_acc", gprofiler_override = "gene_name"),
+        cutoffs = list(up = cutoff(0, 0, 5, 0.1), down = cutoff(0, 0, 5, 0.1), q = cutoff(0.05, 0.001, 0.2, 0.005)),
+        correction = list(choices = c(`g:SCS (Conservative)` = "gSCS", `FDR (Less Conservative)` = "fdr"),
+            selected = "gSCS"),
+        exclude_iea = FALSE,
+        taxon = list(default = "9606", prefill_from = "taxon_id"),
+        services = c("gprofiler2", "clusterprofiler", "stringdb"),
+        organism_filter = list(mixed_species_from = "mixed_species_analysis"),
+        state_name = "enrichment_completed")
 }
 
 #' The proteomics DA tab at b75561de (mod_prot_da_*.R; KIT-106 D5): the tab and status key (mod_proteomics.R, the
@@ -1188,7 +1302,9 @@ omicGuiConfigLipidomics <- function() {
         design = omicGuiLipidDesign(),
         qc = omicGuiLipidQc(),
         norm = omicGuiLipidNorm(),
-        da = omicGuiLipidDa())
+        da = omicGuiLipidDa(),
+        # KIT-107 D9: no enrichment tab.
+        enrichment = NULL)
 }
 
 #' The lipid DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
@@ -1375,7 +1491,9 @@ omicGuiConfigMetabolomics <- function() {
         design = omicGuiMetabDesign(),
         qc = omicGuiMetabQc(),
         norm = omicGuiMetabNorm(),
-        da = omicGuiMetabDa())
+        da = omicGuiMetabDa(),
+        # KIT-107 D9: no enrichment tab.
+        enrichment = NULL)
 }
 
 #' The metab DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
@@ -1576,7 +1694,9 @@ omicGuiConfigTranscriptomics <- function() {
         design = omicGuiTrxDesign(),
         qc = omicGuiTrxQc(),
         norm = omicGuiTrxNorm(),
-        da = omicGuiTrxDa())
+        da = omicGuiTrxDa(),
+        # KIT-107 D9: no enrichment tab.
+        enrichment = NULL)
 }
 
 #' The trx DA tab at b75561de: lipid's tab under the profile's DA entries (mod_transcriptomics.R:49-53, mod_trx_da.R).

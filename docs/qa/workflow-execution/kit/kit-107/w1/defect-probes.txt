@@ -1,0 +1,59 @@
+# KIT-107 W1 defect probes (D11): F107-01 and F107-02 on the start commit, not frozen.
+# Start commit 8e7294b6 (origin/performance-v2; R/ unchanged since b9820d9e), extracted with `git archive` into the W1
+# scratch folder (kit-107-w1/start-tree). R 4.6.1, pkgload::load_all (export_all, helpers); R_LIBS =
+# core/browser-smoke.J57eHO/library (the KIT-106 corrected build); TMPDIR on disk. The probe script (scratch, not
+# committed) evaluates test-omic-enrich-module.R's definitions and drives its fixture (`omicEnrichW1Setup`: the DA and
+# enrichment servers on one bus, the MCI-009 object on a DIA owner) through `omicEnrichW1Drive`, on the deterministic
+# double. Recorded 2026-11-09 by the W1 agent.
+#
+# Result: both CONFIRMED. W1 freezes neither: no W1 (b) case runs a second Run after a Run that reached the manifest
+# branch, and no case mounts a fresh tab over an owner that already holds `enrichment_completed` (the `restore` case
+# calls `restoreProtEnrichResultsFromState` on a NULL holder, KIT-024's function-level measure). W3 writes each one's
+# failing-first test.
+
+## F107-01: a second Run on the same tab fails. CONFIRMED.
+# Steps: the DA (run), the enrichment tab opened, B_vs_A selected with taxon 9606, Run (1), then Run (2).
+# After run 1 the tab's holder `da_results_data` is no longer a manifest (`isDIAResultManifest` FALSE): it is
+# `manifest$results` (names groupB-groupA), as mod_prot_enrich_analysis_helpers.R:537 writes it. Run 2 takes the
+# legacy branch and stops at :387.
+--- step run1
+  notes: [default NULL enrichment_working] Running enrichment analysis...
+      [message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A
+      remove enrichment_working
+  history: initial, correlation_filtered, enrichment_completed
+  product: dia_enrichment_product_v1, service gprofiler2:gprofiler2_test_double, results$groupB-groupA = <manifest da_proteins_long>
+--- step holder (the tab's reactive values after run 1)
+  holder: is_manifest = FALSE
+      names = groupB-groupA
+--- step run2
+  notes: [default NULL enrichment_working] Running enrichment analysis...
+      [error 10 -] Error in enrichment analysis: Missing contrasts_tbl or design_matrix required for enrichment analysis. Please ensure DE analysis was completed successfully.
+      remove enrichment_working
+  errors: <none>
+  tab_status, history, product: <unchanged> (no second state or product; the tab still shows run 1's
+      "[OK] Analysis Complete" status and 10 g:Profiler terms)
+
+## F107-02: results are not restored after an Open. CONFIRMED.
+# Steps: the owner given `enrichment_completed` (the double's EnrichmentResults saved as the state, as KIT-024's test
+# test-workflow-dia-products.R:485-488 does), the enrichment tab as mounted (fresh reactive values), a contrast
+# selected. The selected-contrast observer calls restoreProtEnrichResultsFromState, which returns FALSE at once because
+# the tab starts with `all_enrichment_results = list()` (mod_prot_enrich_observer_helpers.R:202) and the guard tests
+# `!is.null(...)` (mod_prot_enrich_state_helpers.R:590). The same call on a NULL holder restores.
+--- step seed
+  history: initial, correlation_filtered, enrichment_completed
+--- step select (selected_contrast = groupB-groupA)
+  notes: <none>; errors: <none>
+  enrichment_status: [WAITING] Ready for analysis ...
+  gprofiler_summary_stats: No gprofiler2 results available.
+--- step holder
+  holder: all_enrichment_results = <list length 0>
+      is_null = FALSE
+      analysis_complete = FALSE
+      restore_on_tab_values = FALSE
+  null_holder: restore_on_null_holder = TRUE
+      contrasts = groupB-groupA
+
+## Also observed (not a defect): a non-numeric taxon (e.g. "abc") makes the analysis-method reactive raise; the
+# `analysis_method_display` output shows the error, and testServer's mock session reports output errors through
+# `onUnhandledError` with close = FALSE (shiny MockShinySession$defineOutput), so W1 (b)'s `errors` field records it
+# ("<unhandled> organism_taxid must be ..."). In the app it is an output error shown in place, not a session error.

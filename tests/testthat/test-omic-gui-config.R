@@ -30,6 +30,12 @@ guiConfigRequired <- list(
         "assays", "table_filter", "views", "texts", "download")
 )
 
+# KIT-107 W1 (D1, D9): the enrichment group's required fields (proteomics only; NULL for the other omics). The
+# function fields still in R/mod_*.R at the start commit (`organism`, `annotation`, `kernel`) are optional until the
+# W2 merge wires them; the enrichment blocks below check them.
+guiConfigEnrichmentRequired <- c("module_id", "status_key", "tab_value", "operation", "run", "da_source", "id_column",
+    "cutoffs", "correction", "exclude_iea", "taxon", "services", "organism_filter", "state_name")
+
 guiConfigBuilderTexts <- c("save_success", "no_assignment", "contrast_group_prefix",
     "contrast_as_is", "replicate_suffix")
 
@@ -55,15 +61,23 @@ guiConfigFunctions <- function(x) {
     unlist(lapply(x, guiConfigFunctions), recursive = FALSE)
 }
 
-test_that("each omic's configuration validates, with the shell, binding, import, design, qc, norm and da groups", {
+test_that("each omic's configuration validates, with the shell, binding, import, design, qc, norm, da and enrichment groups", {
     for (omic in guiConfigOmics) {
         config <- omicGuiConfig(omic)
-        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm", "da"), info = omic)
+        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm", "da", "enrichment"),
+            info = omic)
         expect_identical(config$shell$omic_type, omic, info = omic)
         expect_identical(config$binding$binding$omic_type, omic, info = omic)
         expect_identical(validateOmicGuiConfig(config), config, info = omic)
         for (group in names(guiConfigRequired)) {
             expect_true(all(guiConfigRequired[[group]] %in% names(config[[group]])), info = omic)
+        }
+        # KIT-107 W1 (D1, D9): proteomics alone has the enrichment group; the other omics carry NULL.
+        if (identical(omic, "proteomics")) {
+            expect_true(all(guiConfigEnrichmentRequired %in% names(config$enrichment)), info = omic)
+        } else {
+            expect_true("enrichment" %in% names(config), info = omic)
+            expect_null(config$enrichment, info = omic)
         }
     }
     expect_error(omicGuiConfig("genomics"), class = "omic_gui_config_invalid")
@@ -187,6 +201,11 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         da_files <- as.character(unlist(lapply(guiConfigFunctions(config$da), utils::getSrcFilename)))
         expect_gt(length(da_files), 0L)
         expect_false(any(startsWith(da_files, "mod_")), info = paste(omic, "da"))
+        # KIT-107 W1 (D9): the enrichment group (proteomics: the declaration, its run and the DA source's readers; a
+        # function still in an R/mod_*.R file is wired only when W2 moves it to the core).
+        enrichment_files <- as.character(unlist(lapply(guiConfigFunctions(config$enrichment), utils::getSrcFilename)))
+        if (identical(omic, "proteomics")) expect_gt(length(enrichment_files), 0L)
+        expect_false(any(startsWith(enrichment_files, "mod_")), info = paste(omic, "enrichment"))
     }
 })
 
@@ -1414,4 +1433,135 @@ test_that("KIT-106 W1 (D8): each da field, required or conditional, is refused b
         expect_identical(validateOmicGuiConfig(removed), removed, info = path)
         expectGuiConfigRefused(bad, paste0("da$", path))
     }
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-107 W1: the enrichment group (D1) and its validator (D9), written from the ticket's table at the start
+# commit 8e7294b6.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-107 W1 (D1): the enrichment group holds proteomics' enrichment tab values at the start commit; NULL for the other omics", {
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) expect_null(omicGuiConfig(omic)$enrichment, info = omic)
+    prot <- omicGuiConfig("proteomics")
+    enrichment <- prot$enrichment
+    # The tab: the shell's enrichment tab's module id, status key and value.
+    tab <- Filter(function(tab) identical(tab$component, "prot_enrich"), prot$shell$tabs)[[1L]]
+    expect_identical(c(enrichment$module_id, enrichment$status_key, enrichment$tab_value),
+        c(tab$module_id, tab$status_key, tab$value))
+    expect_identical(c(enrichment$module_id, enrichment$status_key, enrichment$tab_value),
+        c("enrichment_analysis", "enrichment_analysis", "enrichment"))
+    # The declaration and its run, the DA source.
+    expect_identical(enrichment$operation, diaEnrichmentOperation)
+    expect_identical(enrichment$run, runDIAReferenceEnrichment)
+    expect_identical(enrichment$da_source, list(manifest = isDIAResultManifest, components = c("design_matrix", "protein_id_table"),
+        read = createDAResultsForEnrichment))
+    expect_identical(enrichment$operation()$name, "enrichment")
+    expect_identical(enrichment$operation()$product_type, "dia-enrichment-results")
+    # The identifier column, the cutoffs, the correction, the excluded IEA flag, the taxon.
+    expect_identical(enrichment$id_column, list(slot = "protein_id_column", default = "uniprot_acc", gprofiler_override = "gene_name"))
+    expect_identical(enrichment$cutoffs, list(up = list(value = 0, min = 0, max = 5, step = 0.1),
+        down = list(value = 0, min = 0, max = 5, step = 0.1), q = list(value = 0.05, min = 0.001, max = 0.2, step = 0.005)))
+    expect_identical(enrichment$correction, list(choices = c(`g:SCS (Conservative)` = "gSCS", `FDR (Less Conservative)` = "fdr"),
+        selected = "gSCS"))
+    expect_false(enrichment$exclude_iea)
+    expect_identical(enrichment$taxon, list(default = "9606", prefill_from = "taxon_id"))
+    # The result tabs (STRING-DB the placeholder), the organism filter's toggle, the completed state.
+    expect_identical(enrichment$services, c("gprofiler2", "clusterprofiler", "stringdb"))
+    expect_identical(enrichment$organism_filter$mixed_species_from, "mixed_species_analysis")
+    expect_identical(enrichment$state_name, "enrichment_completed")
+    # The declaration's parameters are the declaration's, not repeated here (D1); no labels, no da_columns.
+    expect_false(any(c("parameters", "background", "labels", "da_columns", "tab") %in% names(enrichment)))
+    # The values the UI renders today are these (mod_prot_enrich.R at the start commit).
+    defaults <- omicsUiInputDefaults(mod_prot_enrich_ui("x"))
+    expect_identical(c(defaults[["x-up_cutoff"]], defaults[["x-down_cutoff"]], defaults[["x-q_cutoff"]]),
+        c(enrichment$cutoffs$up$value, enrichment$cutoffs$down$value, enrichment$cutoffs$q$value))
+    expect_identical(defaults[["x-correction_method"]], enrichment$correction$selected)
+    expect_identical(as.character(defaults[["x-organism_taxid"]]), enrichment$taxon$default)
+})
+
+test_that("KIT-107 W1 (D9): each enrichment field is refused by class when missing or mistyped; services and the organism filter are checked; the W2 function fields are optional, whole when present", {
+    prot <- omicGuiConfig("proteomics")
+    refused <- function(config, path, mistyped = list(NA)) {
+        parts <- strsplit(path, "$", fixed = TRUE)[[1L]]
+        removed <- config
+        removed[["enrichment"]][[parts]] <- NULL
+        expectGuiConfigRefused(removed, paste0("enrichment$", path))
+        bad <- config
+        bad[["enrichment"]][[parts]] <- mistyped[[1L]]
+        expectGuiConfigRefused(bad, paste0("enrichment$", path))
+    }
+    # The required fields and their members (organism_filter may be NULL: its members only).
+    for (path in c(setdiff(guiConfigEnrichmentRequired, "organism_filter"), "da_source$manifest", "da_source$components",
+        "da_source$read", "id_column$slot", "id_column$default", "id_column$gprofiler_override", "cutoffs$up$value",
+        "cutoffs$up$min", "cutoffs$up$max", "cutoffs$up$step", "cutoffs$down$value", "cutoffs$q$step", "correction$choices",
+        "correction$selected", "taxon$default", "taxon$prefill_from", "organism_filter$mixed_species_from")) {
+        refused(prot, path)
+    }
+    bad <- prot
+    bad$enrichment$organism_filter <- "mixed_species_analysis"
+    expectGuiConfigRefused(bad, "enrichment$organism_filter")
+    # A wrong type for a list member, or a reference given by name.
+    bad <- prot
+    bad$enrichment$operation <- "diaEnrichmentOperation"
+    expectGuiConfigRefused(bad, "enrichment$operation")
+    bad <- prot
+    bad$enrichment$cutoffs$q$value <- "0.05"
+    expectGuiConfigRefused(bad, "enrichment$cutoffs$q$value")
+    # The cutoffs name exactly up, down and q.
+    bad <- prot
+    bad$enrichment$cutoffs$q <- NULL
+    expectGuiConfigRefused(bad, "enrichment$cutoffs")
+    bad <- prot
+    bad$enrichment$cutoffs$p <- bad$enrichment$cutoffs$q
+    expectGuiConfigRefused(bad, "enrichment$cutoffs")
+    # The correction's selection is one of its choices.
+    bad <- prot
+    bad$enrichment$correction$selected <- "bonferroni"
+    expectGuiConfigRefused(bad, "enrichment$correction$selected")
+    # The services are the tab's result tabs, once each.
+    bad <- prot
+    bad$enrichment$services <- c("gprofiler2", "gsea")
+    expectGuiConfigRefused(bad, "enrichment$services")
+    bad <- prot
+    bad$enrichment$services <- c("gprofiler2", "gprofiler2")
+    expectGuiConfigRefused(bad, "enrichment$services")
+    # The organism filter: NULL is valid (no filter section); its W2 function fields are optional, by type when present.
+    without_filter <- prot
+    without_filter$enrichment["organism_filter"] <- list(NULL)
+    expect_identical(validateOmicGuiConfig(without_filter), without_filter)
+    for (field in c("mapping", "apply")) {
+        with_ref <- prot
+        with_ref$enrichment$organism_filter[[field]] <- identity
+        expect_identical(validateOmicGuiConfig(with_ref), with_ref, info = field)
+        bad <- prot
+        bad$enrichment$organism_filter[[field]] <- "resolveProtEnrichOrganismMapping"
+        expectGuiConfigRefused(bad, paste0("enrichment$organism_filter$", field))
+    }
+    # The W2 function groups: absent at W1; when present, whole (both members references).
+    members <- list(organism = c("supported", "method"), annotation = c("resolve", "match"), kernel = c("select", "test_double"))
+    for (group in names(members)) {
+        expect_null(prot$enrichment[[group]], info = group)
+        with_group <- prot
+        with_group$enrichment[[group]] <- stats::setNames(list(identity, identity), members[[group]])
+        expect_identical(validateOmicGuiConfig(with_group), with_group, info = group)
+        for (member in members[[group]]) {
+            bad <- with_group
+            bad$enrichment[[group]][[member]] <- NULL
+            expectGuiConfigRefused(bad, paste0("enrichment$", group, "$", member))
+            bad <- with_group
+            bad$enrichment[[group]][[member]] <- "identity"
+            expectGuiConfigRefused(bad, paste0("enrichment$", group, "$", member))
+        }
+        bad <- prot
+        bad$enrichment[[group]] <- "identity"
+        expectGuiConfigRefused(bad, paste0("enrichment$", group))
+    }
+    # A non-proteomics omic may carry the group; NULL is valid, a malformed group is refused.
+    lipid <- omicGuiConfig("lipidomics")
+    bad <- lipid
+    bad$enrichment <- list(module_id = "enrichment")
+    expectGuiConfigRefused(bad, "enrichment$status_key")
+    bad <- lipid
+    bad$enrichment <- "enrichment"
+    expectGuiConfigRefused(bad, "enrichment")
 })

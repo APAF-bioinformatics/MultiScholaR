@@ -1,0 +1,83 @@
+# KIT-107 W1 test-first: tests/testthat/test-omic-enrich-module.R (new) and the enrichment blocks of
+# test-omic-gui-config.R, written first and frozen on the start commit.
+# Start commit 8e7294b6 (origin/performance-v2; R/ unchanged since b9820d9e), extracted with `git archive` into the
+# W1 scratch folder (kit-107-w1/start-tree), so the tests ran on the start commit's R/ exactly. R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner
+# kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.J57eHO/library (the KIT-106 corrected build); TMPDIR on
+# disk. Offline: the enrichment doubles (`install_enrichment_doubles()`, the fake gost and enricher wrapped by argument
+# recorders) and the proxies pointed at 127.0.0.1:9. Recorded 2026-11-09 by the W1 agent (W1 delegated by the lead).
+
+## How the values were frozen
+# MULTISCHOLAR_KIT107_W1_DUMP=<file> writes (a)'s UI parts and each case's captures as R code. Two dump runs of the
+# whole file on the start tree, in separate processes, gave byte-identical files (cmp; 222,201 bytes) on the first
+# pair; the first was pasted between the OMIC_ENRICH_FROZEN_UI and OMIC_ENRICH_FROZEN markers. The frozen file then
+# ran in two more processes at different times (below), each identical to the frozen values.
+# Masked or left out as process-local: temporary roots, dates and times (the bus's timestamps, the download's file
+# name and its summary's Date line), hexadecimal ids (the entry suite's masks), store references (each saved
+# reference as `<ref>` inside a digest; the product's `results` entity ids shown as the manifest table they name,
+# `<manifest da_proteins_long>`: they differ between processes), terminal styling and non-ASCII characters in messages.
+# Digests are taken over the masked canonical form (`guiEntryCanonical`) and kept as 16 hex characters; they are not
+# passed through the text masks, so they stay pinned.
+
+## (a) Identity: mod_prot_enrich_ui("enrichment_analysis") under MULTISCHOLAR_TEST_MODE=true, shiny's tabset ids
+## masked: HTML digest, input and output ids, test ids, tab titles, labels, help texts, choice lists, defaults.
+## 9 parts + 1.
+
+## (b) In process: mod_prot_da_server and mod_prot_enrich_server on one bus in one testServer (KIT-106 W1's
+## proteomics fixture shape: MCI-009's object on a DIA owner as correlation_filtered, its contrast B_vs_A). Each step
+## captures 18 fields (outputs, values, notes, updates, progress, tab_status, history, states, product, resources,
+## kernel, services, bus, display, files, returned, errors; download and restore steps add theirs). Expectations per
+## case (2 + one per field and step):
+#   gprofiler 156 (start, da, open, select, run, filter_up, filter_down, filter_all, download; taxon 9606, the double)
+#   clusterprofiler 156 (the same steps, taxon 999999)
+#   kernel_gprofiler 70, kernel_clusterprofiler 70 (da, open, select, run: the double replaced by name with a recorder
+#     that calls the live processEnrichments; gost and enricher record query and background, all offline)
+#   organism_filter 155 (no_mapping/{da,open,select,run}: the import's mapping is empty, the 8 s warning, an unfiltered
+#     run, enrichment_organism_filter enabled TRUE, applied FALSE; mapped/{da,open,mixed,select,run}: the mixed-species
+#     observer ticks the box and notifies, then the mapping from the annotations: today's
+#     "object 'clean_acc' not found" failure, D11, P-07)
+#   refusals 206 (pre_da/{tab_before_da (the warning), run_before_da (silent), da, open, run_no_contrast (silent),
+#     run_taxon_abc (the error notice)}; q_cutoff/{da, open, run_q_cutoff (q_cutoff 1.5: the error notice)};
+#     table_removed/{da, open, run_table_removed: the DA table deleted before the Run; today the run completes on the
+#     double with a NULL DA table}). Each failure that reaches the run's manifest branch ends its session (a second Run
+#     on that tab is F107-01's).
+#   restore 88 (da, open, select, run, restore: restoreProtEnrichResultsFromState on a NULL holder over the owner that
+#     holds enrichment_completed: TRUE, then FALSE; the restored display tables equal the run's)
+#   prefill 36 (start, prefill: the bus taxon_id 10090 updates organism_taxid; the method shows Mus musculus)
+# Step provenance and the analysis record are not captured (D6).
+
+## Result on the start tree (8e7294b6's R/), the frozen file, two processes
+COUNTS test-omic-enrich-module.R pass 947 fail 0 error 0 skip 0 exit=0 elapsed=161s
+COUNTS test-omic-enrich-module.R pass 947 fail 0 error 0 skip 0 exit=0 elapsed=102s
+## Result on the W1 tree (the enrichment group added to R/utils_omic_gui_config.R; no enrichment module changed)
+COUNTS test-omic-enrich-module.R pass 947 fail 0 error 0 skip 0 exit=0 elapsed=170s
+
+## test-omic-gui-config.R: guiConfigEnrichmentRequired, the enrichment blocks (D1 values; D9 refusals by class), the
+## validates block (:58, the group in the names; proteomics' fields present, NULL for lipid, metab and trx) and the
+## srcref block extended to enrichment. Written first: on the start tree (no enrichment group) they fail; on the W1
+## tree they pass.
+COUNTS test-omic-gui-config.R pass 1412 fail 41 error 2 skip 0   (start tree)
+  BAD each omic's configuration validates, with the shell, binding, import, design, qc, norm, da and enrichment groups
+  BAD no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD KIT-107 W1 (D1): the enrichment group holds proteomics' enrichment tab values at the start commit; NULL for the other omics
+  BAD KIT-107 W1 (D9): each enrichment field is refused by class when missing or mistyped; services and the organism filter are checked; the W2 function fields are optional, whole when present
+COUNTS test-omic-gui-config.R pass 1536 fail 0 error 0 skip 0   (W1 tree)
+
+## The configuration's dependents on the W1 tree (every config is built and validated at each tab's start)
+COUNTS test-omic-design-module.R pass 149 fail 0 error 0 skip 0 exit=0 elapsed=52s
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0 exit=0 elapsed=14s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0 exit=0 elapsed=22s
+
+## Defect probes (D11): F107-01 and F107-02 both confirmed on the start commit; see w1/defect-probes.txt. Not frozen:
+## no W1 case reaches either naturally.
+
+## The masking check list for W3 (test-omic-design-module.R): the names test-omic-enrich-module.R reads inside
+## testServer (its driver mounts a wrapper server, so no module frame is in scope, but W3's frame must not reuse them):
+#   log, acc, setup, steps, live, enrich_prefix, text, server, mount, apply_updates, i, pending, values, put, set,
+#   set_da, read, ui, ui_defaults, capture, step, bus, manager, out_names, shown, returned, files, record, field, value,
+#   ctx, name, case
+## The tab's returned reactive values (13 at start; 18 names after a run): all_enrichment_results, analysis_complete,
+## analysis_method, clusterprofiler_results, contrasts_available, current_contrast_results, current_s4_object,
+## da_results_data, enrichment_plots, enrichment_results, gprofiler_results, organism_supported, stringdb_results;
+## after a run also clusterprofiler_results_table, enrichment_product, enrichment_results_full, enrichment_service,
+## gprofiler_results_table.
