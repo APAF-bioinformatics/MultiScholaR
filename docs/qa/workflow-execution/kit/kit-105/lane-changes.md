@@ -93,3 +93,7 @@ Records: `f105-01/test-first.txt`, `f105-01/targeted.txt`, `f105-01/oracle-diff.
 SHA note: `e76e1e14` (above, in the evidence and in both oracles' `source_sha`) was the fix commit before the push
 rebase. On performance-v2 it is `66838358`, and the re-freeze commit is `a2b9b41d`. The rebase added only
 `kit-105/findings.md` (`8f0313e0`). `git diff e76e1e14 66838358 -- R tests src inst DESCRIPTION NAMESPACE` is empty.
+
+## F105-02: no entry lane changed
+
+F105-02 (the skip-correlation store commit's unhandled error) is fixed in the shared frame's `skipOmicNormCorrelation` (W4 `120efa7f` lipid, W5 `fcc16c6c` metab). No entry lane drives a failing commit, so no oracle in `tests/testdata/gui-entry/` changed: W4 and W5 ran lipid_canonical, trx_screen and metab_lc/gc/combined against the oracles, identical (`w4/entry-suite.txt`, `w5/entry-suite.txt`). Only the two W1 (c) unit captures `skip_correlation_failing` in `test-omic-norm-module.R` (lipid automatic, metab automatic) were re-frozen, once each, with a comment citing F105-02. Before: an unhandled error and the session closed. After: one error notification, the session kept, history, `tab_status` and the at-commit flags unchanged.

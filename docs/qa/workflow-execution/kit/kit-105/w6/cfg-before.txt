@@ -1,0 +1,10 @@
+COUNTS test-omic-gui-config.R pass 974 fail 4 error 0 skip 0
+  BAD test-omic-gui-config.R :: each norm field, required or conditional, is refused by class when missing or mistyped
+--- each norm field, required or conditional, is refused by class when missing or mistyped 
+ Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>. 
+--- each norm field, required or conditional, is refused by class when missing or mistyped 
+ Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>. 
+--- each norm field, required or conditional, is refused by class when missing or mistyped 
+ Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>. 
+--- each norm field, required or conditional, is refused by class when missing or mistyped 
+ Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>. 

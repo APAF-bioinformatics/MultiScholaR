@@ -45,8 +45,7 @@
 # values, the ITSD selection table builder, the test ids and the per-omic display values of design
 # D7 (the skip-correlation flag order, the final PCA's placeholder sizes). Trx (KIT-110) and
 # proteomics (KIT-111) have none yet: their `norm` is NULL. The in-process run and correlation and
-# the export's collector and saver are still module functions (or not yet written), so they stay
-# optional until KIT-105 W6 wires them to the core.
+# the export's collector and saver are the core's (KIT-105 W2/W4) and required since KIT-105 W6.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -176,14 +175,11 @@ omicGuiConfigSchema <- function() {
             testids = "named_chr", skip_correlation_flags = "chr1", final_pca = "named_list",
             # KIT-105 W5 (D7): whether a failed managed correlation is also shown as an error notification.
             managed_correlation_notify = "lgl1"),
-        # `run` and `correlation`: the managed function; the in-process twin is optional until KIT-105
-        # W6 wires it (today it is in R/mod_*.R, W2 writes the core's).
-        norm_action = c(managed = "ref"),
-        norm_action_optional = c(in_process = "ref"),
-        # `export`: the per-omic values (D7, P-18); the collector and saver as `norm_action_optional`.
+        # `run` and `correlation`: the managed function and its in-process twin (the core's; D6).
+        norm_action = c(managed = "ref", in_process = "ref"),
+        # `export`: the per-omic values (D7, P-18), and the core's collector and saver.
         norm_export = c(prefix = "chr1", counts_field = "chr1", samples = "chr1", progress = "named_list",
-            summary_time = "chr1"),
-        norm_export_optional = c(collect = "ref", save = "ref"),
+            summary_time = "chr1", collect = "ref", save = "ref"),
         # KIT-105 W5 (D7): the export's progress display: the gathering step's text, the closing step's text (none
         # when empty) and whether the saver steps the display through its files.
         norm_export_progress = c(gather = "chr1", complete = "chr0", steps = "lgl1"),
@@ -397,10 +393,8 @@ validateOmicGuiNorm <- function(norm, schema) {
     if (length(norm$stage_labels) != 3L) omicGuiConfigAbort("norm$stage_labels", "must hold the three stages' captions")
     for (field in c("run", "correlation")) {
         checkOmicGuiFields(norm[[field]], schema$norm_action, paste0("norm$", field))
-        checkOmicGuiFields(norm[[field]], schema$norm_action_optional, paste0("norm$", field), required = FALSE)
     }
     checkOmicGuiFields(norm$export, schema$norm_export, "norm$export")
-    checkOmicGuiFields(norm$export, schema$norm_export_optional, "norm$export", required = FALSE)
     checkOmicGuiChoice(norm$export$samples, "norm$export$samples", c("design", "columns"))
     checkOmicGuiFields(norm$export$progress, schema$norm_export_progress, "norm$export$progress")
     checkOmicGuiChoice(norm$export$summary_time, "norm$export$summary_time", c("session", "written"))
@@ -707,7 +701,7 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
         ruv_heading = "RUV Parameter Optimization Results",
         ruv_help = paste("Canonical correlation plots and optimization summary per assay. Each assay is optimized",
             "independently."),
-        # KIT-105 W4 wired the in-process twins and the export's collector and saver (the core's; optional until W6).
+        # The in-process twins and the export's collector and saver: the core's (KIT-105 W4; required since W6).
         run = list(managed = runWorkflowOmicsManagedNormalisation, in_process = runWorkflowOmicsInProcessNormalisation),
         correlation = list(managed = runWorkflowOmicsManagedCorrelation, in_process = runWorkflowOmicsInProcessCorrelation),
         pre_qc_on_entry = TRUE,
