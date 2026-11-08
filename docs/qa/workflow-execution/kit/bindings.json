@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-11-08",
+  "created": "2026-11-09",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -645,6 +645,15 @@
       "exact_sum": "02d9fe90a784bcc96bb0ba412d1394f9ea95a3d5ee2b58f0b418cf2754b65c93",
       "install_member": "browser-smoke.r5uUT0",
       "source_commit": "c1079dc7cc073840a2202edc0e564b534c06d0a3",
+      "runtime_patch_bytes": 0
+    },
+    "kit_106": {
+      "ticket": "KIT-106",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.m4DXz7/library",
+      "build": "97a33b8f6fb443abc0c7d9e600b779a41ec1459fda13ca87b37539e99c5e2242",
+      "exact_sum": "3da1d3bd448e561194eef36c4f70b76233ecec797555915f1b6ad0d7f7cd1063",
+      "install_member": "browser-smoke.m4DXz7",
+      "source_commit": "9152e613938816f79eed67ab93bb725c90194959",
       "runtime_patch_bytes": 0
     }
   },
@@ -42332,6 +42341,105 @@
       "oracles": "tmt101_fixture",
       "ceiling_seconds": 1800,
       "purpose": "exactness (recorded, uncounted; KIT-110)"
+    },
+    "106a": {
+      "kind": "single_journey",
+      "build": "kit_106",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-106)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "106b": {
+      "kind": "single_journey",
+      "build": "kit_106",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-106)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "106c": {
+      "kind": "single_journey",
+      "build": "kit_106",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-106)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "106m": {
+      "kind": "single_journey",
+      "build": "kit_106",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-106)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "106l": {
+      "kind": "single_journey",
+      "build": "kit_106",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-106)"
+    },
+    "106t": {
+      "kind": "single_journey",
+      "build": "kit_106",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-106)"
     }
   },
   "lifecycle": {
@@ -42393,12 +42501,12 @@
     "core_pinned_unchanged": true,
     "files": {
       "tools/profiling/workflow_kit.R": "0de08508a8bb06d64c238c0755303a3d9765470e425e522ee20ff6e9612ada5a",
-      "tools/profiling/workflow_kit_driver.R": "c984e859f80915b28d549e199f58566937900cbebd444138857302df869486e7",
+      "tools/profiling/workflow_kit_driver.R": "191d78551e2cdd0b7cad331af3ba112cf14e88e8fdcce8abef35b5c3062f289d",
       "tools/profiling/workflow_kit_coordinator.R": "06ac285a83dde94c2886a7565a51bd8c4af452034c4a14a7dcb2f73ec66c3631",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "381f4645cd8966cd59de5dc85cb9201bb4ad01935b515afcba52b10305556369",
       "tools/profiling/workflow_checkpoint_dia_driver.R": "74e61ee6eaf98e6133c8ab3891e21acdb060ebd4ae17a8fa23b264553c9236f7",
-      "tests/testthat/test-workflow-kit-harness.R": "a83d73841a37eaeab9f4852b592e4751c7da07f74768371ef220e4873748c0fd",
+      "tests/testthat/test-workflow-kit-harness.R": "8bc4b239fea8ad63a52b70585a785284bf0b4ffd16d11a4b0773be19930167ea",
       "tests/testthat/test-workflow-execution-adapters.R": "758020ac8b928f737c12cf9faaaba3bb044bcdee1e68c1b5c2773f34bb7304af",
       "tests/testthat/helper-workflow-checkpoint-fixtures.R": "3ae1d3f2f9036e178609b7c0b180c4a7c511850504e2438bf416c610db8ef396",
       "tests/testthat/helper-workflow-bulk-rollup.R": "f7c0c8af89529645fcca0a747530928145fd6b0ccb979896e86fbf93f4c61977",
