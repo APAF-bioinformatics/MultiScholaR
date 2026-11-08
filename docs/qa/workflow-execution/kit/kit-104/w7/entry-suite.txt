@@ -1,0 +1,21 @@
+KIT-104 W7 entry-point lanes (2026-11-08), proteomics, against the frozen oracles in tests/testdata/gui-entry/ (not
+re-frozen). One R process, load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS = core/browser-smoke.yODoyT/library,
+runner kit/scripts-078/run1.R, MULTISCHOLAR_GUI_ENTRY_RECORD_DIR set (scratch) so each lane's record could be
+compared capture by capture.
+
+COUNTS test-gui-entry-proteomics.R pass 173 fail 14 error 0 skip 0  [766s]
+  BAD KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route   (14 steps differ: P-16, expected)
+
+Per lane (record vs oracle, every step):
+  prot_dia            29 steps, 0 differ   IDENTICAL
+  prot_tmt            21 steps, 0 differ   IDENTICAL
+  prot_lfq            21 steps, 0 differ   IDENTICAL
+  prot_lfq_fragpipe   21 steps, 0 differ   IDENTICAL
+  prot_dia_limpa      24 steps, 14 differ  from qc_protein_peptide_count onwards, only tab_status$quality_control,
+                                           tab_status$normalization and the workflow_progress stepper output
+                                           (P-16); steps import_refusal .. qc_protein_normalisation identical.
+                                           Every differing capture: p16-diff.txt.
+
+All five lanes drive both proteomics groups (DIA, DIA_LIMPA) or the protein group (TMT, LFQ, FragPipe) through
+mod_prot_qc_server, now the shared shell under omicGuiConfig("proteomics"). W7's stop rule is not met: the four
+other lanes and the DIA session and memory set (targeted.txt) are identical.

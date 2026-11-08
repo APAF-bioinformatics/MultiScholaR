@@ -28,59 +28,9 @@ NULL
 getProtQcPeptideModuleSpecs <- function(workflowType = "DIA") {
   # KIT-046: the DIA_LIMPA route's peptide stage (the script's checkpoints): the Q-value filter and the precursor
   # rollup are the shared declarations; the log2 matrix and the peptide-level accession cleanup are KIT-047's
-  # declarations and modules.
-  if (identical(workflowType, "DIA_LIMPA")) {
-    return(list(
-      list(id = "qvalue_filter", title = "Q-Value Filter", uiFn = "mod_prot_qc_peptide_qvalue_ui", serverFn = "mod_prot_qc_peptide_qvalue_server"),
-      list(id = "rollup", title = "Precursor Rollup", uiFn = "mod_prot_qc_peptide_rollup_ui", serverFn = "mod_prot_qc_peptide_rollup_server"),
-      list(id = "log2_matrix", title = "Log2 Matrix", uiFn = "mod_prot_qc_peptide_log2_ui", serverFn = "mod_prot_qc_peptide_log2_server"),
-      list(id = "accession_cleanup", title = "Peptide Accession Cleanup", uiFn = "mod_prot_qc_peptide_accession_ui", serverFn = "mod_prot_qc_peptide_accession_server")
-    ))
-  }
-  list(
-    list(
-      id = "qvalue_filter",
-      title = "Q-Value Filter",
-      uiFn = "mod_prot_qc_peptide_qvalue_ui",
-      serverFn = "mod_prot_qc_peptide_qvalue_server"
-    ),
-    list(
-      id = "protein_peptide_filter",
-      title = "Protein Evidence",
-      uiFn = "mod_prot_qc_peptide_protein_ui",
-      serverFn = "mod_prot_qc_peptide_protein_server"
-    ),
-    list(
-      id = "rollup",
-      title = "Precursor Rollup",
-      uiFn = "mod_prot_qc_peptide_rollup_ui",
-      serverFn = "mod_prot_qc_peptide_rollup_server"
-    ),
-    list(
-      id = "intensity_filter",
-      title = "Intensity Filter",
-      uiFn = "mod_prot_qc_peptide_intensity_ui",
-      serverFn = "mod_prot_qc_peptide_intensity_server"
-    ),
-    list(
-      id = "sample_filter",
-      title = "Sample Quality",
-      uiFn = "mod_prot_qc_peptide_sample_ui",
-      serverFn = "mod_prot_qc_peptide_sample_server"
-    ),
-    list(
-      id = "replicate_filter",
-      title = "Replicate Filter",
-      uiFn = "mod_prot_qc_peptide_replicate_ui",
-      serverFn = "mod_prot_qc_peptide_replicate_server"
-    ),
-    list(
-      id = "imputation",
-      title = "Imputation",
-      uiFn = "mod_prot_qc_peptide_impute_ui",
-      serverFn = "mod_prot_qc_peptide_impute_server"
-    )
-  )
+  # declarations and modules. KIT-104 W7 (D9): the table is the configuration's peptide group; every route other
+  # than DIA_LIMPA lists the DIA steps, as the literal table did (827f2328).
+  protQcModuleSpecs("peptide_qc", if (identical(workflowType, "DIA_LIMPA")) "DIA_LIMPA" else "DIA")
 }
 
 buildProtQcPeptideTab <- function(moduleSpec, ns) {

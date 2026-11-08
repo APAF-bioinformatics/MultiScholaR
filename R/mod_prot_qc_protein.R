@@ -24,58 +24,21 @@
 #' @param id,workflow_type,workflow_data,experiment_paths,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
 NULL
 
+# KIT-104 W7 (D9): the spec tables are the configuration's protein group (`omicGuiConfig("proteomics")$qc`), with
+# today's lists per route (827f2328): the rollup is DIA's alone, the common steps are those of TMT and LFQ.
 getProtQcProteinRollupModuleSpec <- function() {
-  list(
-    id = "rollup",
-    title = "IQ Protein Rollup",
-    uiFn = "mod_prot_qc_protein_rollup_ui",
-    serverFn = "mod_prot_qc_protein_rollup_server",
-    needsExperimentPaths = TRUE
-  )
+  Filter(function(spec) identical(spec$id, "rollup"), protQcModuleSpecs("protein_qc", "DIA"))[[1L]]
 }
 
 getProtQcProteinCommonModuleSpecs <- function() {
-  list(
-    list(
-      id = "cleanup",
-      title = "Accession Cleanup",
-      uiFn = "mod_prot_qc_protein_cleanup_ui",
-      serverFn = "mod_prot_qc_protein_cleanup_server",
-      needsExperimentPaths = TRUE
-    ),
-    list(
-      id = "intensity_filter",
-      title = "Protein Intensity Filter",
-      uiFn = "mod_prot_qc_protein_intensity_ui",
-      serverFn = "mod_prot_qc_protein_intensity_server",
-      needsExperimentPaths = TRUE
-    ),
-    list(
-      id = "duplicate_removal",
-      title = "Duplicate Removal",
-      uiFn = "mod_prot_qc_protein_dedup_ui",
-      serverFn = "mod_prot_qc_protein_dedup_server",
-      needsExperimentPaths = TRUE
-    ),
-    list(
-      id = "replicate_filter",
-      title = "Protein Replicate Filter",
-      uiFn = "mod_prot_qc_protein_replicate_ui",
-      serverFn = "mod_prot_qc_protein_replicate_server",
-      needsExperimentPaths = TRUE
-    )
-  )
+  protQcModuleSpecs("protein_qc", "TMT")
 }
 
 getProtQcProteinModuleSpecs <- function(workflowType = NULL) {
   # KIT-046: the DIA_LIMPA route's protein stage (the script's checkpoints): DPC quantification (KIT-047's module), the
   # optional between-sample normalisation and the peptide-count filter (KIT-041's modules).
   if (identical(workflowType, "DIA_LIMPA")) {
-    return(list(
-      list(id = "dpc_quant", title = "DPC Quantification", uiFn = "mod_prot_qc_protein_dpc_quant_ui", serverFn = "mod_prot_qc_protein_dpc_quant_server", needsExperimentPaths = TRUE),
-      list(id = "normalisation", title = "Between-Sample Normalisation", uiFn = "mod_prot_qc_protein_normalisation_ui", serverFn = "mod_prot_qc_protein_normalisation_server", needsExperimentPaths = TRUE),
-      list(id = "peptide_count", title = "Peptide Count Filter", uiFn = "mod_prot_qc_protein_peptide_count_ui", serverFn = "mod_prot_qc_protein_peptide_count_server", needsExperimentPaths = TRUE)
-    ))
+    return(protQcModuleSpecs("protein_qc", "DIA_LIMPA"))
   }
   moduleSpecs <- getProtQcProteinCommonModuleSpecs()
 

@@ -559,3 +559,83 @@ test_that("W5 the shell's and sub-tabs' module frames hold no name a test's own 
     expect_length(held$frames, 5L)
     for (frame in held$frames) expect_identical(intersect(frame, test_names), character())
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-104 W7: proteomics' QC tab on the shared shell. mod_prot_qc_ui/server are wrappers over
+# mod_omic_qc_*(..., omicGuiConfig("proteomics")); the peptide and protein orchestrators stay as the
+# group plugins; getProtQc*ModuleSpecs return today's lists, built from the configuration (D9).
+# P-16 (the lead's decision, 2026-11-08): DIA_LIMPA's QC completes at peptide_count_filtered.
+# ------------------------------------------------------------------------------------------------
+
+test_that("W7 mod_prot_qc_ui/server are wrappers over the shared shell, without the DEBUG66 messages", {
+    expect_true("mod_omic_qc_ui" %in% all.names(body(mod_prot_qc_ui)))
+    expect_true("mod_omic_qc_server" %in% all.names(body(mod_prot_qc_server)))
+    expect_false(any(grepl("DEBUG66", deparse(mod_prot_qc_server), fixed = TRUE)))
+    expect_identical(names(formals(mod_prot_qc_ui)), "id")
+    expect_identical(names(formals(mod_prot_qc_server)),
+        c("id", "workflow_data", "experiment_paths", "omic_type", "experiment_label", "qc_trigger"))
+    # The static UI is today's (identity (b)).
+    expect_identical(omicQcDigest(mod_prot_qc_ui("qc")), omicQcFrozen$static[["prot_qc"]])
+})
+
+test_that("W7 P-16: QC completes at the route's final state through mod_prot_qc_server, DIA_LIMPA at peptide_count_filtered", {
+    testthat::local_mocked_bindings(
+        mod_prot_qc_peptide_server = function(...) NULL,
+        mod_prot_qc_protein_server = function(...) NULL,
+        .package = "MultiScholaR")
+    completes <- function(route, state) {
+        bus <- shiny::reactiveValues(state_manager = list(workflow_type = route, states = list()),
+            tab_status = list(quality_control = "pending", normalization = "disabled"))
+        suppressMessages(shiny::testServer(mod_prot_qc_server, args = list(workflow_data = bus,
+            experiment_paths = list(), omic_type = "proteomics", experiment_label = "kit104",
+            qc_trigger = function() TRUE), {
+            session$flushReact()
+            bus$state_manager <- list(workflow_type = route, states = stats::setNames(list(TRUE), state))
+            session$flushReact()
+        }))
+        shiny::isolate(bus$tab_status)
+    }
+    complete <- list(quality_control = "complete", normalization = "pending")
+    pending <- list(quality_control = "pending", normalization = "disabled")
+    # P-16: DIA_LIMPA's last QC state (fails before: its QC status stays pending).
+    expect_identical(completes("DIA_LIMPA", "peptide_count_filtered"), complete)
+    # The other routes complete as today, and not on another route's final state.
+    for (route in c("DIA", "TMT", "LFQ")) {
+        expect_identical(completes(route, "protein_replicate_filtered"), complete, info = route)
+        expect_identical(completes(route, "peptide_count_filtered"), pending, info = route)
+    }
+})
+
+test_that("W7 getProtQc*ModuleSpecs return today's lists for every route, built from the configuration", {
+    # Each list's sha256 (version-3 serialisation) at the start commit 827f2328.
+    peptide <- c(default = omicQcSha(getProtQcPeptideModuleSpecs()),
+        DIA = omicQcSha(getProtQcPeptideModuleSpecs("DIA")),
+        DIA_LIMPA = omicQcSha(getProtQcPeptideModuleSpecs("DIA_LIMPA")),
+        TMT = omicQcSha(getProtQcPeptideModuleSpecs("TMT")), LFQ = omicQcSha(getProtQcPeptideModuleSpecs("LFQ")),
+        null = omicQcSha(getProtQcPeptideModuleSpecs(NULL)))
+    dia_peptide <- "f12eb2444c894fab4390fe01098d8abc03f7722853e9ee2af06ff474393c0751"
+    expect_identical(peptide, c(default = dia_peptide, DIA = dia_peptide,
+        DIA_LIMPA = "ce13cbbfe8d0c1375ed775321f18b32b4e6528855c2e4512b9fb7edae3e7eb30", TMT = dia_peptide,
+        LFQ = dia_peptide, null = dia_peptide))
+    protein <- c(default = omicQcSha(getProtQcProteinModuleSpecs()),
+        DIA = omicQcSha(getProtQcProteinModuleSpecs("DIA")),
+        DIA_LIMPA = omicQcSha(getProtQcProteinModuleSpecs("DIA_LIMPA")),
+        TMT = omicQcSha(getProtQcProteinModuleSpecs("TMT")), LFQ = omicQcSha(getProtQcProteinModuleSpecs("LFQ")),
+        rollup = omicQcSha(getProtQcProteinRollupModuleSpec()), common = omicQcSha(getProtQcProteinCommonModuleSpecs()))
+    dia_protein <- "c835f2cf6cfe081ed71e515bdb1d302506d1eeb57c2e77a9ce25b428f4bab530"
+    common <- "e8163cffe36c5926145d1d189152a6dbf06a414c5d5def6742d17d790f12cef1"
+    expect_identical(protein, c(default = dia_protein, DIA = dia_protein,
+        DIA_LIMPA = "519e3103e07568bfdc6f5c51c1dc2497e49eb41c0600826bdcba067cb3b0968d", TMT = common, LFQ = common,
+        rollup = "c4d065800d06aaee39fcc99c54c468f2122cd080c8a5cedc3d6c048678f05cd5", common = common))
+    # Built from the configuration: a title changed there is the spec's (fails before: the tables were literals).
+    original <- omicGuiProteomicsQc
+    testthat::local_mocked_bindings(omicGuiProteomicsQc = function() {
+        qc <- original()
+        qc$groups[[1L]]$tabs[[1L]]$title <- "Q-Value Filter (configured)"
+        qc$groups[[2L]]$tabs[[2L]]$title <- "Accession Cleanup (configured)"
+        qc
+    }, .package = "MultiScholaR")
+    expect_identical(getProtQcPeptideModuleSpecs("DIA_LIMPA")[[1L]]$title, "Q-Value Filter (configured)")
+    expect_identical(getProtQcProteinCommonModuleSpecs()[[1L]]$title, "Accession Cleanup (configured)")
+    expect_identical(getProtQcProteinModuleSpecs("TMT")[[1L]]$title, "Accession Cleanup (configured)")
+})

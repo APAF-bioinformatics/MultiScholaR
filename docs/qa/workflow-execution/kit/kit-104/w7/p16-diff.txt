@@ -1,0 +1,145 @@
+KIT-104 W7, P-16 (2026-11-08): the prot_dia_limpa entry lane after W7, against its frozen oracle
+(tests/testdata/gui-entry/prot_dia_limpa.json, ddf42372; NOT re-frozen: the lead re-freezes once with attribution).
+Record: MULTISCHOLAR_GUI_ENTRY_RECORD_DIR, from the test-gui-entry-proteomics.R run in entry-suite.txt; compared
+capture by capture (JSON round trip, as guiEntryExpectLane compares) by kit-104-w7/compare.R.
+
+Summary: steps import_refusal .. qc_protein_normalisation (10) are identical. From qc_protein_peptide_count on
+(14 steps), the ONLY captures that differ are, in every one of those steps:
+  - tab_status$quality_control: "pending" -> "complete"                     (P-16: QC completes at peptide_count_filtered)
+  - tab_status$normalization:   "disabled" -> "pending"                     (qc_protein_peptide_count, da_refusal,
+                                                                             norm_refusal, norm; from correlation on the
+                                                                             normalisation tab sets it itself, as before)
+  - outputs$proteomics_workflow-workflow_progress (the stepper UI that renders tab_status)
+No committed state, history, artifact, notification, refusal check or other output differs; the step order is
+identical. 32 differing captures in all (3 in each of the 4 steps qc_protein_peptide_count, da_refusal,
+norm_refusal, norm; 2 in each of the 10 steps correlation .. summary_export), each listed below.
+
+F-20 (mod_prot_norm_workflow_helpers.R:518-524): at norm_refusal and norm (the normalisation tab entered on
+peptide_count_filtered) and at ruv_covariates, quality_control is already "complete", so the helper's
+`identical(workflowData$tab_status$quality_control, "complete")` term holds and the DIA_LIMPA-specific
+`limpa_qc_complete` term no longer decides anything; the notifications at those steps are identical to the oracle.
+In the app the term is dead (the shell completes QC on the state's commit, before the normalisation tab opens);
+only its unit test (test-prot-05b-norm-module-contracts.R "KIT-101 F-20") still reaches it, with a pending status
+built by hand. Left for KIT-105, as the ticket says.
+
+lane prot_dia_limpa: 24 recorded steps, 24 oracle steps, order identical: TRUE
+step import_refusal                           identical
+step import                                   identical
+step design_refusal                           identical
+step design                                   identical
+step qc_peptide_qvalue_filter                 identical
+step qc_peptide_rollup                        identical
+step qc_peptide_log2_matrix                   identical
+step qc_peptide_accession_cleanup             identical
+step qc_protein_dpc_quant                     identical
+step qc_protein_normalisation                 identical
+step qc_protein_peptide_count                 DIFFERS (3)
+    qc_protein_peptide_count$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    qc_protein_peptide_count$tab_status$normalization
+      oracle: "disabled"
+      now:    "pending"
+    qc_protein_peptide_count$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+      now:    "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+step da_refusal                               DIFFERS (3)
+    da_refusal$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    da_refusal$tab_status$normalization
+      oracle: "disabled"
+      now:    "pending"
+    da_refusal$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+      now:    "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+step norm_refusal                             DIFFERS (3)
+    norm_refusal$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    norm_refusal$tab_status$normalization
+      oracle: "disabled"
+      now:    "pending"
+    norm_refusal$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+      now:    "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+step norm                                     DIFFERS (3)
+    norm$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    norm$tab_status$normalization
+      oracle: "disabled"
+      now:    "pending"
+    norm$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 048e886d9ee216f23cddfa1eff7638e1ffdac02b48d45840cf61bdbb93a59890"
+      now:    "<ui> 79fd24bd274c2d788dc5b886a41dafa7a6d800d6ef42380b0bd4306b78256519"
+step correlation                              DIFFERS (2)
+    correlation$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    correlation$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+      now:    "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
+step ruv_covariates                           DIFFERS (2)
+    ruv_covariates$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    ruv_covariates$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+      now:    "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
+step session_export                           DIFFERS (2)
+    session_export$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    session_export$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+      now:    "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
+step da_load                                  DIFFERS (2)
+    da_load$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    da_load$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> 7d10a892baf4d2cfa76d73593b69c154e9e97311a47781bcab1319e541a0da3b"
+      now:    "<ui> 412644b8560dd9daf18a07536f741d5b7061af0916841271b72398c1e71884d1"
+step da                                       DIFFERS (2)
+    da$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    da$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+      now:    "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
+step summary_refusal                          DIFFERS (2)
+    summary_refusal$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    summary_refusal$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+      now:    "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
+step summary_save                             DIFFERS (2)
+    summary_save$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    summary_save$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+      now:    "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
+step summary_copy                             DIFFERS (2)
+    summary_copy$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    summary_copy$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+      now:    "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
+step summary_report                           DIFFERS (2)
+    summary_report$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    summary_report$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+      now:    "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"
+step summary_export                           DIFFERS (2)
+    summary_export$tab_status$quality_control
+      oracle: "pending"
+      now:    "complete"
+    summary_export$outputs$proteomics_workflow-workflow_progress
+      oracle: "<ui> df67e9595c543fb5dc622175514ac2ca6ef1714e5ba56c892473f5b4b83513f7"
+      now:    "<ui> b8f0877b6e9e28a781b729212e08fca82a512c2dd18af0354f1e463efc59b6fb"

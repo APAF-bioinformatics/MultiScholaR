@@ -1,0 +1,33 @@
+KIT-104 W7 test-first (2026-11-08). One R process per file, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+R 4.6.1, R_LIBS = the browser-smoke proof library, runner scripts-078/run1.R.
+
+The blocks were written first and run on the start commit 827f2328 (R/ unchanged):
+
+1. tests/testthat/test-omic-qc-module.R, the three W7 blocks added at the end of the file:
+
+COUNTS test-omic-qc-module.R pass 110 fail 7 error 0 skip 3      (the 3 skips are W1's W6 gates)
+  BAD W7 mod_prot_qc_ui/server are wrappers over the shared shell, without the DEBUG66 messages
+      "mod_omic_qc_ui" not in body(mod_prot_qc_ui); "mod_omic_qc_server" not in body(mod_prot_qc_server);
+      DEBUG66 found in mod_prot_qc_server (22 messages in R/mod_prot_qc.R at 827f2328)
+  BAD W7 P-16: QC completes at the route's final state through mod_prot_qc_server, DIA_LIMPA at peptide_count_filtered
+      completes("DIA_LIMPA", "peptide_count_filtered"):
+        actual   quality_control "pending",  normalization "disabled"
+        expected quality_control "complete", normalization "pending"
+      (DIA, TMT and LFQ complete on protein_replicate_filtered and not on peptide_count_filtered: passed before)
+  BAD W7 getProtQc*ModuleSpecs return today's lists for every route, built from the configuration
+      the frozen sha256s of today's lists (peptide: default, DIA, DIA_LIMPA, TMT, LFQ, NULL; protein: default, DIA,
+      DIA_LIMPA, TMT, LFQ, the rollup spec, the common specs) passed before (frozen at 827f2328);
+      a title changed in omicGuiProteomicsQc() is not the specs' (3 failures): the tables were literals.
+
+2. tests/testthat/test-omic-gui-config.R, the qc-group expectation updated to the P-16 decision first:
+
+COUNTS test-omic-gui-config.R pass 764 fail 1 error 0 skip 0
+  BAD the qc group holds today's values per omic
+      names(qc$proteomics$complete_state): actual "DIA" "TMT" "LFQ", expected "DIA" "DIA_LIMPA" "TMT" "LFQ"
+      (DIA_LIMPA = "peptide_count_filtered" missing)
+
+After the change (mod_prot_qc.R wrappers; getProtQc*ModuleSpecs from the configuration; complete_state's
+DIA_LIMPA entry):
+
+COUNTS test-omic-qc-module.R pass 117 fail 0 error 0 skip 3
+COUNTS test-omic-gui-config.R pass 765 fail 0 error 0 skip 0

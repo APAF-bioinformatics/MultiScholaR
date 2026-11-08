@@ -1,0 +1,6 @@
+file	lines_827f2328	lines_after_w7	note
+R/mod_prot_qc.R	219	86	wrappers over the shared shell (omicGuiConfig("proteomics")); the coordinator body and its 22 DEBUG66 messages removed; completeProtQcWorkflowStatus kept; protQcModuleSpecs added
+R/mod_prot_qc_peptide.R	147	97	group plugin kept; getProtQcPeptideModuleSpecs built from the configuration
+R/mod_prot_qc_protein.R	157	120	group plugin kept; the three protein spec getters built from the configuration
+proteomics orchestrators (3 files)	523	303	-220
+R/utils_omic_gui_config.R	1158	1160	P-16: complete_state DIA_LIMPA = "peptide_count_filtered"

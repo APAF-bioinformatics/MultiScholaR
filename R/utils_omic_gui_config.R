@@ -663,8 +663,10 @@ omicGuiProteomicsQc <- function() {
                 protein("normalisation", "Between-Sample Normalisation", "normalisation", "DIA_LIMPA"),
                 protein("peptide_count", "Peptide Count Filter", "peptide_count", "DIA_LIMPA")))),
         auto_init = FALSE,
-        complete_state = c(DIA = "protein_replicate_filtered", TMT = "protein_replicate_filtered",
-            LFQ = "protein_replicate_filtered"),
+        # P-16 (KIT-104 W7, the lead's decision 2026-11-08): DIA_LIMPA completes at its last QC
+        # state (mod_prot_qc_protein_peptide_count.R), so normalisation opens as on the other routes.
+        complete_state = c(DIA = "protein_replicate_filtered", DIA_LIMPA = "peptide_count_filtered",
+            TMT = "protein_replicate_filtered", LFQ = "protein_replicate_filtered"),
         itsd = NULL, texts = stats::setNames(character(), character()),
         notification_ids = stats::setNames(character(), character()))
 }

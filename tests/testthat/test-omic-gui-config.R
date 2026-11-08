@@ -548,10 +548,12 @@ test_that("the qc group holds today's values per omic", {
         TMT = "qc_tabs_tmt", LFQ = "qc_tabs_tmt"))
     expect_identical(vapply(qc, `[[`, TRUE, "auto_init"), c(proteomics = FALSE, lipidomics = TRUE,
         metabolomics = TRUE, transcriptomics = TRUE))
-    # QC completes on protein_replicate_filtered (mod_prot_qc.R:204-216), which DIA_LIMPA never
-    # reaches (P-16, W7); the other omics' finalise tab completes QC.
+    # QC completes on protein_replicate_filtered (mod_prot_qc.R:204-216 at 827f2328), and on the
+    # DIA_LIMPA route at its last QC state, peptide_count_filtered (P-16, fixed by KIT-104 W7); the
+    # other omics' finalise tab completes QC.
     expect_identical(qc$proteomics$complete_state, c(DIA = "protein_replicate_filtered",
-        TMT = "protein_replicate_filtered", LFQ = "protein_replicate_filtered"))
+        DIA_LIMPA = "peptide_count_filtered", TMT = "protein_replicate_filtered",
+        LFQ = "protein_replicate_filtered"))
     for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
         expect_true("complete_state" %in% names(qc[[omic]]), info = omic)
         expect_null(qc[[omic]]$complete_state, info = omic)

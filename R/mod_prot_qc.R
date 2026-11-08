@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Import extracted components at top of file
-# Note: These will need to be available in the package or sourced appropriately
-# Since we are moving to R/, they should be loaded by package loading mechanisms
-# or we might need to source them if they are not functions but scripts (which is bad practice)
-# Given the plan, we should assume they will be refactored into functions in R/ as well.
-# For now, we will assume the sub-modules are available as functions.
+# KIT-104 W7: proteomics' QC tab is the shared QC shell (mod_omic_qc.R) under
+# `omicGuiConfig("proteomics")`: the title, the tabsets by route, the "Peptide QC" and "Protein QC"
+# groups whose plugins are mod_prot_qc_{peptide,protein} (looked up by name), the start on the
+# design's trigger only, the route in the shell's local `qc_workflow_type`, and the completion on the
+# route's final QC state through `completeProtQcWorkflowStatus`. The coordinator these wrappers
+# replace is at 827f2328.
 
 #' @title qualityControlAppletModule
 #'
@@ -35,18 +35,7 @@ NULL
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 uiOutput
 mod_prot_qc_ui <- function(id) {
-  ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::fluidRow(
-    shiny::column(12,
-      shiny::wellPanel(
-        shiny::h3("Quality Control & Filtering"),
-        # Replace the conditional logic with a single UI Output
-        shiny::uiOutput(ns("dynamic_qc_tabs"))
-      )
-    )
-  )
-  )
+  mod_omic_qc_ui(id, omicGuiConfig("proteomics"))
 }
 
 #' @rdname qualityControlAppletModule
@@ -74,146 +63,24 @@ completeProtQcWorkflowStatus <- function(
 }
 
 mod_prot_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
-  shiny::moduleServer(id, function(input, output, session) {
-    ns <- session$ns
-    # State-owner adoption does not change the scientific workflow type. Keep the
-    # existing tab DOM (and selected/visible plots) when only that owner changes.
-    qc_workflow_type <- shiny::reactiveVal(NULL)
-    shiny::observe({
-      # Native WorkflowState changes its R6 field in place during Design. The
-      # existing QC trigger is the notification for that mutation.
-      if (is.function(qc_trigger)) qc_trigger()
-      workflow_data$state_update_trigger
-      qc_workflow_type(workflow_data$state_manager$workflow_type)
-    }, priority = 100)
-    
-    output$dynamic_qc_tabs <- shiny::renderUI({
-      message("=== DEBUG66: mod_prot_qc_server renderUI fired ===")
-      
-      # This logic will run once workflow_type is available
-      shiny::req(qc_workflow_type())
-      workflow_type <- qc_workflow_type()
-      message(sprintf("   DEBUG66: workflow_type = %s", workflow_type))
-      
-      if (workflow_type %in% c("TMT", "LFQ")) {
-        # Check if S4 object already exists from design matrix step
-        # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
-        s4_exists <- tryCatch({
-          exists <- "protein_s4_initial" %in% diaStateHistory(workflow_data$state_manager) # KIT-020/048: the head's history, no hydration
-          s4_obj <- if (exists) "protein_s4_initial" else NULL
-          message(sprintf("   DEBUG66: %s - Checking for protein_s4_initial: exists = %s", workflow_type, exists))
-          if (exists) {
-            message(sprintf("   DEBUG66: %s - S4 object class = %s", workflow_type, class(s4_obj)))
-          }
-          exists
-        }, error = function(e) {
-          message(sprintf("   DEBUG66: %s - Error checking S4: %s", workflow_type, e$message))
-          FALSE
-        })
-        
-        message(sprintf("   DEBUG66: %s - s4_exists final = %s", workflow_type, s4_exists))
-        
-        if (s4_exists) {
-          # S4 already created in design matrix step, skip to protein QC
-          logger::log_info("QC UI: S4 object exists from design matrix. Skipping S4 creation UI.")
-          message(sprintf("   DEBUG66: %s - Rendering single Protein QC tab", workflow_type))
-          shiny::tabsetPanel(
-            id = ns("qc_tabs_tmt"),
-            # Using mod_prot_qc_protein_ui (assuming it will be available)
-            shiny::tabPanel("Protein QC", mod_prot_qc_protein_ui(ns("protein_qc"), workflow_type = workflow_type))
-          )
-        } else {
-          # KIT-048: the protein-level design step commits protein_s4_initial on the owner; there is no in-GUI
-          # fallback creation any more. The Protein QC tab is shown and its steps wait for the state.
-          logger::log_warn("QC UI: protein_s4_initial not found; complete the design step first.")
-          shiny::tabsetPanel(
-            id = ns("qc_tabs_tmt"),
-            shiny::tabPanel("Protein QC", mod_prot_qc_protein_ui(ns("protein_qc"), workflow_type = workflow_type))
-          )
-        }
-      } else { # DIA (peptide-level workflow)
-        message(sprintf("   DEBUG66: %s - Rendering Peptide + Protein QC tabs", workflow_type))
-        # Define and return UI for peptide-based workflows
-        shiny::tabsetPanel(
-          id = ns("qc_tabs_lfq"),
-          # Using mod_prot_qc_peptide_ui and mod_prot_qc_protein_ui
-          shiny::tabPanel("Peptide QC", mod_prot_qc_peptide_ui(ns("peptide_qc"), workflowType = workflow_type)),
-          shiny::tabPanel("Protein QC", mod_prot_qc_protein_ui(ns("protein_qc"), workflow_type = workflow_type))
-        )
-      }
-    })
-    
-    # == Component Server Calls ==========================================
-    
-    # Call the appropriate sub-applet orchestrators based on workflow type
-    # This now waits for the qc_trigger from the design matrix step.
-    shiny::observeEvent(qc_trigger(), {
-      message("=== DEBUG66: mod_prot_qc_server observeEvent(qc_trigger) FIRED ===")
-      message(sprintf("   DEBUG66: qc_trigger() value = %s", qc_trigger()))
-      
-      shiny::req(qc_trigger() == TRUE) # Only run when trigger is explicitly set to TRUE
-      message("   DEBUG66: qc_trigger is TRUE, proceeding with module activation")
-      
-      workflow_type <- shiny::isolate(workflow_data$state_manager$workflow_type)
-      logger::log_info(paste("Main QC Applet: Routing for workflow type:", workflow_type))
-      message(sprintf("   DEBUG66: Isolated workflow_type = %s", workflow_type))
-      
-      if (workflow_type %in% c("DIA", "DIA_LIMPA")) { # KIT-046: both DIA-NN routes are peptide-level
-        message(sprintf("   DEBUG66: %s workflow - calling peptide and protein servers", workflow_type))
-        # The peptide applet orchestrator will handle all peptide-level steps
-        # Using mod_prot_qc_peptide_server
-        mod_prot_qc_peptide_server("peptide_qc", workflow_data, experiment_paths, omic_type, experiment_label)
-        message("   DEBUG66: mod_prot_qc_peptide_server called")
-        
-        # The protein applet orchestrator will handle all protein-level steps
-        # Using mod_prot_qc_protein_server
-        mod_prot_qc_protein_server("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
-        message("   DEBUG66: mod_prot_qc_protein_server called")
-        
-      } else if (workflow_type %in% c("TMT", "LFQ")) {
-        message(sprintf("   DEBUG66: %s workflow - checking S4 existence", workflow_type))
-        # Check if S4 object already exists from design matrix step
-        # Both TMT and LFQ are protein-level workflows that use "protein_s4_initial" state
-        s4_exists <- tryCatch({
-          exists <- "protein_s4_initial" %in% diaStateHistory(workflow_data$state_manager) # KIT-020/048: the head's history, no hydration
-          s4_obj <- if (exists) "protein_s4_initial" else NULL
-          message(sprintf("   DEBUG66: %s observeEvent - S4 exists = %s", workflow_type, exists))
-          exists
-        }, error = function(e) {
-          message(sprintf("   DEBUG66: %s observeEvent - Error checking S4: %s", workflow_type, e$message))
-          FALSE
-        })
-        
-        if (s4_exists) {
-          # S4 already created in design matrix step, go straight to protein QC
-          logger::log_info(sprintf("%s: S4 object exists from design matrix. Skipping S4 creation, starting protein QC.", workflow_type))
-          message(sprintf("   DEBUG66: %s - S4 exists, calling mod_prot_qc_protein_server only", workflow_type))
-          mod_prot_qc_protein_server("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
-          message(sprintf("   DEBUG66: %s - mod_prot_qc_protein_server called", workflow_type))
-        } else {
-          # KIT-048: no in-GUI S4 creation; the design step commits protein_s4_initial on the owner.
-          logger::log_warn(sprintf("%s: protein_s4_initial not found; complete the design step first.", workflow_type))
-          mod_prot_qc_protein_server("protein_qc", workflow_data, experiment_paths, omic_type, experiment_label)
-          message(sprintf("   DEBUG66: %s - mod_prot_qc_protein_server called", workflow_type))
-        }
-      }
-      message("=== DEBUG66: mod_prot_qc_server observeEvent complete ===")
-    }, ignoreNULL = TRUE, once = TRUE) # Run only once when triggered
-    
-    # Final step: update tab status when the final state is reached
-    shiny::observeEvent({
-      if (inherits(workflow_data$state_manager, "DIAStateAdapter")) {
-        workflow_data$state_update_trigger
-        if (hasDIAState(workflow_data$state_manager, "protein_replicate_filtered")) TRUE else NULL
-      } else {
-        workflow_data$state_manager$states$protein_replicate_filtered
-      }
-    }, {
-      # This observer is triggered when the final protein state is reached.
-      # It can be used to update the UI or perform final actions.
-      logger::log_info("Final protein state reached. Quality Control module is ready.")
-      completeProtQcWorkflowStatus(workflow_data)
-    })
-    
+  mod_omic_qc_server(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger,
+    config = omicGuiConfig("proteomics"))
+}
+
+#' One proteomics QC group's spec table on a route, from the configuration (KIT-104 D9): each tab on `route` as the
+#' group plugins read it, `list(id, title, uiFn, serverFn)` plus `needsExperimentPaths = TRUE` where the tab takes the
+#' experiment paths (the protein steps), in the configuration's order.
+#' @param group_id The group's id (`peptide_qc`, `protein_qc`).
+#' @param route The route whose tabs are listed.
+#' @return A list of module specs (`getProtQc{Peptide,Protein}ModuleSpecs`).
+#' @noRd
+protQcModuleSpecs <- function(group_id, route) {
+  groups <- omicGuiConfig("proteomics")$qc$groups
+  group <- Filter(function(group) identical(group$id, group_id), groups)[[1L]]
+  tabs <- Filter(function(tab) route %in% tab$routes, group$tabs)
+  lapply(tabs, function(tab) {
+    c(list(id = tab$id, title = tab$title, uiFn = paste0("mod_", tab$component, "_ui"),
+      serverFn = paste0("mod_", tab$component, "_server")),
+      if (isTRUE(tab$needs_paths)) list(needsExperimentPaths = TRUE))
   })
 }

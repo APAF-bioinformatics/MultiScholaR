@@ -1,0 +1,33 @@
+KIT-104 W7 dependents grep (2026-11-08), across R/, tests/, tools/ (excluding tools/refactor/) and inst/.
+
+Deleted files: none. Deleted function names: none. Every name in R/mod_prot_qc.R, R/mod_prot_qc_peptide.R and
+R/mod_prot_qc_protein.R at 827f2328 is kept with its signature: mod_prot_qc_ui, mod_prot_qc_server,
+completeProtQcWorkflowStatus, the group plugins mod_prot_qc_{peptide,protein}_{ui,server},
+getProtQcPeptideModuleSpecs, getProtQcProteinModuleSpecs, getProtQcProteinRollupModuleSpec,
+getProtQcProteinCommonModuleSpecs, buildProtQc{Peptide,Protein}Tab, runProtQc{Peptide,Protein}Submodule.
+New: protQcModuleSpecs (mod_prot_qc.R), the spec tables built from omicGuiConfig("proteomics")$qc$groups.
+Removed: the coordinator body of mod_prot_qc_server (its renderUI, start and completion observers, now the shared
+shell's) and its 22 DEBUG66 messages (0 left in the three files; the other DEBUG66 lines in R/ are untouched and are
+not QC's).
+
+Callers of the changed names (grep -E 'mod_prot_qc_server|mod_prot_qc_ui|completeProtQcWorkflowStatus|
+getProtQc(Peptide|Protein)ModuleSpecs|getProtQcProtein(Rollup|Common)ModuleSpec|buildProtQc(Peptide|Protein)Tab|
+runProtQc(Peptide|Protein)Submodule|protQcModuleSpecs|qualityControlAppletModule'), each run (targeted.txt):
+  R/mod_omic_qc.R (completeProtQcWorkflowStatus), R/mod_prot_qc_protein_replicate.R (completeQcStatusFn default),
+  R/utils_omic_gui_config.R (comments)
+  tests/testthat/helper-gui-entry.R:667-668 (the entry steps from the spec getters)   -> test-gui-entry-proteomics.R
+  tests/testthat/test-module-ci-prot-dia-limpa.R                                      33/0/0/2
+  tests/testthat/test-module-ui-wrapper-direct-shared.R                               45/0/0/0
+  tests/testthat/test-omic-gui-config.R                                               765/0/0/0
+  tests/testthat/test-omic-qc-module.R                                                117/0/0/3
+  tests/testthat/test-perf107-audit.R (unchanged)                                     191/0/0/1
+  tests/testthat/test-prot-02b-qc-peptide-module-contracts.R (namespace guard)        586/0/0/15
+  tests/testthat/test-prot-02c-qc-protein-module-contracts.R (namespace guard)        407/0/0/23
+  tests/testthat/test-prot-qc-coordinator-direct-shared.R                             4/0/0/3 (Q-80, 3 blocks)
+  tests/testthat/test-workflow-server-shared.R, test-workflow-ui-shared.R (stubs)    204/0/0/0, 178/0/0/0
+
+Readers of the coordinator's own log and message texts ("Skipping S4 creation UI", "protein_s4_initial not found",
+"Main QC Applet: Routing for workflow type", "Final protein state reached", the DEBUG66 texts): only the three
+test-prot-qc-coordinator-direct-shared.R blocks quarantined under Q-80. No tools/ or inst/ reader.
+Unchanged at 827f2328: R/app_ui.R, R/app_server.R, NAMESPACE, R/mod_omic_workflow.R, tools/profiling, DESCRIPTION,
+tests/testthat/test-perf107-audit.R.

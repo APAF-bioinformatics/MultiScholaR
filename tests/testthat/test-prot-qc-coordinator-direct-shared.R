@@ -109,6 +109,7 @@ localQcServerMocks <- function(captured, .local_envir = parent.frame()) {
 }
 
 test_that("proteomics QC coordinator preserves the TMT existing-S4 routing path", {
+  testthat::skip("quarantined: Q-80 (KIT-104 W7) it reads the log lines of the deleted proteomics QC coordinator (mod_prot_qc_server's own routing and S4 checks); mod_prot_qc_server is a wrapper over the shared shell, whose routing, tabsets, group starts and completion are covered by test-omic-qc-module.R (b), the W5 and W7 blocks, test-perf107-audit.R and the five proteomics entry lanes")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
@@ -194,6 +195,7 @@ test_that("proteomics QC completion helper advances workflow status for normaliz
 })
 
 test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path", {
+  testthat::skip("quarantined: Q-80 (KIT-104 W7) it reads the log lines of the deleted proteomics QC coordinator (mod_prot_qc_server's own routing and S4 checks); mod_prot_qc_server is a wrapper over the shared shell, whose routing, tabsets, group starts and completion are covered by test-omic-qc-module.R (b), the W5 and W7 blocks, test-perf107-audit.R and the five proteomics entry lanes")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
@@ -244,6 +246,7 @@ test_that("proteomics QC coordinator preserves the TMT missing-S4 fallback path"
 })
 
 test_that("proteomics QC coordinator preserves the DIA peptide-plus-protein routing path", {
+  testthat::skip("quarantined: Q-80 (KIT-104 W7) it reads the log lines of the deleted proteomics QC coordinator (mod_prot_qc_server's own routing and S4 checks); mod_prot_qc_server is a wrapper over the shared shell, whose routing, tabsets, group starts and completion are covered by test-omic-qc-module.R (b), the W5 and W7 blocks, test-perf107-audit.R and the five proteomics entry lanes")
   captured <- new.env(parent = emptyenv())
   captured$logs <- character()
   captured$calls <- list()
