@@ -1,0 +1,15 @@
+# KIT-106: controller phase peaks (GiB) for the da phase, KIT-110 then KIT-106. A rise above 10% would be a finding.
+a da 0.872 0.873 +0.1%
+b da 0.816 0.829 +1.6%
+c da 0.566 0.566 -0.1%
+m da 0.917 0.896 -2.4%
+l da 0.661 0.662 +0.1%
+t da 0.659 0.663 +0.6%
+DECISION every da phase within +10% of KIT-110
+# Dispatches against KIT-110 (stage summaries): every journey's dispatch set is identical. 106a lipid_volcano_page 1/1 and 106b metab_volcano_page 1/1 prove D10's driver tick; c, m, l and t have no page.
+a identical {'lipid_volcano_page': {'requests': 1, 'complete': 1}}
+b identical {'metab_volcano_page': {'requests': 1, 'complete': 1}}
+c identical 
+m identical 
+l identical 
+t identical 
