@@ -1,0 +1,180 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-110",
+  "stage": "kit110-kit-journey-110t",
+  "date": "2026-11-09",
+  "dispatches": {
+    "da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_accession_cleanup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_duplicate_removal": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_replicate_filter": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 1204207616,
+    "phase_peak_anon_bytes": {
+      "import": 566079488,
+      "design": 578449408,
+      "accession": 672706560,
+      "protein_intensity": 678895616,
+      "duplicates": 681811968,
+      "protein_replicate": 681844736,
+      "normalisation_ruv": 1204207616,
+      "correlation": 1118334976,
+      "session_export": 708816896,
+      "da": 707100672,
+      "report": 754208768
+    }
+  },
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "protein",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "tmt_fixture",
+    "build": "95a095e9728389819cd07d959185a4715e640105c2ec458cdbe0fc1c1443b5d2",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 119.959999999992,
+    "peak_bytes": 1884033024,
+    "peak_anon_bytes": 1825615872,
+    "resident_end_bytes": 1092407296,
+    "phase_seconds": {
+      "import": 5.61999999999534,
+      "design": 9.59999999999127,
+      "accession": 8.43000000000757,
+      "protein_intensity": 7.86000000000058,
+      "duplicates": 6.08999999999651,
+      "protein_replicate": 7.11000000000058,
+      "normalisation_ruv": 24.7100000000064,
+      "correlation": 5.59000000001106,
+      "session_export": 2.05999999999767,
+      "da": 12.8199999999924,
+      "report": 1.80999999999767
+    },
+    "phase_peak_anon_bytes": {
+      "import": 933707776,
+      "design": 946077696,
+      "accession": 1334300672,
+      "protein_intensity": 1363972096,
+      "duplicates": 1370656768,
+      "protein_replicate": 1376923648,
+      "normalisation_ruv": 1575014400,
+      "correlation": 1489141760,
+      "session_export": 1079623680,
+      "da": 1825615872,
+      "report": 1125015552
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.0600000000122236,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process tmt101_fixture_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "4bf79d9642088ac97876aa127be0c88457aaad411189b77dddcd1330680b83ed",
+        "rows": null
+      },
+      "design": {
+        "state": "protein_s4_initial",
+        "entity_id": "701c8f50ebd9132653fa24fe310c06d02b3e980a75fc2606ebcac71e64c0b194",
+        "rows": 5
+      },
+      "accession": {
+        "state": "protein_accession_cleaned",
+        "entity_id": "375993a85f6e84f7d122d35ad642442dd75a4765bb6413a15b0985d1ecda35a4",
+        "rows": 5
+      },
+      "protein_intensity": {
+        "state": "protein_intensity_filtered",
+        "entity_id": "7f8a263f1aae927aeff9ef83f711bc8e660a8dc22dfd008e5d5ebd37e8253f5a",
+        "rows": 4
+      },
+      "duplicates": {
+        "state": "duplicates_removed",
+        "entity_id": "0567be1af16b401082fabd9650ff228a8f8c4acdd0cf389d0a62071fc0659a11",
+        "rows": 4
+      },
+      "protein_replicate": {
+        "state": "protein_replicate_filtered",
+        "entity_id": "d56beba5625325d5a621274f18e0b1c1275cca878cca4d9c4aff2fd3df718ff6",
+        "rows": 4
+      },
+      "normalisation_ruv": {
+        "state": "normalized",
+        "entity_id": "7cc27657a368e82354726c8857d7cddd49183641e1916aa78b0b870b943ce37f",
+        "rows": 4
+      },
+      "correlation": {
+        "state": "correlation_filtered",
+        "entity_id": "9ef9f628ba2511aa1e72ef978126e2a4fa35176c522db8e2fd8d72f4db0bcd78",
+        "rows": 4
+      },
+      "session_export": {
+        "state": "correlation_filtered",
+        "entity_id": "9ef9f628ba2511aa1e72ef978126e2a4fa35176c522db8e2fd8d72f4db0bcd78",
+        "rows": 4
+      },
+      "da": {
+        "state": "correlation_filtered",
+        "entity_id": "13cc3ef55f8d3e54eccb7dbe6e9f253d5fdcc66c3427d70d77a45c7e2fbcb09c",
+        "rows": 4
+      },
+      "report": {
+        "state": "correlation_filtered",
+        "entity_id": "13cc3ef55f8d3e54eccb7dbe6e9f253d5fdcc66c3427d70d77a45c7e2fbcb09c",
+        "rows": 4
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 255,
+    "failure": null
+  }
+}
