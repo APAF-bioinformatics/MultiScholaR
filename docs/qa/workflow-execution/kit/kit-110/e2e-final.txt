@@ -1,0 +1,9 @@
+# KIT-110 e2e lanes at c1079dc7 on browser-smoke.r5uUT0 2026-11-09T00:24:06+11:00
+COUNTS test-e2e-lipidomics-canonical.R pass 88 fail 0 error 0 skip 0 exit 0 wall 74s
+COUNTS test-e2e-metabolomics-lc-gc.R pass 190 fail 0 error 0 skip 0 exit 0 wall 185s
+COUNTS test-e2e-transcriptomics-screen.R pass 14 fail 0 error 0 skip 0 exit 0 wall 51s
+COUNTS test-e2e-proteomics-dia.R pass 42 fail 0 error 0 skip 0 exit 0 wall 167s
+COUNTS test-e2e-proteomics-dia-limpa.R pass 79 fail 0 error 0 skip 0 exit 0 wall 123s
+COUNTS test-e2e-proteomics-enrichment.R pass 98 fail 0 error 0 skip 0 exit 0 wall 340s
+COUNTS test-e2e-proteomics-tmt-lfq.R pass 153 fail 0 error 0 skip 0 exit 0 wall 179s
+DONE
