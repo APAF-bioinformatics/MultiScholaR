@@ -378,6 +378,7 @@ Collate:
     'utils_workflow_prot_declarations.R'
     'utils_workflow_dia_relational_rollup.R'
     'utils_workflow_dia_products.R'
+    'utils_workflow_dia_norm.R'
     'utils_workflow_dia_da.R'
     'utils_workflow_omics_declarations.R'
     'utils_workflow_omics_figures.R'
