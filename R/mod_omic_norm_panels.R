@@ -19,9 +19,10 @@
 # mod_lipid_norm_runtime_helpers.R and mod_lipid_norm_observer_helpers.R; deleted by W4): the
 # option sections of `config$norm$panels`, the QC tabset with its stage grid, the correlation-filter
 # tab, and the renderers and registrars of the tab's outputs. The shared frame (mod_omic_norm.R)
-# assembles them; trx's normalisation server (mod_transcriptomics' profile, KIT-110) registers the
-# grid, log and RUV renderers. Ids, texts and markup are the lipid tab's, byte for byte. Recorded
-# divergence from conventions/R-shiny.md: the wellPanel layout is kept (existing-code scope rule).
+# assembles them. Ids, texts and markup are the lipid tab's, byte for byte; KIT-110 added trx's
+# TMM/logCPM and RUV grid sections and the reset's optional test id, trx's markup byte for byte.
+# Recorded divergence from conventions/R-shiny.md: the wellPanel layout is kept (existing-code
+# scope rule).
 
 # ------------------------------------------------------------------------------------------------
 # The option sections (column 3).
@@ -33,13 +34,13 @@ omicNormDesignSelect <- function(ns, id, label) {
     shiny::selectInput(ns(id), label, choices = c("group", "factor1", "factor2", "batch"), selected = "group", width = "100%")
 }
 
-#' The option sections, by section id: each a list of tags in the well panel (mod_lipid_norm_ui_helpers.R:6-261 at
-#' f8d4c5fc). `norm` is the omic's `norm` group.
+#' The option sections `norm$panels` names, in its order: each a list of tags in the well panel
+#' (mod_lipid_norm_ui_helpers.R:6-261 at f8d4c5fc; KIT-110: trx's `tmm_logcpm` and `ruv_grid`, mod_trx_norm.R:26-47 at
+#' 38d9d25e). Only the named sections are built. `norm` is the omic's `norm` group.
 #' @noRd
 omicNormOptionSections <- function(ns, norm) {
     panels <- norm$panels
-    noun <- panels$ruv_iii$noun
-    list(
+    section <- function(name) switch(name,
         aesthetics = list(shiny::hr(), shiny::h5("Plot Aesthetics"), omicNormDesignSelect(ns, "color_variable", "Color by:"),
             shiny::helpText("Variable to use for plot coloring"), omicNormDesignSelect(ns, "shape_variable", "Shape by:"),
             shiny::helpText("Variable to use for plot shapes")),
@@ -57,17 +58,54 @@ omicNormOptionSections <- function(ns, norm) {
             testid(shiny::selectInput(ns("norm_method"), "Normalization Method:", choices = panels$between_sample$methods,
                 selected = panels$between_sample$default, width = "100%"), norm$testids[["method"]]),
             shiny::helpText("Method for between-sample normalization")),
+        tmm_logcpm = list(shiny::hr(), shiny::h4("TMM and logCPM"),
+            shiny::helpText("edgeR TMM normalisation factors of the filtered counts; log2 counts per million with a prior count of 2.")),
         ruv_iii = omicNormRuvSection(ns, panels$ruv_iii, norm$testids[["ruv_mode"]]),
+        ruv_grid = omicNormRuvGridSection(ns, panels$ruv_grid, norm$testids[["ruv_mode"]]),
         actions = list(shiny::hr(),
             testid(shiny::actionButton(ns("run_normalization"), "Run Normalization Pipeline", class = "btn-primary", width = "100%",
                 icon = shiny::icon("play")), norm$testids[["run"]]),
             shiny::br(), shiny::br(),
-            shiny::actionButton(ns("reset_normalization"), "Reset to Pre-Normalization", class = "btn-warning", width = "100%",
-                icon = shiny::icon("undo"))),
+            omicNormResetButton(ns, if ("reset" %in% names(norm$testids)) norm$testids[["reset"]])),
         export = list(shiny::br(), shiny::br(),
             testid(shiny::actionButton(ns(panels$export$button), "Export Normalized Data", class = "btn-success", width = "100%",
                 icon = shiny::icon("download")), norm$testids[["export"]]),
             shiny::helpText("Save normalized data for later analysis")))
+    lapply(stats::setNames(names(panels), names(panels)), section)
+}
+
+#' The reset button, with its test id when the omic has one (KIT-110: trx's; lipid and metab have none).
+#' @noRd
+omicNormResetButton <- function(ns, testId = NULL) {
+    button <- shiny::actionButton(ns("reset_normalization"), "Reset to Pre-Normalization", class = "btn-warning", width = "100%",
+        icon = shiny::icon("undo"))
+    if (is.null(testId)) button else testid(button, testId)
+}
+
+#' The RUV grid section (KIT-110, trx; mod_trx_norm.R:26-47 at 38d9d25e): RUVs' modes, and the automatic grid's and the
+#' manual run's inputs with the grid's values. The input bounds and help texts are trx's, literal.
+#' @noRd
+omicNormRuvGridSection <- function(ns, grid, testId) {
+    automatic <- shiny::conditionalPanel(condition = "input.ruv_mode == 'automatic'", ns = ns,
+        shiny::h5("Automatic Optimization Parameters"),
+        shiny::fluidRow(shiny::column(4, shiny::numericInput(ns("auto_percentage_min"), "Min %:", value = grid$percentage_min, min = 1, max = 50, width = "100%")),
+            shiny::column(4, shiny::numericInput(ns("auto_percentage_max"), "Max %:", value = grid$percentage_max, min = 1, max = 50, width = "100%")),
+            shiny::column(4, shiny::numericInput(ns("auto_percentage_step"), "Step %:", value = grid$percentage_step, min = 1, max = 25, width = "100%"))),
+        shiny::numericInput(ns("k_penalty_weight"), "K Value Penalty Weight:", value = grid$k_penalty_weight, min = 0, max = 0.9, step = 0.01,
+            width = "100%"),
+        shiny::helpText("The notebook's grid: 5 to 30 % by 5, k capped at 3 below 15 samples and 4 otherwise, penalty 0.05; the",
+            "percentage and k with the maximum composite score are chosen."))
+    manual <- shiny::conditionalPanel(condition = "input.ruv_mode == 'manual'", ns = ns,
+        shiny::sliderInput(ns("ruv_percentage"), "% Genes as Inferred Negative Controls:", min = 1, max = 50, value = grid$percentage, step = 1,
+            width = "100%"),
+        shiny::numericInput(ns("ruv_k"), "Number of Factors (k):", value = grid$k, min = 1, max = 4, width = "100%"),
+        shiny::helpText("k must not exceed the cap (3 below 15 samples, 4 otherwise); a larger k is refused."))
+    list(shiny::hr(), shiny::h4("RUVs (RUVSeq)"),
+        testid(shiny::radioButtons(ns("ruv_mode"), "RUV Parameter Tuning:", choices = grid$modes, selected = grid$default,
+            width = "100%"), testId),
+        shiny::helpText("RUVs uses inferred negative controls (the least significant genes in a preliminary group GLM). Its factors",
+            "W_1..W_k enter the DA model as covariates; the RUVs-corrected logCPM is for display only."),
+        automatic, manual)
 }
 
 #' The RUV-III section: the modes, the grouping, and the automatic, manual and skip panels
@@ -110,12 +148,10 @@ omicNormRuvSection <- function(ns, ruv, testId) {
             shiny::br()))
 }
 
-#' The options column: `norm$panels`' sections in their order, or a panel function's column (KIT-097: an omic profile's
-#' `norm_options(ns)`).
+#' The options column: `norm$panels`' sections in their order.
 #' @noRd
 omicNormOptionsColumn <- function(ns, norm) {
-    if (is.function(norm$panels)) return(norm$panels(ns))
-    sections <- omicNormOptionSections(ns, norm)[names(norm$panels)]
+    sections <- omicNormOptionSections(ns, norm)
     shiny::column(3, do.call(shiny::wellPanel, c(list(shiny::h4("Normalization Options")), do.call(c, unname(sections)))))
 }
 
@@ -141,7 +177,7 @@ omicNormStageRows <- function(ns, kind, labels, assays) {
 
 #' The QC tabset `norm_qc_tabs`: the tabs of `view$plot_tabs` in their order, the stage grid of `view$assay_slots` rows
 #' with `view$stage_labels`, and the RUV tab's `view$ruv_heading` and `view$ruv_help` (mod_lipid_norm_ui_helpers.R:285-307
-#' at f8d4c5fc). `view` is the omic's `norm` group, or the trx profile's values (KIT-097, KIT-110).
+#' at f8d4c5fc). `view` is the omic's `norm` group.
 #' @noRd
 omicNormQcTabset <- function(ns, view) {
     assays <- seq_len(view$assay_slots)
@@ -224,12 +260,12 @@ omicNormPlotAestheticsGetter <- function(input) {
 }
 
 # ------------------------------------------------------------------------------------------------
-# The stage grid's renderers and registrars (trx registers them too, mod_trx_norm.R).
+# The stage grid's renderers and registrars (with an omic's file stem and stage prefixes: trx's, KIT-110).
 # ------------------------------------------------------------------------------------------------
 
 #' An image slot's renderer factory: `function(assaySlot, plotType, stagePrefix)` gives the renderImage of
 #' `<sanitised assay>_<stagePrefix>_<plotType>.png` in `experimentPaths[[qcDirKey]]`.
-#' @param sanitizeAssayNameFn The file stem of an assay name (trx: `trx`).
+#' @param sanitizeAssayNameFn The file stem of an assay name (trx: `trx`, its `norm$image_stem`).
 #' @param qcDirKey The QC directory's key in `experimentPaths`.
 #' @noRd
 omicNormQcImageRenderer <- function(normData, experimentPaths,
@@ -256,7 +292,7 @@ omicNormQcImageRenderer <- function(normData, experimentPaths,
 
 #' The stage grid's image slots `<kind>_<post_filter|post_norm|ruv_corrected>_assay<n>`, for `assaySlots` assays, each the
 #' renderer of its assay, kind and stage file prefix.
-#' @param stagePrefixes The file prefix of each stage (KIT-097: trx's `raw`, `tmm`, `ruvs`).
+#' @param stagePrefixes The file prefix of each stage (KIT-097: trx's `raw`, `tmm`, `ruvs`, its `norm$stage_prefixes`).
 #' @noRd
 registerOmicNormQcImageOutputs <- function(output, renderQcImageForAssay,
     stagePrefixes = c(pre_norm = "pre_norm", post_norm = "post_norm", ruv_corrected = "ruv_corrected"), assaySlots = 2L) {

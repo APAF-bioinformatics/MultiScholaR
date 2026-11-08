@@ -6,9 +6,8 @@
 #' @importFrom purrr imap map walk set_names
 #' @importFrom DT renderDataTable datatable formatStyle styleEqual
 mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL, profile = NULL) {
-    # KIT-097: an omic profile's normalisation sequence, on the lipid tab's panels and renderers.
-    if (!is.null(profile)) return(profile$norm_server(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab))
-    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R) under the lipid configuration.
+    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R). KIT-110 D1: `profile` only selects the omic's
+    # configuration (trx: `trxOmicProfile()`); NULL is lipidomics.
     mod_omic_norm_server(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab,
-        config = omicGuiConfig("lipidomics")$norm)
+        config = omicGuiConfig(profile$omic_type %||% "lipidomics")$norm)
 }

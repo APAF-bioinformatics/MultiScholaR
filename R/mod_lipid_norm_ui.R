@@ -15,16 +15,7 @@ NULL
 #' @importFrom shinyjqui jqui_resizable
 #' @importFrom DT dataTableOutput
 mod_lipid_norm_ui <- function(id, profile = NULL) {
-    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R) under the lipid configuration.
-    norm <- omicGuiConfig("lipidomics")$norm
-    if (is.null(profile)) return(mod_omic_norm_ui(id, norm))
-    # KIT-097 (KIT-105 D4, until KIT-110): the profile's options panel, and the frame's tabset with the profile's tabs, stage
-    # captions and RUV texts, one assay row.
-    norm$panels <- profile$norm_options
-    norm$plot_tabs <- profile$norm_tabs %||% norm$plot_tabs
-    norm$stage_labels <- profile$norm_stage_labels %||% norm$stage_labels
-    norm$assay_slots <- 1L
-    norm$ruv_heading <- profile$norm_ruv_heading %||% norm$ruv_heading
-    norm$ruv_help <- profile$norm_ruv_help %||% norm$ruv_help
-    mod_omic_norm_ui(id, norm)
+    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R). KIT-110 D1: `profile` only selects the omic's
+    # configuration (trx: `trxOmicProfile()`); NULL is lipidomics.
+    mod_omic_norm_ui(id, omicGuiConfig(profile$omic_type %||% "lipidomics")$norm)
 }

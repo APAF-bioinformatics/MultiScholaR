@@ -175,7 +175,8 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         # KIT-105 W1: the norm group (lipid and metab: the managed run and correlation and the ITSD
         # selection table; the in-process twins and the export's collector and saver from W6).
         norm_files <- as.character(unlist(lapply(guiConfigFunctions(config$norm), utils::getSrcFilename)))
-        if (omic %in% c("lipidomics", "metabolomics")) expect_gt(length(norm_files), 0L)
+        # KIT-110 W3: trx's too (its run and reset handlers, utils_workflow_trx_norm.R).
+        if (omic %in% c("lipidomics", "metabolomics", "transcriptomics")) expect_gt(length(norm_files), 0L)
         expect_false(any(startsWith(norm_files, "mod_")), info = paste(omic, "norm"))
     }
 })
@@ -784,8 +785,8 @@ test_that("each qc field, required or conditional, is refused by class when miss
 })
 
 # ------------------------------------------------------------------------------------------------
-# KIT-105 W1: the norm group (kit-101 design 4.7) for lipid and metab; NULL for trx (KIT-110) and
-# proteomics (KIT-111).
+# KIT-105 W1: the norm group (kit-101 design 4.7) for lipid and metab; NULL for proteomics
+# (KIT-111). KIT-110 W3: trx's group (its own blocks below).
 # ------------------------------------------------------------------------------------------------
 
 guiConfigNormRequired <- c("module_id", "panels", "plot_tabs", "stage_labels", "assay_slots", "ruv_heading",
@@ -801,12 +802,13 @@ guiConfigNormWired <- c(run.in_process = "runWorkflowOmicsInProcessNormalisation
     correlation.in_process = "runWorkflowOmicsInProcessCorrelation", export.collect = "collectWorkflowOmicsNormSession",
     export.save = "saveWorkflowOmicsNormSessionArtifacts")
 
-test_that("the norm group holds today's values for lipid and metab and is NULL for trx and proteomics", {
+test_that("the norm group holds today's values for lipid and metab, trx has one (KIT-110) and proteomics' is NULL", {
     configs <- lapply(stats::setNames(guiConfigOmics, guiConfigOmics), omicGuiConfig)
-    for (omic in c("proteomics", "transcriptomics")) {
-        expect_true("norm" %in% names(configs[[omic]]), info = omic)
-        expect_null(configs[[omic]]$norm, info = omic)
-    }
+    expect_true("norm" %in% names(configs$proteomics))
+    expect_null(configs$proteomics$norm)
+    # KIT-110 W3: trx's group is no longer NULL, and it validates.
+    expect_false(is.null(configs$transcriptomics$norm))
+    expect_identical(validateOmicGuiConfig(configs$transcriptomics), configs$transcriptomics)
     lipid <- configs$lipidomics$norm
     metab <- configs$metabolomics$norm
     for (omic in c("lipidomics", "metabolomics")) {
@@ -999,4 +1001,142 @@ test_that("each norm field, required or conditional, is refused by class when mi
     bad <- lipid
     bad$norm$itsd_table <- "buildLipidItsdSelectionTable"
     expectGuiConfigRefused(bad, "norm$itsd_table")
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-110 W3: trx's norm group (D2, D4, D7) and the validator's per-tab and per-panel fields (D8).
+# ------------------------------------------------------------------------------------------------
+
+# D8: the fields required only with the tab that uses them, and the test ids by panel.
+guiConfigNormByTab <- list(itsd = "itsd_table",
+    correlation_filter = c("correlation", "skip_correlation_flags", "final_pca", "managed_correlation_notify"))
+guiConfigNormTestidPanels <- list(method = "between_sample", ruv_mode = c("ruv_iii", "ruv_grid"), export = "export")
+
+test_that("KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e)", {
+    norm <- omicGuiConfig("transcriptomics")$norm
+    expect_identical(norm$module_id, "norm")
+    # D2: TMM/logCPM, the RUV grid and the actions; the grid's defaults (mod_trx_norm.R:26-47).
+    expect_identical(names(norm$panels), c("tmm_logcpm", "ruv_grid", "actions"))
+    expect_identical(norm$panels$tmm_logcpm, list())
+    expect_identical(norm$panels$ruv_grid, list(modes = c("Automatic (recommended)" = "automatic",
+        "Manual (advanced users)" = "manual"), default = "automatic", percentage_min = 5, percentage_max = 30,
+        percentage_step = 5, k_penalty_weight = 0.05, percentage = 10, k = 2))
+    expect_identical(norm$panels$actions, list())
+    # The profile's tabs, captions and RUV texts (mod_transcriptomics.R:48-52), one assay row.
+    expect_identical(norm$plot_tabs, c("ruv", "pca", "rle", "log"))
+    expect_identical(norm$stage_labels, c("Raw logCPM", "TMM logCPM", "RUVs-corrected logCPM (display only)"))
+    expect_identical(norm$assay_slots, 1L)
+    expect_identical(norm$ruv_heading, "RUVs Control Selection (canonical correlation)")
+    expect_identical(norm$ruv_help, paste("The CCA panels and the grid of percentages: the controls are inferred negative",
+        "controls (the least significant genes in a preliminary group GLM)."))
+    # D4: trx's own handlers, the core's.
+    expect_identical(norm$run, list(managed = runTrxNormManaged, in_process = runTrxNormInProcess,
+        settings = trxNormGridParameters, handler = runTrxNormalisation))
+    expect_identical(norm$reset, resetTrxNormalisation)
+    # D3, D7: the fixed assay, the image stem, the stage prefixes, the registered rows (P-21), no pre-QC on entry.
+    expect_false(norm$pre_qc_on_entry)
+    expect_identical(norm$assay_names, "counts")
+    expect_identical(norm$image_stem, "trx")
+    expect_identical(norm$stage_prefixes, c(pre_norm = "raw", post_norm = "tmm", ruv_corrected = "ruvs"))
+    expect_identical(norm$output_assay_slots, 2L)
+    expect_identical(norm$testids, c(ruv_mode = "trx-norm-ruv-mode", run = "trx-norm-run", reset = "trx-norm-reset"))
+    # No tab or panel needs the rest.
+    expect_identical(intersect(c("correlation", "export", "itsd_table", "final_pca", "skip_correlation_flags",
+        "managed_correlation_notify"), names(norm)), character())
+})
+
+test_that("KIT-110 W3 (D8): the validator requires a norm field with the tab or panel that uses it", {
+    trx <- omicGuiConfig("transcriptomics")
+    lipid <- omicGuiConfig("lipidomics")
+    # Always required, for trx too.
+    for (field in c("module_id", "panels", "plot_tabs", "stage_labels", "assay_slots", "ruv_heading", "ruv_help", "run",
+        "pre_qc_on_entry", "testids")) {
+        removed <- trx
+        removed$norm[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$", field))
+    }
+    for (field in c("managed", "in_process")) {
+        removed <- trx
+        removed$norm$run[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$run$", field))
+    }
+    removed <- trx
+    removed$norm$testids <- removed$norm$testids[names(removed$norm$testids) != "run"]
+    expectGuiConfigRefused(removed, "norm$testids$run")
+    # Each conditional field is refused when its tab is present (lipid; trx with the tab added), and trx validates
+    # without it.
+    for (tab in names(guiConfigNormByTab)) {
+        for (field in guiConfigNormByTab[[tab]]) {
+            expect_false(field %in% names(trx$norm), info = field)
+            removed <- lipid
+            removed$norm[[field]] <- NULL
+            expectGuiConfigRefused(removed, paste0("norm$", field))
+            # Trx with the tab added and the tab's other fields (lipid's values): this one is refused.
+            with_tab <- trx
+            with_tab$norm$plot_tabs <- intersect(c("itsd", "ruv", "pca", "rle", "correlation_filter", "log"),
+                c(trx$norm$plot_tabs, tab))
+            others <- setdiff(guiConfigNormByTab[[tab]], field)
+            with_tab$norm[others] <- lipid$norm[others]
+            expectGuiConfigRefused(with_tab, paste0("norm$", field))
+            with_tab$norm[field] <- lipid$norm[field]
+            expect_identical(validateOmicGuiConfig(with_tab), with_tab, info = field)
+        }
+    }
+    with_export <- trx
+    with_export$norm$panels$export <- list(button = "export_session")
+    with_export$norm$testids[["export"]] <- "trx-norm-export-session"
+    expectGuiConfigRefused(with_export, "norm$export")
+    # The test ids by panel: method with between_sample, ruv_mode with ruv_iii or ruv_grid, export with export.
+    for (id in names(guiConfigNormTestidPanels)) {
+        removed <- lipid
+        removed$norm$testids <- removed$norm$testids[names(removed$norm$testids) != id]
+        expectGuiConfigRefused(removed, paste0("norm$testids$", id))
+    }
+    removed <- trx
+    removed$norm$testids <- removed$norm$testids[names(removed$norm$testids) != "ruv_mode"]
+    expectGuiConfigRefused(removed, "norm$testids$ruv_mode")
+    # The optional fields, checked by type when present.
+    optional <- list(c("run", "settings"), c("run", "handler"), "reset", "assay_names", "image_stem", "stage_prefixes",
+        "output_assay_slots")
+    for (path in optional) {
+        removed <- trx
+        mistyped <- trx
+        if (length(path) == 2L) {
+            removed$norm[[path[[1L]]]][[path[[2L]]]] <- NULL
+            mistyped$norm[[path[[1L]]]][path[[2L]]] <- list(NA)
+        } else {
+            removed$norm[[path]] <- NULL
+            mistyped$norm[path] <- list(NA)
+        }
+        expect_identical(validateOmicGuiConfig(removed), removed, info = paste(path, collapse = "$"))
+        expectGuiConfigRefused(mistyped, paste0("norm$", paste(path, collapse = "$")))
+    }
+    bad <- trx
+    bad$norm$image_stem <- c("trx", "counts")
+    expectGuiConfigRefused(bad, "norm$image_stem")
+    bad <- trx
+    bad$norm$output_assay_slots <- 1.5
+    expectGuiConfigRefused(bad, "norm$output_assay_slots")
+    bad <- trx
+    bad$norm$stage_prefixes <- c(raw = "raw", tmm = "tmm", ruvs = "ruvs")
+    expectGuiConfigRefused(bad, "norm$stage_prefixes")
+    bad <- trx
+    bad$norm$testids[["reset"]] <- ""
+    expectGuiConfigRefused(bad, "norm$testids$reset")
+    removed <- trx
+    removed$norm$testids <- removed$norm$testids[names(removed$norm$testids) != "reset"]
+    expect_identical(validateOmicGuiConfig(removed), removed)
+    # The two new option sections: each of the grid's options; the default among its modes; the library's order.
+    for (option in c("modes", "default", "percentage_min", "percentage_max", "percentage_step", "k_penalty_weight",
+        "percentage", "k")) {
+        removed <- trx
+        removed$norm$panels$ruv_grid[[option]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$panels$ruv_grid$", option))
+    }
+    bad <- trx
+    bad$norm$panels$ruv_grid$default <- "skip"
+    expectGuiConfigRefused(bad, "norm$panels$ruv_grid$default")
+    bad <- trx
+    bad$norm$panels <- bad$norm$panels[c("ruv_grid", "tmm_logcpm", "actions")]
+    expectGuiConfigRefused(bad, "norm$panels")
 })

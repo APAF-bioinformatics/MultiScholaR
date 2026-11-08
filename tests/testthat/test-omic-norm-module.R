@@ -1638,9 +1638,11 @@ test_that("F105-01: each lipid QC image slot and assay label shows its own assay
 test_that("W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R", {
     expect_true("mod_omic_norm_ui" %in% all.names(body(mod_lipid_norm_ui)))
     expect_true("mod_omic_norm_server" %in% all.names(body(mod_lipid_norm_server)))
-    # D4: the trx profile's branches stay (KIT-110).
-    expect_true("norm_options" %in% all.names(body(mod_lipid_norm_ui)))
-    expect_true("norm_server" %in% all.names(body(mod_lipid_norm_server)))
+    # KIT-110 W3 (D1): the wrappers hold no profile branch; `profile` only selects the omic's configuration.
+    expect_false("norm_options" %in% all.names(body(mod_lipid_norm_ui)))
+    expect_false("norm_server" %in% all.names(body(mod_lipid_norm_server)))
+    expect_true("omicGuiConfig" %in% all.names(body(mod_lipid_norm_ui)))
+    expect_true("omicGuiConfig" %in% all.names(body(mod_lipid_norm_server)))
     files <- c(mod_omic_norm_ui = "mod_omic_norm.R", mod_omic_norm_server = "mod_omic_norm.R",
         skipOmicNormCorrelation = "mod_omic_norm.R", omicNormQcTabset = "mod_omic_norm_panels.R",
         registerOmicNormQcImageOutputs = "mod_omic_norm_panels.R")
@@ -1787,4 +1789,98 @@ test_that("W5 (D7): a failed managed correlation is notified on metab's tab only
     expect_identical(metab$log, lipid$log)
     expect_identical(metab$notes, c("[default] Applying correlation filter...",
         "[error] Error: kit105: the worker refused the correlation"))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-110 W3: trx's tab on the shared frame under its `norm` configuration (D2 to D4); the trx
+# module file and profile entries deleted (D1). test-trx-norm-module.R (W1 b-trx) holds the captures.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-110 W3 (D2): trx's norm UI from the frame and its configuration equals W1 (a)'s trx digest and ids (fails before)", {
+    actual <- omicNormUiParts(mod_omic_norm_ui("norm", omicGuiConfig("transcriptomics")$norm))
+    for (part in names(omicNormFrozenUi$trx)) {
+        expect_identical(actual[[part]], omicNormFrozenUi$trx[[part]], info = part)
+    }
+})
+
+#' The outputs the frame registers at start for one omic's `norm` group, on a bus with no state.
+omicNormRegisteredAtStart <- function(omic_type, norm) {
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
+        tab_status = list(normalization = "pending"))
+    registered <- NULL
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "norm", workflow_data = bus,
+        experiment_paths = list(), omic_type = omic_type, experiment_label = "kit110", config = norm), {
+        session$flushReact()
+        registered <<- sort(names(session$.__enclos_env__$private$outs))
+    })))
+    registered
+}
+
+test_that("KIT-110 W3 (D3): the frame registers each omic's outputs: lipid's and metab's as W1, trx's as W1 (b-trx) (fails before)", {
+    # Lipid and metab: every output their UIs show (W1 (a)), as before.
+    for (omic in c("lipidomics", "metabolomics")) {
+        expect_identical(omicNormRegisteredAtStart(omic, omicGuiConfig(omic)$norm),
+            sort(omicNormFrozenUi[[if (omic == "lipidomics") "lipid" else "metab"]]$outputs), info = omic)
+    }
+    # Trx: the stage grid for two assay rows (P-21), its labels, the log and the RUV QC; the RUV renderers once the
+    # grid has results (W1 (b-trx): 34 outputs before, 37 after).
+    expect_identical(omicNormRegisteredAtStart("transcriptomics", omicGuiConfig("transcriptomics")$norm),
+        sort(paste0("norm-", c(omicNormImageIds, omicNormLabelIds, "norm_log", "ruv_qc_ui"))))
+})
+
+test_that("KIT-110 W3 (D4): the frame calls an omic's own run and reset handlers with its settings and callbacks (fails before)", {
+    calls <- new.env(parent = emptyenv())
+    calls$run <- list()
+    calls$reset <- list()
+    calls$notes <- character()
+    testthat::local_mocked_bindings(showNotification = function(ui, ..., duration = 5, id = NULL, type = "default") {
+        calls$notes <- c(calls$notes, sprintf("[%s %s] %s", type, format(duration), paste(as.character(ui), collapse = " ")))
+        invisible(id %||% "note")
+    }, .package = "shiny")
+    norm <- omicGuiConfig("transcriptomics")$norm
+    norm$run$settings <- function(input) list(ruv_mode = input$ruv_mode)
+    norm$run$handler <- function(run, binding, manager, settings, normData, config, experimentPaths, addLog, notify, setStatus) {
+        calls$run[[length(calls$run) + 1L]] <- list(run = run, binding = binding$prefix, manager = manager, settings = settings,
+            config = config, paths = experimentPaths, assay_names = shiny::isolate(normData$assay_names))
+        addLog("handler ran")
+        notify("ran", type = "error", duration = 15)
+        setStatus("normalization", "complete")
+    }
+    norm$reset <- function(manager, normData, config, addLog, notify, setStatus) {
+        calls$reset[[length(calls$reset) + 1L]] <- list(manager = manager, config = config)
+        notify("reset", type = "message")
+        setStatus("normalization", "pending")
+    }
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(kit = 110L),
+        tab_status = list(design_matrix = "complete", normalization = "pending"))
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "norm", workflow_data = bus,
+        experiment_paths = list(gene_qc_dir = "qc"), omic_type = "transcriptomics", experiment_label = "kit110",
+        config = norm), {
+        # The run needs the session's state owner (`req`), as trx's server did; the reset does not.
+        session$setInputs(ruv_mode = "manual", run_normalization = 1L)
+        expect_length(calls$run, 0L)
+        bus$state_manager <- "owner"
+        session$setInputs(run_normalization = 2L)
+        expect_length(calls$run, 1L)
+        expect_identical(calls$run[[1L]][c("binding", "manager", "settings", "config", "paths", "assay_names")],
+            list(binding = "trx", manager = "owner", settings = list(ruv_mode = "manual"), config = list(kit = 110L),
+                paths = list(gene_qc_dir = "qc"), assay_names = "counts"))
+        expect_identical(calls$run[[1L]]$run, norm$run)
+        expect_identical(shiny::isolate(bus$tab_status), list(design_matrix = "complete", normalization = "complete"))
+        expect_match(shiny::isolate(session$returned$normalization_log), "handler ran$")
+        bus$state_manager <- NULL
+        session$setInputs(reset_normalization = 1L)
+        expect_identical(calls$reset, list(list(manager = NULL, config = list(kit = 110L))))
+        expect_identical(shiny::isolate(bus$tab_status), list(design_matrix = "complete", normalization = "pending"))
+    })))
+    expect_identical(calls$notes, c("[error 15] ran", "[message 5] reset"))
+})
+
+test_that("KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before)", {
+    ns <- asNamespace("MultiScholaR")
+    for (name in c("trxNormOptionsPanel", "mod_trx_norm_server")) {
+        expect_false(exists(name, envir = ns, inherits = FALSE), info = name)
+    }
+    expect_identical(intersect(c("norm_options", "norm_server", "norm_tabs", "norm_stage_labels", "norm_ruv_heading",
+        "norm_ruv_help"), names(trxOmicProfile())), character())
 })

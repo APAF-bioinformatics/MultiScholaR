@@ -43,9 +43,15 @@
 # file:line there: the option sections in order with their options, the QC tabs, the stage grid, the
 # RUV tab's texts, the managed run and correlation, the pre-QC on tab entry, the export's per-omic
 # values, the ITSD selection table builder, the test ids and the per-omic display values of design
-# D7 (the skip-correlation flag order, the final PCA's placeholder sizes). Trx (KIT-110) and
-# proteomics (KIT-111) have none yet: their `norm` is NULL. The in-process run and correlation and
-# the export's collector and saver are the core's (KIT-105 W2/W4) and required since KIT-105 W6.
+# D7 (the skip-correlation flag order, the final PCA's placeholder sizes). Proteomics (KIT-111) has
+# none yet: its `norm` is NULL. The in-process run and correlation and the export's collector and
+# saver are the core's (KIT-105 W2/W4) and required since KIT-105 W6. KIT-110 W3 adds trx's group
+# (`omicGuiTrxNorm`, from mod_trx_norm.R and mod_transcriptomics.R at 38d9d25e): its option
+# sections, its own run and reset handlers (the core's, utils_workflow_trx_norm.R) and the stage
+# grid's fixed assay, file stem, stage prefixes and registered rows. Since then the validator
+# requires a field only with the tab or panel that uses it (KIT-110 D8): the ITSD table with the
+# `itsd` tab; the correlation, skip-correlation flags, final PCA and managed-correlation notice with
+# the `correlation_filter` tab; the export with the `export` panel.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -168,28 +174,44 @@ omicGuiConfigSchema <- function() {
                 "finalize_no_assays", "finalize_no_design")),
         qc_notifications = c(omic_qc_intensity = "intensity", omic_qc_duplicates = "duplicates",
             omic_qc_itsd = "itsd"),
-        # KIT-105 W1 (design 4.7), checked when the omic has the group.
+        # KIT-105 W1 (design 4.7), checked when the omic has the group. KIT-110 D8: these always; the
+        # others with the tab or panel that uses them (`norm_by_tab`, `norm_by_panel`), or by type when present.
         norm = c(module_id = "chr1", panels = "named_list", plot_tabs = "chr", stage_labels = "chr",
             assay_slots = "int1", ruv_heading = "chr1", ruv_help = "chr1", run = "named_list",
-            correlation = "named_list", pre_qc_on_entry = "lgl1", export = "named_list", itsd_table = "ref",
-            testids = "named_chr", skip_correlation_flags = "chr1", final_pca = "named_list",
-            # KIT-105 W5 (D7): whether a failed managed correlation is also shown as an error notification.
-            managed_correlation_notify = "lgl1"),
+            pre_qc_on_entry = "lgl1", testids = "named_chr"),
+        norm_by_tab = list(itsd = c(itsd_table = "ref"),
+            correlation_filter = c(correlation = "named_list", skip_correlation_flags = "chr1", final_pca = "named_list",
+                # KIT-105 W5 (D7): whether a failed managed correlation is also shown as an error notification.
+                managed_correlation_notify = "lgl1")),
+        norm_by_panel = list(export = c(export = "named_list")),
+        # KIT-110 D3, D4, D7: an omic's own reset handler; the stage grid's fixed assay names, file stem, stage file
+        # prefixes (`norm_stage_prefixes`) and registered assay rows.
+        norm_optional = c(reset = "ref", assay_names = "chr", image_stem = "chr1", stage_prefixes = "named_chr",
+            output_assay_slots = "int1"),
+        norm_stage_prefixes = c("pre_norm", "post_norm", "ruv_corrected"),
         # `run` and `correlation`: the managed function and its in-process twin (the core's; D6).
         norm_action = c(managed = "ref", in_process = "ref"),
+        # KIT-110 D4: an omic's own run handler and the settings it takes from the tab's inputs.
+        norm_run_optional = c(settings = "ref", handler = "ref"),
         # `export`: the per-omic values (D7, P-18), and the core's collector and saver.
         norm_export = c(prefix = "chr1", counts_field = "chr1", samples = "chr1", progress = "named_list",
             summary_time = "chr1", collect = "ref", save = "ref"),
         # KIT-105 W5 (D7): the export's progress display: the gathering step's text, the closing step's text (none
         # when empty) and whether the saver steps the display through its files.
         norm_export_progress = c(gather = "chr1", complete = "chr0", steps = "lgl1"),
-        norm_testids = c(method = "chr1", ruv_mode = "chr1", run = "chr1", export = "chr1"),
+        norm_testids = c(method = "chr1", ruv_mode = "chr1", run = "chr1", export = "chr1", reset = "chr1"),
+        # KIT-110 D8: the panels that need a test id (`run` always; `reset` optional).
+        norm_testid_panels = list(method = "between_sample", ruv_mode = c("ruv_iii", "ruv_grid"), export = "export"),
         # The managed final PCA's placeholders (D7: "Preparing ..." and "Error: ..." text sizes).
         norm_final_pca = c(preparing_size = "num1", error_size = "num1"),
         # The shared panel library's option sections, in their order, and each one's options.
         norm_panels = list(aesthetics = character(), itsd = c(aggregation = "named_chr"),
             log2 = c(offset = "num1"), between_sample = c(methods = "named_chr", default = "chr1"),
+            # KIT-110 D2: trx's TMM/logCPM and RUV grid.
+            tmm_logcpm = character(),
             ruv_iii = c(modes = "named_chr", default = "chr1", percentage = "num1", k = "num1", noun = "chr1"),
+            ruv_grid = c(modes = "named_chr", default = "chr1", percentage_min = "num1", percentage_max = "num1",
+                percentage_step = "num1", k_penalty_weight = "num1", percentage = "num1", k = "num1"),
             actions = character(), export = c(button = "chr1")),
         # The QC tabs a frame can show, in their order.
         norm_plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log")
@@ -367,8 +389,9 @@ validateOmicGuiQcGroups <- function(groups, routes, schema) {
 
 #' The norm group (design 4.7): its fields; the option sections from the shared panel library, in
 #' its order, each with its options; the QC tabs from the frame's set; three stage labels; the
-#' managed run and correlation (their in-process twins optional until W6); the export's values and
-#' choices; the test ids; and the D7 display values.
+#' managed run and its in-process twin; the correlation, the export's values and choices and the D7
+#' display values with the tab or panel that uses them (KIT-110 D8); the test ids; and the optional
+#' fields by type (an omic's own run and reset handlers, the stage grid's fixed values).
 #' @noRd
 validateOmicGuiNorm <- function(norm, schema) {
     checkOmicGuiFields(norm, schema$norm, "norm")
@@ -381,8 +404,8 @@ validateOmicGuiNorm <- function(norm, schema) {
     for (panel in panels) {
         checkOmicGuiFields(norm$panels[[panel]], schema$norm_panels[[panel]], paste0("norm$panels$", panel))
     }
-    for (panel in intersect(c("between_sample", "ruv_iii"), panels)) {
-        choices <- norm$panels[[panel]][[if (identical(panel, "ruv_iii")) "modes" else "methods"]]
+    for (panel in intersect(c("between_sample", "ruv_iii", "ruv_grid"), panels)) {
+        choices <- norm$panels[[panel]][[if (identical(panel, "between_sample")) "methods" else "modes"]]
         checkOmicGuiChoice(norm$panels[[panel]]$default, paste0("norm$panels$", panel, "$default"), choices)
     }
     tabs <- norm$plot_tabs
@@ -390,17 +413,31 @@ validateOmicGuiNorm <- function(norm, schema) {
         omicGuiConfigAbort("norm$plot_tabs", sprintf("must name the frame's QC tabs once each, in their order (%s)",
             paste(schema$norm_plot_tabs, collapse = ", ")))
     }
-    if (length(norm$stage_labels) != 3L) omicGuiConfigAbort("norm$stage_labels", "must hold the three stages' captions")
-    for (field in c("run", "correlation")) {
-        checkOmicGuiFields(norm[[field]], schema$norm_action, paste0("norm$", field))
+    for (tab in intersect(names(schema$norm_by_tab), tabs)) checkOmicGuiFields(norm, schema$norm_by_tab[[tab]], "norm")
+    for (panel in intersect(names(schema$norm_by_panel), panels)) checkOmicGuiFields(norm, schema$norm_by_panel[[panel]], "norm")
+    checkOmicGuiFields(norm, schema$norm_optional, "norm", required = FALSE)
+    if (!is.null(norm$stage_prefixes) && !setequal(names(norm$stage_prefixes), schema$norm_stage_prefixes)) {
+        omicGuiConfigAbort("norm$stage_prefixes", sprintf("must name exactly the stages %s",
+            paste(schema$norm_stage_prefixes, collapse = ", ")))
     }
-    checkOmicGuiFields(norm$export, schema$norm_export, "norm$export")
-    checkOmicGuiChoice(norm$export$samples, "norm$export$samples", c("design", "columns"))
-    checkOmicGuiFields(norm$export$progress, schema$norm_export_progress, "norm$export$progress")
-    checkOmicGuiChoice(norm$export$summary_time, "norm$export$summary_time", c("session", "written"))
-    checkOmicGuiFields(norm$testids, schema$norm_testids, "norm$testids")
-    checkOmicGuiChoice(norm$skip_correlation_flags, "norm$skip_correlation_flags", c("before_commit", "after_commit"))
-    checkOmicGuiFields(norm$final_pca, schema$norm_final_pca, "norm$final_pca")
+    if (length(norm$stage_labels) != 3L) omicGuiConfigAbort("norm$stage_labels", "must hold the three stages' captions")
+    checkOmicGuiFields(norm$run, schema$norm_action, "norm$run")
+    checkOmicGuiFields(norm$run, schema$norm_run_optional, "norm$run", required = FALSE)
+    if ("correlation_filter" %in% tabs) {
+        checkOmicGuiFields(norm$correlation, schema$norm_action, "norm$correlation")
+        checkOmicGuiChoice(norm$skip_correlation_flags, "norm$skip_correlation_flags", c("before_commit", "after_commit"))
+        checkOmicGuiFields(norm$final_pca, schema$norm_final_pca, "norm$final_pca")
+    }
+    if ("export" %in% panels) {
+        checkOmicGuiFields(norm$export, schema$norm_export, "norm$export")
+        checkOmicGuiChoice(norm$export$samples, "norm$export$samples", c("design", "columns"))
+        checkOmicGuiFields(norm$export$progress, schema$norm_export_progress, "norm$export$progress")
+        checkOmicGuiChoice(norm$export$summary_time, "norm$export$summary_time", c("session", "written"))
+    }
+    needed <- c("run", names(Filter(function(owners) any(owners %in% panels), schema$norm_testid_panels)))
+    checkOmicGuiFields(norm$testids, schema$norm_testids[needed], "norm$testids")
+    checkOmicGuiFields(norm$testids, schema$norm_testids[setdiff(names(schema$norm_testids), needed)], "norm$testids",
+        required = FALSE)
     invisible(norm)
 }
 
@@ -1258,9 +1295,38 @@ omicGuiConfigTranscriptomics <- function() {
         import = omicGuiTrxImport(),
         design = omicGuiTrxDesign(),
         qc = omicGuiTrxQc(),
-        # KIT-105 D4: trx mounts the lipid norm module under its profile until KIT-110 gives it its
-        # values here.
-        norm = NULL)
+        norm = omicGuiTrxNorm())
+}
+
+#' The trx normalisation tab (KIT-110): `trxNormOptionsPanel`, `mod_trx_norm_server` and the profile's
+#' `norm_*` fields at 38d9d25e (mod_trx_norm.R:25-53, :215-235; mod_transcriptomics.R:48-52), as values. The options:
+#' TMM and logCPM (mod_trx_norm.R:40-41); the RUV grid, its modes and default (:43-44) and its inputs' values
+#' (:28-31, :35-36); the actions with the reset's test id (:48-52). The profile's tabs, captions and RUV texts, one
+#' assay row (mod_transcriptomics.R:48-52; mod_lipid_norm_ui.R:26 at 38d9d25e). The run and reset are trx's own
+#' handlers (D4; the core's, utils_workflow_trx_norm.R, from mod_trx_norm.R:57-64, :130-187, :191-207). The stage grid:
+#' the one count table (mod_trx_norm.R:219), the file stem `trx` and the stage prefixes (:222-223), and the
+#' registrars' default of two assay rows (:221-224, P-21). No pre-QC on tab entry: the shell calls trx's server
+#' without `selected_tab` (mod_omic_workflow.R:214). No ITSD, correlation-filter tab or export panel (D7).
+#' @noRd
+omicGuiTrxNorm <- function() {
+    list(module_id = "norm",
+        panels = list(tmm_logcpm = list(),
+            ruv_grid = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual"),
+                default = "automatic", percentage_min = 5, percentage_max = 30, percentage_step = 5, k_penalty_weight = 0.05,
+                percentage = 10, k = 2),
+            actions = list()),
+        plot_tabs = c("ruv", "pca", "rle", "log"),
+        stage_labels = c("Raw logCPM", "TMM logCPM", "RUVs-corrected logCPM (display only)"), assay_slots = 1L,
+        ruv_heading = "RUVs Control Selection (canonical correlation)",
+        ruv_help = paste("The CCA panels and the grid of percentages: the controls are inferred negative controls (the least",
+            "significant genes in a preliminary group GLM)."),
+        run = list(managed = runTrxNormManaged, in_process = runTrxNormInProcess, settings = trxNormGridParameters,
+            handler = runTrxNormalisation),
+        reset = resetTrxNormalisation,
+        pre_qc_on_entry = FALSE,
+        assay_names = "counts", image_stem = "trx", stage_prefixes = c(pre_norm = "raw", post_norm = "tmm", ruv_corrected = "ruvs"),
+        output_assay_slots = 2L,
+        testids = c(ruv_mode = "trx-norm-ruv-mode", run = "trx-norm-run", reset = "trx-norm-reset"))
 }
 
 #' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under `trxOmicProfile()`'s QC

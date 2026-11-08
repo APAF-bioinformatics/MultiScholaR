@@ -19,14 +19,17 @@
 # column and the QC tabset of an omic's `norm` group from the panel library (mod_omic_norm_panels.R);
 # `mod_omic_norm_server(...)` holds the tab's reactive state (state references only, KIT-075), its log, the pre-QC on
 # tab entry and the run, reset, correlation apply and skip, and export actions. Each action calls the core: the
-# managed function with the omic's runner, the in-process twin without one (D6). Functions a test mocks are called
+# managed function with the omic's runner, the in-process twin without one (D6). KIT-110: trx's tab too; the frame
+# registers only what an omic's tabs and panels use, and calls an omic's own run and reset handlers when its `norm`
+# names them (D3, D4). Recorded divergence (KIT-110 D7): trx's tab now writes the two console start lines below, and
+# its observers and outputs are registered in the frame's order. Functions a test mocks are called
 # by name when they run. The module frame keeps no locals (the testServer masking rule; test-omic-design-module.R).
 # Recorded divergence from conventions/R-shiny.md: the in-process or managed actions in place of ExtendedTask are
 # kept, under the existing-code scope rule of conventions/R.md.
 
-#' The normalisation tab's UI: the options column (`config$panels`, or a panel function) and the QC tabset.
+#' The normalisation tab's UI: the options column (`config$panels`) and the QC tabset.
 #' @param id The module id.
-#' @param config The omic's `norm` group (`omicGuiConfig(<omic>)$norm`), or a view with its UI fields (KIT-097: trx).
+#' @param config The omic's `norm` group (`omicGuiConfig(<omic>)$norm`).
 #' @return A tag list.
 #' @noRd
 mod_omic_norm_ui <- function(id, config) {
@@ -49,7 +52,9 @@ mod_omic_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
 }
 
 #' The server's body: the state, the log and the aesthetics, then the observers and outputs in the lipid tab's order
-#' (mod_lipid_norm_runtime_helpers.R:203-297 at f8d4c5fc).
+#' (mod_lipid_norm_runtime_helpers.R:203-297 at f8d4c5fc). KIT-110 D3: each registration is made when the omic's tabs
+#' or panels use it (for lipid and metab every one is, in this order); D4: the run and reset are the omic's own handlers
+#' when its `norm` names them (trx), else the frame's.
 #' @noRd
 runOmicNormServer <- function(input, output, session, id, workflowData, experimentPaths, omicType, experimentLabel, selectedTab,
     norm) {
@@ -57,34 +62,74 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
     logger::log_info(paste("Module ID:", id))
     config <- omicGuiConfig(omicType)
     config$norm <- norm
+    tabs <- norm$plot_tabs
+    panels <- names(norm$panels)
     normData <- omicNormReactiveState()
     addLog <- omicNormAddLog(normData)
     getPlotAesthetics <- omicNormPlotAestheticsGetter(input)
-    shiny::observe(omicNormDetectAssays(workflowData, normData, config))
+    # Fixed assay names are set once (trx: its one count table); otherwise they are read from the head state.
+    if (is.null(norm$assay_names)) {
+        shiny::observe(omicNormDetectAssays(workflowData, normData, config))
+    } else {
+        normData$assay_names <- norm$assay_names
+    }
     if (!is.null(selectedTab) && isTRUE(norm$pre_qc_on_entry)) {
         shiny::observeEvent(selectedTab(), runOmicNormTabEntry(selectedTab(), workflowData, experimentPaths, normData, addLog,
             getPlotAesthetics, config), ignoreInit = FALSE)
     }
-    shiny::observe(omicNormDesignChoices(session, workflowData))
+    if (any(c("aesthetics", "ruv_iii") %in% panels)) shiny::observe(omicNormDesignChoices(session, workflowData))
     registerOmicNormLogOutput(output, omicNormLogRenderer(normData))
-    output$itsd_selection_ui <- omicNormItsdSelectionUi(normData, session$ns)
+    if ("itsd" %in% tabs) output$itsd_selection_ui <- omicNormItsdSelectionUi(normData, session$ns)
     registerOmicNormRuvQcOutput(output, omicNormRuvQcUiRenderer(normData, session$ns))
-    registerOmicNormQcImageOutputs(output, omicNormQcImageRenderer(normData, experimentPaths, qcDirKey = config$binding$binding$qc_dir_role),
-        assaySlots = norm$assay_slots)
-    registerOmicNormAssayLabelOutputs(output, omicNormAssayLabelRenderer(normData), norm$assay_slots)
-    shiny::observe(omicNormItsdTables(output, workflowData, normData, config))
-    registerOmicNormItsdSelectionTracking(input, normData)
-    shiny::observeEvent(input$run_normalization, runOmicNormPipeline(input, workflowData, experimentPaths, normData, addLog,
-        getPlotAesthetics, config))
-    shiny::observeEvent(input$reset_normalization, resetOmicNorm(workflowData, normData, addLog, config))
+    registerOmicNormStageGrid(output, normData, experimentPaths, norm, config$binding$binding$qc_dir_role)
+    if ("itsd" %in% tabs) {
+        shiny::observe(omicNormItsdTables(output, workflowData, normData, config))
+        registerOmicNormItsdSelectionTracking(input, normData)
+    }
+    shiny::observeEvent(input$run_normalization, if (is.null(norm$run$handler)) {
+        runOmicNormPipeline(input, workflowData, experimentPaths, normData, addLog, getPlotAesthetics, config)
+    } else {
+        runOmicNormHandler(input, workflowData, experimentPaths, normData, addLog, config)
+    })
+    shiny::observeEvent(input$reset_normalization, if (is.null(norm$reset)) {
+        resetOmicNorm(workflowData, normData, addLog, config)
+    } else {
+        resetOmicNormHandler(workflowData, normData, addLog, config)
+    })
     registerOmicNormRuvCancorOutputs(output, normData)
-    output$correlation_filter_summary <- omicNormCorrelationSummary(normData, workflowData, config$binding$read_metadata)
-    output$final_qc_plot <- omicNormFinalQcPlot(normData, getPlotAesthetics, workflowData, config)
-    shiny::observeEvent(input$apply_correlation_filter, applyOmicNormCorrelation(input, workflowData, normData, addLog, config))
-    shiny::observeEvent(input$skip_correlation_filter, skipOmicNormCorrelation(workflowData, normData, addLog, config))
-    shiny::observeEvent(input[[norm$panels$export$button]], exportOmicNormSession(input, workflowData, experimentPaths,
-        experimentLabel, normData, addLog, config))
+    if ("correlation_filter" %in% tabs) {
+        output$correlation_filter_summary <- omicNormCorrelationSummary(normData, workflowData, config$binding$read_metadata)
+        output$final_qc_plot <- omicNormFinalQcPlot(normData, getPlotAesthetics, workflowData, config)
+        shiny::observeEvent(input$apply_correlation_filter, applyOmicNormCorrelation(input, workflowData, normData, addLog, config))
+        shiny::observeEvent(input$skip_correlation_filter, skipOmicNormCorrelation(workflowData, normData, addLog, config))
+    }
+    if ("export" %in% panels) {
+        shiny::observeEvent(input[[norm$panels$export$button]], exportOmicNormSession(input, workflowData, experimentPaths,
+            experimentLabel, normData, addLog, config))
+    }
     invisible(normData)
+}
+
+#' The stage grid's image slots and labels for `norm$output_assay_slots` assay rows (else `norm$assay_slots`; trx
+#' registers two rows although its tab shows one, P-21): the files `<stem>_<stage prefix>_<kind>.png` in the QC
+#' directory, with the omic's fixed file stem `norm$image_stem` and stage prefixes `norm$stage_prefixes` when it has
+#' them (trx: `trx`, and `raw`, `tmm`, `ruvs`; KIT-110 D3), else the assay's sanitised name and the registrar's.
+#' @param qcDirKey The QC directory's key in `experimentPaths` (the binding's `qc_dir_role`).
+#' @noRd
+registerOmicNormStageGrid <- function(output, normData, experimentPaths, norm, qcDirKey) {
+    slots <- norm$output_assay_slots %||% norm$assay_slots
+    stem <- norm$image_stem
+    renderer <- if (is.null(stem)) {
+        omicNormQcImageRenderer(normData, experimentPaths, qcDirKey = qcDirKey)
+    } else {
+        omicNormQcImageRenderer(normData, experimentPaths, sanitizeAssayNameFn = function(assayName) stem, qcDirKey = qcDirKey)
+    }
+    if (is.null(norm$stage_prefixes)) {
+        registerOmicNormQcImageOutputs(output, renderer, assaySlots = slots)
+    } else {
+        registerOmicNormQcImageOutputs(output, renderer, stagePrefixes = norm$stage_prefixes, assaySlots = slots)
+    }
+    registerOmicNormAssayLabelOutputs(output, omicNormAssayLabelRenderer(normData), slots)
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -269,6 +314,34 @@ resetOmicNorm <- function(workflowData, normData, addLog, config) {
         shiny::showNotification(paste("Error:", e$message), type = "error")
         invisible(FALSE)
     })
+}
+
+#' A `setStatus(tab, value)` callback writing one entry of the bus's `tab_status`.
+#' @noRd
+omicNormStatusSetter <- function(workflowData) {
+    function(tab, value) {
+        status <- workflowData$tab_status
+        status[[tab]] <- value
+        workflowData$tab_status <- status
+    }
+}
+
+#' An omic's own run (`norm$run$handler`; KIT-110 D4, trx's `runTrxNormalisation`), with the session's state owner
+#' required as trx's server did, the settings `norm$run$settings` takes from the tab's inputs, and the tab's notification
+#' and status callbacks. The handler resolves the omic's runner itself; there is no progress display.
+#' @noRd
+runOmicNormHandler <- function(input, workflowData, experimentPaths, normData, addLog, config) {
+    shiny::req(workflowData$state_manager)
+    run <- config$norm$run
+    run$handler(run, config$binding$binding, workflowData$state_manager, run$settings(input), normData, workflowData$config_list,
+        experimentPaths, addLog, notify = function(...) shiny::showNotification(...), setStatus = omicNormStatusSetter(workflowData))
+}
+
+#' An omic's own reset (`norm$reset`; KIT-110 D4, trx's `resetTrxNormalisation`), with no `req`, as trx's server called it.
+#' @noRd
+resetOmicNormHandler <- function(workflowData, normData, addLog, config) {
+    config$norm$reset(workflowData$state_manager, normData, workflowData$config_list, addLog,
+        notify = function(...) shiny::showNotification(...), setStatus = omicNormStatusSetter(workflowData))
 }
 
 #' The tab's completion after a correlation step: `quality_control` and `normalization` complete.

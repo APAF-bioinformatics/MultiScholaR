@@ -42,15 +42,11 @@ trxOmicProfile <- function() {
     c(profile, trxNormDaSummaryProfile())
 }
 
-#' The normalisation, DA and summary entries of the transcriptomics profile (KIT-097).
+#' The DA and summary entries of the transcriptomics profile (KIT-097). KIT-110 W3 removed the six normalisation entries:
+#' their values are `omicGuiConfig("transcriptomics")$norm` (`omicGuiTrxNorm`).
 #' @noRd
 trxNormDaSummaryProfile <- function() {
-    list(norm_options = trxNormOptionsPanel, norm_server = mod_trx_norm_server, norm_tabs = c("ruv", "pca", "rle", "log"),
-        norm_stage_labels = c("Raw logCPM", "TMM logCPM", "RUVs-corrected logCPM (display only)"),
-        norm_ruv_heading = "RUVs Control Selection (canonical correlation)",
-        norm_ruv_help = paste("The CCA panels and the grid of percentages: the controls are inferred negative controls (the least",
-            "significant genes in a preliminary group GLM)."),
-        da_server = mod_trx_da_server, da_model_ui = trxDaModelUi, da_threshold_label = "FDR (BH) threshold:",
+    list(da_server = mod_trx_da_server, da_model_ui = trxDaModelUi, da_threshold_label = "FDR (BH) threshold:",
         da_lfc_label = "Fold-change line (display only; no test):", long_table = "da_genes_long",
         da_columns = list(id = "GeneID", label = "GeneName", pvalue = "PValue", significance = "FDR", significance_label = "FDR (BH)"),
         da_static_volcano = trxDaStaticVolcano, da_volcano_interactive = FALSE, da_widget = trxDaWidget, da_with_source = trxDaWithSource,
