@@ -410,6 +410,7 @@ test_that("mod_metab_norm_server preserves reset error behavior", {
 })
 
 test_that("metab norm shared render and plotting helpers preserve current contracts", {
+  testthat::skip("quarantined: Q-107 (KIT-105 W5) it drives the metab norm helper functions W5 deleted with mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R (its binding check would skip it silently); the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps; blocks 1-8 stay live")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skipIfMissingMultiScholaRBindings(
     "getPlotAesthetics",
@@ -584,6 +585,7 @@ test_that("metab norm shared render and plotting helpers preserve current contra
 })
 
 test_that("metab norm shared export helpers preserve session and file workflows", {
+  testthat::skip("quarantined: Q-107 (KIT-105 W5) it drives the metab norm helper functions W5 deleted with mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R (its binding check would skip it silently); the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps; blocks 1-8 stay live")
   skipIfMissingMultiScholaRBindings(
     "checkMetabNormExportSessionReady",
     "resolveMetabNormExportSourceDir",
@@ -729,6 +731,7 @@ test_that("metab norm shared export helpers preserve session and file workflows"
 })
 
 test_that("metab norm shared normalization helpers preserve pipeline building blocks", {
+  testthat::skip("quarantined: Q-107 (KIT-105 W5) it drives the metab norm helper functions W5 deleted with mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R (its binding check would skip it silently); the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps; blocks 1-8 stay live")
   skipIfMissingMultiScholaRBindings(
     "runMetabNormPreNormalizationQcStep",
     "runMetabNormItsdProgressApplyShell",

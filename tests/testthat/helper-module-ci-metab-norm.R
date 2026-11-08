@@ -298,6 +298,84 @@ module_ci_metab_norm_input <- function(norm_method = "none",
   )
 }
 
+# KIT-105 W5: the RUV inputs the removed step shells took as arguments (runMetabNormRuvProgressApplyShell's
+# autoPercentageMin to manualPercentage), by the tab's input ids, beside the lane's inputs.
+module_ci_metab_norm_ruv_input <- function(input = module_ci_metab_norm_input(),
+                                           percentage_min = 5,
+                                           percentage_max = 10,
+                                           adaptive = FALSE,
+                                           manual_k = 2L,
+                                           manual_percentage = 40) {
+  c(input, list(
+    auto_percentage_min = percentage_min,
+    auto_percentage_max = percentage_max,
+    separation_metric = "max_difference",
+    k_penalty_weight = 0.5,
+    adaptive_k_penalty = adaptive,
+    ruv_k = manual_k,
+    ruv_percentage = manual_percentage
+  ))
+}
+
+# KIT-105 W5: the tab's in-process normalisation is the core's (runWorkflowOmicsInProcessNormalisation; the removed
+# step shells ran its steps one by one). The lane's RUV kernels and no-op QC figures are bound in the namespace the
+# declarations call; the ITSD step is called through, recording the manual selection's feature ids it receives (D8).
+module_ci_metab_norm_run_pipeline <- function(input = module_ci_metab_norm_ruv_input(),
+                                              object = module_ci_metab_norm_object(positive_only = TRUE),
+                                              workflow = module_ci_metab_norm_workflow(object),
+                                              norm_data = module_ci_metab_norm_data(object),
+                                              optimizer_fn = function(theObject, ruv_mode, ...) {
+                                                module_ci_metab_norm_ruv_results(theObject, mode = ruv_mode)
+                                              },
+                                              ruv_fn = function(theObject, ruv_grouping_variable, ruv_number_k, ctrl) {
+                                                theObject@args$ruvIII_C_Varying <- list(ruv_grouping_variable = ruv_grouping_variable,
+                                                  ruv_number_k = ruv_number_k, ctrl = ctrl)
+                                                theObject
+                                              },
+                                              itsd_table_fn = buildItsdSelectionTable) {
+  logs <- character()
+  seen <- new.env(parent = emptyenv())
+  itsd_step <- runWorkflowOmicsReferenceItsdNormalisation
+  kernels <- list(
+    runPerAssayRuvOptimization = function(theObject, ruv_mode, params, experiment_paths) {
+      optimizer_fn(theObject = theObject, ruv_mode = ruv_mode, params = params, experiment_paths = experiment_paths)
+    },
+    ruvIII_C_Varying = ruv_fn,
+    generateMetabQcPlots = function(...) invisible(NULL),
+    runWorkflowOmicsReferenceItsdNormalisation = function(binding, manager, aggregation, feature_ids, config, ...) {
+      seen$itsd_feature_ids <- feature_ids
+      itsd_step(binding, manager, aggregation, feature_ids, config, ...)
+    }
+  )
+  do.call(testthat::local_mocked_bindings, c(kernels, list(.package = "MultiScholaR", .env = environment())))
+  paths <- list(
+    metabolite_qc_dir = tempfile("mci-015-metab-qc-"),
+    source_dir = tempfile("mci-015-metab-source-"),
+    export_dir = tempfile("mci-015-metab-export-")
+  )
+  settings <- c(omicNormRunSettings(input, list(color_var = "group", shape_var = "batch"), norm_data, paths,
+    metabolomicsDeclarationBinding), list(experiment_paths = paths))
+  result <- runWorkflowOmicsInProcessNormalisation(
+    binding = metabolomicsDeclarationBinding,
+    manager = workflow$state_manager,
+    settings = settings,
+    normData = norm_data,
+    config = workflow$config_list,
+    addLog = function(message) {
+      logs <<- c(logs, message)
+      invisible(logs)
+    },
+    advance = function(detail) invisible(NULL),
+    notify = function(...) invisible(NULL),
+    finish = function() invisible(NULL),
+    itsd_table = function(assay_data, id_col, annotation_cols) {
+      itsd_table_fn(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)
+    }
+  )
+
+  list(result = result, workflow = workflow, norm_data = norm_data, logs = logs, itsd_feature_ids = seen$itsd_feature_ids)
+}
+
 module_ci_metab_norm_correlation_pairs <- function(case = c("pass_all", "boundary", "fail_one", "fail_many", "small_n"),
                                                    assays = c("LCMS_Pos", "GCMS")) {
   case <- match.arg(case)
@@ -359,16 +437,20 @@ module_ci_metab_norm_export_variant <- function(variant = c("skip", "manual", "a
     module_ci_metab_norm_ruv_results(object, mode = variant)
   }
 
-  buildMetabNormExportSessionData(
+  # KIT-105 W5: the tab's session list is the core's collector (collectWorkflowOmicsNormSession) under metab's export
+  # values (buildMetabNormExportSessionData was removed with mod_metab_norm_session_helpers.R).
+  collectWorkflowOmicsNormSession(
+    binding = metabolomicsDeclarationBinding,
     workflowData = workflow,
     normData = norm_data,
-    inputValues = module_ci_metab_norm_input(
+    input = module_ci_metab_norm_input(
       norm_method = "quantile",
       ruv_mode = variant,
       apply_itsd = TRUE,
       itsd_aggregation = "median"
     ),
     experimentLabel = paste("MCI-015", variant),
+    export = omicGuiConfig("metabolomics")$norm$export,
     exportTimestamp = as.POSIXct("2026-05-05 12:00:00", tz = "UTC")
   )
 }

@@ -173,14 +173,20 @@ omicGuiConfigSchema <- function() {
         norm = c(module_id = "chr1", panels = "named_list", plot_tabs = "chr", stage_labels = "chr",
             assay_slots = "int1", ruv_heading = "chr1", ruv_help = "chr1", run = "named_list",
             correlation = "named_list", pre_qc_on_entry = "lgl1", export = "named_list", itsd_table = "ref",
-            testids = "named_chr", skip_correlation_flags = "chr1", final_pca = "named_list"),
+            testids = "named_chr", skip_correlation_flags = "chr1", final_pca = "named_list",
+            # KIT-105 W5 (D7): whether a failed managed correlation is also shown as an error notification.
+            managed_correlation_notify = "lgl1"),
         # `run` and `correlation`: the managed function; the in-process twin is optional until KIT-105
         # W6 wires it (today it is in R/mod_*.R, W2 writes the core's).
         norm_action = c(managed = "ref"),
         norm_action_optional = c(in_process = "ref"),
         # `export`: the per-omic values (D7, P-18); the collector and saver as `norm_action_optional`.
-        norm_export = c(prefix = "chr1", counts_field = "chr1", samples = "chr1"),
+        norm_export = c(prefix = "chr1", counts_field = "chr1", samples = "chr1", progress = "named_list",
+            summary_time = "chr1"),
         norm_export_optional = c(collect = "ref", save = "ref"),
+        # KIT-105 W5 (D7): the export's progress display: the gathering step's text, the closing step's text (none
+        # when empty) and whether the saver steps the display through its files.
+        norm_export_progress = c(gather = "chr1", complete = "chr0", steps = "lgl1"),
         norm_testids = c(method = "chr1", ruv_mode = "chr1", run = "chr1", export = "chr1"),
         # The managed final PCA's placeholders (D7: "Preparing ..." and "Error: ..." text sizes).
         norm_final_pca = c(preparing_size = "num1", error_size = "num1"),
@@ -396,6 +402,8 @@ validateOmicGuiNorm <- function(norm, schema) {
     checkOmicGuiFields(norm$export, schema$norm_export, "norm$export")
     checkOmicGuiFields(norm$export, schema$norm_export_optional, "norm$export", required = FALSE)
     checkOmicGuiChoice(norm$export$samples, "norm$export$samples", c("design", "columns"))
+    checkOmicGuiFields(norm$export$progress, schema$norm_export_progress, "norm$export$progress")
+    checkOmicGuiChoice(norm$export$summary_time, "norm$export$summary_time", c("session", "written"))
     checkOmicGuiFields(norm$testids, schema$norm_testids, "norm$testids")
     checkOmicGuiChoice(norm$skip_correlation_flags, "norm$skip_correlation_flags", c("before_commit", "after_commit"))
     checkOmicGuiFields(norm$final_pca, schema$norm_final_pca, "norm$final_pca")
@@ -682,8 +690,9 @@ omicGuiFeatureQcTexts <- function(noun, class) {
 #' @param skip_correlation_flags When skip-correlation sets the tab's flags: before or after the
 #'   store commit.
 #' @param final_pca The managed final PCA's placeholder sizes.
+#' @param managed_correlation_notify Whether a failed managed correlation is also notified as an error (KIT-105 W5).
 #' @noRd
-omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlation_flags, final_pca) {
+omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlation_flags, final_pca, managed_correlation_notify) {
     list(module_id = "norm",
         panels = list(aesthetics = list(),
             itsd = list(aggregation = c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum")),
@@ -706,7 +715,8 @@ omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlatio
         itsd_table = itsd_table,
         testids = c(method = paste0(prefix, "-norm-method"), ruv_mode = paste0(prefix, "-norm-ruv-mode"),
             run = paste0(prefix, "-norm-run"), export = paste0(prefix, "-norm-export-session")),
-        skip_correlation_flags = skip_correlation_flags, final_pca = final_pca)
+        skip_correlation_flags = skip_correlation_flags, final_pca = final_pca,
+        managed_correlation_notify = managed_correlation_notify)
 }
 
 #' The lipid assay-name rule and messages (lipid `processing`:443-468; now
@@ -952,15 +962,20 @@ omicGuiConfigLipidomics <- function() {
 #' (func_lipid_norm_support_helpers.R:19), as the tab calls it (mod_lipid_norm_observer_helpers.R:181,
 #' mod_lipid_norm_workflow_helpers.R:212). D7: skip-correlation sets the flags before the store commit
 #' (mod_lipid_norm_workflow_helpers.R:633-639); the managed final PCA's placeholders are sizes 5 and 4
-#' (mod_lipid_norm_support_helpers.R:350-351).
+#' (mod_lipid_norm_support_helpers.R:350-351). KIT-105 W5 (D7, at f8d4c5fc): the export's progress shows the
+#' gathering and the completion steps only, and the summary carries the session's export time
+#' (mod_lipid_norm_workflow_helpers.R:469, :568-577); a failed managed correlation is logged, not notified (:738-743).
 #' @noRd
 omicGuiLipidNorm <- function() {
     omicGuiFeatureNorm("lipid", "Lipids",
-        export = list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design"),
+        export = list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design",
+            progress = list(gather = "Gathering data and publishing outputs...", complete = "Export complete", steps = FALSE),
+            summary_time = "session"),
         itsd_table = function(assay_data, id_col, annotation_cols) {
             buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols)
         },
-        skip_correlation_flags = "before_commit", final_pca = list(preparing_size = 5, error_size = 4))
+        skip_correlation_flags = "before_commit", final_pca = list(preparing_size = 5, error_size = 4),
+        managed_correlation_notify = FALSE)
 }
 
 #' The lipid QC tab (mod_lipid_qc*.R at b423b764). `itsd` holds the inline analysis's entries
@@ -1101,14 +1116,19 @@ omicGuiConfigMetabolomics <- function() {
 #' as the tab calls it (resolveMetabNormManualItsdFeatureIds, mod_metab_norm_pipeline_helpers.R:177).
 #' D7: skip-correlation sets the flags after the store commit (mod_metab_norm_session_helpers.R:349-361,
 #' :427-436); the managed final PCA's placeholders are both size 5 (mod_metab_norm_render_helpers.R:420-422).
+#' KIT-105 W5 (D7, at 037bc246): the export's progress shows the gathering step and then each of the saver's files,
+#' with no completion step, and the summary carries the time it is written (mod_metab_norm_session_helpers.R:566, :580,
+#' :672, :720-749); a failed managed correlation is also notified as an error (:15-21, :91-94).
 #' @noRd
 omicGuiMetabNorm <- function() {
     omicGuiFeatureNorm("metab", "Metabolites",
-        export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "columns"),
+        export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "columns",
+            progress = list(gather = "Gathering data...", complete = character(0), steps = TRUE), summary_time = "written"),
         itsd_table = function(assay_data, id_col, annotation_cols) {
             buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)
         },
-        skip_correlation_flags = "after_commit", final_pca = list(preparing_size = 5, error_size = 5))
+        skip_correlation_flags = "after_commit", final_pca = list(preparing_size = 5, error_size = 5),
+        managed_correlation_notify = TRUE)
 }
 
 #' The metab QC tab (mod_metab_qc*.R at b423b764). `itsd` holds `analyzeMetabQcItsdData`'s entries

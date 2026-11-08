@@ -35,21 +35,22 @@ test_that("MCI-015.1 normalization method matrix preserves assay names, samples,
     }
   }
 
+  # KIT-105 W5: the between-sample step through the tab's in-process normalisation, the core's
+  # runWorkflowOmicsInProcessNormalisation (runMetabNormBetweenSampleProgressApplyShell was removed with
+  # mod_metab_norm_pipeline_helpers.R).
   workflow <- module_ci_metab_norm_workflow(module_ci_metab_norm_object(positive_only = TRUE))
   norm_data <- module_ci_metab_norm_data(workflow$state_manager$getState())
-  shell_state <- suppressWarnings(suppressMessages(runMetabNormBetweenSampleProgressApplyShell(
-    currentS4 = workflow$state_manager$getState(),
-    totalSteps = 4,
-    normMethod = "quantile",
-    workflowData = workflow,
-    normData = norm_data,
-    incProgressFn = function(...) invisible(NULL)
+  pipeline <- suppressWarnings(suppressMessages(module_ci_metab_norm_run_pipeline(
+    input = module_ci_metab_norm_ruv_input(module_ci_metab_norm_input(norm_method = "quantile", ruv_mode = "skip")),
+    workflow = workflow,
+    norm_data = norm_data
   )))
 
-  expect_true(isSavedWorkflowReference(shell_state$currentS4)) # KIT-075: the step carries the state's reference
+  expect_true(pipeline$result)
+  expect_true(isSavedWorkflowReference(norm_data$post_norm_obj)) # KIT-075: the step carries the state's reference
   expect_true(norm_data$normalization_complete)
   expect_true("metab_normalized" %in% workflow$state_manager$getHistory())
-  module_ci_metab_norm_assert_alignment(module_ci_metab_norm_state(workflow, shell_state$currentS4), c("LCMS_Pos", "GCMS"))
+  module_ci_metab_norm_assert_alignment(module_ci_metab_norm_state(workflow, norm_data$post_norm_obj), c("LCMS_Pos", "GCMS"))
 })
 
 test_that("MCI-015.2 ITSD matrix serializes regex, manual, absent, and invalid ITSD choices", {
@@ -70,32 +71,29 @@ test_that("MCI-015.2 ITSD matrix serializes regex, manual, absent, and invalid I
   manual_indices <- lapply(object@metabolite_data, function(assay) {
     match(c("IS_A", "IS_B"), assay$database_identifier)
   })
-  manual_ids <- resolveMetabNormManualItsdFeatureIds(
-    currentS4 = object,
-    itsdSelections = manual_indices,
-    buildSelectionTableFn = function(assay_data, metabolite_id_col, annotation_cols) {
+  # KIT-105 W5: the manual selection is resolved, and ITSD applied, by the tab's in-process normalisation, the core's
+  # runWorkflowOmicsInProcessNormalisation (D8; resolveMetabNormManualItsdFeatureIds and
+  # runMetabNormItsdProgressApplyShell were removed with mod_metab_norm_pipeline_helpers.R). The ids it resolves are
+  # the ones the ITSD step receives.
+  workflow <- module_ci_metab_norm_workflow(object)
+  norm_data <- module_ci_metab_norm_data(object)
+  norm_data$itsd_selections <- manual_indices
+  itsd_state <- suppressWarnings(suppressMessages(module_ci_metab_norm_run_pipeline(
+    input = module_ci_metab_norm_ruv_input(module_ci_metab_norm_input(apply_itsd = TRUE, itsd_aggregation = "mean")),
+    object = object,
+    workflow = workflow,
+    norm_data = norm_data,
+    itsd_table_fn = function(assay_data, metabolite_id_col, annotation_cols) {
       data.frame(feature_id = assay_data[[metabolite_id_col]], stringsAsFactors = FALSE)
     }
-  )
+  )))
+  manual_ids <- itsd_state$itsd_feature_ids
 
   expect_identical(manual_ids$LCMS_Pos, c("IS_A", "IS_B"))
   expect_identical(manual_ids$GCMS, c("IS_A", "IS_B"))
 
-  workflow <- module_ci_metab_norm_workflow(object)
-  norm_data <- module_ci_metab_norm_data(object)
-  itsd_state <- suppressWarnings(suppressMessages(runMetabNormItsdProgressApplyShell(
-    currentS4 = object,
-    totalSteps = 4,
-    applyItsd = TRUE,
-    itsdAggregation = "mean",
-    itsdSelections = manual_indices,
-    workflowData = workflow,
-    normData = norm_data,
-    incProgressFn = function(...) invisible(NULL),
-    resolveManualFeatureIdsFn = function(...) manual_ids
-  )))
-
-  expect_true(itsd_state$applied)
+  expect_true(itsd_state$result)
+  expect_true("ITSD normalization complete" %in% itsd_state$logs)
   expect_true(isSavedWorkflowReference(norm_data$post_itsd_obj)) # KIT-075: the state's reference
   expect_true("metab_itsd_norm" %in% workflow$state_manager$getHistory())
   expect_identical(module_ci_metab_norm_state(workflow, norm_data$post_itsd_obj)@args$ITSDNormalization$itsd_features_per_assay$LCMS_Pos, c("IS_A", "IS_B"))
@@ -129,31 +127,17 @@ test_that("MCI-015.2 ITSD matrix serializes regex, manual, absent, and invalid I
 
 test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, controls, and per-assay payloads", {
   object <- module_ci_metab_norm_object(layout = "combined", positive_only = TRUE)
-  workflow <- module_ci_metab_norm_workflow(object)
-  norm_data <- module_ci_metab_norm_data(object)
 
-  skip_state <- runMetabNormRuvProgressApplyShell(
-    currentS4 = object,
-    totalSteps = 4,
-    ruvMode = "skip",
-    autoPercentageMin = 5,
-    autoPercentageMax = 10,
-    ruvGroupingVariable = "tech_rep_group",
-    separationMetric = "max_difference",
-    kPenaltyWeight = 0.5,
-    adaptiveKPenalty = TRUE,
-    manualK = 2L,
-    manualPercentage = 40,
-    experimentPaths = list(metabolite_qc_dir = tempdir()),
-    groupingVariable = "group",
-    shapeVariable = "batch",
-    workflowData = workflow,
-    normData = norm_data,
-    incProgressFn = function(...) invisible(NULL)
-  )
-  expect_identical(skip_state$skipLogEntry, "RUV-III skipped")
-  expect_true(norm_data$ruv_complete)
-  expect_identical(norm_data$ruv_corrected_obj, object)
+  # KIT-105 W5: RUV-III through the tab's in-process normalisation, the core's runWorkflowOmicsInProcessNormalisation
+  # (runMetabNormRuvProgressApplyShell was removed with mod_metab_norm_pipeline_helpers.R). The step's input is the
+  # normalised state the run carries, so the skip keeps that state; the k per assay is the correction's argument.
+  skip_state <- suppressWarnings(suppressMessages(module_ci_metab_norm_run_pipeline(
+    input = module_ci_metab_norm_ruv_input(module_ci_metab_norm_input(ruv_mode = "skip")),
+    object = object
+  )))
+  expect_true("RUV-III skipped" %in% skip_state$logs)
+  expect_true(skip_state$norm_data$ruv_complete)
+  expect_identical(skip_state$norm_data$ruv_corrected_obj, skip_state$norm_data$post_norm_obj)
 
   optimizer_stub <- function(theObject, ruv_mode, params, experiment_paths) {
     if (identical(ruv_mode, "manual") && params$manual_k < 1) {
@@ -172,39 +156,38 @@ test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, contr
   }
   run_ruv <- function(mode, optimizer, ruv_fn = identity_ruv, manual_k = 2L, manual_percentage = 40,
                       percentage_min = 5, percentage_max = 10, adaptive = FALSE) {
-    testthat::local_mocked_bindings(runPerAssayRuvOptimization = optimizer, ruvIII_C_Varying = ruv_fn,
-      .package = "MultiScholaR")
     case_workflow <- module_ci_metab_norm_workflow(object)
     case_norm_data <- module_ci_metab_norm_data(object)
-    state <- runMetabNormRuvProgressApplyShell(
-      currentS4 = object, totalSteps = 4, ruvMode = mode,
-      autoPercentageMin = percentage_min, autoPercentageMax = percentage_max,
-      ruvGroupingVariable = "tech_rep_group", separationMetric = "max_difference", kPenaltyWeight = 0.5,
-      adaptiveKPenalty = adaptive, manualK = manual_k, manualPercentage = manual_percentage,
-      experimentPaths = list(metabolite_qc_dir = tempdir()), groupingVariable = "group", shapeVariable = "batch",
-      workflowData = case_workflow, normData = case_norm_data, incProgressFn = function(...) invisible(NULL),
-      runRuvQcStepFn = function(currentS4, ...) list(currentS4 = currentS4)
-    )
-    list(state = state, workflow = case_workflow, norm_data = case_norm_data)
+    state <- suppressWarnings(suppressMessages(module_ci_metab_norm_run_pipeline(
+      input = module_ci_metab_norm_ruv_input(module_ci_metab_norm_input(ruv_mode = mode),
+        percentage_min = percentage_min, percentage_max = percentage_max, adaptive = adaptive,
+        manual_k = manual_k, manual_percentage = manual_percentage),
+      object = object, workflow = case_workflow, norm_data = case_norm_data, optimizer_fn = optimizer, ruv_fn = ruv_fn
+    )))
+    corrected <- if (!is.null(case_norm_data$ruv_corrected_obj)) {
+      module_ci_metab_norm_state(case_workflow, case_norm_data$ruv_corrected_obj)
+    }
+    list(state = state, workflow = case_workflow, norm_data = case_norm_data,
+      best_k = if (!is.null(corrected)) corrected@args$ruvIII_C_Varying$ruv_number_k)
   }
 
   manual <- run_ruv("manual", optimizer_stub)
-  manual_k <- manual$state$optimizationState$bestKPerAssay
+  manual_k <- manual$best_k
   expect_named(manual_k, c("LCMS_Pos", "GCMS"))
   expect_identical(unname(unlist(manual_k)), c(2L, 2L))
-  expect_true(all(vapply(extractCtrlPerAssay(manual$state$optimizationState$ruvResults), function(x) {
+  expect_true(all(vapply(extractCtrlPerAssay(manual$norm_data$ruv_optimization_results), function(x) {
     is.logical(x) && !is.null(names(x)) && sum(x) == 6L
   }, logical(1))))
 
   auto <- run_ruv("automatic", optimizer_stub, percentage_min = 10, percentage_max = 12, adaptive = TRUE)
-  expect_identical(unname(unlist(auto$state$optimizationState$bestKPerAssay)), c(1L, 2L))
-  expect_equal(auto$state$optimizationState$ruvResults$LCMS_Pos$best_percentage, 13)
-  expect_s3_class(auto$state$optimizationState$ruvResults$GCMS$optimization_results, "data.frame")
+  expect_identical(unname(unlist(auto$best_k)), c(1L, 2L))
+  expect_equal(auto$norm_data$ruv_optimization_results$LCMS_Pos$best_percentage, 13)
+  expect_s3_class(auto$norm_data$ruv_optimization_results$GCMS$optimization_results, "data.frame")
   # The correction: committed under `metab_ruv_corrected` with the per-assay k of the optimisation.
-  expect_true(isSavedWorkflowReference(auto$state$currentS4)) # KIT-075: the state's reference
+  expect_true(isSavedWorkflowReference(auto$norm_data$ruv_corrected_obj)) # KIT-075: the state's reference
   expect_true(auto$norm_data$ruv_complete)
   expect_true("metab_ruv_corrected" %in% auto$workflow$state_manager$getHistory())
-  expect_identical(module_ci_metab_norm_state(auto$workflow, auto$state$currentS4)@args$ruvIII_C_Varying$ruv_number_k$LCMS_Pos, 1L)
+  expect_identical(module_ci_metab_norm_state(auto$workflow, auto$norm_data$ruv_corrected_obj)@args$ruvIII_C_Varying$ruv_number_k$LCMS_Pos, 1L)
 
   failed_results <- module_ci_metab_norm_ruv_results(object)
   failed_results$LCMS_Pos <- list(
@@ -215,37 +198,40 @@ test_that("MCI-015.3 RUV matrix covers skip, manual, automatic, invalid k, contr
     error = "too few controls"
   )
   failed <- run_ruv("manual", function(...) failed_results, manual_percentage = 1)
-  expect_true(is.na(failed$state$optimizationState$bestKPerAssay$LCMS_Pos))
+  expect_true(is.na(failed$best_k$LCMS_Pos))
   expect_null(extractCtrlPerAssay(failed_results)$LCMS_Pos)
-  expect_identical(failed$state$optimizationState$bestKPerAssay$GCMS, 2L)
+  expect_identical(failed$best_k$GCMS, 2L)
 
-  invalid_workflow <- module_ci_metab_norm_workflow(object)
-  invalid_norm_data <- module_ci_metab_norm_data(object)
-  testthat::local_mocked_bindings(runPerAssayRuvOptimization = optimizer_stub,
-    ruvIII_C_Varying = function(...) stop("invalid k"), .package = "MultiScholaR")
-  expect_error(runMetabNormRuvProgressApplyShell(
-    currentS4 = object, totalSteps = 4, ruvMode = "manual", autoPercentageMin = 5, autoPercentageMax = 10,
-    ruvGroupingVariable = "tech_rep_group", separationMetric = "max_difference", kPenaltyWeight = 0.5,
-    adaptiveKPenalty = FALSE, manualK = 0L, manualPercentage = 40, experimentPaths = list(metabolite_qc_dir = tempdir()),
-    groupingVariable = "group", shapeVariable = "batch", workflowData = invalid_workflow, normData = invalid_norm_data,
-    incProgressFn = function(...) invisible(NULL), runRuvQcStepFn = function(currentS4, ...) list(currentS4 = currentS4)
-  ), "invalid k")
+  invalid <- run_ruv("manual", optimizer_stub, ruv_fn = function(...) stop("invalid k"), manual_k = 0L)
+  invalid_norm_data <- invalid$norm_data
+  # The core reports the failure in the tab's log (and notification) instead of raising it.
+  expect_false(invalid$state$result)
+  expect_true("ERROR: invalid k" %in% invalid$state$logs)
   expect_false(invalid_norm_data$ruv_complete)
-  expect_false("metab_ruv_corrected" %in% invalid_workflow$state_manager$getHistory())
+  expect_false("metab_ruv_corrected" %in% invalid$workflow$state_manager$getHistory())
 })
 
 test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, boundary, small-n, and invalid inputs", {
   object <- module_ci_metab_norm_object(layout = "combined", positive_only = TRUE)
   norm_data <- module_ci_metab_norm_data(object)
   norm_data$post_norm_obj <- object
+  norm_data$normalization_complete <- TRUE
   workflow <- module_ci_metab_norm_workflow(object)
+  # KIT-105 W5: the shared frame's correlation handlers (mod_omic_norm.R) under the metab configuration
+  # (runMetabNormSkipCorrelationObserverEntry and dispatchMetabNormApplyCorrelation were removed with
+  # mod_metab_norm_session_helpers.R). They require a finished normalisation and notify through shiny by name, so the
+  # lane's `normData` is marked normalised and the notifications are bound to quiet doubles here.
+  config <- omicGuiConfig("metabolomics")
+  testthat::local_mocked_bindings(showNotification = function(...) invisible(NULL), removeNotification = function(...) invisible(NULL),
+    .package = "shiny")
 
-  skip_state <- runMetabNormSkipCorrelationObserverEntry(
+  skip_state <- skipOmicNormCorrelation(
     workflowData = workflow,
     normData = norm_data,
-    showNotificationFn = function(...) invisible(NULL)
+    addLog = function(...) invisible(NULL),
+    config = config
   )
-  expect_identical(skip_state$status, "success")
+  expect_true(skip_state)
   expect_true(norm_data$correlation_filtering_complete)
   expect_identical(norm_data$correlation_filtered_obj, object)
   expect_true("metab_norm_complete" %in% workflow$state_manager$getHistory())
@@ -257,34 +243,29 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
     }, .package = "MultiScholaR")
     case_workflow <- module_ci_metab_norm_workflow(object)
     case_norm_data <- module_ci_metab_norm_data(object)
-    observer_state <- list(
-      currentS4 = object,
-      threshold = 0.75,
-      groupingVariable = "tech_rep_group",
-      notificationId = paste0("corr_", case)
-    )
-    suppressWarnings(suppressMessages(dispatchMetabNormApplyCorrelation(
+    case_norm_data$normalization_complete <- TRUE
+    case_norm_data$post_norm_obj <- object
+    suppressWarnings(suppressMessages(applyOmicNormCorrelation(
+      input = module_ci_metab_norm_input(correlation_threshold = 0.75),
       workflowData = case_workflow,
       normData = case_norm_data,
-      observerState = observer_state,
-      showNotificationFn = function(...) invisible(NULL),
-      removeNotificationFn = function(...) invisible(NULL),
-      reqFn = function(value) value
+      addLog = function(...) invisible(NULL),
+      config = config
     ))) -> result
     list(result = result, workflow = case_workflow, norm_data = case_norm_data)
   }
 
   pass_all <- run_apply_case("pass_all")
-  expect_identical(pass_all$result$status, "success")
+  expect_true(pass_all$result)
   expect_setequal(module_ci_metab_norm_state(pass_all$workflow, pass_all$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2", "S3", "S4"))
   expect_true("metab_correlation_filtered" %in% pass_all$workflow$state_manager$getHistory())
 
   boundary <- run_apply_case("boundary")
-  expect_identical(boundary$result$status, "success")
+  expect_true(boundary$result)
   expect_setequal(module_ci_metab_norm_state(boundary$workflow, boundary$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2", "S3", "S4"))
 
   fail_one <- run_apply_case("fail_one")
-  expect_identical(fail_one$result$status, "success")
+  expect_true(fail_one$result)
   expect_identical(module_ci_metab_norm_state(fail_one$workflow, fail_one$norm_data$correlation_filtered_obj)@design_matrix$Run, c("S1", "S2"))
   expect_identical(module_ci_metab_norm_sample_cols(module_ci_metab_norm_state(fail_one$workflow, fail_one$norm_data$correlation_filtered_obj), "LCMS_Pos"), c("S1", "S2"))
 
@@ -313,22 +294,17 @@ test_that("MCI-015.4 correlation filtering matrix covers skip, pass/fail, bounda
 
   invalid_workflow <- module_ci_metab_norm_workflow(object)
   invalid_norm_data <- module_ci_metab_norm_data(object)
+  invalid_norm_data$normalization_complete <- TRUE
+  invalid_norm_data$post_norm_obj <- object
   testthat::local_mocked_bindings(pearsonCorForSamplePairs = function(...) 1, .package = "MultiScholaR")
-  invalid_state <- dispatchMetabNormApplyCorrelation(
+  invalid_state <- suppressMessages(applyOmicNormCorrelation(
+    input = module_ci_metab_norm_input(correlation_threshold = 0.75),
     workflowData = invalid_workflow,
     normData = invalid_norm_data,
-    observerState = list(
-      currentS4 = object,
-      threshold = 0.75,
-      groupingVariable = "tech_rep_group",
-      notificationId = "invalid_corr"
-    ),
-    showNotificationFn = function(...) invisible(NULL),
-    removeNotificationFn = function(...) invisible(NULL),
-    reqFn = function(value) value,
-    logErrorFn = function(...) invisible(NULL)
-  )
-  expect_identical(invalid_state$status, "error")
+    addLog = function(...) invisible(NULL),
+    config = config
+  ))
+  expect_false(invalid_state)
   expect_false(invalid_norm_data$correlation_filtering_complete)
   expect_false("metab_correlation_filtered" %in% invalid_workflow$state_manager$getHistory())
 })
@@ -354,25 +330,21 @@ test_that("MCI-015.5 session export matrix preserves metabolomics, RUV, ITSD, an
   dir.create(source_dir, recursive = TRUE)
   fixed_time <- as.POSIXct("2026-05-05 12:34:56", tz = "UTC")
   # KIT-071: the session RDS pair is published under the owner's request (the journal and completion record).
-  files <- saveMetabNormExportSessionRdsFiles(
+  # KIT-105 W5: the tab's saver is the core's (saveWorkflowOmicsNormSessionArtifacts) under metab's export values, with
+  # the summary's time fixed (saveMetabNormExportSessionRdsFiles, saveMetabNormExportMetadataFiles and
+  # saveMetabNormExportSummaryFile were removed with mod_metab_norm_session_helpers.R).
+  files <- saveWorkflowOmicsNormSessionArtifacts(
+    binding = metabolomicsDeclarationBinding,
     sessionData = session_data,
     sourceDir = source_dir,
     publicationRequest = list(request_id = "mci-015-5", timestamp = format(fixed_time, "%Y%m%d_%H%M%S")),
-    logInfoFn = function(...) invisible(NULL)
-  )
-  saveMetabNormExportMetadataFiles(
-    sessionData = session_data,
-    sourceDir = source_dir,
+    export = omicGuiConfig("metabolomics")$norm$export,
+    summaryTime = fixed_time,
     logInfoFn = function(...) invisible(NULL),
     logWarnFn = function(...) invisible(NULL)
   )
-  summary <- saveMetabNormExportSummaryFile(
-    sessionData = session_data,
-    sourceDir = source_dir,
-    sessionFilename = files$sessionFilename,
-    timeFn = function() fixed_time,
-    logInfoFn = function(...) invisible(NULL)
-  )
+  summary <- list(summaryFilepath = files$summaryFilepath,
+    summaryContent = paste(readLines(files$summaryFilepath, warn = FALSE), collapse = "\n"))
 
   expect_true(file.exists(files$sessionFilepath))
   expect_true(file.exists(files$latestFilepath))

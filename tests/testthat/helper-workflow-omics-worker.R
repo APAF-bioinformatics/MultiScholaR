@@ -216,14 +216,14 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
         executeLipidDaRunAnalysis(NULL, workflow$contrasts_tbl, "~ 0 + group", 0.05, 0, daData, workflow, session, paths)
       })
     } else {
-      normData <- createMetabNormReactiveState()
+      # KIT-105 W5: the shared normalisation frame's state and its run and correlation actions (mod_omic_norm*.R).
+      normData <- omicNormReactiveState()
       session$userData$probe_norm <- normData
       mod_metab_qc_intensity_server("intensity", workflow, omic, "kit078")
       mod_metab_qc_duplicates_server("duplicates", workflow, omic, "kit078")
-      shiny::observeEvent(input$run_normalization, runMetabNormNormalizationObserverWrapper(workflow, input, paths, omic, normData, addLog,
-        getPlotAestheticsFn = aesthetics, generateCompositeFromFilesFn = function(...) NULL))
-      shiny::observeEvent(input$apply_correlation_filter, runMetabNormApplyCorrelationObserverEntry(workflow, normData, input$min_pearson_correlation_threshold,
-        input$ruv_grouping_variable, addLog))
+      norm_config <- omicGuiConfig("metabolomics")
+      shiny::observeEvent(input$run_normalization, runOmicNormPipeline(input, workflow, paths, normData, addLog, aesthetics, norm_config))
+      shiny::observeEvent(input$apply_correlation_filter, applyOmicNormCorrelation(input, workflow, normData, addLog, norm_config))
       shiny::observeEvent(input$run_da, {
         daData$current_state_name <- workflow$state_manager$current_state
         runMetabDaAnalysisObserverShell(NULL, workflow$contrasts_tbl, "~ 0 + group", 0.05, 0, workflow, daData, session, paths)

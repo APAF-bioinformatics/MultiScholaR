@@ -383,7 +383,12 @@ test_that("KIT-079: the composite reads its PNGs as native rasters, and the figu
     testthat::local_mocked_bindings(rasterGrob = capture, .package = "grid")
     omicsNormCompositeFromFiles(plotFiles = files, ncol = 2, columnLabels = c("a", "b"))
   })
-  loadMetabNormImageAsPlot(files[[1L]], rasterGrobFn = capture)
+  # KIT-105 W5: metab's composite is the same core (loadMetabNormImageAsPlot was removed with
+  # mod_metab_norm_render_helpers.R): its reader, drawn alone.
+  local({
+    testthat::local_mocked_bindings(rasterGrob = capture, .package = "grid")
+    omicsNormCompositeFromFiles(plotFiles = files[[1L]], ncol = 1)
+  })
   expect_identical(unique(seen), "nativeRaster")
   render <- function(reader, name) {
     testthat::local_mocked_bindings(readPNG = function(source, native = FALSE, info = FALSE) reader(source), .package = "png")

@@ -276,7 +276,8 @@ for (omic in c("lipidomics", "metabolomics")) local({
       # KIT-105 W4: the shared frame's ITSD tables (mod_omic_norm_panels.R), the observer's body called directly.
       expect_no_error(suppressWarnings(omicNormItsdTables(output, fixture$workflow, norm, omicGuiConfig("lipidomics"))))
     } else {
-      expect_no_error(suppressWarnings(runMetabNormItsdSelectionTableObserverShell(norm, fixture$workflow, output, reqFn = identity)))
+      # KIT-105 W5: the shared frame's ITSD tables under metab's configuration, the observer's body called directly.
+      expect_no_error(suppressWarnings(omicNormItsdTables(output, fixture$workflow, norm, omicGuiConfig("metabolomics"))))
     }
     expect_length(ls(output), 0L)
   })
@@ -371,11 +372,12 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
       shiny::observeEvent(input$detect, probe$detected <- list(totalDuplicates = detectWorkflowOmicsDuplicates(metabolomicsDeclarationBinding,
         workflow$state_manager)$total))
       shiny::observeEvent(input$finalize, runOmicQcFinalize(workflow, omic, filter_plot, output, config))
-      shiny::observe(runMetabNormItsdSelectionTableObserverShell(norm, workflow, output))
+      # KIT-105 W5: the shared normalisation frame's ITSD tables, final QC plot and export (mod_omic_norm*.R).
+      shiny::observe(omicNormItsdTables(output, workflow, norm, config))
       mod_metab_qc_itsd_server("itsd", workflow, omic, "kit082")
-      output$final_qc <- renderMetabNormFinalQcPlot(norm, workflow, colorVariableFn = function() "group", shapeVariableFn = function() NULL)
+      output$final_qc <- omicNormFinalQcPlot(norm, function(...) list(color_var = "group", shape_var = "group"), workflow, config)
       session$userData$register_da_outputs <- function() registerMetabDaVisualizationOutputs(input, output, da, workflow)
-      shiny::observeEvent(input$export_session, runMetabNormExportSessionObserverShell(workflow, norm, input, paths, "kit082"))
+      shiny::observeEvent(input$export_session, exportOmicNormSession(input, workflow, paths, "kit082", norm, function(...) invisible(NULL), config))
       shiny::observeEvent(input$save_args, runMetabSummarySaveWorkflowArgsObserverShell(input, dirs, omic, workflow, values, output))
     }
   }

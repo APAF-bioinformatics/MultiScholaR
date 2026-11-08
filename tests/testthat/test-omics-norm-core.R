@@ -6,6 +6,7 @@
 # kernels are the MCI lanes' stubs; every other kernel is real. Today's module copies stay until W4/W5 delete them;
 # then the "today" sides of these blocks are quarantined with them.
 # KIT-105 W4 deleted the lipid copies: the lipid halves are quarantined (Q-86 to Q-89); the metab halves stay live until W5.
+# KIT-105 W5 deleted the metab copies: the metab halves are quarantined (Q-108 to Q-111).
 
 normCoreSpec <- function(omic) {
     switch(omic,
@@ -147,6 +148,8 @@ normCoreRun <- function(omic, scenario, core) {
             handleLipidNormRunNormalization(input, workflow, paths, spec$omic_type, norm_data, log,
                 getPlotAestheticsFn = function() aesthetics)
         } else {
+            # Read only by the quarantined metab block (Q-110): runMetabNormNormalizationObserverWrapper was deleted by
+            # KIT-105 W5.
             runMetabNormNormalizationObserverWrapper(workflow, input, paths, spec$omic_type, norm_data, addLogFn = log,
                 getPlotAestheticsFn = function(colorVariable, shapeVariable) aesthetics)
         }
@@ -205,7 +208,8 @@ test_that("the W2 core functions are defined in their core files, in the namespa
 # KIT-105 W4: each comparison block that covered lipid and metab is split into a lipid block and a metab block, with the
 # expectations unchanged; each expectation that reads only the core stays in the live (metab) block. The lipid blocks'
 # "today" side called the lipid module functions W4 deleted, so they are quarantined (Q-86 to Q-89,
-# docs/qa/workflow-execution/kit/quarantined-tests.md); the metab blocks stay live until W5.
+# docs/qa/workflow-execution/kit/quarantined-tests.md); the metab blocks stay live until W5. KIT-105 W5 deleted the metab
+# module functions, so the metab blocks are quarantined too (Q-108 to Q-111).
 
 test_that("writeWorkflowOmicsNormComposite is lipid's composite step: files, labels, log and returned fields (lipid)", {
     testthat::skip("quarantined: Q-86 (KIT-105 W4) it compares the core with writeLipidNormCompositeFigure and buildLipidNormCompositeFromFilesGenerator, deleted with mod_lipid_norm_{workflow,support}_helpers.R; the lipid tab draws the core's writeWorkflowOmicsNormComposite and omicsNormCompositeFromFiles, covered by test-omic-norm-module.R (b) and (c) (the composite with a missing file) and the lipid_canonical norm step")
@@ -242,6 +246,7 @@ test_that("writeWorkflowOmicsNormComposite is lipid's composite step: files, lab
 })
 
 test_that("writeWorkflowOmicsNormComposite is metab's composite step: files, labels, log and returned fields (metab)", {
+    testthat::skip("quarantined: Q-108 (KIT-105 W5) it compares the core with runMetabNormCompositeQcFigureStep and generateMetabNormCompositeFromFiles, deleted with mod_metab_norm_{pipeline,render}_helpers.R; the metab tab and its binding draw the core's writeWorkflowOmicsNormComposite and omicsNormCompositeFromFiles, covered by test-omic-norm-module.R (b) and (c) (the composite with a missing file), MCI-015 and the metab_lc, metab_gc and metab_combined norm steps")
     qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
     normCoreWritePngs(qc)
     # A missing cell: the composite is still written, the cell blank (W1 (c)).
@@ -303,6 +308,7 @@ test_that("omicsNormCompositeFromFiles is lipid's composite from files: the plot
 })
 
 test_that("omicsNormCompositeFromFiles is metab's composite from files: the plot, its size and its labels (metab)", {
+    testthat::skip("quarantined: Q-108 (KIT-105 W5) it compares the core with generateMetabNormCompositeFromFiles, deleted with mod_metab_norm_render_helpers.R; the metab tab and its binding draw the core's omicsNormCompositeFromFiles, covered by test-omic-norm-module.R (b) and (c) (the composite with a missing file), test-workflow-omics-figures.R (KIT-079), test-omics-audit-carry-overs.R (BUG-16) and the metab_lc, metab_gc and metab_combined norm steps")
     qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
     draw <- normCoreCompositeFromFilesCase(qc)
     core <- draw(omicsNormCompositeFromFiles)
@@ -341,6 +347,7 @@ test_that("omicsNormFinalQcPcaPlot is lipid's final-QC PCA builder (lipid)", {
 })
 
 test_that("omicsNormFinalQcPcaPlot is metab's final-QC PCA builder; metab's binding keeps its error placeholder (metab)", {
+    testthat::skip("quarantined: Q-109 (KIT-105 W5) it compares the core with buildMetabNormFinalQcPcaPlot, deleted with mod_metab_norm_session_helpers.R; the metab tab and its binding draw the core's omicsNormFinalQcPcaPlot (the binding keeping metab's placeholder), covered by test-omic-norm-module.R (b) and (c) (the final QC plot and the final PCA failing) and the metab_lc, metab_gc and metab_combined norm steps")
     for (omic in c("lipid", "metab")) {
         spec <- normCoreSpec(omic)
         for (layout in c("combined", "lc")) {
@@ -389,6 +396,7 @@ test_that("the lipid binding's composite_figure gives today's product through th
 })
 
 test_that("the metab binding's composite_figure gives today's product through the core (metab)", {
+    testthat::skip("quarantined: Q-108 (KIT-105 W5) it compares the binding's composite_figure with runMetabNormCompositeQcFigureStep, deleted with mod_metab_norm_pipeline_helpers.R; the binding calls the core's writeWorkflowOmicsNormComposite, covered by the metab journeys' managed composite (test-workflow-omics-worker.R), covered by test-omic-norm-module.R (b) and (c) and the metab_lc, metab_gc and metab_combined norm steps")
     qc <- withr::local_tempdir(pattern = "kit105-w2-qc-")
     normCoreWritePngs(qc, "LCMS_Pos")
     for (mode in c("skip", "manual")) {
@@ -421,6 +429,7 @@ test_that("runWorkflowOmicsInProcessNormalisation is lipid's in-process sequence
 })
 
 test_that("runWorkflowOmicsInProcessNormalisation is metab's in-process sequence: states, provenance, normData, log (metab)", {
+    testthat::skip("quarantined: Q-110 (KIT-105 W5) its \"today\" side is runMetabNormNormalizationObserverWrapper, deleted with mod_metab_norm_binding_helpers.R (and its pipeline shells with mod_metab_norm_pipeline_helpers.R); the metab tab runs the core's runWorkflowOmicsInProcessNormalisation, covered by test-omic-norm-module.R (b) and (c) (the three runs), MCI-015.1 to .3 and the metab_lc, metab_gc and metab_combined norm steps")
     runs <- list()
     for (scenario in c("skip", "manual", "automatic", "error")) {
         today <- normCoreRun("metab", scenario, core = FALSE)
@@ -484,6 +493,7 @@ test_that("collectWorkflowOmicsNormSession is lipid's session list: fields, orde
 })
 
 test_that("collectWorkflowOmicsNormSession is metab's session list: fields, order, counts (P-18) (metab)", {
+    testthat::skip("quarantined: Q-111 (KIT-105 W5) it compares the core with buildMetabNormExportSessionData, deleted with mod_metab_norm_session_helpers.R; the metab tab collects through the core's collectWorkflowOmicsNormSession, covered by test-omic-norm-module.R (b) (the export's session-RDS fields and counts), MCI-015.5 and .6, test-workflow-omics-sessions.R and the metab_lc, metab_gc and metab_combined norm steps")
     normCoreCollectCase("metab", function(fixture) {
         buildMetabNormExportSessionData(fixture$workflow, fixture$norm_data, fixture$input, "kit105", exportTimestamp = normCoreTime)
     })
@@ -506,6 +516,8 @@ normCoreSaveCase <- function(omic, today) {
         log <- function(message) acc$log <- c(acc$log, gsub(dir, "<DIR>", message, fixed = TRUE))
         progress <- function(amount, detail) acc$progress <- c(acc$progress, paste(amount, detail))
         value <- save(dir, log, progress)
+        # F105-03 (KIT-105 W5): the returned publication's completion time is the clock's, as the journal's is below.
+        if (!is.null(value$publication$completed_at)) value$publication$completed_at <- "<TIME>"
         files <- sort(list.files(dir, recursive = TRUE, all.files = TRUE))
         rds <- files[grepl("\\.(rds|RDS)$", files)]
         text <- files[grepl("\\.(txt|json)$", files)]
@@ -536,6 +548,7 @@ test_that("saveWorkflowOmicsNormSessionArtifacts is lipid's saver: files, bytes,
 })
 
 test_that("saveWorkflowOmicsNormSessionArtifacts is metab's savers: files, bytes, summary, log and progress (metab)", {
+    testthat::skip("quarantined: Q-111 (KIT-105 W5) it compares the core with saveMetabNormExportSessionRdsFiles, saveMetabNormExportMetadataFiles and saveMetabNormExportSummaryFile, deleted with mod_metab_norm_session_helpers.R; the metab tab saves through the core's saveWorkflowOmicsNormSessionArtifacts, covered by test-omic-norm-module.R (b) (the export's files and summary text), test-omic-norm-module.R's W5 (D7) export block, MCI-015.5, test-workflow-omics-sessions.R and the metab_lc, metab_gc and metab_combined norm steps")
     normCoreSaveCase("metab", function(session, dir, request, log, progress) {
         # runMetabNormExportSessionWorkflow's saveFn (mod_metab_norm_session_helpers.R:741-756), with the summary's
         # time fixed.

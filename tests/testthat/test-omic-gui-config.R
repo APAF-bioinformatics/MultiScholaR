@@ -790,7 +790,7 @@ test_that("each qc field, required or conditional, is refused by class when miss
 
 guiConfigNormRequired <- c("module_id", "panels", "plot_tabs", "stage_labels", "assay_slots", "ruv_heading",
     "ruv_help", "run", "correlation", "pre_qc_on_entry", "export", "itsd_table", "testids",
-    "skip_correlation_flags", "final_pca")
+    "skip_correlation_flags", "final_pca", "managed_correlation_notify")
 # The option sections and each one's required options (the shared panel library's order).
 guiConfigNormPanels <- list(aesthetics = character(), itsd = "aggregation", log2 = "offset",
     between_sample = c("methods", "default"), ruv_iii = c("modes", "default", "percentage", "k", "noun"),
@@ -855,6 +855,13 @@ test_that("the norm group holds today's values for lipid and metab and is NULL f
     expect_identical(metab$skip_correlation_flags, "after_commit")
     expect_identical(lipid$final_pca, list(preparing_size = 5, error_size = 4))
     expect_identical(metab$final_pca, list(preparing_size = 5, error_size = 5))
+    # KIT-105 W5 (D7): the export's progress display and summary time, and the managed correlation's failure notice.
+    expect_identical(lipid$export[c("progress", "summary_time")], list(progress = list(gather = "Gathering data and publishing outputs...",
+        complete = "Export complete", steps = FALSE), summary_time = "session"))
+    expect_identical(metab$export[c("progress", "summary_time")], list(progress = list(gather = "Gathering data...",
+        complete = character(0), steps = TRUE), summary_time = "written"))
+    expect_false(lipid$managed_correlation_notify)
+    expect_true(metab$managed_correlation_notify)
     # The ITSD selection table calls the omic's core builder with its id-column argument (D8).
     testthat::local_mocked_bindings(
         buildLipidItsdSelectionTable = function(assay_data, lipid_id_col, annotation_cols = NULL, is_patterns = NULL) {
@@ -953,6 +960,29 @@ test_that("each norm field, required or conditional, is refused by class when mi
     bad <- lipid
     bad$norm$export$samples <- "assay"
     expectGuiConfigRefused(bad, "norm$export$samples")
+    # KIT-105 W5: the export's progress display (each of its fields) and summary time.
+    for (omic in c("lipidomics", "metabolomics")) {
+        config <- omicGuiConfig(omic)
+        for (field in c("progress", "summary_time")) {
+            removed <- config
+            removed$norm$export[[field]] <- NULL
+            expectGuiConfigRefused(removed, paste0("norm$export$", field))
+            mistyped <- config
+            mistyped$norm$export[field] <- list(NA)
+            expectGuiConfigRefused(mistyped, paste0("norm$export$", field))
+        }
+        for (field in c("gather", "complete", "steps")) {
+            removed <- config
+            removed$norm$export$progress[[field]] <- NULL
+            expectGuiConfigRefused(removed, paste0("norm$export$progress$", field))
+            mistyped <- config
+            mistyped$norm$export$progress[field] <- list(NA)
+            expectGuiConfigRefused(mistyped, paste0("norm$export$progress$", field))
+        }
+    }
+    bad <- lipid
+    bad$norm$export$summary_time <- "export"
+    expectGuiConfigRefused(bad, "norm$export$summary_time")
     for (field in c("method", "ruv_mode", "run", "export")) {
         removed <- lipid
         removed$norm$testids <- removed$norm$testids[names(removed$norm$testids) != field]

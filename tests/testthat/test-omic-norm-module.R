@@ -1503,6 +1503,10 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
     extra = list(
         final_plot = "<plot>",
         final_plot_failing = "<plot>",
+        # Re-frozen once by KIT-105 W5 for F105-02 (metab joins the frame, which catches the refused commit). At
+        # 9a98e765 the error was unhandled: `errors` held "Error in commitWorkflowReferenceState: kit105: the store
+        # commit is refused", `session_closed` was TRUE and `notes` was character(0). `at_commit` (D7: metab sets its
+        # flags after the commit), `history` and `tab_status` are unchanged.
         skip_correlation_failing = list(
             at_commit = c(
                 normalization_complete = "TRUE", ruv_complete = "TRUE",
@@ -1511,15 +1515,15 @@ omicNormFrozen[["metab"]][["automatic"]] <- list(
                 post_itsd_obj = "metab_itsd_norm", post_log2_obj = "metab_log2",
                 post_norm_obj = "metab_normalized", ruv_corrected_obj = "metab_ruv_corrected",
                 correlation_filtered_obj = "<NULL>"),
-            errors = "Error in commitWorkflowReferenceState: kit105: the store commit is refused",
-            session_closed = TRUE,
+            errors = character(0),
+            session_closed = FALSE,
             history = c(
                 "initial", "metab_qc_complete", "metab_itsd_norm", "metab_log2", "metab_normalized",
                 "metab_ruv_corrected"),
             tab_status = c(
                 setup_import = "complete", design_matrix = "complete", quality_control = "complete",
                 normalization = "pending", differential_analysis = "locked"),
-            notes = character(0))),
+            notes = "[error] Error: kit105: the store commit is refused")),
     choices = list(
         `norm-color_variable` = c("group", "batch"),
         `norm-shape_variable` = c("group", "batch"),
@@ -1667,4 +1671,120 @@ test_that("F105-02: lipid skip-correlation with the store commit refused notifie
     expect_identical(failing$at_commit[["correlation_filtering_complete"]], "TRUE")
     expect_identical(run$after[c("correlation_filtering_complete", "correlation_filtered_obj", "ruv_corrected_obj")],
         c(correlation_filtering_complete = "FALSE", correlation_filtered_obj = "<NULL>", ruv_corrected_obj = "lipid_ruv_corrected"))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-105 W5: the metab tab on the shared frame (R/mod_omic_norm.R, R/mod_omic_norm_panels.R).
+# ------------------------------------------------------------------------------------------------
+
+test_that("W5: the metab norm wrappers are thin wrappers over the shared frame, and the metab helper files are gone (fails before)", {
+    expect_true("mod_omic_norm_ui" %in% all.names(body(mod_metab_norm_ui)))
+    expect_true("mod_omic_norm_server" %in% all.names(body(mod_metab_norm_server)))
+    # One top-level function from each deleted helper file (mod_metab_norm_{binding,entry,pipeline,render,session}_helpers.R).
+    for (name in c("runMetabNormQcImageBindingShell", "runMetabNormModuleServerPublicWrapper", "runMetabNormNormalizationPipelineShell",
+        "generateMetabNormCompositeFromFiles", "buildMetabNormExportSessionData")) {
+        expect_false(exists(name, envir = asNamespace("MultiScholaR"), inherits = FALSE), info = name)
+    }
+})
+
+# F105-02 for metab: the frame catches the refused commit (W4), and metab's flags are set after the commit (D7), so
+# they were FALSE at the commit and stay so. Fails on the start commit (metab's own handler: the session is closed).
+test_that("F105-02: metab skip-correlation with the store commit refused notifies and keeps the session and the state (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    run <- omicNormScenario("metab", "automatic")
+    failing <- run$extra$skip_correlation_failing
+    expect_false(failing$session_closed)
+    expect_identical(failing$errors, character())
+    expect_identical(failing$notes, "[error] Error: kit105: the store commit is refused")
+    expect_identical(failing$history, c("initial", "metab_qc_complete", "metab_itsd_norm", "metab_log2", "metab_normalized",
+        "metab_ruv_corrected"))
+    expect_identical(failing$tab_status[["normalization"]], "pending")
+    expect_identical(failing$at_commit[["correlation_filtering_complete"]], "FALSE")
+    expect_identical(run$after[c("correlation_filtering_complete", "correlation_filtered_obj", "ruv_corrected_obj")],
+        c(correlation_filtering_complete = "FALSE", correlation_filtered_obj = "<NULL>", ruv_corrected_obj = "metab_ruv_corrected"))
+})
+
+# D7 (W5): the export's progress display and the summary's time, per omic. Lipid's tab shows "Gathering data and
+# publishing outputs..." and "Export complete", and its summary carries the session's export time; metab's shows
+# "Gathering data..." and steps through the saver's files, and its summary carries the time it is written. The
+# publication is held a second (runWorkflowLegacyExport, called through) so the two times differ. Passes before and
+# after.
+test_that("W5 (D7): the export's progress and summary time are each omic's", {
+    skip_if_not(workflowOwnerCapable())
+    held <- new.env(parent = emptyenv())
+    held$progress <- character()
+    testthat::local_mocked_bindings(incProgress = function(amount = NULL, message = NULL, detail = NULL, session = NULL) {
+        held$progress <- c(held$progress, paste(amount, detail))
+        invisible(NULL)
+    }, .package = "shiny")
+    publish <- runWorkflowLegacyExport
+    testthat::local_mocked_bindings(runWorkflowLegacyExport = function(...) {
+        Sys.sleep(1.1)
+        publish(...)
+    }, .package = "MultiScholaR")
+    export <- function(omic) {
+        steps <- list(
+            run = function(ctx) {
+                ctx$set(apply_itsd = FALSE, norm_method = "cyclicloess", ruv_mode = "skip")
+                ctx$set(run_normalization = 1L)
+            },
+            export = function(ctx) {
+                held$progress <- character()
+                ctx$set(export_session = 1L)
+                source_dir <- ctx$paths$source_dir
+                session <- readRDS(list.files(source_dir, pattern = "_filtered_session_data_latest\\.rds$", full.names = TRUE)[[1L]])
+                summary <- readLines(list.files(source_dir, pattern = "_filtered_session_summary\\.txt$", full.names = TRUE)[[1L]])
+                written <- sub("^Export Timestamp: ", "", grep("^Export Timestamp: ", summary, value = TRUE))
+                ctx$keep("export", list(progress = held$progress, session_time = format(session$export_timestamp, "%Y-%m-%d %H:%M:%S"),
+                    summary_time = written))
+            })
+        omicNormDrive(omic, steps)$extra$export
+    }
+    lipid <- export("lipid")
+    expect_identical(lipid$progress, c("0.2 Gathering data and publishing outputs...", "0.8 Export complete"))
+    expect_identical(lipid$summary_time, lipid$session_time)
+    metab <- export("metab")
+    expect_identical(metab$progress, c("0.2 Gathering data...", "0.3 Saving to file...", "0.1 Creating latest version...",
+        "0.1 Saving metadata files...", "0.2 Creating summary..."))
+    expect_true(as.POSIXct(metab$summary_time) > as.POSIXct(metab$session_time))
+})
+
+# D7 (W5): a managed correlation's failure on the worker. Lipid's tab logs it and closes the working notification; metab's
+# also shows it as an error notification. Driven through each public server with a runner whose actions fail. Passes
+# before and after.
+test_that("W5 (D7): a failed managed correlation is notified on metab's tab only", {
+    skip_if_not(workflowOwnerCapable())
+    failed_correlation <- function(omic) {
+        spec <- omicNormSpec(omic)
+        object <- spec$object(positive_only = TRUE)
+        workflow <- spec$workflow(object)
+        notes <- character()
+        testthat::local_mocked_bindings(showNotification = function(ui, ..., id = NULL, type = "default") {
+            notes <<- c(notes, paste0("[", type, "] ", paste(as.character(ui), collapse = " ")))
+            invisible(id %||% "note")
+        }, removeNotification = function(...) invisible(NULL), .package = "shiny")
+        runner <- list(retrying = function() FALSE, progress = function(message) list(inc = function(...) NULL, close = function() NULL),
+            run = function(actions, done = NULL, failed = NULL, ...) failed(simpleError("kit105: the worker refused the correlation")))
+        testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) if (identical(omic_type, spec$omic_type)) runner,
+            .package = "MultiScholaR")
+        log <- NULL
+        suppressWarnings(suppressMessages(shiny::testServer(spec$server, args = list(id = "norm", workflow_data = workflow,
+            experiment_paths = list(), omic_type = spec$omic_type, experiment_label = "kit105"), {
+            norm_data <- session$returned
+            norm_data$post_norm_obj <- getWorkflowStateReference(workflow$state_manager)
+            norm_data$normalization_complete <- TRUE
+            session$setInputs(ruv_grouping_variable = "group", min_pearson_correlation_threshold = 0.5)
+            session$setInputs(apply_correlation_filter = 1L)
+            log <<- sub("^\\[[0-9:]+\\] ", "", shiny::isolate(norm_data$normalization_log))
+        })))
+        list(log = log, notes = notes)
+    }
+    lipid <- failed_correlation("lipid")
+    expect_identical(lipid$log, c("Applying correlation filter (threshold: 0.5 )",
+        "ERROR in correlation filtering: kit105: the worker refused the correlation"))
+    expect_identical(lipid$notes, "[default] Applying correlation filter...")
+    metab <- failed_correlation("metab")
+    expect_identical(metab$log, lipid$log)
+    expect_identical(metab$notes, c("[default] Applying correlation filter...",
+        "[error] Error: kit105: the worker refused the correlation"))
 })

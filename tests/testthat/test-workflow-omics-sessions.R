@@ -52,12 +52,13 @@ progressFn <- function(message = NULL, value = NULL, expr) expr
 
 #' KIT-105 W4: the lipid export through the shared frame's handler (mod_omic_norm.R), with shiny's progress and
 #' notifications bound to quiet doubles; an error notification raises, as the handler's injected error log did.
-omicsSessionLipidExport <- function(workflow, source_dir, norm) {
+#' KIT-105 W5: metab's export through the same handler under its configuration (`omic`).
+omicsSessionLipidExport <- function(workflow, source_dir, norm, omic = "lipidomics") {
   testthat::local_mocked_bindings(withProgress = progressFn, incProgress = quietFn,
     showNotification = function(ui, ..., type = "default") if (identical(type, "error")) stop(ui) else invisible(NULL),
     .package = "shiny")
   exportOmicNormSession(omicsSessionInput(), workflow, list(source_dir = source_dir), "Owner test", norm, quietFn,
-    omicGuiConfig("lipidomics"))
+    omicGuiConfig(omic))
 }
 
 omicsSessionExport <- function(case, workflow, source_dir) {
@@ -65,8 +66,7 @@ omicsSessionExport <- function(case, workflow, source_dir) {
   if (identical(case$omic, "lipidomics")) {
     omicsSessionLipidExport(workflow, source_dir, norm)
   } else {
-    runMetabNormExportSessionWorkflow(workflow, norm, omicsSessionInput(), "Owner test", source_dir,
-      withProgressFn = progressFn, incProgressFn = quietFn, logInfoFn = quietFn)
+    omicsSessionLipidExport(workflow, source_dir, norm, omic = "metabolomics")
   }
 }
 
@@ -193,10 +193,7 @@ for (omic in c("lipidomics", "metabolomics")) {
     if (identical(case$omic, "lipidomics")) {
       omicsSessionLipidExport(workflow, source_dir, norm)
     } else {
-      dispatchMetabNormExportSession(workflow, norm, omicsSessionInput(), list(source_dir = source_dir), "Owner test",
-        resolveSourceDirFn = function(paths) paths$source_dir,
-        runWorkflowFn = function(...) runMetabNormExportSessionWorkflow(..., withProgressFn = progressFn, incProgressFn = quietFn, logInfoFn = quietFn),
-        handleOutcomeFn = function(error = NULL, ...) if (!is.null(error)) stop(error))
+      omicsSessionLipidExport(workflow, source_dir, norm, omic = "metabolomics")
     }
     latest <- file.path(source_dir, paste0(case$prefix, "_filtered_session_data_latest.rds"))
     exported <- readRDS(latest)

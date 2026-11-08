@@ -73,24 +73,21 @@ test_that("BUG-10: the metabolomics QC auto-initialisation observer runs once pe
 # ---------------------------------------------------------------------------
 test_that("BUG-16: the metabolomics composite generator builds no phantom label for an empty file list", {
   ns <- omicsAuditNamespace()
-  generate <- get("generateMetabNormCompositeFromFiles", envir = ns, inherits = FALSE)
+  # KIT-105 W5: the metabolomics composite generator is the core's omicsNormCompositeFromFiles (KIT-105 W2;
+  # generateMetabNormCompositeFromFiles was removed with mod_metab_norm_render_helpers.R). It has no injected
+  # functions, so its logger, its label, title and image drawing and its wrapping are bound in their namespaces.
+  generate <- get("omicsNormCompositeFromFiles", envir = ns, inherits = FALSE)
   messages <- character()
   result <- NULL
+  testthat::local_mocked_bindings(log_info = function(...) invisible(NULL),
+    log_error = function(m, ...) messages <<- c(messages, paste("error:", m)), .package = "logger")
+  testthat::local_mocked_bindings(annotate = function(...) stop("no label or title plot expected"), .package = "ggplot2")
+  testthat::local_mocked_bindings(readPNG = function(...) stop("no image expected"), .package = "png")
+  testthat::local_mocked_bindings(wrap_plots = function(...) stop("nothing to wrap"), .package = "patchwork")
   expect_no_warning(
     result <- generate(
-      plot_files = character(0),
-      ncol = 3,
-      logInfoFn = function(...) invisible(NULL),
-      logErrorFn = function(m, ...) messages <<- c(messages, paste("error:", m)),
-      warningFn = function(m, ...) messages <<- c(messages, paste("warning:", m)),
-      requireNamespaceFn = function(...) TRUE,
-      buildLabelPlotFn = function(...) stop("no label plot expected"),
-      buildTitlePlotFn = function(...) stop("no title plot expected"),
-      loadImageAsPlotFn = function(...) stop("no image expected"),
-      wrapPlotsFn = function(...) stop("nothing to wrap"),
-      plotLayoutFn = function(...) NULL,
-      fileExistsFn = function(...) FALSE,
-      gcFn = function() NULL
+      plotFiles = character(0),
+      ncol = 3
     )
   )
   expect_null(result)

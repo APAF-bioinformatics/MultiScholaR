@@ -310,6 +310,10 @@ applyOmicNormCorrelation <- function(input, workflowData, normData, addLog, conf
                     addLog(paste("ERROR in correlation filtering:", conditionMessage(error)))
                     logger::log_error(paste("Correlation filtering error:", conditionMessage(error)))
                     shiny::removeNotification("corr_working")
+                    # D7 (KIT-105 W5): metab's tab also shows the worker's failure.
+                    if (isTRUE(config$norm$managed_correlation_notify)) {
+                        shiny::showNotification(paste("Error:", conditionMessage(error)), type = "error")
+                    }
                 })
             return(invisible(TRUE))
         }
@@ -429,20 +433,26 @@ exportOmicNormSession <- function(input, workflowData, experimentPaths, experime
     }, error = report_failure)
 }
 
-#' The export's publication under the owner's scope and the progress display, then the tab's report.
+#' The export's publication under the owner's scope and the progress display, then the tab's report. The display's
+#' steps and the summary's time are the omic's (`norm$export$progress`, `norm$export$summary_time`; D7, KIT-105 W5).
 #' @noRd
 publishOmicNormExport <- function(manager, workflowData, normData, input, sourceDir, collect, addLog, config) {
     binding <- config$binding$binding
     export <- config$norm$export
+    progress <- export$progress
     artifacts <- withWorkflowStateScope(manager, function() {
         shiny::withProgress(message = "Exporting normalized session data...", value = 0, {
-            shiny::incProgress(0.2, detail = "Gathering data and publishing outputs...")
+            shiny::incProgress(0.2, detail = progress$gather)
             result <- runWorkflowOwnedSessionExport(manager, workflowData, normData, input, sourceDir, collectFn = collect,
                 saveFn = function(sessionData, sourceDir, publicationRequest) {
-                    export$save(binding, sessionData, sourceDir, publicationRequest, export)
+                    # Metab's tab steps the display through the saver's files, and its summary carries the time it is
+                    # written (`Sys.time()` is read when the summary is); lipid's carries the session's export time.
+                    export$save(binding, sessionData, sourceDir, publicationRequest, export,
+                        advance = if (isTRUE(progress$steps)) function(amount, detail) shiny::incProgress(amount, detail = detail),
+                        summaryTime = if (identical(export$summary_time, "written")) Sys.time() else sessionData$export_timestamp)
                 },
                 serializeFn = saveRDS, prefix = export$prefix)
-            shiny::incProgress(0.8, detail = "Export complete")
+            if (length(progress$complete)) shiny::incProgress(0.8, detail = progress$complete)
             result$exportArtifacts
         })
     })

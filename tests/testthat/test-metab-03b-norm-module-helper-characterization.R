@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-105 (KIT-105 W5) its symbol loader parses the five metab norm helper files W5 deleted (mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R) and tests 75 of their functions in 113 blocks; with the files gone the loader would load nothing silently, so the file is skipped here by name; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
