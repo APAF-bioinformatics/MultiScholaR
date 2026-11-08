@@ -1,0 +1,9 @@
+/frozen | 2026-11-08 -> 2026-11-09
+/source_sha | 1b12a7bfb2383276dd8caec0be567e54ee33d987 -> bdeaf8cf640a7999180e5b9419c6ee5a62cdb84a
+/steps/da/outputs/metabolomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_copy/outputs/metabolomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_export/outputs/metabolomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_refusal/outputs/metabolomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_report/outputs/metabolomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+/steps/summary_save/outputs/metabolomics_workflow-de-volcano_glimma | <ui> d1968b0f12a6b4ca08dcf08bc4b7e6bb225a387b0558e2285e7bbf2d0ec601dd -> <req>
+DIFFERENCES 8

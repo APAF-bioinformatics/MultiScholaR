@@ -1,0 +1,4 @@
+COUNTS test-gui-entry-metabolomics.R pass 87 fail 18 error 0 skip 0
+  BAD test-gui-entry-metabolomics.R :: KIT-101 entry lane metab_lc: LC-MS positive and negative assays (custom format)
+  BAD test-gui-entry-metabolomics.R :: KIT-101 entry lane metab_gc: one GC-MS assay (custom format)
+  BAD test-gui-entry-metabolomics.R :: KIT-101 entry lane metab_combined: LC-MS and GC-MS assays (custom format)

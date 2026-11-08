@@ -16,3 +16,10 @@ The `volcano_interactive` box is unticked by default for every omic, and `volcan
 ## W1 unit captures (not entry oracles)
 
 Five `test-omic-da-module.R` values, in two cases, move with D3 and D4. The lead decided to re-freeze them once each, with attribution: [w3/w1-refreeze.md](w3/w1-refreeze.md).
+
+### metab_lc, metab_gc, metab_combined (re-frozen once at `bdeaf8cf`, the W4 merge)
+
+- **Verify before the freeze** ([refreeze/metab-verify-before.txt](refreeze/metab-verify-before.txt)): 87 passed, 18 failed. In each lane's record, the JSON diff against its oracle shows exactly 6 values changed. Each is `metabolomics_workflow-de-volcano_glimma` at `da`, `summary_refusal`, `summary_save`, `summary_copy`, `summary_report` and `summary_export`, and each goes from `<ui> d1968b0f…` (the Combined banner) to `<req>`. Nothing else differs.
+- **The freeze** (once; [refreeze/metab-freeze.txt](refreeze/metab-freeze.txt)): each oracle's diff ([refreeze/metab_lc.diff.txt](refreeze/metab_lc.diff.txt), [metab_gc](refreeze/metab_gc.diff.txt), [metab_combined](refreeze/metab_combined.diff.txt)) is those 6 step values, plus the header fields `frozen` and `source_sha`. No other step value changed.
+- **Verify after** ([refreeze/metab-verify-after.txt](refreeze/metab-verify-after.txt)): 105 passed, 0 failed.
+- **Instrumentation note:** the lead's first record run used a pinned tree whose checkout had failed (an uncommitted local oracle copy). It ran W3's code, where metab was not yet on the frame. That run was discarded and redone on `bdeaf8cf`.
