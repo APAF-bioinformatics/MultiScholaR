@@ -40,7 +40,10 @@ test_that("(W2) the moved functions are in the namespace, each in its new file",
         if (!exists(name, envir = asNamespace("MultiScholaR"), inherits = FALSE)) next
         where <- omicsDaCoreSrcFile(name)
         expect_identical(where$env, "MultiScholaR", info = name)
-        expect_identical(where$file, moved[[name]], info = name)
+        # Source files are known under load_all only; the installed package keeps no srcref (KIT-104 ca35c462's rule).
+        if (!is.null(utils::getSrcref(get(name, envir = asNamespace("MultiScholaR"))))) {
+            expect_identical(where$file, moved[[name]], info = name)
+        }
     }
     expect_false(file.exists(testthat::test_path("..", "..", "R", "mod_prot_da_validation.R")))
 })
