@@ -1,0 +1,35 @@
+KIT-110 W4 merge checks (2026-11-08), on origin/performance-v2 23e75cf8 (code final at 46ec9e01). R 4.6.1. Start commit d5244ffe (R/ as KIT-105's 98da5939).
+
+1. DESCRIPTION Collate == R/*.R: 361 entries, 361 files, no duplicates. utils_workflow_trx_norm.R added after utils_workflow_trx_declarations.R (W2 2ea15095); mod_trx_norm.R removed (W3 46ec9e01).
+2. NAMESPACE against d5244ffe: 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 / 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 (byte-identical). git diff d5244ffe -- man R/app_ui.R R/app_server.R R/mod_omic_workflow.R tools: empty. roxygen2 was not run.
+3. Parse-data back-reference count (kit-104-w3/backrefs.R): 6, unchanged from KIT-105. No config function is defined in R/mod_*.R (test-omic-gui-config.R srcref rule, now covering trx: 1065/0).
+4. Dependents grep (KIT-105 W6's script, start d5244ffe), tracked text files in R/, tests/, tools/ (excluding tools/refactor/), inst/.
+   Every LIVE hit classified (none calls a deleted name):
+   - tests/testthat/test-omic-gui-config.R:1015: a block title citing the file its values came from at 38d9d25e.
+   - tests/testthat/test-omic-norm-module.R:1881, tests/testthat/test-trx-norm-core.R:28: tests asserting the deletion.
+   - The harness label tools/profiling/workflow_kit.R:26 ('mod_trx_norm') is a string, not a name or path match; kept (D10, P-22).
+
+   Deleted R/ files since d5244ffe ( 1 ): mod_trx_norm.R 
+   Deleted top-level names since d5244ffe ( 3 ):
+     mod_trx_norm_server runTrxPublicationInProcess trxNormOptionsPanel 
+   
+   Hits: 16 
+   
+   comment    LIVE 
+        13       3 
+   
+   By file and class:
+     comment           2  R/mod_omic_norm_panels.R
+     comment           6  R/utils_omic_gui_config.R
+     comment           2  R/utils_workflow_omics_actions.R
+     comment           1  R/utils_workflow_trx_norm.R
+     comment           1  tests/testthat/test-omic-gui-config.R
+     comment           1  tests/testthat/test-trx-norm-core.R
+     LIVE              1  tests/testthat/test-omic-gui-config.R
+     LIVE              1  tests/testthat/test-omic-norm-module.R
+     LIVE              1  tests/testthat/test-trx-norm-core.R
+   
+   LIVE hits (code or test lines outside a quarantined file or block): 3 
+     tests/testthat/test-omic-gui-config.R:1015  mod_trx_norm.R
+     tests/testthat/test-omic-norm-module.R:1881  trxNormOptionsPanel,mod_trx_norm_server
+     tests/testthat/test-trx-norm-core.R:28  runTrxPublicationInProcess
