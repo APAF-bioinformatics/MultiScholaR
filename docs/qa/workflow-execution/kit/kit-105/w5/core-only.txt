@@ -1,0 +1,52 @@
+# KIT-105 W5 (W6 follow-up), 2026-11-08: the core side of the quarantined comparison blocks in
+# tests/testthat/test-omics-norm-core.R (Q-86 to Q-89, Q-108 to Q-111), restored as five live blocks at the end of the
+# file. They call only the core and the bindings. Expected values are the ones the quarantined blocks asserted, or what
+# today's writers built (writeLipidNormCompositeFigure and buildLipidNormFinalQcPcaPlot at f8d4c5fc;
+# runMetabNormCompositeQcFigureStep and buildMetabNormExportSessionData at 037bc246). No R/ change.
+
+## Runs (one process, load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, the proof library)
+before (f1f1dc3a):                          COUNTS test-omics-norm-core.R pass 18 fail 0 error 0 skip 14
+after, W5's tree:                           COUNTS test-omics-norm-core.R pass 62 fail 0 error 0 skip 14   109s
+after, on the f8d4c5fc R/ code (pinned `git archive f8d4c5fc` with this test file): pass 62 fail 0 error 0 skip 14   110s
+  (so the new blocks describe behaviour that held before the module copies were deleted)
+
+## Restored (live now)
+- Q-86/Q-108 composite: writeWorkflowOmicsNormComposite's returned list, field by field in metab's order (qcDir,
+  ncolComposite 2/3, columnLabels, allPlotFiles and allRowLabels as today's writers built them, logEntry,
+  compositeSaved TRUE), for skip and automatic, lipid and metab; the same through each binding's composite_figure (one
+  assay, skip and manual) with its three files; both bindings calling writeWorkflowOmicsNormComposite (all.names); no QC
+  directory: the empty list, the one log line, no file; the refused write: errorMessage before compositeSaved FALSE and
+  the log "Warning: Could not generate composite QC figure: kit105 w2: the figure is refused".
+- Q-86/Q-108 composite from files: size c(13, 14); no file and no titles gives NULL with the warning "No valid plot
+  sections to combine".
+- Q-87/Q-109 final PCA: the core's shape (a patchwork for two assays, else the one plot), lipid and metab, combined and
+  lc; each binding's final_pca draws the core's plot (PNG digest); both bindings calling omicsNormFinalQcPcaPlot
+  (all.names); the PCA failing: the core raises, and lipid's binding raises.
+- Q-88/Q-110 in-process run, metab error scenario (core only): the first notification "[error] Error: kit105 w2: the
+  RUV optimisation is refused" and ruv_complete FALSE.
+- Q-89/Q-111 collector and saver: in process the list holds the state (S4); on a managed session current_s4_object is
+  NULL with the field kept; lipid and metab; the saver refuses without a publication request (saved_entity_scope), for
+  both omics' export values.
+
+## Already asserted live elsewhere (not repeated)
+- The composite's log lines ("Generating composite QC figure...", "Composite QC figure saved to: ...") and files
+  (<omic>_composite_QC_figure.pdf/png/rds), the labels it draws with their sizes (titles [6], row labels [5]) and the
+  composite with a missing file: test-omic-norm-module.R (b)/(c), every run scenario, both omics (`log`, `qc_files`,
+  `annotations`).
+- Metab's final-PCA placeholder (label "Error: ...", size 4): test-omic-norm-module.R (c), metab automatic
+  `final_plot_failing` (annotations "Error: kit105: the final PCA is refused [4]"); lipid's in-process size 4 likewise.
+- The in-process run's states, history, provenance, slots, log and success notification, including "ITSD features
+  selected" (manual), ruv_corrected_obj = the normalised state (skip), and the automatic run's history, notes and QC
+  files: test-omic-norm-module.R (b), the three scenarios, both omics; the failing run's result FALSE, "ERROR:" log and
+  ruv_complete FALSE: MCI-015.3 and MCI-021.3 (invalid k).
+- The collector's field order (the counts field at 21), the P-18 sample counts (lipid 4, metab 5): test-omic-norm-module.R
+  (b) skip `export` (`rds_fields`, `feature_counts`), both omics.
+- The saver's files and the summary text and title: test-omic-norm-module.R (b) skip `export` (`summary`, `source_files`);
+  "<prefix>ruv_optimization_results.RDS" and the summary title: MCI-015.5, MCI-021.5; metab's progress steps and summary
+  time: test-omic-norm-module.R's W5 (D7) export block.
+
+## Not restorable without the deleted functions
+Byte-level equality with today's writers (the composite PNG digests, the PCA plot data against today's builder, the
+collector's whole list against today's builder, the in-process state digests against today's handler): those
+comparisons need the "today" side. They are covered end to end by the entry lanes (metab_lc, metab_gc,
+metab_combined, lipid_canonical identical to their oracles) and W1 (b)/(c).

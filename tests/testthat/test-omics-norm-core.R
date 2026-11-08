@@ -566,3 +566,139 @@ test_that("saveWorkflowOmicsNormSessionArtifacts is metab's savers: files, bytes
     expect_error(saveWorkflowOmicsNormSessionArtifacts(fixture$spec$binding, list(), tempdir(), NULL, fixture$export),
         class = "saved_entity_scope")
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-105 W5 (W6 follow-up): the core side of the quarantined comparison blocks above (Q-86 to Q-89, Q-108 to Q-111),
+# live. They call only the core and the bindings. Each expected value is one the quarantined blocks asserted, or what
+# today's writers built (writeLipidNormCompositeFigure and buildLipidNormFinalQcPcaPlot at f8d4c5fc,
+# runMetabNormCompositeQcFigureStep and buildMetabNormExportSessionData at 037bc246). What is asserted live elsewhere is
+# not repeated here (docs/qa/workflow-execution/kit/kit-105/w5/core-only.txt lists which and where).
+# ------------------------------------------------------------------------------------------------
+
+#' The composite's plot files and row labels as today's writers built them: per assay and kind (pca, density, rle,
+#' correlation), the stages' files (`pre_norm`, `post_norm`, and `ruv_corrected` unless RUV was skipped) and one letter
+#' label per file, counted on across rows.
+normCoreExpectedGrid <- function(qc, assays, ruv_mode) {
+    stages <- if (identical(ruv_mode, "skip")) c("pre_norm", "post_norm") else c("pre_norm", "post_norm", "ruv_corrected")
+    files <- character()
+    labels <- list()
+    counter <- 1L
+    for (assay in assays) {
+        safe <- gsub("[^A-Za-z0-9]", "_", tolower(assay))
+        for (kind in c("pca", "density", "rle", "correlation")) {
+            files <- c(files, file.path(qc, sprintf("%s_%s_%s.png", safe, stages, kind)))
+            labels[[sprintf("%s_%s", safe, kind)]] <- sprintf("%s)", letters[counter + seq_along(stages) - 1L])
+            counter <- counter + length(stages)
+        }
+    }
+    list(files = files, labels = labels, ncol = length(stages),
+        columns = c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")[seq_along(stages)])
+}
+
+test_that("core-only (Q-86, Q-108): the composite's returned fields, the empty case and the refused write's warning", {
+    qc <- withr::local_tempdir(pattern = "kit105-w5-qc-")
+    normCoreWritePngs(qc)
+    # A missing cell: the composite is still written (W1 (c)).
+    unlink(file.path(qc, "lcms_pos_post_norm_density.png"))
+    entry <- "Generating composite QC figure..."
+    for (mode in c("skip", "automatic")) {
+        grid <- normCoreExpectedGrid(qc, normCoreAssays, mode)
+        # Metab's fields, in its order (the core returns the superset, D7); lipid read `compositeSaved`.
+        expected <- list(qcDir = qc, ncolComposite = if (identical(mode, "skip")) 2 else 3, columnLabels = grid$columns,
+            allPlotFiles = grid$files, allRowLabels = grid$labels, logEntry = entry, compositeSaved = TRUE)
+        for (omic in c("lipidomics", "metabolomics")) {
+            core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, mode, omic,
+                output_dir = out, addLog = log))
+            expect_identical(core$value, expected, info = paste(omic, mode))
+        }
+    }
+    # Through each binding's `composite_figure` (the worker's), one assay.
+    qc_one <- withr::local_tempdir(pattern = "kit105-w5-qc-")
+    normCoreWritePngs(qc_one, "LCMS_Pos")
+    for (mode in c("skip", "manual")) {
+        grid <- normCoreExpectedGrid(qc_one, "LCMS_Pos", mode)
+        expected <- list(qcDir = qc_one, ncolComposite = if (identical(mode, "skip")) 2 else 3, columnLabels = grid$columns,
+            allPlotFiles = grid$files, allRowLabels = grid$labels, logEntry = entry, compositeSaved = TRUE)
+        for (binding in list(lipidomicsDeclarationBinding, metabolomicsDeclarationBinding)) {
+            through <- normCoreComposite(function(out, log) binding$composite_figure(qc_one, out, "LCMS_Pos", mode))
+            expect_identical(through$value, expected, info = paste(binding$omic_type, mode))
+            expect_identical(through$files, paste0(binding$omic_type, "_composite_QC_figure.", c("pdf", "png", "rds")),
+                info = paste(binding$omic_type, mode))
+        }
+    }
+    expect_true("writeWorkflowOmicsNormComposite" %in% all.names(body(lipidomicsDeclarationBinding$composite_figure)))
+    expect_true("writeWorkflowOmicsNormComposite" %in% all.names(body(metabolomicsDeclarationBinding$composite_figure)))
+    # No QC directory: nothing is drawn and nothing is written.
+    core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(NULL, normCoreAssays, "skip", "lipidomics",
+        output_dir = out, addLog = log))
+    expect_identical(core$value, list(qcDir = NULL, ncolComposite = NULL, columnLabels = NULL, allPlotFiles = character(0),
+        allRowLabels = list(), logEntry = entry, compositeSaved = FALSE))
+    expect_identical(core$log, entry)
+    expect_identical(core$files, character(0))
+    # The figure's write failing: the warning in the log and the message returned.
+    refuse <- function(...) stop("kit105 w2: the figure is refused")
+    core <- normCoreComposite(function(out, log) writeWorkflowOmicsNormComposite(qc, normCoreAssays, "skip", "metabolomics",
+        output_dir = out, addLog = log, savePlotFn = refuse, logWarnFn = function(...) NULL))
+    expect_identical(core$value, list(qcDir = qc, ncolComposite = NULL, columnLabels = NULL, allPlotFiles = character(0),
+        allRowLabels = list(), logEntry = entry, errorMessage = "kit105 w2: the figure is refused", compositeSaved = FALSE))
+    expect_identical(core$log, c(entry, "Warning: Could not generate composite QC figure: kit105 w2: the figure is refused"))
+})
+
+test_that("core-only (Q-86, Q-108): the composite from files' size, and no composite with nothing to draw", {
+    qc <- withr::local_tempdir(pattern = "kit105-w5-qc-")
+    draw <- normCoreCompositeFromFilesCase(qc)
+    # Three columns, column titles and two rows (one file absent): 4 + 3 * 3 wide, 4 + (0.2 + 2 * (0.1 + 1)) * 2 high.
+    expect_identical(draw(omicsNormCompositeFromFiles)$size, c(13, 14))
+    none <- file.path(qc, c("x.png", "y.png", "z.png"))
+    expect_warning(expect_null(suppressMessages(omicsNormCompositeFromFiles(none, 3, list(r = c("a)", "b)", "c)"))))),
+        "No valid plot sections to combine")
+})
+
+test_that("core-only (Q-87, Q-109): the final-QC PCA through each binding is the core's; the core and lipid's binding raise", {
+    for (omic in c("lipid", "metab")) {
+        spec <- normCoreSpec(omic)
+        for (layout in c("combined", "lc")) {
+            # The PCA of a normalised state (the final QC plot's).
+            object <- suppressMessages(suppressWarnings(logTransformAssays(spec$object(layout = layout, positive_only = TRUE), offset = 1)))
+            core <- suppressMessages(suppressWarnings(omicsNormFinalQcPcaPlot(object, "group", "batch")))
+            # Today's builders: the assays' plots in a column (two assays), else the one assay's plot.
+            expect_identical(inherits(core, "patchwork"), identical(layout, "combined"), info = paste(omic, layout))
+            through <- suppressMessages(suppressWarnings(spec$binding$final_pca(object, "group", "batch")))
+            expect_identical(normCorePlotPng(through), normCorePlotPng(core), info = paste(omic, layout))
+        }
+    }
+    expect_true("omicsNormFinalQcPcaPlot" %in% all.names(body(lipidomicsDeclarationBinding$final_pca)))
+    expect_true("omicsNormFinalQcPcaPlot" %in% all.names(body(metabolomicsDeclarationBinding$final_pca)))
+    # The PCA failing (D7): the core raises, and so does lipid's binding (the worker reports it). Metab's placeholder is
+    # asserted by test-omic-norm-module.R (c).
+    testthat::local_mocked_bindings(plotPca = function(...) stop("kit105 w2: the PCA is refused"), .package = "MultiScholaR")
+    expect_error(omicsNormFinalQcPcaPlot(module_ci_metab_norm_object(positive_only = TRUE), "group", "batch"),
+        "kit105 w2: the PCA is refused")
+    expect_error(lipidomicsDeclarationBinding$final_pca(module_ci_lipid_norm_object(positive_only = TRUE), "group", "batch"),
+        "kit105 w2: the PCA is refused")
+})
+
+test_that("core-only (Q-88, Q-110): a failing in-process run is notified as an error and leaves RUV incomplete (metab)", {
+    error <- normCoreRun("metab", "error", core = TRUE)
+    expect_identical(error$notes[[1L]], "[error] Error: kit105 w2: the RUV optimisation is refused")
+    expect_false(error$flags[["ruv_complete"]])
+})
+
+test_that("core-only (Q-89, Q-111): the collector's state in process and on a managed session; the saver needs a request", {
+    for (omic in c("lipid", "metab")) {
+        fixture <- normCoreExportFixture(omic)
+        collect <- function() collectWorkflowOmicsNormSession(fixture$spec$binding, fixture$workflow, fixture$norm_data, fixture$input,
+            "kit105", fixture$export, normCoreTime)
+        expect_true(isS4(collect()$current_s4_object), info = omic)
+        # A managed session: the worker serialises the state, so the list holds none (the field kept).
+        local({
+            testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) list(), .package = "MultiScholaR")
+            managed <- collect()
+            expect_null(managed$current_s4_object)
+            expect_true("current_s4_object" %in% names(managed))
+        })
+        # Without a publication request the saver refuses, as both savers did.
+        expect_error(saveWorkflowOmicsNormSessionArtifacts(fixture$spec$binding, list(), tempdir(), NULL, fixture$export),
+            class = "saved_entity_scope")
+    }
+})
