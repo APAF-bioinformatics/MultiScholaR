@@ -1236,6 +1236,15 @@ if (!is.null(b$builds$kit_104)) {
     }
 }
 
+# KIT-105 (the normalisation core moves; the shared lipid/metab normalisation frame): the same six screen journeys on kit_105.
+if (!is.null(b$builds$kit_105)) {
+    kit_105 <- list(build = "kit_105", purpose = "exactness (recorded, uncounted; KIT-105)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("105", suffix)]] <- utils::modifyList(from, kit_105)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
