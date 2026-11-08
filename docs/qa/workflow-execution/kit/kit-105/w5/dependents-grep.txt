@@ -1,0 +1,33 @@
+# KIT-105 W5 dependents grep (2026-11-08) on W5's tree, for every deleted name and file, across R/, tests/, tools/
+# (excluding tools/refactor/) and inst/. The deleted set: the five files R/mod_metab_norm_{binding,entry,pipeline,render,
+# session}_helpers.R and their 76 top-level functions (parsed at 037bc246), and the body of mod_metab_norm_ui (the name
+# stays: a thin wrapper). Command: grep -rnwF -f <the 76 names> and grep -rnE 'mod_metab_norm_(binding|entry|pipeline|
+# render|session)_helpers' (scratch depgrep.sh). Also: codetools::findGlobals over every function in the loaded
+# namespace finds no deleted name (character(0)), and no deleted name is still defined there.
+
+## No live hit remains. Every hit, classified:
+
+R/ (no call of a deleted function):
+  - comments naming the deleted functions or files as provenance:
+      R/utils_workflow_omics_actions.R:343, R/utils_workflow_omics_figures.R:174, :229,
+      R/utils_workflow_saved_exports.R:104, :157, R/utils_omic_gui_config.R:683, :685, :1113-1121 (file:line notes)
+  - `getPlotAesthetics` as a local or argument name, not metab's deleted top-level function of that name:
+      R/mod_omic_norm.R:62-238 (the frame's getter, kept by that name), R/mod_omic_norm_panels.R:491-501 (an argument),
+      R/mod_prot_norm_observer_helpers.R:246-298 (a local of runProtNormModuleServerShell's body)
+
+tests/ :
+  - quarantined files: test-metab-03b (Q-105, line-1 skip; 204 name hits, 5 file hits), test-metab-03c (Q-106; 7 and 5),
+    test-lipid-12 (Q-95, W4; `getPlotAesthetics` as a stub/field name), test-lipid-12a blocks 4-8 (Q-96, W4; field name)
+  - quarantined blocks: test-metab-03d blocks 9-11 (Q-107; lines 416-763, 62 hits; blocks 1-8, lines 166-411, have none),
+    test-omics-norm-core.R metab blocks at :248, :310, :349, :398, :431, :495, :550 (Q-108 to Q-111), and :151-153 in
+    normCoreRun's metab branch, read only by the Q-110 block (commented)
+  - comments in the retargeted tests naming what was removed: helper-module-ci-metab-norm.R:301, :441;
+    test-module-ci-metab-norm.R:39-40, :75-76, :132, :221-222, :334-335; test-workflow-omics-figures.R:386-387;
+    test-omics-audit-carry-overs.R:77
+  - a test that asserts the deletion: test-omic-norm-module.R:1684-1685 (the W5 wrapper block)
+
+tools/ (excluding tools/refactor/), inst/: no hit. (tools/ci/impact-map.json:229 matches R/(mod|func)_metab_.*norm.*\.R
+  by pattern; the remaining mod_metab_norm_{ui,server}.R still match it. test-ci-impact-* run as dependents.)
+
+## NAMESPACE and man/
+git diff 037bc246 -- NAMESPACE man R/app_ui.R R/app_server.R R/mod_omic_workflow.R tools: empty.

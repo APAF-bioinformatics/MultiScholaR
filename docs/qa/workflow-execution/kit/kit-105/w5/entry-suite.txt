@@ -1,0 +1,19 @@
+# KIT-105 W5 entry-point suite on W5's tree (metab on the shared frame; the five metab helper files deleted). load_all,
+# R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, the proof library, one process per file, in sequence under a sleep lock (one
+# targeted batch ran alongside), against the frozen oracles in tests/testdata/gui-entry/ (no oracle changed by W5).
+# Ceilings 900 s per lane, 4,500 s per file. Per-lane times are each block's wall time (scratch run-entry.R, run1.R
+# with the blocks' `real` times printed). Recorded 2026-11-08.
+
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0     358s
+  metab_lc        identical  35/0/0/0  133s
+  metab_gc        identical  35/0/0/0   98s
+  metab_combined  identical  35/0/0/0  118s
+  (their norm_refusal, norm, correlation and session_export steps now through mod_omic_norm_server under the metab
+  configuration: the in-process twin, the frame's correlation and the core's collector and saver)
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0        125s
+  lipid_canonical identical  35/0/0/0  116s  (the frame's export/correlation edits keep lipid's values)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0   74s
+  trx_screen      identical  29/0/0/0   66s
+
+# Not run here (lead, W6): the lifecycle trace on metab_combined (Simulation Setup) and the proteomics lanes (no
+# proteomics file changed by W5).

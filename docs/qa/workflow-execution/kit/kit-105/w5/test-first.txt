@@ -1,0 +1,58 @@
+# KIT-105 W5 test-first (2026-11-08). One Rscript process per file, pkgload::load_all, R 4.6.1,
+# MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS = the browser-smoke proof library (kit/scripts-078/run1.R), two batches in
+# parallel under a sleep lock.
+#
+# 1. The tests W5 retargets or quarantines, unchanged, on the start commit 037bc246 against the old code (a pinned
+#    `git archive 037bc246` copy). All pass. (The clock flake W4 saw in W2's saver block, F105-03, did not fire here.)
+
+COUNTS test-omic-norm-module.R pass 503 fail 0 error 0 skip 0                     135s
+COUNTS test-omic-gui-config.R pass 949 fail 0 error 0 skip 0                      12s
+COUNTS test-omics-norm-core.R pass 121 fail 0 error 0 skip 7                      227s  (the 7 lipid halves, Q-86 to Q-89)
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0                 57s   (MCI-015, old targets)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0                 67s   (MCI-021)
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0                    117s  (MCI-030)
+COUNTS test-omic-design-module.R pass 146 fail 0 error 0 skip 0                   24s
+COUNTS test-metab-03d-norm-module-characterization.R pass 55 fail 0 error 0 skip 1   46s
+COUNTS test-metab-03b-norm-module-helper-characterization.R pass 876 fail 0 error 0 skip 3   19s
+COUNTS test-metab-03c-norm-module-seams.R pass 51 fail 0 error 0 skip 0           7s
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0                412s  (the helper's metab lines, old)
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0              301s
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0     948s
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0               277s
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0              66s
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0               25s
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0                   18s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0               18s
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0          108s
+
+# 2. W5's new and retargeted tests on the start commit's R/ code (037bc246 with W5's tests/testthat files copied in).
+#    The retargeted tests pass against the old code; the new blocks that describe W5's change fail before, as written.
+
+COUNTS test-omic-norm-module.R pass 513 fail 12 error 0 skip 0                    414s
+  BAD (b, c) metab, RUV automatic: ... skip-correlation with the commit failing
+      the F105-02 re-freeze of the one metab (c) capture (`skip_correlation_failing`): today
+      errors = "Error in commitWorkflowReferenceState: kit105: the store commit is refused", session_closed = TRUE,
+      notes = character(0)
+  BAD W5: the metab norm wrappers are thin wrappers over the shared frame, and the metab helper files are gone
+      (mod_omic_norm_ui/server not in the wrappers' bodies; the five sample names of the helper files exist)
+  BAD F105-02: metab skip-correlation with the store commit refused notifies and keeps the session and the state
+      `session_closed` TRUE (expected FALSE); `errors` holds shiny's unhandled observer error; `notes` empty;
+      the flags after read FALSE/<NULL>/<NULL> on the closed session (expected FALSE/<NULL>/metab_ruv_corrected)
+  PASS (new, written to pass before and after) W5 (D7): the export's progress and summary time are each omic's
+      (lipid: "0.2 Gathering data and publishing outputs...", "0.8 Export complete", summary time = the session's;
+      metab: "0.2 Gathering data...", "0.3 Saving to file...", "0.1 Creating latest version...",
+      "0.1 Saving metadata files...", "0.2 Creating summary...", summary time later than the session's)
+  PASS (new, before and after) W5 (D7): a failed managed correlation is notified on metab's tab only
+  Every other block, including (a), the other five (b)/(c) scenarios and F105-01, passes.
+COUNTS test-omic-gui-config.R pass 947 fail 31 error 0 skip 0                     39s
+  BAD the norm group holds today's values ... and BAD each norm field ... is refused: the W5 config fields
+      (`managed_correlation_notify`, `export$progress` and its three fields, `export$summary_time`) do not exist yet.
+COUNTS test-module-ci-metab-norm.R pass 153 fail 0 error 0 skip 0                 104s  (MCI-015 retargeted; 150 -> 153:
+      the retargeted .2 and .3 also assert the run's result and log lines)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0               18s   (BUG-16 retargeted to the core)
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0               243s  (KIT-079 metab line retargeted)
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0              57s   (metab export through the frame)
+COUNTS test-omics-norm-core.R pass 121 fail 0 error 0 skip 7                      501s  (F105-03 mask; before quarantine)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0                815s  (the helper's metab lines retargeted)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0     945s  (metab ITSD tables, final QC
+      plot and export through the frame)

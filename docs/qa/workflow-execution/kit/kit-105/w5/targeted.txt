@@ -1,0 +1,44 @@
+# KIT-105 W5 targeted tests on W5's tree (metab on the shared frame, the five metab helper files and the body of
+# mod_metab_norm_ui.R deleted, the frame's two config-driven metab branches, the config's W5 fields, the tests retargeted
+# and quarantined). load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file (kit/scripts-078/
+# run1.R), two batches in parallel under a sleep lock. Recorded 2026-11-08. Start-commit counts in test-first.txt.
+
+COUNTS test-omic-norm-module.R pass 525 fail 0 error 0 skip 0                 438s
+  (a) the lipid, metab and trx-profile UI digests, ids, test ids and tab titles unchanged.
+  (b), (c) every capture identical for metab and lipid except the one F105-02 re-freeze (metab automatic
+  `skip_correlation_failing`: errors character(0), session_closed FALSE, notes "[error] Error: kit105: the store commit
+  is refused"; at_commit (D7: FALSE/<NULL>, metab sets its flags after the commit), history and tab_status unchanged).
+  F105-01 both omics; W4's blocks; W5's wrapper block, F105-02 metab block and the two D7 blocks (export progress and
+  summary time; the managed correlation's failure notice). 503 + 22.
+COUNTS test-omic-gui-config.R pass 978 fail 0 error 0 skip 0                  37s   (949 + the W5 fields' cases)
+COUNTS test-omic-design-module.R pass 146 fail 0 error 0 skip 0               41s   (146 = 146)
+COUNTS test-omics-norm-core.R pass 18 fail 0 error 0 skip 14                  12s
+  (the seven metab halves quarantined, Q-108 to Q-111, beside W4's seven lipid halves, Q-86 to Q-89; the core-files
+  block live)
+COUNTS test-module-ci-metab-norm.R pass 153 fail 0 error 0 skip 0             100s  (MCI-015 retargeted: 153, as on the
+  start code with the retargeted tests; 150 with the old ones)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0             102s  (MCI-021: 153 = 153)
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0                185s  (MCI-030: 61 = 61)
+COUNTS test-metab-03d-norm-module-characterization.R pass 13 fail 0 error 0 skip 3   80s
+  (blocks 1-8 live; blocks 9-11 quarantined, Q-107. Start: 55 pass, 1 skip inside blocks 9-11)
+COUNTS test-metab-03b-norm-module-helper-characterization.R pass 0 fail 0 error 0 skip 0   14s
+  (whole file quarantined by its line-1 skip, Q-105; start 876/0/0/3)
+COUNTS test-metab-03c-norm-module-seams.R pass 0 fail 0 error 0 skip 0        15s   (whole file, Q-106; start 51)
+COUNTS test-lipid-12-norm-module-contracts.R pass 0 fail 0 error 0 skip 0     14s   (W4's Q-95, unchanged)
+COUNTS test-lipid-12a-norm-module-characterization.R pass 5 fail 0 error 0 skip 5   19s   (W4's Q-96, unchanged)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0            847s  (283 = 283; metab lines retargeted)
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0          356s  (97 = 97)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0 592s  (230 = 230)
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0           153s  (109 = 109)
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0          39s   (150 = 150)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0           27s   (20 = 20; BUG-16 on the core)
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0               19s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0           20s
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0      122s  (259 = 259)
+# Dependents (the grep's other files; tools/ci/impact-map.json's metab norm pattern):
+COUNTS test-ci-impact-router.R pass 27 fail 0 error 0 skip 0                  11s
+COUNTS test-ci-impact-e2e.R pass 10 fail 0 error 0 skip 0                     9s
+COUNTS test-ci-impact-audit.R pass 26 fail 0 error 0 skip 0                   10s
+
+# Entry suite: entry-suite.txt (metab_lc, metab_gc, metab_combined, lipid_canonical and trx_screen identical).
+# Dependents grep: dependents-grep.txt (no live hit). NAMESPACE and man/: no diff against 037bc246.

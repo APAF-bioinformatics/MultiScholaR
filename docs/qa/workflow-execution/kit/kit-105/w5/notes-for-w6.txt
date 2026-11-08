@@ -1,0 +1,51 @@
+# KIT-105 W5 notes for W6 (the lead's merge), 2026-11-08
+
+## What W5 changed
+- mod_metab_norm_ui/server: thin wrappers over mod_omic_norm_ui/server with omicGuiConfig("metabolomics")$norm;
+  signatures and roxygen blocks unchanged (NAMESPACE, man/ unchanged). The five helper files deleted (Collate updated).
+- The frame (R/mod_omic_norm.R), two config-driven branches, lipid's values unchanged:
+  - publishOmicNormExport: `norm$export$progress` (gather text; `steps` passes the core saver's
+    `advance = function(amount, detail) shiny::incProgress(amount, detail = detail)`; `complete` text, none when empty)
+    and `norm$export$summary_time` ("written": `summaryTime = Sys.time()`, read when the summary is written;
+    "session": the session's export time, the saver's default).
+  - applyOmicNormCorrelation's managed failure: `norm$managed_correlation_notify` (metab TRUE: also
+    showNotification("Error: <message>", type = "error"), after removeNotification, as metab's handler did).
+- R/utils_omic_gui_config.R: the three data fields, required (schema `norm`, `norm_export`, new `norm_export_progress`),
+  a choice check for `summary_time`; omicGuiFeatureNorm takes `managed_correlation_notify`.
+- No metab-only reactive field, observer order or markup was needed: W1 (a) to (c) hold with the frame unchanged
+  otherwise (one F105-02 re-freeze).
+
+## Divergences kept (no tab log line, notification, state, file or capture changes; recorded, not made config)
+Console logger lines only (logger::log_*), metab now as lipid:
+  1. apply-correlation logs "Calculating Pearson correlations per sample pair..." (metab's handler did not);
+  2. a managed export's collect logs the three "*** EXPORT: ..." lines (metab's managed collect did not; its in-process
+     collect did);
+  3. a refused skip-correlation commit logs "Skip correlation filtering error: ..." (F105-02, new for both).
+Unreachable edges (metab's handler and the frame differ only where today's tab cannot get):
+  4. apply-correlation with `normalization_complete` set and no normalised reference: the frame's req is caught and
+     logged as "ERROR in correlation filtering:"; metab's ran on the head. A finished run always sets the reference.
+  5. a managed final PCA display with neither `plot` nor `message`: metab showed "Error: " text, the frame draws NULL.
+     Metab's worker builder (the binding's final_pca) always returns a plot or the failure message.
+  6. the ITSD candidate ids: metab merged each assay's ids into the list (an assay without a table removed), the frame
+     sets the list from the tables (an assay without a table kept as NULL). omicsManualItsdFeatureIds reads both alike.
+  7. the managed export: the frame refuses a non-owner manager before starting; metab's handler refused it later, in
+     its publication. A managed session's manager is always the owner.
+  8. observer registration order: metab registered apply/skip-correlation before the correlation summary and final QC
+     outputs; the frame after. No capture differs.
+
+## Quarantine (draft rows; the lead writes quarantined-tests.md)
+Q-105 test-metab-03b (whole file, line-1 skip), Q-106 test-metab-03c (whole file), Q-107 test-metab-03d blocks 9-11,
+Q-108 to Q-111 test-omics-norm-core.R's seven metab halves. With W4's lipid halves, test-omics-norm-core.R now runs
+only its core-files block (18 pass, 14 skip). Core-only expectations that were live in the metab halves and are now
+skipped: the composite's lipid/metab returned-field equality and its refused-write warning text; the composite from
+files' size c(13, 14) and its "No valid plot sections to combine" warning; the bindings' final_pca through the core,
+the lipid binding raising and metab's placeholder (label, size 4); the bindings calling the core (all.names); the
+collector's counts-field position, P-18 sample counts and managed NULL state; the saver's refusal without a request
+and the summary title. Most are covered elsewhere (W1 (b)/(c), MCI-015, the entry lanes, the W5 D7 export block); a
+live core-only block would restore the rest. Not done here (not in the item's scope).
+
+## Other
+- The stale header comment in R/utils_omic_gui_config.R (lines 46-48, "the in-process run ... still module functions
+  ... optional until W6") is W6's, as W4 flagged; untouched.
+- F105-03: the saver block's returned publication$completed_at is masked (test-omics-norm-core.R, normCoreSaveCase),
+  before the block was quarantined (Q-111). The flake did not fire in W5's runs.
