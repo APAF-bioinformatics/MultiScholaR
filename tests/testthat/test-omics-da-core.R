@@ -411,6 +411,7 @@ omicsDaCoreCompareExport <- function(omic, write) {
 
 # Comparison side (lipid): quarantined when W3 deletes mod_lipid_da_session_helpers.R (`lipidDaResultsWithSource`).
 test_that("(W2, D4; comparison side) lipid: the in-process publication equals the start commit's write", {
+    testthat::skip("quarantined: Q-130 (KIT-106 W3) it compared the in-process DA publication with the start commit's lipid write, `outputLipidDaResultsAllContrasts` on `lipidDaResultsWithSource` (mod_lipid_da_session_helpers.R), which W3 deleted; the tab's export is `runWorkflowOmicsPublicationInProcess(..., \"lipid_da_publication\")` in the shared frame (mod_omic_da.R), whose core side stays live in the block above and in test-omic-da-module.R (b) lipid_main's run step")
     omicsDaCoreCompareExport("lipid", function(results, fixture, paths, notify) {
         # mod_lipid_da_analysis_helpers.R `finalizeLipidDaRunAnalysisSuccess`'s in-process write and its notice.
         written <- outputLipidDaResultsAllContrasts(da_results_list = lipidDaResultsWithSource(results, fixture$tab, fixture$bus),

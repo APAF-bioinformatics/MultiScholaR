@@ -230,46 +230,16 @@ module_ci_lipid_da_capture_ui <- function() {
   capture
 }
 
-module_ci_lipid_da_restore_post_read <- function(capture) {
-  function(sessionData, workflowData, daData, session, debugLog) {
-    restoreLipidDaPostReadSessionState(
-      sessionData = sessionData,
-      workflowData = workflowData,
-      daData = daData,
-      session = session,
-      debugLog = debugLog,
-      restoreContrastsFn = function(sessionData, workflowData, daData, session, ...) {
-        restoreLipidDaContrastsFromSession(
-          sessionData = sessionData,
-          workflowData = workflowData,
-          daData = daData,
-          session = session,
-          updateSelectInputFn = capture$updateSelectInput,
-          logInfo = function(...) invisible(NULL)
-        )
-      },
-      restoreAssaysFn = function(sessionData, daData, session, debugLog, ...) {
-        restoreLipidDaAssaysFromSession(
-          sessionData = sessionData,
-          daData = daData,
-          session = session,
-          updateSelectInputFn = capture$updateSelectInput,
-          debugLog = debugLog
-        )
-      },
-      restoreFormulaFn = function(sessionData, daData, session, debugLog, ...) {
-        restoreLipidDaFormulaFromSession(
-          sessionData = sessionData,
-          daData = daData,
-          session = session,
-          updateTextAreaInputFn = capture$updateTextAreaInput,
-          debugLog = debugLog,
-          hasArgsMethodFn = function() TRUE,
-          logWarn = function(...) invisible(NULL)
-        )
-      }
-    )
-  }
+# KIT-106 W3: the DA tab's session load through the shared frame (`loadOmicDaSession` on the core's
+# `loadWorkflowOmicsDaSession`) under lipid's configuration, in an owner session (the legacy adoption), with the
+# selector, formula and notification calls recorded in `capture`. Returns the core's result (`status`, `message`, the
+# choices and the formula).
+module_ci_lipid_da_load <- function(experiment_paths, workflow, da_data, capture) {
+  testthat::local_mocked_bindings(updateSelectInput = capture$updateSelectInput,
+    updateTextAreaInput = capture$updateTextAreaInput, showNotification = capture$showNotification,
+    removeNotification = capture$removeNotification, .package = "shiny")
+  suppressMessages(shiny::withReactiveDomain(omicsOwnerSession(), loadOmicDaSession("module-ci-lipid-da", workflow, da_data,
+    experiment_paths, omicGuiConfig("lipidomics")$da, lipidomicsDeclarationBinding)))
 }
 
 module_ci_lipid_da_local_binding <- function(env, name, value, .local_envir = parent.frame()) {

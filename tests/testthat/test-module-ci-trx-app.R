@@ -71,10 +71,12 @@ test_that("MCI-029.2 the module in process: import, design, QC, normalisation an
   seen$widgets <- 0L
   quiet <- function(...) invisible(NULL)
   # KIT-097 e2e defect: the browser hung after DA while the Glimma volcano of every gene was built and sent on completion.
-  # The DA tab's interactive volcano is counted here; the browser sends the checkbox's declared default.
-  testthat::local_mocked_bindings(trxVolcanoWidget = function(...) {
+  # The DA tab's interactive volcano is counted here; the browser sends the checkbox's declared default. KIT-106 W3 (D3):
+  # the volcano is the binding's `trx_volcano_page`, built in process by its page action (the binding holds the widget
+  # by value, so the action is counted).
+  testthat::local_mocked_bindings(computeWorkflowOmicsVolcanoPageAction = function(manager, request, variant) {
     seen$widgets <- seen$widgets + 1L
-    shiny::div("interactive volcano")
+    list(display = list(page = NULL))
   }, .package = "MultiScholaR")
   html <- htmltools::renderTags(mod_lipid_da_ui("de", profile = trxOmicProfile()))$html
   interactive_default <- grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html)

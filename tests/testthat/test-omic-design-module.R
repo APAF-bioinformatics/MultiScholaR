@@ -540,3 +540,29 @@ test_that("KIT-105 W4 the normalisation frame keeps its returned reactive values
         expect_identical(shiny::isolate(session$returned$assay_names), c("LCMS_Pos", "GCMS"))
     })
 })
+
+# KIT-106 W3: the masking check extended to the shared DA frame (R/mod_omic_da*.R). testServer evaluates a test's code
+# over the module's frame, so a frame local named after a variable the DA tests read inside testServer
+# (test-omic-da-module.R's omicDaW1Drive and omicDaW3Volcano, MCI-029.2, the KIT-082 application probes) would be read
+# in its place.
+test_that("KIT-106 W3 the DA frame keeps its returned reactive values and no name that masks a test's own variables", {
+    skip_if_not(workflowOwnerCapable())
+    test_names <- c("log", "acc", "setup", "steps", "step", "prefix", "text", "server", "mount", "apply_updates", "i", "pending",
+        "values", "set", "read", "defaults", "capture", "bus", "manager", "out_names", "shown", "returned", "operations",
+        "files", "record", "field", "value", "ctx", "flush_updates", "k", "queued", "sent", "put", "glimma", "ui_defaults",
+        "out", "seen", "page_action", "run", "select", "builder", "group", "trx_config", "preview", "dir", "design", "quiet",
+        "html", "interactive_default", "root", "project_dirs", "probe", "fixture", "case", "omic", "contrast", "assays",
+        "page", "paths", "workflow", "da", "results", "name", "tab", "result")
+    object <- module_ci_lipid_da_object(layout = "pos_gcms")
+    bus <- module_ci_lipid_da_workflow(object)
+    shiny::testServer(mod_lipid_da_server, args = list(id = "de", workflow_data = bus, experiment_paths = list(),
+        omic_type = "lipidomics", experiment_label = "kit106"), {
+        module_names <- c(ls(session$env, all.names = TRUE), ls(parent.env(session$env), all.names = TRUE))
+        expect_identical(intersect(module_names, test_names), character())
+        session$flushReact()
+        expect_true(shiny::is.reactivevalues(session$returned))
+        expect_identical(sort(names(session$returned)), c("analysis_complete", "assays_available", "contrasts_available",
+            "current_col_clusters", "current_heatmap_plot", "current_row_clusters", "current_state_name", "da_results_list",
+            "formula_from_s4"))
+    })
+})

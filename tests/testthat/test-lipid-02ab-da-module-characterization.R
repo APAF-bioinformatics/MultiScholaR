@@ -365,6 +365,7 @@ test_that("mod_lipid_da_server preserves corrupt-session public error behavior",
 })
 
 test_that("mod_lipid_da_server preserves run-analysis public success behavior", {
+  testthat::skip("quarantined: Q-134 (KIT-106 W3) it counts calls to a mocked `outputLipidDaResultsAllContrasts` from the in-process run on a mocked `runLipidReferenceDaAnalysis` that accepts no DA manifest; the tab's in-process export is now the binding's `lipid_da_publication` run through `runWorkflowOmicsPublicationInProcess` on the head's accepted manifest (D4, mod_omic_da.R), covered by test-omic-da-module.R (b) lipid_main's run step and test-omics-da-core.R")
   harness <- makeLipidDaHarness(session_file_mode = "valid")
   on.exit(harness$cleanup(), add = TRUE)
   installLipidDaModuleMocks(harness)
@@ -413,6 +414,7 @@ test_that("mod_lipid_da_server preserves run-analysis public error behavior", {
 })
 
 test_that("mod_lipid_da_server preserves render and heatmap-save public behavior", {
+  testthat::skip("quarantined: Q-135 (KIT-106 W3) it reads `volcano_glimma` without ticking the interactive volcano and expects a mocked `generateLipidDAVolcanoPlotGlimma` to be called on the tab's results; the volcano is off by default and, ticked, is the binding's `lipid_volcano_page` built from the head's manifest (D3, mod_omic_da.R); covered by test-omic-da-module.R's W3 D3 blocks and (b) lipid_main (heatmap, cluster summary, Save Heatmap's params and prefix, the table)")
   harness <- makeLipidDaHarness(session_file_mode = "valid")
   on.exit(harness$cleanup(), add = TRUE)
   installLipidDaModuleMocks(

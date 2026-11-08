@@ -42,16 +42,13 @@ trxOmicProfile <- function() {
     c(profile, trxNormDaSummaryProfile())
 }
 
-#' The DA and summary entries of the transcriptomics profile (KIT-097). KIT-110 W3 removed the six normalisation entries:
-#' their values are `omicGuiConfig("transcriptomics")$norm` (`omicGuiTrxNorm`).
+#' The summary entries of the transcriptomics profile (KIT-097). KIT-110 W3 removed the six normalisation entries: their
+#' values are `omicGuiConfig("transcriptomics")$norm` (`omicGuiTrxNorm`). KIT-106 W3 removed the 14 DA entries: their
+#' values are `omicGuiConfig("transcriptomics")$da` (`omicGuiTrxDa`), the long table is the binding's, and the tab is the
+#' shared DA frame (mod_omic_da.R).
 #' @noRd
 trxNormDaSummaryProfile <- function() {
-    list(da_server = mod_trx_da_server, da_model_ui = trxDaModelUi, da_threshold_label = "FDR (BH) threshold:",
-        da_lfc_label = "Fold-change line (display only; no test):", long_table = "da_genes_long",
-        da_columns = list(id = "GeneID", label = "GeneName", pvalue = "PValue", significance = "FDR", significance_label = "FDR (BH)"),
-        da_static_volcano = trxDaStaticVolcano, da_volcano_interactive = FALSE, da_widget = trxDaWidget, da_with_source = trxDaWithSource,
-        da_formula = trxRealisedFormula, da_contrasts = trxDaContrastEntries, da_export = trxDaExport, da_run_reference = runTrxReferenceDaAnalysis,
-        summary_export_ui = trxSummaryExportUi, summary_server = trxSummaryServer, summary_context = trxSummaryContext,
+    list(summary_export_ui = trxSummaryExportUi, summary_server = trxSummaryServer, summary_context = trxSummaryContext,
         summary_state_object = trxSummaryStateObject, summary_placeholder = "e.g., my_transcriptomics_analysis",
         summary_description = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export",
         ruviii_m_choices = trxRuviiiMChoices, integration_filename = "transcriptomics_normalized_data.tsv",

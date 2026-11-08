@@ -342,55 +342,17 @@ test_that("MCI-021.6 DA reload consumes every accepted lipid export variant", {
       invisible(NULL)
     }
 
-    # KIT-072: a file from another session adopts into the owner, which attaches to the module's session.
-    result <- shiny::withReactiveDomain(session, loadLipidDaSessionFromFile(
-      sessionFile = export$latest_file,
-      workflowData = workflow,
-      daData = da_data,
-      session = session,
-      showLoadingFn = function() list(notificationId = "loading_session"),
-      finalizeSuccessFn = function(...) list(successMessage = "Session loaded successfully!"),
-      finalizeErrorFn = function(errorMessage, ...) stop(errorMessage),
-      restorePostReadFn = function(sessionData, workflowData, daData, session, debugLog) {
-        restoreLipidDaPostReadSessionState(
-          sessionData = sessionData,
-          workflowData = workflowData,
-          daData = daData,
-          session = session,
-          debugLog = debugLog,
-          restoreContrastsFn = function(sessionData, workflowData, daData, session, ...) {
-            restoreLipidDaContrastsFromSession(
-              sessionData = sessionData,
-              workflowData = workflowData,
-              daData = daData,
-              session = session,
-              updateSelectInputFn = update_select,
-              logInfo = function(...) invisible(NULL)
-            )
-          },
-          restoreAssaysFn = function(sessionData, daData, session, debugLog, ...) {
-            restoreLipidDaAssaysFromSession(
-              sessionData = sessionData,
-              daData = daData,
-              session = session,
-              updateSelectInputFn = update_select,
-              debugLog = debugLog
-            )
-          },
-          restoreFormulaFn = function(sessionData, daData, session, debugLog, ...) {
-            restoreLipidDaFormulaFromSession(
-              sessionData = sessionData,
-              daData = daData,
-              session = session,
-              updateTextAreaInputFn = update_text,
-              debugLog = debugLog,
-              hasArgsMethodFn = function() TRUE,
-              logWarn = function(...) invisible(NULL)
-            )
-          }
-        )
-      }
-    ))
+    # KIT-072: a file from another session adopts into the owner, which attaches to the module's session. KIT-106 W3: the
+    # load is the shared DA frame's (`loadOmicDaSession` on the core's `loadWorkflowOmicsDaSession`), which reads the
+    # configuration's file name in the source directory: the export's latest file.
+    expect_identical(basename(export$latest_file), omicGuiConfig("lipidomics")$da$session_load$file)
+    quiet <- function(...) invisible(NULL)
+    result <- local({
+      testthat::local_mocked_bindings(updateSelectInput = update_select, updateTextAreaInput = update_text,
+        showNotification = quiet, removeNotification = quiet, .package = "shiny")
+      suppressMessages(shiny::withReactiveDomain(session, loadOmicDaSession(session, workflow, da_data,
+        list(source_dir = dirname(export$latest_file)), omicGuiConfig("lipidomics")$da, lipidomicsDeclarationBinding)))
+    })
 
     expect_identical(result$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.

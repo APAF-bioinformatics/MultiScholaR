@@ -190,13 +190,15 @@ for (omic in c("lipidomics", "metabolomics")) local({
     # Every display the tab builds from these rows, on each selection.
     contrast <- unique(long$comparison)[[1L]]
     assay <- unique(long$assay)[[1L]]
+    # KIT-106 W3: lipid's views are the shared panel library's (mod_omic_da_panels.R) under its configuration.
+    lipid_da <- omicGuiConfig("lipidomics")$da
     for (selected in c(assay, "Combined", "All")) for (filter in c("all", "significant", "up", "down")) {
       shown <- function(results) if (identical(omic, "lipidomics")) {
-        buildLipidDaResultsTableRenderWidget(results, contrast, selected, filter, 1, 0, 1000L, reqFn = identity)$x$data
+        omicDaTableWidget(results[[binding$long_table]], contrast, selected, filter, 1, 0, 1000L, lipid_da$columns)$x$data
       } else buildMetabDaResultsTableRenderOutput(results, contrast, selected, filter, 1, 0, 1000L)$x$data
       expect_identical(shown(tab), shown(whole), info = paste(selected, filter))
     }
-    stats <- function(results) if (identical(omic, "lipidomics")) buildLipidDaSummaryStatsRenderText(results, contrast, assay, 0.05, reqFn = identity) else
+    stats <- function(results) if (identical(omic, "lipidomics")) omicDaSummaryText(results[[binding$long_table]], contrast, assay, 0.05, lipid_da$summary) else
       buildMetabDaSummaryStatsRenderOutput(results, contrast, assay, 0.05)
     expect_identical(stats(tab), stats(whole))
     static <- if (identical(omic, "lipidomics")) generateLipidDAVolcanoStatic else generateMetabDAVolcanoStatic
@@ -223,7 +225,7 @@ for (omic in c("lipidomics", "metabolomics")) local({
     tab$write_download <- function(file) writeWorkflowOmicsDaDownload(binding, owner, manifest, tab$download_columns, file)
     through <- tempfile(fileext = ".csv")
     if (identical(omic, "lipidomics")) {
-      handler <- buildLipidDaResultsDownloadOutputHandler(tab, buildResultsDownloadHandlerFn = function(daResultsReactive) buildLipidDaResultsDownloadHandler(daResultsReactive, downloadHandlerFactory = function(filename, content) content, reqFn = identity))
+      handler <- omicDaDownloadHandler(function() tab, binding$long_table, lipid_da$download, downloadHandlerFactory = function(filename, content) content, reqFn = identity)
       handler(through)
     } else {
       handler <- buildMetabDaResultsDownloadHandler(list(da_results_list = tab), downloadHandler = function(filename, content) content)
@@ -359,9 +361,10 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
       mod_lipid_qc_itsd_server("itsd", workflow, omic, "kit082")
       output$final_qc <- omicNormFinalQcPlot(norm, function(...) list(color_var = "group", shape_var = NULL), workflow, config)
       # The test's DA holder is not reactive, so its outputs are registered once it holds the results.
+      # KIT-106 W3: the shared DA frame's registrations (mod_omic_da.R) under lipid's configuration.
       session$userData$register_da_outputs <- function() {
-        registerLipidDaVolcanoGlimmaOutput(output, input, da, workflow)
-        registerLipidDaHeatmapPlotOutput(output, input, da, workflow)
+        registerOmicDaVolcanoGlimmaOutput(output, input, da, workflow, paths, config$da, config$binding$binding)
+        registerOmicDaHeatmapPlotOutput(output, input, da, workflow, config$da, config$binding$binding)
       }
       shiny::observeEvent(input$export_session, exportOmicNormSession(input, workflow, paths, "kit082", norm, quiet, config))
       shiny::observeEvent(input$save_args, handleLipidSummarySaveWorkflowArgs(input, values, output, dirs, omic, workflow))
@@ -416,6 +419,8 @@ omicsAppJourney <- function(session, output, omic, prefix, assays, contrast) {
   session$setInputs(run_da = 1)
   session$flushReact()
   session$userData$register_da_outputs()
+  # KIT-106 D3: the interactive volcano is built when its box is ticked (off by default), as a user ticks it.
+  session$setInputs(volcano_interactive = TRUE)
   session$setInputs(da_q_val_thresh = 1, volcano_contrast = contrast, volcano_assay = assays[[1L]], heatmap_contrast = contrast, heatmap_assay = assays[[1L]],
     heatmap_top_n = 10L, heatmap_clustering = "both", heatmap_scaling = "row", heatmap_color_scheme = "RdBu", heatmap_cluster_method = "complete",
     heatmap_distance_method = "euclidean", heatmap_show_labels = TRUE, heatmap_tree_cut_method = "none")
@@ -636,9 +641,19 @@ test_that("KIT-082: the lipid download serves each run's results through the reg
   da$da_results_list <- NULL
   output <- new.env()
   contents <- NULL
-  registerLipidDaResultsDownloadOutput(output, da, buildResultsDownloadOutputHandlerFn = function(...) {
-    buildLipidDaResultsDownloadOutputHandler(..., buildResultsDownloadHandlerFn = function(daResultsReactive) daResultsReactive)
-  })
+  # KIT-106 W3: the shared DA frame's download registration (mod_omic_da.R) under lipid's configuration; a click returns
+  # what the handler resolved to serve (the long table or the managed writer).
+  lipid <- omicGuiConfig("lipidomics")
+  registerOmicDaDownloadOutput(output, da, lipid$da, lipid$binding$binding,
+    downloadHandlerFactory = function(filename, content) function() {
+      contents <<- NULL
+      try(content(tempfile(fileext = ".csv")), silent = TRUE)
+      contents
+    },
+    reqFn = function(results) {
+      contents <<- results
+      shiny::req(results)
+    })
   # A download before any run does not fix the answer.
   expect_null(output$download_da_results())
   da$da_results_list <- list(da_lipids_long = data.frame(run = 1L))
@@ -795,7 +810,8 @@ trxTabsProbeJourney <- function(fixture, probe, managed, holding = FALSE) {
     try(output[["de-volcano_glimma"]], silent = TRUE)
     # The download as the handler writes it (the store's DA tables a contrast at a time when managed).
     results <- shiny::isolate(session$userData$da$da_results_list)
-    try(resolveLipidDaResultsDownloadData(results, trxOmicProfile()$long_table)(tempfile(fileext = ".csv")), silent = TRUE)
+    # KIT-106 W3: the shared panel library's download data, on the binding's long table.
+    try(omicDaDownloadData(results, transcriptomicsDeclarationBinding$long_table)(tempfile(fileext = ".csv")), silent = TRUE)
     session$setInputs(`summary-ruviii_m_source` = "group", `summary-run_ruviii_export` = 1L)
     session$flushReact()
     for (name in c("summary-ruviii_status", "summary-ruviii_before_after")) try(output[[name]], silent = TRUE)

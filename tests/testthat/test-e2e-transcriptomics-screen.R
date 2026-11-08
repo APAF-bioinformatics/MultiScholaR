@@ -73,6 +73,15 @@ test_that("E2E-KIT101 transcriptomics trx_screen lane reaches the summary, the R
     e2e_switch_workflow_tab(driver, "transcriptomics", "de", timeout = timeout)
     e2e_click_testid(driver, "trx-da-run", timeout = timeout)
     e2e_wait_for_step_status(driver, "transcriptomics", "differential_analysis", "complete", timeout = timeout)
+    # KIT-106 D3: the interactive volcano is built on demand (KIT-097's hang was a volcano built on completion): no page
+    # before its box is ticked; once ticked, the worker's page arrives within the lane's timeout and Shiny is idle after it.
+    has_page <- sprintf("(function(){var el = document.getElementById(%s); return !!(el && el.querySelector('iframe'));})()",
+      jsonlite::toJSON(.e2e_trx_screen("da", "volcano_glimma"), auto_unbox = TRUE))
+    e2e_wait_for_idle(driver, timeout = timeout)
+    expect_false(isTRUE(e2e_call_driver_method(driver, "get_js", script = has_page)))
+    e2e_set_input_and_idle(driver, .e2e_trx_screen("da", "volcano_interactive"), TRUE, timeout = timeout)
+    expect_no_error(e2e_wait_for_js(driver, script = has_page, timeout = timeout))
+    expect_no_error(e2e_wait_for_idle(driver, timeout = timeout))
     # Summary: the RUVIII export, save, copy, the report with the lane's template, the session export.
     e2e_switch_workflow_tab(driver, "transcriptomics", "summary", timeout = timeout)
     e2e_wait_for_selector(driver, "trx-tab-summary", timeout = timeout)

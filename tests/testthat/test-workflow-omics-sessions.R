@@ -72,9 +72,18 @@ omicsSessionExport <- function(case, workflow, source_dir) {
 
 omicsSessionOpen <- function(case, workflow, da, session_file, session) {
   shiny::withReactiveDomain(session, if (identical(case$omic, "lipidomics")) {
-    loadLipidDaSessionFromFile(session_file, workflow, da, session, showLoadingFn = function() NULL,
-      restorePostReadFn = function(...) NULL, finalizeSuccessFn = function(...) NULL,
-      finalizeErrorFn = function(errorMessage, ...) list(errorMessage = errorMessage))
+    # KIT-106 W3: the core's DA session load the shared frame calls (`loadWorkflowOmicsDaSession`), which reads the
+    # configuration's file name in the source directory: another file is opened from a directory of its own.
+    config <- omicGuiConfig("lipidomics")
+    directory <- dirname(session_file)
+    if (!identical(basename(session_file), config$da$session_load$file)) {
+      directory <- tempfile("omics-session-open-")
+      dir.create(directory)
+      file.copy(session_file, file.path(directory, config$da$session_load$file))
+    }
+    result <- loadWorkflowOmicsDaSession(config$binding$binding, workflow, da, list(source_dir = directory), config$da$session_load)
+    result$errorMessage <- result$message
+    result
   } else {
     runMetabDaLoadSessionObserverShell(session_file, workflow, da, session, showNotification = quietFn,
       removeNotification = quietFn, logInfo = quietFn, logError = quietFn,

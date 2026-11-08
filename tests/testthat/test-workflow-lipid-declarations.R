@@ -162,7 +162,10 @@ test_that("KIT-031: the lipid journey on the owner commits every state with its 
     expect_null(journey$da$results$theObject) # KIT-075: the results carry no source object
     # KIT-075: a display or an export reads the DA's source state for the call: the Glimma volcano and heatmaps see the
     # same object the wrapper used to attach.
-    with_source <- lipidDaResultsWithSource(journey$da$results, list(current_state_name = owner$current_state), list(state_manager = owner))
+    # KIT-106 W3: the tab no longer reads it; the core does, as the DA publication and volcano page actions read it
+    # (`results$theObject <- readWorkflowOmicsState(binding, manager, manifest$source)`).
+    with_source <- journey$da$results
+    with_source$theObject <- readWorkflowOmicsState(lipidomicsDeclarationBinding, owner, getWorkflowStateReference(owner, owner$current_state))
     expect_s4_class(with_source$theObject, "LipidomicsAssayData")
     expect_equal(with_source$theObject@lipid_data, owner$getState(owner$current_state)@lipid_data, ignore_attr = TRUE)
     expect_identical(with_source[names(journey$da$results)], journey$da$results)

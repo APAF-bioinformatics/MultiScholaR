@@ -146,12 +146,15 @@ test_that("KIT-076: ids the fit envelope refuses keep the fit unsaved and the re
 test_that("KIT-076: the DA tabs warn about a failed contrast, and say nothing when none failed", {
   failed <- list(`groupC-groupA` = list(pos = "limma could not fit this contrast"))
   long <- data.frame(friendly_name = "B_vs_A", comparison = "groupB-groupA", assay = "pos", stringsAsFactors = FALSE)
+  # KIT-106 W3: lipid's completion is the shared DA frame's (`completeOmicDaRun`, mod_omic_da.R) under its configuration.
+  lipid <- omicGuiConfig("lipidomics")
   lipid_warnings <- function(results) {
     warnings <- list()
-    finalizeLipidDaRunAnalysisSuccess(results = results, daData = new.env(parent = emptyenv()), workflowData = new.env(parent = emptyenv()),
-      session = NULL, experimentPaths = list(), daQValThresh = 0.05, treatLfcCutoff = 0, removeNotificationFn = function(...) NULL,
-      notify = function(message, type = NULL, ...) if (identical(type, "warning")) warnings[[length(warnings) + 1L]] <<- message,
-      updateSelectInputFn = function(...) NULL, logInfo = function(...) NULL, logWarn = function(...) NULL, writeResultsFn = function(...) TRUE)
+    testthat::local_mocked_bindings(removeNotification = function(...) NULL, updateSelectInput = function(...) NULL,
+      showNotification = function(message, type = NULL, ...) if (identical(type, "warning")) warnings[[length(warnings) + 1L]] <<- message,
+      .package = "shiny")
+    suppressMessages(completeOmicDaRun(results = results, tab = new.env(parent = emptyenv()), workflowData = new.env(parent = emptyenv()),
+      session = NULL, experimentPaths = list(), da = lipid$da, binding = lipid$binding$binding))
     warnings
   }
   expect_identical(lipid_warnings(list(da_lipids_long = long, failed_contrasts = failed)), list("DA failed for: groupC-groupA"))

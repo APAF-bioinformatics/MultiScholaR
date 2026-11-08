@@ -4429,8 +4429,10 @@ test_that("(c) the table filter: \"Combined\" selects every assay for metab and 
 
 test_that("(c, D2) the value each DA server returns today: lipid its outputs, metab its registrations, trx and proteomics their reactive values", {
     # D2: the frame returns its reactive values for every omic. W3 and W4 change lipid's and metab's (a recorded divergence;
-    # no caller reads the value) and retarget these two lines.
-    expect_identical(omicDaW1Case("lipid_refusals")$returned, "shinyoutput")
+    # no caller reads the value) and retarget these two lines. W3: lipid's are the frame's reactive values (trx's fields).
+    expect_identical(omicDaW1Case("lipid_refusals")$returned, paste0("reactivevalues: analysis_complete,assays_available,",
+        "contrasts_available,current_col_clusters,current_heatmap_plot,current_row_clusters,current_state_name,da_results_list,",
+        "formula_from_s4"))
     expect_identical(omicDaW1Case("metab_refusals")$returned,
         "list: loadFilteredSessionObserver,runAnalysisObserver,visualizationOutputs,saveHeatmapObserver,resultsOutputs")
     expect_identical(omicDaW1Case("trx_refusals")$returned, paste0("reactivevalues: analysis_complete,assays_available,",

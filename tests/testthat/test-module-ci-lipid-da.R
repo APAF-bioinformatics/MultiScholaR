@@ -10,26 +10,16 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
     session_data <- module_ci_lipid_da_session_data(layout = layout)
     saveRDS(session_data, session_file)
 
-    resolved <- resolveLipidDaSessionFile(
-      experimentPaths = list(source_dir = tmp_root, export_dir = tempfile("unused-"))
-    )
-    expect_identical(resolved$sessionFile, session_file)
-
+    # KIT-106 W3: the load is the shared frame's (`loadOmicDaSession` on the core's `loadWorkflowOmicsDaSession`); the
+    # session file is the configuration's name in the source directory.
     workflow <- module_ci_lipid_da_workflow(session_data$current_s4_object)
     da_data <- module_ci_lipid_da_data_env()
     capture <- module_ci_lipid_da_capture_ui()
 
-    load_state <- shiny::withReactiveDomain(omicsOwnerSession(), loadLipidDaSessionFromFile(
-      sessionFile = session_file,
-      workflowData = workflow,
-      daData = da_data,
-      session = "module-ci-lipid-da",
-      showLoadingFn = function() list(notificationId = "loading_session"),
-      finalizeSuccessFn = function(...) list(successMessage = "Session loaded successfully!"),
-      finalizeErrorFn = function(errorMessage, ...) stop(errorMessage),
-      restorePostReadFn = module_ci_lipid_da_restore_post_read(capture)
-    ))
+    load_state <- module_ci_lipid_da_load(list(source_dir = tmp_root, export_dir = tempfile("unused-")), workflow, da_data,
+      capture)
 
+    expect_identical(basename(session_file), omicGuiConfig("lipidomics")$da$session_load$file)
     expect_identical(load_state$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
     loaded_object <- workflow$state_manager$getState(da_data$current_state_name)
@@ -49,56 +39,45 @@ test_that("MCI-022.1 reload matrix covers valid lipid sessions and failure branc
   withr::defer(unlink(stale_export_dir, recursive = TRUE, force = TRUE))
   stale_file <- file.path(stale_export_dir, "lipid_filtered_session_data_latest.rds")
   saveRDS(module_ci_lipid_da_session_data("pos_gcms"), stale_file)
-  stale_resolved <- resolveLipidDaSessionFile(
-    experimentPaths = list(source_dir = file.path(stale_export_dir, "missing"), export_dir = stale_export_dir)
+  # A missing source directory falls back to the export directory.
+  stale_resolved <- module_ci_lipid_da_load(
+    list(source_dir = file.path(stale_export_dir, "missing"), export_dir = stale_export_dir),
+    module_ci_lipid_da_workflow(module_ci_lipid_da_object(layout = "pos_gcms")), module_ci_lipid_da_data_env(),
+    module_ci_lipid_da_capture_ui()
   )
-  expect_identical(stale_resolved$sessionFile, stale_file)
+  expect_identical(stale_resolved$status, "success")
 
+  missing_dir <- file.path(stale_export_dir, "empty")
+  dir.create(missing_dir)
   missing_capture <- module_ci_lipid_da_capture_ui()
-  missing_resolved <- resolveLipidDaSessionFile(
-    experimentPaths = list(source_dir = stale_export_dir, export_dir = stale_export_dir),
-    fileExistsFn = function(path) FALSE,
-    notifySessionFileMissingFn = function(sessionFile) {
-      missing_capture$showNotification(sprintf("Session file not found: %s", sessionFile), type = "error")
-      list(sessionFile = sessionFile)
-    }
+  missing_resolved <- module_ci_lipid_da_load(
+    list(source_dir = file.path(stale_export_dir, "missing"), export_dir = missing_dir), module_ci_lipid_da_workflow(),
+    module_ci_lipid_da_data_env(), missing_capture
   )
-  expect_null(missing_resolved)
+  expect_identical(missing_resolved$status, "missing")
+  expect_identical(missing_resolved$message, sprintf("Session file not found: %s", file.path(missing_dir, basename(stale_file))))
   expect_match(missing_capture$notifications[[1L]][[1L]], "Session file not found", fixed = TRUE)
 
-  malformed_file <- file.path(stale_export_dir, "malformed.rds")
-  writeLines("not an rds", malformed_file)
-  malformed <- shiny::withReactiveDomain(omicsOwnerSession(), loadLipidDaSessionFromFile(
-    sessionFile = malformed_file,
-    workflowData = module_ci_lipid_da_workflow(),
-    daData = module_ci_lipid_da_data_env(),
-    session = "module-ci-lipid-da",
-    showLoadingFn = function() list(notificationId = "loading_session"),
-    finalizeSuccessFn = function(...) stop("malformed session should not succeed"),
-    finalizeErrorFn = function(errorMessage, ...) list(errorMessage = errorMessage)
-  ))
+  malformed_dir <- file.path(stale_export_dir, "malformed")
+  dir.create(malformed_dir)
+  writeLines("not an rds", file.path(malformed_dir, basename(stale_file)))
+  malformed <- module_ci_lipid_da_load(list(source_dir = malformed_dir), module_ci_lipid_da_workflow(),
+    module_ci_lipid_da_data_env(), module_ci_lipid_da_capture_ui())
   expect_identical(malformed$status, "error")
-  expect_true(nzchar(malformed$errorMessage))
+  expect_true(nzchar(malformed$message))
 
-  mismatch_file <- file.path(stale_export_dir, "mismatch.rds")
+  mismatch_dir <- file.path(stale_export_dir, "mismatch")
+  dir.create(mismatch_dir)
   mismatch_session <- module_ci_lipid_da_session_data(
     layout = "pos_gcms",
     assay_names = c("LCMS_Pos", "STALE_ASSAY")
   )
-  saveRDS(mismatch_session, mismatch_file)
+  saveRDS(mismatch_session, file.path(mismatch_dir, basename(stale_file)))
   mismatch_capture <- module_ci_lipid_da_capture_ui()
-  mismatch <- shiny::withReactiveDomain(omicsOwnerSession(), loadLipidDaSessionFromFile(
-    sessionFile = mismatch_file,
-    workflowData = module_ci_lipid_da_workflow(mismatch_session$current_s4_object),
-    daData = module_ci_lipid_da_data_env(),
-    session = "module-ci-lipid-da",
-    showLoadingFn = function() list(notificationId = "loading_session"),
-    finalizeSuccessFn = function(...) stop("mismatched session should not succeed"),
-    finalizeErrorFn = function(errorMessage, ...) list(errorMessage = errorMessage),
-    restorePostReadFn = module_ci_lipid_da_restore_post_read(mismatch_capture)
-  ))
+  mismatch <- module_ci_lipid_da_load(list(source_dir = mismatch_dir), module_ci_lipid_da_workflow(mismatch_session$current_s4_object),
+    module_ci_lipid_da_data_env(), mismatch_capture)
   expect_identical(mismatch$status, "error")
-  expect_match(mismatch$errorMessage, "assay_names do not match", fixed = TRUE)
+  expect_match(mismatch$message, "assay_names do not match", fixed = TRUE)
 })
 
 test_that("MCI-022.2 formula and contrast preflight rejects invalid DA inputs before analysis", {
@@ -156,12 +135,22 @@ test_that("MCI-022.2 formula and contrast preflight rejects invalid DA inputs be
   expect_false(invalid_formula$valid)
   expect_true(any(grepl("cannot produce a model matrix", invalid_formula$errors, fixed = TRUE)))
 
-  no_contrasts_context <- prepareLipidDaRunAnalysisContext(
-    daData = list2env(list(current_state_name = "lipid_correlation_filtered"), parent = emptyenv()),
-    workflowData = module_ci_lipid_da_workflow(object, contrasts = module_ci_lipid_da_contrasts("no_contrasts")),
-    notify = function(...) invisible(NULL),
-    logInfo = function(...) invisible(NULL)
-  )
+  # KIT-106 W3: the run button's refusals and preflight are the shared frame's (`runOmicDaAnalysis`), under lipid's
+  # configuration; the run itself (`executeOmicDaRun`) must not be reached.
+  config <- omicGuiConfig("lipidomics")
+  settings <- list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)
+  shell_called <- FALSE
+  testthat::local_mocked_bindings(executeOmicDaRun = function(...) {
+    shell_called <<- TRUE
+    stop("analysis shell must not run for invalid preflight")
+  })
+  quiet <- module_ci_lipid_da_capture_ui()
+  testthat::local_mocked_bindings(showNotification = quiet$showNotification, removeNotification = quiet$removeNotification,
+    .package = "shiny")
+  no_contrasts_context <- suppressMessages(runOmicDaAnalysis(settings, "module-ci-lipid-da",
+    module_ci_lipid_da_workflow(object, contrasts = module_ci_lipid_da_contrasts("no_contrasts")),
+    list2env(list(current_state_name = "lipid_correlation_filtered"), parent = emptyenv()), list(), config$da,
+    config$binding$binding))
   expect_null(no_contrasts_context)
 
   invalid_workflow <- module_ci_lipid_da_workflow(
@@ -169,32 +158,17 @@ test_that("MCI-022.2 formula and contrast preflight rejects invalid DA inputs be
     contrasts = module_ci_lipid_da_contrasts("invalid_term")
   )
   capture <- module_ci_lipid_da_capture_ui()
-  shell_called <- FALSE
-  analysis_state <- handleLipidDaRunAnalysisPreflight(
-    analysisContext = list(
-      currentS4 = readLipidWorkflowMetadata(invalid_workflow$state_manager), # KIT-075: the state's metadata
-      contrastsTbl = invalid_workflow$contrasts_tbl,
-      runningNotification = list(id = "da_running")
-    ),
-    formulaString = "~ 0 + group",
-    daQValThresh = 0.05,
-    treatLfcCutoff = 0,
-    daData = module_ci_lipid_da_data_env(),
-    workflowData = invalid_workflow,
-    session = "module-ci-lipid-da",
-    experimentPaths = list(),
-    removeNotificationFn = capture$removeNotification,
-    notify = capture$showNotification,
-    executeRunAnalysisFn = function(...) {
-      shell_called <<- TRUE
-      stop("analysis shell must not run for invalid preflight")
-    }
-  )
+  testthat::local_mocked_bindings(showNotification = capture$showNotification, removeNotification = capture$removeNotification,
+    .package = "shiny")
+  # KIT-075: the tab reads the head's metadata; the preflight reads the state for this action only.
+  analysis_state <- suppressMessages(runOmicDaAnalysis(settings, "module-ci-lipid-da", invalid_workflow,
+    module_ci_lipid_da_data_env(), list(), config$da, config$binding$binding))
   expect_identical(analysis_state$status, "error")
   expect_false(shell_called)
   expect_match(analysis_state$errorMessage, "references terms absent", fixed = TRUE)
   expect_true("da_running" %in% capture$removed)
-  expect_match(capture$notifications[[1L]][[1L]], "references terms absent", fixed = TRUE)
+  # The running notice first, then the refusal.
+  expect_match(capture$notifications[[2L]][[1L]], "references terms absent", fixed = TRUE)
 })
 
 test_that("MCI-022.3 DA orchestration preserves schema, provenance, edge cases, and intensity columns", {
@@ -270,7 +244,9 @@ test_that("MCI-022.4 render matrix covers combined/per-assay filters, plots, tab
   combined <- long[long$comparison == "groupKO-groupWT", , drop = FALSE]
   expect_setequal(unique(combined$assay), c("LCMS_Pos", "LCMS_Neg", "GCMS"))
 
-  per_assay <- buildLipidDaResultsTableWidget(
+  # KIT-106 W3: the views are the shared panel library's (mod_omic_da_panels.R) under lipid's configuration.
+  config <- omicGuiConfig("lipidomics")
+  per_assay <- omicDaTableWidget(
     daResults = long,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "LCMS_Pos",
@@ -278,6 +254,7 @@ test_that("MCI-022.4 render matrix covers combined/per-assay filters, plots, tab
     daQValThresh = 0.05,
     lfcThreshold = 1,
     tableMaxRows = 10,
+    columns = config$da$columns,
     datatableFactory = function(data, ...) data,
     formatRoundFactory = function(widget, ...) widget,
     formatStyleFactory = function(widget, ...) widget,
@@ -288,28 +265,29 @@ test_that("MCI-022.4 render matrix covers combined/per-assay filters, plots, tab
   expect_identical(unique(per_assay$assay), "LCMS_Pos")
   expect_true(all(per_assay$logFC > 1))
 
-  empty <- buildLipidDaResultsTableWidget(
+  empty <- omicDaTableWidget(
     daResults = long,
     selectedContrast = "DOES_NOT_EXIST",
     selectedAssay = "LCMS_Pos",
     tableSignificance = "all",
     daQValThresh = 0.05,
     lfcThreshold = 1,
-    tableMaxRows = 10
+    tableMaxRows = 10,
+    columns = config$da$columns
   )
   expect_null(empty)
 
   captured_volcano <- NULL
-  volcano <- buildLipidDaVolcanoStaticPlot(
+  volcano <- omicDaStaticVolcano(
     daResultsList = results_list,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "Combined",
     daQValThresh = 0.05,
     lfcThreshold = 1,
-    plotFactory = function(...) {
+    view = utils::modifyList(config$da$views$static_volcano, list(plot = function(...) {
       captured_volcano <<- list(...)
       "volcano-rendered"
-    }
+    }))
   )
   expect_identical(volcano, "volcano-rendered")
   expect_identical(captured_volcano$selected_assay, "Combined")
@@ -317,7 +295,7 @@ test_that("MCI-022.4 render matrix covers combined/per-assay filters, plots, tab
 
   da_data <- module_ci_lipid_da_data_env()
   captured_heatmap <- NULL
-  heatmap_state <- buildLipidDaHeatmapRenderState(
+  heatmap_state <- omicDaHeatmapState(
     daResultsList = results_list,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "LCMS_Pos",
@@ -327,30 +305,31 @@ test_that("MCI-022.4 render matrix covers combined/per-assay filters, plots, tab
     clusteringMethod = "ward.D2",
     distanceMethod = "euclidean",
     colorScheme = "RdBu",
-    showLipidNames = TRUE,
+    showLabels = TRUE,
     daQValThresh = 0.05,
     treeCutMethod = "kmeans",
     nClusters = 2,
     cutHeight = 0.5,
     minClusterSize = 2,
-    heatmapFactory = function(...) {
+    heatmap = utils::modifyList(config$da$views$heatmap, list(kernel = function(...) {
       captured_heatmap <<- list(...)
       list(plot = "heatmap-rendered", row_clusters = c(L_UP = 1, L_DOWN = 2), col_clusters = NULL)
-    }
+    }))
   )
   expect_identical(heatmap_state$plot, "heatmap-rendered")
   expect_false(captured_heatmap$cluster_cols)
   expect_true(captured_heatmap$cluster_rows)
   expect_identical(captured_heatmap$top_n, 4)
   expect_identical(captured_heatmap$n_clusters, 2)
-  expect_identical(storeLipidDaHeatmapRenderState(heatmap_state, da_data), "heatmap-rendered")
+  expect_identical(omicDaStoreHeatmap(heatmap_state, da_data), "heatmap-rendered")
   expect_identical(da_data$current_row_clusters, c(L_UP = 1, L_DOWN = 2))
 
-  summary_text <- buildLipidDaSummaryStatsText(
+  summary_text <- omicDaSummaryText(
     daResults = long,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "LCMS_Pos",
-    daQValThresh = 0.05
+    daQValThresh = 0.05,
+    summary = config$da$summary
   )
   expect_match(summary_text, "Total lipids:", fixed = TRUE)
   expect_match(summary_text, "Up-regulated", fixed = TRUE)
@@ -358,21 +337,18 @@ test_that("MCI-022.4 render matrix covers combined/per-assay filters, plots, tab
   capture <- module_ci_lipid_da_capture_ui()
   workflow <- module_ci_lipid_da_workflow(module_ci_lipid_da_object(layout = "triple"))
   da_env <- module_ci_lipid_da_data_env()
-  selector_state <- finalizeLipidDaRunAnalysisSuccess(
+  testthat::local_mocked_bindings(updateSelectInput = capture$updateSelectInput, showNotification = capture$showNotification,
+    removeNotification = capture$removeNotification, .package = "shiny")
+  # The completion of the shared frame; unset output directories skip the export.
+  selector_state <- suppressMessages(completeOmicDaRun(
     results = results_list,
-    daData = da_env,
+    tab = da_env,
     workflowData = workflow,
     session = "module-ci-lipid-da",
     experimentPaths = list(da_output_dir = NULL, publication_graphs_dir = NULL),
-    daQValThresh = 0.05,
-    treatLfcCutoff = 1,
-    removeNotificationFn = capture$removeNotification,
-    notify = capture$showNotification,
-    updateSelectInputFn = capture$updateSelectInput,
-    logInfo = function(...) invisible(NULL),
-    logWarn = function(...) invisible(NULL),
-    writeResultsFn = function(...) TRUE
-  )
+    da = config$da,
+    binding = config$binding$binding
+  ))
   expect_identical(selector_state$contrastChoices, c("KO_vs_WT", "RES_vs_WT"))
   expect_identical(selector_state$assayChoices, c("Combined", "LCMS_Pos", "LCMS_Neg", "GCMS"))
   expect_identical(selector_state$tableAssayChoices, c("All", "LCMS_Pos", "LCMS_Neg", "GCMS"))

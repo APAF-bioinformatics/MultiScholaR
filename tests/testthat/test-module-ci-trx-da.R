@@ -37,9 +37,10 @@ test_that("MCI-031.1 the DA tab runs on the RUVs head; the record names the edge
   expect_match(out$summary_stats, "FDR (BH)", fixed = TRUE)
   expect_false(grepl("Q <|q-value", out$summary_stats))
   # The displayed table: the FDR column, labelled FDR (BH), identical to the reference's FDR.
-  profile <- trxOmicProfile()
-  widget <- buildLipidDaResultsTableWidget(out$da$da_genes_long, unique(first$comparison), "All", "all", 0.05, 1, 100000,
-    columns = profile$da_columns)
+  # KIT-106 W3: the shared panel library's table (mod_omic_da_panels.R) with trx's configured columns.
+  trx <- omicGuiConfig("transcriptomics")$da
+  widget <- omicDaTableWidget(out$da$da_genes_long, unique(first$comparison), "All", "all", 0.05, 1, 100000,
+    columns = trx$columns)
   shown <- widget$x$data
   # DT keeps the data's column names and shows the label in the table's header.
   expect_true(grepl(">FDR (BH)<", paste(as.character(widget$x$container), collapse = ""), fixed = TRUE))
@@ -72,9 +73,11 @@ test_that("MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH)
   skipWithoutTrxDeclReference()
   fixture <- module_ci_trx_project(module_ci_trx_corpus())
   out <- module_ci_trx_tabs_journey(fixture)
-  profile <- trxOmicProfile()
+  # KIT-106 W3: the static volcano from trx's configuration; the interactive one is the binding's widget, given the
+  # contrast's entry as the page action gives it (D3).
+  trx <- omicGuiConfig("transcriptomics")$da
   contrast <- unique(out$da$da_genes_long$comparison)[[1L]]
-  plot <- profile$da_static_volcano(out$da, contrast, "counts", 0.05, 1)
+  plot <- trx$views$static_volcano$plot(out$da, contrast, "counts", 0.05, 1)
   expect_s3_class(plot, "ggplot")
   expect_match(rlang::as_label(plot$mapping$y), "FDR", fixed = TRUE)
   results <- withWorkflowStateScope(fixture$owner, function() {
@@ -83,7 +86,7 @@ test_that("MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH)
     r$theObject <- readTrxWorkflowState(fixture$owner, manifest$source)
     r
   })
-  widget <- profile$da_widget(fixture$workflow)(results, contrast, "counts", 0.05)
+  widget <- transcriptomicsDeclarationBinding$volcano_widget(results, trx$contrast_entry(fixture$workflow, contrast), "counts", 0.05)
   expect_s3_class(widget, "htmlwidget")
   table <- widget$x$data$table
   first <- module_ci_trx_first_contrast(out$da)

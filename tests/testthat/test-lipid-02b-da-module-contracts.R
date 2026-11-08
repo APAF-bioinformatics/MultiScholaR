@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-133 (KIT-106 W3) it sources the five lipid DA helper files W3 deleted (mod_lipid_da_{display,results,session,analysis,export}_helpers.R) with mod_lipid_da.R's registrations and tests their seams in 77 blocks; the tab is the shared frame mod_omic_da.R and panel library mod_omic_da_panels.R over the W2 core (utils_workflow_omics_da.R), covered by test-omic-da-module.R (a) to (c) and its W3 blocks, MCI-022, test-omics-da-core.R and the lipid_canonical DA steps")
 library(testthat)
 
 source(test_path("..", "..", "R", "mod_lipid_da_display_helpers.R"), local = environment())

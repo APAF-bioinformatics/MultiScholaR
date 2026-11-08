@@ -213,7 +213,9 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
       shiny::observeEvent(input$apply_correlation_filter, applyOmicNormCorrelation(input, workflow, normData, addLog, norm_config))
       shiny::observeEvent(input$run_da, {
         daData$current_state_name <- workflow$state_manager$current_state
-        executeLipidDaRunAnalysis(NULL, workflow$contrasts_tbl, "~ 0 + group", 0.05, 0, daData, workflow, session, paths)
+        # KIT-106 W3: the shared DA frame's run (mod_omic_da.R) under lipid's configuration.
+        executeOmicDaRun(daData, workflow, session, paths, list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05,
+          treat_lfc_cutoff = 0), workflow$contrasts_tbl, omicGuiConfig("lipidomics")$da, lipidomicsDeclarationBinding)
       })
     } else {
       # KIT-105 W5: the shared normalisation frame's state and its run and correlation actions (mod_omic_norm*.R).
