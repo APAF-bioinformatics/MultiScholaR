@@ -4664,3 +4664,43 @@ test_that("(W4, F106-05) metab: Run DA on an owner whose head is its initial sta
     expect_identical(run$notes, "[error 5 -] No metabolomics data loaded. Please load a filtered session first.")
     expect_identical(run$tab_status[["differential_analysis"]], "pending")
 })
+
+# ------------------------------------------------------------------------------------------------
+# W5 (D3, D5): proteomics' DA UI sections and renders on the shared frame, written before it
+# (kit-106/w5/test-first.txt). Its UI from layout data is W1 (a)'s proteomics UI; the interactive volcano is
+# unticked, `<req>` until ticked, then its DA-time page (the run plugin publishes it; no page action runs).
+# ------------------------------------------------------------------------------------------------
+
+#' Proteomics' run as W1 (b) drives it: the tab opened (the init plugin reads the head), then Run DA.
+omicDaW5ProtRun <- function(setup) {
+    function(put) {
+        setup$tab("da")
+        put(list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0))
+        put(list(run_da_analysis = 1L))
+    }
+}
+
+test_that("(W5, D3) proteomics' DA UI has the interactive volcano unticked", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    ui <- mod_prot_da_ui("differential_expression")
+    html <- as.character(htmltools::renderTags(ui)$html)
+    expect_match(html, "<input id=\"differential_expression-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
+    expect_false(grepl("<input id=\"differential_expression-volcano_interactive\"[^>]*checked", html))
+    expect_false(omicsUiInputDefaults(ui)[["differential_expression-volcano_interactive"]])
+})
+
+test_that("(W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    parts <- omicDaW1UiParts(mod_omic_da_ui("differential_expression", omicGuiConfig("proteomics")$da))
+    for (part in names(omicDaW1FrozenUi$prot)) expect_identical(parts[[part]], omicDaW1FrozenUi$prot[[part]], info = part)
+})
+
+test_that("(W5, D3) proteomics: after a run with a contrast selected, the volcano is <req> until ticked, then its DA-time page", {
+    testthat::skip_if_not_installed("Glimma")
+    setup <- omicDaW1ProtSetup()
+    out <- omicDaW3Volcano(setup, omicDaW5ProtRun(setup), list(volcano_contrast = "B_vs_A"))
+    expect_identical(out$unticked, "<req>")
+    expect_match(out$ticked, "<iframe", fixed = TRUE)
+    expect_match(out$ticked, "title=\"Interactive volcano B_vs_A\"", fixed = TRUE)
+    expect_identical(out$pages, character())
+})

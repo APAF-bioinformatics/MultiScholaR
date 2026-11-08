@@ -1,0 +1,66 @@
+# KIT-106 W5: the W5 blocks of test-omic-da-module.R, written first and run on the start commit fe97aac1 (R/ unchanged).
+# run1.R, load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, TMPDIR on disk. Every other block passes (W1 (a) to (c),
+# W3); the three W5 blocks fail (10 expectations). Long messages cut at 300 characters.
+COUNTS test-omic-da-module.R pass 1224 fail 10 error 0 skip 0
+  BAD test-omic-da-module.R :: (W5, D3) proteomics' DA UI has the interactive volcano unticked
+  BAD test-omic-da-module.R :: (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI
+  BAD test-omic-da-module.R :: (W5, D3) proteomics: after a run with a contrast selected, the volcano is <req> until ticked, then its DA-time page
+--- (W5, D3) proteomics' DA UI has the interactive volcano unticked 
+ Expected `grepl(...)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+--
+--- (W5, D3) proteomics' DA UI has the interactive volcano unticked 
+ Expected `omicsUiInputDefaults(ui)[["differential_expression-volcano_interactive"]]` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+`actual`:   "f700979d6e20dc52a65b3a8a2c765b1c0f01a86dfe522dbfb1790ea88f827334"
+`expected`: "469abf274e873a5d9b607a8d4f7635d318cca6d8048d2d6cb4543356b450a765"
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+actual[2:8] vs expected[2:7]
+  "differential_expression-da_results_tabs"
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+actual[3:8] vs expected[3:9]
+  "differential_expression-da_results_table"
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+names(actual)[1:6] vs names(expected)[1:5]
+  "differential_expression-da_q_val_thresh"
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+actual vs expected
+  "Formula fetched from S4 object @args"
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+`actual` is length 13
+`expected` is length 10
+--
+--- (W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI 
+ Expected `parts[[part]]` to be identical to `omicDaW1FrozenUi$prot[[part]]`.
+Differences:
+names(actual)[1:6] vs names(expected)[1:5]
+  "differential_expression-da_q_val_thresh"
+--
+--- (W5, D3) proteomics: after a run with a contrast selected, the volcano is <req> until ticked, then its DA-time page 
+ Expected `out$unticked` to be identical to "<req>".
+Differences:
+actual vs expected
+- "<iframe srcdoc=\"&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset=&quot;utf-8&quot;/&gt;&#10;&lt;title&gt;glimmaXY&lt;/title&gt;&#10;&lt;script&gt;&#10;(function() {&#10;  // If window.HTMLWidgets is already defined, then use it; otherwise create a&#10;  // new object.
