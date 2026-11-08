@@ -14,9 +14,16 @@ for (fn in fns) {
 }
 started <- Sys.time()
 reporter <- testthat::ListReporter$new()
-res <- testthat::with_reporter(testthat::MultiReporter$new(list(testthat::SummaryReporter$new(), reporter)), testthat::test_that(paste("lifecycle", lane), {
-  guiEntryExpectLane(lane)
-}))
+# KIT-110 W2 (instrumentation repair of the kit-105 copy): the ListReporter needs a current file, else
+# `add_result` fails with "attempt to use zero-length variable name"; the file is started and ended here.
+multi <- testthat::MultiReporter$new(list(testthat::SummaryReporter$new(), reporter))
+res <- testthat::with_reporter(multi, {
+  multi$start_file(paste0("lifecycle-", lane))
+  testthat::test_that(paste("lifecycle", lane), {
+    guiEntryExpectLane(lane)
+  })
+  multi$end_file()
+})
 r <- as.data.frame(reporter$get_results())
 ok <- nrow(r) > 0 && sum(r$failed) == 0 && !any(r$error) && sum(r$skipped) == 0
 # (KIT-105 lead: the first version read isTRUE(<reporter object>), always FALSE; see entry-suite.md)
