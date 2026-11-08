@@ -86,7 +86,7 @@ runTrxRuviiiExport <- function(m_source, workflowData, experimentPaths, shown) {
     }
     tryCatch({
         run <- runTrxReferenceRuviiiExport(manager, m_source)
-        for (f in figures) runTrxPublicationInProcess(manager, f[[1L]], f[[2L]], experimentPaths)
+        for (f in figures) runWorkflowOmicsPublicationInProcess(transcriptomicsDeclarationBinding, manager, f[[1L]], f[[2L]], experimentPaths)
         shown(list(text = trxRuviiiStatusText(run$value), at = Sys.time()))
     }, error = failed)
 }

@@ -180,6 +180,35 @@ omicsManagedProduct <- function(operation, parameters, deliver, before = NULL) {
     list(operation = operation, parameters = parameters, before = before, deliver = deliver, context = NULL)
 }
 
+#' Run one of the binding's publication operations in process on the head and copy what it staged to the experiment's
+#' directories (what `publishWorkflowOmicsResult` does for the worker). KIT-110 D5: `runTrxPublicationInProcess`
+#' (mod_trx_norm.R at d5244ffe), resolved through `binding$publications` (`c(<name after the prefix>, <handler>)` each).
+#' @param binding The omic's binding.
+#' @param manager The session's state owner.
+#' @param operation The registered name (`<prefix>_<name>`: `trx_qc_figures`, ...).
+#' @param parameters The operation's parameters.
+#' @param experiment_paths The experiment's directories, by role.
+#' @return The operation's display.
+#' @noRd
+runWorkflowOmicsPublicationInProcess <- function(binding, manager, operation, parameters, experiment_paths) {
+    entry <- Filter(function(p) identical(paste0(binding$prefix, "_", p[[1L]]), operation), binding$publications)
+    if (!length(entry)) cli::cli_abort("unknown {binding$omic_type} publication {.val {operation}}", class = "workflow_operation_parameters")
+    directory <- tempfile(paste0(binding$prefix, "-publication-"))
+    dir.create(directory, recursive = TRUE)
+    on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+    request <- list(operation = operation, directory = directory, parameters = parameters,
+        input_references = list(state = getWorkflowStateReference(manager)))
+    done <- withWorkflowStateScope(manager, function() get(entry[[1L]][[2L]], mode = "function")(manager, request, NULL))
+    staged <- file.path(directory, "omics-publication")
+    for (role in list.dirs(staged, full.names = FALSE, recursive = FALSE)) {
+        target <- experiment_paths[[role]]
+        if (is.null(target)) next
+        dir.create(target, recursive = TRUE, showWarnings = FALSE)
+        file.copy(list.files(file.path(staged, role), full.names = TRUE, all.files = TRUE, no.. = TRUE), target, recursive = TRUE, overwrite = TRUE)
+    }
+    done$display
+}
+
 #' The filtering metrics a managed step's worker saved, for the figures the tab draws (`updateLipidFiltering`,
 #' `updateMetaboliteFiltering`).
 #' @return The metrics, or NULL when the worker could not compute them.

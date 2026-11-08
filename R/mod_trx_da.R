@@ -101,7 +101,7 @@ trxDaWithSource <- function(results, workflowData) {
 #' @noRd
 trxDaWriteResults <- function(workflowData, experimentPaths) {
     function(...) {
-        display <- runTrxPublicationInProcess(workflowData$state_manager, "trx_da_publication", list(), experimentPaths)
+        display <- runWorkflowOmicsPublicationInProcess(transcriptomicsDeclarationBinding, workflowData$state_manager, "trx_da_publication", list(), experimentPaths)
         if (!isTRUE(display$saved)) stop(display$message %||% "the DA publication reported no success", call. = FALSE)
         TRUE
     }

@@ -1,0 +1,49 @@
+# KIT-110 W2 targeted: the W2 tree (d5244ffe + W1 8da52fcf + W2). R 4.6.1, load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file (two sequences in parallel); runner kit/scripts-078/run1.R;
+# R_LIBS = core/browser-smoke.KA61uA/library (kit_105). Recorded 2026-11-08. Before = kit-110/test-first.txt.
+
+## Targeted files                         after                         before (d5244ffe)
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0            89/0/0/0  (W1 (b-trx): identical, frozen values)
+COUNTS test-trx-norm-core.R pass 58 fail 0 error 0 skip 0              19/12/5/0 (new; w2/test-first.txt)
+COUNTS test-omic-norm-module.R pass 525 fail 0 error 0 skip 0          525/0/0/0 (W1 (a) incl. the trx UI digest)
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0          48/0/0/0  (MCI-029)
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0         61/0/0/0  (MCI-030)
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0           50/0/0/0  (MCI-031)
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0      70/0/0/0  (MCI-032)
+COUNTS test-trx-publication.R pass 174 fail 0 error 0 skip 0           174/0/0/0
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0 324/0/0/0
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0  29/0/0/0  (trx_screen vs its oracle)
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0       (guard, once; KIT-105: 35)
+
+## trx_screen alone with traces (the Simulation Setup's method; the repaired lifecycle copy, see kit-110/test-first.txt)
+LANE trx_screen identical_to_oracle=TRUE elapsed=37s
+CALLS mod_trx_norm_server 1
+CALLS runTrxNormalisation 2                  (the refusal and the run; before: 2)
+CALLS resetTrxNormalisation 0                (before: 0; no entry lane resets)
+CALLS runTrxNormInProcess 2                  (new; the refusal and the run)
+CALLS runTrxNormManaged 0                    (in process; MCI-030.3 and W1's managed cases run it)
+CALLS runTrxNormPublicationsInProcess 1      (before: 1; the refused run stops before the figures)
+CALLS runWorkflowOmicsPublicationInProcess 8 (before, as runTrxPublicationInProcess: 8 = norm 5, DA 1, RUVIII figures 2)
+
+## Definitions and Collate (scratch defs.R)
+names defined twice: none
+  trxNormGridParameters, trxNormRuvQcResult, trxNormRuvsStep, runTrxNormPublicationsInProcess, runTrxNormManaged,
+  runTrxNormInProcess, runTrxNormalisation, resetTrxNormalisation: utils_workflow_trx_norm.R
+  runWorkflowOmicsPublicationInProcess: utils_workflow_omics_actions.R
+  runTrxPublicationInProcess: (none)
+  trxNormOptionsPanel, mod_trx_norm_server: mod_trx_norm.R (until W3)
+Collate equals R/*.R: TRUE 362 362 ('utils_workflow_trx_norm.R' after 'utils_workflow_trx_declarations.R')
+
+## git diff d5244ffe -- NAMESPACE man R/app_ui.R R/app_server.R R/mod_omic_workflow.R tools
+(empty)
+
+## Dependents grep: R, tests, tools (excluding tools/refactor), inst, for the moved and removed names
+runTrxPublicationInProcess: only a comment (utils_workflow_omics_actions.R, the D5 provenance) and the core test's
+  absence check. No caller.
+runWorkflowOmicsPublicationInProcess: mod_trx_da.R:104, mod_trx_summary.R:89, utils_workflow_trx_norm.R (the norm
+  publications), test-trx-norm-core.R.
+runTrxNormalisation, resetTrxNormalisation, runTrxNormManaged, runTrxNormInProcess, trxNormGridParameters:
+  mod_trx_norm.R (the server's observers), test-trx-norm-core.R.
+trxNormRuvQcResult, trxNormRuvsStep, runTrxNormPublicationsInProcess: utils_workflow_trx_norm.R only.
+docs/qa/.../kit-098/oracle-record.R:133 and kit-099/oracle-record.R:135 name trxNormGridParameters in a comment
+  (unchanged name).

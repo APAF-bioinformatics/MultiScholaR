@@ -1,0 +1,23 @@
+# KIT-110 W2 test-first: tests/testthat/test-trx-norm-core.R (new), written before the move and run on the start
+# commit's R/ (d5244ffe; W1 committed as 8da52fcf, tests only). R 4.6.1, load_all, MULTISCHOLAR_STRICT_SKIPS=1, one
+# process; runner kit/scripts-078/run1.R (verbose); R_LIBS = kit_105. Recorded 2026-11-08.
+# Every block fails or errors before: the moved functions are in mod_trx_norm.R (srcref), runTrxNormalisation calls
+# shiny::showNotification, runTrxNormInProcess and runWorkflowOmicsPublicationInProcess do not exist, and
+# runTrxPublicationInProcess does.
+
+COUNTS test-trx-norm-core.R pass 19 fail 12 error 5 skip 0
+  BAD test-trx-norm-core.R :: the moved functions are the namespace's, defined in utils_workflow_trx_norm.R, and call no Shiny UI function
+  BAD test-trx-norm-core.R :: runWorkflowOmicsPublicationInProcess resolves through binding$publications, and refuses an unknown operation by class
+  BAD test-trx-norm-core.R :: the handlers outside a session: an automatic run, then a reset, as W1 (b-trx) in process
+  BAD test-trx-norm-core.R :: the handlers outside a session: a manual run (k 2, 10 %), as W1 (b-trx) in process
+  BAD test-trx-norm-core.R :: the handlers outside a session: a reset before any run, then a manual k above the cap (refused), as W1 (b-trx) in process
+# First messages: "Expected `basename(utils::getSrcFilename(fn, full.names = TRUE))` to be identical to `files[[name]]`"
+# (7 moved functions, in mod_trx_norm.R); "Expected `is.function(fn)` to be TRUE" (runTrxNormInProcess,
+# runWorkflowOmicsPublicationInProcess); "Expected `any(...)` to be FALSE" (runTrxNormalisation, resetTrxNormalisation:
+# shiny::showNotification in the body); "Expected `exists(\"runTrxPublicationInProcess\", ...)` to be FALSE";
+# "object 'runWorkflowOmicsPublicationInProcess' not found"; "could not find function
+# \"runWorkflowOmicsPublicationInProcess\""; "object 'runTrxNormInProcess' not found" (the three handler blocks).
+
+# After the move (the W2 tree):
+COUNTS test-trx-norm-core.R pass 58 fail 0 error 0 skip 0
+exit=0 elapsed=31s
