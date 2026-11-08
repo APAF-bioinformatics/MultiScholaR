@@ -1,0 +1,85 @@
+KIT-106 W6 merge checks (2026-11-09), on origin/performance-v2 d4ca601f. R 4.6.1. Start commit b75561de (R/ as 46ec9e01).
+
+1. DESCRIPTION Collate == R/*.R: 353 entries, 353 files, no duplicates.
+   Added: utils_workflow_dia_da_validation.R (git mv of mod_prot_da_validation.R), utils_workflow_omics_da.R, utils_workflow_trx_da.R (W2); mod_omic_da_panels.R, mod_omic_da.R (W3); utils_workflow_dia_da_views.R (W5).
+   Removed: the five lipid DA helpers and mod_trx_da.R (W3); the four metab DA helpers (W4); the three proteomics render files (W5).
+2. NAMESPACE against b75561de: 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 / 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 (byte-identical). git diff b75561de -- man R/app_ui.R R/app_server.R R/mod_omic_workflow.R: empty. git diff b75561de -- tools: exactly D10's two lines in tools/profiling/workflow_kit_driver.R (0034c4aa). roxygen2 was not run.
+3. Parse-data back-reference count (kit-104-w3/backrefs.R): 2 (6 at the start): the exported design-builder wrappers #4 and #5, mod_prot_design_builder_{server,ui} <- func_general_applets.R.
+4. The config: the wired function fields are required since W6 (D8; kit-106/w6/config-required.txt). No config function is defined in R/mod_*.R (test-omic-gui-config.R's srcref rule, 1406/0).
+5. Dependents grep (KIT-105 W6's script, start b75561de), tracked text files in R/, tests/, tools/ (excluding tools/refactor/), inst/. The LIVE hits, each classified, none calls a deleted name:
+   - test-metab-02ab-da-module-characterization.R:120, :130: the file's existence guards (exists() over the deleted names), used only by its quarantined blocks Q-147 and Q-148.
+   - test-omic-da-module.R:628: W1's state-factory hook, guarded by exists(), inert since W3/W4.
+   - test-omics-da-core.R:45: a test asserting that R/mod_prot_da_validation.R was removed (W2's move).
+   - The harness label tools/profiling/workflow_kit.R:27 ('mod_trx_da') is a string (D10, P-24).
+
+   Deleted R/ files since b75561de ( 14 ): mod_lipid_da_analysis_helpers.R, mod_lipid_da_display_helpers.R, mod_lipid_da_export_helpers.R, mod_lipid_da_results_helpers.R, mod_lipid_da_session_helpers.R, mod_metab_da_display_helpers.R, mod_metab_da_observer_helpers.R, mod_metab_da_registration_helpers.R, mod_metab_da_server_helpers.R, mod_prot_da_render_heatmap.R, mod_prot_da_render_table.R, mod_prot_da_render_volcano.R, mod_prot_da_validation.R, mod_trx_da.R 
+   Deleted top-level names since b75561de ( 120 ):
+     bootstrapLipidDaLoadFilteredSession bootstrapLipidDaRunAnalysis bootstrapLipidDaSaveHeatmap
+     buildLipidDaClusterSummaryRenderText buildLipidDaClusterSummaryText buildLipidDaContrastsText
+     buildLipidDaHeatmapManualSaveWarning buildLipidDaHeatmapRenderState buildLipidDaResultsDownloadHandler
+     buildLipidDaResultsDownloadOutputHandler buildLipidDaResultsTableRenderWidget buildLipidDaResultsTableWidget
+     buildLipidDaStatusText buildLipidDaSummaryStatsRenderText buildLipidDaSummaryStatsText
+     buildLipidDaVolcanoGlimmaUi buildLipidDaVolcanoStaticPlot buildMetabDaClusterSummaryRenderOutput
+     buildMetabDaClusterSummaryText buildMetabDaContrastsDisplayText buildMetabDaContrastsRenderOutput
+     buildMetabDaGlimmaCombinedViewInfoBanner buildMetabDaGlimmaErrorBanner buildMetabDaGlimmaRenderOutput
+     buildMetabDaHeatmapManualSaveWarning buildMetabDaHeatmapManualSaveWarningRenderOutput
+     buildMetabDaHeatmapPlotOutput buildMetabDaHeatmapRenderOutput buildMetabDaResultsDatatable
+     buildMetabDaResultsDownloadHandler buildMetabDaResultsTableRenderOutput buildMetabDaStaticVolcanoPlot
+     buildMetabDaStaticVolcanoRenderOutput buildMetabDaStatusRenderOutput buildMetabDaStatusText
+     buildMetabDaSummaryStatsRenderOutput buildMetabDaSummaryStatsText createMetabDaServerModuleHandler
+     createMetabDaServerState da_server_heatmap_render_handler da_server_table_render_handler
+     da_server_volcano_render_handler executeLipidDaRunAnalysis filterMetabDaDisplayResults
+     finalizeLipidDaRunAnalysisError finalizeLipidDaRunAnalysisSuccess finalizeLipidDaSessionLoadError
+     finalizeLipidDaSessionLoadSuccess handleLipidDaLoadFilteredSession handleLipidDaRunAnalysisPreflight
+     handleLipidDaSaveHeatmap initializeLipidDaServerState initializeMetabDaServerBody lipidDaCurrentS4
+     lipidDaResultsWithSource loadLipidDaSessionFromFile metabDaCurrentS4 metabDaResultsWithSource
+     mod_prot_da_heatmap_tab_ui mod_prot_da_sidebar_ui mod_prot_da_table_tab_ui mod_prot_da_volcano_tab_ui
+     mod_trx_da_server notifyLipidDaSessionFileMissing notifyLipidDaSessionSourceDirError
+     prepareLipidDaRunAnalysisContext readLipidDaSessionData registerLipidDaClusterSummaryOutput
+     registerLipidDaHeatmapPlotOutput registerLipidDaHeatmapWarningOutput registerLipidDaPrimaryTextOutputs
+     registerLipidDaResultsDownloadOutput registerLipidDaResultsTableOutput registerLipidDaSaveHeatmapObserver
+     registerLipidDaSummaryStatsOutput registerLipidDaVolcanoGlimmaOutput registerLipidDaVolcanoStaticOutput
+     registerMetabDaLoadFilteredSessionObserver registerMetabDaMainOutputsAndObservers registerMetabDaOverviewOutputs
+     registerMetabDaResultsOutputs registerMetabDaRunAnalysisObserver registerMetabDaSaveHeatmapObserver
+     registerMetabDaServerBodyOutputs registerMetabDaVisualizationOutputs resolveLipidDaResultsDownloadData
+     resolveLipidDaSessionFile resolveMetabDaAnalysisInputs resolveMetabDaGlimmaWidgetOutput
+     resolveMetabDaLoadSessionFile restoreLipidDaAssaysFromSession restoreLipidDaContrastsFromSession
+     restoreLipidDaCurrentS4FromSession restoreLipidDaFormulaFromSession restoreLipidDaPostReadSessionState
+     restoreMetabDaLoadedSessionState runMetabDaAnalysisObserverEntry runMetabDaAnalysisObserverShell
+     runMetabDaLoadSessionObserverEntry runMetabDaLoadSessionObserverShell runMetabDaSaveHeatmapObserverEntry
+     runMetabDaSaveHeatmapObserverShell runMetabDaServerEntry runMetabDaServerModule runMetabDaServerModuleCallback
+     runMetabDaServerModuleShell runTrxDaAnalysis shapeMetabDaTableDisplayResults
+     showLipidDaSessionLoadingNotification startMetabDaServerBody storeLipidDaHeatmapRenderState
+     summarizeMetabDaDisplayResults trxDaModelUi trxDaStatusText trxDaWidget trxDaWithSource trxDaWriteResults
+     updateMetabDaResultsSelectorInputs writeMetabDaResultsArtifacts writeMetabDaResultsDownloadCsv 
+   
+   Hits: 439 
+   
+             comment              LIVE quarantined-block  quarantined-file 
+                  74                 4                 8               353 
+   
+   By file and class:
+     comment           1  R/func_omics_design_shared.R
+     comment          12  R/mod_omic_da_panels.R
+     comment          12  R/mod_omic_da.R
+     comment          31  R/utils_omic_gui_config.R
+     comment           1  R/utils_workflow_dia_da_validation.R
+     comment           9  R/utils_workflow_dia_da_views.R
+     comment           1  R/utils_workflow_omics_da.R
+     comment           1  R/utils_workflow_trx_da.R
+     comment           6  tests/testthat/test-omics-da-core.R
+     LIVE              2  tests/testthat/test-metab-02ab-da-module-characterization.R
+     LIVE              1  tests/testthat/test-omic-da-module.R
+     LIVE              1  tests/testthat/test-omics-da-core.R
+     quarantined-block    4  tests/testthat/test-metab-02ab-da-module-characterization.R
+     quarantined-block    4  tests/testthat/test-omics-da-core.R
+     quarantined-file  165  tests/testthat/test-lipid-02b-da-module-contracts.R
+     quarantined-file  161  tests/testthat/test-metab-02aa-da-display-filter-characterization.R
+     quarantined-file   18  tests/testthat/test-metab-02aa-da-display-filter-shared.R
+     quarantined-file    9  tests/testthat/test-prot-da-render-direct-shared.R
+   
+   LIVE hits (code or test lines outside a quarantined file or block): 4 
+     tests/testthat/test-metab-02ab-da-module-characterization.R:120  buildMetabDaResultsDownloadHandler,writeMetabDaResultsDownloadCsv
+     tests/testthat/test-metab-02ab-da-module-characterization.R:130  resolveMetabDaAnalysisInputs
+     tests/testthat/test-omic-da-module.R:628  initializeLipidDaServerState,createMetabDaServerState
+     tests/testthat/test-omics-da-core.R:45  mod_prot_da_validation.R
