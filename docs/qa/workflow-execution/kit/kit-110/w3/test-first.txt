@@ -1,0 +1,539 @@
+# KIT-110 W3 test-first: the new and changed tests run on the unchanged R/ code at b51ad555 (only the two test files edited).
+# R 4.6.1, load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one process per file, kit/scripts-078/run1.R,
+# R_LIBS = core/browser-smoke.KA61uA/library. Recorded 2026-11-08.
+# Note: after this run one construction in the D8 block was corrected (trx with the correlation_filter tab added now
+# carries the tab's other fields, so that each field's own refusal is the one raised); on b51ad555 that block still
+# fails at its first statement (trx's norm is NULL: 'omic GUI configuration field norm is missing').
+
+## test-omic-gui-config.R (before: 977/21/1/0; after: 1065/0/0/0)
+COUNTS test-omic-gui-config.R pass 977 fail 21 error 1 skip 0
+  BAD test-omic-gui-config.R :: no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD test-omic-gui-config.R :: the norm group holds today's values for lipid and metab, trx has one (KIT-110) and proteomics' is NULL
+  BAD test-omic-gui-config.R :: KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e)
+  BAD test-omic-gui-config.R :: KIT-110 W3 (D8): the validator requires a norm field with the tab or panel that uses it
+--- no configuration function is defined in an R/mod_*.R file (srcref, under load_all) 
+ Expected `length(norm_files)` > 0L.
+Actual comparison: 0 <= 0
+Difference: 0 <= 0 
+--- the norm group holds today's values for lipid and metab, trx has one (KIT-110) and proteomics' is NULL 
+ Expected `is.null(configs$transcriptomics$norm)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$module_id` to be identical to "norm".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('norm')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `names(norm$panels)` to be identical to `c("tmm_logcpm", "ruv_grid", "actions")`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('tmm_logcpm', 'ruv_grid', 'actions')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$panels$tmm_logcpm` to be identical to `list()`.
+Differences:
+`actual` is NULL
+`expected` is a list
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$panels$ruv_grid` to be identical to `list(...)`.
+Differences:
+`actual` is NULL
+`expected` is a list
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$panels$actions` to be identical to `list()`.
+Differences:
+`actual` is NULL
+`expected` is a list
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$plot_tabs` to be identical to `c("ruv", "pca", "rle", "log")`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('ruv', 'pca', 'rle', 'log')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$stage_labels` to be identical to `c("Raw logCPM", "TMM logCPM", "RUVs-corrected logCPM (display only)")`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('Raw logCPM', 'TMM logCPM', 'RUVs-corrected logCPM (display only)')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$assay_slots` to be identical to 1L.
+Differences:
+`actual` is NULL
+`expected` is an integer vector (1)
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$ruv_heading` to be identical to "RUVs Control Selection (canonical correlation)".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('RUVs Control Selection (canonical correlation)')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$ruv_help` to be identical to `paste(...)`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('The CCA panels and the grid of percentages: the controls are inferred negative controls (the least significant genes in a preliminary group GLM).')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$run` to be identical to `list(...)`.
+Differences:
+`actual` is NULL
+`expected` is a list
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$reset` to be identical to `resetTrxNormalisation`.
+Differences:
+`actual` is NULL
+`expected` is a function
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$pre_qc_on_entry` to be FALSE.
+Differences:
+`actual` is NULL
+`expected` is a logical vector (FALSE)
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$assay_names` to be identical to "counts".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('counts')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$image_stem` to be identical to "trx".
+Differences:
+`actual` is NULL
+`expected` is a character vector ('trx')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$stage_prefixes` to be identical to `c(pre_norm = "raw", post_norm = "tmm", ruv_corrected = "ruvs")`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('raw', 'tmm', 'ruvs')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$output_assay_slots` to be identical to 2L.
+Differences:
+`actual` is NULL
+`expected` is an integer vector (2)
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `norm$testids` to be identical to `c(ruv_mode = "trx-norm-ruv-mode", run = "trx-norm-run", reset = "trx-norm-reset")`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ('trx-norm-ruv-mode', 'trx-norm-run', 'trx-norm-reset')
+ 
+--- KIT-110 W3: trx's norm group holds today's trx tab values (mod_trx_norm.R, mod_transcriptomics.R at 38d9d25e) 
+ Expected `intersect(...)` to be identical to `character()`.
+Differences:
+`actual` is NULL
+`expected` is a character vector ()
+ 
+--- KIT-110 W3 (D8): the validator requires a norm field with the tab or panel that uses it 
+ <omic_gui_config_invalid/rlang_error/error/condition>
+Error in `omicGuiConfigAbort(where, "is missing")`: omic GUI configuration field norm is missing. 
+
+## test-omic-norm-module.R (before: 527/5/3/0, the lipid and metab halves of the D3 block pass before; after: 547/0/0/0)
+INFO [2026-11-08 23:02:17] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:02:17] Module ID: norm
+INFO [2026-11-08 23:02:17] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:02:18] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:02:18] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:02:18] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-08 23:02:18] Auto-triggering pre-normalization QC plots
+INFO [2026-11-08 23:02:18] === GENERATING PRE-NORMALIZATION QC PLOTS ===
+INFO [2026-11-08 23:02:18] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:02:18] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:18] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:18] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:02:18] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:02:18] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:02:18] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:02:18] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:02:18] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:02:18] Pre-normalization QC plots generated successfully
+INFO [2026-11-08 23:02:19] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-08 23:02:19] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:02:19] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:19] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:19] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:02:19] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:02:19] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:02:19] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:02:19] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:02:19] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:02:20] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-08 23:02:20] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:02:21] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:02:22] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:02:23] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:02:23] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:02:24] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:02:24] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-08 23:02:31] Calculating Pearson correlations per sample pair...
+INFO [2026-11-08 23:02:33] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-08 23:02:33] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-08 23:02:33] *** EXPORT: Assays: LCMS_Pos, GCMS ***
+INFO [2026-11-08 23:02:33] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-08 23:02:33] *** EXPORT: Session data saved to: /tmp/Rtmp0Diwza/kit105-norm-lipid-3afbe83767809e/source/lipid_filtered_session_data_20261108_230233.rds ***
+INFO [2026-11-08 23:02:33] *** EXPORT: Latest version saved to: /tmp/Rtmp0Diwza/kit105-norm-lipid-3afbe83767809e/source/lipid_filtered_session_data_latest.rds ***
+INFO [2026-11-08 23:02:33] *** EXPORT: Saved lipid_qc_params.RDS ***
+INFO [2026-11-08 23:02:33] *** EXPORT: Summary saved to: /tmp/Rtmp0Diwza/kit105-norm-lipid-3afbe83767809e/source/lipid_filtered_session_summary.txt ***
+INFO [2026-11-08 23:02:33] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-08 23:02:35] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:02:35] Module ID: norm
+INFO [2026-11-08 23:02:35] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:02:36] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:02:36] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:02:36] Normalization tab selected - checking if pre-QC needed
+INFO [2026-11-08 23:02:36] Auto-triggering pre-normalization QC plots
+INFO [2026-11-08 23:02:36] === GENERATING PRE-NORMALIZATION QC PLOTS ===
+INFO [2026-11-08 23:02:36] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:02:36] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:36] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:36] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:02:36] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:02:36] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:02:36] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:02:36] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:02:36] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:02:36] Pre-normalization QC plots generated successfully
+INFO [2026-11-08 23:02:36] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-08 23:02:37] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:02:37] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:37] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:37] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:02:37] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:02:37] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:02:37] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:02:37] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:02:37] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:02:38] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-08 23:02:38] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:02:39] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:02:39] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:02:40] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:02:40] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-08 23:02:47] Calculating Pearson correlations per sample pair...
+INFO [2026-11-08 23:02:49] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-08 23:02:49] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-08 23:02:49] *** EXPORT: Assays: LCMS_Pos, GCMS ***
+INFO [2026-11-08 23:02:49] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-08 23:02:49] *** EXPORT: Session data saved to: /tmp/Rtmp0Diwza/kit105-norm-metab-3afbe874c5c135/source/metab_filtered_session_data_20261108_230249.rds ***
+INFO [2026-11-08 23:02:49] *** EXPORT: Latest version saved to: /tmp/Rtmp0Diwza/kit105-norm-metab-3afbe874c5c135/source/metab_filtered_session_data_latest.rds ***
+INFO [2026-11-08 23:02:49] *** EXPORT: Saved metab_qc_params.RDS ***
+INFO [2026-11-08 23:02:49] *** EXPORT: Summary saved to: /tmp/Rtmp0Diwza/kit105-norm-metab-3afbe874c5c135/source/metab_filtered_session_summary.txt ***
+INFO [2026-11-08 23:02:49] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-08 23:02:51] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:02:51] Module ID: norm
+INFO [2026-11-08 23:02:51] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:02:51] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:02:51] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:02:51] ITSD selection updated for LCMS_Pos : 1 features selected
+INFO [2026-11-08 23:02:51] ITSD selection updated for GCMS : 1 features selected
+INFO [2026-11-08 23:02:51] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:02:51] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:02:52] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:52] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:02:52] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:02:52] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:02:52] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:02:52] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:02:52] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:02:52] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:02:53] Applying between-sample normalization method: quantile
+INFO [2026-11-08 23:02:53] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:02:54] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:02:55] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:02:56] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:02:57] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:02:57] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:02:58] Generated 8 QC plots for stage: ruv_corrected
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Generating composite from 24 files...
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:02:58] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:02:59] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:02:59] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-08 23:03:10] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:03:10] Module ID: norm
+INFO [2026-11-08 23:03:10] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:03:10] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:03:10] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:03:10] ITSD selection updated for LCMS_Pos : 1 features selected
+INFO [2026-11-08 23:03:10] ITSD selection updated for GCMS : 1 features selected
+INFO [2026-11-08 23:03:10] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:03:10] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:03:10] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:03:10] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:03:10] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:03:10] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:03:10] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:03:10] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:03:10] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:03:11] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:03:12] Applying between-sample normalization method: quantile
+INFO [2026-11-08 23:03:12] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:03:13] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:03:14] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:03:14] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:03:16] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:03:16] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:03:17] Generated 8 QC plots for stage: ruv_corrected
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Generating composite from 24 files...
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:03:17] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:03:18] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:03:18] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:03:18] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:03:18] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-08 23:03:29] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:03:29] Module ID: norm
+INFO [2026-11-08 23:03:29] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:03:30] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:03:30] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:03:30] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:03:30] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:03:30] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:03:30] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:03:30] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:03:30] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:03:30] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:03:30] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:03:30] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:03:32] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-08 23:03:32] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:03:33] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:03:33] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:03:34] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:03:35] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:03:36] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:03:36] Generated 8 QC plots for stage: ruv_corrected
+INFO [2026-11-08 23:03:36] [generateCompositeFromFiles] Generating composite from 24 files...
+INFO [2026-11-08 23:03:36] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:03:37] [generateCompositeFromFiles] Combining plot sections...
+ERROR [2026-11-08 23:03:47] Skip correlation filtering error: kit105: the store commit is refused
+INFO [2026-11-08 23:03:48] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:03:48] Module ID: norm
+INFO [2026-11-08 23:03:48] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:03:48] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:03:48] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:03:48] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:03:48] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:03:48] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:03:48] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:03:49] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:03:49] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:03:49] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:03:49] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:03:49] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:03:50] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-08 23:03:50] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:03:51] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:03:52] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:03:53] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:03:54] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:03:54] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:03:55] Generated 8 QC plots for stage: ruv_corrected
+INFO [2026-11-08 23:03:55] [generateCompositeFromFiles] Generating composite from 24 files...
+INFO [2026-11-08 23:03:55] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:03:55] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:03:55] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:03:55] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:03:56] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:03:56] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:03:56] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:03:56] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:03:56] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:03:56] [generateCompositeFromFiles] Combining plot sections...
+ERROR [2026-11-08 23:04:06] Skip correlation filtering error: kit105: the store commit is refused
+INFO [2026-11-08 23:04:07] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:07] Module ID: norm
+INFO [2026-11-08 23:04:07] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:04:07] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:04:07] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:04:07] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:04:07] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:04:07] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:04:07] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:04:08] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:04:08] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:04:08] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:04:08] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:04:08] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:04:08] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-08 23:04:08] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:04:09] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:04:10] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:04:11] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:04:11] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-08 23:04:17] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-08 23:04:17] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-08 23:04:17] *** EXPORT: Assays: LCMS_Pos, GCMS ***
+INFO [2026-11-08 23:04:17] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-08 23:04:19] *** EXPORT: Session data saved to: /tmp/Rtmp0Diwza/kit105-norm-lipid-3afbe8796980fc/source/lipid_filtered_session_data_20261108_230417.rds ***
+INFO [2026-11-08 23:04:19] *** EXPORT: Latest version saved to: /tmp/Rtmp0Diwza/kit105-norm-lipid-3afbe8796980fc/source/lipid_filtered_session_data_latest.rds ***
+INFO [2026-11-08 23:04:19] *** EXPORT: Saved lipid_qc_params.RDS ***
+INFO [2026-11-08 23:04:19] *** EXPORT: Summary saved to: /tmp/Rtmp0Diwza/kit105-norm-lipid-3afbe8796980fc/source/lipid_filtered_session_summary.txt ***
+INFO [2026-11-08 23:04:19] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-08 23:04:20] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:20] Module ID: norm
+INFO [2026-11-08 23:04:20] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:04:21] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:04:21] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:04:21] Generating QC plots for assay: LCMS_Pos
+WARN [2026-11-08 23:04:21] Error generating PCA for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:04:21] Error generating RLE for LCMS_Pos : In index: 1.
+WARN [2026-11-08 23:04:21] Error generating Density for LCMS_Pos : In index: 1.
+INFO [2026-11-08 23:04:21] Generating QC plots for assay: GCMS
+WARN [2026-11-08 23:04:21] Error generating PCA for GCMS : In index: 1.
+WARN [2026-11-08 23:04:21] Error generating RLE for GCMS : In index: 1.
+WARN [2026-11-08 23:04:21] Error generating Density for GCMS : In index: 1.
+INFO [2026-11-08 23:04:21] Generated 2 QC plots for stage: post_filter
+INFO [2026-11-08 23:04:22] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-08 23:04:22] Between-sample normalization process finished for all assays.
+INFO [2026-11-08 23:04:23] Generating QC plots for assay: LCMS_Pos
+INFO [2026-11-08 23:04:23] Generating QC plots for assay: GCMS
+INFO [2026-11-08 23:04:24] Generated 8 QC plots for stage: post_norm
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Generating composite from 16 files...
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Added column titles
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Added row: lcms_pos_pca
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Added row: lcms_pos_density
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Added row: lcms_pos_rle
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Added row: lcms_pos_correlation
+INFO [2026-11-08 23:04:24] [generateCompositeFromFiles] Added row: gcms_pca
+INFO [2026-11-08 23:04:25] [generateCompositeFromFiles] Added row: gcms_density
+INFO [2026-11-08 23:04:25] [generateCompositeFromFiles] Added row: gcms_rle
+INFO [2026-11-08 23:04:25] [generateCompositeFromFiles] Added row: gcms_correlation
+INFO [2026-11-08 23:04:25] [generateCompositeFromFiles] Combining plot sections...
+INFO [2026-11-08 23:04:31] === EXPORT NORMALIZED SESSION BUTTON CLICKED ===
+INFO [2026-11-08 23:04:31] *** EXPORT: Gathered session data successfully ***
+INFO [2026-11-08 23:04:31] *** EXPORT: Assays: LCMS_Pos, GCMS ***
+INFO [2026-11-08 23:04:31] *** EXPORT: Contrasts available: 1 ***
+INFO [2026-11-08 23:04:32] *** EXPORT: Session data saved to: /tmp/Rtmp0Diwza/kit105-norm-metab-3afbe850e02fc6/source/metab_filtered_session_data_20261108_230431.rds ***
+INFO [2026-11-08 23:04:32] *** EXPORT: Latest version saved to: /tmp/Rtmp0Diwza/kit105-norm-metab-3afbe850e02fc6/source/metab_filtered_session_data_latest.rds ***
+INFO [2026-11-08 23:04:32] *** EXPORT: Saved metab_qc_params.RDS ***
+INFO [2026-11-08 23:04:32] *** EXPORT: Summary saved to: /tmp/Rtmp0Diwza/kit105-norm-metab-3afbe850e02fc6/source/metab_filtered_session_summary.txt ***
+INFO [2026-11-08 23:04:32] === EXPORT NORMALIZED SESSION COMPLETED SUCCESSFULLY ===
+INFO [2026-11-08 23:04:34] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:34] Module ID: norm
+INFO [2026-11-08 23:04:34] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:04:34] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:04:34] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:04:34] Calculating Pearson correlations per sample pair...
+ERROR [2026-11-08 23:04:34] Correlation filtering error: kit105: the worker refused the correlation
+INFO [2026-11-08 23:04:35] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:35] Module ID: norm
+INFO [2026-11-08 23:04:35] Detected assays: LCMS_Pos, GCMS
+INFO [2026-11-08 23:04:36] ITSD selection updated for LCMS_Pos : 0 features selected
+INFO [2026-11-08 23:04:36] ITSD selection updated for GCMS : 0 features selected
+INFO [2026-11-08 23:04:36] Calculating Pearson correlations per sample pair...
+ERROR [2026-11-08 23:04:36] Correlation filtering error: kit105: the worker refused the correlation
+INFO [2026-11-08 23:04:36] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:36] Module ID: norm
+INFO [2026-11-08 23:04:36] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:36] Module ID: norm
+INFO [2026-11-08 23:04:36] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:36] Module ID: norm
+INFO [2026-11-08 23:04:36] === METABOLOMICS NORMALIZATION MODULE STARTED ===
+INFO [2026-11-08 23:04:36] Module ID: norm
+COUNTS test-omic-norm-module.R pass 527 fail 5 error 3 skip 0
+  BAD test-omic-norm-module.R :: W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R
+  BAD test-omic-norm-module.R :: KIT-110 W3 (D2): trx's norm UI from the frame and its configuration equals W1 (a)'s trx digest and ids (fails before)
+  BAD test-omic-norm-module.R :: KIT-110 W3 (D3): the frame registers each omic's outputs: lipid's and metab's as W1, trx's as W1 (b-trx) (fails before)
+  BAD test-omic-norm-module.R :: KIT-110 W3 (D4): the frame calls an omic's own run and reset handlers with its settings and callbacks (fails before)
+  BAD test-omic-norm-module.R :: KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before)
+--- W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R 
+ Expected `"norm_options" %in% all.names(body(mod_lipid_norm_ui))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+ 
+--- W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R 
+ Expected `"norm_server" %in% all.names(body(mod_lipid_norm_server))` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+ 
+--- KIT-110 W3 (D2): trx's norm UI from the frame and its configuration equals W1 (a)'s trx digest and ids (fails before) 
+ Error in `normalizeChoicesArgs(choices, choiceNames, choiceValues)`: Please specify a non-empty vector for `choices` (or, alternatively, for both `choiceNames` AND `choiceValues`). 
+--- KIT-110 W3 (D3): the frame registers each omic's outputs: lipid's and metab's as W1, trx's as W1 (b-trx) (fails before) 
+ Error in `seq_len(assaySlots)`: argument must be coercible to non-negative integer 
+--- KIT-110 W3 (D4): the frame calls an omic's own run and reset handlers with its settings and callbacks (fails before) 
+ Error in `seq_len(assaySlots)`: argument must be coercible to non-negative integer 
+--- KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before) 
+ Expected `exists(name, envir = ns, inherits = FALSE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+trxNormOptionsPanel 
+--- KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before) 
+ Expected `exists(name, envir = ns, inherits = FALSE)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+mod_trx_norm_server 
+--- KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before) 
+ Expected `intersect(...)` to be identical to `character()`.
+Differences:
+    actual              | expected 
+[1] "norm_options"      -          
+[2] "norm_server"       -          
+[3] "norm_tabs"         -          
+[4] "norm_stage_labels" -          
+[5] "norm_ruv_heading"  -          
+[6] "norm_ruv_help"     -          
+ 

@@ -1,0 +1,98 @@
+# KIT-110 W3 targeted, dependents, trx_screen alone and the entry suite: the W3 tree (b51ad555 + W3).
+# R 4.6.1, load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file (batches in
+# parallel); runner kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.KA61uA/library (kit_105). Recorded 2026-11-08.
+# Before: kit-110/w2/targeted.txt for the ticket's targeted files; kit-105/skips-load_all.tsv for the dependents
+# (passed and skipped counts equal in every file below).
+
+## W1 captures and the W3 tests
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0
+COUNTS test-omic-norm-module.R pass 547 fail 0 error 0 skip 0
+COUNTS test-omic-gui-config.R pass 1065 fail 0 error 0 skip 0
+
+## Targeted (the ticket's W3 list)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-norm.R pass 153 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+COUNTS test-trx-norm-core.R pass 58 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
+COUNTS test-omic-design-module.R pass 146 fail 0 error 0 skip 0
+COUNTS test-trx-publication.R pass 174 fail 0 error 0 skip 0
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+
+## Dependents (grep of R/, tests/, tools/ (excl. tools/refactor), inst/ for the changed and deleted names; plus the
+## experiment budget's frame-handler files). Skips are the recorded quarantines (Q-76, Q-95, Q-96, Q-105 to Q-107)
+## and the KIT-040-reference gates, as at KIT-105.
+COUNTS test-ci-impact-audit.R pass 26 fail 0 error 0 skip 0
+COUNTS test-ci-impact-e2e.R pass 10 fail 0 error 0 skip 0
+COUNTS test-ci-impact-router.R pass 27 fail 0 error 0 skip 0
+COUNTS test-lipid-12a-norm-module-characterization.R pass 5 fail 0 error 0 skip 5
+COUNTS test-lipid-12-norm-module-contracts.R pass 0 fail 0 error 0 skip 0
+COUNTS test-metab-03b-norm-module-helper-characterization.R pass 0 fail 0 error 0 skip 0
+COUNTS test-metab-03c-norm-module-seams.R pass 0 fail 0 error 0 skip 0
+COUNTS test-metab-03d-norm-module-characterization.R pass 13 fail 0 error 0 skip 3
+COUNTS test-module-ci-lipid-design.R pass 109 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-import.R pass 173 fail 0 error 0 skip 0
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-design.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-import.R pass 91 fail 0 error 0 skip 0
+COUNTS test-module-ci-metab-qc.R pass 63 fail 0 error 0 skip 1
+COUNTS test-module-ci-prot-import.R pass 107 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0
+COUNTS test-omic-qc-module.R pass 158 fail 0 error 0 skip 0
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0
+COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10
+COUNTS test-omics-norm-core.R pass 62 fail 0 error 0 skip 14
+COUNTS test-omics-qc-core.R pass 32 fail 0 error 0 skip 10
+COUNTS test-prot-01c-import-module-contracts.R pass 427 fail 0 error 0 skip 0
+COUNTS test-module-ci-manifest.R pass 33 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-import.R pass 24 fail 0 error 0 skip 8
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0
+
+## trx_screen alone with traces (docs/qa/workflow-execution/kit/kit-105/lifecycle/lifecycle.R, be0a2601)
+LANE trx_screen identical_to_oracle=TRUE elapsed=32s
+CALLS mod_omic_norm_server 1
+CALLS runTrxNormalisation 2
+CALLS runTrxNormInProcess 2
+CALLS runTrxNormPublicationsInProcess 1
+CALLS runWorkflowOmicsPublicationInProcess 8
+CALLS resetTrxNormalisation 0
+CALLS runTrxNormManaged 0
+CALLS runOmicNormHandler 2
+
+## Entry suite (the three files in parallel, timeout 4500 s per file, under systemd-inhibit --what=sleep)
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0
+rc=0 ELAPSED test-gui-entry-lipidomics.R 72s
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0
+rc=0 ELAPSED test-gui-entry-metabolomics.R 160s
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0
+rc=0 ELAPSED test-gui-entry-transcriptomics.R 42s
+Each file passes only when every lane in it equals its frozen oracle (trx_screen; lipid_canonical; metab_lc, metab_gc,
+metab_combined): all five identical, 0 failures, errors or skips; counts as at KIT-105 (trx 29, lipid 35, metab 105).
+Per-lane times are not printed by the runner; each file's total is under the 900 s lane ceiling.
+
+## Expected traced counts (ticket Simulation Setup) against measured
+mod_omic_norm_server 1/1; runTrxNormalisation 2/2; runTrxNormInProcess 2/2; runTrxNormPublicationsInProcess 1/1;
+runWorkflowOmicsPublicationInProcess >=5/8 (norm 5, DA 1, RUVIII figures 2; W2 measured 8). runOmicNormHandler (the
+frame's dispatch) 2: both trx runs reach the core through norm$run$handler. reset and managed: in no entry lane.
+
+## Dependents grep for every deleted name and file (trxNormOptionsPanel, mod_trx_norm_server, R/mod_trx_norm.R, the
+## profile fields norm_options, norm_server, norm_tabs, norm_stage_labels, norm_ruv_heading, norm_ruv_help) across
+## R/, tests/, tools/ (excl. tools/refactor/) and inst/
+No live hit. Remaining hits: provenance comments naming mod_trx_norm.R at a commit (mod_omic_norm_panels.R:38, :85;
+utils_omic_gui_config.R:49, :1301-1307; utils_workflow_trx_norm.R:17; utils_workflow_omics_actions.R:185;
+test-trx-norm-core.R:3; test-omic-gui-config.R:1015, :1018); the harness label tools/profiling/workflow_kit.R:26 (D10,
+P-22, unchanged); tests asserting the deletion (test-omic-norm-module.R:1642-1643, :1881-1885). `norm_ruv_help` also
+matches test-prot-norm-core.R:169 inside "mod_prot_norm_ruv_helpers.R" (not a reference).
+
+## Protected files
+git diff b51ad555 -- NAMESPACE man R/app_ui.R R/app_server.R R/mod_omic_workflow.R tools: empty.
+DESCRIPTION Collate: 'mod_trx_norm.R' removed; Collate equals R/*.R (361 = 361).
