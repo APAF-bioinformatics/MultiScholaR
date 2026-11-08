@@ -43,7 +43,7 @@ KIT-097's e2e hang (`kit-097/outcome.md`, defect 2: "`de-volcano_glimma` then ar
 stable failed") has the same signature on the same 300-gene lane. That widget sat in the page itself. KIT-097 attributed the
 hang to the widget's size; the alert is the likelier cause (not re-run).
 
-## The fix (fa239458)
+## The fix (b9820d9e; fa239458 before the rebase onto ec6f40da)
 
 `R/mod_omic_da.R`: `omicDaVolcanoPageFactory` passes the managed or in-process factory's result through
 `omicDaVolcanoPageFrame`. That function adds `sandbox="allow-scripts allow-same-origin allow-downloads"` to an iframe and
@@ -62,13 +62,15 @@ lipid managed. Without the R change it fails 2 and errors 1 ([test-first.txt](te
 
 See [reruns.txt](reruns.txt).
 
-## Finding (proposed)
+## Findings (proposed, for the lead's findings.md)
 
-- **F106-06.** trx's interactive volcano page names a `GeneID` table column that Glimma's table does not have. DataTables
-  answers with two modal `alert()`s, which blocked the e2e browser after D3's tick and would interrupt a user twice. Fixed
-  for every omic's on-demand page by the sandboxed iframe (fa239458). The trigger itself stays:
+- **F106-06 (resolution).** The cause is a DataTables `alert()` in trx's page, a modal that blocks the browser page. Size,
+  the websocket and the test's waits are not the cause. Fixed by the sandboxed iframe (b9820d9e) for every omic's
+  on-demand page.
+- **F106-07 (new, not fixed here).** The trigger itself stays:
+  - trx's interactive volcano names a `GeneID` table column that Glimma's table does not have.
   - `trxGlimmaInputs` (`func_trx_publication.R:229`) keeps the notebook's `display_columns`. That value is pinned by
     `test-trx-publication.R:152` against the KIT-040 notebook.
-  - In the sandboxed frame the table's `GeneID` column is blank, and the ids show under `gene`.
-  - Changing the columns is a display change against a notebook-parity pin. It is left to the lead (outside this pass's
-    files).
+  - In the sandboxed frame the table's `GeneID` column is blank, and the ids show under `gene`. Before the fix, a user saw
+    two DataTables warning dialogs.
+  - Changing the columns is a display change against a notebook-parity pin, outside this pass's files. The lead decides.

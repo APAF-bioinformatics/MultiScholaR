@@ -1,4 +1,4 @@
-# KIT-106 correction reruns at fa239458, 2026-11-09. Build: R CMD INSTALL of fa239458 into a scratch library layered
+# KIT-106 correction reruns at fa239458 (= b9820d9e after the rebase onto ec6f40da, a docs-only commit), 2026-11-09. Build: R CMD INSTALL of fa239458 into a scratch library layered
 # over kit_106 (m4DXz7) via R_LIBS; the e2e app and the test processes load the worktree source (load_all), as run 8 did.
 # CHROMOTE_CHROME=/usr/bin/brave, NOT_CRAN=true, TMPDIR short and on disk; one process per file; MULTISCHOLAR_STRICT_SKIPS=1
 # for the non-browser files; the e2e under systemd-inhibit --what=sleep, ceiling 1,800 s, one attempt.
