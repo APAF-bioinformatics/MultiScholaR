@@ -1263,6 +1263,16 @@ if (!is.null(b$builds$kit_106)) {
     }
 }
 
+# KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
+# volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b).
+if (!is.null(b$builds$kit_106c)) {
+    kit_106c <- list(build = "kit_106c", purpose = "exactness after the correction pass (recorded, uncounted; KIT-106)")
+    for (pair in list(c("x", "a"), c("y", "b"))) {
+        from <- b$tickets[[paste0("101", pair[[2L]])]]
+        if (!is.null(from)) b$tickets[[paste0("106", pair[[1L]])]] <- utils::modifyList(from, kit_106c)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
