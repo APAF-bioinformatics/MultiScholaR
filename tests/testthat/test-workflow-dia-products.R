@@ -350,13 +350,14 @@ test_that("KIT-101 F-08: a DA whose FDR cannot be estimated publishes every outp
         data.frame(), 0.05, staged))))
     expect_identical(done, list(completed = TRUE))
     expect_true(file.exists(file.path(staged$publication_graphs_dir, "Interactive_Volcano_Plots", "groupB_vs_groupA.unavailable.txt")))
-    # The DA tab tells the user why the interactive volcano is absent.
+    # The DA tab tells the user why the interactive volcano is absent (KIT-106 W5: the shared frame's registrations with
+    # proteomics' group; the volcano renders once its box is ticked, D3).
     shiny::testServer(function(input, output, session) {
         session$userData$dia_capacity_manager <- manager
         da_data <- shiny::reactiveValues(da_results_list = manifest, current_s4_object = object)
-        da_server_volcano_render_handler(input, output, session, session$ns, da_data, list(da_output_dir = tempdir()))
+        registerOmicDaPluginVolcanoOutputs(output, input, da_data, list(da_output_dir = tempdir()), omicGuiConfig("proteomics")$da)
     }, {
-        session$setInputs(volcano_contrast = "groupB_vs_groupA", da_q_val_thresh = 0.05)
+        session$setInputs(volcano_contrast = "groupB_vs_groupA", volcano_interactive = TRUE, da_q_val_thresh = 0.05)
         expect_match(output$volcano_glimma$html, "is not available", fixed = TRUE)
     })
 })

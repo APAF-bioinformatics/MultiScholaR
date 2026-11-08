@@ -316,21 +316,5 @@ da_server_init_handlers <- function(input, output, session, da_data, workflow_da
     }
   })
 
-  # Display available contrasts
-  output$contrasts_display <- shiny::renderText({
-    if (!is.null(da_data$contrasts_available)) {
-      paste(da_data$contrasts_available, collapse = "\n")
-    } else {
-      "No contrasts available.\nComplete normalization and\ncorrelation filtering first."
-    }
-  })
-
-  # Display analysis status
-  output$da_status <- shiny::renderText({
-    if (da_data$analysis_complete) {
-      diaDaStatusText(length(da_data$contrasts_available))
-    } else {
-      "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start"
-    }
-  })
+  # KIT-106 W5 (D5): the contrasts and status outputs are the shared DA frame's (registerOmicDaPluginTextOutputs).
 }

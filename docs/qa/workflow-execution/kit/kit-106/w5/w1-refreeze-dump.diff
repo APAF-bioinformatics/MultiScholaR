@@ -1,0 +1,10 @@
+282,283c282
+<             volcano_glimma = "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06",
+<             volcano_plot_static = "<plot> alt=Plot object"),
+---
+>             volcano_glimma = "<req>", volcano_plot_static = "<plot> alt=Plot object"),
+337,338c336
+<             volcano_glimma = "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06",
+<             volcano_plot_static = "<plot> alt=Plot object"),
+---
+>             volcano_glimma = "<req>", volcano_plot_static = "<plot> alt=Plot object"),

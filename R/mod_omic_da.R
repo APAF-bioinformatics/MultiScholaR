@@ -46,6 +46,10 @@ mod_omic_da_ui <- function(id, config) {
 #' @noRd
 mod_omic_da_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, config, selected_tab = NULL) {
     shiny::moduleServer(id, function(input, output, session) {
+        if (!is.null(config$plugins)) {
+            return(runOmicDaPluginServer(input, output, session, workflow_data, experiment_paths, omic_type, experiment_label,
+                config, selected_tab))
+        }
         runOmicDaServer(input, output, session, workflow_data, experiment_paths, omic_type, config)
     })
 }
@@ -430,4 +434,125 @@ saveOmicDaHeatmap <- function(input, tab, experimentPaths, da) {
         output_dir = experimentPaths$publication_graphs_dir, file_prefix = prefix)
     shiny::showNotification("Heatmap and cluster info saved to publication_graphs/Heatmap", type = "message", duration = 5)
     invisible(list(params = params, prefix = prefix))
+}
+
+# ------------------------------------------------------------------------------------------------
+# The plugin registry: an omic whose group names `plugins` (proteomics, KIT-106 W5, D5).
+# ------------------------------------------------------------------------------------------------
+
+#' The tab's reactive values when the group has plugins: proteomics' (mod_prot_da_server.R:21-30 at fe97aac1), which
+#' its plugins read and write.
+#' @noRd
+omicDaPluginTabState <- function() {
+    shiny::reactiveValues(da_results_list = NULL, contrasts_available = NULL, analysis_complete = FALSE,
+        volcano_plot_identity = NULL, current_s4_object = NULL, formula_from_s4 = NULL, current_row_clusters = NULL,
+        current_col_clusters = NULL)
+}
+
+#' The server of an omic whose group has plugins (mod_prot_da_server.R:9-57 at fe97aac1): its `init`, `load` and `run`
+#' plugins, each looked up by name when called (`omicGuiFunction`), with their signatures unchanged; the frame's
+#' registrations of the group's outputs between them, in the order the omic's server made them. Kernel placement is the
+#' run plugin's (KIT-111 to 113). Recorded divergence: the server's six console `cat()` lines on entry are not written.
+#' @return The tab's reactive values.
+#' @noRd
+runOmicDaPluginServer <- function(input, output, session, workflowData, experimentPaths, omicType, experimentLabel, da,
+    selectedTab) {
+    tab <- omicDaPluginTabState()
+    omicGuiFunction(da$plugins[["init"]])(input, output, session, tab, workflowData, selectedTab)
+    registerOmicDaPluginTextOutputs(output, tab, da)
+    omicGuiFunction(da$plugins[["load"]])(input, output, session, tab, workflowData, experimentPaths)
+    omicGuiFunction(da$plugins[["run"]])(input, output, session, session$ns, tab, workflowData, experimentPaths,
+        omic_type = omicType, experiment_label = experimentLabel)
+    registerOmicDaPluginVolcanoOutputs(output, input, tab, experimentPaths, da)
+    registerOmicDaPluginHeatmapOutputs(output, input, tab, experimentPaths, da)
+    registerOmicDaPluginTableOutputs(output, input, tab, da)
+    tab
+}
+
+#' The contrasts and the status, as text (mod_prot_da_handlers_init.R:318-336 at fe97aac1).
+#' @noRd
+registerOmicDaPluginTextOutputs <- function(output, tab, da) {
+    output$contrasts_display <- shiny::renderText(diaDaContrastsView(tab$contrasts_available, da$texts))
+    output$da_status <- shiny::renderText(diaDaStatusView(tab$analysis_complete, tab$contrasts_available, da$texts))
+    invisible(output)
+}
+
+#' The volcano (mod_prot_da_render_volcano.R at fe97aac1): the opt-in CP08 capture, the interactive volcano built when
+#' its box is ticked (D3; the DA-time page), and the static volcano, whose alt text is the managed publication's plot
+#' identity (KIT-019).
+#' @noRd
+registerOmicDaPluginVolcanoOutputs <- function(output, input, tab, experimentPaths, da) {
+    # --- TESTTHAT CHECKPOINT CP08 (see test-prot-08-volcano.R) ---
+    shiny::observeEvent(list(input$volcano_contrast, tab$da_results_list), {
+        shiny::req(input$volcano_contrast, tab$da_results_list)
+        .capture_checkpoint(list(
+            da_results_list = tab$da_results_list,
+            selected_contrast = input$volcano_contrast,
+            da_q_val_thresh = input$da_q_val_thresh,
+            args_row_id = diaGuiProteinKey(tab$current_s4_object)
+        ), "cp08", "volcano_input")
+    }, ignoreInit = TRUE)
+    output$volcano_glimma <- shiny::renderUI({
+        shiny::req(isTRUE(input$volcano_interactive))
+        diaDaVolcanoGlimmaView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, tab$current_s4_object,
+            experimentPaths$da_output_dir)
+    })
+    output[[da$views$static_volcano$output]] <- shiny::renderPlot(alt = function() tab$volcano_plot_identity %||% NA_character_,
+        diaDaStaticVolcanoView(tab$da_results_list, input$volcano_contrast, input$da_q_val_thresh, input$treat_lfc_cutoff,
+            input$volcano_show_labels, input$volcano_label_top_n))
+    invisible(output)
+}
+
+#' The heatmap (mod_prot_da_render_heatmap.R at fe97aac1): the opt-in CP09 capture, the heatmap, the cluster summary
+#' and the frame's Save Heatmap under the group's prefix.
+#' @noRd
+registerOmicDaPluginHeatmapOutputs <- function(output, input, tab, experimentPaths, da) {
+    # --- TESTTHAT CHECKPOINT CP09 (see test-prot-09-heatmap.R) ---
+    shiny::observeEvent(list(input$heatmap_contrast, tab$da_results_list), {
+        shiny::req(input$heatmap_contrast, tab$da_results_list)
+        plot_data_structure <- if (isDIAResultManifest(tab$da_results_list)) tab$da_results_list else list(
+            da_proteins_long = tab$da_results_list$da_proteins_long,
+            theObject = tab$da_results_list$theObject
+        )
+        .capture_checkpoint(list(
+            da_results_list = plot_data_structure,
+            selected_contrast = input$heatmap_contrast,
+            top_n_genes = input$heatmap_top_n,
+            clustering_method = input$heatmap_cluster_method,
+            distance_method = input$heatmap_distance_method,
+            cluster_rows = input$heatmap_clustering %in% c("both", "row"),
+            cluster_cols = input$heatmap_clustering %in% c("both", "column"),
+            scale_data = input$heatmap_scaling,
+            color_scheme = input$heatmap_color_scheme,
+            show_gene_names = input$heatmap_show_labels,
+            da_q_val_thresh = input$da_q_val_thresh,
+            tree_cut_method = input$heatmap_tree_cut_method,
+            n_clusters = input$heatmap_n_clusters,
+            cut_height = input$heatmap_cut_height,
+            min_cluster_size = input$heatmap_min_cluster_size
+        ), "cp09", "heatmap_input")
+    }, ignoreInit = TRUE)
+    output$heatmap_plot <- shiny::renderPlot(diaDaHeatmapView(tab, input$heatmap_contrast, input$heatmap_top_n,
+        input$heatmap_cluster_method, input$heatmap_distance_method, input$heatmap_clustering, input$heatmap_scaling,
+        input$heatmap_color_scheme, input$heatmap_show_labels, input$da_q_val_thresh, input$heatmap_tree_cut_method,
+        input$heatmap_n_clusters, input$heatmap_cut_height, input$heatmap_min_cluster_size, input$heatmap_show_dendro))
+    output$cluster_summary <- shiny::renderPrint(diaDaClusterSummaryView(input$heatmap_tree_cut_method, tab$current_row_clusters))
+    shiny::observeEvent(input$save_heatmap, saveOmicDaHeatmap(input, tab, experimentPaths, da))
+    invisible(output)
+}
+
+#' The results table paged from the store, the summary statistics and the download (mod_prot_da_render_table.R at
+#' fe97aac1).
+#' @noRd
+registerOmicDaPluginTableOutputs <- function(output, input, tab, da) {
+    pager <- new.env(parent = emptyenv())
+    output$da_results_table <- DT::renderDT(diaDaResultsTableView(tab$da_results_list, input$table_contrast,
+        input$table_significance, input$da_q_val_thresh, input$treat_lfc_cutoff, input$table_max_rows, pager),
+        server = TRUE, funcFilter = diaDisplayTableFilter(pager))
+    output$da_summary_stats <- shiny::renderText(diaDaSummaryStatsView(tab$da_results_list, input$table_contrast,
+        input$da_q_val_thresh, input$treat_lfc_cutoff))
+    output$download_da_results <- shiny::downloadHandler(
+        filename = function() paste0(da$download$stem, Sys.Date(), ".", da$download$extension),
+        content = diaDaDownloadContent)
+    invisible(output)
 }

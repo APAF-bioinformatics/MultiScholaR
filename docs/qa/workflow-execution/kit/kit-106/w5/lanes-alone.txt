@@ -1,0 +1,135 @@
+LANE prot_dia identical_to_oracle=TRUE elapsed=494s
+CALLS mod_omic_da_server 1
+CALLS runOmicDaPluginServer 1
+CALLS da_server_init_handlers 1
+CALLS da_server_load_session_handler 1
+CALLS da_server_run_analysis_handler 1
+CALLS runDIAReferenceDaAnalysis 1
+CALLS validateProtDaFilteredSession 1
+CALLS normaliseProtDaContrastsTable 3
+CALLS diaDaContrastsView 2
+CALLS diaDaStatusView 3
+JSONDIFF prot_dia.json: 5 leaf differences (7811 leaves)
+  /source_sha
+    oracle: ddf42372e7054b1027430178a0e873a496baf6bb
+    record: NA
+  /load_mode
+    oracle: load_all
+    record: NA
+  /r_version
+    oracle: R version 4.6.1 (2026-06-24)
+    record: NA
+  /frozen
+    oracle: 2026-11-07
+    record: NA
+  /omic
+    oracle: NA
+    record: proteomics
+LANE prot_dia_limpa identical_to_oracle=TRUE elapsed=345s
+CALLS mod_omic_da_server 1
+CALLS runOmicDaPluginServer 1
+CALLS da_server_init_handlers 1
+CALLS da_server_load_session_handler 1
+CALLS da_server_run_analysis_handler 1
+CALLS runDIAReferenceDaAnalysis 1
+CALLS validateProtDaFilteredSession 1
+CALLS normaliseProtDaContrastsTable 3
+CALLS diaDaContrastsView 2
+CALLS diaDaStatusView 2
+JSONDIFF prot_dia_limpa.json: 5 leaf differences (5217 leaves)
+  /source_sha
+    oracle: 8b7f3eae5b1dd5e2a9dcf0a9ac25bcc74f93b240
+    record: NA
+  /load_mode
+    oracle: load_all
+    record: NA
+  /r_version
+    oracle: R version 4.6.1 (2026-06-24)
+    record: NA
+  /frozen
+    oracle: 2026-11-08
+    record: NA
+  /omic
+    oracle: NA
+    record: proteomics
+LANE prot_lfq identical_to_oracle=TRUE elapsed=195s
+CALLS mod_omic_da_server 1
+CALLS runOmicDaPluginServer 1
+CALLS da_server_init_handlers 1
+CALLS da_server_load_session_handler 1
+CALLS da_server_run_analysis_handler 1
+CALLS runDIAReferenceDaAnalysis 1
+CALLS validateProtDaFilteredSession 1
+CALLS normaliseProtDaContrastsTable 3
+CALLS diaDaContrastsView 2
+CALLS diaDaStatusView 2
+JSONDIFF prot_lfq.json: 5 leaf differences (3662 leaves)
+  /source_sha
+    oracle: ddf42372e7054b1027430178a0e873a496baf6bb
+    record: NA
+  /load_mode
+    oracle: load_all
+    record: NA
+  /r_version
+    oracle: R version 4.6.1 (2026-06-24)
+    record: NA
+  /frozen
+    oracle: 2026-11-07
+    record: NA
+  /omic
+    oracle: NA
+    record: proteomics
+LANE prot_lfq_fragpipe identical_to_oracle=TRUE elapsed=168s
+CALLS mod_omic_da_server 1
+CALLS runOmicDaPluginServer 1
+CALLS da_server_init_handlers 1
+CALLS da_server_load_session_handler 1
+CALLS da_server_run_analysis_handler 1
+CALLS runDIAReferenceDaAnalysis 1
+CALLS validateProtDaFilteredSession 1
+CALLS normaliseProtDaContrastsTable 3
+CALLS diaDaContrastsView 2
+CALLS diaDaStatusView 2
+JSONDIFF prot_lfq_fragpipe.json: 5 leaf differences (3662 leaves)
+  /source_sha
+    oracle: ddf42372e7054b1027430178a0e873a496baf6bb
+    record: NA
+  /load_mode
+    oracle: load_all
+    record: NA
+  /r_version
+    oracle: R version 4.6.1 (2026-06-24)
+    record: NA
+  /frozen
+    oracle: 2026-11-07
+    record: NA
+  /omic
+    oracle: NA
+    record: proteomics
+LANE prot_tmt identical_to_oracle=TRUE elapsed=193s
+CALLS mod_omic_da_server 1
+CALLS runOmicDaPluginServer 1
+CALLS da_server_init_handlers 1
+CALLS da_server_load_session_handler 1
+CALLS da_server_run_analysis_handler 1
+CALLS runDIAReferenceDaAnalysis 1
+CALLS validateProtDaFilteredSession 1
+CALLS normaliseProtDaContrastsTable 3
+CALLS diaDaContrastsView 2
+CALLS diaDaStatusView 2
+JSONDIFF prot_tmt.json: 5 leaf differences (3662 leaves)
+  /source_sha
+    oracle: ddf42372e7054b1027430178a0e873a496baf6bb
+    record: NA
+  /load_mode
+    oracle: load_all
+    record: NA
+  /r_version
+    oracle: R version 4.6.1 (2026-06-24)
+    record: NA
+  /frozen
+    oracle: 2026-11-07
+    record: NA
+  /omic
+    oracle: NA
+    record: proteomics

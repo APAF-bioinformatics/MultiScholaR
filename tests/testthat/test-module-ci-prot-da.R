@@ -308,11 +308,14 @@ test_that("MCI-009.3 DA statistical output matrix preserves schemas across q-val
 })
 
 test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds, and empty states", {
+  # KIT-106 W5 (D5): the render handlers are the shared frame's registrations with proteomics' `da` group; the
+  # interactive volcano renders once its box is ticked (D3). Expectations unchanged.
   captured <- module_ci_prot_da_render_mocks()
+  da <- omicGuiConfig("proteomics")$da
 
   table_output <- new.env(parent = emptyenv())
   table_data <- module_ci_prot_da_render_state(module_ci_prot_da_result_table("standard"))
-  da_server_table_render_handler(
+  registerOmicDaPluginTableOutputs(
     input = list(
       table_contrast = "B_vs_A",
       table_significance = "up",
@@ -321,8 +324,8 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
       table_max_rows = 1
     ),
     output = table_output,
-    session = list(),
-    da_data = table_data
+    tab = table_data,
+    da = da
   )
   expect_identical(table_output$da_results_table$data$uniprot_acc, "P1")
   expect_match(table_output$da_summary_stats, "Significant (q < 0.050): 4", fixed = TRUE)
@@ -330,7 +333,7 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
   expect_match(table_output$da_summary_stats, "Down-regulated: 1", fixed = TRUE)
 
   threshold_output <- new.env(parent = emptyenv())
-  da_server_table_render_handler(
+  registerOmicDaPluginTableOutputs(
     input = list(
       table_contrast = "B_vs_A",
       table_significance = "significant",
@@ -339,15 +342,15 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
       table_max_rows = 25
     ),
     output = threshold_output,
-    session = list(),
-    da_data = table_data
+    tab = table_data,
+    da = da
   )
   expect_identical(nrow(threshold_output$da_results_table$data), 0L)
   expect_match(threshold_output$da_summary_stats, "Significant (q < 0.010): 0", fixed = TRUE)
 
   empty_output <- new.env(parent = emptyenv())
   empty_data <- module_ci_prot_da_render_state(module_ci_prot_da_result_table("no_significant"))
-  da_server_table_render_handler(
+  registerOmicDaPluginTableOutputs(
     input = list(
       table_contrast = "missing",
       table_significance = "significant",
@@ -356,8 +359,8 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
       table_max_rows = 25
     ),
     output = empty_output,
-    session = list(),
-    da_data = empty_data
+    tab = empty_data,
+    da = da
   )
   expect_identical(empty_output$da_results_table$data$Message, "No results available for selected contrast")
   expect_identical(empty_output$da_summary_stats, "No results available for selected contrast")
@@ -379,7 +382,7 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
       save_heatmap_products = function(...) invisible(NULL)
     ),
     {
-      da_server_heatmap_render_handler(
+      registerOmicDaPluginHeatmapOutputs(
         input = list(
           heatmap_contrast = "B_vs_A",
           heatmap_top_n = 3,
@@ -397,10 +400,9 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
           save_heatmap = NULL
         ),
         output = heatmap_output,
-        session = list(),
-        ns = function(id) id,
-        da_data = heatmap_data,
-        experiment_paths = list(publication_graphs_dir = tempdir())
+        tab = heatmap_data,
+        experimentPaths = list(publication_graphs_dir = tempdir()),
+        da = da
       )
     }
   )
@@ -416,7 +418,7 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
       generateProtDAHeatmap = function(...) NULL
     ),
     {
-      expect_no_error(da_server_heatmap_render_handler(
+      expect_no_error(registerOmicDaPluginHeatmapOutputs(
         input = list(
           heatmap_contrast = "B_vs_A",
           heatmap_top_n = 20,
@@ -434,10 +436,9 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
           save_heatmap = NULL
         ),
         output = empty_heatmap_output,
-        session = list(),
-        ns = function(id) id,
-        da_data = heatmap_data,
-        experiment_paths = list(publication_graphs_dir = tempdir())
+        tab = heatmap_data,
+        experimentPaths = list(publication_graphs_dir = tempdir()),
+        da = da
       ))
     }
   )
@@ -458,19 +459,19 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
       }
     ),
     {
-      da_server_volcano_render_handler(
+      registerOmicDaPluginVolcanoOutputs(
         input = list(
           volcano_contrast = "B_vs_A",
+          volcano_interactive = TRUE,
           da_q_val_thresh = 0.05,
           treat_lfc_cutoff = 1,
           volcano_show_labels = TRUE,
           volcano_label_top_n = 5
         ),
         output = volcano_output,
-        session = list(),
-        ns = function(id) id,
-        da_data = volcano_data,
-        experiment_paths = list(da_output_dir = tempdir())
+        tab = volcano_data,
+        experimentPaths = list(da_output_dir = tempdir()),
+        da = da
       )
       expect_identical(volcano_args$static$show_labels, TRUE)
       expect_identical(volcano_args$static$n_labels, 5)
@@ -482,12 +483,12 @@ test_that("MCI-009.4 DA render matrix covers volcano, heatmap, table, thresholds
         list(FALSE, NULL, FALSE, 10)
       )
       for (label_case in label_cases) {
-        da_server_volcano_render_handler(
-          input = list(volcano_contrast = "B_vs_A", da_q_val_thresh = 0.05,
+        registerOmicDaPluginVolcanoOutputs(
+          input = list(volcano_contrast = "B_vs_A", volcano_interactive = TRUE, da_q_val_thresh = 0.05,
             treat_lfc_cutoff = 1, volcano_show_labels = label_case[[1L]],
             volcano_label_top_n = label_case[[2L]]),
-          output = volcano_output, session = list(), ns = function(id) id,
-          da_data = volcano_data, experiment_paths = list(da_output_dir = tempdir())
+          output = volcano_output, tab = volcano_data,
+          experimentPaths = list(da_output_dir = tempdir()), da = da
         )
         expect_identical(volcano_args$static$show_labels, label_case[[3L]])
         expect_identical(volcano_args$static$n_labels, label_case[[4L]])

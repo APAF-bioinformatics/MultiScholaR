@@ -58,7 +58,9 @@ omicDaTagFunctions <- function() {
 #' @return A tag.
 #' @noRd
 omicDaRenderNode <- function(ns, node) {
-    args <- c(if (!is.null(node$ns_id)) list(id = ns(node$ns_id)), node$args)
+    # W5: a plugin node is its group plugin's UI, `function(ns)`, looked up by name (proteomics' archive chooser).
+    if (!is.null(node$plugin)) return(omicGuiFunction(node$plugin)(ns))
+    args <-c(if (!is.null(node$ns_id)) list(id = ns(node$ns_id)), node$args)
     if (!is.null(args$icon)) args$icon <- shiny::icon(args$icon)
     if (identical(node$tag, "conditionalPanel")) args$ns <- ns
     children <- lapply(Filter(Negate(is.null), node$children), \(child) omicDaRenderNode(ns, child))
@@ -68,11 +70,13 @@ omicDaRenderNode <- function(ns, node) {
     tag
 }
 
-#' The layout of an omic's DA tab: the feature omics' (lipid, metab, trx) from their `da` group.
+#' The layout of an omic's DA tab: the feature omics' (lipid, metab, trx) from their `da` group; an omic whose group
+#' has plugins (proteomics) its own.
 #' @param da The omic's `da` group.
 #' @return The root node.
 #' @noRd
 omicDaLayout <- function(da) {
+    if (!is.null(da$plugins)) return(omicDaPluginLayout(da))
     omicDaFeatureLayout(da)
 }
 
@@ -417,4 +421,133 @@ omicDaDownloadHandler <- function(readResults, longTable, download, downloadHand
 #' @noRd
 omicDaDownloadData <- function(daResultsList, longTable) {
     daResultsList$write_download %||% daResultsList[[longTable]]
+}
+
+# ------------------------------------------------------------------------------------------------
+# Proteomics' layout data (KIT-106 W5, D5).
+# ------------------------------------------------------------------------------------------------
+
+#' The DA tab of an omic whose group has plugins, as layout data: proteomics' (mod_prot_da_ui.R:13-493 at fe97aac1).
+#' Its own layout and values: the outer well, the sidebar heading and spacing, the archive chooser (the group's
+#' `archive` plugin), tab icons, column widths, the "Advanced Clustering Options" well with its choices and the
+#' dendrogram switch, `h5` for "Cluster Information", and the save note's output that no server renders (P-25). The
+#' interactive volcano's box is unticked (D3: built on demand).
+#' @param da The omic's `da` group.
+#' @return The root node.
+#' @noRd
+omicDaPluginLayout <- function(da) {
+    node <- omicDaNode
+    numeric <- function(id, spec) {
+        node("numericInput", spec$label, value = spec$value, min = spec$min, max = spec$max, step = spec$step, id = id)
+    }
+    sidebar <- node("wellPanel", children = list(node("h4", "DA Analysis Settings"),
+        node("textAreaInput", da$model$label, value = da$model$default, height = "60px", id = "formula_string"),
+        node("helpText", da$model$help), node("hr"),
+        node("h5", "Analysis Parameters"), numeric("da_q_val_thresh", da$threshold), numeric("treat_lfc_cutoff", da$lfc),
+        node("hr"),
+        node("h5", "Available Contrasts"), node("verbatimTextOutput", id = "contrasts_display"),
+        node("helpText", "Contrasts defined in design matrix"), node("br"),
+        list(plugin = da$plugins[["archive"]]),
+        node("actionButton", "Load Filtered Session", class = "btn-info", width = "100%", icon = "upload",
+            id = "load_filtered_session", testid = da$testids[["load_session"]]),
+        node("helpText", "Load the latest session, a portable native DIA archive, or a historical RDS session."), node("br"),
+        node("actionButton", "Run DA Analysis", class = "btn-primary", width = "100%", icon = "play", id = "run_da_analysis",
+            testid = da$testids[["run"]]),
+        node("br"), node("br"),
+        node("downloadButton", "Download All Results", class = "btn-success", width = "100%", id = "download_da_results",
+            testid = da$testids[["download"]]),
+        node("br"), node("br"),
+        node("h5", "Analysis Status"), node("verbatimTextOutput", id = "da_status")))
+    tabset <- node("tabsetPanel", ns_id = "da_results_tabs", testid = da$testids[["results_tabs"]],
+        children = list(omicDaPluginVolcanoTab(da), omicDaPluginHeatmapTab(da), omicDaPluginTableTab(da)))
+    node("wellPanel", children = list(node("fluidRow", children = list(node("column", 3, children = list(sidebar)),
+        node("column", 9, children = list(node("uiOutput", id = "heatmap_manual_save_warning"), tabset))))))
+}
+
+#' Proteomics' volcano tab (mod_prot_da_ui.R:136-204 at fe97aac1).
+#' @noRd
+omicDaPluginVolcanoTab <- function(da) {
+    node <- omicDaNode
+    static <- da$views$static_volcano
+    node("tabPanel", da$tabs[["volcano"]], icon = "chart-area", children = list(node("br"),
+        omicDaRow(list(6, omicDaSelect("volcano_contrast", "Select Contrast:", NULL, width = "100%")),
+            list(6, node("checkboxInput", "Interactive Plot (Glimma)", value = FALSE, id = "volcano_interactive"))),
+        node("hr"),
+        node("conditionalPanel", condition = "input.volcano_interactive == true", children = list(
+            node("div", style = "height: 600px; background-color: white; border-radius: 8px; padding: 10px;",
+                ns_id = "volcano_glimma_container", children = list(node("htmlOutput", id = "volcano_glimma"))))),
+        node("conditionalPanel", condition = "input.volcano_interactive == false", children = list(
+            # KIT-101 F-02: the static renderer's label inputs, at the defaults it applies when absent.
+            omicDaRow(list(6, node("checkboxInput", da$nouns[["label_top"]], value = static$show_labels, id = "volcano_show_labels")),
+                list(6, node("numericInput", "Number of Labels:", value = static$n_labels, min = 0, max = 100, step = 1,
+                    id = "volcano_label_top_n"))),
+            node("plotOutput", height = "600px", id = static$output, resizable = TRUE)))))
+}
+
+#' Proteomics' heatmap tab with its tree-cut defaults (mod_prot_da_ui.R:206-432 at fe97aac1).
+#' @noRd
+omicDaPluginHeatmapTab <- function(da) {
+    node <- omicDaNode
+    nouns <- da$nouns
+    cut <- da$views$heatmap$tree_cut
+    when <- function(method, input) {
+        node("conditionalPanel", condition = sprintf("input.heatmap_tree_cut_method == '%s'", method), children = list(input))
+    }
+    options <- node("wellPanel", children = list(node("h5", "Advanced Clustering Options"),
+        omicDaRow(list(3, omicDaSelect("heatmap_cluster_method", "Clustering Method:", list("Ward (minimum variance)" = "ward.D2",
+                "Ward (original)" = "ward.D", "Complete linkage" = "complete", "Single linkage" = "single",
+                "Average linkage" = "average", "McQuitty (WPGMA)" = "mcquitty", "Median (WPGMC)" = "median",
+                "Centroid (UPGMC)" = "centroid"), selected = "ward.D2")),
+            list(3, omicDaSelect("heatmap_distance_method", "Distance Metric:", list("Euclidean" = "euclidean",
+                "Manhattan" = "manhattan", "Pearson correlation" = "pearson", "Spearman correlation" = "spearman",
+                "Maximum" = "maximum", "Canberra" = "canberra", "Binary" = "binary", "Minkowski" = "minkowski"),
+                selected = "euclidean")),
+            list(3, omicDaSelect("heatmap_tree_cut_method", "Tree Cutting:", list("Number of clusters" = "k_clusters",
+                "Height cutoff" = "height_cutoff", "Dynamic tree cutting" = "dynamic", "No cutting" = "none"),
+                selected = cut$default)),
+            list(3,
+                when("k_clusters", node("numericInput", "Number of Clusters:", value = cut$n_clusters, min = 2, max = 20, step = 1,
+                    id = "heatmap_n_clusters")),
+                when("height_cutoff", node("numericInput", "Cut Height:", value = cut$cut_height, min = 0.1, max = 2.0, step = 0.1,
+                    id = "heatmap_cut_height")),
+                when("dynamic", node("numericInput", "Min Cluster Size:", value = cut$min_cluster_size, min = 2, max = 20,
+                    step = 1, id = "heatmap_min_cluster_size")))),
+        omicDaRow(list(4, node("checkboxInput", "Show Dendrogram", value = TRUE, id = "heatmap_show_dendro")),
+            list(4, node("checkboxInput", nouns[["labels"]], value = FALSE, id = "heatmap_show_labels")),
+            list(4, omicDaSelect("heatmap_color_scheme", "Color Scheme:", list("Red-Blue" = "RdBu", "Red-Yellow-Blue" = "RdYlBu",
+                "Blue-White-Red" = "coolwarm", "Viridis" = "viridis", "Plasma" = "plasma", "Inferno" = "inferno"),
+                selected = "RdBu")))))
+    node("tabPanel", da$tabs[["heatmap"]], icon = "th", children = list(node("br"),
+        omicDaRow(list(3, omicDaSelect("heatmap_contrast", "Select Contrast:", NULL, width = "100%")),
+            list(3, node("numericInput", nouns[["top_n"]], value = 50, min = 10, max = 500, step = 10, id = "heatmap_top_n")),
+            list(3, omicDaSelect("heatmap_clustering", "Apply Clustering:", list("Both rows & columns" = "both",
+                "Rows only" = "row", "Columns only" = "column", "None" = "none"), selected = "both")),
+            list(3, omicDaSelect("heatmap_scaling", "Data Scaling:", stats::setNames(list("row", "column", "both", "none"),
+                c(nouns[["scaling"]], "Column (sample) scaling", "Both", "None")), selected = "row"))),
+        node("conditionalPanel", condition = "input.heatmap_clustering != 'none'", children = list(options)),
+        node("hr"),
+        node("div", style = "height: 650px;", ns_id = "heatmap_container", children = list(
+            node("plotOutput", height = "600px", id = "heatmap_plot", resizable = TRUE))),
+        node("div", style = "margin-top: 10px; margin-bottom: 20px;", children = list(
+            node("actionButton", "Save Heatmap", icon = "download", class = "btn-primary", id = "save_heatmap"))),
+        node("conditionalPanel", condition = "input.heatmap_tree_cut_method != 'none'", children = list(
+            node("wellPanel", children = list(node("h5", "Cluster Information"),
+                node("verbatimTextOutput", id = "cluster_summary")))))))
+}
+
+#' Proteomics' table tab with its defaults (mod_prot_da_ui.R:434-493 at fe97aac1).
+#' @noRd
+omicDaPluginTableTab <- function(da) {
+    node <- omicDaNode
+    table <- da$views$table
+    node("tabPanel", da$tabs[["table"]], icon = "table", children = list(node("br"),
+        omicDaRow(list(4, omicDaSelect("table_contrast", "Select Contrast:", NULL, width = "100%")),
+            list(4, omicDaSelect("table_significance", "Show:", list("All Results" = "all", "Significant Only" = "significant",
+                "Up-regulated" = "up", "Down-regulated" = "down"), selected = table$significance)),
+            list(4, node("numericInput", "Max Rows:", value = table$max_rows, min = 100, max = 10000, step = 100,
+                id = "table_max_rows"))),
+        node("hr"),
+        omicDaRow(list(12, node("wellPanel", children = list(node("h5", "Summary Statistics"),
+            node("verbatimTextOutput", id = "da_summary_stats"))))),
+        node("DTOutput", id = "da_results_table")))
 }

@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-151 to Q-154 (KIT-106 W5) its four blocks call the proteomics render handlers `da_server_heatmap_render_handler` and `da_server_table_render_handler` (mod_prot_da_render_{heatmap,table}.R, deleted by W5; its top-level `get()` lines name them); the renders are the shared frame's registrations with proteomics' group (registerOmicDaPluginHeatmapOutputs, registerOmicDaPluginTableOutputs, mod_omic_da.R) over the views moved unchanged to utils_workflow_dia_da_views.R, covered by MCI-009.4 (test-module-ci-prot-da.R) and test-omic-da-module.R (b) prot_main")
 # fidelity-coverage-compare: shared
 library(testthat)
 

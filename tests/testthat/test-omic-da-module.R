@@ -3264,7 +3264,9 @@ omicDaW1Frozen[["prot_main"]] <- list(
             da_status = "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
             da_summary_stats = "Total genes: 6\nSignificant (q < 0.050): 4\nUp-regulated: 3\nDown-regulated: 1\nFold-change cutoff: 0.00",
             download_da_results = "<download>", heatmap_plot = "<plot> alt=Plot object",
-            volcano_glimma = "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06",
+            # Re-frozen once (KIT-106 W5, D3; lead decision): the box is unticked by default, so the volcano is <req>
+            # (was the DA-time page, "<ui> 6c24457f..."). kit-106/w5/w1-refreeze.md.
+            volcano_glimma = "<req>",
             volcano_plot_static = "<plot> alt=Plot object"),
         calls = c(
             "generateProtDAVolcanoStatic(selected_contrast=B_vs_A, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=10) -> ggplot <HEX>",
@@ -3319,7 +3321,9 @@ omicDaW1Frozen[["prot_main"]] <- list(
             da_status = "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
             da_summary_stats = "Total genes: 6\nSignificant (q < 0.050): 4\nUp-regulated: 3\nDown-regulated: 1\nFold-change cutoff: 0.00",
             download_da_results = "<download>", heatmap_plot = "<plot> alt=Plot object",
-            volcano_glimma = "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06",
+            # Re-frozen once (KIT-106 W5, D3; lead decision): the box is unticked here, so the volcano is <req>
+            # (was the DA-time page, "<ui> 6c24457f..."). kit-106/w5/w1-refreeze.md.
+            volcano_glimma = "<req>",
             volcano_plot_static = "<plot> alt=Plot object"),
         calls = character(0),
         notes = character(0),
