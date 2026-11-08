@@ -1,0 +1,175 @@
+KIT-104 W8 merge checks (2026-11-08), on the W8 tree (origin/performance-v2 691aaa71 plus the W8 edits). R 4.6.1.
+
+1. DESCRIPTION Collate == R/*.R (scratchpad kit-104-w8/collate.R)
+   Collate entries 369, R/*.R files 369, duplicates in Collate 0
+   In Collate, not in R/: none 
+   In R/, not in Collate: none 
+   setequal: TRUE 
+
+2. NAMESPACE against the start commit b423b764: cmp byte-identical (sha256
+   8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1). roxygen2 was not run; the two man/*.Rd source
+   headers W3 listed were patched by hand (man/mod_prot_qc_peptide_impute.Rd adds R/utils_workflow_dia_qc_rollup.R,
+   man/mod_prot_qc_protein_cleanup.Rd adds R/utils_workflow_prot_declarations.R; the wrapped two-line form roxygen
+   writes, as in man/mod_prot_design_builder_ui.Rd).
+
+3. Parse-data back-reference count (scratchpad kit-104-w3/backrefs.R <tree>): core files (utils_workflow_*, func_*)
+   naming a top-level function defined only in an R/mod_*.R file. Expected 25 (29 at the start; #6 to #9 moved).
+   Count: 25 
+     validateLipidDaAnalysisPreflight (defined in mod_lipid_da_analysis_helpers.R) <- func_lipid_da_model.R,utils_workflow_lipid_declarations.R
+     buildLipidNormCompositeFromFilesGenerator (defined in mod_lipid_norm_support_helpers.R) <- utils_workflow_lipid_declarations.R
+     buildLipidNormFinalQcPcaPlot (defined in mod_lipid_norm_support_helpers.R) <- utils_workflow_lipid_declarations.R
+     writeLipidNormCompositeFigure (defined in mod_lipid_norm_workflow_helpers.R) <- utils_workflow_lipid_declarations.R
+     runMetabNormCompositeQcFigureStep (defined in mod_metab_norm_pipeline_helpers.R) <- utils_workflow_metab_declarations.R
+     generateMetabNormCompositeFromFiles (defined in mod_metab_norm_render_helpers.R) <- utils_workflow_metab_declarations.R
+     buildMetabNormFinalQcPcaPlot (defined in mod_metab_norm_session_helpers.R) <- utils_workflow_metab_declarations.R
+     normaliseProtDaContrastsTable (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+     validateProtDaFilteredSession (defined in mod_prot_da_validation.R) <- utils_workflow_dia_sessions.R
+     validateProtDaModelAndContrasts (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+     mod_prot_design_builder_server (defined in mod_prot_design_builder_server.R) <- func_general_applets.R
+     mod_prot_design_builder_ui (defined in mod_prot_design_builder_ui.R) <- func_general_applets.R
+     resolveProtNormCorrelationResultFilenames (defined in mod_prot_norm_correlation_helpers.R) <- utils_workflow_dia_products.R
+     saveProtNormCorrelationResults (defined in mod_prot_norm_correlation_helpers.R) <- utils_workflow_dia_sessions.R
+     buildProtNormQcPlotProduct (defined in mod_prot_norm_qc_generation_helpers.R) <- utils_workflow_dia_products.R
+     stripProtNormQcPlotOwners (defined in mod_prot_norm_qc_generation_helpers.R) <- utils_workflow_dia_da.R,utils_workflow_dia_products.R,utils_workflow_dia_sessions.R,utils_workflow_omics_declarations.R
+     buildProtNormCorrelationPlot (defined in mod_prot_norm_qc_support_helpers.R) <- utils_workflow_dia_products.R
+     buildProtNormDensityPlot (defined in mod_prot_norm_qc_support_helpers.R) <- utils_workflow_dia_products.R
+     resolveProtRuvParameters (defined in mod_prot_norm_ruv_helpers.R) <- utils_workflow_dia_products.R
+     validateProtNormRuvK (defined in mod_prot_norm_ruv_helpers.R) <- func_prot_norm_optimization_helpers.R,func_prot_s4_norm_methods.R
+     buildProtNormExportSummaryContent (defined in mod_prot_norm_session_helpers.R) <- utils_workflow_dia_sessions.R
+     saveProtNormExportMetadataFiles (defined in mod_prot_norm_session_helpers.R) <- utils_workflow_dia_sessions.R
+     buildProtNormSkippedRuvResult (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+     finalizeProtNormWorkflowState (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+     generateProtNormCompositeQcFigure (defined in mod_prot_norm_workflow_helpers.R) <- utils_workflow_dia_products.R
+
+4. Dependents grep (scratchpad kit-104-w8/dependents.R). The deleted set is computed, not hand-listed: every
+   top-level name defined in R/ at b423b764 and nowhere in R/ now (102; W5 reported 41 and W6 62, W6's count including
+   the module copies of four trx figure functions whose names stay defined in func_trx_qc_plots.R; W7 deleted none),
+   and every R/ file deleted since (7). Searched:
+   every tracked text file (*.R, *.Rmd, *.qmd, *.yml, *.yaml, *.json, *.md, *.sh, *.txt, *.js, *.css, *.html, *.py)
+   under R/, tests/, tools/ (excluding tools/refactor/) and inst/. Each hit is classified: a comment line, inside a
+   quarantined file (a file-level "quarantined: Q-" skip), inside a quarantined test_that block, or LIVE.
+
+   Result: no code in R/, tools/ or inst/ names a deleted name or path (R/ hits are provenance comments only, each
+   now pinned to its commit). The LIVE hits below are all in tests/ and none calls a deleted name:
+   - test-omic-qc-module.R:494-499 and :677-684: the W5 and W6 deletion assertions' lists of deleted names
+     (expect that none exists); :469 a block title naming the two trx functions its frozen digests replaced.
+   - test-lipid-01g:19, test-metab-01q:61-67 and :138-144, test-metab-01t:61, test-metab-01u:41: the files'
+     "seams are target-only" guards (hasMultiScholaRBinding / exists over the deleted names), which skip the
+     quarantined blocks (Q-61, Q-68, Q-71, Q-72); 01q's loadSelectedFunctions symbol list loads none of them.
+   - test-metab-01v:13-24: a mock of runMetabQcItsdServerBody behind an exists() check; the block takes its other
+     branch (the public server) and passes (W6).
+   - test-omics-module-globals.R:48: an allow-list entry naming two deleted files (a deleted file only removes hits).
+   Recorded, left as they are (each is a test asserting or guarding the deletion; no change is required by W8).
+
+   Deleted R/ files since b423b764 ( 7 ): mod_lipid_qc_duplicates_server_helpers.R, mod_lipid_qc_intensity_server_helpers.R, mod_metab_qc_duplicates_render_helpers.R, mod_metab_qc_duplicates_server_helpers.R, mod_metab_qc_duplicates_ui_helpers.R, mod_metab_qc_itsd.R, mod_metab_qc_s4_server_helpers.R 
+   Deleted top-level names since b423b764 ( 102 ):
+     analyzeMetabQcItsdData applyLipidDuplicateDetectionResult applyLipidDuplicateResolutionResult
+     applyLipidDuplicateRevertResult applyMetabDuplicateResolutionState buildLipidDuplicateDatatable
+     buildLipidDuplicateSummaryUi buildLipidDuplicateTablesUi buildLipidQcS4AssayStatsTable
+     buildLipidQcS4DataSummaryUi buildLipidQcS4FinalizeResultsText buildLipidQcS4StateHistoryUi
+     buildMetabDuplicateResolutionSummary buildMetabDuplicateSummaryUi buildMetabDuplicateTablesUi
+     buildMetabIntensityAssayTabsUi buildMetabIntensityFilterStats buildMetabIntensityFilterSummary
+     buildMetabQcItsdCvPlot buildMetabQcItsdIntensityPlot buildMetabQcItsdSummaryUi buildMetabQcItsdVizTabsUi
+     buildMetabQcS4AssayStatsDatatable buildMetabQcS4AssayStatsRenderOutput buildMetabQcS4DataSummaryRenderOutput
+     buildMetabQcS4DataSummaryUi buildMetabQcS4FilterPlotRenderOutput buildMetabQcS4FinalizeResultsText
+     buildMetabQcS4StateHistoryRenderOutput buildMetabQcS4StateHistoryUi completeLipidQcS4TabStatus
+     completeMetabQcS4TabStatus detectMetabDuplicateFeatures getLipidQcS4FinalizeHistory getLipidQcS4FinalizeState
+     getMetabQcS4AssayStatsState getMetabQcS4DataSummaryState getMetabQcS4FinalizeHistory getMetabQcS4FinalizeState
+     getMetabQcS4StateHistory handleLipidDuplicateDetection handleLipidDuplicateResolution handleLipidDuplicateRevert
+     initializeLipidDuplicateServerState initializeMetabQcSubmodules initializeTrxQcSubmodules metabQcItsdColumns
+     readMetabQcItsdState registerLipidDuplicateDetectObserver registerLipidDuplicateFilterPlotOutput
+     registerLipidDuplicateResolveObserver registerLipidDuplicateRevertObserver registerLipidDuplicateServerBindings
+     registerLipidDuplicateSummaryOutput registerLipidDuplicateTableObserver registerLipidDuplicateTableOutputs
+     registerLipidDuplicateTablesOutput registerLipidIntensityApplyFilterObserver
+     registerLipidIntensityAssayResultsOutput registerLipidIntensityFilterPlotOutput
+     registerLipidIntensityRevertObserver registerLipidItsdCvPlotOutput registerLipidItsdSummaryOutput
+     registerLipidItsdVisualizationTabsOutput registerLipidQcS4AssayStatsOutput registerLipidQcS4DataSummaryOutput
+     registerLipidQcS4StateHistoryOutput registerMetabDuplicateTableRenderers registerTrxQcSummaryOutput
+     renderMetabDuplicateFilterPlot renderMetabIntensityFilterPlot renderMetabQcS4FilterPlot
+     reportLipidQcS4FinalizeError reportLipidQcS4FinalizeSuccess reportMetabDuplicateDetection
+     reportMetabDuplicateDetectionError reportMetabIntensityFilterRevertSuccess reportMetabIntensityFilterSuccess
+     reportMetabQcS4FinalizeError reportMetabQcS4FinalizeSuccess revertMetabDuplicateResolution
+     runLipidDuplicateModuleServerShell runLipidQcS4FinalizeWorkflow runMetabDuplicateDetectionObserverShell
+     runMetabDuplicateResolutionObserver runMetabDuplicateResolutionObserverShell runMetabDuplicateResolutionWorkflow
+     runMetabDuplicateRevertObserverShell runMetabQcItsdServerBody runMetabQcS4FinalizeWorkflow runMetabQcS4ServerBody
+     sanitizeLipidDuplicateTableOutputId saveLipidQcS4CompletedState saveMetabQcS4CompletedState
+     trxQcFinalizeCollaborators trxQcFinalizeText trxQcTabsUi updateLipidQcS4TrackingPlot
+     updateMetabIntensityFilterQcPlot updateMetabQcS4TrackingPlot validateLipidQcS4FinalizeState
+     validateMetabQcS4FinalizeState 
+   
+   Hits: 552 
+   
+             comment              LIVE quarantined-block  quarantined-file 
+                  45                37               141               329 
+   
+   By file and class:
+     comment           1  R/func_metab_s4_qc_methods.R
+     comment          10  R/func_omics_qc_shared.R
+     comment          12  R/mod_omic_qc_tabs.R
+     comment           2  R/mod_omic_qc.R
+     comment          15  R/utils_omic_gui_config.R
+     comment           1  R/utils_workflow_omics_actions.R
+     comment           1  tests/testthat/test-module-ci-metab-qc.R
+     comment           3  tests/testthat/test-omic-qc-module.R
+     LIVE              1  tests/testthat/test-lipid-01g-qc-duplicates-module-characterization.R
+     LIVE             14  tests/testthat/test-metab-01q-qc-intensity-module-characterization.R
+     LIVE              1  tests/testthat/test-metab-01t-qc-s4-module-characterization.R
+     LIVE              1  tests/testthat/test-metab-01u-qc-duplicates-module-characterization.R
+     LIVE              4  tests/testthat/test-metab-01v-qc-itsd-wrapper-characterization.R
+     LIVE             15  tests/testthat/test-omic-qc-module.R
+     LIVE              1  tests/testthat/test-omics-module-globals.R
+     quarantined-block    9  tests/testthat/test-lipid-01-qc-filtering-helpers.R
+     quarantined-block   23  tests/testthat/test-lipid-01g-qc-duplicates-module-characterization.R
+     quarantined-block   31  tests/testthat/test-metab-01q-qc-intensity-module-characterization.R
+     quarantined-block   29  tests/testthat/test-metab-01t-qc-s4-module-characterization.R
+     quarantined-block   15  tests/testthat/test-metab-01u-qc-duplicates-module-characterization.R
+     quarantined-block    1  tests/testthat/test-module-ci-metab-qc.R
+     quarantined-block   33  tests/testthat/test-omics-qc-core.R
+     quarantined-file   60  tests/testthat/test-lipid-01c-qc-duplicate-module-seams.R
+     quarantined-file   23  tests/testthat/test-lipid-01d-qc-intensity-module-seams.R
+     quarantined-file   13  tests/testthat/test-lipid-01e-qc-itsd-module-seams.R
+     quarantined-file   27  tests/testthat/test-lipid-01f-qc-s4-module-seams.R
+     quarantined-file   16  tests/testthat/test-metab-01o-qc-module-characterization.R
+     quarantined-file   85  tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R
+     quarantined-file   29  tests/testthat/test-metab-01r-qc-itsd-module-characterization.R
+     quarantined-file   64  tests/testthat/test-metab-01s-qc-s4-module-characterization.R
+     quarantined-file   12  tests/testthat/test-metab-qc-itsd-direct-shared.R
+   
+   LIVE hits (code or test lines outside a quarantined file or block): 37 
+     tests/testthat/test-lipid-01g-qc-duplicates-module-characterization.R:19  runLipidDuplicateModuleServerShell
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:61  buildMetabIntensityAssayTabsUi
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:62  renderMetabIntensityFilterPlot
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:63  buildMetabIntensityFilterStats
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:64  updateMetabIntensityFilterQcPlot
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:65  buildMetabIntensityFilterSummary
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:66  reportMetabIntensityFilterSuccess
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:67  reportMetabIntensityFilterRevertSuccess
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:138  buildMetabIntensityAssayTabsUi
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:139  renderMetabIntensityFilterPlot
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:140  buildMetabIntensityFilterStats
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:141  updateMetabIntensityFilterQcPlot
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:142  buildMetabIntensityFilterSummary
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:143  reportMetabIntensityFilterSuccess
+     tests/testthat/test-metab-01q-qc-intensity-module-characterization.R:144  reportMetabIntensityFilterRevertSuccess
+     tests/testthat/test-metab-01t-qc-s4-module-characterization.R:61  runMetabQcS4ServerBody
+     tests/testthat/test-metab-01u-qc-duplicates-module-characterization.R:41  runMetabDuplicateResolutionWorkflow
+     tests/testthat/test-metab-01v-qc-itsd-wrapper-characterization.R:13  runMetabQcItsdServerBody
+     tests/testthat/test-metab-01v-qc-itsd-wrapper-characterization.R:18  runMetabQcItsdServerBody
+     tests/testthat/test-metab-01v-qc-itsd-wrapper-characterization.R:20  runMetabQcItsdServerBody
+     tests/testthat/test-metab-01v-qc-itsd-wrapper-characterization.R:24  runMetabQcItsdServerBody
+     tests/testthat/test-omic-qc-module.R:469  registerTrxQcSummaryOutput,trxQcFinalizeText
+     tests/testthat/test-omic-qc-module.R:494  registerLipidIntensityApplyFilterObserver,registerLipidIntensityAssayResultsOutput
+     tests/testthat/test-omic-qc-module.R:495  registerLipidIntensityFilterPlotOutput,handleLipidDuplicateDetection,handleLipidDuplicateResolution
+     tests/testthat/test-omic-qc-module.R:496  handleLipidDuplicateRevert,registerLipidDuplicateServerBindings,runLipidDuplicateModuleServerShell
+     tests/testthat/test-omic-qc-module.R:497  registerLipidItsdSummaryOutput,registerLipidItsdCvPlotOutput,buildLipidQcS4DataSummaryUi
+     tests/testthat/test-omic-qc-module.R:498  buildLipidQcS4AssayStatsTable,buildLipidQcS4FinalizeResultsText,validateLipidQcS4FinalizeState
+     tests/testthat/test-omic-qc-module.R:499  updateLipidQcS4TrackingPlot,getLipidQcS4FinalizeState,saveLipidQcS4CompletedState
+     tests/testthat/test-omic-qc-module.R:677  initializeMetabQcSubmodules,buildMetabIntensityAssayTabsUi,buildMetabIntensityFilterStats
+     tests/testthat/test-omic-qc-module.R:678  reportMetabIntensityFilterSuccess,buildMetabDuplicateSummaryUi,detectMetabDuplicateFeatures
+     tests/testthat/test-omic-qc-module.R:679  runMetabDuplicateResolutionObserver,registerMetabDuplicateTableRenderers,metabQcItsdColumns
+     tests/testthat/test-omic-qc-module.R:680  readMetabQcItsdState,analyzeMetabQcItsdData,runMetabQcItsdServerBody,buildMetabQcS4DataSummaryUi
+     tests/testthat/test-omic-qc-module.R:681  validateMetabQcS4FinalizeState,runMetabQcS4FinalizeWorkflow,runMetabQcS4ServerBody
+     tests/testthat/test-omic-qc-module.R:682  trxQcTabsUi,initializeTrxQcSubmodules,registerTrxQcSummaryOutput,trxQcFinalizeText
+     tests/testthat/test-omic-qc-module.R:683  trxQcFinalizeCollaborators,runLipidQcS4FinalizeWorkflow,reportLipidQcS4FinalizeSuccess
+     tests/testthat/test-omic-qc-module.R:684  registerLipidIntensityRevertObserver
+     tests/testthat/test-omics-module-globals.R:48  mod_lipid_qc_duplicates_server_helpers.R,mod_metab_qc_duplicates_server_helpers.R

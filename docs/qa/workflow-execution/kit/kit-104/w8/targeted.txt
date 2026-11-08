@@ -1,0 +1,128 @@
+KIT-104 W8 run 1, the targeted set (2026-11-08). 92 files, one R process per file, tools/testing/test-baseline.R file
+load_all (pkgload::load_all(export_all = TRUE, helpers = TRUE)), MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1,
+R_LIBS = core/browser-smoke.yODoyT/library, 4 files in parallel, per-file timeout 1,800 s, under
+systemd-inhibit --what=idle:sleep. Tree: origin/performance-v2 691aaa71 plus the W8 edits (the W8 commit).
+Started 2026-11-08T13:43:11+11:00, finished 2026-11-08T13:57:24+11:00 (14 min; ceiling 2 h).
+
+Set: every test file W1 to W7 counted in their evidence (w1..w7 targeted, dependents, test-first), which includes the
+retargeted MCI files (lipid, metab, trx QC; prot peptide, protein, dia-limpa), test-omic-gui-config.R,
+test-omic-qc-module.R, test-omic-design-module.R, the worker, residency, application-reads and audit files, the shared
+ui, server, wrapper and coordinator files, test-prot-02b, 02c (both), 02p and 02q, and every dependent the W5 to W7
+greps listed; plus test-prot-05b-norm-module-contracts.R (the F-20 unit test, P-16). The five DIA session and memory
+files run in run 3 (memory-session.txt) and the entry files in run 2 (entry-suite.txt); they are not repeated here.
+W8's own dependents are in the set: the trxOmicProfile() readers (the trx MCI files, test-omic-design-module.R,
+test-omics-design-core.R, test-workflow-omics-application-reads.R, test-workflow-server-shared.R; helper-gui-entry.R
+in run 2) and the worker helper's file (test-workflow-omics-worker.R).
+
+W8 test first (written before the R/ edits, run on 691aaa71's R/; same runner, run1.R):
+COUNTS test-omic-gui-config.R pass 772 fail 6 error 0 skip 0
+  BAD :: each qc field, required or conditional, is refused by class when missing or mistyped
+     6 x "Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>."
+     (lipid, metab and trx x filtering_figure, finalize_alignment: each was accepted when removed)
+COUNTS test-omic-qc-module.R pass 157 fail 1 error 0 skip 0
+  BAD :: W6 metab's and trx's QC copies are deleted; their exports are wrappers; the trx profile has no QC hook
+     `actual`: "class" "read_state" (the trx profile still held them)
+
+Result: TOTAL files 92 pass 8980 fail 0 error 0 skip 193.
+File-level skips 11, each a quarantined file (Q-21, Q-56 to Q-60, Q-66, Q-67, Q-69, Q-70, Q-74). Skip categories:
+quarantine 188; other 4 (pre-existing: the metab-03d extracted-helper guard, prot-02f's IQ timeout branch, prot-02h's
+two guarded experiments); fixture 1 (prot-02-qc-filtering, an LFS pointer).
+Every file's passed and skipped counts equal its last W5 to W7 value (this runner counts a file-level skip as 1 where
+run1.R shows 0), except the two files W8 changed:
+  test-omic-gui-config.R 765 -> 778: +12 (three omics x two function fields: present, and refused when removed),
+    +1 (trx's qc functions in the srcref check);
+  test-omic-qc-module.R 158 -> 158 (the profile check now also requires class and read_state gone).
+
+file	passed	failed	error	skipped	file_skip	seconds
+test-lipid-01a-qc-update-filtering-characterization.R	5	0	0	0	FALSE	8.8
+test-lipid-01b-qc-module-contracts.R	0	0	0	1	TRUE	7
+test-lipid-01c-qc-duplicate-module-seams.R	0	0	0	1	TRUE	7
+test-lipid-01d-qc-intensity-module-seams.R	0	0	0	1	TRUE	7
+test-lipid-01e-qc-itsd-module-seams.R	0	0	0	1	TRUE	6.7
+test-lipid-01f-qc-s4-module-seams.R	0	0	0	1	TRUE	6.8
+test-lipid-01g-qc-duplicates-module-characterization.R	9	0	0	5	FALSE	12.7
+test-lipid-01h-qc-s4-module-characterization.R	3	0	0	0	FALSE	12.3
+test-lipid-01i-qc-itsd-wrapper-characterization.R	0	0	0	1	FALSE	6.6
+test-lipid-01j-qc-orchestrator-shared.R	3	0	0	3	FALSE	6.9
+test-lipid-01k-qc-intensity-shared.R	16	0	0	1	FALSE	15.3
+test-lipid-01-qc-filtering-helpers.R	58	0	0	2	FALSE	8.6
+test-lipid-02b-da-module-contracts.R	569	0	0	0	FALSE	11.8
+test-lipid-12a-norm-module-characterization.R	62	0	0	0	FALSE	18.4
+test-lipid-12-norm-module-contracts.R	707	0	0	0	FALSE	17.5
+test-metab-01b-qc-filtering-helpers-characterization.R	9	0	0	0	FALSE	6.8
+test-metab-01j-s4-pearson-correlation-characterization.R	12	0	0	0	FALSE	7
+test-metab-01k-s4-plot-pearson-characterization.R	17	0	0	0	FALSE	7.5
+test-metab-01m-s4-resolve-duplicate-intensity-characterization.R	17	0	0	0	FALSE	6.8
+test-metab-01n-s4-find-duplicate-feature-ids-characterization.R	20	0	0	0	FALSE	7.1
+test-metab-01o-qc-module-characterization.R	0	0	0	1	TRUE	6.6
+test-metab-01p-qc-duplicates-module-characterization.R	0	0	0	1	TRUE	6.8
+test-metab-01q-qc-intensity-module-characterization.R	20	0	0	13	FALSE	12.8
+test-metab-01r-qc-itsd-module-characterization.R	0	0	0	1	TRUE	6.8
+test-metab-01s-qc-s4-module-characterization.R	0	0	0	1	TRUE	6.8
+test-metab-01t-qc-s4-module-characterization.R	2	0	0	7	FALSE	13
+test-metab-01u-qc-duplicates-module-characterization.R	9	0	0	3	FALSE	13.7
+test-metab-01v-qc-itsd-wrapper-characterization.R	3	0	0	0	FALSE	6.8
+test-metab-01w-qc-orchestrator-shared.R	3	0	0	3	FALSE	7
+test-metab-02aa-da-display-filter-characterization.R	591	0	0	0	FALSE	14.2
+test-metab-02t-metabolite-intensity-filtering-characterization.R	14	0	0	0	FALSE	7.1
+test-metab-02u-resolve-duplicate-features-characterization.R	17	0	0	0	FALSE	7.1
+test-metab-02v-sample-correlation-filter-characterization.R	13	0	0	0	FALSE	7.1
+test-metab-03b-norm-module-helper-characterization.R	876	0	0	3	FALSE	17.5
+test-metab-03d-norm-module-characterization.R	55	0	0	1	FALSE	42.6
+test-metab-qc-itsd-direct-shared.R	0	0	0	1	TRUE	6.9
+test-metab-s4-qc-shared.R	32	0	0	0	FALSE	7.9
+test-module-ci-lipid-qc.R	68	0	0	0	FALSE	43.9
+test-module-ci-metab-qc.R	63	0	0	1	FALSE	46.6
+test-module-ci-prot-dia-limpa.R	33	0	0	2	FALSE	11.9
+test-module-ci-prot-peptide-qc.R	39	0	0	1	FALSE	8.7
+test-module-ci-prot-protein-qc.R	0	0	0	6	FALSE	6.8
+test-module-ci-trx-app.R	48	0	0	0	FALSE	46.4
+test-module-ci-trx-da.R	50	0	0	0	FALSE	113.6
+test-module-ci-trx-design.R	71	0	0	0	FALSE	27.6
+test-module-ci-trx-import.R	96	0	0	0	FALSE	11
+test-module-ci-trx-norm.R	61	0	0	0	FALSE	94.6
+test-module-ci-trx-qc.R	38	0	0	0	FALSE	47.8
+test-module-ci-trx-summary.R	70	0	0	0	FALSE	151.3
+test-module-ui-wrapper-direct-shared.R	45	0	0	0	FALSE	7.9
+test-omic-design-module.R	143	0	0	0	FALSE	21
+test-omic-gui-config.R	778	0	0	0	FALSE	16.5
+test-omic-qc-module.R	158	0	0	0	FALSE	73.1
+test-omics-audit-carry-overs.R	20	0	0	0	FALSE	12.2
+test-omics-design-core.R	52	0	0	10	FALSE	18.3
+test-omics-module-globals.R	14	0	0	0	FALSE	6.9
+test-omics-qc-core.R	32	0	0	10	FALSE	23.4
+test-prot-02b-qc-peptide-module-contracts.R	586	0	0	15	FALSE	13.8
+test-prot-02c-qc-peptide-intensity-shared.R	0	0	0	5	FALSE	6.8
+test-prot-02c-qc-protein-module-contracts.R	407	0	0	23	FALSE	12.1
+test-prot-02d-qc-protein-intensity-shared.R	0	0	0	5	FALSE	6.9
+test-prot-02e-qc-protein-cleanup-shared.R	0	0	0	6	FALSE	6.8
+test-prot-02f-qc-protein-rollup-shared.R	2	0	0	5	FALSE	6.9
+test-prot-02g-qc-peptide-qvalue-shared.R	7	0	0	4	FALSE	6.9
+test-prot-02h-peptide-audit-shared.R	93	0	0	2	FALSE	8.2
+test-prot-02h-qc-protein-replicate-shared.R	0	0	0	5	FALSE	6.9
+test-prot-02i-qc-peptide-sample-shared.R	0	0	0	4	FALSE	6.9
+test-prot-02j-qc-peptide-protein-shared.R	2	0	0	4	FALSE	6.9
+test-prot-02k-qc-peptide-impute-shared.R	12	0	0	5	FALSE	7.2
+test-prot-02l-qc-protein-dedup-shared.R	5	0	0	3	FALSE	7.1
+test-prot-02m-qc-peptide-replicate-shared.R	0	0	0	4	FALSE	6.9
+test-prot-02n-qc-peptide-rollup-shared.R	0	0	0	4	FALSE	6.9
+test-prot-02o-qc-protein-s4-shared.R	0	0	0	1	TRUE	6.8
+test-prot-02p-qc-protein-orchestrator-shared.R	19	0	0	0	FALSE	7.2
+test-prot-02-qc-filtering.R	4	0	0	1	FALSE	9.2
+test-prot-02-qc-peptide-groupaware.R	39	0	0	0	FALSE	10.9
+test-prot-02q-qc-peptide-orchestrator-shared.R	15	0	0	0	FALSE	7.2
+test-prot-02r-qc-reporting-helpers-shared.R	56	0	0	0	FALSE	27.4
+test-prot-02s-identification-evidence.R	17	0	0	0	FALSE	7.9
+test-prot-02t-qc-peptide-exclusions.R	32	0	0	1	FALSE	7.2
+test-prot-05b-norm-module-contracts.R	504	0	0	9	FALSE	9.1
+test-prot-qc-coordinator-direct-shared.R	4	0	0	3	FALSE	6.9
+test-prot-qc-core.R	18	0	0	0	FALSE	14.6
+test-workflow-lipid-declarations.R	259	0	0	0	FALSE	69.8
+test-workflow-metab-declarations.R	259	0	0	0	FALSE	69.1
+test-workflow-omics-application-reads.R	230	0	0	0	FALSE	492.8
+test-workflow-omics-residency.R	97	0	0	0	FALSE	264.3
+test-workflow-omics-worker.R	283	0	0	0	FALSE	416.2
+test-workflow-prot-declarations.R	303	0	0	2	FALSE	124.2
+test-workflow-server-shared.R	204	0	0	0	FALSE	9.4
+test-workflow-trx-declarations.R	324	0	0	0	FALSE	125.2
+test-workflow-ui-shared.R	178	0	0	0	FALSE	8.7

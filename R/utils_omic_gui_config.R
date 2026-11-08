@@ -29,9 +29,14 @@
 # there: the title, the tabset, the groups of sub-tabs (a component id each: the shared sub-tabs
 # `omic_qc_*`, trx's filter plugin and proteomics' plugins, `mod_<component>_ui/server`), the start
 # and completion, the tracking figure, the ITSD analysis, the finalise's per-omic differences, and
-# the texts and notification ids the shared sub-tabs render per omic. Fields whose functions are
-# still in R/mod_*.R (trx's `filtering_figure`; every `finalize_alignment`, which W2 writes) are
-# absent and optional until KIT-104 W8 wires them.
+# the texts and notification ids the shared sub-tabs render per omic. KIT-104 W5 and W6 deleted
+# seven of those files (the lipid intensity and duplicate helper files, mod_metab_qc_itsd.R and four
+# metab helper files) and W7 the proteomics coordinator's body, so the qc group's file:line notes are
+# provenance at b423b764; the values now render through the shared QC shell and sub-tabs
+# (mod_omic_qc.R, mod_omic_qc_tabs.R). KIT-104 W8 made the
+# finalise's function fields (`filtering_figure`, `finalize_alignment`), wired to the core by W2 to
+# W6, required with the finalise sub-tab, which every feature omic has; `finalize_shell` (trx only)
+# stays optional.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -130,8 +135,6 @@ omicGuiConfigSchema <- function() {
         qc = c(title = "chr1", tabset_id = "by_route", groups = "list", auto_init = "lgl1",
             complete_state = "route_map_or_null", itsd = "named_list_or_null", texts = "named_chr0",
             notification_ids = "named_chr0"),
-        # Required at KIT-104 W8, once their functions are in the core (absent until then).
-        qc_optional = c(filtering_figure = "ref", finalize_alignment = "ref"),
         # KIT-104 W6 (F104-04): the finalise's shell read, `function(binding, manager)`, for an omic
         # whose class cannot be rebuilt as the generic shell (trx); optional.
         qc_read = c(finalize_shell = "ref"),
@@ -139,9 +142,10 @@ omicGuiConfigSchema <- function() {
             tabs = "list"),
         qc_tab = c(id = "chr1", title = "chr1", component = "chr1", routes = "chr",
             needs_paths = "lgl1"),
-        # Required with the shared finalise sub-tab.
+        # Required with the shared finalise sub-tab; its function fields since KIT-104 W8, once their
+        # functions were in the core (every feature omic carries them).
         qc_finalize = c(finalize_zero_rows = "lgl1", finalize_opens_norm = "lgl1",
-            finalize_per_assay = "lgl1"),
+            finalize_per_assay = "lgl1", filtering_figure = "ref", finalize_alignment = "ref"),
         qc_itsd = c(name_columns = "chr", metrics = "ref", quant = "ref", tip = "chr1"),
         # The texts and the notification ids each shared sub-tab renders, by its component.
         qc_texts = list(
@@ -264,7 +268,6 @@ validateOmicGuiDesignImport <- function(design_import, schema) {
 #' @noRd
 validateOmicGuiQc <- function(qc, routes, schema) {
     checkOmicGuiFields(qc, schema$qc, "qc")
-    checkOmicGuiFields(qc, schema$qc_optional, "qc", required = FALSE)
     checkOmicGuiFields(qc, schema$qc_read, "qc", required = FALSE)
     if (length(qc$tabset_id) > 1L && !setequal(names(qc$tabset_id), routes)) {
         omicGuiConfigAbort("qc$tabset_id", "must name each of the omic's routes")

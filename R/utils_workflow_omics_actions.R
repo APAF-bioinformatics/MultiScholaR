@@ -192,7 +192,7 @@ readWorkflowOmicsFilteringMetrics <- function(manager, result) {
 
 #' A QC step that commits a state and draws the filtering-progress figure (KIT-104 D6; the intensity filter and the
 #' duplicate resolution, mod_lipid_qc_intensity_server_helpers.R:241-260 and mod_lipid_qc_duplicates_server_helpers.R
-#' :256-268, the same in metab). On a runner: the managed commit, and the figure from the worker's metrics. In process:
+#' :256-268 at b423b764, the same in metab; those files were deleted by KIT-104 W5). On a runner: the managed commit, and the figure from the worker's metrics. In process:
 #' the reference step, and the figure from the committed state read for this action only. The tab holds no object.
 #' @param binding The omic's declaration binding.
 #' @param workflowData The omic's bus (`state_manager`, `config_list`).

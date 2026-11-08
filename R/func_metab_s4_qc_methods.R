@@ -914,7 +914,8 @@ findMetabDuplicateFeatureIDs <- function(theObject) {
 }
 
 # KIT-104 W2 (back-reference #9): the duplicate resolution per assay that `metabolomicsDeclarationBinding$resolve_duplicates`
-# runs, moved unchanged with its name from R/mod_metab_qc_duplicates_server_helpers.R (:1-51).
+# runs, moved unchanged with its name from R/mod_metab_qc_duplicates_server_helpers.R (:1-51 at b423b764; the file was
+# deleted by KIT-104 W6).
 resolveMetabDuplicateAssayData <- function(
     assayList
     , metaboliteIdCol

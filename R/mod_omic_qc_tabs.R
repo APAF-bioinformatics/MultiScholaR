@@ -22,7 +22,9 @@
 # (func_omics_qc_shared.R, `runWorkflowOmicsQcAction`); a sub-tab holds the numbers it shows, never
 # a state object (KIT-075, KIT-082). Every action ignores a click made before its server started
 # (`qcClickAfterStart`, KIT-101 F-17 and F-24). Each server's module frame holds only its input,
-# output and session, so a test's variables are not masked under testServer.
+# output and session, so a test's variables are not masked under testServer. The file:line notes
+# below cite the lipid files at d8f6dde4; KIT-104 W5 deleted the two helper files
+# (mod_lipid_qc_intensity_server_helpers.R, mod_lipid_qc_duplicates_server_helpers.R).
 
 # ------------------------------------------------------------------------------------------------
 # Shared pieces.

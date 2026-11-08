@@ -200,7 +200,6 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
     }
     addLog <- function(entry) probe$log <- c(probe$log, entry)
     aesthetics <- function(...) list(color_var = "group", shape_var = NULL)
-    stats <- shiny::reactiveVal(NULL); plot <- shiny::reactiveVal(NULL); info <- shiny::reactiveVal(NULL)
     daData <- list2env(list(current_state_name = NULL, analysis_complete = FALSE))
     session$userData$probe_da <- daData
     if (identical(omic, "lipidomics")) {

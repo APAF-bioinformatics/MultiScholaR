@@ -168,8 +168,10 @@ resolveDuplicateFeaturesByIntensity <- function(assay_tibble, id_col, sample_col
 
 # ============================================================================
 # KIT-104 W2: the QC tab's computation for lipid, metab and trx, out of the modules (design 4.6, 5). Each function is
-# today's lipid and metab code, which was the same code twice; where the two differed the difference is named. The
-# shared QC sub-tabs (R/mod_omic_qc_tabs.R) call these with the omic's binding and its `omicGuiConfig(<omic>)$qc`.
+# the lipid and metab code at b423b764, which was the same code twice; where the two differed the difference is named.
+# The shared QC sub-tabs (R/mod_omic_qc_tabs.R) call these with the omic's binding and its `omicGuiConfig(<omic>)$qc`.
+# The module names and file:line notes below are provenance at b423b764: KIT-104 W5 and W6 deleted those functions and
+# several of the files (mod_lipid_qc_intensity_server_helpers.R, mod_metab_qc_itsd.R and the metab helper files).
 # ============================================================================
 
 #' The intensity filter's per-assay table from the declaration's counts (lipid's inline table,

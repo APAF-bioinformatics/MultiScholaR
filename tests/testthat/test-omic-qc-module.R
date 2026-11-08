@@ -688,8 +688,9 @@ test_that("W6 metab's and trx's QC copies are deleted; their exports are wrapper
         expect_match(utils::getSrcFilename(get(name, envir = ns)), "func_trx_qc_plots.R", fixed = TRUE, info = name)
     }
     profile <- trxOmicProfile()
-    expect_identical(intersect(c("qc_title", "qc_tabs", "qc_init", "register_qc_summary", "finalize", "read_metadata"),
-        names(profile)), character())
+    # KIT-104 W8: `class` and `read_state` too, once test-omic-gui-config.R pinned their values.
+    expect_identical(intersect(c("qc_title", "qc_tabs", "qc_init", "register_qc_summary", "finalize", "read_metadata",
+        "class", "read_state"), names(profile)), character())
     expect_identical(profile$omic_type, "transcriptomics")
     # Every finalise checks its alignment; trx's is its own design check (D10).
     for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {

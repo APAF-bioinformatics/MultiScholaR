@@ -20,8 +20,8 @@ guiConfigRequired <- list(
         "no_data_text", "preview_text", "preview_assays", "testids", "builder_texts",
         "group_levels", "validate", "build_object"),
     # KIT-104 W1 (design 4.6 and the ticket's rendering fields). `complete_state` and `itsd` are
-    # NULL where the omic has none; the finalise fields and the function fields whose functions are
-    # still in R/mod_*.R are checked by their own blocks below.
+    # NULL where the omic has none; the finalise fields, required with a finalise tab, are checked by
+    # their own blocks below (KIT-104 W8 made its function fields required there).
     qc = c("title", "tabset_id", "groups", "auto_init", "complete_state", "itsd", "texts",
         "notification_ids")
 )
@@ -167,10 +167,10 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         expect_gt(length(design), 0L)
         design_files <- unlist(lapply(design, utils::getSrcFilename))
         expect_false(any(startsWith(design_files, "mod_")), info = paste(omic, "design"))
-        # KIT-104 W1: the qc group. Lipid and metab carry functions now (the tracking figure and the
-        # ITSD kernels); trx's and the finalise alignments arrive with W2 and W8.
+        # KIT-104 W1: the qc group. Since W8 every feature omic carries its tracking figure and its
+        # finalise alignment (lipid and metab also their ITSD kernels).
         qc_files <- as.character(unlist(lapply(guiConfigFunctions(config$qc), utils::getSrcFilename)))
-        if (omic %in% c("lipidomics", "metabolomics")) expect_gt(length(qc_files), 0L)
+        if (omic != "proteomics") expect_gt(length(qc_files), 0L)
         expect_false(any(startsWith(qc_files, "mod_")), info = paste(omic, "qc"))
     }
 })
@@ -198,8 +198,10 @@ test_that("the trx shell and import values equal trxOmicProfile()'s fields today
         expect_identical(config$import[[field]], expected[[field]], info = field)
     }
     expect_identical(config$binding$binding, profile$binding)
-    expect_identical(config$binding$read_state, profile$read_state)
-    expect_identical(config$binding$binding$class, profile$class)
+    # KIT-104 W8 removed the profile's `read_state` and `class` (mod_transcriptomics.R:39-40 at
+    # 691aaa71); their values are pinned here as literals, unchanged.
+    expect_identical(config$binding$read_state, readTrxWorkflowState)
+    expect_identical(config$binding$binding$class, "TranscriptomicsAssayData")
 })
 
 test_that("the DIA binding adaptor answers with today's core functions", {
@@ -507,6 +509,8 @@ test_that("the DIA binding adaptor's design entries call today's core functions"
 guiConfigQcGroupFields <- c("id", "title", "component", "tabs")
 guiConfigQcTabFields <- c("id", "title", "component", "routes", "needs_paths")
 guiConfigQcFinalize <- c("finalize_zero_rows", "finalize_opens_norm", "finalize_per_assay")
+# KIT-104 W8: the finalise's function fields, required with a finalise tab (every feature omic).
+guiConfigQcFinalizeFunctions <- c("filtering_figure", "finalize_alignment")
 guiConfigQcItsd <- c("name_columns", "metrics", "quant", "tip")
 # The texts and the notification ids each shared sub-tab renders, by its component.
 guiConfigQcTexts <- list(
@@ -691,6 +695,16 @@ test_that("each qc field, required or conditional, is refused by class when miss
         mistyped$qc[[field]] <- NA
         expectGuiConfigRefused(mistyped, paste0("qc$", field))
     }
+    # KIT-104 W8: so are its function fields, for every feature omic.
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        config <- omicGuiConfig(omic)
+        for (field in guiConfigQcFinalizeFunctions) {
+            expect_true(is.function(config$qc[[field]]), info = paste(omic, field))
+            removed <- config
+            removed$qc[[field]] <- NULL
+            expectGuiConfigRefused(removed, paste0("qc$", field))
+        }
+    }
     # The texts and notification ids each tab's component renders.
     for (component in names(guiConfigQcTexts)) {
         for (key in guiConfigQcTexts[[component]]) {
@@ -756,8 +770,8 @@ test_that("each qc field, required or conditional, is refused by class when miss
     bad <- prot
     bad$qc$auto_init <- NA
     expectGuiConfigRefused(bad, "qc$auto_init")
-    # The function fields are checked by type when present (the deferred ones are absent until W8).
-    for (field in c("filtering_figure", "finalize_alignment")) {
+    # The function fields are checked by type.
+    for (field in guiConfigQcFinalizeFunctions) {
         bad <- lipid
         bad$qc[[field]] <- "a function name"
         expectGuiConfigRefused(bad, paste0("qc$", field))

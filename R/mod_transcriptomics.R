@@ -31,14 +31,14 @@
 #' the design tab (KIT-103 W5): its eight design fields left the profile for `omicGuiConfig("transcriptomics")$design`,
 #' and its design functions (`trxDesignGroupLevels`, `trxDesignCheck`, `trxDesignObject`) are in func_trx_design.R.
 #' So is the QC tab (KIT-104 W6): its QC fields left the profile for `omicGuiConfig("transcriptomics")$qc`, the shared
-#' shell and finalise (mod_omic_qc.R, mod_omic_qc_tabs.R); `class` and `read_state` stay while
-#' test-omic-gui-config.R reads them.
+#' shell and finalise (mod_omic_qc.R, mod_omic_qc_tabs.R); KIT-104 W8 removed `class` and `read_state`, which nothing
+#' else read (the configuration's binding carries both).
 #' @return A plain list.
 #' @noRd
 trxOmicProfile <- function() {
     profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
-        class = "TranscriptomicsAssayData", workflow_type = "TRANSCRIPTOMICS",
-        read_state = readTrxWorkflowState, binding = transcriptomicsDeclarationBinding, report_template = "transcriptomics_report.rmd", report_dir = "transcriptomics")
+        workflow_type = "TRANSCRIPTOMICS",
+        binding = transcriptomicsDeclarationBinding, report_template = "transcriptomics_report.rmd", report_dir = "transcriptomics")
     c(profile, trxNormDaSummaryProfile())
 }
 
