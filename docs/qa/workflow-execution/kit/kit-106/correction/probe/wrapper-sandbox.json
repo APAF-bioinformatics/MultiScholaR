@@ -1,0 +1,5 @@
+{
+  "mode": "plain",
+  "loaded": "0.1386003 secs",
+  "polls": ["0.1492336 secs {\"svg\":1,\"rows\":10,\"ready\":\"complete\"}", "1.151552 secs {\"svg\":1,\"rows\":10,\"ready\":\"complete\"}", "2.154718 secs {\"svg\":1,\"rows\":10,\"ready\":\"complete\"}", "3.158185 secs {\"svg\":1,\"rows\":10,\"ready\":\"complete\"}", "4.161812 secs {\"svg\":1,\"rows\":10,\"ready\":\"complete\"}", "5.165226 secs {\"svg\":1,\"rows\":10,\"ready\":\"complete\"}"]
+}

@@ -1,0 +1,117 @@
+library(testthat)
+
+# KIT-101 W5: the transcriptomics e2e lane `trx_screen` (tests/testdata/e2e/manifest.json), in the form of the other
+# omics' lanes: the committed fixture (the KIT-040 trx_screen recipe, 12 samples, 300 genes, sha256 in the manifest),
+# the browser from the tile through import, design, QC, normalisation, DA and the summary's RUVIII export, save, copy,
+# report (the lane's stub template, seeded as the other lanes seed theirs) and session export. The KIT-097 journey
+# (test-e2e-trx-journey.R) stays the trx_edge_12 proof.
+
+.e2e_trx_screen <- function(step, input) e2e_input_id("transcriptomics", step, input)
+
+test_that("K106DIAG trx_screen reaches the summary, the RUVIII export and the report through the browser", {
+  skip_if_no_e2e_browser()
+  started <- Sys.time()
+  lane <- read_e2e_manifest()[["trx_screen"]]
+  design <- e2e_read_lane_design(lane)
+  groups <- unlist(lane$groups)
+  contrast <- strsplit(lane$expected_contrasts[[1L]], "_vs_", fixed = TRUE)[[1L]]
+  case_id <- "E2E-KIT101-trx_screen"
+  project_root <- file.path(tempdir(), paste0(case_id, "-", Sys.getpid()))
+  dir.create(project_root, recursive = TRUE, showWarnings = FALSE)
+  base <- e2e_project_base_dir(project_root, case_id)
+  results_summary <- file.path(base, "results_summary", "transcriptomics")
+  source_dir <- file.path(base, "scripts", "transcriptomics")
+  timeout <- 300000L
+  driver <- e2e_new_app_driver(case_id = case_id, launch_surface = "run_app", timeout = 60000L, load_timeout = 180000L)
+  on.exit(e2e_stop_driver(driver), add = TRUE)
+  e2e_with_failure_artifacts(driver, case_id, {
+    e2e_wait_for_selector(driver, "tile-transcriptomics", timeout = 60000L)
+    e2e_select_omics(driver, "transcriptomics", timeout = 60000L)
+    e2e_complete_project_setup(driver, case_id, project_root, timeout = 60000L)
+    # Import: the lane's count table through the browser file input.
+    e2e_wait_for_selector(driver, "trx-tab-import", timeout = timeout)
+    e2e_upload_file(driver, .e2e_trx_screen("import", "assay1_file_std"), e2e_lane_seed_path(lane))
+    e2e_wait_for_idle(driver, timeout = timeout)
+    e2e_click_testid(driver, "trx-import-process", timeout = timeout)
+    e2e_wait_for_step_status(driver, "transcriptomics", "setup_import", "complete", timeout = timeout)
+    # Design: the lane's groups, every sample assigned, the manifest's contrast.
+    builder <- function(input) .e2e_trx_screen("design", paste0("builder-", input))
+    e2e_switch_workflow_tab(driver, "transcriptomics", "design", timeout = timeout)
+    e2e_wait_for_selector(driver, "trx-tab-design", timeout = timeout)
+    e2e_set_input_and_idle(driver, builder("main_tabs"), "Factors", timeout = timeout)
+    for (group in groups) {
+      e2e_set_input_and_idle(driver, builder("new_factor"), group, timeout = timeout)
+      e2e_click_input_id(driver, builder("add_factor"), timeout = timeout)
+    }
+    e2e_set_input_and_idle(driver, builder("main_tabs"), "Assign Metadata", timeout = timeout)
+    available <- e2e_selectize_option_values(driver, builder("selected_runs"), timeout = timeout)
+    for (group in groups) {
+      e2e_set_selectize_values(driver, builder("selected_runs"), e2e_match_available_values(design$sample[design$group == group], available),
+        timeout = timeout)
+      e2e_wait_for_input_id(driver, builder("replicate_start"), timeout = timeout)
+      e2e_set_selectize_values(driver, builder("factor1_select"), group, timeout = timeout, multiple = FALSE)
+      e2e_click_input_id(driver, builder("assign_metadata"), timeout = timeout)
+    }
+    e2e_set_input_and_idle(driver, builder("main_tabs"), "Contrasts", timeout = timeout)
+    e2e_set_selectize_values(driver, builder("contrast_group1"), contrast[[1L]], timeout = timeout, multiple = FALSE)
+    e2e_set_selectize_values(driver, builder("contrast_group2"), contrast[[2L]], timeout = timeout, multiple = FALSE)
+    e2e_click_input_id(driver, builder("add_contrast"), timeout = timeout)
+    e2e_click_input_id(driver, builder("save_results"), timeout = timeout)
+    e2e_wait_for_step_status(driver, "transcriptomics", "design_matrix", "complete", timeout = timeout)
+    # QC: the expression filter and the finalise.
+    e2e_switch_workflow_tab(driver, "transcriptomics", "qc", timeout = timeout)
+    e2e_wait_for_selector(driver, "trx-tab-qc", timeout = timeout)
+    e2e_click_testid(driver, "trx-qc-apply-filter", timeout = timeout)
+    e2e_wait_for_r6_state(driver, "transcriptomics", "trx_expression_filtered", timeout = timeout)
+    e2e_set_input_and_idle(driver, .e2e_trx_screen("qc", "trx_qc_tabs"), "Finalize QC", timeout = timeout)
+    e2e_click_input_id(driver, .e2e_trx_screen("qc", "s4_finalize-finalize_qc"), timeout = timeout)
+    e2e_wait_for_step_status(driver, "transcriptomics", "quality_control", "complete", timeout = timeout)
+    # Normalisation and DA.
+    e2e_switch_workflow_tab(driver, "transcriptomics", "norm", timeout = timeout)
+    e2e_click_testid(driver, "trx-norm-run", timeout = timeout)
+    e2e_wait_for_step_status(driver, "transcriptomics", "normalization", "complete", timeout = timeout)
+    e2e_switch_workflow_tab(driver, "transcriptomics", "de", timeout = timeout)
+    e2e_click_testid(driver, "trx-da-run", timeout = timeout)
+    dd <- Sys.getenv("K106_DIAG_DIR")
+    w <- function(name, x) writeLines(as.character(x), file.path(dd, name))
+    vid <- .e2e_trx_screen("da", "volcano_glimma")
+    iid <- .e2e_trx_screen("da", "volcano_interactive")
+    probe <- "window.__k = {values: [], disc: false, errs: [], block: true};
+      $(document).on('shiny:value', function(e){ if (e.name.indexOf('volcano_glimma') >= 0) { var s = (typeof e.value === 'string') ? e.value : JSON.stringify(e.value); window.__k.values.push({len: s.length, t: Date.now(), block: window.__k.block}); window.__k.full = s; if (window.__k.block) e.preventDefault(); } });
+      $(document).on('shiny:disconnected', function(){ window.__k.disc = true; });
+      $(document).on('shiny:error', function(e){ window.__k.errs.push(String(e.name) + ': ' + (e.error && e.error.message)); });
+      true"
+    e2e_wait_for_idle(driver, timeout = timeout)
+    driver$get_js(probe)
+    has_page <- sprintf("(function(){var el = document.getElementById(%s); return !!(el && el.querySelector('iframe'));})()", jsonlite::toJSON(vid, auto_unbox = TRUE))
+    w("phase0-has-page.txt", isTRUE(driver$get_js(has_page)))
+    # Phase 1: the tick, its value captured and NOT rendered.
+    t0 <- Sys.time()
+    e2e_set_input(driver = driver, input_id = iid, value = TRUE, wait = FALSE, timeout = timeout, priority = "input")
+    r1 <- tryCatch({driver$wait_for_idle(timeout = 120000); "idle"}, error = function(e) paste("ERROR", conditionMessage(e)))
+    w("phase1-idle.txt", c(r1, format(difftime(Sys.time(), t0, units = "secs"))))
+    w("phase1-k.json", driver$get_js("JSON.stringify({values: window.__k.values, disc: window.__k.disc, errs: window.__k.errs})", timeout = 20000))
+    writeLines(driver$get_js("window.__k.full || ''", timeout = 60000), file.path(dd, "volcano_glimma-value.json"))
+    w("phase1-logs.txt", utils::capture.output(print(driver$get_logs())))
+    # Phase 2: untick, unblock, tick again: the value rendered.
+    e2e_set_input_and_idle(driver, iid, FALSE, timeout = timeout)
+    driver$get_js("window.__k.block = false; true")
+    t0 <- Sys.time()
+    e2e_set_input(driver = driver, input_id = iid, value = TRUE, wait = FALSE, timeout = timeout, priority = "input")
+    st <- sprintf("JSON.stringify({n: window.__k.values.length, disc: window.__k.disc, busy: document.documentElement.classList.contains('shiny-busy'), iframe: (function(){var el = document.getElementById(%s); var f = el && el.querySelector('iframe'); if (!f) return null; var d = null; try { d = f.contentDocument && f.contentDocument.readyState; } catch (x) { d = 'x:' + x; } return {ready: d, srcdoc_len: (f.getAttribute('srcdoc') || '').length}; })(), now: Date.now()})",
+      jsonlite::toJSON(vid, auto_unbox = TRUE))
+    polls <- character()
+    for (i in 1:20) {
+      tt <- format(difftime(Sys.time(), t0, units = "secs"))
+      res <- tryCatch(driver$get_js(st, timeout = 5000), error = function(e) paste("ERROR", conditionMessage(e)))
+      polls <- c(polls, paste(tt, res))
+      w("phase2-polls.txt", polls)
+      Sys.sleep(5)
+    }
+    t0 <- Sys.time()
+    r2 <- tryCatch({driver$wait_for_idle(timeout = 60000); "idle"}, error = function(e) paste("ERROR", conditionMessage(e)))
+    w("phase2-idle.txt", c(r2, format(difftime(Sys.time(), t0, units = "secs"))))
+    w("phase2-logs.txt", utils::capture.output(print(driver$get_logs())))
+    w("project-files.txt", list.files(base, recursive = TRUE, full.names = FALSE))
+  })
+})

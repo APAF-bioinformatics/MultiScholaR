@@ -1,0 +1,23 @@
+# KIT-106 correction: the captured page alone in a headless browser: alerts recorded (not shown), and the main thread's
+# responsiveness, the widget's render and the page's size.
+args <- commandArgs(TRUE)
+page <- args[1]; out <- args[2]; mode <- if (length(args) > 2) args[3] else "record"
+b <- chromote::ChromoteSession$new()
+b$Page$enable()
+if (identical(mode, "record")) {
+  b$Page$addScriptToEvaluateOnNewDocument("window.__alerts = []; window.alert = function(m){ window.__alerts.push(String(m)); }; window.__errors = []; window.addEventListener('error', function(e){ window.__errors.push(String(e.message)); });")
+}
+t0 <- Sys.time()
+b$Page$navigate(paste0("file://", normalizePath(page)), wait_ = FALSE)
+loaded <- tryCatch({b$Page$loadEventFired(timeout_ = 60); format(difftime(Sys.time(), t0, units = "secs"))}, error = function(e) paste("ERROR", conditionMessage(e)))
+polls <- character()
+for (i in 1:6) {
+  r <- tryCatch(b$Runtime$evaluate("JSON.stringify({alerts: window.__alerts, errors: window.__errors, svg: (function(){var f = document.querySelector('iframe'); var d = f ? f.contentDocument : document; return d.querySelectorAll('svg').length;})(), rows: (function(){var f = document.querySelector('iframe'); var d = f ? f.contentDocument : document; return d.querySelectorAll('table.dataTable tbody tr').length;})(), ready: document.readyState})", timeout_ = 5)$result$value,
+    error = function(e) paste("ERROR", conditionMessage(e)))
+  polls <- c(polls, paste(format(difftime(Sys.time(), t0, units = "secs")), r))
+  Sys.sleep(1)
+}
+res <- list(mode = mode, loaded = loaded, polls = polls)
+try(b$close(), silent = TRUE)
+jsonlite::write_json(res, out, auto_unbox = TRUE, pretty = TRUE)
+print(res)

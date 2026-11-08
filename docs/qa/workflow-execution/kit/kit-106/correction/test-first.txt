@@ -1,0 +1,18 @@
+# KIT-106 correction, failing first: fcbb06b4 with the new test-omic-da-module.R block and R/mod_omic_da.R at fcbb06b4 (no fix).
+# test_file(desc = the new block), load_all, MULTISCHOLAR_STRICT_SKIPS=1 (the file's local() blocks run as well).
+── 1. Failure ('test-omic-da-module.R:4722:9'): (KIT-106 correction, F106-06) th
+Expected `tag` to match string "sandbox=\"allow-scripts allow-same-origin allow-downloads\"".
+Actual text:
+x | <iframe srcdoc="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset=&quot;utf-8&quot;/&gt;&#10;&lt;title&gt;glimmaXY&lt;/title&gt;...
+trx in process
+
+── 2. Failure ('test-omic-da-module.R:4722:9'): (KIT-106 correction, F106-06) th
+Expected `tag` to match string "sandbox=\"allow-scripts allow-same-origin allow-downloads\"".
+Actual text:
+x | <iframe srcdoc="&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;&lt;meta charset=&quot;utf-8&quot;/&gt;&#10;&lt;title&gt;glimmaXY&lt;/title&gt;...
+lipid managed
+
+── 3. Error ('test-omic-da-module.R:4727:5'): (KIT-106 correction, F106-06) the
+Error in `omicDaVolcanoPageFrame(NULL)`: could not find function "omicDaVolcanoPageFrame"
+COUNTS test-omic-da-module.R pass 1124 fail 2 error 1 skip 0
+wall 259s
