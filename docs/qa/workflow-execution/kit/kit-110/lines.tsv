@@ -2,6 +2,7 @@ file	before_d5244ffe	after_23e75cf8
 R/mod_lipid_norm_server.R	14	13
 R/mod_lipid_norm_ui.R	30	21
 R/mod_omic_norm.R	464	537
+R/mod_omic_norm_panels.R	514	550
 R/mod_transcriptomics.R	87	83
 R/mod_trx_da.R	171	171
 R/mod_trx_norm.R	235	0
