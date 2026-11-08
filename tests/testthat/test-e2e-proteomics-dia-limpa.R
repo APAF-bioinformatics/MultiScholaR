@@ -63,7 +63,7 @@ test_that("E2E-006 DIA limpa workflow preserves imputation metadata through repo
     session_data <- session_artifacts$session_data
     # The export summary's Report Template is not checked: the native export reads it from globalParameters, which no
     # route sets since KIT-046 (the report step chooses the template by workflow type), so it reads NA on every route
-    # (KIT-104 W4 finding). The template is checked at the report below.
+    # (F104-01, queued to KIT-108). The template is checked at the report below.
     expect_identical(session_data$workflow_type, "DIA_LIMPA")
     expect_true(isTRUE(session_data$limpa_applied))
     expect_equal(session_data$final_sample_count, lane$sample_count)
@@ -102,15 +102,12 @@ test_that("E2E-006 DIA limpa workflow preserves imputation metadata through repo
       info = "DIA limpa workflow must not route through the canonical DIA report template"
     )
 
-    # KIT-104 W4 stop rule (F-25): the lane runs to the report download; the study_parameters content checks below
-    # still expect the legacy S4 path (report_template in globalParameters, a proteinMissingValueImputationLimpa args
-    # group). The native study_parameters has neither (the report step picks the template by workflow type; the DPC
-    # args are limpaDpcQuant and limpa_dpc_quant_results). The W4 correction pass was spent on the export summary, so
-    # these checks and the ones after them wait for the lead (kit-104/w4/e2e.txt).
-    skip("KIT-104 W4 (F-25): legacy study_parameters content checks; replacement pending (kit-104/w4/e2e.txt)")
+    # KIT-104 W4 (F-25): the native path's study parameters: the DPC-Quant args groups (limpaDpcQuant,
+    # limpa_dpc_quant_results), not the legacy proteinMissingValueImputationLimpa group or a template in
+    # globalParameters (the template is checked above by the copied report file; F104-01).
     study_parameters <- paste(readLines(file.path(paths$source_dir, "study_parameters.txt"), warn = FALSE), collapse = "\n")
-    expect_match(study_parameters, "DIANN_limpa_report.rmd", fixed = TRUE)
-    expect_match(study_parameters, "proteinMissingValueImputationLimpa", fixed = TRUE)
+    expect_match(study_parameters, "[limpaDpcQuant]", fixed = TRUE)
+    expect_match(study_parameters, "[limpa_dpc_quant_results]", fixed = TRUE)
     expect_match(study_parameters, "limpa_dpc_quant", fixed = TRUE)
 
     report_outputs <- list.files(
