@@ -1,0 +1,194 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-105",
+  "stage": "kit105-kit-journey-105c",
+  "date": "2026-11-08",
+  "dispatches": {
+    "trx_composite_figure": {
+      "requests": 2,
+      "complete": 2
+    },
+    "trx_da_contrast": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_da_tab_results": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_expression_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_filtering_metrics": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_integration_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_qc_figures": {
+      "requests": 5,
+      "complete": 5
+    },
+    "trx_ruv_grid": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_ruv_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_ruviii_export": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_ruvs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "trx_tmm_logcpm": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 765456384,
+    "phase_peak_anon_bytes": {
+      "import": 558735360,
+      "design": 580632576,
+      "expression_filter": 588910592,
+      "qc_finalize": 616493056,
+      "normalisation": 616599552,
+      "da": 607846400,
+      "ruviii_export": 612614144,
+      "report": 765456384,
+      "session_export": 665530368
+    }
+  },
+  "decision": {
+    "status": "accepted",
+    "rule": "exactness_and_completion",
+    "failing_rule": null,
+    "steps": ["import", "design", "expression_filter", "qc_finalize", "normalisation", "da", "ruviii_export", "report", "session_export"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "transcriptomics",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "trx_screen",
+    "build": "105a673f4e7234c36ca80bbbb0e09cc9deac700d38fe3b64bdb987a272b0b07e",
+    "status": "complete",
+    "exact": true,
+    "elapsed_seconds": 123.670000000013,
+    "peak_bytes": 2082402304,
+    "peak_anon_bytes": 2059722752,
+    "resident_end_bytes": 1036505088,
+    "phase_seconds": {
+      "import": 3.30999999999767,
+      "design": 14.2900000000081,
+      "expression_filter": 8.91999999999825,
+      "qc_finalize": 4.33000000000175,
+      "normalisation": 47.1100000000006,
+      "da": 13.7699999999895,
+      "ruviii_export": 14.7099999999919,
+      "report": 5.35000000000582,
+      "session_export": 0.270000000004075
+    },
+    "phase_peak_anon_bytes": {
+      "import": 926367744,
+      "design": 948264960,
+      "expression_filter": 1452101632,
+      "qc_finalize": 1379405824,
+      "normalisation": 2059722752,
+      "da": 1545760768,
+      "ruviii_export": 1624121344,
+      "report": 1357709312,
+      "session_export": 1036505088
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "expression_filter": "complete",
+      "qc_finalize": "complete",
+      "normalisation": "complete",
+      "da": "complete",
+      "ruviii_export": "complete",
+      "report": "complete",
+      "session_export": "complete"
+    },
+    "max_sample_interval": 0.0600000000122236,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process trx98a_<step> fingerprints (protocol v1.8 section 10)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "96667d0788575514b475ebf95ebb8ae490342e816a66005f5037f41bb556d403",
+        "rows": null
+      },
+      "design": {
+        "state": "trx_raw_data_s4",
+        "entity_id": "edfb7ded2ce4bd6bad98b3266e1f684ceb518dfc7ae170844e7ed929447117b4",
+        "rows": 6000
+      },
+      "expression_filter": {
+        "state": "trx_expression_filtered",
+        "entity_id": "a48709839013398b468f100fecb68c7ff1e44b8b7f4310dee2dedba8cf72e747",
+        "rows": 4565
+      },
+      "qc_finalize": {
+        "state": "trx_qc_complete",
+        "entity_id": "504162fcfb8ad54268ab9797b10659849051ebc27cf89199d89d130ab4cee35f",
+        "rows": 4565
+      },
+      "normalisation": {
+        "state": "trx_ruvs",
+        "entity_id": "a36e18a2d0f11469e093ebc5ea2892a884d7f3df5ca12bfe25096242aaba767d",
+        "rows": 4565
+      },
+      "da": {
+        "state": "trx_ruvs",
+        "entity_id": "a36e18a2d0f11469e093ebc5ea2892a884d7f3df5ca12bfe25096242aaba767d",
+        "rows": 4565
+      },
+      "ruviii_export": {
+        "state": "trx_ruvs",
+        "entity_id": "a36e18a2d0f11469e093ebc5ea2892a884d7f3df5ca12bfe25096242aaba767d",
+        "rows": 4565
+      },
+      "report": {
+        "state": "trx_ruvs",
+        "entity_id": "a36e18a2d0f11469e093ebc5ea2892a884d7f3df5ca12bfe25096242aaba767d",
+        "rows": 4565
+      },
+      "session_export": {
+        "state": "trx_ruvs",
+        "entity_id": "a36e18a2d0f11469e093ebc5ea2892a884d7f3df5ca12bfe25096242aaba767d",
+        "rows": 4565
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 101,
+    "failure": null
+  }
+}
