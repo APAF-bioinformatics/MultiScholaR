@@ -1,0 +1,30 @@
+# KIT-104 notes for phases C and D (W5, W6, W7), from the W1 to W4 reports (2026-11-08; the lead's copy)
+
+## The QC core (W2)
+- **Finalise check:** validateWorkflowOmicsQcFinalize(shell, config, binding), where config = omicGuiConfig(<omic>)$qc and binding = the declaration binding (class, data_slot). It takes three arguments because the class is not in the qc group. The mismatch text is 'Current <Class> object has assay/design mismatch: ' plus the errors joined by '; '. A qc config with no finalize_alignment is refused (omic_gui_config_invalid).
+- **QC action:** runWorkflowOmicsQcAction(binding, workflowData, step, deliver, draw, failed).
+  - deliver(result, figure), where result = list(value, reference). Call figure() where today's tab draws, inside its tryCatch that logs 'Could not generate QC plot:'.
+  - On a runner, figure() reads the worker's metrics; NULL metrics fail with 'the worker computed no filtering metrics'. In process, it draws from list(theObject = state).
+  - draw(arguments) should do.call the config's filtering_figure with step_name, omics_type, return_grid = TRUE and overwrite = TRUE.
+  - failed applies only on a runner; in-process errors propagate to the observer's tryCatch.
+- **ITSD:** analyzeWorkflowOmicsItsd(binding, manager, pattern, itsd) returns list(metrics, long_data, result_text, total, pattern, metrics_by_assay). When there is no long data, metab sets is_data_long to NULL while lipid kept the previous value. The core returns NULL, so the shared sub-tab chooses; metab's behaviour is recommended (it differs only when standards are found but no intensities can be read).
+- **Duplicates:** detectWorkflowOmicsDuplicates returns list(duplicates, total). total is an integer (lipid's was a double), with the same text. omicsDuplicateResolutionStats(value, assay_names).
+- **Missing state:** the core uses shiny::req(shell), as lipid and metab do.
+
+## Config wiring (lead at W8, or as each item lands)
+- finalize_alignment: lipid = function(shell) omicsQcFinalizeAlignment(shell, "lipidomics"); metab likewise with "metabolomics"; trx = trxDesignAlignment. These can be wired now.
+- trx filtering_figure = trxQcFilteringFigure, but only after W6 deletes the mod_trx_qc_filter.R copies (the srcref rule).
+- P-16 (W7): add DIA_LIMPA = "peptide_count_filtered" to proteomics qc$complete_state.
+
+## Lead decisions
+- **F104-04 (trx shell read):** use option 1. trx's finalise builds a structural shell from the stored count table's prototype plus the metadata's slots and design, assigned with @<- so no validity runs. It then runs the shared check. W6 implements it, test first; MCI-028.1, trx_screen and 104c must stay identical.
+- **P-16:** DIA_LIMPA's QC completes at peptide_count_filtered (W7). The prot_dia_limpa lane is re-frozen once from qc_protein_peptide_count onwards, with attribution in parity.md.
+
+## From W1, W3 and W4
+- **Component ids:** omic_qc_{intensity,duplicates,itsd,finalize}, trx_qc_filter, the 17 proteomics stems, and the group components prot_qc_peptide and prot_qc_protein.
+- **W1's gated tests:** omicQcPending("W5") or ("W6"). W5 removes its gate line; W6 removes the others. No skip is left after W6.
+- **Identity test (b):** it renders proteomics with state_manager = list(workflow_type = route), and freezes the output names (14 lipid/metab, 8 trx, prot only qc-dynamic_qc_tabs). Capture (d) mocks ggplot2::ggplot.
+- **Never regenerate NAMESPACE with roxygen2 8.0.0.** W7 keeps .peptideRollupSummaryFromObject and its roxygen block.
+- **The DIA_LIMPA e2e lane** now passes 79/0/0/0. It waits on R6 states, not on the QC tab status.
+- **Quarantine ids:** W5 drafts Q-56 to Q-65, W6 Q-66 to Q-79, W7 Q-80 to Q-85. The lead writes the rows.
+- **Scratch folders:** each agent uses .../scratchpad/kit-104-wN/.
