@@ -4,3 +4,4 @@ kit-journey-106c accepted failing none failed_step none error none
 kit-journey-106m accepted failing none failed_step none error none 
 kit-journey-106l accepted failing none failed_step none error none 
 kit-journey-106t accepted failing none failed_step none error none 
+kit-journey-106x accepted failing none failed_step none error none 
