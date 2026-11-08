@@ -1,0 +1,2 @@
+kit-journey-104a start 15:01:04 at 30b9e2cb: AC 1, profile low-power, battery 69%, load 2.19, available 27 GiB
+kit-journey-104a end 15:04:24: AC 1, profile low-power, battery 70%, load 1.87, available 27 GiB
