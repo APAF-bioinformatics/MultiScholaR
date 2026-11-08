@@ -1,0 +1,61 @@
+# KIT-104 W2 test first: tests/testthat/test-omics-qc-core.R (new), written before the QC core existed and run on the
+# start tree: HEAD 5f8cb531 (origin/performance-v2, W1), R/ unchanged. R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process; runner kit/scripts-078/run1.R (verbose); R_LIBS =
+# core/browser-smoke.yODoyT/library. Recorded 2026-11-08.
+
+COUNTS test-omics-qc-core.R pass 10 fail 6 error 13 skip 0
+# Every block fails (15 of 15). The passing expectations are today's sides of the comparisons (e.g. lipid's NULL-pattern
+# error, below).
+  BAD :: omicsQcCountsTable is today's lipid (inline) and metab (buildMetabIntensityFilterStats) table
+  BAD :: detectWorkflowOmicsDuplicates finds today's duplicates (lipid and metab detection)
+  BAD :: omicsDuplicateResolutionStats reads both products as today's lipid and metab resolutions do
+  BAD :: #9: metabolomicsDeclarationBinding$resolve_duplicates works through the moved resolveMetabDuplicateAssayData
+  BAD :: analyzeWorkflowOmicsItsd gives lipid's inline analysis: values, text and refusals
+  BAD :: F104 (W2): a NULL pattern is read as an empty one, as metab reads it (lipid's inline analysis errors)
+  BAD :: analyzeWorkflowOmicsItsd gives metab's analysis (analyzeMetabQcItsdData on readMetabQcItsdState)
+  BAD :: omicsItsdCvPlot and omicsItsdIntensityPlot are today's ITSD figures
+  BAD :: validateWorkflowOmicsQcFinalize is lipid's finalise validation: passes, refusals and their texts
+  BAD :: validateWorkflowOmicsQcFinalize for metab: today's passes and refusals, and the alignment (parity)
+  BAD :: omicsQcFinalizeAlignment is lipid's alignment call (validateLipidDesignAlignment with its arguments)
+  BAD :: trxDesignAlignment passes on the trx_screen shell and refuses what validateTrxDesign refuses
+  BAD :: runWorkflowOmicsQcAction in process: today's reference step, then the figure from the state read for it
+  BAD :: runWorkflowOmicsQcAction on a runner: the managed commit, then the figure from the worker's metrics
+  BAD :: trx's QC figure functions are in func_trx_qc_plots.R, text-identical to any module copy left
+# First message per block: 'could not find function' for omicsQcCountsTable, detectWorkflowOmicsDuplicates,
+# omicsDuplicateResolutionStats, analyzeWorkflowOmicsItsd (3 blocks), omicsItsdCvPlot, validateWorkflowOmicsQcFinalize
+# (2), omicsQcFinalizeAlignment, trxDesignAlignment, runWorkflowOmicsQcAction (2); #9: getSrcFilename is
+# "mod_metab_qc_duplicates_server_helpers.R", expected "func_metab_s4_qc_methods.R"; trx: the four names are absent
+# from func_trx_qc_plots.R.
+
+# Three expectations were corrected after the first implemented run, each to today's behaviour (no claim narrowed):
+#  - the lipid duplicate product is list(final, counts), not list(counts): the check is now that it holds `counts` and
+#    no `stats` (metab: holds `stats`);
+#  - another omic's state (lipid binding on a metab state, and the reverse for ITSD) is refused by today's readers
+#    before any class check (`no slot of name "lipid_id_column"`); the blocks now require the core's refusal to equal
+#    today's (handleLipidDuplicateDetection; analyzeMetabQcItsdData on readMetabQcItsdState) instead of a class text;
+#  - the in-process action's value carries `final`, the owner's own product reference, so it is compared by its names
+#    and its `counts` with the twin owner's runLipidReferenceIntensityFilter.
+
+## W2 finding A (proposed F104-NN; fixed, no methodology change): lipid's ITSD analysis errors on a NULL pattern
+# Today's mod_lipid_qc_itsd_server evaluates nzchar(input$is_pattern) (mod_lipid_qc_itsd.R:237), so a NULL input fails
+# with "argument is of length zero"; metab's (readMetabQcItsdState, analyzeMetabQcItsdData) reads NULL as empty and uses
+# the state's internal_standard_regex. Only a test session leaves the input NULL (the browser sends ""), so no
+# user-facing path changes. The shared analyzeWorkflowOmicsItsd takes metab's handling. Failing first: the block
+# "F104 (W2)" above (today's side, passing on the start tree: notification
+# "[error] Error analyzing internal standards: argument is of length zero"; the core's side: function absent).
+# After: analyzeWorkflowOmicsItsd(..., NULL, ...) is identical to analyzeWorkflowOmicsItsd(..., "", ...).
+
+## W2 finding B (not fixed: outside W2's files; a decision for the lead before W6): a trx state cannot be read as a shell
+# readWorkflowOmicsShell(transcriptomicsDeclarationBinding, owner) refuses every trx state. The shell's count table is
+# its zero-row prototype; rebuildDIACheckpointObject calls methods::new, which runs TranscriptomicsAssayData's validity
+# (trxAssayInputs -> validateTrxCounts); as.matrix() of a zero-row data frame is an NA logical array, so the policy
+# refuses with "counts must be numeric" (trx_counts_invalid). (A numeric zero-row matrix would be refused too, as
+# zero library sizes.) Probe on the trx_screen corpus (scratch, load_all, this tree):
+#   class(readWorkflowOmicsShell(...)) error: trx_counts_invalid, "counts must be numeric"
+#   the prototype seen by trxAssayInputs: 0 rows; 2 character columns (GeneID, GeneName), 12 numeric
+# Today no trx path reads a shell (trx's finalise reads the metadata: trxQcFinalizeCollaborators). The ticket's shared
+# finalise reads the shell for every omic (scientific contract: "finalise reads the shell"; D10 "the zero-row
+# prototype's sample columns"), so W6's trx finalise would refuse every trx state, the aligned ones included (MCI-028.1,
+# the trx_screen entry lane, 103c/104c). trxDesignAlignment and validateWorkflowOmicsQcFinalize take a shell and are
+# tested on a structural one (the object with its zero-row prototype and stored row count, built with `@<-`, which
+# runs no validity). Options are in the W2 report (parked).

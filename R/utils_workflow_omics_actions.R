@@ -190,6 +190,38 @@ readWorkflowOmicsFilteringMetrics <- function(manager, result) {
     resolveWorkflowStateValue(manager$.context, reference)
 }
 
+#' A QC step that commits a state and draws the filtering-progress figure (KIT-104 D6; the intensity filter and the
+#' duplicate resolution, mod_lipid_qc_intensity_server_helpers.R:241-260 and mod_lipid_qc_duplicates_server_helpers.R
+#' :256-268, the same in metab). On a runner: the managed commit, and the figure from the worker's metrics. In process:
+#' the reference step, and the figure from the committed state read for this action only. The tab holds no object.
+#' @param binding The omic's declaration binding.
+#' @param workflowData The omic's bus (`state_manager`, `config_list`).
+#' @param step `omicsIntensityFilterStep` or `omicsDuplicateResolutionStep`.
+#' @param deliver `function(result, figure)`: `result` is `list(value, reference)`, the declaration's value and the
+#'   committed state's reference; `figure()` draws the figure, when the tab draws it.
+#' @param draw `function(arguments)` drawing the figure from `list(theObject =)` or `list(theObject = NULL, metrics =)`.
+#' @param failed `function(error)` for a managed action's failure (the step has reported it). In process an error is
+#'   raised to the caller, as the tabs' observers handle it.
+#' @noRd
+runWorkflowOmicsQcAction <- function(binding, workflowData, step, deliver, draw, failed = NULL) {
+    runner <- workflowOmicsManagedActions(binding$omic_type)
+    if (!is.null(runner)) {
+        runner$run(list(omicsManagedCommit(step, workflowData$config_list, function(result) {
+            deliver(list(value = result$value, reference = result$stateReference), function() {
+                metrics <- readWorkflowOmicsFilteringMetrics(workflowData$state_manager, result)
+                if (is.null(metrics)) stop("the worker computed no filtering metrics")
+                draw(list(theObject = NULL, metrics = metrics))
+            })
+        })), failed = failed)
+        return(invisible(NULL))
+    }
+    run <- runWorkflowOmicsReferenceStep(workflowData$state_manager, step, workflowData$config_list)
+    deliver(list(value = run$value, reference = run$reference), function() {
+        draw(list(theObject = readWorkflowOmicsState(binding, workflowData$state_manager, run$reference)))
+    })
+    invisible(NULL)
+}
+
 #' The ITSD selection's feature ids from the candidates the tab's tables showed: the table's row indices per assay, read
 #' without the matrix (`itsd_candidate_ids`, kept when the tables are built).
 #' @return Feature ids per assay with a selection, or NULL with none.

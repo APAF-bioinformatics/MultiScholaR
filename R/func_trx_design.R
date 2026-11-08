@@ -84,6 +84,29 @@ trxDesignCheck <- function(results, columnMapping) {
     }, trx_error = function(error) list(valid = FALSE, errors = trxConditionText(error)))
 }
 
+#' KIT-104 D10. The QC finalise's alignment for trx: KIT-093's design check (`validateTrxDesign`) on the count table's
+#' sample columns, taken from the shell's zero-row prototype as `trxAssayInputs` takes them, and the recorded level
+#' order (`args$group_levels`). It refuses what every other trx step refuses.
+#' @param shell The head state's shell (one count table, possibly with no rows).
+#' @return `list(valid, errors)`, the errors as the tab shows them (`trxConditionText`).
+#' @noRd
+trxDesignAlignment <- function(shell) {
+    tryCatch({
+        tables <- shell@count_data
+        if (length(tables) != 1L || !is.data.frame(tables[[1L]])) {
+            trxAbort("count_data must hold exactly one count table", c("trx_counts_invalid", "trx_error"))
+        }
+        ids <- c(shell@gene_id_column, shell@annotation_id_column)
+        if (!all(ids %in% names(tables[[1L]]))) {
+            trxAbort(sprintf("the count table lacks the column(s) %s", paste(setdiff(ids, names(tables[[1L]])), collapse = ", ")),
+                c("trx_counts_invalid", "trx_error"))
+        }
+        validateTrxDesign(setdiff(names(tables[[1L]]), ids), shell@design_matrix, shell@args$group_levels, shell@sample_id,
+            shell@group_id)
+        list(valid = TRUE, errors = character())
+    }, trx_error = function(error) list(valid = FALSE, errors = trxConditionText(error)))
+}
+
 #' The design state's object: the builder's count table and design, the recorded level order, the chosen id and name
 #' columns, and the builder's `tech_rep_group` as the technical replicates.
 #' @noRd

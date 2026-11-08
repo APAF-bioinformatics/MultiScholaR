@@ -43,3 +43,48 @@ trxRleStats <- function(mat, design) {
     buffer <- (ylim_vals[2] - ylim_vals[1]) * 0.05
     list(rle_matrix = rle_long, rle_whiskers = whiskers, rle_ylim = c(ylim_vals[1] - buffer, ylim_vals[2] + buffer))
 }
+
+# KIT-104 W2: the expression-filter sub-tab's statistics, text, table and figure, moved unchanged with their names from
+# R/mod_trx_qc_filter.R (:29-65) for the QC core and the trx configuration (`filtering_figure`). They are defined there
+# too until KIT-104 W6 deletes the module copies (KIT-103 W2's precedent for the trx design functions).
+
+#' The raw-logCPM PCA and RLE statistics of a state (the `trx_qc_figures` operation's stage `raw`, in process).
+#' @noRd
+trxQcRawStats <- function(object) {
+    x <- trxAssayInputs(object)
+    design <- trxFigureDesign(x)
+    raw <- trxTmmLogCpm(x$counts, x$design$group)$log_cpm_raw
+    list(pca = trxPcaStats(raw, design), rle = trxRleStats(raw, design))
+}
+
+#' The filter's result text: the genes at each step, the zero-variance step named.
+#' @noRd
+trxQcFilterText <- function(counts) {
+    paste("Expression Filter Applied", "=========================", "filterByExpr on TMM-scaled library sizes, then zero-variance genes removed",
+        "", sprintf("Genes before filtering: %d", counts$before), sprintf("After filterByExpr: %d", counts$after_filter_by_expr),
+        sprintf("After the Zero-variance step: %d", counts$after_zero_variance), "", "State saved as: 'trx_expression_filtered'", sep = "\n")
+}
+
+#' The per-run metrics table: library size and genes detected.
+#' @noRd
+trxQcMetricsTable <- function(metrics) {
+    data.frame(Run = names(metrics$library_size), `Library size` = unname(metrics$library_size),
+        `Genes detected` = unname(metrics$detected_genes), check.names = FALSE, stringsAsFactors = FALSE)
+}
+
+#' The filtering progress figure from the counts and the metrics: the genes at each step (when given), and per run the
+#' library size and the genes detected.
+#' @return A ggplot.
+#' @noRd
+trxQcFilteringFigure <- function(counts, metrics) {
+    panel <- function(name, x, value) data.frame(panel = name, x = x, value = as.numeric(value), stringsAsFactors = FALSE)
+    rows <- rbind(if (!is.null(counts)) panel("Genes retained by step", c("Before", "filterByExpr", "Zero variance"), unlist(counts)),
+        panel("Library size per run", names(metrics$library_size), metrics$library_size),
+        panel("Genes detected per run", names(metrics$detected_genes), metrics$detected_genes))
+    rows$x <- factor(rows$x, levels = unique(rows$x))
+    rows$panel <- factor(rows$panel, levels = unique(rows$panel))
+    ggplot2::ggplot(rows, ggplot2::aes(x = .data$x, y = .data$value)) + ggplot2::geom_col(fill = "steelblue") +
+        ggplot2::facet_wrap(ggplot2::vars(.data$panel), scales = "free", ncol = 1) + ggplot2::labs(x = NULL, y = NULL) +
+        ggplot2::theme_bw() + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
+}
+

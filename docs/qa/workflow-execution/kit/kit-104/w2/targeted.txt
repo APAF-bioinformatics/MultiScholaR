@@ -1,0 +1,55 @@
+# KIT-104 W2 targeted tests, after the implementation: the QC core (R/func_omics_qc_shared.R,
+# R/utils_workflow_omics_actions.R, R/func_trx_design.R, R/func_trx_qc_plots.R), back-reference #9 moved
+# (R/func_metab_s4_qc_methods.R; removed from R/mod_metab_qc_duplicates_server_helpers.R), and
+# tests/testthat/test-omics-qc-core.R (new). Base 5f8cb531 (origin/performance-v2, W1). R 4.6.1, pkgload::load_all
+# (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence; runner
+# kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.yODoyT/library. Recorded 2026-11-08. No R CMD check,
+# no install, no journeys, no e2e. No new R file, so Collate is unchanged.
+
+## The work item's tests and the ticket's targeted files
+COUNTS test-omics-qc-core.R pass 134 fail 0 error 0 skip 0 exit=0 elapsed=77s     (test first: 10/6/13, every block failing)
+COUNTS test-omic-qc-module.R pass 24 fail 0 error 0 skip 4 exit=0 elapsed=27s     (= W1; the 4 skips are W1's gated blocks, W5/W6)
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0 exit=0 elapsed=36s  (= W1)
+COUNTS test-module-ci-metab-qc.R pass 64 fail 0 error 0 skip 0 exit=0 elapsed=33s  (= W1)
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0 exit=0 elapsed=41s    (= W1)
+COUNTS test-omic-gui-config.R pass 765 fail 0 error 0 skip 0 exit=0 elapsed=15s    (= W1)
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0 exit=0 elapsed=58s
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0 exit=0 elapsed=62s
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0 exit=0 elapsed=136s
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0 exit=0 elapsed=459s  (= kit-101 baseline 283)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0 exit=0 elapsed=545s  (= W1, baseline 230)
+
+## The dependents grep
+# Names: resolveMetabDuplicateAssayData (moved, name kept) and the four trx names (copied, module copies kept).
+# Paths: R/mod_metab_qc_duplicates_server_helpers.R and the five edited core files. Whole words / fixed strings over R/,
+# tests/, tools/ (tools/refactor excluded), inst/ and DESCRIPTION. Hits outside the edited files:
+#   R/utils_workflow_metab_declarations.R:52,54,87 (the binding's caller and its comments: resolves in the namespace);
+#   R/utils_omic_gui_config.R:960 (a provenance comment citing mod_metab_qc_duplicates_server_helpers.R:418 at
+#     b423b764; the notification id is now at :366 after the 52 removed lines. Comment only; the lead's file);
+#   DESCRIPTION:247 (Collate, the file stays);
+#   tests: test-metab-01p (loads selected symbols from the module file; the name now resolves from the namespace),
+#   test-metab-01u, test-module-ci-metab-qc, test-omics-audit-carry-overs (by name in the namespace),
+#   test-omics-module-globals (`<<-` allow-list: func_metab_s4_qc_methods.R is already listed); the characterisation
+#   files that parse the edited core files: test-metab-01b, 01j, 01k, 01m, 01n, 02t, 02u, 02v, test-omics-design-core;
+#   test-module-ci-trx-qc (the trx names).
+COUNTS test-metab-01p-qc-duplicates-module-characterization.R pass 228 fail 0 error 0 skip 1 exit=0 elapsed=11s  (baseline 228, 1 KIT-072 quarantine skip)
+COUNTS test-metab-01u-qc-duplicates-module-characterization.R pass 50 fail 0 error 0 skip 0 exit=0 elapsed=15s    (baseline 50)
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0 exit=0 elapsed=7s                                (baseline 14)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0 exit=0 elapsed=12s
+COUNTS test-metab-01b-qc-filtering-helpers-characterization.R pass 9 fail 0 error 0 skip 0 exit=0 elapsed=7s      (baseline 9)
+COUNTS test-metab-01j-s4-pearson-correlation-characterization.R pass 12 fail 0 error 0 skip 0 exit=0 elapsed=7s   (baseline 12)
+COUNTS test-metab-01k-s4-plot-pearson-characterization.R pass 17 fail 0 error 0 skip 0 exit=0 elapsed=7s          (baseline 17)
+COUNTS test-metab-01m-s4-resolve-duplicate-intensity-characterization.R pass 17 fail 0 error 0 skip 0 exit=0 elapsed=7s (baseline 17)
+COUNTS test-metab-01n-s4-find-duplicate-feature-ids-characterization.R pass 20 fail 0 error 0 skip 0 exit=0 elapsed=7s  (baseline 20)
+COUNTS test-metab-02t-metabolite-intensity-filtering-characterization.R pass 14 fail 0 error 0 skip 0 exit=0 elapsed=8s (baseline 14)
+COUNTS test-metab-02u-resolve-duplicate-features-characterization.R pass 17 fail 0 error 0 skip 0 exit=0 elapsed=7s     (baseline 17)
+COUNTS test-metab-02v-sample-correlation-filter-characterization.R pass 13 fail 0 error 0 skip 0 exit=0 elapsed=7s      (baseline 13)
+COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10 exit=0 elapsed=17s  (the 10 skips are the Q-35/Q-37 quarantines)
+# (baseline = docs/qa/workflow-execution/kit/kit-101/test-baseline.tsv, load_all.)
+
+## The parse-data back-reference count (functions defined at top level in R/mod_*.R that appear as a SYMBOL or
+## SYMBOL_FUNCTION_CALL in R/utils_workflow_*.R or R/func_*.R; names also defined in those core files excluded)
+# Before (5f8cb531): 29. After: 28. The one that left is #9, resolveMetabDuplicateAssayData (utils_workflow_metab_
+# declarations.R:54 now calls func_metab_s4_qc_methods.R). No new back-reference: the W2 core calls nothing defined in
+# R/mod_*.R (the four trx names are also defined in func_trx_qc_plots.R, so they are excluded until W6 deletes the
+# module copies).
