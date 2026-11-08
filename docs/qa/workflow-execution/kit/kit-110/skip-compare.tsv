@@ -1,0 +1,10 @@
+=== load_all
+files 104 393 105 45; passed 30645 -> 5881; failed 0 -> 0; error blocks 2 -> 0
+file	change	detail	Q-ids in file
+test-trx-norm-core.R	new file	passed 58 failed 0 errors 0 skips 0	
+test-trx-norm-module.R	new file	passed 89 failed 0 errors 0 skips 0	
+=== check
+files 104 393 105 45; passed 22560 -> 5132; failed 149 -> 9; error blocks 393 -> 10
+file	change	detail	Q-ids in file
+test-trx-norm-core.R	new file	passed 49 failed 0 errors 0 skips 0	
+test-trx-norm-module.R	new file	passed 89 failed 0 errors 0 skips 0	

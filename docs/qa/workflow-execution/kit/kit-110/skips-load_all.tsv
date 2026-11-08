@@ -1,0 +1,46 @@
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-ci-impact-audit.R	load_all	2	2	0	26	26	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	9	complete
+test-ci-impact-e2e.R	load_all	2	2	0	10	10	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	8.2	complete
+test-ci-impact-router.R	load_all	5	5	0	27	27	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	8.7	complete
+test-lipid-12a-norm-module-characterization.R	load_all	8	8	0	10	5	0	0	5	0	5	FALSE			FALSE		0	0	0	5	0	0	8.7	complete
+test-lipid-12-norm-module-contracts.R	load_all	69	0	69	0	0	0	0	0	0	1	TRUE	quarantined: Q-95 (KIT-105 W4) it sources the six lipid norm helper files W4 deleted (mod_lipid_norm_{server,runtime,observer,support,ui,workflow}_helpers.R; its file guard names them) and tests their 69 seams; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps	quarantine	FALSE		0	0	0	1	0	0	5.4	complete
+test-metab-03b-norm-module-helper-characterization.R	load_all	113	0	113	0	0	0	0	0	0	1	TRUE	quarantined: Q-105 (KIT-105 W5) its symbol loader parses the five metab norm helper files W5 deleted (mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R) and tests 75 of their functions in 113 blocks; with the files gone the loader would load nothing silently, so the file is skipped here by name; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps	quarantine	FALSE		0	0	0	1	0	0	5.3	complete
+test-metab-03c-norm-module-seams.R	load_all	4	0	4	0	0	0	0	0	0	1	TRUE	quarantined: Q-106 (KIT-105 W5) it sys.sources the five metab norm helper files W5 deleted (mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R) with mod_metab_norm_server.R and tests the server shell's seams in 4 blocks; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps	quarantine	FALSE		0	0	0	1	0	0	5.2	complete
+test-metab-03d-norm-module-characterization.R	load_all	11	11	0	16	13	0	0	3	0	3	FALSE			FALSE		0	0	0	3	0	0	33	complete
+test-module-ci-lipid-design.R	load_all	6	6	0	109	109	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	10.5	complete
+test-module-ci-lipid-import.R	load_all	6	6	0	174	173	0	0	0	1	0	FALSE			FALSE		0	0	0	0	0	0	12.5	complete
+test-module-ci-lipid-norm.R	load_all	6	6	0	153	153	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	49.3	complete
+test-module-ci-lipid-qc.R	load_all	7	7	0	68	68	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	33.8	complete
+test-module-ci-manifest.R	load_all	3	3	0	33	33	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	5	complete
+test-module-ci-metab-design.R	load_all	6	6	0	96	96	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	9.5	complete
+test-module-ci-metab-import.R	load_all	7	7	0	91	91	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	12.2	complete
+test-module-ci-metab-norm.R	load_all	6	6	0	153	153	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	50.8	complete
+test-module-ci-metab-qc.R	load_all	7	7	0	64	63	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	35.8	complete
+test-module-ci-prot-import.R	load_all	7	7	0	107	107	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	6.3	complete
+test-module-ci-trx-app.R	load_all	4	4	0	48	48	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	34.7	complete
+test-module-ci-trx-da.R	load_all	4	4	0	50	50	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	86.4	complete
+test-module-ci-trx-design.R	load_all	6	6	0	71	71	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	22.1	complete
+test-module-ci-trx-import.R	load_all	5	5	0	96	96	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	8.2	complete
+test-module-ci-trx-norm.R	load_all	4	4	0	61	61	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	72.7	complete
+test-module-ci-trx-qc.R	load_all	7	7	0	38	38	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	37.4	complete
+test-module-ci-trx-summary.R	load_all	5	5	0	70	70	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	114.5	complete
+test-omic-design-module.R	load_all	19	19	0	146	146	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	17.7	complete
+test-omic-gui-config.R	load_all	18	18	0	1065	1065	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	15.8	complete
+test-omic-norm-module.R	load_all	19	19	0	547	547	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	189.5	complete
+test-omic-qc-module.R	load_all	18	18	0	158	158	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	59	complete
+test-omics-audit-carry-overs.R	load_all	8	8	0	20	20	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	9.4	complete
+test-omics-design-core.R	load_all	18	18	0	62	52	0	0	10	0	10	FALSE			FALSE		0	0	0	10	0	0	13.8	complete
+test-omics-norm-core.R	load_all	20	20	0	76	62	0	0	14	0	14	FALSE			FALSE		0	0	0	14	0	0	60.7	complete
+test-omics-qc-core.R	load_all	15	15	0	42	32	0	0	10	0	10	FALSE			FALSE		0	0	0	10	0	0	19.1	complete
+test-prot-01c-import-module-contracts.R	load_all	54	54	0	427	427	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	10.6	complete
+test-trx-norm-core.R	load_all	5	5	0	58	58	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	38.3	complete
+test-trx-norm-module.R	load_all	5	5	0	89	89	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	65.4	complete
+test-trx-publication.R	load_all	2	2	0	178	174	0	0	0	4	0	FALSE			FALSE		0	0	0	0	0	0	37.4	complete
+test-workflow-omics-application-reads.R	load_all	18	27	0	230	230	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	417.1	complete
+test-workflow-omics-import.R	load_all	13	13	0	32	24	0	0	8	0	8	FALSE			FALSE		0	0	0	8	0	0	5.8	complete
+test-workflow-omics-residency.R	load_all	6	7	0	97	97	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	199	complete
+test-workflow-omics-sessions.R	load_all	4	8	0	150	150	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	28.8	complete
+test-workflow-omics-worker.R	load_all	7	7	0	283	283	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	347.5	complete
+test-workflow-server-shared.R	load_all	7	7	0	204	204	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	6.8	complete
+test-workflow-trx-declarations.R	load_all	7	7	0	324	324	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	106.6	complete
+test-workflow-ui-shared.R	load_all	6	6	0	178	178	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	6.9	complete

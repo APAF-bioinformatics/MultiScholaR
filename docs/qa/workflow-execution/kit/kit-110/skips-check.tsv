@@ -1,0 +1,46 @@
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-ci-impact-audit.R	check	2	2	0	6	0	2	2	0	4	0	FALSE			FALSE		0	0	0	0	0	0	2.3	complete
+test-ci-impact-e2e.R	check	2	2	0	6	0	2	2	0	4	0	FALSE			FALSE		0	0	0	0	0	0	2.2	complete
+test-ci-impact-router.R	check	5	5	0	15	0	5	5	0	10	0	FALSE			FALSE		0	0	0	0	0	0	2.3	complete
+test-lipid-12a-norm-module-characterization.R	check	8	8	0	10	5	0	0	5	0	5	FALSE			FALSE		0	0	0	5	0	0	3.1	complete
+test-lipid-12-norm-module-contracts.R	check	69	0	69	0	0	0	0	0	0	1	TRUE	quarantined: Q-95 (KIT-105 W4) it sources the six lipid norm helper files W4 deleted (mod_lipid_norm_{server,runtime,observer,support,ui,workflow}_helpers.R; its file guard names them) and tests their 69 seams; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-021, test-omics-norm-core.R and the lipid_canonical norm steps	quarantine	FALSE		0	0	0	1	0	0	2.1	complete
+test-metab-03b-norm-module-helper-characterization.R	check	113	0	113	0	0	0	0	0	0	1	TRUE	quarantined: Q-105 (KIT-105 W5) its symbol loader parses the five metab norm helper files W5 deleted (mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R) and tests 75 of their functions in 113 blocks; with the files gone the loader would load nothing silently, so the file is skipped here by name; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps	quarantine	FALSE		0	0	0	1	0	0	2.1	complete
+test-metab-03c-norm-module-seams.R	check	4	0	4	0	0	0	0	0	0	1	TRUE	quarantined: Q-106 (KIT-105 W5) it sys.sources the five metab norm helper files W5 deleted (mod_metab_norm_{session,pipeline,render,binding,entry}_helpers.R) with mod_metab_norm_server.R and tests the server shell's seams in 4 blocks; the tab is the shared frame mod_omic_norm.R and panel library mod_omic_norm_panels.R over the W2 core, covered by test-omic-norm-module.R (a) to (c), MCI-015, test-omics-norm-core.R and the metab_lc, metab_gc and metab_combined norm steps	quarantine	FALSE		0	0	0	1	0	0	2.1	complete
+test-metab-03d-norm-module-characterization.R	check	11	11	0	16	13	0	0	3	0	3	FALSE			FALSE		0	0	0	3	0	0	23.6	complete
+test-module-ci-lipid-design.R	check	6	6	0	109	109	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	4.9	complete
+test-module-ci-lipid-import.R	check	6	6	0	174	173	0	0	0	1	0	FALSE			FALSE		0	0	0	0	0	0	7.4	complete
+test-module-ci-lipid-norm.R	check	6	6	0	153	153	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	38.5	complete
+test-module-ci-lipid-qc.R	check	7	7	0	68	68	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	24.4	complete
+test-module-ci-manifest.R	check	3	3	0	33	33	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	2	complete
+test-module-ci-metab-design.R	check	6	6	0	96	96	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	4.4	complete
+test-module-ci-metab-import.R	check	7	7	0	91	91	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	6.7	complete
+test-module-ci-metab-norm.R	check	6	6	0	153	153	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	40.9	complete
+test-module-ci-metab-qc.R	check	7	7	0	64	63	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	26.3	complete
+test-module-ci-prot-import.R	check	7	7	0	107	107	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	2.8	complete
+test-module-ci-trx-app.R	check	4	4	0	48	48	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	29	complete
+test-module-ci-trx-da.R	check	4	4	0	17	14	0	0	3	0	3	FALSE			FALSE		0	0	0	0	0	3	2.1	complete
+test-module-ci-trx-design.R	check	6	6	0	71	71	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	14.4	complete
+test-module-ci-trx-import.R	check	5	5	0	96	96	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	3.8	complete
+test-module-ci-trx-norm.R	check	4	4	0	20	17	0	0	3	0	3	FALSE			FALSE		0	0	0	0	0	3	2.3	complete
+test-module-ci-trx-qc.R	check	7	7	0	33	32	0	0	1	0	1	FALSE			FALSE		0	0	0	0	0	1	17.7	complete
+test-module-ci-trx-summary.R	check	5	5	0	14	10	0	0	4	0	4	FALSE			FALSE		0	0	0	0	0	4	2.1	complete
+test-omic-design-module.R	check	19	19	0	146	146	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	11.9	complete
+test-omic-gui-config.R	check	18	18	0	1035	1034	0	0	1	0	1	FALSE			FALSE		0	0	0	0	0	1	11.2	complete
+test-omic-norm-module.R	check	19	19	0	542	542	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	168.2	complete
+test-omic-qc-module.R	check	18	18	0	141	141	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	47.5	complete
+test-omics-audit-carry-overs.R	check	8	8	0	20	20	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	6.2	complete
+test-omics-design-core.R	check	18	18	0	62	52	0	0	10	0	10	FALSE			FALSE		0	0	0	10	0	0	8.5	complete
+test-omics-norm-core.R	check	20	20	0	70	56	0	0	14	0	14	FALSE			FALSE		0	0	0	14	0	0	53.7	complete
+test-omics-qc-core.R	check	15	15	0	38	27	0	1	10	1	10	FALSE			FALSE		0	0	0	10	0	0	11.7	complete
+test-prot-01c-import-module-contracts.R	check	54	54	0	427	427	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	5.8	complete
+test-trx-norm-core.R	check	5	5	0	49	49	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	34.9	complete
+test-trx-norm-module.R	check	5	5	0	89	89	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	56.8	complete
+test-trx-publication.R	check	2	2	0	2	0	0	0	2	0	2	FALSE			FALSE		0	0	0	0	0	2	2.1	complete
+test-workflow-omics-application-reads.R	check	18	27	0	218	216	0	0	2	0	2	FALSE			FALSE		0	0	0	0	0	2	300	complete
+test-workflow-omics-import.R	check	13	13	0	32	24	0	0	8	0	8	FALSE			FALSE		0	0	0	8	0	0	2.3	complete
+test-workflow-omics-residency.R	check	6	7	0	19	16	0	0	3	0	3	FALSE			FALSE		0	0	0	0	3	0	4.7	complete
+test-workflow-omics-sessions.R	check	4	8	0	150	150	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	20.2	complete
+test-workflow-omics-worker.R	check	7	7	0	283	283	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	292.9	complete
+test-workflow-server-shared.R	check	7	7	0	204	204	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	3.5	complete
+test-workflow-trx-declarations.R	check	7	7	0	132	126	0	0	6	0	6	FALSE			FALSE		0	0	0	0	0	6	2.3	complete
+test-workflow-ui-shared.R	check	6	6	0	178	178	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	3.2	complete
