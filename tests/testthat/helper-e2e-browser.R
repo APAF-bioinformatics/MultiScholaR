@@ -1318,9 +1318,57 @@ e2e_run_prot_dia_qc <- function(
 }
 
 e2e_run_prot_dia_limpa_qc <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
-  # KIT-046: the limpa route is the DIA_LIMPA workflow type chosen at import (`dia_route`); its QC steps are
-  # declared by KIT-047 and KIT-041, so there is no browser path to drive yet.
-  testthat::skip("DIA_LIMPA route: the peptide and protein stages are declared in KIT-047 and KIT-041")
+  # KIT-104 F-25: the DIA_LIMPA route's seven sub-tabs (getProtQc{Peptide,Protein}ModuleSpecs("DIA_LIMPA")) by the
+  # journey driver's action ids (workflow_kit_driver.R), at their defaults as the entry lane runs them, each waited on
+  # its R6 state. The lane waits on the route's last QC state, peptide_count_filtered, never on the QC tab status
+  # (KIT-104 D12; P-16).
+  qc <- function(input) e2e_input_id("proteomics", "qc", input)
+  groups <- list(
+    list(title = "Peptide QC", tabs = "peptide_qc-peptide_filter_tabs", steps = list(
+      list(tab = "Q-Value Filter", action = "peptide_qc-qvalue_filter-apply_qvalue_filter", state = "qvalue_filtered"),
+      list(tab = "Precursor Rollup", action = "peptide_qc-rollup-apply_rollup", state = "precursor_rollup"),
+      list(tab = "Log2 Matrix", action = "peptide_qc-log2_matrix-apply_log2_matrix", state = "log2_matrix"),
+      list(tab = "Peptide Accession Cleanup", action = "peptide_qc-accession_cleanup-apply_peptide_accession",
+        state = "peptide_accession_cleaned"))),
+    list(title = "Protein QC", tabs = "protein_qc-protein_filter_tabs", steps = list(
+      list(tab = "DPC Quantification", action = "protein_qc-dpc_quant-apply_dpc_quant", state = "protein_dpc_quant"),
+      list(tab = "Between-Sample Normalisation", action = "protein_qc-normalisation-apply_protein_normalisation",
+        state = "protein_normalised"),
+      list(tab = "Peptide Count Filter", action = "protein_qc-peptide_count-apply_peptide_count",
+        state = "peptide_count_filtered"))))
+
+  e2e_switch_workflow_tab(driver, "proteomics", "quality_control")
+  e2e_wait_for_selector(driver, "prot-tab-qc", timeout = timeout)
+  for (group in groups) {
+    e2e_set_input_and_idle(driver, qc("qc_tabs_lfq"), group$title, timeout = timeout)
+    for (step in group$steps) {
+      e2e_set_input_and_idle(driver, qc(group$tabs), step$tab, timeout = timeout)
+      e2e_click_input_id(driver, qc(step$action), timeout = timeout)
+      e2e_wait_for_r6_state(driver, "proteomics", step$state, timeout = timeout)
+    }
+  }
+  invisible(driver)
+}
+
+e2e_run_prot_dia_limpa_normalization_export <- function(driver, timeout = .E2E_BROWSER_DEFAULT_TIMEOUT) {
+  # KIT-104 F-25: the DIA_LIMPA normalisation as the entry lane runs it (guiEntryProtSteps): the run at the tab's
+  # defaults (the route sets the RUV mode to covariates), the correlation filter at 0.5, the RUV-III covariates, then
+  # the session export, waited on its notification.
+  norm <- function(input) e2e_input_id("proteomics", "norm", input)
+  e2e_switch_workflow_tab(driver, "proteomics", "normalization")
+  e2e_wait_for_selector(driver, "prot-tab-normalization", timeout = timeout)
+  e2e_click_testid(driver, "prot-norm-run", timeout = timeout)
+  e2e_set_input_and_idle(driver, norm("norm_qc_tabs"), "Correlation Filtering", timeout = timeout)
+  e2e_set_input_and_idle(driver, norm("min_pearson_correlation_threshold"), 0.5, timeout = timeout)
+  e2e_click_input_id(driver, norm("apply_correlation_filter"), timeout = timeout)
+  e2e_wait_for_r6_state(driver, "proteomics", "correlation_filtered", timeout = timeout)
+  e2e_click_input_id(driver, norm("apply_ruv_covariates"), timeout = timeout)
+  e2e_wait_for_r6_state(driver, "proteomics", "ruv_covariates", timeout = timeout)
+  e2e_click_norm_export(driver, "proteomics")
+  e2e_wait_for_js(driver, sprintf(
+    "Array.from(document.querySelectorAll('.shiny-notification')).some(function(n){return (n.textContent||'').indexOf(%s)!==-1;})",
+    jsonlite::toJSON("Filtered session data exported successfully!", auto_unbox = TRUE)), timeout = timeout)
+  invisible(driver)
 }
 
 e2e_run_prot_normalization_export <- function(

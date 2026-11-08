@@ -1,0 +1,34 @@
+# KIT-104 W4 (F-25) test first: the DIA_LIMPA e2e lane with the QC skip removed and the old checks.
+# Start commit 5f8cb531 (origin/performance-v2), R 4.6.1, run in development: the test process load_all's the worktree
+# (kit/scripts-078/run1.R <tree> <file> x), the app process load_all's the same source (e2e_launch_spec run_app);
+# R_LIBS = core/browser-smoke.yODoyT/library (dependencies only); NOT_CRAN=true CHROMOTE_CHROME=/usr/bin/brave;
+# systemd-inhibit idle:sleep; timeout 1800 s. Power profile: power-saver (unchanged). 2026-11-08T10:39+11:00.
+
+## The lane as run (diff against 5f8cb531)
+- helper-e2e-browser.R: `e2e_run_prot_dia_limpa_qc` no longer skips; it drives the seven DIA_LIMPA sub-tabs by DOM id
+  (the journey driver's action ids) and waits on each R6 state. New `e2e_run_prot_dia_limpa_normalization_export`
+  (the entry lane's normalisation: run, correlation filter at 0.5, RUV-III covariates, export).
+- test-e2e-proteomics-dia-limpa.R: the import chooses `setup_import-dia_route` = DIA_LIMPA; the normalisation calls the
+  new helper. Everything else is the old lane: the import's `workflow_types = DIA`, the wait on the QC tab status, and the
+  legacy export checks (`workflow_type` "DIA", `use_limpa`, `current_s4_object@args`, limpa_parameters.RDS,
+  limpa_dpc_quant_results.RDS).
+
+## Result
+COUNTS test-e2e-proteomics-dia-limpa.R pass 10 fail 0 error 1 skip 0 (exit 0, wall 19 s)
+  BAD :: E2E-006 DIA limpa workflow preserves imputation metadata through report generation
+  Error: Expected `digest$workflow_type_per_omic[[omic]]` to be identical to `workflow_types[[omic]]`.
+    actual: "DIA_LIMPA"   expected: "DIA"
+
+## Where it fails, and why
+- The first legacy check fails at the import: with the route chosen, the workflow type is DIA_LIMPA (KIT-046: the limpa
+  route is a workflow type of its own), and the lane still expected "DIA". e2e_with_failure_artifacts turns the first
+  failed expectation into an error, so the later legacy checks are not reached in the same run.
+- The later legacy checks cannot pass on the native export either (read from the source, recorded, not run):
+  - the QC tab status stays `pending` on DIA_LIMPA at every step (entry oracle prot_dia_limpa; KIT-101 F-20; P-16);
+  - the export summary's Workflow Type is the store identity, DIA_LIMPA (collectDIANativeSessionMetadata,
+    R/utils_workflow_dia_sessions.R:1856);
+  - `e2e_assert_prot_filtered_session_artifacts` returns the summary's fields only: no `use_limpa`, no
+    `current_s4_object` (`NULL@args` errors);
+  - the native export sets `limpa_parameters = NULL, limpa_dpc_quant_results = NULL` (:1861), so
+    limpa_parameters.RDS and limpa_dpc_quant_results.RDS are not written; the oracle's session_export step lists the
+    eight files the export adds and these two are not among them.

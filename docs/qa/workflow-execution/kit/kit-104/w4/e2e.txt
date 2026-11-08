@@ -1,0 +1,76 @@
+# KIT-104 W4 (F-25): the DIA_LIMPA e2e lane, development runs, and the regression lanes.
+# Base 5f8cb531 (origin/performance-v2) plus the W4 test changes (tests only; no R/ change). R 4.6.1. Runner as in
+# test-first.txt (run1.R, load_all of the worktree in both the test and the app process; R_LIBS =
+# core/browser-smoke.yODoyT/library for dependencies; NOT_CRAN=true CHROMOTE_CHROME=/usr/bin/brave; systemd-inhibit
+# idle:sleep; timeout 1800 s). Power profile power-saver throughout (not changed). Proteomics lanes offline (F-28).
+# Budget used: test first, one development run, one correction pass (AGENTS.md; the ticket's W4 runs).
+
+## The DIA_LIMPA lane (test-e2e-proteomics-dia-limpa.R)
+| run | result | wall | where it stopped |
+|---|---|---|---|
+| test first (old checks) | pass 10, fail 0, error 1, skip 0 | 19 s | import: workflow_types "DIA" expected, "DIA_LIMPA" actual (test-first.txt) |
+| development run (new lane) | pass 27, fail 0, error 1, skip 0 | 109 s | export summary: Report Template "NA", lane expected "DIANN_limpa_report.rmd" |
+| correction pass | pass 68, fail 0, error 1, skip 0 | 136 s | report: study_parameters.txt does not contain "DIANN_limpa_report.rmd" |
+
+What the correction-pass run proved, in order (68 expectations passed):
+- import on the DIA_LIMPA route (`setup_import-dia_route`), workflow type DIA_LIMPA in the state digest;
+- design, offline UniProt cache read (no network);
+- the seven QC sub-tabs driven by DOM id, each waited on its R6 state (qvalue_filtered, precursor_rollup, log2_matrix,
+  peptide_accession_cleaned, protein_dpc_quant, protein_normalised, peptide_count_filtered); no QC tab status waited on;
+- normalisation as the entry lane runs it (run, correlation filter 0.5 -> correlation_filtered, RUV-III covariates ->
+  ruv_covariates), the export waited on its notification; normalization tab complete;
+- the native export: head and history identical to the prot_dia_limpa oracle's session_export step; the latest pointer,
+  archive (size, sha256), summary naming the archive; summary Workflow Type DIA_LIMPA, limpa DPC-Quant yes, Samples 8,
+  Proteins > 0; the eight files the oracle's export adds to scripts/proteomics each present once and non-empty
+  (archive, filtered_session_latest.json, filtered_session_summary.txt, native_export_complete_*.json,
+  accession_cleanup_results.RDS, qc_params.RDS, mixed_species_analysis.RDS, ruv_optimization_results.RDS); the legacy
+  limpa_parameters.RDS / limpa_dpc_quant_results.RDS absent (not in the oracle; the native export sets both NULL);
+- DA (differential_expression complete), summary save/copy/report, the report download (DIANN_limpa_report.rmd),
+  study_parameters.txt non-empty, the limpa template copied and DIANN_report.rmd absent.
+
+Where it failed: `expect_match(study_parameters, "DIANN_limpa_report.rmd")`. The remaining checks of that block were not
+reached ("proteinMissingValueImputationLimpa", "limpa_dpc_quant", the report outputs, the session_state export, console
+errors, error notifications). From the app log (WORKFLOW ARGS lines in the failure artifact's browser-logs.json): the
+writer took the S4 args path with 33 function groups, including `limpaDpcQuant` (5) and `limpa_dpc_quant_results` (9),
+`globalParameters` (5), and no `proteinMissingValueImputationLimpa` group. So these content checks carry the same legacy
+basis as F-25's export checks: the template in globalParameters (no route sets it since KIT-046; the report step picks
+the template by workflow type) and an args group of the legacy S4 path.
+
+## Stop rule (W4)
+The lane did not pass inside the correction pass, so W4 stops here. The acceptance item "DIA_LIMPA runs to the end with
+0 failures and 0 skips" is UNMET.
+- The committed lane keeps the new import, QC, normalisation and native-export checks (all proven above) and keeps ONE
+  skip, moved from the QC helper to just before the study_parameters content checks, with its reason updated. The
+  skipped block is unchanged (the legacy checks are kept as the record of what is pending). Expected count with this
+  file: 68 passed, 1 skip (not run in this exact form: the budget was spent; the difference from the correction-pass
+  run is the skip line only). The lead may instead keep the ticket's literal outcome (the skip at QC, 12 passed / 1 skip)
+  by moving the skip line.
+- Proposed next bounded action (test-only, one run): replace the study_parameters content checks with the native
+  ones (the limpaDpcQuant and limpa_dpc_quant_results groups, "limpa_dpc_quant"; the template asserted by the report
+  file name as already done) and drop the skip; run the lane once.
+
+## Findings (for kit-104/findings.md; the lead numbers them)
+- Export summary "Report Template: NA" on every proteomics route (DIA_LIMPA here; also TMT, LFQ, DIA_LIMPA in the
+  kit_101 journeys 101t/101l/101m). collectDIANativeSessionMetadata (R/utils_workflow_dia_sessions.R:1857) reads
+  `global$report_template %||% summary$report_template`, and nothing sets either since KIT-046 moved the template
+  choice to the report step (mod_prot_summary_report_helpers.R). Display only (the summary file); the report uses the
+  right template. Needs an R/ change, outside W4: recorded, not fixed.
+- The DIA_LIMPA lane's study_parameters content checks are legacy (above).
+
+## Regression lanes (once each, same runner, after the change)
+| file | result | wall |
+|---|---|---|
+| test-e2e-browser-harness.R | pass 124, fail 0, error 0, skip 0 | 12 s |
+| test-e2e-proteomics-dia.R | pass 42, fail 0, error 0, skip 0 | 197 s |
+| test-e2e-proteomics-enrichment.R | pass 98, fail 0, error 0, skip 0 | 411 s |
+| test-e2e-proteomics-tmt-lfq.R | pass 153, fail 0, error 0, skip 0 | 246 s |
+Each equals its KIT-103 count (kit-103/e2e-final.txt; harness as in kit-101 fixes8).
+
+## Raw run lines (runner results.txt)
+test-first: COUNTS test-e2e-proteomics-dia-limpa.R pass 10 fail 0 error 1 skip 0 exit 0 wall 19s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T10:39:27+11:00
+dev1: COUNTS test-e2e-proteomics-dia-limpa.R pass 27 fail 0 error 1 skip 0 exit 0 wall 109s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T10:42:00+11:00
+corr1: COUNTS test-e2e-proteomics-dia-limpa.R pass 68 fail 0 error 1 skip 0 exit 0 wall 136s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T10:46:51+11:00
+reg-harness: COUNTS test-e2e-browser-harness.R pass 124 fail 0 error 0 skip 0 exit 0 wall 12s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T10:47:58+11:00
+reg-dia: COUNTS test-e2e-proteomics-dia.R pass 42 fail 0 error 0 skip 0 exit 0 wall 197s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T10:51:15+11:00
+reg-enrichment: COUNTS test-e2e-proteomics-enrichment.R pass 98 fail 0 error 0 skip 0 exit 0 wall 411s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T10:58:06+11:00
+reg-tmt-lfq: COUNTS test-e2e-proteomics-tmt-lfq.R pass 153 fail 0 error 0 skip 0 exit 0 wall 246s head 5f8cb531 (+2 uncommitted test/R paths) 2026-11-08T11:02:12+11:00
