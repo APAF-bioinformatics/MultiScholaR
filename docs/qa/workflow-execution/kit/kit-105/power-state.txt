@@ -8,3 +8,5 @@ kit-journey-105m start 20:49:04 at e4fb25cf: AC 1, profile low-power, battery 10
 kit-journey-105m end 20:53:44: AC 1, profile low-power, battery 100%, load 2.27, available 26 GiB
 kit-journey-105l start 20:53:46 at dcc63592: AC 1, profile low-power, battery 100%, load 2.27, available 26 GiB
 kit-journey-105l end 20:56:26: AC 1, profile low-power, battery 100%, load 2.97, available 26 GiB
+kit-journey-105t start 20:56:29 at 8725349d: AC 1, profile low-power, battery 100%, load 2.82, available 26 GiB
+kit-journey-105t end 20:59:09: AC 1, profile low-power, battery 100%, load 2.61, available 26 GiB
