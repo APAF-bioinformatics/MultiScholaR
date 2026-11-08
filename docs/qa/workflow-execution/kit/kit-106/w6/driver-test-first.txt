@@ -1,0 +1,7 @@
+# KIT-106 W6 item 4 (D10, P-23): the journey driver ticks the interactive volcano before the feature DA step's page wait.
+# Test first: test-workflow-kit-harness.R with the new block, driver unchanged:
+COUNTS test-workflow-kit-harness.R pass 734 fail 1 error 0 skip 0
+  BAD test-workflow-kit-harness.R :: KIT-106 (D10, P-23): the lipid-or-metab DA step ticks the interactive volcano before it waits for the page
+# After the driver change:
+COUNTS test-workflow-kit-harness.R pass 735 fail 0 error 0 skip 0
+# (A first version of the block matched the proteomics and trx DA steps too, and was narrowed to the feature step before these runs.)

@@ -2029,3 +2029,19 @@ test_that("KIT-100 (protocol v1.9): ticket keys take three digits; two-digit key
     for (bad in c("kit:journey-1000:candidate:1", "kit:journey-10:candidate:1", "kit:journey-100ab:candidate:1", "kit:1000:single:1"))
         expect_error(h$kitSelectorStage(bad))
 })
+
+test_that("KIT-106 (D10, P-23): the lipid-or-metab DA step ticks the interactive volcano before it waits for the page", {
+    # The interactive volcano is off by default for every omic since KIT-106 (the user's unification, 2026-11-06), so the
+    # feature DA step must tick it before it selects the assay and waits for the page, as a user does.
+    lines <- readLines(testthat::test_path("../../tools/profiling/workflow_kit_driver.R"))
+    start <- grep("^\\s*da = \\{$", lines)
+    # The lipid-or-metab DA step: it opens tab "de" and loads the filtered session. Proteomics' DA step opens its own tab and
+    # trx's loads no session; neither waits for the interactive volcano.
+    start <- start[vapply(start, function(i) grepl("open_tab(\"de\")", lines[i + 1], fixed = TRUE) &&
+        any(grepl("load_filtered_session", lines[i + 0:4], fixed = TRUE)), logical(1))]
+    expect_length(start, 1L)
+    assay_set <- grep("checkpointSetInput(driver, paste0(de, \"volcano_assay\"), assay)", lines, fixed = TRUE)
+    assay_set <- assay_set[assay_set > start][1]
+    tick <- grep("checkpointSetInput(driver, paste0(de, \"volcano_interactive\"), TRUE)", lines, fixed = TRUE)
+    expect_true(any(tick > start & tick < assay_set))
+})

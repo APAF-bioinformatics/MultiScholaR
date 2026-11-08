@@ -657,6 +657,8 @@ runKitOmicsStep <- function(h, driver, project_parent, corpus, journey, step) {
             assay_script <- sprintf("(function(){const el=document.getElementById(%s);if(!el||!el.selectize)return '';return Object.keys(el.selectize.options).filter(k=>k!=='Combined')[0]||'';})()", assay_input)
             h$checkpointWaitForJs(driver, sprintf("%s!==''", assay_script), timeout = h$checkpointWaitBudget())
             assay <- driver$get_js(assay_script)
+            # KIT-106 (D10, P-23): the interactive volcano is off by default for every omic, so tick it, as a user does.
+            h$checkpointSetInput(driver, paste0(de, "volcano_interactive"), TRUE)
             h$checkpointSetInput(driver, paste0(de, "volcano_assay"), assay)
             h$checkpointWaitForJs(driver, sprintf(paste0("(function(){const el=document.getElementById(%s);return el!==null&&",
                 "(el.classList.contains('shiny-output-error')||el.querySelector('iframe,.html-widget,.alert-danger,.alert-warning')!==null);})()"), volcano),
