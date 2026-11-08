@@ -1,0 +1,69 @@
+KIT-104 W6 targeted tests (2026-11-08), after the change. One R process per file, in sequence, pkgload::load_all,
+MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, R_LIBS = core/browser-smoke.yODoyT/library, runner kit/scripts-078/run1.R.
+Before: the start commit 827f2328 (w6/test-first.txt; W5 targeted.txt for files not re-run at the start).
+
+COUNTS test-omic-qc-module.R pass 140 fail 0 error 0 skip 0          before 99/0/0/3 (the 3 W6 gates removed, all pass:
+                                                                      metab and trx parity (a), metab F-24 (c); 2 W6 blocks
+                                                                      added; no skip left)
+COUNTS test-omics-qc-core.R pass 32 fail 0 error 0 skip 10           before 81/0/0/7; +3 skips are Q-75 (blocks comparing
+                                                                      the core with metab/trx functions W6 deleted)
+COUNTS test-module-ci-metab-qc.R pass 63 fail 0 error 0 skip 1       before 64 (MCI-014.3 and .5 retargeted to the core and
+                                                                      the shared finalise, expectations unchanged; the
+                                                                      malformed-object subcase of .3 skipped, Q-76)
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0         before 38 (MCI-028.4 renders the shell's trx tabset)
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0       before 68
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0   before 283 (metab duplicates as their module)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   before 230 (metab blocks on the shared
+                                                                      summary, detection and finalise)
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0 before 97 (W5)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0  before 20 (metab case on startOmicQcSubtabs: 1 init,
+                                                                      2 reads)
+COUNTS test-omic-gui-config.R pass 765 fail 0 error 0 skip 0         before 765 (W5)
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0  before 204
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0      before 178
+
+Dependents (dependents.txt):
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0
+COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0
+COUNTS test-lipid-01a-qc-update-filtering-characterization.R pass 5 fail 0 error 0 skip 0
+COUNTS test-lipid-01g-qc-duplicates-module-characterization.R pass 9 fail 0 error 0 skip 5   (W5 Q-61)
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 3 fail 0 error 0 skip 0
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 3 fail 0 error 0 skip 3                  (W5 Q-63)
+COUNTS test-lipid-01k-qc-intensity-shared.R pass 16 fail 0 error 0 skip 1                    (W5 Q-65)
+COUNTS test-lipid-01-qc-filtering-helpers.R pass 58 fail 0 error 0 skip 2                    (W5 Q-65)
+COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0
+COUNTS test-lipid-12-norm-module-contracts.R pass 707 fail 0 error 0 skip 0
+COUNTS test-lipid-02b-da-module-contracts.R pass 569 fail 0 error 0 skip 0
+COUNTS test-metab-03d-norm-module-characterization.R pass 55 fail 0 error 0 skip 1   (1 skip at the start commit too)
+COUNTS test-metab-03b-norm-module-helper-characterization.R pass 876 fail 0 error 0 skip 3   (3 at the start too)
+COUNTS test-metab-02aa-da-display-filter-characterization.R pass 591 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10       (the same 10 KIT-103 Q-35/Q-37 skips at the start)
+COUNTS test-metab-01o-qc-module-characterization.R pass 0 fail 0 error 0 skip 0     (Q-66, file)
+COUNTS test-metab-01p-qc-duplicates-module-characterization.R pass 0 fail 0 error 0 skip 0   (Q-67, file)
+COUNTS test-metab-01q-qc-intensity-module-characterization.R pass 20 fail 0 error 0 skip 13  (12 Q-68 + 1 KIT-072)
+COUNTS test-metab-01r-qc-itsd-module-characterization.R pass 0 fail 0 error 0 skip 0     (Q-69, file)
+COUNTS test-metab-01s-qc-s4-module-characterization.R pass 0 fail 0 error 0 skip 0      (Q-70, file)
+COUNTS test-metab-01t-qc-s4-module-characterization.R pass 2 fail 0 error 0 skip 7      (Q-71)
+COUNTS test-metab-01u-qc-duplicates-module-characterization.R pass 9 fail 0 error 0 skip 3   (Q-72)
+COUNTS test-metab-01v-qc-itsd-wrapper-characterization.R pass 3 fail 0 error 0 skip 0
+COUNTS test-metab-01w-qc-orchestrator-shared.R pass 3 fail 0 error 0 skip 3            (Q-73)
+COUNTS test-metab-qc-itsd-direct-shared.R pass 0 fail 0 error 0 skip 0                 (Q-74, file)
+COUNTS test-metab-s4-qc-shared.R pass 32 fail 0 error 0 skip 0
+
+Note on the runner: an earlier first pass of test-workflow-omics-residency.R printed no COUNTS line because the scratch
+wrapper piped the output through `head` (the process was cut by SIGPIPE, an instrumentation failure, not a test result);
+the wrapper was fixed to log the whole output and the file was re-run once (97/0 above).
+
+After the rebase onto W7 (65010461, 8a8a3421; one conflict in test-omic-qc-module.R, both sections kept), the two files
+both items edit, re-run on the rebased tree:
+COUNTS test-omic-qc-module.R pass 158 fail 0 error 0 skip 0          (W5 + W6 + W7 blocks)
+COUNTS test-omic-gui-config.R pass 765 fail 0 error 0 skip 0
+
+Not run (outside W6, or later budget runs): test-prot-*, test-perf107-audit.R, R CMD check, install, journeys, e2e.

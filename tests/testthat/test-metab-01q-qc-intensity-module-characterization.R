@@ -448,6 +448,7 @@ test_that("metabolomics intensity module preserves revert public behavior", {
 })
 
 test_that("metabolomics intensity assay tabs seam returns null for empty stats and builds namespaced assay tabs", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -519,6 +520,7 @@ test_that("metabolomics intensity assay tabs seam returns null for empty stats a
 })
 
 test_that("metabolomics intensity module server delegates the assay tabs render path through the seam", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -619,6 +621,7 @@ test_that("metabolomics intensity module server delegates the assay tabs render 
 })
 
 test_that("metabolomics intensity filter-plot seam dispatches grid and ggplot payloads", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -679,6 +682,7 @@ test_that("metabolomics intensity filter-plot seam dispatches grid and ggplot pa
 })
 
 test_that("metabolomics intensity stats seam counts per-assay metabolites and retention", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -732,6 +736,7 @@ test_that("metabolomics intensity stats seam counts per-assay metabolites and re
 })
 
 test_that("metabolomics intensity QC plot seam refreshes the plot and stores it", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -787,6 +792,7 @@ test_that("metabolomics intensity QC plot seam refreshes the plot and stores it"
 })
 
 test_that("metabolomics intensity QC plot seam falls back to a null plot on refresh errors", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -880,6 +886,7 @@ test_that("metabolomics intensity state-save seam persists filtered state and re
 })
 
 test_that("metabolomics intensity summary seam assembles totals and result text", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -927,6 +934,7 @@ test_that("metabolomics intensity summary seam assembles totals and result text"
 })
 
 test_that("metabolomics intensity success-reporting seam renders results and reports completion", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -1008,6 +1016,7 @@ test_that("metabolomics intensity success-reporting seam renders results and rep
 })
 
 test_that("metabolomics intensity revert-reporting seam resets outputs and reports completion", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -1072,6 +1081,7 @@ test_that("metabolomics intensity revert-reporting seam resets outputs and repor
 })
 
 test_that("metabolomics intensity module server delegates the filter-plot render path through the seam", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   skip_if_not(
     metabIntensityHasExtractedSeams(),
     "Extracted metabolomics intensity seams are target-only."
@@ -1162,6 +1172,7 @@ test_that("metabolomics intensity module server delegates the filter-plot render
 })
 
 test_that("metabolomics intensity module apply observer delegates QC plot refresh, state save, and success reporting through seams", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   kit089WholeIntensity() # KIT-089: this test fakes the filter kernel, which only the `whole` variant hands the object to.
   skip_if_not(
     metabIntensityHasExtractedSeams(),
@@ -1432,6 +1443,7 @@ test_that("metabolomics intensity module apply observer delegates QC plot refres
 })
 
 test_that("metabolomics intensity module revert observer delegates reset and reporting through the seam", {
+  testthat::skip("quarantined: Q-68 (KIT-104 W6) its seams (buildMetabIntensity*, reportMetabIntensity*, updateMetabIntensityFilterQcPlot, renderMetabIntensityFilterPlot) were deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction and omicsQcCountsTable, covered by test-omic-qc-module.R, MCI-014.1, the KIT-078 worker test and the metab_* qc_intensity steps")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_not(
     metabIntensityHasExtractedSeams(),

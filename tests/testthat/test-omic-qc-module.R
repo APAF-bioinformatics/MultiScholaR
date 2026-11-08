@@ -9,17 +9,8 @@
 #   (d) The ITSD capture: analyze_is's summary, visualisation tabs, CV-plot and intensity-plot data.
 # (b) and (d) pass on the start commit (b423b764), where their values were frozen. The parity blocks
 # for metab and trx and the F-24 blocks fail there (docs/qa/workflow-execution/kit/kit-104/w1/
-# test-first.txt); they are skipped until the phase that lands them unless
-# MULTISCHOLAR_KIT104_PENDING=1. The phase that lands one removes its `omicQcPending()` line.
-
-#' Skip a block that fails until a later KIT-104 phase lands it, unless MULTISCHOLAR_KIT104_PENDING=1.
-#' @param phase The work item that lands it.
-omicQcPending <- function(phase) {
-    if (!identical(Sys.getenv("MULTISCHOLAR_KIT104_PENDING"), "1")) {
-        testthat::skip(sprintf("KIT-104 W1: expected to fail until %s lands it (MULTISCHOLAR_KIT104_PENDING=1 runs it)",
-            phase))
-    }
-}
+# test-first.txt); W5 landed lipid's F-24 block and W6 the metab and trx parity blocks and metab's
+# F-24 block, so none is skipped.
 
 #' The rendered HTML's sha256, with shiny's random tabset ids masked (as the entry suite does).
 omicQcHtml <- function(x) {
@@ -137,7 +128,6 @@ test_that("(a) metab refuses a design run absent from its assays today (its clas
 })
 
 test_that("(a) parity: metab refuses a design the alignment check refuses, with no commit (fails before)", {
-    omicQcPending("W6")
     out <- omicQcFinalize(module_ci_metab_qc_workflow(omicQcMisaligned(module_ci_metab_qc_object(), "group")),
         "metab_qc", "metabolomics")
     # D11: the shared alignment with lipid's arguments and lipid's text for the class.
@@ -148,7 +138,6 @@ test_that("(a) parity: metab refuses a design the alignment check refuses, with 
 test_that("(a) parity: trx refuses a misaligned design at finalise, with no commit (fails before)", {
     skip_if_not(workflowOwnerCapable())
     skip_if_not_installed("edgeR")
-    omicQcPending("W6")
     # D10: trx's own design check (validateTrxDesign), as every other trx step applies it.
     for (case in list(c(how = "run", text = "S_absent"), c(how = "group", text = "outside the declared levels"))) {
         fixture <- omicQcTrxMisaligned(case[["how"]])
@@ -329,7 +318,6 @@ test_that("(c) F-24: a lipid Detect duplicates or Analyze internal standards cli
 })
 
 test_that("(c) F-24: a metab Detect duplicates or Analyze internal standards click before the start is not run", {
-    omicQcPending("W6")
     for (button in names(omicQcDisplayOnly)) {
         out <- omicQcClickBeforeStart(module_ci_metab_qc_workflow(), "metab_qc", "metabolomics", "metab_raw_data_s4",
             button)
@@ -486,19 +474,19 @@ test_that("W5 the shared finalise's one-table summary and text are trx's today (
     config <- omicGuiConfig("transcriptomics")
     held <- new.env(parent = emptyenv())
     suppressWarnings(suppressMessages(shiny::testServer(function(input, output, session) {
-        legacy <- new.env(parent = emptyenv())
-        registerTrxQcSummaryOutput(legacy, fixture$workflow)
-        output$legacy_summary <- legacy$data_summary
         registerOmicQcFinalizeSummary(output, fixture$workflow, config)
     }, {
-        held$legacy <- output$legacy_summary
         held$shared <- output$data_summary
     })))
     expect_false(is.null(held$shared$html))
-    expect_identical(held$shared, held$legacy)
+    # KIT-104 W6 deleted trx's copies: the summary's HTML and the text are the sha256 of what
+    # registerTrxQcSummaryOutput and trxQcFinalizeText gave on this fixture at 827f2328 (w6/test-first.txt).
+    sha <- function(text) digest::digest(as.character(text), algo = "sha256", serialize = FALSE)
+    expect_identical(sha(held$shared$html), "01b96be2ab75dabe19023041fc713e37f9e4b979118f607310fd5cdbd8045201")
     meta <- readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, fixture$owner)
     history <- fixture$owner$getHistory()
-    expect_identical(omicQcFinalizeText(sum(meta$assay_rows), NULL, history, config), trxQcFinalizeText(meta, history))
+    expect_identical(sha(omicQcFinalizeText(sum(meta$assay_rows), NULL, history, config)),
+        "068f1028210d199b0ee99687b5ca511234bdf96ead9ad8d3dc6553ce4c2cb179")
 })
 
 test_that("W5 lipid's QC copies are deleted; its exports are wrappers over the shared shell and sub-tabs", {
@@ -638,4 +626,74 @@ test_that("W7 getProtQc*ModuleSpecs return today's lists for every route, built 
     expect_identical(getProtQcPeptideModuleSpecs("DIA_LIMPA")[[1L]]$title, "Q-Value Filter (configured)")
     expect_identical(getProtQcProteinCommonModuleSpecs()[[1L]]$title, "Accession Cleanup (configured)")
     expect_identical(getProtQcProteinModuleSpecs("TMT")[[1L]]$title, "Accession Cleanup (configured)")
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-104 W6: metab and trx on the shared shell and sub-tabs; trx's finalise on a structural shell
+# (F104-04); the metab and trx QC copies deleted.
+# ------------------------------------------------------------------------------------------------
+
+test_that("W6 F104-04: trx's shared finalise reads a structural shell (no validity), checks it and commits trx_qc_complete", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not_installed("edgeR")
+    fixture <- trxDeclarationsOwner(withr::local_tempdir(), module_ci_trx_corpus())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    owner <- fixture$owner
+    config <- omicGuiConfig("transcriptomics")
+    binding <- transcriptomicsDeclarationBinding
+    meta <- readWorkflowOmicsMetadata(binding, owner)
+    # The generic shell read refuses every trx state: the class's validity on the zero-row prototype.
+    expect_error(readWorkflowOmicsShell(binding, owner, measures = "features"), class = "trx_counts_invalid")
+    # The structural shell: the stored slots and design, the count table as its zero-row prototype, the stored rows.
+    expect_true(is.function(config$qc$finalize_shell))
+    shell <- config$qc$finalize_shell(binding, owner)
+    expect_s4_class(shell, "TranscriptomicsAssayData")
+    expect_identical(attr(shell, "assay_rows"), meta$assay_rows)
+    expect_identical(names(shell@count_data), meta$assay_names)
+    expect_identical(nrow(shell@count_data[[1L]]), 0L)
+    expect_identical(names(shell@count_data[[1L]]), names(fixture$object@count_data[[1L]]))
+    expect_identical(shell@design_matrix, meta$design_matrix)
+    expect_identical(shell@args, fixture$object@args)
+    expect_identical(validateWorkflowOmicsQcFinalize(shell, config$qc, binding), shell)
+    # The shared finalise sub-tab under trx's configuration commits and reports as trx's did.
+    notes <- omicQcNotes()
+    held <- new.env(parent = emptyenv())
+    suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+        mod_omic_qc_finalize_server("s4_finalize", fixture$workflow, "transcriptomics", "kit104", config)
+    }, {
+        session$setInputs(`s4_finalize-finalize_qc` = 1L)
+        session$flushReact()
+        held$text <- output$`s4_finalize-finalize_results`
+    }))))
+    history <- owner$getHistory()
+    expect_identical(history, c("initial", "trx_raw_data_s4", "trx_qc_complete"))
+    expect_identical(fixture$workflow$tab_status$quality_control, "complete")
+    expect_identical(held$text, omicQcFinalizeText(sum(meta$assay_rows), NULL, history, config))
+    expect_identical(notes$notes, "[message] QC complete! Proceed to Normalization.")
+})
+
+test_that("W6 metab's and trx's QC copies are deleted; their exports are wrappers; the trx profile has no QC hook", {
+    ns <- asNamespace("MultiScholaR")
+    deleted <- c("initializeMetabQcSubmodules", "buildMetabIntensityAssayTabsUi", "buildMetabIntensityFilterStats",
+        "reportMetabIntensityFilterSuccess", "buildMetabDuplicateSummaryUi", "detectMetabDuplicateFeatures",
+        "runMetabDuplicateResolutionObserver", "registerMetabDuplicateTableRenderers", "metabQcItsdColumns",
+        "readMetabQcItsdState", "analyzeMetabQcItsdData", "runMetabQcItsdServerBody", "buildMetabQcS4DataSummaryUi",
+        "validateMetabQcS4FinalizeState", "runMetabQcS4FinalizeWorkflow", "runMetabQcS4ServerBody",
+        "trxQcTabsUi", "initializeTrxQcSubmodules", "registerTrxQcSummaryOutput", "trxQcFinalizeText",
+        "trxQcFinalizeCollaborators", "runLipidQcS4FinalizeWorkflow", "reportLipidQcS4FinalizeSuccess",
+        "registerLipidQcS4ProfileFinalize", "registerLipidIntensityRevertObserver")
+    expect_identical(deleted[vapply(deleted, exists, logical(1), envir = ns, inherits = FALSE)], character())
+    # trx's four QC figure functions are defined once, in the core.
+    for (name in c("trxQcRawStats", "trxQcFilterText", "trxQcMetricsTable", "trxQcFilteringFigure")) {
+        expect_match(utils::getSrcFilename(get(name, envir = ns)), "func_trx_qc_plots.R", fixed = TRUE, info = name)
+    }
+    profile <- trxOmicProfile()
+    expect_identical(intersect(c("qc_title", "qc_tabs", "qc_init", "register_qc_summary", "finalize", "read_metadata"),
+        names(profile)), character())
+    expect_identical(profile$omic_type, "transcriptomics")
+    # Every finalise checks its alignment; trx's is its own design check (D10).
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        expect_true(is.function(omicGuiConfig(omic)$qc$finalize_alignment), info = omic)
+    }
+    expect_identical(omicGuiConfig("transcriptomics")$qc$finalize_alignment, trxDesignAlignment)
 })

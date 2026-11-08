@@ -30,15 +30,15 @@
 #' feature-table panel under `omicGuiConfig("transcriptomics")` (KIT-102), which the profile's `omic_type` selects. So is
 #' the design tab (KIT-103 W5): its eight design fields left the profile for `omicGuiConfig("transcriptomics")$design`,
 #' and its design functions (`trxDesignGroupLevels`, `trxDesignCheck`, `trxDesignObject`) are in func_trx_design.R.
+#' So is the QC tab (KIT-104 W6): its QC fields left the profile for `omicGuiConfig("transcriptomics")$qc`, the shared
+#' shell and finalise (mod_omic_qc.R, mod_omic_qc_tabs.R); `class` and `read_state` stay while
+#' test-omic-gui-config.R reads them.
 #' @return A plain list.
 #' @noRd
 trxOmicProfile <- function() {
     profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
         class = "TranscriptomicsAssayData", workflow_type = "TRANSCRIPTOMICS",
-        qc_title = "Transcriptomics Quality Control & Filtering", qc_tabs = trxQcTabsUi, qc_init = initializeTrxQcSubmodules,
-        read_metadata = function(manager) readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager),
-        read_state = readTrxWorkflowState, register_qc_summary = registerTrxQcSummaryOutput, finalize = trxQcFinalizeCollaborators(),
-        binding = transcriptomicsDeclarationBinding, report_template = "transcriptomics_report.rmd", report_dir = "transcriptomics")
+        read_state = readTrxWorkflowState, binding = transcriptomicsDeclarationBinding, report_template = "transcriptomics_report.rmd", report_dir = "transcriptomics")
     c(profile, trxNormDaSummaryProfile())
 }
 

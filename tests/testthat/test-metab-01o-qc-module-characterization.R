@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-66 (KIT-104 W6) it stubs initializeMetabQcSubmodules and the deleted orchestrator's internals; the tab is the shared shell (mod_omic_qc.R), covered by test-omic-qc-module.R (b), MCI-014's F-24 block, the BUG-10 audit and the metab_* QC steps")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

@@ -58,7 +58,8 @@ test_that("BUG-10: the lipidomics QC auto-initialisation observer runs once per 
 })
 
 test_that("BUG-10: the metabolomics QC auto-initialisation observer runs once per state-manager appearance", {
-  counts <- countQcAutoInitialisation("mod_metab_qc_server", "initializeMetabQcSubmodules", "MetaboliteAssayData")
+  # KIT-104 W6: the metab tab is the shared shell; its start function is startOmicQcSubtabs (mod_omic_qc.R).
+  counts <- countQcAutoInitialisation("mod_metab_qc_server", "startOmicQcSubtabs", "MetaboliteAssayData")
   expect_identical(counts$inits, 1L)
   expect_identical(counts$state_reads, 2L)
 })

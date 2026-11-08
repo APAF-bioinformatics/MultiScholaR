@@ -3,24 +3,23 @@
 library(testthat)
 
 omicsReadCase <- function(omic) {
+  # KIT-104 W5/W6: the QC tab is the shared sub-tabs' (mod_omic_qc_tabs.R) under the omic's configuration.
+  config <- omicGuiConfig(omic)
+  binding <- config$binding$binding
+  common <- list(binding = binding,
+    summary = function(object) omicQcDataSummaryUi(object, config), stats = function(object) omicQcAssayStatsFrame(object, config),
+    text = function(object, history) omicQcFinalizeText(omicQcFeatureTotal(object, binding), length(methods::slot(object, binding$data_slot)), history, config),
+    validate = function(object) validateWorkflowOmicsQcFinalize(object, config$qc, binding))
   if (identical(omic, "lipidomics")) {
-    # KIT-104 W5: lipid's QC tab is the shared sub-tabs' (mod_omic_qc_tabs.R) under lipid's configuration.
-    config <- omicGuiConfig("lipidomics")
-    binding <- lipidomicsDeclarationBinding
-    list(binding = binding, owner_of = lipidDeclarationsOwner, prefix = "lipid",
-      summary = function(object) omicQcDataSummaryUi(object, config), stats = function(object) omicQcAssayStatsFrame(object, config),
-      text = function(object, history) omicQcFinalizeText(omicQcFeatureTotal(object, binding), length(methods::slot(object, binding$data_slot)), history, config),
-      validate = function(object) validateWorkflowOmicsQcFinalize(object, config$qc, binding),
+    c(common, list(owner_of = lipidDeclarationsOwner, prefix = "lipid",
       finder = findLipidDuplicateFeatureIDs,
       itsd = function(page, object) buildLipidItsdSelectionTable(assay_data = page, lipid_id_col = object@lipid_id_column, annotation_cols = object@annotation_id_column),
-      volcano = "generateLipidDAVolcanoPlotGlimma")
+      volcano = "generateLipidDAVolcanoPlotGlimma"))
   } else {
-    list(binding = metabolomicsDeclarationBinding, owner_of = metabDeclarationsOwner, prefix = "metab",
-      summary = buildMetabQcS4DataSummaryUi, stats = function(object) buildMetabQcS4AssayStatsDatatable(object, datatableFn = function(table, ...) table),
-      text = buildMetabQcS4FinalizeResultsText, validate = function(object) validateMetabQcS4FinalizeState(object, reqFn = identity),
+    c(common, list(owner_of = metabDeclarationsOwner, prefix = "metab",
       finder = findMetabDuplicateFeatureIDs,
       itsd = function(page, object) buildItsdSelectionTable(assay_data = page, metabolite_id_col = object@metabolite_id_column, annotation_cols = object@annotation_id_column),
-      volcano = "generateMetabDAVolcanoPlotGlimma")
+      volcano = "generateMetabDAVolcanoPlotGlimma"))
   }
 }
 
@@ -37,17 +36,17 @@ omicsSyncRunner <- function(fixture, controller, calls = new.env()) {
   }, retrying = function() FALSE, progress = function(message) list(close = function() invisible(NULL)))
 }
 
-#' KIT-104 W5: lipid's finalise is the shared one (`runOmicQcFinalize`). It is called here with the old finalise's
-#' collaborator arguments, each standing in for the shared step it names (the shell read, the checks, the commit, the
-#' tab completion, the history and the two reports).
+#' KIT-104 W5/W6: the lipid and metab finalise is the shared one (`runOmicQcFinalize`). It is called here with the old
+#' finalise's collaborator arguments, each standing in for the shared step it names (the shell read, the checks, the
+#' commit, the tab completion, the history and the two reports).
 omicsReadSharedFinalize <- function(workflowData, omicType, filterPlot, output, getFinalizeStateFn, validateFinalizeStateFn,
   saveCompletedStateFn, completeTabStatusFn, getFinalizeHistoryFn, reportFinalizeSuccessFn, reportFinalizeErrorFn) {
   manager <- list(getHistory = function() getFinalizeHistoryFn(workflowData$state_manager))
   testthat::with_mocked_bindings(
-    runOmicQcFinalize(list(state_manager = manager), omicType, filterPlot, output, omicGuiConfig("lipidomics")),
+    runOmicQcFinalize(list(state_manager = manager), omicType, filterPlot, output, omicGuiConfig(omicType)),
     readWorkflowOmicsShell = function(binding, manager, ...) {
       getFinalizeStateFn(workflowData$state_manager)
-      module_ci_lipid_qc_object()
+      if (identical(omicType, "lipidomics")) module_ci_lipid_qc_object() else module_ci_metab_qc_object()
     },
     validateWorkflowOmicsQcFinalize = function(shell, ...) validateFinalizeStateFn(shell),
     commitWorkflowOmicsStoreStep = function(...) saveCompletedStateFn(...),
@@ -57,10 +56,10 @@ omicsReadSharedFinalize <- function(workflowData, omicType, filterPlot, output, 
     .package = "MultiScholaR")
 }
 
-#' KIT-104 W5: lipid's finalise figure is the shared one (`omicQcTrackingFigure`), with the configuration's figure.
-omicsReadSharedTracking <- function(currentS4, omicType, setFilterPlotFn, updateLipidFilteringFn, metrics = NULL) {
-  config <- omicGuiConfig("lipidomics")
-  config$qc$filtering_figure <- updateLipidFilteringFn
+#' KIT-104 W5/W6: the finalise figure is the shared one (`omicQcTrackingFigure`), with the configuration's figure.
+omicsReadSharedTracking <- function(currentS4, omicType, setFilterPlotFn, updateFilteringFn, metrics = NULL) {
+  config <- omicGuiConfig(omicType)
+  config$qc$filtering_figure <- updateFilteringFn
   omicQcTrackingFigure(currentS4, omicType, setFilterPlotFn, config, metrics = metrics)
 }
 
@@ -234,8 +233,8 @@ for (omic in c("lipidomics", "metabolomics")) local({
   })
 
   test_that(sprintf("KIT-082: a managed %s QC finalise completes when its tracking figure fails, as in process, and forwards the worker's metrics", omic), {
-    finalize <- if (identical(omic, "lipidomics")) omicsReadSharedFinalize else runMetabQcS4FinalizeWorkflow
-    tracking <- if (identical(omic, "lipidomics")) omicsReadSharedTracking else updateMetabQcS4TrackingPlot
+    finalize <- omicsReadSharedFinalize
+    tracking <- omicsReadSharedTracking
     runner <- list(run = function(actions, done = NULL, failed = NULL) failed(simpleError("the worker failed")))
     testthat::local_mocked_bindings(workflowOmicsManagedActions = function(omic_type) runner, .package = "MultiScholaR")
     seen <- new.env()
@@ -260,8 +259,7 @@ for (omic in c("lipidomics", "metabolomics")) local({
     # The metrics argument reaches the kernel, with no object.
     arguments <- NULL
     updater <- function(...) { arguments <<- list(...); "plot" }
-    if (identical(omic, "lipidomics")) tracking(NULL, omic, function(plot) NULL, updateLipidFilteringFn = updater, metrics = "metrics") else
-      tracking(NULL, omic, function(plot) NULL, updateMetaboliteFilteringFn = updater, metrics = "metrics")
+    tracking(NULL, omic, function(plot) NULL, updateFilteringFn = updater, metrics = "metrics")
     expect_identical(arguments$metrics, "metrics")
     expect_null(arguments$theObject)
   })
@@ -365,10 +363,12 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
       shiny::observeEvent(input$export_session, handleLipidNormExportSession(input, workflow, paths, "kit082", norm, addLog = quiet))
       shiny::observeEvent(input$save_args, handleLipidSummarySaveWorkflowArgs(input, values, output, dirs, omic, workflow))
     } else {
-      output$data_summary <- shiny::renderUI(buildMetabQcS4DataSummaryRenderOutput(workflow$state_manager))
-      output$assay_stats_table <- DT::renderDT(buildMetabQcS4AssayStatsRenderOutput(workflow$state_manager))
-      shiny::observeEvent(input$detect, probe$detected <- detectMetabDuplicateFeatures(workflow$state_manager))
-      shiny::observeEvent(input$finalize, runMetabQcS4FinalizeWorkflow(workflow, omic, filter_plot, output))
+      # KIT-104 W6: the shared sub-tabs' summary, detection and finalise under metab's configuration.
+      config <- omicGuiConfig("metabolomics")
+      registerOmicQcFinalizeSummary(output, workflow, config)
+      shiny::observeEvent(input$detect, probe$detected <- list(totalDuplicates = detectWorkflowOmicsDuplicates(metabolomicsDeclarationBinding,
+        workflow$state_manager)$total))
+      shiny::observeEvent(input$finalize, runOmicQcFinalize(workflow, omic, filter_plot, output, config))
       shiny::observe(runMetabNormItsdSelectionTableObserverShell(norm, workflow, output))
       mod_metab_qc_itsd_server("itsd", workflow, omic, "kit082")
       output$final_qc <- renderMetabNormFinalQcPlot(norm, workflow, colorVariableFn = function() "group", shapeVariableFn = function() NULL)
@@ -381,13 +381,13 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
 
 omicsAppJourney <- function(session, output, omic, prefix, assays, contrast) {
   do.call(session$setInputs, omicsTabInputs())
-  # KIT-104 W5: lipid's intensity and duplicate sub-tabs run as their modules (omicsTabServer), as metab's intensity does.
+  # KIT-104 W5/W6: the intensity and duplicate sub-tabs run as their modules (omicsTabServer).
   apply_intensity <- list(`intensity-intensity_cutoff_percentile` = 1, `intensity-proportion_below_cutoff` = 0.5, `intensity-apply_filter` = 1)
   do.call(session$setInputs, apply_intensity)
   session$flushReact()
   session$setInputs(detect = 1)
   session$flushReact()
-  do.call(session$setInputs, if (identical(omic, "metabolomics")) list(resolve_duplicates = 1) else list(`duplicates-resolve_duplicates` = 1))
+  session$setInputs(`duplicates-resolve_duplicates` = 1)
   session$flushReact()
   force(output$data_summary)
   force(output$assay_stats_table)

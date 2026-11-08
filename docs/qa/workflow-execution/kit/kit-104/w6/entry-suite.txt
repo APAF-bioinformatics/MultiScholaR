@@ -1,0 +1,15 @@
+KIT-104 W6 entry-point lanes (2026-11-08), against the frozen oracles in tests/testdata/gui-entry/ (not re-frozen; the
+directory is unchanged). One R process per file, in sequence, load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1,
+R_LIBS = core/browser-smoke.yODoyT/library, runner kit/scripts-078/run1.R. Each lane compares every step (outputs by name,
+committed states, artifacts, notifications) with its oracle; a pass is identity.
+
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0  [62s]   trx_screen: identical (baseline 29)
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0  [108s]       lipid_canonical: identical (baseline 35)
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0  [265s]    metab_lc, metab_gc, metab_combined:
+                                                                              identical (baseline 105)
+
+Trx now runs wholly on the shared shell: mod_lipid_qc_server(profile = trxOmicProfile()) is mod_omic_qc_server under
+omicGuiConfig("transcriptomics"), which starts the trx_qc_filter plugin and the shared finalise (structural shell read,
+F104-04; trxDesignAlignment; the one-table summary and text). Metab runs on the shared shell and the four shared sub-tabs
+through its exported wrappers, with the design-alignment check at finalise (D11). The parity check changed no capture of
+these five lanes and refused none of their designs. Proteomics lanes do not touch W6's files and were not run (W7).

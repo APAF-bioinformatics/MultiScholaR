@@ -1,0 +1,22 @@
+file	lines_827f2328	lines_after_w6	note
+R/mod_metab_qc.R	169	49	exported wrappers over the shared shell (metab configuration); initializeMetabQcSubmodules deleted (the shell's start)
+R/mod_metab_qc_intensity.R	474	48	exported wrappers over the shared intensity sub-tab
+R/mod_metab_qc_duplicates_ui.R	71	18	exported wrapper over the shared duplicate sub-tab UI
+R/mod_metab_qc_duplicates_server.R	83	9	exported wrapper over the shared duplicate sub-tab server
+R/mod_metab_qc_duplicates_ui_helpers.R	73	0	deleted
+R/mod_metab_qc_duplicates_render_helpers.R	59	0	deleted
+R/mod_metab_qc_duplicates_server_helpers.R	403	0	deleted (#9 had already moved to func_metab_s4_qc_methods.R in W2)
+R/mod_metab_qc_itsd.R	464	0	deleted (the analysis is analyzeWorkflowOmicsItsd); its roxygen topic block moved to mod_metab_qc_itsd_ui.R
+R/mod_metab_qc_itsd_ui.R	49	16	exported wrapper over the shared ITSD sub-tab UI, with the mod_metab_qc_itsd topic block
+R/mod_metab_qc_itsd_server.R	18	8	exported wrapper over the shared ITSD sub-tab server
+R/mod_metab_qc_s4.R	132	51	exported wrappers over the shared finalise sub-tab
+R/mod_metab_qc_s4_server_helpers.R	672	0	deleted (validateWorkflowOmicsQcFinalize, runOmicQcFinalize)
+metab QC family (12 files)	2667	199	-2468
+R/mod_trx_qc_filter.R	242	128	the trx_qc_filter plugin only; the four moved figure functions' copies and the five profile hooks deleted
+R/mod_transcriptomics.R	87	87	the profile's QC fields removed (qc_title, qc_tabs, qc_init, read_metadata, register_qc_summary, finalize); 3 doc lines added
+R/mod_lipid_qc.R	67	58	mod_lipid_qc_server's profile branch removed
+R/mod_lipid_qc_s4.R	188	53	runLipidQcS4FinalizeWorkflow, reportLipidQcS4FinalizeSuccess, registerLipidQcS4ProfileFinalize removed (W5 notes, authorised)
+R/mod_lipid_qc_intensity.R	58	48	registerLipidIntensityRevertObserver removed (trx calls registerOmicQcRevertObserver)
+R/mod_omic_qc_tabs.R	810	813	runOmicQcFinalize reads the shell through qc$finalize_shell when the omic has one (F104-04)
+R/utils_omic_gui_config.R	1158	1190	metab finalize_alignment; trx filtering_figure adaptor, finalize_alignment, finalize_shell; the optional qc_read schema entry
+net R/ (these files)	5277	2576	-2701

@@ -758,9 +758,12 @@ runOmicQcFinalize <- function(workflow_data, omic_type, plot, output, config) {
     qc <- config$qc
     manager <- workflow_data$state_manager
     tryCatch({
-        # KIT-082: the checks read names, classes and row counts, and the text counts the id column.
-        shell <- validateWorkflowOmicsQcFinalize(readWorkflowOmicsShell(binding, manager, measures = "features"), qc,
-            binding)
+        # KIT-082: the checks read names, classes and row counts, and the text counts the id column. KIT-104 W6
+        # (F104-04): an omic whose class cannot be rebuilt as the generic shell reads its own (`qc$finalize_shell`).
+        read_shell <- qc$finalize_shell %||% function(binding, manager) {
+            readWorkflowOmicsShell(binding, manager, measures = "features")
+        }
+        shell <- validateWorkflowOmicsQcFinalize(read_shell(binding, manager), qc, binding)
         assays <- methods::slot(shell, binding$data_slot)
         total <- if (isTRUE(qc$finalize_per_assay)) omicQcFeatureTotal(shell, binding) else
             sum(attr(shell, "assay_rows") %||% vapply(assays, nrow, integer(1)))

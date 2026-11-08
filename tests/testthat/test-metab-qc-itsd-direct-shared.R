@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-74 (KIT-104 W6) it calls the deleted analyzeMetabQcItsdData, buildMetabQcItsd* and runMetabQcItsdServerBody; covered by test-omic-qc-module.R (c) and (d), MCI-014.3 and test-omics-qc-core.R's ITSD blocks")
 # fidelity-coverage-compare: shared
 library(testthat)
 

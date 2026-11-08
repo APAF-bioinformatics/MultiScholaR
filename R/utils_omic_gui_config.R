@@ -132,6 +132,9 @@ omicGuiConfigSchema <- function() {
             notification_ids = "named_chr0"),
         # Required at KIT-104 W8, once their functions are in the core (absent until then).
         qc_optional = c(filtering_figure = "ref", finalize_alignment = "ref"),
+        # KIT-104 W6 (F104-04): the finalise's shell read, `function(binding, manager)`, for an omic
+        # whose class cannot be rebuilt as the generic shell (trx); optional.
+        qc_read = c(finalize_shell = "ref"),
         qc_group = c(id = "chr1_or_null", title = "chr1_or_null", component = "chr1_or_null",
             tabs = "list"),
         qc_tab = c(id = "chr1", title = "chr1", component = "chr1", routes = "chr",
@@ -262,6 +265,7 @@ validateOmicGuiDesignImport <- function(design_import, schema) {
 validateOmicGuiQc <- function(qc, routes, schema) {
     checkOmicGuiFields(qc, schema$qc, "qc")
     checkOmicGuiFields(qc, schema$qc_optional, "qc", required = FALSE)
+    checkOmicGuiFields(qc, schema$qc_read, "qc", required = FALSE)
     if (length(qc$tabset_id) > 1L && !setequal(names(qc$tabset_id), routes)) {
         omicGuiConfigAbort("qc$tabset_id", "must name each of the omic's routes")
     }
@@ -961,6 +965,10 @@ omicGuiMetabQc <- function() {
         # Only an empty assay list is refused (mod_metab_qc_s4_server_helpers.R:335-339); only
         # `quality_control` is set (:368-378); a per-assay table (mod_metab_qc_s4.R:73-77).
         finalize_zero_rows = FALSE, finalize_opens_norm = FALSE, finalize_per_assay = TRUE,
+        # D11, the parity check (KIT-104 W6): the shared alignment with lipid's arguments; today's
+        # metab finalise checked the class, the assay list and the design rows only
+        # (mod_metab_qc_s4_server_helpers.R:320-350 at 827f2328).
+        finalize_alignment = function(shell) omicsQcFinalizeAlignment(shell, "metabolomics"),
         texts = omicGuiFeatureQcTexts("metabolite", "MetaboliteAssayData"),
         # mod_metab_qc_intensity.R:365; mod_metab_qc_duplicates_server_helpers.R:418;
         # mod_metab_qc_itsd.R:402
@@ -1072,8 +1080,8 @@ omicGuiConfigTranscriptomics <- function() {
 
 #' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under `trxOmicProfile()`'s QC
 #' fields (mod_transcriptomics.R:38-41; mod_trx_qc_filter.R): the expression-filter plugin and the
-#' shared finalise with one table. `filtering_figure` (`trxQcFilteringFigure`, mod_trx_qc_filter.R
-#' :55) is added at W8, once W2 has moved it into func_trx_qc_plots.R.
+#' shared finalise with one table. Since KIT-104 W6 the profile has no QC field: the tab is the
+#' shared shell under this configuration, with the figure, alignment and shell read below.
 #' @noRd
 omicGuiTrxQc <- function() {
     list(title = "Transcriptomics Quality Control & Filtering", # mod_transcriptomics.R:38
@@ -1084,6 +1092,30 @@ omicGuiTrxQc <- function() {
             omicGuiQcTab("s4_finalize", "Finalize QC", "omic_qc_finalize", "TRANSCRIPTOMICS")))),
         # The lipid orchestrator's class check under the profile (mod_lipid_qc.R:151-158).
         auto_init = TRUE, complete_state = NULL, itsd = NULL,
+        # The finalise's tracking figure from the worker's metrics, or from the state in process, as
+        # trx's finalise drew it (trxQcFinalizeCollaborators, mod_trx_qc_filter.R:234-237 at 827f2328).
+        filtering_figure = function(theObject = NULL, metrics = NULL, ...) {
+            trxQcFilteringFigure(NULL, metrics %||% trxFilteringMetrics(theObject))
+        },
+        # D10, the parity check (KIT-104 W6): trx's own design check (func_trx_design.R); today's trx
+        # finalise checked the class, the row counts and the design rows only (mod_trx_qc_filter.R:224-229).
+        finalize_alignment = trxDesignAlignment,
+        # F104-04 (lead decision, option 1): the class's validity refuses a count table with no rows,
+        # so the finalise reads a structural shell: the stored slots and design, the count table as its
+        # zero-row prototype (`trxReadTemplate`, which runs no validity) and the stored row counts.
+        finalize_shell = function(binding, manager) {
+            if (!inherits(manager, "DIAStateAdapter")) {
+                cli::cli_abort(paste(binding$step_scope, "needs the session's state owner"), class = "saved_entity_scope")
+            }
+            reference <- getWorkflowStateReference(manager)
+            if (is.null(reference)) return(NULL)
+            withWorkflowStateScope(manager, function() {
+                shell <- trxReadTemplate(manager, reference)
+                tables <- readWorkflowStateMetadata(manager, reference)$data$components[[binding$data_slot]]
+                attr(shell, "assay_rows") <- vapply(tables, function(table) as.integer(table$metadata$shape[[1L]]), integer(1))
+                shell
+            })
+        },
         # Any zero-row assay is refused (mod_trx_qc_filter.R:226); lipid's tab status opens
         # normalisation (mod_lipid_qc_s4.R:420-436); one table, no per-assay table (:75).
         finalize_zero_rows = TRUE, finalize_opens_norm = TRUE, finalize_per_assay = FALSE,

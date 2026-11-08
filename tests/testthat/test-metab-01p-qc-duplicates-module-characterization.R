@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-67 (KIT-104 W6) it reads the deleted mod_metab_qc_duplicates_{ui,render,server}_helpers.R; the sub-tab is mod_omic_qc_tabs.R over the core, covered by test-omic-qc-module.R, MCI-014, the KIT-078 worker test and the metab_* qc_duplicates steps")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

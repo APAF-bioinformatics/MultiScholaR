@@ -147,6 +147,7 @@ test_that("mod_metab_qc_s4_server preserves public finalize behavior", {
 })
 
 test_that("metabolomics QC S4 helper builders preserve summary and assay statistics behavior", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   skip_if_missing_metab_qc_s4_helpers()
 
   current_s4 <- makeMetabQcS4CharacterizationData()
@@ -170,6 +171,7 @@ test_that("metabolomics QC S4 helper builders preserve summary and assay statist
 })
 
 test_that("metabolomics QC S4 history and state helpers preserve fallback behavior", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_metab_qc_s4_helpers()
 
@@ -222,6 +224,7 @@ test_that("metabolomics QC S4 history and state helpers preserve fallback behavi
 })
 
 test_that("metabolomics QC S4 finalize helpers preserve persistence and completion behavior", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   skip_if_missing_metab_qc_s4_helpers()
 
   save_completed_state <- getMultiScholaRBinding("saveMetabQcS4CompletedState")
@@ -252,6 +255,7 @@ test_that("metabolomics QC S4 finalize helpers preserve persistence and completi
 })
 
 test_that("metabolomics QC S4 render helpers preserve render-path behavior", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_metab_qc_s4_helpers()
 
@@ -327,6 +331,7 @@ test_that("metabolomics QC S4 render helpers preserve render-path behavior", {
 })
 
 test_that("metabolomics QC S4 finalize workflow preserves success and error orchestration", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   skip_if_missing_metab_qc_s4_helpers()
 
   run_finalize_workflow <- getMultiScholaRBinding("runMetabQcS4FinalizeWorkflow")
@@ -411,6 +416,7 @@ test_that("metabolomics QC S4 finalize workflow preserves success and error orch
 })
 
 test_that("metabolomics QC S4 reporting and plot helpers preserve success and error tails", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   skip_if_missing_metab_qc_s4_helpers()
 
   report_finalize_success <- getMultiScholaRBinding("reportMetabQcS4FinalizeSuccess")
@@ -494,6 +500,7 @@ test_that("metabolomics QC S4 reporting and plot helpers preserve success and er
 })
 
 test_that("metabolomics QC S4 server body preserves render and observer wiring", {
+  testthat::skip("quarantined: Q-71 (KIT-104 W6) its seams (buildMetabQcS4*, runMetabQcS4*, the finalise helpers) were deleted with mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
   skip_if_missing_metab_qc_s4_helpers()
 
   run_server_body <- getMultiScholaRBinding("runMetabQcS4ServerBody")

@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-69 (KIT-104 W6) it reads the deleted mod_metab_qc_itsd.R (analyzeMetabQcItsdData, buildMetabQcItsd*, runMetabQcItsdServerBody); the sub-tab is mod_omic_qc_tabs.R over analyzeWorkflowOmicsItsd, omicsItsdCvPlot and omicsItsdIntensityPlot, covered by test-omic-qc-module.R (c) and (d), MCI-014.3 and the metab_* qc_itsd_refusal steps")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

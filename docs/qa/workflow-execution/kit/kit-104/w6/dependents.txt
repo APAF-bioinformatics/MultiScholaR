@@ -1,0 +1,68 @@
+KIT-104 W6 dependents grep (2026-11-08), across R/, tests/, tools/ (excluding tools/refactor/) and inst/ (*.R, *.Rmd, *.yml,
+*.json), after the change.
+
+Deleted files (5): R/mod_metab_qc_duplicates_ui_helpers.R, R/mod_metab_qc_duplicates_render_helpers.R,
+R/mod_metab_qc_duplicates_server_helpers.R, R/mod_metab_qc_itsd.R, R/mod_metab_qc_s4_server_helpers.R (Collate updated).
+
+Deleted names (62):
+- metab (53): every function of the 12 metab QC files except the 10 exports (now wrappers): initializeMetabQcSubmodules,
+  the intensity seams (buildMetabIntensity{AssayTabsUi,FilterStats,FilterSummary}, renderMetabIntensityFilterPlot,
+  updateMetabIntensityFilterQcPlot, reportMetabIntensityFilter{Success,RevertSuccess}), the duplicate seams (15), the
+  ITSD seams (metabQcItsdColumns, readMetabQcItsdState, analyzeMetabQcItsdData, buildMetabQcItsd{SummaryUi,VizTabsUi,
+  CvPlot,IntensityPlot}, runMetabQcItsdServerBody) and the finalise seams (21, mod_metab_qc_s4_server_helpers.R);
+- trx (5): trxQcTabsUi, initializeTrxQcSubmodules, registerTrxQcSummaryOutput, trxQcFinalizeText,
+  trxQcFinalizeCollaborators; and the module copies of trxQcRawStats, trxQcFilterText, trxQcMetricsTable and
+  trxQcFilteringFigure (the names stay, defined once in func_trx_qc_plots.R since W2);
+- lipid (4, authorised by the W5 notes): runLipidQcS4FinalizeWorkflow, reportLipidQcS4FinalizeSuccess,
+  registerLipidQcS4ProfileFinalize, registerLipidIntensityRevertObserver; and mod_lipid_qc_server's profile branch.
+- the trx profile's fields qc_title, qc_tabs, qc_init, read_metadata, register_qc_summary, finalize. `class` and
+  `read_state` stay: test-omic-gui-config.R:201-202 reads them (the ticket's rule: removed once no other reader).
+
+Names: files still naming a deleted name
+     25 tests/testthat/test-omic-qc-module.R                       the W6 deletion block's list of deleted names
+     22 tests/testthat/test-metab-01t-qc-s4-module-characterization.R      7 blocks quarantined (Q-71); 1 live block
+     22 tests/testthat/test-metab-01s-qc-s4-module-characterization.R      whole file quarantined (Q-70)
+     15 tests/testthat/test-metab-01u-qc-duplicates-module-characterization.R  3 blocks quarantined (Q-72); 1 live block
+     15 tests/testthat/test-metab-01p-qc-duplicates-module-characterization.R  whole file quarantined (Q-67)
+      9 tests/testthat/test-omics-qc-core.R                         W5's Q-64 blocks and W6's Q-75 (3 blocks)
+      7 tests/testthat/test-metab-01q-qc-intensity-module-characterization.R  12 blocks quarantined (Q-68)
+      6 tests/testthat/test-metab-qc-itsd-direct-shared.R           whole file quarantined (Q-74)
+      6 tests/testthat/test-metab-01r-qc-itsd-module-characterization.R    whole file quarantined (Q-69)
+      1 tests/testthat/test-metab-01o-qc-module-characterization.R    whole file quarantined (Q-66)
+      1 tests/testthat/test-metab-01v-qc-itsd-wrapper-characterization.R    a mock of runMetabQcItsdServerBody behind an
+                                                                    exists() check; the block takes its other branch
+                                                                    (the public server's moduleServer registration)
+                                                                    and passes (3/0)
+      1 tests/testthat/test-module-ci-metab-qc.R                    a comment (MCI-014.3: "it replaces analyzeMetabQcItsdData")
+      1 tests/testthat/test-lipid-01-qc-filtering-helpers.R         inside a W5 Q-65 block
+      1 tests/testthat/test-lipid-01d-qc-intensity-module-seams.R   whole file quarantined (W5 Q-58)
+      8 R/func_omics_qc_shared.R, 3 R/utils_omic_gui_config.R, 3 R/mod_omic_qc_tabs.R   provenance comments only
+                                                                    (file:line at a named commit; no code reference)
+Paths: R/func_metab_s4_qc_methods.R:917, R/func_omics_qc_shared.R, R/utils_omic_gui_config.R: provenance comments;
+test-metab-01p/01s/01r: the file lists behind their (now quarantined) file guards; test-omics-module-globals.R:48: an
+allow-list entry (a deleted file only removes hits; passes 14/0).
+
+No live caller of a deleted name or path remains.
+
+Test files that reach the old code through public names, run after the change (targeted.txt):
+COUNTS test-metab-01o-qc-module-characterization.R pass 0 fail 0 error 0 skip 0     (file-level skip, Q-66)
+COUNTS test-metab-01p-qc-duplicates-module-characterization.R pass 0 fail 0 error 0 skip 0   (Q-67)
+COUNTS test-metab-01q-qc-intensity-module-characterization.R pass 20 fail 0 error 0 skip 13   (12 Q-68 + 1 KIT-072 skip
+                                                                                              at the start commit)
+COUNTS test-metab-01r-qc-itsd-module-characterization.R pass 0 fail 0 error 0 skip 0     (Q-69)
+COUNTS test-metab-01s-qc-s4-module-characterization.R pass 0 fail 0 error 0 skip 0      (Q-70)
+COUNTS test-metab-01t-qc-s4-module-characterization.R pass 2 fail 0 error 0 skip 7      (Q-71)
+COUNTS test-metab-01u-qc-duplicates-module-characterization.R pass 9 fail 0 error 0 skip 3   (Q-72)
+COUNTS test-metab-01v-qc-itsd-wrapper-characterization.R pass 3 fail 0 error 0 skip 0
+COUNTS test-metab-01w-qc-orchestrator-shared.R pass 3 fail 0 error 0 skip 3            (Q-73)
+COUNTS test-metab-qc-itsd-direct-shared.R pass 0 fail 0 error 0 skip 0                 (Q-74)
+COUNTS test-metab-s4-qc-shared.R pass 32 fail 0 error 0 skip 0
+Before the skip lines, after the change: 01o 0/4/1, 01r 6/16/8, 01w 7/4/1, itsd-direct 0/0/4 (pass/fail/error); 01q,
+01t and 01u hid 12, 7 and 3 blocks behind their own "seams are target-only" guards (0, 0 and 0 such skips at the start
+commit; listed per block by a skip-reason run on a snapshot of 827f2328), so they carry explicit Q-ids.
+
+Callers whose callee changed, run as dependents (targeted.txt): helper-gui-entry.R (the three entry files,
+entry-suite.txt), test-workflow-{ui,server}-shared.R, test-module-ui-wrapper-direct-shared.R, test-omics-module-globals.R,
+test-omic-design-module.R, the live lipid QC files (01a, 01g, 01h, 01j, 01k, 01-qc-filtering-helpers), the live users of
+the owner helper's stand-ins (test-lipid-12, 12a, 02b, test-metab-03b, 03d, 02aa), the trx files reading the profile or
+the configuration (test-module-ci-trx-{app,norm,summary,da,design,import}.R, test-omics-design-core.R).

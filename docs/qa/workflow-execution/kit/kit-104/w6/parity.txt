@@ -1,0 +1,33 @@
+KIT-104 W6 parity (2026-11-08): the QC-finalise design-alignment check now runs for metab and trx, as for lipid.
+
+The check
+- metab (D11): omicGuiConfig("metabolomics")$qc$finalize_alignment = function(shell) omicsQcFinalizeAlignment(shell,
+  "metabolomics"): the shared alignment (validateOmicsDesignAlignment, omicsDesignRules("metabolomics")) with lipid's
+  arguments (the design's runs as sample_columns, requireReplicates = FALSE). Refusal text: "Current MetaboliteAssayData
+  object has assay/design mismatch: <errors joined by '; '>".
+- trx (D10): finalize_alignment = trxDesignAlignment (validateTrxDesign on the count table prototype's sample columns,
+  the design and args$group_levels; the check every trx step applies). It runs on the structural shell (F104-04, lead
+  decision option 1): config$qc$finalize_shell reads the stored slots and design and the count table's zero-row
+  prototype through trxReadTemplate (no validity run), with the stored row counts as attr "assay_rows".
+- Both run after today's checks (class, assays with finalize_zero_rows, design rows), in validateWorkflowOmicsQcFinalize;
+  a refusal commits nothing, leaves QC pending and shows "Error finalizing QC: <text>".
+
+Tests (test-omic-qc-module.R; failing first in w6/test-first.txt, passing after in targeted.txt)
+- (a) metab: a design run absent from the assays is refused (by the class's validity on the shell read, as before); a
+  blank group is now refused with "Current MetaboliteAssayData object has assay/design mismatch: Design matrix group
+  column 'group' contains blank assignments." (it committed metab_qc_complete before).
+- (a) trx: a design run absent from the count table ("S_absent") and a group outside the declared levels are both now
+  refused, no commit (both committed trx_qc_complete before).
+- (a) lipid (control): refused before and after.
+
+Lanes and corpora
+- Entry lanes run (w6/entry-suite.txt): trx_screen, lipid_canonical, metab_lc, metab_gc, metab_combined: identical to
+  their oracles. The check refused none of their designs and changed no capture. Nothing to re-freeze.
+- Module-CI and corpus fixtures that run the finalise: the MCI metab fixtures (MCI-014.5, test-omic-qc-module.R (a)/(c),
+  the KIT-082 application-reads journeys), the trx_screen corpus (MCI-028.1 and .3, the W6 F104-04 block), the KIT-040
+  trx_edge_12 reference design (MCI-028.2): all finalise as before. (The KIT-078 worker journeys commit the finalise's
+  store step directly, without the check.)
+- Not run here (outside W6's budget): the proteomics lanes (no finalise step; P-17), the journeys (104a/b/c) and the
+  e2e lanes.
+
+Lane differences: none.

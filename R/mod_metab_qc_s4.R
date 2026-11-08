@@ -19,8 +19,9 @@
 # ============================================================================
 # Purpose: Final S4 state confirmation module for metabolomics QC
 #
-# This module provides a summary of QC processing and allows the user to
-# finalize the QC step before proceeding to normalization.
+# KIT-104 W6: the exported wrappers over the shared finalise sub-tab (mod_omic_qc_tabs.R) under the
+# metab configuration: today's checks plus the design-alignment check every omic's finalise runs
+# (parity, D11), metab's refusal of an empty assay list only (D2) and its QC-only status (D3).
 # ============================================================================
 
 #' @title Metabolomics QC Finalization Module
@@ -36,81 +37,8 @@ NULL
 #' @importFrom DT DTOutput
 #' @importFrom shinyjqui jqui_resizable
 mod_metab_qc_s4_ui <- function(id) {
-    ns <- shiny::NS(id)
-    
-    shiny::tabPanel(
-        "Finalize QC"
-        , shiny::br()
-        , shiny::fluidRow(
-            shiny::column(6
-                , shiny::wellPanel(
-                    shiny::h4("QC Processing Summary")
-                    , shiny::p("Review the QC processing steps before finalizing. You can revert to any previous state if needed.")
-                    , shiny::hr()
-                    
-                    # State history
-                    , shiny::h5("Processing History")
-                    , shiny::uiOutput(ns("state_history"))
-                    
-                    , shiny::hr()
-                    , shiny::div(
-                        shiny::actionButton(
-                            ns("finalize_qc")
-                            , "Finalize QC"
-                            , class = "btn-success"
-                            , width = "100%"
-                            , icon = shiny::icon("check")
-                        )
-                    )
-                )
-            )
-            , shiny::column(6
-                , shiny::wellPanel(
-                    shiny::h4("Current Data Summary")
-                    , shiny::hr()
-                    , shiny::uiOutput(ns("data_summary"))
-                )
-                , shiny::wellPanel(
-                    shiny::h4("Per-Assay Statistics")
-                    , shiny::hr()
-                    , DT::DTOutput(ns("assay_stats_table"))
-                )
-            )
-        )
-        , shiny::fluidRow(
-            shiny::column(12
-                , shiny::verbatimTextOutput(ns("finalize_results"))
-                , shiny::br()
-                # QC Progress Grid
-                , shinyjqui::jqui_resizable(
-                    shiny::plotOutput(ns("filter_plot"), height = "600px", width = "100%")
-                )
-            )
-        )
-    )
+    mod_omic_qc_finalize_ui(id, omicGuiConfig("metabolomics"))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #' @rdname mod_metab_qc_s4
 #' @export
@@ -119,14 +47,5 @@ mod_metab_qc_s4_ui <- function(id) {
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
 mod_metab_qc_s4_server <- function(id, workflow_data, omic_type, experiment_label) {
-    shiny::moduleServer(id, function(input, output, session) {
-        runMetabQcS4ServerBody(
-            input = input,
-            output = output,
-            session = session,
-            workflowData = workflow_data,
-            omicType = omic_type,
-            experimentLabel = experiment_label
-        )
-    })
+    mod_omic_qc_finalize_server(id, workflow_data, omic_type, experiment_label, omicGuiConfig("metabolomics"))
 }

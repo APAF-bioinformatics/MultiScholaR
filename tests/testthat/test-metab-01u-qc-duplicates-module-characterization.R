@@ -207,6 +207,7 @@ test_that("mod_metab_qc_duplicates_server preserves detect-resolve-revert public
 })
 
 test_that("metabolomics duplicate helper builders preserve assay summaries and renderers", {
+  testthat::skip("quarantined: Q-72 (KIT-104 W6) its seams (the duplicate builders, observer shells and resolution workflow) were deleted with mod_metab_qc_duplicates_*_helpers.R; the sub-tab is mod_omic_qc_tabs.R over detectWorkflowOmicsDuplicates and omicsDuplicateResolutionStats, covered by the file's live block, test-omic-qc-module.R, MCI-014.2, the KIT-078 worker test and the metab_* qc_duplicates steps")
   skip_if_missing_metab_duplicate_helpers()
 
   build_summary_ui <- getMultiScholaRBinding("buildMetabDuplicateSummaryUi")
@@ -280,6 +281,7 @@ test_that("metabolomics duplicate helper builders preserve assay summaries and r
 })
 
 test_that("metabolomics duplicate misc helpers preserve resolution workflow behavior", {
+  testthat::skip("quarantined: Q-72 (KIT-104 W6) its seams (the duplicate builders, observer shells and resolution workflow) were deleted with mod_metab_qc_duplicates_*_helpers.R; the sub-tab is mod_omic_qc_tabs.R over detectWorkflowOmicsDuplicates and omicsDuplicateResolutionStats, covered by the file's live block, test-omic-qc-module.R, MCI-014.2, the KIT-078 worker test and the metab_* qc_duplicates steps")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_metab_duplicate_helpers()
 
@@ -396,6 +398,7 @@ test_that("metabolomics duplicate misc helpers preserve resolution workflow beha
 })
 
 test_that("metabolomics duplicate observer helpers preserve notification and output behavior", {
+  testthat::skip("quarantined: Q-72 (KIT-104 W6) its seams (the duplicate builders, observer shells and resolution workflow) were deleted with mod_metab_qc_duplicates_*_helpers.R; the sub-tab is mod_omic_qc_tabs.R over detectWorkflowOmicsDuplicates and omicsDuplicateResolutionStats, covered by the file's live block, test-omic-qc-module.R, MCI-014.2, the KIT-078 worker test and the metab_* qc_duplicates steps")
   skip_if_missing_metab_duplicate_helpers()
 
   report_detection <- getMultiScholaRBinding("reportMetabDuplicateDetection")

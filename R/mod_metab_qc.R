@@ -19,8 +19,9 @@
 # ============================================================================
 # Purpose: Metabolomics QC orchestrator module
 #
-# This module coordinates all QC sub-modules (intensity filtering, duplicate
-# resolution, internal standards, and finalization) in a tabbed interface.
+# KIT-104 W6: the exported wrappers over the shared QC shell (mod_omic_qc.R) under the metab
+# configuration (`omicGuiConfig("metabolomics")`): its title, tabset, four shared sub-tabs, their
+# start (the design's trigger, or the state's class) and the finalise's alignment check.
 # ============================================================================
 
 #' @title Metabolomics Quality Control Orchestrator Module
@@ -35,50 +36,7 @@ NULL
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 uiOutput
 mod_metab_qc_ui <- function(id) {
-    ns <- shiny::NS(id)
-    
-    shiny::tagList(
-        shiny::fluidRow(
-            shiny::column(12
-                , shiny::wellPanel(
-                    shiny::h3("Metabolite Quality Control & Filtering")
-                    , shiny::uiOutput(ns("dynamic_qc_tabs"))
-                )
-            )
-        )
-    )
-}
-
-initializeMetabQcSubmodules <- function(workflowData, omicType, experimentLabel) {
-    mod_metab_qc_intensity_server(
-        "intensity"
-        , workflowData
-        , omicType
-        , experimentLabel
-    )
-    
-    mod_metab_qc_duplicates_server(
-        "duplicates"
-        , workflowData
-        , omicType
-        , experimentLabel
-    )
-    
-    mod_metab_qc_itsd_server(
-        "itsd"
-        , workflowData
-        , omicType
-        , experimentLabel
-    )
-    
-    mod_metab_qc_s4_server(
-        "s4_finalize"
-        , workflowData
-        , omicType
-        , experimentLabel
-    )
-    
-    invisible(NULL)
+    mod_omic_qc_ui(id, omicGuiConfig("metabolomics"))
 }
 
 #' @rdname mod_metab_qc
@@ -86,84 +44,6 @@ initializeMetabQcSubmodules <- function(workflowData, omicType, experimentLabel)
 #' @importFrom shiny moduleServer reactive observeEvent req renderUI tabsetPanel tabPanel
 #' @importFrom logger log_info log_error
 mod_metab_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
-    shiny::moduleServer(id, function(input, output, session) {
-        ns <- session$ns
-        
-        # Track whether sub-modules have been initialized
-        modules_initialized <- shiny::reactiveVal(FALSE)
-        
-        # Render dynamic QC tabs
-        output$dynamic_qc_tabs <- shiny::renderUI({
-            # Check if we have data available
-            # KIT-075: the state's metadata answers whether there is data; no object is read.
-            has_data <- tryCatch({
-                !is.null(workflow_data$state_manager) && 
-                !is.null(readMetabWorkflowMetadata(workflow_data$state_manager))
-            }, error = function(e) {
-                FALSE
-            })
-            
-            if (!has_data) {
-                return(shiny::div(
-                    class = "alert alert-info"
-                    , shiny::icon("info-circle")
-                    , " Please complete the 'Design Matrix' step first. QC tabs will appear here once data is available."
-                ))
-            }
-            
-            # Build the QC tabset
-            shiny::tabsetPanel(
-                id = ns("metab_qc_tabs")
-                , mod_metab_qc_intensity_ui(ns("intensity"))
-                , mod_metab_qc_duplicates_ui(ns("duplicates"))
-                , mod_metab_qc_itsd_ui(ns("itsd"))
-                , mod_metab_qc_s4_ui(ns("s4_finalize"))
-            )
-        })
-        
-        # Initialize sub-module servers when triggered
-        shiny::observeEvent(qc_trigger(), {
-            shiny::req(qc_trigger() == TRUE)
-            
-            if (!modules_initialized()) {
-                logger::log_info("Metabolomics QC: Initializing sub-module servers")
-
-                initializeMetabQcSubmodules(
-                    workflowData = workflow_data
-                    , omicType = omic_type
-                    , experimentLabel = experiment_label
-                )
-                
-                modules_initialized(TRUE)
-                logger::log_info("Metabolomics QC: Sub-modules initialized successfully")
-            }
-        }, ignoreNULL = TRUE, once = TRUE)
-        
-        # Alternative initialization when state manager becomes available
-        shiny::observe({
-            shiny::req(workflow_data$state_manager)
-            
-            # Check if we have a metabolomics S4 object
-            current_state <- tryCatch({
-                readMetabWorkflowMetadata(workflow_data$state_manager)
-            }, error = function(e) {
-                NULL
-            })
-            
-            if (!is.null(current_state) && 
-                identical(current_state$class, "MetaboliteAssayData") && 
-                !shiny::isolate(modules_initialized())) {
-                
-                logger::log_info("Metabolomics QC: Auto-initializing sub-modules (state detected)")
-
-                initializeMetabQcSubmodules(
-                    workflowData = workflow_data
-                    , omicType = omic_type
-                    , experimentLabel = experiment_label
-                )
-                
-                modules_initialized(TRUE)
-            }
-        })
-    })
+    mod_omic_qc_server(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger,
+        config = omicGuiConfig("metabolomics"))
 }

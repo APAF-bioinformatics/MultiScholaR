@@ -1,0 +1,54 @@
+KIT-104 W6 test-first (2026-11-08). One R process per file, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1,
+R_LIBS = core/browser-smoke.yODoyT/library, runner kit/scripts-078/run1.R. Start commit: 827f2328 (origin/performance-v2,
+"KIT-104: quarantine rows Q-56 to Q-65 (W5); notes for phase D").
+
+1. tests/testthat/test-omic-qc-module.R on the start commit's R/ with the W1 gates forced open
+   (MULTISCHOLAR_KIT104_PENDING=1), before any W6 edit:
+
+COUNTS test-omic-qc-module.R pass 99 fail 16 error 0 skip 0
+  BAD (a) parity: metab refuses a design the alignment check refuses, with no commit (fails before)
+      history gains metab_qc_complete; QC "complete"; no error notification; "[message] QC complete! ..."
+  BAD (a) parity: trx refuses a misaligned design at finalise, with no commit (fails before)
+      both cases (a design run absent, a blank group) commit trx_qc_complete and complete QC
+  BAD (c) F-24: a metab Detect duplicates or Analyze internal standards click before the start is not run
+      "[warning] Detection complete: 4 duplicate IDs found" and "[default] Analyzing internal standards...",
+      "[message] Found 4 internal standards" are shown at the start (the click made before the start ran)
+
+2. The same file with the W6 blocks written first (the three W6 gate lines removed; the W5 trx summary/text block
+   retargeted to frozen digests; two W6 blocks added), still on the start commit's R/:
+
+COUNTS test-omic-qc-module.R pass 102 fail 26 error 1 skip 0
+  BAD (a) parity: metab ...                               (as above)
+  BAD (a) parity: trx ...                                 (as above)
+  BAD (c) F-24: metab ...                                 (as above)
+  BAD W6 F104-04: trx's shared finalise reads a structural shell (no validity), checks it and commits trx_qc_complete
+      readWorkflowOmicsShell on the trx_screen state errors with class trx_counts_invalid (passes: F104-04 reproduced);
+      `config$qc$finalize_shell` is not a function; "attempt to apply non-function"
+  BAD W6 metab's and trx's QC copies are deleted; their exports are wrappers; the trx profile has no QC hook
+      25 deleted names still exist; trx's four figure functions resolve to mod_trx_qc_filter.R; the profile still holds
+      qc_title, qc_tabs, qc_init, register_qc_summary, finalize, read_metadata; metab and trx have no finalize_alignment
+  The retargeted W5 block ("the shared finalise's one-table summary and text are trx's today") passes on the start
+  commit against its frozen digests.
+
+   Frozen values (computed on the start commit from registerTrxQcSummaryOutput and trxQcFinalizeText on the trx_screen
+   fixture, history "initial", "trx_raw_data_s4", 300 genes):
+     summary HTML sha256 01b96be2ab75dabe19023041fc713e37f9e4b979118f607310fd5cdbd8045201
+     text sha256         068f1028210d199b0ee99687b5ca511234bdf96ead9ad8d3dc6553ce4c2cb179
+
+3. The retargeted tests, unchanged, on the start commit (before their targets changed):
+
+COUNTS test-module-ci-metab-qc.R pass 64 fail 0 error 0 skip 0          (MCI-014)
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0            (MCI-028)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0      (KIT-078; the worker helper's metab lines)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0     (BUG-10 metab case)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   (KIT-082 metab and trx blocks)
+COUNTS test-omics-qc-core.R pass 81 fail 0 error 0 skip 7               (W2; the 7 skips are W5's Q-64)
+
+4. Display identity checked before deleting the metab copies (start commit, a scratch comparison on the MCI metab
+   fixtures, layouts combined and gc, each on the whole object and on the store's shell): metab's renderers against
+   the shared sub-tabs' under omicGuiConfig("metabolomics"), HTML with shiny's random tabset ids masked.
+     data summary, finalize text, state history (0, 1, 2 states), duplicate summary and tables (none detected, found,
+     all NULL), duplicate text, intensity table, intensity per-assay tabs, intensity text: IDENTICAL
+     per-assay statistics frame: column types differ (metab's counts are double, the shared integer); its JSON and
+     its DT widget payload are IDENTICAL (what the browser receives)
+   The ITSD sub-tab is held by (d) (frozen digests, metab and lipid) and the UIs by (b).

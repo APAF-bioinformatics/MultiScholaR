@@ -218,7 +218,7 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
       normData <- createMetabNormReactiveState()
       session$userData$probe_norm <- normData
       mod_metab_qc_intensity_server("intensity", workflow, omic, "kit078")
-      shiny::observeEvent(input$resolve_duplicates, runMetabDuplicateResolutionObserver(workflow, omic, output, info, stats, plot))
+      mod_metab_qc_duplicates_server("duplicates", workflow, omic, "kit078")
       shiny::observeEvent(input$run_normalization, runMetabNormNormalizationObserverWrapper(workflow, input, paths, omic, normData, addLog,
         getPlotAestheticsFn = aesthetics, generateCompositeFromFilesFn = function(...) NULL))
       shiny::observeEvent(input$apply_correlation_filter, runMetabNormApplyCorrelationObserverEntry(workflow, normData, input$min_pearson_correlation_threshold,
@@ -234,12 +234,11 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
 #' Click through the tabs' journey in the server.
 omicsTabJourney <- function(session, omic, selections = NULL) {
   do.call(session$setInputs, omicsTabInputs())
-  # KIT-104 W5: lipid's intensity and duplicate sub-tabs run as their modules (`intensity`, `duplicates`), as metab's
-  # intensity sub-tab does.
+  # KIT-104 W5/W6: the intensity and duplicate sub-tabs run as their modules (`intensity`, `duplicates`).
   apply_intensity <- list(`intensity-intensity_cutoff_percentile` = 1, `intensity-proportion_below_cutoff` = 0.5, `intensity-apply_filter` = 1)
   do.call(session$setInputs, apply_intensity)
   session$flushReact()
-  do.call(session$setInputs, if (identical(omic, "metabolomics")) list(resolve_duplicates = 1) else list(`duplicates-resolve_duplicates` = 1))
+  session$setInputs(`duplicates-resolve_duplicates` = 1)
   session$flushReact()
   commitWorkflowOmicsStoreStep(session$userData$probe_owner, paste0(if (identical(omic, "metabolomics")) "metab" else "lipid", "_qc_finalize"),
     paste0(if (identical(omic, "metabolomics")) "metab" else "lipid", "_qc_complete"), list(), "QC processing complete - ready for normalization")

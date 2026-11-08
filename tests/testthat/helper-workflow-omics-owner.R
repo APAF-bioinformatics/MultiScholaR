@@ -112,7 +112,8 @@ omicsStandInReaders <- function(env = parent.frame()) {
     readLipidWorkflowShell = shell_of, readMetabWorkflowShell = shell_of,
     readLipidWorkflowIds = state_of, readMetabWorkflowIds = state_of,
     readWorkflowOmicsRows = function(binding, manager, reference = NULL, keep) state_of(manager, reference),
-    readMetabQcItsdState = function(stateManager, inputPattern) state_of(stateManager),
+    # KIT-104 W6: the ITSD analysis is the core's (analyzeWorkflowOmicsItsd), which reads the state's shell.
+    readWorkflowOmicsShell = function(binding, manager, reference = NULL, measures = character()) state_of(manager, reference),
     readWorkflowOmicsItsdTables = function(binding, manager, assays, build, reference = NULL) {
       tables <- methods::slot(state_of(manager, reference), binding$data_slot)
       lapply(tables[intersect(assays, names(tables))], build)

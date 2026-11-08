@@ -46,13 +46,3 @@ mod_lipid_qc_intensity_ui <- function(id) {
 mod_lipid_qc_intensity_server <- function(id, workflow_data, omic_type, experiment_label) {
     mod_omic_qc_intensity_server(id, workflow_data, omic_type, experiment_label, omicGuiConfig("lipidomics"))
 }
-
-#' The lipid intensity sub-tab's Revert, which trx's expression filter borrows (mod_trx_qc_filter.R) until KIT-104 W6:
-#' the shared revert (`registerOmicQcRevertObserver`) clearing the two values given.
-#' @noRd
-registerLipidIntensityRevertObserver <- function(input, workflowData, output, filterStatsVal, filterPlotVal) {
-    registerOmicQcRevertObserver(input, output, "revert_filter", workflowData, "filter_results", function() {
-        filterStatsVal(NULL)
-        filterPlotVal(NULL)
-    }, "Reverted lipid intensity filter to")
-}

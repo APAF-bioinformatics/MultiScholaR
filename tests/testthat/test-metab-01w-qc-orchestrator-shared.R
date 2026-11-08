@@ -215,6 +215,7 @@ test_that("metabolomics QC orchestrator preserves the unavailable-state info pan
 })
 
 test_that("metabolomics QC orchestrator preserves populated tab rendering", {
+  testthat::skip("quarantined: Q-73 (KIT-104 W6) it stubs the deleted orchestrator's sub-module servers in its own environment and reads its log lines; the tab is the shared shell, covered by the file's live block, test-omic-qc-module.R (b), the BUG-10 audit and MCI-014's F-24 block")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedMetabQcCapture()
   server_fn <- getMetabQcServer()
@@ -246,6 +247,7 @@ test_that("metabolomics QC orchestrator preserves populated tab rendering", {
 })
 
 test_that("metabolomics QC orchestrator preserves qc-trigger submodule initialization", {
+  testthat::skip("quarantined: Q-73 (KIT-104 W6) it stubs the deleted orchestrator's sub-module servers in its own environment and reads its log lines; the tab is the shared shell, covered by the file's live block, test-omic-qc-module.R (b), the BUG-10 audit and MCI-014's F-24 block")
   captured <- newSharedMetabQcCapture()
   server_fn <- getMetabQcServer()
   server_env <- environment(server_fn)
@@ -279,6 +281,7 @@ test_that("metabolomics QC orchestrator preserves qc-trigger submodule initializ
 })
 
 test_that("metabolomics QC orchestrator preserves state-detected auto-initialization", {
+  testthat::skip("quarantined: Q-73 (KIT-104 W6) it stubs the deleted orchestrator's sub-module servers in its own environment and reads its log lines; the tab is the shared shell, covered by the file's live block, test-omic-qc-module.R (b), the BUG-10 audit and MCI-014's F-24 block")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedMetabQcCapture()
   server_fn <- getMetabQcServer()

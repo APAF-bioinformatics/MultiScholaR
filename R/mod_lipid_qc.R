@@ -20,7 +20,8 @@
 # Purpose: Lipidomics QC orchestrator module
 #
 # KIT-104 W5: the exported wrappers over the shared QC shell (mod_omic_qc.R) under the lipid
-# configuration, or the profile's omic (trx) under its own.
+# configuration, or the profile's omic (trx) under its own (KIT-104 W6: its tab is wholly the shared
+# shell's, with the filter plugin and the shared finalise).
 # ============================================================================
 
 #' @title Lipidomics Quality Control Orchestrator Module
@@ -29,7 +30,7 @@
 #'              duplicate resolution, internal standard QC, and finalization.
 #' @name mod_lipid_qc
 #' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
-#' @param profile An omic profile (KIT-096): its title, sub-tabs, their servers and class. `NULL`, the default, is lipidomics.
+#' @param profile An omic profile (KIT-096): its `omic_type` selects that omic's configuration. `NULL`, the default, is lipidomics.
 NULL
 
 #' @rdname mod_lipid_qc
@@ -51,17 +52,7 @@ initializeLipidQcSubmodules <- function(workflow_data, omic_type, experiment_lab
 }
 
 mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL, profile = NULL) {
-    # KIT-104 W5: the shared shell under the lipid configuration, or the profile's omic (trx) under its own.
-    config <- omicGuiConfig(profile$omic_type %||% "lipidomics")
-    if (is.null(profile$qc_init)) {
-        return(mod_omic_qc_server(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger,
-            config = config))
-    }
-    # Until KIT-104 W6 moves trx onto the shared finalise: the shell, with the profile's own sub-modules started (its
-    # filter and the lipid finalise under the profile, `initializeTrxQcSubmodules`). Its tabset is the configuration's.
-    shiny::moduleServer(id, function(input, output, session) {
-        qc_workflow_type <- shiny::reactiveVal(NULL)
-        registerOmicQcShell(output, session, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger,
-            config, qc_workflow_type, start = function(route) profile$qc_init(workflow_data, omic_type, experiment_label))
-    })
+    # KIT-104 W5/W6: the shared shell under the lipid configuration, or the profile's omic (trx) under its own.
+    mod_omic_qc_server(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger,
+        config = omicGuiConfig(profile$omic_type %||% "lipidomics"))
 }

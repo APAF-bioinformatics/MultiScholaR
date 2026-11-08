@@ -1,6 +1,7 @@
 # KIT-096 MCI-028: the transcriptomics QC tab: the expression-filter sub-tab (KIT-095's trx_expression_filter, its counts
 # metrics, the filtering figure, the raw-logCPM PCA and RLE) and the lipid QC finalise under the transcriptomics profile
-# (trx_qc_finalize). In process through the wrappers, managed through the worker.
+# (trx_qc_finalize; since KIT-104 W6 the shared finalise under the transcriptomics configuration). In process through the
+# wrappers, managed through the worker.
 
 #' The QC tab's sub-modules, as the QC orchestrator starts them, with the runner when managed. The filter sub-tab's
 #' displayed values are kept on the session for the test.
@@ -99,7 +100,8 @@ test_that("MCI-028.3 under a managed session the metrics and figures are the wor
 test_that("MCI-028.4 the QC tab under the transcriptomics profile: the filter and finalise sub-tabs, the orchestrator's class", {
   html <- htmltools::renderTags(mod_lipid_qc_ui("qc", profile = trxOmicProfile()))$html
   expect_match(html, "Transcriptomics Quality Control", fixed = TRUE)
-  tabs <- htmltools::renderTags(trxOmicProfile()$qc_tabs(shiny::NS("qc")))$html
+  # KIT-104 W6: the profile's QC tabs are the shared shell's tabset under the transcriptomics configuration.
+  tabs <- htmltools::renderTags(omicQcTabsetUi(shiny::NS("qc"), omicGuiConfig("transcriptomics"), "TRANSCRIPTOMICS"))$html
   expect_match(tabs, "Expression Filter", fixed = TRUE)
   expect_match(tabs, "Finalize QC", fixed = TRUE)
   expect_match(tabs, "qc-filter-apply_filter", fixed = TRUE)

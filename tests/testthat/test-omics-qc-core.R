@@ -208,6 +208,7 @@ test_that("F104 (W2): a NULL pattern is read as an empty one, as metab reads it 
 })
 
 test_that("analyzeWorkflowOmicsItsd gives metab's analysis (analyzeMetabQcItsdData on readMetabQcItsdState)", {
+    testthat::skip("quarantined: Q-75 (KIT-104 W6) it compares the core with analyzeMetabQcItsdData and readMetabQcItsdState, which W6 deleted; the comparison passed at 827f2328")
     itsd <- omicGuiConfig("metabolomics")$qc$itsd
     for (pattern in list("", "^IS_", "^NO_MATCH$", NULL)) {
         workflow <- module_ci_metab_qc_workflow(module_ci_metab_qc_object(layout = "combined"))
@@ -294,6 +295,7 @@ test_that("validateWorkflowOmicsQcFinalize is lipid's finalise validation: passe
 })
 
 test_that("validateWorkflowOmicsQcFinalize for metab: today's passes and refusals, and the alignment (parity)", {
+    testthat::skip("quarantined: Q-75 (KIT-104 W6) it compares the core with validateMetabQcS4FinalizeState, which W6 deleted; the comparison passed at 827f2328")
     qc <- qcCoreConfig("metabolomics")
     aligned <- readMetabWorkflowShell(module_ci_metab_qc_workflow()$state_manager, measures = "features")
     expect_identical(validateWorkflowOmicsQcFinalize(aligned, qc, metabolomicsDeclarationBinding),
@@ -360,6 +362,7 @@ test_that("trxDesignAlignment passes on the trx_screen shell and refuses what va
     absent@design_matrix <- rbind(absent@design_matrix, extra)
     expect_match(trxDesignAlignment(absent)$errors, "S_absent", fixed = TRUE)
 
+    testthat::skip("quarantined: Q-75 (KIT-104 W6) the rest compares the core with trxQcFinalizeCollaborators, which W6 deleted; it passed at 827f2328")
     # The finalise: today's trx checks (on the metadata) give the same passes and texts; the alignment is the parity.
     qc <- qcCoreConfig("transcriptomics")
     today <- trxQcFinalizeCollaborators()$validateFinalizeStateFn

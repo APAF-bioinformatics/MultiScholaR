@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-70 (KIT-104 W6) it reads the deleted mod_metab_qc_s4_server_helpers.R; the finalise is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by test-omic-qc-module.R (a), MCI-014.5, the KIT-082 application-reads blocks and the metab_* qc_finalize steps")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)
