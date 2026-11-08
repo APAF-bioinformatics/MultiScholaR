@@ -1,0 +1,131 @@
+# KIT-105 W1 notes for phases B to E (from the W1 agent, 2026-11-08)
+
+## What W1 added
+- `omicGuiConfig(<omic>)$norm` (R/utils_omic_gui_config.R; design 4.7): lipid's and metab's values at 9a98e765, with
+  their file:line in the builders' comments (`omicGuiFeatureNorm`, `omicGuiLipidNorm`, `omicGuiMetabNorm`). Trx and
+  proteomics carry `norm = NULL` (the name is present; KIT-110 and KIT-111 fill it).
+- Validated by `validateOmicGuiNorm` (class `omic_gui_config_invalid`); the group is `named_list_or_null` and is checked
+  only when present. Two type codes were added to `omicGuiFieldHasType`: `num1` (one number) and `int1` (one positive
+  whole number).
+- Required fields: `module_id` ("norm"), `panels`, `plot_tabs`, `stage_labels` (3), `assay_slots` (2L), `ruv_heading`,
+  `ruv_help`, `run` and `correlation` (lists with `managed`), `pre_qc_on_entry` (TRUE), `export`, `itsd_table`, `testids`,
+  `skip_correlation_flags`, `final_pca`.
+  - `panels`: the shared panel library's sections, a subset in the library's order: `aesthetics` (list()), `itsd`
+    (`aggregation`: the three choices, median first), `log2` (`offset` 1), `between_sample` (`methods`, the four
+    choices; `default` "cyclicloess"), `ruv_iii` (`modes`, the three choices; `default` "automatic"; `percentage` 5;
+    `k` 2; `noun` "Lipids"/"Metabolites"), `actions` (list()), `export` (`button` "export_session"). The choices are named
+    vectors label = value, as today's UI renders them; a default must be among its choices.
+  - `plot_tabs`: the frame's eight tab ids, once each and in order (itsd, ruv, pca, density, rle, correlation,
+    correlation_filter, log). `stage_labels`: "Post-Filtering", "Post-Normalization", "RUV-Corrected".
+  - `run$managed` = `runWorkflowOmicsManagedNormalisation`, `correlation$managed` = `runWorkflowOmicsManagedCorrelation`.
+  - `export`: `prefix` ("lipid_"/"metab_"), `counts_field` ("lipid_counts"/"metabolite_counts"), `samples`
+    ("design"/"columns", P-18; the validator allows only these two).
+  - `itsd_table`: an adaptor in the config, `function(assay_data, id_col, annotation_cols)`, over
+    `buildLipidItsdSelectionTable(lipid_id_col =)` / `buildItsdSelectionTable(metabolite_id_col =)` (D8; the KIT-104
+    `qc$itsd$metrics` precedent). The `is_patterns` argument is left at the builders' default, as both tabs call them.
+  - `testids`: `method`, `ruv_mode`, `run`, `export` (`<prefix>-norm-method`, `-norm-ruv-mode`, `-norm-run`,
+    `-norm-export-session`).
+  - D7 values: `skip_correlation_flags` ("before_commit" lipid, "after_commit" metab; the validator allows only these
+    two) and `final_pca` (`preparing_size` 5 both; `error_size` 4 lipid, 5 metab: the managed placeholders).
+- The srcref block of test-omic-gui-config.R walks `config$norm`: no norm function may be defined in an R/mod_*.R file.
+
+## Deferred for the lead to wire at W6 (absent now; optional and type-checked when present)
+- `norm$run$in_process` and `norm$correlation$in_process`: today `handleLipidNormRunNormalization` /
+  `runMetabNormNormalizationPipelineShell` and the in-process branches of the correlation handlers, all in R/mod_*.R;
+  W2 writes `runWorkflowOmicsInProcessNormalisation` (and the frame's in-process correlation call).
+- `norm$export$collect` and `norm$export$save`: W2's `collectWorkflowOmicsNormSession` and
+  `saveWorkflowOmicsNormSessionArtifacts`.
+- At W6: move them from `norm_action_optional` / `norm_export_optional` into the required schemas
+  (`omicGuiConfigSchema()`), and drop them from `guiConfigNormDeferred` in test-omic-gui-config.R (its block asserts they
+  are absent today and accepted when wired).
+- Not config fields (the binding's, design 4.7): the composite figure and the final PCA (`composite_figure`,
+  `final_pca` entries of the declaration bindings, W2's re-point).
+- Not added (no consumer yet): the export summary's title ("Lipidomics"/"Metabolomics Normalized Session Data Export
+  Summary") and the session RDS `omic_type`; they derive from `shell$label` / `shell$omic_type` if the core saver needs
+  them. Everything else the two tabs show is the same text (see "Twin differences").
+
+## test-omic-norm-module.R: what it drives and what the new code must keep
+- (a) `mod_lipid_norm_ui("norm")`, `mod_metab_norm_ui("norm")`, `mod_lipid_norm_ui("norm", profile = trxOmicProfile())`:
+  the HTML sha256 (tabset ids masked) and the literal inputs, outputs, test ids and tab titles. Lipid and metab have the
+  same 22 inputs and 37 outputs; they differ in the test-id prefix and the HTML (metab's hand-written markup). W5 must
+  keep metab's HTML digest: any markup difference from lipid's generated grid becomes config data (ticket W5).
+- (b)/(c) drive `mod_{lipid,metab}_norm_server` in `testServer` (module id "norm", tab starting on "qc") on the MCI
+  fixtures (`module_ci_*_norm_object(positive_only = TRUE)`, `module_ci_*_norm_workflow`, a real owner), in process.
+  Three scenarios per omic, each run once per file (cached in `omicNormRuns`):
+  - skip: tab entry ("norm": the pre-QC), export refused, run (ITSD off, cyclicloess, RUV skip), correlation (0.5),
+    final QC plot, export, reset;
+  - manual: a manual ITSD selection (rows 2 and 1 of the selection tables: IS_A, IS_B), quantile, RUV manual k 2 / 5%;
+    skip correlation; reset;
+  - automatic: ITSD by pattern, cyclicloess, RUV automatic, with `lcms_pos_post_norm_density.png` removed after the
+    post-norm figures (the composite with a missing file); final QC plot; the final PCA failing; skip-correlation with
+    the store commit failing (last: it ends the session).
+- Doubles, all looked up by name at call time (the frame and the core must keep calling these by name in the namespace):
+  the RUV kernels (`runLipidPerAssayRuvOptimization` / `runPerAssayRuvOptimization`, `ruvIII_C_Varying`: the MCI
+  stubs); `plotPca` (called through; the "Final QC - PCA" calls are recorded, and refused for the failing case);
+  `generateLipidQcPlots` / `generateMetabQcPlots` (called through; one file removed in the automatic run);
+  `commitWorkflowReferenceState` (refused for the failing skip); `ggplot2::annotate` (labels recorded); and the entry
+  suite's browser double (`guiEntryInstallBrowserDouble`: notifications and select updates).
+- Captured per step: history; `tab_status`; the new log lines (time masked); the notifications; `normData`'s flags,
+  assay names, ITSD selections and each state slot's committed state name; the provenance operations; digests of the
+  states (`guiEntryStateDigests`), the provenance (entity ids masked), `ruv_optimization_results` /
+  `correlation_results` / `itsd_candidate_ids`, the 24 image slots (the QC file each shows, by bytes, with its alt), the
+  8 labels, every other registered output (`guiEntryOutputValue`); the "Final QC - PCA" calls (state digest, grouping,
+  shape, title, plot data); every annotation label drawn; the QC directory and the source directory's files. The export
+  step keeps the session RDS field names, the feature counts, a digest of the other values and the summary text.
+- What the frame must keep for these to hold: `session$returned` is the reactive `normData`, with today's field names
+  (`normalization_log`, the flags, `assay_names`, `itsd_selections`, `itsd_candidate_ids`, the six `*_obj` slots,
+  `ruv_optimization_results`, `correlation_results`); the same registered outputs (names are in the outputs digest);
+  the same log lines, notifications (type and text) and select updates; the same order of annotate calls (the
+  composite's row labels and column titles, the placeholders).
+- Run time: about 2 minutes (six runs with real figures, composites and correlation).
+- Six fields are held as "<unchanged>" when a step left them as the step before had them (`history`, `tab_status`,
+  `norm`, `operations`, `qc_files`, `source_files`), so the frozen file stays readable; the comparison stays exact.
+- MULTISCHOLAR_KIT105_W1_DUMP=<file> writes every capture (and each step's full image and label slots) as R code; that
+  is how the frozen values were made, and how to see what changed.
+
+## Twin differences recorded (design D7; all on today's code)
+- Export, per-assay sample count (P-18): on the MCI fixture lipid writes 4 samples per assay (design samples among the
+  columns), metab 5 (7 columns less the id and annotation columns; the fixture has a third, `annotation_id`). Counts
+  field `lipid_counts` / `metabolite_counts`. The 25 session-RDS fields are the same names in the same order otherwise.
+- Export summary text: the same 27 lines except the omic word in the title and the file prefix.
+- Skip-correlation with the store commit refused: at the commit lipid already holds `correlation_filtering_complete`
+  TRUE and `correlation_filtered_obj` (the RUV-corrected state); metab holds FALSE and NULL. In both the error is
+  unhandled in the observer, so shiny ends the session ("Error in commitWorkflowReferenceState: ..."); history and
+  `tab_status` are unchanged and no notification is shown. The flag order is therefore visible only at the commit
+  (F105-02 below).
+- Final PCA failing, in process: both show "Error: <message>" at size 4 (lipid's renderer catch, metab's builder catch).
+  The managed sizes differ (lipid 5/4, metab 5/5): config `final_pca`.
+- The composite with a missing file: the same log lines, files and annotation labels for both; the missing cell is
+  blank and the composite is written.
+- Everything else (log lines, notifications, outputs other than the image slots and labels, provenance operations and
+  variants, the final PCA's plot data) is the same text for both omics; the state digests differ only by the fixtures'
+  feature names.
+- Metab's composite step returns extra fields (W2's concern; not visible at the server).
+
+## Findings
+- F105-01 (defect, display only; not fixed in W1: outside its write scope). Lipid's stage-grid registrars
+  (`registerLipidNormStaticQcImageOutputs`, mod_lipid_norm_support_helpers.R:4-39, and
+  `registerLipidNormAssayLabelOutputs`, :41-58) assign renderers in a `for` loop whose arguments are lazy promises
+  (`spec[[1]]`, `spec[[2]]`, `stagePrefixes[[spec[[3]]]]`, `output_specs[[output_id]]`) read only when the renderer
+  first runs, after the loop: every one of the 24 lipid image slots shows the last spec (assay 2's RUV-corrected
+  correlation figure, or "Plot not generated yet: <assay2>_ruv_corrected_correlation.png") and every one of the 8 labels
+  names assay 2. Trx's mount registers the same functions (mod_trx_norm.R:217-227), so its slots show assay 2 of one
+  assay ("Assay not detected yet") and its labels "Assay 2: (detecting...)". Metab's hand-written bindings are right.
+  The frozen entry oracles hold the defect: `lipid_canonical` (assay1 labels "Assay: LCMS_Neg", the second assay; the
+  image slots without an image) and `trx_screen` (labels "Assay 2: (detecting...)", image slots empty).
+  - Test: "F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)", gated
+    by `omicNormPending()` (MULTISCHOLAR_KIT105_PENDING=1 runs it; it fails on 9a98e765 in every step). The metab twin
+    passes ungated.
+  - Fix (no methodology change): `force()` the arguments in `buildLipidNormQcImageRenderer`'s and
+    `buildLipidNormAssayLabelRenderer`'s returned functions (or the frame's grid registrars, W4, written without the lazy
+    loop). When it lands: remove the `omicNormPending()` line; re-freeze the lipid `images` and `labels` digests of
+    every (b) step once (only those two fields change); re-freeze the `lipid_canonical` and `trx_screen` lanes once with
+    attribution in kit-105/lane-changes.md (the ticket's rule); MCI-030 asserts the UI only.
+- F105-02 (defect, robustness; not fixed): an error in skip-correlation's store commit is unhandled in both omics
+  (lipid `handleLipidNormSkipCorrelationFilter`, metab `dispatchMetabNormSkipCorrelation`; neither has a tryCatch, unlike
+  run, reset and apply), so shiny ends the user's session. No result changes. A fix (catch, log "ERROR ...", error
+  notification) would change the (c) capture `skip_correlation_failing` for both omics; it is the lead's call whether
+  the frame (W4) takes it, re-freezing that one extra entry.
+- Observed, not investigated (kernel behaviour, the same for both omics): on the MCI fixture the pre-normalisation
+  stage writes only the correlation figure (no `*_pre_norm_{pca,density,rle}.png`); the entry lanes' fixtures draw the
+  pre-normalisation PCA (metab_lc oracle). The captures record it as today's behaviour.

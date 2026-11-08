@@ -37,6 +37,16 @@
 # finalise's function fields (`filtering_figure`, `finalize_alignment`), wired to the core by W2 to
 # W6, required with the finalise sub-tab, which every feature omic has; `finalize_shell` (trx only)
 # stays optional.
+#
+# KIT-105 W1 adds the `norm` group (design 4.7) with the values the lipid and metab normalisation
+# tabs have at HEAD 9a98e765 (the lipid and metab norm files unchanged since 55a53d44), with their
+# file:line there: the option sections in order with their options, the QC tabs, the stage grid, the
+# RUV tab's texts, the managed run and correlation, the pre-QC on tab entry, the export's per-omic
+# values, the ITSD selection table builder, the test ids and the per-omic display values of design
+# D7 (the skip-correlation flag order, the final PCA's placeholder sizes). Trx (KIT-110) and
+# proteomics (KIT-111) have none yet: their `norm` is NULL. The in-process run and correlation and
+# the export's collector and saver are still module functions (or not yet written), so they stay
+# optional until KIT-105 W6 wires them to the core.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -44,7 +54,7 @@
 
 #' The shared GUI layer's configuration of one omic, validated.
 #' @param omic_type One of `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
-#' @return A plain list with the groups `shell`, `binding`, `import`, `design` and `qc`.
+#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc` and `norm`.
 #' @noRd
 omicGuiConfig <- function(omic_type) {
     builders <- list(proteomics = omicGuiConfigProteomics, lipidomics = omicGuiConfigLipidomics,
@@ -70,13 +80,14 @@ validateOmicGuiConfig <- function(config) {
     if (!is.list(config)) omicGuiConfigAbort("config", "must be a list")
     schema <- omicGuiConfigSchema()
     groups <- c(shell = "named_list", binding = "named_list", import = "named_list",
-        design = "named_list", qc = "named_list")
+        design = "named_list", qc = "named_list", norm = "named_list_or_null")
     checkOmicGuiFields(config, groups)
     validateOmicGuiShell(config$shell, schema)
     validateOmicGuiBinding(config$binding, config$shell$omic_type, schema)
     validateOmicGuiImport(config$import, schema)
     validateOmicGuiDesign(config$design, config, schema)
     validateOmicGuiQc(config$qc, config$shell$routes, schema)
+    if (!is.null(config$norm)) validateOmicGuiNorm(config$norm, schema)
     invisible(config)
 }
 
@@ -157,7 +168,29 @@ omicGuiConfigSchema <- function() {
             omic_qc_finalize = c("finalize_total_label", "finalize_id_label", "finalize_total",
                 "finalize_no_assays", "finalize_no_design")),
         qc_notifications = c(omic_qc_intensity = "intensity", omic_qc_duplicates = "duplicates",
-            omic_qc_itsd = "itsd")
+            omic_qc_itsd = "itsd"),
+        # KIT-105 W1 (design 4.7), checked when the omic has the group.
+        norm = c(module_id = "chr1", panels = "named_list", plot_tabs = "chr", stage_labels = "chr",
+            assay_slots = "int1", ruv_heading = "chr1", ruv_help = "chr1", run = "named_list",
+            correlation = "named_list", pre_qc_on_entry = "lgl1", export = "named_list", itsd_table = "ref",
+            testids = "named_chr", skip_correlation_flags = "chr1", final_pca = "named_list"),
+        # `run` and `correlation`: the managed function; the in-process twin is optional until KIT-105
+        # W6 wires it (today it is in R/mod_*.R, W2 writes the core's).
+        norm_action = c(managed = "ref"),
+        norm_action_optional = c(in_process = "ref"),
+        # `export`: the per-omic values (D7, P-18); the collector and saver as `norm_action_optional`.
+        norm_export = c(prefix = "chr1", counts_field = "chr1", samples = "chr1"),
+        norm_export_optional = c(collect = "ref", save = "ref"),
+        norm_testids = c(method = "chr1", ruv_mode = "chr1", run = "chr1", export = "chr1"),
+        # The managed final PCA's placeholders (D7: "Preparing ..." and "Error: ..." text sizes).
+        norm_final_pca = c(preparing_size = "num1", error_size = "num1"),
+        # The shared panel library's option sections, in their order, and each one's options.
+        norm_panels = list(aesthetics = character(), itsd = c(aggregation = "named_chr"),
+            log2 = c(offset = "num1"), between_sample = c(methods = "named_chr", default = "chr1"),
+            ruv_iii = c(modes = "named_chr", default = "chr1", percentage = "num1", k = "num1", noun = "chr1"),
+            actions = character(), export = c(button = "chr1")),
+        # The QC tabs a frame can show, in their order.
+        norm_plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log")
     )
 }
 
@@ -330,6 +363,45 @@ validateOmicGuiQcGroups <- function(groups, routes, schema) {
     unique(unlist(lapply(groups, function(group) vapply(group$tabs, `[[`, character(1), "component"))))
 }
 
+#' The norm group (design 4.7): its fields; the option sections from the shared panel library, in
+#' its order, each with its options; the QC tabs from the frame's set; three stage labels; the
+#' managed run and correlation (their in-process twins optional until W6); the export's values and
+#' choices; the test ids; and the D7 display values.
+#' @noRd
+validateOmicGuiNorm <- function(norm, schema) {
+    checkOmicGuiFields(norm, schema$norm, "norm")
+    sections <- names(schema$norm_panels)
+    panels <- names(norm$panels)
+    if (length(panels) == 0L || !all(panels %in% sections) || is.unsorted(match(panels, sections))) {
+        omicGuiConfigAbort("norm$panels", sprintf("must name option sections of the panel library in its order (%s)",
+            paste(sections, collapse = ", ")))
+    }
+    for (panel in panels) {
+        checkOmicGuiFields(norm$panels[[panel]], schema$norm_panels[[panel]], paste0("norm$panels$", panel))
+    }
+    for (panel in intersect(c("between_sample", "ruv_iii"), panels)) {
+        choices <- norm$panels[[panel]][[if (identical(panel, "ruv_iii")) "modes" else "methods"]]
+        checkOmicGuiChoice(norm$panels[[panel]]$default, paste0("norm$panels$", panel, "$default"), choices)
+    }
+    tabs <- norm$plot_tabs
+    if (anyDuplicated(tabs) || !all(tabs %in% schema$norm_plot_tabs) || is.unsorted(match(tabs, schema$norm_plot_tabs))) {
+        omicGuiConfigAbort("norm$plot_tabs", sprintf("must name the frame's QC tabs once each, in their order (%s)",
+            paste(schema$norm_plot_tabs, collapse = ", ")))
+    }
+    if (length(norm$stage_labels) != 3L) omicGuiConfigAbort("norm$stage_labels", "must hold the three stages' captions")
+    for (field in c("run", "correlation")) {
+        checkOmicGuiFields(norm[[field]], schema$norm_action, paste0("norm$", field))
+        checkOmicGuiFields(norm[[field]], schema$norm_action_optional, paste0("norm$", field), required = FALSE)
+    }
+    checkOmicGuiFields(norm$export, schema$norm_export, "norm$export")
+    checkOmicGuiFields(norm$export, schema$norm_export_optional, "norm$export", required = FALSE)
+    checkOmicGuiChoice(norm$export$samples, "norm$export$samples", c("design", "columns"))
+    checkOmicGuiFields(norm$testids, schema$norm_testids, "norm$testids")
+    checkOmicGuiChoice(norm$skip_correlation_flags, "norm$skip_correlation_flags", c("before_commit", "after_commit"))
+    checkOmicGuiFields(norm$final_pca, schema$norm_final_pca, "norm$final_pca")
+    invisible(norm)
+}
+
 #' Check the fields a schema names: present (when required) and of their type.
 #' @param values The list holding the fields.
 #' @param schema Named character vector: field name to type code.
@@ -354,15 +426,19 @@ checkOmicGuiFields <- function(values, schema, path = NULL, required = TRUE) {
 #' non-empty character vector; `chr0` a character vector; `named_chr`; `named_chr0` a possibly
 #' empty named character vector; `by_route` one non-empty string, or non-empty strings named by
 #' route; `route_map_or_null` NULL, or non-empty strings named by route (a route not named has no
-#' value); `lgl1`; `ref` a function; `ref_or_null`; `refs` a named list of functions; `list` a
-#' non-empty list; `named_list`; `named_list_or_null`.
+#' value); `lgl1`; `num1` one number; `int1` one positive whole number; `ref` a function;
+#' `ref_or_null`; `refs` a named list of functions; `list` a non-empty list; `named_list`;
+#' `named_list_or_null`.
 #' @noRd
 omicGuiFieldHasType <- function(value, type) {
     is_chr <- is.character(value) && !anyNA(value)
     named <- length(value) == 0L ||
         (!is.null(names(value)) && all(nzchar(names(value))) && !anyDuplicated(names(value)))
     is_chr1 <- is_chr && length(value) == 1L && nzchar(value)
+    is_num1 <- is.numeric(value) && length(value) == 1L && !is.na(value)
     isTRUE(switch(type,
+        num1 = is_num1,
+        int1 = is_num1 && value >= 1 && value == round(value),
         chr1 = is_chr1,
         chr1_or_null = is.null(value) || is_chr1,
         chr = is_chr && length(value) >= 1L,
@@ -586,6 +662,50 @@ omicGuiFeatureQcTexts <- function(noun, class) {
         finalize_no_design = sprintf("Current %s object has no design matrix rows to finalize.", class))
 }
 
+#' The normalisation tab of lipid and metab at 9a98e765 (design 4.7): one layout, written twice
+#' (lipid generated by buildLipidNormOptionsControlPanel and buildLipidNormQcTabsetPanel,
+#' mod_lipid_norm_ui_helpers.R; metab by hand, mod_metab_norm_ui.R:25-658), differing in the RUV
+#' noun, the test ids and the per-omic values of design D7. The option sections, in order: the
+#' aesthetics (:8-25), ITSD with its aggregation (:29-52, default median), log2 with its offset
+#' (:57-65), the between-sample methods (:70-85), RUV-III with its modes, percentage and k
+#' (:90-204), the actions (run, reset; :225-246) and the export button (:251-261). The QC tabs, the
+#' stage captions, the assay rows and the RUV tab's texts: buildLipidNormQcTabsetPanel (:285-307;
+#' metab :290-658). The managed run and correlation: the core's (utils_workflow_omics_actions.R:254,
+#' :347), called by both tabs (mod_lipid_norm_workflow_helpers.R:150, :738;
+#' mod_metab_norm_binding_helpers.R:628, mod_metab_norm_session_helpers.R:19). Both start the
+#' pre-normalisation QC when the tab is opened (mod_lipid_norm_workflow_helpers.R:871-893;
+#' mod_metab_norm_entry_helpers.R:84-96).
+#' @param prefix The test-id prefix (`lipid`, `metab`).
+#' @param noun The RUV-III control noun (`Lipids`, `Metabolites`).
+#' @param export The export's `prefix`, `counts_field` and `samples` rule.
+#' @param itsd_table The ITSD selection table builder, `function(assay_data, id_col, annotation_cols)`.
+#' @param skip_correlation_flags When skip-correlation sets the tab's flags: before or after the
+#'   store commit.
+#' @param final_pca The managed final PCA's placeholder sizes.
+#' @noRd
+omicGuiFeatureNorm <- function(prefix, noun, export, itsd_table, skip_correlation_flags, final_pca) {
+    list(module_id = "norm",
+        panels = list(aesthetics = list(),
+            itsd = list(aggregation = c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum")),
+            log2 = list(offset = 1),
+            between_sample = list(methods = c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
+                "Scale (Median Absolute Values)" = "scale", "None" = "none"), default = "cyclicloess"),
+            ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
+                "Skip RUV" = "skip"), default = "automatic", percentage = 5, k = 2, noun = noun),
+            actions = list(), export = list(button = "export_session")),
+        plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log"),
+        stage_labels = c("Post-Filtering", "Post-Normalization", "RUV-Corrected"), assay_slots = 2L,
+        ruv_heading = "RUV Parameter Optimization Results",
+        ruv_help = paste("Canonical correlation plots and optimization summary per assay. Each assay is optimized",
+            "independently."),
+        run = list(managed = runWorkflowOmicsManagedNormalisation),
+        correlation = list(managed = runWorkflowOmicsManagedCorrelation),
+        pre_qc_on_entry = TRUE, export = export, itsd_table = itsd_table,
+        testids = c(method = paste0(prefix, "-norm-method"), ruv_mode = paste0(prefix, "-norm-ruv-mode"),
+            run = paste0(prefix, "-norm-run"), export = paste0(prefix, "-norm-export-session")),
+        skip_correlation_flags = skip_correlation_flags, final_pca = final_pca)
+}
+
 #' The lipid assay-name rule and messages (lipid `processing`:443-468; now
 #' `validateOmicsImportAssayNames()`): a second name needs a second file and the reverse. Trx runs
 #' the same rule (`processing`:652).
@@ -620,7 +740,9 @@ omicGuiConfigProteomics <- function() {
             read_metadata = readDIAStateMetadata),
         import = omicGuiProteomicsImport(),
         design = omicGuiProteomicsDesign(),
-        qc = omicGuiProteomicsQc())
+        qc = omicGuiProteomicsQc(),
+        # KIT-105 D3 (P-20): proteomics keeps its own normalisation frame until KIT-111.
+        norm = NULL)
 }
 
 #' The proteomics QC tab (mod_prot_qc.R, mod_prot_qc_peptide.R, mod_prot_qc_protein.R at b423b764):
@@ -815,7 +937,27 @@ omicGuiConfigLipidomics <- function() {
             readLipidWorkflowMetadata),
         import = omicGuiLipidImport(),
         design = omicGuiLipidDesign(),
-        qc = omicGuiLipidQc())
+        qc = omicGuiLipidQc(),
+        norm = omicGuiLipidNorm())
+}
+
+#' The lipid normalisation tab (mod_lipid_norm_*.R at 9a98e765; the shared values are
+#' `omicGuiFeatureNorm`'s). The RUV noun (mod_lipid_norm_ui_helpers.R:187, :194) and the test ids
+#' (:84, :103, :234, :259). The export: the `lipid_` files (mod_lipid_norm_workflow_helpers.R:412-416,
+#' :576), the `lipid_counts` field (:382) and the per-assay sample count of design samples among the
+#' columns (:336-346; P-18). The ITSD selection table: buildLipidItsdSelectionTable
+#' (func_lipid_norm_support_helpers.R:19), as the tab calls it (mod_lipid_norm_observer_helpers.R:181,
+#' mod_lipid_norm_workflow_helpers.R:212). D7: skip-correlation sets the flags before the store commit
+#' (mod_lipid_norm_workflow_helpers.R:633-639); the managed final PCA's placeholders are sizes 5 and 4
+#' (mod_lipid_norm_support_helpers.R:350-351).
+#' @noRd
+omicGuiLipidNorm <- function() {
+    omicGuiFeatureNorm("lipid", "Lipids",
+        export = list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design"),
+        itsd_table = function(assay_data, id_col, annotation_cols) {
+            buildLipidItsdSelectionTable(assay_data = assay_data, lipid_id_col = id_col, annotation_cols = annotation_cols)
+        },
+        skip_correlation_flags = "before_commit", final_pca = list(preparing_size = 5, error_size = 4))
 }
 
 #' The lipid QC tab (mod_lipid_qc*.R at b423b764). `itsd` holds the inline analysis's entries
@@ -943,7 +1085,27 @@ omicGuiConfigMetabolomics <- function() {
             readMetabWorkflowMetadata),
         import = omicGuiMetabImport(),
         design = omicGuiMetabDesign(),
-        qc = omicGuiMetabQc())
+        qc = omicGuiMetabQc(),
+        norm = omicGuiMetabNorm())
+}
+
+#' The metab normalisation tab (mod_metab_norm*.R at 9a98e765; the shared values are
+#' `omicGuiFeatureNorm`'s, written by hand in mod_metab_norm_ui.R:25-658). The RUV noun
+#' (mod_metab_norm_ui.R:209, :216) and the test ids (:106, :125, :256, :281). The export: the
+#' `metab_` files (mod_metab_norm_session_helpers.R:181, :576, :757), the `metabolite_counts` field
+#' (:538) and the per-assay sample count of the columns less the id and annotation columns (:480-497;
+#' P-18). The ITSD selection table: buildItsdSelectionTable (func_metab_norm_support_helpers.R:111),
+#' as the tab calls it (resolveMetabNormManualItsdFeatureIds, mod_metab_norm_pipeline_helpers.R:177).
+#' D7: skip-correlation sets the flags after the store commit (mod_metab_norm_session_helpers.R:349-361,
+#' :427-436); the managed final PCA's placeholders are both size 5 (mod_metab_norm_render_helpers.R:420-422).
+#' @noRd
+omicGuiMetabNorm <- function() {
+    omicGuiFeatureNorm("metab", "Metabolites",
+        export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "columns"),
+        itsd_table = function(assay_data, id_col, annotation_cols) {
+            buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)
+        },
+        skip_correlation_flags = "after_commit", final_pca = list(preparing_size = 5, error_size = 5))
 }
 
 #' The metab QC tab (mod_metab_qc*.R at b423b764). `itsd` holds `analyzeMetabQcItsdData`'s entries
@@ -1078,7 +1240,10 @@ omicGuiConfigTranscriptomics <- function() {
             }),
         import = omicGuiTrxImport(),
         design = omicGuiTrxDesign(),
-        qc = omicGuiTrxQc())
+        qc = omicGuiTrxQc(),
+        # KIT-105 D4: trx mounts the lipid norm module under its profile until KIT-110 gives it its
+        # values here.
+        norm = NULL)
 }
 
 #' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under `trxOmicProfile()`'s QC

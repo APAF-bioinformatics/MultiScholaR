@@ -1,0 +1,43 @@
+# KIT-105 W1 test-first: the tests written before the implementation, run on the start commit's R/.
+# HEAD 9a98e765 (origin/performance-v2; includes 735ad485 and c2aebaf9). R/utils_omic_gui_config.R was restored to
+# HEAD for these runs (`git diff --quiet HEAD -- R` held), so R/ is the start commit's. R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence;
+# runner kit/scripts-078/run1.R (verbose); R_LIBS = core/browser-smoke.xocrNB/library. Recorded 2026-11-08.
+
+## tests/testthat/test-omic-norm-module.R (new)
+# (a) identity, (b) server captures and (c) twin differences were frozen from this R/ (two dump runs in separate
+# processes gave byte-identical captures before the freeze) and pass here. The F105-01 metab block passes here; the
+# F105-01 lipid block fails here and is gated by `omicNormPending()` (skipped unless MULTISCHOLAR_KIT105_PENDING=1).
+
+# Default (as the lead's targeted run sees it):
+COUNTS test-omic-norm-module.R pass 469 fail 0 error 0 skip 1 exit=0 elapsed=115s
+#   skipped: "F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)"
+
+# MULTISCHOLAR_KIT105_PENDING=1 (the fail-before record):
+COUNTS test-omic-norm-module.R pass 469 fail 13 error 0 skip 0 exit=0 elapsed=111s
+  BAD test-omic-norm-module.R :: F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)
+# What fails, and why it is the defect under test (F105-01): one failure per captured lipid step (13: skip 7,
+# manual 3, automatic 3). In every step all 24 image slots show the last registered spec, assay 2's RUV-corrected
+# correlation figure (or "Plot not generated yet: gcms_ruv_corrected_correlation.png" before it exists), and all 8
+# labels read "Assay: GCMS". First message (skip / entry):
+#   - "pca_post_filter_assay1 shows '<none> Plot not generated yet: gcms_ruv_corrected_correlation.png', not lcms_pos_pre_norm_pca.png"
+#   - "pca_post_norm_assay1 shows '<none> Plot not generated yet: gcms_ruv_corrected_correlation.png', not lcms_pos_post_norm_pca.png"
+#   - ... (24 slots), "assay1_label_pca reads 'Assay: GCMS', not Assay: LCMS_Pos" (4 assay-1 labels)
+# Cause: registerLipidNormStaticQcImageOutputs and registerLipidNormAssayLabelOutputs
+# (mod_lipid_norm_support_helpers.R:4-58) pass `spec[[1]]`, `spec[[2]]`, `stagePrefixes[[spec[[3]]]]` and
+# `output_specs[[output_id]]` as lazy arguments to renderers that first read them after the `for` loop ends. Metab's
+# hand-written bindings (runMetabNormQcImageBindingShell, runMetabNormAssayLabelBindingShell) pass constants.
+
+## tests/testthat/test-omic-gui-config.R (the norm group's blocks added; the KIT-102 first block and the srcref block
+## extended)
+COUNTS test-omic-gui-config.R pass 788 fail 151 error 1 skip 0 exit=0 elapsed=9s
+  BAD test-omic-gui-config.R :: each omic's configuration validates, with the shell, binding, import, design, qc and norm groups
+  BAD test-omic-gui-config.R :: no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD test-omic-gui-config.R :: the norm group holds today's values for lipid and metab and is NULL for trx and proteomics
+  BAD test-omic-gui-config.R :: each norm field, required or conditional, is refused by class when missing or mistyped
+# First message of each failing block:
+--- each omic's ... :: Expected `names(config)` to be identical to `c("shell", "binding", "import", "design", "qc", "norm")`.
+--- no configuration function ... :: Expected `length(norm_files)` > 0L.
+--- the norm group holds today's values ... :: Expected `"norm" %in% names(configs[[omic]])` to be TRUE.
+--- each norm field ... :: Expected `validateOmicGuiConfig(config)` to throw a error with class <omic_gui_config_invalid>.
+# The other KIT-102/103/104 blocks pass.

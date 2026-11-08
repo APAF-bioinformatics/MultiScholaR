@@ -51,10 +51,10 @@ guiConfigFunctions <- function(x) {
     unlist(lapply(x, guiConfigFunctions), recursive = FALSE)
 }
 
-test_that("each omic's configuration validates, with the shell, binding, import, design and qc groups", {
+test_that("each omic's configuration validates, with the shell, binding, import, design, qc and norm groups", {
     for (omic in guiConfigOmics) {
         config <- omicGuiConfig(omic)
-        expect_identical(names(config), c("shell", "binding", "import", "design", "qc"), info = omic)
+        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm"), info = omic)
         expect_identical(config$shell$omic_type, omic, info = omic)
         expect_identical(config$binding$binding$omic_type, omic, info = omic)
         expect_identical(validateOmicGuiConfig(config), config, info = omic)
@@ -172,6 +172,11 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         qc_files <- as.character(unlist(lapply(guiConfigFunctions(config$qc), utils::getSrcFilename)))
         if (omic != "proteomics") expect_gt(length(qc_files), 0L)
         expect_false(any(startsWith(qc_files, "mod_")), info = paste(omic, "qc"))
+        # KIT-105 W1: the norm group (lipid and metab: the managed run and correlation and the ITSD
+        # selection table; the in-process twins and the export's collector and saver from W6).
+        norm_files <- as.character(unlist(lapply(guiConfigFunctions(config$norm), utils::getSrcFilename)))
+        if (omic %in% c("lipidomics", "metabolomics")) expect_gt(length(norm_files), 0L)
+        expect_false(any(startsWith(norm_files, "mod_")), info = paste(omic, "norm"))
     }
 })
 
@@ -776,4 +781,182 @@ test_that("each qc field, required or conditional, is refused by class when miss
         bad$qc[[field]] <- "a function name"
         expectGuiConfigRefused(bad, paste0("qc$", field))
     }
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-105 W1: the norm group (kit-101 design 4.7) for lipid and metab; NULL for trx (KIT-110) and
+# proteomics (KIT-111).
+# ------------------------------------------------------------------------------------------------
+
+guiConfigNormRequired <- c("module_id", "panels", "plot_tabs", "stage_labels", "assay_slots", "ruv_heading",
+    "ruv_help", "run", "correlation", "pre_qc_on_entry", "export", "itsd_table", "testids",
+    "skip_correlation_flags", "final_pca")
+# The option sections and each one's required options (the shared panel library's order).
+guiConfigNormPanels <- list(aesthetics = character(), itsd = "aggregation", log2 = "offset",
+    between_sample = c("methods", "default"), ruv_iii = c("modes", "default", "percentage", "k", "noun"),
+    actions = character(), export = "button")
+# Optional until W6 wires them (their functions are in R/mod_*.R today, or not yet written).
+guiConfigNormDeferred <- list(run = "in_process", correlation = "in_process", export = c("collect", "save"))
+
+test_that("the norm group holds today's values for lipid and metab and is NULL for trx and proteomics", {
+    configs <- lapply(stats::setNames(guiConfigOmics, guiConfigOmics), omicGuiConfig)
+    for (omic in c("proteomics", "transcriptomics")) {
+        expect_true("norm" %in% names(configs[[omic]]), info = omic)
+        expect_null(configs[[omic]]$norm, info = omic)
+    }
+    lipid <- configs$lipidomics$norm
+    metab <- configs$metabolomics$norm
+    for (omic in c("lipidomics", "metabolomics")) {
+        norm <- configs[[omic]]$norm
+        expect_true(all(guiConfigNormRequired %in% names(norm)), info = omic)
+        # The tab's module id, as the shell's.
+        tab <- Filter(function(tab) identical(tab$status_key, "normalization"), configs[[omic]]$shell$tabs)
+        expect_identical(norm$module_id, tab[[1L]]$module_id, info = omic)
+        expect_identical(norm$module_id, "norm")
+        # The option sections in order, and their options (mod_lipid_norm_ui_helpers.R:1-264;
+        # mod_metab_norm_ui.R:25-289).
+        expect_identical(names(norm$panels), names(guiConfigNormPanels), info = omic)
+        expect_identical(norm$panels$itsd$aggregation, c("Median (recommended)" = "median", "Mean" = "mean", "Sum" = "sum"))
+        expect_identical(norm$panels$log2$offset, 1)
+        expect_identical(norm$panels$between_sample$methods, c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
+            "Scale (Median Absolute Values)" = "scale", "None" = "none"))
+        expect_identical(norm$panels$between_sample$default, "cyclicloess")
+        expect_identical(norm$panels$ruv_iii[c("modes", "default", "percentage", "k")], list(
+            modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual", "Skip RUV" = "skip"),
+            default = "automatic", percentage = 5, k = 2))
+        expect_identical(norm$panels$export$button, "export_session")
+        # The QC tabs, the stage grid and the RUV tab's texts (buildLipidNormQcTabsetPanel, :285-307).
+        expect_identical(norm$plot_tabs, c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log"))
+        expect_identical(norm$stage_labels, c("Post-Filtering", "Post-Normalization", "RUV-Corrected"))
+        expect_identical(norm$assay_slots, 2L)
+        expect_identical(norm$ruv_heading, "RUV Parameter Optimization Results")
+        expect_identical(norm$ruv_help,
+            "Canonical correlation plots and optimization summary per assay. Each assay is optimized independently.")
+        # The managed run and correlation are the core's; the tab opens with the pre-normalisation QC.
+        expect_identical(norm$run$managed, runWorkflowOmicsManagedNormalisation)
+        expect_identical(norm$correlation$managed, runWorkflowOmicsManagedCorrelation)
+        expect_true(norm$pre_qc_on_entry)
+    }
+    # Per omic: the RUV noun, the test ids and the export (P-18) and D7 values.
+    expect_identical(lipid$panels$ruv_iii$noun, "Lipids")
+    expect_identical(metab$panels$ruv_iii$noun, "Metabolites")
+    expect_identical(lipid$testids, c(method = "lipid-norm-method", ruv_mode = "lipid-norm-ruv-mode",
+        run = "lipid-norm-run", export = "lipid-norm-export-session"))
+    expect_identical(metab$testids, c(method = "metab-norm-method", ruv_mode = "metab-norm-ruv-mode",
+        run = "metab-norm-run", export = "metab-norm-export-session"))
+    expect_identical(lipid$export[c("prefix", "counts_field", "samples")],
+        list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design"))
+    expect_identical(metab$export[c("prefix", "counts_field", "samples")],
+        list(prefix = "metab_", counts_field = "metabolite_counts", samples = "columns"))
+    expect_identical(lipid$skip_correlation_flags, "before_commit")
+    expect_identical(metab$skip_correlation_flags, "after_commit")
+    expect_identical(lipid$final_pca, list(preparing_size = 5, error_size = 4))
+    expect_identical(metab$final_pca, list(preparing_size = 5, error_size = 5))
+    # The ITSD selection table calls the omic's core builder with its id-column argument (D8).
+    testthat::local_mocked_bindings(
+        buildLipidItsdSelectionTable = function(assay_data, lipid_id_col, annotation_cols = NULL, is_patterns = NULL) {
+            list("lipid", assay_data, lipid_id_col, annotation_cols)
+        },
+        buildItsdSelectionTable = function(assay_data, metabolite_id_col, annotation_cols = NULL, is_patterns = NULL) {
+            list("metab", assay_data, metabolite_id_col, annotation_cols)
+        })
+    expect_identical(lipid$itsd_table("assay", "lipid_id", "lipid"), list("lipid", "assay", "lipid_id", "lipid"))
+    expect_identical(metab$itsd_table("assay", "database_identifier", "Name"),
+        list("metab", "assay", "database_identifier", "Name"))
+})
+
+test_that("each norm field, required or conditional, is refused by class when missing or mistyped", {
+    for (omic in c("lipidomics", "metabolomics")) {
+        config <- omicGuiConfig(omic)
+        for (field in guiConfigNormRequired) {
+            removed <- config
+            removed$norm[[field]] <- NULL
+            expectGuiConfigRefused(removed, paste0("norm$", field))
+            mistyped <- config
+            mistyped$norm[field] <- list(NA)
+            expectGuiConfigRefused(mistyped, paste0("norm$", field))
+        }
+    }
+    lipid <- omicGuiConfig("lipidomics")
+    # A group that is neither NULL nor a named list.
+    bad <- lipid
+    bad$norm <- "norm"
+    expectGuiConfigRefused(bad, "norm")
+    # Each option section's options.
+    for (panel in names(guiConfigNormPanels)) {
+        for (option in guiConfigNormPanels[[panel]]) {
+            removed <- lipid
+            removed$norm$panels[[panel]][[option]] <- NULL
+            expectGuiConfigRefused(removed, paste0("norm$panels$", panel, "$", option))
+        }
+    }
+    # The sections come from the panel library, in its order; the defaults are among the choices.
+    bad <- lipid
+    bad$norm$panels <- c(bad$norm$panels, list(tmm = list()))
+    expectGuiConfigRefused(bad, "norm$panels")
+    bad <- lipid
+    bad$norm$panels <- bad$norm$panels[c("itsd", "aesthetics", "log2", "between_sample", "ruv_iii", "actions", "export")]
+    expectGuiConfigRefused(bad, "norm$panels")
+    bad <- lipid
+    bad$norm$panels$between_sample$default <- "tmm"
+    expectGuiConfigRefused(bad, "norm$panels$between_sample$default")
+    bad <- lipid
+    bad$norm$panels$ruv_iii$default <- "always"
+    expectGuiConfigRefused(bad, "norm$panels$ruv_iii$default")
+    # The QC tabs from the frame's set, once each and in order; three stage captions; whole assay rows.
+    bad <- lipid
+    bad$norm$plot_tabs <- c(bad$norm$plot_tabs, "tmm")
+    expectGuiConfigRefused(bad, "norm$plot_tabs")
+    bad <- lipid
+    bad$norm$plot_tabs <- rev(bad$norm$plot_tabs)
+    expectGuiConfigRefused(bad, "norm$plot_tabs")
+    bad <- lipid
+    bad$norm$stage_labels <- bad$norm$stage_labels[1:2]
+    expectGuiConfigRefused(bad, "norm$stage_labels")
+    bad <- lipid
+    bad$norm$assay_slots <- 1.5
+    expectGuiConfigRefused(bad, "norm$assay_slots")
+    # The managed functions are required; the in-process twins and the export's collector and saver
+    # are optional until W6, and checked by type when present.
+    for (field in c("run", "correlation")) {
+        removed <- lipid
+        removed$norm[[field]]$managed <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$", field, "$managed"))
+    }
+    for (field in names(guiConfigNormDeferred)) {
+        for (entry in guiConfigNormDeferred[[field]]) {
+            expect_false(entry %in% names(lipid$norm[[field]]), info = paste(field, entry))
+            bad <- lipid
+            bad$norm[[field]][[entry]] <- "a function name"
+            expectGuiConfigRefused(bad, paste0("norm$", field, "$", entry))
+            wired <- lipid
+            wired$norm[[field]][[entry]] <- function(...) NULL
+            expect_identical(validateOmicGuiConfig(wired), wired, info = paste(field, entry))
+        }
+    }
+    # The export's values and choices, the test ids and the D7 values.
+    for (field in c("prefix", "counts_field", "samples")) {
+        removed <- lipid
+        removed$norm$export[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$export$", field))
+    }
+    bad <- lipid
+    bad$norm$export$samples <- "assay"
+    expectGuiConfigRefused(bad, "norm$export$samples")
+    for (field in c("method", "ruv_mode", "run", "export")) {
+        removed <- lipid
+        removed$norm$testids <- removed$norm$testids[names(removed$norm$testids) != field]
+        expectGuiConfigRefused(removed, paste0("norm$testids$", field))
+    }
+    bad <- lipid
+    bad$norm$skip_correlation_flags <- "never"
+    expectGuiConfigRefused(bad, "norm$skip_correlation_flags")
+    for (field in c("preparing_size", "error_size")) {
+        removed <- lipid
+        removed$norm$final_pca[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$final_pca$", field))
+    }
+    bad <- lipid
+    bad$norm$itsd_table <- "buildLipidItsdSelectionTable"
+    expectGuiConfigRefused(bad, "norm$itsd_table")
 })
