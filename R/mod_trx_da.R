@@ -28,53 +28,11 @@ trxDaModelUi <- function(ns) {
             "W_1..W_k as covariates. No fold-change test is applied."))
 }
 
-#' The realised formula and model text of the head (metadata only).
-#' @noRd
-trxDaModelText <- function(workflowData) {
-    manager <- workflowData$state_manager
-    formula <- tryCatch(withWorkflowStateScope(manager, function() trxRealisedFormula(manager, getWorkflowStateReference(manager))),
-        error = function(error) NULL)
-    if (is.null(formula) || !grepl("W_", formula, fixed = TRUE)) return("Run the normalisation (RUVs) first; the formula is realised from its design.")
-    paste(c(paste("Formula:", formula), "Fit: glmQLFit(robust = TRUE)", "Test: QL F-test (glmQLFTest)", "Adjustment: BH (FDR)"), collapse = "\n")
-}
-
-#' The head's metadata when it is a RUVs state (its design has W columns), the state the DA runs on; NULL otherwise.
-#' @noRd
-trxDaReadMetadata <- function(workflowData) {
-    meta <- tryCatch(readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, workflowData$state_manager), error = function(error) NULL)
-    if (is.null(meta) || !any(startsWith(names(meta$design_matrix), "W_"))) return(NULL)
-    meta
-}
-
 #' The tab's status text: the lipid text once the analysis has run.
 #' @noRd
 trxDaStatusText <- function(analysisComplete, daResultsList, currentS4Object) {
     if (isTRUE(analysisComplete)) return(buildLipidDaStatusText(analysisComplete, daResultsList, currentS4Object))
     "Ready. The DA runs on the normalised (RUVs) state."
-}
-
-#' The contrasts the binding reads: the builder's `name=expression` entries (its `full_format`).
-#' @noRd
-trxDaContrastEntries <- function(contrastsTbl) {
-    entries <- if ("full_format" %in% names(contrastsTbl)) contrastsTbl$full_format else contrastsTbl$contrasts
-    trxContrastsTable(as.character(entries))
-}
-
-#' The contrast entry of a contrast name (the tab's selectors show names; the results are keyed by entry).
-#' @noRd
-trxDaContrastEntry <- function(workflowData, name) {
-    entries <- trxDaContrastEntries(workflowData$contrasts_tbl)
-    hit <- entries$contrasts[entries$friendly_names == name]
-    if (length(hit)) hit[[1L]] else name
-}
-
-#' The static volcano of one contrast: KIT-093's renderer (the notebook's): y is -log10 FDR (BH), significance FDR (BH) <
-#' threshold; the +-1 logFC lines are decorative.
-#' @noRd
-trxDaStaticVolcano <- function(da_results_list, selected_contrast, selected_assay = NULL, da_q_val_thresh = 0.05, lfc_threshold = 1, ...) {
-    shiny::req(da_results_list, selected_contrast)
-    long <- da_results_list$da_genes_long
-    trxVolcano(long[long$comparison == selected_contrast, , drop = FALSE], selected_contrast, fdr_thresh = da_q_val_thresh)$plot
 }
 
 #' The interactive volcano's widget: the binding's Glimma widget in process, the worker's page when managed; the contrast
@@ -105,13 +63,6 @@ trxDaWriteResults <- function(workflowData, experimentPaths) {
         if (!isTRUE(display$saved)) stop(display$message %||% "the DA publication reported no success", call. = FALSE)
         TRUE
     }
-}
-
-#' The worker's DA publication in the words of the tab's report (`success`).
-#' @noRd
-trxDaExport <- function(export) {
-    export$success <- isTRUE(export$saved)
-    export
 }
 
 #' The run button's analysis: the lipid bootstrap with the transcriptomics collaborators.

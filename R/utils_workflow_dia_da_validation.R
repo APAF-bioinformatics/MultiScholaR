@@ -1,3 +1,7 @@
+# KIT-106 D4: the proteomics DA validators, moved unchanged with their names from R/mod_prot_da_validation.R
+# (back-references #29 to #31): the core's DA (utils_workflow_dia_da.R) and session load (utils_workflow_dia_sessions.R)
+# call them, as the load-session plugin does (mod_prot_da_handlers_load_session.R).
+
 protDaScalarString <- function(value) {
   is.character(value) && length(value) == 1L && !is.na(value) && nzchar(trimws(value))
 }

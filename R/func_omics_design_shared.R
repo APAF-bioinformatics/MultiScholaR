@@ -761,6 +761,43 @@ validateLipidDesignDaPreflight <- function(designMatrix, assayList, contrastsTbl
         requireContrasts = requireContrasts)
 }
 
+#' KIT-106 D4 (back-reference #32): the lipid DA's preflight on its object, moved unchanged from
+#' mod_lipid_da_analysis_helpers.R:84-115 at 2269a45f. The lipid declaration's `da_preflight` and
+#' `runLipidsDA` call it; the DA tab in process names it in its configuration (`da$preflight`).
+#' @noRd
+validateLipidDaAnalysisPreflight <- function(
+    currentS4,
+    contrastsTbl,
+    formulaString = "~ 0 + group",
+    validateAlignmentFn = validateLipidDesignAlignment,
+    validateContrastsFn = validateLipidDesignContrasts
+) {
+    alignment <- validateAlignmentFn(
+        designMatrix = currentS4@design_matrix,
+        assayList = currentS4@lipid_data,
+        sampleIdCol = currentS4@sample_id,
+        groupCol = currentS4@group_id,
+        requireReplicates = FALSE
+    )
+    contrastValidation <- validateContrastsFn(
+        designMatrix = currentS4@design_matrix,
+        contrastsTbl = contrastsTbl,
+        formulaString = formulaString,
+        allowEmpty = FALSE
+    )
+    errors <- c(alignment$errors, contrastValidation$errors)
+    warnings <- c(alignment$warnings, contrastValidation$warnings)
+
+    list(
+        valid = length(errors) == 0L,
+        errors = unique(errors),
+        warnings = unique(warnings),
+        alignment = alignment,
+        contrast_validation = contrastValidation,
+        model_terms = contrastValidation$model_terms
+    )
+}
+
 # ------------------------------------------------------------------------------------------------
 # The metab wrappers (KIT-103 W5).
 # ------------------------------------------------------------------------------------------------

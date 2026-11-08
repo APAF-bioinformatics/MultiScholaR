@@ -81,39 +81,6 @@ prepareLipidDaRunAnalysisContext <- function(
     )
 }
 
-validateLipidDaAnalysisPreflight <- function(
-    currentS4,
-    contrastsTbl,
-    formulaString = "~ 0 + group",
-    validateAlignmentFn = validateLipidDesignAlignment,
-    validateContrastsFn = validateLipidDesignContrasts
-) {
-    alignment <- validateAlignmentFn(
-        designMatrix = currentS4@design_matrix,
-        assayList = currentS4@lipid_data,
-        sampleIdCol = currentS4@sample_id,
-        groupCol = currentS4@group_id,
-        requireReplicates = FALSE
-    )
-    contrastValidation <- validateContrastsFn(
-        designMatrix = currentS4@design_matrix,
-        contrastsTbl = contrastsTbl,
-        formulaString = formulaString,
-        allowEmpty = FALSE
-    )
-    errors <- c(alignment$errors, contrastValidation$errors)
-    warnings <- c(alignment$warnings, contrastValidation$warnings)
-
-    list(
-        valid = length(errors) == 0L,
-        errors = unique(errors),
-        warnings = unique(warnings),
-        alignment = alignment,
-        contrast_validation = contrastValidation,
-        model_terms = contrastValidation$model_terms
-    )
-}
-
 handleLipidDaRunAnalysisPreflight <- function(
     analysisContext,
     formulaString,

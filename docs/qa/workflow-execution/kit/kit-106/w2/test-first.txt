@@ -1,0 +1,28 @@
+# KIT-106 W2 test-first: tests/testthat/test-omics-da-core.R written before the moves and run on the unchanged tree
+# (origin/performance-v2 at 2269a45f). R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1,
+# one Rscript process per file, kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.r5uUT0/library. 2026-11-09.
+
+## Before (2269a45f, unchanged): every block fails, for the moves and the two new functions only
+COUNTS test-omics-da-core.R pass 28 fail 17 error 6 skip 0   (24 s)
+  BAD (W2) the moved functions are in the namespace, each in its new file
+      16 failures: the 7 proteomics validators read mod_prot_da_validation.R, validateLipidDaAnalysisPreflight reads
+      mod_lipid_da_analysis_helpers.R, the 6 trx functions read mod_trx_da.R, the 2 new functions do not exist; and
+      R/mod_prot_da_validation.R exists.
+  BAD (W2, D4) the session load restores W1 (b)'s bus, tab values and choices for lipid and metab
+  BAD (W2, D4, D7) the session load's refusals: a missing file, and the assay check's rule, text and order
+  BAD (W2, D3) the in-process page factory gives the managed factory's iframe for lipid and metab, NULL for no widget
+  BAD (W2, D3) the in-process page factory gives trx's page for the contrast's entry (MCI-030's project)
+  BAD (W2, D4) the in-process DA publication makes W1 (b)'s export calls, files and notice for lipid and metab
+  BAD (W2, D4; comparison side) the in-process publication equals the start commit's writers
+      6 errors: could not find function "loadWorkflowOmicsDaSession" (5), "workflowOmicsInProcessVolcanoPageFactory" (1).
+
+## After (the W2 change)
+First run: pass 104 fail 33 -- the adopted owner needs the module's session ("the adopted owner needs the module's
+  session to attach to"): the test's load call was given the reactive domain the frame provides
+  (shiny::withReactiveDomain(omicsOwnerSession(), ...), as omicsTestOwner does). Test-side fix, no R/ change.
+Second run: pass 133 fail 4 -- two test-helper bugs: guiEntryMask collapses a vector into one string (now applied per
+  call), and format() padded the tab's assay names (now as.character). Test-side fixes, no R/ change; the comparison
+  side passed already (old writers and runner made the same calls, files and notice).
+Third run: COUNTS test-omics-da-core.R pass 137 fail 0 error 0 skip 0   (110 s)
+Final (comparison side split into one block per omic, so W3 and W4 quarantine theirs separately):
+COUNTS test-omics-da-core.R pass 139 fail 0 error 0 skip 0   (111 s)
