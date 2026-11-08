@@ -1,1 +1,2 @@
 kit-journey-106a accepted failing none failed_step none error none 
+kit-journey-106b accepted failing none failed_step none error none 
