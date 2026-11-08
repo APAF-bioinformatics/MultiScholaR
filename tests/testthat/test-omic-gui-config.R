@@ -1264,7 +1264,23 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
         assay_check_first = TRUE))
     expect_null(trx$session_load)
     expect_identical(c(lipid$preflight_first, metab$preflight_first, trx$preflight_first), c(FALSE, TRUE, FALSE))
-    expect_identical(metab$preflight, validateMetabDesignDaPreflight)
+    # KIT-106 W4: metab's preflight adapts the frame's call (the state read for the run, the contrasts, the formula) to
+    # validateMetabDesignDaPreflight's arguments, as the start commit's tab called it; without a formula it is not called.
+    expect_identical(names(formals(metab$preflight)), c("currentS4", "contrastsTbl", "formulaString"))
+    preflight_args <- NULL
+    testthat::local_mocked_bindings(validateMetabDesignDaPreflight = function(...) {
+        preflight_args <<- list(...)
+        list(valid = FALSE, errors = "refused")
+    })
+    object <- module_ci_metab_da_object()
+    contrasts <- module_ci_metab_da_contrasts("multi_group")
+    expect_identical(metab$preflight(currentS4 = object, contrastsTbl = contrasts, formulaString = NULL), list(valid = TRUE))
+    expect_null(preflight_args)
+    expect_identical(metab$preflight(currentS4 = object, contrastsTbl = contrasts, formulaString = "~ 0 + group"),
+        list(valid = FALSE, errors = "refused"))
+    expect_identical(preflight_args, list(designMatrix = object@design_matrix, assayList = object@metabolite_data,
+        contrastsTbl = contrasts, formulaString = "~ 0 + group", sampleIdCol = object@sample_id, groupCol = object@group_id,
+        requireContrasts = TRUE))
     # The texts, the download and proteomics' plugins.
     for (da in list(lipid, metab)) {
         expect_identical(da$texts, c(status_ready = "Data loaded. Ready to run analysis.",

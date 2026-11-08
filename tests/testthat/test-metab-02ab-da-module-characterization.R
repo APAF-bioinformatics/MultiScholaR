@@ -317,6 +317,7 @@ test_that("mod_metab_da_server preserves load-session public error behavior", {
 })
 
 test_that("mod_metab_da_server preserves run-analysis public success behavior", {
+  testthat::skip("quarantined: Q-145 (KIT-106 W4) it counts calls to a mocked `outputMetabDaResultsAllContrasts` from the in-process run on a mocked `runMetabReferenceDaAnalysis` that accepts no DA manifest; the tab's in-process export is now the binding's `metab_da_publication` run through `runWorkflowOmicsPublicationInProcess` on the head's accepted manifest (D4, mod_omic_da.R), covered by test-omic-da-module.R (b) metab_main's run step and test-omics-da-core.R")
   harness <- makeMetabDaHarness(session_file_mode = "valid")
   installMetabDaModuleMocks(harness)
 
@@ -363,6 +364,7 @@ test_that("mod_metab_da_server preserves run-analysis public error behavior", {
 })
 
 test_that("mod_metab_da_server preserves Glimma error and heatmap-save public behavior", {
+  testthat::skip("quarantined: Q-146 (KIT-106 W4) it reads `volcano_glimma` without ticking the interactive volcano and expects a mocked `generateMetabDAVolcanoPlotGlimma` to raise on the tab's results; the volcano is off by default and, ticked, is the binding's `metab_volcano_page` built from the head's manifest (D3, mod_omic_da.R); covered by test-omic-da-module.R's W4 D3 blocks and (b) metab_main (heatmap, cluster summary, Save Heatmap's params and prefix, the table)")
   harness <- makeMetabDaHarness(session_file_mode = "valid")
   installMetabDaModuleMocks(
     harness,
@@ -420,6 +422,7 @@ test_that("mod_metab_da_server preserves Glimma error and heatmap-save public be
 })
 
 test_that("metabolomics DA analysis input resolver preserves state and guard behavior", {
+  testthat::skip("quarantined: Q-147 (KIT-106 W4) it calls `resolveMetabDaAnalysisInputs` (mod_metab_da_observer_helpers.R, deleted by W4); the run's refusals and preflight are the shared frame's `runOmicDaAnalysis` and `omicDaPreflight` under metab's configuration (`preflight_first`, the preflight adapter in utils_omic_gui_config.R), covered by test-omic-da-module.R (b) metab_refusals, metab_no_contrasts and metab_invalid_preflight, (c) the refusal order, its W4 F106-05 block and MCI-016.2")
   skip_if_not(
     metabDaHasAnalysisInputResolver(),
     "Extracted metabolomics DA analysis input resolver is target-only."
@@ -486,6 +489,7 @@ test_that("metabolomics DA analysis input resolver preserves state and guard beh
 })
 
 test_that("metabolomics DA download helpers write full result CSV payloads", {
+  testthat::skip("quarantined: Q-148 (KIT-106 W4) it calls `buildMetabDaResultsDownloadHandler` (mod_metab_da_observer_helpers.R, deleted by W4); the download is the panel library's `omicDaDownloadHandler` under metab's `download` (stem `metabolomics_da_results_`), covered by test-omic-da-module.R (b) metab_main's download step, test-omic-gui-config.R's download values and test-workflow-omics-application-reads.R's managed download")
   skip_if_not(
     metabDaHasDownloadHelpers(),
     "Extracted metabolomics DA download helpers are target-only."

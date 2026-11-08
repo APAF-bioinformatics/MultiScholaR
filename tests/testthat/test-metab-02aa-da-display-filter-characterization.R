@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-143 (KIT-106 W4) it loads, with a silent loader, the four metab DA helper files W4 deleted (mod_metab_da_{display,observer,registration,server}_helpers.R) with mod_metab_da_server.R and mod_metab_da.R, and tests their seams in 69 blocks; the tab is the shared frame mod_omic_da.R and panel library mod_omic_da_panels.R over the W2 core (utils_workflow_omics_da.R), covered by test-omic-da-module.R (a) to (c) and its W4 blocks, MCI-016, test-metab-da-heatmap-shared.R (F-03) and the DA steps of the three metab lanes")
 library(testthat)
 
 repo_root <- normalizePath(file.path("..", ".."), mustWork = TRUE)

@@ -425,6 +425,7 @@ test_that("(W2, D4; comparison side) lipid: the in-process publication equals th
 # Comparison side (metab): quarantined when W4 deletes mod_metab_da_observer_helpers.R (`writeMetabDaResultsArtifacts`,
 # `metabDaResultsWithSource`).
 test_that("(W2, D4; comparison side) metab: the in-process publication equals the start commit's write", {
+    testthat::skip("quarantined: Q-131 (KIT-106 W4) it compared the in-process DA publication with the start commit's metab write, `writeMetabDaResultsArtifacts` on `metabDaResultsWithSource` (mod_metab_da_observer_helpers.R), which W4 deleted; the tab's export is `runWorkflowOmicsPublicationInProcess(..., \"metab_da_publication\")` in the shared frame (mod_omic_da.R), whose core side stays live in the block above and in test-omic-da-module.R (b) metab_main's run step")
     omicsDaCoreCompareExport("metab", function(results, fixture, paths, notify) {
         writeMetabDaResultsArtifacts(results = metabDaResultsWithSource(results, fixture$tab, fixture$bus),
             experimentPaths = paths, daQValThresh = 0.05, treatLfcCutoff = 0, showNotification = notify)

@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-144 (KIT-106 W4) its guard names three metab DA helper files W4 deleted (mod_metab_da_{display,registration,server}_helpers.R), and its 7 blocks test their table filter, summary, table and cluster-summary seams; the views are the panel library mod_omic_da_panels.R under metab's configuration (table filter `all_or_combined`), covered by test-omic-da-module.R (b) metab_main and metab_no_friendly and (c) the table filter, and MCI-016.4")
 # fidelity-coverage-compare: shared
 library(testthat)
 

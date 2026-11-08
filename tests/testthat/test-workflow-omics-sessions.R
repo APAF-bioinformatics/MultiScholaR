@@ -71,10 +71,11 @@ omicsSessionExport <- function(case, workflow, source_dir) {
 }
 
 omicsSessionOpen <- function(case, workflow, da, session_file, session) {
-  shiny::withReactiveDomain(session, if (identical(case$omic, "lipidomics")) {
+  shiny::withReactiveDomain(session, {
     # KIT-106 W3: the core's DA session load the shared frame calls (`loadWorkflowOmicsDaSession`), which reads the
-    # configuration's file name in the source directory: another file is opened from a directory of its own.
-    config <- omicGuiConfig("lipidomics")
+    # configuration's file name in the source directory: another file is opened from a directory of its own. KIT-106 W4:
+    # metab's too, under its configuration.
+    config <- omicGuiConfig(case$omic)
     directory <- dirname(session_file)
     if (!identical(basename(session_file), config$da$session_load$file)) {
       directory <- tempfile("omics-session-open-")
@@ -84,13 +85,6 @@ omicsSessionOpen <- function(case, workflow, da, session_file, session) {
     result <- loadWorkflowOmicsDaSession(config$binding$binding, workflow, da, list(source_dir = directory), config$da$session_load)
     result$errorMessage <- result$message
     result
-  } else {
-    runMetabDaLoadSessionObserverShell(session_file, workflow, da, session, showNotification = quietFn,
-      removeNotification = quietFn, logInfo = quietFn, logError = quietFn,
-      restoreState = function(sessionData, sessionFile, workflowData, daData, session, debugLog) {
-        restoreMetabDaLoadedSessionState(sessionData, sessionFile, workflowData, daData, session,
-          updateSelectInput = quietFn, updateTextAreaInput = quietFn, logInfo = quietFn, logWarn = quietFn)
-      })
   })
 }
 

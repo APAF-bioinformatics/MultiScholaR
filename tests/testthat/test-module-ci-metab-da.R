@@ -8,41 +8,16 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
     session_data <- module_ci_metab_da_session_data(layout = layout)
     saveRDS(session_data, session_file)
 
-    resolved <- resolveMetabDaLoadSessionFile(
-      experimentPaths = list(source_dir = tmp_root, export_dir = tempfile("unused-"))
-    )
-    expect_true(resolved$ok)
-    expect_identical(resolved$sessionFile, session_file)
-
+    # KIT-106 W4: the load is the shared frame's (`loadOmicDaSession` on the core's `loadWorkflowOmicsDaSession`); the
+    # session file is the configuration's name in the source directory.
     workflow <- module_ci_metab_da_workflow(session_data$current_s4_object)
     da_data <- module_ci_metab_da_data_env()
     capture <- module_ci_metab_da_capture_ui()
 
-    load_state <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabDaLoadSessionObserverShell(
-      sessionFile = session_file,
-      workflowData = workflow,
-      daData = da_data,
-      session = "module-ci-metab-da",
-      restoreState = function(sessionData, sessionFile, workflowData, daData, session, debugLog) {
-        restoreMetabDaLoadedSessionState(
-          sessionData = sessionData,
-          sessionFile = sessionFile,
-          workflowData = workflowData,
-          daData = daData,
-          session = session,
-          updateSelectInput = capture$updateSelectInput,
-          updateTextAreaInput = capture$updateTextAreaInput,
-          logInfo = function(...) invisible(NULL),
-          logWarn = function(...) invisible(NULL),
-          debugLog = debugLog
-        )
-      },
-      showNotification = capture$showNotification,
-      removeNotification = capture$removeNotification,
-      logInfo = function(...) invisible(NULL),
-      logError = function(...) invisible(NULL)
-    ))
+    load_state <- module_ci_metab_da_load(list(source_dir = tmp_root, export_dir = tempfile("unused-")), workflow, da_data,
+      capture)
 
+    expect_identical(basename(session_file), omicGuiConfig("metabolomics")$da$session_load$file)
     expect_identical(load_state$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.
     loaded_object <- workflow$state_manager$getState(da_data$current_state_name)
@@ -63,68 +38,43 @@ test_that("MCI-016.1 reload matrix covers valid LC/GC/combined sessions and fail
   withr::defer(unlink(stale_export_dir, recursive = TRUE, force = TRUE))
   stale_file <- file.path(stale_export_dir, "metab_filtered_session_data_latest.rds")
   saveRDS(module_ci_metab_da_session_data("combined"), stale_file)
-  stale_resolved <- resolveMetabDaLoadSessionFile(
-    experimentPaths = list(source_dir = file.path(stale_export_dir, "missing"), export_dir = stale_export_dir)
+  # A missing source directory falls back to the export directory.
+  stale_resolved <- module_ci_metab_da_load(
+    list(source_dir = file.path(stale_export_dir, "missing"), export_dir = stale_export_dir),
+    module_ci_metab_da_workflow(module_ci_metab_da_object(layout = "combined")), module_ci_metab_da_data_env(),
+    module_ci_metab_da_capture_ui()
   )
-  expect_true(stale_resolved$ok)
-  expect_identical(stale_resolved$sessionFile, stale_file)
+  expect_identical(stale_resolved$status, "success")
 
-  missing_resolved <- resolveMetabDaLoadSessionFile(
-    experimentPaths = list(source_dir = stale_export_dir, export_dir = stale_export_dir),
-    sessionFilename = "does-not-exist.rds"
+  missing_dir <- file.path(stale_export_dir, "empty")
+  dir.create(missing_dir)
+  missing_resolved <- module_ci_metab_da_load(
+    list(source_dir = missing_dir, export_dir = missing_dir), module_ci_metab_da_workflow(),
+    module_ci_metab_da_data_env(), module_ci_metab_da_capture_ui()
   )
-  expect_false(missing_resolved$ok)
-  expect_match(missing_resolved$errorMessage, "Session file not found", fixed = TRUE)
+  expect_identical(missing_resolved$status, "missing")
+  expect_match(missing_resolved$message, "Session file not found", fixed = TRUE)
 
-  malformed_file <- file.path(stale_export_dir, "malformed.rds")
-  writeLines("not an rds", malformed_file)
-  malformed_capture <- module_ci_metab_da_capture_ui()
-  malformed <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabDaLoadSessionObserverShell(
-    sessionFile = malformed_file,
-    workflowData = module_ci_metab_da_workflow(),
-    daData = module_ci_metab_da_data_env(),
-    session = "module-ci-metab-da",
-    showNotification = malformed_capture$showNotification,
-    removeNotification = malformed_capture$removeNotification,
-    logInfo = function(...) invisible(NULL),
-    logError = function(...) invisible(NULL)
-  ))
+  malformed_dir <- file.path(stale_export_dir, "malformed")
+  dir.create(malformed_dir)
+  writeLines("not an rds", file.path(malformed_dir, basename(stale_file)))
+  malformed <- module_ci_metab_da_load(list(source_dir = malformed_dir), module_ci_metab_da_workflow(),
+    module_ci_metab_da_data_env(), module_ci_metab_da_capture_ui())
   expect_identical(malformed$status, "error")
-  expect_true(nzchar(malformed$errorMessage))
+  expect_true(nzchar(malformed$message))
 
-  mismatch_file <- file.path(stale_export_dir, "mismatch.rds")
+  mismatch_dir <- file.path(stale_export_dir, "mismatch")
+  dir.create(mismatch_dir)
   mismatch_session <- module_ci_metab_da_session_data(
     layout = "combined",
     assay_names = c("LCMS_Pos", "STALE_ASSAY")
   )
-  saveRDS(mismatch_session, mismatch_file)
+  saveRDS(mismatch_session, file.path(mismatch_dir, basename(stale_file)))
   mismatch_capture <- module_ci_metab_da_capture_ui()
-  mismatch <- shiny::withReactiveDomain(omicsOwnerSession(), runMetabDaLoadSessionObserverShell(
-    sessionFile = mismatch_file,
-    workflowData = module_ci_metab_da_workflow(mismatch_session$current_s4_object),
-    daData = module_ci_metab_da_data_env(),
-    session = "module-ci-metab-da",
-    restoreState = function(sessionData, sessionFile, workflowData, daData, session, debugLog) {
-      restoreMetabDaLoadedSessionState(
-        sessionData = sessionData,
-        sessionFile = sessionFile,
-        workflowData = workflowData,
-        daData = daData,
-        session = session,
-        updateSelectInput = mismatch_capture$updateSelectInput,
-        updateTextAreaInput = mismatch_capture$updateTextAreaInput,
-        logInfo = function(...) invisible(NULL),
-        logWarn = function(...) invisible(NULL),
-        debugLog = debugLog
-      )
-    },
-    showNotification = mismatch_capture$showNotification,
-    removeNotification = mismatch_capture$removeNotification,
-    logInfo = function(...) invisible(NULL),
-    logError = function(...) invisible(NULL)
-  ))
+  mismatch <- module_ci_metab_da_load(list(source_dir = mismatch_dir),
+    module_ci_metab_da_workflow(mismatch_session$current_s4_object), module_ci_metab_da_data_env(), mismatch_capture)
   expect_identical(mismatch$status, "error")
-  expect_match(mismatch$errorMessage, "assay_names do not match", fixed = TRUE)
+  expect_match(mismatch$message, "assay_names do not match", fixed = TRUE)
 })
 
 test_that("MCI-016.2 formula and contrast preflight rejects invalid DA inputs before analysis", {
@@ -194,14 +144,25 @@ test_that("MCI-016.2 formula and contrast preflight rejects invalid DA inputs be
   expect_false(invalid_formula$valid)
   expect_true(any(grepl("cannot produce a model matrix", invalid_formula$errors, fixed = TRUE)))
 
-  no_contrasts <- resolveMetabDaAnalysisInputs(
-    currentS4Object = object,
-    workflowData = list(contrasts_tbl = module_ci_metab_da_contrasts("no_contrasts")),
-    formulaString = "~ 0 + group"
-  )
-  expect_false(no_contrasts$ok)
+  # KIT-106 W4: the run button's refusals and preflight are the shared frame's (`runOmicDaAnalysis`), under metab's
+  # configuration (the preflight before the running notice); the run itself (`executeOmicDaRun`) must not be reached.
+  config <- omicGuiConfig("metabolomics")
+  settings <- list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)
+  shell_called <- FALSE
+  testthat::local_mocked_bindings(executeOmicDaRun = function(...) {
+    shell_called <<- TRUE
+    stop("analysis shell must not run for invalid preflight")
+  })
+  no_contrasts_capture <- module_ci_metab_da_capture_ui()
+  testthat::local_mocked_bindings(showNotification = no_contrasts_capture$showNotification,
+    removeNotification = no_contrasts_capture$removeNotification, .package = "shiny")
+  no_contrasts <- suppressMessages(runOmicDaAnalysis(settings, "module-ci-metab-da",
+    module_ci_metab_da_workflow(object, contrasts = module_ci_metab_da_contrasts("no_contrasts")),
+    list2env(list(current_state_name = "metab_correlation_filtered"), parent = emptyenv()), list(), config$da,
+    config$binding$binding))
+  expect_null(no_contrasts)
   expect_identical(
-    no_contrasts$errorMessage,
+    no_contrasts_capture$notifications[[1L]][[1L]],
     "No contrasts defined. Please define contrasts in the design tab."
   )
 
@@ -210,22 +171,11 @@ test_that("MCI-016.2 formula and contrast preflight rejects invalid DA inputs be
     contrasts = module_ci_metab_da_contrasts("invalid_term")
   )
   capture <- module_ci_metab_da_capture_ui()
-  shell_called <- FALSE
-  analysis_state <- runMetabDaAnalysisObserverEntry(
-    currentS4Object = object,
-    workflowData = invalid_workflow,
-    formulaString = "~ 0 + group",
-    daQValThresh = 0.05,
-    treatLfcCutoff = 0,
-    daData = module_ci_metab_da_data_env(),
-    session = "module-ci-metab-da",
-    experimentPaths = list(),
-    runAnalysisShell = function(...) {
-      shell_called <<- TRUE
-      stop("analysis shell must not run for invalid preflight")
-    },
-    showNotification = capture$showNotification
-  )
+  testthat::local_mocked_bindings(showNotification = capture$showNotification, removeNotification = capture$removeNotification,
+    .package = "shiny")
+  # KIT-075: the tab reads the head's metadata; the preflight reads the state for this action only.
+  analysis_state <- suppressMessages(runOmicDaAnalysis(settings, "module-ci-metab-da", invalid_workflow,
+    module_ci_metab_da_data_env(), list(), config$da, config$binding$binding))
   expect_identical(analysis_state$status, "error")
   expect_false(shell_called)
   expect_match(analysis_state$errorMessage, "references terms absent", fixed = TRUE)
@@ -302,100 +252,134 @@ test_that("MCI-016.4 render matrix covers combined/per-assay filters, plots, tab
   results_list <- module_ci_metab_da_results_list("mixed")
   long <- results_list$da_metabolites_long
 
-  combined <- filterMetabDaDisplayResults(
+  # KIT-106 W4: the views are the shared panel library's (mod_omic_da_panels.R) under metab's configuration (its table
+  # filter `all_or_combined`; the table widget's DT functions passed through, so it returns the rows it shows).
+  config <- omicGuiConfig("metabolomics")
+  rows <- function(data, ...) data
+  combined <- omicDaFilterRows(
     results = long,
     selectedContrast = "KO_vs_WT",
-    selectedAssay = "Combined"
+    selectedAssay = "Combined",
+    tableFilter = config$da$table_filter
   )
   expect_setequal(unique(combined$assay), c("LCMS_Pos", "GCMS"))
 
-  per_assay <- filterMetabDaDisplayResults(
-    results = long,
+  per_assay <- omicDaTableWidget(
+    daResults = long,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "LCMS_Pos",
-    significanceFilter = "up",
+    tableSignificance = "up",
     daQValThresh = 0.05,
-    treatLfcCutoff = 1
+    lfcThreshold = 1,
+    tableMaxRows = nrow(long),
+    columns = config$da$columns,
+    tableFilter = config$da$table_filter,
+    datatableFactory = rows,
+    formatRoundFactory = rows,
+    formatStyleFactory = rows,
+    styleEqualFactory = function(...) NULL
   )
   expect_true(nrow(per_assay) > 0)
   expect_identical(unique(per_assay$assay), "LCMS_Pos")
   expect_true(all(per_assay$logFC > 1))
   expect_true(all(per_assay$fdr_qvalue < 0.05))
 
-  empty <- filterMetabDaDisplayResults(
+  empty <- omicDaFilterRows(
     results = long,
     selectedContrast = "DOES_NOT_EXIST",
-    selectedAssay = "LCMS_Pos"
+    selectedAssay = "LCMS_Pos",
+    tableFilter = config$da$table_filter
   )
   expect_equal(nrow(empty), 0)
-  expect_null(buildMetabDaResultsTableRenderOutput(
-    daResultsList = list(da_metabolites_long = empty),
+  expect_null(omicDaTableWidget(
+    daResults = empty,
     selectedContrast = "DOES_NOT_EXIST",
     selectedAssay = "LCMS_Pos",
-    requireInputs = function(...) invisible(NULL)
+    tableSignificance = "all",
+    daQValThresh = 0.05,
+    lfcThreshold = 0,
+    tableMaxRows = 1000,
+    columns = config$da$columns,
+    tableFilter = config$da$table_filter
   ))
 
   captured_volcano <- NULL
-  volcano <- buildMetabDaStaticVolcanoRenderOutput(
+  volcano <- omicDaStaticVolcano(
     daResultsList = results_list,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "Combined",
     daQValThresh = 0.05,
-    treatLfcCutoff = 1,
-    requireInputs = function(...) invisible(NULL),
-    buildPlot = function(...) {
+    lfcThreshold = 1,
+    view = utils::modifyList(config$da$views$static_volcano, list(plot = function(...) {
       captured_volcano <<- list(...)
       "volcano-rendered"
-    }
+    }))
   )
   expect_identical(volcano, "volcano-rendered")
-  expect_identical(captured_volcano$selectedAssay, "Combined")
-  expect_identical(captured_volcano$treatLfcCutoff, 1)
+  expect_identical(captured_volcano$selected_assay, "Combined")
+  expect_identical(captured_volcano$lfc_threshold, 1)
 
   captured_heatmap <- NULL
   da_data <- module_ci_metab_da_data_env()
-  heatmap <- buildMetabDaHeatmapRenderOutput(
+  heatmap <- omicDaHeatmapState(
     daResultsList = results_list,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "LCMS_Pos",
     topN = 4,
     heatmapClustering = "row",
+    scaleData = "row",
+    clusteringMethod = "complete",
+    distanceMethod = "euclidean",
+    colorScheme = "RdBu",
+    showLabels = TRUE,
+    daQValThresh = 0.05,
     treeCutMethod = "kmeans",
     nClusters = 2,
-    daData = da_data,
-    requireInputs = function(...) invisible(NULL),
-    buildPlot = function(...) {
+    cutHeight = NULL,
+    minClusterSize = 1,
+    heatmap = utils::modifyList(config$da$views$heatmap, list(kernel = function(...) {
       captured_heatmap <<- list(...)
       list(plot = "heatmap-rendered", row_clusters = c(M_UP = 1, M_DOWN = 2))
-    }
+    }))
   )
   expect_type(heatmap, "list")
-  expect_false(captured_heatmap$clusterCols)
-  expect_true(captured_heatmap$clusterRows)
-  expect_identical(captured_heatmap$topN, 4)
-  expect_identical(captured_heatmap$nClusters, 2)
+  expect_false(captured_heatmap$cluster_cols)
+  expect_true(captured_heatmap$cluster_rows)
+  expect_identical(captured_heatmap$top_n, 4)
+  expect_identical(captured_heatmap$n_clusters, 2)
 
-  table_output <- buildMetabDaResultsTableRenderOutput(
-    daResultsList = results_list,
+  table_output <- omicDaTableWidget(
+    daResults = long,
     selectedContrast = "KO_vs_WT",
     selectedAssay = "All",
-    significanceFilter = "significant",
+    tableSignificance = "significant",
     daQValThresh = 0.05,
-    maxRows = 5,
-    requireInputs = function(...) invisible(NULL),
-    buildDatatable = function(results) results
+    lfcThreshold = 0,
+    tableMaxRows = 5,
+    columns = config$da$columns,
+    tableFilter = config$da$table_filter,
+    datatableFactory = rows,
+    formatRoundFactory = rows,
+    formatStyleFactory = rows,
+    styleEqualFactory = function(...) NULL
   )
   expect_s3_class(table_output, "data.frame")
   expect_lte(nrow(table_output), 5)
   expect_true(all(table_output$significant != "NS"))
 
   capture <- module_ci_metab_da_capture_ui()
-  selector_state <- updateMetabDaResultsSelectorInputs(
-    daResultsLong = long,
+  testthat::local_mocked_bindings(updateSelectInput = capture$updateSelectInput, showNotification = capture$showNotification,
+    removeNotification = capture$removeNotification, .package = "shiny")
+  # The completion of the shared frame; unset output directories skip the export.
+  selector_state <- suppressMessages(completeOmicDaRun(
+    results = results_list,
+    tab = da_data,
+    workflowData = module_ci_metab_da_workflow(),
     session = "module-ci-metab-da",
-    updateSelectInput = capture$updateSelectInput,
-    logInfo = function(...) invisible(NULL)
-  )
+    experimentPaths = list(da_output_dir = NULL, publication_graphs_dir = NULL),
+    da = config$da,
+    binding = config$binding$binding
+  ))
   expect_identical(selector_state$contrastChoices, c("KO_vs_WT", "RES_vs_WT"))
   expect_identical(selector_state$assayChoices, c("Combined", "LCMS_Pos", "GCMS"))
   expect_identical(selector_state$tableAssayChoices, c("All", "LCMS_Pos", "GCMS"))

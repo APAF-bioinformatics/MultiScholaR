@@ -4439,8 +4439,10 @@ test_that("(c, D2) the value each DA server returns today: lipid its outputs, me
     expect_identical(omicDaW1Case("lipid_refusals")$returned, paste0("reactivevalues: analysis_complete,assays_available,",
         "contrasts_available,current_col_clusters,current_heatmap_plot,current_row_clusters,current_state_name,da_results_list,",
         "formula_from_s4"))
-    expect_identical(omicDaW1Case("metab_refusals")$returned,
-        "list: loadFilteredSessionObserver,runAnalysisObserver,visualizationOutputs,saveHeatmapObserver,resultsOutputs")
+    # W4: metab's are the frame's reactive values (lipid's and trx's fields).
+    expect_identical(omicDaW1Case("metab_refusals")$returned, paste0("reactivevalues: analysis_complete,assays_available,",
+        "contrasts_available,current_col_clusters,current_heatmap_plot,current_row_clusters,current_state_name,da_results_list,",
+        "formula_from_s4"))
     expect_identical(omicDaW1Case("trx_refusals")$returned, paste0("reactivevalues: analysis_complete,assays_available,",
         "contrasts_available,current_col_clusters,current_heatmap_plot,current_row_clusters,current_state_name,da_results_list,",
         "formula_from_s4"))
@@ -4605,5 +4607,55 @@ test_that("(W3, F106-05) lipid: Run DA on an owner whose head is its initial sta
     }))$captures$run_no_data
     expect_identical(run$errors, character())
     expect_identical(run$notes, "[error 5 -] No lipidomics data loaded. Please load a filtered session first.")
+    expect_identical(run$tab_status[["differential_analysis"]], "pending")
+})
+
+# ------------------------------------------------------------------------------------------------
+# W4 (D3, F106-05): metab on the shared frame, written before it (kit-106/w4/test-first.txt). The interactive volcano is
+# unticked in metab's UI, `<req>` until ticked, then the binding's `metab_volcano_page` (in process and managed); the tab's
+# reactive values hold no state, widget or page bytes. F106-05: an owner whose head is its initial state is refused as no
+# data, through the frame's handler.
+# ------------------------------------------------------------------------------------------------
+
+test_that("(W4, D3) metab's DA UI has the interactive volcano unticked", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    ui <- mod_metab_da_ui("de")
+    html <- as.character(htmltools::renderTags(ui)$html)
+    expect_match(html, "<input id=\"de-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
+    expect_false(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))
+    expect_false(omicsUiInputDefaults(ui)[["de-volcano_interactive"]])
+})
+
+test_that("(W4, D3) metab in process: the volcano is <req> until ticked, then the metab_volcano_page iframe; the tab holds no state, widget or page", {
+    testthat::skip_if_not_installed("Glimma")
+    setup <- omicDaW1FeatureSetup("metab", session_file = FALSE)
+    out <- omicDaW3Volcano(setup, omicDaW3FeatureRun, list(volcano_contrast = "KO_vs_WT", volcano_assay = "LCMS_Pos"))
+    expect_identical(out$unticked, "<req>")
+    expect_identical(out$pages_unticked, character())
+    expect_match(out$ticked, "<iframe", fixed = TRUE)
+    expect_identical(out$pages, "metab_volcano_page")
+    expect_identical(out$heavy, character())
+})
+
+test_that("(W4, D3) metab managed: the volcano is <req> until ticked, then the worker's metab_volcano_page iframe; the tab holds no state, widget or page", {
+    testthat::skip_if_not_installed("Glimma")
+    setup <- omicDaW1FeatureSetup("metab", session_file = FALSE, managed = TRUE)
+    out <- omicDaW3Volcano(setup, omicDaW3FeatureRun, list(volcano_contrast = "KO_vs_WT", volcano_assay = "LCMS_Pos"))
+    expect_identical(out$unticked, "<req>")
+    expect_identical(out$pages_unticked, character())
+    expect_match(out$ticked, "<iframe", fixed = TRUE)
+    expect_identical(out$pages, "metab_volcano_page")
+    expect_identical(out$heavy, character())
+})
+
+test_that("(W4, F106-05) metab: Run DA on an owner whose head is its initial state is refused as no data", {
+    setup <- omicDaW1FeatureSetup("metab", state = FALSE, session_file = FALSE)
+    omicsTestOwner(workflow = setup$bus(), omic_type = "metabolomics", experiment_paths = list(source_dir = file.path(setup$roots, "source")))
+    run <- omicDaW1Drive(setup, list(run_no_data = function(ctx) {
+        ctx$set(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)
+        ctx$set(run_da_analysis = 1L)
+    }))$captures$run_no_data
+    expect_identical(run$errors, character())
+    expect_identical(run$notes, "[error 5 -] No metabolomics data loaded. Please load a filtered session first.")
     expect_identical(run$tab_status[["differential_analysis"]], "pending")
 })

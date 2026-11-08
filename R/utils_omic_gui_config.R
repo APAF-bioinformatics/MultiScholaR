@@ -1403,7 +1403,15 @@ omicGuiMetabDa <- function() {
             assay_check_first = TRUE),
         preflight_first = TRUE,
         download = "metabolomics_da_results_"))
-    da$preflight <- validateMetabDesignDaPreflight
+    # KIT-106 W4: the frame calls the preflight with the state read for the run, the contrasts and the formula
+    # (`omicDaPreflight`, mod_omic_da.R); metab's validator takes the state's design and assays, and is not called without
+    # a formula (mod_metab_da_observer_helpers.R:351-362 at fe97aac1). It is looked up by name when it runs.
+    da$preflight <- function(currentS4, contrastsTbl, formulaString) {
+        if (is.null(formulaString)) return(list(valid = TRUE))
+        validateMetabDesignDaPreflight(designMatrix = currentS4@design_matrix, assayList = currentS4@metabolite_data,
+            contrastsTbl = contrastsTbl, formulaString = formulaString, sampleIdCol = currentS4@sample_id,
+            groupCol = currentS4@group_id, requireContrasts = TRUE)
+    }
     da
 }
 

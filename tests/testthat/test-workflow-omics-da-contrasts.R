@@ -160,16 +160,15 @@ test_that("KIT-076: the DA tabs warn about a failed contrast, and say nothing wh
   expect_identical(lipid_warnings(list(da_lipids_long = long, failed_contrasts = failed)), list("DA failed for: groupC-groupA"))
   expect_length(lipid_warnings(list(da_lipids_long = long, failed_contrasts = list())), 0L)
 
+  # KIT-106 W4: metab's completion is the shared DA frame's too, under its configuration.
+  metab <- omicGuiConfig("metabolomics")
   metab_warnings <- function(results) {
     warnings <- list()
-    testthat::local_mocked_bindings(runMetabReferenceDaAnalysis = function(...) list(results = results),
-      getWorkflowStateReference = function(...) NULL, metabDaResultsWithSource = function(results, ...) results, .package = "MultiScholaR")
-    workflow <- new.env(parent = emptyenv()); workflow$tab_status <- list()
-    runMetabDaAnalysisObserverShell(currentS4 = NULL, contrastsTbl = data.frame(), formulaString = "~ 0 + group", daQValThresh = 0.05, treatLfcCutoff = 0,
-      workflowData = workflow, daData = new.env(parent = emptyenv()), session = NULL, experimentPaths = list(),
-      updateSelectors = function(...) NULL, writeArtifacts = function(...) NULL,
+    testthat::local_mocked_bindings(removeNotification = function(...) NULL, updateSelectInput = function(...) NULL,
       showNotification = function(message, type = NULL, ...) if (identical(type, "warning")) warnings[[length(warnings) + 1L]] <<- message,
-      removeNotification = function(...) NULL, logInfo = function(...) NULL, logError = function(...) NULL)
+      .package = "shiny")
+    suppressMessages(completeOmicDaRun(results = results, tab = new.env(parent = emptyenv()), workflowData = new.env(parent = emptyenv()),
+      session = NULL, experimentPaths = list(), da = metab$da, binding = metab$binding$binding))
     warnings
   }
   expect_identical(metab_warnings(list(da_metabolites_long = long, failed_contrasts = failed)), list("DA failed for: groupC-groupA"))

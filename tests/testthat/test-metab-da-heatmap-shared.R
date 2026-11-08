@@ -178,27 +178,23 @@ test_that("KIT-101 F-03: the metab DA UI defines lipid's four tree-cut inputs an
     heatmap_min_cluster_size = 5
   ))
 
+  # KIT-106 W4: the tab is the shared DA frame (mod_omic_da.R) under metab's configuration, mounted through
+  # `mod_metab_da_server`. Its heatmap render hands the inputs to `omicDaHeatmapState` (captured here); its cluster
+  # summary reads the tree-cut method itself (captured as the server reads it, with the summary's value).
   captured <- new.env(parent = emptyenv())
-  server <- function(input, output, session) {
-    registerMetabDaVisualizationOutputs(
-      input = input,
-      output = output,
-      daData = list(da_results_list = NULL, analysis_complete = FALSE),
-      buildHeatmapOutput = function(...) {
-        captured$heatmap <- list(...)
-        NULL
-      },
-      buildClusterSummaryOutput = function(...) {
-        captured$cluster_summary <- list(...)
-        invisible(NULL)
-      }
-    )
-  }
-  shiny::testServer(server, {
+  heatmap_arguments <- names(formals(omicDaHeatmapState))
+  testthat::local_mocked_bindings(omicDaHeatmapState = function(...) {
+    captured$heatmap <- stats::setNames(list(...), heatmap_arguments)
+    NULL
+  })
+  workflow <- list2env(list(state_manager = NULL, contrasts_tbl = NULL, tab_status = list()), parent = emptyenv())
+  suppressMessages(shiny::testServer(mod_metab_da_server, args = list(workflow_data = workflow, experiment_paths = list(),
+    omic_type = "metabolomics", experiment_label = "f03"), {
     do.call(session$setInputs, Filter(Negate(is.null), ui_defaults))
     output$heatmap_plot
-    output$cluster_summary
-  })
+    captured$cluster_summary <- list(treeCutMethod = input$heatmap_tree_cut_method,
+      value = tryCatch(output$cluster_summary, shiny.silent.error = function(e) "<req>"))
+  }))
   expect_identical(captured$heatmap$treeCutMethod, "none")
   expect_identical(captured$heatmap$nClusters, 4)
   expect_identical(captured$heatmap$cutHeight, 10)
@@ -211,19 +207,30 @@ test_that("KIT-101 F-03: with tree cutting 'none' the metab heatmap is identical
     da_metabolites_long = buildMetabDaHeatmapResultsShared(),
     theObject = buildMetabDaHeatmapObjectShared()
   )
+  # KIT-106 W4: the shared frame's heatmap view (`omicDaHeatmapState`, then `omicDaStoreHeatmap` on the tab) under metab's
+  # configuration, with the start commit's builder defaults for the other inputs.
+  heatmap_view <- omicGuiConfig("metabolomics")$da$views$heatmap
   render <- function(treeCutMethod, nClusters, cutHeight, minClusterSize) {
     daData <- new.env(parent = emptyenv())
-    plot <- buildMetabDaHeatmapRenderOutput(
+    state <- omicDaHeatmapState(
       daResultsList = da_results,
       selectedContrast = "groupB-groupA",
       selectedAssay = "Combined",
       topN = 3,
+      heatmapClustering = "both",
+      scaleData = "row",
+      clusteringMethod = "complete",
+      distanceMethod = "euclidean",
+      colorScheme = "RdBu",
+      showLabels = TRUE,
+      daQValThresh = 0.05,
       treeCutMethod = treeCutMethod,
       nClusters = nClusters,
       cutHeight = cutHeight,
       minClusterSize = minClusterSize,
-      daData = daData
+      heatmap = heatmap_view
     )
+    plot <- omicDaStoreHeatmap(state, daData)
     png_path <- tempfile(fileext = ".png")
     grDevices::png(png_path, width = 600, height = 500)
     tryCatch(ComplexHeatmap::draw(plot), finally = grDevices::dev.off())

@@ -226,6 +226,18 @@ module_ci_metab_da_capture_ui <- function() {
   capture
 }
 
+# KIT-106 W4: the DA tab's session load through the shared frame (`loadOmicDaSession` on the core's
+# `loadWorkflowOmicsDaSession`) under metab's configuration, in an owner session (the legacy adoption), with the
+# selector, formula and notification calls recorded in `capture`. Returns the core's result (`status`, `message`, the
+# choices and the formula).
+module_ci_metab_da_load <- function(experiment_paths, workflow, da_data, capture) {
+  testthat::local_mocked_bindings(updateSelectInput = capture$updateSelectInput,
+    updateTextAreaInput = capture$updateTextAreaInput, showNotification = capture$showNotification,
+    removeNotification = capture$removeNotification, .package = "shiny")
+  suppressMessages(shiny::withReactiveDomain(omicsOwnerSession(), loadOmicDaSession("module-ci-metab-da", workflow, da_data,
+    experiment_paths, omicGuiConfig("metabolomics")$da, metabolomicsDeclarationBinding)))
+}
+
 module_ci_metab_da_local_binding <- function(env, name, value, .local_envir = parent.frame()) {
   had_binding <- exists(name, envir = env, inherits = FALSE)
   old_value <- if (had_binding) get(name, envir = env, inherits = FALSE) else NULL

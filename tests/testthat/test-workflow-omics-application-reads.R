@@ -192,14 +192,17 @@ for (omic in c("lipidomics", "metabolomics")) local({
     assay <- unique(long$assay)[[1L]]
     # KIT-106 W3: lipid's views are the shared panel library's (mod_omic_da_panels.R) under its configuration.
     lipid_da <- omicGuiConfig("lipidomics")$da
+    # KIT-106 W4: metab's too, with its table filter.
+    metab_da <- omicGuiConfig("metabolomics")$da
     for (selected in c(assay, "Combined", "All")) for (filter in c("all", "significant", "up", "down")) {
       shown <- function(results) if (identical(omic, "lipidomics")) {
         omicDaTableWidget(results[[binding$long_table]], contrast, selected, filter, 1, 0, 1000L, lipid_da$columns)$x$data
-      } else buildMetabDaResultsTableRenderOutput(results, contrast, selected, filter, 1, 0, 1000L)$x$data
+      } else omicDaTableWidget(results[[binding$long_table]], contrast, selected, filter, 1, 0, 1000L, metab_da$columns,
+        metab_da$table_filter)$x$data
       expect_identical(shown(tab), shown(whole), info = paste(selected, filter))
     }
     stats <- function(results) if (identical(omic, "lipidomics")) omicDaSummaryText(results[[binding$long_table]], contrast, assay, 0.05, lipid_da$summary) else
-      buildMetabDaSummaryStatsRenderOutput(results, contrast, assay, 0.05)
+      omicDaSummaryText(results[[binding$long_table]], contrast, assay, 0.05, metab_da$summary, metab_da$table_filter)
     expect_identical(stats(tab), stats(whole))
     static <- if (identical(omic, "lipidomics")) generateLipidDAVolcanoStatic else generateMetabDAVolcanoStatic
     # A plot's data carries every column of its input; the layers draw none of the per-sample ones.
@@ -228,7 +231,7 @@ for (omic in c("lipidomics", "metabolomics")) local({
       handler <- omicDaDownloadHandler(function() tab, binding$long_table, lipid_da$download, downloadHandlerFactory = function(filename, content) content, reqFn = identity)
       handler(through)
     } else {
-      handler <- buildMetabDaResultsDownloadHandler(list(da_results_list = tab), downloadHandler = function(filename, content) content)
+      handler <- omicDaDownloadHandler(function() tab, binding$long_table, metab_da$download, downloadHandlerFactory = function(filename, content) content, reqFn = identity)
       handler(through)
     }
     expect_identical(digest::digest(file = through, algo = "sha256"), digest::digest(file = written, algo = "sha256"))
@@ -379,7 +382,11 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
       shiny::observe(omicNormItsdTables(output, workflow, norm, config))
       mod_metab_qc_itsd_server("itsd", workflow, omic, "kit082")
       output$final_qc <- omicNormFinalQcPlot(norm, function(...) list(color_var = "group", shape_var = "group"), workflow, config)
-      session$userData$register_da_outputs <- function() registerMetabDaVisualizationOutputs(input, output, da, workflow)
+      # KIT-106 W4: the shared DA frame's registrations (mod_omic_da.R) under metab's configuration.
+      session$userData$register_da_outputs <- function() {
+        registerOmicDaVolcanoGlimmaOutput(output, input, da, workflow, paths, config$da, config$binding$binding)
+        registerOmicDaHeatmapPlotOutput(output, input, da, workflow, config$da, config$binding$binding)
+      }
       shiny::observeEvent(input$export_session, exportOmicNormSession(input, workflow, paths, "kit082", norm, function(...) invisible(NULL), config))
       shiny::observeEvent(input$save_args, runMetabSummarySaveWorkflowArgsObserverShell(input, dirs, omic, workflow, values, output))
     }

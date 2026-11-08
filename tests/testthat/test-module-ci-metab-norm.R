@@ -376,37 +376,25 @@ test_that("MCI-015.6 DA reload consumes every accepted metabolomics export varia
     capture$select <- list()
     capture$text <- list()
 
-    # KIT-072: a file from another session adopts into the owner, which attaches to the module's session.
-    result <- shiny::withReactiveDomain(session, runMetabDaLoadSessionObserverShell(
-      sessionFile = session_file,
-      workflowData = workflow,
-      daData = da_data,
-      session = session,
-      showNotification = function(...) invisible(NULL),
-      removeNotification = function(...) invisible(NULL),
-      logInfo = function(...) invisible(NULL),
-      logError = function(...) invisible(NULL),
-      restoreState = function(sessionData, sessionFile, workflowData, daData, session, debugLog) {
-        restoreMetabDaLoadedSessionState(
-          sessionData = sessionData,
-          sessionFile = sessionFile,
-          workflowData = workflowData,
-          daData = daData,
-          session = session,
-          updateSelectInput = function(session, inputId, choices = NULL, selected = NULL, ...) {
-            capture$select[[inputId]] <- list(choices = choices, selected = selected)
-            invisible(NULL)
-          },
-          updateTextAreaInput = function(session, inputId, value = NULL, ...) {
-            capture$text[[inputId]] <- value
-            invisible(NULL)
-          },
-          logInfo = function(...) invisible(NULL),
-          logWarn = function(...) invisible(NULL),
-          debugLog = debugLog
-        )
-      }
-    ))
+    # KIT-072: a file from another session adopts into the owner, which attaches to the module's session. KIT-106 W4: the
+    # load is the shared DA frame's (`loadOmicDaSession` on the core's `loadWorkflowOmicsDaSession`), which reads the
+    # configuration's file name in the source directory.
+    expect_identical(basename(session_file), omicGuiConfig("metabolomics")$da$session_load$file)
+    quiet <- function(...) invisible(NULL)
+    result <- local({
+      testthat::local_mocked_bindings(
+        updateSelectInput = function(session, inputId, choices = NULL, selected = NULL, ...) {
+          capture$select[[inputId]] <- list(choices = choices, selected = selected)
+          invisible(NULL)
+        },
+        updateTextAreaInput = function(session, inputId, value = NULL, ...) {
+          capture$text[[inputId]] <- value
+          invisible(NULL)
+        },
+        showNotification = quiet, removeNotification = quiet, .package = "shiny")
+      suppressMessages(shiny::withReactiveDomain(session, loadOmicDaSession(session, workflow, da_data,
+        list(source_dir = source_dir), omicGuiConfig("metabolomics")$da, metabolomicsDeclarationBinding)))
+    })
 
     expect_identical(result$status, "success")
     # KIT-030: the DA tab holds the state name; the object is read through the state manager.

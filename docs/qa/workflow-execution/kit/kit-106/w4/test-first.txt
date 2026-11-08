@@ -1,0 +1,24 @@
+KIT-106 W4 test first (the four W4 blocks of tests/testthat/test-omic-da-module.R)
+
+Run: a scratch file holding test-omic-da-module.R's definitions (its W1 (a) block included, not its W1 (b)/(c) cases),
+the W3 volcano helpers and the W4 blocks; run1.R, load_all, MULTISCHOLAR_STRICT_SKIPS=1, TMPDIR on disk.
+
+## Before: origin/performance-v2 at fe97aac1 with only the W4 blocks added (metab on its own module)
+
+COUNTS test-zz-w4-only.R pass 41 fail 9 error 1 skip 0
+  BAD (W4, D3) metab's DA UI has the interactive volcano unticked
+    the volcano_interactive input is `checked`; omicsUiInputDefaults gives TRUE
+  BAD (W4, D3) metab in process: the volcano is <req> until ticked, then the metab_volcano_page iframe; ...
+    unticked: the Glimma widget (generateMetabDAVolcanoPlotGlimma on the tab's results with source), not <req>
+    ticked: the widget, not an iframe; no metab_volcano_page action; the server returns its registrations
+    ("<not reactive values>")
+  BAD (W4, D3) metab managed: the volcano is <req> until ticked, then the worker's metab_volcano_page iframe; ...
+    unticked: the worker's iframe, the page already requested at select ("metab_volcano_page"); "<not reactive values>"
+  BAD (W4, F106-05) metab: Run DA on an owner whose head is its initial state is refused as no data
+    Error: Can't access reactive `reactiveValues2326`; its module session has been destroyed
+    (the run observer raised in readMetabWorkflowMetadata -> readWorkflowStateMetadata: "state requires explicit
+    legacy conversion", from mod_metab_da_observer_helpers.R:401 via :316)
+
+## After: the W4 tree (metab on the shared frame)
+
+COUNTS test-zz-w4-only.R pass 53 fail 0 error 0 skip 0
