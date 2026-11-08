@@ -13,3 +13,6 @@ c identical
 m identical 
 l identical 
 t identical 
+# Correction pass (F106-06, the build J57eHO at e1a5b960 on kit_906): the two journeys that tick the volcano, rerun once under new keys.
+106x (as 106a): accepted, exactness_and_completion; dispatches identical to 106a; da 0.873 -> 0.870 GiB
+106y (as 106b): accepted, exactness_and_completion; dispatches identical to 106b; da 0.829 -> 0.827 GiB

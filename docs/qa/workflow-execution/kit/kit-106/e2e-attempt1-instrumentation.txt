@@ -1,0 +1,9 @@
+# KIT-106 e2e lanes at 9152e613 on browser-smoke.m4DXz7 2026-11-09T06:54:25+11:00
+COUNTS test-e2e-lipidomics-canonical.R pass 0 fail 0 error 0 skip 2 exit 0 wall 14s
+COUNTS test-e2e-metabolomics-lc-gc.R pass 0 fail 0 error 0 skip 3 exit 0 wall 13s
+COUNTS test-e2e-transcriptomics-screen.R pass 0 fail 0 error 0 skip 1 exit 0 wall 7s
+COUNTS test-e2e-proteomics-dia.R pass 0 fail 0 error 0 skip 1 exit 0 wall 6s
+COUNTS test-e2e-proteomics-dia-limpa.R pass 0 fail 0 error 0 skip 1 exit 0 wall 7s
+COUNTS test-e2e-proteomics-enrichment.R pass 0 fail 0 error 0 skip 2 exit 0 wall 10s
+COUNTS test-e2e-proteomics-tmt-lfq.R pass 0 fail 0 error 0 skip 3 exit 0 wall 12s
+DONE
