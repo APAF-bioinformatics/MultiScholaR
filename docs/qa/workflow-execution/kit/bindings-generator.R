@@ -1263,6 +1263,15 @@ if (!is.null(b$builds$kit_106)) {
     }
 }
 
+# KIT-107 (the shared enrichment module; F-16): the same six screen journeys on kit_107.
+if (!is.null(b$builds$kit_107)) {
+    kit_107 <- list(build = "kit_107", purpose = "exactness (recorded, uncounted; KIT-107)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("107", suffix)]] <- utils::modifyList(from, kit_107)
+    }
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
