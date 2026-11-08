@@ -206,8 +206,8 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
     if (identical(omic, "lipidomics")) {
       normData <- createLipidNormReactiveState()
       session$userData$probe_norm <- normData
-      registerLipidIntensityApplyFilterObserver(input, workflow, output, stats, plot, omic)
-      registerLipidDuplicateResolveObserver(input, workflow, omic, stats, info, plot, output)
+      mod_lipid_qc_intensity_server("intensity", workflow, omic, "kit078")
+      mod_lipid_qc_duplicates_server("duplicates", workflow, omic, "kit078")
       registerLipidNormRunNormalizationObserver(input, workflow, paths, omic, normData, addLog, aesthetics, function(...) NULL)
       registerLipidNormApplyCorrelationFilterObserver(input, workflow, normData, addLog)
       shiny::observeEvent(input$run_da, {
@@ -234,10 +234,12 @@ omicsTabServer <- function(fixture, omic, probe, managed) {
 #' Click through the tabs' journey in the server.
 omicsTabJourney <- function(session, omic, selections = NULL) {
   do.call(session$setInputs, omicsTabInputs())
-  apply_intensity <- if (identical(omic, "metabolomics")) list(`intensity-intensity_cutoff_percentile` = 1, `intensity-proportion_below_cutoff` = 0.5, `intensity-apply_filter` = 1) else list(apply_filter = 1)
+  # KIT-104 W5: lipid's intensity and duplicate sub-tabs run as their modules (`intensity`, `duplicates`), as metab's
+  # intensity sub-tab does.
+  apply_intensity <- list(`intensity-intensity_cutoff_percentile` = 1, `intensity-proportion_below_cutoff` = 0.5, `intensity-apply_filter` = 1)
   do.call(session$setInputs, apply_intensity)
   session$flushReact()
-  session$setInputs(resolve_duplicates = 1)
+  do.call(session$setInputs, if (identical(omic, "metabolomics")) list(resolve_duplicates = 1) else list(`duplicates-resolve_duplicates` = 1))
   session$flushReact()
   commitWorkflowOmicsStoreStep(session$userData$probe_owner, paste0(if (identical(omic, "metabolomics")) "metab" else "lipid", "_qc_finalize"),
     paste0(if (identical(omic, "metabolomics")) "metab" else "lipid", "_qc_complete"), list(), "QC processing complete - ready for normalization")

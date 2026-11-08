@@ -101,6 +101,7 @@ makeLipidQcItsdWorkflowHarness <- function(current_s4 = makeLipidQcItsdCharacter
 }
 
 test_that("mod_lipid_qc_itsd_server preserves public internal-standard analysis behavior", {
+  testthat::skip("quarantined: Q-62 (KIT-104 W5) it drives the ITSD server on a list state manager through the lipid stand-in readers; the shared analysis (analyzeWorkflowOmicsItsd) reads through the owner; covered by test-omic-qc-module.R (d), test-omics-qc-core.R and MCI-020.3")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_not(
     exists("mod_lipid_qc_itsd_server", envir = multiScholaRNamespace(), inherits = FALSE),

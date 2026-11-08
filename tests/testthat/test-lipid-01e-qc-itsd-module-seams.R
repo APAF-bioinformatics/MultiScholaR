@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-59 (KIT-104 W5) it tests registerLipidItsd{Summary,VisualizationTabs,CvPlot}Output and the ITSD server's seams, deleted; the sub-tab is mod_omic_qc_tabs.R over analyzeWorkflowOmicsItsd, covered by test-omic-qc-module.R (d), test-omics-qc-core.R and MCI-020.3")
 library(testthat)
 suppressPackageStartupMessages(library(shiny))
 

@@ -215,6 +215,7 @@ test_that("lipidomics QC orchestrator preserves the unavailable-state info panel
 })
 
 test_that("lipidomics QC orchestrator preserves populated tab rendering", {
+  testthat::skip("quarantined: Q-63 (KIT-104 W5) it stubs the deleted orchestrator's sub-module names and reads its log lines; the tab is the shared shell (mod_omic_qc.R), covered by test-omic-qc-module.R (b) and the W5 shell blocks, the BUG-10 audit and MCI-020's F-24 block")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidQcCapture()
   server_fn <- getLipidQcServer()
@@ -246,6 +247,7 @@ test_that("lipidomics QC orchestrator preserves populated tab rendering", {
 })
 
 test_that("lipidomics QC orchestrator preserves qc-trigger submodule initialization", {
+  testthat::skip("quarantined: Q-63 (KIT-104 W5) it stubs the deleted orchestrator's sub-module names and reads its log lines; the tab is the shared shell (mod_omic_qc.R), covered by test-omic-qc-module.R (b) and the W5 shell blocks, the BUG-10 audit and MCI-020's F-24 block")
   captured <- newSharedLipidQcCapture()
   server_fn <- getLipidQcServer()
   server_env <- environment(server_fn)
@@ -279,6 +281,7 @@ test_that("lipidomics QC orchestrator preserves qc-trigger submodule initializat
 })
 
 test_that("lipidomics QC orchestrator preserves state-detected auto-initialization", {
+  testthat::skip("quarantined: Q-63 (KIT-104 W5) it stubs the deleted orchestrator's sub-module names and reads its log lines; the tab is the shared shell (mod_omic_qc.R), covered by test-omic-qc-module.R (b) and the W5 shell blocks, the BUG-10 audit and MCI-020's F-24 block")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidQcCapture()
   server_fn <- getLipidQcServer()

@@ -319,7 +319,6 @@ omicQcDisplayOnly <- list(
     `itsd-analyze_is` = c("[default] Analyzing internal standards...", "[message] Found 4 internal standards"))
 
 test_that("(c) F-24: a lipid Detect duplicates or Analyze internal standards click before the start is not run", {
-    omicQcPending("W5")
     for (button in names(omicQcDisplayOnly)) {
         out <- omicQcClickBeforeStart(module_ci_lipid_qc_workflow(), "lipid_qc", "lipidomics", "lipid_raw_data_s4",
             button)
@@ -398,4 +397,165 @@ test_that("(d) analyze_is through the lipid and metab ITSD servers shows today's
     expect_identical(lipid, omicQcItsdFrozen$lipid)
     metab <- omicQcItsdCapture(mod_metab_qc_itsd_server, module_ci_metab_qc_workflow(), "metabolomics")
     expect_identical(metab, omicQcItsdFrozen$metab)
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-104 W5: the shared shell (R/mod_omic_qc.R) and sub-tabs (R/mod_omic_qc_tabs.R), lipid first.
+# Lipid runs on them through its wrappers ((a) to (d) above, MCI-020). These blocks hold what the
+# later consumers need of them, against today's modules: proteomics' tabsets, start and completion
+# by route (mod_prot_qc_server), and trx's one-table summary and text (registerTrxQcSummaryOutput,
+# trxQcFinalizeText).
+# ------------------------------------------------------------------------------------------------
+
+#' The tabset digest, ids and registered outputs of `mod_omic_qc_server("qc", ...)` under `config`.
+omicQcShellRendered <- function(config, workflow, omic_type) {
+    held <- new.env(parent = emptyenv())
+    suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
+        session$userData$trigger <- shiny::reactiveVal(NULL)
+        mod_omic_qc_server("qc", workflow, list(), omic_type, "kit104", session$userData$trigger, config = config)
+    }, {
+        session$flushReact()
+        held$tabs <- session$getOutput("qc-dynamic_qc_tabs")
+        held$outputs <- sort(names(session$.__enclos_env__$private$outs))
+    }))))
+    list(tabs = omicQcDigest(held$tabs), ids = omicQcSha(omicQcIds(held$tabs)), outputs = held$outputs)
+}
+
+test_that("W5 the shell renders proteomics' tabsets by route as mod_prot_qc_server does, before the trigger", {
+    config <- omicGuiConfig("proteomics")
+    expect_identical(omicQcDigest(mod_omic_qc_ui("qc", config)), omicQcFrozen$static[["prot_qc"]])
+    for (route in c("DIA", "DIA_LIMPA", "TMT", "LFQ")) {
+        key <- paste0("prot_", route)
+        rendered <- omicQcShellRendered(config, shiny::reactiveValues(state_manager = list(workflow_type = route)),
+            "proteomics")
+        expect_identical(rendered, list(tabs = omicQcFrozen$tabs[[key]], ids = omicQcFrozen$ids[[key]],
+            outputs = omicQcFrozen$outputs[[key]]), info = route)
+    }
+})
+
+test_that("W5 the shell starts proteomics' groups on the trigger by route, keeps `qc_workflow_type` and completes", {
+    started <- character()
+    testthat::local_mocked_bindings(
+        mod_prot_qc_peptide_server = function(id, ...) started <<- c(started, id),
+        mod_prot_qc_protein_server = function(id, ...) started <<- c(started, id),
+        .package = "MultiScholaR")
+    config <- omicGuiConfig("proteomics")
+    for (case in list(list(route = "DIA", groups = c("peptide_qc", "protein_qc")),
+        list(route = "TMT", groups = "protein_qc"))) {
+        started <- character()
+        bus <- shiny::reactiveValues(state_manager = list(workflow_type = case$route, states = list()),
+            tab_status = list(quality_control = "pending", normalization = "disabled"))
+        suppressMessages(shiny::testServer(function(input, output, session) {
+            # NULL until the design saves (a FALSE at the start ends the once-only start observer, as in
+            # mod_prot_qc.R today).
+            session$userData$go <- shiny::reactiveVal(NULL)
+            mod_omic_qc_server("qc", bus, list(), "proteomics", "kit104", session$userData$go, config = config)
+        }, {
+            session$flushReact()
+            expect_identical(started, character(), info = case$route)
+            session$userData$go(TRUE)
+            session$flushReact()
+            expect_identical(started, case$groups, info = case$route)
+            # The final protein state completes QC and opens normalisation (completeProtQcWorkflowStatus).
+            bus$state_manager <- list(workflow_type = case$route, states = list(protein_replicate_filtered = TRUE))
+            session$flushReact()
+            expect_identical(shiny::isolate(bus$tab_status), list(quality_control = "complete",
+                normalization = "pending"), info = case$route)
+        }))
+    }
+    # test-perf107-audit.R's reading of the shell's local route, under an owner that changes its route in place.
+    native <- WorkflowState$new(audit_enabled = FALSE)
+    bus <- shiny::reactiveValues(state_manager = native)
+    go <- shiny::reactiveVal(FALSE)
+    suppressMessages(shiny::testServer(mod_omic_qc_server, args = list(workflow_data = bus, experiment_paths = list(),
+        omic_type = "proteomics", experiment_label = "kit104", qc_trigger = go, config = config), {
+        session$flushReact()
+        expect_identical(qc_workflow_type(), "LFQ")
+        native$setWorkflowType("DIA")
+        go(TRUE)
+        session$flushReact()
+        expect_identical(qc_workflow_type(), "DIA")
+    }))
+})
+
+test_that("W5 the shared finalise's one-table summary and text are trx's today (registerTrxQcSummaryOutput, trxQcFinalizeText)", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not_installed("edgeR")
+    fixture <- trxDeclarationsOwner(withr::local_tempdir(), module_ci_trx_corpus())
+    withr::defer(closeDIAStateAdapter(fixture$owner))
+    config <- omicGuiConfig("transcriptomics")
+    held <- new.env(parent = emptyenv())
+    suppressWarnings(suppressMessages(shiny::testServer(function(input, output, session) {
+        legacy <- new.env(parent = emptyenv())
+        registerTrxQcSummaryOutput(legacy, fixture$workflow)
+        output$legacy_summary <- legacy$data_summary
+        registerOmicQcFinalizeSummary(output, fixture$workflow, config)
+    }, {
+        held$legacy <- output$legacy_summary
+        held$shared <- output$data_summary
+    })))
+    expect_false(is.null(held$shared$html))
+    expect_identical(held$shared, held$legacy)
+    meta <- readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, fixture$owner)
+    history <- fixture$owner$getHistory()
+    expect_identical(omicQcFinalizeText(sum(meta$assay_rows), NULL, history, config), trxQcFinalizeText(meta, history))
+})
+
+test_that("W5 lipid's QC copies are deleted; its exports are wrappers over the shared shell and sub-tabs", {
+    ns <- asNamespace("MultiScholaR")
+    deleted <- c("registerLipidIntensityApplyFilterObserver", "registerLipidIntensityAssayResultsOutput",
+        "registerLipidIntensityFilterPlotOutput", "handleLipidDuplicateDetection", "handleLipidDuplicateResolution",
+        "handleLipidDuplicateRevert", "registerLipidDuplicateServerBindings", "runLipidDuplicateModuleServerShell",
+        "registerLipidItsdSummaryOutput", "registerLipidItsdCvPlotOutput", "buildLipidQcS4DataSummaryUi",
+        "buildLipidQcS4AssayStatsTable", "buildLipidQcS4FinalizeResultsText", "validateLipidQcS4FinalizeState",
+        "updateLipidQcS4TrackingPlot", "getLipidQcS4FinalizeState", "saveLipidQcS4CompletedState")
+    expect_identical(deleted[vapply(deleted, exists, logical(1), envir = ns, inherits = FALSE)], character())
+    # qcClickAfterStart moved into the shell's file with its name.
+    expect_match(utils::getSrcFilename(qcClickAfterStart), "mod_omic_qc.R", fixed = TRUE)
+    for (name in c("mod_omic_qc_ui", "mod_omic_qc_server", "omicQcComponents", "registerOmicQcRevertObserver")) {
+        expect_match(utils::getSrcFilename(get(name, envir = ns)), "mod_omic_qc.R", fixed = TRUE, info = name)
+    }
+    for (part in c("intensity", "duplicates", "itsd", "finalize")) {
+        for (side in c("ui", "server")) {
+            name <- sprintf("mod_omic_qc_%s_%s", part, side)
+            expect_match(utils::getSrcFilename(get(name, envir = ns)), "mod_omic_qc_tabs.R", fixed = TRUE, info = name)
+        }
+    }
+    # The registry names a module pair for every component the four omics' qc groups name.
+    components <- omicQcComponents()
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics", "proteomics")) {
+        for (group in omicGuiConfig(omic)$qc$groups) {
+            ids <- c(group$component, vapply(group$tabs, `[[`, "", "component"))
+            expect_true(all(ids %in% names(components)), info = omic)
+            for (id in intersect(ids, names(components))) {
+                expect_true(exists(components[[id]]$ui, envir = ns) && exists(components[[id]]$server, envir = ns),
+                    info = id)
+            }
+        }
+    }
+})
+
+test_that("W5 the shell's and sub-tabs' module frames hold no name a test's own variables would be masked by", {
+    # The variables the QC tests (this file, MCI-020, MCI-028, test-perf107-audit.R) use inside testServer.
+    test_names <- c("out", "seen", "notes", "workflow", "fixture", "owner", "click", "button", "renders", "first",
+        "native", "trigger", "go", "bus", "started", "case", "counts", "captured", "probe", "design", "after_click",
+        "config", "route", "drawn", "ggplot", "held", "legacy", "manager", "lipid", "metab")
+    held <- new.env(parent = emptyenv())
+    held$frames <- list()
+    capture <- function(server, args) {
+        suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(server, args = args, {
+            held$frames <- c(held$frames, list(ls(session$env, all.names = TRUE)))
+        }))))
+    }
+    lipid <- omicGuiConfig("lipidomics")
+    capture(mod_omic_qc_server, list(workflow_data = module_ci_lipid_qc_workflow(), experiment_paths = list(),
+        omic_type = "lipidomics", experiment_label = "kit104", qc_trigger = function() NULL, config = lipid))
+    # The shell keeps the local a test reads by name (test-perf107-audit.R).
+    expect_true("qc_workflow_type" %in% held$frames[[1L]])
+    for (part in c("intensity", "duplicates", "itsd", "finalize")) {
+        capture(get(sprintf("mod_omic_qc_%s_server", part)), list(workflow_data = module_ci_lipid_qc_workflow(),
+            omic_type = "lipidomics", experiment_label = "kit104", config = lipid))
+    }
+    expect_length(held$frames, 5L)
+    for (frame in held$frames) expect_identical(intersect(frame, test_names), character())
 })

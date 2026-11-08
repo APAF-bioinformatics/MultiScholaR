@@ -1,0 +1,12 @@
+file	lines_d8f6dde4	lines_after_w5	note
+R/mod_lipid_qc.R	161	67	exported wrappers over the shell; trx's profile start kept until W6 (profile$qc_init)
+R/mod_lipid_qc_duplicates.R	134	50	exported wrappers
+R/mod_lipid_qc_duplicates_server_helpers.R	643	0	deleted (detection, resolution and statistics in the core; observers and outputs in mod_omic_qc_tabs.R)
+R/mod_lipid_qc_intensity.R	148	58	exported wrappers; registerLipidIntensityRevertObserver a one-call wrapper over the shared revert (trx's filter borrows it until W6)
+R/mod_lipid_qc_intensity_server_helpers.R	272	0	deleted (qcClickAfterStart moved to mod_omic_qc.R; counts table in the core; observers and outputs in mod_omic_qc_tabs.R)
+R/mod_lipid_qc_itsd.R	430	48	exported wrappers (the inline analysis is the core's analyzeWorkflowOmicsItsd)
+R/mod_lipid_qc_s4.R	656	188	exported wrappers; trx's profile finalise (runLipidQcS4FinalizeWorkflow, reportLipidQcS4FinalizeSuccess, registerLipidQcS4ProfileFinalize, 113 lines) kept until W6
+lipid QC family (7 files)	2444	411	-2033
+R/mod_omic_qc.R	0	318	new: the shell, the plugin registry, qcClickAfterStart, the shared revert
+R/mod_omic_qc_tabs.R	0	808	new: the four shared sub-tabs
+net R/ (these files)	2444	1537	-907

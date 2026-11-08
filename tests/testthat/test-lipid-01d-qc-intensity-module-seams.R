@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-58 (KIT-104 W5) it sources mod_lipid_qc_intensity_server_helpers.R, deleted; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction, covered by test-omic-qc-module.R, MCI-020, the KIT-078 worker test and the lipid_canonical qc_intensity step")
 library(testthat)
 suppressPackageStartupMessages(library(shiny))
 

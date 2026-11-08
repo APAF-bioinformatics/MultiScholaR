@@ -57,6 +57,7 @@ qcCoreError <- function(code) tryCatch({
 # ------------------------------------------------------------------------------------------------
 
 test_that("omicsQcCountsTable is today's lipid (inline) and metab (buildMetabIntensityFilterStats) table", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with registerLipidIntensityApplyFilterObserver, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     workflow <- module_ci_lipid_qc_workflow()
     captured <- new.env(parent = emptyenv())
     qcCoreSpy("runLipidReferenceIntensityFilter", captured)
@@ -85,6 +86,7 @@ test_that("omicsQcCountsTable is today's lipid (inline) and metab (buildMetabInt
 # ------------------------------------------------------------------------------------------------
 
 test_that("detectWorkflowOmicsDuplicates finds today's duplicates (lipid and metab detection)", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with handleLipidDuplicateDetection, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     lipid <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
     today <- handleLipidDuplicateDetection(lipid, logInfoFn = function(...) invisible(NULL))
     core <- detectWorkflowOmicsDuplicates(lipidomicsDeclarationBinding, lipid$state_manager)
@@ -108,6 +110,7 @@ test_that("detectWorkflowOmicsDuplicates finds today's duplicates (lipid and met
 })
 
 test_that("omicsDuplicateResolutionStats reads both products as today's lipid and metab resolutions do", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with handleLipidDuplicateResolution, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     lipid <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
     captured <- new.env(parent = emptyenv())
     qcCoreSpy("runLipidReferenceDuplicateResolution", captured)
@@ -169,6 +172,7 @@ qcCoreLipidItsd <- function(workflow, pattern) {
 }
 
 test_that("analyzeWorkflowOmicsItsd gives lipid's inline analysis: values, text and refusals", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with the lipid ITSD server's inline analysis, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     itsd <- omicGuiConfig("lipidomics")$qc$itsd
     for (pattern in c("", "^IS_By_Name$", "^NO_MATCH$")) {
         workflow <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
@@ -193,6 +197,7 @@ test_that("analyzeWorkflowOmicsItsd gives lipid's inline analysis: values, text 
 })
 
 test_that("F104 (W2): a NULL pattern is read as an empty one, as metab reads it (lipid's inline analysis errors)", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with the lipid ITSD server's inline analysis, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     itsd <- omicGuiConfig("lipidomics")$qc$itsd
     workflow <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
     # Today's lipid server fails on a NULL input (nzchar(NULL)); only a test session leaves the input NULL.
@@ -234,6 +239,7 @@ test_that("analyzeWorkflowOmicsItsd gives metab's analysis (analyzeMetabQcItsdDa
 })
 
 test_that("omicsItsdCvPlot and omicsItsdIntensityPlot are today's ITSD figures", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with registerLipidItsdCvPlotOutput, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     workflow <- module_ci_metab_qc_workflow(module_ci_metab_qc_object(layout = "combined"))
     analysis <- analyzeMetabQcItsdData(readMetabQcItsdState(workflow$state_manager, ""), inputPattern = "",
         logInfoFn = function(...) invisible(NULL))
@@ -264,6 +270,7 @@ test_that("omicsItsdCvPlot and omicsItsdIntensityPlot are today's ITSD figures",
 # ------------------------------------------------------------------------------------------------
 
 test_that("validateWorkflowOmicsQcFinalize is lipid's finalise validation: passes, refusals and their texts", {
+    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with validateLipidQcS4FinalizeState, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
     qc <- qcCoreConfig("lipidomics")
     aligned <- readLipidWorkflowShell(module_ci_lipid_qc_workflow()$state_manager, measures = "features")
     expect_identical(validateWorkflowOmicsQcFinalize(aligned, qc, lipidomicsDeclarationBinding),

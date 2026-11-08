@@ -19,8 +19,8 @@
 # ============================================================================
 # Purpose: Lipid intensity filtering Shiny module
 #
-# This module wraps the lipidIntensityFiltering() S4 method to provide
-# an interactive UI for filtering lipids based on intensity thresholds.
+# KIT-104 W5: the exported wrappers over the shared intensity sub-tab (mod_omic_qc_tabs.R) under
+# the lipid configuration.
 # ============================================================================
 
 #' @title Lipid Intensity Filter Module
@@ -35,75 +35,8 @@ NULL
 #' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 p hr numericInput sliderInput div actionButton verbatimTextOutput uiOutput
 #' @importFrom shinyjqui jqui_resizable
 mod_lipid_qc_intensity_ui <- function(id) {
-    ns <- shiny::NS(id)
-    
-    shiny::tabPanel(
-        "Intensity Filter"
-        , shiny::br()
-        , shiny::fluidRow(
-            shiny::column(4
-                , shiny::wellPanel(
-                    shiny::h4("Lipid Intensity Filter Parameters")
-                    , shiny::p("Filter lipids based on intensity thresholds. Lipids with low intensities across many samples will be removed.")
-                    , shiny::hr()
-                    
-                    # Intensity cutoff percentile
-                    , shiny::sliderInput(
-                        ns("intensity_cutoff_percentile")
-                        , "Intensity Cutoff Percentile (%)"
-                        , min = 1
-                        , max = 50
-                        , value = 10
-                        , step = 1
-                    )
-                    , shiny::helpText("Intensities below this percentile are considered 'low' (default: 10%)")
-                    
-                    # Proportion threshold
-                    , shiny::sliderInput(
-                        ns("proportion_below_cutoff")
-                        , "Max Proportion of Samples Below Threshold"
-                        , min = 0.1
-                        , max = 1.0
-                        , value = 0.5
-                        , step = 0.05
-                    )
-                    , shiny::helpText("Remove lipids where this proportion of samples are below the intensity threshold (default: 0.5)")
-                    
-                    , shiny::hr()
-                    , shiny::div(
-                        shiny::actionButton(
-                            ns("apply_filter")
-                            , "Apply Filter"
-                            , class = "btn-primary"
-                            , width = "48%"
-                        )
-                        , shiny::actionButton(
-                            ns("revert_filter")
-                            , "Revert"
-                            , class = "btn-warning"
-                            , width = "48%"
-                            , style = "margin-left: 4%"
-                        )
-                    )
-                )
-            )
-            , shiny::column(8
-                , shiny::verbatimTextOutput(ns("filter_results"))
-                , shiny::br()
-                # Per-assay results tabs
-                , shiny::uiOutput(ns("assay_results_tabs"))
-                , shiny::br()
-                , shinyjqui::jqui_resizable(
-                    shiny::plotOutput(ns("filter_plot"), height = "600px", width = "100%")
-                )
-            )
-        )
-    )
+    mod_omic_qc_intensity_ui(id, omicGuiConfig("lipidomics"))
 }
-
-
-
-
 
 #' @rdname mod_lipid_qc_intensity
 #' @export
@@ -111,38 +44,15 @@ mod_lipid_qc_intensity_ui <- function(id) {
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
 mod_lipid_qc_intensity_server <- function(id, workflow_data, omic_type, experiment_label) {
-    shiny::moduleServer(id, function(input, output, session) {
-        ns <- session$ns
-        
-        filter_plot <- shiny::reactiveVal(NULL)
-        filter_stats <- shiny::reactiveVal(NULL)
+    mod_omic_qc_intensity_server(id, workflow_data, omic_type, experiment_label, omicGuiConfig("lipidomics"))
+}
 
-        registerLipidIntensityApplyFilterObserver(
-            input = input,
-            workflowData = workflow_data,
-            output = output,
-            filterStatsVal = filter_stats,
-            filterPlotVal = filter_plot,
-            omicType = omic_type
-        )
-        
-        registerLipidIntensityRevertObserver(
-            input = input,
-            workflowData = workflow_data,
-            output = output,
-            filterStatsVal = filter_stats,
-            filterPlotVal = filter_plot
-        )
-        
-        registerLipidIntensityAssayResultsOutput(
-            output = output,
-            filterStatsVal = filter_stats,
-            ns = ns
-        )
-
-        registerLipidIntensityFilterPlotOutput(
-            output = output,
-            filterPlotVal = filter_plot
-        )
-    })
+#' The lipid intensity sub-tab's Revert, which trx's expression filter borrows (mod_trx_qc_filter.R) until KIT-104 W6:
+#' the shared revert (`registerOmicQcRevertObserver`) clearing the two values given.
+#' @noRd
+registerLipidIntensityRevertObserver <- function(input, workflowData, output, filterStatsVal, filterPlotVal) {
+    registerOmicQcRevertObserver(input, output, "revert_filter", workflowData, "filter_results", function() {
+        filterStatsVal(NULL)
+        filterPlotVal(NULL)
+    }, "Reverted lipid intensity filter to")
 }

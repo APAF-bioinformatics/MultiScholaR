@@ -1,0 +1,14 @@
+KIT-104 W5 entry-point lanes (2026-11-08), against the frozen oracles in tests/testdata/gui-entry/ (lipid_canonical
+and trx_screen at ddf42372; not re-frozen). One R process per file, in sequence, load_all, R 4.6.1,
+MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS = core/browser-smoke.yODoyT/library, runner kit/scripts-078/run1.R. Each lane
+compares every step (outputs by name, committed states, artifacts, notifications) with its oracle; a pass is identity.
+
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0  [62s]   lipid_canonical: identical (baseline 35)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0  [38s]  trx_screen: identical (baseline 29)
+
+Lipid runs the shared shell and the four shared sub-tabs (mod_omic_qc.R, mod_omic_qc_tabs.R) through its exported
+wrappers. Trx runs the shared shell through mod_lipid_qc_server(profile = trxOmicProfile()) with the trx
+configuration's tabset; until W6 its sub-modules are still started by the profile (initializeTrxQcSubmodules: its
+filter and mod_lipid_qc_s4_server under the profile, whose UI is the shared finalise UI and whose server keeps
+runLipidQcS4FinalizeWorkflow with trx's collaborators). Metab and proteomics lanes do not touch W5's files and were
+not run (W6, W7).

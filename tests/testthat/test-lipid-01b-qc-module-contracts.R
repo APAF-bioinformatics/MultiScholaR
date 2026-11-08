@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-56 (KIT-104 W5) it sources mod_lipid_qc.R into a harness with stubbed sub-module UIs and servers and reads the deleted orchestrator's internals; the tab is the shared shell (mod_omic_qc.R), covered by test-omic-qc-module.R, MCI-020, the BUG-10 audit and the lipid_canonical QC steps")
 library(testthat)
 suppressPackageStartupMessages(library(shiny))
 

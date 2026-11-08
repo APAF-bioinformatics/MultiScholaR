@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-57 (KIT-104 W5) it sources mod_lipid_qc_duplicates_server_helpers.R, deleted; the sub-tab is mod_omic_qc_tabs.R over the core, covered by test-omic-qc-module.R, test-omics-qc-core.R, MCI-020 and the lipid_canonical qc_duplicates step")
 library(testthat)
 
 source(test_path("..", "..", "R", "mod_lipid_qc_duplicates_server_helpers.R"), local = environment())

@@ -832,6 +832,9 @@ omicGuiLipidQc <- function() {
         # Any zero-row assay is refused (mod_lipid_qc_s4.R:365); normalisation opens (:420-436); a
         # per-assay table (:75-79).
         finalize_zero_rows = TRUE, finalize_opens_norm = TRUE, finalize_per_assay = TRUE,
+        # D11 (KIT-104 W5, the shared finalise's first consumer): the shared alignment with lipid's
+        # arguments (mod_lipid_qc_s4.R:374-394 at b423b764).
+        finalize_alignment = function(shell) omicsQcFinalizeAlignment(shell, "lipidomics"),
         texts = omicGuiFeatureQcTexts("lipid", "LipidomicsAssayData"),
         # mod_lipid_qc_intensity_server_helpers.R:151; mod_lipid_qc_duplicates_server_helpers.R:373,
         # :415; mod_lipid_qc_itsd.R:223

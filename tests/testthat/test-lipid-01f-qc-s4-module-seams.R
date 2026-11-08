@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-60 (KIT-104 W5) it tests the finalise's helpers (buildLipidQcS4*, registerLipidQcS4*) and the server's seams, deleted; the sub-tab is mod_omic_qc_tabs.R over validateWorkflowOmicsQcFinalize, covered by MCI-020.4/.5, test-omic-qc-module.R (a), the KIT-082 application-reads blocks and the lipid_canonical qc_finalize step")
 library(testthat)
 suppressPackageStartupMessages(library(shiny))
 

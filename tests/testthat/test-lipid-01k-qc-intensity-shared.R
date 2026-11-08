@@ -274,6 +274,7 @@ withSharedLipidIntensityUiMocks <- function(captured,
 }
 
 test_that("lipidomics intensity module preserves apply-filter success behavior", {
+  testthat::skip("quarantined: Q-65 (KIT-104 W5) it reaches the deleted intensity helpers (registerLipidIntensity{ApplyFilterObserver,AssayResultsOutput,FilterPlotOutput}) or their stand-in readers; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction, covered by test-omic-qc-module.R, MCI-020, the KIT-078 worker test and the lipid_canonical qc_intensity step")
   kit089WholeIntensity() # KIT-089: this test fakes the filter kernel, which only the `whole` variant hands the object to.
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   captured <- newSharedLipidIntensityCapture()

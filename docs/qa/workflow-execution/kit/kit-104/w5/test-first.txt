@@ -1,0 +1,42 @@
+KIT-104 W5 test-first (2026-11-08). One R process per file, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+R 4.6.1, R_LIBS = the browser-smoke proof library, runner scripts-078/run1.R.
+
+1. tests/testthat/test-omic-qc-module.R with the W5 blocks written first, run on the start commit d8f6dde4
+   (R/ unchanged; MULTISCHOLAR_KIT104_PENDING=1 so the W1 gated blocks run too):
+
+COUNTS test-omic-qc-module.R pass 24 fail 22 error 5 skip 0
+  BAD (a) parity: metab refuses a design the alignment check refuses, with no commit (fails before)   [W6's]
+  BAD (a) parity: trx refuses a misaligned design at finalise, with no commit (fails before)          [W6's]
+  BAD (c) F-24: a lipid Detect duplicates or Analyze internal standards click before the start is not run   [W5's gate]
+      "[warning] Detection complete: 4 duplicate IDs found" shown at the start (the click before the start ran),
+      and "[default] Analyzing internal standards...", "[message] Found 4 internal standards" likewise.
+  BAD (c) F-24: a metab Detect duplicates or Analyze internal standards click ...                       [W6's]
+  BAD W5 the shell renders proteomics' tabsets by route as mod_prot_qc_server does, before the trigger
+      Error: could not find function "mod_omic_qc_ui"
+  BAD W5 the shell starts proteomics' groups on the trigger by route, keeps `qc_workflow_type` and completes
+      Error: could not find function "mod_omic_qc_server"
+  BAD W5 the shared finalise's one-table summary and text are trx's today (registerTrxQcSummaryOutput, trxQcFinalizeText)
+      Error: could not find function "registerOmicQcFinalizeSummary"
+  BAD W5 lipid's QC copies are deleted; its exports are wrappers over the shared shell and sub-tabs
+      17 lipid internals still exist; qcClickAfterStart is in mod_lipid_qc_intensity_server_helpers.R;
+      object 'mod_omic_qc_ui' not found
+  BAD W5 the shell's and sub-tabs' module frames hold no name a test's own variables would be masked by
+      object 'mod_omic_qc_server' not found
+ELAPSED 69s
+
+2. The retargeted tests, unchanged, on the start commit (a snapshot copy of d8f6dde4's tree), before their
+   targets changed:
+
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0              (MCI-020)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0         (BUG-10 lipid case)
+COUNTS test-module-ci-trx-qc.R pass 32 fail 0 error 0 skip 1                (MCI-028; the skip is MCI-028.2's
+                                                                             KIT-040 reference guard, as before)
+COUNTS test-omics-qc-core.R pass 134 fail 0 error 0 skip 0                  (W2)
+COUNTS test-workflow-omics-application-reads.R pass 216 fail 0 error 0 skip 2
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0          (KIT-078 lifecycle)
+
+3. After W5 (same method): see targeted.txt. test-omic-qc-module.R: pass 99 fail 0 error 0 skip 3 (the three W6
+   gates; the W5 gate line is removed and the lipid F-24 block passes).
+   One correction inside the pass: the proteomics start block first held the trigger at FALSE, which ends the
+   once-only start observer at its first run (as mod_prot_qc.R does today; the app's trigger starts NULL); the
+   test now starts it NULL.

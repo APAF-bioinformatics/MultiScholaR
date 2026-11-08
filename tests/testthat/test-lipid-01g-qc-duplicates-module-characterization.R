@@ -183,6 +183,7 @@ test_that("mod_lipid_qc_duplicates_server preserves detect-resolve-revert public
 })
 
 test_that("lipid duplicate helper builders preserve initial-state and UI behavior", {
+  testthat::skip("quarantined: Q-61 (KIT-104 W5) it tests the duplicate sub-tab's helpers (mod_lipid_qc_duplicates_server_helpers.R), deleted; covered by the file's live public block, test-omic-qc-module.R, test-omics-qc-core.R, MCI-020.2 and the lipid_canonical qc_duplicates step")
   skip_if_missing_lipid_duplicate_helpers()
 
   initialize_state <- getMultiScholaRBinding("initializeLipidDuplicateServerState")
@@ -223,6 +224,7 @@ test_that("lipid duplicate helper builders preserve initial-state and UI behavio
 })
 
 test_that("lipid duplicate output helpers preserve render registration behavior", {
+  testthat::skip("quarantined: Q-61 (KIT-104 W5) it tests the duplicate sub-tab's helpers (mod_lipid_qc_duplicates_server_helpers.R), deleted; covered by the file's live public block, test-omic-qc-module.R, test-omics-qc-core.R, MCI-020.2 and the lipid_canonical qc_duplicates step")
   skip_if_missing_lipid_duplicate_helpers()
 
   register_summary_output <- getMultiScholaRBinding("registerLipidDuplicateSummaryOutput")
@@ -289,6 +291,7 @@ test_that("lipid duplicate output helpers preserve render registration behavior"
 })
 
 test_that("lipid duplicate detection helpers preserve duplicate summary behavior", {
+  testthat::skip("quarantined: Q-61 (KIT-104 W5) it tests the duplicate sub-tab's helpers (mod_lipid_qc_duplicates_server_helpers.R), deleted; covered by the file's live public block, test-omic-qc-module.R, test-omics-qc-core.R, MCI-020.2 and the lipid_canonical qc_duplicates step")
   omicsStandInReaders() # KIT-075: the stand-in manager answers the readers
   skip_if_missing_lipid_duplicate_helpers()
 
@@ -332,6 +335,7 @@ test_that("lipid duplicate detection helpers preserve duplicate summary behavior
 })
 
 test_that("lipid duplicate resolution and revert helpers preserve save and fallback behavior", {
+  testthat::skip("quarantined: Q-61 (KIT-104 W5) it tests the duplicate sub-tab's helpers (mod_lipid_qc_duplicates_server_helpers.R), deleted; covered by the file's live public block, test-omic-qc-module.R, test-omics-qc-core.R, MCI-020.2 and the lipid_canonical qc_duplicates step")
   skip_if_missing_lipid_duplicate_helpers()
 
   handle_resolution <- getMultiScholaRBinding("handleLipidDuplicateResolution")
@@ -428,6 +432,7 @@ test_that("lipid duplicate resolution and revert helpers preserve save and fallb
 })
 
 test_that("lipid duplicate observer and shell helpers preserve registration wiring", {
+  testthat::skip("quarantined: Q-61 (KIT-104 W5) it tests the duplicate sub-tab's helpers (mod_lipid_qc_duplicates_server_helpers.R), deleted; covered by the file's live public block, test-omic-qc-module.R, test-omics-qc-core.R, MCI-020.2 and the lipid_canonical qc_duplicates step")
   skip_if_missing_lipid_duplicate_helpers()
 
   register_table_observer <- getMultiScholaRBinding("registerLipidDuplicateTableObserver")

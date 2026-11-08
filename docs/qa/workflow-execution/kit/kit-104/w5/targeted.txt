@@ -1,0 +1,30 @@
+KIT-104 W5 targeted tests (2026-11-08), after the change. One R process per file, in sequence, pkgload::load_all,
+MULTISCHOLAR_STRICT_SKIPS=1, R 4.6.1, R_LIBS = core/browser-smoke.yODoyT/library, runner kit/scripts-078/run1.R.
+Before: the start commit d8f6dde4 (test-first.txt; W1/W2 targeted.txt for the files whose start counts are recorded
+there).
+
+COUNTS test-omic-qc-module.R pass 99 fail 0 error 0 skip 3          before 24/0/0/4 (W5 gate removed; 5 W5 blocks added;
+                                                                     the 3 skips are W6's gates)
+COUNTS test-module-ci-lipid-qc.R pass 68 fail 0 error 0 skip 0      before 68 (MCI-020.2/.4/.5 retargeted, expectations unchanged)
+COUNTS test-omics-audit-carry-overs.R pass 20 fail 0 error 0 skip 0 before 20 (lipid case on startOmicQcSubtabs, still 1 init, 2 reads)
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0        before 38 (W1 targeted.txt; trx unchanged, still the profile path)
+COUNTS test-omics-qc-core.R pass 81 fail 0 error 0 skip 7           before 134/0; the 7 skips are Q-64 (blocks comparing the core
+                                                                     with deleted lipid functions; passed at 7b99e7e8)
+COUNTS test-omic-gui-config.R pass 765 fail 0 error 0 skip 0        (lipid finalize_alignment wired)
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0  before 283 (lipid observers -> mod_lipid_qc_{intensity,duplicates}_server)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   before 230 (W1 targeted.txt; lipid blocks retargeted)
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0
+COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0
+COUNTS test-omics-module-globals.R pass 14 fail 0 error 0 skip 0
+
+Note: the start-commit runs in test-first.txt section 2 were made on a snapshot copy without docs/; there
+test-module-ci-trx-qc.R showed 32/1 and application-reads 216/2 because MCI-028.2's and two KIT-082 blocks'
+reference guards read files under docs/. W1 recorded 38/0 and 230/0 at the start on the full tree; the counts
+after W5 equal those.
+
+Not run (W5 does not touch them; W6/W7 or later budget runs): test-prot-*, test-perf107-audit.R (the shell's
+proteomics path is held by test-omic-qc-module.R's two W5 proteomics blocks against mod_prot_qc_server's frozen
+render and test-perf107-audit.R's construction), the metab QC files, R CMD check, install, journeys, e2e.

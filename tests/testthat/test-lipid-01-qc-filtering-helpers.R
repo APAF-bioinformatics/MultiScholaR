@@ -507,6 +507,7 @@ ensureLipidIntensityWorkflowTestClass <- function() {
 }
 
 test_that("lipid intensity module output helpers render assay summaries and plots", {
+    testthat::skip("quarantined: Q-65 (KIT-104 W5) it reaches the deleted intensity helpers (registerLipidIntensity{ApplyFilterObserver,AssayResultsOutput,FilterPlotOutput}) or their stand-in readers; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction, covered by test-omic-qc-module.R, MCI-020, the KIT-078 worker test and the lipid_canonical qc_intensity step")
     skipIfMissingLipidQcNamespaceBindings(c(
         "registerLipidIntensityAssayResultsOutput",
         "registerLipidIntensityFilterPlotOutput"
@@ -570,6 +571,7 @@ test_that("lipid intensity module output helpers render assay summaries and plot
 })
 
 test_that("lipid intensity module observers preserve apply and revert contracts", {
+    testthat::skip("quarantined: Q-65 (KIT-104 W5) it reaches the deleted intensity helpers (registerLipidIntensity{ApplyFilterObserver,AssayResultsOutput,FilterPlotOutput}) or their stand-in readers; the sub-tab is mod_omic_qc_tabs.R over runWorkflowOmicsQcAction, covered by test-omic-qc-module.R, MCI-020, the KIT-078 worker test and the lipid_canonical qc_intensity step")
     skipIfMissingLipidQcNamespaceBindings(c(
         "registerLipidIntensityApplyFilterObserver",
         "registerLipidIntensityRevertObserver"

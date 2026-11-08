@@ -91,13 +91,13 @@ test_that("MCI-020.2 duplicate matrix covers IDs, annotations/classes, ties, con
   expect_identical(same_annotation$lipid_id, "L_ANN_B")
 
   workflow <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined", include_duplicates = TRUE, include_itsd = FALSE))
-  dispatched <- handleLipidDuplicateResolution(
-    workflowData = workflow,
-    omicType = "lipidomics",
-    reqFn = function(value) value,
-    updateFilteringFn = function(...) "qc-plot",
-    logWarnFn = function(...) invisible(NULL)
-  )
+  # KIT-104 W5: the resolution through the core's QC action and its statistics, as the shared duplicates sub-tab runs it.
+  binding <- lipidomicsDeclarationBinding
+  assays <- readLipidWorkflowMetadata(workflow$state_manager)$assay_names
+  dispatched <- NULL
+  runWorkflowOmicsQcAction(binding, workflow, omicsDuplicateResolutionStep(binding), function(result, figure) {
+    dispatched <<- list(statsList = omicsDuplicateResolutionStats(result$value, assays), stateReference = result$reference)
+  }, function(arguments) "qc-plot")
   expect_identical(names(dispatched$statsList), c("LCMS_Pos", "GCMS"))
   expect_true(all(vapply(dispatched$statsList, `[[`, numeric(1), "removed") >= 2))
   expect_true("lipid_duplicates_resolved" %in% workflow$state_manager$getHistory())
@@ -200,8 +200,9 @@ test_that("MCI-020.4 S4 plotting matrix covers PCA, Pearson, RLE, density, small
   expect_true(is.list(constant_pearson))
 
   missing_group <- module_ci_lipid_qc_object(layout = "gc", include_duplicates = FALSE, include_itsd = FALSE, missing_group = TRUE)
+  # KIT-104 W5: the shared finalise's checks with lipid's configuration (D11).
   expect_error(
-    validateLipidQcS4FinalizeState(missing_group, reqFn = function(value) value),
+    validateWorkflowOmicsQcFinalize(missing_group, omicGuiConfig("lipidomics")$qc, lipidomicsDeclarationBinding),
     "blank assignments",
     fixed = TRUE
   )
@@ -213,28 +214,28 @@ test_that("MCI-020.5 finalization validates lipid S4 state and unlocks normaliza
   output <- new.env(parent = emptyenv())
   captured <- new.env(parent = emptyenv())
 
-  runLipidQcS4FinalizeWorkflow(
-    workflowData = workflow,
-    omicType = "lipidomics",
-    filterPlot = function(value = NULL) {
+  # KIT-104 W5: the shared finalise (runOmicQcFinalize) under lipid's configuration; its figure and its report are
+  # captured as the injected collaborators were.
+  config <- omicGuiConfig("lipidomics")
+  config$qc$filtering_figure <- function(theObject, step_name, omics_type, ...) {
+    captured$tracking <- list(currentS4 = theObject, omicType = omics_type)
+    "qc-progress-plot"
+  }
+  testthat::with_mocked_bindings(
+    runOmicQcFinalize(workflow, "lipidomics", function(value = NULL) {
       if (!missing(value)) captured$filter_plot <- value
       captured$filter_plot
-    },
-    output = output,
-    updateTrackingPlotFn = function(currentS4, omicType, setFilterPlotFn, ...) {
-      captured$tracking <- list(currentS4 = currentS4, omicType = omicType)
-      setFilterPlotFn("qc-progress-plot")
-      "qc-progress-plot"
-    },
-    reportFinalizeSuccessFn = function(currentS4, history, output, ...) {
-      captured$success <- list(currentS4 = currentS4, history = history)
+    }, output, config),
+    reportOmicQcFinalizeSuccess = function(text, output, config) {
+      captured$success <- list(text = text, history = workflow$state_manager$getHistory())
       output$finalize_results <- "finalized"
       invisible("finalized")
     },
-    reportFinalizeErrorFn = function(error, ...) {
+    reportOmicQcFinalizeError = function(error) {
       captured$error <- conditionMessage(error)
       invisible(captured$error)
-    }
+    },
+    .package = "MultiScholaR"
   )
 
   expect_identical(workflow$tab_status$quality_control, "complete")
@@ -248,16 +249,14 @@ test_that("MCI-020.5 finalization validates lipid S4 state and unlocks normaliza
   invalid_workflow <- module_ci_lipid_qc_workflow(current)
   # KIT-072: the owner's current state holds a value that is not the omic's S4.
   invalid_workflow$state_manager$saveState("lipid_not_s4", list(not = "s4"), invalid_workflow$config_list, "not an S4")
-  runLipidQcS4FinalizeWorkflow(
-    workflowData = invalid_workflow,
-    omicType = "lipidomics",
-    filterPlot = function(...) NULL,
-    output = new.env(parent = emptyenv()),
-    reportFinalizeSuccessFn = function(...) stop("should not finalize"),
-    reportFinalizeErrorFn = function(error, ...) {
+  testthat::with_mocked_bindings(
+    runOmicQcFinalize(invalid_workflow, "lipidomics", function(...) NULL, new.env(parent = emptyenv()), config),
+    reportOmicQcFinalizeSuccess = function(...) stop("should not finalize"),
+    reportOmicQcFinalizeError = function(error) {
       captured$invalid_error <- conditionMessage(error)
       invisible(NULL)
-    }
+    },
+    .package = "MultiScholaR"
   )
   # KIT-075: the state is read through the component reader, which refuses a state with no component metadata before
   # the class check; the finalise is refused either way.
@@ -267,7 +266,7 @@ test_that("MCI-020.5 finalization validates lipid S4 state and unlocks normaliza
   empty_design <- current
   empty_design@design_matrix <- empty_design@design_matrix[0, , drop = FALSE]
   expect_error(
-    validateLipidQcS4FinalizeState(empty_design, reqFn = function(value) value),
+    validateWorkflowOmicsQcFinalize(empty_design, config$qc, lipidomicsDeclarationBinding),
     "no design matrix rows",
     fixed = TRUE
   )
@@ -275,7 +274,7 @@ test_that("MCI-020.5 finalization validates lipid S4 state and unlocks normaliza
   empty_assay <- current
   empty_assay@lipid_data$LCMS_Pos <- empty_assay@lipid_data$LCMS_Pos[0, , drop = FALSE]
   expect_error(
-    validateLipidQcS4FinalizeState(empty_assay, reqFn = function(value) value),
+    validateWorkflowOmicsQcFinalize(empty_assay, config$qc, lipidomicsDeclarationBinding),
     "no assay data",
     fixed = TRUE
   )

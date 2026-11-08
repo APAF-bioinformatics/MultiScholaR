@@ -51,7 +51,8 @@ countQcAutoInitialisation <- function(server_name, init_name, state_class) {
 }
 
 test_that("BUG-10: the lipidomics QC auto-initialisation observer runs once per state-manager appearance", {
-  counts <- countQcAutoInitialisation("mod_lipid_qc_server", "initializeLipidQcSubmodules", "LipidomicsAssayData")
+  # KIT-104 W5: the lipid tab is the shared shell; its start function is startOmicQcSubtabs (mod_omic_qc.R).
+  counts <- countQcAutoInitialisation("mod_lipid_qc_server", "startOmicQcSubtabs", "LipidomicsAssayData")
   expect_identical(counts$inits, 1L)
   expect_identical(counts$state_reads, 2L)
 })

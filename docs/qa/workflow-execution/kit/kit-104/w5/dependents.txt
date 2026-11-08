@@ -1,0 +1,52 @@
+KIT-104 W5 dependents grep (2026-11-08), across R/, tests/, tools/ (excluding tools/refactor/) and inst/.
+
+Deleted files (2): R/mod_lipid_qc_intensity_server_helpers.R, R/mod_lipid_qc_duplicates_server_helpers.R.
+
+Deleted names (41): every function of the seven lipid QC files except the 10 exports and mod_lipid_qc_server
+(now wrappers), initializeLipidQcSubmodules (wrapper over startOmicQcSubtabs), qcClickAfterStart (moved, name kept,
+into mod_omic_qc.R), and three kept for trx's profile path until W6: registerLipidIntensityRevertObserver (a one-call
+wrapper over registerOmicQcRevertObserver; mod_trx_qc_filter.R calls it), runLipidQcS4FinalizeWorkflow and
+reportLipidQcS4FinalizeSuccess (trxQcFinalizeCollaborators runs on them). The D6 wrapper validateLipidDesignAlignment
+is no longer called from QC (its call at mod_lipid_qc_s4.R:383 left with the file's validator); DA still calls it.
+
+Names: hits by file (outside the deleted files)
+     58 tests/testthat/test-lipid-01c-qc-duplicate-module-seams.R      quarantined whole file (Q-57)
+     27 tests/testthat/test-lipid-01f-qc-s4-module-seams.R            quarantined whole file (Q-60)
+     19 tests/testthat/test-lipid-01g-qc-duplicates-module-characterization.R  5 blocks quarantined (Q-61); the live block calls the public server
+     16 tests/testthat/test-lipid-01d-qc-intensity-module-seams.R      quarantined whole file (Q-58)
+     13 tests/testthat/test-lipid-01e-qc-itsd-module-seams.R           quarantined whole file (Q-59)
+     13 tests/testthat/test-omics-qc-core.R                            all in the 7 Q-64 blocks
+      7 tests/testthat/test-lipid-01-qc-filtering-helpers.R            all in the 2 Q-65 blocks
+      6 tests/testthat/test-omic-qc-module.R                           the W5 deletion block's list of deleted names
+      3 R/func_omics_qc_shared.R, 1 R/mod_omic_qc_tabs.R               provenance comments
+Paths: R/func_omics_qc_shared.R, R/utils_workflow_omics_actions.R, R/utils_omic_gui_config.R, R/mod_omic_qc.R,
+R/mod_omic_qc_tabs.R: provenance comments (file:line at a named commit); tests/testthat/test-lipid-01{c,d}: the
+source() lines behind the Q-57/Q-58 file skips; tests/testthat/test-omics-module-globals.R:48: an allow-list entry
+(a deleted file only removes hits; passes 14/0).
+
+Test files that reach the old code through public names but stub or read its internals (no deleted name in the
+text), run and quarantined where they failed:
+  test-lipid-01b-qc-module-contracts.R (4 blocks, sources mod_lipid_qc.R into a stub harness)   Q-56 whole file
+  test-lipid-01i-qc-itsd-wrapper-characterization.R (1 block, list state manager + stand-ins)    Q-62
+  test-lipid-01j-qc-orchestrator-shared.R (3 of 4 blocks: stubbed sub-module names, log lines)  Q-63; 1 live block
+  test-lipid-01k-qc-intensity-shared.R (1 of 6 blocks: stand-in readers on the figure)          Q-65; 5 live blocks
+  test-lipid-01a, 01h: pass unchanged (5/0, 3/0).
+
+Results after the skip lines:
+COUNTS test-lipid-01b-qc-module-contracts.R pass 0 fail 0 error 0 skip 0   (file-level skip)
+COUNTS test-lipid-01c-qc-duplicate-module-seams.R pass 0 fail 0 error 0 skip 0
+COUNTS test-lipid-01d-qc-intensity-module-seams.R pass 0 fail 0 error 0 skip 0
+COUNTS test-lipid-01e-qc-itsd-module-seams.R pass 0 fail 0 error 0 skip 0
+COUNTS test-lipid-01f-qc-s4-module-seams.R pass 0 fail 0 error 0 skip 0
+COUNTS test-lipid-01g-qc-duplicates-module-characterization.R pass 9 fail 0 error 0 skip 5
+COUNTS test-lipid-01h-qc-s4-module-characterization.R pass 3 fail 0 error 0 skip 0
+COUNTS test-lipid-01i-qc-itsd-wrapper-characterization.R pass 0 fail 0 error 0 skip 1
+COUNTS test-lipid-01j-qc-orchestrator-shared.R pass 3 fail 0 error 0 skip 3
+COUNTS test-lipid-01k-qc-intensity-shared.R pass 16 fail 0 error 0 skip 1
+COUNTS test-lipid-01-qc-filtering-helpers.R pass 58 fail 0 error 0 skip 2
+COUNTS test-lipid-01a-qc-update-filtering-characterization.R pass 5 fail 0 error 0 skip 0
+
+Callers whose callee changed (run as dependents, targeted.txt): helper-gui-entry.R (the lipid and trx entry lanes,
+entry-suite.txt), test-workflow-{ui,server}-shared.R, test-module-ci-trx-qc.R, test-omics-audit-carry-overs.R,
+test-workflow-omics-{worker,application-reads,residency}.R, test-omic-gui-config.R, test-omic-design-module.R,
+test-module-ui-wrapper-direct-shared.R. No live caller of a deleted name or path remains.
