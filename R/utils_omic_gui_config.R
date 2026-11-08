@@ -537,7 +537,8 @@ validateOmicGuiDa <- function(da, schema) {
     if ("load_session" %in% names(da$testids) && !"load" %in% plugins) {
         checkOmicGuiFields(da, c(session_load = "named_list"), "da")
         checkOmicGuiFields(da$session_load, schema$da_session_load, "da$session_load")
-        checkOmicGuiFields(da$session_load, c(assay_omic_type = "chr1"), "da$session_load", required = FALSE)
+        checkOmicGuiFields(da$session_load, c(assay_omic_type = "chr1", assay_check_first = "lgl1"), "da$session_load",
+            required = FALSE)
         checkOmicGuiChoice(da$session_load$assay_rule, "da$session_load$assay_rule", c("setequal", "identical"))
     }
     if (!"run" %in% plugins) {
@@ -1195,11 +1196,11 @@ omicGuiConfigLipidomics <- function() {
 #' (mod_lipid_da_analysis_helpers.R:218), the source and its no-data text (:34-36), the session file and assay check:
 #' a set comparison, for a lipidomics session only (mod_lipid_da_session_helpers.R:56-64, :227), the preflight after
 #' the running notice (mod_lipid_da_analysis_helpers.R:139-157), the download's stem (mod_lipid_da_results_helpers.R:
-#' 173-193). The preflight (`validateLipidDaAnalysisPreflight`, mod_lipid_da_analysis_helpers.R:84) is wired when W2
-#' moves it to the core.
+#' 173-193). The preflight (`validateLipidDaAnalysisPreflight`, mod_lipid_da_analysis_helpers.R:84) moved
+#' to the core at KIT-106 W2 (func_omics_design_shared.R) and is wired.
 #' @noRd
 omicGuiLipidDa <- function() {
-    omicGuiFeatureDa("lipid", list(
+    da <- omicGuiFeatureDa("lipid", list(
         columns = list(id = "lipid_id", label = "lipid_name", fold_change = "logFC", pvalue = "raw_pvalue",
             significance = "fdr_qvalue"),
         summary = list(noun = "lipids", significance_label = "Q"),
@@ -1215,6 +1216,9 @@ omicGuiLipidDa <- function() {
             assay_message = "Loaded lipid session assay_names do not match S4 lipid_data assays: session [%s], S4 [%s]"),
         preflight_first = FALSE,
         download = "lipidomics_da_results_"))
+    # KIT-106 W2 moved the preflight to the core (func_omics_design_shared.R); wired at the W2 merge.
+    da$preflight <- validateLipidDaAnalysisPreflight
+    da
 }
 
 #' The lipid normalisation tab (mod_lipid_norm_*.R at 9a98e765; the shared values are
@@ -1394,7 +1398,9 @@ omicGuiMetabDa <- function() {
         source = list(read_metadata = readMetabWorkflowMetadata, class = "MetaboliteAssayData",
             no_data = "No metabolomics data loaded. Please load a filtered session first."),
         session_load = list(file = "metab_filtered_session_data_latest.rds", assay_rule = "identical",
-            assay_message = "Session assay_names do not match current_s4_object assays: session=%s; object=%s"),
+            assay_message = "Session assay_names do not match current_s4_object assays: session=%s; object=%s",
+            # KIT-106 W2 (D7, from W1's captures): metab checks the assays before the session is adopted; lipid after.
+            assay_check_first = TRUE),
         preflight_first = TRUE,
         download = "metabolomics_da_results_"))
     da$preflight <- validateMetabDesignDaPreflight
@@ -1569,8 +1575,8 @@ omicGuiConfigTranscriptomics <- function() {
 #' the binding's `da_fixed`, utils_workflow_trx_declarations.R:722); the columns (mod_transcriptomics.R:51); the
 #' summary (mod_trx_da.R:157); one assay, on which the volcano opens (:123); the static volcano (:74-78); the in-process
 #' reference DA (mod_transcriptomics.R:53); the source's class and no-data text (mod_trx_da.R:129-130); the texts
-#' (:51-54, and lipid's contrasts text); the download's stem (:167). Wired when W2 moves them from mod_trx_da.R: the
-#' model text (`trxDaModelText`), the static volcano (`trxDaStaticVolcano`), the source read (`trxDaReadMetadata`), the
+#' (:51-54, and lipid's contrasts text); the download's stem (:167). Wired at the KIT-106 W2 merge, after W2 moved them
+#' from mod_trx_da.R to utils_workflow_trx_da.R: the model text (`trxDaModelText`), the static volcano (`trxDaStaticVolcano`), the source read (`trxDaReadMetadata`), the
 #' contrast entries (`trxDaContrastEntries`, `trxDaContrastEntry`) and the export report (`trxDaExport`).
 #' @noRd
 omicGuiTrxDa <- function() {
@@ -1580,7 +1586,7 @@ omicGuiTrxDa <- function() {
             help = c("edgeR quasi-likelihood: estimateDisp and glmQLFit(robust = TRUE), then glmQLFTest per contrast on the",
                 "one fit; Benjamini-Hochberg FDR. The formula is realised from the design: ~ 0 + group plus the RUVs factors",
                 "W_1..W_k as covariates. No fold-change test is applied."),
-            formula = trxRealisedFormula),
+            formula = trxRealisedFormula, text = trxDaModelText),
         threshold = list(label = "FDR (BH) threshold:", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
         lfc = list(label = "Fold-change line (display only; no test):", value = 0, min = 0, max = 2, step = 0.1,
             tested = FALSE),
@@ -1589,10 +1595,13 @@ omicGuiTrxDa <- function() {
         summary = list(noun = "genes", significance_label = "FDR (BH)"),
         tabs = c(volcano = "Volcano Plot", table = "DA Results Table"),
         assays = "single", table_filter = "all_only",
-        views = list(static_volcano = list(output = "volcano_static", show_labels = TRUE, n_labels = 15),
+        views = list(static_volcano = list(output = "volcano_static", plot = trxDaStaticVolcano, show_labels = TRUE,
+            n_labels = 15),
             table = list(significance = "significant", max_rows = 1000)),
-        run = list(managed = runWorkflowOmicsManagedDa, in_process = runTrxReferenceDaAnalysis),
-        source = list(class = "TranscriptomicsAssayData",
+        contrast_entries = trxDaContrastEntries, contrast_entry = trxDaContrastEntry,
+        run = list(managed = runWorkflowOmicsManagedDa, in_process = runTrxReferenceDaAnalysis,
+            export_report = trxDaExport),
+        source = list(class = "TranscriptomicsAssayData", read_metadata = trxDaReadMetadata,
             no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."),
         preflight_first = FALSE,
         texts = c(status_ready = "Ready. The DA runs on the normalised (RUVs) state.",

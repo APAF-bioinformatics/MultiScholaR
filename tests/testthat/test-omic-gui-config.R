@@ -1225,7 +1225,8 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     expect_identical(lipid$views$static_volcano, list(output = "volcano_static", plot = generateLipidDAVolcanoStatic,
         show_labels = TRUE, n_labels = 15))
     expect_identical(metab$views$static_volcano$plot, generateMetabDAVolcanoStatic)
-    expect_identical(trx$views$static_volcano, list(output = "volcano_static", show_labels = TRUE, n_labels = 15))
+    expect_identical(trx$views$static_volcano, list(output = "volcano_static", plot = trxDaStaticVolcano,
+        show_labels = TRUE, n_labels = 15))
     expect_identical(prot$views$static_volcano, list(output = "volcano_plot_static", plot = generateProtDAVolcanoStatic,
         show_labels = TRUE, n_labels = 10))
     expect_identical(lipid$views$heatmap, list(kernel = generateLipidDAHeatmap, labels_argument = "show_lipid_names",
@@ -1246,13 +1247,21 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     expect_identical(lipid$source, list(read_metadata = readLipidWorkflowMetadata, class = "LipidomicsAssayData",
         no_data = "No lipidomics data loaded. Please load a filtered session first."))
     expect_identical(metab$source$read_metadata, readMetabWorkflowMetadata)
-    expect_identical(trx$source, list(class = "TranscriptomicsAssayData",
+    # KIT-106 W2 merge: trx's source read, model text, static volcano, contrast entries and export report are wired to
+    # the core (utils_workflow_trx_da.R), and lipid's preflight (func_omics_design_shared.R).
+    expect_identical(trx$source, list(class = "TranscriptomicsAssayData", read_metadata = trxDaReadMetadata,
         no_data = "Run the normalisation first: the DA runs on the normalised (RUVs) state."))
+    expect_identical(trx$model$text, trxDaModelText)
+    expect_identical(trx$views$static_volcano$plot, trxDaStaticVolcano)
+    expect_identical(c(trx$contrast_entries, trx$contrast_entry), c(trxDaContrastEntries, trxDaContrastEntry))
+    expect_identical(trx$run$export_report, trxDaExport)
+    expect_identical(lipid$preflight, validateLipidDaAnalysisPreflight)
     expect_identical(lipid$session_load, list(file = "lipid_filtered_session_data_latest.rds", assay_rule = "setequal",
         assay_omic_type = "lipidomics",
         assay_message = "Loaded lipid session assay_names do not match S4 lipid_data assays: session [%s], S4 [%s]"))
     expect_identical(metab$session_load, list(file = "metab_filtered_session_data_latest.rds", assay_rule = "identical",
-        assay_message = "Session assay_names do not match current_s4_object assays: session=%s; object=%s"))
+        assay_message = "Session assay_names do not match current_s4_object assays: session=%s; object=%s",
+        assay_check_first = TRUE))
     expect_null(trx$session_load)
     expect_identical(c(lipid$preflight_first, metab$preflight_first, trx$preflight_first), c(FALSE, TRUE, FALSE))
     expect_identical(metab$preflight, validateMetabDesignDaPreflight)
