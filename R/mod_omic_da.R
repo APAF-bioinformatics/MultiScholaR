@@ -125,7 +125,8 @@ registerOmicDaVolcanoGlimmaOutput <- function(output, input, tab, workflowData, 
     invisible(output)
 }
 
-#' The volcano page factory of the session: the worker's page when managed, the in-process page otherwise.
+#' The volcano page factory of the session: the worker's page when managed, the in-process page otherwise, shown in a
+#' frame that opens no dialog (`omicDaVolcanoPageFrame`).
 #' @noRd
 omicDaVolcanoPageFactory <- function(workflowData, experimentPaths, da, binding) {
     runner <- workflowOmicsManagedActions(binding$omic_type)
@@ -134,10 +135,20 @@ omicDaVolcanoPageFactory <- function(workflowData, experimentPaths, da, binding)
     } else {
         workflowOmicsVolcanoPageFactory(binding, runner, workflowData$state_manager)
     }
-    if (is.null(da$contrast_entry)) return(factory)
     function(da_results_list, selected_contrast, selected_assay, da_q_val_thresh) {
-        factory(da_results_list, da$contrast_entry(workflowData, selected_contrast), selected_assay, da_q_val_thresh)
+        if (!is.null(da$contrast_entry)) selected_contrast <- da$contrast_entry(workflowData, selected_contrast)
+        omicDaVolcanoPageFrame(factory(da_results_list, selected_contrast, selected_assay, da_q_val_thresh))
     }
+}
+
+#' The page's iframe sandboxed without `allow-modals`: its scripts, origin and downloads as before, but an `alert()` in the
+#' page is ignored. A modal dialog in the frame blocks the whole browser page, Shiny with it, until it is dismissed: trx's
+#' Glimma table asks for a `GeneID` column it does not have, and DataTables reports that with `alert()` (F106-06). Anything
+#' that is not an iframe (the wait, a message, NULL) is returned unchanged.
+#' @noRd
+omicDaVolcanoPageFrame <- function(page) {
+    if (!inherits(page, "shiny.tag") || !identical(page$name, "iframe")) return(page)
+    htmltools::tagAppendAttributes(page, sandbox = "allow-scripts allow-same-origin allow-downloads")
 }
 
 #' The static volcano.

@@ -4708,3 +4708,23 @@ test_that("(W5, D3) proteomics: after a run with a contrast selected, the volcan
     expect_match(out$ticked, "title=\"Interactive volcano B_vs_A\"", fixed = TRUE)
     expect_identical(out$pages, character())
 })
+
+test_that("(KIT-106 correction, F106-06) the volcano page's iframe opens no dialog: sandboxed without allow-modals, managed and in process", {
+    testthat::skip_if_not_installed("Glimma")
+    iframe_tag <- function(html) regmatches(html, regexpr("<iframe[^>]*>", html))
+    trx <- omicDaW3Volcano(omicDaW1TrxSetup(), omicDaW3TrxRun, list(volcano_assay = "counts"))
+    lipid <- omicDaW3Volcano(omicDaW1FeatureSetup("lipid", session_file = FALSE, managed = TRUE), omicDaW3FeatureRun,
+        list(volcano_contrast = "KO_vs_WT", volcano_assay = "LCMS_Pos"))
+    for (case in list(list("trx in process", trx, "trx_volcano_page"), list("lipid managed", lipid, "lipid_volcano_page"))) {
+        out <- case[[2L]]
+        tag <- iframe_tag(out$ticked)
+        expect_length(tag, 1L)
+        expect_match(tag, "sandbox=\"allow-scripts allow-same-origin allow-downloads\"", fixed = TRUE, info = case[[1L]])
+        expect_false(grepl("allow-modals", tag, fixed = TRUE), info = case[[1L]])
+        expect_identical(out$pages, case[[3L]], info = case[[1L]])
+    }
+    # The wait, a message or no page pass unchanged.
+    expect_null(omicDaVolcanoPageFrame(NULL))
+    wait <- shiny::div(class = "alert alert-info", "Preparing the interactive plot...")
+    expect_identical(omicDaVolcanoPageFrame(wait), wait)
+})
