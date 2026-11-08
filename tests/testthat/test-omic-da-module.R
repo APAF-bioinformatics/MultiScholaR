@@ -1729,7 +1729,19 @@ omicDaW1Frozen[["lipid_no_friendly"]] <- list(
             heatmap_manual_save_warning = "<ui> b49e16f946860932c7dd705a255211e9526ac5c4a85467ed0a5fd32b6e9e4d48",
             heatmap_plot = "<error> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found",
             volcano_static = "<error> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found"),
-        calls = "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 16x7 <HEX>",
+        # KIT-106 W3, D4 (lead decision 2026-11-09, re-frozen once): the in-process export is the publication runner, which
+        # reads the head's accepted manifest, not the tab's list; the case mocks friendly_name out of the tab's list only.
+        # Was the table widget alone; now the export's 4 static volcano and 4 heatmap calls, then the table widget.
+        calls = c(
+            "generateLipidDAVolcanoStatic(selected_contrast=groupKO-groupWT, selected_assay=LCMS_Pos, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateLipidDAHeatmap(selected_contrast=groupKO-groupWT, selected_assay=LCMS_Pos, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_lipid_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "generateLipidDAVolcanoStatic(selected_contrast=groupRES-groupWT, selected_assay=LCMS_Pos, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateLipidDAHeatmap(selected_contrast=groupRES-groupWT, selected_assay=LCMS_Pos, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_lipid_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "generateLipidDAVolcanoStatic(selected_contrast=groupKO-groupWT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateLipidDAHeatmap(selected_contrast=groupKO-groupWT, selected_assay=GCMS, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_lipid_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "generateLipidDAVolcanoStatic(selected_contrast=groupRES-groupWT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
+            "generateLipidDAHeatmap(selected_contrast=groupRES-groupWT, selected_assay=GCMS, top_n=50, clustering_method=ward.D2, distance_method=euclidean, cluster_rows=TRUE, cluster_cols=TRUE, scale_data=row, color_scheme=RdBu, show_lipid_names=FALSE, da_q_val_thresh=0.05) -> list(plot = Heatmap <HEX>, row_clusters = <HEX>)",
+            "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 16x7 <HEX>"),
         notes = c(
             "[default NULL da_running] Running differential expression analysis...", "remove da_running",
             "[message 5 -] Differential expression analysis complete!",
@@ -1753,23 +1765,48 @@ omicDaW1Frozen[["lipid_no_friendly"]] <- list(
             da_results_list = "<list: contrasts_results,da_lipids_long,per_assay_results,significant_counts,qvalue_warnings,da_q_val_thresh,treat_lfc_cutoff,failed_contrasts>",
             formula_from_s4 = "<NULL>"),
         rows = c(da_lipids_long = "24x22 7fddbdb5400fbc8c"),
+        # KIT-106 W3, D4 (lead decision 2026-11-09, re-frozen once): the in-process export is the publication runner, which
+        # reads the head's accepted manifest, not the tab's list; the case mocks friendly_name out of the tab's list only.
+        # Was 4 TSVs (their friendly_name-less tables), their XLSX and NumSigDE; now the TSVs with friendly_name, every
+        # volcano and heatmap figure, and the store's figure entities with their roots (omics-figure 11,
+        # omics-figure-asset 19, dia-state 13 -> 43; kit-106/w3/w1-refreeze.md).
         files = c(
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "13",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "43",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>` = "2",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>` = "2",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>` = "2",
-            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "d2f89fe4d910977451525faf47b8df2eb865e4f9dc672e79010ee282ce6795d2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "074f019210bb05e4db534de339e88fba7e321a2f2e9b0d50bb503d7d5bb8eb98",
             `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "19ab37e5e8eeb250111d0163ec7dd332bf924603ab81ebb5b847f5d734c1e1c8",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "8597e926b23cddc4514ddec594433c871289662093c37c5f845074adafcdc8e3",
             `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.tsv` = "9633c5a76d0bf66dbfb318b6e8d7be9861e5a3c88671c3e54abbc06e9f3912a9",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.tsv` = "3ef61cc44f484ab6f9f7c6a1fef40960ffe082360f5bed58ddbff740cdbcdd23",
             `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.tsv` = "85c142271d7aa11a681709e08a4ce344d18605a19dea87e171a19a22685bb5cb",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.tsv` = "c10aa8e923a83d86c58b8e06db8c79d9917eeb185799fdb802622f5286c9e7e8",
             `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
             `publication_graphs/NumSigDeMolecules/lipids_num_sig_barplot.png` = "<present>",
             `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
-            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx` = "<present>"),
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
         operations = NULL,
         errors = c(
             "<unhandled> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found",
@@ -3949,54 +3986,23 @@ omicDaW1Frozen[["lipid_managed"]] <- list(
         calls = c(
             "generateLipidDAVolcanoStatic(selected_contrast=RES_vs_WT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
             "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 6x7 <HEX>"),
-        notes = c(
-            "[default NULL lipidomics_action_working] Applying lipidomics step ...",
-            "remove lipidomics_action_working"),
+        # KIT-106 W3, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
+        # 2026-11-06), so the managed page is not requested at select. Was the page action's two notices
+        # ("[default NULL lipidomics_action_working] Applying lipidomics step ...", "remove lipidomics_action_working"); now none.
+        notes = character(0),
         updates = character(0),
         tab_status = "<unchanged>",
         history = "<unchanged>",
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        files = c(
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "15",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>` = "2",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>` = "2",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>` = "2",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
-            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
-            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "074f019210bb05e4db534de339e88fba7e321a2f2e9b0d50bb503d7d5bb8eb98",
-            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "8597e926b23cddc4514ddec594433c871289662093c37c5f845074adafcdc8e3",
-            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.tsv` = "3ef61cc44f484ab6f9f7c6a1fef40960ffe082360f5bed58ddbff740cdbcdd23",
-            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
-            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.tsv` = "c10aa8e923a83d86c58b8e06db8c79d9917eeb185799fdb802622f5286c9e7e8",
-            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
-            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
-            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
-            `publication_graphs/NumSigDeMolecules/lipids_num_sig_barplot.png` = "<present>",
-            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
-            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx` = "<present>",
-            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
-            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
-        operations = "lipid_volcano_page",
+        # KIT-106 W3, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
+        # 2026-11-06), so the managed page is not requested at select. Was the run step's files with the page's store
+        # entries added (omics-volcano-html 1; dia-state 14 -> 15); now "<unchanged>".
+        files = "<unchanged>",
+        # KIT-106 W3, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
+        # 2026-11-06), so the managed page is not requested at select. Was "lipid_volcano_page"; now none.
+        operations = character(0),
         errors = character(0)))
 
 omicDaW1Frozen[["metab_managed"]] <- list(
