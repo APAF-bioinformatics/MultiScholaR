@@ -1245,6 +1245,15 @@ if (!is.null(b$builds$kit_105)) {
     }
 }
 
+# KIT-110 (transcriptomics' normalisation on the shared frame): the same six screen journeys on kit_110.
+if (!is.null(b$builds$kit_110)) {
+    kit_110 <- list(build = "kit_110", purpose = "exactness (recorded, uncounted; KIT-110)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("110", suffix)]] <- utils::modifyList(from, kit_110)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
