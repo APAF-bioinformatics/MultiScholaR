@@ -1,0 +1,8 @@
+# KIT-105 run 3: the DIA session and memory set on 98da5939 (test-baseline.R file load_all, one process per file, strict skips, R 4.6.1, R_LIBS kit_104 xocrNB)
+# Decision: each file's passed and skipped counts equal the baseline (native-session 733/2, perf107-audit 191/1, perf107-checkpoints 38/1, checkpoint-dia-state 174/4, memory-lifetimes 80/11). Result: all equal; 0 failed, 0 errors. W3's stop-rule gate holds.
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-perf107-audit.R	load_all	11	11	0	192	191	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	21.3	complete
+test-perf107-checkpoints.R	load_all	4	4	0	39	38	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	20.4	complete
+test-workflow-checkpoint-dia-state.R	load_all	19	19	0	178	174	0	0	4	0	4	FALSE			FALSE		0	0	0	4	0	0	25.1	complete
+test-workflow-gui-memory-lifetimes.R	load_all	17	17	0	91	80	0	0	11	0	11	FALSE			FALSE		0	0	2	8	0	1	10.5	complete
+test-workflow-native-session.R	load_all	24	24	0	742	733	0	0	2	7	2	FALSE			FALSE		0	0	1	0	0	1	401.2	complete
