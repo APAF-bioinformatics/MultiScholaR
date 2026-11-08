@@ -1,0 +1,44 @@
+# KIT-105 W4 notes for W5 (metab on the frame), 2026-11-08
+
+## The frame (R/mod_omic_norm.R) and the panel library (R/mod_omic_norm_panels.R)
+- `mod_omic_norm_ui(id, config)`: `config` is the omic's `norm` group (or, for trx's profile mount, a copy of lipid's
+  with `panels` = the profile's `norm_options` function, its tabs, captions, RUV texts and `assay_slots` 1L).
+- `mod_omic_norm_server(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL, config)`:
+  `config` is the `norm` group; the frame reads the binding and its readers from `omicGuiConfig(omic_type)` (it sets
+  that config's `norm` to the one passed). So the metab wrapper is `mod_omic_norm_server(..., config =
+  omicGuiConfig("metabolomics")$norm)` with omic_type "metabolomics" (what the shell passes).
+- The module frame holds no locals (`runOmicNormServer` does the work); test-omic-design-module.R checks the names.
+- Handlers, callable outside a session with shiny's notification/progress mocked in the shiny namespace (MCI-021 and
+  the sessions/application-reads tests do this): `runOmicNormPipeline`, `resetOmicNorm`, `applyOmicNormCorrelation`,
+  `skipOmicNormCorrelation`, `exportOmicNormSession`, `runOmicNormTabEntry`, `runOmicNormPreQc`; and the bodies
+  `omicNormItsdTables(output, workflowData, normData, config)` (metab's twin: `runMetabNormItsdSelectionTableObserverShell`)
+  and `omicNormFinalQcPlot(normData, getPlotAesthetics, workflowData, config)` (metab's: `renderMetabNormFinalQcPlot`).
+  `config` there is the full omic configuration (`omicGuiConfig(<omic>)`).
+- Per-omic behaviour is config/binding data: `binding$prefix` (`<prefix>_qc_figures`, `_reset`, `_norm_complete`),
+  `binding$qc_dir_role` (the image slots' QC directory and the run's `qc_dir`), `binding$class`/`data_slot`/`id_slot`,
+  `binding$qc_plots`, `binding$final_pca` (in process; metab's binding keeps its placeholder), `config$binding$read_state`
+  and `read_metadata`, `norm$itsd_table`, `norm$export`, `norm$final_pca` (managed placeholder sizes),
+  `norm$skip_correlation_flags` (`after_commit` sets the flags after the notification, metab's place).
+- F105-02 is in `skipOmicNormCorrelation`: metab gets it on joining; re-freeze the metab (c) `skip_correlation_failing`
+  capture once with attribution (expected: errors character(0), session_closed FALSE, notes
+  "[error] Error: kit105: the store commit is refused"; at_commit unchanged: metab's flags FALSE/<NULL> at the commit).
+
+## Metab's hand-written QC markup (mod_metab_norm_ui.R:290-658) against the frame's stage grid
+- `mod_omic_norm_ui("norm", omicGuiConfig("metabolomics")$norm)` renders the same HTML as `mod_metab_norm_ui("norm")`
+  at W4's head: 51,918 characters each, and the only differences are shiny's random `data-tabsetid` values (which W1
+  (a) masks). So the 32 hand-written QC output ids, the option sections, the test ids (`metab-norm-*`) and the noun
+  ("Metabolites"/"metabolites") all come from the existing config; no new config data is needed to keep W1 (a)'s metab
+  digest. (Checked by rendering both and diffing; scratch metab_today.html / metab_frame.html.)
+
+## Differences the frame does not cover yet (metab server, to check against W1 (b)/(c))
+- The reactive state: the frame's `omicNormReactiveState()` is lipid's field set; metab's `createMetabNormReactiveState`
+  may differ (W1 (b) reads `normalization_log`, the flags, `assay_names`, `itsd_selections`, `itsd_candidate_ids`, the
+  six `*_obj` slots, `ruv_optimization_results`, `correlation_results`).
+- Order of observers and outputs follows lipid's registration order; metab's may differ (visible only in log/
+  notification order within a flush).
+- Metab's export progress: the core saver's `advance = function(a, d) incProgress(a, detail = d)` and
+  `summaryTime = Sys.time()` (W2's hand-off); the frame passes neither today (`publishOmicNormExport` calls
+  `export$save(binding, sessionData, sourceDir, publicationRequest, export)`). Metab needs these as per-omic values.
+- The worker helper's metab lines (`helper-workflow-omics-worker.R:217-223`) pass `generateCompositeFromFilesFn =
+  function(...) NULL`; W4's lipid retarget calls `runOmicNormPipeline`, whose in-process path draws the real composite
+  (the test asserts nothing about it in process).

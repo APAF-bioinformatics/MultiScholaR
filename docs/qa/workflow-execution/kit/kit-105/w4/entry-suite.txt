@@ -1,0 +1,11 @@
+# KIT-105 W4 entry-point suite, lipid and trx (the frame's consumers) and metab (the panels are shared code), on W4's
+# tree. load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, one process per file, in sequence under a sleep lock, against
+# the frozen oracles in tests/testdata/gui-entry/ (lipid_canonical and trx_screen as re-frozen at a2b9b41d for F105-01;
+# no oracle changed by W4). Ceilings 900 s per lane, 4,500 s per file. Recorded 2026-11-08.
+
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0        89s
+  (lipid_canonical identical: its norm_refusal, norm, correlation and session_export steps through the shared frame)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0   47s
+  (trx_screen identical: the trx mount of mod_lipid_norm_ui/server(profile =) with the re-pointed renderers)
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0     203s
+  (metab_lc, metab_gc, metab_combined identical; metab is not yet on the frame)

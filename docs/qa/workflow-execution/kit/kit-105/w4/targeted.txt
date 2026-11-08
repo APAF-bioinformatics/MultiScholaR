@@ -1,0 +1,34 @@
+# KIT-105 W4 targeted tests on W4's tree (the frame, the panel library, lipid on it, trx re-pointed, the six lipid
+# helper files deleted, the tests retargeted and quarantined). load_all, R 4.6.1, MULTISCHOLAR_STRICT_SKIPS=1, one
+# Rscript process per file (kit/scripts-078/run1.R), two batches in parallel under a sleep lock. Recorded 2026-11-08.
+# Start-commit counts (f8d4c5fc, old code) in test-first.txt.
+
+COUNTS test-omic-norm-module.R pass 503 fail 0 error 0 skip 0                 148s
+  (a) the lipid, metab and trx-profile UI digests, ids, test ids and tab titles unchanged.
+  (b), (c) every capture identical except the one F105-02 re-freeze (lipid automatic `skip_correlation_failing`:
+  errors character(0), session_closed FALSE, notes "[error] Error: kit105: the store commit is refused"; at_commit,
+  history and tab_status unchanged). F105-01 both omics; the W4 wrapper block; the F105-02 block. 482 + 21 new.
+COUNTS test-omic-design-module.R pass 146 fail 0 error 0 skip 0                17s   (143 + the frame masking block)
+COUNTS test-omic-gui-config.R pass 949 fail 0 error 0 skip 0                   13s   (941; the wired fields, +8)
+COUNTS test-omics-norm-core.R pass 121 fail 0 error 0 skip 7                   182s
+  (the seven lipid halves quarantined, Q-86 to Q-89; the metab halves and the core-only checks live)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0              52s   (MCI-021 retargeted: 153 = 153)
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0                 76s   (MCI-030: 61 = 61)
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0              37s   (MCI-015 untouched: 150 = 150)
+COUNTS test-lipid-12a-norm-module-characterization.R pass 5 fail 0 error 0 skip 5   6s
+  (blocks 1-3 live; blocks 4-8 quarantined, Q-96)
+COUNTS test-lipid-12-norm-module-contracts.R pass 0 fail 0 error 0 skip 0      5s    (whole file quarantined, Q-95)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0             332s  (283 = 283)
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0           171s  (97 = 97)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0  407s  (230 = 230)
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0            111s  (109 = 109)
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0           27s   (150 = 150)
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0                6s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0            7s
+# Dependents of the public names (the grep's other files):
+COUNTS test-ci-impact-router.R pass 27 fail 0 error 0 skip 0                   7s
+COUNTS test-ci-impact-e2e.R pass 10 fail 0 error 0 skip 0                      6s
+COUNTS test-ci-impact-audit.R pass 26 fail 0 error 0 skip 0                    6s
+
+# Entry suite: entry-suite.txt (lipid_canonical, trx_screen and the three metab lanes identical).
+# NAMESPACE and man/: no diff against f8d4c5fc.

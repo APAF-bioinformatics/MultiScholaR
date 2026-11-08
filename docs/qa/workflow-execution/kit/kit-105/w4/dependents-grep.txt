@@ -1,0 +1,21 @@
+# KIT-105 W4 dependents grep (2026-11-08), at W4's head before the rebase. The deleted set: the 53 top-level names
+# defined at f8d4c5fc in the six deleted files (mod_lipid_norm_{server,runtime,observer,support,ui,workflow}_helpers.R)
+# plus mod_lipid_norm_server.R/ui.R, less the two exported wrappers that stay; and the six file names. Searched as whole
+# words across R/, tests/, tools/ (tools/refactor/ excluded) and inst/ (and DESCRIPTION for the file names).
+# 291 hits; classified by file. No live hit.
+
+R/ (33 hits): provenance comments and roxygen only ("from <name> ... at f8d4c5fc", the config's file:line notes);
+  no code reference.
+  R/mod_omic_norm_panels.R 12, R/mod_omic_norm.R 1, R/utils_omic_gui_config.R 12, R/utils_workflow_omics_actions.R 4,
+  R/utils_workflow_omics_figures.R 2, R/utils_workflow_saved_exports.R 2.
+tools/, inst/, DESCRIPTION: none.
+tests/testthat/test-lipid-12-norm-module-contracts.R 169: whole file quarantined (Q-95, file-level skip on line 1).
+tests/testthat/test-lipid-12a-norm-module-characterization.R 54: all at line 204 or later, inside blocks 4-8, each
+  quarantined (Q-96); blocks 1-3 (the public names) stay live.
+tests/testthat/test-omics-norm-core.R 30: inside the quarantined lipid blocks (Q-86 to Q-89) and their skip texts; the
+  header comment (:96); and normCoreRun's lipid "today" branch (:146-147), annotated as read only by the quarantined
+  Q-88 block (no live block calls normCoreRun("lipid", ...)).
+tests/testthat/test-omic-norm-module.R 2: one comment (:1580, the F105-01 description).
+tests/testthat/test-omic-gui-config.R 2: comments (:819, :831, the norm group's provenance).
+
+NAMESPACE: `git diff f8d4c5fc -- NAMESPACE` empty. man/: `git diff f8d4c5fc -- man/` empty.

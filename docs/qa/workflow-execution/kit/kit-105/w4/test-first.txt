@@ -1,0 +1,47 @@
+# KIT-105 W4 test-first (2026-11-08). One Rscript process per file, pkgload::load_all, R 4.6.1,
+# MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS = the browser-smoke proof library (kit/scripts-078/run1.R).
+#
+# 1. The tests W4 retargets, on the start commit f8d4c5fc against the old code (a pinned `git archive f8d4c5fc` copy),
+#    before their targets changed. All pass except one clock flake in W2's saver comparison (see note).
+
+COUNTS test-omic-norm-module.R pass 482 fail 0 error 0 skip 0                 147s
+COUNTS test-omic-gui-config.R pass 941 fail 0 error 0 skip 0                   14s
+COUNTS test-omics-norm-core.R pass 216 fail 1 error 0 skip 0                   295s
+  BAD test-omics-norm-core.R :: saveWorkflowOmicsNormSessionArtifacts is lipid's and metab's savers: files, bytes,
+      summary, log and progress
+      `actual$publication$completed_at`:   "2026-11-08 07:09:20 UTC"
+      `expected$publication$completed_at`: "2026-11-08 07:09:19 UTC"   (lipid)
+      A clock flake in W2's block: the saver's returned `publication$completed_at` is compared between two runs a
+      second apart (the block masks it in the journal text, not in the returned value). Not a W4 change; the block is
+      split here and its lipid half quarantined (Q-89); the metab half has the same exposure (proposed F105-03).
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0              42s   (MCI-021, old targets)
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0                 66s   (MCI-030)
+COUNTS test-omic-design-module.R pass 143 fail 0 error 0 skip 0                14s
+COUNTS test-lipid-12a-norm-module-characterization.R pass 62 fail 0 error 0 skip 0   12s
+COUNTS test-lipid-12-norm-module-contracts.R pass 707 fail 0 error 0 skip 0    12s
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0             344s  (the helper's lipid lines, old)
+COUNTS test-workflow-omics-residency.R pass 97 fail 0 error 0 skip 0           182s
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0  380s
+COUNTS test-workflow-omics-figures.R pass 109 fail 0 error 0 skip 0            85s
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0           27s
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0                6s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0            7s
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0              43s
+
+# 2. W4's new and changed tests (test-omic-norm-module.R, test-omic-design-module.R) on the start commit's R/ code:
+#    the new blocks fail before, as written.
+
+COUNTS test-omic-norm-module.R pass 486 fail 12 error 0 skip 0                 146s
+  BAD (b, c) lipid, RUV automatic: ... skip-correlation with the commit failing
+      the F105-02 re-freeze of the one (c) capture (lipid `skip_correlation_failing`): today
+      errors = "Error in commitWorkflowReferenceState: kit105: the store commit is refused", session_closed = TRUE,
+      notes = character(0)
+  BAD W4: the lipid norm wrappers are thin wrappers over the shared frame, defined in mod_omic_norm*.R
+      (mod_omic_norm_ui/server, skipOmicNormCorrelation, omicNormQcTabset, registerOmicNormQcImageOutputs absent)
+  BAD F105-02: lipid skip-correlation with the store commit refused notifies and keeps the session and the state
+      `failing$session_closed` TRUE (expected FALSE); `errors` holds shiny's unhandled observer error; `notes` empty
+      (expected "[error] Error: kit105: the store commit is refused"); the flags after read FALSE/<NULL>/<NULL> on the
+      closed session (expected FALSE/<NULL>/lipid_ruv_corrected)
+  Every other block, including (a) and the other five (b)/(c) scenarios, passes.
+COUNTS test-omic-design-module.R pass 146 fail 0 error 0 skip 0                17s
+  (the new masking block holds on the old lipid server too: its frame had no test-named locals)
