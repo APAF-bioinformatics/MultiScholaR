@@ -1227,6 +1227,15 @@ if (!is.null(b$builds$kit_103)) {
     }
 }
 
+# KIT-104 (the shared QC shell and sub-tabs; the parity change; P-16): the same six screen journeys on kit_104.
+if (!is.null(b$builds$kit_104)) {
+    kit_104 <- list(build = "kit_104", purpose = "exactness (recorded, uncounted; KIT-104)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("104", suffix)]] <- utils::modifyList(from, kit_104)
+    }
+}
+
 files <- c("tools/profiling/workflow_kit.R", "tools/profiling/workflow_kit_driver.R",
     "tools/profiling/workflow_kit_coordinator.R", "tools/profiling/workflow_kit_member.R", "tools/profiling/run_workflow_kit.sh",
     "tools/profiling/workflow_checkpoint_dia_driver.R", "tests/testthat/test-workflow-kit-harness.R",
