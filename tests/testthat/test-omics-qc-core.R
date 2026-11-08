@@ -139,8 +139,11 @@ test_that("omicsDuplicateResolutionStats reads both products as today's lipid an
 })
 
 test_that("#9: metabolomicsDeclarationBinding$resolve_duplicates works through the moved resolveMetabDuplicateAssayData", {
-    expect_identical(basename(utils::getSrcFilename(resolveMetabDuplicateAssayData, full.names = TRUE)),
-        "func_metab_s4_qc_methods.R")
+    # Source references are kept under load_all only; the check layout's installed package has none.
+    if (!is.null(utils::getSrcref(resolveMetabDuplicateAssayData))) {
+        expect_identical(basename(utils::getSrcFilename(resolveMetabDuplicateAssayData, full.names = TRUE)),
+            "func_metab_s4_qc_methods.R")
+    }
     object <- module_ci_metab_qc_object(layout = "combined")
     resolved <- metabolomicsDeclarationBinding$resolve_duplicates(object)
     direct <- resolveMetabDuplicateAssayData(assayList = object@metabolite_data,

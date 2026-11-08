@@ -498,15 +498,18 @@ test_that("W5 lipid's QC copies are deleted; its exports are wrappers over the s
         "buildLipidQcS4AssayStatsTable", "buildLipidQcS4FinalizeResultsText", "validateLipidQcS4FinalizeState",
         "updateLipidQcS4TrackingPlot", "getLipidQcS4FinalizeState", "saveLipidQcS4CompletedState")
     expect_identical(deleted[vapply(deleted, exists, logical(1), envir = ns, inherits = FALSE)], character())
-    # qcClickAfterStart moved into the shell's file with its name.
-    expect_match(utils::getSrcFilename(qcClickAfterStart), "mod_omic_qc.R", fixed = TRUE)
-    for (name in c("mod_omic_qc_ui", "mod_omic_qc_server", "omicQcComponents", "registerOmicQcRevertObserver")) {
-        expect_match(utils::getSrcFilename(get(name, envir = ns)), "mod_omic_qc.R", fixed = TRUE, info = name)
-    }
-    for (part in c("intensity", "duplicates", "itsd", "finalize")) {
-        for (side in c("ui", "server")) {
-            name <- sprintf("mod_omic_qc_%s_%s", part, side)
-            expect_match(utils::getSrcFilename(get(name, envir = ns)), "mod_omic_qc_tabs.R", fixed = TRUE, info = name)
+    # qcClickAfterStart moved into the shell's file with its name. Source references are kept under load_all only
+    # (KIT-104 lead: the check layout's installed package has none), so the file checks run there alone.
+    if (!is.null(utils::getSrcref(qcClickAfterStart))) {
+        expect_match(utils::getSrcFilename(qcClickAfterStart), "mod_omic_qc.R", fixed = TRUE)
+        for (name in c("mod_omic_qc_ui", "mod_omic_qc_server", "omicQcComponents", "registerOmicQcRevertObserver")) {
+            expect_match(utils::getSrcFilename(get(name, envir = ns)), "mod_omic_qc.R", fixed = TRUE, info = name)
+        }
+        for (part in c("intensity", "duplicates", "itsd", "finalize")) {
+            for (side in c("ui", "server")) {
+                name <- sprintf("mod_omic_qc_%s_%s", part, side)
+                expect_match(utils::getSrcFilename(get(name, envir = ns)), "mod_omic_qc_tabs.R", fixed = TRUE, info = name)
+            }
         }
     }
     # The registry names a module pair for every component the four omics' qc groups name.
@@ -684,8 +687,10 @@ test_that("W6 metab's and trx's QC copies are deleted; their exports are wrapper
         "registerLipidQcS4ProfileFinalize", "registerLipidIntensityRevertObserver")
     expect_identical(deleted[vapply(deleted, exists, logical(1), envir = ns, inherits = FALSE)], character())
     # trx's four QC figure functions are defined once, in the core.
-    for (name in c("trxQcRawStats", "trxQcFilterText", "trxQcMetricsTable", "trxQcFilteringFigure")) {
-        expect_match(utils::getSrcFilename(get(name, envir = ns)), "func_trx_qc_plots.R", fixed = TRUE, info = name)
+    if (!is.null(utils::getSrcref(trxQcFilteringFigure))) {
+        for (name in c("trxQcRawStats", "trxQcFilterText", "trxQcMetricsTable", "trxQcFilteringFigure")) {
+            expect_match(utils::getSrcFilename(get(name, envir = ns)), "func_trx_qc_plots.R", fixed = TRUE, info = name)
+        }
     }
     profile <- trxOmicProfile()
     # KIT-104 W8: `class` and `read_state` too, once test-omic-gui-config.R pinned their values.
