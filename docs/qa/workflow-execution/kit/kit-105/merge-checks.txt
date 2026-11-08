@@ -1,0 +1,131 @@
+KIT-105 W6 merge checks (2026-11-08), on origin/performance-v2 8d58c9db. R 4.6.1. Start commit 746fde45 (KIT-104 closed).
+
+1. DESCRIPTION Collate == R/*.R: 361 entries, 361 files, setequal, no duplicates.
+   Added: utils_workflow_dia_norm.R (28afdcd4), mod_omic_norm_panels.R, mod_omic_norm.R (W4 120efa7f).
+   Removed: the six mod_lipid_norm_*_helpers.R (W4) and five mod_metab_norm_*_helpers.R (W5 fcc16c6c).
+
+2. NAMESPACE against 746fde45: start 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1, now 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 (byte-identical). roxygen2 was not run.
+   git diff 746fde45 -- man R/app_ui.R R/app_server.R R/mod_omic_workflow.R tools: 0 lines (empty).
+
+3. Parse-data back-reference count (scratchpad kit-104-w3/backrefs.R): expected 6 (25 at the start).
+   Count: 6 
+     validateLipidDaAnalysisPreflight (defined in mod_lipid_da_analysis_helpers.R) <- func_lipid_da_model.R,utils_workflow_lipid_declarations.R
+     normaliseProtDaContrastsTable (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+     validateProtDaFilteredSession (defined in mod_prot_da_validation.R) <- utils_workflow_dia_sessions.R
+     validateProtDaModelAndContrasts (defined in mod_prot_da_validation.R) <- utils_workflow_dia_da.R
+     mod_prot_design_builder_server (defined in mod_prot_design_builder_server.R) <- func_general_applets.R
+     mod_prot_design_builder_ui (defined in mod_prot_design_builder_ui.R) <- func_general_applets.R
+
+4. Dependents grep (KIT-104 W8's script, start 746fde45): the deleted set computed, searched over tracked text files in R/, tests/, tools/ (excluding tools/refactor/) and inst/.
+   LIVE hits, each classified (none calls a deleted global):
+   - getPlotAesthetics (R/mod_omic_norm.R x12, R/mod_omic_norm_panels.R x2, R/mod_prot_norm_observer_helpers.R x5): a local or argument name. The deleted top-level lipid helper of that name is not referenced: codetools::findGlobals over every namespace function finds no global getPlotAesthetics. The prot local predates KIT-105.
+   - tests/testthat/test-omic-norm-module.R:1684-1685: W5's deletion assertion (its list of names that must no longer exist).
+   - tests/testthat/test-omics-norm-core.R:148, :153: normCoreRun's 'today' branches, reached only from the quarantined Q-88 and Q-110 blocks (commented so).
+
+   Deleted R/ files since 746fde45 ( 11 ): mod_lipid_norm_observer_helpers.R, mod_lipid_norm_runtime_helpers.R, mod_lipid_norm_server_helpers.R, mod_lipid_norm_support_helpers.R, mod_lipid_norm_ui_helpers.R, mod_lipid_norm_workflow_helpers.R, mod_metab_norm_binding_helpers.R, mod_metab_norm_entry_helpers.R, mod_metab_norm_pipeline_helpers.R, mod_metab_norm_render_helpers.R, mod_metab_norm_session_helpers.R 
+   Deleted top-level names since 746fde45 ( 129 ):
+     appendMetabNormNormalizationLog buildLipidNormAddLog buildLipidNormAssayLabelRenderer
+     buildLipidNormCompositeFromFilesGenerator buildLipidNormCorrelationFilterSummaryRenderer
+     buildLipidNormCorrelationFilterTab buildLipidNormExportSessionData buildLipidNormFinalQcPcaPlot
+     buildLipidNormFinalQcPlotRenderer buildLipidNormItsdSelectionUiRenderer buildLipidNormLogRenderer
+     buildLipidNormOptionsControlPanel buildLipidNormPlotAestheticsGetter buildLipidNormQcImageRenderer
+     buildLipidNormQcTabsetPanel buildLipidNormRuvQcUiRenderer buildLipidNormStageRows
+     buildMetabNormCorrelationFilterSummary buildMetabNormExportSessionData buildMetabNormFinalQcPcaPlot
+     buildMetabNormLabelPlot buildMetabNormTitlePlot checkMetabNormExportSessionReady
+     collectMetabNormFeatureCountsPerAssay completeMetabNormSkipCorrelationState createLipidNormReactiveState
+     createLipidNormStartupRuntime createMetabNormReactiveState dispatchMetabNormApplyCorrelation
+     dispatchMetabNormExportSession dispatchMetabNormSkipCorrelation generateMetabNormCompositeFromFiles
+     generateMetabNormPreNormalizationQc getPlotAesthetics handleLipidNormApplyCorrelationFilter
+     handleLipidNormExportSession handleLipidNormPreNormalizationQc handleLipidNormResetNormalization
+     handleLipidNormRunNormalization handleLipidNormSelectedTabPreNormalizationTrigger
+     handleLipidNormSkipCorrelationFilter handleMetabNormApplyCorrelationOutcome handleMetabNormExportSessionOutcome
+     handleMetabNormSkipCorrelationOutcome initializeMetabNormAssayNames loadMetabNormImageAsPlot
+     registerLipidNormApplyCorrelationFilterObserver registerLipidNormAssayLabelOutputs
+     registerLipidNormAssayNameInitializationObserver registerLipidNormCorrelationFilterSummaryOutput
+     registerLipidNormDesignDrivenChoiceObserver registerLipidNormExportSessionObserver
+     registerLipidNormFinalQcPlotOutput registerLipidNormItsdSelectionOutput registerLipidNormItsdSelectionRuntime
+     registerLipidNormItsdSelectionTracking registerLipidNormItsdTableOutputs registerLipidNormLogOutput
+     registerLipidNormPostNormalizationOutputs registerLipidNormPrimaryStartupOutputs
+     registerLipidNormResetNormalizationObserver registerLipidNormRunNormalizationObserver
+     registerLipidNormRuvCancorOutputs registerLipidNormRuvQcOutput
+     registerLipidNormSelectedTabPreNormalizationObserver registerLipidNormServerRuntime
+     registerLipidNormSkipCorrelationFilterObserver registerLipidNormStartupObserverRuntime
+     registerLipidNormStaticQcImageOutputs registerMetabNormItsdSelectionTracking renderMetabNormAssayLabel
+     renderMetabNormCorrelationFilterSummary renderMetabNormFinalQcPlot renderMetabNormItsdSelectionTable
+     renderMetabNormItsdSelectionUi renderMetabNormNormalizationLog renderMetabNormQcImageForAssay
+     renderMetabNormRuvCancorPlot renderMetabNormRuvOptimizationSummary renderMetabNormRuvQcUi
+     renderMetabNormRuvResultsTable resolveMetabNormExportSourceDir resolveMetabNormFinalQcRenderState
+     resolveMetabNormManualItsdFeatureIds resolveMetabNormSkipCorrelationInputObject
+     runLipidNormModuleServerEntryShell runLipidNormModuleServerPublicWrapper runLipidNormModuleServerShell
+     runMetabNormApplyCorrelationObserverEntry runMetabNormApplyCorrelationObserverShell
+     runMetabNormApplyCorrelationObserverWrapper runMetabNormAssayLabelBindingShell
+     runMetabNormAutoPreNormalizationQcObserverShell runMetabNormBetweenSampleNormalizationStep
+     runMetabNormBetweenSampleProgressApplyShell runMetabNormCompositeQcFigureStep runMetabNormCompositeQcRefreshShell
+     runMetabNormExportSessionObserverShell runMetabNormExportSessionObserverWrapper runMetabNormExportSessionWorkflow
+     runMetabNormItsdNormalizationStep runMetabNormItsdProgressApplyShell runMetabNormItsdSelectionTableObserverShell
+     runMetabNormItsdSelectionTrackingObserverShell runMetabNormLog2ProgressApplyShell
+     runMetabNormLog2TransformationStep runMetabNormModuleServerEntryShell runMetabNormModuleServerPublicWrapper
+     runMetabNormModuleServerShell runMetabNormNormalizationObserverShell runMetabNormNormalizationObserverWrapper
+     runMetabNormNormalizationPipelineShell runMetabNormPostNormalizationQcStep runMetabNormPreNormalizationQcStep
+     runMetabNormQcImageBindingShell runMetabNormResetNormalizationObserverShell
+     runMetabNormResetNormalizationObserverWrapper runMetabNormRuvBindingObserverShell
+     runMetabNormRuvProgressApplyShell runMetabNormRuvQcStep runMetabNormSkipCorrelationObserverEntry
+     runMetabNormSkipCorrelationObserverShell runMetabNormSkipCorrelationObserverWrapper saveLipidNormExportArtifacts
+     saveMetabNormExportMetadataFiles saveMetabNormExportSessionRdsFiles saveMetabNormExportSummaryFile
+     updateMetabNormDesignDrivenChoices writeLipidNormCompositeFigure 
+   
+   Hits: 644 
+   
+             comment              LIVE quarantined-block  quarantined-file 
+                  62                23               163               396 
+   
+   By file and class:
+     comment          11  R/mod_omic_norm_panels.R
+     comment           1  R/mod_omic_norm.R
+     comment          19  R/utils_omic_gui_config.R
+     comment           3  R/utils_workflow_omics_actions.R
+     comment           4  R/utils_workflow_omics_figures.R
+     comment           3  R/utils_workflow_saved_exports.R
+     comment           2  tests/testthat/helper-module-ci-metab-norm.R
+     comment           9  tests/testthat/test-module-ci-metab-norm.R
+     comment           2  tests/testthat/test-omic-gui-config.R
+     comment           1  tests/testthat/test-omic-norm-module.R
+     comment           1  tests/testthat/test-omics-audit-carry-overs.R
+     comment           4  tests/testthat/test-omics-norm-core.R
+     comment           2  tests/testthat/test-workflow-omics-figures.R
+     LIVE              2  R/mod_omic_norm_panels.R
+     LIVE             12  R/mod_omic_norm.R
+     LIVE              5  R/mod_prot_norm_observer_helpers.R
+     LIVE              2  tests/testthat/test-omic-norm-module.R
+     LIVE              2  tests/testthat/test-omics-norm-core.R
+     quarantined-block   58  tests/testthat/test-lipid-12a-norm-module-characterization.R
+     quarantined-block   62  tests/testthat/test-metab-03d-norm-module-characterization.R
+     quarantined-block   43  tests/testthat/test-omics-norm-core.R
+     quarantined-file  175  tests/testthat/test-lipid-12-norm-module-contracts.R
+     quarantined-file  209  tests/testthat/test-metab-03b-norm-module-helper-characterization.R
+     quarantined-file   12  tests/testthat/test-metab-03c-norm-module-seams.R
+   
+   LIVE hits (code or test lines outside a quarantined file or block): 23 
+     R/mod_omic_norm.R:62  getPlotAesthetics
+     R/mod_omic_norm.R:66  getPlotAesthetics
+     R/mod_omic_norm.R:78  getPlotAesthetics
+     R/mod_omic_norm.R:82  getPlotAesthetics
+     R/mod_omic_norm.R:133  getPlotAesthetics
+     R/mod_omic_norm.R:143  getPlotAesthetics
+     R/mod_omic_norm.R:152  getPlotAesthetics
+     R/mod_omic_norm.R:166  getPlotAesthetics
+     R/mod_omic_norm.R:182  getPlotAesthetics
+     R/mod_omic_norm.R:216  getPlotAesthetics
+     R/mod_omic_norm.R:228  getPlotAesthetics
+     R/mod_omic_norm.R:238  getPlotAesthetics
+     R/mod_omic_norm_panels.R:494  getPlotAesthetics
+     R/mod_omic_norm_panels.R:501  getPlotAesthetics
+     R/mod_prot_norm_observer_helpers.R:246  getPlotAesthetics
+     R/mod_prot_norm_observer_helpers.R:258  getPlotAesthetics
+     R/mod_prot_norm_observer_helpers.R:267  getPlotAesthetics
+     R/mod_prot_norm_observer_helpers.R:278  getPlotAesthetics
+     R/mod_prot_norm_observer_helpers.R:298  getPlotAesthetics
+     tests/testthat/test-omic-norm-module.R:1684  runMetabNormQcImageBindingShell,runMetabNormModuleServerPublicWrapper,runMetabNormNormalizationPipelineShell
+     tests/testthat/test-omic-norm-module.R:1685  generateMetabNormCompositeFromFiles,buildMetabNormExportSessionData
+     tests/testthat/test-omics-norm-core.R:148  handleLipidNormRunNormalization
+     tests/testthat/test-omics-norm-core.R:153  runMetabNormNormalizationObserverWrapper
