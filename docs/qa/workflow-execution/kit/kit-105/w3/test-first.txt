@@ -1,0 +1,39 @@
+# KIT-105 W3 test-first: tests/testthat/test-prot-norm-core.R (new) and the retargeted F-20 block of
+# test-prot-05b-norm-module-contracts.R, before the moves and before F-20's removal.
+# HEAD aa79fe3f (origin/performance-v2, W1 included), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1; runner kit/scripts-078/run1.R <tree> <file> v; R_LIBS = core/browser-smoke.xocrNB/library.
+# Recorded 2026-11-08.
+#
+# The pinned values were recorded at this commit with MULTISCHOLAR_KIT105_W3_DUMP=1:
+# - the 20 definition digests (sha256 of deparse(utils::removeSource(fn)));
+# - eight output digests through the core callers: runDIAReferenceNormalization (skip, then manual) and
+#   runDIAReferenceCorrelation on a native DIA owner with the "small" protein recipe of
+#   test-workflow-checkpoint-dia-state.R; runDIAReferenceLimpaNormalisationPassThrough on the same owner;
+#   restoreDIANativeLegacyArtifacts (restoreDIANativeGuiFiles mocked to capture the dependency list);
+#   refreshDIANativeSummaryArchive (export runner mocked to call prepare_outputs with a fixed timestamp);
+#   the lipid and metab RUV declaration (omicsRuvOperation through run{Lipid,Metab}ReferenceRuv on the
+#   test-workflow-{lipid,metab}-declarations.R fixtures).
+#   Store-local entity ids are replaced by each state's slots (args excluded) and each product's value; a first
+#   version that digested entity ids differed between processes and was not used. The final values were the same
+#   in two separate processes before pinning.
+# Call counts by name (with_mocked_bindings counters) show each caller reaches the moved functions.
+#
+# Expected to fail first: the location block (the 20 functions are still in R/mod_prot_norm_*.R).
+# Expected to pass at base (guards): the definition digests, environment and not-exported checks; every caller's
+# call counts and output digests; the retargeted F-20 block.
+# Observed: as expected.
+
+COUNTS test-prot-norm-core.R pass 56 fail 1 error 0 skip 0
+  BAD test-prot-norm-core.R :: back-references #10 to #22, their callees and the pass-through are defined in the proteomics norm core
+--- back-references #10 to #22, their callees and the pass-through are defined in the proteomics norm core
+ Expected `found` to be identical to `stats::setNames(...)`.
+ (each of the 20 names: "mod_prot_norm_<file>_helpers.R" where "utils_workflow_dia_norm.R" is expected)
+
+COUNTS test-prot-05b-norm-module-contracts.R pass 502 fail 0 error 0 skip 9
+  (the retargeted block "KIT-101 F-20 (KIT-105 W3): ..." passes with F-20's workaround still present: on DIA_LIMPA
+  with quality_control `complete`, peptide_count_filtered and ruv_covariates neither generate nor warn; the unfinished
+  route states protein_dpc_quant and protein_normalised still warn; the DIA route is unchanged. The block's former
+  pending/in_progress cases on peptide_count_filtered and ruv_covariates are dropped: with KIT-104 P-16 the route's
+  QC writes `complete` there, so those inputs do not occur in the app.)
+
+# After the moves: test-prot-norm-core.R pass 57 fail 0 error 0 skip 0; test-prot-05b 502/0/0/9 (targeted.txt).

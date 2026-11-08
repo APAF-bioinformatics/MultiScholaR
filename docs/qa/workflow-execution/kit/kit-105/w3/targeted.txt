@@ -1,0 +1,67 @@
+# KIT-105 W3 targeted tests, after the moves and F-20's removal.
+# 20 functions moved unchanged, names and roxygen tags kept, into R/utils_workflow_dia_norm.R (new): back-references
+# #10 to #22, their callees buildProtNormManualRuvResult, resolveProtNormCompositeFigureInputs,
+# generateProtNormCompositeFromFiles, buildProtNormTitlePlot, buildProtNormLabelPlot, loadProtNormImageAsPlot, and
+# runDIAReferenceLimpaNormalisationPassThrough. F-20: `limpa_qc_complete` and its comment removed from
+# runProtNormTabEntryWorkflow (mod_prot_norm_workflow_helpers.R). No caller edited.
+# Base aa79fe3f (origin/performance-v2, W1 included), R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file, in sequence; runner kit/scripts-078/run1.R (verbose);
+# R_LIBS = core/browser-smoke.xocrNB/library. DESCRIPTION Collate gained 'utils_workflow_dia_norm.R' (after
+# 'utils_workflow_dia_products.R') LOCALLY for load_all only; not committed (the lead's file). Recorded 2026-11-08.
+# No R CMD check, no install, no journeys, no e2e.
+# Every file: exit 0, 0 failures, 0 errors.
+
+COUNTS test-prot-norm-core.R pass 57 fail 0 error 0 skip 0                    (new; test-first 56/1, see test-first.txt)
+COUNTS test-prot-05-normalisation.R pass 4 fail 0 error 0 skip 1             (baseline 4/1)
+COUNTS test-prot-05a-log2-transformation-characterization.R pass 5 fail 0 error 0 skip 0 (baseline 5)
+COUNTS test-prot-05b-norm-module-contracts.R pass 502 fail 0 error 0 skip 9  (= base 502/9 with the retargeted F-20 block)
+COUNTS test-prot-05c-norm-module-seams.R pass 53 fail 0 error 0 skip 0       (baseline 53; also 53/0 under
+                                                                              load_all(export_all = FALSE), check's
+                                                                              exports-only view: no 05c block reaches a
+                                                                              moved function through its sys.source
+                                                                              environment, so no quarantine row)
+COUNTS test-prot-05d-norm-module-characterization.R pass 100 fail 0 error 0 skip 10 (baseline 100/10)
+COUNTS test-prot-05e-s4-missingness-limpa-characterization.R pass 29 fail 0 error 0 skip 0 (baseline 29)
+COUNTS test-prot-05f-limpa-qc-helpers-shared.R pass 11 fail 0 error 0 skip 0 (baseline 11)
+COUNTS test-module-ci-prot-norm.R pass 60 fail 0 error 0 skip 4             (MCI-008; baseline 60/4)
+COUNTS test-prot-ruv-sweep-imputation.R pass 25 fail 0 error 0 skip 0       (KIT-101 18; blocks added since)
+COUNTS test-e2e-browser-harness.R pass 123 fail 0 error 0 skip 1            (dependent: buildProtNormExportSummaryContent;
+                                                                              the skip is skip_if_no_e2e_browser, no
+                                                                              CHROMOTE_CHROME in this run)
+COUNTS test-workflow-gui-memory-repairs.R pass 0 fail 0 error 0 skip 6       (dependent; baseline 0/6, environment)
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0          (KIT-101 176; blocks added since)
+COUNTS test-workflow-saved-qc.R pass 120 fail 0 error 0 skip 0              (baseline 120)
+COUNTS test-workflow-saved-exports.R pass 276 fail 0 error 0 skip 4         (baseline 276/4)
+COUNTS test-workflow-gui-diagnostic.R pass 72 fail 0 error 0 skip 4         (baseline 72/4)
+COUNTS test-workflow-operations.R pass 75 fail 0 error 0 skip 0             (dependent: diaNormalizationOperation; baseline 75)
+COUNTS test-workflow-memory-mechanism-member.R pass 0 fail 0 error 0 skip 13 (dependent; baseline 0/13, environment)
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0    (baseline 259; the lipid RUV path)
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0    (baseline 259; the metab RUV path)
+
+# The DIA session and memory set (run 3, the stop-rule gate): each equals the ticket's counts.
+COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2        (733/2) 467s
+COUNTS test-perf107-audit.R pass 191 fail 0 error 0 skip 1                  (191/1)
+COUNTS test-perf107-checkpoints.R pass 38 fail 0 error 0 skip 1             (38/1)
+COUNTS test-workflow-checkpoint-dia-state.R pass 174 fail 0 error 0 skip 4  (174/4)
+COUNTS test-workflow-gui-memory-lifetimes.R pass 80 fail 0 error 0 skip 11  (80/11)
+
+# NAMESPACE and man/: not edited (git diff empty). The moved roxygen blocks carry only @noRd, @param and @return
+# (three @noRd blocks: stripProtNormQcPlotOwners, buildProtNormQcPlotProduct, the pass-through); the other 17 have
+# no roxygen block. So no NAMESPACE directive and no Rd page comes from them, and no man/ source header names the
+# module files on their account. roxygen2 was not run.
+
+# Pure-move check (scratch puremove.py over `git diff -- R/`): every removed non-blank line reappears in the new file;
+# the only lines added beyond them are the file header (5 comment lines) and six "# --- ... ---" section comments.
+# The F-20 edit removes 4 lines and drops "|| limpa_qc_complete" from the condition.
+
+# Back-reference count (parse-data method, kit-104-w3/backrefs.R): 25 at aa79fe3f -> 12 after W3. The 13 proteomics
+# names (#10-#22) are gone from the list and no new name appears (the six callees and the pass-through moved with
+# them). The 12 left: W2's six lipid/metab rows (#23-#28), KIT-106's four, and the design-builder wrappers #4, #5.
+# With W2 merged: 6.
+
+# Dependents grep (R/, tests/, tools/, inst/; tools/refactor excluded) for the 20 names: the definitions
+# (utils_workflow_dia_norm.R), the unchanged callers (utils_workflow_dia_products.R, _dia_da.R, _dia_sessions.R,
+# _omics_declarations.R, func_prot_norm_optimization_helpers.R, func_prot_s4_norm_methods.R and the prot norm module
+# files), the tests above, and tools/profiling/workflow_checkpoint_gui_diagnostic.R and workflow_checkpoint_dia_driver.R
+# (names resolved in the namespace; unaffected). The only test that reads the module files' paths is
+# test-prot-05c (sys.source of render/workflow/observer/server helpers): 53/0 in both views, above.

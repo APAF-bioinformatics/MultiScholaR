@@ -570,13 +570,13 @@ test_that("KIT-101 F-10: the normalisation tab warns that QC is incomplete only 
   expect_identical(entry("protein_replicate_filtered", FALSE, "complete"), list(generated = 1L, warned = 0L))
 })
 
-test_that("KIT-101 F-20: on the DIA_LIMPA route the tab recognises the completed protein QC", {
+test_that("KIT-101 F-20 (KIT-105 W3): on the DIA_LIMPA route the tab recognises the completed protein QC", {
   entry <- function(state, qc_status, workflow_type = "DIA_LIMPA") {
     workflow_data <- new.env(parent = emptyenv())
     workflow_data$state_manager <- new.env(parent = emptyenv())
     workflow_data$state_manager$current_state <- state
     workflow_data$state_manager$workflow_type <- workflow_type
-    # The route's QC never writes the tab status (its last state is not protein_replicate_filtered).
+    # KIT-104 P-16: the route's protein QC writes the tab status `complete` when it ends on peptide_count_filtered.
     workflow_data$tab_status <- list(quality_control = qc_status)
     norm_data <- new.env(parent = emptyenv())
     norm_data$pre_norm_qc_generated <- FALSE
@@ -596,11 +596,10 @@ test_that("KIT-101 F-20: on the DIA_LIMPA route the tab recognises the completed
     )
     mget(c("generated", "warned"), envir = calls)
   }
-  # The protein QC's last state (the tab's normalisation input) and the tab's RUV covariates state after it.
-  for (status in c("pending", "in_progress")) {
-    expect_identical(entry("peptide_count_filtered", status), list(generated = 0L, warned = 0L), info = status)
-    expect_identical(entry("ruv_covariates", status), list(generated = 0L, warned = 0L), info = status)
-  }
+  # The protein QC's last state (the tab's normalisation input) and the tab's RUV covariates state after it, with
+  # the protein QC complete: neither generates nor warns.
+  expect_identical(entry("peptide_count_filtered", "complete"), list(generated = 0L, warned = 0L))
+  expect_identical(entry("ruv_covariates", "complete"), list(generated = 0L, warned = 0L))
   # QC not finished on the route: the warning stands.
   expect_identical(entry("protein_dpc_quant", "in_progress"), list(generated = 0L, warned = 1L))
   expect_identical(entry("protein_normalised", "in_progress"), list(generated = 0L, warned = 1L))

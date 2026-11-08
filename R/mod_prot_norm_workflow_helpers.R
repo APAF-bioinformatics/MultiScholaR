@@ -87,17 +87,6 @@ runProtNormPostNormalizationQcStep <- function(
   invisible(NULL)
 }
 
-buildProtNormSkippedRuvResult <- function() {
-  list(
-    best_percentage = NA,
-    best_k = NA,
-    best_control_genes_index = NA,
-    best_cancor_plot = NULL,
-    ruv_skipped = TRUE,
-    skip_reason = "User selected skip due to dataset constraints"
-  )
-}
-
 applyProtNormSkippedRuvState <- function(
   normalizedS4,
   normMethod,
@@ -224,127 +213,6 @@ runProtNormStep6RuvQc <- function(
   invisible(NULL)
 }
 
-resolveProtNormCompositeFigureInputs <- function(ruvMode, qcDir) {
-  if (ruvMode == "skip") {
-    ncol_composite <- 2
-    file_names <- c(
-      "pre_norm_pca.png", "post_norm_pca.png",
-      "pre_norm_density.png", "post_norm_density.png",
-      "pre_norm_rle.png", "post_norm_rle.png",
-      "pre_norm_correlation.png", "post_norm_correlation.png"
-    )
-    row_labels <- list(
-      pca = c("a)", "b)"),
-      density = c("c)", "d)"),
-      rle = c("e)", "f)"),
-      correlation = c("g)", "h)")
-    )
-    column_labels <- c("Pre-Normalisation", "Post-Normalisation")
-  } else {
-    ncol_composite <- 3
-    file_names <- c(
-      "pre_norm_pca.png", "post_norm_pca.png", "ruv_corrected_pca.png",
-      "pre_norm_density.png", "post_norm_density.png", "ruv_corrected_density.png",
-      "pre_norm_rle.png", "post_norm_rle.png", "ruv_corrected_rle.png",
-      "pre_norm_correlation.png", "post_norm_correlation.png", "ruv_corrected_correlation.png",
-      # The RUV control plot stands alone on its row: centred (the middle column), not under the RUV column.
-      NA, "ruv_corrected_cancor.png", NA
-    )
-    row_labels <- list(
-      pca = c("a)", "b)", "c)"),
-      density = c("d)", "e)", "f)"),
-      rle = c("g)", "h)", "i)"),
-      correlation = c("j)", "k)", "l)"),
-      cancor = c("", "m)", "")
-    )
-    column_labels <- c("Pre-Normalisation", "Post-Normalisation", "RUV-Corrected")
-  }
-
-  plot_files <- if (!is.null(qcDir)) {
-    vapply(
-      file_names,
-      function(fn) {
-        if (is.na(fn)) NA_character_ else file.path(qcDir, fn)
-      },
-      character(1)
-    )
-  } else {
-    NULL
-  }
-
-  list(
-    ncol = ncol_composite,
-    plotFiles = plot_files,
-    rowLabels = row_labels,
-    columnLabels = column_labels
-  )
-}
-
-generateProtNormCompositeQcFigure <- function(
-  ruvMode,
-  qcDir,
-  omicType,
-  resolveInputsFn = resolveProtNormCompositeFigureInputs,
-  generateCompositeFn = generateProtNormCompositeFromFiles,
-  savePlotFn = savePlot,
-  messageFn = message
-) {
-  messageFn("*** STEP 6B: Generating composite QC figure from saved images ***")
-
-  if (is.null(qcDir)) {
-    return(invisible(NULL))
-  }
-
-  # ggplot2 retains the last constructed plot independently of our GUI holders.
-  # Keep the caller's plot while releasing this export's raster composite on exit.
-  previous_plot <- ggplot2::get_last_plot()
-  on.exit(ggplot2::set_last_plot(previous_plot), add = TRUE)
-  composite_inputs <- resolveInputsFn(ruvMode, qcDir)
-
-  tryCatch({
-    composite_res <- generateCompositeFn(
-      plotFiles = composite_inputs$plotFiles,
-      ncol = composite_inputs$ncol,
-      rowLabels = composite_inputs$rowLabels,
-      columnLabels = composite_inputs$columnLabels
-    )
-
-    if (!is.null(composite_res)) {
-      savePlotFn(
-        composite_res$plot,
-        base_path = qcDir,
-        plot_name = paste0(omicType, "_composite_QC_figure"),
-        width = composite_res$width,
-        height = composite_res$height,
-        dpi = 150,
-        limitsize = FALSE
-      )
-      messageFn("*** STEP 6B: Composite QC figure saved to protein_qc_dir ***")
-    }
-  }, error = function(e) {
-    messageFn(paste("Warning: Could not generate composite QC figure:", e$message))
-  })
-
-  invisible(NULL)
-}
-
-finalizeProtNormWorkflowState <- function(
-  normData,
-  gcFn = gc,
-  messageFn = message
-) {
-  normData$QC_composite_figure <- NULL
-  messageFn("*** STEP 6: Clearing redundant plot objects from memory ***")
-  gcFn()
-
-  normData$ruv_complete <- TRUE
-  messageFn("*** STEP 6: RUV-corrected workflow completed ***")
-  messageFn("*** STEP 7: Enabling correlation filtering step ***")
-  messageFn("*** STEP 7: Normalization and RUV workflow completed - ready for correlation filtering ***")
-
-  invisible(NULL)
-}
-
 #' The RUV mode choices of the normalisation tab by workflow type (KIT-041): the DIA_LIMPA route computes the
 #' RUV-III factors as covariates after the correlation filter (or skips RUV); every other type keeps the
 #' automatic / manual / skip correction modes the UI ships.
@@ -355,31 +223,6 @@ protNormRuvModeChoices <- function(workflowType = NULL) {
     return(list("RUV-III factors as covariates (recommended)" = "covariates", "RUV-III correction of the quantified matrix" = "correction", "Skip RUV" = "skip"))
   }
   list("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual", "Skip RUV (troublesome datasets)" = "skip")
-}
-
-#' The DIA_LIMPA route's normalisation action (KIT-041): the between-sample normalisation and the peptide-count
-#' filter ran in the protein QC stage, so the tab's normalisation button designates the current state as the
-#' correlation step's input, draws the post-normalisation QC from it and completes; the RUV covariates run after
-#' the correlation filter.
-#' @noRd
-runDIAReferenceLimpaNormalisationPassThrough <- function(settings, workflow, norm_data, post_qc) {
-  manager <- workflow$state_manager
-  withDIAStateScope(manager, function() {
-    assertDIAExportReady(manager, allow_action = "normalization")
-    source <- getDIAStateReference(manager)
-    norm_data$normalization_input_reference <- source
-    norm_data$normalized_protein_obj <- source
-    norm_data$ruv_normalized_obj <- source
-    norm_data$ruv_optimization_result <- NULL
-    norm_data$best_k <- NA
-    norm_data$control_genes_index <- NA
-    post_qc(source)
-    norm_data$normalization_complete <- TRUE
-    norm_data$filtering_summary_text <- paste0(
-      "DIA with limpa: between-sample normalisation (", diaStateHistory(manager) |> (\(h) if ("protein_normalised" %in% h) "applied in the protein QC stage" else "not run")(),
-      ") and the peptide count filter are protein QC steps; RUV-III factors are computed as covariates after the correlation filter.")
-    TRUE
-  })
 }
 
 #' The RUV-covariates action of the normalisation tab on the DIA_LIMPA route (KIT-041/053): after the correlation
@@ -517,11 +360,7 @@ runProtNormTabEntryWorkflow <- function(
   )) {
     # KIT-101 F-10: the gate is also FALSE when the pre-normalisation QC was already generated, and on a route whose
     # last QC state is not a trigger state; neither means QC is incomplete, so warn only while it is.
-    # KIT-101 F-20: the DIA_LIMPA route's protein QC ends at peptide_count_filtered without writing the QC tab status;
-    # that state (the tab's normalisation input) and the tab's RUV covariates state after it mean QC is complete.
-    limpa_qc_complete <- identical(workflowData$state_manager$workflow_type, "DIA_LIMPA") &&
-      isTRUE(current_state %in% c("peptide_count_filtered", "ruv_covariates"))
-    if (shouldAutoGeneratePreQcFn(selectedTab, current_state, FALSE) || limpa_qc_complete ||
+    if (shouldAutoGeneratePreQcFn(selectedTab, current_state, FALSE) ||
         identical(workflowData$tab_status$quality_control, "complete")) {
       return(invisible(FALSE))
     }

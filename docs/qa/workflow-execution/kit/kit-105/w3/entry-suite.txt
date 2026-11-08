@@ -1,0 +1,20 @@
+# KIT-105 W3 entry-point suite (the stop-rule gate for the proteomics lanes and the lipid/metab RUV path), after the
+# moves and F-20's removal. Same tree, method and bindings as targeted.txt (load_all, R 4.6.1,
+# MULTISCHOLAR_STRICT_SKIPS=1, one process per file, in sequence, against the frozen oracles in
+# tests/testdata/gui-entry/ at aa79fe3f; ceiling 4,500 s per file). Recorded 2026-11-08.
+
+COUNTS test-gui-entry-proteomics.R pass 187 fail 0 error 0 skip 0   772s
+  (prot_dia, prot_dia_limpa, prot_tmt, prot_lfq, prot_lfq_fragpipe: all five lanes identical to their oracles;
+  prot_dia_limpa passes through runProtNormTabEntryWorkflow without F-20's branch and through the moved
+  pass-through, and is identical: D10 holds)
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0    72s
+  (lipid_canonical identical to its aa79fe3f oracle, every step including the normalisation/RUV state captures:
+  stripProtNormQcPlotOwners on the lipid RUV path through the moved definition)
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0 173s
+  (metab_lc, metab_gc, metab_combined identical)
+COUNTS test-omic-norm-module.R pass 469 fail 0 error 0 skip 1       129s
+  (W1's identity guard and lipid/metab server captures: equal to W1's 469/1; the skip is the gated F105-01 block)
+
+# The DIA session and memory set (run 3): equal to its counts; see targeted.txt.
+# Stop rule (W3): not triggered. The five proteomics lanes, the DIA session and memory set and the lipid/metab
+# behaviour are identical; the moves stand.
