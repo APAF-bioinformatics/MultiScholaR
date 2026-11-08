@@ -1,0 +1,14 @@
+# KIT-105 F105-01 targeted regressions, after the fix (e76e1e14) and the two lane re-freezes. R 4.6.1, pkgload::load_all
+# through kit/scripts-078/run1.R, one Rscript process at a time, MULTISCHOLAR_STRICT_SKIPS=1,
+# R_LIBS = core/browser-smoke.xocrNB/library. Recorded 2026-11-08. Expected: unchanged (all pass); metab entry identical.
+COUNTS test-omic-norm-module.R pass 482 fail 0 error 0 skip 0 exit=0 elapsed=120s
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0 exit=0 elapsed=73s   (against the new oracle)
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0 exit=0 elapsed=46s   (against the new oracle)
+COUNTS test-module-ci-lipid-norm.R pass 153 fail 0 error 0 skip 0 exit=0 elapsed=47s
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0 exit=0 elapsed=74s
+COUNTS test-module-ci-metab-norm.R pass 150 fail 0 error 0 skip 0 exit=0 elapsed=35s
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0 exit=0 elapsed=420s
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0 exit=0 elapsed=360s
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0 exit=0 elapsed=200s   (identical to its 3 oracles)
+# sha256 of tests/testdata/gui-entry/*.json after all runs, against the start: only lipid_canonical.json and
+# trx_screen.json differ; the other 8 are byte-identical (the metab entry run did not rewrite its oracles).

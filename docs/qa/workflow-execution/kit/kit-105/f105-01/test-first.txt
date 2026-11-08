@@ -1,0 +1,35 @@
+# KIT-105 F105-01 test-first record. Branch from origin/performance-v2 aa79fe3f (W1). R 4.6.1, pkgload::load_all
+# (export_all, helpers) through kit/scripts-078/run1.R (verbose), one Rscript process at a time,
+# R_LIBS = core/browser-smoke.xocrNB/library, MULTISCHOLAR_STRICT_SKIPS=1. Recorded 2026-11-08.
+
+## Before the fix (R/ at aa79fe3f), MULTISCHOLAR_KIT105_PENDING=1
+COUNTS test-omic-norm-module.R pass 469 fail 13 error 0 skip 0 exit=0 elapsed=113s
+  BAD test-omic-norm-module.R :: F105-01: each lipid QC image slot and assay label shows its own assay, stage and kind (fails before)
+# 13 failures = one per captured lipid step (skip 7, manual 3, automatic 3), as W1 recorded (w1/test-first.txt).
+
+## The fix (e76e1e14): force(assaySlot, plotType, stagePrefix) in buildLipidNormQcImageRenderer's returned function and
+## force(assaySlot) in buildLipidNormAssayLabelRenderer's (R/mod_lipid_norm_support_helpers.R).
+
+## After the fix, before the re-freeze, MULTISCHOLAR_KIT105_PENDING=1 and MULTISCHOLAR_KIT105_W1_DUMP=<scratch>
+COUNTS test-omic-norm-module.R pass 456 fail 26 error 0 skip 0 exit=0 elapsed=115s
+  BAD test-omic-norm-module.R :: (b) lipid, RUV skip and ITSD off: entry pre-QC, export refused, run, correlation, final QC plot, export, reset
+  BAD test-omic-norm-module.R :: (b) lipid, RUV manual with a manual ITSD selection: run, skip correlation, reset
+  BAD test-omic-norm-module.R :: (b, c) lipid, RUV automatic: run with a figure missing at the composite, final QC plot, the final PCA failing, skip-correlation with the commit failing
+# The F105-01 lipid block passes. The 26 failures are exactly the `images` and `labels` fields of the 13 lipid (b)
+# steps (skip: entry, export_refused, run, correlation, final_plot, export, reset; manual: run, skip_correlation,
+# reset; automatic: run, final_plot, final_plot_failing). No metab field and no other lipid field differs.
+
+## Re-freeze of test-omic-norm-module.R (26 lines between the OMIC_NORM_FROZEN markers)
+# Before writing, the script compared each of the six omicNormFrozen sections with the dump's, line by line, with the
+# lipid images/labels digests masked: they were identical (a trailing blank line ignored). It then replaced only those
+# digests:
+#   lipid skip  entry, export_refused            images 444e5507... -> 168bd32f...   labels 9fe14361... -> aaf4247e...
+#   lipid skip  run, correlation, final_plot,
+#               export, reset                     images 444e5507... -> 1cfa99b8...   labels 9fe14361... -> aaf4247e...
+#   lipid manual run, skip_correlation, reset     images 9bf4b4e7... -> c64a1c2a...   labels 9fe14361... -> aaf4247e...
+#   lipid automatic run, final_plot,
+#               final_plot_failing                images 9bf4b4e7... -> 422c5931...   labels 9fe14361... -> aaf4247e...
+# The omicNormPending() gate line of the F105-01 lipid block was removed. The function stays defined, now unused.
+
+## After the fix and the re-freeze (default environment, no pending gate)
+COUNTS test-omic-norm-module.R pass 482 fail 0 error 0 skip 0 exit=0 elapsed=120s
