@@ -1063,6 +1063,9 @@ omicDaW1Case <- function(case) {
 
 # The frozen captures, per case (the dump's entries, pasted).
 # OMIC_DA_FROZEN_START
+# KIT-111 W5 (D7), the lead's one attributed re-freeze from two byte-identical dumps: every proteomics DA run's notes
+# gain "remove da_working" (F106-02) and every proteomics cluster_summary loses the trailing "NULL" (F106-03).
+# Nothing else moved (docs/qa/workflow-execution/kit/kit-111/lane-changes.md).
 omicDaW1Frozen <- list()
 omicDaW1Frozen[["lipid_refusals"]] <- list(
     load_missing = list(
@@ -2989,7 +2992,7 @@ omicDaW1Frozen[["prot_refusals"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "No contrasts available.\nComplete normalization and\ncorrelation filtering first.",
             da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
@@ -3015,7 +3018,7 @@ omicDaW1Frozen[["prot_refusals"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "No contrasts available.\nComplete normalization and\ncorrelation filtering first.",
             da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
@@ -3039,7 +3042,7 @@ omicDaW1Frozen[["prot_load"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupB-groupA", da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3085,7 +3088,7 @@ omicDaW1Frozen[["prot_load"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupB-groupA", da_results_table = "<req>",
             da_status = "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3093,7 +3096,8 @@ omicDaW1Frozen[["prot_load"]] <- list(
         calls = character(0),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-volcano_contrast: B_vs_A -> <none>",
             "differential_expression-heatmap_contrast: B_vs_A -> <none>",
@@ -3150,7 +3154,7 @@ omicDaW1Frozen[["prot_main"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "No contrasts available.\nComplete normalization and\ncorrelation filtering first.",
             da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
@@ -3178,7 +3182,7 @@ omicDaW1Frozen[["prot_main"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupB-groupA", da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3207,7 +3211,7 @@ omicDaW1Frozen[["prot_main"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupB-groupA", da_results_table = "<req>",
             da_status = "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3215,7 +3219,8 @@ omicDaW1Frozen[["prot_main"]] <- list(
         calls = character(0),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-volcano_contrast: B_vs_A -> <none>",
             "differential_expression-heatmap_contrast: B_vs_A -> <none>",
@@ -3775,7 +3780,7 @@ omicDaW1Frozen[["prot_invalid_preflight"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupZ-groupA", da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3807,7 +3812,7 @@ omicDaW1Frozen[["prot_invalid_preflight"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupZ-groupA", da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3833,7 +3838,7 @@ omicDaW1Frozen[["prot_no_contrasts"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupA-groupB", da_results_table = "<req>",
             da_status = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3865,7 +3870,7 @@ omicDaW1Frozen[["prot_no_contrasts"]] <- list(
             "cluster_summary", "contrasts_display", "da_results_table", "da_status", "da_summary_stats",
             "download_da_results", "heatmap_plot", "volcano_glimma", "volcano_plot_static"),
         values = c(
-            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL",
+            cluster_summary = "No clusters defined. Enable clustering and tree cutting on the heatmap.",
             contrasts_display = "groupA-groupB", da_results_table = "<req>",
             da_status = "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
             da_summary_stats = "<req>", download_da_results = "<download>", heatmap_plot = "<req>",
@@ -3873,7 +3878,8 @@ omicDaW1Frozen[["prot_no_contrasts"]] <- list(
         calls = character(0),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-volcano_contrast: A_vs_B -> <none>",
             "differential_expression-heatmap_contrast: A_vs_B -> <none>",

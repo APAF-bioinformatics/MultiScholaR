@@ -793,6 +793,9 @@ omicEnrichW1Case <- function(case) {
 #     refusals table_removed/run_table_removed;
 #   F107-05 (the live kernel's results made portable before the commit): kernel_gprofiler and kernel_clusterprofiler
 #     run steps' history, states and store state-entry counts (the commit the start commit refused now happens).
+# KIT-111 W5 (D7), the lead's one attributed re-freeze from two byte-identical dumps: every proteomics DA run's notes
+# gain "remove da_working" (F106-02) and every proteomics cluster_summary loses the trailing "NULL" (F106-03).
+# Nothing else moved (docs/qa/workflow-execution/kit/kit-111/lane-changes.md).
 omicEnrichW1Frozen <- list()
 omicEnrichW1Frozen[["gprofiler"]] <- list(
     start = list(
@@ -862,7 +865,8 @@ omicEnrichW1Frozen[["gprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -1287,7 +1291,8 @@ omicEnrichW1Frozen[["clusterprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -1671,7 +1676,8 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -1916,7 +1922,8 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -2168,7 +2175,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -2408,7 +2416,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -2706,7 +2715,8 @@ omicEnrichW1Frozen[["refusals"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -2891,7 +2901,8 @@ omicEnrichW1Frozen[["refusals"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -3044,7 +3055,8 @@ omicEnrichW1Frozen[["refusals"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -3208,7 +3220,8 @@ omicEnrichW1Frozen[["restore"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!"),
+            "[message 5 -] Differential abundance analysis completed successfully!",
+            "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
