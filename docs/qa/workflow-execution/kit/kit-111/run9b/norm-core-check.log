@@ -1,0 +1,161 @@
+INFO [2026-11-10 09:00:14] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-10 09:00:15] Between-sample normalization process finished for all assays.
+INFO [2026-11-10 09:00:17] Running RUV optimization for 2 assays in manual mode
+INFO [2026-11-10 09:00:17] Processing assay: LCMS_Pos
+INFO [2026-11-10 09:00:17] Starting Negative Control selection using ANOVA for lipids.
+INFO [2026-11-10 09:00:17] Parameters (Resolved):
+INFO [2026-11-10 09:00:17]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:17]   - RUV Q-value Cutoff: 0.05
+INFO [2026-11-10 09:00:17]   - RUV FDR Method: BH
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Pos': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Pos': Selected 9 control features.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Neg': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Neg': Selected 9 control features.
+INFO [2026-11-10 09:00:17] Finished Negative Control selection for 2 assay(s).
+INFO [2026-11-10 09:00:17] Starting RUV Canonical Correlation plot generation for lipids.
+INFO [2026-11-10 09:00:17] Parameters (Resolved):
+INFO [2026-11-10 09:00:17]   - Control Features Key: 'ctrl' (Value type depends on input/config)
+INFO [2026-11-10 09:00:17]   - Num Imputation Components: 2
+INFO [2026-11-10 09:00:17]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:17] Finished RUV Canonical Correlation plot generation for 2 assay(s).
+INFO [2026-11-10 09:00:17] Processing assay: LCMS_Neg
+INFO [2026-11-10 09:00:17] Starting Negative Control selection using ANOVA for lipids.
+INFO [2026-11-10 09:00:17] Parameters (Resolved):
+INFO [2026-11-10 09:00:17]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:17]   - RUV Q-value Cutoff: 0.05
+INFO [2026-11-10 09:00:17]   - RUV FDR Method: BH
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Pos': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Pos': Selected 9 control features.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Neg': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:17]   Assay 'LCMS_Neg': Selected 9 control features.
+INFO [2026-11-10 09:00:17] Finished Negative Control selection for 2 assay(s).
+INFO [2026-11-10 09:00:17] Starting RUV Canonical Correlation plot generation for lipids.
+INFO [2026-11-10 09:00:17] Parameters (Resolved):
+INFO [2026-11-10 09:00:17]   - Control Features Key: 'ctrl' (Value type depends on input/config)
+INFO [2026-11-10 09:00:17]   - Num Imputation Components: 2
+INFO [2026-11-10 09:00:17]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:17] Finished RUV Canonical Correlation plot generation for 2 assay(s).
+INFO [2026-11-10 09:00:17] Using 'ruv_grouping_variable' from function argument: group
+INFO [2026-11-10 09:00:17] Using 'ruv_number_k' from function argument.
+INFO [2026-11-10 09:00:17] Using 'ctrl' from function argument.
+INFO [2026-11-10 09:00:17] Starting RUV-III C Varying correction for lipids.
+INFO [2026-11-10 09:00:17] Parameters (Resolved):
+INFO [2026-11-10 09:00:17]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:17]   - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+INFO [2026-11-10 09:00:17]   - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': Using 9 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Pos': RUV correction applied. Dimensions before cleaning: 44x24, After: 44x24
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': Using 9 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+INFO [2026-11-10 09:00:17]    Assay 'LCMS_Neg': RUV correction applied. Dimensions before cleaning: 44x24, After: 44x24
+INFO [2026-11-10 09:00:17] Cleaning design matrix to match remaining samples after RUV...
+INFO [2026-11-10 09:00:17] RUV-III correction process finished for 2 assay(s).
+INFO [2026-11-10 09:00:30] Applying between-sample normalization method: cyclicloess
+INFO [2026-11-10 09:00:30] Between-sample normalization process finished for all assays.
+INFO [2026-11-10 09:00:32] Running RUV optimization for 2 assays in manual mode
+INFO [2026-11-10 09:00:32] Processing assay: LCMS_Pos
+INFO [2026-11-10 09:00:32] Starting Negative Control selection using ANOVA for metabolites.
+INFO [2026-11-10 09:00:32] Parameters (Resolved):
+INFO [2026-11-10 09:00:32]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:32]   - RUV Q-value Cutoff: 0.05
+INFO [2026-11-10 09:00:32]   - RUV FDR Method: BH
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:32]   Assay 'LCMS_Pos': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:32]   Assay 'LCMS_Pos': Selected 9 control features.
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:32]   Assay 'GCMS': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:32]   Assay 'GCMS': Selected 9 control features.
+INFO [2026-11-10 09:00:32] Finished Negative Control selection for 2 assay(s).
+INFO [2026-11-10 09:00:32] Starting RUV Canonical Correlation plot generation for metabolites.
+INFO [2026-11-10 09:00:32] Parameters (Resolved):
+INFO [2026-11-10 09:00:32]   - Control Features Key: 'ctrl' (Value type depends on input/config)
+INFO [2026-11-10 09:00:32]   - Num Imputation Components: 2
+INFO [2026-11-10 09:00:32]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:32] Finished RUV Canonical Correlation plot generation for 2 assay(s).
+INFO [2026-11-10 09:00:32] Processing assay: GCMS
+INFO [2026-11-10 09:00:32] Starting Negative Control selection using ANOVA for metabolites.
+INFO [2026-11-10 09:00:32] Parameters (Resolved):
+INFO [2026-11-10 09:00:32]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:32]   - RUV Q-value Cutoff: 0.05
+INFO [2026-11-10 09:00:32]   - RUV FDR Method: BH
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:32]   Assay 'LCMS_Pos': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:32]   Assay 'LCMS_Pos': Selected 9 control features.
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using single percentage value from argument: 20
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using num_neg_ctrl from config/calculated default: 9
+INFO [2026-11-10 09:00:32]   Assay 'GCMS': Final Neg Ctrl Count: 9 (based on percentage: 20%)
+INFO [2026-11-10 09:00:32]   Assay 'GCMS': Selected 9 control features.
+INFO [2026-11-10 09:00:32] Finished Negative Control selection for 2 assay(s).
+INFO [2026-11-10 09:00:32] Starting RUV Canonical Correlation plot generation for metabolites.
+INFO [2026-11-10 09:00:32] Parameters (Resolved):
+INFO [2026-11-10 09:00:32]   - Control Features Key: 'ctrl' (Value type depends on input/config)
+INFO [2026-11-10 09:00:32]   - Num Imputation Components: 2
+INFO [2026-11-10 09:00:32]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using the globally provided 'ctrl' vector.
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using 9 control features for cancor plot.
+INFO [2026-11-10 09:00:32] Finished RUV Canonical Correlation plot generation for 2 assay(s).
+INFO [2026-11-10 09:00:32] Using 'ruv_grouping_variable' from function argument: group
+INFO [2026-11-10 09:00:32] Using 'ruv_number_k' from function argument.
+INFO [2026-11-10 09:00:32] Using 'ctrl' from function argument.
+INFO [2026-11-10 09:00:32] Starting RUV-III C Varying correction for metabolites.
+INFO [2026-11-10 09:00:32] Parameters (Resolved):
+INFO [2026-11-10 09:00:32]   - RUV Grouping Variable: group
+INFO [2026-11-10 09:00:32]   - RUV Number K (k): Type 'list' (Value(s) resolved per assay)
+INFO [2026-11-10 09:00:32]   - Control Features (ctrl): Type 'list' (Value(s) resolved per assay)
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': Using 9 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+INFO [2026-11-10 09:00:32]    Assay 'LCMS_Pos': RUV correction applied. Dimensions before cleaning: 44x24, After: 44x24
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': Using 9 control features.
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+INFO [2026-11-10 09:00:32]    Assay 'GCMS': RUV correction applied. Dimensions before cleaning: 44x24, After: 44x24
+INFO [2026-11-10 09:00:32] Cleaning design matrix to match remaining samples after RUV...
+INFO [2026-11-10 09:00:32] RUV-III correction process finished for 2 assay(s).
+ERROR BLOCKS 14 
+ERR | the normalisation action and the correlation action give the recorded output through the moved functions | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | the DIA_LIMPA pass-through designates the current state as the correlation input, as recorded | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | the legacy restore writes the recorded correlation table and metadata files through the moved functions | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W1 (a): the DIA normalisation and correlation clicks give the recorded states, products, provenance, files and display | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covariates in both modes give the recorded values | Error in `h(simpleError(msg, call))`: error in evaluating the argument 'theObject' in selecting a method for function 'rollUpPrecursorToPeptide': cannot open the connection 
+ERR | KIT-111 W2 (W1 (b)): the DIA normalisation and correlation clicks through the worker give W1 (a)'s values | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates through the worker give W1 (a)'s values | Error in `h(simpleError(msg, call))`: error in evaluating the argument 'theObject' in selecting a method for function 'rollUpPrecursorToPeptide': cannot open the connection 
+ERR | KIT-111 W2: a DIA worker value whose commit description is NULL commits nothing; one that carries it replaces the context's (extension 1) | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W2 (R7): a managed publication that fails is completed by the repeated click, a hit that commits nothing | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W2: a managed action names its input; without one its input is the head (extension 2) | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W3: unmanaged, the tab's run, apply, skip and refusal give W1 (a)'s states and today's notices | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W3: managed, the tab's run, apply and refusal run on the worker on their named inputs and equal the unmanaged tab | Error in `open.connection(con, "rb")`: cannot open the connection 
+ERR | KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give W1 (a)'s states, the summary and the inputs | Error in `h(simpleError(msg, call))`: error in evaluating the argument 'theObject' in selecting a method for function 'rollUpPrecursorToPeptide': cannot open the connection 
+ERR | KIT-111 W3 (R5): a click while the tab's action runs waits for it; a click the application refuses commits nothing | Error in `open.connection(con, "rb")`: cannot open the connection 

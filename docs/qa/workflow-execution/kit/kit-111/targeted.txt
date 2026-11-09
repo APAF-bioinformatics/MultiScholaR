@@ -1,3 +1,4 @@
+# KIT-111 run 1: the targeted and dependent set on the merged tree (bcd3396b; R as 341dab60). test-baseline.R file load_all, one process per file, 4 parallel, strict skips, R 4.6.1, R_LIBS kit_108 (X6BzNV), TMPDIR on disk. 49 files: 15,753 passed, 0 failed, 0 error blocks. NOT_CRAN was unset (see skip-compare.md).
 file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
 test-module-ci-prot-da.R	load_all	8	8	0	219	218	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	14.2	complete
 test-module-ci-prot-dia-limpa.R	load_all	6	6	0	35	33	0	0	2	0	2	FALSE			FALSE		0	0	0	2	0	0	15.9	complete
