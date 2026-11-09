@@ -664,6 +664,15 @@
       "install_member": "browser-smoke.J57eHO",
       "source_commit": "e1a5b960af1ab2babf71f20281ff2d8d1c77a01b",
       "runtime_patch_bytes": 0
+    },
+    "kit_107": {
+      "ticket": "KIT-107",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.66sPmE/library",
+      "build": "946e547f7dbe277347a5ca4c5cff858a336d767344fee6586d9b79754a41245e",
+      "exact_sum": "a63220d954a7c864cfff6c2a14f4b39d453e440d1b88ab73e7afed9ebe8fb565",
+      "install_member": "browser-smoke.66sPmE",
+      "source_commit": "8b92d7ac16795cb28cf33c60c964f23e24fd0816",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -42449,6 +42458,105 @@
       "oracles": "tmt101_fixture",
       "ceiling_seconds": 1800,
       "purpose": "exactness (recorded, uncounted; KIT-106)"
+    },
+    "107a": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-107)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "107b": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-107)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "107c": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-107)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "107m": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-107)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "107l": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-107)"
+    },
+    "107t": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness (recorded, uncounted; KIT-107)"
     },
     "106x": {
       "kind": "single_journey",
