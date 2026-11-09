@@ -57,6 +57,8 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
         if (length(warnings)) shiny::showNotification(
           "Some contrasts used the existing BH fallback after q-value estimation failed.", type = "warning", duration = NULL)
         shiny::showNotification("Differential abundance analysis completed successfully!", type = "message", duration = 5)
+        # KIT-111 F106-02: the in-process run returns here, so it removes its working notice first.
+        shiny::removeNotification("da_working")
         return(manifest)
       },
       error = function(e) {

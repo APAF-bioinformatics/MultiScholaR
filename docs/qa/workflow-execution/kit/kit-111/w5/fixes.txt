@@ -1,0 +1,4 @@
+# KIT-111 W5: F106-02 and F106-03 fixed (load_all, strict skips, kit_108 R_LIBS). Before (W1 (c), on the start commit): test-prot-07b-da-handlers-compat.R 34/1, test-module-ci-prot-da.R 217/1.
+COUNTS test-module-ci-prot-da.R pass 218 fail 0 error 0 skip 1 file_skip FALSE
+COUNTS test-prot-07b-da-handlers-compat.R pass 35 fail 0 error 0 skip 2 file_skip FALSE
+The five proteomics entry lanes and the KIT-106/107 W1 module captures are re-frozen once, after the W3 merge (D7).

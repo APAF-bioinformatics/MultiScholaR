@@ -142,14 +142,15 @@ diaDaHeatmapView <- function(daData, selectedContrast, topN, clusterMethod, dist
     )
 }
 
-#' The tree cut's cluster summary, printed (mod_prot_da_render_heatmap.R:104-130 at fe97aac1; F106-03 kept).
+#' The tree cut's cluster summary, printed (mod_prot_da_render_heatmap.R:104-130 at fe97aac1; KIT-111 F106-03: the
+#' no-clusters text returns invisibly, so `renderPrint` prints no `NULL` after it).
 #' @noRd
 diaDaClusterSummaryView <- function(treeCutMethod, rowClusters) {
     shiny::req(treeCutMethod != "none")
 
     if (is.null(rowClusters)) {
         cat("No clusters defined. Enable clustering and tree cutting on the heatmap.")
-        return()
+        return(invisible(NULL))
     }
 
     clusters <- rowClusters
