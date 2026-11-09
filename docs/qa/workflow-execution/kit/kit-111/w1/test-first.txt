@@ -1,0 +1,63 @@
+# KIT-111 W1 test-first: the W1 (a) captures and the W1 (c) tests, on the start commit.
+# Start commit 7c7c599e (origin/performance-v2). The W1 worktree changes tests only; its R/ is the start commit's.
+# R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file through
+# tools/testing/test-baseline.R file load_all; R_LIBS = core/browser-smoke.X6BzNV/library (kit_108); TMPDIR on disk
+# (~/.cache/k111w1/tmp). Recorded 2026-11-10 by the W1 agent, with no multischolar* unit live.
+
+## W1 (a): tests/testthat/test-prot-norm-core.R, three new blocks (KIT-111 W1 (a) section; frozen values in
+## protNormW1Frozen, written by MULTISCHOLAR_KIT111_W1_DUMP=<file>)
+# Cases (each the capture after one click; D6's in-process cases):
+#   protNormCoreOwner (DIA, iq): dia_normalization_skip, dia_normalization_skip_repeat (cache hit: runSavedOperation 1,
+#     commitDIAReferenceState 0), dia_normalization_manual (k 1, 50 %), dia_correlation_apply (0.5),
+#     dia_correlation_reapply (0.7; source = the normalisation's final, not the head), dia_correlation_skip,
+#     dia_normalization_refused (manual ruv_k = 50: "RUV-III cannot estimate 50 factors from 32 control proteins ..."),
+#     dia_normalization_retry (manual, same owner: completes).
+#   DIA_LIMPA owner (protNormW1LimpaOwner: the KIT-053 record fixture of test-workflow-analysis-record.R, the "small"
+#     recipe quantified by the limpa DPC engine, then protein_normalised (none) and peptide_count_filtered, committed as
+#     the route does; one owner per mode): limpa_<mode>_pass_through, _correlation (0.5), _ruv, _ruv_repeat, for
+#     mode = covariates and correction.
+#   Automatic: no case. The automatic sweep does not complete on protNormCoreOwner (w1/probes.txt, probe 1); automatic
+#     is covered by the large pair only (D6). The block written for it was removed before the freeze.
+# Captured per case: current state and history (manager and head), each committed state's record digest (science =
+# protNormCoreState's slots plus args' limpa_dpc_quant_results and ruvCovariates; config; description; previous state;
+# product names), completed outputs per state, the head's products and output products by type and fingerprint, the step
+# provenance (committed_at, build, source_commit dropped; store ids masked), the analysis record's steps (ids, times,
+# software dropped; products by kind and type), protNormCoreFiles, protNormCoreNormState, every norm_data field, the
+# workflow's RUV result without plots, the workflow's other fields (state_update_trigger, a time, left out), the runner's
+# value, the refusal message, the callbacks' inputs and the call counts of 12 callees of the halves.
+
+# Dumps: two separate Rscript processes, in parallel (dump.sh), MULTISCHOLAR_KIT111_W1_DUMP=dumpA.R / dumpB.R.
+# (Earlier attempts, not frozen: dump 1 read the head before forcing the click's promise, so its head fields lagged one
+#  click; the next pair differed only in `workflow`, which then held state_update_trigger (Sys.time()). Both fixed in the
+#  capture code before the pair below.)
+dumpA.R 49284 bytes sha256 456e887a25718d525aeda174428bf39b474254befa4371df16a8c55ce3deed05
+dumpB.R 49284 bytes sha256 456e887a25718d525aeda174428bf39b474254befa4371df16a8c55ce3deed05
+cmp dumpA.R dumpB.R: IDENTICAL
+# The values were pasted from dumpA.R. Then the file as committed, on the start commit:
+COUNTS test-prot-norm-core.R pass 361 fail 0 error 0 skip 0 file_skip FALSE exit=0 elapsed=182s
+# (before W1: 57/0; the 304 new expectations are W1 (a)'s; the recorded digests normalization_skip,
+#  normalization_manual, correlation, pass_through are unchanged and pass.)
+
+## W1 (c): F106-02 and F106-03, failing on the start commit (as expected)
+COUNTS test-prot-07b-da-handlers-compat.R pass 34 fail 1 error 0 skip 2 file_skip FALSE exit=0 elapsed=11s
+COUNTS test-module-ci-prot-da.R pass 217 fail 1 error 0 skip 1 file_skip FALSE exit=0 elapsed=13s
+# (the skips are the files' existing Q-22 blocks, test-prot-07b :477, :609, and MCI-009's one)
+FAIL [expectation_failure] KIT-111 W1 (c), F106-03: the cluster summary with no clusters prints its text and no NULL
+Expected `printed` to be identical to "No clusters defined. Enable clustering and tree cutting on the heatmap.".
+Differences:
+actual vs expected
+- "No clusters defined. Enable clustering and tree cutting on the heatmap.NULL"
++ "No clusters defined. Enable clustering and tree cutting on the heatmap."
+
+FAIL [expectation_failure] KIT-111 W1 (c), F106-02: an in-process proteomics DA run removes its working notice
+Expected `"remove da_working" %in% notes` to be TRUE.
+Differences:
+`actual`:   FALSE
+`expected`: TRUE
+# F106-02's block: test-prot-07b-da-handlers-compat.R (the file that drives da_server_run_analysis_handler alone under
+#   testServer); the notice is shown ("show da_working default") and the success message shown; the removal is missing.
+# F106-03's block: test-module-ci-prot-da.R (MCI-009, the proteomics DA render matrix); capture.output prints the view's
+#   visible value as renderPrint does.
+# Falsification (scratch copy of the start tree only, not committed): with removeNotification("da_working") before the
+# success return (mod_prot_da_handlers_run_analysis.R:60) and return(invisible(NULL)) at
+# utils_workflow_dia_da_views.R:151, both files pass: test-prot-07b 35/0/2 skip, test-module-ci-prot-da 218/0/1 skip.

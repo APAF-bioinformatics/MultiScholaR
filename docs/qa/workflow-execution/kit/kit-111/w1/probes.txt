@@ -1,0 +1,54 @@
+# KIT-111 W1 probes (scratch, not frozen). Start commit 7c7c599e (origin/performance-v2; R/ unchanged), the W1 worktree,
+# R 4.6.1, pkgload::load_all (export_all, helpers), R_LIBS = core/browser-smoke.X6BzNV/library (kit_108), TMPDIR on disk
+# (~/.cache/k111w1/tmp). One Rscript process per probe, run 2026-11-10 01:18-01:26 AEDT with no multischolar* unit live.
+# Scripts: the W1 agent's scratch folder (.../scratchpad/kit-111-w1/p1-core.R, p2-lfq.R, p2b-lfq5.R, p3-f11101.R).
+
+## 1. The automatic sweep on protNormCoreOwner (for D6) -- DOES NOT COMPLETE
+# runDIAReferenceNormalization(protNormCoreSettings("automatic"), ...) on a fresh protNormCoreOwner (the "small" recipe:
+# 12 samples, 64 proteins), the module's callbacks as no-ops.
+PROBE automatic elapsed_s=2.4
+PROBE automatic error: argument is of length zero
+PROBE automatic history: initial > protein_replicate_filtered
+# Decision (D6): automatic has no W1 (a) case; automatic is covered by the large pair (111p/111q) only. The W1 (a)
+# block written for it was removed before the freeze.
+# The same fixture, for the refusal case: manual k = 50 is refused by the kernel, manual k = 1 completes.
+PROBE manual_k50 error: RUV-III cannot estimate 50 factors from 32 control proteins observed in [every sample ...]
+PROBE manual_k50 history: initial > protein_replicate_filtered
+PROBE manual_k1 completed: value=TRUE state=ruv_corrected best_k=1 percentage=50 controls=32
+# So W1 (a)'s refusal case is "manual ruv_k = 50" (proteomics has no explicit k cap; the refusal is RUV-III's).
+
+## 2. Automatic RUV in process on the LFQ fixture (for 111f) -- FAILS on the journeys' five-protein fixture
+# The prot_lfq entry lane (helper-gui-entry.R) driven in process to its norm step with `normalization-ruv_mode` =
+# "automatic" in place of "skip" (steps after norm dropped).
+# (a) The journeys' fixture: the lfq_fixture corpus (lfq101_fixture) copies tests/testdata/e2e/prot_lfq
+#     (tools/profiling/kit_protein_corpus.R:146; 5 proteins, 6 samples). Lane fixture_dir overridden to prot_lfq.
+PROBE lfq5_automatic elapsed_s=90.4
+PROBE lfq5_automatic head_before=protein_replicate_filtered head_after=protein_replicate_filtered
+PROBE lfq5_automatic tab_status_normalization=pending
+PROBE lfq5_automatic notification [error] Error in normalization: No valid percentage found. Please check your data and parameters.
+# Decision (D8): the in-process failure is confirmed on the five-protein fixture, so 111f binds as declared
+# (normalisation = list(ruv_mode = "automatic")); the manual ruv_k = 50 fallback is not needed.
+# (b) Note: the entry lane prot_lfq itself uses tests/testdata/e2e/prot_lfq_maxquant (410 proteins), not prot_lfq.
+#     There, automatic COMPLETES in process (ruv_corrected committed):
+PROBE lfq_automatic head_before=protein_replicate_filtered head_after=ruv_corrected
+PROBE lfq_automatic notification [message] Normalization and RUV correction completed! Check the 'Post-Normalisation QC' tab for filtering summary, then proceed to 'Correlation Filtering' tab for the final step.
+#     So "the LFQ fixture" must mean the corpus prot_lfq (lfq101_fixture), as 111f binds it.
+
+## 3. F111-01 (D9 R1) on the in-process test worker -- REPRODUCED
+# helper-workflow-omics-worker.R (omicsWorkerController, omicsWorkerAction, omicsWorkerRun) on lipidDeclarationsOwner,
+# with workflowExecutionBuildIdentity and finishWorkflowExecutionJob mocked as test-workflow-omics-worker.R does. The
+# QC and normalisation steps through the worker to lipid_normalized, then:
+PROBE setup head=lipid_normalized
+# (a) A lipid RUV request the worker completed but the controller never accepted, then the same RUV action from the
+#     same head: it completes. (The probe did not record whether that second run was a product hit.)
+PROBE abandoned_ruv worker_status=complete head=lipid_normalized
+PROBE ruv_after_abandoned_ruv completed
+PROBE after_ruv head=lipid_ruv_corrected
+# (b) After the RUV commit, a product-only action (lipid_pearson_pairs, correlation_group = "group") twice from the
+#     same head: the second is a cache hit and the worker fails.
+PROBE pairs_first completed
+PROBE pairs_second_identical failed: worker failed: native reference roots contain a live payload
+# Decision (D9 R1): reproduced. computeWorkflowOmicsOperationAction roots a hit with list(run$value) among its
+# dependencies (utils_workflow_omics_declarations.R:1202); the pairs product's value is a data frame, and
+# collectWorkflowNativeReferences (utils_workflow_dia_sessions.R:300) aborts on it. W2b applies (its own commit,
+# test first: a second identical omics action is a hit and completes).
