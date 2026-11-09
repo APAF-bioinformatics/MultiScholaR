@@ -190,6 +190,11 @@ runProtNormModuleServerShell <- function(
   }
 
   normData <- createReactiveStateFn()
+  # KIT-111 D3: the omics runner the tab's normalisation, correlation and RUV covariates dispatch through on a managed
+  # session (`workflowOmicsManagedActions`); none on an unmanaged one, where they run in process.
+  if (inherits(session, c("ShinySession", "session_proxy", "MockShinySession"))) {
+    installWorkflowOmicsActions(session, workflowData, "proteomics", experimentLabel, experimentPaths)
+  }
   output$export_s4_compatibility <- shiny::downloadHandler(
     filename = function() paste0(omicType, "_", experimentLabel, "_final_s4.RDS"),
     content = function(file) {

@@ -249,29 +249,90 @@ runProtNormRuvCovariatesObserver <- function(input, output, workflowData, normDa
     }
     if (!mode %in% c("covariates", "correction")) stop("the RUV mode must be covariates, correction or skip")
     settings <- list(ruv_mode = mode, color_variable = input$color_variable, shape_variable = input$shape_variable)
+    finish <- function(accepted) finishProtNormRuvCovariates(accepted, mode, output, workflowData, normData, renderTextFn,
+      showNotificationFn, messageFn)
+    # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
+    runner <- workflowOmicsManagedActions("proteomics")
+    if (!is.null(runner)) return(dispatchProtNormRuvCovariates(runner, settings, workflowData, normData, experimentPaths,
+      generateRuvCorrectedQcFn, getRuvGroupingVariableFn, finish, function(e) reportProtNormRuvCovariatesError(e, output,
+        renderTextFn, showNotificationFn, messageFn)))
     accepted <- runDIAReferenceRuvCovariates(settings, workflowData, normData, experimentPaths, omicType, experimentLabel,
       generateRuvCorrectedQcFn, getRuvGroupingVariableFn)
-    updateProtNormRuvAuditTrail(ruvK = normData$best_k, controlGenesIndex = normData$control_genes_index,
-      percentageAsNegCtrl = normData$ruv_optimization_result$best_percentage, modeLabel = mode,
-      workflowData = workflowData, messageFn = messageFn)
-    result <- normData$ruv_optimization_result
-    controls <- paste0("negative controls ", result$best_percentage, "% (", sum(normData$control_genes_index, na.rm = TRUE), " proteins); replicate structure ", result$replicate_structure)
-    text <- if (identical(mode, "correction")) paste0("RUV-III correction applied to the quantified matrix: k = ", normData$best_k, "; ", controls,
-      ". The corrected matrix and the DPC EList carry Y - W alpha; the DPC standard errors are kept as quantified; no W terms enter the DA model.\n",
-      "State saved as: 'ruv_corrected'") else paste0("RUV-III covariates appended to the design: k = ", normData$best_k, " (W", if (normData$best_k > 1) paste0("1..W", normData$best_k) else "1",
-      "); ", controls, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.\n",
-      "State saved as: 'ruv_covariates'")
-    output$ruv_covariates_summary <- renderTextFn(text)
-    showNotificationFn(if (identical(mode, "correction")) sprintf("RUV-III correction applied (k = %s). Ready for differential expression analysis.", normData$best_k) else
-      sprintf("RUV-III factors appended as covariates (k = %s). Ready for differential expression analysis.", normData$best_k), type = "message", duration = 10)
-    invisible(accepted)
-  }, error = function(e) {
-    message <- paste("Error computing the RUV-III covariates:", e$message)
-    messageFn(message)
-    output$ruv_covariates_summary <- renderTextFn(message)
-    showNotificationFn(message, type = "error", duration = 10)
-    invisible(NULL)
+    finish(accepted)
+  }, error = function(e) reportProtNormRuvCovariatesError(e, output, renderTextFn, showNotificationFn, messageFn))
+}
+
+#' The RUV covariates' completion on the tab (KIT-041/053/056), after the runner or the managed delivery: the RUV audit
+#' trail, the summary text and the notice.
+#' @param accepted The accepted reference.
+#' @param mode `covariates` or `correction`.
+#' @return `accepted`, invisibly.
+#' @noRd
+finishProtNormRuvCovariates <- function(accepted, mode, output, workflowData, normData, renderTextFn, showNotificationFn,
+                                        messageFn) {
+  updateProtNormRuvAuditTrail(ruvK = normData$best_k, controlGenesIndex = normData$control_genes_index,
+    percentageAsNegCtrl = normData$ruv_optimization_result$best_percentage, modeLabel = mode,
+    workflowData = workflowData, messageFn = messageFn)
+  result <- normData$ruv_optimization_result
+  controls <- paste0("negative controls ", result$best_percentage, "% (", sum(normData$control_genes_index, na.rm = TRUE), " proteins); replicate structure ", result$replicate_structure)
+  text <- if (identical(mode, "correction")) paste0("RUV-III correction applied to the quantified matrix: k = ", normData$best_k, "; ", controls,
+    ". The corrected matrix and the DPC EList carry Y - W alpha; the DPC standard errors are kept as quantified; no W terms enter the DA model.\n",
+    "State saved as: 'ruv_corrected'") else paste0("RUV-III covariates appended to the design: k = ", normData$best_k, " (W", if (normData$best_k > 1) paste0("1..W", normData$best_k) else "1",
+    "); ", controls, ". The quantified matrix is unchanged; the adjusted matrix is shown in the RUV-corrected QC plots only.\n",
+    "State saved as: 'ruv_covariates'")
+  output$ruv_covariates_summary <- renderTextFn(text)
+  showNotificationFn(if (identical(mode, "correction")) sprintf("RUV-III correction applied (k = %s). Ready for differential expression analysis.", normData$best_k) else
+    sprintf("RUV-III factors appended as covariates (k = %s). Ready for differential expression analysis.", normData$best_k), type = "message", duration = 10)
+  invisible(accepted)
+}
+
+#' The RUV covariates' error on the tab: the summary text and the notice.
+#' @noRd
+reportProtNormRuvCovariatesError <- function(e, output, renderTextFn, showNotificationFn, messageFn) {
+  message <- paste("Error computing the RUV-III covariates:", e$message)
+  messageFn(message)
+  output$ruv_covariates_summary <- renderTextFn(message)
+  showNotificationFn(message, type = "error", duration = 10)
+  invisible(NULL)
+}
+
+#' One managed action of the proteomics normalisation tab (KIT-111 D3): the operation on its named `input` (a re-run's
+#' source is not the head). A state-producing action names its state; the worker's commit description replaces the
+#' context's config and description.
+#' @noRd
+protNormManagedAction <- function(operation, parameters, input, stateName, deliver) {
+  list(operation = operation, parameters = parameters, input = input, deliver = deliver,
+    context = if (!is.null(stateName)) list(state_name = stateName, config = list(), description = operation))
+}
+
+#' The managed RUV covariates (DIA_LIMPA, KIT-111 D3): the gate, the source and the parameters as
+#' `runDIAReferenceRuvCovariates` resolves them, the declaration on the worker, then the publication half and `finish`.
+#' @param settings `ruv_mode`, `color_variable`, `shape_variable`.
+#' @param ruvQc,grouping The module's RUV QC callback and grouping function.
+#' @param finish `function(accepted)`; `failed` `function(error)`.
+#' @return TRUE, invisibly, once dispatched.
+#' @noRd
+dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normData, experimentPaths, ruvQc, grouping,
+                                          finish, failed) {
+  manager <- workflowData$state_manager
+  request <- withDIAStateScope(manager, function() {
+    assertDIAExportReady(manager, allow_action = "ruv-covariates")
+    source <- normData$correlation_filtered_obj %||% getDIAStateReference(manager)
+    if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
+    list(source = source, parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, grouping(),
+      settings$ruv_mode %||% "covariates"))
   })
+  entry <- proteomicsDiaBinding$norm$ruv_covariates
+  state <- if (identical(settings$ruv_mode, "correction")) "ruv_corrected" else "ruv_covariates"
+  runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
+    prior_plot <- ggplot2::get_last_plot()
+    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+    # Published before the tab's completion reads it (an argument would be a promise).
+    accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, result[c("value", "reference")],
+      workflowData, normData, experimentPaths, ruvQc))
+    finish(accepted)
+  })), failed = failed)
+  invisible(TRUE)
 }
 
 buildProtNormCompletionNotification <- function(ruvMode) {
@@ -431,23 +492,65 @@ runProtNormNormalizationWorkflow <- function(
       return(completed)
     }
     recordProtNormMethod(workflowData, settings$norm_method)
+    finish <- function(completed) finishProtNormNormalization(completed, settings, workflowData, normData,
+      buildCompletionNotificationFn, showNotificationFn, messageFn)
+    # KIT-111 D3: on a managed session the declaration runs on the worker and the delivery finishes the tab.
+    runner <- workflowOmicsManagedActions("proteomics")
+    if (!is.null(runner)) return(dispatchProtNormNormalization(runner, settings, workflowData, normData, experimentPaths,
+      omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, getRuvGroupingVariableFn,
+      finish, function(e) handleErrorFn(error = e)))
     completed <- runDIAReferenceNormalization(settings, workflowData, normData, experimentPaths,
       omicType, experimentLabel, generatePostNormalizationQcFn, generateRuvCorrectedQcFn,
       getRuvGroupingVariableFn)
-    if (isTRUE(completed) && !identical(settings$ruv_mode, "skip")) {
-      updateProtNormRuvAuditTrail(
-        ruvK = normData$best_k,
-        controlGenesIndex = normData$control_genes_index,
-        percentageAsNegCtrl = if (identical(settings$ruv_mode, "automatic"))
-          normData$ruv_optimization_result$best_percentage else settings$ruv_percentage,
-        modeLabel = settings$ruv_mode,
-        workflowData = workflowData,
-        messageFn = messageFn
-      )
-    }
-    showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode), type = "message", duration = 10)
-    completed
+    finish(completed)
   }, error = function(e) handleErrorFn(error = e)))
+}
+
+#' The normalisation's completion on the tab, after the runner or the managed delivery: the RUV audit trail (unless
+#' skipped) and the completion notice.
+#' @param completed The publication half's value.
+#' @return `completed`.
+#' @noRd
+finishProtNormNormalization <- function(completed, settings, workflowData, normData, buildCompletionNotificationFn,
+                                        showNotificationFn, messageFn) {
+  if (isTRUE(completed) && !identical(settings$ruv_mode, "skip")) {
+    updateProtNormRuvAuditTrail(
+      ruvK = normData$best_k,
+      controlGenesIndex = normData$control_genes_index,
+      percentageAsNegCtrl = if (identical(settings$ruv_mode, "automatic"))
+        normData$ruv_optimization_result$best_percentage else settings$ruv_percentage,
+      modeLabel = settings$ruv_mode,
+      workflowData = workflowData,
+      messageFn = messageFn
+    )
+  }
+  showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode), type = "message", duration = 10)
+  completed
+}
+
+#' The managed normalisation (KIT-111 D3): the gate and the request (`diaNormalizationRequest`, which records the
+#' source) in the controller, `normalization-ruv` on the worker on that source, then the publication half and `finish`.
+#' @param postQc,ruvQc,grouping The module's QC callbacks and grouping function.
+#' @param finish `function(completed)`; `failed` `function(error)`.
+#' @return TRUE, invisibly, once dispatched.
+#' @noRd
+dispatchProtNormNormalization <- function(runner, settings, workflowData, normData, experimentPaths, omicType,
+                                          experimentLabel, postQc, ruvQc, grouping, finish, failed) {
+  manager <- workflowData$state_manager
+  request <- withDIAStateScope(manager, function() {
+    assertDIAExportReady(manager, allow_action = "normalization")
+    diaNormalizationRequest(manager, settings, normData, grouping())
+  })
+  entry <- proteomicsDiaBinding$norm$run
+  state <- if (identical(settings$ruv_mode, "skip")) "normalized" else "ruv_corrected"
+  runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
+    prior_plot <- ggplot2::get_last_plot()
+    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+    completed <- withDIAStateScope(manager, function() entry$publish(manager, settings, result[c("value", "reference")],
+      workflowData, normData, experimentPaths, omicType, experimentLabel, postQc, ruvQc))
+    finish(completed)
+  })), failed = failed)
+  invisible(TRUE)
 }
 
 runProtNormApplyCorrelationObserver <- function(
@@ -468,6 +571,24 @@ runProtNormApplyCorrelationObserver <- function(
   messageFn = message,
   generateRuvCorrectedQcFn = NULL
 ) {
+  failed <- function(e) handleCorrelationErrorFn(error = e,
+    logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")
+  # KIT-111 D3: on a managed session the pairs and the selection run on the worker and the delivery finishes the tab.
+  runner <- workflowOmicsManagedActions("proteomics")
+  threshold <- input$min_pearson_correlation_threshold
+  if (!is.null(runner)) return(tryCatch(dispatchProtNormCorrelation(runner, workflowData, normData, experimentPaths,
+    threshold, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn,
+    function(final) completeCorrelationWorkflowFn(
+      finalS4ForDe = final,
+      workflowData = workflowData,
+      output = output,
+      normData = normData,
+      correlationThreshold = threshold,
+      skipped = FALSE,
+      successNotification = "Correlation filtering completed! Ready for differential expression analysis.",
+      completionMessage = "Correlation workflow completed",
+      messagePrefix = "Correlation"
+    ), failed), error = failed))
   return(tryCatch(withDIAStateScope(getDIAActiveManager(), function() {
     final <- runDIAReferenceCorrelation(workflowData, normData, experimentPaths,
       input$min_pearson_correlation_threshold, FALSE, omicType, experimentLabel, getRuvGroupingVariableFn, getPlotAestheticsFn)
@@ -487,6 +608,38 @@ runProtNormApplyCorrelationObserver <- function(
     final
   }), error = function(e) handleCorrelationErrorFn(error = e,
       logPrefix = "Error in correlation filtering:", notificationPrefix = "Error in correlation filtering:")))
+}
+
+#' The managed correlation filter (KIT-111 D3): the gate and the source (the normalisation's final, as
+#' `runDIAReferenceCorrelation` reads it), then `pearson-pairs` and `pearson-selection` on that source on the worker, the
+#' selection naming the pairs product; then the publication half and `finish`.
+#' @param threshold The filter's threshold.
+#' @param grouping,aesthetics The module's grouping and aesthetics functions.
+#' @param finish `function(final)`; `failed` `function(error)`.
+#' @return TRUE, invisibly, once dispatched.
+#' @noRd
+dispatchProtNormCorrelation <- function(runner, workflowData, normData, experimentPaths, threshold, omicType,
+                                        experimentLabel, grouping, aesthetics, finish, failed) {
+  manager <- workflowData$state_manager
+  source <- withDIAStateScope(manager, function() {
+    assertDIAExportReady(manager, allow_action = "correlation")
+    source <- normData$ruv_normalized_obj
+    if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+    readDIAStateMetadata(manager, source)
+    source
+  })
+  entry <- proteomicsDiaBinding$norm$correlation
+  held <- new.env(parent = emptyenv())
+  select <- function() runner$run(list(protNormManagedAction(entry$selection,
+    list(pairs = held$pairs$reference$entity_id, threshold = threshold), source, "correlation_filtered", function(result) {
+      run <- list(pairs = held$pairs$reference, final = result$value)
+      final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
+        threshold, FALSE, omicType, experimentLabel, aesthetics))
+      finish(final)
+    })), failed = failed)
+  runner$run(list(protNormManagedAction(entry$pairs, diaPearsonPairsParameters(grouping()), source, NULL,
+    function(result) held$pairs <- result)), done = select, failed = failed)
+  invisible(TRUE)
 }
 
 runProtNormSkipCorrelationObserver <- function(

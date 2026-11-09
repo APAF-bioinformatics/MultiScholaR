@@ -1457,3 +1457,307 @@ test_that("KIT-111 W2: the DIA adaptor's norm entries name registered omics oper
     # The configuration stays valid and proteomics does not join the shared normalisation frame (D5).
     expect_null(omicGuiConfig("proteomics")$norm)
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-111 W3: the tab through its public entry point (`mod_prot_norm_server`) in testServer. Unmanaged, the session has
+# no runner and the tab runs in process (today's path). Managed, the shell installs the omics runner and the tab
+# dispatches through it under `omicsManagedChainMocks`, with `runWorkflowAction` running each request on its named input
+# through the worker's entry point (`protNormW2Dispatch`), as the real one does since F111-03. MCI-008's module fixture is
+# an in-memory manager, which the managed step refuses ("the managed worker needs the on-disk state owner"), so the tab
+# runs on W1's owners with W1 (a)'s settings. Captured after each click: the history, the committed states as W1 (a)
+# records them, the head's products, the provenance, the record's steps, the files, the tab's fields, the bus, the
+# summary texts and the notices; managed, each action's operation and input.
+# ------------------------------------------------------------------------------------------------
+
+protNormW3Inputs <- function(mode, ...) utils::modifyList(list(norm_method = "quantile", ruv_mode = mode,
+    ruv_percentage = 50, ruv_k = 1, color_variable = "group", ruv_grouping_variable = "group",
+    min_pearson_correlation_threshold = 0.5), list(...))
+
+#' The notices shown (`[type duration] text`) and the ids removed, recorded in `log`.
+protNormW3Notices <- function(log, root, env = parent.frame()) {
+    notify <- function(ui, action = NULL, duration = 5, closeButton = TRUE, id = NULL,
+        type = c("default", "message", "warning", "error"), session = NULL) {
+        log$notes <- c(log$notes, sprintf("[%s %s] %s", type[[1L]], if (is.null(duration)) "NULL" else format(duration),
+            protNormW1Mask(paste(as.character(ui), collapse = " "), root)))
+        invisible(id %||% "notification")
+    }
+    remove <- function(id, session = NULL) {
+        log$removed <- c(log$removed, id)
+        invisible(id)
+    }
+    testthat::local_mocked_bindings(showNotification = notify, removeNotification = remove, .package = "shiny", .env = env)
+    testthat::local_mocked_bindings(showNotification = notify, removeNotification = remove, .package = "MultiScholaR", .env = env)
+}
+
+#' The managed session: the chain mocks, with each action's request run on its named input and recorded in `probe`
+#' (`actions`: operation and input entity id; `values`: the worker's values). `probe$hold` keeps the action running.
+protNormW3Managed <- function(fixture, probe, env = parent.frame()) {
+    controller <- omicsManagedChainMocks(list(owner = fixture$manager, paths = fixture$paths), probe, env = env)
+    testthat::local_mocked_bindings(
+        runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
+            probe$actions <- c(probe$actions, list(list(operation = operation, input = input_references$state$entity_id)))
+            out <- protNormW2Dispatch(fixture, controller, operation, parameters, input_references$state, completion_context)
+            probe$values <- c(probe$values, list(out$result))
+            probe$handoff <- list(accepted = list(operation = operation, reference = out$reference,
+                state_reference = out$stateReference, display = out$display))
+            paste0("worker-", operation)
+        },
+        pollWorkflowAction = function(owner) list(status = if (isTRUE(probe$hold)) "running" else "complete"),
+        .package = "MultiScholaR", .env = env)
+    controller
+}
+
+#' The capture after one click (see the section's header). `head_id` is local to the store.
+protNormW3Capture <- function(fixture, norm, output, log, actions) {
+    manager <- fixture$manager
+    root <- fixture$root
+    snapshot <- withWorkflowStateScope(manager, function() manager$.context$snapshot)
+    history <- as.character(unlist(snapshot$state_history))
+    committed <- setdiff(history, "initial")
+    fields <- shiny::isolate(shiny::reactiveValuesToList(norm))
+    # The RUV covariates' publication leaves its QC paths in the staging directory, named by store-local ids (draft
+    # F111-05), on both paths; masked to the staged role.
+    if (!is.null(fields$qc_plot_paths)) fields$qc_plot_paths <- rapply(list(fields$qc_plot_paths), function(path)
+        sub("^.*/[.]workflow-export/[^/]+/files/", "<staged>/", path), classes = "character", how = "replace")[[1L]]
+    workflow <- mget(setdiff(sort(ls(fixture$workflow)), c("state_manager", "design_matrix", "config_list",
+        "state_update_trigger")), envir = fixture$workflow)
+    text <- function(name) tryCatch(protNormW1Mask(output[[name]], root), error = function(e) NA_character_)
+    list(
+        current = manager$current_state,
+        history = as.character(unlist(manager$state_history)),
+        head_current = snapshot$current_state,
+        head_history = history,
+        states = vapply(stats::setNames(nm = committed), function(state)
+            protNormW1Sha(protNormW1Record(manager, snapshot$states[[state]], root)), ""),
+        products = protNormW1Products(manager, root),
+        provenance = protNormW1Sha(protNormW1Provenance(snapshot, root)),
+        record = protNormW1Sha(protNormW1RecordSteps(manager, root)),
+        files = protNormCoreFiles(root),
+        norm = vapply(fields[sort(names(fields))], function(field)
+            substr(protNormW1Sha(protNormW1Canonical(field, manager, root)), 1L, 16L), ""),
+        workflow = protNormW1Sha(protNormW1Canonical(workflow, manager, root)),
+        outputs = c(correlation = text("correlation_filter_summary"), ruv_covariates = text("ruv_covariates_summary")),
+        notes = log$notes,
+        head_id = snapshot$states[[snapshot$current_state]]$entity_id,
+        actions = actions)
+}
+
+#' Drive the tab through `steps` (named `function(session)`), capturing after each; managed under the runner.
+protNormW3Drive <- function(fixture, steps, managed, probe = new.env()) {
+    log <- new.env(parent = emptyenv())
+    protNormW3Notices(log, fixture$root)
+    if (managed) protNormW3Managed(fixture, probe)
+    acc <- new.env(parent = emptyenv())
+    acc$captures <- list()
+    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
+        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
+        experiment_label = "core"), {
+        norm <- session$getReturned()
+        for (case in names(steps)) {
+            seen <- length(probe$actions)
+            log$notes <- character()
+            steps[[case]](session)
+            session$flushReact()
+            acc$captures[[case]] <- protNormW3Capture(fixture, norm, output, log,
+                probe$actions[seq_along(probe$actions) > seen])
+        }
+    })))
+    acc$captures
+}
+
+#' A click on `button` (after setting `inputs`), counted per drive.
+protNormW3Clicker <- function() {
+    counts <- new.env(parent = emptyenv())
+    function(button, ...) {
+        inputs <- list(...)
+        function(session) {
+            if (length(inputs)) do.call(session$setInputs, inputs)
+            counts[[button]] <- (counts[[button]] %||% 0) + 1
+            do.call(session$setInputs, stats::setNames(list(counts[[button]]), button))
+        }
+    }
+}
+
+#' W1 (a)'s DIA clicks as the tab's buttons.
+protNormW3DiaSteps <- function() {
+    click <- protNormW3Clicker()
+    list(
+        dia_normalization_skip = do.call(click, c(list("run_normalization"), protNormW3Inputs("skip"))),
+        dia_normalization_skip_repeat = click("run_normalization"),
+        dia_normalization_manual = click("run_normalization", ruv_mode = "manual"),
+        dia_correlation_apply = click("apply_correlation_filter"),
+        dia_correlation_reapply = click("apply_correlation_filter", min_pearson_correlation_threshold = 0.7),
+        dia_correlation_skip = click("skip_correlation_filter"),
+        dia_normalization_refused = click("run_normalization", ruv_k = 50),
+        dia_normalization_retry = click("run_normalization", ruv_k = 1))
+}
+
+#' W1 (a)'s DIA_LIMPA clicks in one RUV mode as the tab's buttons.
+protNormW3LimpaSteps <- function(mode) {
+    click <- protNormW3Clicker()
+    stats::setNames(list(do.call(click, c(list("run_normalization"), protNormW3Inputs(mode))),
+        click("apply_correlation_filter"), click("apply_ruv_covariates"), click("apply_ruv_covariates")),
+        paste0("limpa_", mode, c("_pass_through", "_correlation", "_ruv", "_ruv_repeat")))
+}
+
+#' The fields of a module capture that W1 (a)'s core capture also records and the tab's own work does not change.
+protNormW3W1Fields <- c("current", "history", "head_current", "head_history", "states")
+
+protNormW3ExpectW1 <- function(captures, label) {
+    for (case in names(captures)) {
+        frozen <- protNormW1Frozen()[[case]]
+        expect_false(is.null(frozen), info = case)
+        for (field in protNormW3W1Fields) {
+            expect_identical(captures[[case]][[field]], frozen[[field]], info = paste(label, case, field))
+        }
+    }
+}
+
+#' The notices without the runner's own (its working notice, and its error before the tab's), each error by its text up
+#' to the first colon: a worker's error reaches the tab as the controller words it ("managed action ended: <status>"
+#' through the service), not as the kernel's condition.
+protNormW3TabNotes <- function(notes) {
+    notes <- notes[!grepl("^\\[(default NULL|error 15)\\] (Applying|Error applying) proteomics step", notes)]
+    sub("(?s)^(\\[error [0-9]+\\] [^:]+:).*$", "\\1", notes, perl = TRUE)
+}
+
+#' Managed against unmanaged: every field but the store-local head id and the actions; the notices without the runner's.
+protNormW3ExpectSame <- function(managed, unmanaged) {
+    expect_identical(names(managed), names(unmanaged))
+    for (case in names(unmanaged)) {
+        for (field in setdiff(names(unmanaged[[case]]), c("notes", "head_id", "actions", "norm"))) {
+            expect_identical(managed[[case]][[field]], unmanaged[[case]][[field]], info = paste("managed", case, field))
+        }
+        expect_identical(names(managed[[case]]$norm), names(unmanaged[[case]]$norm), info = paste("managed", case, "norm"))
+        for (field in names(unmanaged[[case]]$norm)) {
+            expect_identical(managed[[case]]$norm[[field]], unmanaged[[case]]$norm[[field]], info = paste("managed", case, "norm", field))
+        }
+        expect_identical(protNormW3TabNotes(managed[[case]]$notes), protNormW3TabNotes(unmanaged[[case]]$notes),
+            info = paste("managed", case, "notes"))
+    }
+}
+
+#' The unmanaged drive on a fresh owner, once per key in the file (the managed blocks compare with it).
+protNormW3Unmanaged <- local({
+    cache <- list()
+    function(key, owner, steps) {
+        if (is.null(cache[[key]])) {
+            drive <- function() protNormW3Drive(owner(environment()), steps, managed = FALSE)
+            cache[[key]] <<- drive()
+        }
+        cache[[key]]
+    }
+})
+
+test_that("KIT-111 W3: unmanaged, the tab's run, apply, skip and refusal give W1 (a)'s states and today's notices", {
+    captures <- protNormW3Unmanaged("dia", protNormCoreOwner, protNormW3DiaSteps())
+    protNormW3ExpectW1(captures, "unmanaged")
+    expect_identical(captures$dia_normalization_skip$notes, paste("[message 10]", buildProtNormCompletionNotification("skip")))
+    expect_identical(captures$dia_normalization_manual$notes, paste("[message 10]", buildProtNormCompletionNotification("manual")))
+    expect_identical(captures$dia_correlation_apply$notes,
+        "[message 5] Correlation filtering completed! Ready for differential expression analysis.")
+    expect_identical(captures$dia_correlation_skip$notes,
+        "[message 5] Correlation filtering skipped! Ready for differential expression analysis.")
+    expect_length(captures$dia_normalization_refused$notes, 1L)
+    expect_match(captures$dia_normalization_refused$notes, "^\\[error 10\\] Error in normalization: ")
+    for (case in names(captures)) expect_length(captures[[case]]$actions, 0L)
+})
+
+test_that("KIT-111 W3: managed, the tab's run, apply and refusal run on the worker on their named inputs and equal the unmanaged tab", {
+    skip_if_not(workflowOwnerCapable())
+    unmanaged <- protNormW3Unmanaged("dia", protNormCoreOwner, protNormW3DiaSteps())
+    fixture <- protNormCoreOwner()
+    probe <- new.env()
+    managed <- protNormW3Drive(fixture, protNormW3DiaSteps(), managed = TRUE, probe = probe)
+    protNormW3ExpectW1(managed, "managed")
+    protNormW3ExpectSame(managed, unmanaged)
+    operations <- lapply(managed, function(capture) vapply(capture$actions, `[[`, "", "operation"))
+    expect_identical(operations, list(dia_normalization_skip = "normalization-ruv", dia_normalization_skip_repeat = "normalization-ruv",
+        dia_normalization_manual = "normalization-ruv", dia_correlation_apply = c("pearson-pairs", "pearson-selection"),
+        dia_correlation_reapply = c("pearson-pairs", "pearson-selection"), dia_correlation_skip = character(),
+        dia_normalization_refused = "normalization-ruv", dia_normalization_retry = "normalization-ruv"))
+    # The completion texts are today's, after the runner's working notice.
+    working <- "[default NULL] Applying proteomics step ..."
+    expect_identical(managed$dia_normalization_skip$notes, c(working, paste("[message 10]", buildProtNormCompletionNotification("skip"))))
+    expect_identical(managed$dia_normalization_manual$notes, c(working, paste("[message 10]", buildProtNormCompletionNotification("manual"))))
+    expect_identical(managed$dia_correlation_apply$notes, c(working, working,
+        "[message 5] Correlation filtering completed! Ready for differential expression analysis."))
+    # The worker's failure: the runner's error, then the tab's; nothing committed (W1 (a)'s states, above); the retry completes.
+    refused <- managed$dia_normalization_refused$notes
+    expect_length(refused, 3L)
+    expect_match(refused[[2L]], "^\\[error 15\\] Error applying proteomics step: ")
+    expect_match(refused[[3L]], "^\\[error 10\\] Error in normalization: ")
+    # Each action's input: the normalisation's recorded source; the normalisation's final for the pairs and the selection,
+    # on the reapply too, when the head is correlation_filtered.
+    inputs <- lapply(managed, function(capture) vapply(capture$actions, `[[`, "", "input"))
+    states <- withDIAStateScope(fixture$manager, function() fixture$manager$.context$snapshot$states)
+    expect_identical(unique(unlist(inputs[grep("^dia_normalization", names(inputs))])), states$protein_replicate_filtered$entity_id)
+    expect_identical(unique(inputs$dia_correlation_apply), inputs$dia_correlation_reapply[[1L]])
+    expect_identical(unique(inputs$dia_correlation_reapply), inputs$dia_correlation_apply[[1L]])
+    expect_false(identical(inputs$dia_correlation_reapply[[1L]], managed$dia_correlation_apply$head_id))
+    # The repeated click is a hit whose commit description is NULL.
+    expect_identical(vapply(probe$values[1:2], function(value) is.null(value$commit), NA), c(FALSE, TRUE))
+})
+
+test_that("KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give W1 (a)'s states, the summary and the inputs", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    for (mode in c("covariates", "correction")) {
+        unmanaged <- protNormW3Unmanaged(mode, protNormW1LimpaOwner, protNormW3LimpaSteps(mode))
+        protNormW3ExpectW1(unmanaged, "unmanaged")
+        state <- if (identical(mode, "correction")) "ruv_corrected" else "ruv_covariates"
+        summary <- unmanaged[[paste0("limpa_", mode, "_ruv")]]$outputs[["ruv_covariates"]]
+        expect_true(endsWith(summary, paste0("State saved as: '", state, "'")), info = mode)
+        if (!workflowOwnerCapable()) next
+        fixture <- protNormW1LimpaOwner()
+        managed <- protNormW3Drive(fixture, protNormW3LimpaSteps(mode), managed = TRUE)
+        protNormW3ExpectW1(managed, "managed")
+        protNormW3ExpectSame(managed, unmanaged)
+        actions <- lapply(managed, `[[`, "actions")
+        expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(character(),
+            c("pearson-pairs", "pearson-selection"), "protein_ruv_covariates", "protein_ruv_covariates"), info = mode)
+        # The covariates' input is the tab's correlation result (the selection's checkpoint, as in process); F111-02, as
+        # today: the repeat's is the committed RUV state.
+        expect_false(identical(actions[[3L]][[1L]]$input, actions[[4L]][[1L]]$input), info = mode)
+        expect_identical(actions[[4L]][[1L]]$input, managed[[3L]]$head_id, info = mode)
+    }
+})
+
+test_that("KIT-111 W3 (R5): a click while the tab's action runs waits for it; a click the application refuses commits nothing", {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- protNormCoreOwner()
+    probe <- new.env()
+    probe$hold <- TRUE
+    log <- new.env(parent = emptyenv())
+    protNormW3Notices(log, fixture$root)
+    protNormW3Managed(fixture, probe)
+    done <- paste("[message 10]", buildProtNormCompletionNotification("skip"))
+    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
+        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
+        experiment_label = "core"), {
+        do.call(session$setInputs, protNormW3Inputs("skip"))
+        session$setInputs(run_normalization = 1)
+        session$setInputs(run_normalization = 2)
+        # The second click waits: one action reserved, nothing delivered.
+        expect_identical(probe$operations, "normalization-ruv")
+        expect_identical(log$notes, "[default NULL] Applying proteomics step ...")
+        probe$hold <- FALSE
+        session$elapse(100)
+        session$flushReact()
+        expect_identical(probe$operations, c("normalization-ruv", "normalization-ruv"))
+        expect_identical(sum(log$notes == done), 2L)
+        expect_identical(as.character(unlist(fixture$manager$state_history)), c("initial", "protein_replicate_filtered", "normalized"))
+        expect_null(probe$values[[2L]]$commit)
+        # Another heavy action holds the application: the click is refused with that notice and the tab's error.
+        log$notes <- character()
+        testthat::with_mocked_bindings({
+            session$setInputs(ruv_mode = "manual")
+            session$setInputs(run_normalization = 3)
+        }, beginWorkflowGUIAction = function(application, manager, operation, publication)
+            cli::cli_abort("another heavy action is active", class = "workflow_execution_busy"), .package = "MultiScholaR")
+        expect_identical(log$notes, c("[error 15] another heavy action is active",
+            "[error 10] Error in normalization: another heavy action is active"))
+        expect_identical(fixture$manager$current_state, "normalized")
+        expect_length(probe$actions, 2L)
+    })))
+})
