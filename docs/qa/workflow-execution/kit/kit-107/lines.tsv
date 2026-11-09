@@ -1,0 +1,21 @@
+file	before_8e7294b6	after_2b1e02c8
+R/mod_omic_enrich_panels.R	0	701
+R/mod_omic_enrich.R	0	692
+R/mod_prot_enrich_analysis_helpers.R	640	0
+R/mod_prot_enrich_execution_helpers.R	257	0
+R/mod_prot_enrich_input_helpers.R	774	0
+R/mod_prot_enrich_observer_helpers.R	266	0
+R/mod_prot_enrich.R	418	33
+R/mod_prot_enrich_registration_helpers.R	671	0
+R/mod_prot_enrich_render_helpers.R	616	0
+R/mod_prot_enrich_server.R	64	14
+R/mod_prot_enrich_setup_helpers.R	569	0
+R/mod_prot_enrich_state_helpers.R	607	0
+R/utils_omic_gui_config.R	1766	1892
+R/utils_workflow_analysis_record.R	903	922
+R/utils_workflow_dia_da.R	1024	1025
+R/utils_workflow_dia_da_validation.R	186	186
+R/utils_workflow_dia_da_views.R	330	330
+R/utils_workflow_dia_enrichment.R	0	653
+R/utils_workflow_enrichment.R	0	1134
+# R/ total:  15 files changed, 2274 insertions(+), 3783 deletions(-)

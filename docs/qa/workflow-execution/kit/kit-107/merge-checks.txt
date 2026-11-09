@@ -1,0 +1,60 @@
+KIT-107 W4 merge checks (2026-11-09), on origin/performance-v2 2b1e02c8. R 4.6.1. Start commit 8e7294b6 (R/ as b9820d9e).
+
+1. DESCRIPTION Collate == R/*.R: 349 entries, 349 files, no duplicates. Added: utils_workflow_dia_enrichment.R, utils_workflow_enrichment.R (W2), mod_omic_enrich_panels.R, mod_omic_enrich.R (W3). Removed: the eight mod_prot_enrich_*_helpers.R (W3).
+2. NAMESPACE against 8e7294b6: 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 / 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 (byte-identical). git diff 8e7294b6 -- man R/app_ui.R R/app_server.R R/mod_omic_workflow.R R/mod_proteomics.R tools R/func_general_enrichment_*.R R/func_general_s4_objects.R: empty (the kernels unchanged). roxygen2 was not run.
+3. Parse-data back-reference count: 2 (unchanged from KIT-106).
+4. The config: the enrichment function groups and the organism filter's mapping/apply are required (w4/config-required.txt); the srcref rule holds (test-omic-gui-config.R 1544/0).
+5. Dependents grep (start 8e7294b6): 73 deleted names and 8 files, 275 hits, 0 LIVE (every hit a comment, a quarantined file Q-163/Q-164 or a quarantined block Q-165/Q-166). The step-map label (P-29) names files, not code.
+
+   Deleted R/ files since 8e7294b6 ( 8 ): mod_prot_enrich_analysis_helpers.R, mod_prot_enrich_execution_helpers.R, mod_prot_enrich_input_helpers.R, mod_prot_enrich_observer_helpers.R, mod_prot_enrich_registration_helpers.R, mod_prot_enrich_render_helpers.R, mod_prot_enrich_setup_helpers.R, mod_prot_enrich_state_helpers.R 
+   Deleted top-level names since 8e7294b6 ( 73 ):
+     buildProtEnrichContrastChoices captureProtEnrichPostProcessResults completeProtEnrichProgress
+     completeProtEnrichTabStatus createProtEnrichReactiveValues createProtEnrichSupportedOrganismsReactive
+     executeProtEnrichProcessEnrichments finalizeProtEnrichAnalysisBodyResults finalizeProtEnrichObserverFailure
+     finalizeProtEnrichObserverRun handoffProtEnrichObserverRun logProtEnrichAnalysisError logProtEnrichCompletion
+     messageProtEnrichAnalysisError notifyProtEnrichAnalysisError notifyProtEnrichCompletion
+     persistProtEnrichAnalysisResults prepareProtEnrichAnalysisBodySetup prepareProtEnrichProcessExecution
+     registerProtEnrichAnalysisMethodDisplayOutput registerProtEnrichClusterProfilerResultsTableOutput
+     registerProtEnrichClusterProfilerSummaryOutput registerProtEnrichContrastsDisplayOutput
+     registerProtEnrichDaResultsObserver registerProtEnrichGprofilerResultsTableOutput
+     registerProtEnrichGprofilerSummaryOutput registerProtEnrichMixedSpeciesObserver registerProtEnrichPlotOutputs
+     registerProtEnrichResultsDownloadHandler registerProtEnrichRunObserver registerProtEnrichSelectedContrastObserver
+     registerProtEnrichSelectedTabObserver registerProtEnrichStatusOutput registerProtEnrichStringDbPlotOutput
+     registerProtEnrichStringDbResultsTableOutput registerProtEnrichStringDbSummaryOutput
+     registerProtEnrichTaxonIdObserver removeProtEnrichWorkingNotification reportProtEnrichAnalysisError
+     reportProtEnrichCompletion resolveProtEnrichCurrentS4Object runProtEnrichAnalysisBody
+     runProtEnrichObserverPreflight runProtEnrichObserverShell saveProtEnrichCompletedState
+     setupProtEnrichAnalysisMethodBootstrap setupProtEnrichAnalysisMethodDisplayOutputRegistration
+     setupProtEnrichClusterProfilerResultsTableOutputRegistration
+     setupProtEnrichClusterProfilerSummaryOutputRegistration setupProtEnrichContrastsDisplayOutputRegistration
+     setupProtEnrichCurrentAnalysisMethodReactive setupProtEnrichDaResultsObserverRegistration
+     setupProtEnrichDisplayStatusOutputBootstrap setupProtEnrichGprofilerResultsTableOutputRegistration
+     setupProtEnrichGprofilerSummaryOutputRegistration setupProtEnrichMixedSpeciesObserverRegistration
+     setupProtEnrichObserverRegistrationBootstrap setupProtEnrichPlotOutputBootstrap
+     setupProtEnrichPlotOutputsRegistration setupProtEnrichRawContrastNameReactive setupProtEnrichReactiveValues
+     setupProtEnrichResultsDownloadHandlerRegistration setupProtEnrichResultsSummaryOutputBootstrap
+     setupProtEnrichRunObserverRegistration setupProtEnrichRunOutputDownloadBootstrap
+     setupProtEnrichSelectedContrastObserverRegistration setupProtEnrichSelectedTabObserverRegistration
+     setupProtEnrichStatusOutputRegistration setupProtEnrichStringDbPlotOutputRegistration
+     setupProtEnrichStringDbResultsTableOutputRegistration setupProtEnrichStringDbSummaryOutputRegistration
+     setupProtEnrichSupportedOrganismsReactive setupProtEnrichTaxonIdObserverRegistration 
+   
+   Hits: 275 
+   
+             comment quarantined-block  quarantined-file 
+                  29                 6               240 
+   
+   By file and class:
+     comment           3  R/mod_omic_enrich_panels.R
+     comment           6  R/mod_omic_enrich.R
+     comment          11  R/utils_omic_gui_config.R
+     comment           2  R/utils_workflow_dia_enrichment.R
+     comment           4  R/utils_workflow_enrichment.R
+     comment           1  tests/testthat/test-module-ci-prot-da.R
+     comment           2  tests/testthat/test-omics-enrich-core.R
+     quarantined-block    3  tests/testthat/test-module-ci-prot-enrich.R
+     quarantined-block    3  tests/testthat/test-omics-enrich-core.R
+     quarantined-file  190  tests/testthat/test-prot-11-enrichment-module-contracts.R
+     quarantined-file   50  tests/testthat/test-prot-11a-enrichment-module-characterization.R
+   
+   LIVE hits (code or test lines outside a quarantined file or block): 0 
