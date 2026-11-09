@@ -682,6 +682,15 @@
       "install_member": "browser-smoke.X6BzNV",
       "source_commit": "7b52f535a79636cee93816a8bcc5d05ec5a6506d",
       "runtime_patch_bytes": 0
+    },
+    "kit_111": {
+      "ticket": "KIT-111",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.MlQroA/library",
+      "build": "3dc0648e58b72752c13037d80b8b96b7b50fff11e067fcb27cb678638413750a",
+      "exact_sum": "011b0f8624c445a1efeca63cf5dfba0c50d70add3be14058ce88f11192dd3f56",
+      "install_member": "browser-smoke.MlQroA",
+      "source_commit": "c568dfa5ab8ff5573fa6b59974466390dc6ad42f",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -40045,6 +40054,49 @@
         "counts": "counts.tsv"
       },
       "design_file": "design.tsv"
+    },
+    "lfq_fixture_auto": {
+      "profile": "lfq_fixture",
+      "synthetic": true,
+      "samples": 6,
+      "rows": 5,
+      "recipe": {
+        "kind": "lfq_fixture",
+        "synthetic": true,
+        "seed": 20260428,
+        "samples": 6,
+        "proteins": 5,
+        "source": "/home/doktersmol/Projects/APAF/MultiScholaR/tests/testdata/e2e/prot_lfq"
+      },
+      "directory": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture",
+      "expected_retained_samples": 6,
+      "report_file": "proteinGroups.txt",
+      "format": "maxquant",
+      "route": "protein",
+      "notes": "the e2e fixture, copied; the screen lifecycle corpus for the protein route",
+      "files": {
+        "proteinGroups.txt": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture/proteinGroups.txt",
+          "bytes": 435,
+          "sha256": "ad2ba7383d9703f14986e520617f9cccf0c79a923f03f6f65b030f72265dcacb"
+        },
+        "design.tsv": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture/design.tsv",
+          "bytes": 61,
+          "sha256": "af0c7db73f5b450b6cdad028ec95177b177343d13675833724237596aab8fd01"
+        },
+        "proteins.fasta": {
+          "path": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/corpus/lfq-fixture/proteins.fasta",
+          "bytes": 546,
+          "sha256": "db934bbb4751ce376b4ab56af65c7f32eb6cd75b1215a677dfc2124589222f17"
+        }
+      },
+      "generator": "tools/profiling/kit_protein_corpus.R",
+      "normalisation": {
+        "ruv_mode": "automatic"
+      },
+      "fasta_file": "proteins.fasta",
+      "design_file": "design.tsv"
     }
   },
   "lifecycle_omics": {
@@ -42754,6 +42806,127 @@
       "whole_journey": true,
       "ceiling_seconds": 14400,
       "purpose": "memory baseline, in process (recorded, uncounted; KIT-111 D8)"
+    },
+    "111a": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "111b": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "111c": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "111m": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "111l": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)"
+    },
+    "111t": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)"
+    },
+    "111f": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "lfq_fixture_auto",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the lifecycle test's failure half (recorded, uncounted; KIT-111 D8)",
+      "normalisation": {
+        "ruv_mode": "automatic"
+      }
+    },
+    "111q": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "memory candidate, on the worker (recorded, uncounted; KIT-111 D8)"
     },
     "106x": {
       "kind": "single_journey",
