@@ -1,0 +1,7 @@
+/frozen | 2026-11-07 -> <absent>
+/load_mode | load_all -> <absent>
+/omic | <absent> -> proteomics
+/r_version | R version 4.6.1 (2026-06-24) -> <absent>
+/seconds | <absent> -> 239.3
+/source_sha | ddf42372e7054b1027430178a0e873a496baf6bb -> <absent>
+DIFFERENCES 6

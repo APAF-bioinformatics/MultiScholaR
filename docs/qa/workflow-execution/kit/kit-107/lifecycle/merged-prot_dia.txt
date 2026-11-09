@@ -1,0 +1,18 @@
+lifecycle-prot_dia: INFO [2026-11-09 13:36:43] --- Processing setup for omic type: proteomics ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  timestamp                      : 20261109_133643
+------------------------------------------
+
+ERROR [2026-11-09 13:38:40] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+.INFO [2026-11-09 13:40:28] Results summary directory for proteomics_prot_dia (/home/doktersmol/.cache/k107lead/tmp/Rtmp1nZMvr/gui-entry-prot_dia-294ee4778822fe/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+..........................................
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE prot_dia identical_to_oracle=TRUE elapsed=241s
+CALLS mod_omic_enrich_server 1
+CALLS runWorkflowEnrichment 1
+CALLS runDIAReferenceEnrichment 1
+CALLS saveWorkflowEnrichmentState 1
+CALLS resolveProtEnrichUniprotAnnotations 1
+CALLS buildProtEnrichAllContrastResults 1
+CALLS restoreWorkflowEnrichment 1

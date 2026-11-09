@@ -1,0 +1,60 @@
+lifecycle-prot_dia: INFO [2026-11-09 13:30:42] --- Processing setup for omic type: proteomics ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  timestamp                      : 20261109_133042
+------------------------------------------
+
+ERROR [2026-11-09 13:33:45] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+1INFO [2026-11-09 13:36:21] Results summary directory for proteomics_prot_dia (/home/doktersmol/.cache/k107lead/tmp/RtmpuQL44Z/gui-entry-prot_dia-2915222160c8a2/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+..........................................
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure: lifecycle prot_dia ──────────────────────────────────────────────
+Expected `any(...)` to be FALSE.
+Differences:
+`actual`:   TRUE 
+`expected`: FALSE
+
+KIT-107 F-16: the analysis record's enrichment step is complete
+Backtrace:
+     ▆
+  1. ├─guiEntryExpectLane(lane)
+  2. │ └─guiEntryRunLane(lane_id) at tests/testthat/helper-gui-entry.R:390:3
+  3. │   ├─base::suppressWarnings(...) at tests/testthat/helper-gui-entry.R:297:3
+  4. │   │ └─base::withCallingHandlers(...)
+  5. │   ├─base::suppressMessages(...)
+  6. │   │ └─base::withCallingHandlers(...)
+  7. │   ├─utils::capture.output(...)
+  8. │   │ └─base::withVisible(...elt(i))
+  9. │   └─shiny::testServer(...)
+ 10. │     ├─shiny:::withMockContext(...)
+ 11. │     │ ├─shiny::isolate(...)
+ 12. │     │ │ ├─shiny::..stacktraceoff..(...)
+ 13. │     │ │ └─ctx$run(...)
+ 14. │     │ │   ├─promises::with_promise_domain(...)
+ 15. │     │ │   │ └─domain$wrapSync(expr)
+ 16. │     │ │   ├─shiny::withReactiveDomain(...)
+ 17. │     │ │   │ └─promises::with_promise_domain(...)
+ 18. │     │ │   │   └─domain$wrapSync(expr)
+ 19. │     │ │   │     └─base::force(expr)
+ 20. │     │ │   ├─shiny:::with_otel_span_context(...)
+ 21. │     │ │   │ └─base::force(expr)
+ 22. │     │ │   ├─shiny::captureStackTraces(...)
+ 23. │     │ │   │ └─promises::with_promise_domain(...)
+ 24. │     │ │   │   └─domain$wrapSync(expr)
+ 25. │     │ │   │     └─base::withCallingHandlers(expr, error = doCaptureStack)
+ 26. │     │ │   └─env$runWith(self, func)
+ 27. │     │ │     └─shiny (local) contextFunc()
+ 28. │     │ │       └─shiny::..stacktraceon..(expr)
+ 29. │     │ ├─shiny::withReactiveDomain(...)
+ 30. │     │ │ └─promises::with_promise_domain(...)
+ 31. │     │ │   └─domain$wrapSync(expr)
+ 32. │     │ │     └─base::force(expr)
+ 33. │     │ └─withr::with_options(...)
+ 34. │     │   └─base::force(code)
+ 35. │     └─rlang::eval_tidy(quosure, mask, rlang::caller_env())
+ 36. └─step$run(api) at tests/testthat/helper-gui-entry.R:355:7
+ 37.   └─testthat::expect_false(...) at tests/testthat/helper-gui-entry.R:771:9
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE prot_dia identical_to_oracle=FALSE elapsed=355s
+CALLS runDIAReferenceEnrichment 1
