@@ -1,0 +1,17 @@
+=== load_all (baseline: KIT-105 full-suite rows overlaid with KIT-110's and KIT-106's)
+files 104 397 105 20; passed 31336 -> 7476; failed 0 -> 0; error blocks 2 -> 0
+file	change	detail	Q-ids in file
+test-module-ci-prot-enrich.R	passed 92->79; skips 1->2		Q-02,Q-165
+test-omic-enrich-module.R	new file	passed 975 failed 0 errors 0 skips 0	
+test-omics-enrich-core.R	new file	passed 223 failed 0 errors 0 skips 1	Q-166
+test-prot-11-enrichment-module-contracts.R	new file-level skip; hidden blocks 0->173; blocks run 173->0; passed 1258->0; skips 0->1; new category skip_quarantine		Q-163
+test-prot-11a-enrichment-module-characterization.R	new file-level skip; hidden blocks 0->14; blocks run 14->0; passed 143->0; skips 0->1; new category skip_quarantine		Q-164
+=== check (baseline: KIT-105 full-suite rows overlaid with KIT-110's and KIT-106's)
+files 104 397 105 20; passed 23873 -> 6171; failed 149 -> 0; error blocks 389 -> 95
+file	change	detail	Q-ids in file
+test-module-ci-prot-enrich.R	passed 92->79; skips 1->2		Q-02,Q-165
+test-omic-enrich-module.R	new file	passed 975 failed 0 errors 0 skips 0	
+test-omics-enrich-core.R	new file	passed 175 failed 0 errors 1 skips 1	Q-166
+test-prot-11-enrichment-module-contracts.R	new file-level skip; hidden blocks 0->173; blocks run 173->0; passed 1258->0; skips 0->1; new category skip_quarantine		Q-163
+test-prot-11a-enrichment-module-characterization.R	new file-level skip; hidden blocks 0->14; blocks run 14->0; passed 143->0; skips 0->1; new category skip_quarantine		Q-164
+test-workflow-analysis-record.R	error blocks 16->17		
