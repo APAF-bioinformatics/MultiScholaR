@@ -270,3 +270,26 @@ test_that("KIT-078: the controller materialises no assay table of the omic durin
     }
   }
 })
+
+test_that("KIT-111 F111-01: a second identical omics action is a cache hit and completes on the worker, committing nothing", {
+  skip_if_not(workflowOwnerCapable())
+  testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+    finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) }, .package = "MultiScholaR")
+  fixture <- lipidDeclarationsOwner(withr::local_tempdir())
+  withr::defer(closeDIAStateAdapter(fixture$owner))
+  owner <- fixture$owner
+  controller <- omicsWorkerController(fixture)
+  # A product-only action whose value is the live science (the pairs data frame), twice from the same head.
+  first <- omicsWorkerAction(fixture, controller, "lipid_pearson_pairs", list(correlation_group = "group"))
+  head <- getWorkflowStateReference(owner)
+  states <- names(owner$.context$snapshot$states)
+  roots <- owner$.context$snapshot$product_dependencies[[first$reference$entity_id]]
+  second <- omicsWorkerAction(fixture, controller, "lipid_pearson_pairs", list(correlation_group = "group"))
+  expect_identical(second$acceptance, first$acceptance)
+  # The hit names the first product; no state is committed and the product's root is unchanged.
+  expect_identical(second$reference, first$reference)
+  expect_identical(second$value, first$value)
+  expect_identical(getWorkflowStateReference(owner), head)
+  expect_identical(names(owner$.context$snapshot$states), states)
+  expect_identical(owner$.context$snapshot$product_dependencies[[first$reference$entity_id]], roots)
+})

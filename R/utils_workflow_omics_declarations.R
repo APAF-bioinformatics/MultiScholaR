@@ -1198,8 +1198,13 @@ computeWorkflowOmicsOperationAction <- function(manager, request, variant) {
     dependencies <- lapply(intersect(binding$dependency_parameters, declaration$parameters),
         function(parameter) manager$.context$snapshot$products[[parameters[[parameter]]]])
     run <- runSavedOperation(manager, declaration, source, parameters, dependencies)
-    # An earlier worker's product whose action never completed has no root yet.
-    if (identical(run$status, "hit")) rootWorkflowProduct(manager, run$reference, c(list(source), dependencies, list(run$value)))
+    # An earlier worker's product whose action never completed has no root yet. KIT-111 F111-01: a hit roots what the
+    # computed run rooted, the source, the dependencies and the saved references its value names; a value that is the
+    # live science (a product-only declaration's) is never a root.
+    if (identical(run$status, "hit")) {
+        named <- tryCatch(collectWorkflowNativeReferences(run$value), saved_entity_invalid = function(error) list())
+        rootWorkflowProduct(manager, run$reference, c(list(source), dependencies, named))
+    }
     if (is.null(declaration$output_class)) {
         return(list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference,
             native = if (declaration$name %in% binding$native_steps) collectWorkflowNativeReferences(run$value)))

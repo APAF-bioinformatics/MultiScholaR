@@ -1,0 +1,23 @@
+# KIT-111 W2b test-first (F111-01): the new block in tests/testthat/test-workflow-omics-worker.R
+# ("KIT-111 F111-01: a second identical omics action is a cache hit and completes on the worker, committing nothing")
+# run on the start commit's R/ (HEAD 8dd32418, before the fix). R 4.6.1; R_LIBS=core/browser-smoke.X6BzNV/library;
+# MULTISCHOLAR_STRICT_SKIPS=1; load_all; TMPDIR on disk.
+
+## 1. The whole file (Rscript tools/testing/test-baseline.R file load_all <worktree> tests/testthat/test-workflow-omics-worker.R <out>)
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-workflow-omics-worker.R	load_all	8	8	0	283	283	0	1	0	0	0	FALSE			FALSE		0	0	0	0	0	0	388.8	complete
+
+The new block is the one error block: it stops at its second send, before its expectations. The seven existing blocks
+pass 283/0, as on the start commit (targeted.txt, before).
+
+## 2. The new block alone (testthat::test_file(desc = <the block>), summary reporter)
+workflow-omics-worker: 1
+
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Error ('test-workflow-omics-worker.R:287:3'): KIT-111 F111-01: a second id
+Error in `omicsWorkerAction(fixture, controller, "lipid_pearson_pairs", list(correlation_group = "group"))`: worker failed: native reference roots contain a live payload
+Backtrace:
+    ▆
+ 1. └─omicsWorkerAction(...) at test-workflow-omics-worker.R:287:3
+
+Line 287 is the second, identical lipid_pearson_pairs send (the cache hit). The first send (:282) completed.
