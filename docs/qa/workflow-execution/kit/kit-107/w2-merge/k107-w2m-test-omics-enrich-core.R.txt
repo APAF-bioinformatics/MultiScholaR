@@ -1,0 +1,2 @@
+COUNTS test-omics-enrich-core.R pass 269 fail 6 error 0 skip 0
+  BAD test-omics-enrich-core.R :: (F-16, D6 test 1) after a Run the record's enrichment step carries its operation, variant and 9 declared parameters (passes from W3)

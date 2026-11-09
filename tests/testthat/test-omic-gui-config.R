@@ -1537,10 +1537,16 @@ test_that("KIT-107 W1 (D9): each enrichment field is refused by class when missi
         bad$enrichment$organism_filter[[field]] <- "resolveProtEnrichOrganismMapping"
         expectGuiConfigRefused(bad, paste0("enrichment$organism_filter$", field))
     }
-    # The W2 function groups: absent at W1; when present, whole (both members references).
+    # The W2 function groups: wired to the core at the W2 merge; whole when present (both members references).
     members <- list(organism = c("supported", "method"), annotation = c("resolve", "match"), kernel = c("select", "test_double"))
+    wired <- list(organism = c("buildProtEnrichSupportedOrganisms", "resolveProtEnrichAnalysisMethod"),
+        annotation = c("resolveProtEnrichUniprotAnnotations", "resolveProtEnrichAnnotationMatching"),
+        kernel = c("resolveProtEnrichProcessEnrichmentsFn", "runProtEnrichDeterministicProcessEnrichments"))
     for (group in names(members)) {
-        expect_null(prot$enrichment[[group]], info = group)
+        for (i in seq_along(members[[group]])) {
+            expect_identical(prot$enrichment[[group]][[members[[group]][[i]]]],
+                get(wired[[group]][[i]], envir = asNamespace("MultiScholaR")), info = paste(group, i))
+        }
         with_group <- prot
         with_group$enrichment[[group]] <- stats::setNames(list(identity, identity), members[[group]])
         expect_identical(validateOmicGuiConfig(with_group), with_group, info = group)

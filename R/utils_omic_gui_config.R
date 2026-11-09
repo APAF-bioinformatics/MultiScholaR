@@ -1059,7 +1059,12 @@ omicGuiProteomicsEnrichment <- function() {
         exclude_iea = FALSE,
         taxon = list(default = "9606", prefill_from = "taxon_id"),
         services = c("gprofiler2", "clusterprofiler", "stringdb"),
-        organism_filter = list(mixed_species_from = "mixed_species_analysis"),
+        organism_filter = list(mixed_species_from = "mixed_species_analysis", mapping = resolveProtEnrichOrganismMapping,
+            apply = applyProtEnrichOrganismFilter),
+        # KIT-107 W2 merge: the core's functions (utils_workflow_enrichment.R, utils_workflow_dia_enrichment.R).
+        organism = list(supported = buildProtEnrichSupportedOrganisms, method = resolveProtEnrichAnalysisMethod),
+        annotation = list(resolve = resolveProtEnrichUniprotAnnotations, match = resolveProtEnrichAnnotationMatching),
+        kernel = list(select = resolveProtEnrichProcessEnrichmentsFn, test_double = runProtEnrichDeterministicProcessEnrichments),
         state_name = "enrichment_completed")
 }
 
