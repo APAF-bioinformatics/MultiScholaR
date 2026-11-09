@@ -1382,5 +1382,12 @@ proteomicsDiaBinding <- list(
         ruv_covariates = list(operation = "protein_ruv_covariates",
             in_process = function(...) runDIAReferenceRuvCovariates(...),
             publish = function(...) publishDIAReferenceRuvCovariates(...))
-    )
+    ),
+    # KIT-112 D4: the DA tab's runner (in process), its managed operation (one action per contrast) with the request
+    # and accept halves the controller runs around it, and the publication step (utils_workflow_dia_da.R).
+    da = list(operation = "DA-contrast-output",
+        in_process = function(...) runDIAReferenceDaAnalysis(...),
+        request = function(...) diaDaRequest(...),
+        accept = function(...) acceptDIADaManifest(...),
+        publication = "da_publication")
 )

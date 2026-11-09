@@ -330,6 +330,8 @@ diaContrastOperation <- function(route = "iq") {
 }
 
 #' Run native DA one contrast at a time through the DA declaration and retain only accepted references.
+#' KIT-112 D3: the request half, the compute half per contrast and the accept half, in today's order, then today's
+#' publication; under a managed application the run plugin sends the compute half to the worker.
 #' @param settings Plain list: `formula_string`, `da_q_val_thresh`, `treat_lfc_cutoff`.
 #' @param da_data,workflow,paths Existing module owners and publication paths.
 #' @param contrasts Contrasts table; NULL uses `workflow$contrasts_tbl`, then the available contrasts.
@@ -342,94 +344,176 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
     publish = TRUE) {
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
-        assertDIAExportReady(manager, allow_action = "da")
-        source <- da_data$current_s4_object
-        if (!isSavedWorkflowReference(source)) cli::cli_abort("load a reference-backed protein state before DA")
-        if (is.null(contrasts)) contrasts <- workflow$contrasts_tbl
-        if (is.null(contrasts)) contrasts <- data.frame(contrasts = da_data$contrasts_available)
-        contrasts <- normaliseProtDaContrastsTable(contrasts)
-        if (is.null(annotations)) annotations <- workflow$uniprot_dat_cln
-        if (is.null(annotations)) annotations <- data.frame()
-        spec <- readDIAStateMetadata(manager, source)$data
-        prototype <- readDIAExecutionComponents(manager, source, fields = "design_matrix")
-        validateProtDaModelAndContrasts(prototype, settings$formula_string, contrasts)
-        prototype <- NULL
-        manifest <- list(schema = "dia.da_results.v1", source = source,
-            protein_id_column = spec$slots$protein_id_column, sample_id = spec$slots$sample_id,
-            contrasts = contrasts, results = list(), parameters = list(formula = settings$formula_string,
-                qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff, weights = NA))
-        # KIT-022: the DA UI arguments are committed onto the current state before the contrast loop, so the
-        # manifest's source is the head state the module and the worker see (one reference per scientific state).
-        # The contrast identity strips these arguments, so the contrast products are unchanged by the commit.
-        workflow$da_ui_params <- list(q_value_threshold = settings$da_q_val_thresh,
-            log_fold_change_cutoff = settings$treat_lfc_cutoff, treat_enabled = settings$treat_lfc_cutoff > 0,
-            formula_string = settings$formula_string, timestamp = Sys.time())
-        state_record <- readDIAStateMetadata(manager)
-        checkpoint <- state_record$data
-        da_parameters <- workflow$da_ui_params
-        recorded <- checkpoint$slots$args$daAnalysisUI
-        if (!identical(recorded[setdiff(names(recorded), "timestamp")],
-            da_parameters[setdiff(names(da_parameters), c("timestamp", "treat_enabled"))])) {
-            first <- data.frame(contrasts = contrasts$full_format[[1L]], stringsAsFactors = FALSE)
-            defaults <- list(contrasts_tbl = first, formula_string = settings$formula_string,
-                da_q_val_thresh = settings$da_q_val_thresh, treat_lfc_cutoff = settings$treat_lfc_cutoff,
-                eBayes_trend = TRUE, eBayes_robust = TRUE, args_group_pattern = "(\\d+)",
-                args_row_id = manifest$protein_id_column, qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
-            if (is.null(checkpoint$slots$args$differentialAbundanceAnalysis))
-                checkpoint$slots$args$differentialAbundanceAnalysis <- defaults
-            checkpoint$slots$args$daAnalysisUI <- da_parameters[setdiff(names(da_parameters), "treat_enabled")]
-            if (nrow(contrasts) > 1L && is.null(checkpoint$slots$args$differentialAbundanceAnalysisHelper))
-                checkpoint$slots$args$differentialAbundanceAnalysisHelper <- defaults
-            commitDIAReferenceState(manager, manager$current_state, checkpoint,
-                state_record$config, state_record$description)
-            source <- getDIAStateReference(manager)
-            manifest$source <- source
-            # The module's holder follows the head (a reference, KIT-012), so a rerun starts from the head too.
-            da_data$current_s4_object <- source
-        }
+        request <- diaDaRequest(manager, settings, da_data, workflow, contrasts, annotations)
         context <- manager$.context
         context$da_reference_execution <- TRUE
-        context$da_source_reference <- source
+        context$da_source_reference <- request$source
         on.exit({ context$da_reference_execution <- FALSE; context$da_source_reference <- NULL }, add = TRUE)
-        operation <- diaContrastOperation(diaActiveRoute(manager))
-        for (i in seq_len(nrow(contrasts))) {
-            name <- contrasts$contrasts[[i]]
-            run <- runSavedOperation(manager, operation, source, c(manifest$parameters,
-                list(contrast = contrasts$full_format[[i]], annotations = spec$components$protein_id_table$entity_id,
-                    name = name, comparison = contrasts$friendly_names[[i]])))
+        route <- diaActiveRoute(manager)
+        results <- list()
+        for (parameters in request$steps) {
+            run <- computeDIAReferenceDaContrast(manager, request$source, parameters, route)$run
             if (identical(run$status, "computed")) {
                 snapshot <- context$snapshot
                 snapshot$da_dependencies[[run$reference$entity_id]] <- collectDIANativeReferences(run$value)
                 publishDIAStateHead(context, snapshot)
             }
-            manifest$results[[name]] <- run$value
+            results[[parameters$name]] <- run$value
         }
-        clearDIAStepProvenance(manager) # KIT-025 audit PH-01: the contrasts commit no state
-        snapshot <- context$snapshot
-        # KIT-035: the model that ran, from the base fit's recorded factors (provenance; not part of any identity).
-        fit_factors <- manager$.context$da_base_fit_reference$metadata$factors
-        # KIT-053: the kernel's own account of the model (limma or dpcDE with the W terms) first; the limma base fit's
-        # factors beside it (NULL on the dpcDE branch, which fits no saved base fit).
-        kernel_model <- manifest$results[[1L]]$model %||% list(model = "limma")
-        manifest$model <- c(kernel_model, list(route = diaActiveRoute(manager),
-            group_id = fit_factors$group_id, technical_replicate_id = fit_factors$technical_replicate_id,
-            block_reason = kernel_model$block_reason %||% fit_factors$block_reason,
-            uses_duplicate_correlation = kernel_model$uses_duplicate_correlation %||% fit_factors$uses_duplicate_correlation,
-            consensus_correlation = fit_factors$consensus_correlation))
-        manifest_reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
-        snapshot$da_results <- manifest_reference
-        snapshot$da_dependencies[[manifest_reference$entity_id]] <- collectDIANativeReferences(
-            list(manifest$source, manifest$results))
-        publishDIAStateHead(context, snapshot)
+        manifest <- acceptDIADaManifest(manager, request$manifest, results)
         # KIT-019: under a managed application the DA module requests the publication from the worker
         # (`da_publication`); in process the publication runs here as before.
         if (publish) publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
             paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
-                produceDIADaPublication(manager, manifest, annotations, settings$da_q_val_thresh, staged),
+                produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, staged),
             identity = diaDaPublicationIdentity(manifest))
         if (publish) completeDIADaDisplay(da_data, workflow, manifest)
         manifest
     })
+}
+
+#' The DA request half (KIT-112 D3), in the controller on both paths: the gate, the source, the contrasts and
+#' annotations defaults, the validation on the design only, the manifest skeleton and the DA arguments' commit. It reads
+#' state records and the design table, never an assay.
+#' @param manager Session owner, inside its state scope.
+#' @inheritParams runDIAReferenceDaAnalysis
+#' @return `list(source, spec, contrasts, annotations, manifest, steps)`; each step is one contrast's declared
+#'   parameters, as the compute half takes them.
+#' @noRd
+diaDaRequest <- function(manager, settings, da_data, workflow, contrasts, annotations) {
+    assertDIAExportReady(manager, allow_action = "da")
+    source <- da_data$current_s4_object
+    if (!isSavedWorkflowReference(source)) cli::cli_abort("load a reference-backed protein state before DA")
+    if (is.null(contrasts)) contrasts <- workflow$contrasts_tbl
+    if (is.null(contrasts)) contrasts <- data.frame(contrasts = da_data$contrasts_available)
+    contrasts <- normaliseProtDaContrastsTable(contrasts)
+    if (is.null(annotations)) annotations <- workflow$uniprot_dat_cln
+    if (is.null(annotations)) annotations <- data.frame()
+    spec <- readDIAStateMetadata(manager, source)$data
+    prototype <- readDIAExecutionComponents(manager, source, fields = "design_matrix")
+    validateProtDaModelAndContrasts(prototype, settings$formula_string, contrasts)
+    prototype <- NULL
+    manifest <- list(schema = "dia.da_results.v1", source = source,
+        protein_id_column = spec$slots$protein_id_column, sample_id = spec$slots$sample_id,
+        contrasts = contrasts, results = list(), parameters = list(formula = settings$formula_string,
+            qvalue = settings$da_q_val_thresh, lfc = settings$treat_lfc_cutoff, weights = NA))
+    committed <- commitDIADaArguments(manager, settings, workflow, contrasts, manifest$protein_id_column)
+    if (!is.null(committed)) {
+        source <- committed
+        manifest$source <- source
+        # The module's holder follows the head (a reference, KIT-012), so a rerun starts from the head too.
+        da_data$current_s4_object <- source
+    }
+    steps <- lapply(seq_len(nrow(contrasts)), function(i) c(manifest$parameters,
+        list(contrast = contrasts$full_format[[i]], annotations = spec$components$protein_id_table$entity_id,
+            name = contrasts$contrasts[[i]], comparison = contrasts$friendly_names[[i]])))
+    list(source = source, spec = spec, contrasts = contrasts, annotations = annotations, manifest = manifest,
+        steps = steps)
+}
+
+#' KIT-022: the DA UI arguments are committed onto the current state before the contrasts, so the manifest's source
+#' is the head state the module and the worker see (one reference per scientific state). The contrast identity strips
+#' these arguments, so the contrast products are unchanged by the commit.
+#' @param protein_id_column The manifest's protein identifier column.
+#' @inheritParams diaDaRequest
+#' @return The committed head's reference, or NULL when the head already records these arguments.
+#' @noRd
+commitDIADaArguments <- function(manager, settings, workflow, contrasts, protein_id_column) {
+    workflow$da_ui_params <- list(q_value_threshold = settings$da_q_val_thresh,
+        log_fold_change_cutoff = settings$treat_lfc_cutoff, treat_enabled = settings$treat_lfc_cutoff > 0,
+        formula_string = settings$formula_string, timestamp = Sys.time())
+    state_record <- readDIAStateMetadata(manager)
+    checkpoint <- state_record$data
+    da_parameters <- workflow$da_ui_params
+    recorded <- checkpoint$slots$args$daAnalysisUI
+    if (identical(recorded[setdiff(names(recorded), "timestamp")],
+        da_parameters[setdiff(names(da_parameters), c("timestamp", "treat_enabled"))])) return(NULL)
+    first <- data.frame(contrasts = contrasts$full_format[[1L]], stringsAsFactors = FALSE)
+    defaults <- list(contrasts_tbl = first, formula_string = settings$formula_string,
+        da_q_val_thresh = settings$da_q_val_thresh, treat_lfc_cutoff = settings$treat_lfc_cutoff,
+        eBayes_trend = TRUE, eBayes_robust = TRUE, args_group_pattern = "(\\d+)",
+        args_row_id = protein_id_column, qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue")
+    if (is.null(checkpoint$slots$args$differentialAbundanceAnalysis))
+        checkpoint$slots$args$differentialAbundanceAnalysis <- defaults
+    checkpoint$slots$args$daAnalysisUI <- da_parameters[setdiff(names(da_parameters), "treat_enabled")]
+    if (nrow(contrasts) > 1L && is.null(checkpoint$slots$args$differentialAbundanceAnalysisHelper))
+        checkpoint$slots$args$differentialAbundanceAnalysisHelper <- defaults
+    commitDIAReferenceState(manager, manager$current_state, checkpoint,
+        state_record$config, state_record$description)
+    getDIAStateReference(manager)
+}
+
+#' The DA compute half (KIT-112 D3): one contrast's declaration on the source, reused on a hit. Worker-safe: no head
+#' write, no Shiny, no tab state. The reference-path flags the base and contrasted fits read are set for the call and
+#' their previous values restored, so the in-process runner, which holds them over its loop, is unchanged.
+#' @param manager State owner (the session's, or the worker's reopened owner), inside its state scope.
+#' @param source Saved reference of the DA source state.
+#' @param parameters One step of `diaDaRequest`.
+#' @param route The route factor of the declaration (`diaActiveRoute`).
+#' @return `list(run, base_fit)`: `runSavedOperation`'s run, and the base fit's reference when the kernel ran in this
+#'   call and fitted or reused one (else NULL).
+#' @noRd
+computeDIAReferenceDaContrast <- function(manager, source, parameters, route) {
+    context <- manager$.context
+    previous <- list(execution = context$da_reference_execution, source = context$da_source_reference)
+    context$da_reference_execution <- TRUE
+    context$da_source_reference <- source
+    on.exit({
+        context$da_reference_execution <- previous$execution
+        context$da_source_reference <- previous$source
+    }, add = TRUE)
+    run <- runSavedOperation(manager, diaContrastOperation(route), source, parameters)
+    list(run = run, base_fit = if (identical(run$status, "computed")) context$da_base_fit_reference)
+}
+
+#' The DA accept half (KIT-112 D3), in the controller on both paths: provenance cleared, the model record, the manifest
+#' saved as the head's `da_results` with its `da_dependencies`, the head published. References only.
+#' @param manager Session owner, inside its state scope.
+#' @param manifest The request half's manifest skeleton.
+#' @param results The contrasts' values by contrast name (`run$value`, or the delivered product's value).
+#' @return The accepted manifest.
+#' @noRd
+acceptDIADaManifest <- function(manager, manifest, results) {
+    context <- manager$.context
+    manifest$results <- results
+    clearDIAStepProvenance(manager) # KIT-025 audit PH-01: the contrasts commit no state
+    snapshot <- context$snapshot
+    # KIT-035: the model that ran, from the base fit's recorded factors (provenance; not part of any identity).
+    fit_factors <- context$da_base_fit_reference$metadata$factors
+    # KIT-053: the kernel's own account of the model (limma or dpcDE with the W terms) first; the limma base fit's
+    # factors beside it (NULL on the dpcDE branch, which fits no saved base fit).
+    kernel_model <- manifest$results[[1L]]$model %||% list(model = "limma")
+    manifest$model <- c(kernel_model, list(route = diaActiveRoute(manager),
+        group_id = fit_factors$group_id, technical_replicate_id = fit_factors$technical_replicate_id,
+        block_reason = kernel_model$block_reason %||% fit_factors$block_reason,
+        uses_duplicate_correlation = kernel_model$uses_duplicate_correlation %||% fit_factors$uses_duplicate_correlation,
+        consensus_correlation = fit_factors$consensus_correlation))
+    manifest_reference <- saveDIAStateValue(context, manifest, "da-result-references", codec = "rds")
+    snapshot$da_results <- manifest_reference
+    snapshot$da_dependencies[[manifest_reference$entity_id]] <- collectDIANativeReferences(
+        list(manifest$source, manifest$results))
+    publishDIAStateHead(context, snapshot)
+    manifest
+}
+
+#' The DA contrast on the managed worker (`DA-contrast-output`, KIT-112 D3): the compute half on the request's named
+#' input. The route travels in the request (the worker reopens a bare owner) and is stripped, so the declaration receives
+#' the in-process parameters. A hit is rooted with the source and the saved references its value names (F111-01). The
+#' value holds references only: the source's record, the product, its native references and the base fit's reference.
+#' @noRd
+computeWorkflowDiaContrastAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    parameters <- request$parameters
+    route <- parameters$route
+    if (!isTRUE(route %in% c("iq", "limpa")))
+        cli::cli_abort("the DA contrast request names no route", class = "workflow_operation_parameters")
+    parameters$route <- NULL
+    computed <- computeDIAReferenceDaContrast(manager, source, parameters, route)
+    run <- computed$run
+    native <- collectDIANativeReferences(run$value)
+    if (identical(run$status, "hit")) rootDIAProduct(manager, run$reference, list(source, native))
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference, native = native,
+        display = list(base_fit = computed$base_fit))
 }
 
 #' The publication identity of one accepted DA manifest (the request key of its action outputs).

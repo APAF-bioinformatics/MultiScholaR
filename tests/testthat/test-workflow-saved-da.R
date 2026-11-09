@@ -1154,3 +1154,261 @@ test_that("KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) in proces
     fixture <- savedDaW1LimpaOwner()
     savedDaW1Expect("limpa_one_contrast", savedDaW1Click(fixture, savedDaW1Contrasts(1L)))
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-112 W2 (W1 (b)): the split runner on the managed worker, at core level. Each W1 (a) click runs here as the managed
+# tab will run it: the request half in the controller, one `DA-contrast-output` action per contrast through the
+# worker's entry point (`workflowWorkerMain`) on the request's named input, the base fit adopted when delivered, the
+# accept half in the controller, then the `da_publication` step through the worker and the controller's publication,
+# and the step's delivery (`readManagedDaResult`, `completeDIADaDisplay`). The DIA clicks are also run on a twin owner
+# through today's managed path (the whole runner in the controller without its publication, then the same publication
+# step), and the two managed paths must be equal in every captured field but the `saveDIAStateValue` count (it counts
+# the head snapshots, which the worker's completions write; D6). Against W1 (a)'s frozen in-process values the worker
+# path must be equal too, except, by design: that count; the pending step provenance, which on both managed paths is the
+# `da_publication` completion's (KIT-019, unchanged; in process the accept half leaves none) and, after a worker
+# failure, is held by the worker's owner (D6); the committed step provenance of a DA-arguments commit that follows a
+# managed publication, which records that pending entry on both managed paths (draft finding, W2 notes); and in the
+# non-head case the refused publication and what it leaves (R7: today's managed outcome, the publication refuses a
+# non-head manifest).
+# ------------------------------------------------------------------------------------------------
+
+#' One managed action in this process: the request (with its named input) through the worker's entry point, the
+#' acceptance and what the tab reads. A worker failure is raised with the worker's message. Each delivered value's size
+#' and names are kept in `log`.
+savedDaW2Dispatch <- function(fixture, controller, operation, parameters, input, log = NULL) {
+    store <- fixture$workflow$state_manager$.context$store
+    id <- paste0("wfx-", substr(digest::digest(list(tempfile(), operation), algo = "sha256"), 1L, 32L))
+    paths <- workflowExportPaths(store$directory, id)
+    token <- list(request_id = id, incarnation = store$identity$incarnation, expected_head = workflowExecutionHead(store)$entity_id,
+        generation = controller$control$generation, controller_id = controller$control$controller_id)
+    writeWorkflowExecutionMessage(file.path(paths$request_dir, "publication-context.rds"),
+        list(experiment_label = "core", experiment_paths = fixture$paths, omic_type = "proteomics"))
+    writeWorkflowExportJournal(paths, list(schema = "multischolar.workflow_action.v1", request_id = id, status = "admitting",
+        expected_head = token$expected_head, token_hash = digest::digest(token, algo = "sha256")))
+    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = operation,
+        input_references = list(state = input), parameters = parameters, token = token, owner = store$identity,
+        project_root = dirname(store$directory), directory = paths$request_dir, config = list(mode = "adapters"),
+        worker_cap = 12 * 1024^3)
+    path <- file.path(paths$request_dir, "request.rds")
+    writeWorkflowExecutionMessage(path, request)
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"), suppressWarnings(suppressMessages(utils::capture.output(try(
+        workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))), silent = TRUE)))))
+    message <- readRDS(file.path(paths$request_dir, "worker-result.rds"))
+    if (!identical(message$status, "complete")) stop(message$error, call. = FALSE)
+    if (is.environment(log)) log$values[[length(log$values) + 1L]] <- list(operation = operation,
+        bytes = as.numeric(object.size(message$result)), names = names(message$result), status = message$result$status,
+        base_fit = !is.null(message$result$display$base_fit), mutable = hasMutableWorkflowEntityOwner(message$result))
+    controller$job <- list(request = list(token = token, operation = operation, config = list(mode = "adapters"),
+        parameters = parameters), paths = paths, completion_context = validateWorkflowOmicsCompletionContext(operation, NULL))
+    receipt <- acceptWorkflowActionResult(controller, message[c("schema", "status", "token", "result")])
+    accepted <- resumeWorkflowAction(controller, id)
+    c(readManagedOmicsResult(fixture$workflow$state_manager, accepted, NULL), list(acceptance = receipt$status, accepted = accepted))
+}
+
+#' The managed DA click's front: the request half in the controller, each contrast on the worker (the route in the
+#' request), the base fit adopted only when delivered (R1), the accept half in the controller. `today = TRUE` is
+#' today's managed front instead: the whole runner in the controller without its publication.
+savedDaW2Front <- function(fixture, dispatch, settings, contrasts, today = FALSE) {
+    manager <- fixture$workflow$state_manager
+    annotations <- fixture$workflow$uniprot_dat_cln
+    if (today) return(runDIAReferenceDaAnalysis(settings, fixture$da, fixture$workflow, fixture$paths, contrasts, annotations,
+        publish = FALSE))
+    request <- withDIAStateScope(manager, function() diaDaRequest(manager, settings, fixture$da, fixture$workflow, contrasts,
+        annotations))
+    route <- withDIAStateScope(manager, function() diaActiveRoute(manager))
+    results <- list()
+    for (step in request$steps) {
+        delivered <- dispatch("DA-contrast-output", c(step, list(route = route)), request$source)
+        results[[step$name]] <- delivered$value
+        if (!is.null(delivered$display$base_fit)) manager$.context$da_base_fit_reference <- delivered$display$base_fit
+    }
+    withDIAStateScope(manager, function() acceptDIADaManifest(manager, request$manifest, results))
+}
+
+#' One managed DA click: the front, then the publication step on the worker and its delivery to the tab.
+savedDaW2Managed <- function(fixture, dispatch, settings, contrasts, today = FALSE) {
+    manager <- fixture$workflow$state_manager
+    manifest <- savedDaW2Front(fixture, dispatch, settings, contrasts, today)
+    published <- dispatch("da_publication", list(annotations = NULL), getDIAStateReference(manager))
+    delivered <- withDIAStateScope(manager, function() readManagedDaResult(manager, published$accepted, NULL))
+    completeDIADaDisplay(fixture$da, fixture$workflow, delivered$manifest)
+    manifest
+}
+
+#' The tab's DA click on the managed path, captured as `savedDaW1Click` captures the in-process one.
+savedDaW2Click <- function(fixture, dispatch, contrasts, formula = "~ 0 + group", qvalue = 0.05, lfc = 0, fail = FALSE,
+    today = FALSE) {
+    fixture$workflow$contrasts_tbl <- contrasts
+    fixture$da$contrasts_available <- contrasts$contrasts
+    settings <- list(formula_string = formula, da_q_val_thresh = qvalue, treat_lfc_cutoff = lfc)
+    click <- function() savedDaW2Managed(fixture, dispatch, settings, contrasts, today)
+    run <- if (fail) savedDaW1Run(testthat::with_mocked_bindings(click(),
+        differentialAbundanceAnalysis = function(...) stop("forced DA kernel failure (KIT-112 W1)"), .package = "MultiScholaR")) else
+        savedDaW1Run(click())
+    savedDaW1Capture(fixture, run)
+}
+
+#' A dispatcher on the fixture's current owner, with a controller per owner (a reopen gets its own).
+savedDaW2Dispatcher <- function(fixture, log) {
+    owner <- NULL
+    controller <- NULL
+    function(operation, parameters, input) {
+        manager <- fixture$workflow$state_manager
+        if (!identical(manager, owner)) {
+            owner <<- manager
+            controller <<- omicsWorkerController(list(owner = manager))
+        }
+        savedDaW2Dispatch(fixture, controller, operation, parameters, input, log)
+    }
+}
+
+#' Compare one managed case with W1 (a)'s frozen in-process value: every field, with `saveDIAStateValue`'s count and
+#' the fields named in `masked` excepted (D6).
+savedDaW2Expect <- function(case, capture, masked = character(), frozen = savedDaW1Frozen()[[case]],
+    masked_calls = character()) {
+    expect_false(is.null(frozen), info = case)
+    for (field in setdiff(union(names(frozen), names(capture)), c("calls", masked))) {
+        expect_identical(capture[[field]], frozen[[field]], info = paste("worker", case, field))
+    }
+    keep <- setdiff(names(frozen$calls), c("saveDIAStateValue", masked_calls))
+    expect_identical(capture$calls[keep], frozen$calls[keep], info = paste("worker", case, "calls"))
+}
+
+#' The operation of the owner's pending step provenance (NA when none is pending).
+savedDaW2Pending <- function(fixture) fixture$workflow$state_manager$.context$pending_provenance$operation %||% NA_character_
+
+savedDaW2Mocks <- function(env = parent.frame()) {
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) },
+        .package = "MultiScholaR", .env = env)
+}
+
+#' Reopen a fixture's owner from its store, as W1 (a)'s reopened case does.
+savedDaW2Reopen <- function(fixture) {
+    closeDIAStateAdapter(fixture$workflow$state_manager)
+    reopened <- newDIAStateAdapter(newWorkflowEntityStore(fixture$root, fixture$project, "DIA"),
+        WorkflowState$new(audit_enabled = FALSE), reopen = TRUE)
+    reopened$.context$experiment_paths <- fixture$paths
+    fixture$workflow$state_manager <- reopened
+    fixture$da$current_s4_object <- getDIAStateReference(reopened)
+    invisible(reopened)
+}
+
+test_that("KIT-112 W2 (W1 (b)): the DIA DA clicks through the worker equal today's managed path and W1 (a)'s values", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    savedDaW2Mocks()
+    log <- new.env(parent = emptyenv())
+    fixture <- savedDaW1Owner("kit112-w2")
+    twin <- savedDaW1Owner("kit112-w2-today")
+    dispatch <- savedDaW2Dispatcher(fixture, log)
+    twin_dispatch <- savedDaW2Dispatcher(twin, NULL)
+    # One click on both managed paths: the worker against today's, then against W1 (a)'s frozen in-process value.
+    both <- function(case, n, ..., masked = character(), masked_calls = character()) {
+        worker <- savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(n), ...)
+        today <- savedDaW2Click(twin, twin_dispatch, savedDaW1Contrasts(n), ..., today = TRUE)
+        savedDaW2Expect(case, worker, frozen = today)
+        savedDaW2Expect(case, worker, masked = c("pending", "provenance", masked), masked_calls = masked_calls)
+        worker
+    }
+    first <- list(worker = fixture$da$current_s4_object, today = twin$da$current_s4_object)
+    both("dia_one_contrast", 1L)
+    # The pending provenance on a managed path is the publication step's completion's.
+    expect_identical(c(savedDaW2Pending(fixture), savedDaW2Pending(twin)), c("da_publication", "da_publication"))
+    both("dia_two_contrasts", 2L)
+    both("dia_repeat", 2L)
+    # R1: after the reopen every contrast hits, no base fit is delivered, and the model's base-fit fields stay NULL.
+    savedDaW2Reopen(fixture)
+    savedDaW2Reopen(twin)
+    both("dia_reopened_rerun", 2L)
+    # R7: a non-head source. Both managed paths compute and accept it, and the publication refuses it.
+    head <- list(worker = fixture$da$current_s4_object, today = twin$da$current_s4_object)
+    fixture$da$current_s4_object <- first$worker
+    twin$da$current_s4_object <- first$today
+    worker <- both("dia_non_head", 2L, masked = c("outputs", "files", "publication", "display", "error", "manifest",
+        "model_unset"), masked_calls = "publishDIAActionOutputs")
+    expect_match(worker$error, "DA manifest does not belong to the head state", fixed = TRUE)
+    fixture$da$current_s4_object <- head$worker
+    twin$da$current_s4_object <- head$today
+    both("dia_changed_arguments", 2L, lfc = 0.5)
+    both("dia_qvalue_only", 2L, qvalue = 0.01, lfc = 0.5)
+    both("dia_refused", 2L, formula = "~ 0 + absent_factor", qvalue = 0.01, lfc = 0.5)
+    # R5: each contrast's value holds references only, under the acceptance's 8 MiB; the base fit is delivered by the
+    # contrast that ran the kernel on a base fit, never by a hit.
+    contrasts <- Filter(function(entry) identical(entry$operation, "DA-contrast-output"), log$values)
+    expect_length(contrasts, 13L)
+    for (entry in contrasts) {
+        expect_lt(entry$bytes, 8388608)
+        expect_false(entry$mutable)
+        expect_identical(entry$names, c("checkpoint", "reference", "native", "display", "operation", "roots", "owned"))
+    }
+    expect_identical(vapply(contrasts, `[[`, NA, "base_fit"),
+        c(TRUE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE))
+})
+
+test_that("KIT-112 W2 (W1 (b)): a worker failure, then a retry with the same arguments, give W1 (a)'s values", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    savedDaW2Mocks()
+    fixture <- savedDaW1Owner("kit112-w2-retry")
+    dispatch <- savedDaW2Dispatcher(fixture, NULL)
+    # The worker's owner, not the controller's, held the failed contrast's pending provenance (D6).
+    savedDaW2Expect("dia_failure", savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L), fail = TRUE), masked = "pending")
+    expect_identical(savedDaW2Pending(fixture), NA_character_)
+    savedDaW2Expect("dia_retry", savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L)), masked = "pending")
+    expect_identical(savedDaW2Pending(fixture), "da_publication")
+})
+
+test_that("KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE, no base fit) gives W1 (a)'s values", {
+    skip_if_not_installed("Glimma")
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    skip_if_not(workflowOwnerCapable())
+    savedDaW2Mocks()
+    log <- new.env(parent = emptyenv())
+    fixture <- savedDaW1LimpaOwner()
+    savedDaW2Expect("limpa_one_contrast", savedDaW2Click(fixture, savedDaW2Dispatcher(fixture, log), savedDaW1Contrasts(1L)),
+        masked = "pending")
+    expect_identical(savedDaW2Pending(fixture), "da_publication")
+    expect_false(log$values[[1L]]$base_fit)
+})
+
+test_that("KIT-112 W2: the worker handler strips the route from the request, so the compute half takes the in-process parameters", {
+    step <- list(formula = "~ 0 + group", qvalue = 0.05, lfc = 0, weights = NA, contrast = "a=groupB-groupA",
+        annotations = "entity", name = "a", comparison = "a")
+    seen <- new.env(parent = emptyenv())
+    source <- list(entity_id = "source", kind = "checkpoint")
+    testthat::local_mocked_bindings(
+        computeDIAReferenceDaContrast = function(manager, source, parameters, route) {
+            seen$parameters <- parameters
+            seen$route <- route
+            list(run = list(status = "computed", value = list(), reference = list(entity_id = "product")), base_fit = NULL)
+        },
+        readWorkflowStateMetadata = function(manager, reference) list(data = list(record = reference$entity_id)),
+        .package = "MultiScholaR")
+    for (route in c("iq", "limpa")) {
+        value <- computeWorkflowDiaContrastAction(NULL, list(input_references = list(state = source),
+            parameters = c(step, list(route = route))), "whole")
+        expect_identical(seen$parameters, step, info = route)
+        expect_identical(seen$route, route)
+        expect_identical(value$checkpoint, list(record = "source"))
+        expect_identical(value$display, list(base_fit = NULL))
+    }
+    expect_error(computeWorkflowDiaContrastAction(NULL, list(input_references = list(state = source), parameters = step), "whole"),
+        class = "workflow_operation_parameters")
+})
+
+test_that("KIT-112 W2 (D4): the DIA adaptor's `da` entry names the registered omics operation, the publication step and existing functions", {
+    da <- proteomicsDiaBinding$da
+    expect_identical(names(da), c("operation", "in_process", "request", "accept", "publication"))
+    entry <- workflowActionSpec(da$operation)
+    expect_identical(entry[c("compute", "handler", "completion", "named_input")],
+        list(compute = "omics", handler = "computeWorkflowDiaContrastAction", completion = "omics", named_input = TRUE))
+    expect_true(is.function(get(entry$handler, envir = asNamespace("MultiScholaR"), mode = "function")))
+    expect_identical(workflowActionSpec(da$publication)$compute, "protein")
+    for (field in c("in_process", "request", "accept")) expect_true(is.function(da[[field]]), info = field)
+    for (name in c("runDIAReferenceDaAnalysis", "diaDaRequest", "acceptDIADaManifest", "computeDIAReferenceDaContrast"))
+        expect_true(exists(name, envir = asNamespace("MultiScholaR"), mode = "function", inherits = FALSE), info = name)
+    expect_identical(names(formals(runDIAReferenceDaAnalysis)),
+        c("settings", "da_data", "workflow", "paths", "contrasts", "annotations", "publish"))
+})

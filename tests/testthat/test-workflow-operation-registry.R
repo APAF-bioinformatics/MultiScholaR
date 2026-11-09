@@ -161,8 +161,8 @@ test_that("the DA publication is a registered worker operation with its own comp
     expect_null(validateWorkflowDaPublicationParameters(list(), NULL))
 })
 
-test_that("the whole-matrix DA declarations refuse worker dispatch (KIT-024); the normalisation tab's four run on the omics role (KIT-111 D11)", {
-    for (name in c("DA-contrast-output", "enrichment")) {
+test_that("the enrichment declaration refuses worker dispatch (KIT-024); the normalisation tab's four and the DA contrast run on the omics role (KIT-111 D11, KIT-112 D11)", {
+    for (name in c("enrichment")) {
         entry <- workflowActionSpec(name)
         expect_identical(entry$compute, "in_process")
         expect_null(entry$handler)
@@ -172,7 +172,12 @@ test_that("the whole-matrix DA declarations refuse worker dispatch (KIT-024); th
     }
     # KIT-111 D11, a deliberate contract change: the four move to the managed worker's omics role with their handlers.
     handlers <- c(`normalization-ruv` = "computeWorkflowDiaNormalizationAction", `pearson-pairs` = "computeWorkflowDiaPearsonPairsAction",
-        `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction")
+        `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction",
+        `DA-contrast-output` = "computeWorkflowDiaContrastAction")
+    # KIT-112 D3: the DA contrast takes a named input and, by the omics loop's rule, no `@args` section.
+    expect_true(isTRUE(workflowActionSpec("DA-contrast-output")$named_input))
+    expect_true("section" %in% names(workflowActionSpec("DA-contrast-output")))
+    expect_null(workflowActionSpec("DA-contrast-output")$section)
     for (name in names(handlers)) {
         entry <- workflowActionSpec(name)
         expect_identical(entry[c("compute", "handler", "validate", "completion", "publication", "variants", "default_variant", "omic_type")],
@@ -330,10 +335,10 @@ test_that("the RUV covariates step's ruv_mode is the tab's choice with no shippe
   expect_true("ruv_mode" %in% workflowActionSpec("protein_ruv_covariates")$parameters)
 })
 
-test_that("KIT-111 F111-03: only the normalisation tab's four take a named input that is not the head; every other operation keeps the head rule", {
-    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates")
+test_that("KIT-111 F111-03, KIT-112 D11: only the normalisation tab's four and the DA contrast take a named input that is not the head; every other operation keeps the head rule", {
+    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates", "DA-contrast-output")
     for (name in named) expect_true(isTRUE(workflowActionSpec(name)$named_input), info = name)
-    for (name in c("protein_intensity_filter", "precursor_rollup", "DA-contrast-output", "lipid_pearson_pairs"))
+    for (name in c("protein_intensity_filter", "precursor_rollup", "lipid_pearson_pairs"))
         expect_null(workflowActionSpec(name)$named_input, info = name)
     head <- list(entity_id = "head", kind = "state")
     other <- list(entity_id = "normalised-final", kind = "state")

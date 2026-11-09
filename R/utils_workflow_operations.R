@@ -691,7 +691,8 @@ registerBuiltinWorkflowOperations <- function() {
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE))
     # KIT-024: the whole-matrix declarations that run in process only (KIT-004, KIT-016) are registered too, so the
     # registry is the one place an operation is named (KIT-007); a dispatch of one to the worker is refused.
-    for (declaration in list(diaContrastOperation(), diaEnrichmentOperation())) {
+    # KIT-112 D3: the DA contrast left this loop for the omics one below; the enrichment stays in process (KIT-113).
+    for (declaration in list(diaEnrichmentOperation())) {
         registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
             compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),
@@ -703,10 +704,13 @@ registerBuiltinWorkflowOperations <- function() {
     # completion commits the handler's commit description. A step whose kernel writes no `@args` section the route maps
     # declares `section = NULL` (the RUV covariates map `ruvCovariates`). F111-03: each takes a named input (the
     # normalisation's source, its final for the correlation, the selection for the covariates), which is not the head.
+    # KIT-112 D3: the DA contrast (one action per contrast, its source named as in process) joins them; its handler
+    # builds the route's declaration from the request, and the controller's accept half clears its provenance.
     handlers <- c(`normalization-ruv` = "computeWorkflowDiaNormalizationAction", `pearson-pairs` = "computeWorkflowDiaPearsonPairsAction",
-        `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction")
+        `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction",
+        `DA-contrast-output` = "computeWorkflowDiaContrastAction")
     for (declaration in list(diaNormalizationOperation(), diaPearsonPairsOperation(), diaPearsonSelectionOperation(),
-        diaRuvCovariatesOperation())) {
+        diaRuvCovariatesOperation(), diaContrastOperation())) {
         registerWorkflowOperation(c(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
             compute = "omics", handler = handlers[[declaration$name]], validate = "validateWorkflowOmicsParameters", resolve = NULL,
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),
