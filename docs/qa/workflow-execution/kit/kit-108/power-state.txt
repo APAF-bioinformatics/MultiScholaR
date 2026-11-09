@@ -16,3 +16,5 @@ kit-journey-108l start 22:25:22 at 2b28e28a: AC 1, profile low-power, battery 10
 kit-journey-108l end 22:28:22: AC 1, profile low-power, battery 100%, load 0.91, available 30 GiB
 kit-journey-108t start 22:28:25 at 43b2e93e: AC 1, profile low-power, battery 100%, load 0.91, available 30 GiB
 kit-journey-108t end 22:31:05: AC 1, profile low-power, battery 100%, load 1.56, available 29 GiB
+kit-journey-108v start 22:31:07 at de091102: AC 1, profile low-power, battery 100%, load 1.44, available 29 GiB
+kit-journey-108v end 22:52:47: AC 1, profile low-power, battery 100%, load 0.91, available 30 GiB
