@@ -1628,7 +1628,8 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
         "metab_norm_complete", "metab_ruv_corrected", "metab_normalized", "loaded_for_de", "metab_qc_complete"),
         read_ids = readMetabWorkflowIds))
     expect_identical(summaries$proteomics$final_state, list())
-    expect_identical(summaries$transcriptomics$final_state, list())
+    # KIT-108 W3 wired trx's context (moved to utils_workflow_summary.R).
+    expect_identical(summaries$transcriptomics$final_state, list(context = trxSummaryContext))
     # The record's owner class; the copy.
     expect_identical(summaries$proteomics$record_class, "DIAStateAdapter")
     for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
@@ -1645,7 +1646,7 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     expect_identical(summaries$metabolomics$integration, list(filename = "%s_%s_final_s4.RDS",
         operation = "metab_integration_export", write = NULL, requires = NULL))
     expect_identical(summaries$transcriptomics$integration, list(filename = "transcriptomics_normalized_data.tsv",
-        operation = "trx_integration_export", requires = "trx_ruviii_export",
+        operation = "trx_integration_export", write = trxSummaryIntegrationWrite, requires = "trx_ruviii_export",
         missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."))
     # The report.
     # The report flow's per-omic order (W1's captures, test-omic-summary-module.R): metab renders after a failed
@@ -1663,20 +1664,23 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     for (summary in summaries) {
         expect_true(dir.exists(system.file("reports", summary$report$dir, package = "MultiScholaR")), info = summary$report$dir)
     }
-    # No session-state payload yet (every omic's is in an R/mod_*.R file at the start commit).
-    for (omic in guiConfigOmics) expect_false("session_state" %in% names(summaries[[omic]]), info = omic)
+    # The session-state payload: KIT-108 W3 wired lipid's, metab's and trx's (utils_workflow_summary.R); proteomics' is
+    # still in an R/mod_*.R file (W4).
+    expect_false("session_state" %in% names(summaries$proteomics))
+    expect_identical(summaries$lipidomics$session_state, prepareLipidSummarySessionState)
+    expect_identical(summaries$metabolomics$session_state, prepareMetabSummarySessionState)
+    expect_identical(summaries$transcriptomics$session_state, trxSummarySessionState)
     # The texts that differ per omic.
     expect_identical(summaries$proteomics$texts, c(integration_saved = "Saved Integration artifact",
         progress_detect = "Detecting workflow type..."))
     expect_identical(summaries$lipidomics$texts, character())
     expect_identical(summaries$metabolomics$texts, character())
     expect_identical(summaries$transcriptomics$texts, c(integration_not_written = "not written (no integration export yet)"))
-    # Trx's values equal trxOmicProfile()'s summary entries today (mod_transcriptomics.R:39-57).
+    # Trx's template values equal trxOmicProfile()'s (mod_transcriptomics.R:39); KIT-108 W3 removed the profile's summary
+    # entries (`trxNormDaSummaryProfile`), whose values are pinned above as literals, unchanged.
     profile <- trxOmicProfile()
     trx <- summaries$transcriptomics
-    expect_identical(c(trx$placeholder, trx$description, trx$integration$filename, trx$integration$missing_message,
-        trx$report$template, trx$report$dir), c(profile$summary_placeholder, profile$summary_description,
-        profile$integration_filename, profile$integration_missing_message, profile$report_template, profile$report_dir))
+    expect_identical(c(trx$report$template, trx$report$dir), c(profile$report_template, profile$report_dir))
     # The export steps: none for proteomics, lipid and metab; trx's RUVIII export (D4).
     for (omic in c("proteomics", "lipidomics", "metabolomics")) expect_identical(summaries[[omic]]$export_steps, list(), info = omic)
     expect_length(trx$export_steps, 1L)
@@ -1688,16 +1692,18 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
             "or the design's technical replicates when it has them."),
         choice = list(output = "ruviii_m_ui", input = "ruviii_m_source", label = "Replicate structure M:",
             selected = "group", unavailable = c("Technical replicates: not available; the design has no technical",
-                "replicates (trx_ruviii_replicates_invalid).")),
+                "replicates (trx_ruviii_replicates_invalid)."), choices = trxRuviiiMChoices,
+            available = trxHeadHasTechnicalReplicates),
         button = list(input = "run_ruviii_export", label = "Run RUVIII Export", testid = "trx-summary-ruviii-export",
             icon = "play", class = "btn-primary"),
-        status = list(output = "ruviii_status", idle = "Not run yet."),
+        status = list(output = "ruviii_status", idle = "Not run yet.", text = trxRuviiiStatusText),
         figure = list(output = "ruviii_before_after", file = "ruviii_before_and_after.png", dir = "publication_graphs_dir",
             height = "500px", image = c(content_type = "image/png", width = "100%", height = "auto"),
             alt = "RUVIII before and after", alt_idle = "RUVIII export not run yet"),
         operation = "trx_ruviii_export"))
     expect_identical(step$accept, acceptTrxRuviiiExport)
     expect_identical(step$run_reference, runTrxReferenceRuviiiExport)
+    expect_identical(step$parameters, trxRuviiiExportParameters)
     expect_identical(step$publications, list(list(operation = "trx_qc_figures", parameters = list(stage = "ruviii")),
         list(operation = "trx_composite_figure", parameters = list(figure = "ruviii_before_and_after"))))
     expect_identical(step$error, list(prefix = "RUVIII export error:", type = "error", duration = 15))

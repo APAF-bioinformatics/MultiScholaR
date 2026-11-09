@@ -4591,3 +4591,17 @@ for (case in omicSummaryW1Selected) {
         })
     })
 }
+
+# KIT-108 W3, F108-03 (the lead's decision): trx's save before the RUVIII export refuses the integration write with the
+# gate's warning, and shows no "Saved Integration" notice (the start commit's handler showed one, and wrote nothing).
+# Written first: it fails on the start commit's handlers (kit-108/w3/test-first.txt).
+test_that("(W3, F108-03) trx: the save before the RUVIII export shows the gate's warning and no \"Saved Integration\" notice", {
+    spec <- omicSummaryW1CaseSpec("trx_main", environment())
+    captures <- omicSummaryW1Drive(spec$setup, spec$steps[c("norm", "da", "report_before_copy", "save_before_export")])
+    saved <- captures$save_before_export
+    expect_identical(saved$notes, c(paste("[warning 10 -] The integration export needs the RUVIII export: run it in the",
+        "panel above, then save again."), "[message 5 -] Study parameters saved successfully"))
+    expect_match(saved$values[["session_summary"]], "Integration Object: not written (no integration export yet)", fixed = TRUE)
+    expect_identical(saved$reactive_values[["workflow_args_saved"]], "TRUE")
+    expect_identical(list.files(spec$setup$paths$integration_dir), character())
+})

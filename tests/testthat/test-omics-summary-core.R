@@ -1,0 +1,345 @@
+# KIT-108 W3 (D3, D4): the Summary & Export tab's core (R/utils_workflow_summary.R), its entries tested directly.
+#   - The 20 lipid, metab and trx functions D3's map moves are in the core file, unchanged by name; the core calls no
+#     Shiny UI function.
+#   - Core side (live): each entry, called directly in W1 (b)'s session on W1 (b)'s lipid, metab and trx fixtures in
+#     place of the tab's button, gives W1 (b)'s frozen notifications, progress, arguments (the recorders' calls), the
+#     `project_dirs` global and the files of that step: `saveWorkflowSummaryParameters` (in process, managed, the record
+#     failing, trx's gate), `copyWorkflowSummaryResults` (complete, an optional artifact missing, required ones missing),
+#     `renderWorkflowSummaryReport` (the template copied from the package, in the project, the GitHub fallback failing
+#     offline; the record bundle failing), `writeWorkflowSummarySessionState` and `runWorkflowSummaryExportStep` (in
+#     process and managed). F108-03: the save before trx's RUVIII export shows no "Saved Integration" notice.
+#   - Comparison side: the start commit's handlers (the old modules' buttons, the same W1 (b) cases) give the same fields
+#     as the core side, apart from F108-03's notice. One block, quarantined when W3 deletes the handlers (Q-175).
+#   - The copy's classification by `copy$required`, and the template's ensure order (the project's copy, the package's,
+#     the GitHub download; a failed retrieval stops the report unless `report$render_after_failed_template`).
+
+# W1 (b)'s helpers and frozen captures: every top-level assignment of test-omic-summary-module.R (its blocks are not run).
+for (omicsSummaryCoreW1Expression in parse(testthat::test_path("test-omic-summary-module.R"), keep.source = FALSE)) {
+    if (is.call(omicsSummaryCoreW1Expression) && identical(omicsSummaryCoreW1Expression[[1L]], as.name("<-"))) {
+        eval(omicsSummaryCoreW1Expression, environment())
+    }
+}
+rm(omicsSummaryCoreW1Expression)
+
+test_that("(W3) the moved lipid, metab and trx functions are in the core file; the core calls no Shiny UI function", {
+    moved <- c("buildLipidSummarySessionState", "lipidSummaryFirstNonNull", "getLipidSummaryWorkflowValue",
+        "getLipidSummaryStateObject", "getLipidSummaryObjectArgs", "buildLipidSummaryParameterPayload",
+        "prepareLipidSummarySessionState", "metabSummaryFirstNonNull", "getMetabSummaryWorkflowValue",
+        "getMetabSummaryStateObject", "getMetabSummaryObjectArgs", "buildMetabSummaryParameterPayload",
+        "prepareMetabSummarySessionState", "trxRuviiiMChoices", "trxHeadHasTechnicalReplicates", "trxRuviiiStatusText",
+        "trxSummaryContext", "trxSummaryStateObject", "trxSummaryIntegrationWrite", "trxSummaryIntegrationReady")
+    entries <- c("workflowSummaryFinalState", "saveWorkflowSummaryParameters", "startWorkflowSummaryIntegrationExport",
+        "copyWorkflowSummaryResults", "renderWorkflowSummaryReport", "writeWorkflowSummarySessionState",
+        "workflowSummaryTemplateStatus", "runWorkflowSummaryExportStep", "trxRuviiiExportParameters",
+        "trxSummarySessionState")
+    expect_length(moved, 20L)
+    ns <- asNamespace("MultiScholaR")
+    for (name in c(moved, entries)) {
+        expect_true(exists(name, envir = ns, inherits = FALSE), info = name)
+        if (!exists(name, envir = ns, inherits = FALSE)) next
+        fn <- get(name, envir = ns, inherits = FALSE)
+        # Source files are known under load_all only; the installed package keeps no srcref (KIT-104 ca35c462's rule).
+        if (!is.null(utils::getSrcref(fn))) expect_identical(utils::getSrcFilename(fn), "utils_workflow_summary.R", info = name)
+    }
+    if (!is.null(utils::getSrcref(get("saveWorkflowSummaryParameters", envir = ns)))) {
+        source <- readLines(testthat::test_path("..", "..", "R", "utils_workflow_summary.R"))
+        code <- sub("#.*$", "", source)
+        expect_false(any(grepl("shiny::", code, fixed = TRUE)))
+    }
+})
+
+# ------------------------------------------------------------------------------------------------
+# Core side: the entries in W1 (b)'s session, in place of the tab's buttons.
+# ------------------------------------------------------------------------------------------------
+
+#' The fields an entry's step is compared on (the frame renders the outputs and holds the reactive values).
+omicsSummaryCoreFields <- c("notes", "progress", "calls", "global", "files", "study_parameters", "integration",
+    "session_state")
+
+#' The cases, and the steps each replaces with its entry.
+omicsSummaryCoreCases <- c("lipid_main", "lipid_variants", "lipid_required_missing", "lipid_github_fallback",
+    "lipid_managed", "metab_main", "metab_variants", "metab_required_missing", "metab_github_fallback", "metab_managed",
+    "trx_main", "trx_managed")
+
+#' A W1 (b) case with its save, copy, report, export and RUVIII steps calling the core entries directly. The tab's
+#' values the frame would hold (saved, copied, the report) are kept in `held`, as the frame keeps them.
+omicsSummaryCoreSteps <- function(case, steps, setup) {
+    omic <- c(lipid = "lipidomics", metab = "metabolomics", trx = "transcriptomics")[[setup$omic]]
+    held <- new.env(parent = emptyenv())
+    held$saved <- FALSE
+    held$copied <- FALSE
+    held$generated <- FALSE
+    label <- "kit108"
+    config <- function() omicGuiConfig(omic)$summary
+    save <- function(ctx) shiny::isolate(saveWorkflowSummaryParameters(config(), ctx$bus(), setup$project_dirs, omic, label,
+        setup$description, notify = omicSummaryNotify, done = function(saved) held$saved <- TRUE,
+        failed = function(error) held$saved <- TRUE))
+    copy <- function(ctx) {
+        copied <- shiny::isolate(shiny::withProgress(message = "Copying files to publication directory...",
+            copyWorkflowSummaryResults(config(), ctx$bus(), setup$project_dirs, omic, label, setup$description,
+                argsSaved = held$saved, notify = omicSummaryNotify)))
+        if (isTRUE(copied$fallbackWritten)) held$saved <- TRUE
+        if (is.null(copied$error)) held$copied <- TRUE
+    }
+    report <- function(ctx) {
+        report <- shiny::isolate(renderWorkflowSummaryReport(config(), ctx$bus(), setup$project_dirs, omic, label,
+            notify = omicSummaryNotify, progress = omicSummaryProgress,
+            within = function(message, code) shiny::withProgress(message = message, code)))
+        if (!is.null(report$path)) {
+            held$generated <- TRUE
+            held$path <- report$path
+        }
+    }
+    export <- function(ctx) shiny::isolate(writeWorkflowSummarySessionState(config(), ctx$bus(), setup$project_dirs, omic,
+        label, setup$description, values = list(workflow_args_saved = held$saved, files_copied = held$copied,
+            report_generated = held$generated, report_path = held$path), notify = omicSummaryNotify))
+    ruviii <- function(m_source) function(ctx) {
+        step <- config()$export_steps[[1L]]
+        shiny::isolate(runWorkflowSummaryExportStep(step, ctx$bus(), setup$project_dirs[[omic]], m_source,
+            done = function(shown) invisible(shown), binding = transcriptomicsDeclarationBinding,
+            failed = function(error) shiny::showNotification(paste(step$error$prefix, trxConditionText(error)),
+                type = step$error$type, duration = step$error$duration)))
+        export <- ctx$setup$owner$.context$snapshot$exports$trx_ruviii_export
+        value <- if (!is.null(export)) hydrateSavedWorkflowEntity(ctx$setup$owner$.context$store, export$reference)$value
+        ctx$keep("ruviii", if (is.null(value)) "<none>" else c(m_source = value$m_source, k = as.character(value$k),
+            controls = as.character(value$control_count %||% sum(value$ctl_mask)),
+            newY = sprintf("%dx%d %s", nrow(value$newY), ncol(value$newY), omicSummaryW1Short(value$newY))))
+    }
+    fault <- function(name, value, then) function(ctx) {
+        ctx$fault(name, value)
+        then(ctx)
+    }
+    entries <- list(save = save, save_before_export = save, save_record_fails = fault("record", TRUE, save),
+        copy = if (grepl("_variants$", case)) fault("record", FALSE, copy) else copy, report = report,
+        report_fallback = report, report_bundle_fails = fault("bundle", TRUE, report), export = export,
+        ruviii = ruviii("group"), ruviii_unavailable = ruviii("technical_replicate"))
+    # A report refused at the tab's gate (the copy failed) is the frame's, not the entry's.
+    if (grepl("_required_missing$", case)) entries$report <- NULL
+    replaced <- intersect(names(steps), names(entries))
+    steps[replaced] <- entries[replaced]
+    list(steps = steps, replaced = replaced)
+}
+
+#' A case driven on the core: the captures of its entry steps.
+omicsSummaryCoreRun <- function(case) {
+    env <- environment()
+    spec <- omicSummaryW1CaseSpec(case, env)
+    core <- omicsSummaryCoreSteps(case, spec$steps, spec$setup)
+    captures <- omicSummaryW1Drive(spec$setup, core$steps)
+    list(captures = captures, replaced = core$replaced)
+}
+
+#' F108-03 (the lead's decision): the save before trx's RUVIII export shows the gate's warning and no "Saved
+#' Integration" notice (W1 (b)'s capture re-frozen once at W3; this holds before and after that re-freeze).
+omicsSummaryCoreExpected <- function(case, step, field) {
+    frozen <- omicSummaryW1Frozen[[case]][[step]][[field]]
+    if (identical(c(case, step, field), c("trx_main", "save_before_export", "notes"))) {
+        frozen <- setdiff(frozen, "[message 5 -] Saved Integration S4 Object")
+    }
+    frozen
+}
+
+for (omicsSummaryCoreCase in omicsSummaryCoreCases) {
+    local({
+        case <- omicsSummaryCoreCase
+        test_that(sprintf("(W3, core side) %s: each entry gives W1 (b)'s notifications, progress, arguments, global and files", case), {
+            run <- omicsSummaryCoreRun(case)
+            expect_gt(length(run$replaced), 0L)
+            for (step in run$replaced) {
+                for (field in omicsSummaryCoreFields) {
+                    expect_identical(run$captures[[step]][[field]], omicsSummaryCoreExpected(case, step, field),
+                        info = paste(case, step, field))
+                }
+                if (!is.null(omicSummaryW1Frozen[[case]][[step]]$ruviii)) {
+                    expect_identical(run$captures[[step]]$ruviii, omicSummaryW1Frozen[[case]][[step]]$ruviii,
+                        info = paste(case, step))
+                }
+            }
+        })
+    })
+}
+rm(omicsSummaryCoreCase)
+
+# Comparison side: quarantined when W3 deletes the start commit's lipid, metab and trx handlers, Q-175.
+test_that("(W3, comparison side) the start commit's handlers give the core entries' notifications, progress, arguments, global and files", {
+    for (case in omicsSummaryCoreCases) {
+        core <- omicsSummaryCoreRun(case)
+        old <- omicSummaryW1Case(case)
+        for (step in core$replaced) {
+            for (field in omicsSummaryCoreFields) {
+                expected <- old[[step]][[field]]
+                # F108-03: the start commit's handler showed the notice after a refused write.
+                if (identical(c(case, step, field), c("trx_main", "save_before_export", "notes"))) {
+                    expect_true("[message 5 -] Saved Integration S4 Object" %in% expected)
+                    expected <- setdiff(expected, "[message 5 -] Saved Integration S4 Object")
+                }
+                expect_identical(core$captures[[step]][[field]], expected, info = paste(case, step, field))
+            }
+        }
+    }
+})
+
+# ------------------------------------------------------------------------------------------------
+# The classification, the template's ensure order and the integration gate.
+# ------------------------------------------------------------------------------------------------
+
+#' A project's summary directories under a temporary base.
+omicsSummaryCoreDirs <- function(omic = "lipidomics", env = parent.frame()) {
+    base <- withr::local_tempdir(.local_envir = env)
+    paths <- list(base_dir = base, source_dir = file.path(base, "scripts", omic), integration_dir = file.path(base, "integration"),
+        results_summary_dir = file.path(base, "results_summary"))
+    for (dir in paths) dir.create(dir, recursive = TRUE, showWarnings = FALSE)
+    stats::setNames(list(paths), omic)
+}
+
+omicsSummaryCoreNotes <- function() {
+    notes <- new.env(parent = emptyenv())
+    notes$shown <- character()
+    notes$progress <- character()
+    notes$notify <- function(message, type, duration) {
+        notes$shown <- c(notes$shown, sprintf("[%s %s] %s", type, if (is.null(duration)) "NULL" else format(duration), message))
+    }
+    notes$step <- function(value, detail) notes$progress <- c(notes$progress, paste(value, detail))
+    notes
+}
+
+test_that("(W3) the copy classifies copyToResultsSummary's failures by copy$required: a required one stops the copy; NULL leaves them unclassified", {
+    dirs <- omicsSummaryCoreDirs()
+    withr::local_options(list())
+    had <- exists("project_dirs", envir = .GlobalEnv, inherits = FALSE)
+    old <- if (had) get("project_dirs", envir = .GlobalEnv)
+    withr::defer(if (had) assign("project_dirs", old, envir = .GlobalEnv) else if (exists("project_dirs", envir = .GlobalEnv,
+        inherits = FALSE)) rm("project_dirs", envir = .GlobalEnv))
+    config <- omicGuiConfig("lipidomics")$summary
+    failures <- list(list(display_name = "Design Matrix"), list(display_name = "Heatmaps"))
+    copy <- function(...) failures
+    notes <- omicsSummaryCoreNotes()
+    out <- copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = TRUE, notify = notes$notify,
+        copyFn = copy)
+    expect_identical(out$error, "Required publication artifacts missing: Design Matrix")
+    expect_identical(notes$shown, "[error 10] Copy error: Required publication artifacts missing: Design Matrix")
+    failures <- list(list(display_name = "Heatmaps"))
+    notes <- omicsSummaryCoreNotes()
+    out <- copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = TRUE, notify = notes$notify,
+        copyFn = copy)
+    expect_null(out$error)
+    expect_identical(out$optional, failures)
+    expect_identical(notes$shown, "[warning 5] Publication files copied with optional missing artifacts")
+    # Unclassified (proteomics' copy$required = NULL): copied whatever is missing.
+    config$copy$required <- NULL
+    failures <- list(list(display_name = "Design Matrix"))
+    notes <- omicsSummaryCoreNotes()
+    out <- copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = TRUE, notify = notes$notify,
+        copyFn = copy)
+    expect_null(out$error)
+    expect_identical(out$optional, list())
+    expect_identical(notes$shown, "[message 5] Publication files copied")
+    # Not saved: the fallback study parameters are written once, and reported.
+    out <- copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = FALSE,
+        notify = notes$notify, copyFn = copy)
+    expect_true(out$fallbackWritten)
+    expect_match(readLines(file.path(dirs$lipidomics$source_dir, "study_parameters.txt"))[[4L]], "Workflow Name: kit108")
+    expect_false(copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = FALSE,
+        notify = notes$notify, copyFn = copy)$fallbackWritten)
+})
+
+test_that("(W3) the report ensures its template in order: the project's copy, the package's, the GitHub download; a failed retrieval stops it unless render_after_failed_template", {
+    config <- omicGuiConfig("lipidomics")$summary
+    rendered <- character()
+    render <- function(omic_type, experiment_label, rmd_filename) {
+        rendered <<- c(rendered, rmd_filename)
+        path <- file.path(tempdir(), "kit108-core-report.docx")
+        writeLines("report", path)
+        path
+    }
+    # The package's copy.
+    dirs <- omicsSummaryCoreDirs()
+    notes <- omicsSummaryCoreNotes()
+    out <- renderWorkflowSummaryReport(config, NULL, dirs, "lipidomics", "kit108", notes$notify, notes$step, renderFn = render)
+    expect_identical(out$templateSource, "package")
+    expect_true(file.exists(file.path(dirs$lipidomics$source_dir, "lipidomics_report.rmd")))
+    expect_identical(notes$progress, c("0.2 Checking for lipidomics_report.rmd template...", "0.5 Rendering report..."))
+    expect_identical(notes$shown, c("[message 5] lipidomics_report.rmd template copied from package",
+        "[message 5] Report generated successfully!"))
+    # The project's copy: no check.
+    notes <- omicsSummaryCoreNotes()
+    out <- renderWorkflowSummaryReport(config, NULL, dirs, "lipidomics", "kit108", notes$notify, notes$step, renderFn = render)
+    expect_identical(out$templateSource, "existing")
+    expect_identical(notes$progress, "0.5 Rendering report...")
+    # The check's progress always (proteomics' flag).
+    always <- config
+    always$report$checking_progress_always <- TRUE
+    notes <- omicsSummaryCoreNotes()
+    renderWorkflowSummaryReport(always, NULL, dirs, "lipidomics", "kit108", notes$notify, notes$step, renderFn = render)
+    expect_identical(notes$progress, c("0.2 Checking for lipidomics_report.rmd template...", "0.5 Rendering report..."))
+    # The GitHub download, when the package has no template (a directory it does not ship).
+    missing <- config
+    missing$report$dir <- "kit108-absent"
+    downloads <- character()
+    download <- function(url, destfile, quiet) {
+        downloads <<- c(downloads, url)
+        writeLines("template", destfile)
+    }
+    dirs <- omicsSummaryCoreDirs()
+    notes <- omicsSummaryCoreNotes()
+    out <- renderWorkflowSummaryReport(missing, NULL, dirs, "lipidomics", "kit108", notes$notify, notes$step,
+        renderFn = render, downloadFileFn = download)
+    expect_identical(out$templateSource, "github")
+    expect_identical(downloads,
+        "https://raw.githubusercontent.com/APAF-bioinformatics/MultiScholaR/main/inst/reports/kit108-absent/lipidomics_report.rmd")
+    # A failed retrieval stops the report, or (metab's flag) renders anyway.
+    offline <- function(url, destfile, quiet) stop("offline")
+    for (render_after in c(FALSE, TRUE)) {
+        missing$report$render_after_failed_template <- render_after
+        dirs <- omicsSummaryCoreDirs()
+        notes <- omicsSummaryCoreNotes()
+        rendered <- character()
+        out <- renderWorkflowSummaryReport(missing, NULL, dirs, "lipidomics", "kit108", notes$notify, notes$step,
+            renderFn = render, downloadFileFn = offline)
+        expect_null(out$templateSource)
+        expect_identical(notes$shown[[1L]], "[error 10] Template retrieval failed: offline")
+        expect_identical(length(rendered), as.integer(render_after), info = render_after)
+    }
+    # Project directories not initialised: refused before the progress display.
+    notes <- omicsSummaryCoreNotes()
+    started <- FALSE
+    out <- renderWorkflowSummaryReport(config, NULL, list(), "lipidomics", "kit108", notes$notify, notes$step,
+        within = function(message, code) started <<- TRUE, renderFn = render)
+    expect_null(out$path)
+    expect_false(started)
+    expect_identical(notes$shown, "[error 10] Error: Project directories not properly initialized")
+})
+
+test_that("(W3, F108-03) a save the integration gate refuses shows the gate's warning and no \"Saved Integration\" notice; an accepted export writes and says so", {
+    config <- omicGuiConfig("transcriptomics")$summary
+    dirs <- omicsSummaryCoreDirs("transcriptomics")
+    paths <- dirs$transcriptomics
+    written <- character()
+    config$final_state$context <- function(workflowData, catFn) list(finalS4Object = NULL, contrastsTbl = NULL,
+        dataStateUsed = "trx_ruvs")
+    config$integration$write <- function(workflowData, path) {
+        written <<- c(written, path)
+        writeLines("integration", path)
+    }
+    args <- function(...) file.path(paths$source_dir, "study_parameters.txt")
+    record <- function(manager, path) invisible(path)
+    for (accepted in c(FALSE, TRUE)) {
+        manager <- new.env()
+        manager$.context <- list(snapshot = list(exports = if (accepted) list(trx_ruviii_export = list(reference = "r"))))
+        notes <- omicsSummaryCoreNotes()
+        saved <- NULL
+        saveWorkflowSummaryParameters(config, list(state_manager = manager), dirs, "transcriptomics", "kit108", "d",
+            notify = notes$notify, done = function(value) saved <<- value, failed = function(error) stop(error),
+            createWorkflowArgsFn = args, writeAnalysisRecordFn = record)
+        if (accepted) {
+            expect_identical(notes$shown, c("[message 5] Saved Integration S4 Object", "[message 5] Study parameters saved successfully"))
+            expect_identical(saved$integrationFile, "transcriptomics_normalized_data.tsv")
+            expect_identical(written, file.path(paths$integration_dir, "transcriptomics_normalized_data.tsv"))
+        } else {
+            expect_identical(notes$shown, c(paste("[warning 10] The integration export needs the RUVIII export: run it in the",
+                "panel above, then save again."), "[message 5] Study parameters saved successfully"))
+            expect_identical(saved$integrationFile, "not written (no integration export yet)")
+            expect_identical(written, character())
+        }
+    }
+})

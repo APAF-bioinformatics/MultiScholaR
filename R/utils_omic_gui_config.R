@@ -1508,7 +1508,8 @@ omicGuiLipidSummary <- function() {
         report = list(dir = "lipidomics", template = "lipidomics_report.rmd", label = "Lipidomics", status = NULL,
             render_after_failed_template = FALSE, checking_progress_always = FALSE, record_after_success = FALSE),
         export_steps = list(),
-        texts = character())
+        texts = character(),
+        session_state = prepareLipidSummarySessionState)
 }
 
 #' The lipid DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
@@ -1724,7 +1725,8 @@ omicGuiMetabSummary <- function() {
         report = list(dir = "metabolomics", template = "metabolomics_report.rmd", label = "Metabolomics", status = NULL,
             render_after_failed_template = TRUE, checking_progress_always = FALSE, record_after_success = FALSE),
         export_steps = list(),
-        texts = character())
+        texts = character(),
+        session_state = prepareMetabSummarySessionState)
 }
 
 #' The metab DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
@@ -1947,17 +1949,18 @@ omicGuiConfigTranscriptomics <- function() {
 omicGuiTrxSummary <- function() {
     list(module_id = "summary", testid = "trx", placeholder = "e.g., my_transcriptomics_analysis",
         description = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export",
-        final_state = list(),
+        final_state = list(context = trxSummaryContext),
         record_class = NULL,
         copy = omicGuiFeatureSummaryCopy(),
         integration = list(filename = "transcriptomics_normalized_data.tsv", operation = "trx_integration_export",
-            requires = "trx_ruviii_export",
+            write = trxSummaryIntegrationWrite, requires = "trx_ruviii_export",
             missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."),
         report = list(dir = "transcriptomics", template = "transcriptomics_report.rmd", label = "Transcriptomics",
             status = NULL, render_after_failed_template = FALSE, checking_progress_always = FALSE,
             record_after_success = FALSE),
         export_steps = list(omicGuiTrxRuviiiExportStep()),
-        texts = c(integration_not_written = "not written (no integration export yet)"))
+        texts = c(integration_not_written = "not written (no integration export yet)"),
+        session_state = trxSummarySessionState)
 }
 
 #' Trx's RUVIII export at 5be34ee5 as an export step (KIT-108 D4; mod_trx_summary.R:23-117): the panel
@@ -1977,14 +1980,16 @@ omicGuiTrxRuviiiExportStep <- function() {
             "or the design's technical replicates when it has them."),
         choice = list(output = "ruviii_m_ui", input = "ruviii_m_source", label = "Replicate structure M:",
             selected = "group", unavailable = c("Technical replicates: not available; the design has no technical",
-                "replicates (trx_ruviii_replicates_invalid).")),
+                "replicates (trx_ruviii_replicates_invalid)."), choices = trxRuviiiMChoices,
+            available = trxHeadHasTechnicalReplicates),
         button = list(input = "run_ruviii_export", label = "Run RUVIII Export", testid = "trx-summary-ruviii-export",
             icon = "play", class = "btn-primary"),
-        status = list(output = "ruviii_status", idle = "Not run yet."),
+        status = list(output = "ruviii_status", idle = "Not run yet.", text = trxRuviiiStatusText),
         figure = list(output = "ruviii_before_after", file = "ruviii_before_and_after.png", dir = "publication_graphs_dir",
             height = "500px", image = c(content_type = "image/png", width = "100%", height = "auto"),
             alt = "RUVIII before and after", alt_idle = "RUVIII export not run yet"),
         operation = "trx_ruviii_export", accept = acceptTrxRuviiiExport, run_reference = runTrxReferenceRuviiiExport,
+        parameters = trxRuviiiExportParameters,
         publications = list(list(operation = "trx_qc_figures", parameters = list(stage = "ruviii")),
             list(operation = "trx_composite_figure", parameters = list(figure = "ruviii_before_and_after"))),
         error = list(prefix = "RUVIII export error:", type = "error", duration = 15))

@@ -20,23 +20,6 @@
 # when the design has them. The integration export is that RUVIII matrix (KIT-095's writer); the template is the
 # package's `reports/transcriptomics/transcriptomics_report.rmd`.
 
-#' The M sources the export offers: the group, and the technical replicates only when the design has them.
-#' @noRd
-trxRuviiiMChoices <- function(has_replicates) {
-    choices <- c(`Group (the notebook)` = "group")
-    if (isTRUE(has_replicates)) choices <- c(choices, `Technical replicates` = "technical_replicate")
-    choices
-}
-
-#' Whether the head's design has technical replicates (a technical-replicate set with more than one run); metadata only.
-#' @noRd
-trxHeadHasTechnicalReplicates <- function(manager) {
-    meta <- tryCatch(readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, manager), error = function(error) NULL)
-    column <- meta$slots$technical_replicate_id
-    if (is.null(meta) || length(column) != 1L || is.na(column) || !column %in% names(meta$design_matrix)) return(FALSE)
-    sets <- meta$design_matrix[[column]]
-    any(duplicated(sets[!is.na(sets)]))
-}
 
 #' The export panel above the lipid summary's panels.
 #' @noRd
@@ -53,12 +36,6 @@ trxSummaryExportUi <- function(ns) {
         shinyjqui::jqui_resizable(shiny::imageOutput(ns("ruviii_before_after"), height = "500px")))))
 }
 
-#' The status text of an accepted export.
-#' @noRd
-trxRuviiiStatusText <- function(value) {
-    paste(c("RUVIII export complete (integration only; DA results unchanged).", sprintf("M = %s", value$m_source),
-        sprintf("k = %d, %d inferred negative controls", as.integer(value$k), as.integer(value$control_count %||% sum(value$ctl_mask)))), collapse = "\n")
-}
 
 #' Run the export on the worker (the product, its acceptance on the head, its figures) or in process (the wrapper).
 #' @noRd
@@ -116,28 +93,3 @@ trxSummaryServer <- function(input, output, session, workflowData, experimentPat
     invisible(shown)
 }
 
-#' The summary's final state: the head's reference (its arguments are read from the record) and name; no object.
-#' @noRd
-trxSummaryContext <- function(workflowData, catFn = cat, ...) {
-    manager <- workflowData$state_manager
-    if (is.null(manager)) return(list(finalS4Object = NULL, contrastsTbl = workflowData$contrasts_tbl, dataStateUsed = NULL))
-    catFn(sprintf("SESSION SUMMARY: final transcriptomics state '%s'\n", manager$current_state))
-    list(finalS4Object = getWorkflowStateReference(manager), contrastsTbl = workflowData$contrasts_tbl, dataStateUsed = manager$current_state)
-}
-
-#' The head's metadata for the session export.
-#' @noRd
-trxSummaryStateObject <- function(workflowData) {
-    tryCatch(readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, workflowData$state_manager), error = function(error) NULL)
-}
-
-#' The integration export in process: KIT-095's writer of the accepted RUVIII matrix.
-#' @noRd
-trxSummaryIntegrationWrite <- function(workflowData, path) {
-    manager <- workflowData$state_manager
-    withWorkflowStateScope(manager, function() trxWriteIntegrationExport(manager, list(), path))
-}
-
-#' Whether the RUVIII export the integration file is written from has been accepted.
-#' @noRd
-trxSummaryIntegrationReady <- function(workflowData) !is.null(workflowData$state_manager$.context$snapshot$exports$trx_ruviii_export)
