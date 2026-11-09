@@ -1,0 +1,38 @@
+# KIT-111 W2b targeted runs (F111-01). One R process per file:
+#   Rscript tools/testing/test-baseline.R file load_all <tree> tests/testthat/<file> <out>
+# R 4.6.1; R_LIBS=core/browser-smoke.X6BzNV/library; MULTISCHOLAR_STRICT_SKIPS=1; TMPDIR on disk (~/.cache/k111w2b).
+# before = the start commit 8dd32418 (a copy of the worktree at 8dd32418, its src compiled by load_all);
+# after  = 0792fd6a (the fix and the new block in test-workflow-omics-worker.R).
+# Files: the worker and application-reads tests, the operations and registry tests, every test that drives the omics
+# worker (grep computeWorkflowOmicsOperationAction|omicsWorkerAction: lipid, metab and trx declarations, omics
+# binding-steps, omics sessions), and the three non-proteomics entry lanes.
+
+file                                     blocks(before/after)  passed/failed before  passed/failed after  errors  skips
+test-workflow-omics-worker.R             7 / 8                 283/0                 289/0                0 / 0   0 / 0
+test-workflow-omics-application-reads.R  27 / 27               230/0                 230/0                0 / 0   0 / 0
+test-workflow-operations.R               6 / 6                 75/0                  75/0                 0 / 0   0 / 0
+test-workflow-operation-registry.R       14 / 14               1007/0                1007/0               0 / 0   0 / 0
+test-workflow-lipid-declarations.R       3 / 3                 259/0                 259/0                0 / 0   0 / 0
+test-workflow-metab-declarations.R       3 / 3                 259/0                 259/0                0 / 0   0 / 0
+test-workflow-trx-declarations.R         7 / 7                 324/0                 324/0                0 / 0   0 / 0
+test-workflow-omics-binding-steps.R      7 / 7                 57/0                  57/0                 0 / 0   0 / 0
+test-workflow-omics-sessions.R           8 / 8                 150/0                 150/0                0 / 0   0 / 0
+test-gui-entry-lipidomics.R              1 / 1                 35/0                  35/0                 0 / 0   0 / 0
+test-gui-entry-metabolomics.R            3 / 3                 105/0                 105/0                0 / 0   0 / 0
+test-gui-entry-transcriptomics.R         1 / 1                 29/0                  29/0                 0 / 0   0 / 0
+
+Every file runs to completion with no file skip and no file error, before and after. The only difference is the new
+F111-01 block: +1 block, +6 expectations in test-workflow-omics-worker.R (283 -> 289). The entry lanes match the
+expected 35/0, 105/0 and 29/0.
+
+The new block on the start commit errors at its second send ("native reference roots contain a live payload",
+test-first.txt) and passes after (6/6). Its last expectation checks that the hit leaves the product's root
+(snapshot$product_dependencies) identical to the root the first, computed run published.
+
+Fix as made (R/utils_workflow_omics_declarations.R, computeWorkflowOmicsOperationAction): a hit roots the source, the
+dependencies and the saved references its value names (collectWorkflowNativeReferences(run$value)). A value holding a
+live payload (a product-only declaration's science, e.g. the pearson pairs data frame) contributes none, so such a hit
+is rooted with the source and the dependencies only. Every hit that worked before (a state-producing value, which is
+only references and atomics) is rooted exactly as before. Because a hit overwrites the product's
+product_dependencies entry, dropping the value outright would remove references that were rooted only through that
+entry, such as the RUV optimisation product. The session export collects its reachable set from the snapshot.
