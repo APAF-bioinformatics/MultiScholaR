@@ -13,7 +13,7 @@ Traces: `sim-prot_dia.txt`, `sim-prot_dia_limpa.txt`.
 
 ## Run 1: the 49 targeted files
 
-49 files, 15,753 passed, 0 failed, 0 errors (`run1.tsv`). The DIA memory set within it: `test-workflow-native-session.R` 733 passed / 2 skipped; `test-workflow-dia-products.R` 189/0; `test-module-ci-prot-dia-limpa.R` 33/2; `test-module-ci-prot-norm.R` 60/4; `test-module-ci-prot-da.R` 218/1.
+49 files, 15,753 passed, 0 failed, 0 errors (`run1.tsv`). The DIA session and memory set within it (`../dia-memory-set.txt`), all equal to KIT-108's: `test-workflow-native-session.R` 733/2, `test-perf107-audit.R` 191/1, `test-perf107-checkpoints.R` 38/1, `test-workflow-checkpoint-dia-state.R` 174/4, `test-workflow-gui-memory-lifetimes.R` 80/11 (passed/skipped).
 
 ## Run 3: the entry-point suite with records
 
