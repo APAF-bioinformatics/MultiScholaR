@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-180 (KIT-108 W4) its binding guard (:12-16) names observeProtSummaryReportGeneration (mod_prot_summary_server_helpers.R, deleted) and its 55 blocks test the deleted proteomics summary seams (mod_prot_summary_{server,publication,session,report}_helpers.R); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
 # fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)

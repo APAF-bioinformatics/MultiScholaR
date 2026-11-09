@@ -133,14 +133,15 @@ test_that("the summary page writes analysis_record.json after study_parameters.t
     manager <- structure(list(), class = "DIAStateAdapter")
     workflow <- list(state_manager = manager, contrasts_tbl = NULL, config_list = NULL)
     source_dir <- withr::local_tempdir()
-    completeProtSummaryWorkflowArgsSave(output = list(), values = list(), projectDirs = list(proteomics = list(source_dir = source_dir,
-            integration_dir = withr::local_tempdir(), base_dir = source_dir)),
-        workflowData = workflow, experimentLabel = "x", description = "d",
-        resolveFinalS4StateFn = function(...) list(finalS4Object = NULL),
+    # KIT-108 W4: the core's save under proteomics' group, its final state replaced as before.
+    config <- omicGuiConfig("proteomics")$summary
+    config$final_state$context <- function(...) list(finalS4Object = NULL)
+    saveWorkflowSummaryParameters(config, workflow, projectDirs = list(proteomics = list(source_dir = source_dir,
+            integration_dir = withr::local_tempdir(), base_dir = source_dir)), omicType = "proteomics",
+        label = "x", description = "d", notify = function(...) NULL, done = function(...) NULL, failed = function(...) NULL,
         createWorkflowArgsFn = function(...) { calls <<- c(calls, "study_parameters"); "study_parameters.txt" },
         writeAnalysisRecordFn = function(manager, path) { calls <<- c(calls, "analysis_record"); record_args <<- path },
-        saveRDSFn = function(...) NULL, renderTextFn = function(...) NULL, showNotificationFn = function(...) NULL,
-        catFn = function(...) NULL)
+        saveRDSFn = function(...) NULL, catFn = function(...) NULL)
     expect_identical(calls[1:2], c("study_parameters", "analysis_record"))
     expect_identical(record_args, file.path(source_dir, "analysis_record.json"))
 })
@@ -214,12 +215,15 @@ test_that("KIT-027 audit PH-04/07/08: backfilled steps, exact default comparison
     expect_false(workflowParameterMatchesDefault(0.0100000001, "0.01"))
     expect_true(workflowParameterMatchesDefault(0.01, "0.01"))
     notified <- NULL
-    completeProtSummaryWorkflowArgsSave(output = list(), values = list(), projectDirs = list(proteomics = list(
-            source_dir = withr::local_tempdir(), integration_dir = withr::local_tempdir(), base_dir = withr::local_tempdir())),
-        workflowData = list(state_manager = structure(list(), class = "DIAStateAdapter")), experimentLabel = "x", description = "d",
-        resolveFinalS4StateFn = function(...) list(finalS4Object = NULL), createWorkflowArgsFn = function(...) "study_parameters.txt",
-        writeAnalysisRecordFn = function(...) stop("disk full"), saveRDSFn = function(...) NULL, renderTextFn = function(...) NULL,
-        showNotificationFn = function(message, ...) notified <<- c(notified, message), catFn = function(...) NULL)
+    # KIT-108 W4: the core's save under proteomics' group, its final state replaced as before.
+    config <- omicGuiConfig("proteomics")$summary
+    config$final_state$context <- function(...) list(finalS4Object = NULL)
+    saveWorkflowSummaryParameters(config, list(state_manager = structure(list(), class = "DIAStateAdapter")),
+        projectDirs = list(proteomics = list(source_dir = withr::local_tempdir(), integration_dir = withr::local_tempdir(),
+            base_dir = withr::local_tempdir())), omicType = "proteomics", label = "x", description = "d",
+        notify = function(message, ...) notified <<- c(notified, message), done = function(...) NULL,
+        failed = function(...) NULL, createWorkflowArgsFn = function(...) "study_parameters.txt",
+        writeAnalysisRecordFn = function(...) stop("disk full"), saveRDSFn = function(...) NULL, catFn = function(...) NULL)
     expect_true(any(grepl("analysis record .* not written: disk full", notified)))
 })
 
@@ -316,12 +320,19 @@ test_that("KIT-029: report generation exports the record bundle for an on-disk o
     exported <- NULL
     notified <- NULL
     workflow <- list(state_manager = structure(list(), class = "DIAStateAdapter"))
-    dirs <- list(proteomics = list(study_report_dir = withr::local_tempdir()))
-    run <- function(generated, export) runProtSummaryReportProgress(output = list(), values = list(), workflowData = workflow,
-        projectDirs = dirs, experimentLabel = "x", description = "d",
-        resolveReportTemplateFn = function(...) list(templateFilename = "t.rmd"), retrieveTemplateAssetFn = function(...) "t.rmd",
-        runReportGenerationFn = function(...) generated, incProgressFn = function(...) NULL,
-        exportRecordFn = export, showNotificationFn = function(message, ...) notified <<- c(notified, message))
+    # KIT-108 W4: the core's report entry under proteomics' group (runProtSummaryReportProgress deleted): the route's
+    # template replaced and present in the project, the render replaced (a report written, or none); TRUE when the
+    # report is generated, as before.
+    dirs <- list(proteomics = list(base_dir = withr::local_tempdir(), study_report_dir = withr::local_tempdir()))
+    dir.create(file.path(dirs$proteomics$base_dir, "scripts", "proteomics"), recursive = TRUE)
+    writeLines("template", file.path(dirs$proteomics$base_dir, "scripts", "proteomics", "t.rmd"))
+    rendered <- file.path(dirs$proteomics$study_report_dir, "t_proteomics_x.docx")
+    writeLines("report", rendered)
+    config <- omicGuiConfig("proteomics")$summary
+    config$report$template <- function(...) list(templateFilename = "t.rmd")
+    run <- function(generated, export) !is.null(renderWorkflowSummaryReport(config, workflow, dirs, "proteomics", "x",
+        notify = function(message, ...) notified <<- c(notified, message), progress = function(...) NULL,
+        renderFn = function(...) if (generated) rendered, exportRecordFn = export, catFn = function(...) NULL)$path)
     expect_true(run(TRUE, function(manager, directory) exported <<- directory))
     expect_identical(exported, dirs$proteomics$study_report_dir)
     exported <- NULL

@@ -49,6 +49,7 @@ test_that("MCI-011.1 workflow parameters roundtrip for every proteomics summary 
 })
 
 test_that("MCI-011.2 publication copy preserves required outputs and tolerates missing optional artifacts", {
+  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryPublicationCopy (mod_prot_summary_publication_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
   skip_if_not_installed("openxlsx")
   complete_dirs <- module_ci_prot_summary_paths()
   module_ci_prot_summary_write_publication_inputs(complete_dirs, include_optional = TRUE)
@@ -155,6 +156,7 @@ test_that("MCI-011.3 report-template selection is deterministic and branch-corre
 })
 
 test_that("MCI-011.4 rendered-report stubs activate every proteomics template", {
+  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryReportGeneration and activateProtSummaryRenderedReport (mod_prot_summary_report_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
   templates <- c("DIANN_report.rmd", "DIANN_limpa_report.rmd", "TMT_report.rmd", "LFQ_report.rmd")
 
   for (template in templates) {
@@ -204,6 +206,7 @@ test_that("MCI-011.4 rendered-report stubs activate every proteomics template", 
 })
 
 test_that("MCI-011.5 session-state export preserves workflow metadata and parameter payload", {
+  skip("quarantined: Q-182 (KIT-108 W4) it calls completeProtSummarySessionStateExport (mod_prot_summary_session_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
   config <- module_ci_prot_summary_branch_config("DIA_limpa", enrichment = TRUE, ruv = "run", da_q_cutoff = 0.01)
   workflow <- module_ci_prot_summary_workflow(config)
   project_dirs <- module_ci_prot_summary_paths()
@@ -244,6 +247,7 @@ test_that("MCI-011.5 session-state export preserves workflow metadata and parame
 })
 
 test_that("MCI-011.6 artifact scorecard entries cover report-facing outputs", {
+  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryPublicationCopy (mod_prot_summary_publication_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
   skip_if_not_installed("openxlsx")
   project_dirs <- module_ci_prot_summary_paths()
   module_ci_prot_summary_write_publication_inputs(project_dirs, include_optional = TRUE)

@@ -144,7 +144,7 @@ test_that("the installed journey trace list resolves and can be removed", {
         "workflowExportBoundary", "stageWorkflowLegacyExport",
         "publishWorkflowLegacyExport") %in% context$traced))
     expect_true(all(c(".peptideQcCanonicalise", "runProteinIqRollupApplyStep",
-        "generateProtNormCompositeFromFiles", "runProtSummaryPublicationCopy") %in% context$traced))
+        "generateProtNormCompositeFromFiles", "copyWorkflowSummaryResults") %in% context$traced))
     metadata <- api$checkpointGuiOwnerSizes(list(table = data.frame(x = 1:3), env = new.env()))
     expect_identical(metadata$table$shape, c(3L, 1L))
     expect_true(is.na(metadata$table$bytes))

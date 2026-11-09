@@ -963,20 +963,23 @@ runDIARawCheckpointReplay <- function(source_member, root) {
                     paths$publication_graphs_dir, gsub("[^A-Za-z0-9_]", "_", paste0("prot_", contrast)))
             })
             phase("Summary", function() {
-                completeProtSummaryWorkflowArgsSave(output, values, directories, workflow,
-                    experimentLabel = "dia_baseline_smoke", description = "DIA IQ checkpoint replay",
-                    showNotificationFn = function(...) NULL)
+                # KIT-108 W4: the summary's save, copy and session export are the core's entries under proteomics'
+                # group (the copy reads the bus's contrasts and design; its error is raised, as before).
+                summary <- omicGuiConfig("proteomics")$summary
+                saveWorkflowSummaryParameters(summary, workflow, directories, "proteomics", "dia_baseline_smoke",
+                    "DIA IQ checkpoint replay", notify = function(...) NULL,
+                    done = function(saved) values$workflow_args_saved <- TRUE,
+                    failed = function(error) values$workflow_args_saved <- TRUE)
                 stopifnot(isTRUE(values$workflow_args_saved))
-                runProtSummaryPublicationCopy(output, values, directories,
-                    experimentLabel = "dia_baseline_smoke", description = "DIA IQ checkpoint replay",
-                    contrastsTbl = workflow$contrasts_tbl, designMatrix = workflow$design_matrix,
-                    showNotificationFn = function(...) NULL)
+                copied <- copyWorkflowSummaryResults(summary, workflow, directories, "proteomics", "dia_baseline_smoke",
+                    "DIA IQ checkpoint replay", argsSaved = values$workflow_args_saved, notify = function(...) NULL)
+                if (!is.null(copied$error)) stop(copied$error)
+                values$files_copied <- TRUE
                 stopifnot(isTRUE(values$files_copied))
-                stopifnot(completeProtSummarySessionStateExport(directories,
-                    experimentLabel = "dia_baseline_smoke", description = "DIA IQ checkpoint replay",
-                    workflowArgsSaved = values$workflow_args_saved, filesCopied = values$files_copied,
-                    reportGenerated = FALSE, reportPath = NULL, workflowData = workflow,
-                    showNotificationFn = function(...) NULL))
+                stopifnot(!is.null(writeWorkflowSummarySessionState(summary, workflow, directories, "proteomics",
+                    "dia_baseline_smoke", "DIA IQ checkpoint replay", values = list(
+                        workflow_args_saved = values$workflow_args_saved, files_copied = values$files_copied,
+                        report_generated = FALSE, report_path = NULL), notify = function(...) NULL)))
             })
             receipt$ownership <<- diaStateOwnership(manager)
         }
@@ -1166,18 +1169,21 @@ verifyDIARetainedReplayOutputs <- function(source, root) {
                     list(norm_method = view$normalization_method, ruv_mode = view$ruv_mode), paths$source_dir,
                     withProgressFn = function(message, value, expr) force(expr), incProgressFn = function(...) NULL)
                 values <- shiny::reactiveValues()
-                completeProtSummaryWorkflowArgsSave(output, values, directories, workflow,
-                    experimentLabel = "dia_baseline_smoke", description = "DIA IQ retained-output recovery",
-                    showNotificationFn = function(...) NULL)
+                # KIT-108 W4: the core's entries under proteomics' group, as above.
+                summary <- omicGuiConfig("proteomics")$summary
+                saveWorkflowSummaryParameters(summary, workflow, directories, "proteomics", "dia_baseline_smoke",
+                    "DIA IQ retained-output recovery", notify = function(...) NULL,
+                    done = function(saved) values$workflow_args_saved <- TRUE,
+                    failed = function(error) values$workflow_args_saved <- TRUE)
                 stopifnot(isTRUE(values$workflow_args_saved))
-                runProtSummaryPublicationCopy(output, values, directories, experimentLabel = "dia_baseline_smoke",
-                    description = "DIA IQ retained-output recovery", contrastsTbl = workflow$contrasts_tbl,
-                    designMatrix = workflow$design_matrix, showNotificationFn = function(...) NULL)
+                copied <- copyWorkflowSummaryResults(summary, workflow, directories, "proteomics", "dia_baseline_smoke",
+                    "DIA IQ retained-output recovery", argsSaved = values$workflow_args_saved, notify = function(...) NULL)
+                if (!is.null(copied$error)) stop(copied$error)
+                values$files_copied <- TRUE
                 stopifnot(isTRUE(values$files_copied))
-                stopifnot(completeProtSummarySessionStateExport(directories,
-                    experimentLabel = "dia_baseline_smoke", description = "DIA IQ retained-output recovery",
-                    workflowArgsSaved = TRUE, filesCopied = TRUE, reportGenerated = FALSE,
-                    reportPath = NULL, workflowData = workflow, showNotificationFn = function(...) NULL))
+                stopifnot(!is.null(writeWorkflowSummarySessionState(summary, workflow, directories, "proteomics",
+                    "dia_baseline_smoke", "DIA IQ retained-output recovery", values = list(workflow_args_saved = TRUE,
+                        files_copied = TRUE, report_generated = FALSE, report_path = NULL), notify = function(...) NULL)))
             }, differentialAbundanceAnalysis = function(...) stop("output recovery refitted DA"),
                 materializeDIAStateRecord = function(...) stop("output recovery hydrated a full S4"))
             stopifnot(identical(getDIAStateReference(manager), before))

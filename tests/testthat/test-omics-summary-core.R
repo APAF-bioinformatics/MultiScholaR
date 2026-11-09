@@ -248,6 +248,7 @@ for (omicsSummaryCoreCase in omicsSummaryCoreProtCases) {
 rm(omicsSummaryCoreCase)
 
 test_that("(W4, comparison side) the start commit's proteomics handlers give the core entries' notifications, progress, arguments, global and files", {
+    testthat::skip("quarantined: Q-183 (KIT-108 W4) the comparison side drives the start commit's proteomics handlers (mod_prot_summary_{server,publication,session,report}_helpers.R, deleted by W4) through mod_prot_summary_server's buttons; the core side's blocks above stay live and compare each entry with W1 (b)'s frozen steps, and W1 (b) drives the tab on the core")
     for (case in omicsSummaryCoreProtCases) {
         core <- omicsSummaryCoreRun(case)
         old <- omicSummaryW1Case(case)

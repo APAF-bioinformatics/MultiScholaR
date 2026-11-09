@@ -302,7 +302,7 @@ installCheckpointGuiTraces <- function(context, namespace, functions = NULL) {
         ".peptideQcRemovalLedger", "runProteinIqRollupApplyStep",
         "runProteinIntensityFilterApplyStep", "runProteinReplicateFilterApplyStep",
         "generateProtNormCompositeQcFigure", "generateProtNormCompositeFromFiles",
-        "loadProtNormImageAsPlot", "savePlot", "runProtSummaryPublicationCopy")
+        "loadProtNormImageAsPlot", "savePlot", "copyWorkflowSummaryResults")
     absent <- functions[!vapply(functions, exists, logical(1), envir = namespace, inherits = FALSE)]
     if (length(absent)) stop(paste("missing diagnostic functions:", paste(absent, collapse = ", ")))
     observer <- function(phase, name, frame) {
@@ -343,7 +343,7 @@ installCheckpointGuiTraces <- function(context, namespace, functions = NULL) {
                 "runPeptideIntensityApplyStep", "runPeptideSampleApplyStep", "runPeptideReplicateApplyStep",
                 "runPeptideImputationStep", "runProteinIqRollupApplyStep", "runProteinReplicateFilterApplyStep",
                 "runProtNormNormalizationWorkflow", "runProtNormExportSessionWorkflow",
-                "restoreDIAStateSession", "runTestsContrasts", "runProtSummaryPublicationCopy")) {
+                "restoreDIAStateSession", "runTestsContrasts", "copyWorkflowSummaryResults")) {
             context$heap_pending <- unique(c(context$heap_pending, name))
             detail$frame_owners <- checkpointGuiFrameOwners(frame)
         }
@@ -361,7 +361,7 @@ installCheckpointGuiTraces <- function(context, namespace, functions = NULL) {
                 context$allocator_pending <- TRUE
             }
             if (phase == "exit" && name %in% c("runProtNormNormalizationWorkflow",
-                "runTestsContrasts", "runProtSummaryPublicationCopy")) {
+                "runTestsContrasts", "copyWorkflowSummaryResults")) {
                 checkpointAllocatorBoundary(context, paste0("action_exit:", name))
                 context$allocator_pending <- TRUE
             }

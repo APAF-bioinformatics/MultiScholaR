@@ -389,13 +389,17 @@ test_that("native GUI export and owned DA load do not materialize historical sta
     integration <- file.path(fresh_paths$source_dir, "integration")
     values <- new.env(parent = emptyenv())
     output <- new.env(parent = emptyenv())
-    expect_true(completeProtSummaryWorkflowArgsSave(output, values,
-        projectDirs = list(proteomics = c(paths, list(integration_dir = integration))),
-        workflowData = workflow, experimentLabel = "native_fixture", description = "native output",
-        assignFn = function(...) NULL,
+    # KIT-108 W4: the summary's save is the core's entry under proteomics' group (completeProtSummaryWorkflowArgsSave
+    # deleted); TRUE when the save completes, as before.
+    expect_true(saveWorkflowSummaryParameters(omicGuiConfig("proteomics")$summary, workflow,
+        projectDirs = list(proteomics = c(paths, list(integration_dir = integration))), omicType = "proteomics",
+        label = "native_fixture", description = "native output", notify = function(...) NULL,
+        done = function(saved) {
+            values$workflow_args_saved <- TRUE
+            TRUE
+        }, failed = function(error) FALSE,
         createWorkflowArgsFn = function(...) file.path(paths$source_dir, "study_parameters.txt"),
         saveRDSFn = function(...) stop("automatic Summary S4 export is forbidden"),
-        renderTextFn = function(expr) force(expr), showNotificationFn = function(...) NULL,
         catFn = function(...) NULL))
     expect_identical(digest::digest(file = file.path(integration,
         "proteomics_native_fixture_final.msdia.tar"), algo = "sha256"),
