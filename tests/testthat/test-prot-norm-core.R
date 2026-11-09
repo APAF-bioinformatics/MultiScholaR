@@ -354,3 +354,811 @@ test_that("the lipid and metab RUV declaration give the recorded result through 
     protNormCoreExpectDigest("lipid_ruv", protNormCoreOmicsRuv("lipid"))
     protNormCoreExpectDigest("metab_ruv", protNormCoreOmicsRuv("metab"))
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-111 W1 (a): the three normalisation-tab runners (runDIAReferenceNormalization, runDIAReferenceCorrelation,
+# runDIAReferenceRuvCovariates) and the DIA_LIMPA pass-through, in process at core level, captured on the start
+# commit (7c7c599e) before the split (W2) and the dispatch (W3), and frozen from two byte-identical dumps made in
+# separate processes (docs/qa/workflow-execution/kit/kit-111/w1/test-first.txt). They pass before and after; W2 and
+# W3 compare the worker path with these values. Per case, after each click: the committed states (their science,
+# their args' limpa and RUV covariates entries, config, description, previous state and product names), the head's
+# history and current state, the head's products fingerprinted by type, the step provenance and the analysis
+# record's steps (store-local ids, times and builds masked), the completed outputs, the published files,
+# protNormCoreNormState, every norm_data field, the workflow's RUV result without plots and its other fields, the
+# runner's value or refusal, the callbacks' inputs and the call counts of the halves' callees.
+# MULTISCHOLAR_KIT111_W1_DUMP=<file> appends each case's capture as R code (how the frozen values were made).
+# ------------------------------------------------------------------------------------------------
+
+protNormW1Callees <- c("assertDIAExportReady", "runSavedOperation", "commitDIAReferenceState", "saveDIADisplayTable",
+    "publishDIAActionOutputs", "readDIAProteinProgress", "updateProteinFiltering", "writeDIADesignTable",
+    "resolveDIAReferenceQcPlot", "resolveProtNormCorrelationResultFilenames", "generateProtNormCompositeQcFigure",
+    "finalizeProtNormWorkflowState")
+
+protNormW1Sha <- function(x) digest::digest(x, algo = "sha256")
+
+#' Store-local ids and the fixture's temporary root masked in every character value of plain lists.
+protNormW1Mask <- function(x, root) {
+    if (is.character(x)) {
+        x[!is.na(x) & grepl("^[a-f0-9]{64}$", x)] <- "<id>"
+        return(gsub(root, "<root>", x, fixed = TRUE))
+    }
+    if (is.list(x) && !is.object(x)) {
+        x[] <- lapply(x, protNormW1Mask, root = root)
+        if (!is.null(names(x))) names(x) <- protNormW1Mask(names(x), root)
+    }
+    x
+}
+
+#' A saved checkpoint's science: protNormCoreState's slots, with the limpa and RUV covariates entries of its args.
+protNormW1State <- function(manager, reference) {
+    withWorkflowStateScope(manager, function() {
+        object <- resolveDIAStateValue(manager$.context, reference)$data
+        if (!isS4(object)) object <- rebuildDIACheckpointObject(manager$.context, object, TRUE, list())
+        slots <- setdiff(methods::slotNames(object), "args")
+        list(slots = lapply(stats::setNames(nm = slots), function(slot) methods::slot(object, slot)),
+            args = object@args[intersect(c("limpa_dpc_quant_results", "ruvCovariates"), names(object@args))])
+    })
+}
+
+#' A value without store-local ids: a checkpoint by its science, a table by its rows, any other saved entity by its
+#' hydrated envelope; plots by class (a ggplot also by its data and title); bookkeeping fields dropped.
+protNormW1Canonical <- function(value, manager, root, depth = 0L) {
+    if (depth > 32L) return("<depth>")
+    if (is.null(value)) return(NULL)
+    if (is.function(value) || is.environment(value)) return("<opaque>")
+    if (inherits(value, c("gg", "ggplot"))) return(list(.gg = class(value),
+        data = protNormW1Sha(as.data.frame(value$data)), title = value$labels$title))
+    if (inherits(value, c("grob", "gtable", "htmlwidget", "recordedplot"))) return(paste0("<", class(value)[[1L]], ">"))
+    if (isSavedWorkflowReference(value)) {
+        if (identical(value$kind, "checkpoint")) return(list(.state = protNormW1Sha(protNormW1State(manager, value))))
+        if (identical(value$payload$codec, "parquet_duckdb")) {
+            table <- as.data.frame(materializeWorkflowTable(manager$.context, value))
+            attr(table, "dia_source_order") <- NULL
+            rownames(table) <- NULL
+            return(list(.table = protNormW1Sha(table)))
+        }
+        if (identical(value$kind, "rendered_asset")) return(list(.rendered = value$kind))
+        hydrated <- hydrateSavedWorkflowEntity(manager$.context$store, value)
+        return(list(.entity = value$kind, value = protNormW1Canonical(hydrated, manager, root, depth + 1L)))
+    }
+    if (isS4(value)) return(list(.s4 = class(value)[[1L]]))
+    if (is.data.frame(value)) {
+        value <- as.data.frame(value)
+        rownames(value) <- NULL
+        return(list(.df = protNormW1Sha(protNormW1Mask(as.list(value), root)), dim = dim(value)))
+    }
+    if (is.list(value)) {
+        keep <- !(names(value) %||% rep("", length(value))) %in% c("timestamp", "mtime", "dependencies",
+            "product_dependencies", "owned_components", "component_dependencies", "committed_at")
+        return(lapply(value[keep], protNormW1Canonical, manager = manager, root = root, depth = depth + 1L))
+    }
+    protNormW1Mask(value, root)
+}
+
+#' The head's products (and its output products), each by its type and a fingerprint of its canonical value; a
+#' rendered asset by its kind only.
+protNormW1Products <- function(manager, root) {
+    snapshot <- manager$.context$snapshot
+    one <- function(reference, prefix) {
+        if (identical(reference$kind, "rendered_asset")) return(paste0(prefix, "rendered_asset"))
+        canonical <- protNormW1Canonical(reference, manager, root)
+        type <- canonical$value$product_type
+        if (!is.character(type)) type <- reference$kind
+        paste0(prefix, type, ":", substr(protNormW1Sha(canonical), 1L, 16L))
+    }
+    sort(c(vapply(unname(snapshot$products), one, "", prefix = ""),
+        vapply(unname(snapshot$output_products), one, "", prefix = "output/")))
+}
+
+#' One committed state's record: its science, config, description, previous state and product names.
+protNormW1Record <- function(manager, reference, root) {
+    record <- readDIAStateMetadata(manager, reference)
+    list(state = protNormW1State(manager, reference), config = protNormW1Canonical(record$config, manager, root),
+        description = record$description, previous = record$previous_state,
+        products = sort(names(record$data$products)))
+}
+
+#' The step provenance without its times, builds and commits.
+protNormW1Provenance <- function(snapshot, root) {
+    protNormW1Mask(lapply(snapshot$step_provenance, function(entry) entry[setdiff(names(entry),
+        c("committed_at", "build", "source_commit"))]), root)
+}
+
+#' The analysis record's steps without ids, times and software, each product by its kind and type.
+protNormW1RecordSteps <- function(manager, root) {
+    steps <- tryCatch(buildWorkflowAnalysisRecord(manager)$steps, error = function(e) paste("error:", conditionMessage(e)))
+    if (is.character(steps)) return(steps)
+    protNormW1Mask(lapply(steps, function(step) {
+        step$products <- lapply(step$products, function(product) product[c("kind", "product_type")])
+        step[setdiff(names(step), c("committed_at", "result_entity_id", "input_entity_ids", "software"))]
+    }), root)
+}
+
+#' Run one click with the halves' callees counted; a refusal is returned as its message.
+protNormW1Run <- function(code) {
+    calls <- stats::setNames(integer(length(protNormW1Callees)), protNormW1Callees)
+    counters <- lapply(protNormW1Callees, function(name) {
+        original <- get(name, envir = asNamespace("MultiScholaR"))
+        function(...) {
+            calls[[name]] <<- calls[[name]] + 1L
+            original(...)
+        }
+    })
+    names(counters) <- protNormW1Callees
+    outcome <- rlang::inject(testthat::with_mocked_bindings(
+        tryCatch(list(value = protNormCoreQuiet(code)), error = function(e) list(error = conditionMessage(e))),
+        !!!counters, .package = "MultiScholaR"))
+    c(outcome, list(calls = calls))
+}
+
+#' The capture after one click (see the section's header).
+protNormW1Capture <- function(fixture, norm, run, seen) {
+    force(run)
+    manager <- fixture$manager
+    root <- fixture$root
+    # The head as an action scope reads it (the context's copy outside a scope can lag the last commit).
+    snapshot <- withWorkflowStateScope(manager, function() manager$.context$snapshot)
+    history <- as.character(unlist(snapshot$state_history))
+    committed <- setdiff(history, "initial")
+    # The workflow's fields but its owners and its state_update_trigger (a time).
+    workflow <- mget(setdiff(sort(ls(fixture$workflow)), c("state_manager", "design_matrix", "config_list",
+        "state_update_trigger")), envir = fixture$workflow)
+    value <- if (isSavedWorkflowReference(run$value)) protNormW1Canonical(run$value, manager, root) else run$value
+    list(
+        current = manager$current_state,
+        history = as.character(unlist(manager$state_history)),
+        head_current = snapshot$current_state,
+        head_history = history,
+        states = vapply(stats::setNames(nm = committed), function(state)
+            protNormW1Sha(protNormW1Record(manager, snapshot$states[[state]], root)), ""),
+        outputs = lapply(stats::setNames(nm = committed), function(state)
+            unlist(snapshot$completed_outputs[[snapshot$states[[state]]$entity_id]])),
+        products = protNormW1Products(manager, root),
+        provenance = protNormW1Sha(protNormW1Provenance(snapshot, root)),
+        record = protNormW1Sha(protNormW1RecordSteps(manager, root)),
+        files = protNormW1Sha(protNormCoreFiles(root)),
+        norm_state = protNormW1Sha(protNormW1Mask(protNormCoreNormState(norm, manager), root)),
+        norm_fields = vapply(mget(sort(ls(norm)), envir = norm), function(field)
+            substr(protNormW1Sha(protNormW1Canonical(field, manager, root)), 1L, 16L), ""),
+        ruv_result = protNormW1Sha(protNormW1Mask(protNormCoreWithoutPlots(fixture$workflow$ruv_optimization_result), root)),
+        workflow = protNormW1Sha(protNormW1Canonical(workflow, manager, root)),
+        value = protNormW1Sha(value),
+        error = if (is.null(run$error)) NA_character_ else protNormW1Mask(run$error, root),
+        calls = run$calls,
+        callbacks = seen)
+}
+
+protNormW1DumpPath <- function() {
+    path <- Sys.getenv("MULTISCHOLAR_KIT111_W1_DUMP")
+    if (nzchar(path)) path else NULL
+}
+
+#' Compare one case with its frozen value; under the dump switch, append it as R code first.
+protNormW1Expect <- function(case, capture) {
+    path <- protNormW1DumpPath()
+    if (!is.null(path)) {
+        fields <- vapply(names(capture), function(field) paste0("        ", field, " = ", paste(deparse(capture[[field]],
+            width.cutoff = 100L, control = c("keepNA", "keepInteger", "niceNames", "showAttributes")),
+            collapse = "\n            ")), "")
+        cat(sprintf("    %s = list(\n%s),\n", case, paste(fields, collapse = ",\n")), file = path, append = TRUE)
+    }
+    frozen <- protNormW1Frozen()[[case]]
+    expect_false(is.null(frozen), info = case)
+    for (field in union(names(frozen), names(capture))) {
+        expect_identical(capture[[field]], frozen[[field]], info = paste(case, field))
+    }
+}
+
+#' A DIA_LIMPA owner (the KIT-053 record fixture of test-workflow-analysis-record.R): the "small" recipe rolled up and
+#' quantified by the limpa DPC engine, then the protein QC stage's between-sample normalisation (none) and peptide
+#' count filter, committed as the route commits them, with protNormCoreOwner's paths.
+protNormW1LimpaOwner <- function(envir = parent.frame()) {
+    withr::local_options(multischolar.dia_native_sessions = TRUE, multischolar.capture_test_checkpoints = FALSE,
+        .local_envir = envir)
+    root <- withr::local_tempdir(.local_envir = envir)
+    paths <- list(source_dir = file.path(root, "scripts", "proteomics"),
+        protein_qc_dir = file.path(root, "results", "proteomics", "protein_qc"),
+        peptide_qc_dir = file.path(root, "results", "proteomics", "peptide_qc"))
+    paths$publication_graphs_dir <- file.path(root, "results", "proteomics", "publication_graphs")
+    paths$time_dir <- file.path(paths$publication_graphs_dir, "filtering_qc")
+    for (path in unlist(paths)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(paths$source_dir, "kit111-limpa", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager), envir = envir)
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("DIA_LIMPA")
+    manager$.context$experiment_paths <- paths
+    rolled <- rollUpPrecursorToPeptide(makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small")), core_utilisation = NA)
+    quantified <- protNormCoreQuiet(proteinMissingValueImputationLimpa(log2TransformPeptideMatrix(calcPeptideMatrix(rolled)),
+        dpc_slope = 0.8, verbose = FALSE, chunk = 1000, engine = "limpa"))
+    setDIAStepProvenance(manager, "design_builder")
+    manager$saveState("protein_dpc_quant", quantified, list(), "fixture")
+    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
+    protNormCoreQuiet(withDIAStateScope(manager, function() {
+        v1 <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), list(norm_method = "none"))
+        setDIAStepProvenance(manager, "protein_between_sample_normalisation", "whole", "norm_method", NULL,
+            values = list(norm_method = "none"))
+        finishDIAReferenceProteinStep(workflow, v1, publish = FALSE)
+        v2 <- computeDIAReferenceProteinPeptideCountFilter(manager, getDIAStateReference(manager),
+            list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 2))
+        setDIAStepProvenance(manager, "protein_peptide_count_filter", "whole",
+            c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"), NULL, values = v2$config[1:2])
+        finishDIAReferenceProteinStep(workflow, v2, publish = FALSE)
+    }))
+    list(root = root, paths = paths, workflow = workflow, manager = manager)
+}
+
+#' The tab's clicks on one owner, each captured as protNormW1Capture describes. The callbacks record the science
+#' (12 characters of its digest) of the reference each receives.
+protNormW1Clicks <- function(fixture) {
+    norm <- new.env(parent = emptyenv())
+    seen <- character()
+    manager <- fixture$manager
+    callback <- function(kind) function(reference) {
+        seen <<- c(seen, paste0(kind, ":", substr(protNormW1Sha(protNormW1State(manager, reference)), 1L, 12L)))
+        invisible(NULL)
+    }
+    capture <- function(run) {
+        out <- protNormW1Capture(fixture, norm, run, seen)
+        seen <<- character()
+        out
+    }
+    aesthetics <- function() list(color_var = "group", shape_var = NULL)
+    list(
+        norm = norm,
+        normalization = function(mode, ...) {
+            settings <- utils::modifyList(protNormCoreSettings(mode), list(...))
+            capture(protNormW1Run(runDIAReferenceNormalization(settings, fixture$workflow, norm, fixture$paths,
+                "proteomics", "core", callback("post"), callback("ruv"), function() "group")))
+        },
+        correlation = function(threshold, skipped = FALSE) {
+            capture(protNormW1Run(runDIAReferenceCorrelation(fixture$workflow, norm, fixture$paths, threshold, skipped,
+                "proteomics", "core", if (skipped) function() NULL else function() "group", aesthetics)))
+        },
+        pass_through = function() {
+            capture(protNormW1Run(runDIAReferenceLimpaNormalisationPassThrough(protNormCoreSettings("covariates"),
+                fixture$workflow, norm, callback("post"))))
+        },
+        ruv_covariates = function(mode) {
+            capture(protNormW1Run(runDIAReferenceRuvCovariates(list(ruv_mode = mode, color_variable = "group",
+                shape_variable = NULL), fixture$workflow, norm, fixture$paths, "proteomics", "core", callback("ruv"),
+                function() "group")))
+        })
+}
+
+# The frozen values: two dumps on the start commit in separate processes, byte-identical (cmp), pasted from the first.
+protNormW1Frozen <- function() list(
+    dia_normalization_skip = list(
+        current = "normalized",
+        history = c("initial", "protein_replicate_filtered", "normalized"),
+        head_current = "normalized",
+        head_history = c("initial", "protein_replicate_filtered", "normalized"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE)),
+        products = "dia-normalization-ruv:fc952b8790c07658",
+        provenance = "241946e9b6426a565a2d1574529eeece1ab4882f18afa37b820bc8562f25b6cb",
+        record = "dad690818a6ce5c56ab230e01c35799f994d0c8e63948665c94c38593a10acea",
+        files = "10f5f602bae9c8e28239b40f613dfa3179733b587f2c1cb5ce7299a8f2c9e868",
+        norm_state = "0809b8018bafde2e009b93e4b479b9716af885734a5e949f687648f1663d46db",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "3fe0774c75a5f7ec", control_genes_index = "3fe0774c75a5f7ec", 
+            filtering_summary_text = "71557d1c8bac9bbe", normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", 
+            normalized_protein_obj = "3ea964fe2023dddb", post_norm_filtering_plot = "71557d1c8bac9bbe", publication_paths = "71557d1c8bac9bbe", 
+            qc_plot_paths = "28df520b992b4a4b", ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "3ea964fe2023dddb", 
+            ruv_optimization_result = "21d2cfada7829073", ruv_optimization_table = "71557d1c8bac9bbe"),
+        ruv_result = "21d2cfada7829073d467cb158e5062c42c6507f5639f35da2b03362d6efb4581",
+        workflow = "fbea021eb73497238620c200d02c93de5ed4ab1caa7a29be69dd1f7604357566",
+        value = "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 1L, 
+            finalizeProtNormWorkflowState = 1L),
+        callbacks = "post:32d9093cb75d"),
+    dia_normalization_skip_repeat = list(
+        current = "normalized",
+        history = c("initial", "protein_replicate_filtered", "normalized"),
+        head_current = "normalized",
+        head_history = c("initial", "protein_replicate_filtered", "normalized"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE)),
+        products = "dia-normalization-ruv:fc952b8790c07658",
+        provenance = "241946e9b6426a565a2d1574529eeece1ab4882f18afa37b820bc8562f25b6cb",
+        record = "dad690818a6ce5c56ab230e01c35799f994d0c8e63948665c94c38593a10acea",
+        files = "10f5f602bae9c8e28239b40f613dfa3179733b587f2c1cb5ce7299a8f2c9e868",
+        norm_state = "0809b8018bafde2e009b93e4b479b9716af885734a5e949f687648f1663d46db",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "3fe0774c75a5f7ec", control_genes_index = "3fe0774c75a5f7ec", 
+            filtering_summary_text = "71557d1c8bac9bbe", normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", 
+            normalized_protein_obj = "3ea964fe2023dddb", post_norm_filtering_plot = "71557d1c8bac9bbe", publication_paths = "71557d1c8bac9bbe", 
+            qc_plot_paths = "28df520b992b4a4b", ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "3ea964fe2023dddb", 
+            ruv_optimization_result = "21d2cfada7829073", ruv_optimization_table = "71557d1c8bac9bbe"),
+        ruv_result = "21d2cfada7829073d467cb158e5062c42c6507f5639f35da2b03362d6efb4581",
+        workflow = "fbea021eb73497238620c200d02c93de5ed4ab1caa7a29be69dd1f7604357566",
+        value = "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 0L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 0L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 1L),
+        callbacks = character(0)),
+    dia_normalization_manual = list(
+        current = "ruv_corrected",
+        history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected"),
+        head_current = "ruv_corrected",
+        head_history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692", 
+            ruv_corrected = "89eaade153d179c743701f10610a68323d35b21ce15c8a62b2391b89cc55dbe8"),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE), ruv_corrected = c(normalization = TRUE)),
+        products = c("dia-normalization-ruv:a2ff7f83981cff63", "dia-normalization-ruv:fc952b8790c07658", "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+            ),
+        provenance = "4916dc4d938cd3913c9c10d9e01cac46959630236d768aa52eca9ff151d35826",
+        record = "d19acc85da5ba7999f4af330499f1c93d518fa9cd94ce02091286207b8c9867e",
+        files = "25c82c19abbd083fc8dfea532ce38b6f0a80eaadc861d6c905ae4846b2695fbc",
+        norm_state = "8892d37afe006d0afc191cdd8bc3a4168ff6e471d1a688aad331501ca4bae334",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "60235a10c1ff424d", control_genes_index = "f1eb628a13bb1aeb", 
+            filtering_summary_text = "f5162d65b6daff8e", normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", 
+            normalized_protein_obj = "3ea964fe2023dddb", post_norm_filtering_plot = "1cc1786a46386211", publication_paths = "71557d1c8bac9bbe", 
+            qc_plot_paths = "28df520b992b4a4b", ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8b5b1c46fa8314c7", 
+            ruv_optimization_result = "ffc12bf635e5c112", ruv_optimization_table = "c7841b609b82546d"),
+        ruv_result = "330ecfe26fe03dbb4a4374188c4a208ecb7e13b46ed8772d2884d547a88b28ad",
+        workflow = "458611adfe717bdfaabe100a28e62d4a729d7974a0ebfca2ed4643e561ede894",
+        value = "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 1L, 
+            finalizeProtNormWorkflowState = 1L),
+        callbacks = c("post:32d9093cb75d", "ruv:a50c91a55ed5")),
+    dia_correlation_apply = list(
+        current = "correlation_filtered",
+        history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        head_current = "correlation_filtered",
+        head_history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692", 
+            ruv_corrected = "89eaade153d179c743701f10610a68323d35b21ce15c8a62b2391b89cc55dbe8", correlation_filtered = "91a967cfb1269399f1f49928f51211e97f373a82715700d7c0018c8f604823a8"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE), ruv_corrected = c(normalization = TRUE), 
+                correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-normalization-ruv:a2ff7f83981cff63", "dia-normalization-ruv:fc952b8790c07658", "dia-pearson-pairs:e4d56e08c2383db2", 
+            "dia-pearson-selection:ac622a900a2062ab", "dia_normalization_pca:a15ef8c115aaba13", "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+            ),
+        provenance = "68f3678ffee19ddb999f986041ed409dca3a439f0ddb7c8bb2ea8e3bb415e7f0",
+        record = "df134a21406aa67bb9db7a625937f8248f3f9b8e52f9a30cec91f6f95363a7d8",
+        files = "5b238a84991d085e2867dcc8a02dbde4e206504d440a971e42fa22662e741d23",
+        norm_state = "fb69ce836f260cd45d6b3c5c219cabaca658005228a0634cab95720c76acfec2",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "60235a10c1ff424d", control_genes_index = "f1eb628a13bb1aeb", 
+            correlation_filtered_obj = "8b5b1c46fa8314c7", correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "e4d56e08c2383db2", 
+            filtering_summary_text = "f5162d65b6daff8e", final_filtering_plot = "1cc1786a46386211", final_qc_plot = "0833312183929473", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", normalized_protein_obj = "3ea964fe2023dddb", 
+            post_norm_filtering_plot = "1cc1786a46386211", publication_paths = "71557d1c8bac9bbe", qc_plot_paths = "28df520b992b4a4b", 
+            ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8b5b1c46fa8314c7", ruv_optimization_result = "ffc12bf635e5c112", 
+            ruv_optimization_table = "c7841b609b82546d"),
+        ruv_result = "330ecfe26fe03dbb4a4374188c4a208ecb7e13b46ed8772d2884d547a88b28ad",
+        workflow = "458611adfe717bdfaabe100a28e62d4a729d7974a0ebfca2ed4643e561ede894",
+        value = "8b5b1c46fa8314c7646cf463787c44ff6ee60255f50cadbc5f5f26f5b9290034",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 2L, commitDIAReferenceState = 1L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = character(0)),
+    dia_correlation_reapply = list(
+        current = "correlation_filtered",
+        history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        head_current = "correlation_filtered",
+        head_history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692", 
+            ruv_corrected = "89eaade153d179c743701f10610a68323d35b21ce15c8a62b2391b89cc55dbe8", correlation_filtered = "416d38a77b1e8bb581ad6f46b7101c18d653bc2691a5d139976e143dab4ebc9e"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE), ruv_corrected = c(normalization = TRUE), 
+                correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-normalization-ruv:a2ff7f83981cff63", "dia-normalization-ruv:fc952b8790c07658", "dia-pearson-pairs:e4d56e08c2383db2", 
+            "dia-pearson-selection:ac622a900a2062ab", "dia-pearson-selection:ac622a900a2062ab", "dia_normalization_pca:a15ef8c115aaba13", 
+            "dia_normalization_pca:a15ef8c115aaba13", "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"),
+        provenance = "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579",
+        record = "4c68dd10bf802b0822f4a5fc48adcbbb2010e98162a4e9f018005174d820e834",
+        files = "5b238a84991d085e2867dcc8a02dbde4e206504d440a971e42fa22662e741d23",
+        norm_state = "fb69ce836f260cd45d6b3c5c219cabaca658005228a0634cab95720c76acfec2",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "60235a10c1ff424d", control_genes_index = "f1eb628a13bb1aeb", 
+            correlation_filtered_obj = "8b5b1c46fa8314c7", correlation_threshold = "29a39c60c37c4f96", correlation_vector = "e4d56e08c2383db2", 
+            filtering_summary_text = "f5162d65b6daff8e", final_filtering_plot = "1cc1786a46386211", final_qc_plot = "0833312183929473", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", normalized_protein_obj = "3ea964fe2023dddb", 
+            post_norm_filtering_plot = "1cc1786a46386211", publication_paths = "71557d1c8bac9bbe", qc_plot_paths = "28df520b992b4a4b", 
+            ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8b5b1c46fa8314c7", ruv_optimization_result = "ffc12bf635e5c112", 
+            ruv_optimization_table = "c7841b609b82546d"),
+        ruv_result = "330ecfe26fe03dbb4a4374188c4a208ecb7e13b46ed8772d2884d547a88b28ad",
+        workflow = "458611adfe717bdfaabe100a28e62d4a729d7974a0ebfca2ed4643e561ede894",
+        value = "8b5b1c46fa8314c7646cf463787c44ff6ee60255f50cadbc5f5f26f5b9290034",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 2L, commitDIAReferenceState = 1L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = character(0)),
+    dia_correlation_skip = list(
+        current = "correlation_filtered",
+        history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        head_current = "correlation_filtered",
+        head_history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692", 
+            ruv_corrected = "89eaade153d179c743701f10610a68323d35b21ce15c8a62b2391b89cc55dbe8", correlation_filtered = "d36fa4aa2a6fabdae4f4cd9690cb1b8c74f363d72e834ba7c434614b1fea0c4d"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE), ruv_corrected = c(normalization = TRUE), 
+                correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-normalization-ruv:a2ff7f83981cff63", "dia-normalization-ruv:fc952b8790c07658", "dia-pearson-pairs:e4d56e08c2383db2", 
+            "dia-pearson-selection:ac622a900a2062ab", "dia-pearson-selection:ac622a900a2062ab", "dia_normalization_pca:a15ef8c115aaba13", 
+            "dia_normalization_pca:a15ef8c115aaba13", "dia_normalization_pca:a15ef8c115aaba13", "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+            ),
+        provenance = "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579",
+        record = "aad6d183e1fb0e4cded898b0b032d6725b09fab5d64ca72911faef202f0b63d3",
+        files = "5b238a84991d085e2867dcc8a02dbde4e206504d440a971e42fa22662e741d23",
+        norm_state = "fb69ce836f260cd45d6b3c5c219cabaca658005228a0634cab95720c76acfec2",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "60235a10c1ff424d", control_genes_index = "f1eb628a13bb1aeb", 
+            correlation_filtered_obj = "8b5b1c46fa8314c7", correlation_threshold = "a991209291aaafd6", correlation_vector = "e4d56e08c2383db2", 
+            filtering_summary_text = "f5162d65b6daff8e", final_filtering_plot = "1cc1786a46386211", final_qc_plot = "b9f17e080d57b5bc", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", normalized_protein_obj = "3ea964fe2023dddb", 
+            post_norm_filtering_plot = "1cc1786a46386211", publication_paths = "71557d1c8bac9bbe", qc_plot_paths = "28df520b992b4a4b", 
+            ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8b5b1c46fa8314c7", ruv_optimization_result = "ffc12bf635e5c112", 
+            ruv_optimization_table = "c7841b609b82546d"),
+        ruv_result = "330ecfe26fe03dbb4a4374188c4a208ecb7e13b46ed8772d2884d547a88b28ad",
+        workflow = "458611adfe717bdfaabe100a28e62d4a729d7974a0ebfca2ed4643e561ede894",
+        value = "8b5b1c46fa8314c7646cf463787c44ff6ee60255f50cadbc5f5f26f5b9290034",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 0L, commitDIAReferenceState = 1L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = character(0)),
+    dia_normalization_refused = list(
+        current = "correlation_filtered",
+        history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        head_current = "correlation_filtered",
+        head_history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692", 
+            ruv_corrected = "89eaade153d179c743701f10610a68323d35b21ce15c8a62b2391b89cc55dbe8", correlation_filtered = "d36fa4aa2a6fabdae4f4cd9690cb1b8c74f363d72e834ba7c434614b1fea0c4d"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE), ruv_corrected = c(normalization = TRUE), 
+                correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-normalization-ruv:a2ff7f83981cff63", "dia-normalization-ruv:fc952b8790c07658", "dia-pearson-pairs:e4d56e08c2383db2", 
+            "dia-pearson-selection:ac622a900a2062ab", "dia-pearson-selection:ac622a900a2062ab", "dia_normalization_pca:a15ef8c115aaba13", 
+            "dia_normalization_pca:a15ef8c115aaba13", "dia_normalization_pca:a15ef8c115aaba13", "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+            ),
+        provenance = "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579",
+        record = "aad6d183e1fb0e4cded898b0b032d6725b09fab5d64ca72911faef202f0b63d3",
+        files = "5b238a84991d085e2867dcc8a02dbde4e206504d440a971e42fa22662e741d23",
+        norm_state = "fb69ce836f260cd45d6b3c5c219cabaca658005228a0634cab95720c76acfec2",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "60235a10c1ff424d", control_genes_index = "f1eb628a13bb1aeb", 
+            correlation_filtered_obj = "8b5b1c46fa8314c7", correlation_threshold = "a991209291aaafd6", correlation_vector = "e4d56e08c2383db2", 
+            filtering_summary_text = "f5162d65b6daff8e", final_filtering_plot = "1cc1786a46386211", final_qc_plot = "b9f17e080d57b5bc", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", normalized_protein_obj = "3ea964fe2023dddb", 
+            post_norm_filtering_plot = "1cc1786a46386211", publication_paths = "71557d1c8bac9bbe", qc_plot_paths = "28df520b992b4a4b", 
+            ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8b5b1c46fa8314c7", ruv_optimization_result = "ffc12bf635e5c112", 
+            ruv_optimization_table = "c7841b609b82546d"),
+        ruv_result = "330ecfe26fe03dbb4a4374188c4a208ecb7e13b46ed8772d2884d547a88b28ad",
+        workflow = "458611adfe717bdfaabe100a28e62d4a729d7974a0ebfca2ed4643e561ede894",
+        value = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+        error = "RUV-III cannot estimate 50 factors from 32 control proteins observed in every sample\ni choose a smaller k or a larger control set, filter for completeness first, or run normalisation without RUV",
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 0L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 0L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 0L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = character(0)),
+    dia_normalization_retry = list(
+        current = "ruv_corrected",
+        history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        head_current = "ruv_corrected",
+        head_history = c("initial", "protein_replicate_filtered", "normalized", "ruv_corrected", "correlation_filtered"),
+        states = c(protein_replicate_filtered = "932a9ccbf7a5c866708b9960912487faa3fa398571c005986822e936be65ca78", normalized = "87f9eba78ad3cf1d3961f3c9dbaa34f6fb1880e450c5e7018abe2c6fdfd68692", 
+            ruv_corrected = "2c7fbb38bdb82f2d9f78a3296aea6df1afe0e35fa5fa1127041ec805df74cad7", correlation_filtered = "d36fa4aa2a6fabdae4f4cd9690cb1b8c74f363d72e834ba7c434614b1fea0c4d"
+            ),
+        outputs = list(protein_replicate_filtered = NULL, normalized = c(normalization = TRUE), ruv_corrected = c(normalization = TRUE), 
+                correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-normalization-ruv:a2ff7f83981cff63", "dia-normalization-ruv:fc952b8790c07658", "dia-pearson-pairs:e4d56e08c2383db2", 
+            "dia-pearson-selection:ac622a900a2062ab", "dia-pearson-selection:ac622a900a2062ab", "dia_normalization_pca:a15ef8c115aaba13", 
+            "dia_normalization_pca:a15ef8c115aaba13", "dia_normalization_pca:a15ef8c115aaba13", "output/dia-protein-filtering-counts:2b3a70b7fdc2233a"
+            ),
+        provenance = "a181cb9aa9e95f4f52221586dfc19c10d6e3197d780ee3a1d7fc4f559fa2e579",
+        record = "aad6d183e1fb0e4cded898b0b032d6725b09fab5d64ca72911faef202f0b63d3",
+        files = "5b238a84991d085e2867dcc8a02dbde4e206504d440a971e42fa22662e741d23",
+        norm_state = "0a885333fe431e018f77a3073f63740973a79c88b15b3807dfa0ee58bfef2fe6",
+        norm_fields = c(QC_composite_figure = "71557d1c8bac9bbe", best_k = "60235a10c1ff424d", control_genes_index = "f1eb628a13bb1aeb", 
+            correlation_filtered_obj = "8b5b1c46fa8314c7", correlation_threshold = "a991209291aaafd6", correlation_vector = "e4d56e08c2383db2", 
+            filtering_summary_text = "f5162d65b6daff8e", final_filtering_plot = "1cc1786a46386211", final_qc_plot = "b9f17e080d57b5bc", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "0c78c0cd259e526a", normalized_protein_obj = "3ea964fe2023dddb", 
+            post_norm_filtering_plot = "1cc1786a46386211", publication_paths = "71557d1c8bac9bbe", qc_plot_paths = "28df520b992b4a4b", 
+            ruv_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8b5b1c46fa8314c7", ruv_optimization_result = "ffc12bf635e5c112", 
+            ruv_optimization_table = "c7841b609b82546d"),
+        ruv_result = "330ecfe26fe03dbb4a4374188c4a208ecb7e13b46ed8772d2884d547a88b28ad",
+        workflow = "458611adfe717bdfaabe100a28e62d4a729d7974a0ebfca2ed4643e561ede894",
+        value = "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 1L, 
+            finalizeProtNormWorkflowState = 1L),
+        callbacks = c("post:32d9093cb75d", "ruv:a50c91a55ed5")),
+    limpa_covariates_pass_through = list(
+        current = "peptide_count_filtered",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered"),
+        head_current = "peptide_count_filtered",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered"),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL),
+        products = c("output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "b735d98157cc15fc39d183d25e744262d612b0f19d994ce5b073da963f5b60be",
+        record = "6d3d46d9c054af2bb3b2f07469d89981e294f90d4f84a5d713938372b89e86d2",
+        files = "8ab794fecc83e91d92f2fee89cd8fdc808bd44a3e8c693472e90be9cbf830156",
+        norm_state = "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167",
+        norm_fields = c(best_k = "3fe0774c75a5f7ec", control_genes_index = "3fe0774c75a5f7ec", filtering_summary_text = "1ba7030e9325c39d", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", 
+            ruv_normalized_obj = "7e1a356bda20ce87", ruv_optimization_result = "71557d1c8bac9bbe"),
+        ruv_result = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+        workflow = "31f37cefd94f75f4f1e164b03125e1825178d30df82fc99a89aa16b7ba947e3a",
+        value = "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 0L, commitDIAReferenceState = 0L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 0L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 0L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = "post:f08bb05015f2"),
+    limpa_covariates_correlation = list(
+        current = "correlation_filtered",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered"
+            ),
+        head_current = "correlation_filtered",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered"
+            ),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+            ),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia_normalization_pca:d9b5720af8d8a298", 
+            "output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "9201164d5d72b3fe7f7ee72607a2e03edc64d9eb2a7d6c94b87505b9bd14cc62",
+        record = "181955afdf5b3fc2465446465437e447f422ace7d0f85293e0d5a1e0fb446ff3",
+        files = "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c",
+        norm_state = "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1",
+        norm_fields = c(best_k = "3fe0774c75a5f7ec", control_genes_index = "3fe0774c75a5f7ec", correlation_filtered_obj = "7e1a356bda20ce87", 
+            correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
+            final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
+            normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", ruv_normalized_obj = "7e1a356bda20ce87", 
+            ruv_optimization_result = "71557d1c8bac9bbe"),
+        ruv_result = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+        workflow = "31f37cefd94f75f4f1e164b03125e1825178d30df82fc99a89aa16b7ba947e3a",
+        value = "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 2L, commitDIAReferenceState = 1L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = character(0)),
+    limpa_covariates_ruv = list(
+        current = "ruv_covariates",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_covariates"),
+        head_current = "ruv_covariates",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_covariates"),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935", 
+            ruv_covariates = "b2442669d93f3fbceeca3c61238b3fef1991c236c7ab4391e9f2dbe650ec072e"),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
+                ruv_covariates = c("ruv-covariates" = TRUE)),
+        products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia-ruv-covariates:52b9cf17c41aa8c0", 
+            "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "b277eb8197ce4789839d312cf291fed25eae7f1c6b5450795b7b6706b9c33067",
+        record = "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38",
+        files = "b8e5c65e86cc0c32a8345221bfe52f4ecf30b8bdf26b4a213f5cd207ba3e4803",
+        norm_state = "abc3041ac1452514dd38bea7dac56eaeb710139787ec11909029bb4ca7387977",
+        norm_fields = c(best_k = "a7b8541c0f557ee0", control_genes_index = "1c497b478576b300", correlation_filtered_obj = "8f53dc8138ce299d", 
+            correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
+            final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
+            normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8f53dc8138ce299d", ruv_optimization_result = "eeae0389f229a0bd", 
+            ruv_optimization_table = "bf419098d53c4e33"),
+        ruv_result = "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6",
+        workflow = "1aea9a4f60d498c1d539b6ced76fa6d4522eb4875db793ea53cf2a73fe2e049d",
+        value = "8f53dc8138ce299d67fb2dbeb73332a20afa4f5e15c31dd7f3aefd09892e4f32",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 2L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = "ruv:e1c1cd4c99f5"),
+    limpa_covariates_ruv_repeat = list(
+        current = "ruv_covariates",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_covariates"),
+        head_current = "ruv_covariates",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_covariates"),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935", 
+            ruv_covariates = "49a8e114895c4afeb722b4f41bb56e96c18da6abc6351d3014c5f8c571b92722"),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
+                ruv_covariates = c("ruv-covariates" = TRUE)),
+        products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia-ruv-covariates:52b9cf17c41aa8c0", 
+            "dia-ruv-covariates:63c261200c1ced1e", "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", 
+            "output/dia-protein-qc-output:8b8101851eb54168", "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "b277eb8197ce4789839d312cf291fed25eae7f1c6b5450795b7b6706b9c33067",
+        record = "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38",
+        files = "b8e5c65e86cc0c32a8345221bfe52f4ecf30b8bdf26b4a213f5cd207ba3e4803",
+        norm_state = "abc3041ac1452514dd38bea7dac56eaeb710139787ec11909029bb4ca7387977",
+        norm_fields = c(best_k = "a7b8541c0f557ee0", control_genes_index = "1c497b478576b300", correlation_filtered_obj = "8f53dc8138ce299d", 
+            correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
+            final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
+            normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8f53dc8138ce299d", ruv_optimization_result = "eeae0389f229a0bd", 
+            ruv_optimization_table = "bf419098d53c4e33"),
+        ruv_result = "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6",
+        workflow = "1aea9a4f60d498c1d539b6ced76fa6d4522eb4875db793ea53cf2a73fe2e049d",
+        value = "8f53dc8138ce299d67fb2dbeb73332a20afa4f5e15c31dd7f3aefd09892e4f32",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 2L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = "ruv:60a06748b674"),
+    limpa_correction_pass_through = list(
+        current = "peptide_count_filtered",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered"),
+        head_current = "peptide_count_filtered",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered"),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0"),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL),
+        products = c("output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "b735d98157cc15fc39d183d25e744262d612b0f19d994ce5b073da963f5b60be",
+        record = "6d3d46d9c054af2bb3b2f07469d89981e294f90d4f84a5d713938372b89e86d2",
+        files = "8ab794fecc83e91d92f2fee89cd8fdc808bd44a3e8c693472e90be9cbf830156",
+        norm_state = "d61f7e02b4c6a6d12fca78b9106ca07e9c39c3d7f406541c74a2ddc2947c3167",
+        norm_fields = c(best_k = "3fe0774c75a5f7ec", control_genes_index = "3fe0774c75a5f7ec", filtering_summary_text = "1ba7030e9325c39d", 
+            normalization_complete = "21dd4c7bf548536a", normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", 
+            ruv_normalized_obj = "7e1a356bda20ce87", ruv_optimization_result = "71557d1c8bac9bbe"),
+        ruv_result = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+        workflow = "31f37cefd94f75f4f1e164b03125e1825178d30df82fc99a89aa16b7ba947e3a",
+        value = "21dd4c7bf548536a0a6a9811519c53a3223f1a4f0357aa5382dd8a49aad258b6",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 0L, commitDIAReferenceState = 0L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 0L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 0L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = "post:f08bb05015f2"),
+    limpa_correction_correlation = list(
+        current = "correlation_filtered",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered"
+            ),
+        head_current = "correlation_filtered",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered"
+            ),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935"
+            ),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE)),
+        products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia_normalization_pca:d9b5720af8d8a298", 
+            "output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "9201164d5d72b3fe7f7ee72607a2e03edc64d9eb2a7d6c94b87505b9bd14cc62",
+        record = "181955afdf5b3fc2465446465437e447f422ace7d0f85293e0d5a1e0fb446ff3",
+        files = "34e64dc1e1e246298b07d49ed56b42a6743ca9e662a09925d3be94dc69c4735c",
+        norm_state = "3b0fbc63724b4e8bf08fb33060738e1459d38205eb8bd692f03e358d03181fa1",
+        norm_fields = c(best_k = "3fe0774c75a5f7ec", control_genes_index = "3fe0774c75a5f7ec", correlation_filtered_obj = "7e1a356bda20ce87", 
+            correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
+            final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
+            normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", ruv_normalized_obj = "7e1a356bda20ce87", 
+            ruv_optimization_result = "71557d1c8bac9bbe"),
+        ruv_result = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
+        workflow = "31f37cefd94f75f4f1e164b03125e1825178d30df82fc99a89aa16b7ba947e3a",
+        value = "7e1a356bda20ce879fd8f423db352ae28d5e6b171ffb73d4cabec81acfa36136",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 2L, commitDIAReferenceState = 1L, saveDIADisplayTable = 0L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 1L, updateProteinFiltering = 1L, writeDIADesignTable = 1L, 
+            resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = character(0)),
+    limpa_correction_ruv = list(
+        current = "ruv_corrected",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_corrected"),
+        head_current = "ruv_corrected",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_corrected"),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935", 
+            ruv_corrected = "e1206824d8302e3581c57eeb39d5e7535da216dec6881f1b0575d03077085598"),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
+                ruv_corrected = c("ruv-covariates" = TRUE)),
+        products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia-ruv-covariates:8cc4809c5a4a073b", 
+            "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "22d6232c9a55eab50e0d9d1c186d266c5e8bd33368999fa3af0e8ac982064470",
+        record = "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1",
+        files = "b8e5c65e86cc0c32a8345221bfe52f4ecf30b8bdf26b4a213f5cd207ba3e4803",
+        norm_state = "25f3c43b9d26b351078901bd372606692d82831c945aa7393aa91c10e6d3b672",
+        norm_fields = c(best_k = "a7b8541c0f557ee0", control_genes_index = "1c497b478576b300", correlation_filtered_obj = "8422092ca23581c1", 
+            correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
+            final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
+            normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8422092ca23581c1", ruv_optimization_result = "d91a80603a5612cd", 
+            ruv_optimization_table = "bf419098d53c4e33"),
+        ruv_result = "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f",
+        workflow = "3707fc6f2eed26843082dd0112a28f8f6ac8ebb623036e6eb1d80a9782cf17c0",
+        value = "8422092ca23581c14e7503c24ccac8c235a1f244336f28163c3fe6d6bd7533f7",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 2L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = "ruv:e1c1cd4c99f5"),
+    limpa_correction_ruv_repeat = list(
+        current = "ruv_corrected",
+        history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_corrected"),
+        head_current = "ruv_corrected",
+        head_history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
+            "ruv_corrected"),
+        states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
+            peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935", 
+            ruv_corrected = "0c680e295e60bf593b7864d35762f69e81dd99629cd7662359be16c81285cb8d"),
+        outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
+                ruv_corrected = c("ruv-covariates" = TRUE)),
+        products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia-ruv-covariates:8cc4809c5a4a073b", 
+            "dia-ruv-covariates:8f30ef662db854de", "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", 
+            "output/dia-protein-qc-output:8b8101851eb54168", "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+        provenance = "22d6232c9a55eab50e0d9d1c186d266c5e8bd33368999fa3af0e8ac982064470",
+        record = "548a545e77a0fb5d09953a780b89dc4ffbf5d9dd5cb217eee5a4847fab89fe01",
+        files = "09d8cbcc30ea9902537d19ee36c7e73843b1f1638ce516c1853f6b39a0545f64",
+        norm_state = "1d6de9a50ebc818aa87294c77c8f5847eed7f02e38bcbeb691544c0c5510aa75",
+        norm_fields = c(best_k = "a7b8541c0f557ee0", control_genes_index = "19d490e85cf85a3f", correlation_filtered_obj = "aebfcf21f9e83b32", 
+            correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
+            final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
+            normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "aebfcf21f9e83b32", ruv_optimization_result = "8faef6229524df22", 
+            ruv_optimization_table = "4dd1aab74e24f986"),
+        ruv_result = "3b26a46b119a2ad250fc602170716a5883a82760a3b572c920ff3d5f5766fe5f",
+        workflow = "87e84fcf3901962127a4b85055f3d423299d2eadabe3987a1a98c90eb4f91d4e",
+        value = "aebfcf21f9e83b325a4c92d9d1d81c8b1cda3d82cf6a607e1cc5e84a71a2e59b",
+        error = NA_character_,
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 2L, 
+            resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
+            finalizeProtNormWorkflowState = 0L),
+        callbacks = "ruv:5e9abad6fbec")
+)
+
+test_that("KIT-111 W1 (a): the DIA normalisation and correlation clicks give the recorded states, products, provenance, files and display", {
+    fixture <- protNormCoreOwner()
+    clicks <- protNormW1Clicks(fixture)
+    protNormW1Expect("dia_normalization_skip", clicks$normalization("skip"))
+    # The same click again: the saved product is reused and nothing is committed.
+    protNormW1Expect("dia_normalization_skip_repeat", clicks$normalization("skip"))
+    protNormW1Expect("dia_normalization_manual", clicks$normalization("manual"))
+    protNormW1Expect("dia_correlation_apply", clicks$correlation(0.5))
+    # Re-applied at another threshold: the source is the normalisation's final, not the head.
+    protNormW1Expect("dia_correlation_reapply", clicks$correlation(0.7))
+    protNormW1Expect("dia_correlation_skip", clicks$correlation(0, skipped = TRUE))
+    # A refusal (manual k above what the data allow), then a valid run on the same owner.
+    protNormW1Expect("dia_normalization_refused", clicks$normalization("manual", ruv_k = 50))
+    protNormW1Expect("dia_normalization_retry", clicks$normalization("manual"))
+})
+
+test_that("KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covariates in both modes give the recorded values", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    for (mode in c("covariates", "correction")) {
+        fixture <- protNormW1LimpaOwner()
+        clicks <- protNormW1Clicks(fixture)
+        protNormW1Expect(paste0("limpa_", mode, "_pass_through"), clicks$pass_through())
+        protNormW1Expect(paste0("limpa_", mode, "_correlation"), clicks$correlation(0.5))
+        protNormW1Expect(paste0("limpa_", mode, "_ruv"), clicks$ruv_covariates(mode))
+        # The same click again, as today: its source is the committed RUV state (the runner sets
+        # correlation_filtered_obj to it), so the declaration runs again and commits.
+        protNormW1Expect(paste0("limpa_", mode, "_ruv_repeat"), clicks$ruv_covariates(mode))
+    }
+})

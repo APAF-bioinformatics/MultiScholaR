@@ -846,3 +846,39 @@ test_that("da_server_init_handlers normalizes user contrasts to group-prefixed f
     }
   )
 })
+
+test_that("KIT-111 W1 (c), F106-02: an in-process proteomics DA run removes its working notice", {
+  notes <- character()
+  testthat::local_mocked_bindings(
+    showNotification = function(ui, action = NULL, duration = 5, closeButton = TRUE, id = NULL,
+                                type = c("default", "message", "warning", "error"), session = NULL) {
+      notes <<- c(notes, paste("show", if (is.null(id)) "<no id>" else id, type[[1L]]))
+      invisible(id)
+    },
+    removeNotification = function(id, session = NULL) {
+      notes <<- c(notes, paste("remove", id))
+      invisible(id)
+    },
+    .package = "shiny"
+  )
+  testthat::local_mocked_bindings(
+    installWorkflowManagedStep = function(...) list(apply = function(...) stop("no managed step in process")),
+    workflowSessionApplication = function(session) NULL,
+    getDIAActiveManager = function() NULL,
+    withDIAStateScope = function(manager, operation) operation(),
+    runDIAReferenceDaAnalysis = function(settings, da_data, workflow_data, experiment_paths, contrasts, annotations,
+                                         publish) {
+      list(contrasts = data.frame(friendly_names = "B_vs_A"), results = list(list(qvalue_warnings = NULL)))
+    },
+    .package = "MultiScholaR"
+  )
+  da_data <- shiny::reactiveValues(current_s4_object = list(entity_id = "in-process"))
+  workflow_data <- shiny::reactiveValues(contrasts_tbl = data.frame(contrasts = "groupB-groupA"), uniprot_dat_cln = NULL)
+  utils::capture.output(testServer(make_prot_da_run_handler_module(da_data, workflow_data, list()), {
+    session$setInputs(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)
+    session$setInputs(run_da_analysis = 1)
+  }))
+  expect_identical(notes[[1L]], "show da_working default")
+  expect_true("show <no id> message" %in% notes)
+  expect_true("remove da_working" %in% notes)
+})

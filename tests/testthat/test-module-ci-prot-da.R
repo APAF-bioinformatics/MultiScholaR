@@ -747,3 +747,9 @@ test_that("MCI-009.6 DA output schema remains consumable by enrichment and summa
     stringr::str_remove("_long_annot\\.xlsx$")
   expect_identical(summary_index_description, "proteins_groupB-groupA")
 })
+
+test_that("KIT-111 W1 (c), F106-03: the cluster summary with no clusters prints its text and no NULL", {
+  # renderPrint prints the view's visible value after its output (mod_omic_da.R:550); capture.output does the same.
+  printed <- utils::capture.output(diaDaClusterSummaryView("dynamic", NULL))
+  expect_identical(printed, "No clusters defined. Enable clustering and tree cutting on the heatmap.")
+})
