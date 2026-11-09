@@ -947,6 +947,7 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
     warning_message <- NULL
     saved <- FALSE
     tryCatch({
+        results <- portableWorkflowEnrichmentResults(results) # F107-05
         entry <- workflowOperationEntry(config$operation()$name)
         setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
             values = declared)
@@ -972,6 +973,78 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
         cat(sprintf("   ENRICHMENT Step: Warning saving to R6 state manager: %s\n", e$message))
     })
     list(attempted = TRUE, saved = saved, warning = warning_message)
+}
+
+#' The completed enrichment's results made portable for the commit (KIT-107 F107-05)
+#'
+#' The live kernel's static plots (`processEnrichments`: ggplot2, then `plotly::ggplotly` and `ggplot2::ggsave`) keep
+#' the environments they were made in: a ggplot2 layer records its caller's environment, and building the plot leaves
+#' ggproto method closures whose `self` (and a scale transform's `reverse`) are unforced promises. Through the kernel's
+#' frame they can also reach the DA tables as readr read them, with a live parser pointer. The commit's portability check
+#' (`checkSavedWorkflowPayload`) refuses both, so a run on the live kernel never saved its state. Here every lazy binding
+#' reachable from the results is forced (it then holds the value it would have read) and every readr table's parser
+#' diagnostics are materialised (`prepareDIAParserTable`), in place, before the commit. No value, method or result
+#' changes. A binding that cannot be forced is left as it is, and the check refuses it as before.
+#' @param results The `EnrichmentResults` to commit.
+#' @return `results`, with the reachable readr tables' diagnostics materialised.
+#' @noRd
+portableWorkflowEnrichmentResults <- function(results) {
+    seen <- new.env(parent = emptyenv())
+    visit <- function(value) {
+        if (inherits(value, "spec_tbl_df")) return(prepareDIAParserTable(value))
+        if (is.environment(value)) {
+            if (isNamespace(value) || identical(value, globalenv()) || identical(value, baseenv()) ||
+                identical(value, emptyenv())) return(value)
+            id <- rlang::obj_address(value)
+            if (exists(id, envir = seen, inherits = FALSE)) return(value)
+            assign(id, TRUE, envir = seen)
+            for (name in ls(value, all.names = TRUE)) {
+                if (bindingIsActive(name, value)) next
+                if (rlang::env_binding_are_lazy(value, name)) {
+                    tryCatch(get(name, envir = value, inherits = FALSE), error = function(e) NULL)
+                    if (rlang::env_binding_are_lazy(value, name)) next
+                }
+                # An empty argument binding (a plotting closure's) holds no value to visit.
+                if (rlang::is_missing(.subset2(value, name))) next
+                current <- .subset2(value, name)
+                updated <- visit(current)
+                if (!identical(updated, current) && !bindingIsLocked(name, value)) assign(name, updated, envir = value)
+            }
+            visit(parent.env(value))
+            return(value)
+        }
+        if (is.function(value)) {
+            if (!is.primitive(value)) visit(environment(value))
+            return(value)
+        }
+        if (isS4(value) && length(methods::slotNames(value))) {
+            for (slot in methods::slotNames(value)) {
+                current <- methods::slot(value, slot)
+                updated <- visit(current)
+                if (!identical(updated, current)) methods::slot(value, slot, check = FALSE) <- updated
+            }
+        } else if (is.list(value) && !is.pairlist(value)) {
+            classes <- oldClass(value)
+            for (i in seq_along(value)) {
+                current <- .subset2(value, i)
+                updated <- visit(current)
+                if (!identical(updated, current)) {
+                    oldClass(value) <- NULL
+                    value[i] <- list(updated)
+                    oldClass(value) <- classes
+                }
+            }
+        }
+        others <- setdiff(names(attributes(value)), c("names", "class", "row.names",
+            if (isS4(value)) methods::slotNames(value)))
+        for (name in others) {
+            current <- attr(value, name, exact = TRUE)
+            updated <- visit(current)
+            if (!identical(updated, current)) attr(value, name) <- updated
+        }
+        value
+    }
+    visit(results)
 }
 
 #' The completed enrichment's results after an Open (KIT-107 D3; KIT-024)
