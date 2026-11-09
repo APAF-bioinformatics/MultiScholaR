@@ -1,0 +1,34 @@
+# KIT-108 run 1: targeted and dependent set on 14b5b20c+ (code final; the lane-check fix f718c5ea is a test helper only). test-baseline.R file load_all, one process per file, 4 parallel, strict skips, R 4.6.1, R_LIBS kit_107 (66sPmE), TMPDIR on disk. 31 files: 9,034 passed, 0 failed, 0 error blocks.
+# Against KIT-105's full-suite rows overlaid with KIT-110/106/107's: every change is a recorded quarantine (Q-170..Q-175, Q-180..Q-183) or a new file (test-omic-summary-module.R 1703/0, test-omics-summary-core.R 665/0/2).
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-e2e-test-mode-integration.R	load_all	26	26	0	61	61	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	8.2	complete
+test-general-filemgmt-report-helpers-shared.R	load_all	11	11	0	89	85	0	0	1	3	1	FALSE			FALSE		0	0	0	1	0	0	9.1	complete
+test-lipid-14a-summary-module-characterization.R	load_all	11	0	11	0	0	0	0	0	0	1	TRUE	quarantined: Q-170 (KIT-108 W3) its binding guard names the deleted lipid summary helpers (mod_lipid_summary_{workflow,state,observer}_helpers.R) and its 11 blocks test their seams; the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps	quarantine	FALSE		0	0	0	1	0	0	5.6	complete
+test-lipid-15-summary-module-seams.R	load_all	19	0	19	0	0	0	0	0	0	1	TRUE	quarantined: Q-171 (KIT-108 W3) it sources the deleted mod_lipid_summary_{state,workflow,observer}_helpers.R by path and tests their seams in 19 blocks; the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps	quarantine	FALSE		0	0	0	1	0	0	5.5	complete
+test-metab-05-summary-module-characterization.R	load_all	25	0	25	0	0	0	0	0	0	1	TRUE	quarantined: Q-172 (KIT-108 W3) its binding guard names the deleted metab summary helpers (mod_metab_summary_{server,observer}_helpers.R) and its 25 blocks test their seams; the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps	quarantine	FALSE		0	0	0	1	0	0	5.5	complete
+test-module-ci-lipid-summary.R	load_all	8	8	0	20	14	0	0	6	0	6	FALSE			FALSE		0	0	0	6	0	0	11.3	complete
+test-module-ci-metab-summary.R	load_all	7	7	0	18	12	0	0	6	0	6	FALSE			FALSE		0	0	0	6	0	0	10.9	complete
+test-module-ci-prot-norm.R	load_all	6	6	0	64	60	0	0	4	0	4	FALSE			FALSE		0	0	0	4	0	0	6.3	complete
+test-module-ci-prot-summary.R	load_all	6	6	0	25	20	0	0	5	0	5	FALSE			FALSE		0	0	0	5	0	0	5.5	complete
+test-module-ci-trx-summary.R	load_all	5	5	0	70	70	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	138.7	complete
+test-module-ui-wrapper-direct-shared.R	load_all	1	1	0	45	45	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	6.6	complete
+test-omic-da-module.R	load_all	21	43	0	1260	1260	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	421	complete
+test-omic-design-module.R	load_all	22	22	0	158	158	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	23.5	complete
+test-omic-gui-config.R	load_all	24	24	0	1849	1849	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	28.3	complete
+test-omic-norm-module.R	load_all	19	19	0	547	547	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	215.3	complete
+test-omics-summary-core.R	load_all	12	31	0	667	665	0	0	2	0	2	FALSE			FALSE		0	0	0	2	0	0	193.5	complete
+test-omic-summary-module.R	load_all	3	28	0	1703	1703	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	238.9	complete
+test-prot-12a-summary-module-characterization.R	load_all	6	0	6	0	0	0	0	0	0	1	TRUE	quarantined: Q-181 (KIT-108 W4) its 6 blocks characterise the deleted proteomics summary handlers (mod_prot_summary_{server,publication,session,report}_helpers.R); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps	quarantine	FALSE		0	0	0	1	0	0	5.3	complete
+test-prot-12-summary-module-contracts.R	load_all	55	0	55	0	0	0	0	0	0	1	TRUE	quarantined: Q-180 (KIT-108 W4) its binding guard (:12-16) names observeProtSummaryReportGeneration (mod_prot_summary_server_helpers.R, deleted) and its 55 blocks test the deleted proteomics summary seams (mod_prot_summary_{server,publication,session,report}_helpers.R); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps	quarantine	FALSE		0	0	0	1	0	0	5.6	complete
+test-prot-norm-core.R	load_all	7	7	0	57	57	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	78.8	complete
+test-trx-norm-module.R	load_all	5	5	0	89	89	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	80.4	complete
+test-trx-publication.R	load_all	2	2	0	178	174	0	0	0	4	0	FALSE			FALSE		0	0	0	0	0	0	40	complete
+test-workflow-analysis-record.R	load_all	23	23	0	278	274	0	0	0	4	0	FALSE			FALSE		0	0	0	0	0	0	178.6	complete
+test-workflow-gui-diagnostic.R	load_all	15	15	0	76	72	0	0	4	0	4	FALSE			FALSE		0	0	1	0	0	3	16.4	complete
+test-workflow-memory-mechanism-member.R	load_all	13	13	0	13	0	0	0	13	0	13	FALSE			FALSE		0	0	1	0	0	12	5.4	complete
+test-workflow-native-session.R	load_all	24	24	0	742	733	0	0	2	7	2	FALSE			FALSE		0	0	1	0	0	1	584	complete
+test-workflow-omics-application-reads.R	load_all	18	27	0	230	230	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	572.5	complete
+test-workflow-omics-sessions.R	load_all	4	8	0	150	150	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	36.2	complete
+test-workflow-server-shared.R	load_all	7	7	0	204	204	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	7.5	complete
+test-workflow-trx-declarations.R	load_all	7	7	0	324	324	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	170.8	complete
+test-workflow-ui-shared.R	load_all	6	6	0	178	178	0	0	0	0	0	FALSE			FALSE		0	0	0	0	0	0	7.3	complete

@@ -1,0 +1,4 @@
+── 1. Error: lifecycle prot_dia ────────────────────────────────────────────────
+<subscriptOutOfBoundsError/error/condition>
+Error in `rendered[[1L]]`: subscript out of bounds
+Backtrace:

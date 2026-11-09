@@ -1,0 +1,17 @@
+lifecycle-trx_screen: INFO [2026-11-09 20:50:51] --- Processing setup for omic type: transcriptomics ---
+
+Paths for Omics Label: 'transcriptomics' (Type: transcriptomics)
+  timestamp                      : 20261109_205051
+------------------------------------------
+ERROR [2026-11-09 20:50:53] Error processing import: negative count (1 cell(s); first: gene 1, sample RPMI_03_r2) (trx_counts_negative)
+ERROR [2026-11-09 20:51:01] Normalization error: manual k 50 is above the cap of 3 for 12 samples (trx_ruv_k_above_cap)
+.............................
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE trx_screen identical_to_oracle=TRUE elapsed=40s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS startWorkflowSummaryIntegrationExport 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS runWorkflowSummaryExportStep 1

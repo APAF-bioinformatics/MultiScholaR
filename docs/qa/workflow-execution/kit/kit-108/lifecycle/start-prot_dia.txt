@@ -1,0 +1,61 @@
+lifecycle-prot_dia: INFO [2026-11-09 21:34:52] --- Processing setup for omic type: proteomics ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  timestamp                      : 20261109_213452
+------------------------------------------
+
+ERROR [2026-11-09 21:36:48] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+.INFO [2026-11-09 21:39:09] Results summary directory for proteomics_prot_dia (/home/doktersmol/.cache/k108lead/tmp/RtmpIRpFxL/gui-entry-prot_dia-b38ec1d22a9c/project/prot_dia/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+1INFO [2026-11-09 21:39:33] Session state exported to: /home/doktersmol/.cache/k108lead/tmp/RtmpIRpFxL/gui-entry-prot_dia-b38ec1d22a9c/project/prot_dia/scripts/proteomics/session_state_2026-11-09.RDS
+..........................................
+══ Failed ══════════════════════════════════════════════════════════════════════
+── 1. Failure: lifecycle prot_dia ──────────────────────────────────────────────
+Expected `stored` to be identical to `sub(suffix, "", rendered[[1L]])`.
+Differences:
+`actual`:   "NA"          
+`expected`: "DIANN_report"
+
+KIT-108 F104-01: the export summary names the rendered report's template
+Backtrace:
+     ▆
+  1. ├─guiEntryExpectLane(lane)
+  2. │ └─guiEntryRunLane(lane_id) at tests/testthat/helper-gui-entry.R:390:3
+  3. │   ├─base::suppressWarnings(...) at tests/testthat/helper-gui-entry.R:297:3
+  4. │   │ └─base::withCallingHandlers(...)
+  5. │   ├─base::suppressMessages(...)
+  6. │   │ └─base::withCallingHandlers(...)
+  7. │   ├─utils::capture.output(...)
+  8. │   │ └─base::withVisible(...elt(i))
+  9. │   └─shiny::testServer(...)
+ 10. │     ├─shiny:::withMockContext(...)
+ 11. │     │ ├─shiny::isolate(...)
+ 12. │     │ │ ├─shiny::..stacktraceoff..(...)
+ 13. │     │ │ └─ctx$run(...)
+ 14. │     │ │   ├─promises::with_promise_domain(...)
+ 15. │     │ │   │ └─domain$wrapSync(expr)
+ 16. │     │ │   ├─shiny::withReactiveDomain(...)
+ 17. │     │ │   │ └─promises::with_promise_domain(...)
+ 18. │     │ │   │   └─domain$wrapSync(expr)
+ 19. │     │ │   │     └─base::force(expr)
+ 20. │     │ │   ├─shiny:::with_otel_span_context(...)
+ 21. │     │ │   │ └─base::force(expr)
+ 22. │     │ │   ├─shiny::captureStackTraces(...)
+ 23. │     │ │   │ └─promises::with_promise_domain(...)
+ 24. │     │ │   │   └─domain$wrapSync(expr)
+ 25. │     │ │   │     └─base::withCallingHandlers(expr, error = doCaptureStack)
+ 26. │     │ │   └─env$runWith(self, func)
+ 27. │     │ │     └─shiny (local) contextFunc()
+ 28. │     │ │       └─shiny::..stacktraceon..(expr)
+ 29. │     │ ├─shiny::withReactiveDomain(...)
+ 30. │     │ │ └─promises::with_promise_domain(...)
+ 31. │     │ │   └─domain$wrapSync(expr)
+ 32. │     │ │     └─base::force(expr)
+ 33. │     │ └─withr::with_options(...)
+ 34. │     │   └─base::force(code)
+ 35. │     └─rlang::eval_tidy(quosure, mask, rlang::caller_env())
+ 36. └─step$run(api) at tests/testthat/helper-gui-entry.R:355:7
+ 37.   └─testthat::expect_identical(...) at tests/testthat/helper-gui-entry.R:796:7
+
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE prot_dia identical_to_oracle=FALSE elapsed=287s
+CALLS collectDIANativeSessionMetadata 1
