@@ -1,0 +1,6 @@
+# KIT-108 W6: the summary function fields wired at W3/W4 are required: session_state, the final state's context or states, the integration filename, the report template, and the export step's parameters/choices/available/status text.
+# Old validator with the new refusals:
+COUNTS test-omic-gui-config.R pass 1834 fail 15 error 0 skip 0
+  BAD test-omic-gui-config.R :: KIT-108 W1 (D9): each summary field is refused by class when missing or mistyped; the final state, the copy, the integration, the report and the export steps are checked; the W3 and W4 function fields are optional, by type when present
+# New validator:
+COUNTS test-omic-gui-config.R pass 1849 fail 0 error 0 skip 0

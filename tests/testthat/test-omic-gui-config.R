@@ -1884,4 +1884,29 @@ test_that("KIT-108 W1 (D9): each summary field is refused by class when missing 
         bad$summary$export_steps[[1L]][[parts]] <- "identity"
         expectGuiConfigRefused(bad, paste0("summary$export_steps[[1]]$", path))
     }
+    # KIT-108 W6: the function fields W3 and W4 wired are required; each removed is refused by class.
+    for (omic in list(lipid, prot, trx)) {
+        removed <- omic
+        removed$summary$session_state <- NULL
+        expectGuiConfigRefused(removed, "summary$session_state")
+        removed <- omic
+        removed$summary$integration$filename <- NULL
+        expectGuiConfigRefused(removed, "summary$integration$filename")
+        removed <- omic
+        removed$summary$report$template <- NULL
+        expectGuiConfigRefused(removed, "summary$report$template")
+    }
+    removed <- prot
+    removed$summary$final_state$context <- NULL
+    expectGuiConfigRefused(removed, "summary$final_state")
+    removed <- lipid
+    removed$summary$final_state$states <- NULL
+    removed$summary$final_state$read_ids <- NULL
+    expectGuiConfigRefused(removed, "summary$final_state")
+    for (path in c("parameters", "choice$choices", "choice$available", "status$text")) {
+        parts <- strsplit(path, "$", fixed = TRUE)[[1L]]
+        removed <- trx
+        removed$summary$export_steps[[1L]][[parts]] <- NULL
+        expectGuiConfigRefused(removed, paste0("summary$export_steps[[1]]$", path))
+    }
 })

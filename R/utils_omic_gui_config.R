@@ -310,13 +310,14 @@ omicGuiConfigSchema <- function() {
         enrichment_kernel = c(select = "ref", test_double = "ref"),
         enrichment_organism_filter = c(mixed_species_from = "chr1"),
         enrichment_organism_filter_optional = c(mapping = "ref", apply = "ref"),
-        # KIT-108 W1 (design 4.10, D1, D4, D9): the Summary & Export tab, every omic. The function fields still in an
-        # R/mod_*.R file at the start commit are optional (`*_optional`), checked by type when present, until the W3 and
-        # W4 merges wire them. `export_steps` is a list, possibly empty, of steps; `texts` the per-omic texts.
+        # KIT-108 W1 (design 4.10, D1, D4, D9): the Summary & Export tab, every omic. The function fields W3 and W4 wired
+        # to the core are required since KIT-108 W6 (the session state, the final state's context or states, the
+        # integration file name, the report template, an export step's functions). `export_steps` is a list, possibly
+        # empty, of steps; `texts` the per-omic texts.
         summary = c(module_id = "chr1", testid = "chr1", placeholder = "chr1", description = "chr1",
             final_state = "named_list", copy = "named_list", integration = "named_list", report = "named_list",
-            texts = "named_chr0"),
-        summary_optional = c(record_class = "chr1_or_null", session_state = "ref"),
+            texts = "named_chr0", session_state = "ref"),
+        summary_optional = c(record_class = "chr1_or_null"),
         # The final state: the head's by its `context` function, or the first of `states` with its `read_ids` reader.
         summary_final_state = c(context = "ref", states = "chr", read_ids = "ref"),
         # `required`: NULL (failures not classified) or the required artifacts' display names, checked by the validator.
@@ -704,6 +705,9 @@ validateOmicGuiSummary <- function(summary, shell, schema) {
         omicGuiConfigAbort("summary$final_state", "must name the final state by `context` or by `states`, not both")
     }
     if (!is.null(final$states)) checkOmicGuiFields(final, c(read_ids = "ref"), "summary$final_state")
+    if (is.null(final$context) && is.null(final$states)) {
+        omicGuiConfigAbort("summary$final_state", "must name the final state by `context` or by `states`")
+    }
     copy <- summary$copy
     checkOmicGuiFields(copy, schema$summary_copy, "summary$copy")
     checkOmicGuiFields(copy, schema$summary_copy_optional, "summary$copy", required = FALSE)
@@ -722,6 +726,7 @@ validateOmicGuiSummary <- function(summary, shell, schema) {
     if (!is.null(integration$requires)) {
         checkOmicGuiFields(integration, c(missing_message = "chr1"), "summary$integration")
     }
+    if (!"filename" %in% names(integration)) omicGuiConfigAbort("summary$integration$filename", "is missing")
     if ("filename" %in% names(integration) && !(omicGuiFieldHasType(integration$filename, "chr1") ||
         is.function(integration$filename))) {
         omicGuiConfigAbort("summary$integration$filename", "must be a file name or a function")
@@ -729,6 +734,7 @@ validateOmicGuiSummary <- function(summary, shell, schema) {
     report <- summary$report
     checkOmicGuiFields(report, schema$summary_report, "summary$report")
     checkOmicGuiFields(report, schema$summary_report_optional, "summary$report", required = FALSE)
+    if (!"template" %in% names(report)) omicGuiConfigAbort("summary$report$template", "is missing")
     if ("template" %in% names(report)) {
         if (omicGuiFieldHasType(report$template, "chr1")) {
             checkOmicGuiFields(report, c(label = "chr1"), "summary$report")
@@ -743,12 +749,12 @@ validateOmicGuiSummary <- function(summary, shell, schema) {
         path <- sprintf("summary$export_steps[[%d]]", i)
         step <- steps[[i]]
         checkOmicGuiFields(step, schema$summary_export_step, path)
-        checkOmicGuiFields(step, schema$summary_export_step_optional, path, required = FALSE)
+        checkOmicGuiFields(step, schema$summary_export_step_optional, path)
         checkOmicGuiFields(step$choice, schema$summary_export_choice, paste0(path, "$choice"))
-        checkOmicGuiFields(step$choice, schema$summary_export_choice_optional, paste0(path, "$choice"), required = FALSE)
+        checkOmicGuiFields(step$choice, schema$summary_export_choice_optional, paste0(path, "$choice"))
         checkOmicGuiFields(step$button, schema$summary_export_button, paste0(path, "$button"))
         checkOmicGuiFields(step$status, schema$summary_export_status, paste0(path, "$status"))
-        checkOmicGuiFields(step$status, schema$summary_export_status_optional, paste0(path, "$status"), required = FALSE)
+        checkOmicGuiFields(step$status, schema$summary_export_status_optional, paste0(path, "$status"))
         checkOmicGuiFields(step$figure, schema$summary_export_figure, paste0(path, "$figure"))
         for (j in seq_along(step$publications)) {
             checkOmicGuiFields(step$publications[[j]], schema$summary_export_publication,
