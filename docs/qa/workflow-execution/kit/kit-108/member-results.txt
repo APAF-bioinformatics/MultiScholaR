@@ -8,3 +8,4 @@ kit-journey-108m accepted failing none failed_step none error none
 kit-journey-108l accepted failing none failed_step none error none 
 kit-journey-108t accepted failing none failed_step none error none 
 kit-journey-108v accepted failing none failed_step none error none 
+kit-journey-108w accepted failing none failed_step none error none 
