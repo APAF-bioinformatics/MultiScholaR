@@ -783,6 +783,17 @@ guiEntryProtSteps <- function(lane) {
       api$set(list(`session_summary-save_workflow_args` = 1L))
     }),
     guiEntryStep("summary_copy", "session_summary", function(api) api$set(list(`session_summary-copy_to_publication` = 1L))),
-    guiEntryStep("summary_report", "session_summary", function(api) api$set(list(`session_summary-generate_report` = 2L))),
+    guiEntryStep("summary_report", "session_summary", function(api) {
+      api$set(list(`session_summary-generate_report` = 2L))
+      # KIT-108 D5 test 2 (F104-01): the export summary's Report Template names the template the report step rendered
+      # (<template>_<lane>.docx). One expectation; no capture changes.
+      dirs <- get("project_dirs", envir = globalenv())[["proteomics"]]
+      rendered <- list.files(dirs$study_report_dir, pattern = paste0("_", lane$lane_id, "\\.docx$"))
+      line <- grep("Report Template:", readLines(file.path(dirs$source_dir, "filtered_session_summary.txt"), warn = FALSE),
+        value = TRUE, fixed = TRUE)
+      stored <- sub("\\.rmd$", "", trimws(sub(".*Report Template:", "", line[[1L]])), ignore.case = TRUE)
+      testthat::expect_identical(stored, sub(paste0("_", lane$lane_id, "\\.docx$"), "", rendered[[1L]]),
+        info = "KIT-108 F104-01: the export summary names the rendered report's template")
+    }),
     guiEntryStep("summary_export", "session_summary", function(api) api$set(list(`session_summary-export_session_state` = 1L)))))
 }

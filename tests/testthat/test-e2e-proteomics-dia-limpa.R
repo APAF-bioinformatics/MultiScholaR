@@ -61,9 +61,8 @@ test_that("E2E-006 DIA limpa workflow preserves imputation metadata through repo
 
     session_artifacts <- e2e_assert_prot_filtered_session_artifacts(project_base)
     session_data <- session_artifacts$session_data
-    # The export summary's Report Template is not checked: the native export reads it from globalParameters, which no
-    # route sets since KIT-046 (the report step chooses the template by workflow type), so it reads NA on every route
-    # (F104-01, queued to KIT-108). The template is checked at the report below.
+    # KIT-108 D5 (F104-01): the export summary's Report Template is the route's template, as the report step resolves it.
+    expect_identical(session_data$report_template, "DIANN_limpa_report.rmd")
     expect_identical(session_data$workflow_type, "DIA_LIMPA")
     expect_true(isTRUE(session_data$limpa_applied))
     expect_equal(session_data$final_sample_count, lane$sample_count)
