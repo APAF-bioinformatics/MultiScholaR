@@ -1,0 +1,41 @@
+# KIT-111 W2 test-first: the new W2 tests and D11's retarget, on the start commit, before the R changes.
+# Start commit 8dd32418 (origin/performance-v2, W1 merged), extracted with `git archive` into an on-disk scratch tree
+# (~/.cache/k111w2/start-tree) with the W2 test files copied in; the start tree's own R/ ran. R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true, one Rscript process per file;
+# R_LIBS = core/browser-smoke.X6BzNV/library (kit_108); TMPDIR on disk (~/.cache/k111w2/tmp). Recorded 2026-11-10 by
+# the W2 agent, with no multischolar* unit live. Failure messages from a ListReporter dump (diag.R); counts from
+# tools/testing/test-baseline.R file load_all.
+
+## D11: test-workflow-operation-registry.R, the :164-172 block retargeted (a deliberate contract change: the four
+## normalisation-tab declarations move to the omics role with their handlers; DA-contrast-output and enrichment keep
+## the KIT-024 expectations unchanged)
+COUNTS test-workflow-operation-registry.R pass 986 fail 1 error 1 skip 0 file_skip FALSE exit=0 elapsed=16s
+FAILURE the whole-matrix DA declarations refuse worker dispatch (KIT-024); the normalisation tab's four run on the omics role (KIT-111 D11)
+  `actual$compute` "in_process" / expected "omics"; `actual$handler` NULL / expected 'computeWorkflowDiaNormalizationAction';
+  validate, completion, publication likewise (normalization-ruv)
+ERROR   (same block) assertWorkflowOperationDispatchable(name): operation "normalization-ruv" runs in process only
+  (whole-matrix declaration); it cannot be dispatched to a worker
+# Before the retarget, on the same start tree: 1007/0 (W1's kit-111/test-first.txt). After W2: 1011/0 (w2/targeted.txt).
+
+## The W2 blocks of test-prot-norm-core.R (W1's frozen blocks unchanged and passing on the start tree)
+DIAG test-prot-norm-core.R pass 404 fail 198 error 2 skip 0
+# Every failure and error is in a W2 block; W1 (a) and the four recorded digests pass (as on the start commit).
+#  134 FAILURE + 1 ERROR  "KIT-111 W2 (W1 (b)): the DIA normalisation and correlation clicks through the worker give W1 (a)'s
+#      values": the start registry refuses the dispatch, so no click commits (`current` "protein_replicate_filtered",
+#      expected "normalized"; ...), then `results[[2L]]` subscript out of bounds.
+#   49 FAILURE + 1 ERROR  "KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates through the worker give W1 (a)'s
+#      values": likewise (`current` "peptide_count_filtered"; `covariates[[1L]]` out of bounds).
+#    5 FAILURE  "a DIA worker value whose commit description is NULL commits nothing; one that carries it replaces the
+#      context's (extension 1)": `record$description` "source", expected "Post-normalization complete: RUV-III skipped by
+#      user"; `record$config$ruv_applied` NULL; ...
+#    1 FAILURE  "a managed action names its input; without one its input is the head (extension 2)": the first action's
+#      input reached runWorkflowAction as the head (c2b8de82...), not the named source (31dc302a...).
+#    9 FAILURE  "the DIA adaptor's norm entries name registered omics operations and existing functions (D4)":
+#      `is.null(norm)` TRUE; ...
+# (A first pass of this run had the extension-2 test building its parameters with the new diaPearsonPairsParameters,
+#  so it errored on the missing function; the test now spells the list, and fails on its claim as above.)
+# The R7 block (a managed publication that fails is completed by the repeated click) is managed-path behaviour that
+# has no start-commit form (its click helpers call the new halves); it is not counted as test-first.
+
+## Not test-first: the in-process guard. W1 (a)'s blocks and the recorded digests pass before and after (W1's
+## kit-111/w1/test-first.txt; w2/targeted.txt).

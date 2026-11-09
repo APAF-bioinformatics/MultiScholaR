@@ -1,0 +1,82 @@
+# KIT-111 W2 targeted runs: the W2 worktree (8dd32418 + the W2 changes), R 4.6.1, one Rscript process per file through
+# tools/testing/test-baseline.R file load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true; R_LIBS =
+# core/browser-smoke.X6BzNV/library (kit_108); TMPDIR on disk (~/.cache/k111w2/tmp). At most 4 R processes at a time;
+# no multischolar* unit live at any batch start. Recorded 2026-11-10 by the W2 agent.
+# Start counts: kit-111/test-first.txt (W1's before half) unless marked "start (W2)" (run here on the start tree,
+# ~/.cache/k111w2/start-tree, 8dd32418 by git archive).
+
+## Batch 1 (files W2 changes, W1's before-half list)
+COUNTS test-workflow-operation-registry.R pass 1011 fail 0 error 0 skip 0   # start 1007/0; D11 retarget (w2/test-first.txt)
+COUNTS test-prot-norm-core.R pass 705 fail 0 error 0 skip 0                 # before the R7 block was added; see batch 3
+COUNTS test-module-ci-prot-norm.R pass 60 fail 0 error 0 skip 4             # start 60/4
+COUNTS test-module-ci-prot-dia-limpa.R pass 33 fail 0 error 0 skip 2        # start 33/2
+COUNTS test-prot-05b-norm-module-contracts.R pass 502 fail 0 error 0 skip 9 # start 502/9
+COUNTS test-prot-05c-norm-module-seams.R pass 53 fail 0 error 0 skip 0      # start 53/0
+COUNTS test-prot-05d-norm-module-characterization.R pass 100 fail 0 error 0 skip 10  # start 100/10
+COUNTS test-workflow-operations.R pass 75 fail 0 error 0 skip 0             # start 75/0
+COUNTS test-workflow-prot-declarations.R pass 302 fail 1 error 0 skip 2     # start 303/0/2: EXPECTED BY THE CONTRACT CHANGE,
+#   not in W2's write scope: :470 (KIT-041 block) pins `workflowActionSpec("protein_ruv_covariates")$compute` to
+#   "in_process"; actual "omics". D11 did not list it (draft F111-04). One-line retarget for the lead.
+COUNTS test-workflow-analysis-record.R pass 274 fail 0 error 0 skip 0       # start 274/0
+
+## Batch 2 (the worker and application reads, the module captures, the DIA set, the proteomics lanes, F106 tests)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0          # start 283/0
+COUNTS test-workflow-omics-application-reads.R pass 218 fail 0 error 1 skip 0  # start 230/0: DEFECT, fixed in the
+#   correction pass: "KIT-082: a failed publication's retry ..." (:574-582) mocks installWorkflowManagedStep with
+#   apply = function(parameters, operation, context); installWorkflowOmicsActions passed a fourth argument (`input`)
+#   always. Fix: pass `input` only when the action names one, so lipid/metab/trx call apply exactly as before.
+#   Rerun in batch 3.
+COUNTS test-omic-da-module.R pass 1260 fail 0 error 0 skip 0               # start 1260/0
+COUNTS test-omic-enrich-module.R pass 975 fail 0 error 0 skip 0            # start 975/0
+COUNTS test-prot-norm-core.R pass 727 fail 0 error 0 skip 0                # with the R7 block
+COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2        # DIA set 733/2: equal
+COUNTS test-perf107-audit.R pass 191 fail 0 error 0 skip 1                  # DIA set 191/1: equal
+COUNTS test-perf107-checkpoints.R pass 38 fail 0 error 0 skip 1             # DIA set 38/1: equal
+COUNTS test-workflow-checkpoint-dia-state.R pass 174 fail 0 error 0 skip 4  # DIA set 174/4: equal
+COUNTS test-workflow-gui-memory-lifetimes.R pass 80 fail 0 error 0 skip 11  # DIA set 80/11: equal
+COUNTS test-gui-entry-proteomics.R pass 193 fail 0 error 0 skip 0           # the five proteomics lanes: 193/0, identical
+COUNTS test-prot-07b-da-handlers-compat.R pass 34 fail 1 error 0 skip 2     # start 34/1/2: F106-02, expected until W5
+COUNTS test-module-ci-prot-da.R pass 217 fail 1 error 0 skip 1              # start 217/1/1: F106-03, expected until W5
+# (Batch 2's gui-entry, native-session, prot-norm-core and enrich files loaded the tree before the correction; the
+#  correction touches only installWorkflowOmicsActions' call of apply when an action names no input, which the
+#  unmanaged lanes and these files do not reach with a fourth argument.)
+
+## Batch 3 (after the correction; the final tree, committed as fac4ccc8): the reruns, then the dependents grep (the
+## changed and new names across tests/, tools/, inst/: runDIAReference{Normalization,Correlation,RuvCovariates},
+## completeWorkflowOmicsAction, installWorkflowOmicsActions, installWorkflowManagedStep, proteomicsDiaBinding,
+## registerBuiltinWorkflowOperations, assertWorkflowOperationDispatchable; plus the two files that enumerate compute
+## roles), each also run on the start tree ("start (W2)")
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   # start 230/0: restored (correction pass)
+COUNTS test-workflow-omics-worker.R pass 283 fail 0 error 0 skip 0              # start 283/0
+COUNTS test-prot-norm-core.R pass 727 fail 0 error 0 skip 0                     # start 361/0 (W1); +366 W2 expectations
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0                    # start (W2) 38/0
+COUNTS test-omic-gui-config.R pass 1849 fail 0 error 0 skip 0                   # start (W2) 1849/0
+COUNTS test-omic-summary-module.R pass 1703 fail 0 error 0 skip 0               # start (W2) 1703/0
+COUNTS test-perf-107.R pass 21 fail 0 error 0 skip 0                            # start (W2) 21/0
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0                     # start (W2) 89/0
+COUNTS test-workflow-lipid-declarations.R pass 259 fail 0 error 0 skip 0        # start (W2) 259/0
+COUNTS test-workflow-memory-mechanism-member.R pass 0 fail 0 error 0 skip 13    # start (W2) 0/0/13
+COUNTS test-workflow-metab-declarations.R pass 259 fail 0 error 0 skip 0        # start (W2) 259/0
+COUNTS test-workflow-omics-binding-steps.R pass 57 fail 0 error 0 skip 0        # start (W2) 57/0
+COUNTS test-workflow-omics-declarations.R pass 68 fail 0 error 0 skip 0         # start (W2) 68/0
+COUNTS test-workflow-partitions.R pass 437 fail 0 error 0 skip 2                # start (W2) 437/0/2
+COUNTS test-workflow-saved-qc.R pass 120 fail 0 error 0 skip 0                  # start (W2) 120/0
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0          # start (W2) 324/0
+# (tools/profiling/workflow_checkpoint_gui_diagnostic.R names the runners by name; they keep their names.)
+
+## R4: the worker values' sizes (object.size of the worker's result, roots included), a one-off scratch run of the W2
+## click helpers (~/.cache/k111w2/sizes.R); the limit is 8 MiB (8,388,608 bytes)
+SIZE dia normalization-ruv 132192 bytes commit=normalized
+SIZE dia normalization-ruv 82568 bytes commit=NULL (the repeated click)
+SIZE dia normalization-ruv 222336 bytes commit=ruv_corrected (manual)
+SIZE dia pearson-pairs 95144 bytes (product only)
+SIZE dia pearson-selection 198560 bytes commit=correlation_filtered
+SIZE limpa_covariates protein_ruv_covariates 361312 bytes commit=ruv_covariates
+SIZE limpa_correction protein_ruv_covariates 491000 bytes commit=ruv_corrected (the largest available case)
+
+## Summary
+# Unchanged against the start: every file except the two recorded contract changes (test-workflow-operation-registry.R,
+# D11, and test-workflow-prot-declarations.R :470, draft F111-04, outside W2's write scope) and the expected F106-02/03
+# failures. W1 (a) and the four recorded digests pass unchanged; the DIA set equals its counts; the five proteomics
+# lanes are identical (193/0); lipid, metab and trx worker tests unchanged. No operation was kept in process by the
+# stop rule.
