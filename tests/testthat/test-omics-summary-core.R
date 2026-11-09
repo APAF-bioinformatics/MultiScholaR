@@ -523,7 +523,8 @@ test_that("(W5, D8) the copy's DA workbook is built one sheet at a time: its hea
     # adaptive triggers and of this process's history. A first copy warms the namespaces and the byte-compiled closures.
     package_path <- getNamespaceInfo("MultiScholaR", "path")
     measured <- callr::r(function(package_path, root) {
-        if (file.exists(file.path(package_path, "DESCRIPTION")) && dir.exists(file.path(package_path, "R"))) {
+        # An installed package also has DESCRIPTION and R/; only an installed one has Meta/.
+        if (!dir.exists(file.path(package_path, "Meta"))) {
             suppressMessages(pkgload::load_all(package_path, quiet = TRUE, helpers = FALSE))
         } else {
             loadNamespace("MultiScholaR", lib.loc = dirname(package_path))
