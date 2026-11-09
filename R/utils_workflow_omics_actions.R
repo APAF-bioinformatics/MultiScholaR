@@ -17,7 +17,9 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
     start <- function() {
         action <- run$actions[[run$index]]
         if (is.function(action$before)) action$before()
-        step$apply(action$parameters, action$operation, action$context)
+        # KIT-111 D3: an action that names its input (a re-run's source) passes it; the others call as before.
+        if (is.null(action$input)) step$apply(action$parameters, action$operation, action$context) else
+            step$apply(action$parameters, action$operation, action$context, action$input)
     }
     begin <- function(actions, done, failed, dropped = NULL) {
         run$actions <- actions

@@ -161,14 +161,25 @@ test_that("the DA publication is a registered worker operation with its own comp
     expect_null(validateWorkflowDaPublicationParameters(list(), NULL))
 })
 
-test_that("the whole-matrix declarations are registered as in-process operations that refuse worker dispatch (KIT-024)", {
-    for (name in c("normalization-ruv", "pearson-pairs", "pearson-selection", "DA-contrast-output", "enrichment", "protein_ruv_covariates")) {
+test_that("the whole-matrix DA declarations refuse worker dispatch (KIT-024); the normalisation tab's four run on the omics role (KIT-111 D11)", {
+    for (name in c("DA-contrast-output", "enrichment")) {
         entry <- workflowActionSpec(name)
         expect_identical(entry$compute, "in_process")
         expect_null(entry$handler)
         expect_identical(entry$completion, "in_process")
         expect_identical(entry$declaration$name, name)
         expect_error(assertWorkflowOperationDispatchable(name), class = "workflow_execution_unsupported")
+    }
+    # KIT-111 D11, a deliberate contract change: the four move to the managed worker's omics role with their handlers.
+    handlers <- c(`normalization-ruv` = "computeWorkflowDiaNormalizationAction", `pearson-pairs` = "computeWorkflowDiaPearsonPairsAction",
+        `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction")
+    for (name in names(handlers)) {
+        entry <- workflowActionSpec(name)
+        expect_identical(entry[c("compute", "handler", "validate", "completion", "publication", "variants", "default_variant", "omic_type")],
+            list(compute = "omics", handler = handlers[[name]], validate = "validateWorkflowOmicsParameters", completion = "omics",
+                publication = "omics", variants = "whole", default_variant = "whole", omic_type = "proteomics"), info = name)
+        expect_identical(entry$declaration$name, name)
+        expect_identical(assertWorkflowOperationDispatchable(name)$compute, "omics", info = name)
     }
     expect_identical(assertWorkflowOperationDispatchable("protein_intensity_filter")$compute, "protein")
     # An in-process entry must carry its declaration and no handler; a worker entry must name a handler.

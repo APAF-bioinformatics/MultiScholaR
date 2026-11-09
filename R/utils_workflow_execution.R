@@ -629,6 +629,7 @@ readManagedPeptideResult <- function(manager, result, workflow_data) {
 #' KIT-078, for a tab that runs several actions under one display: `apply` also takes the action's `operation` and
 #' completion `context`, `publication` may be a function read at each action, and a `ui` with no `ack` closes each action
 #' as it is delivered, without a browser acknowledgement, then calls `ui$delivered()`; `ui$failed(error)` hears a failure.
+#' KIT-111 D3: `apply` also takes the action's `input` reference (a re-run's source); the default is the head.
 #' @noRd
 installWorkflowManagedStep <- function(session, input, workflow_data, operation, publication, ui, deliver,
     read_result = readManagedPeptideResult) {
@@ -688,7 +689,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         shiny::removeNotification(ui$notification)
         invisible(NULL)
     }
-    step$apply <- function(parameters, operation_name = operation, context = NULL) {
+    step$apply <- function(parameters, operation_name = operation, context = NULL, input = NULL) {
         application <- workflowSessionApplication(session)
         if (is.null(application)) cli::cli_abort("no managed application on this session", class = "workflow_execution_scope")
         if (!is.null(shiny::isolate(managed_action()))) {
@@ -725,7 +726,7 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             if (is.null(owner)) owner <- newWorkflowExecutionController(manager, application)
             action$owner <- owner
             action$phase <- "running"
-            action$worker_request_id <- runWorkflowAction(operation_name, list(state = getWorkflowStateReference(manager)),
+            action$worker_request_id <- runWorkflowAction(operation_name, list(state = input %||% getWorkflowStateReference(manager)),
                 parameters, owner, reservation = action$reservation,
                 completion_context = context %||% workflowManagedCompletionContext(operation_name, workflow_data))
             managed_action(action)
@@ -3009,6 +3010,8 @@ completeWorkflowAction <- function(owner, operation, value, context = NULL, vari
 #' @param entry The action's registry entry.
 #' @param value The worker's result.
 #' @param context The module's commit (`validateWorkflowOmicsCompletionContext`).
+#' KIT-111 D3: a worker value that carries `commit` (the DIA handlers' commit description) commits under its `config`
+#' and `description` in place of the context's; a `commit` that is NULL commits nothing, as a product-only action.
 #' @return The committed state's reference, or NULL.
 #' @noRd
 completeWorkflowOmicsAction <- function(manager, entry, value, context) {
@@ -3021,7 +3024,7 @@ completeWorkflowOmicsAction <- function(manager, entry, value, context) {
     }
     if (!is.null(value$native)) snapshot$da_dependencies[[value$reference$entity_id]] <- value$native
     if (is.null(entry$declaration)) clearWorkflowStepProvenance(manager)
-    if (is.null(entry$declaration$output_class)) {
+    if (is.null(entry$declaration$output_class) || ("commit" %in% names(value) && is.null(value$commit))) {
         generation <- workflow_context$head$entity_id
         publishWorkflowStateHead(workflow_context, snapshot)
         # KIT-082: no state changed, so an export of this state is still the state's (a display can run after the export).
@@ -3032,7 +3035,8 @@ completeWorkflowOmicsAction <- function(manager, entry, value, context) {
     committed <- FALSE
     on.exit(if (!committed) workflow_context$snapshot <- previous, add = TRUE)
     workflow_context$snapshot <- snapshot
-    reference <- commitWorkflowReferenceState(manager, context$state_name, value$checkpoint, context$config, context$description)
+    commit <- value$commit %||% context
+    reference <- commitWorkflowReferenceState(manager, context$state_name, value$checkpoint, commit$config, commit$description)
     committed <- TRUE
     reference
 }

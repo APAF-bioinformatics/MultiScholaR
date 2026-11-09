@@ -1368,5 +1368,19 @@ proteomicsDiaBinding <- list(
         },
         # Proteomics keeps its own commit (`runProtDesignBuilderSaveFlow`, mod_prot_design_builder_helpers.R:53).
         commit = "prot_hook"
+    ),
+    # KIT-111 D4: the normalisation tab's runners (in process) and their managed operations with the publication halves
+    # (utils_workflow_dia_products.R); the DIA_LIMPA pass-through stays in process (utils_workflow_dia_norm.R).
+    norm = list(
+        run = list(operation = "normalization-ruv",
+            in_process = function(...) runDIAReferenceNormalization(...),
+            publish = function(...) publishDIAReferenceNormalization(...)),
+        pass_through = function(...) runDIAReferenceLimpaNormalisationPassThrough(...),
+        correlation = list(pairs = "pearson-pairs", selection = "pearson-selection",
+            in_process = function(...) runDIAReferenceCorrelation(...),
+            publish = function(...) publishDIAReferenceCorrelation(...)),
+        ruv_covariates = list(operation = "protein_ruv_covariates",
+            in_process = function(...) runDIAReferenceRuvCovariates(...),
+            publish = function(...) publishDIAReferenceRuvCovariates(...))
     )
 )

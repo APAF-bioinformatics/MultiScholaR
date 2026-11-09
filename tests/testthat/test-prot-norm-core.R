@@ -1162,3 +1162,298 @@ test_that("KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covar
         protNormW1Expect(paste0("limpa_", mode, "_ruv_repeat"), clicks$ruv_covariates(mode))
     }
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-111 W2: the split runners on the managed worker, at core level. Each W1 (a) click runs here as the managed tab
+# runs it: the gate and the request in the controller, the declaration through the worker's entry point
+# (`workflowWorkerMain`) on the request's named input, the controller's acceptance and completion, then the
+# publication half on the delivered product. The DIA_LIMPA pass-through and the skipped correlation stay in process on
+# both paths. The captures must equal W1 (a)'s frozen values; the halves' call counts differ by design (the worker runs
+# the compute half and the completion commits) and are not compared.
+# ------------------------------------------------------------------------------------------------
+
+#' One managed action, in this process: the frozen request (with its named input) through the worker's entry point,
+#' the acceptance and what the tab reads. A worker failure is raised with the worker's message.
+protNormW2Dispatch <- function(fixture, controller, operation, parameters, input, context = NULL) {
+    store <- fixture$manager$.context$store
+    id <- paste0("wfx-", substr(digest::digest(list(tempfile(), operation), algo = "sha256"), 1L, 32L))
+    paths <- workflowExportPaths(store$directory, id)
+    token <- list(request_id = id, incarnation = store$identity$incarnation, expected_head = workflowExecutionHead(store)$entity_id,
+        generation = controller$control$generation, controller_id = controller$control$controller_id)
+    writeWorkflowExecutionMessage(file.path(paths$request_dir, "publication-context.rds"),
+        list(experiment_label = "core", experiment_paths = fixture$paths, omic_type = "proteomics"))
+    writeWorkflowExportJournal(paths, list(schema = "multischolar.workflow_action.v1", request_id = id, status = "admitting",
+        expected_head = token$expected_head, token_hash = digest::digest(token, algo = "sha256")))
+    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = operation,
+        input_references = list(state = input), parameters = parameters, token = token, owner = store$identity,
+        project_root = dirname(store$directory), directory = paths$request_dir, config = list(mode = "adapters"),
+        worker_cap = 12 * 1024^3)
+    path <- file.path(paths$request_dir, "request.rds")
+    writeWorkflowExecutionMessage(path, request)
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"), suppressWarnings(suppressMessages(utils::capture.output(try(
+        workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))), silent = TRUE)))))
+    message <- readRDS(file.path(paths$request_dir, "worker-result.rds"))
+    if (!identical(message$status, "complete")) stop(message$error, call. = FALSE)
+    controller$job <- list(request = list(token = token, operation = operation, config = list(mode = "adapters"),
+        parameters = parameters), paths = paths, completion_context = validateWorkflowOmicsCompletionContext(operation, context))
+    receipt <- acceptWorkflowActionResult(controller, message[c("schema", "status", "token", "result")])
+    accepted <- resumeWorkflowAction(controller, id)
+    c(readManagedOmicsResult(fixture$manager, accepted, NULL), list(acceptance = receipt$status, result = message$result))
+}
+
+#' The managed normalisation click: the gate and the request in the controller, the worker, the publication half.
+protNormW2Normalization <- function(fixture, dispatch, norm, settings, post_qc, ruv_qc) {
+    manager <- fixture$manager
+    request <- withDIAStateScope(manager, function() {
+        assertDIAExportReady(manager, allow_action = "normalization")
+        diaNormalizationRequest(manager, settings, norm, "group")
+    })
+    state <- if (identical(settings$ruv_mode, "skip")) "normalized" else "ruv_corrected"
+    result <- dispatch("normalization-ruv", request$parameters, request$source, state)
+    withDIAStateScope(manager, function() publishDIAReferenceNormalization(manager, settings, result[c("value", "reference")],
+        fixture$workflow, norm, fixture$paths, "proteomics", "core", post_qc, ruv_qc))
+}
+
+#' The managed correlation click: the pairs, then the selection on them, each on the normalisation's final.
+protNormW2Correlation <- function(fixture, dispatch, norm, threshold, aesthetics) {
+    manager <- fixture$manager
+    source <- withDIAStateScope(manager, function() {
+        assertDIAExportReady(manager, allow_action = "correlation")
+        source <- norm$ruv_normalized_obj
+        if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+        readDIAStateMetadata(manager, source)
+        source
+    })
+    pairs <- dispatch("pearson-pairs", diaPearsonPairsParameters("group"), source)
+    selection <- dispatch("pearson-selection", list(pairs = pairs$reference$entity_id, threshold = threshold), source,
+        "correlation_filtered")
+    withDIAStateScope(manager, function() publishDIAReferenceCorrelation(manager, list(pairs = pairs$reference,
+        final = selection$value), fixture$workflow, norm, fixture$paths, threshold, FALSE, "proteomics", "core", aesthetics))
+}
+
+#' The managed RUV covariates click (DIA_LIMPA).
+protNormW2RuvCovariates <- function(fixture, dispatch, norm, mode, ruv_qc) {
+    manager <- fixture$manager
+    request <- withDIAStateScope(manager, function() {
+        assertDIAExportReady(manager, allow_action = "ruv-covariates")
+        source <- norm$correlation_filtered_obj %||% getDIAStateReference(manager)
+        if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
+        list(source = source, parameters = resolveDIARuvCovariatesParameters(fixture$workflow$config_list, "group", mode))
+    })
+    result <- dispatch("protein_ruv_covariates", request$parameters, request$source,
+        if (identical(mode, "correction")) "ruv_corrected" else "ruv_covariates")
+    withDIAStateScope(manager, function() publishDIAReferenceRuvCovariates(manager, list(ruv_mode = mode,
+        color_variable = "group", shape_variable = NULL), result[c("value", "reference")], fixture$workflow, norm,
+        fixture$paths, ruv_qc))
+}
+
+#' The tab's clicks on one owner through the worker, each captured as protNormW1Capture describes. The dispatch
+#' context names the state with a placeholder config and description, which the handler's commit description replaces.
+#' `results()` lists each worker value (its operation, size, names, commit description and input).
+protNormW2Clicks <- function(fixture) {
+    norm <- new.env(parent = emptyenv())
+    seen <- character()
+    results <- list()
+    manager <- fixture$manager
+    controller <- omicsWorkerController(list(owner = manager))
+    callback <- function(kind) function(reference) {
+        seen <<- c(seen, paste0(kind, ":", substr(protNormW1Sha(protNormW1State(manager, reference)), 1L, 12L)))
+        invisible(NULL)
+    }
+    capture <- function(run) {
+        out <- protNormW1Capture(fixture, norm, run, seen)
+        seen <<- character()
+        out
+    }
+    dispatch <- function(operation, parameters, input, state_name = NULL) {
+        context <- if (!is.null(state_name)) list(state_name = state_name, config = list(), description = "dispatch")
+        out <- protNormW2Dispatch(fixture, controller, operation, parameters, input, context)
+        results[[length(results) + 1L]] <<- list(operation = operation, bytes = as.numeric(object.size(out$result)),
+            names = names(out$result), commit = out$result$commit, input = input$entity_id)
+        out
+    }
+    aesthetics <- function() list(color_var = "group", shape_var = NULL)
+    list(norm = norm, results = function() results,
+        normalization = function(mode, ...) {
+            settings <- utils::modifyList(protNormCoreSettings(mode), list(...))
+            capture(protNormW1Run(protNormW2Normalization(fixture, dispatch, norm, settings, callback("post"), callback("ruv"))))
+        },
+        correlation = function(threshold, skipped = FALSE) {
+            capture(protNormW1Run(if (skipped) runDIAReferenceCorrelation(fixture$workflow, norm, fixture$paths, threshold,
+                TRUE, "proteomics", "core", function() NULL, aesthetics) else
+                protNormW2Correlation(fixture, dispatch, norm, threshold, aesthetics)))
+        },
+        pass_through = function() {
+            capture(protNormW1Run(runDIAReferenceLimpaNormalisationPassThrough(protNormCoreSettings("covariates"),
+                fixture$workflow, norm, callback("post"))))
+        },
+        ruv_covariates = function(mode) capture(protNormW1Run(protNormW2RuvCovariates(fixture, dispatch, norm, mode, callback("ruv")))))
+}
+
+#' Compare one managed case with W1 (a)'s frozen in-process value, every field but the halves' call counts.
+protNormW2Expect <- function(case, capture) {
+    frozen <- protNormW1Frozen()[[case]]
+    expect_false(is.null(frozen), info = case)
+    for (field in setdiff(union(names(frozen), names(capture)), "calls")) {
+        expect_identical(capture[[field]], frozen[[field]], info = paste("worker", case, field))
+    }
+}
+
+protNormW2Mocks <- function(env = parent.frame()) {
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) },
+        .package = "MultiScholaR", .env = env)
+}
+
+test_that("KIT-111 W2 (W1 (b)): the DIA normalisation and correlation clicks through the worker give W1 (a)'s values", {
+    skip_if_not(workflowOwnerCapable())
+    protNormW2Mocks()
+    fixture <- protNormCoreOwner()
+    clicks <- protNormW2Clicks(fixture)
+    protNormW2Expect("dia_normalization_skip", clicks$normalization("skip"))
+    # A repeated click: the worker's hit carries a NULL commit description and the completion commits nothing.
+    protNormW2Expect("dia_normalization_skip_repeat", clicks$normalization("skip"))
+    protNormW2Expect("dia_normalization_manual", clicks$normalization("manual"))
+    protNormW2Expect("dia_correlation_apply", clicks$correlation(0.5))
+    # R6: the pairs' provenance stays pending until the selection commits, and is recorded before it.
+    provenance <- withDIAStateScope(fixture$manager, function() fixture$manager$.context$snapshot$step_provenance$correlation_filtered)
+    expect_identical(provenance$operation, "pearson-selection")
+    expect_identical(lapply(provenance$preceded_by, `[[`, "operation"), list("pearson-pairs"))
+    expect_identical(provenance$preceded_by[[1L]]$values, list(group = "group", tech_rep_remove_regex = "pool"))
+    # The re-run names its source (the normalisation's final), which is not the head.
+    protNormW2Expect("dia_correlation_reapply", clicks$correlation(0.7))
+    protNormW2Expect("dia_correlation_skip", clicks$correlation(0, skipped = TRUE))
+    protNormW2Expect("dia_normalization_refused", clicks$normalization("manual", ruv_k = 50))
+    protNormW2Expect("dia_normalization_retry", clicks$normalization("manual"))
+    results <- clicks$results()
+    expect_identical(vapply(results, `[[`, "", "operation"), c("normalization-ruv", "normalization-ruv", "normalization-ruv",
+        "pearson-pairs", "pearson-selection", "pearson-pairs", "pearson-selection", "normalization-ruv"))
+    expect_null(results[[2L]]$commit)
+    expect_true("commit" %in% results[[2L]]$names)
+    expect_identical(results[[1L]]$commit$description, "Post-normalization complete: RUV-III skipped by user")
+    # The reapply's input is the normalisation's final, as the first apply's was; neither is the head.
+    expect_identical(results[[6L]]$input, results[[4L]]$input)
+    # R4: the values cross the boundary as references and the commit description.
+    expect_true(all(vapply(results, `[[`, 0, "bytes") < 8388608))
+})
+
+test_that("KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates through the worker give W1 (a)'s values", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    protNormW2Mocks()
+    for (mode in c("covariates", "correction")) {
+        fixture <- protNormW1LimpaOwner()
+        clicks <- protNormW2Clicks(fixture)
+        protNormW2Expect(paste0("limpa_", mode, "_pass_through"), clicks$pass_through())
+        protNormW2Expect(paste0("limpa_", mode, "_correlation"), clicks$correlation(0.5))
+        protNormW2Expect(paste0("limpa_", mode, "_ruv"), clicks$ruv_covariates(mode))
+        # F111-02, today's behaviour on both paths: the repeat's source is the committed RUV state, and it commits again.
+        protNormW2Expect(paste0("limpa_", mode, "_ruv_repeat"), clicks$ruv_covariates(mode))
+        covariates <- Filter(function(result) identical(result$operation, "protein_ruv_covariates"), clicks$results())
+        expect_length(covariates, 2L)
+        # R4, on the covariates case: under the worker value's 8 MiB.
+        expect_true(all(vapply(covariates, `[[`, 0, "bytes") < 8388608), info = mode)
+        expect_identical(covariates[[1L]]$commit$state_name, if (identical(mode, "correction")) "ruv_corrected" else "ruv_covariates")
+    }
+})
+
+test_that("KIT-111 W2: a DIA worker value whose commit description is NULL commits nothing; one that carries it replaces the context's (extension 1)", {
+    skip_if_not(workflowOwnerCapable())
+    protNormW2Mocks()
+    fixture <- protNormCoreOwner()
+    manager <- fixture$manager
+    clicks <- protNormW2Clicks(fixture)
+    clicks$normalization("skip")
+    record <- readDIAStateMetadata(manager)
+    expect_identical(record$description, "Post-normalization complete: RUV-III skipped by user")
+    expect_identical(record$config$ruv_applied, FALSE)
+    head <- withDIAStateScope(manager, function() manager$.context$snapshot$states$normalized)
+    counted <- protNormCoreCountCalls("commitWorkflowReferenceState", clicks$normalization("skip"))
+    expect_identical(counted$calls[["commitWorkflowReferenceState"]], 0L)
+    expect_identical(withDIAStateScope(manager, function() manager$.context$snapshot$states$normalized), head)
+    expect_identical(as.character(unlist(manager$state_history)), c("initial", "protein_replicate_filtered", "normalized"))
+    # The completion's own rule: a NULL commit takes the product-only branch whatever the context names.
+    entry <- workflowActionSpec("normalization-ruv")
+    value <- list(checkpoint = record$data, reference = record$data$products$normalization_science, commit = NULL)
+    counted <- protNormCoreCountCalls("commitWorkflowReferenceState", withDIAStateScope(manager, function()
+        completeWorkflowOmicsAction(manager, entry, value, list(state_name = "normalized", config = list(), description = "x"))))
+    expect_null(counted$value)
+    expect_identical(counted$calls[["commitWorkflowReferenceState"]], 0L)
+})
+
+test_that("KIT-111 W2 (R7): a managed publication that fails is completed by the repeated click, a hit that commits nothing", {
+    skip_if_not(workflowOwnerCapable())
+    protNormW2Mocks()
+    fixture <- protNormCoreOwner()
+    clicks <- protNormW2Clicks(fixture)
+    failed <- testthat::with_mocked_bindings(clicks$normalization("skip"),
+        generateProtNormCompositeQcFigure = function(...) stop("forced publication failure"), .package = "MultiScholaR")
+    expect_identical(failed$error, "forced publication failure")
+    expect_identical(failed$head_history, c("initial", "protein_replicate_filtered", "normalized"))
+    protNormW2Expect("dia_normalization_skip", clicks$normalization("skip"))
+    results <- clicks$results()
+    expect_length(results, 2L)
+    expect_null(results[[2L]]$commit)
+})
+
+test_that("KIT-111 W2: a managed action names its input; without one its input is the head (extension 2)", {
+    fixture <- protNormCoreOwner()
+    manager <- fixture$manager
+    protNormCoreQuiet(runDIAReferenceNormalization(protNormCoreSettings("skip"), fixture$workflow, new.env(), fixture$paths,
+        "proteomics", "core", function(reference) NULL, function(reference) NULL, function() "group"))
+    source <- getDIAStateReference(manager, "protein_replicate_filtered")
+    head <- getDIAStateReference(manager)
+    expect_false(identical(source$entity_id, head$entity_id))
+    seen <- list()
+    testthat::local_mocked_bindings(
+        workflowSessionApplication = function(session) list(),
+        beginWorkflowGUIAction = function(application, manager, operation, publication) list2env(list(id = operation, closed = FALSE)),
+        finishWorkflowGUIAction = function(reservation, status, ...) { reservation$closed <- TRUE; list() },
+        newWorkflowExecutionController = function(manager, application) list(manager = manager),
+        runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
+            seen[[length(seen) + 1L]] <<- list(operation = operation, input = input_references$state$entity_id)
+            paste0("worker-", length(seen))
+        },
+        pollWorkflowAction = function(owner) list(status = "running"),
+        .package = "MultiScholaR")
+    shiny::testServer(function(input, output, session) {
+        session$userData$runner <- installWorkflowOmicsActions(session, fixture$workflow, "proteomics", "core", fixture$paths)
+    }, {
+        runner <- session$userData$runner
+        pairs <- list(group = "group", tech_rep_remove_regex = "pool")
+        runner$run(list(list(operation = "pearson-pairs", parameters = pairs, input = source, deliver = function(result) NULL)))
+        runner$step$cancel("test")
+        runner$run(list(list(operation = "pearson-pairs", parameters = pairs, deliver = function(result) NULL)))
+        runner$step$cancel("test")
+    })
+    expect_identical(seen, list(list(operation = "pearson-pairs", input = source$entity_id),
+        list(operation = "pearson-pairs", input = head$entity_id)))
+})
+
+test_that("KIT-111 W2: the DIA adaptor's norm entries name registered omics operations and existing functions (D4)", {
+    norm <- proteomicsDiaBinding$norm
+    expect_false(is.null(norm))
+    operations <- c(norm$run$operation, norm$correlation$pairs, norm$correlation$selection, norm$ruv_covariates$operation)
+    expect_identical(operations, c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates"))
+    for (operation in operations) {
+        entry <- workflowActionSpec(operation)
+        expect_identical(entry$compute, "omics", info = operation)
+        expect_true(exists(entry$handler %||% "", envir = asNamespace("MultiScholaR"), mode = "function"), info = operation)
+    }
+    calls <- c(run = "runDIAReferenceNormalization", run_publish = "publishDIAReferenceNormalization",
+        pass_through = "runDIAReferenceLimpaNormalisationPassThrough", correlation = "runDIAReferenceCorrelation",
+        correlation_publish = "publishDIAReferenceCorrelation", ruv_covariates = "runDIAReferenceRuvCovariates",
+        ruv_covariates_publish = "publishDIAReferenceRuvCovariates")
+    entries <- list(run = norm$run$in_process, run_publish = norm$run$publish, pass_through = norm$pass_through,
+        correlation = norm$correlation$in_process, correlation_publish = norm$correlation$publish,
+        ruv_covariates = norm$ruv_covariates$in_process, ruv_covariates_publish = norm$ruv_covariates$publish)
+    for (name in names(calls)) {
+        expect_true(is.function(entries[[name]]), info = name)
+        if (!is.function(entries[[name]])) next
+        expect_identical(as.character(body(entries[[name]])[[1L]]), calls[[name]], info = name)
+        expect_true(exists(calls[[name]], envir = asNamespace("MultiScholaR"), mode = "function"), info = name)
+    }
+    # The configuration stays valid and proteomics does not join the shared normalisation frame (D5).
+    expect_null(omicGuiConfig("proteomics")$norm)
+})

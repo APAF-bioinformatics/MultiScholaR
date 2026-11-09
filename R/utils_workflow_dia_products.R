@@ -529,83 +529,129 @@ runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, o
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "normalization")
-        source <- norm_data$normalization_input_reference %||%
-            manager$.context$snapshot$qc_sources$pre_normalization %||%
-            getDIAStateReference(manager, "protein_replicate_filtered") %||% getDIAStateReference(manager)
-        norm_data$normalization_input_reference <- source
-        fields <- c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
-            "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")
-        parameters <- stats::setNames(lapply(fields, \(field) settings[[field]]), fields)
-        parameters$grouping <- grouping()
-        run <- runSavedOperation(manager, diaNormalizationOperation(), source, parameters)
-        saved <- run$value
-        product <- run$reference
-        norm_data$normalized_protein_obj <- saved$normalized
-        norm_data$ruv_normalized_obj <- saved$final
-        norm_data$best_k <- saved$best_k
-        norm_data$control_genes_index <- saved$controls
-        norm_data$ruv_optimization_result <- saved$ruv_result
-        workflow$ruv_optimization_result <- saved$ruv_result
-        # KIT-018: the optimisation grid is a saved display table the module pages on demand.
-        norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
-        skipped <- identical(settings$ruv_mode, "skip")
-        final <- readDIAStateMetadata(manager, saved$final)$data
-        config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,
-            ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
-        if (skipped) config$ruv_applied <- FALSE
-        state_name <- if (skipped) "normalized" else "ruv_corrected"
-        final$products$normalization_science <- product
-        previous <- if (manager$current_state == state_name) readDIAStateMetadata(manager) else NULL
-        if (is.null(previous) || !identical(previous$data$products$normalization_science, product)) {
-            commitDIAReferenceState(manager, state_name, final, config,
-                if (skipped) "Post-normalization complete: RUV-III skipped by user" else
-                    "Post-normalization complete: RUV-III correction and missing value cleanup completed")
-        }
-        accepted <- getDIAStateReference(manager)
-        display <- publishDIAActionOutputs(manager, accepted, "normalization",
-            paths[c("source_dir", "protein_qc_dir", "time_dir")], function(staged) {
-                norm_data$publication_paths <- staged
-                on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
-                pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png$", full.names = TRUE)
-                if (length(pre_files) && !all(file.copy(pre_files, staged$protein_qc_dir))) {
-                    cli::cli_abort("cannot stage pre-normalization display inputs")
-                }
-                norm_spec <- readDIAStateMetadata(manager, saved$normalized)$data
-                writeDIADesignTable(manager, norm_spec$components$protein_quant_table,
-                    file.path(staged$protein_qc_dir, "normalized_protein_matrix_pre_ruv.tsv"), vroom::vroom_write)
-                saveRDS(saved$ruv_result, file.path(staged$source_dir, "ruv_optimization_results.RDS"))
-                post_qc(saved$normalized)
-                if (!skipped) {
-                    ruv_qc(saved$final)
-                    summary <- readDIAProteinProgress(manager, saved$final)
-                    directories <- stats::setNames(list(list(time_dir = staged$time_dir,
-                        publication_graphs_dir = paths$publication_graphs_dir)),
-                        paste(omic_type, experiment_label, sep = "_"))
-                    norm_data$post_norm_filtering_plot <- updateProteinFiltering(summary,
-                        "11_RUV_filtered", omic_type, experiment_label, overwrite = TRUE,
-                        return_grid = TRUE, project_dirs = directories)
-                    workflow$protein_counts$after_ruv_filtering <- final$metadata$proteins
-                    norm_data$filtering_summary_text <- sprintf(
-                        "Filtering Summary through Normalization & RUV:\n\n* Pre-normalization proteins: [Previous step]\n* Post-RUV filtering: %d proteins\n* Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n* Normalization method: %s\n* RUV mode: %s\n* RUV k value: %d\n* Negative control %%: %.1f",
-                        final$metadata$proteins, settings$norm_method, settings$ruv_mode, saved$best_k, saved$percentage)
-                    if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
-                        file.path(staged$protein_qc_dir, "ruv_corrected_cancor.png"),
-                        saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
-                }
-                generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
-                list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
-                    filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
-            }, identity = list(product = product$entity_id, color = settings$color_variable,
-                shape = settings$shape_variable, output_schema = 2L))
-        norm_data$qc_plot_paths <- lapply(display$qc_paths, function(group) lapply(group, function(path) {
-            if (is.character(path)) sub(display$staged_qc_dir, paths$protein_qc_dir, path, fixed = TRUE) else path
-        }))
-        norm_data$post_norm_filtering_plot <- display$filtering_plot
-        norm_data$filtering_summary_text <- display$filtering_text
-        norm_data$normalization_complete <- TRUE
-        finalizeProtNormWorkflowState(norm_data)
-        TRUE
+        request <- diaNormalizationRequest(manager, settings, norm_data, grouping())
+        run <- computeDIAReferenceNormalization(manager, request$source, request$parameters)
+        commit <- diaNormalizationCommit(manager, settings, run)
+        if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        publishDIAReferenceNormalization(manager, settings, run, workflow, norm_data, paths, omic_type, experiment_label,
+            post_qc, ruv_qc)
     })
+}
+
+#' The normalisation's source and declared parameters, as the tab sends them in process and to the worker (KIT-111 D3):
+#' the recorded input, else the pre-normalisation QC source, else `protein_replicate_filtered`, else the head. The source
+#' is recorded as the tab's normalisation input.
+#' @param manager,norm_data Session owner and the tab's state.
+#' @param settings The normalisation settings (`runDIAReferenceNormalization`).
+#' @param grouping The RUV grouping variable.
+#' @return `list(source, parameters)`.
+#' @noRd
+diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
+    source <- norm_data$normalization_input_reference %||%
+        manager$.context$snapshot$qc_sources$pre_normalization %||%
+        getDIAStateReference(manager, "protein_replicate_filtered") %||% getDIAStateReference(manager)
+    norm_data$normalization_input_reference <- source
+    fields <- c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
+        "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")
+    parameters <- stats::setNames(lapply(fields, \(field) settings[[field]]), fields)
+    parameters$grouping <- grouping
+    list(source = source, parameters = parameters)
+}
+
+#' The normalisation's compute half (KIT-111 D3): the declaration on the source, reused on a hit. Worker-safe: no head
+#' write, no Shiny, no tab state.
+#' @return `runSavedOperation`'s run.
+#' @noRd
+computeDIAReferenceNormalization <- function(manager, source, parameters) {
+    runSavedOperation(manager, diaNormalizationOperation(), source, parameters)
+}
+
+#' The normalisation's commit description (KIT-111 D3), shared by the in-process runner and the worker's completion.
+#' @param settings The settings or the request's parameters (`norm_method`, `ruv_mode`).
+#' @param run The compute half's run.
+#' @return `list(state_name, checkpoint, config, description)`, or NULL when the head already holds the state with
+#'   this product.
+#' @noRd
+diaNormalizationCommit <- function(manager, settings, run) {
+    saved <- run$value
+    skipped <- identical(settings$ruv_mode, "skip")
+    final <- readDIAStateMetadata(manager, saved$final)$data
+    config <- list(norm_method = settings$norm_method, ruv_mode = settings$ruv_mode,
+        ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage)
+    if (skipped) config$ruv_applied <- FALSE
+    state_name <- if (skipped) "normalized" else "ruv_corrected"
+    final$products$normalization_science <- run$reference
+    previous <- if (manager$current_state == state_name) readDIAStateMetadata(manager) else NULL
+    if (!is.null(previous) && identical(previous$data$products$normalization_science, run$reference)) return(NULL)
+    list(state_name = state_name, checkpoint = final, config = config,
+        description = if (skipped) "Post-normalization complete: RUV-III skipped by user" else
+            "Post-normalization complete: RUV-III correction and missing value cleanup completed")
+}
+
+#' The normalisation's publication half (KIT-111 D3), in the controller on both paths: the tab's state, the RUV
+#' optimisation table and the step's files and display, on the accepted head.
+#' @param run The compute half's run (`value`, `reference`); on the worker path the delivered product.
+#' @inheritParams runDIAReferenceNormalization
+#' @return TRUE after the required tables and plots have completed.
+#' @noRd
+publishDIAReferenceNormalization <- function(manager, settings, run, workflow, norm_data, paths, omic_type,
+    experiment_label, post_qc, ruv_qc) {
+    saved <- run$value
+    product <- run$reference
+    norm_data$normalized_protein_obj <- saved$normalized
+    norm_data$ruv_normalized_obj <- saved$final
+    norm_data$best_k <- saved$best_k
+    norm_data$control_genes_index <- saved$controls
+    norm_data$ruv_optimization_result <- saved$ruv_result
+    workflow$ruv_optimization_result <- saved$ruv_result
+    # KIT-018: the optimisation grid is a saved display table the module pages on demand.
+    norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
+    skipped <- identical(settings$ruv_mode, "skip")
+    final <- readDIAStateMetadata(manager, saved$final)$data
+    accepted <- getDIAStateReference(manager)
+    display <- publishDIAActionOutputs(manager, accepted, "normalization",
+        paths[c("source_dir", "protein_qc_dir", "time_dir")], function(staged) {
+            norm_data$publication_paths <- staged
+            on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
+            pre_files <- list.files(paths$protein_qc_dir, pattern = "^pre_norm_.*[.]png$", full.names = TRUE)
+            if (length(pre_files) && !all(file.copy(pre_files, staged$protein_qc_dir))) {
+                cli::cli_abort("cannot stage pre-normalization display inputs")
+            }
+            norm_spec <- readDIAStateMetadata(manager, saved$normalized)$data
+            writeDIADesignTable(manager, norm_spec$components$protein_quant_table,
+                file.path(staged$protein_qc_dir, "normalized_protein_matrix_pre_ruv.tsv"), vroom::vroom_write)
+            saveRDS(saved$ruv_result, file.path(staged$source_dir, "ruv_optimization_results.RDS"))
+            post_qc(saved$normalized)
+            if (!skipped) {
+                ruv_qc(saved$final)
+                summary <- readDIAProteinProgress(manager, saved$final)
+                directories <- stats::setNames(list(list(time_dir = staged$time_dir,
+                    publication_graphs_dir = paths$publication_graphs_dir)),
+                    paste(omic_type, experiment_label, sep = "_"))
+                norm_data$post_norm_filtering_plot <- updateProteinFiltering(summary,
+                    "11_RUV_filtered", omic_type, experiment_label, overwrite = TRUE,
+                    return_grid = TRUE, project_dirs = directories)
+                workflow$protein_counts$after_ruv_filtering <- final$metadata$proteins
+                norm_data$filtering_summary_text <- sprintf(
+                    "Filtering Summary through Normalization & RUV:\n\n* Pre-normalization proteins: [Previous step]\n* Post-RUV filtering: %d proteins\n* Proteins removed by RUV: [Calculated from difference]\n\nRUV Parameters:\n* Normalization method: %s\n* RUV mode: %s\n* RUV k value: %d\n* Negative control %%: %.1f",
+                    final$metadata$proteins, settings$norm_method, settings$ruv_mode, saved$best_k, saved$percentage)
+                if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+                    file.path(staged$protein_qc_dir, "ruv_corrected_cancor.png"),
+                    saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+            }
+            generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
+            list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
+                filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
+        }, identity = list(product = product$entity_id, color = settings$color_variable,
+            shape = settings$shape_variable, output_schema = 2L))
+    norm_data$qc_plot_paths <- lapply(display$qc_paths, function(group) lapply(group, function(path) {
+        if (is.character(path)) sub(display$staged_qc_dir, paths$protein_qc_dir, path, fixed = TRUE) else path
+    }))
+    norm_data$post_norm_filtering_plot <- display$filtering_plot
+    norm_data$filtering_summary_text <- display$filtering_text
+    norm_data$normalization_complete <- TRUE
+    finalizeProtNormWorkflowState(norm_data)
+    TRUE
 }
 
 #' Count the accepted protein display population with projected columns.
@@ -830,59 +876,87 @@ runDIAReferenceRuvCovariates <- function(settings, workflow, norm_data, paths, o
         source <- norm_data$correlation_filtered_obj %||% getDIAStateReference(manager)
         if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
         parameters <- resolveDIARuvCovariatesParameters(workflow$config_list, grouping(), settings$ruv_mode %||% "covariates")
-        run <- runSavedOperation(manager, diaRuvCovariatesOperation(), source, parameters)
-        saved <- run$value
-        product <- run$reference
-        norm_data$ruv_optimization_result <- saved$ruv_result
-        workflow$ruv_optimization_result <- saved$ruv_result
-        norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
-        norm_data$best_k <- saved$best_k
-        norm_data$control_genes_index <- saved$controls
-        ruv_mode <- saved$ruv_mode %||% "covariates"
-        correction <- identical(ruv_mode, "correction")
-        state_name <- if (correction) "ruv_corrected" else "ruv_covariates"
-        final <- readDIAStateMetadata(manager, saved$final %||% saved$covariates)$data
-        final$products$ruv_covariates_science <- product
-        config <- list(ruv_mode = ruv_mode, ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
-            control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
-            composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
-            replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
-            ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
-            outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
-                separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
-                replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, ruv_mode = ruv_mode))
-        previous <- if (identical(manager$current_state, state_name)) readDIAStateMetadata(manager) else NULL
-        if (is.null(previous) || !identical(previous$data$products$ruv_covariates_science, product)) {
-            commitDIAReferenceState(manager, state_name, final, config, if (correction)
-                sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
-                sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
-        }
-        accepted <- getDIAStateReference(manager)
-        norm_data$ruv_normalized_obj <- accepted
-        norm_data$correlation_filtered_obj <- accepted
-        workflow$ruv_normalised_for_da_analysis_obj <- accepted
-        display <- publishDIAActionOutputs(manager, accepted, "ruv-covariates", paths[c("source_dir", "protein_qc_dir")],
-            function(staged) {
-                norm_data$publication_paths <- staged
-                on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
-                writeDIADesignTable(manager, readDIAStateMetadata(manager, saved$covariates)$data$components$design_matrix,
-                    file.path(staged$protein_qc_dir, "ruv_covariates_design.tsv"), vroom::vroom_write)
-                adjusted_spec <- readDIAStateMetadata(manager, saved$adjusted)$data
-                writeDIADesignTable(manager, adjusted_spec$components$protein_quant_table,
-                    file.path(staged$protein_qc_dir, "ruv_adjusted_protein_matrix.tsv"), vroom::vroom_write)
-                vroom::vroom_write(saved$ruv_result$optimization_results, file.path(staged$protein_qc_dir, "ruv_covariates_optimization.tsv"))
-                saveRDS(saved$ruv_result[setdiff(names(saved$ruv_result), "best_cancor_plot")],
-                    file.path(staged$source_dir, "ruv_covariates_optimization_results.RDS"))
-                if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
-                    file.path(staged$protein_qc_dir, "ruv_covariates_cancor.png"),
-                    saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
-                ruv_qc(saved$adjusted)
-                list(completed = TRUE, qc_paths = norm_data$qc_plot_paths)
-            }, identity = list(product = product$entity_id, color = settings$color_variable,
-                shape = settings$shape_variable, output_schema = 1L))
-        norm_data$ruv_covariates_complete <- TRUE
-        accepted
+        run <- computeDIAReferenceRuvCovariates(manager, source, parameters)
+        commit <- diaRuvCovariatesCommit(manager, parameters, run)
+        if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        publishDIAReferenceRuvCovariates(manager, settings, run, workflow, norm_data, paths, ruv_qc)
     })
+}
+
+#' The RUV covariates' compute half (KIT-111 D3): the declaration on the source, reused on a hit. Worker-safe.
+#' @return `runSavedOperation`'s run.
+#' @noRd
+computeDIAReferenceRuvCovariates <- function(manager, source, parameters) {
+    runSavedOperation(manager, diaRuvCovariatesOperation(), source, parameters)
+}
+
+#' The RUV covariates' commit description (KIT-111 D3), shared by the in-process runner and the worker's completion.
+#' @param parameters The declaration's parameters (`resolveDIARuvCovariatesParameters`).
+#' @param run The compute half's run.
+#' @return `list(state_name, checkpoint, config, description)`, or NULL when the head already holds the state with
+#'   this product.
+#' @noRd
+diaRuvCovariatesCommit <- function(manager, parameters, run) {
+    saved <- run$value
+    ruv_mode <- saved$ruv_mode %||% "covariates"
+    correction <- identical(ruv_mode, "correction")
+    state_name <- if (correction) "ruv_corrected" else "ruv_covariates"
+    final <- readDIAStateMetadata(manager, saved$final %||% saved$covariates)$data
+    final$products$ruv_covariates_science <- run$reference
+    config <- list(ruv_mode = ruv_mode, ruv_k = saved$best_k, percentage_as_neg_ctrl = saved$percentage,
+        control_count = saved$control_count, separation_score = saved$ruv_result$best_separation_score,
+        composite_score = saved$ruv_result$best_composite_score, max_acceptable_k = saved$ruv_result$max_acceptable_k,
+        replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, replicate_blocks = saved$blocks,
+        ruv_grouping_variable = parameters$ruv_grouping_variable, ruv_applied = TRUE,
+        outcomes = list(k = saved$best_k, percentage_as_neg_ctrl = saved$percentage, control_count = saved$control_count,
+            separation_score = saved$ruv_result$best_separation_score, composite_score = saved$ruv_result$best_composite_score,
+            replicate_structure = saved$replicate_structure, block_reason = saved$block_reason, ruv_mode = ruv_mode))
+    previous <- if (identical(manager$current_state, state_name)) readDIAStateMetadata(manager) else NULL
+    if (!is.null(previous) && identical(previous$data$products$ruv_covariates_science, run$reference)) return(NULL)
+    list(state_name = state_name, checkpoint = final, config = config, description = if (correction)
+        sprintf("RUV-III correction applied to the quantified matrix and the DPC EList (k = %d; Y - W alpha); no W terms in the design", saved$best_k) else
+        sprintf("RUV-III factors appended to the design as covariates (W1..W%d); the quantified matrix unchanged", saved$best_k))
+}
+
+#' The RUV covariates' publication half (KIT-111 D3), in the controller on both paths: the tab's state and the step's
+#' files and display, on the accepted head.
+#' @param run The compute half's run (`value`, `reference`); on the worker path the delivered product.
+#' @inheritParams runDIAReferenceRuvCovariates
+#' @return The accepted reference.
+#' @noRd
+publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, norm_data, paths, ruv_qc) {
+    saved <- run$value
+    product <- run$reference
+    norm_data$ruv_optimization_result <- saved$ruv_result
+    workflow$ruv_optimization_result <- saved$ruv_result
+    norm_data$ruv_optimization_table <- saveDIADisplayTable(manager, saved$ruv_result$optimization_results)
+    norm_data$best_k <- saved$best_k
+    norm_data$control_genes_index <- saved$controls
+    accepted <- getDIAStateReference(manager)
+    norm_data$ruv_normalized_obj <- accepted
+    norm_data$correlation_filtered_obj <- accepted
+    workflow$ruv_normalised_for_da_analysis_obj <- accepted
+    display <- publishDIAActionOutputs(manager, accepted, "ruv-covariates", paths[c("source_dir", "protein_qc_dir")],
+        function(staged) {
+            norm_data$publication_paths <- staged
+            on.exit({ norm_data$publication_paths <- NULL }, add = TRUE)
+            writeDIADesignTable(manager, readDIAStateMetadata(manager, saved$covariates)$data$components$design_matrix,
+                file.path(staged$protein_qc_dir, "ruv_covariates_design.tsv"), vroom::vroom_write)
+            adjusted_spec <- readDIAStateMetadata(manager, saved$adjusted)$data
+            writeDIADesignTable(manager, adjusted_spec$components$protein_quant_table,
+                file.path(staged$protein_qc_dir, "ruv_adjusted_protein_matrix.tsv"), vroom::vroom_write)
+            vroom::vroom_write(saved$ruv_result$optimization_results, file.path(staged$protein_qc_dir, "ruv_covariates_optimization.tsv"))
+            saveRDS(saved$ruv_result[setdiff(names(saved$ruv_result), "best_cancor_plot")],
+                file.path(staged$source_dir, "ruv_covariates_optimization_results.RDS"))
+            if (!is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+                file.path(staged$protein_qc_dir, "ruv_covariates_cancor.png"),
+                saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+            ruv_qc(saved$adjusted)
+            list(completed = TRUE, qc_paths = norm_data$qc_plot_paths)
+        }, identity = list(product = product$entity_id, color = settings$color_variable,
+            shape = settings$shape_variable, output_schema = 1L))
+    norm_data$ruv_covariates_complete <- TRUE
+    accepted
 }
 
 #' Apply, skip or reapply Pearson filtering from the original saved population.
@@ -900,52 +974,140 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
         source <- norm_data$ruv_normalized_obj
         if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
         original <- readDIAStateMetadata(manager, source)$data
-        if (skipped) {
-            final <- source
-        } else {
-            pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), source,
-                list(group = grouping(), tech_rep_remove_regex = "pool"))
-            norm_data$correlation_vector <- pairs$reference
-            selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), source,
-                list(pairs = pairs$reference$entity_id, threshold = threshold, correlations = pairs$value),
-                dependencies = list(pairs$reference))
-            final <- selection$value
-            pairs <- selection <- NULL
-        }
-        norm_data$correlation_filtered_obj <- final
-        norm_data$correlation_threshold <- if (skipped) 0 else threshold
-        spec <- readDIAStateMetadata(manager, final)$data
-        config <- if (skipped) list(min_pearson_correlation_threshold = 0, skipped = TRUE) else
-            list(min_pearson_correlation_threshold = threshold)
-        previous <- if (manager$current_state == "correlation_filtered") readDIAStateMetadata(manager) else NULL
-        if (is.null(previous) || !identical(previous$data$components, spec$components) ||
-            !identical(previous$config, config)) commitDIAReferenceState(manager,
-                "correlation_filtered", spec, config, if (skipped) "Skipped final sample correlation filter" else
-                    "Applied final sample correlation filter (chunk 28)")
-        accepted <- getDIAStateReference(manager)
-        display <- publishDIAActionOutputs(manager, accepted, "correlation",
-            paths[c("protein_qc_dir", "time_dir")], function(staged) {
-                summary <- readDIAProteinProgress(manager, final)
-                directories <- stats::setNames(list(list(time_dir = staged$time_dir,
-                    publication_graphs_dir = paths$publication_graphs_dir)),
-                    paste(omic_type, experiment_label, sep = "_"))
-                # KIT-041: the DIA_LIMPA route labels the correlation step as the limpa script does.
-                step_label <- if (identical(manager$workflow_type, "DIA_LIMPA")) "12_samplecorr_filtered" else "12_correlation_filtered"
-                filtering_plot <- updateProteinFiltering(summary, step_label,
-                    omic_type, experiment_label, overwrite = TRUE, return_grid = TRUE, project_dirs = directories)
-                plot <- resolveDIAReferenceQcPlot(final, aesthetics(), "pca", buildProtNormQcPlotProduct,
-                    plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
-                qc_plot <- stripProtNormQcPlotOwners(plot + ggplot2::labs(title = if (skipped)
-                    "Final Data (Correlation Filter Skipped)" else "Final Correlation-Filtered Data"))
-                names <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
-                    workflow$ruv_optimization_result)
-                writeDIADesignTable(manager, spec$components$protein_quant_table,
-                    file.path(staged$protein_qc_dir, names$tsvFilename), readr::write_tsv)
-                list(filtering_plot = filtering_plot, qc_plot = qc_plot)
-            }, identity = list(result = final$entity_id, skipped = skipped, threshold = threshold,
-                aesthetics = aesthetics(), output_schema = 2L))
-        norm_data$final_filtering_plot <- display$filtering_plot
-        norm_data$final_qc_plot <- display$qc_plot
-        final
+        run <- if (skipped) list(final = source) else computeDIAReferenceCorrelation(manager, source, grouping(), threshold)
+        commit <- diaCorrelationCommit(manager, run$final, threshold, skipped)
+        if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+        publishDIAReferenceCorrelation(manager, run, workflow, norm_data, paths, threshold, skipped, omic_type,
+            experiment_label, aesthetics)
     })
+}
+
+#' The within-group Pearson pairs' parameters (KIT-111 D3): the grouping and the pool-sample pattern the tab removes.
+#' @noRd
+diaPearsonPairsParameters <- function(grouping) list(group = grouping, tech_rep_remove_regex = "pool")
+
+#' The correlation filter's compute half (KIT-111 D3): the pairs, then the selection on them at the threshold, each
+#' reused on a hit. Worker-safe; the worker runs the two as two actions (`computeWorkflowDiaPearsonPairsAction`,
+#' `computeWorkflowDiaPearsonSelectionAction`).
+#' @return `list(pairs, final)`: the pairs product and the selection's checkpoint.
+#' @noRd
+computeDIAReferenceCorrelation <- function(manager, source, grouping, threshold) {
+    pairs <- runSavedOperation(manager, diaPearsonPairsOperation(), source, diaPearsonPairsParameters(grouping))
+    selection <- runSavedOperation(manager, diaPearsonSelectionOperation(), source,
+        list(pairs = pairs$reference$entity_id, threshold = threshold, correlations = pairs$value),
+        dependencies = list(pairs$reference))
+    list(pairs = pairs$reference, final = selection$value)
+}
+
+#' The correlation filter's commit description (KIT-111 D3), shared by the in-process runner and the worker's completion.
+#' @param final The selection's checkpoint (the source when skipped).
+#' @param threshold,skipped The user's filtering decision.
+#' @return `list(state_name, checkpoint, config, description)`, or NULL when the head is `correlation_filtered` with
+#'   the same components and config.
+#' @noRd
+diaCorrelationCommit <- function(manager, final, threshold, skipped) {
+    spec <- readDIAStateMetadata(manager, final)$data
+    config <- if (skipped) list(min_pearson_correlation_threshold = 0, skipped = TRUE) else
+        list(min_pearson_correlation_threshold = threshold)
+    previous <- if (manager$current_state == "correlation_filtered") readDIAStateMetadata(manager) else NULL
+    if (!is.null(previous) && identical(previous$data$components, spec$components) &&
+        identical(previous$config, config)) return(NULL)
+    list(state_name = "correlation_filtered", checkpoint = spec, config = config,
+        description = if (skipped) "Skipped final sample correlation filter" else "Applied final sample correlation filter (chunk 28)")
+}
+
+#' The correlation filter's publication half (KIT-111 D3), in the controller on both paths: the tab's state and the
+#' step's files and display, on the accepted head.
+#' @param run `list(pairs, final)` (`computeDIAReferenceCorrelation`; `final` alone when skipped).
+#' @inheritParams runDIAReferenceCorrelation
+#' @return The selection's checkpoint (the source when skipped).
+#' @noRd
+publishDIAReferenceCorrelation <- function(manager, run, workflow, norm_data, paths, threshold, skipped, omic_type,
+    experiment_label, aesthetics) {
+    final <- run$final
+    if (!skipped) norm_data$correlation_vector <- run$pairs
+    norm_data$correlation_filtered_obj <- final
+    norm_data$correlation_threshold <- if (skipped) 0 else threshold
+    spec <- readDIAStateMetadata(manager, final)$data
+    accepted <- getDIAStateReference(manager)
+    display <- publishDIAActionOutputs(manager, accepted, "correlation",
+        paths[c("protein_qc_dir", "time_dir")], function(staged) {
+            summary <- readDIAProteinProgress(manager, final)
+            directories <- stats::setNames(list(list(time_dir = staged$time_dir,
+                publication_graphs_dir = paths$publication_graphs_dir)),
+                paste(omic_type, experiment_label, sep = "_"))
+            # KIT-041: the DIA_LIMPA route labels the correlation step as the limpa script does.
+            step_label <- if (identical(manager$workflow_type, "DIA_LIMPA")) "12_samplecorr_filtered" else "12_correlation_filtered"
+            filtering_plot <- updateProteinFiltering(summary, step_label,
+                omic_type, experiment_label, overwrite = TRUE, return_grid = TRUE, project_dirs = directories)
+            plot <- resolveDIAReferenceQcPlot(final, aesthetics(), "pca", buildProtNormQcPlotProduct,
+                plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
+            qc_plot <- stripProtNormQcPlotOwners(plot + ggplot2::labs(title = if (skipped)
+                "Final Data (Correlation Filter Skipped)" else "Final Correlation-Filtered Data"))
+            names <- resolveProtNormCorrelationResultFilenames(norm_data$ruv_optimization_result,
+                workflow$ruv_optimization_result)
+            writeDIADesignTable(manager, spec$components$protein_quant_table,
+                file.path(staged$protein_qc_dir, names$tsvFilename), readr::write_tsv)
+            list(filtering_plot = filtering_plot, qc_plot = qc_plot)
+        }, identity = list(result = final$entity_id, skipped = skipped, threshold = threshold,
+            aesthetics = aesthetics(), output_schema = 2L))
+    norm_data$final_filtering_plot <- display$filtering_plot
+    norm_data$final_qc_plot <- display$qc_plot
+    final
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-111 D3: the normalisation tab's declarations on the managed worker's `omics` role. Each handler runs its compute
+# half on the request's state and returns references and the commit description only; the controller's completion
+# (`completeWorkflowOmicsAction`) commits, and the tab's delivery runs the publication half. A hit is rooted with the
+# saved references the run names, never with the product's value (F111-01).
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The worker's value for a state-producing DIA action: the committed record (the head's when the commit description is
+#' NULL), the product and the commit description without its checkpoint.
+#' @noRd
+diaWorkerCommitValue <- function(manager, run, commit) {
+    list(checkpoint = if (is.null(commit)) readWorkflowStateMetadata(manager)$data else commit$checkpoint,
+        reference = run$reference, commit = if (!is.null(commit)) commit[c("state_name", "config", "description")])
+}
+
+#' The normalisation on the worker (`normalization-ruv`).
+#' @noRd
+computeWorkflowDiaNormalizationAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    run <- computeDIAReferenceNormalization(manager, source, request$parameters)
+    if (identical(run$status, "hit")) rootDIAProduct(manager, run$reference, list(source, run$value$normalized, run$value$final))
+    diaWorkerCommitValue(manager, run, diaNormalizationCommit(manager, request$parameters, run))
+}
+
+#' The within-group Pearson pairs on the worker (`pearson-pairs`, a product): the source's record is returned.
+#' @noRd
+computeWorkflowDiaPearsonPairsAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    run <- runSavedOperation(manager, diaPearsonPairsOperation(), source, request$parameters)
+    if (identical(run$status, "hit")) rootDIAProduct(manager, run$reference, list(source))
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = run$reference)
+}
+
+#' The sample selection on the worker (`pearson-selection`): the correlations come from the pairs product its `pairs`
+#' parameter names in the session; the request carries no vector.
+#' @noRd
+computeWorkflowDiaPearsonSelectionAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    pairs <- manager$.context$snapshot$products[[request$parameters$pairs]]
+    if (is.null(pairs)) cli::cli_abort("the Pearson pairs product is not in the session", class = "workflow_operation_parameters")
+    parameters <- c(request$parameters, list(correlations = hydrateSavedWorkflowEntity(manager$.context$store, pairs)$value))
+    run <- runSavedOperation(manager, diaPearsonSelectionOperation(), source, parameters, dependencies = list(pairs))
+    if (identical(run$status, "hit")) rootDIAProduct(manager, run$reference, list(source, pairs, run$value))
+    diaWorkerCommitValue(manager, run, diaCorrelationCommit(manager, run$value, request$parameters$threshold, FALSE))
+}
+
+#' The RUV covariates on the worker (`protein_ruv_covariates`, DIA_LIMPA).
+#' @noRd
+computeWorkflowDiaRuvCovariatesAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    run <- computeDIAReferenceRuvCovariates(manager, source, request$parameters)
+    if (identical(run$status, "hit"))
+        rootDIAProduct(manager, run$reference, c(list(source), run$value[c("covariates", "adjusted", "final")]))
+    diaWorkerCommitValue(manager, run, diaRuvCovariatesCommit(manager, request$parameters, run))
 }

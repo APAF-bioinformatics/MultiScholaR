@@ -689,14 +689,27 @@ registerBuiltinWorkflowOperations <- function() {
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE))
     # KIT-024: the whole-matrix declarations that run in process only (KIT-004, KIT-016) are registered too, so the
     # registry is the one place an operation is named (KIT-007); a dispatch of one to the worker is refused.
-    for (declaration in list(diaNormalizationOperation(), diaPearsonPairsOperation(), diaPearsonSelectionOperation(),
-        diaContrastOperation(), diaEnrichmentOperation(), diaRuvCovariatesOperation())) {
+    for (declaration in list(diaContrastOperation(), diaEnrichmentOperation())) {
         registerWorkflowOperation(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
             compute = "in_process", handler = NULL, validate = "validateWorkflowInProcessParameters", resolve = NULL,
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),
             completion = "in_process", publication = "in_process", step_label = NULL, omic_type = "proteomics",
             variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
             declaration = declaration))
+    }
+    # KIT-111 D3: the normalisation tab's four on the managed worker's `omics` role, each with its DIA handler; the
+    # completion commits the handler's commit description. A step whose kernel writes no `@args` section the route maps
+    # declares `section = NULL` (the RUV covariates map `ruvCovariates`).
+    handlers <- c(`normalization-ruv` = "computeWorkflowDiaNormalizationAction", `pearson-pairs` = "computeWorkflowDiaPearsonPairsAction",
+        `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction")
+    for (declaration in list(diaNormalizationOperation(), diaPearsonPairsOperation(), diaPearsonSelectionOperation(),
+        diaRuvCovariatesOperation())) {
+        registerWorkflowOperation(c(list(name = declaration$name, input = "checkpoint", input_class = declaration$input_class,
+            compute = "omics", handler = handlers[[declaration$name]], validate = "validateWorkflowOmicsParameters", resolve = NULL,
+            parameter_limit = 65536, parameters = declaration$parameters %||% character(),
+            completion = "omics", publication = "omics", step_label = NULL, omic_type = "proteomics",
+            variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
+            declaration = declaration), if (!declaration$name %in% workflowAllSectionOperations()) list(section = NULL)))
     }
     # KIT-031/032: the lipidomics and metabolomics declarations (the kit's rule that a new workflow adds declarations,
     # registry entries and module code only). KIT-073: both omics from the shared declaration core. KIT-078: the compute
