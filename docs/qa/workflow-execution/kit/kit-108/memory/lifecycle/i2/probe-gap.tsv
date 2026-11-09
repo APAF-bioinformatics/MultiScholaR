@@ -1,0 +1,19 @@
+epoch	uptime	event	unit	cgroup	pid	comm	vm_rss_kb	rss_anon_kb	rss_file_kb	rss_shmem_kb	vm_hwm_kb	smaps_rss_kb	smaps_pss_anon_kb	smaps_anonymous_kb	cg_anon	cg_file	cg_shmem	note
+1794201654.727	165160.88	start																pattern=kit108-sampler-gap* unit=none interval=1 wait=900 max=21600 grace=5 pid=3241148
+1794201654.736	165160.89	unit_seen																kit108-sampler-gap1.service
+1794201654.746	165160.90	cgroup	kit108-sampler-gap1.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap1.service											118784	0	0	
+1794201654.754	165160.91	process	kit108-sampler-gap1.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap1.service	3241147	sleep	2680	116	2564	0	2680	2680	116	116				
+1794201655.769	165161.92	cgroup	kit108-sampler-gap1.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap1.service											118784	0	0	
+1794201655.777	165161.93	process	kit108-sampler-gap1.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap1.service	3241147	sleep	2680	116	2564	0	2680	2680	116	116				
+1794201656.811	165162.96	cgroup	kit108-sampler-gap1.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap1.service											118784	0	0	
+1794201656.824	165162.98	process	kit108-sampler-gap1.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap1.service	3241147	sleep	2680	116	2564	0	2680	2680	116	116				
+1794201659.847	165166.00	unit_gap																no match for 2s
+1794201659.857	165166.01	cgroup	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service											114688	0	0	
+1794201659.867	165166.02	process	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service	3241816	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201660.886	165167.04	cgroup	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service											114688	0	0	
+1794201660.896	165167.05	process	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service	3241816	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201661.908	165168.06	cgroup	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service											114688	0	0	
+1794201661.917	165168.07	process	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service	3241816	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201662.930	165169.08	cgroup	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service											114688	0	0	
+1794201662.939	165169.09	process	kit108-sampler-gap2.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-gap2.service	3241816	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201668.981	165175.13	unit_gone	kit108-sampler-gap*															after sampling

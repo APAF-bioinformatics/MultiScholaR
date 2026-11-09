@@ -1,0 +1,5 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"findCenvVar"	0.05	25	0.05	25	44.3
+"lazyLoadDBfetch"	0.05	25	0.05	25	31.8
+"codeBufCode"	0.05	25	0.05	25	0
+"stri_join"	0.05	25	0.05	25	0

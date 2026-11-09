@@ -1,0 +1,33 @@
+== 1 completion: pattern mode, a two-process scratch unit (R holding ~230 MB anon + sleep), stopped after 8 s, grace 3 s
+Running as unit: kit108-sampler-probe.service; invocation ID: fa0d252dd8bd498aa1f488b03a15def5
+exit 0
+      8 cgroup       1 event      16 process       1 start       1 unit_gone       1 unit_seen 
+19 fields
+last tick: R RssAnon 237420 kB, cgroup anon 237536 kB, ratio 0.9995
+== 2 gap: pattern mode; unit gap1 runs 3 s, gap2 starts 2 s after it ends and runs 4 s; grace 5 s
+Running as unit: kit108-sampler-gap1.service; invocation ID: db5ff2f8b42742fe95c7c0bc02b7882d
+Running as unit: kit108-sampler-gap2.service; invocation ID: 16d0e4f3a7734c94a7155e6a81cdaa1e
+exit 0
+event	note
+start	pattern=kit108-sampler-gap* unit=none interval=1 wait=900 max=21600 grace=5 pid=3241148
+unit_seen	kit108-sampler-gap1.service
+unit_gap	no match for 2s
+unit_gone	after sampling
+== 3 failure: --unit, the scratch unit stopped after 5 s
+Running as unit: kit108-sampler-probe.service; invocation ID: 47937cf76a99464ea1ef62c3d169148b
+exit 0
+event	note
+start	pattern=multischolar* unit=kit108-sampler-probe.service interval=1 wait=900 max=21600 grace=0 pid=3242830
+unit_seen	kit108-sampler-probe.service
+unit_gone	after sampling
+== 4 failure: --unit, a scratch unit already stopped when the sampler starts
+ActiveState=inactive
+exit 0
+event	note
+start	pattern=multischolar* unit=kit108-sampler-stopped.service interval=1 wait=900 max=21600 grace=0 pid=3243356
+unit_gone	not active at start
+== 5 failure: --pattern with no match within --wait 3
+exit 0
+event	note
+start	pattern=kit108-nothing* unit=none interval=1 wait=3 max=21600 grace=30 pid=3243375
+never_seen	no active unit within 3s

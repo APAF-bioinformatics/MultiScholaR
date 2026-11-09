@@ -1,0 +1,14 @@
+epoch	uptime	event	unit	cgroup	pid	comm	vm_rss_kb	rss_anon_kb	rss_file_kb	rss_shmem_kb	vm_hwm_kb	smaps_rss_kb	smaps_pss_anon_kb	smaps_anonymous_kb	cg_anon	cg_file	cg_shmem	note
+1794201668.995	165175.15	start																pattern=multischolar* unit=kit108-sampler-probe.service interval=1 wait=900 max=21600 grace=0 pid=3242830
+1794201669.004	165175.16	unit_seen																kit108-sampler-probe.service
+1794201669.014	165175.17	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											114688	0	0	
+1794201669.023	165175.18	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3242829	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201670.043	165176.20	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											114688	0	0	
+1794201670.053	165176.20	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3242829	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201671.074	165177.23	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											114688	0	0	
+1794201671.083	165177.24	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3242829	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201672.101	165178.25	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											114688	0	0	
+1794201672.112	165178.26	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3242829	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201673.133	165179.29	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											114688	0	0	
+1794201673.144	165179.30	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3242829	sleep	2700	112	2588	0	2700	2700	112	112				
+1794201674.155	165180.31	unit_gone	kit108-sampler-probe.service															after sampling

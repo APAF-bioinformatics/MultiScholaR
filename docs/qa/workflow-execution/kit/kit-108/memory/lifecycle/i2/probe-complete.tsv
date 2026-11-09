@@ -1,0 +1,28 @@
+epoch	uptime	event	unit	cgroup	pid	comm	vm_rss_kb	rss_anon_kb	rss_file_kb	rss_shmem_kb	vm_hwm_kb	smaps_rss_kb	smaps_pss_anon_kb	smaps_anonymous_kb	cg_anon	cg_file	cg_shmem	note
+1794201643.373	165149.53	start																pattern=kit108-sampler-probe* unit=none interval=1 wait=900 max=21600 grace=3 pid=3234330
+1794201643.382	165149.53	unit_seen																kit108-sampler-probe.service
+1794201643.395	165149.55	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											724992	0	0	
+1794201643.403	165149.56	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	13760	2536	11224	0	13760	14376	3024	3024				
+1794201643.413	165149.57	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201644.435	165150.59	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201644.449	165150.60	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201644.457	165150.61	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201645.480	165151.63	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201645.494	165151.65	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201645.502	165151.65	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201646.516	165152.67	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201646.528	165152.68	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201646.536	165152.69	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201647.551	165153.70	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201647.563	165153.72	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201647.571	165153.72	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201648.588	165154.74	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201648.598	165154.75	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201648.606	165154.76	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201649.621	165155.77	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201649.634	165155.79	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201649.641	165155.79	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201650.661	165156.81	cgroup	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service											243236864	4096	4096	
+1794201650.673	165156.82	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234329	R	253572	237420	16152	0	253572	253572	237420	237420				
+1794201650.679	165156.83	process	kit108-sampler-probe.service	/user.slice/user-1000.slice/user@1000.service/app.slice/kit108-sampler-probe.service	3234347	sleep	2676	116	2560	0	2676	2676	116	116				
+1794201654.707	165160.86	unit_gone	kit108-sampler-probe*															after sampling

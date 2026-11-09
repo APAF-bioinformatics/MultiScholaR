@@ -1,0 +1,1 @@
+REPLICA FAILED in render: R Markdown template file not found at the expected location: ‘/home/doktersmol/.cache/k108w2/i3-107a-fail/work/kit_omics_lifecycle/scripts/lipidomics/lipidomics_report.rmd’. This should be in the general scripts/<omic_type> directory (e.g., scripts/proteomics).

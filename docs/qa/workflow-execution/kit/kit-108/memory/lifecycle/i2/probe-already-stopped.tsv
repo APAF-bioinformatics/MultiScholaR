@@ -1,0 +1,3 @@
+epoch	uptime	event	unit	cgroup	pid	comm	vm_rss_kb	rss_anon_kb	rss_file_kb	rss_shmem_kb	vm_hwm_kb	smaps_rss_kb	smaps_pss_anon_kb	smaps_anonymous_kb	cg_anon	cg_file	cg_shmem	note
+1794201674.199	165180.35	start																pattern=multischolar* unit=kit108-sampler-stopped.service interval=1 wait=900 max=21600 grace=0 pid=3243356
+1794201674.207	165180.36	unit_gone	kit108-sampler-stopped.service															not active at start

@@ -1,0 +1,6 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"getInlineInfo"	0.05	20	0.1	40	39.1
+"nsName"	0.05	20	0.05	20	39.1
+"cb$setcurloc"	0.05	20	0.05	20	38.2
+"dir.create"	0.05	20	0.05	20	12.2
+"unlist"	0.05	20	0.05	20	0
