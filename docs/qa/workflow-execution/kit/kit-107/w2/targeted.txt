@@ -1,0 +1,60 @@
+# KIT-107 W2 targeted checks (base origin/performance-v2 0dac5178; W2 commits 037698f7, cc65db89). R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file,
+# kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.J57eHO/library; TMPDIR on disk. Functional files up to 4 at a
+# time; the DIA session and memory set and the lanes one at a time with nothing else running, under
+# systemd-inhibit --what=sleep. 2026-11-09. Baselines: kit-107/test-first.txt (start commit) and the stop-rule counts.
+
+## W1's captures (stop-rule gate) and the configuration
+COUNTS test-omic-enrich-module.R pass 947 fail 0 error 0 skip 0      (180 s)  baseline 947/0
+COUNTS test-omic-gui-config.R pass 1536 fail 0 error 0 skip 0        (30 s)
+
+## W2's own tests
+COUNTS test-omics-enrich-core.R pass 269 fail 6 error 0 skip 0       (181 s)  new
+  the 6 failures are D6 test 1 only, by design: the module (unchanged until W3) still commits a `legacy` step
+  (operation "legacy", no variant, no parameters; "legacy step: enrichment_completed" incomplete). It passes from W3.
+  Every other block passes: srcref/namespace (33 names + the class), core side x4, comparison side, restore,
+  refuse_missing_da, D6 test 4.
+COUNTS test-workflow-analysis-record.R pass 274 fail 0 error 0 skip 0  (172 s)  248 existing (identical) + 26 new (D6 test 3)
+
+## Callers of the moved names (dependents grep below), MCI-009, MCI-010, prot-11, prot-11a
+COUNTS test-module-ci-prot-da.R pass 217 fail 0 error 0 skip 1        (13 s)   MCI-009, baseline 217/1
+COUNTS test-module-ci-prot-enrich.R pass 92 fail 0 error 0 skip 1     (11 s)   MCI-010, baseline 92/1
+COUNTS test-prot-11-enrichment-module-contracts.R pass 1258 fail 0 error 0 skip 0 (17 s) baseline 1258/0
+COUNTS test-prot-11a-enrichment-module-characterization.R pass 143 fail 0 error 0 skip 0 (14 s) baseline 143/0
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0    (88 s)   KIT-016/KIT-024, baseline 189/0
+COUNTS test-workflow-operation-registry.R pass 1007 fail 0 error 0 skip 0 (20 s) start tree 1007/0
+COUNTS test-workflow-operations.R pass 75 fail 0 error 0 skip 0       (99 s)   start tree 75/0
+
+## The DIA session and memory set (stop-rule gate): each equals its count
+COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2       (810 s)  733/2
+COUNTS test-perf107-audit.R pass 191 fail 0 error 0 skip 1                 (20 s)   191/1
+COUNTS test-perf107-checkpoints.R pass 38 fail 0 error 0 skip 1            (21 s)   38/1
+COUNTS test-workflow-checkpoint-dia-state.R pass 174 fail 0 error 0 skip 4 (28 s)   174/4
+COUNTS test-workflow-gui-memory-lifetimes.R pass 80 fail 0 error 0 skip 11 (11 s)   80/11
+
+## The five proteomics lanes alone, through kit-105/lifecycle/lifecycle.R as committed, each record written with
+## MULTISCHOLAR_GUI_ENTRY_RECORD_DIR and JSON-diffed (steps, read back) against tests/testdata/gui-entry/<lane>.json
+LANE prot_dia identical_to_oracle=TRUE elapsed=422s           JSONDIFF EMPTY
+  CALLS runProtEnrichAnalysisBody 1, runDIAReferenceEnrichment 1, saveProtEnrichCompletedState 1,
+        resolveProtEnrichUniprotAnnotations 1, buildProtEnrichAllContrastResults 1, runWorkflowEnrichment 0,
+        saveWorkflowEnrichmentState 0, restoreWorkflowEnrichment 0
+  (the old module drives the moved helpers from their new files; the entries are unwired until W3)
+LANE prot_dia_limpa identical_to_oracle=TRUE elapsed=220s     JSONDIFF EMPTY   (no enrichment step: all CALLS 0)
+LANE prot_tmt identical_to_oracle=TRUE elapsed=151s           JSONDIFF EMPTY   (all CALLS 0)
+LANE prot_lfq identical_to_oracle=TRUE elapsed=224s           JSONDIFF EMPTY   (all CALLS 0)
+LANE prot_lfq_fragpipe identical_to_oracle=TRUE elapsed=228s  JSONDIFF EMPTY   (all CALLS 0)
+# The JSON diff was checked to report differences (prot_dia's record against prot_dia_limpa's oracle: 3999).
+
+## NAMESPACE and man/: `git diff 0dac5178 -- NAMESPACE man` is empty; roxygen not run.
+## Collate equals R/*.R (355 files, no duplicates); the two new files follow utils_workflow_dia_da_views.R.
+
+## Dependents grep (every moved or new name; R, tests, tools excluding tools/refactor, inst): no caller outside the
+## enrichment module files, the configuration (comments and the W1 group), the new core files and these tests:
+## test-module-ci-prot-enrich.R, helper-module-ci-prot-enrich.R, test-module-ci-prot-da.R, test-omic-gui-config.R,
+## test-omic-enrich-module.R, test-workflow-dia-products.R, test-prot-11*.R, test-omics-enrich-core.R,
+## test-workflow-analysis-record.R. Each ran above. No hit in tools/ or inst/.
+
+## Observed, not changed: with the live kernel (W1 (b)'s kernel cases, the fake gost/enricher), the
+## `enrichment_completed` commit is refused ("payload contains active or lazy bindings") and reported as the save
+## warning; the run otherwise completes. W1 froze it (history unchanged after the run); the core reproduces it, and F-16
+## then leaves no provenance pending (the failed-commit path of D4).

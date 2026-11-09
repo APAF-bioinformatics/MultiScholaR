@@ -1,0 +1,31 @@
+# KIT-107 W2 test-first. R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript
+# process per file (kit/scripts-078/run1.R, verbose); R_LIBS = core/browser-smoke.J57eHO/library; TMPDIR on disk.
+# Start commit 0dac5178 (origin/performance-v2; W1 eed336ea on it), extracted with `git archive` into the W2 scratch
+# folder (kit-107-w2/start-tree). 2026-11-09, the W2 agent.
+
+## tests/testthat/test-omics-enrich-core.R (new), first version, on the start tree: every block fails
+COUNTS test-omics-enrich-core.R pass 62 fail 40 error 8 skip 0   (193 s)
+  (W2) the moved functions ...: 29 srcref files are the old mod_prot_enrich_*_helpers.R; the 4 entries do not exist
+  (W2, core side) gprofiler / clusterprofiler / kernel_gprofiler / kernel_clusterprofiler: runWorkflowEnrichment
+    does not exist (error)
+  (W2, comparison side): runWorkflowEnrichment does not exist (error)
+  (W2) restore: could not find function "restoreWorkflowEnrichment"
+  (W2) refuse_missing_da: no refusal (the guard does not exist)
+  (F-16, D6 test 4): could not find function "saveWorkflowEnrichmentState"
+  (F-16, D6 test 1): the record's last step is operation "legacy", no variant, no parameters, and the record lists
+    "legacy step: enrichment_completed"
+# The final version differs from the first only in the test plumbing found on the W2 tree (attempts 1-2 below): the
+# backend cases replay W1 (b)'s `start` step so each "<unchanged>" field is relative to the same previous step; the kept
+# product/display are named `run_product`/`run_display` (the capture's own `product`/`display` hold the tab's); the
+# state's config is read with `readComponentMetadata` (a result-class state, KIT-101 F-15); the expected commit result
+# follows W1 (b) (the live kernel cases' commit fails today, below); `config[["organism"]]` (exact: `$organism`
+# partially matches `organism_filter` before the merge wires the field).
+
+## D6 test 3 (test-workflow-analysis-record.R, new block), on the W2 tree before the replay change (037698f7 + the
+## block): it fails with the replay's refusal, as D6 says
+COUNTS test-workflow-analysis-record.R pass 258 fail 0 error 1 skip 0   (230 s; the 248 existing expectations pass)
+  KIT-107 F-16: a DIA record's enrichment step replays ...:
+  <workflow_replay_unsupported> step "enrichment_completed" cannot be replayed: operation "enrichment"
+
+## D6 test 4 tests new code (no before). D6 test 1 fails on the start tree and on the W2 tree (the old module still
+## commits a `legacy` step); it passes from W3.
