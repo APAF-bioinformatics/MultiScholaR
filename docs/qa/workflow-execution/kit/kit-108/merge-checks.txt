@@ -1,0 +1,56 @@
+KIT-108 W6 merge checks (2026-11-09), on origin/performance-v2 14b5b20c. R 4.6.1. Start commit 5be34ee5 (R/ as kit_107's 8b92d7ac).
+
+1. DESCRIPTION Collate == R/*.R: 342 entries, 342 files, no duplicates. Added: utils_workflow_summary.R, mod_omic_summary.R (W3), utils_workflow_dia_summary.R (W4). Removed: the six lipid/metab/trx helper files (W3), the four proteomics helper files (W4).
+2. NAMESPACE against 5be34ee5: 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 / 8956edc44126a5d21d50f0cfe8413895fad91cda8f40ceb2717f7d09c2969cc1 (byte-identical). git diff 5be34ee5 -- man inst R/app_ui.R R/app_server.R R/mod_omic_workflow.R R/mod_proteomics.R R/mod_lipidomics.R R/mod_metabolomics.R: empty. git diff 5be34ee5 -- tools: exactly D11's three traced-name lines in tools/profiling/workflow_checkpoint_gui_diagnostic.R. roxygen2 was not run.
+3. Parse-data back-reference count: 2 (unchanged).
+4. The config: the summary function fields are required (w6/config-required.txt); the srcref rule holds (test-omic-gui-config.R 1849/0).
+5. Dependents grep (start 5be34ee5): 51 deleted names and 10 files, 405 hits, 1 LIVE: tests/testthat/test-omic-gui-config.R:1841, a string ('buildLipidSummaryTemplateStatus') in a refusal test (a mistyped value), not a call. Every other hit is a comment, a quarantined file (Q-170..Q-172, Q-180, Q-181) or a quarantined block (Q-173..Q-175, Q-182, Q-183).
+
+   Deleted R/ files since 5be34ee5 ( 10 ): mod_lipid_summary_observer_helpers.R, mod_lipid_summary_state_helpers.R, mod_lipid_summary_workflow_helpers.R, mod_metab_summary_observer_helpers.R, mod_metab_summary_server_helpers.R, mod_prot_summary_publication_helpers.R, mod_prot_summary_report_helpers.R, mod_prot_summary_server_helpers.R, mod_prot_summary_session_helpers.R, mod_trx_summary.R 
+   Deleted top-level names since 5be34ee5 ( 51 ):
+     activateProtSummaryRenderedReport bootstrapProtSummaryCopyFallbackStudyParams buildLipidSummaryTemplateStatus
+     classifyLipidSummaryCopyFailures classifyMetabSummaryCopyFailures collectLipidSummaryWorkflowArgsContext
+     completeProtSummaryGithubPush completeProtSummarySessionStateExport completeProtSummaryWorkflowArgsSave
+     ensureProtSummaryReportTemplate handleLipidSummaryCopyToPublication handleLipidSummaryExportSessionState
+     handleLipidSummaryGenerateReport handleLipidSummaryPushToGithub handleLipidSummarySaveWorkflowArgs
+     handleProtSummaryPublicationCopyError initializeLipidSummarySessionBootstrap initializeProtSummaryDefaultOutputs
+     observeProtSummaryGithubPush observeProtSummaryPublicationCopy observeProtSummaryReportGeneration
+     observeProtSummarySessionStateExport observeProtSummaryWorkflowArgsSave prepareProtSummaryCopyInputs
+     registerLipidSummaryCopyToPublicationObserver registerLipidSummaryExportSessionObserver
+     registerLipidSummaryGenerateReportObserver registerLipidSummaryInitialOutputs
+     registerLipidSummaryPushToGithubObserver registerLipidSummarySaveWorkflowArgsObserver
+     registerLipidSummaryTemplateStatusOutput registerMetabSummaryServerObservers
+     registerProtSummaryTemplateStatusOutput retrieveProtSummaryReportTemplateAsset
+     runMetabSummaryCopyToPublicationObserverShell runMetabSummaryExportSessionObserverShell
+     runMetabSummaryGenerateReportObserverShell runMetabSummaryGithubPushObserverShell
+     runMetabSummarySaveWorkflowArgsObserverShell runProtSummaryGithubPush runProtSummaryPublicationCopy
+     runProtSummaryReportGeneration runProtSummaryReportProgress runTrxRuviiiExport setupMetabSummaryBootstrapOutputs
+     setupMetabSummaryServerBootstrapState setupMetabSummaryTemplateStatusOutput trxNormDaSummaryProfile
+     trxSummaryExportUi trxSummaryServer validateProtSummaryProjectDirs 
+   
+   Hits: 405 
+   
+             comment              LIVE quarantined-block  quarantined-file 
+                  54                 1                16               334 
+   
+   By file and class:
+     comment           3  R/mod_omic_summary.R
+     comment          37  R/utils_omic_gui_config.R
+     comment           4  R/utils_workflow_dia_summary.R
+     comment           6  R/utils_workflow_summary.R
+     comment           2  tests/testthat/test-omic-gui-config.R
+     comment           1  tests/testthat/test-workflow-analysis-record.R
+     comment           1  tests/testthat/test-workflow-native-session.R
+     LIVE              1  tests/testthat/test-omic-gui-config.R
+     quarantined-block   15  tests/testthat/test-module-ci-lipid-summary.R
+     quarantined-block    1  tests/testthat/test-omics-summary-core.R
+     quarantined-file   42  tests/testthat/test-lipid-14a-summary-module-characterization.R
+     quarantined-file   39  tests/testthat/test-lipid-15-summary-module-seams.R
+     quarantined-file   81  tests/testthat/test-metab-05-summary-module-characterization.R
+     quarantined-file   16  tests/testthat/test-module-ci-metab-summary.R
+     quarantined-file   11  tests/testthat/test-module-ci-prot-summary.R
+     quarantined-file  117  tests/testthat/test-prot-12-summary-module-contracts.R
+     quarantined-file   28  tests/testthat/test-prot-12a-summary-module-characterization.R
+   
+   LIVE hits (code or test lines outside a quarantined file or block): 1 
+     tests/testthat/test-omic-gui-config.R:1841  buildLipidSummaryTemplateStatus
