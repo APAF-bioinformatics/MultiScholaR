@@ -1,0 +1,57 @@
+# KIT-108 W3: the five lipid, metab and trx lanes alone on d92fa6d7, one at a time, through
+# docs/qa/workflow-execution/kit/kit-105/lifecycle/lifecycle.R as committed, strict skips, R_LIBS = kit_107, TMPDIR on
+# disk, MULTISCHOLAR_GUI_ENTRY_RECORD_DIR set; each record JSON-diffed (steps) against tests/testdata/gui-entry/<lane>.json.
+# No multischolar* unit active at each start (checked per lane).
+HOST active units: 0 (2026-11-09T18:13:13+11:00)
+rc=0
+LANE trx_screen identical_to_oracle=TRUE elapsed=37s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS startWorkflowSummaryIntegrationExport 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS runWorkflowSummaryExportStep 1
+JSONDIFF trx_screen.json: 0 differences
+[exited with code 0]
+HOST active units: 0 (2026-11-09T18:14:05+11:00)
+rc=0
+LANE lipid_canonical identical_to_oracle=TRUE elapsed=70s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS startWorkflowSummaryIntegrationExport 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+JSONDIFF lipid_canonical.json: 0 differences
+HOST active units: 0 (2026-11-09T18:15:20+11:00)
+rc=0
+LANE metab_lc identical_to_oracle=TRUE elapsed=90s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS startWorkflowSummaryIntegrationExport 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+JSONDIFF metab_lc.json: 0 differences
+HOST active units: 0 (2026-11-09T18:16:54+11:00)
+rc=0
+LANE metab_gc identical_to_oracle=TRUE elapsed=64s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS startWorkflowSummaryIntegrationExport 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+JSONDIFF metab_gc.json: 0 differences
+HOST active units: 0 (2026-11-09T18:18:02+11:00)
+rc=0
+LANE metab_combined identical_to_oracle=TRUE elapsed=74s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS startWorkflowSummaryIntegrationExport 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+JSONDIFF metab_combined.json: 0 differences
+[exited with code 0]

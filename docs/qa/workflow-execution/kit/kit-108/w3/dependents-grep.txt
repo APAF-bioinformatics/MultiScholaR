@@ -1,0 +1,274 @@
+# The dependents grep: the deleted set = the top-level functions of the six deleted files at 0ce7e60e, minus the 20
+# moved (still defined in R/), plus trxNormDaSummaryProfile; searched across R/, tests/, tools/ (not tools/refactor/)
+# and inst/; and the removed profile fields and the deleted file names. Every live hit is in a quarantined block or file
+# (Q-170 to Q-175), a comment (provenance), the moved prepareLipidSummarySessionState`s own profile argument, or a string
+# in a refusal test (test-omic-gui-config.R:1838).
+start defs: 50
+moved: buildLipidSummaryParameterPayload
+moved: buildLipidSummarySessionState
+moved: buildMetabSummaryParameterPayload
+moved: getLipidSummaryObjectArgs
+moved: getLipidSummaryStateObject
+moved: getLipidSummaryWorkflowValue
+moved: getMetabSummaryObjectArgs
+moved: getMetabSummaryStateObject
+moved: getMetabSummaryWorkflowValue
+moved: lipidSummaryFirstNonNull
+moved: metabSummaryFirstNonNull
+moved: prepareLipidSummarySessionState
+moved: prepareMetabSummarySessionState
+moved: trxHeadHasTechnicalReplicates
+moved: trxRuviiiMChoices
+moved: trxRuviiiStatusText
+moved: trxSummaryContext
+moved: trxSummaryIntegrationReady
+moved: trxSummaryIntegrationWrite
+moved: trxSummaryStateObject
+deleted: 30
+== hits for deleted names (R tests tools inst, excluding tools/refactor) ==
+R/utils_workflow_summary.R:350:#' Run an export step (D4; trx's RUVIII export, `runTrxRuviiiExport` at 5be34ee5 made generic over the step). On the
+R/utils_workflow_summary.R:441:#' The RUVIII export's parameters (D4; `runTrxRuviiiExport`'s at 5be34ee5, mod_trx_summary.R:76-78): the head's RUVs
+R/mod_omic_summary.R:142:#' An export step's panel (D4; trx's `trxSummaryExportUi` at 5be34ee5, mod_trx_summary.R:43-54): its title, help text,
+R/mod_omic_summary.R:348:#' An export step's panel server (D4; trx's `trxSummaryServer` at 5be34ee5, mod_trx_summary.R:96-117): the choice's
+R/utils_omic_gui_config.R:1478:#' failure stops the copy (`classifyLipidSummaryCopyFailures`, mod_lipid_summary_state_helpers.R:211-227, called at
+R/utils_omic_gui_config.R:1490:#' utils_workflow_lipid_declarations.R:130), else `getState` (`collectLipidSummaryWorkflowArgsContext`,
+R/utils_omic_gui_config.R:1937:#' `trxNormDaSummaryProfile`, mod_transcriptomics.R:45-57; `trxOmicProfile`, :39-41): the module id and test ids (the
+R/utils_omic_gui_config.R:1967:#' (`trxSummaryExportUi`, :43-54: title, help text, the choice's output, the button, the status and the figure), the
+R/utils_omic_gui_config.R:1968:#' choice (the radio input, its label and default, the unavailable text; `trxSummaryServer`, :99-104), the status's idle
+tests/testthat/test-lipid-14a-summary-module-characterization.R:36:    "buildLipidSummaryTemplateStatus",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:37:    "registerLipidSummaryTemplateStatusOutput",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:39:    "handleLipidSummaryExportSessionState",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:40:    "registerLipidSummaryExportSessionObserver",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:41:    "collectLipidSummaryWorkflowArgsContext",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:42:    "handleLipidSummarySaveWorkflowArgs",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:43:    "registerLipidSummarySaveWorkflowArgsObserver",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:44:    "handleLipidSummaryCopyToPublication",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:45:    "registerLipidSummaryCopyToPublicationObserver",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:46:    "handleLipidSummaryGenerateReport",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:47:    "registerLipidSummaryGenerateReportObserver",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:48:    "handleLipidSummaryPushToGithub",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:49:    "registerLipidSummaryPushToGithubObserver",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:50:    "initializeLipidSummarySessionBootstrap",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:51:    "registerLipidSummaryInitialOutputs",
+tests/testthat/test-lipid-14a-summary-module-characterization.R:124:    buildLipidSummaryTemplateStatus(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:131:    buildLipidSummaryTemplateStatus(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:140:    buildLipidSummaryTemplateStatus(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:150:  result <- registerLipidSummaryTemplateStatusOutput(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:182:  result <- registerLipidSummaryInitialOutputs(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:207:  bootstrap <- initializeLipidSummarySessionBootstrap(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:236:  initializeLipidSummarySessionBootstrap(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:270:  context <- collectLipidSummaryWorkflowArgsContext(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:291:  empty_context <- collectLipidSummaryWorkflowArgsContext(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:314:  result <- handleLipidSummarySaveWorkflowArgs(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:377:  fallback_result <- handleLipidSummarySaveWorkflowArgs(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:426:  result <- handleLipidSummaryCopyToPublication(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:503:  error_result <- handleLipidSummaryCopyToPublication(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:563:  handleLipidSummaryGenerateReport(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:630:  guard_result <- withVisible(handleLipidSummaryGenerateReport(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:667:  handleLipidSummaryGenerateReport(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:719:  handleLipidSummaryGenerateReport(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:751:  handleLipidSummaryGenerateReport(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:790:  result <- handleLipidSummaryPushToGithub(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:842:  error_result <- handleLipidSummaryPushToGithub(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:915:  result <- handleLipidSummaryExportSessionState(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:952:  error_result <- handleLipidSummaryExportSessionState(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:1026:    registerLipidSummarySaveWorkflowArgsObserver(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:1043:    registerLipidSummaryCopyToPublicationObserver(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:1060:    registerLipidSummaryGenerateReportObserver(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:1076:    registerLipidSummaryPushToGithubObserver(
+tests/testthat/test-lipid-14a-summary-module-characterization.R:1092:    registerLipidSummaryExportSessionObserver(
+tests/testthat/test-lipid-15-summary-module-seams.R:9:test_that("buildLipidSummaryTemplateStatus keeps missing-project warnings stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:11:        buildLipidSummaryTemplateStatus(
+tests/testthat/test-lipid-15-summary-module-seams.R:19:test_that("buildLipidSummaryTemplateStatus keeps template status text stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:29:        buildLipidSummaryTemplateStatus(
+tests/testthat/test-lipid-15-summary-module-seams.R:40:        buildLipidSummaryTemplateStatus(
+tests/testthat/test-lipid-15-summary-module-seams.R:48:test_that("registerLipidSummaryTemplateStatusOutput keeps render handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:56:    result <- registerLipidSummaryTemplateStatusOutput(
+tests/testthat/test-lipid-15-summary-module-seams.R:83:test_that("registerLipidSummaryInitialOutputs keeps wrapper output setup stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:89:    result <- registerLipidSummaryInitialOutputs(
+tests/testthat/test-lipid-15-summary-module-seams.R:116:test_that("initializeLipidSummarySessionBootstrap keeps bootstrap handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:120:    result <- initializeLipidSummarySessionBootstrap(
+tests/testthat/test-lipid-15-summary-module-seams.R:149:test_that("initializeLipidSummarySessionBootstrap skips label prefill when absent", {
+tests/testthat/test-lipid-15-summary-module-seams.R:152:    result <- initializeLipidSummarySessionBootstrap(
+tests/testthat/test-lipid-15-summary-module-seams.R:174:test_that("collectLipidSummaryWorkflowArgsContext keeps state resolution stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:198:    result <- collectLipidSummaryWorkflowArgsContext(
+tests/testthat/test-lipid-15-summary-module-seams.R:219:test_that("handleLipidSummarySaveWorkflowArgs keeps success side effects stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:231:    result <- handleLipidSummarySaveWorkflowArgs(
+tests/testthat/test-lipid-15-summary-module-seams.R:304:test_that("registerLipidSummarySaveWorkflowArgsObserver keeps the observer shell handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:318:    result <- registerLipidSummarySaveWorkflowArgsObserver(
+tests/testthat/test-lipid-15-summary-module-seams.R:352:test_that("handleLipidSummaryCopyToPublication keeps success side effects stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:369:    result <- handleLipidSummaryCopyToPublication(
+tests/testthat/test-lipid-15-summary-module-seams.R:463:test_that("registerLipidSummaryCopyToPublicationObserver keeps the observer shell handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:478:    result <- registerLipidSummaryCopyToPublicationObserver(
+tests/testthat/test-lipid-15-summary-module-seams.R:514:test_that("handleLipidSummaryGenerateReport keeps success side effects stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:540:    handleLipidSummaryGenerateReport(
+tests/testthat/test-lipid-15-summary-module-seams.R:623:test_that("registerLipidSummaryGenerateReportObserver keeps the observer shell handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:634:    result <- registerLipidSummaryGenerateReportObserver(
+tests/testthat/test-lipid-15-summary-module-seams.R:675:        tryCatch(registerLipidSummaryGenerateReportObserver(input = input, values = values, output = new.env(),
+tests/testthat/test-lipid-15-summary-module-seams.R:687:test_that("handleLipidSummaryPushToGithub keeps success side effects stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:694:    handleLipidSummaryPushToGithub(
+tests/testthat/test-lipid-15-summary-module-seams.R:762:test_that("registerLipidSummaryPushToGithubObserver keeps the observer shell handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:778:    result <- registerLipidSummaryPushToGithubObserver(
+tests/testthat/test-lipid-15-summary-module-seams.R:861:test_that("handleLipidSummaryExportSessionState keeps export side effects stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:870:    result <- handleLipidSummaryExportSessionState(
+tests/testthat/test-lipid-15-summary-module-seams.R:918:test_that("registerLipidSummaryExportSessionObserver keeps the observer shell handoff stable", {
+tests/testthat/test-lipid-15-summary-module-seams.R:928:    result <- registerLipidSummaryExportSessionObserver(
+tests/testthat/test-metab-05-summary-module-characterization.R:35:    "setupMetabSummaryBootstrapOutputs",
+tests/testthat/test-metab-05-summary-module-characterization.R:36:    "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:37:    "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:38:    "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:39:    "runMetabSummaryExportSessionObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:40:    "runMetabSummaryGenerateReportObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:41:    "runMetabSummaryGithubPushObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:42:    "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:43:    "setupMetabSummaryTemplateStatusOutput",
+tests/testthat/test-metab-05-summary-module-characterization.R:85:  setupMetabSummaryTemplateStatusOutput(
+tests/testthat/test-metab-05-summary-module-characterization.R:104:  setupMetabSummaryTemplateStatusOutput(
+tests/testthat/test-metab-05-summary-module-characterization.R:115:  setupMetabSummaryTemplateStatusOutput(
+tests/testthat/test-metab-05-summary-module-characterization.R:145:  setupMetabSummaryBootstrapOutputs(
+tests/testthat/test-metab-05-summary-module-characterization.R:167:  result <- setupMetabSummaryServerBootstrapState(
+tests/testthat/test-metab-05-summary-module-characterization.R:205:  setupMetabSummaryServerBootstrapState(
+tests/testthat/test-metab-05-summary-module-characterization.R:256:    runMetabSummaryExportSessionObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:341:    runMetabSummaryExportSessionObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:452:    runMetabSummarySaveWorkflowArgsObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:622:    runMetabSummarySaveWorkflowArgsObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:735:    runMetabSummaryCopyToPublicationObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:898:    runMetabSummaryCopyToPublicationObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:1004:    runMetabSummaryGenerateReportObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:1193:    runMetabSummaryGenerateReportObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:1264:    runMetabSummaryGenerateReportObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:1397:    runMetabSummaryGithubPushObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:1503:    runMetabSummaryGithubPushObserverShell(
+tests/testthat/test-metab-05-summary-module-characterization.R:1617:    registerMetabSummaryServerObservers(
+tests/testthat/test-metab-05-summary-module-characterization.R:1746:    "setupMetabSummaryTemplateStatusOutput",
+tests/testthat/test-metab-05-summary-module-characterization.R:1753:      "setupMetabSummaryTemplateStatusOutput",
+tests/testthat/test-metab-05-summary-module-characterization.R:1762:        "setupMetabSummaryTemplateStatusOutput",
+tests/testthat/test-metab-05-summary-module-characterization.R:1767:      "setupMetabSummaryTemplateStatusOutput",
+tests/testthat/test-metab-05-summary-module-characterization.R:1771:      rm(list = "setupMetabSummaryTemplateStatusOutput", envir = server_env)
+tests/testthat/test-metab-05-summary-module-characterization.R:1776:    "setupMetabSummaryTemplateStatusOutput",
+tests/testthat/test-metab-05-summary-module-characterization.R:1842:    "setupMetabSummaryBootstrapOutputs",
+tests/testthat/test-metab-05-summary-module-characterization.R:1849:      "setupMetabSummaryBootstrapOutputs",
+tests/testthat/test-metab-05-summary-module-characterization.R:1858:        "setupMetabSummaryBootstrapOutputs",
+tests/testthat/test-metab-05-summary-module-characterization.R:1863:      "setupMetabSummaryBootstrapOutputs",
+tests/testthat/test-metab-05-summary-module-characterization.R:1867:      rm(list = "setupMetabSummaryBootstrapOutputs", envir = server_env)
+tests/testthat/test-metab-05-summary-module-characterization.R:1872:    "setupMetabSummaryBootstrapOutputs",
+tests/testthat/test-metab-05-summary-module-characterization.R:1940:    "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:1947:      "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:1956:        "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:1961:      "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:1966:        list = "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:1975:    "setupMetabSummaryServerBootstrapState",
+tests/testthat/test-metab-05-summary-module-characterization.R:2062:    "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:2069:      "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:2078:        "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:2083:      "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:2088:        list = "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:2095:    "registerMetabSummaryServerObservers",
+tests/testthat/test-metab-05-summary-module-characterization.R:2178:    "runMetabSummaryExportSessionObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2185:      "runMetabSummaryExportSessionObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2194:        "runMetabSummaryExportSessionObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2199:      "runMetabSummaryExportSessionObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2203:      rm(list = "runMetabSummaryExportSessionObserverShell", envir = server_env)
+tests/testthat/test-metab-05-summary-module-characterization.R:2208:    "runMetabSummaryExportSessionObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2305:    "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2312:      "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2321:        "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2326:      "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2331:        list = "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2338:    "runMetabSummarySaveWorkflowArgsObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2438:    "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2445:      "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2454:        "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2459:      "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2464:        list = "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2471:    "runMetabSummaryCopyToPublicationObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2564:    "runMetabSummaryGithubPushObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2571:      "runMetabSummaryGithubPushObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2580:        "runMetabSummaryGithubPushObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2585:      "runMetabSummaryGithubPushObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2589:      rm(list = "runMetabSummaryGithubPushObserverShell", envir = server_env)
+tests/testthat/test-metab-05-summary-module-characterization.R:2594:    "runMetabSummaryGithubPushObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2694:    "runMetabSummaryGenerateReportObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2701:      "runMetabSummaryGenerateReportObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2710:        "runMetabSummaryGenerateReportObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2715:      "runMetabSummaryGenerateReportObserverShell",
+tests/testthat/test-metab-05-summary-module-characterization.R:2719:      rm(list = "runMetabSummaryGenerateReportObserverShell", envir = server_env)
+tests/testthat/test-metab-05-summary-module-characterization.R:2724:    "runMetabSummaryGenerateReportObserverShell",
+tests/testthat/test-module-ci-lipid-summary.R:13:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummarySaveWorkflowArgs (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame 
+tests/testthat/test-module-ci-lipid-summary.R:29:    result <- suppressMessages(suppressWarnings(handleLipidSummarySaveWorkflowArgs(
+tests/testthat/test-module-ci-lipid-summary.R:73:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryCopyToPublication (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame
+tests/testthat/test-module-ci-lipid-summary.R:87:    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+tests/testthat/test-module-ci-lipid-summary.R:131:    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+tests/testthat/test-module-ci-lipid-summary.R:160:    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+tests/testthat/test-module-ci-lipid-summary.R:182:  skip("quarantined: Q-23 (KIT-101 F-04) runLipidSummaryGenerateReportObserverShell was dead code; the live handler handleLipidSummaryGenerateReport is covered by MCI-023
+tests/testthat/test-module-ci-lipid-summary.R:238:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryGenerateReport (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame m
+tests/testthat/test-module-ci-lipid-summary.R:249:  handleLipidSummaryGenerateReport(
+tests/testthat/test-module-ci-lipid-summary.R:281:  handleLipidSummaryGenerateReport(
+tests/testthat/test-module-ci-lipid-summary.R:332:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryExportSessionState (mod_lipid_summary_state_helpers.R, deleted); the tab is the shared frame 
+tests/testthat/test-module-ci-lipid-summary.R:343:  export_path <- handleLipidSummaryExportSessionState(
+tests/testthat/test-module-ci-lipid-summary.R:366:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryCopyToPublication and handleLipidSummaryExportSessionState (deleted); the tab is the shared f
+tests/testthat/test-module-ci-lipid-summary.R:378:    suppressWarnings(suppressMessages(handleLipidSummaryCopyToPublication(
+tests/testthat/test-module-ci-lipid-summary.R:397:  session_export_path <- handleLipidSummaryExportSessionState(
+tests/testthat/test-module-ci-metab-summary.R:2:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummarySaveWorkflowArgsObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shar
+tests/testthat/test-module-ci-metab-summary.R:18:    result <- suppressMessages(suppressWarnings(runMetabSummarySaveWorkflowArgsObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:55:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryCopyToPublicationObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the sh
+tests/testthat/test-module-ci-metab-summary.R:69:    suppressWarnings(suppressMessages(runMetabSummaryCopyToPublicationObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:111:    suppressWarnings(suppressMessages(runMetabSummaryCopyToPublicationObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:140:    suppressWarnings(suppressMessages(runMetabSummaryCopyToPublicationObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:162:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryGenerateReportObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shar
+tests/testthat/test-module-ci-metab-summary.R:171:  rendered <- runMetabSummaryGenerateReportObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:199:  missing_output <- runMetabSummaryGenerateReportObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:216:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryGenerateReportObserverShell (deleted); F-11's refusal notices are the frame's report observer, c
+tests/testthat/test-module-ci-metab-summary.R:219:    tryCatch(runMetabSummaryGenerateReportObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:263:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryExportSessionObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the share
+tests/testthat/test-module-ci-metab-summary.R:274:  export <- runMetabSummaryExportSessionObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:298:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryCopyToPublicationObserverShell and runMetabSummaryExportSessionObserverShell (deleted); the tab 
+tests/testthat/test-module-ci-metab-summary.R:310:    suppressWarnings(suppressMessages(runMetabSummaryCopyToPublicationObserverShell(
+tests/testthat/test-module-ci-metab-summary.R:329:  session_export <- runMetabSummaryExportSessionObserverShell(
+tests/testthat/test-omic-gui-config.R:1680:    # entries (`trxNormDaSummaryProfile`), whose values are pinned above as literals, unchanged.
+tests/testthat/test-omic-gui-config.R:1838:    bad$summary$report$status <- "buildLipidSummaryTemplateStatus"
+== hits for removed profile fields ==
+R/utils_workflow_summary.R:579:    finalS4Object <- if (is.null(profile)) getLipidSummaryStateObject(workflowData) else profile$summary_state_object(workflowData)
+== hits for deleted file names ==
+R/utils_workflow_summary.R:21:# mod_metab_summary_observer_helpers.R, mod_trx_summary.R; deleted by W3), with their per-omic differences read from the
+R/utils_workflow_summary.R:387:# Transcriptomics' functions (moved unchanged from mod_trx_summary.R, D3; and the export step's parameters, D4).
+R/utils_workflow_summary.R:441:#' The RUVIII export's parameters (D4; `runTrxRuviiiExport`'s at 5be34ee5, mod_trx_summary.R:76-78): the head's RUVs
+R/utils_workflow_summary.R:460:# Lipidomics' session-state functions (moved unchanged from mod_lipid_summary_state_helpers.R, D3).
+R/utils_workflow_summary.R:633:# Metabolomics' session-state functions (moved unchanged from mod_metab_summary_observer_helpers.R, D3).
+R/mod_omic_summary.R:19:# mod_metab_summary_*_helpers.R, and trx's export panel, mod_trx_summary.R; deleted by W3). `mod_omic_summary_ui(id,
+R/mod_omic_summary.R:142:#' An export step's panel (D4; trx's `trxSummaryExportUi` at 5be34ee5, mod_trx_summary.R:43-54): its title, help text,
+R/mod_omic_summary.R:348:#' An export step's panel server (D4; trx's `trxSummaryServer` at 5be34ee5, mod_trx_summary.R:96-117): the choice's
+R/utils_omic_gui_config.R:1478:#' failure stops the copy (`classifyLipidSummaryCopyFailures`, mod_lipid_summary_state_helpers.R:211-227, called at
+R/utils_omic_gui_config.R:1479:#' mod_lipid_summary_workflow_helpers.R:268-277; metab's mod_metab_summary_observer_helpers.R:147-163, :617-626); the
+R/utils_omic_gui_config.R:1480:#' `project_dirs` global looked up with `exists`' default `inherits = TRUE` (mod_lipid_summary_workflow_helpers.R:255;
+R/utils_omic_gui_config.R:1481:#' mod_metab_summary_observer_helpers.R:603).
+R/utils_omic_gui_config.R:1491:#' mod_lipid_summary_state_helpers.R:312-377, states :322-329, :332, :336-337), the record whenever there is a bus
+R/utils_omic_gui_config.R:1492:#' (mod_lipid_summary_workflow_helpers.R:67, :479), the copy (`omicGuiFeatureSummaryCopy`), the integration file and its
+R/utils_omic_gui_config.R:1494:#' label (:359, :387; mod_lipid_summary_state_helpers.R:7-24), the report flow's order (the template check's progress
+R/utils_omic_gui_config.R:1497:#' (`prepareLipidSummarySessionState`, mod_lipid_summary_state_helpers.R:133-209).
+R/utils_omic_gui_config.R:1708:#' utils_workflow_metab_declarations.R:124), else `getState` (mod_metab_summary_observer_helpers.R:310-328), the record
+R/utils_omic_gui_config.R:1711:#' (:757, :784; mod_metab_summary_server_helpers.R:1-27), the report flow's order (the template check's progress only
+R/utils_omic_gui_config.R:1714:#' `session_state` (`prepareMetabSummarySessionState`, mod_metab_summary_observer_helpers.R:70-145).
+R/utils_omic_gui_config.R:1940:#' (:54; mod_lipid_summary_workflow_helpers.R:89, :124-127) gated on the accepted RUVIII export with its message
+R/utils_omic_gui_config.R:1941:#' (mod_transcriptomics.R:56; `trxSummaryIntegrationReady`, mod_trx_summary.R:143; mod_lipid_summary_workflow_helpers.R:
+R/utils_omic_gui_config.R:1942:#' 119-122), the template, its directory and its label (mod_transcriptomics.R:39; mod_lipid_summary_state_helpers.R:17,
+R/utils_omic_gui_config.R:1943:#' :20), lipid's report flow (mod_lipid_summary_workflow_helpers.R:352-534), the RUVIII export step
+R/utils_omic_gui_config.R:1945:#' (mod_lipid_summary_workflow_helpers.R:121). Wired at the W3 merge: `final_state$context` (`trxSummaryContext`,
+R/utils_omic_gui_config.R:1946:#' mod_trx_summary.R:121-126), `integration$write` (`trxSummaryIntegrationWrite`, :136-139) and `session_state` (the
+R/utils_omic_gui_config.R:1947:#' lipid payload with `trxSummaryStateObject`, :130-132; mod_lipid_summary_state_helpers.R:158, :168, :172).
+R/utils_omic_gui_config.R:1966:#' Trx's RUVIII export at 5be34ee5 as an export step (KIT-108 D4; mod_trx_summary.R:23-117): the panel
+R/utils_omic_gui_config.R:1970:#' and its acceptance on the head (`acceptTrxRuviiiExport`, utils_workflow_trx_declarations.R:411; mod_trx_summary.R:
+R/utils_omic_gui_config.R:1971:#' 76-83), the in-process run (`runTrxReferenceRuviiiExport`, utils_workflow_trx_declarations.R:815; mod_trx_summary.R:
+tests/testthat/test-lipid-15-summary-module-seams.R:4:source(test_path("..", "..", "R", "mod_lipid_summary_state_helpers.R"), local = environment())
+tests/testthat/test-lipid-15-summary-module-seams.R:5:source(test_path("..", "..", "R", "mod_lipid_summary_workflow_helpers.R"), local = environment())
+tests/testthat/test-lipid-15-summary-module-seams.R:6:source(test_path("..", "..", "R", "mod_lipid_summary_observer_helpers.R"), local = environment())
+tests/testthat/test-module-ci-lipid-summary.R:13:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummarySaveWorkflowArgs (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame 
+tests/testthat/test-module-ci-lipid-summary.R:73:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryCopyToPublication (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame
+tests/testthat/test-module-ci-lipid-summary.R:238:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryGenerateReport (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame m
+tests/testthat/test-module-ci-lipid-summary.R:332:  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryExportSessionState (mod_lipid_summary_state_helpers.R, deleted); the tab is the shared frame 
+tests/testthat/test-module-ci-metab-summary.R:2:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummarySaveWorkflowArgsObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shar
+tests/testthat/test-module-ci-metab-summary.R:55:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryCopyToPublicationObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the sh
+tests/testthat/test-module-ci-metab-summary.R:162:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryGenerateReportObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shar
+tests/testthat/test-module-ci-metab-summary.R:263:  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryExportSessionObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the share
+tests/testthat/test-omic-gui-config.R:1710:    # The panel today renders these strings (mod_trx_summary.R:43-54 at the start commit).
+tests/testthat/test-omics-summary-core.R:170:    testthat::skip("quarantined: Q-175 (KIT-108 W3) the comparison side drives the start commit's lipid, metab and trx handlers (mod_lipid_summary_*_helpers.R, mod_metab_summa

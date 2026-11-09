@@ -16,10 +16,10 @@ Every other field of that step (the session summary's `Integration Object: not w
 file written (`done(TRUE)`); the gate's refusal reports `done(FALSE)` (R/utils_workflow_summary.R).
 
 **Test first:** `(W3, F108-03) trx: the save before the RUVIII export ...` (test-omic-summary-module.R) failed on
-1e0215ac, where the wrappers were still the start commit's modules (`kit-108/w3/test-first.txt`), and passes on the W3
+c2702c21, where the wrappers were still the start commit's modules (`kit-108/w3/test-first.txt`), and passes on the W3
 tree. `test-omics-summary-core.R`'s `(W3, F108-03)` block tests the entry directly.
 
-**Nothing else moved:** two dump runs of the whole W1 file on 6f69ce6a (the wrappers on the frame), in separate
+**Nothing else moved:** two dump runs of the whole W1 file on 1b3b9205 (the wrappers on the frame), in separate
 processes (`MULTISCHOLAR_KIT108_W1_DUMP`; 2026-11-09, no `multischolar*` unit active):
 
 ```

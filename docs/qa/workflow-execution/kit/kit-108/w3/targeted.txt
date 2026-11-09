@@ -1,0 +1,48 @@
+# KIT-108 W3 targeted tests. One Rscript process per file (kit/scripts-078/run1.R), pkgload::load_all, R 4.6.1,
+# MULTISCHOLAR_STRICT_SKIPS=1, R_LIBS = core/browser-smoke.66sPmE/library (kit_107), TMPDIR on disk. Each large file
+# started only with no multischolar* unit active. Recorded 2026-11-09 by the W3 agent. "start" = kit-108/test-first.txt.
+
+## On d92fa6d7 (the W3 tree, the re-freeze included)
+COUNTS test-omic-summary-module.R pass 1703 fail 0 error 0 skip 0      (start 1699: + 4, the F108-03 block)
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0      (start 70; MCI-032.3's :114-115 retargeted)
+COUNTS test-workflow-omics-sessions.R pass 150 fail 0 error 0 skip 0
+COUNTS test-workflow-trx-declarations.R pass 324 fail 0 error 0 skip 0
+COUNTS test-trx-publication.R pass 174 fail 0 error 0 skip 0
+COUNTS test-workflow-analysis-record.R pass 274 fail 0 error 0 skip 0  (start 274)
+COUNTS test-general-filemgmt-report-helpers-shared.R pass 85 fail 0 error 0 skip 1
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0    (start 204)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0   (start 230; :373, :391 retargeted)
+# The dependents (they mount the trx tabs under trxOmicProfile() or read its fields):
+COUNTS test-module-ci-trx-app.R pass 48 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-da.R pass 50 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-design.R pass 71 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-import.R pass 96 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-norm.R pass 61 fail 0 error 0 skip 0
+COUNTS test-module-ci-trx-qc.R pass 38 fail 0 error 0 skip 0
+COUNTS test-trx-norm-module.R pass 89 fail 0 error 0 skip 0
+COUNTS test-omic-qc-module.R pass 158 fail 0 error 0 skip 0
+COUNTS test-omics-design-core.R pass 52 fail 0 error 0 skip 10         (the same 10 skips on c2702c21, whose design code is the start's)
+
+## On 1b3b9205's tree before the re-freeze commit (R/ identical to d92fa6d7)
+COUNTS test-omic-design-module.R pass 158 fail 0 error 0 skip 0        (start 152: + 6, the KIT-108 W3 masking block, two servers)
+COUNTS test-omic-gui-config.R pass 1834 fail 0 error 0 skip 0          (W1 tree 1833: + 1, the step's `parameters`)
+COUNTS test-module-ci-lipid-summary.R pass 14 fail 0 error 0 skip 6    (start 105/1: Q-173's five blocks; MCI-023.4 and F-04 live)
+COUNTS test-module-ci-metab-summary.R pass 12 fail 0 error 0 skip 6    (start 82/0: Q-174's six blocks; MCI-017.4 live)
+COUNTS test-lipid-14a-summary-module-characterization.R pass 0 fail 0 error 0 skip 0   (Q-170, line-1 skip)
+COUNTS test-lipid-15-summary-module-seams.R pass 0 fail 0 error 0 skip 0             (Q-171, line-1 skip)
+COUNTS test-metab-05-summary-module-characterization.R pass 0 fail 0 error 0 skip 0  (Q-172, line-1 skip)
+COUNTS test-omics-summary-core.R pass 376 fail 0 error 0 skip 1        (the comparison side skipped: Q-175)
+
+## The equivalence on c2702c21 (the core and frame present, the start commit's lipid, metab and trx modules still the
+## wrappers), the whole of test-omics-summary-core.R, comparison side live:
+COUNTS test-omics-summary-core.R pass 640 fail 1 error 0 skip 0
+  BAD :: (W3, core side) trx_managed  -- the test's own read of the managed export before the runner delivered
+# (`ruviii` = "<none>"; an instrumentation error in the core side, repaired in 00a8c712: the export is read in the
+# step's `done`). The comparison side passed in that run: on 12 lipid, metab and trx cases, every entry step's notes,
+# progress, calls, global and files equal the start commit's handlers', apart from F108-03's notice. After the repair
+# the core side passes on every case (376/0/1 above).
+
+## Not run here (lead's runs): the four test-gui-entry-*.R files (the five lanes alone instead: lanes.txt), the e2e
+## lanes, test-omic-da-module.R and test-omic-norm-module.R (they read only trxOmicProfile()'s base fields).

@@ -1,0 +1,21 @@
+# KIT-108 W3 test-first (F108-03 and the core's tests). R 4.6.1, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+# R_LIBS = core/browser-smoke.66sPmE/library (kit_107), TMPDIR on disk (~/.cache/k108w3). Recorded by the W3 agent.
+
+## F108-03: test-omic-summary-module.R "(W3, F108-03) trx: the save before the RUVIII export shows the gate's warning
+## and no "Saved Integration" notice", written first.
+# On c2702c21 (the core and frame added; the wrappers still the start commit's modules, so the save is the old
+# handler's), the block alone (scratch rdesc.R, one process):
+BLOCK pass 3 fail 1 error 0 skip 0 :: (W3, F108-03) trx: the save before the RUVIII export shows the gate's warning and no "Saved Integration" notic
+--- Expected `saved$notes` to be identical to `c(...)`.
+#   actual: "[warning 10 -] The integration export needs ...", "[message 5 -] Saved Integration S4 Object",
+#           "[message 5 -] Study parameters saved successfully"
+# On 1b3b9205 (the wrappers on the frame): see targeted.txt (the whole file, 0 failures).
+
+## test-omics-summary-core.R's unit blocks on c2702c21 (the core's own; they cannot run on the start commit, where the
+## core does not exist):
+BLOCK pass 62 fail 0 error 0 skip 0 :: (W3) the moved lipid, metab and trx functions are in the core file; the core calls no Shiny UI function
+BLOCK pass 11 fail 0 error 0 skip 0 :: (W3) the copy classifies copyToResultsSummary's failures by copy$required
+BLOCK pass 18 fail 0 error 0 skip 0 :: (W3) the report ensures its template in order
+BLOCK pass 6 fail 0 error 0 skip 0 :: (W3, F108-03) a save the integration gate refuses shows the gate's warning and no "Saved Integration" notice
+
+## The before half of the retargeted and guarding tests is W1's (kit-108/test-first.txt, on the start commit).
