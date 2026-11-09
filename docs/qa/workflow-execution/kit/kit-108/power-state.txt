@@ -2,3 +2,5 @@ kit-journey-108d start 17:07:25 at 031a6ca0: AC 1, profile low-power, battery 10
 kit-journey-108d end 17:11:05: AC 1, profile low-power, battery 100%, load 1.59, available 27 GiB
 kit-journey-108p start 17:11:24 at 24853737: AC 1, profile low-power, battery 100%, load 1.56, available 27 GiB
 kit-journey-108p end 17:34:24: AC 1, profile low-power, battery 100%, load 2.61, available 26 GiB
+kit-journey-108q start 17:34:28 at b97ad9e8: AC 1, profile low-power, battery 100%, load 2.80, available 26 GiB
+kit-journey-108q end 17:57:48: AC 1, profile low-power, battery 100%, load 1.67, available 27 GiB
