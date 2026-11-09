@@ -1,0 +1,190 @@
+start defs: 28
+moved: buildProtSummaryTemplateStatus
+moved: prepareProtSummarySessionStateExport
+moved: resolveProtSummaryExpectedTemplate
+moved: resolveProtSummaryFinalS4State
+moved: resolveProtSummaryReportTemplate
+moved: resolveProtSummaryTemplateSelection
+moved: summariseProtSummaryWorkflowMetadata
+deleted: 21
+== hits for deleted names (R tests tools inst, excluding tools/refactor) ==
+R/utils_omic_gui_config.R:1166:#' after the success notice and outputs (:534-550; `activateProtSummaryRenderedReport`, :389-408). Wired by KIT-108 W4
+tests/testthat/test-module-ci-prot-summary.R:19:    ok <- suppressMessages(suppressWarnings(completeProtSummaryWorkflowArgsSave(
+tests/testthat/test-module-ci-prot-summary.R:52:  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryPublicationCopy (mod_prot_summary_publication_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:61:  copy_args <- suppressMessages(suppressWarnings(runProtSummaryPublicationCopy(
+tests/testthat/test-module-ci-prot-summary.R:94:  expect_no_error(suppressMessages(suppressWarnings(runProtSummaryPublicationCopy(
+tests/testthat/test-module-ci-prot-summary.R:159:  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryReportGeneration and activateProtSummaryRenderedReport (mod_prot_summary_report_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:167:    rendered <- runProtSummaryReportGeneration(
+tests/testthat/test-module-ci-prot-summary.R:180:        activateProtSummaryRenderedReport(
+tests/testthat/test-module-ci-prot-summary.R:209:  skip("quarantined: Q-182 (KIT-108 W4) it calls completeProtSummarySessionStateExport (mod_prot_summary_session_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:216:  ok <- completeProtSummarySessionStateExport(
+tests/testthat/test-module-ci-prot-summary.R:250:  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryPublicationCopy (mod_prot_summary_publication_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:258:  suppressMessages(suppressWarnings(runProtSummaryPublicationCopy(
+tests/testthat/test-prot-12-summary-module-contracts.R:1:testthat::skip("quarantined: Q-180 (KIT-108 W4) its binding guard (:12-16) names observeProtSummaryReportGeneration (mod_prot_summary_server_helpers.R, deleted) and its 55 blocks test the deleted proteomics summary seams (mod_prot_summary_{server,publication,session,report}_helpers.R); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-prot-12-summary-module-contracts.R:16:  "observeProtSummaryReportGeneration"
+tests/testthat/test-prot-12-summary-module-contracts.R:320:test_that("ensureProtSummaryReportTemplate copies the packaged template into the project", {
+tests/testthat/test-prot-12-summary-module-contracts.R:335:  templateInfo <- ensureProtSummaryReportTemplate(
+tests/testthat/test-prot-12-summary-module-contracts.R:371:test_that("retrieveProtSummaryReportTemplateAsset delegates template lookup through the seam", {
+tests/testthat/test-prot-12-summary-module-contracts.R:380:  retrieved <- retrieveProtSummaryReportTemplateAsset(
+tests/testthat/test-prot-12-summary-module-contracts.R:417:test_that("retrieveProtSummaryReportTemplateAsset preserves the template-retrieval error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:421:  retrieved <- retrieveProtSummaryReportTemplateAsset(
+tests/testthat/test-prot-12-summary-module-contracts.R:446:test_that("validateProtSummaryProjectDirs accepts initialized project directories", {
+tests/testthat/test-prot-12-summary-module-contracts.R:449:  validated <- validateProtSummaryProjectDirs(
+tests/testthat/test-prot-12-summary-module-contracts.R:465:test_that("initializeProtSummaryDefaultOutputs wires the default summary outputs", {
+tests/testthat/test-prot-12-summary-module-contracts.R:469:  initialized <- initializeProtSummaryDefaultOutputs(
+tests/testthat/test-prot-12-summary-module-contracts.R:489:test_that("validateProtSummaryProjectDirs preserves the project-dir validation error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:492:  validated <- validateProtSummaryProjectDirs(
+tests/testthat/test-prot-12-summary-module-contracts.R:514:test_that("activateProtSummaryRenderedReport wires report-ready outputs from a rendered file", {
+tests/testthat/test-prot-12-summary-module-contracts.R:530:  activated <- activateProtSummaryRenderedReport(
+tests/testthat/test-prot-12-summary-module-contracts.R:585:test_that("activateProtSummaryRenderedReport returns FALSE when the rendered file is missing", {
+tests/testthat/test-prot-12-summary-module-contracts.R:591:  activated <- activateProtSummaryRenderedReport(
+tests/testthat/test-prot-12-summary-module-contracts.R:609:test_that("runProtSummaryReportGeneration delegates report rendering and activation", {
+tests/testthat/test-prot-12-summary-module-contracts.R:614:  rendered <- runProtSummaryReportGeneration(
+tests/testthat/test-prot-12-summary-module-contracts.R:683:test_that("runProtSummaryReportGeneration preserves the report-generation error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:692:  rendered <- runProtSummaryReportGeneration(
+tests/testthat/test-prot-12-summary-module-contracts.R:753:test_that("runProtSummaryReportProgress delegates report progress orchestration through seams", {
+tests/testthat/test-prot-12-summary-module-contracts.R:759:  progressed <- runProtSummaryReportProgress(
+tests/testthat/test-prot-12-summary-module-contracts.R:785:                                       ensureTemplateFn = ensureProtSummaryReportTemplate,
+tests/testthat/test-prot-12-summary-module-contracts.R:811:                                     activateReportFn = activateProtSummaryRenderedReport,
+tests/testthat/test-prot-12-summary-module-contracts.R:858:test_that("runProtSummaryReportProgress stops before rendering when template retrieval fails", {
+tests/testthat/test-prot-12-summary-module-contracts.R:864:  progressed <- runProtSummaryReportProgress(
+tests/testthat/test-prot-12-summary-module-contracts.R:904:test_that("completeProtSummaryWorkflowArgsSave preserves the save success shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:935:    completed <- completeProtSummaryWorkflowArgsSave(
+tests/testthat/test-prot-12-summary-module-contracts.R:1036:test_that("completeProtSummaryWorkflowArgsSave preserves the save warning shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1061:  completed <- completeProtSummaryWorkflowArgsSave(
+tests/testthat/test-prot-12-summary-module-contracts.R:1165:test_that("completeProtSummarySessionStateExport preserves the export success shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1179:  completed <- completeProtSummarySessionStateExport(
+tests/testthat/test-prot-12-summary-module-contracts.R:1252:test_that("completeProtSummarySessionStateExport preserves the export error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1256:  completed <- completeProtSummarySessionStateExport(
+tests/testthat/test-prot-12-summary-module-contracts.R:1294:test_that("bootstrapProtSummaryCopyFallbackStudyParams creates a basic study-parameters fallback file", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1305:  created <- bootstrapProtSummaryCopyFallbackStudyParams(
+tests/testthat/test-prot-12-summary-module-contracts.R:1337:test_that("bootstrapProtSummaryCopyFallbackStudyParams preserves the fallback-write error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1342:  created <- bootstrapProtSummaryCopyFallbackStudyParams(
+tests/testthat/test-prot-12-summary-module-contracts.R:1361:test_that("prepareProtSummaryCopyInputs prefers workflow_data tables over file fallbacks", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1366:  copyInputs <- prepareProtSummaryCopyInputs(
+tests/testthat/test-prot-12-summary-module-contracts.R:1390:test_that("prepareProtSummaryCopyInputs falls back to source files when workflow_data tables are missing", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1404:  copyInputs <- prepareProtSummaryCopyInputs(
+tests/testthat/test-prot-12-summary-module-contracts.R:1434:test_that("runProtSummaryPublicationCopy bootstraps copy execution and applies success updates", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1459:    recorded$copyArgs <- runProtSummaryPublicationCopy(
+tests/testthat/test-prot-12-summary-module-contracts.R:1524:test_that("observeProtSummaryPublicationCopy wires the copy observer through the existing seams", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1551:    observeProtSummaryPublicationCopy,
+tests/testthat/test-prot-12-summary-module-contracts.R:1553:      bootstrapProtSummaryCopyFallbackStudyParams = function(values,
+tests/testthat/test-prot-12-summary-module-contracts.R:1578:      prepareProtSummaryCopyInputs = function(workflowData,
+tests/testthat/test-prot-12-summary-module-contracts.R:1591:      runProtSummaryPublicationCopy = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:1619:      handleProtSummaryPublicationCopyError = function(...) {
+tests/testthat/test-prot-12-summary-module-contracts.R:1665:test_that("handleProtSummaryPublicationCopyError preserves the copy error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1672:  handled <- handleProtSummaryPublicationCopyError(
+tests/testthat/test-prot-12-summary-module-contracts.R:1710:test_that("runProtSummaryGithubPush configures GitHub options and delegates the push call", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1724:  githubPush <- runProtSummaryGithubPush(
+tests/testthat/test-prot-12-summary-module-contracts.R:1763:test_that("completeProtSummaryGithubPush preserves the GitHub success shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1779:  completed <- completeProtSummaryGithubPush(
+tests/testthat/test-prot-12-summary-module-contracts.R:1840:test_that("observeProtSummaryGithubPush wires the GitHub observer through the completion seam", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1855:    observeProtSummaryGithubPush,
+tests/testthat/test-prot-12-summary-module-contracts.R:1857:      completeProtSummaryGithubPush = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:1866:                                               pushGithubFn = runProtSummaryGithubPush,
+tests/testthat/test-prot-12-summary-module-contracts.R:1940:test_that("observeProtSummarySessionStateExport wires the export observer through the completion seam", {
+tests/testthat/test-prot-12-summary-module-contracts.R:1955:    observeProtSummarySessionStateExport,
+tests/testthat/test-prot-12-summary-module-contracts.R:1957:      completeProtSummarySessionStateExport = function(projectDirs,
+tests/testthat/test-prot-12-summary-module-contracts.R:2033:test_that("completeProtSummaryGithubPush preserves the GitHub error shell", {
+tests/testthat/test-prot-12-summary-module-contracts.R:2038:  completed <- completeProtSummaryGithubPush(
+tests/testthat/test-prot-12-summary-module-contracts.R:2072:test_that("observeProtSummaryWorkflowArgsSave wires the save observer through the completion seam", {
+tests/testthat/test-prot-12-summary-module-contracts.R:2102:    observeProtSummaryWorkflowArgsSave,
+tests/testthat/test-prot-12-summary-module-contracts.R:2104:      completeProtSummaryWorkflowArgsSave = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:2311:      completeProtSummaryWorkflowArgsSave = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:2400:      observeProtSummaryWorkflowArgsSave = function(input,
+tests/testthat/test-prot-12-summary-module-contracts.R:2406:                                                    completeWorkflowArgsSaveFn = completeProtSummaryWorkflowArgsSave,
+tests/testthat/test-prot-12-summary-module-contracts.R:2480:test_that("registerProtSummaryTemplateStatusOutput renders template status through the seam", {
+tests/testthat/test-prot-12-summary-module-contracts.R:2495:    registerProtSummaryTemplateStatusOutput,
+tests/testthat/test-prot-12-summary-module-contracts.R:2541:      registerProtSummaryTemplateStatusOutput = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:2582:test_that("observeProtSummaryReportGeneration wires the report observer through the existing seams", {
+tests/testthat/test-prot-12-summary-module-contracts.R:2608:    observeProtSummaryReportGeneration,
+tests/testthat/test-prot-12-summary-module-contracts.R:2610:      validateProtSummaryProjectDirs = function(projectDirs,
+tests/testthat/test-prot-12-summary-module-contracts.R:2619:      runProtSummaryReportProgress = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:2627:                                              retrieveTemplateAssetFn = retrieveProtSummaryReportTemplateAsset,
+tests/testthat/test-prot-12-summary-module-contracts.R:2628:                                              runReportGenerationFn = runProtSummaryReportGeneration,
+tests/testthat/test-prot-12-summary-module-contracts.R:2675:test_that("observeProtSummaryReportGeneration stops when project-dir validation fails", {
+tests/testthat/test-prot-12-summary-module-contracts.R:2696:    observeProtSummaryReportGeneration,
+tests/testthat/test-prot-12-summary-module-contracts.R:2698:      validateProtSummaryProjectDirs = function(projectDirs,
+tests/testthat/test-prot-12-summary-module-contracts.R:2707:      runProtSummaryReportProgress = function(...) {
+tests/testthat/test-prot-12-summary-module-contracts.R:2747:      observeProtSummaryReportGeneration(input = input, output = output, values = values, projectDirs = list(),
+tests/testthat/test-prot-12-summary-module-contracts.R:2781:      observeProtSummaryReportGeneration = function(input,
+tests/testthat/test-prot-12-summary-module-contracts.R:2787:                                                    validateProjectDirsFn = validateProtSummaryProjectDirs,
+tests/testthat/test-prot-12-summary-module-contracts.R:2788:                                                    runReportProgressFn = runProtSummaryReportProgress,
+tests/testthat/test-prot-12-summary-module-contracts.R:2826:  expect_identical(recorded$args$validateProjectDirsFn, validateProtSummaryProjectDirs)
+tests/testthat/test-prot-12-summary-module-contracts.R:2827:  expect_identical(recorded$args$runReportProgressFn, runProtSummaryReportProgress)
+tests/testthat/test-prot-12-summary-module-contracts.R:2854:      bootstrapProtSummaryCopyFallbackStudyParams = function(values,
+tests/testthat/test-prot-12-summary-module-contracts.R:2879:      prepareProtSummaryCopyInputs = function(workflowData,
+tests/testthat/test-prot-12-summary-module-contracts.R:2886:      runProtSummaryPublicationCopy = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:2973:      prepareProtSummaryCopyInputs = function(workflowData,
+tests/testthat/test-prot-12-summary-module-contracts.R:2983:      runProtSummaryPublicationCopy = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:3065:      prepareProtSummaryCopyInputs = function(workflowData,
+tests/testthat/test-prot-12-summary-module-contracts.R:3075:      runProtSummaryPublicationCopy = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:3092:      handleProtSummaryPublicationCopyError = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:3153:      completeProtSummarySessionStateExport = function(projectDirs,
+tests/testthat/test-prot-12-summary-module-contracts.R:3234:      observeProtSummaryGithubPush = function(input,
+tests/testthat/test-prot-12-summary-module-contracts.R:3239:                                              completeGithubPushFn = completeProtSummaryGithubPush,
+tests/testthat/test-prot-12-summary-module-contracts.R:3271:  expect_identical(recorded$args$completeGithubPushFn, completeProtSummaryGithubPush)
+tests/testthat/test-prot-12-summary-module-contracts.R:3293:      observeProtSummaryPublicationCopy = function(input,
+tests/testthat/test-prot-12-summary-module-contracts.R:3299:                                                   fallbackBootstrapFn = bootstrapProtSummaryCopyFallbackStudyParams,
+tests/testthat/test-prot-12-summary-module-contracts.R:3300:                                                   prepareCopyInputsFn = prepareProtSummaryCopyInputs,
+tests/testthat/test-prot-12-summary-module-contracts.R:3301:                                                   runPublicationCopyFn = runProtSummaryPublicationCopy,
+tests/testthat/test-prot-12-summary-module-contracts.R:3302:                                                   handleCopyErrorFn = handleProtSummaryPublicationCopyError,
+tests/testthat/test-prot-12-summary-module-contracts.R:3344:  expect_identical(recorded$args$fallbackBootstrapFn, bootstrapProtSummaryCopyFallbackStudyParams)
+tests/testthat/test-prot-12-summary-module-contracts.R:3345:  expect_identical(recorded$args$prepareCopyInputsFn, prepareProtSummaryCopyInputs)
+tests/testthat/test-prot-12-summary-module-contracts.R:3346:  expect_identical(recorded$args$runPublicationCopyFn, runProtSummaryPublicationCopy)
+tests/testthat/test-prot-12-summary-module-contracts.R:3347:  expect_identical(recorded$args$handleCopyErrorFn, handleProtSummaryPublicationCopyError)
+tests/testthat/test-prot-12-summary-module-contracts.R:3369:      initializeProtSummaryDefaultOutputs = function(output,
+tests/testthat/test-prot-12-summary-module-contracts.R:3418:      observeProtSummarySessionStateExport = function(input,
+tests/testthat/test-prot-12-summary-module-contracts.R:3423:                                                      completeSessionStateExportFn = completeProtSummarySessionStateExport) {
+tests/testthat/test-prot-12-summary-module-contracts.R:3454:    completeProtSummarySessionStateExport
+tests/testthat/test-prot-12a-summary-module-characterization.R:53:      exists("validateProtSummaryProjectDirs", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+tests/testthat/test-prot-12a-summary-module-characterization.R:58:  validate_project_dirs <- get("validateProtSummaryProjectDirs", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:145:      exists("ensureProtSummaryReportTemplate", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:146:      exists("retrieveProtSummaryReportTemplateAsset", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:147:      exists("activateProtSummaryRenderedReport", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+tests/testthat/test-prot-12a-summary-module-characterization.R:151:  ensure_report_template <- get("ensureProtSummaryReportTemplate", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:152:  retrieve_report_template <- get("retrieveProtSummaryReportTemplateAsset", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:153:  activate_rendered_report <- get("activateProtSummaryRenderedReport", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:359:    exists("runProtSummaryReportGeneration", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:360:      exists("runProtSummaryReportProgress", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+tests/testthat/test-prot-12a-summary-module-characterization.R:363:  run_report_generation <- get("runProtSummaryReportGeneration", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:364:  run_report_progress <- get("runProtSummaryReportProgress", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:456:    exists("completeProtSummaryWorkflowArgsSave", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:458:      exists("completeProtSummarySessionStateExport", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+tests/testthat/test-prot-12a-summary-module-characterization.R:461:  complete_workflow_save <- get("completeProtSummaryWorkflowArgsSave", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:463:  complete_session_export <- get("completeProtSummarySessionStateExport", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:584:    exists("bootstrapProtSummaryCopyFallbackStudyParams", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:585:      exists("prepareProtSummaryCopyInputs", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:586:      exists("runProtSummaryPublicationCopy", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:587:      exists("handleProtSummaryPublicationCopyError", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:588:      exists("runProtSummaryGithubPush", envir = asNamespace("MultiScholaR"), inherits = FALSE) &&
+tests/testthat/test-prot-12a-summary-module-characterization.R:589:      exists("completeProtSummaryGithubPush", envir = asNamespace("MultiScholaR"), inherits = FALSE)
+tests/testthat/test-prot-12a-summary-module-characterization.R:592:  bootstrap_copy_fallback <- get("bootstrapProtSummaryCopyFallbackStudyParams", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:593:  prepare_copy_inputs <- get("prepareProtSummaryCopyInputs", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:594:  run_publication_copy <- get("runProtSummaryPublicationCopy", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:595:  handle_copy_error <- get("handleProtSummaryPublicationCopyError", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:596:  run_github_push <- get("runProtSummaryGithubPush", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-prot-12a-summary-module-characterization.R:597:  complete_github_push <- get("completeProtSummaryGithubPush", envir = asNamespace("MultiScholaR"))
+tests/testthat/test-workflow-analysis-record.R:323:    # KIT-108 W4: the core's report entry under proteomics' group (runProtSummaryReportProgress deleted): the route's
+tests/testthat/test-workflow-native-session.R:392:    # KIT-108 W4: the summary's save is the core's entry under proteomics' group (completeProtSummaryWorkflowArgsSave
+== hits for the deleted file names ==
+R/utils_workflow_dia_summary.R:19:# name and its in-process writer are today's (mod_prot_summary_publication_helpers.R:104;
+R/utils_workflow_dia_summary.R:20:# mod_prot_summary_session_helpers.R:82-98 at 1cb2a79b), and the session-state payload's adapter calls today's
+R/utils_workflow_dia_summary.R:22:# unchanged by name and body (mod_prot_summary_report_helpers.R:1-248, mod_prot_summary_session_helpers.R:144-215; the
+R/utils_workflow_dia_summary.R:69:# Moved unchanged (D3's map): mod_prot_summary_report_helpers.R:1-248 and mod_prot_summary_session_helpers.R:144-215.
+R/utils_omic_gui_config.R:1159:#' (mod_prot_summary_session_helpers.R:59; mod_prot_summary_report_helpers.R:545), the copy's failures unclassified and
+R/utils_omic_gui_config.R:1160:#' its `project_dirs` global looked up with `inherits = FALSE` (mod_prot_summary_publication_helpers.R:89-153, :105), no
+R/utils_omic_gui_config.R:1161:#' managed integration operation and no gate (mod_prot_summary_session_helpers.R:82-98), the package's template directory
+R/utils_omic_gui_config.R:1162:#' (mod_prot_summary_report_helpers.R:254), no one-template label (the route's status lists four templates, :29-61), no
+R/utils_omic_gui_config.R:1163:#' export step, the native integration's notification (mod_prot_summary_session_helpers.R:97-98), and the report flow's
+R/utils_omic_gui_config.R:1165:#' (mod_prot_summary_report_helpers.R:512, :520), a failed retrieval stopping the report (:528-530), the record bundle
+R/utils_omic_gui_config.R:1169:#' (`resolveProtSummaryFinalS4State`, mod_prot_summary_report_helpers.R:1-27), `copy$gate` (today's
+R/utils_omic_gui_config.R:1170:#' `assertDIAExportReady(getDIAActiveManager())`, mod_prot_summary_publication_helpers.R:104), `integration$filename`
+R/utils_omic_gui_config.R:1172:#' `saveRDS`; mod_prot_summary_session_helpers.R:82-93), `report$template` (`resolveProtSummaryReportTemplate`,
+R/utils_omic_gui_config.R:1173:#' mod_prot_summary_report_helpers.R:131-248), `report$status` (`buildProtSummaryTemplateStatus`, :29-61) and
+R/utils_omic_gui_config.R:1174:#' `session_state` (`prepareProtSummarySessionStateExport`, mod_prot_summary_session_helpers.R:181-215).
+tests/testthat/test-module-ci-prot-summary.R:52:  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryPublicationCopy (mod_prot_summary_publication_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:159:  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryReportGeneration and activateProtSummaryRenderedReport (mod_prot_summary_report_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:209:  skip("quarantined: Q-182 (KIT-108 W4) it calls completeProtSummarySessionStateExport (mod_prot_summary_session_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-module-ci-prot-summary.R:250:  skip("quarantined: Q-182 (KIT-108 W4) it calls runProtSummaryPublicationCopy (mod_prot_summary_publication_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")
+tests/testthat/test-prot-12-summary-module-contracts.R:1:testthat::skip("quarantined: Q-180 (KIT-108 W4) its binding guard (:12-16) names observeProtSummaryReportGeneration (mod_prot_summary_server_helpers.R, deleted) and its 55 blocks test the deleted proteomics summary seams (mod_prot_summary_{server,publication,session,report}_helpers.R); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R) and the proteomics route pieces (utils_workflow_dia_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R, MCI-011.3 and the five proteomics lanes' summary steps")

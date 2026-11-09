@@ -1,0 +1,27 @@
+# KIT-108 W4 test-first. R 4.6.1, pkgload::load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+# R_LIBS = core/browser-smoke.66sPmE/library (kit_107), TMPDIR on disk (~/.cache/k108w4). Recorded by the W4 agent.
+
+## F104-01 (D5) test 1, written first: the two "(W4, F104-01)" blocks now at the end of test-omics-summary-core.R, run
+## as one scratch file (the same text) on the W3 merge 1cb2a79b, before any W4 change:
+COUNTS test-f10401.R pass 6 fail 6 error 0 skip 0
+  BAD :: (W4, F104-01) the native export's metadata names the route's template as the report step resolves it
+  BAD :: (W4, F104-01) the summary's archive refresh fills a missing stored template with the route's, and keeps a set one
+# The 6 failures: collectDIANativeSessionMetadata(...)$metadata$report_template is NULL on each of DIA, DIA_LIMPA, TMT
+# and LFQ (expected DIANN_report.rmd, DIANN_limpa_report.rmd, TMT_report.rmd, LFQ_report.rmd, the resolver's); the
+# refresh leaves a NULL stored value NULL, and filtered_session_summary.txt reads "- Report Template: NA". The 6 passes:
+# the resolver's four names, and a stored "default" kept (metadata and text).
+
+## On 86a5c18b (the fix), the same scratch file:
+COUNTS test-f10401.R pass 12 fail 0 error 0 skip 0
+
+## The proteomics equivalence (Q-183's comparison side), on 86a5c18b: the route pieces and core hooks in place, the
+## start commit's proteomics module still mounted (mod_prot_summary_server's handlers). The whole test-omics-summary-core.R
+## with the comparison side live:
+COUNTS test-omics-summary-core.R pass 901 fail 0 error 0 skip 1        (the skip: Q-175, W3's comparison side)
+# The W4 blocks in it: the moved functions' file; the core side on the nine proteomics W1 (b) cases with an entry step
+# (prot_route_dia, _dia_limpa, _tmt, _lfq, prot_stale, prot_owner, prot_owner_variants, prot_native,
+# prot_github_fallback; each entry's notifications, progress, recorder calls, global and files equal W1 (b)'s frozen
+# step); the comparison side (each entry step equals the start commit's handler's, same fields, no exception); F104-01's
+# two blocks. On f6fbbb68 (the wrappers; the comparison side skipped, Q-183): 661 pass, 2 skips (Q-175, Q-183).
+
+## The before half of the retargeted tests is W1's (kit-108/test-first.txt, on the start commit).

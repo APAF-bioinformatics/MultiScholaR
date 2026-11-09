@@ -1,0 +1,72 @@
+# KIT-108 W4: the five proteomics lanes alone on f6fbbb68 (the wrappers on the frame), one at a time, through
+# docs/qa/workflow-execution/kit/kit-105/lifecycle/lifecycle.R as committed, strict skips, R_LIBS = kit_107, TMPDIR on
+# disk, MULTISCHOLAR_GUI_ENTRY_RECORD_DIR set; each record JSON-diffed against tests/testdata/gui-entry/<lane>.json
+# (every path). The 6 differences per lane are the header fields (the oracle's frozen, load_mode, r_version,
+# source_sha; the record's omic and seconds), as in kit-107/lifecycle/prot_dia-record.diff.txt. No step value
+# differs: F104-01 changed no capture. No multischolar* unit was active at each start (checked per lane).
+# resolveProtSummaryReportTemplate's 3 calls per lane: the norm export's metadata (collectDIANativeSessionMetadata),
+# the report, the session export.
+HOST active units: 0 (2026-11-09T19:15:43+11:00)
+rc=0
+LANE prot_dia identical_to_oracle=TRUE elapsed=243s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS resolveProtSummaryReportTemplate 3
+CALLS collectDIANativeSessionMetadata 1
+JSONDIFF prot_dia.json: DIFFERENCES 6 (steps: 0)
+HOST active units: 0 (2026-11-09T19:19:50+11:00)
+rc=0
+LANE prot_dia_limpa identical_to_oracle=TRUE elapsed=148s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS resolveProtSummaryReportTemplate 3
+CALLS collectDIANativeSessionMetadata 1
+JSONDIFF prot_dia_limpa.json: DIFFERENCES 6 (steps: 0)
+HOST active units: 0 (2026-11-09T19:22:22+11:00)
+rc=0
+LANE prot_lfq identical_to_oracle=TRUE elapsed=110s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS resolveProtSummaryReportTemplate 3
+CALLS collectDIANativeSessionMetadata 1
+JSONDIFF prot_lfq.json: DIFFERENCES 6 (steps: 0)
+HOST active units: 0 (2026-11-09T19:24:16+11:00)
+rc=0
+LANE prot_lfq_fragpipe identical_to_oracle=TRUE elapsed=112s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS resolveProtSummaryReportTemplate 3
+CALLS collectDIANativeSessionMetadata 1
+JSONDIFF prot_lfq_fragpipe.json: DIFFERENCES 6 (steps: 0)
+HOST active units: 0 (2026-11-09T19:26:12+11:00)
+rc=0
+LANE prot_tmt identical_to_oracle=TRUE elapsed=144s
+CALLS mod_omic_summary_server 1
+CALLS saveWorkflowSummaryParameters 1
+CALLS copyWorkflowSummaryResults 1
+CALLS renderWorkflowSummaryReport 1
+CALLS writeWorkflowSummarySessionState 1
+CALLS resolveProtSummaryReportTemplate 3
+CALLS collectDIANativeSessionMetadata 1
+JSONDIFF prot_tmt.json: DIFFERENCES 6 (steps: 0)
+
+## The prot_dia record diff (the other four lanes show the same six header paths):
+/frozen | 2026-11-07 -> <absent>
+/load_mode | load_all -> <absent>
+/omic | <absent> -> proteomics
+/r_version | R version 4.6.1 (2026-06-24) -> <absent>
+/seconds | <absent> -> 242
+/source_sha | ddf42372e7054b1027430178a0e873a496baf6bb -> <absent>
+DIFFERENCES 6 (steps: 0)
