@@ -329,3 +329,25 @@ test_that("the RUV covariates step's ruv_mode is the tab's choice with no shippe
   expect_true(nzchar(workflowParameterLabels$protein_ruv_covariates$ruv_mode))
   expect_true("ruv_mode" %in% workflowActionSpec("protein_ruv_covariates")$parameters)
 })
+
+test_that("KIT-111 F111-03: only the normalisation tab's four take a named input that is not the head; every other operation keeps the head rule", {
+    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates")
+    for (name in named) expect_true(isTRUE(workflowActionSpec(name)$named_input), info = name)
+    for (name in c("protein_intensity_filter", "precursor_rollup", "DA-contrast-output", "lipid_pearson_pairs"))
+        expect_null(workflowActionSpec(name)$named_input, info = name)
+    head <- list(entity_id = "head", kind = "state")
+    other <- list(entity_id = "normalised-final", kind = "state")
+    testthat::with_mocked_bindings({
+        for (name in named) {
+            expect_invisible(assertWorkflowActionInputSelected(name, NULL, list(state = other)))
+            expect_invisible(assertWorkflowActionInputSelected(name, NULL, list(state = head)))
+        }
+        expect_invisible(assertWorkflowActionInputSelected("protein_intensity_filter", NULL, list(state = head)))
+        expect_error(assertWorkflowActionInputSelected("protein_intensity_filter", NULL, list(state = other)),
+            "not the selected immutable checkpoint", class = "workflow_execution_stale")
+    }, getWorkflowStateReference = function(manager) head, .package = "MultiScholaR")
+    # A named-input flag must be a single logical.
+    entry <- workflowActionSpec("pearson-pairs")
+    entry$named_input <- "yes"
+    expect_error(validateWorkflowOperationEntry(entry), class = "workflow_operation_invalid")
+})

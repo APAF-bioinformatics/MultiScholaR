@@ -1563,8 +1563,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$existing_entities <- list.files(file.path(store$directory, "entities"))
     job$existing_pending <- list.files(file.path(store$directory, ".pending"), all.files = TRUE, no.. = TRUE)
     validateSavedWorkflowReference(store, input_references$state, payload = FALSE)
-    if (!identical(input_references$state, getWorkflowStateReference(owner$manager)))
-        cli::cli_abort("action input is not the selected immutable checkpoint", class = "workflow_execution_stale")
+    assertWorkflowActionInputSelected(operation, owner$manager, input_references)
     validateWorkflowActionInput(operation, owner$manager, input_references)
     parameters <- resolveWorkflowActionParameters(operation, owner$manager,
         input_references$state, parameters, app$config$policy)
@@ -2921,6 +2920,20 @@ workflowActionSpec <- function(operation) workflowOperationEntry(operation)
 #' @noRd
 workflowActionWorkerDeadline <- function(operation, policy) {
     as.integer(workflowActionSpec(operation)$worker_deadline %||% policy$deadline)
+}
+
+#' The action's input is the selected checkpoint: the head, or (KIT-111 F111-03) for a step registered with
+#' `named_input` any saved component checkpoint the caller names. Staleness stays guarded by the token's
+#' `expected_head`, which acceptance checks against the head.
+#' @param operation Registered operation identifier.
+#' @param manager The owner's state manager.
+#' @param input_references `list(state = <saved reference>)`.
+#' @return `NULL`, invisibly; refuses with `workflow_execution_stale`.
+#' @noRd
+assertWorkflowActionInputSelected <- function(operation, manager, input_references) {
+    if (identical(input_references$state, getWorkflowStateReference(manager)) ||
+        isTRUE(workflowActionSpec(operation)$named_input)) return(invisible(NULL))
+    cli::cli_abort("action input is not the selected immutable checkpoint", class = "workflow_execution_stale")
 }
 
 #' Validate the registered scientific role without collecting assay data.

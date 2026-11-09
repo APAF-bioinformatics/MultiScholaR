@@ -1,0 +1,14 @@
+# KIT-111 F111-03 and F111-04 (the lead), load_all, strict skips, kit_108 R_LIBS
+## Test first, on 7ba1cb8a (W2 merged) with only the new registry block added
+COUNTS test-workflow-operation-registry.R pass 1015 fail 4 error 1 skip 0 file_skip FALSE
+## After the fix and the F111-04 retarget
+COUNTS test-prot-norm-core.R pass 727 fail 0 error 0 skip 0 file_skip FALSE
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0 file_skip FALSE
+COUNTS test-workflow-execution-adapters.R pass 0 fail 0 error 0 skip 6 file_skip FALSE
+COUNTS test-workflow-execution.R pass 98 fail 0 error 0 skip 11 file_skip FALSE
+COUNTS test-workflow-operation-registry.R pass 1030 fail 0 error 0 skip 0 file_skip FALSE
+COUNTS test-perf-003.R pass 137 fail 0 error 0 skip 1 file_skip FALSE
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0 file_skip FALSE
+COUNTS test-workflow-prot-declarations.R pass 303 fail 0 error 0 skip 2 file_skip FALSE
+COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2 file_skip FALSE
+COUNTS test-workflow-omics-worker.R pass 289 fail 0 error 0 skip 0 file_skip FALSE

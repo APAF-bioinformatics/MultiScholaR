@@ -244,6 +244,8 @@ validateWorkflowOperationEntry <- function(entry) {
         is.character(entry$variants) &&
         (is.null(entry$default_variant) || (scalar(entry$default_variant) && entry$default_variant %in% entry$variants)) &&
         flag(entry$diagnostic_only) && flag(entry$inclusion_absence) &&
+        # KIT-111 F111-03: a step whose source is a named checkpoint, not the head, says so.
+        (is.null(entry$named_input) || flag(entry$named_input)) &&
         (is.null(entry$declaration) || is.list(entry$declaration)) &&
         # KIT-053: a worker step whose kernel needs longer than the policy's worker deadline names its own,
         # within the journey ceiling (60 s to 4 h); every other step keeps the policy's.
@@ -699,7 +701,8 @@ registerBuiltinWorkflowOperations <- function() {
     }
     # KIT-111 D3: the normalisation tab's four on the managed worker's `omics` role, each with its DIA handler; the
     # completion commits the handler's commit description. A step whose kernel writes no `@args` section the route maps
-    # declares `section = NULL` (the RUV covariates map `ruvCovariates`).
+    # declares `section = NULL` (the RUV covariates map `ruvCovariates`). F111-03: each takes a named input (the
+    # normalisation's source, its final for the correlation, the selection for the covariates), which is not the head.
     handlers <- c(`normalization-ruv` = "computeWorkflowDiaNormalizationAction", `pearson-pairs` = "computeWorkflowDiaPearsonPairsAction",
         `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction")
     for (declaration in list(diaNormalizationOperation(), diaPearsonPairsOperation(), diaPearsonSelectionOperation(),
@@ -709,7 +712,8 @@ registerBuiltinWorkflowOperations <- function() {
             parameter_limit = 65536, parameters = declaration$parameters %||% character(),
             completion = "omics", publication = "omics", step_label = NULL, omic_type = "proteomics",
             variants = "whole", default_variant = "whole", diagnostic_only = FALSE, inclusion_absence = FALSE,
-            declaration = declaration), if (!declaration$name %in% workflowAllSectionOperations()) list(section = NULL)))
+            named_input = TRUE, declaration = declaration),
+            if (!declaration$name %in% workflowAllSectionOperations()) list(section = NULL)))
     }
     # KIT-031/032: the lipidomics and metabolomics declarations (the kit's rule that a new workflow adds declarations,
     # registry entries and module code only). KIT-073: both omics from the shared declaration core. KIT-078: the compute

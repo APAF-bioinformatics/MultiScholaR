@@ -467,7 +467,8 @@ test_that("the DIA_LIMPA protein-stage declarations are registered with the unit
         expect_true(all(entry$parameters %in% names(workflowParameterLabels[[name]])), info = name)
     }
     covariates <- workflowActionSpec("protein_ruv_covariates")
-    expect_identical(covariates$compute, "in_process")
+    # KIT-111 D11/F111-04, a deliberate contract change: the covariates run on the managed worker's omics role.
+    expect_identical(covariates$compute, "omics")
     expect_true(all(covariates$parameters %in% names(workflowOperationDefaults$protein_ruv_covariates)))
     expect_identical(workflowOperationForSection("ruvCovariates", "DIA_LIMPA"), "protein_ruv_covariates")
     expect_identical(workflowOperationForSection("filterMinNumPeptidesPerProtein", "DIA_LIMPA"), "protein_peptide_count_filter")
