@@ -1293,6 +1293,15 @@ if (!is.null(b$builds$kit_108)) {
     }
 }
 
+# KIT-111 (proteomics normalisation and correlation on the worker, measured; D8). W0: the large in-process baseline 111p,
+# the DIA route's whole journey on the 300-sample corpus, bound as KIT-065's counted member was, on the start commit's build
+# kit_108. After the install: 111a..t from 101<suffix> on kit_111, the lifecycle failure member 111f (101l with automatic RUV)
+# and the large candidate 111q on kit_111.
+if (!is.null(b$builds$kit_108)) {
+    b$tickets[["111p"]] <- list(kind = "single_journey", build = "kit_108", corpus = "full", route = "DIA", whole_journey = TRUE,
+        ceiling_seconds = 14400L, purpose = "memory baseline, in process (recorded, uncounted; KIT-111 D8)")
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
