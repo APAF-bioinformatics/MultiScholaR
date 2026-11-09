@@ -1,0 +1,8 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"tryCatch"	0.05	6.67	0.75	100	217.8
+"sub"	0.05	6.67	0.05	6.67	54.4
+"file"	0.05	6.67	0.05	6.67	48.6
+"png::readPNG"	0.45	60	0.45	60	42.4
+"$"	0.05	6.67	0.05	6.67	38.8
+"lazyLoadDBfetch"	0.05	6.67	0.05	6.67	33.6
+"names"	0.05	6.67	0.05	6.67	0

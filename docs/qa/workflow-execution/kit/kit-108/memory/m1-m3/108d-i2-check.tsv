@@ -1,0 +1,14 @@
+item	value
+sampler rows	1042
+controller unit	multischolarwfxc80861217daa3f84-controller.service
+controller R PIDs	3485732
+ticks (controller cgroup rows)	173
+max tick gap (s)	1.12
+max tick gap inside the report step (s)	1.11
+epoch - uptime offset (median)	1794036493.848
+offset spread over rows (s)	0.011
+R RssAnon vs harness controller_anon: max |relative error|	0.0058
+rows within 10% of controller_anon	173 / 173
+R RssAnon vs controller cgroup anon: max |relative error|	0.0132
+max |dt| to the nearest harness sample (s)	3.16
+events	start,unit_seen,unit_gone

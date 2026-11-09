@@ -1,0 +1,6 @@
+window	from	to	seconds	ticks	r_anon_entry	r_anon_peak	r_anon_exit	cg_anon_peak	children	children_anon_peak	other_units_anon_peak
+pre	170776.63	170781.63	5	5	1.398	1.398	1.398	1.398		0	0.359
+save	170781.63	170788.77	7.14	6	1.398	1.423	1.423	1.424		0	0.531
+copy	170788.77	170831.8	43.03	39	1.423	2.788	2.591	2.788		0	0.36
+render	170831.8	170834.34	2.54	2	2.591	2.669	2.669	2.669		0	0.36
+post	170834.34	170861.48	27.14	24	2.669	2.669	2.669	2.669		0	0.36

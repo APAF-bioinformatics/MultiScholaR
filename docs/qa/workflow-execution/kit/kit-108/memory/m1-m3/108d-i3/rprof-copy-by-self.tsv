@@ -1,0 +1,4 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"findLocals1"	0.05	33.33	0.05	33.33	56.6
+"as.list.default"	0.05	33.33	0.05	33.33	0
+"unlist"	0.05	33.33	0.05	33.33	0

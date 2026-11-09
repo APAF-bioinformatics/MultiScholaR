@@ -1,0 +1,8 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"unique"	0.05	14.29	0.05	14.29	100.8
+"strsplit"	0.05	14.29	0.05	14.29	37.3
+".name_spec"	0.05	14.29	0.05	14.29	35.7
+"asNamespace"	0.05	14.29	0.05	14.29	33.6
+"lazyLoadDBfetch"	0.05	14.29	0.05	14.29	26.3
+"packageStartupMessage"	0.05	14.29	0.05	14.29	25.5
+"names"	0.05	14.29	0.05	14.29	0

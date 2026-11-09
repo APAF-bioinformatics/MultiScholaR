@@ -1,0 +1,6 @@
+window	from	to	seconds	ticks	r_anon_entry	r_anon_peak	r_anon_exit	cg_anon_peak	children	children_anon_peak	other_units_anon_peak
+pre	169366.33	169371.33	5	4	1.308	1.308	1.308	1.308		0	0.357
+save	169371.33	169378.98	7.65	7	1.308	1.308	1.115	1.116	sh,bash	0.001	0.538
+copy	169378.98	169428.62	49.63	45	1.115	2.879	2.879	2.879		0	0.359
+render	169428.62	169431.68	3.06	2	2.879	2.944	2.944	2.986		0	0.359
+post	169431.68	169461.86	30.18	27	2.944	2.945	2.945	2.945		0	0.359

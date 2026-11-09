@@ -1,0 +1,4 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"openxlsx::writeData"	0.05	33.33	0.1	66.67	61.3
+"findCenvVar"	0.05	33.33	0.05	33.33	61.3
+".getClassesFromCache"	0.05	33.33	0.05	33.33	0

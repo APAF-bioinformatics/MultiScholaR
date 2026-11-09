@@ -1,0 +1,7 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"call_block"	0.05	14.29	0.35	100	260.5
+"$.knitr_strict_list"	0.05	14.29	0.05	14.29	101.7
+"<Anonymous>"	0.05	14.29	0.1	28.57	67
+"recycle_columns"	0.05	14.29	0.05	14.29	41.1
+"asNamespace"	0.05	14.29	0.05	14.29	33.8
+"names"	0.1	28.57	0.1	28.57	23.9

@@ -1,0 +1,6 @@
+member	replica	copy_raw_rise	render_raw_rise	replica_rise	gui_copy_entry_to_render_exit	ratio_to_gui	gc_used_after_copy_mb	gc_max_during_copy_mb	gc_used_before_copy_mb	rss_after_gc	free_arena_before_render	rss_final_gc	rss_after_trim	trim_returned	left_above_before_copy	copy_s
+108p	108p-i3-r1	1.8654	0.0012	1.6598	1.829	0.9075	299.4	2124.5	199.7	2.0104	1.5956	2.0116	0.4527	1.5589	0.1009	52.882
+108p	108p-i3-r2	1.8654	0.0012	1.6598	1.829	0.9075	299.4	2124.5	199.7	2.0104	1.5958	2.0116	0.4527	1.5589	0.1009	52.332
+108q	108q-i3-r1	1.9298	0.0012	1.9316	1.246	1.5503	299.4	2115.2	199.7	2.2823	1.8676	2.2835	0.4528	1.8306	0.101	52.83
+108q	108q-i3-r2	1.9294	0.0012	1.9312	1.246	1.5499	299.4	2115.2	199.7	2.2822	1.8673	2.2834	0.4536	1.8298	0.1014	72.926
+099l	099l-i3	0.0325	0.1047	0.1367	NA	NA	207	332.9	199.7	0.3838	0.0614	0.3843	0.3349	0.0494	-0.017	1.31

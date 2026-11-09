@@ -1,0 +1,15 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"wb$writeData"	0.05	4.35	0.3	26.09	105
+"<Anonymous>"	0.35	30.43	0.7	60.87	66.5
+"get"	0.05	4.35	0.05	4.35	40.8
+"findCenvVar"	0.05	4.35	0.05	4.35	32.5
+"%in%"	0.15	13.04	0.15	13.04	29.3
+"scan"	0.1	8.7	0.1	8.7	17.8
+"write_worksheet_xml"	0.05	4.35	0.05	4.35	13.4
+"which"	0.05	4.35	0.05	4.35	11
+"Encoding"	0.05	4.35	0.05	4.35	10.7
+"unlist"	0.05	4.35	0.05	4.35	10.1
+"stri_join"	0.05	4.35	0.05	4.35	6.4
+"file.copy"	0.05	4.35	0.1	8.7	4.3
+"file.append"	0.05	4.35	0.05	4.35	4.3
+"lazyLoadDBfetch"	0.05	4.35	0.05	4.35	3.4

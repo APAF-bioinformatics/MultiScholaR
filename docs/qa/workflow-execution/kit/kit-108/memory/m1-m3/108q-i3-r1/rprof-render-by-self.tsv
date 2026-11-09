@@ -1,0 +1,7 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"png::readPNG"	0.05	16.67	0.05	16.67	77.2
+"grep"	0.05	16.67	0.05	16.67	46.1
+"names"	0.05	16.67	0.05	16.67	36.4
+"lazyLoadDBfetch"	0.05	16.67	0.05	16.67	34.1
+"aperm.default"	0.05	16.67	0.05	16.67	18.9
+"Sys.setenv"	0.05	16.67	0.05	16.67	0

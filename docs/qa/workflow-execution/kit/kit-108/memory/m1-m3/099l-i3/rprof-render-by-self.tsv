@@ -1,0 +1,5 @@
+fn	self.time	self.pct	total.time	total.pct	mem.total
+"png::readPNG"	0.7	82.35	0.7	82.35	95.8
+"scan"	0.05	5.88	0.05	5.88	55.4
+".External2"	0.05	5.88	0.05	5.88	10.5
+".row_names_info"	0.05	5.88	0.05	5.88	0

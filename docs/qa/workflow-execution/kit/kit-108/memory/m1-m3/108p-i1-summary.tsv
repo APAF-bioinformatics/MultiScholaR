@@ -1,0 +1,2 @@
+member	corpus	align_error_s	da_peak	before_save	after_save	after_save_range	after_copy	after_copy_range	after_render	report_peak	teardown	teardown_min5s	slice_resident_end	save_s	copy_s	render_s	render_s_range	save_rise_min	save_rise_max	copy_rise_min	copy_rise_max	render_rise_min	render_rise_max	report_rise
+108p	metab_large_missing	1.531	1.54	1.308	1.621	1.115-1.805	2.944	2.879-2.962	2.962	2.98	2.945	2.945	3.304	9.187	49.632	1.531	-0.000-3.062	-0.193	0.497	1.157	1.764	0	0.083	1.654

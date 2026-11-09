@@ -64,8 +64,10 @@ rTick <- stats::aggregate(rss_anon_kb ~ uptime, data = rp, FUN = sum)
 k <- nearest(rTick$uptime)
 rTick$harness_controller_anon <- trace$controller_anon[k]
 rTick$harness_dt <- abs(trace$uptime[k] - rTick$uptime)
-rTick$cg_anon <- cgc$cg_anon[match(rTick$uptime, cgc$uptime)]
-rTick$cg_anon[is.na(rTick$cg_anon)] <- stats::approx(cgc$uptime, cgc$cg_anon, rTick$uptime[is.na(rTick$cg_anon)], rule = 2)$y
+# The same tick's cgroup row: written just before the tick's process rows (correction 1, 2026-11-09: the first
+# version interpolated between ticks, which showed up to 15% at a step change that was not in the data).
+cgc <- cgc[order(cgc$uptime), ]
+rTick$cg_anon <- cgc$cg_anon[pmax(findInterval(rTick$uptime, cgc$uptime), 1L)]
 rTick$rel_err_harness <- (rTick$rss_anon_kb * 1024 - rTick$harness_controller_anon) / rTick$harness_controller_anon
 rTick$rel_err_cgroup <- (rTick$rss_anon_kb * 1024 - rTick$cg_anon) / rTick$cg_anon
 check <- data.frame(

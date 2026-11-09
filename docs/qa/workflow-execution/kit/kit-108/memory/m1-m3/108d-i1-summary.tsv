@@ -1,0 +1,2 @@
+member	corpus	align_error_s	da_peak	before_save	after_save	after_save_range	after_copy	after_copy_range	after_render	report_peak	teardown	teardown_min5s	slice_resident_end	save_s	copy_s	render_s	render_s_range	save_rise_min	save_rise_max	copy_rise_min	copy_rise_max	render_rise_min	render_rise_max	report_rise
+108d	lipid_screen_missing	0.258	0.79	0.79	0.79	0.790-0.790	0.79	0.790-0.790	0.914	0.944	0.914	0.914	1.259	5.631	0.262	1.767	1.509-2.025	0	0	0	0	0.124	0.124	0.124
