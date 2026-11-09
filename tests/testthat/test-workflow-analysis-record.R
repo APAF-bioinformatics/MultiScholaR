@@ -751,3 +751,147 @@ test_that("a DIA_LIMPA record in the RUV correction mode commits ruv_corrected, 
     expect_true("ruv_corrected" %in% replay$states)
     expect_identical(as.character(replay$mismatches), character())
 })
+
+# KIT-107 F-16 (D4, D5, D6 test 3): the enrichment step carries its provenance and replays after the DA.
+
+#' The proteomics `enrichment` group with its function fields (KIT-107 D1): until the W2 merge wires them in
+#' utils_omic_gui_config.R they are optional; this fills an absent one with the value the merge wires, and changes
+#' nothing once they are wired.
+recordEnrichmentConfig <- function(config) {
+    config[["organism"]] <- config[["organism"]] %||% list(supported = buildProtEnrichSupportedOrganisms,
+        method = resolveProtEnrichAnalysisMethod)
+    config$annotation <- config$annotation %||% list(resolve = resolveProtEnrichUniprotAnnotations,
+        match = resolveProtEnrichAnnotationMatching)
+    config$kernel <- config$kernel %||% list(select = resolveProtEnrichProcessEnrichmentsFn,
+        test_double = runProtEnrichDeterministicProcessEnrichments)
+    config$organism_filter$mapping <- config$organism_filter$mapping %||% resolveProtEnrichOrganismMapping
+    config$organism_filter$apply <- config$organism_filter$apply %||% applyProtEnrichOrganismFilter
+    config
+}
+
+#' The enrichment product a store's head roots (schema `dia_enrichment_product_v1`), hydrated.
+recordEnrichmentProduct <- function(manager) {
+    for (reference in manager$.context$snapshot$products) {
+        value <- tryCatch(hydrateSavedWorkflowEntity(manager$.context$store, reference)$value, error = function(e) NULL)
+        if (is.list(value) && identical(value$schema, "dia_enrichment_product_v1")) return(value)
+    }
+    NULL
+}
+
+test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to the same enrichment data, summaries and product (D6 test 3)", {
+    withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
+    enrichment <- omicGuiProteomicsEnrichment
+    testthat::local_mocked_bindings(omicGuiProteomicsEnrichment = function() recordEnrichmentConfig(enrichment()))
+    root <- withr::local_tempdir()
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "enrichment-record", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager))
+    manager$.context$reference_states <- TRUE
+    manager$setWorkflowType("DIA")
+    # W1 (b)'s fixture state (MCI-009's object, row names dropped), standing in for the design precondition.
+    design <- module_ci_prot_da_design()
+    rownames(design) <- NULL
+    quant <- module_ci_prot_da_table()
+    rownames(quant) <- NULL
+    setDIAStepProvenance(manager, "design_builder")
+    manager$saveState("correlation_filtered", module_ci_prot_da_object(design = design, protein_quant_table = quant), list(), "fixture")
+    paths <- list(source_dir = file.path(root, "source"), results_dir = file.path(root, "results"),
+        da_output_dir = file.path(root, "results", "da_proteins"), pathway_dir = file.path(root, "results", "pathway_enrichment"),
+        publication_graphs_dir = file.path(root, "publication_graphs"))
+    for (p in paths) dir.create(p, recursive = TRUE, showWarnings = FALSE)
+    manager$.context$experiment_paths <- paths
+    contrasts <- module_ci_prot_da_contrasts("two_group")
+    workflow <- list2env(list(state_manager = manager, contrasts_tbl = contrasts, tab_status = list(),
+        qc_params = list(protein_qc = list()), config_list = list()))
+    origin <- NULL
+    withDIAStateScope(manager, function() {
+        da_data <- new.env(parent = emptyenv())
+        da_data$current_s4_object <- getDIAStateReference(manager)
+        da_data$contrasts_available <- contrasts$contrasts
+        manifest <- suppressMessages(suppressWarnings(runDIAReferenceDaAnalysis(list(formula_string = "~ 0 + group",
+            da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), da_data, workflow, paths, contrasts = contrasts, publish = FALSE)))
+        # The DA tables as the GUI's DA publication writes them (its one body), then the enrichment as the tab runs it.
+        suppressMessages(suppressWarnings(produceDIADaPublication(manager, manifest, data.frame(), 0.05,
+            paths[c("da_output_dir", "publication_graphs_dir")], save_assets = FALSE)))
+        utils::capture.output(origin <<- suppressMessages(suppressWarnings(runWorkflowEnrichment(workflow,
+            omicGuiConfig("proteomics")$enrichment, manifest, list(selected_contrast = "B_vs_A", organism_taxid = "9606",
+                up_cutoff = 0, down_cutoff = 0, q_cutoff = 0.05, correction_method = "gSCS", enable_organism_filter = FALSE),
+            paths))))
+    })
+    expect_identical(manager$current_state, "enrichment_completed")
+    json <- file.path(root, "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    record <- jsonlite::read_json(json, simplifyVector = FALSE)
+    check <- validateWorkflowAnalysisRecord(record)
+    expect_true(check$valid)
+    expect_false(any(grepl("enrichment_completed", check$incomplete, fixed = TRUE)))
+    expect_identical(vapply(record$steps, function(s) s$operation, ""), c("import", "design_builder", "enrichment"))
+    step <- record$steps[[3L]]
+    expect_identical(step$variant, "whole")
+    expect_identical(vapply(step$parameters, `[[`, "", "name"), diaEnrichmentOperation()$parameters)
+    expect_identical(vapply(step$parameters, `[[`, "", "source"), rep("provenance", 9L))
+    expect_false(is.null(record$analyses$differential_abundance))
+    state <- withDIAStateScope(manager, function() manager$getState("enrichment_completed"))
+    product <- recordEnrichmentProduct(manager)
+    expect_identical(product$parameters, origin$parameters[setdiff(names(origin$parameters), "results")])
+    expect_identical(product$results, origin$parameters$results)
+    # Replay on a copy cut to the import and design states: the DA refitted, then the enrichment on the double.
+    copy <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy)) == 0L)
+    h <- new.env(parent = globalenv())
+    sys.source(file.path(testthat::test_path("..", ".."), "tools", "profiling", "workflow_kit.R"), h)
+    api <- function(name) get(name, asNamespace("MultiScholaR"))
+    prepared <- h$kitPrepareReplayProject(copy, c("initial", "correlation_filtered"), api)
+    seen <- character()
+    replayed <- list()
+    utils::capture.output(replay <- suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(record, prepared,
+        character(), paths, withr::local_tempdir(), on_step = function(step, manager) {
+            seen <<- c(seen, step$operation)
+            if (identical(step$operation, "enrichment")) {
+                replayed$state <<- manager$getState("enrichment_completed")
+                replayed$product <<- recordEnrichmentProduct(manager)
+                replayed$provenance <<- manager$.context$snapshot$step_provenance$enrichment_completed
+                replayed$tables <<- lapply(replayed$product$results, function(id)
+                    describeSavedWorkflowEntity(manager$.context$store, id)$identity)
+            }
+        }))))
+    expect_identical(replay$states, c("initial", "correlation_filtered", "enrichment_completed"))
+    expect_identical(seen, c("DA-contrast-output", "enrichment"))
+    # The KIT-016 measure: the enrichment data and summaries, and the product's parameters and results; the plot slots
+    # carry random widget ids and are not compared. `results` holds the DA tables' entity ids, which are store-local (an
+    # entity id hashes its payload's file name): the replayed tables are compared by their content identity.
+    expect_identical(digest::digest(replayed$state@enrichment_data), digest::digest(state@enrichment_data))
+    expect_identical(digest::digest(replayed$state@enrichment_summaries), digest::digest(state@enrichment_summaries))
+    expect_identical(replayed$product$parameters, product$parameters)
+    expect_identical(names(replayed$product$results), names(product$results))
+    expect_identical(replayed$tables, lapply(product$results, function(id) describeSavedWorkflowEntity(manager$.context$store, id)$identity))
+    expect_false(is.null(replayed$tables[[1L]]$input))
+    expect_identical(replayed$product$service, product$service)
+    expect_identical(replayed$provenance$operation, "enrichment")
+    recorded <- manager$.context$snapshot$step_provenance$enrichment_completed$values
+    keep <- setdiff(names(recorded), "results")
+    expect_identical(replayed$provenance$values[keep], recorded[keep])
+    expect_identical(names(replayed$provenance$values$results), names(recorded$results))
+    # A record whose enrichment step is legacy (a store written before F-16) is still refused by name.
+    legacy <- record
+    legacy$steps[[3L]]$operation <- "legacy"
+    legacy$steps[[3L]]$parameters <- list()
+    copy_legacy <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy_legacy)) == 0L)
+    prepared_legacy <- h$kitPrepareReplayProject(copy_legacy, c("initial", "correlation_filtered"), api)
+    utils::capture.output(expect_error(suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(legacy, prepared_legacy,
+        character(), paths, withr::local_tempdir()))), regexp = "enrichment_completed", class = "workflow_replay_unsupported"))
+    # A recorded value the replay does not produce refuses the replay, naming the parameter.
+    changed <- record
+    expect_identical(changed$steps[[3L]]$parameters[[7L]]$name, "protein_id_column")
+    changed$steps[[3L]]$parameters[[7L]]$value$value <- "not_the_id_column"
+    copy_changed <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy_changed)) == 0L)
+    prepared_changed <- h$kitPrepareReplayProject(copy_changed, c("initial", "correlation_filtered"), api)
+    utils::capture.output(expect_error(suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(changed, prepared_changed,
+        character(), paths, withr::local_tempdir()))), regexp = "protein_id_column", class = "workflow_replay_invalid"))
+    # A record with an enrichment step and no DA analysis is refused before any step runs.
+    no_da <- record
+    no_da$analyses$differential_abundance <- NULL
+    expect_error(replayWorkflowAnalysisRecord(no_da, prepared, character(), paths, withr::local_tempdir()),
+        regexp = "enrichment_completed", class = "workflow_replay_unsupported")
+})

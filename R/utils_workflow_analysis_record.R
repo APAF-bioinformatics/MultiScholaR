@@ -467,6 +467,12 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     on_step = NULL) {
     check <- validateWorkflowAnalysisRecord(record)
     if (!check$valid) cli::cli_abort(c("the analysis record is malformed", check$errors), class = "workflow_replay_invalid")
+    # KIT-107 D5 (F-16): a recorded enrichment step replays after the DA, on the replayed DA's manifest.
+    enrichment_steps <- Filter(function(step) identical(step$operation, "enrichment"), record$steps)
+    if (length(enrichment_steps) && is.null(record$analyses$differential_abundance)) {
+        cli::cli_abort("step {.val {enrichment_steps[[1L]]$state}} cannot be replayed without the record's DA analysis",
+            class = "workflow_replay_unsupported")
+    }
     # Inputs first: a record whose files do not match the project is refused before any step runs.
     # KIT-031: an omics route records one `<input prefix><n>` role per imported assay file (`lipid_assay_<n>`,
     # `metab_assay_<n>`); KIT-094: the roles are the bindings' `design_input_prefix`.
@@ -506,6 +512,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
     normalization_final <- NULL
     for (step in steps[-preconditions]) {
         operation <- step$operation
+        if (identical(operation, "enrichment")) next # KIT-107 D5: after the DA, below
         entry <- if (operation %in% c("legacy", "import", "design_builder")) NULL else
             tryCatch(workflowOperationEntry(operation), error = function(e) NULL)
         if (is.null(entry)) cli::cli_abort("step {.val {step$state}} cannot be replayed: operation {.val {operation}}",
@@ -602,6 +609,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
         if (is.function(on_step)) on_step(step, manager)
     }
     da <- record$analyses$differential_abundance
+    da_manifest <- NULL
     if (!is.null(da)) {
         settings <- list()
         for (parameter in da$parameters) settings[parameter$name] <- list(decodeWorkflowRecordValue(parameter$value))
@@ -622,10 +630,21 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
             withWorkflowStateScope(manager, function() runWorkflowOmicsReferenceDaAnalysis(omics_binding, manager,
                 getWorkflowStateReference(manager), omics_settings, contrasts))
         } else {
-            runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
+            da_manifest <- runDIAReferenceDaAnalysis(list(formula_string = settings$formula, da_q_val_thresh = settings$qvalue,
                 treat_lfc_cutoff = settings$lfc), da_data, da_workflow, paths, contrasts = contrasts, publish = FALSE)
         }
         if (is.function(on_step)) on_step(list(state = manager$current_state, operation = da$operation %||% "DA-contrast-output"), manager)
+        # KIT-107 D5 (F-16): each recorded enrichment step, on the manifest the DA just produced.
+        for (step in enrichment_steps) {
+            if (is.null(da_manifest))
+                cli::cli_abort("step {.val {step$state}} cannot be replayed without a proteomics DA manifest", class = "workflow_replay_unsupported")
+            parameters <- workflowReplayParameters(step$parameters, workflowOperationEntry("enrichment")$parameters)
+            withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters, da_manifest,
+                contrasts, paths, scratch))
+            if (!identical(manager$current_state, step$state))
+                cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
+            if (is.function(on_step)) on_step(step, manager)
+        }
     }
     # KIT-095: the exports after the DA, through their binding's replay entry with the recorded parameters.
     for (analysis in record$analyses[setdiff(names(record$analyses %||% list()), "differential_abundance")]) {

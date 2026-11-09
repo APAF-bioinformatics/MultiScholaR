@@ -1009,8 +1009,10 @@ restoreWorkflowEnrichment <- function(manager, config) {
 #'    and the kernel the GUI would select. Its annotation resolver takes the GUI's order with an empty bus: the
 #'    prepared project's `uniprot_dat_cln.RDS`, then the test-mode table, then the network.
 #' 3. The run commits the completed state with the same provenance (D4). The declared values it produced must equal
-#'    the record's 9 (`protein_id_column`, `contrast_names` and `results`, the DA tables' content-addressed
-#'    references, among them); a difference refuses the replay, naming the parameter.
+#'    the record's 9 (`protein_id_column` and `contrast_names` among them); a difference refuses the replay, naming
+#'    the parameter. `results` is compared by its contrasts: its values are the DA tables' entity ids, which are
+#'    store-local (a saved entity's id hashes its payload's file name, `saveWorkflowTable`), so the replay store's ids
+#'    never equal the origin's; the tables' content is the replayed DA's (proposed F107-04).
 #'
 #' Limits: a live g:Profiler result reproduces only when the service's database version is the recorded one (the
 #' record's `external_resources`); the annotation table is the prepared project's and is not hash-checked; the organism
@@ -1046,8 +1048,11 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
     as_recorded <- function(value) decodeWorkflowRecordValue(jsonlite::fromJSON(jsonlite::toJSON(
         encodeWorkflowRecordValue(value), auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),
         simplifyVector = FALSE))
+    produced <- run$parameters
+    produced$results <- names(produced$results)
+    parameters$results <- names(parameters$results)
     for (name in names(parameters)) {
-        if (!identical(as_recorded(run$parameters[[name]]), parameters[[name]])) {
+        if (!identical(as_recorded(produced[[name]]), parameters[[name]])) {
             cli::cli_abort("replayed step {.val {step$state}} produced a different {.val {name}} from the record",
                 class = "workflow_replay_invalid")
         }
