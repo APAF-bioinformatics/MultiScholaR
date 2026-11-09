@@ -2652,9 +2652,11 @@ omicSummaryW1Frozen[["trx_main"]] <- list(
             ruviii_status = "Not run yet.",
             session_summary = "Study parameters created for: kit108 \nDescription: Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export \nTimestamp: <TIME> \nFile: <ROOT>/scripts/transcriptomics/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: not written (no integration export yet) \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report template will be downloaded when generating report"),
+        # Re-frozen once at KIT-108 W3 (F108-03, the lead's decision: after a refused integration write there is no
+        # success notice): "[message 5 -] Saved Integration S4 Object" removed; kit-108/w3/w1-refreeze.md.
         notes = c(
             "[warning 10 -] The integration export needs the RUVIII export: run it in the panel above, then save again.",
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+            "[message 5 -] Study parameters saved successfully"),
         updates = character(0),
         progress = character(0),
         reactive_values = c(
