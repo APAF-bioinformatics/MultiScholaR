@@ -1,0 +1,21 @@
+# KIT-111 W3 test first: the four new W3 blocks of tests/testthat/test-prot-norm-core.R on the start (51461ac4, W2, W2b,
+# F111-03 and F111-04 merged; the tree by git archive, ~/.cache/k111w3/start-tree) with only the final test file copied in.
+# R 4.6.1, load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true, R_LIBS = core/browser-smoke.X6BzNV/library (kit_108),
+# TMPDIR on disk (~/.cache/k111w3). No multischolar* unit live at the batch start. Recorded 2026-11-10 by the W3 agent.
+
+## The whole file, one process (tools/testing/test-baseline.R file load_all)
+COUNTS test-prot-norm-core.R pass 1517 fail 17 error 1 skip 0 file_skip FALSE    # start tree
+COUNTS test-prot-norm-core.R pass 1541 fail 0 error 0 skip 0 file_skip FALSE     # W3 tree (6df2b639): 727 W1/W2 + 814 W3
+
+## The W3 blocks alone on the start tree (the summary reporter lists the first 10 problems)
+PASS   KIT-111 W3: unmanaged, the tab's run, apply, skip and refusal give W1 (a)'s states and today's notices
+       (today's behaviour: the tab at module level gives W1 (a)'s frozen states and the completion texts; it passes
+       before and after, the unmanaged guard)
+FAIL   KIT-111 W3: managed, the tab's run, apply and refusal run on the worker ... (5 failures + 1 error)
+       no runner is installed, so no action is dispatched (operations empty), the notices lack the runner's working
+       notice, and a refused run shows the tab's error only; the states still equal W1 (a) because the tab ran in process
+FAIL   KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed ... (failures 7-10 shown)
+       the unmanaged half passes (W1 (a)'s states, "State saved as: 'ruv_covariates'" / "'ruv_corrected'"); the managed
+       half dispatches nothing (no pairs, selection or protein_ruv_covariates action, no inputs)
+FAIL   KIT-111 W3 (R5): a click while the tab's action runs waits ... (its failures are among the file's 17 + 1, past
+       the reporter's first 10: with no runner both clicks run in process and no action is reserved)
