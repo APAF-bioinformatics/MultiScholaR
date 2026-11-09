@@ -1,0 +1,14 @@
+# KIT-108 W5: test-first and regressions. One process per file, kit-078's run1.R (load_all), MULTISCHOLAR_STRICT_SKIPS=1,
+# R_LIBS = kit_107 (browser-smoke.66sPmE), R 4.6.1, TMPDIR on /home, no multischolar* unit active at each start,
+# under systemd-inhibit --what=sleep. W4 = git archive of 1eead052 (+ the new test file for test-first); W5 = 8f5e89f9.
+# test-first (W4 tree + the new block):
+COUNTS test-omics-summary-core.R pass 664 fail 1 error 0 skip 2   (W4 661/0/2 + the W5 block's 3 passes and 1 failure)
+  BAD (W5, D8) ...: Expected the copy's gc max used (518.9 MB) < both sheets' read data held at once (300.0 MB).
+# W5:
+COUNTS test-omics-summary-core.R pass 665 fail 0 error 0 skip 2   (661 + the W5 block's 4; skips Q-175, Q-183 as at W4)
+COUNTS test-general-filemgmt-report-helpers-shared.R pass 85 fail 0 error 0 skip 1   (W4 tree: 85/0/1)
+COUNTS test-omic-summary-module.R pass 1703 fail 0 error 0 skip 0   (W1 (a) and (b) identical; W4 1703)
+COUNTS test-gui-entry-proteomics.R pass 188 fail 0 error 0 skip 0
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0   (the ten lanes identical to their oracles)

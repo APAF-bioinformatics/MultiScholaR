@@ -1,0 +1,9 @@
+# stages.R on 108p's two DA files (results/metabolomics/da_metabolites), kit_107, R 4.6.1; MB of R heap above the start; full gc after every stage
+read1          start    5.3  max 1009.2  after  101.7 (above base)
+write1         start  101.7  max  667.2  after  515.5 (above base)
+read2          start  484.3  max 1536.3  after  547.5 (above base)
+write2         start  547.5  max 1407.4  after  958.4 (above base)
+save           start  927.2  max 1428.9  after  928.0 (above base)
+rm             start  928.0  max  928.1  after  103.4 (above base)
+VmHWM:	 1623672 kB
+RssAnon:	 1600808 kB

@@ -1,0 +1,8 @@
+project	tree	copy_s	gc_max_used_mb	gc_used_after_mb	rss_anon_before_gib	raw_rise_gib	rise_after_gc_gib	hwm_rise_gib	render_raw_rise_gib	end
+108p	w4	47.097	2320.3	435.7	0.578	1.773	1.379	1.772	0.001	complete
+108p	w5a	49.194	2235.7	435.7	0.578	1.681	1.681	1.716	0.001	complete
+108p	w5	54.476	2161.6	435.7	0.578	1.457	1.457	1.457	0.001	complete
+108q	w4	59.893	2281.5	435.7	0.58	1.74	1.593	1.74	0.001	complete
+108q	w5	52.487	2155.1	435.7	0.578	1.274	1.274	1.376	0.001	complete
+099l	w4	0.822	543.9	343.3	0.578	0.053	0.053	0.053	0.059	complete
+099l	w5	1.731	508.3	343.3	0.578	0.014	0.014	0.024	0.059	complete
