@@ -161,25 +161,6 @@ runProtEnrichObserverPreflight <- function(input,
   )
 }
 
-buildProtEnrichSupportedOrganisms <- function() {
-  tibble::tribble(
-    ~taxid,     ~id,             ~name,
-    "9606",     "hsapiens",      "Homo sapiens",
-    "10090",    "mmusculus",     "Mus musculus",
-    "10116",    "rnorvegicus",   "Rattus norvegicus",
-    "7227",     "dmelanogaster", "Drosophila melanogaster",
-    "6239",     "celegans",      "Caenorhabditis elegans",
-    "4932",     "scerevisiae",   "Saccharomyces cerevisiae",
-    "3702",     "athaliana",     "Arabidopsis thaliana",
-    "7955",     "drerio",        "Danio rerio",
-    "9031",     "ggallus",       "Gallus gallus",
-    "9823",     "sscrofa",       "Sus scrofa",
-    "9913",     "btaurus",       "Bos taurus",
-    "9544",     "mmulatta",      "Macaca mulatta",
-    "9598",     "ptroglodytes",  "Pan troglodytes"
-  )
-}
-
 createProtEnrichSupportedOrganismsReactive <- function(reactiveFn = shiny::reactive,
                                                        buildSupportedOrganismsFn = buildProtEnrichSupportedOrganisms) {
   reactiveFn({
@@ -202,65 +183,5 @@ createProtEnrichReactiveValues <- function(reactiveValuesFn = shiny::reactiveVal
     all_enrichment_results = list(),
     current_contrast_results = list(),
     enrichment_plots = list()
-  )
-}
-
-normaliseProtEnrichTaxonId <- function(organismTaxid) {
-  if (is.null(organismTaxid) || length(organismTaxid) != 1L || is.na(organismTaxid)) {
-    stop("organism_taxid must be a single positive integer NCBI taxonomy ID.", call. = FALSE)
-  }
-
-  taxonId <- trimws(as.character(organismTaxid))
-  if (!nzchar(taxonId) || !grepl("^[0-9]+$", taxonId)) {
-    stop("organism_taxid must be a single positive integer NCBI taxonomy ID.", call. = FALSE)
-  }
-
-  taxonId <- sub("^0+", "", taxonId)
-  if (!nzchar(taxonId) || identical(taxonId, "0")) {
-    stop("organism_taxid must be a single positive integer NCBI taxonomy ID.", call. = FALSE)
-  }
-
-  taxonId
-}
-
-validateProtEnrichProcessParameters <- function(organismTaxid,
-                                                upCutoff,
-                                                downCutoff,
-                                                qCutoff,
-                                                correctionMethod = NULL) {
-  taxonId <- normaliseProtEnrichTaxonId(organismTaxid)
-  numericParams <- list(
-    up_cutoff = upCutoff,
-    down_cutoff = downCutoff,
-    q_cutoff = qCutoff
-  )
-  numericParams <- lapply(names(numericParams), function(name) {
-    value <- numericParams[[name]]
-    if (is.null(value) || length(value) != 1L || is.na(value)) {
-      stop(sprintf("%s must be a single finite numeric value.", name), call. = FALSE)
-    }
-    value <- suppressWarnings(as.numeric(value))
-    if (!is.finite(value)) {
-      stop(sprintf("%s must be a single finite numeric value.", name), call. = FALSE)
-    }
-    value
-  }) |>
-    stats::setNames(names(numericParams))
-
-  if (numericParams$q_cutoff < 0 || numericParams$q_cutoff > 1) {
-    stop("q_cutoff must be between 0 and 1.", call. = FALSE)
-  }
-
-  if (!is.null(correctionMethod) &&
-      (length(correctionMethod) != 1L || is.na(correctionMethod) || !nzchar(trimws(as.character(correctionMethod))))) {
-    stop("correction_method must be a single non-empty string.", call. = FALSE)
-  }
-
-  list(
-    organism_taxid = taxonId,
-    up_cutoff = numericParams$up_cutoff,
-    down_cutoff = numericParams$down_cutoff,
-    q_cutoff = numericParams$q_cutoff,
-    correction_method = if (is.null(correctionMethod)) NULL else trimws(as.character(correctionMethod))
   )
 }

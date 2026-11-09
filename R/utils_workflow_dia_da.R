@@ -597,7 +597,8 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
             if (identical(parts[[1L]], "clusterProfiler")) "package_version" else "database_version",
             query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
     }
-    list(results = value$results, service = value$service, reference = reference)
+    list(results = value$results, service = value$service, reference = reference,
+        parameters = parameters[declaration$parameters]) # KIT-107 D4 (F-16): the declared values the identity used
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's

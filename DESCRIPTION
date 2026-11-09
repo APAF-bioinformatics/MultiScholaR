@@ -356,6 +356,8 @@ Collate:
     'utils_workflow_dia_da.R'
     'utils_workflow_dia_da_validation.R'
     'utils_workflow_dia_da_views.R'
+    'utils_workflow_dia_enrichment.R'
+    'utils_workflow_enrichment.R'
     'utils_workflow_omics_declarations.R'
     'utils_workflow_omics_figures.R'
     'utils_workflow_omics_actions.R'
