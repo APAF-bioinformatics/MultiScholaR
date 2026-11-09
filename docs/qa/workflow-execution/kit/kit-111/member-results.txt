@@ -6,3 +6,4 @@ kit-journey-111f invalid failing verifier_accepted failed_step normalisation_ruv
 kit-journey-111a accepted failing none failed_step none error none 
 kit-journey-111b accepted failing none failed_step none error none 
 kit-journey-111c accepted failing none failed_step none error none 
+kit-journey-111q rejected failing oracle_mismatch failed_step none error none 
