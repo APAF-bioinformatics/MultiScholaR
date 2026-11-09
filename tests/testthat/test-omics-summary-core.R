@@ -93,17 +93,22 @@ omicsSummaryCoreSteps <- function(case, steps, setup) {
     export <- function(ctx) shiny::isolate(writeWorkflowSummarySessionState(config(), ctx$bus(), setup$project_dirs, omic,
         label, setup$description, values = list(workflow_args_saved = held$saved, files_copied = held$copied,
             report_generated = held$generated, report_path = held$path), notify = omicSummaryNotify))
-    ruviii <- function(m_source) function(ctx) {
-        step <- config()$export_steps[[1L]]
-        shiny::isolate(runWorkflowSummaryExportStep(step, ctx$bus(), setup$project_dirs[[omic]], m_source,
-            done = function(shown) invisible(shown), binding = transcriptomicsDeclarationBinding,
-            failed = function(error) shiny::showNotification(paste(step$error$prefix, trxConditionText(error)),
-                type = step$error$type, duration = step$error$duration)))
+    # The head's export as W1 (b) keeps it (`omicSummaryW1Ruviii`), read when the step is done: on a managed session
+    # the runner delivers at the step's flush.
+    accepted <- function(ctx) {
         export <- ctx$setup$owner$.context$snapshot$exports$trx_ruviii_export
         value <- if (!is.null(export)) hydrateSavedWorkflowEntity(ctx$setup$owner$.context$store, export$reference)$value
         ctx$keep("ruviii", if (is.null(value)) "<none>" else c(m_source = value$m_source, k = as.character(value$k),
             controls = as.character(value$control_count %||% sum(value$ctl_mask)),
             newY = sprintf("%dx%d %s", nrow(value$newY), ncol(value$newY), omicSummaryW1Short(value$newY))))
+    }
+    ruviii <- function(m_source) function(ctx) {
+        step <- config()$export_steps[[1L]]
+        accepted(ctx)
+        shiny::isolate(runWorkflowSummaryExportStep(step, ctx$bus(), setup$project_dirs[[omic]], m_source,
+            done = function(shown) accepted(ctx), binding = transcriptomicsDeclarationBinding,
+            failed = function(error) shiny::showNotification(paste(step$error$prefix, trxConditionText(error)),
+                type = step$error$type, duration = step$error$duration)))
     }
     fault <- function(name, value, then) function(ctx) {
         ctx$fault(name, value)
