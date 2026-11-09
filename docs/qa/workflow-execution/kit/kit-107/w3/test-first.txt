@@ -1,0 +1,27 @@
+# KIT-107 W3 test-first. R 4.6.1, pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript
+# process per file (kit/scripts-078/run1.R, verbose); R_LIBS = core/browser-smoke.J57eHO/library; TMPDIR on disk
+# (~/.cache/k107w3). Start commit eacd4a5b (origin/performance-v2: W1 eed336ea, W2 037698f7..116b4c6d, the W2 merge),
+# extracted with `git archive` into the W3 scratch folder (kit-107-w3/start-tree); the W3 test file copied into it, so the
+# tests ran against the start commit's R/ exactly. 2026-11-09, the W3 agent.
+
+## test-omic-enrich-module.R with W3's blocks (W1's frozen values as W1 froze them), on the start tree
+COUNTS test-omic-enrich-module.R pass 953 fail 7 error 2 skip 0   (154 s; W1's 947 pass, the four W3 blocks fail)
+  (W3, F107-01) a second Run: the notes are "[error 10 -] Error in enrichment analysis: Missing contrasts_tbl or
+    design_matrix required for enrichment analysis. Please ensure DE analysis was completed successfully.", the progress
+    stops at 0.3, nothing is committed (the files are "<unchanged>")
+  (W3, F107-02) after an Open: the fresh tab's `analysis_complete` FALSE, no restored display, gprofiler_summary_stats
+    "No gprofiler2 results available.", enrichment_status "[WAITING] Ready for analysis"
+  (W3, F107-05) kernel_gprofiler, kernel_clusterprofiler: no `enrichment_completed` in the history (the commit is refused:
+    "payload contains active or lazy bindings"), so the state cannot be read (error)
+
+## The re-frozen file (w1-refreeze.md) on the start tree: fails exactly in the re-frozen cases
+COUNTS test-omic-enrich-module.R pass 921 fail 34 error 3 skip 0   (347 s)
+  BAD (b) gprofiler, clusterprofiler, kernel_gprofiler, kernel_clusterprofiler, organism_filter, refusals, restore
+    (F107-01's `returned$da_results_data`; F107-03's table_removed step; F107-05's kernel commits); prefill passes
+  BAD the four W3 blocks, as above
+
+## D6 test 1 (test-omics-enrich-core.R, written at W2): failed on the W2 tree (the old module committed a `legacy` step,
+## kit-107/w2/targeted.txt: 269/6); on the W3 tree it passes (targeted.txt).
+
+## F107-03: the core's guard was written and tested first at W2 (`refuse_missing_da`); the tab's refusal is W1 (b)'s
+## re-frozen refusals/table_removed step, which fails on the start tree (above) and passes on the W3 tree.

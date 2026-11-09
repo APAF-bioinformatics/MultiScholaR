@@ -1,0 +1,66 @@
+# KIT-107 W3 targeted checks (base origin/performance-v2 eacd4a5b; W3 commits 951682e2, e8a8b2fc). R 4.6.1,
+# pkgload::load_all (export_all, helpers), MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file,
+# kit/scripts-078/run1.R; R_LIBS = core/browser-smoke.J57eHO/library; TMPDIR on disk (~/.cache/k107w3). Functional files
+# up to 3 at a time; the lanes one at a time with nothing else running, under systemd-inhibit --what=sleep. 2026-11-09.
+
+## W1 (a) and (b), and W3's blocks
+COUNTS test-omic-enrich-module.R pass 975 fail 0 error 0 skip 0      (466 s)  W1's 947 (re-frozen once: w1-refreeze.md) + W3's 28
+  (a) the frame's UI HTML digest 3c213c43...822ba equals W1 (a) (also checked directly: mod_omic_enrich_ui under the
+      proteomics group is byte-identical to the start commit's mod_prot_enrich_ui, tabset ids masked)
+
+## The core (Q-166's comparison side skipped) and the record
+COUNTS test-omics-enrich-core.R pass 223 fail 0 error 0 skip 1        (243 s)  W2: 269/6 + the comparison side;
+  275 - 52 (the comparison side's 4 x 13 expectations, Q-166) = 223; D6 test 1's 6 expectations pass now
+COUNTS test-workflow-analysis-record.R pass 274 fail 0 error 0 skip 0 (352 s)  274/0
+
+## MCI-009 (MCI-009.6 retargeted), MCI-010 (MCI-010.6 quarantined, Q-165)
+COUNTS test-module-ci-prot-da.R pass 217 fail 0 error 0 skip 1        (8 s)    baseline 217/1 (Q-22), the retarget keeps "B_vs_A"
+COUNTS test-module-ci-prot-enrich.R pass 79 fail 0 error 0 skip 2     (7 s)    baseline 92/1; MCI-010.6's 13 expectations skipped (Q-165)
+
+## The configuration, the masking check, the KIT-016/KIT-024 tests
+COUNTS test-omic-gui-config.R pass 1539 fail 0 error 0 skip 0         (60 s)   1539/0 (W2 merge)
+COUNTS test-omic-design-module.R pass 152 fail 0 error 0 skip 0       (26 s)   start tree 149/0 + the KIT-107 W3 masking block (3)
+COUNTS test-workflow-dia-products.R pass 189 fail 0 error 0 skip 0    (97 s)   189/0 (KIT-016 equality, KIT-024 restore)
+
+## The dependents (exported names) and the quarantined seam files
+COUNTS test-module-ui-wrapper-direct-shared.R pass 45 fail 0 error 0 skip 0   45/0
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0               178/0
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0           204/0
+COUNTS test-prot-11-enrichment-module-contracts.R pass 0 fail 0 error 0 skip 0          line-1 skip, Q-163 (was 1258/0)
+COUNTS test-prot-11a-enrichment-module-characterization.R pass 0 fail 0 error 0 skip 0  line-1 skip, Q-164 (was 143/0)
+# (a file-level skip reports no expectation; the runner prints skip 0 for it)
+
+## The five proteomics lanes alone, through kit-105/lifecycle/lifecycle.R as committed, each record written with
+## MULTISCHOLAR_GUI_ENTRY_RECORD_DIR and JSON-diffed (steps, read back) against tests/testdata/gui-entry/<lane>.json
+LANE prot_dia identical_to_oracle=TRUE elapsed=503s            JSONDIFF EMPTY
+  CALLS mod_omic_enrich_server 1, runWorkflowEnrichment 1, runDIAReferenceEnrichment 1, saveWorkflowEnrichmentState 1,
+        resolveProtEnrichUniprotAnnotations 1, buildProtEnrichAllContrastResults 1, portableWorkflowEnrichmentResults 1,
+        restoreWorkflowEnrichment 1
+  (restoreWorkflowEnrichment 1, not the Simulation Setup's expected 0: F107-02's guard lets the selected-contrast
+   observer ask the core once when the contrast is selected before the Run; the owner holds no enrichment_completed yet,
+   the core returns NULL and nothing is restored. The lane is identical.)
+LANE prot_dia_limpa identical_to_oracle=TRUE elapsed=240s      JSONDIFF EMPTY   (frame 1, every other CALLS 0)
+LANE prot_tmt identical_to_oracle=TRUE elapsed=258s            JSONDIFF EMPTY   (frame 1, every other CALLS 0)
+LANE prot_lfq identical_to_oracle=TRUE elapsed=159s            JSONDIFF EMPTY   (frame 1, every other CALLS 0)
+LANE prot_lfq_fragpipe identical_to_oracle=TRUE elapsed=117s   JSONDIFF EMPTY   (frame 1, every other CALLS 0)
+
+## NAMESPACE and man/: `git diff eacd4a5b -- NAMESPACE man` is empty; roxygen not run.
+## Collate equals R/*.R (349 files, no duplicates): the eight helper files removed, mod_omic_enrich_panels.R and
+## mod_omic_enrich.R added after mod_omic_da.R. Each commit loads (951682e2 alone checked with load_all).
+
+## Dependents grep: the 73 names defined in the eight helper files at eacd4a5b and not redefined by W3 (91 there, 18 moved
+## to mod_omic_enrich_panels.R), word matches across R/, tests/, tools/ (excluding tools/refactor/) and inst/, and the
+## eight file names. Live hits: none. Every hit is a comment (utils_workflow_enrichment.R :793, :930 provenance notes;
+## test-module-ci-prot-da.R:725's retarget note; test-omics-enrich-core.R:9, :167), a quarantined block (MCI-010.6, Q-165;
+## the core's comparison side, Q-166) or a quarantined file (test-prot-11*.R, Q-163, Q-164). The file names appear only
+## in provenance comments (R/ core, config, frame and panels) and test-prot-11a's quarantined loader. No hit in tools/ or
+## inst/.
+
+## Lines (before at eacd4a5b -> after): the ten mod_prot_enrich*.R 3,461 -> mod_prot_enrich.R 33, mod_prot_enrich_server.R
+## 14, mod_omic_enrich.R 692, mod_omic_enrich_panels.R 701 (1,440); utils_workflow_enrichment.R 1,061 -> 1,134 (F107-05).
+
+## Recorded divergence (the lead's W3 instruction "keep req() on the taxon, so a blank taxon stays silent"): the frame's
+## Run stops at `req(input$organism_taxid)` before any notice. Probe on the start tree (scratch probes/blank_taxon.R):
+## there a blank taxon reached the run, wrote `uniprot_dat_cln` and `enrichment_organism_filter` to the bus, then failed
+## at the method reactive's req with "[error 10 -] Error in enrichment analysis: " (empty message). No lane or W1 capture
+## drives a blank taxon.
