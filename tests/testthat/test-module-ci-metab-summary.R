@@ -1,4 +1,5 @@
 test_that("MCI-017.1 summary parameters roundtrip for LC, GC, and LC+GC branches", {
+  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummarySaveWorkflowArgsObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
   configs <- list(
     lc = module_ci_metab_summary_config("lc", normalization_method = "none", ruv_mode = "skip", da_q_cutoff = 0.1),
     gc = module_ci_metab_summary_config("gc", normalization_method = "scale", ruv_mode = "manual", da_q_cutoff = 0.01),
@@ -51,6 +52,7 @@ test_that("MCI-017.1 summary parameters roundtrip for LC, GC, and LC+GC branches
 })
 
 test_that("MCI-017.2 publication copy preserves required outputs and reports optional gaps", {
+  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryCopyToPublicationObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
   skip_if_not_installed("openxlsx")
 
   complete_dirs <- module_ci_metab_summary_paths()
@@ -157,6 +159,7 @@ test_that("MCI-017.2 publication copy preserves required outputs and reports opt
 })
 
 test_that("MCI-017.3 report rendering produces deterministic push-safe outputs", {
+  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryGenerateReportObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
   project_dirs <- module_ci_metab_summary_paths()
   module_ci_metab_summary_write_template(project_dirs)
   output <- new.env(parent = emptyenv())
@@ -210,6 +213,7 @@ test_that("MCI-017.3 report rendering produces deterministic push-safe outputs",
 })
 
 test_that("KIT-101 F-11: the metab report refuses with a message before the publication copy or without a label", {
+  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryGenerateReportObserverShell (deleted); F-11's refusal notices are the frame's report observer, covered by test-omic-summary-module.R (b) metab_refusals; the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
   refuse <- function(label, copied) {
     notes <- character()
     tryCatch(runMetabSummaryGenerateReportObserverShell(
@@ -256,6 +260,7 @@ test_that("MCI-017.4 study/session parameter payload preserves assay and contras
 })
 
 test_that("MCI-017.5 summary session-state export writes a reloadable schema-valid RDS", {
+  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryExportSessionObserverShell (mod_metab_summary_observer_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
   config <- module_ci_metab_summary_config("combined", ruv_mode = "automatic")
   workflow <- module_ci_metab_summary_workflow(config)
   project_dirs <- module_ci_metab_summary_paths()
@@ -290,6 +295,7 @@ test_that("MCI-017.5 summary session-state export writes a reloadable schema-val
 })
 
 test_that("MCI-017.6 artifact scorecard covers report-facing outputs", {
+  testthat::skip("quarantined: Q-174 (KIT-108 W3) it calls runMetabSummaryCopyToPublicationObserverShell and runMetabSummaryExportSessionObserverShell (deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
   skip_if_not_installed("openxlsx")
   project_dirs <- module_ci_metab_summary_paths()
   config <- module_ci_metab_summary_config("combined", ruv_mode = "automatic")

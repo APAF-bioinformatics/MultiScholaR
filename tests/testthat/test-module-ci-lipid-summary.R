@@ -10,6 +10,7 @@ test_that("KIT-101 F-04: no dead summary observer shell is left for MCI-023 to t
 })
 
 test_that("MCI-023.1 summary parameters roundtrip for lipid assay branches", {
+  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummarySaveWorkflowArgs (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps")
   configs <- list(
     single_pos = module_ci_lipid_summary_config("single_pos", normalization_method = "none", ruv_mode = "skip", itsd_method = "skip", da_q_cutoff = 0.1),
     pos_gcms = module_ci_lipid_summary_config("pos_gcms", normalization_method = "scale", ruv_mode = "manual", itsd_method = "manual_assay_specific", da_q_cutoff = 0.01),
@@ -69,6 +70,7 @@ test_that("MCI-023.1 summary parameters roundtrip for lipid assay branches", {
 })
 
 test_that("MCI-023.2 publication copy preserves required outputs and reports optional gaps", {
+  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryCopyToPublication (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps")
   skip_if_not_installed("openxlsx")
 
   complete_dirs <- module_ci_lipid_summary_paths()
@@ -233,6 +235,7 @@ test_that("MCI-023.3 report rendering produces deterministic push-safe outputs",
 })
 
 test_that("MCI-023.3b report rendering through the live handler produces deterministic push-safe outputs", {
+  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryGenerateReport (mod_lipid_summary_workflow_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps")
   project_dirs <- module_ci_lipid_summary_paths()
   template_dir <- module_ci_lipid_summary_write_template(project_dirs)
   output <- new.env(parent = emptyenv())
@@ -326,6 +329,7 @@ test_that("MCI-023.4 study/session parameter payload preserves lipid metadata", 
 })
 
 test_that("MCI-023.5 summary session-state export writes a reloadable schema-valid RDS", {
+  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryExportSessionState (mod_lipid_summary_state_helpers.R, deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps")
   config <- module_ci_lipid_summary_config("pos_gcms", ruv_mode = "automatic")
   workflow <- module_ci_lipid_summary_workflow(config)
   project_dirs <- module_ci_lipid_summary_paths()
@@ -359,6 +363,7 @@ test_that("MCI-023.5 summary session-state export writes a reloadable schema-val
 })
 
 test_that("MCI-023.6 artifact scorecard covers report-facing outputs", {
+  testthat::skip("quarantined: Q-173 (KIT-108 W3) it calls handleLipidSummaryCopyToPublication and handleLipidSummaryExportSessionState (deleted); the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps")
   skip_if_not_installed("openxlsx")
   project_dirs <- module_ci_lipid_summary_paths()
   config <- module_ci_lipid_summary_config("pos_neg", ruv_mode = "automatic")

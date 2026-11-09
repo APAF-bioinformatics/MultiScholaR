@@ -39,21 +39,7 @@ trxOmicProfile <- function() {
     profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics", label_lower = "transcriptomics",
         workflow_type = "TRANSCRIPTOMICS",
         binding = transcriptomicsDeclarationBinding, report_template = "transcriptomics_report.rmd", report_dir = "transcriptomics")
-    c(profile, trxNormDaSummaryProfile())
-}
-
-#' The summary entries of the transcriptomics profile (KIT-097). KIT-110 W3 removed the six normalisation entries: their
-#' values are `omicGuiConfig("transcriptomics")$norm` (`omicGuiTrxNorm`). KIT-106 W3 removed the 14 DA entries: their
-#' values are `omicGuiConfig("transcriptomics")$da` (`omicGuiTrxDa`), the long table is the binding's, and the tab is the
-#' shared DA frame (mod_omic_da.R).
-#' @noRd
-trxNormDaSummaryProfile <- function() {
-    list(summary_export_ui = trxSummaryExportUi, summary_server = trxSummaryServer, summary_context = trxSummaryContext,
-        summary_state_object = trxSummaryStateObject, summary_placeholder = "e.g., my_transcriptomics_analysis",
-        summary_description = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export",
-        ruviii_m_choices = trxRuviiiMChoices, integration_filename = "transcriptomics_normalized_data.tsv",
-        integration_write = trxSummaryIntegrationWrite, integration_ready = trxSummaryIntegrationReady,
-        integration_missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again.")
+    profile
 }
 
 # ---------------------------------------------------------------------------------------------------------------

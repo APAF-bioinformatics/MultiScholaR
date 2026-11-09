@@ -111,8 +111,8 @@ test_that("MCI-032.3 a design without technical replicates disables the option, 
   expect_null(fixture$owner$.context$snapshot$exports$trx_ruviii_export)
   shown <- vapply(out$notes, `[[`, "", "message")
   expect_true(any(grepl("trx_ruviii_replicates_invalid", shown, fixed = TRUE)), info = paste(shown, collapse = " | "))
-  expect_identical(trxOmicProfile()$ruviii_m_choices(FALSE), c(`Group (the notebook)` = "group"))
-  expect_true("technical_replicate" %in% trxOmicProfile()$ruviii_m_choices(TRUE))
+  expect_identical(trxRuviiiMChoices(FALSE), c(`Group (the notebook)` = "group"))
+  expect_true("technical_replicate" %in% trxRuviiiMChoices(TRUE))
 })
 
 test_that("MCI-032.4 under a managed session the export, its figure and the integration file are the worker's and equal the in-process ones", {

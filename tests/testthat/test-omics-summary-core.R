@@ -162,6 +162,7 @@ rm(omicsSummaryCoreCase)
 
 # Comparison side: quarantined when W3 deletes the start commit's lipid, metab and trx handlers, Q-175.
 test_that("(W3, comparison side) the start commit's handlers give the core entries' notifications, progress, arguments, global and files", {
+    testthat::skip("quarantined: Q-175 (KIT-108 W3) the comparison side drives the start commit's lipid, metab and trx handlers (mod_lipid_summary_*_helpers.R, mod_metab_summary_*_helpers.R, mod_trx_summary.R, deleted by W3) through their modules' buttons; the core side's blocks above stay live and compare each entry with W1 (b)'s frozen steps, and W1 (b) drives the tab on the core")
     for (case in omicsSummaryCoreCases) {
         core <- omicsSummaryCoreRun(case)
         old <- omicSummaryW1Case(case)

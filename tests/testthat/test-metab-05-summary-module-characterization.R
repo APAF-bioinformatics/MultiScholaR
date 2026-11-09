@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-172 (KIT-108 W3) its binding guard names the deleted metab summary helpers (mod_metab_summary_{server,observer}_helpers.R) and its 25 blocks test their seams; the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the metab_lc, metab_gc and metab_combined summary steps")
 # fidelity-coverage-compare: shared
 library(testthat)
 

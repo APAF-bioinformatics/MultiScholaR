@@ -370,7 +370,8 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
         registerOmicDaHeatmapPlotOutput(output, input, da, workflow, config$da, config$binding$binding)
       }
       shiny::observeEvent(input$export_session, exportOmicNormSession(input, workflow, paths, "kit082", norm, quiet, config))
-      shiny::observeEvent(input$save_args, handleLipidSummarySaveWorkflowArgs(input, values, output, dirs, omic, workflow))
+      shiny::observeEvent(input$save_args, saveWorkflowSummaryParameters(config$summary, workflow, dirs, omic, input$experiment_label, input$description,
+        notify = omicSummaryNotify, done = function(saved) values$workflow_args_saved <- TRUE, failed = function(error) values$workflow_args_saved <- TRUE))
     } else {
       # KIT-104 W6: the shared sub-tabs' summary, detection and finalise under metab's configuration.
       config <- omicGuiConfig("metabolomics")
@@ -388,7 +389,8 @@ omicsAppServer <- function(fixture, omic, probe, managed) {
         registerOmicDaHeatmapPlotOutput(output, input, da, workflow, config$da, config$binding$binding)
       }
       shiny::observeEvent(input$export_session, exportOmicNormSession(input, workflow, paths, "kit082", norm, function(...) invisible(NULL), config))
-      shiny::observeEvent(input$save_args, runMetabSummarySaveWorkflowArgsObserverShell(input, dirs, omic, workflow, values, output))
+      shiny::observeEvent(input$save_args, saveWorkflowSummaryParameters(config$summary, workflow, dirs, omic, input$experiment_label, input$description,
+        notify = omicSummaryNotify, done = function(saved) values$workflow_args_saved <- TRUE, failed = function(error) values$workflow_args_saved <- TRUE))
     }
   }
 }

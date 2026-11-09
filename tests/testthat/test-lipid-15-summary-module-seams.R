@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-171 (KIT-108 W3) it sources the deleted mod_lipid_summary_{state,workflow,observer}_helpers.R by path and tests their seams in 19 blocks; the tab is the shared frame mod_omic_summary.R over the core (utils_workflow_summary.R), covered by test-omic-summary-module.R (a)/(b), test-omics-summary-core.R and the lipid_canonical summary steps")
 library(testthat)
 
 source(test_path("..", "..", "R", "mod_lipid_summary_state_helpers.R"), local = environment())

@@ -589,3 +589,23 @@ test_that("KIT-107 W3 the enrichment frame keeps its returned reactive values an
             "stringdb_results"))
     })
 })
+
+# KIT-108 W3: the masking check extended to the shared summary frame (R/mod_omic_summary.R). testServer evaluates a
+# test's code over the module's frame, so a frame local named after a variable the summary tests read inside
+# testServer (test-omic-summary-module.R's omicSummaryW1Drive) would be read in its place.
+test_that("KIT-108 W3 the summary frame keeps its returned reactive values and no name that masks a test's own variables", {
+    test_names <- c("log", "acc", "setup", "steps", "prefix", "text", "apply_updates", "i", "pending", "values", "put", "set",
+        "read", "ui_defaults", "capture", "out_names", "shown", "files", "record", "current", "previous", "differs",
+        "changed", "removed", "field", "value", "ctx", "step")
+    project_dirs <- list(lipidomics = list(base_dir = tempdir()))
+    for (server in list(mod_lipid_summary_server, mod_metab_summary_server)) {
+        shiny::testServer(server, args = list(id = "summary", project_dirs = project_dirs, experiment_label = "kit108"), {
+            module_names <- c(ls(session$env, all.names = TRUE), ls(parent.env(session$env), all.names = TRUE))
+            expect_identical(intersect(module_names, test_names), character())
+            session$flushReact()
+            expect_true(shiny::is.reactivevalues(session$returned))
+            expect_identical(sort(names(session$returned)), c("files_copied", "report_generated", "report_path",
+                "workflow_args_saved"))
+        })
+    }
+})
