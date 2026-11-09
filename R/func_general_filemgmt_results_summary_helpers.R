@@ -650,24 +650,31 @@ copyToResultsSummary <- function(omic_type,
     # KIT-097: the transcriptomics DE tables are the notebook's per-contrast CSVs.
     if (omic_type == "transcriptomics") da_files <- list.files(path = current_paths$da_output_dir, pattern = "^de_results_.+\\.csv$", full.names = TRUE)
 
-    purrr::imap(da_files, \(file, idx) {
+    # KIT-108 W5: one sheet at a time. The read's garbage is collected before the sheet is written, and the sheet's data
+    # and the write's garbage before the next sheet is read, so no two of these transients overlap (the report step's
+    # memory, kit-108/memory). The index, sheet names and order are unchanged. A failed read warns as before; its record
+    # was local to the former purrr::imap closure and never reached `failed_copies`, so none is added here either.
+    for (idx in seq_along(da_files)) {
+        file <- da_files[[idx]]
         sheet_name <- sprintf("DA_Sheet%d", idx)
         base_name <- basename(file) |>
             stringr::str_remove("^da_") |>
             stringr::str_remove("^de_") |>
             stringr::str_remove("_long_annot\\.xlsx$")
         if (grepl("\\.csv$", file)) base_name <- sub("^de_results_(.*)\\.csv$", "\\1", basename(file))
-        da_index_data <<- rbind(da_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
+        da_index_data <- rbind(da_index_data, data.frame(Sheet = sheet_name, Description = base_name, stringsAsFactors = FALSE))
         data_content <- tryCatch(if (grepl("\\.csv$", file)) utils::read.csv(file, check.names = FALSE) else openxlsx::read.xlsx(file),
             error = function(e) NULL)
+        gc(FALSE)
         if (!is.null(data_content)) {
             openxlsx::addWorksheet(da_wb, sheet_name)
             openxlsx::writeData(da_wb, sheet_name, data_content)
         } else {
             warning(paste0("Failed to read DA Excel file: ", file))
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "da_excel_read", source = file, error = "Failed to read")
         }
-    })
+        rm(data_content)
+        gc(FALSE)
+    }
     openxlsx::writeData(da_wb, "DA_Results_Index", da_index_data)
     openxlsx::setColWidths(da_wb, "DA_Results_Index", cols = 1:2, widths = c(15, 50))
     openxlsx::addStyle(da_wb, "DA_Results_Index", style = openxlsx::createStyle(textDecoration = "bold"), rows = 1, cols = 1:2)
@@ -716,6 +723,8 @@ copyToResultsSummary <- function(omic_type,
             failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message)
         }
     )
+    rm(da_wb, enrichment_wb)
+    gc(FALSE)
 
     cat("\nCopying individual files/folders to Results Summary for ", omic_label, "...\n")
     cat("\nCopying individual files/folders to Results Summary for ", omic_label, "...\n")

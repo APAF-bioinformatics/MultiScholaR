@@ -12,6 +12,8 @@
 #     as the core side, apart from F108-03's notice. One block, quarantined when W3 deletes the handlers (Q-175).
 #   - The copy's classification by `copy$required`, and the template's ensure order (the project's copy, the package's,
 #     the GitHub download; a failed retrieval stops the report unless `report$render_after_failed_template`).
+#   - W5 (D8): the copy builds the combined DA workbook one sheet at a time; its R heap's peak stays below holding
+#     both sheets' read data at once, and nothing larger than one sheet survives it.
 
 # W1 (b)'s helpers and frozen captures: every top-level assignment of test-omic-summary-module.R (its blocks are not run).
 for (omicsSummaryCoreW1Expression in parse(testthat::test_path("test-omic-summary-module.R"), keep.source = FALSE)) {
@@ -496,4 +498,76 @@ test_that("(W4, F104-01) the summary's archive refresh fills a missing stored te
     kept <- refresh("default", "TMT")
     expect_identical(kept$metadata, "default")
     expect_identical(kept$text, "- Report Template: default")
+})
+
+test_that("(W5, D8) the copy's DA workbook is built one sheet at a time: its heap peak stays below both sheets' read data held at once", {
+    # A synthetic DA directory in the shape the copy reads: 2 assays x 2,000 features x 200 samples, as xlsx.
+    root <- withr::local_tempdir()
+    da_dir <- file.path(root, "da")
+    dir.create(da_dir)
+    set.seed(108L)
+    for (assay in c("gcms", "posmode")) {
+        n <- 2000L
+        sheet <- data.frame(metabolite_id = as.character(seq_len(n)),
+            metabolite_name = sprintf("Metabolite_%s_%d", assay, seq_len(n)), logFC = stats::rnorm(n),
+            raw_pvalue = stats::runif(n), fdr_qvalue = stats::runif(n),
+            significant = sample(c("Up", "Down", "NS"), n, replace = TRUE), assay = assay,
+            comparison = "groupWT-groupKO", stringsAsFactors = FALSE)
+        intensities <- matrix(stats::rnorm(n * 200L, 20), n, 200L,
+            dimnames = list(NULL, sprintf("intensity.S%03d", seq_len(200L))))
+        openxlsx::write.xlsx(cbind(sheet, as.data.frame(intensities)),
+            file.path(da_dir, sprintf("de_%s_metabolites_groupWT-groupKO_long_annot.xlsx", assay)))
+    }
+    # The heap is measured in a fresh R whose collection triggers are set high (R_VSIZE, R_NSIZE), so a collection runs
+    # only where the code asks for one: gc's max used then counts all the garbage alive at once, independent of R's
+    # adaptive triggers and of this process's history. A first copy warms the namespaces and the byte-compiled closures.
+    package_path <- getNamespaceInfo("MultiScholaR", "path")
+    measured <- callr::r(function(package_path, root) {
+        if (file.exists(file.path(package_path, "DESCRIPTION")) && dir.exists(file.path(package_path, "R"))) {
+            suppressMessages(pkgload::load_all(package_path, quiet = TRUE, helpers = FALSE))
+        } else {
+            loadNamespace("MultiScholaR", lib.loc = dirname(package_path))
+        }
+        copy_function <- get("copyToResultsSummary", envir = asNamespace("MultiScholaR"))
+        da_files <- list.files(file.path(root, "da"), full.names = TRUE)
+        used_mb <- function(g) sum(g[, 2])
+        max_used_mb <- function(g) sum(g[, 6])
+        copy_once <- function(run) {
+            run_dir <- file.path(root, run)
+            paths <- list(results_dir = file.path(run_dir, "results"),
+                results_summary_dir = file.path(run_dir, "results_summary", "metabolomics_W5"),
+                publication_graphs_dir = file.path(run_dir, "publication_graphs"), time_dir = file.path(run_dir, "time"),
+                qc_dir = file.path(run_dir, "qc"), da_output_dir = file.path(root, "da"),
+                pathway_dir = file.path(run_dir, "pathway"), source_dir = file.path(run_dir, "source"),
+                feature_qc_dir = file.path(run_dir, "feature_qc"))
+            for (path in paths) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+            copy <- copy_function
+            environment(copy) <- list2env(list(getProjectPaths = function(...) paths), parent = environment(copy_function))
+            utils::capture.output(suppressWarnings(copy("metabolomics", "W5", data.frame(contrasts = "B-A"),
+                data.frame(Sample_ID = "S1"), force = TRUE)))
+            file.path(paths$results_summary_dir, "Publication_tables", "DA_results_metabolomics.xlsx")
+        }
+        copy_once("warm")
+        before <- gc(reset = TRUE)
+        workbook <- copy_once("measured")
+        after <- gc()
+        copy <- c(peak = max_used_mb(after) - used_mb(before), residue = used_mb(after) - used_mb(before))
+        before <- gc(reset = TRUE)
+        sheets <- lapply(da_files, openxlsx::read.xlsx)
+        after <- gc()
+        list(copy = copy, both = max_used_mb(after) - used_mb(before),
+            one_sheet = as.numeric(utils::object.size(sheets[[1L]])) / 2^20,
+            sheet_names = openxlsx::getSheetNames(workbook),
+            index = openxlsx::read.xlsx(workbook, sheet = "DA_Results_Index"))
+    }, args = list(package_path, root), libpath = .libPaths(),
+        env = c(callr::rcmd_safe_env(), R_VSIZE = "3G", R_NSIZE = "40M"))
+    expect_identical(measured$sheet_names, c("DA_Results_Index", "DA_Sheet1", "DA_Sheet2"))
+    expect_identical(measured$index, data.frame(Sheet = c("DA_Sheet1", "DA_Sheet2"),
+        Description = c("gcms_metabolites_groupWT-groupKO", "posmode_metabolites_groupWT-groupKO")))
+    expect_lt(measured$copy[["peak"]], measured$both,
+        label = sprintf("the copy's gc max used (%.1f MB)", measured$copy[["peak"]]),
+        expected.label = sprintf("both sheets' read data held at once (%.1f MB)", measured$both))
+    expect_lt(measured$copy[["residue"]], measured$one_sheet,
+        label = sprintf("the heap left after the copy (%.1f MB)", measured$copy[["residue"]]),
+        expected.label = sprintf("one sheet's data (%.1f MB)", measured$one_sheet))
 })
