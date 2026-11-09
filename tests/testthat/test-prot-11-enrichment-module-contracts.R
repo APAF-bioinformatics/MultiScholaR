@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-163 (KIT-107 W3) its namespace guard names three functions W3 deleted (`resolveProtEnrichCurrentS4Object`, `buildProtEnrichContrastChoices`, `setupProtEnrichReactiveValues`), and its 173 blocks test the deleted setup, registration, observer and legacy seams of mod_prot_enrich_*_helpers.R; the tab is the shared frame mod_omic_enrich.R under proteomics' `enrichment` group, the run the core's `runWorkflowEnrichment` (utils_workflow_enrichment.R), covered by test-omic-enrich-module.R (a) and (b), test-omics-enrich-core.R, MCI-010.1 to .5 and the prot_dia enrichment step")
 # fidelity-coverage-compare: shared
 # testthat for Proteomics Enrichment helper contracts
 

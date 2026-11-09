@@ -281,14 +281,6 @@ Collate:
     'mod_prot_design_builder_server_helpers.R'
     'mod_prot_design_builder_ui.R'
     'mod_prot_design_builder_server.R'
-    'mod_prot_enrich_setup_helpers.R'
-    'mod_prot_enrich_registration_helpers.R'
-    'mod_prot_enrich_observer_helpers.R'
-    'mod_prot_enrich_execution_helpers.R'
-    'mod_prot_enrich_render_helpers.R'
-    'mod_prot_enrich_state_helpers.R'
-    'mod_prot_enrich_analysis_helpers.R'
-    'mod_prot_enrich_input_helpers.R'
     'mod_prot_enrich_server.R'
     'mod_prot_enrich.R'
     'mod_prot_import_ui_helpers.R'
@@ -387,6 +379,8 @@ Collate:
     'mod_omic_norm.R'
     'mod_omic_da_panels.R'
     'mod_omic_da.R'
+    'mod_omic_enrich_panels.R'
+    'mod_omic_enrich.R'
     'zzz.R'
 Suggests:
     RhpcBLASctl,

@@ -722,11 +722,10 @@ test_that("MCI-009.6 DA output schema remains consumable by enrichment and summa
   expect_s3_class(enrichment_ready@da_data[["groupB-groupA"]], "spec_tbl_df")
   expect_true(all(c("uniprot_acc", "comparison", "fdr_qvalue", "log2FC") %in% names(enrichment_ready@da_data[["groupB-groupA"]])))
 
-  contrast_choices <- buildProtEnrichContrastChoices(
-    daResultsList = enrichment_ready@da_data,
-    contrastsTbl = contrasts_tbl
-  )
-  expect_identical(contrast_choices$contrastsAvailable, "B_vs_A")
+  # KIT-107 W3: the enrichment tab's choices come from the DA result manifest's contrasts (buildProtEnrichContrastChoices
+  # was deleted with the legacy branch, D7).
+  contrast_choices <- omicEnrichManifestChoices(list(contrasts = contrasts_tbl))
+  expect_identical(unname(contrast_choices), "B_vs_A")
   resolved <- resolveProtEnrichSelectedDaResults(
     selectedContrast = "B_vs_A",
     daResultsData = enrichment_ready@da_data,

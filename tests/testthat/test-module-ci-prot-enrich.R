@@ -345,6 +345,7 @@ test_that("MCI-010.5 export ZIP and publication/report metadata preserve backend
 })
 
 test_that("MCI-010.6 pre-seeded DA output initializes enrichment without rerunning DA", {
+  testthat::skip("quarantined: Q-165 (KIT-107 W3) it drives the legacy tab-observer branch (`registerProtEnrichSelectedTabObserver` on a state-manager source with a non-manifest DA list, and `runProtEnrichObserverPreflight`), both deleted with the legacy non-manifest branch (D7); the tab holds only the DA result manifest (`selectOmicEnrichTab`, `holdOmicEnrichManifest`, mod_omic_enrich.R), covered by test-omic-enrich-module.R (b) (the tab, the DA arrival, the refusals) and the prot_dia enrichment step")
   workflow_data <- module_ci_prot_enrich_workflow()
   enrichment_data <- new.env(parent = emptyenv())
   enrichment_data$current_s4_object <- NULL

@@ -1,3 +1,4 @@
+testthat::skip("quarantined: Q-164 (KIT-107 W3) its loader sources the eight mod_prot_enrich_*_helpers.R files W3 deleted, and its six testServer blocks read the old frame's local `enrichment_data` and drive non-manifest fixtures (the legacy branch retired by D7); the tab is the shared frame mod_omic_enrich.R under proteomics' `enrichment` group (its 13 initial values kept, omicEnrichTabState), covered by test-omic-enrich-module.R (a) and (b), test-omics-enrich-core.R, MCI-010.1 to .5 and the prot_dia enrichment step")
 # fidelity-coverage-compare: shared
 library(testthat)
 library(shiny)

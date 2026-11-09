@@ -166,6 +166,7 @@ for (case in names(omicsEnrichCoreCases)) {
 
 # Comparison side: quarantined when W3 deletes mod_prot_enrich_analysis_helpers.R (`runProtEnrichAnalysisBody`), Q-166.
 test_that("(W2, comparison side) runWorkflowEnrichment gives the start commit's runProtEnrichAnalysisBody on the same fixture", {
+    testthat::skip("quarantined: Q-166 (KIT-107 W3) the comparison side runs the start commit's `runProtEnrichAnalysisBody` (mod_prot_enrich_analysis_helpers.R, deleted by W3); the core side's blocks above stay live and compare `runWorkflowEnrichment` with W1 (b)'s frozen run steps, and W1 (b) drives the tab on the core")
     for (case in names(omicsEnrichCoreCases)) {
         core <- omicsEnrichCoreRun(case)
         body <- omicsEnrichCoreDrive(case, function(ctx, inputs) shiny::isolate({

@@ -566,3 +566,26 @@ test_that("KIT-106 W3 the DA frame keeps its returned reactive values and no nam
             "formula_from_s4"))
     })
 })
+
+# KIT-107 W3: the masking check extended to the shared enrichment frame (R/mod_omic_enrich*.R). testServer evaluates a
+# test's code over the module's frame, so a frame local named after a variable the enrichment tests read inside
+# testServer (test-omic-enrich-module.R's omicEnrichW1Drive) would be read in its place.
+test_that("KIT-107 W3 the enrichment frame keeps its returned reactive values and no name that masks a test's own variables", {
+    skip_if_not(workflowOwnerCapable())
+    test_names <- c("log", "acc", "setup", "steps", "live", "enrich_prefix", "text", "server", "mount", "apply_updates", "i",
+        "pending", "values", "put", "set", "set_da", "read", "ui", "ui_defaults", "capture", "step", "bus", "manager",
+        "out_names", "shown", "returned", "files", "record", "field", "value", "ctx", "name", "case")
+    bus <- shiny::reactiveValues(state_manager = NULL, contrasts_tbl = NULL, tab_status = list(), da_analysis_results_list = NULL,
+        taxon_id = NULL, mixed_species_analysis = NULL)
+    shiny::testServer(mod_prot_enrich_server, args = list(id = "enrichment_analysis", workflow_data = bus,
+        experiment_paths = list(), omic_type = "proteomics", experiment_label = "kit107"), {
+        module_names <- c(ls(session$env, all.names = TRUE), ls(parent.env(session$env), all.names = TRUE))
+        expect_identical(intersect(module_names, test_names), character())
+        session$flushReact()
+        expect_true(shiny::is.reactivevalues(session$returned))
+        expect_identical(sort(names(session$returned)), c("all_enrichment_results", "analysis_complete", "analysis_method",
+            "clusterprofiler_results", "contrasts_available", "current_contrast_results", "current_s4_object",
+            "da_results_data", "enrichment_plots", "enrichment_results", "gprofiler_results", "organism_supported",
+            "stringdb_results"))
+    })
+})
