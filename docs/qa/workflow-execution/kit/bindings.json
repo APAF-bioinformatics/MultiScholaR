@@ -42558,6 +42558,54 @@
       "ceiling_seconds": 1800,
       "purpose": "exactness (recorded, uncounted; KIT-107)"
     },
+    "108d": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "108p": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "metab_large_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86",
+      "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "108q": {
+      "kind": "single_journey",
+      "build": "kit_107",
+      "corpus": "lipid_large_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86",
+      "ceiling_seconds": 14400,
+      "purpose": "exactness",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
     "106x": {
       "kind": "single_journey",
       "build": "kit_906",
