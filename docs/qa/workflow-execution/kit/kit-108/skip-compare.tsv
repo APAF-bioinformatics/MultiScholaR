@@ -1,0 +1,26 @@
+=== load_all (baseline: KIT-105 full-suite rows overlaid with KIT-110's, KIT-106's and KIT-107's)
+files 104 399 105 31; passed 31297 -> 9034; failed 0 -> 0; error blocks 2 -> 0
+file	change	detail	Q-ids in file
+test-lipid-14a-summary-module-characterization.R	new file-level skip; hidden blocks 0->11; blocks run 11->0; passed 131->0; skips 0->1; new category skip_quarantine		Q-170
+test-lipid-15-summary-module-seams.R	new file-level skip; hidden blocks 0->19; blocks run 19->0; passed 139->0; skips 0->1; new category skip_quarantine		Q-171
+test-metab-05-summary-module-characterization.R	new file-level skip; hidden blocks 0->25; blocks run 25->0; passed 161->0; new category skip_quarantine		Q-172
+test-module-ci-lipid-summary.R	passed 105->14; skips 1->6		Q-173,Q-23
+test-module-ci-metab-summary.R	passed 82->12; skips 0->6; new category skip_quarantine		Q-174
+test-module-ci-prot-summary.R	passed 70->20; skips 1->5		Q-182,Q-22
+test-omic-summary-module.R	new file	passed 1703 failed 0 errors 0 skips 0	
+test-omics-summary-core.R	new file	passed 665 failed 0 errors 0 skips 2	Q-175,Q-183
+test-prot-12-summary-module-contracts.R	new file-level skip; hidden blocks 0->55; blocks run 55->0; passed 432->0		Q-180,Q-22
+test-prot-12a-summary-module-characterization.R	new file-level skip; hidden blocks 0->6; blocks run 6->0; passed 30->0		Q-181,Q-22
+=== check (the same baseline overlay, check mode)
+files 104 399 105 31; passed 23755 -> 7226; failed 149 -> 0; error blocks 391 -> 49
+file	change	detail	Q-ids in file
+test-lipid-14a-summary-module-characterization.R	new file-level skip; hidden blocks 0->11; blocks run 11->0; passed 131->0; skips 0->1; new category skip_quarantine		Q-170
+test-lipid-15-summary-module-seams.R	new file-level skip; skips 0->1; new category skip_quarantine	(also fewer: error blocks 1->0)	Q-171
+test-metab-05-summary-module-characterization.R	new file-level skip; hidden blocks 0->25; blocks run 25->0; passed 161->0; new category skip_quarantine		Q-172
+test-module-ci-lipid-summary.R	passed 105->14; skips 1->6		Q-173,Q-23
+test-module-ci-metab-summary.R	passed 82->12; skips 0->6; new category skip_quarantine		Q-174
+test-module-ci-prot-summary.R	passed 70->20; skips 1->5		Q-182,Q-22
+test-omic-summary-module.R	new file	passed 1454 failed 0 errors 0 skips 4	
+test-omics-summary-core.R	new file	passed 533 failed 0 errors 2 skips 4	Q-175,Q-183
+test-prot-12-summary-module-contracts.R	new file-level skip; hidden blocks 0->55; blocks run 55->0; passed 432->0		Q-180,Q-22
+test-prot-12a-summary-module-characterization.R	new file-level skip; hidden blocks 0->6; blocks run 6->0; passed 30->0		Q-181,Q-22
