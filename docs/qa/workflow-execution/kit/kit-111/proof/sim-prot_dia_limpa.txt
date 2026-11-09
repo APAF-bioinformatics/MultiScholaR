@@ -1,0 +1,138 @@
+lifecycle-prot_dia_limpa: INFO [2026-11-10 05:29:29] --- Processing setup for omic type: proteomics ---
+INFO [2026-11-10 05:29:29] Ensured omic-specific data directory exists: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/data/proteomics
+INFO [2026-11-10 05:29:29] Ensured timestamped directory exists: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261110_052929
+INFO [2026-11-10 05:29:29] Creating directory structure for 'proteomics'...
+WARN [2026-11-10 05:29:29] Source script directory not found for proteomics: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics. No scripts copied.
+INFO [2026-11-10 05:29:29] Ensured UniProt annotation directory exists: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/data/UniProt
+INFO [2026-11-10 05:29:29] Stored paths for proteomics.
+INFO [2026-11-10 05:29:29] --- Directory Structure Setup Complete ---
+
+Paths for Omics Label: 'proteomics' (Type: proteomics)
+  base_dir                       : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa (5 items)
+  data_dir                       : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/data/proteomics (0 items)
+  source_dir                     : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics (0 items)
+  results_dir                    : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics (6 items)
+  results_summary_dir            : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics (4 items)
+  timestamp                      : 20261110_052929
+  time_dir                       : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc/20261110_052929 (0 items)
+  clean_features_dir             : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  clean_proteins_dir             : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/clean_proteins (0 items)
+  da_output_dir                  : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/da_proteins (0 items)
+  feature_qc_dir                 : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  integration_dir                : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/integration (0 items)
+  pathway_dir                    : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/pathway_enrichment (0 items)
+  peptide_qc_dir                 : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  protein_qc_dir                 : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/protein_qc (0 items)
+  publication_figures_dir        : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics/Publication_figures (0 items)
+  publication_graphs_dir         : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/publication_graphs (1 items)
+  publication_tables_dir         : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics/Publication_tables (0 items)
+  qc_dir                         : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/publication_graphs/filtering_qc (1 items)
+  qc_figures_dir                 : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics/QC_figures (0 items)
+  study_report_dir               : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics/Study_report (0 items)
+  subfeature_qc_dir              : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results/proteomics/peptide_qc (0 items)
+  uniprot_annotation_dir         : /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/data/UniProt (0 items)
+------------------------------------------
+
+INFO [2026-11-10 05:29:33] Added base_dir to volumes for easier navigation: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa
+INFO [2026-11-10 05:29:34] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-10 05:29:35] Proteomics test checkpoint capture DISABLED
+INFO [2026-11-10 05:29:35] Detected format: diann (confidence: 1)
+INFO [2026-11-10 05:29:38] Reading diann data from /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/inputs/report.tsv
+INFO [2026-11-10 05:29:38] Starting DIA-NN import from: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/inputs/report.tsv
+INFO [2026-11-10 05:29:38] Read 8886 rows and 16 columns
+INFO [2026-11-10 05:29:38] Converting Precursor.Normalised to numeric
+INFO [2026-11-10 05:29:38] Using quantity column: Precursor.Normalised
+INFO [2026-11-10 05:29:38] Data imported successfully. Rows: 8886
+INFO [2026-11-10 05:29:38] Sanitized 8 unique sample names.
+INFO [2026-11-10 05:29:39] Processing FASTA file...
+INFO [2026-11-10 05:29:39] Checking experiment_paths...
+INFO [2026-11-10 05:29:40] Saved aa_seq_tbl_final to scripts directory: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/aa_seq_tbl_final.RDS
+INFO [2026-11-10 05:29:40] Saved FASTA metadata to scripts directory: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/fasta_metadata.RDS
+INFO [2026-11-10 05:29:40] FASTA Format: standard_uniprot, Sequences: 400
+INFO [2026-11-10 05:29:40] FASTA file processed successfully. Found 400 sequences
+INFO [2026-11-10 05:29:40] Using default configuration
+INFO [2026-11-10 05:29:40] config.ini not found in project. Retrieving default config.
+INFO [2026-11-10 05:29:40] Found default config.ini in package: /home/doktersmol/.cache/k111lead/merged/inst/config/config.ini
+INFO [2026-11-10 05:29:40] Default config.ini copied to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/config.ini
+INFO [2026-11-10 05:29:40] Stored config_list on workflow_data
+INFO [2026-11-10 05:29:40] Creating processing log...
+INFO [2026-11-10 05:29:40] Processing log created successfully
+INFO [2026-11-10 05:29:42] Received results from design matrix builder module. Now saving to workflow and disk.
+INFO [2026-11-10 05:29:42] Writing design matrix to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/design_matrix.tab
+INFO [2026-11-10 05:29:42] Writing cleaned data to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/data_cln.tab
+INFO [2026-11-10 05:29:42] Writing contrasts to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/contrast_strings.tab
+INFO [2026-11-10 05:29:42] Saved manifest.json to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/manifest.json
+INFO [2026-11-10 05:29:42] Added workflow_type to config.ini: DIA_LIMPA
+INFO [2026-11-10 05:29:42] Writing config.ini to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/config.ini
+INFO [2026-11-10 05:29:42] Saved config.ini for future import/export.
+INFO [2026-11-10 05:29:42] Created tech_rep_group column for proper technical replicate identification
+INFO [2026-11-10 05:29:43] Design Matrix complete. Triggering UniProt annotation.
+INFO [2026-11-10 05:29:43] Saved uniprot_dat_cln to scripts directory: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/uniprot_dat_cln.RDS
+INFO [2026-11-10 05:29:43] UniProt annotations retrieved successfully. Found 400 annotations
+INFO [2026-11-10 05:29:43]  QC: starting the sub-modules on DIA_LIMPA
+INFO [2026-11-10 05:29:43] Peptide QC orchestrator: workflow type is DIA_LIMPA
+INFO [2026-11-10 05:29:43] Running DIA_LIMPA peptide processing sub-modules.
+INFO [2026-11-10 05:29:43] Protein QC orchestrator: workflow type is DIA_LIMPA
+INFO [2026-11-10 05:29:43] Running common protein processing sub-modules.
+INFO [2026-11-10 05:29:45] Q-value filter: S4 class = PeptideQuantitativeData
+INFO [2026-11-10 05:29:45] Q-value filter: S4 @peptide_data has 0 rows, 16 columns
+INFO [2026-11-10 05:29:45] Q-value filter: input_matrix_column_ids length = 9
+INFO [2026-11-10 05:29:45] Q-value filter: input_matrix_column_ids values: ['Run', 'Precursor.Id', 'Protein.Group', 'Protein.Ids', 'Stripped.Sequence', 'Modified.Sequence', 'Precursor.Charge', 'Precursor.Quantity', 'Precursor.Normalised']
+INFO [2026-11-10 05:29:45] QC Step: Applying DIA-NN confidence filter at 0.01 for Q.Value, Global.Q.Value, and Global.PG.Q.Value
+INFO [2026-11-10 05:29:53] Q-value filter applied successfully
+INFO [2026-11-10 05:30:07] Precursor rollup applied successfully
+INFO [2026-11-10 05:30:21] Log2 peptide matrix calculated
+INFO [2026-11-10 05:30:23] Choosing best protein accession at the peptide level...
+INFO [2026-11-10 05:30:23] Aggregation method for duplicate peptides will be: 'mean'
+INFO [2026-11-10 05:30:24] Aggregating peptide quantities for newly resolved protein groups...
+INFO [2026-11-10 05:30:24] Aggregation complete. Before: 6851 rows. After: 6851 rows.
+INFO [2026-11-10 05:30:24] Recalculating peptide matrix with updated protein accessions...
+INFO [2026-11-10 05:30:37] Peptide accession cleanup completed
+INFO [2026-11-10 05:30:53] Limpa DPC quantification completed
+INFO [2026-11-10 05:31:06] Between-sample normalisation step completed
+INFO [2026-11-10 05:31:19] Peptide count filter completed
+INFO [2026-11-10 05:31:19] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:31:19] Quality Control complete. Normalization is ready.
+ERROR [2026-11-10 05:31:23] Error loading session: No exported session data found. Please export session data from the Normalization tab first.
+INFO [2026-11-10 05:31:39] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:31:39] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:31:55] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:31:55] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:32:09] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:32:09] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:32:36] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:32:36] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:32:46] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:32:46] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:32:50] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:32:50] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:33:06] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-10 05:33:06]    selected_contrast = KO_vs_WT
+INFO [2026-11-10 05:33:06]    Glimma: Available contrasts in data: KO_vs_WT
+INFO [2026-11-10 05:33:06]    Glimma: Target contrast: KO_vs_WT
+INFO [2026-11-10 05:33:06]    Glimma: Grouping expression plot by 'group' with 8 samples
+INFO [2026-11-10 05:33:06]    Glimma: Unique groups detected: KO, WT
+INFO [2026-11-10 05:33:06]    Glimma: Synchronized 393 proteins with expression data
+INFO [2026-11-10 05:33:06]    Glimma: Calling glimmaXY with 393 proteins and 8 samples
+INFO [2026-11-10 05:33:06]    Glimma: Highlighting 15 significant genes (11 up, 4 down)
+INFO [2026-11-10 05:33:06] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-10 05:33:07] Final QC state reached. Quality Control module is ready.
+INFO [2026-11-10 05:33:07] Quality Control complete. Normalization is ready.
+INFO [2026-11-10 05:33:29] Results summary directory for proteomics_prot_dia_limpa (/home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-10 05:33:29] Results summary directory for proteomics_prot_dia_limpa (/home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics) is empty. No backup needed. Proceeding to create subdirectories.
+INFO [2026-11-10 05:33:37] Attempting to render report:
+INFO [2026-11-10 05:33:37] - Rmd Source (Template): /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/scripts/proteomics/DIANN_limpa_report.rmd
+INFO [2026-11-10 05:33:37] - Output File: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics/DIANN_limpa_report_proteomics_prot_dia_limpa.docx
+INFO [2026-11-10 05:33:37] - Params: omic_type='proteomics', experiment_label='prot_dia_limpa'
+INFO [2026-11-10 05:33:39] Report successfully rendered to: /home/doktersmol/.cache/k111lead/tmp/RtmpkfGcTX/gui-entry-prot_dia_limpa-16629364dc01f6/project/prot_dia_limpa/results_summary/proteomics/DIANN_limpa_report_proteomics_prot_dia_limpa.docx
+......................................
+══ DONE ════════════════════════════════════════════════════════════════════════
+LANE prot_dia_limpa identical_to_oracle=TRUE elapsed=260s
+CALLS runDIAReferenceLimpaNormalisationPassThrough 1
+CALLS runDIAReferenceCorrelation 1
+CALLS computeDIAReferenceCorrelation 1
+CALLS runDIAReferenceRuvCovariates 1
+CALLS computeDIAReferenceRuvCovariates 1
+CALLS diaRuvCovariatesCommit 1
+CALLS publishDIAReferenceRuvCovariates 1
+CALLS computeWorkflowDiaRuvCovariatesAction 0
