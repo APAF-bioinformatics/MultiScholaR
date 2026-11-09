@@ -23,3 +23,14 @@ The lane was run through `kit-105/lifecycle/lifecycle.R` as committed, with stri
 | `restoreWorkflowEnrichment` | 1 |
 
 The ticket expected `restoreWorkflowEnrichment` to be called 0 times. It is called once because of F107-02's fix: the selected-contrast observer asks the core once before the Run, the core returns NULL (no state yet), and nothing is restored. The ticket's expectation predates the fix; the lane is identical either way. W3 measured the same.
+
+## Run 3: the four entry files in parallel on aeb1d3fd
+
+| File | Pass | Fail | Error | Skip | Elapsed |
+|---|---|---|---|---|---|
+| test-gui-entry-transcriptomics.R | 29 | 0 | 0 | 0 | 85 s |
+| test-gui-entry-lipidomics.R | 35 | 0 | 0 | 0 | 139 s |
+| test-gui-entry-metabolomics.R | 105 | 0 | 0 | 0 | 407 s |
+| test-gui-entry-proteomics.R | 188 | 0 | 0 | 0 | 1,480 s |
+
+**Decision:** all 10 lanes are identical to their oracles. Proteomics has 188 expectations: KIT-106's 187 plus F-16's lane check. No oracle changed.
