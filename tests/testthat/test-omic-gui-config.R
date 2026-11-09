@@ -1529,6 +1529,17 @@ test_that("KIT-107 W1 (D9): each enrichment field is refused by class when missi
     without_filter <- prot
     without_filter$enrichment["organism_filter"] <- list(NULL)
     expect_identical(validateOmicGuiConfig(without_filter), without_filter)
+    # KIT-107 W4: the wired function fields are required; each removed is refused by class.
+    for (group in c("organism", "annotation", "kernel")) {
+        removed <- prot
+        removed$enrichment[group] <- list(NULL)
+        expectGuiConfigRefused(removed, paste0("enrichment$", group))
+    }
+    for (field in c("mapping", "apply")) {
+        removed <- prot
+        removed$enrichment$organism_filter[[field]] <- NULL
+        expectGuiConfigRefused(removed, paste0("enrichment$organism_filter$", field))
+    }
     for (field in c("mapping", "apply")) {
         with_ref <- prot
         with_ref$enrichment$organism_filter[[field]] <- identity

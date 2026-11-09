@@ -277,9 +277,9 @@ omicGuiConfigSchema <- function() {
         da_session_load = c(file = "chr1", assay_rule = "chr1", assay_message = "chr1"),
         da_plugins = c("init", "load", "run", "archive"),
         # KIT-107 W1 (design 4.9, D1, D9): the enrichment tab, checked when the omic has the group. The function
-        # fields still in R/mod_*.R at the start commit (`organism`, `annotation`, `kernel`) are optional until the
-        # W2 merge wires them, then checked whole when present; `organism_filter` is NULL or its toggle's bus key
-        # (`mixed_species_from`), with its `mapping` and `apply` optional likewise.
+        # function groups `organism`, `annotation` and `kernel` (the core's, wired at the W2 merge) are required since
+        # KIT-107 W4 and checked whole; `organism_filter` is NULL or its toggle's bus key (`mixed_species_from`) with
+        # its `mapping` and `apply`.
         enrichment = c(module_id = "chr1", status_key = "chr1", tab_value = "chr1", operation = "ref", run = "ref",
             da_source = "named_list", id_column = "named_list", cutoffs = "named_list", correction = "named_list",
             exclude_iea = "lgl1", taxon = "named_list", services = "chr", organism_filter = "named_list_or_null",
@@ -599,7 +599,8 @@ validateOmicGuiDa <- function(da, schema) {
 #' @noRd
 validateOmicGuiEnrichment <- function(enrichment, schema) {
     checkOmicGuiFields(enrichment, schema$enrichment, "enrichment")
-    checkOmicGuiFields(enrichment, schema$enrichment_optional, "enrichment", required = FALSE)
+    # KIT-107 W4: the function groups are the core's (wired at the W2 merge) and required.
+    checkOmicGuiFields(enrichment, schema$enrichment_optional, "enrichment")
     checkOmicGuiFields(enrichment$da_source, schema$enrichment_da_source, "enrichment$da_source")
     checkOmicGuiFields(enrichment$id_column, schema$enrichment_id_column, "enrichment$id_column")
     if (!setequal(names(enrichment$cutoffs), schema$enrichment_cutoffs) || length(enrichment$cutoffs) != 3L) {
@@ -621,7 +622,7 @@ validateOmicGuiEnrichment <- function(enrichment, schema) {
     if (!is.null(enrichment$organism_filter)) {
         checkOmicGuiFields(enrichment$organism_filter, schema$enrichment_organism_filter, "enrichment$organism_filter")
         checkOmicGuiFields(enrichment$organism_filter, schema$enrichment_organism_filter_optional,
-            "enrichment$organism_filter", required = FALSE)
+            "enrichment$organism_filter")
     }
     for (group in names(schema$enrichment_optional)) {
         if (!is.null(enrichment[[group]])) {

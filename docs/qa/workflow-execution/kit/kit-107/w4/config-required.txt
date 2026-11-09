@@ -1,0 +1,7 @@
+# KIT-107 W4: the enrichment function groups (organism, annotation, kernel) and the organism filter's mapping/apply are required.
+# Old validator, with the new refusals:
+COUNTS test-omic-gui-config.R pass 1542 fail 2 error 0 skip 0
+  BAD test-omic-gui-config.R :: KIT-107 W1 (D9): each enrichment field is refused by class when missing or mistyped; services and the organism filter are checked; the W2 function fields are optional, whole when present
+# (The three group refusals passed already: a group set to NULL was refused by type. The filter's mapping/apply removals were accepted.)
+# New validator:
+COUNTS test-omic-gui-config.R pass 1544 fail 0 error 0 skip 0

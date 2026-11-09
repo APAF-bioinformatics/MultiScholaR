@@ -763,6 +763,13 @@ guiEntryProtSteps <- function(lane) {
         api$set(list(`enrichment_analysis-selected_contrast` = lane$expected_contrasts[[1L]], `enrichment_analysis-up_cutoff` = 0,
           `enrichment_analysis-down_cutoff` = 0, `enrichment_analysis-q_cutoff` = 0.05))
         api$set(list(`enrichment_analysis-run_enrichment_analysis` = 1L))
+        # KIT-107 D6 test 2 (F-16): the record built from the owner lists no incomplete enrichment step. One expectation;
+        # no capture changes.
+        manager <- shiny::isolate(api$workflow_data$state_manager)
+        record <- jsonlite::fromJSON(jsonlite::toJSON(buildWorkflowAnalysisRecord(manager), auto_unbox = TRUE,
+          digits = I(17), null = "null", na = "null"), simplifyVector = FALSE)
+        testthat::expect_false(any(grepl("enrichment_completed", unlist(validateWorkflowAnalysisRecord(record)$incomplete),
+          fixed = TRUE)), info = "KIT-107 F-16: the analysis record's enrichment step is complete")
       })),
     list(
     guiEntryStep("summary_refusal", "session_summary", refusal = "message", function(api) {
