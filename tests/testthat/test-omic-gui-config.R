@@ -36,6 +36,14 @@ guiConfigRequired <- list(
 guiConfigEnrichmentRequired <- c("module_id", "status_key", "tab_value", "operation", "run", "da_source", "id_column",
     "cutoffs", "correction", "exclude_iea", "taxon", "services", "organism_filter", "state_name")
 
+# KIT-108 W1 (D1, D9): the summary group's required fields (every omic). The function fields still in R/mod_*.R at the
+# start commit (proteomics' and trx's final-state context, proteomics' copy gate, integration file name and writer,
+# report template and status, trx's integration writer and the export step's choices, availability, parameters and
+# status text, every omic's session-state payload) are optional until the W3 and W4 merges wire them; the summary
+# blocks below check them.
+guiConfigSummaryRequired <- c("module_id", "testid", "placeholder", "description", "final_state", "copy", "integration",
+    "report", "export_steps", "texts")
+
 guiConfigBuilderTexts <- c("save_success", "no_assignment", "contrast_group_prefix",
     "contrast_as_is", "replicate_suffix")
 
@@ -61,11 +69,13 @@ guiConfigFunctions <- function(x) {
     unlist(lapply(x, guiConfigFunctions), recursive = FALSE)
 }
 
-test_that("each omic's configuration validates, with the shell, binding, import, design, qc, norm, da and enrichment groups", {
+test_that("each omic's configuration validates, with the shell, binding, import, design, qc, norm, da, enrichment and summary groups", {
     for (omic in guiConfigOmics) {
         config <- omicGuiConfig(omic)
-        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm", "da", "enrichment"),
-            info = omic)
+        expect_identical(names(config), c("shell", "binding", "import", "design", "qc", "norm", "da", "enrichment",
+            "summary"), info = omic)
+        # KIT-108 W1 (D1, D9): every omic has the summary group.
+        expect_true(all(guiConfigSummaryRequired %in% names(config$summary)), info = omic)
         expect_identical(config$shell$omic_type, omic, info = omic)
         expect_identical(config$binding$binding$omic_type, omic, info = omic)
         expect_identical(validateOmicGuiConfig(config), config, info = omic)
@@ -206,6 +216,11 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
         enrichment_files <- as.character(unlist(lapply(guiConfigFunctions(config$enrichment), utils::getSrcFilename)))
         if (identical(omic, "proteomics")) expect_gt(length(enrichment_files), 0L)
         expect_false(any(startsWith(enrichment_files, "mod_")), info = paste(omic, "enrichment"))
+        # KIT-108 W1 (D9): the summary group (lipid and metab: the final state's id reader; trx: the RUVIII export's
+        # acceptance and in-process run; a function still in an R/mod_*.R file is wired only when W3 or W4 moves it).
+        summary_files <- as.character(unlist(lapply(guiConfigFunctions(config$summary), utils::getSrcFilename)))
+        if (omic != "proteomics") expect_gt(length(summary_files), 0L)
+        expect_false(any(startsWith(summary_files, "mod_")), info = paste(omic, "summary"))
     }
 })
 
@@ -1581,4 +1596,283 @@ test_that("KIT-107 W1 (D9): each enrichment field is refused by class when missi
     bad <- lipid
     bad$enrichment <- "enrichment"
     expectGuiConfigRefused(bad, "enrichment")
+})
+
+test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Export tab values at the start commit", {
+    configs <- stats::setNames(lapply(guiConfigOmics, omicGuiConfig), guiConfigOmics)
+    summaries <- lapply(configs, `[[`, "summary")
+    # The module id is the shell's summary tab's; the test id prefix is the shell's.
+    for (omic in guiConfigOmics) {
+        tab <- Filter(function(tab) identical(tab$status_key, "session_summary"), configs[[omic]]$shell$tabs)[[1L]]
+        expect_identical(summaries[[omic]]$module_id, tab$module_id, info = omic)
+        expect_identical(summaries[[omic]]$testid, configs[[omic]]$shell$testid, info = omic)
+    }
+    expect_identical(vapply(summaries, `[[`, "", "module_id"),
+        c(proteomics = "session_summary", lipidomics = "summary", metabolomics = "summary", transcriptomics = "summary"))
+    expect_identical(vapply(summaries, `[[`, "", "testid"),
+        c(proteomics = "prot", lipidomics = "lipid", metabolomics = "metab", transcriptomics = "trx"))
+    expect_identical(vapply(summaries, `[[`, "", "placeholder"),
+        c(proteomics = "e.g., my_proteomics_analysis", lipidomics = "e.g., my_lipidomics_analysis",
+            metabolomics = "e.g., my_metabolomics_analysis", transcriptomics = "e.g., my_transcriptomics_analysis"))
+    expect_identical(vapply(summaries, `[[`, "", "description"),
+        c(proteomics = "Full protein analysis workflow with config parameters",
+            lipidomics = "Full lipidomics analysis workflow with normalization and DA",
+            metabolomics = "Full metabolomics analysis workflow with normalization and DA",
+            transcriptomics = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export"))
+    # The final state: lipid and metab name their data states, head first, with the id reader; proteomics' and trx's
+    # context is wired at the W4 and W3 merges.
+    expect_identical(summaries$lipidomics$final_state, list(states = c("lipid_correlation_filtered",
+        "lipid_norm_complete", "lipid_ruv_corrected", "lipid_normalized", "loaded_for_de", "lipid_qc_complete"),
+        read_ids = readLipidWorkflowIds))
+    expect_identical(summaries$metabolomics$final_state, list(states = c("metab_correlation_filtered",
+        "metab_norm_complete", "metab_ruv_corrected", "metab_normalized", "loaded_for_de", "metab_qc_complete"),
+        read_ids = readMetabWorkflowIds))
+    expect_identical(summaries$proteomics$final_state, list())
+    expect_identical(summaries$transcriptomics$final_state, list())
+    # The record's owner class; the copy.
+    expect_identical(summaries$proteomics$record_class, "DIAStateAdapter")
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        expect_true("record_class" %in% names(summaries[[omic]]), info = omic)
+        expect_null(summaries[[omic]]$record_class, info = omic)
+        expect_identical(summaries[[omic]]$copy, list(gate = NULL,
+            required = c("Contrasts Table", "Design Matrix", "Study Parameters"), inherits = TRUE), info = omic)
+    }
+    expect_identical(summaries$proteomics$copy, list(required = NULL, inherits = FALSE))
+    # The integration export.
+    expect_identical(summaries$proteomics$integration, list(operation = NULL, requires = NULL))
+    expect_identical(summaries$lipidomics$integration, list(filename = "%s_%s_final_s4.RDS",
+        operation = "lipid_integration_export", write = NULL, requires = NULL))
+    expect_identical(summaries$metabolomics$integration, list(filename = "%s_%s_final_s4.RDS",
+        operation = "metab_integration_export", write = NULL, requires = NULL))
+    expect_identical(summaries$transcriptomics$integration, list(filename = "transcriptomics_normalized_data.tsv",
+        operation = "trx_integration_export", requires = "trx_ruviii_export",
+        missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."))
+    # The report.
+    # The report flow's per-omic order (W1's captures, test-omic-summary-module.R): metab renders after a failed
+    # template retrieval; proteomics shows the template check's progress always and exports the record bundle after
+    # the success notice.
+    flags <- function(failed, checking, after) list(render_after_failed_template = failed,
+        checking_progress_always = checking, record_after_success = after)
+    expect_identical(summaries$proteomics$report, c(list(dir = "proteomics", label = NULL), flags(FALSE, TRUE, TRUE)))
+    expect_identical(summaries$lipidomics$report, c(list(dir = "lipidomics", template = "lipidomics_report.rmd",
+        label = "Lipidomics", status = NULL), flags(FALSE, FALSE, FALSE)))
+    expect_identical(summaries$metabolomics$report, c(list(dir = "metabolomics", template = "metabolomics_report.rmd",
+        label = "Metabolomics", status = NULL), flags(TRUE, FALSE, FALSE)))
+    expect_identical(summaries$transcriptomics$report, c(list(dir = "transcriptomics",
+        template = "transcriptomics_report.rmd", label = "Transcriptomics", status = NULL), flags(FALSE, FALSE, FALSE)))
+    for (summary in summaries) {
+        expect_true(dir.exists(system.file("reports", summary$report$dir, package = "MultiScholaR")), info = summary$report$dir)
+    }
+    # No session-state payload yet (every omic's is in an R/mod_*.R file at the start commit).
+    for (omic in guiConfigOmics) expect_false("session_state" %in% names(summaries[[omic]]), info = omic)
+    # The texts that differ per omic.
+    expect_identical(summaries$proteomics$texts, c(integration_saved = "Saved Integration artifact",
+        progress_detect = "Detecting workflow type..."))
+    expect_identical(summaries$lipidomics$texts, character())
+    expect_identical(summaries$metabolomics$texts, character())
+    expect_identical(summaries$transcriptomics$texts, c(integration_not_written = "not written (no integration export yet)"))
+    # Trx's values equal trxOmicProfile()'s summary entries today (mod_transcriptomics.R:39-57).
+    profile <- trxOmicProfile()
+    trx <- summaries$transcriptomics
+    expect_identical(c(trx$placeholder, trx$description, trx$integration$filename, trx$integration$missing_message,
+        trx$report$template, trx$report$dir), c(profile$summary_placeholder, profile$summary_description,
+        profile$integration_filename, profile$integration_missing_message, profile$report_template, profile$report_dir))
+    # The export steps: none for proteomics, lipid and metab; trx's RUVIII export (D4).
+    for (omic in c("proteomics", "lipidomics", "metabolomics")) expect_identical(summaries[[omic]]$export_steps, list(), info = omic)
+    expect_length(trx$export_steps, 1L)
+    step <- trx$export_steps[[1L]]
+    expect_identical(step[c("id", "title", "help", "choice", "button", "status", "figure", "operation")], list(
+        id = "ruviii_export", title = "RUVIII Integration Export",
+        help = c("RUVIII (ruv::RUVIII) on the TMM logCPM, with the RUVs inferred negative controls and k, for the",
+            "integration export only: the DA results are not changed. M is the replicate structure: the group (the notebook),",
+            "or the design's technical replicates when it has them."),
+        choice = list(output = "ruviii_m_ui", input = "ruviii_m_source", label = "Replicate structure M:",
+            selected = "group", unavailable = c("Technical replicates: not available; the design has no technical",
+                "replicates (trx_ruviii_replicates_invalid).")),
+        button = list(input = "run_ruviii_export", label = "Run RUVIII Export", testid = "trx-summary-ruviii-export",
+            icon = "play", class = "btn-primary"),
+        status = list(output = "ruviii_status", idle = "Not run yet."),
+        figure = list(output = "ruviii_before_after", file = "ruviii_before_and_after.png", dir = "publication_graphs_dir",
+            height = "500px", image = c(content_type = "image/png", width = "100%", height = "auto"),
+            alt = "RUVIII before and after", alt_idle = "RUVIII export not run yet"),
+        operation = "trx_ruviii_export"))
+    expect_identical(step$accept, acceptTrxRuviiiExport)
+    expect_identical(step$run_reference, runTrxReferenceRuviiiExport)
+    expect_identical(step$publications, list(list(operation = "trx_qc_figures", parameters = list(stage = "ruviii")),
+        list(operation = "trx_composite_figure", parameters = list(figure = "ruviii_before_and_after"))))
+    expect_identical(step$error, list(prefix = "RUVIII export error:", type = "error", duration = 15))
+    # The panel today renders these strings (mod_trx_summary.R:43-54 at the start commit).
+    html <- as.character(htmltools::renderTags(mod_lipid_summary_ui("summary", profile = profile))$html)
+    for (text in c(step$title, step$help, step$button$label, step$button$testid, paste0("summary-", step$choice$output),
+        paste0("summary-", step$button$input), paste0("summary-", step$status$output), paste0("summary-", step$figure$output))) {
+        expect_true(grepl(text, html, fixed = TRUE), info = text)
+    }
+    # The UIs' placeholders and descriptions today are the group's.
+    uis <- list(proteomics = mod_prot_summary_ui("x"), lipidomics = mod_lipid_summary_ui("x"),
+        metabolomics = mod_metab_summary_ui("x"), transcriptomics = mod_lipid_summary_ui("x", profile = profile))
+    for (omic in guiConfigOmics) {
+        html <- as.character(htmltools::renderTags(uis[[omic]])$html)
+        expect_true(grepl(sprintf("placeholder=\"%s\"", summaries[[omic]]$placeholder), html, fixed = TRUE), info = omic)
+        expect_true(grepl(sprintf(">%s</textarea>", summaries[[omic]]$description), html, fixed = TRUE), info = omic)
+    }
+})
+
+test_that("KIT-108 W1 (D9): each summary field is refused by class when missing or mistyped; the final state, the copy, the integration, the report and the export steps are checked; the W3 and W4 function fields are optional, by type when present", {
+    configs <- stats::setNames(lapply(guiConfigOmics, omicGuiConfig), guiConfigOmics)
+    for (omic in guiConfigOmics) {
+        config <- configs[[omic]]
+        for (field in guiConfigSummaryRequired) {
+            removed <- config
+            removed$summary[[field]] <- NULL
+            expectGuiConfigRefused(removed, paste0("summary$", field))
+            mistyped <- config
+            mistyped$summary[field] <- list(42L)
+            expectGuiConfigRefused(mistyped, paste0("summary$", field))
+        }
+        bad <- config
+        bad$summary <- NULL
+        expectGuiConfigRefused(bad, "summary")
+        bad <- config
+        bad$summary <- "summary"
+        expectGuiConfigRefused(bad, "summary")
+    }
+    lipid <- configs$lipidomics
+    prot <- configs$proteomics
+    trx <- configs$transcriptomics
+    # The module id and test id are the shell's.
+    bad <- lipid
+    bad$summary$module_id <- "session_summary"
+    expectGuiConfigRefused(bad, "summary$module_id")
+    bad <- prot
+    bad$summary$testid <- "proteomics"
+    expectGuiConfigRefused(bad, "summary$testid")
+    # The final state: by context or by states with their reader, not both; each by type.
+    bad <- lipid
+    bad$summary$final_state$read_ids <- NULL
+    expectGuiConfigRefused(bad, "summary$final_state$read_ids")
+    bad <- lipid
+    bad$summary$final_state$read_ids <- "readLipidWorkflowIds"
+    expectGuiConfigRefused(bad, "summary$final_state$read_ids")
+    bad <- lipid
+    bad$summary$final_state$states <- 1:6
+    expectGuiConfigRefused(bad, "summary$final_state$states")
+    bad <- lipid
+    bad$summary$final_state$context <- identity
+    expectGuiConfigRefused(bad, "summary$final_state")
+    bad <- prot
+    bad$summary$final_state$context <- "resolveProtSummaryFinalS4State"
+    expectGuiConfigRefused(bad, "summary$final_state$context")
+    with_context <- prot
+    with_context$summary$final_state$context <- identity
+    expect_identical(validateOmicGuiConfig(with_context), with_context)
+    # The copy: its gate NULL or a function, its required artifacts NULL or names, its lookup a flag.
+    bad <- lipid
+    bad$summary$copy$required <- NULL
+    expectGuiConfigRefused(bad, "summary$copy$required")
+    bad <- lipid
+    bad$summary$copy$required <- 3L
+    expectGuiConfigRefused(bad, "summary$copy$required")
+    bad <- lipid
+    bad$summary$copy$inherits <- NULL
+    expectGuiConfigRefused(bad, "summary$copy$inherits")
+    bad <- lipid
+    bad$summary$copy$inherits <- "TRUE"
+    expectGuiConfigRefused(bad, "summary$copy$inherits")
+    bad <- prot
+    bad$summary$copy$gate <- "assertDIAExportReady"
+    expectGuiConfigRefused(bad, "summary$copy$gate")
+    with_gate <- prot
+    with_gate$summary$copy$gate <- identity
+    expect_identical(validateOmicGuiConfig(with_gate), with_gate)
+    # The integration: the operation present, NULL or an integration export; the gate with its message; the file name
+    # a string or a function; the writer NULL or a function.
+    bad <- lipid
+    bad$summary$integration$operation <- NULL
+    expectGuiConfigRefused(bad, "summary$integration$operation")
+    bad <- lipid
+    bad$summary$integration$operation <- "lipid_session_export"
+    expectGuiConfigRefused(bad, "summary$integration$operation")
+    bad <- lipid
+    bad$summary$integration$requires <- NULL
+    expectGuiConfigRefused(bad, "summary$integration$requires")
+    bad <- trx
+    bad$summary$integration$requires <- 1L
+    expectGuiConfigRefused(bad, "summary$integration$requires")
+    bad <- trx
+    bad$summary$integration$missing_message <- NULL
+    expectGuiConfigRefused(bad, "summary$integration$missing_message")
+    bad <- lipid
+    bad$summary$integration$filename <- 42L
+    expectGuiConfigRefused(bad, "summary$integration$filename")
+    bad <- lipid
+    bad$summary$integration$write <- "saveRDS"
+    expectGuiConfigRefused(bad, "summary$integration$write")
+    with_refs <- prot
+    with_refs$summary$integration$filename <- function(...) "x"
+    with_refs$summary$integration$write <- identity
+    expect_identical(validateOmicGuiConfig(with_refs), with_refs)
+    # The report: its directory, a template file name with its label, or the route's resolver with its status.
+    for (field in c("dir", "label", "render_after_failed_template", "checking_progress_always", "record_after_success")) {
+        bad <- lipid
+        bad$summary$report[[field]] <- NULL
+        expectGuiConfigRefused(bad, paste0("summary$report$", field))
+    }
+    for (field in c("render_after_failed_template", "checking_progress_always", "record_after_success")) {
+        bad <- prot
+        bad$summary$report[[field]] <- "TRUE"
+        expectGuiConfigRefused(bad, paste0("summary$report$", field))
+    }
+    bad <- lipid
+    bad$summary$report["label"] <- list(NULL)
+    expectGuiConfigRefused(bad, "summary$report$label")
+    bad <- lipid
+    bad$summary$report$template <- 42L
+    expectGuiConfigRefused(bad, "summary$report$template")
+    bad <- lipid
+    bad$summary$report$status <- "buildLipidSummaryTemplateStatus"
+    expectGuiConfigRefused(bad, "summary$report$status")
+    with_refs <- prot
+    with_refs$summary$report$template <- identity
+    with_refs$summary$report$status <- identity
+    expect_identical(validateOmicGuiConfig(with_refs), with_refs)
+    # The session-state payload: a function when present; the record's owner class a string or NULL.
+    bad <- lipid
+    bad$summary$session_state <- "prepareLipidSummarySessionState"
+    expectGuiConfigRefused(bad, "summary$session_state")
+    with_ref <- lipid
+    with_ref$summary$session_state <- identity
+    expect_identical(validateOmicGuiConfig(with_ref), with_ref)
+    bad <- lipid
+    bad$summary$record_class <- 1L
+    expectGuiConfigRefused(bad, "summary$record_class")
+    # The export steps: a list of steps, each with its panel strings and references.
+    step_paths <- c("id", "title", "help", "choice", "button", "status", "figure", "operation", "accept", "run_reference",
+        "publications", "error", "choice$output", "choice$input", "choice$label", "choice$selected", "choice$unavailable",
+        "button$input", "button$label", "button$testid", "button$icon", "button$class", "status$output", "status$idle",
+        "figure$output", "figure$file", "figure$dir", "figure$height", "figure$image", "figure$alt", "figure$alt_idle",
+        "error$prefix", "error$type", "error$duration")
+    for (path in step_paths) {
+        parts <- strsplit(path, "$", fixed = TRUE)[[1L]]
+        removed <- trx
+        removed$summary$export_steps[[1L]][[parts]] <- NULL
+        expectGuiConfigRefused(removed, paste0("summary$export_steps[[1]]$", path))
+        bad <- trx
+        bad$summary$export_steps[[1L]][[parts]] <- NA
+        expectGuiConfigRefused(bad, paste0("summary$export_steps[[1]]$", path))
+    }
+    for (field in c("operation", "parameters")) {
+        bad <- trx
+        bad$summary$export_steps[[1L]]$publications[[2L]][[field]] <- NULL
+        expectGuiConfigRefused(bad, paste0("summary$export_steps[[1]]$publications[[2]]$", field))
+    }
+    # The W3 function fields of the step are optional, by type when present.
+    for (path in c("parameters", "choice$choices", "choice$available", "status$text")) {
+        parts <- strsplit(path, "$", fixed = TRUE)[[1L]]
+        with_ref <- trx
+        with_ref$summary$export_steps[[1L]][[parts]] <- identity
+        expect_identical(validateOmicGuiConfig(with_ref), with_ref, info = path)
+        bad <- trx
+        bad$summary$export_steps[[1L]][[parts]] <- "identity"
+        expectGuiConfigRefused(bad, paste0("summary$export_steps[[1]]$", path))
+    }
 })

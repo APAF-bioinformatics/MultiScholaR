@@ -1,0 +1,98 @@
+# KIT-108 W1 test-first: tests/testthat/test-omic-summary-module.R (new) and the summary blocks of
+# test-omic-gui-config.R, written first and frozen on the start commit.
+# Start commit 5be34ee5 (origin/performance-v2; R/ identical to a19a6bf2 and kit_107's source 8b92d7ac), extracted with
+# `git archive` into an on-disk scratch tree with the two new test files copied in (~/.cache/k108w1/tf-tree), so the
+# tests ran on the start commit's R/ exactly. R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner kit/scripts-078/run1.R (verbose);
+# R_LIBS = core/browser-smoke.66sPmE/library (kit_107); TMPDIR on disk. Offline: the HTTP(S) proxies at 127.0.0.1:9;
+# the GitHub fallback's download is a double that fails; the push is a double. Recorded 2026-11-09 by the W1 agent.
+
+## How the values were frozen
+# MULTISCHOLAR_KIT108_W1_DUMP=<file> writes (a)'s UI parts and each case's captures as R code. The final harness's two
+# dump runs of the whole file on the start tree, in separate processes, were byte-identical on the first pair (cmp;
+# 270,433 bytes); the first was pasted between the OMIC_SUMMARY_FROZEN_UI and OMIC_SUMMARY_FROZEN markers. (An earlier
+# pair, before the files capture became per-step changes, was also byte-identical: 428,166 bytes; not used.) One
+# instrumentation correction after the freeze, not a value change: (a)'s `conditions` part was read through
+# `stats::na.omit`, whose `na.action` attribute the dump does not write; it is now read without it (the frozen values
+# are the dump's). The frozen file then ran in two more processes on the start tree at different times, and once on the
+# W1 tree, each identical to the frozen values (below).
+# Masked or left out as process-local: the project's and the owner's roots (<ROOT>), tempdir (<TMP>), dates and times
+# (the session summary's Timestamp, the session-state file's date and `timestamp` field), hexadecimal ids of 10 or more
+# characters in texts (the entry suite's masks), store references (`<ref>`; saved-entity ids are not content-addressed,
+# KIT-107 W2), store entity ids in managed parameters (`<entity>`), environments by their class. Digests are taken over
+# the masked canonical form (`guiEntryCanonical`) and kept as 16 hex characters; they are not passed through the text
+# masks, so they stay pinned. Console logging (cat, logger) is not captured (D1).
+
+## (a) Identity: mod_prot_summary_ui("session_summary"), mod_lipid_summary_ui("summary"), mod_metab_summary_ui("summary"),
+## mod_lipid_summary_ui("summary", profile = trxOmicProfile()) under MULTISCHOLAR_TEST_MODE=true: per UI the HTML digest,
+## inputs, outputs, test ids, labels, button texts, placeholders, text areas, conditional panels' conditions, help texts
+## and defaults (11 parts). 45 expectations.
+
+## (b) In process: each exported server in testServer, mounted as the shell's `summary` call mounts it, on MCI-011's,
+## MCI-017's, MCI-023's and MCI-032's fixtures. Each step captures 13 fields (outputs, values, notes, updates, progress,
+## reactive_values, calls, global, files, study_parameters, integration, session_state, errors; trx's RUVIII steps add
+## `ruviii`). Expectations per case (1 + per step 1 + one per field):
+#   lipid_refusals 99, metab_refusals 99, prot_refusals 99 (start, save_no_label, copy_no_label, report_no_label (the
+#     F-11 notice), export_no_label, report_before_copy (the F-11 notice), github_before_report (silent))
+#   lipid_main 99, metab_main 99 (start (the label prefilled), save (in process, the record written), copy (complete,
+#     the global absent: assigned), report (the template copied from the package), export, github_disabled (silent),
+#     github (the push double))
+#   lipid_variants 57, metab_variants 57 (the global the session's; the template in scripts/<omic>/: save_record_fails
+#     (the warning, duration NULL), copy (an optional artifact missing: the warning), report_bundle_fails)
+#   lipid_required_missing 43, metab_required_missing 43 (no inputs, no contrasts or design on the bus: copy (required
+#     artifacts missing: the error), report (refused: not copied))
+#   lipid_github_fallback 29, metab_github_fallback 29, prot_github_fallback 29 (copy, report_fallback: the package
+#     template absent, the download double failing offline; metab still renders, the render double fails)
+#   lipid_managed 43, metab_managed 43 (start, save (managed: the integration product on the in-test worker), export)
+#   lipid_global_another 15 (copy with another project's `project_dirs` global: kept, and the copy reads it: the error)
+#   trx_main 143 (norm, da, report_before_copy, save_before_export (the gate's warning and "not written (no integration
+#     export yet)"), ruviii_unavailable (technical_replicate on a design without them: the classed refusal), ruviii
+#     (group), save (the integration TSV), copy, report, export)
+#   trx_technical 44 (norm, da, ruviii_technical: the technical-replicate choice offered and run)
+#   trx_managed 58 (norm, da, ruviii (managed: the product and its figures), save (the managed integration product))
+#   prot_route_dia 71, prot_route_dia_limpa 71, prot_route_tmt 71, prot_route_lfq 71 (MCI-011's in-memory manager:
+#     start, save (non-native: the RDS of NULL), copy (no active owner: the gate passes), report (the route's template
+#     from the package), export)
+#   prot_stale 43 (TMT_PD with DIANN_report.rmd requested: copy, report (TMT_report.rmd), export)
+#   prot_owner 99 (a non-native DIA owner, the active owner: start, save (the record; the RDS of a reference), copy,
+#     report (the template in scripts/proteomics/, the record bundle), export, github_disabled, github)
+#   prot_owner_variants 71 (start, save_record_fails, copy_gate_refuses (export_pending: "session outputs are pending"),
+#     copy, report_bundle_fails (the warning after the success notice))
+#   prot_native 29 (a native owner with no norm export: start, save (refused: "Study parameters saved with warnings"))
+# `report_ready` reads as today's "<error> unused arguments (self, name)" in every step (D2: the testServer read of a
+# `shiny::reactive` assigned to an output); the same read also reaches the session's unhandled-error hook, so `errors`
+# holds "<unhandled> unused arguments (self, name)" on the steps that (re)register the output. Both are today's values.
+
+## Result on the start tree (5be34ee5's R/), the frozen file, two processes at different times
+COUNTS test-omic-summary-module.R pass 1699 fail 0 error 0 skip 0 exit=0 elapsed=141s
+COUNTS test-omic-summary-module.R pass 1699 fail 0 error 0 skip 0 exit=0 elapsed=139s
+## Result on the W1 tree (the summary group added to R/utils_omic_gui_config.R; no summary module changed)
+COUNTS test-omic-summary-module.R pass 1699 fail 0 error 0 skip 0 exit=0 elapsed=140s
+
+## test-omic-gui-config.R: guiConfigSummaryRequired, the summary blocks (D1 and D4 values; D9 refusals by class), the
+## validates block (:58, the group in the names and its required fields for every omic) and the srcref block extended to
+## the summary group. Written first: on the start tree (no summary group) they fail; on the W1 tree they pass.
+COUNTS test-omic-gui-config.R pass 1549 fail 164 error 2 skip 0   (start tree)
+  BAD each omic's configuration validates, with the shell, binding, import, design, qc, norm, da, enrichment and summary groups
+  BAD no configuration function is defined in an R/mod_*.R file (srcref, under load_all)
+  BAD KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Export tab values at the start commit
+  BAD KIT-108 W1 (D9): each summary field is refused by class when missing or mistyped; the final state, the copy, the integration, the report and the export steps are checked; the W3 and W4 function fields are optional, by type when present
+COUNTS test-omic-gui-config.R pass 1833 fail 0 error 0 skip 0   (W1 tree)
+
+## The configuration's dependents on the W1 tree (every config is built and validated at each tab's start)
+COUNTS test-omic-design-module.R pass 152 fail 0 error 0 skip 0 exit=0 elapsed=22s
+COUNTS test-workflow-ui-shared.R pass 178 fail 0 error 0 skip 0 exit=0 elapsed=7s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0 exit=0 elapsed=7s
+# The first W1-tree run of test-workflow-server-shared.R errored (189/0/1): its KIT-102 W4 block builds a lipid shell
+# with three tabs (no summary tab) and the validator then required the summary's module id to match a summary tab. The
+# validator now checks the module id only when the shell has its summary tab (W1's own correction, before any commit);
+# the rerun above passes with the start tree's count (204).
+
+## The masking check list for W3 (test-omic-design-module.R): the names test-omic-summary-module.R reads or assigns
+## inside testServer (its driver mounts a wrapper server, so no module frame is in scope, but W3's frame must not
+## reuse them):
+#   log, acc, setup, steps, prefix, text, apply_updates, i, pending, values, put, set, read, ui_defaults, capture,
+#   out_names, shown, files, record, current, previous, differs, changed, removed, field, value, ctx, step
+## The reactive values are read from the `reactiveValues` the tab creates with `workflow_args_saved` (a recorder on
+## shiny::reactiveValues), not from the module frame, so the frame may keep them where it likes provided it creates them
+## with shiny::reactiveValues(workflow_args_saved = , files_copied = , report_generated = , report_path = ).

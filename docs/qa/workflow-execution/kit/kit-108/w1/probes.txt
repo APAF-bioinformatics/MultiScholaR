@@ -1,0 +1,79 @@
+# KIT-108 W1 probes (D12, and the `texts` field). Start commit 5be34ee5 (R/ identical to a19a6bf2). Not frozen except
+# where a W1 (b) case already captures the behaviour (named below). Recorded 2026-11-09 by the W1 agent.
+
+## Probe 1: scoping risk 6, the non-native proteomics integration branch (mod_prot_summary_session_helpers.R:91-92)
+# Question: is the branch that `saveRDS`es `resolveProtSummaryFinalS4State(...)$finalS4Object` reachable from the app,
+# and what does it write?
+#
+# (a) What it writes, when driven (W1 (b), frozen):
+#   prot_owner (a DIAStateAdapter without session_format "native_v1", the session's active owner):
+#     save -> integration/proteomics_kit108_final_s4.RDS = "<RDS> <reference>" (a saved workflow reference, not the
+#     object), notice "Saved Integration S4 Object"; createWorkflowArgsFromConfig receives final_s4_object = <ref>.
+#   prot_route_dia, _dia_limpa, _tmt, _lfq (MCI-011's in-memory state manager, not an owner):
+#     save -> integration/proteomics_kit108_final_s4.RDS = "<RDS> NULL" (getDIAStateReference returns NULL for a
+#     non-owner); final_s4_object = <NULL>.
+#   So the branch, when reached, writes a reference (an owner) or NULL (no owner), never the S4 object.
+#
+# (b) Reachability from the app (static, R/ at 5be34ee5):
+#   The proteomics bus's owner is set in one place at session start: startOmicWorkflow, mod_omic_workflow.R:113,
+#   `config$binding$owner` = createDIASessionOwner = createWorkflowSessionOwner (utils_omic_gui_config.R:1017;
+#   utils_workflow_dia_sessions.R:902), which sets session_format "native_v1" (utils_workflow_dia_sessions.R:891).
+#   Every later replacement of `workflow_data$state_manager` in R/ attaches an owner that is native too:
+#     :960  bindDIASessionOwnerType      (bound owner, native at :954)
+#     :1035 adopt at import               (native at :1032)
+#     :1237 GUI pilot adoption            (stageDIAGUIReferenceOwner: native at :1063, reopened native at :1071)
+#     :1284 adoptDIANativeSession         (openDIANativeSession: native at :766)
+#     :1395 legacy ingest                 (native at :1355)
+#     :1484 omics legacy ingest           (native at :1462)
+#     :2179 openDIAPeptideCheckpoint      (openDIANativeSession: native at :766)
+#   The other `state_manager <-` sites (utils_workflow_analysis_record.R:506, :621; utils_workflow_enrichment.R:1112;
+#   utils_workflow_execution.R:577) build a private workflow for the record replay or the worker's completion, never
+#   the GUI bus the summary reads. `grep -n session_format R/*.R` finds only assignments of "native_v1" and reads; no
+#   site clears it. KIT-072: the modules only ever hold an owner.
+#
+# Result: the non-native branch is NOT reachable from the app (every GUI owner is native from session start since
+# KIT-048). D12's rule: not raised as F108-02; kept as configuration, unchanged (W4's `protSummaryIntegrationFilename`
+# and `protSummaryIntegrationWrite` keep the non-native branch), and recorded here. Its behaviour stays pinned by
+# prot_owner and prot_route_* in W1 (b).
+
+## Probe 2: the per-omic texts and flow differences no reading pass could be sure of (completes `texts`, D1)
+# From the W1 (b) captures (frozen) and the entry oracles (tests/testdata/gui-entry/*.json):
+#   Texts (now `summary$texts`):
+#     proteomics integration_saved = "Saved Integration artifact": the native save's notice (all five prot oracles;
+#       lipid, metab and trx show "Saved Integration S4 Object", as proteomics' non-native branch does: prot_owner).
+#     proteomics progress_detect = "Detecting workflow type...": the report's first progress (every prot report step;
+#       no other omic shows it).
+#     transcriptomics integration_not_written = "not written (no integration export yet)": the session summary's
+#       integration object before the RUVIII export (trx_main save_before_export).
+#   Flow differences that are not texts (now `summary$report` logicals, with their file:line in the builders):
+#     render_after_failed_template: metab renders after a failed template retrieval (metab_github_fallback: the
+#       retrieval error, then "Report generation failed: ..." and the 10 s debug warning); lipid, trx and proteomics
+#       stop at the retrieval error (lipid_github_fallback, prot_github_fallback).
+#     checking_progress_always: proteomics shows "0.2 Checking for <template> template..." when the template is
+#       already in the project (prot_owner report); lipid and metab only when it is missing (lipid_variants,
+#       metab_variants report_bundle_fails show no 0.2 step).
+#     record_after_success: proteomics shows "Report generated successfully!" before the record bundle's warning
+#       (prot_owner_variants report_bundle_fails); lipid and metab after it (lipid_variants, metab_variants).
+#   Already configuration (D1): proteomics' unclassified copy (copy$required NULL: "Publication files copied" whatever
+#   is missing), its record only on a DIAStateAdapter (record_class: no record bundle on MCI-011's in-memory manager),
+#   the copy's `project_dirs` lookup (copy$inherits).
+#   No other per-omic text: the remaining notices, progress texts, outputs, session-summary texts and the template
+#   status' one-template text are the same string in every copy (the frozen captures differ only by the omic's label,
+#   template and paths), and the UI markup differs only by the group's placeholder, description and test ids
+#   (W1 (a)) and trx's export panel.
+
+## Observations recorded, not defects of this ticket's code
+# O1 (lipid_global_another): another project's `project_dirs` global is kept (the tab assigns it only when absent,
+#    D3) and copyToResultsSummary reads the global by name, so the copy fails ("Failed to get project paths ...").
+#    Today's contract; pinned so the core keeps "assign only when absent".
+# O2: every report step registers `report_ready` as a `shiny::reactive`; under testServer its read is
+#    "<error> unused arguments (self, name)" and the same read reaches the session's unhandled-error hook (D2).
+
+## Proposed finding
+# F108-03 (proposed; display only, not fixed in W1): the trx save before the RUVIII export shows the warning
+#   "The integration export needs the RUVIII export: run it in the panel above, then save again." and then the
+#   message "Saved Integration S4 Object", while the session summary says "Integration Object: not written (no
+#   integration export yet)" and no integration file is written (trx_main save_before_export, frozen;
+#   mod_lipid_summary_workflow_helpers.R:119-122 then finish()'s :94). The second notice is untrue for that save.
+#   Changing it changes a notification's text, which the scientific contract keeps byte-identical in KIT-108; queued
+#   for the lead's decision (park, or KIT-109's cleanup).

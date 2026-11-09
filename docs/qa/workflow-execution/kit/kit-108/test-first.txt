@@ -1,0 +1,54 @@
+# KIT-108 test-first: the before half of every retargeted or guarding test, on the start commit, unchanged.
+# Start commit 5be34ee5 (origin/performance-v2; R/ identical to a19a6bf2 and to kit_107's source 8b92d7ac), extracted
+# with `git archive` into an on-disk scratch tree (~/.cache/k108w1/start-tree); the start tree's own R/ and tests/ ran,
+# so the tests ran on the start commit exactly. R 4.6.1, pkgload::load_all (export_all, helpers),
+# MULTISCHOLAR_STRICT_SKIPS=1, one Rscript process per file; runner kit/scripts-078/run1.R (verbose);
+# R_LIBS = core/browser-smoke.66sPmE/library (kit_107); TMPDIR on disk (~/.cache/k108w1/tmp). Recorded 2026-11-09 by
+# the W1 agent (W1 delegated by the lead).
+
+## MCI-011 (proteomics), MCI-017 (metab), MCI-023 (lipid), MCI-032 (trx)
+COUNTS test-module-ci-prot-summary.R pass 70 fail 0 error 0 skip 1 exit=0 elapsed=6s
+# (the 1 skip is Q-22's quarantined MCI-011.1, test-module-ci-prot-summary.R:2)
+COUNTS test-module-ci-metab-summary.R pass 82 fail 0 error 0 skip 0 exit=0 elapsed=25s
+COUNTS test-module-ci-lipid-summary.R pass 105 fail 0 error 0 skip 1 exit=0 elapsed=26s
+# (the 1 skip is Q-23's quarantined MCI-023.3, test-module-ci-lipid-summary.R:180)
+COUNTS test-module-ci-trx-summary.R pass 70 fail 0 error 0 skip 0 exit=0 elapsed=129s
+
+## The seam files (quarantine candidates Q-170 to Q-172 at W3, Q-180 and Q-181 at W4)
+COUNTS test-prot-12-summary-module-contracts.R pass 432 fail 0 error 0 skip 3 exit=0 elapsed=7s
+# (the 3 skips are Q-22's quarantined blocks, :84, :248, :284)
+COUNTS test-prot-12a-summary-module-characterization.R pass 30 fail 0 error 0 skip 2 exit=0 elapsed=6s
+# (the 2 skips are Q-22's quarantined blocks, :48, :141)
+COUNTS test-lipid-14a-summary-module-characterization.R pass 131 fail 0 error 0 skip 0 exit=0 elapsed=8s
+COUNTS test-lipid-15-summary-module-seams.R pass 139 fail 0 error 0 skip 0 exit=0 elapsed=7s
+COUNTS test-metab-05-summary-module-characterization.R pass 161 fail 0 error 0 skip 9 exit=0 elapsed=6s
+# (the 9 skips are the file's binding guard, :24, "requires extracted helper binding": helpers KIT-101 deleted)
+
+## D11's retargeted files
+COUNTS test-workflow-native-session.R pass 733 fail 0 error 0 skip 2 exit=0 elapsed=529s
+# (run 4's count, 733/2; :392 is retargeted at W4)
+COUNTS test-workflow-analysis-record.R pass 274 fail 0 error 0 skip 0 exit=0 elapsed=172s
+COUNTS test-workflow-memory-mechanism-member.R pass 0 fail 0 error 0 skip 13 exit=0 elapsed=6s
+# (every block is selector-gated, e.g. :178 "explicit isolated performance or preflight selector only": the
+#  retargeted lines :966-975 and :1169-1177 run only under their member selector, not under the per-file runner)
+COUNTS test-workflow-omics-application-reads.R pass 230 fail 0 error 0 skip 0 exit=0 elapsed=474s
+COUNTS test-workflow-gui-diagnostic.R pass 72 fail 0 error 0 skip 4 exit=0 elapsed=17s
+
+## The norm core (F104-01's summary_archive digest) and the configuration's guards
+COUNTS test-prot-norm-core.R pass 57 fail 0 error 0 skip 0 exit=0 elapsed=70s
+COUNTS test-omic-gui-config.R pass 1544 fail 0 error 0 skip 0 exit=0 elapsed=22s
+COUNTS test-omic-design-module.R pass 152 fail 0 error 0 skip 0 exit=0 elapsed=23s
+COUNTS test-workflow-server-shared.R pass 204 fail 0 error 0 skip 0 exit=0 elapsed=6s
+
+## The four entry files against their frozen oracles (in parallel, under systemd-inhibit --what=sleep; ceilings 900 s
+## per lane, 4,500 s per file; no multischolar* user unit active). Each lane's expectations compare its whole record
+## with its oracle, so a pass is "identical". 05:23:01Z to 05:36:46Z.
+COUNTS test-gui-entry-proteomics.R pass 188 fail 0 error 0 skip 0 exit=0 elapsed=825s
+COUNTS test-gui-entry-lipidomics.R pass 35 fail 0 error 0 skip 0 exit=0 elapsed=96s
+COUNTS test-gui-entry-metabolomics.R pass 105 fail 0 error 0 skip 0 exit=0 elapsed=219s
+COUNTS test-gui-entry-transcriptomics.R pass 29 fail 0 error 0 skip 0 exit=0 elapsed=51s
+# All ten lanes identical to their oracles (KIT-107's counts: proteomics 188, lipid 35, metab 105, trx 29).
+
+## Not run here: test-e2e-proteomics-dia-limpa.R (:64-66; a browser lane, the lead's run 8) and helper-gui-entry.R's
+## F104-01 lane check (the lead's, W6). F104-01's tests 1 and 2 are shown failing on the start commit by the item that
+## writes them (W4, W6). W1's own tests (written first): w1/test-first.txt; the probes: w1/probes.txt.

@@ -75,6 +75,18 @@
 # (`organism`, `annotation`, `kernel`, and the organism filter's `mapping` and `apply`) are optional
 # and absent until the W2 merge wires them; W4 makes them required. The declared parameters and the
 # background are the declaration's, not repeated here; labels and help texts stay in the markup (D1).
+#
+# KIT-108 W1 adds the `summary` group (design 4.10, the ticket's D1, D4 and D9) for all four omics: the Summary &
+# Export tab at the KIT-108 start commit 5be34ee5 (R/ identical to a19a6bf2 and to kit_107's source 8b92d7ac), with
+# each value's file:line there: the module id and test id prefix, the label placeholder and description, the final
+# state, the record's owner class, the publication copy (its gate, its required artifacts and the `project_dirs`
+# global's lookup), the integration export (its file name, managed operation, in-process writer and trx's gate on the
+# RUVIII export), the report (its template directory, template, label and template status), the export steps (trx's
+# RUVIII export, D4) and the texts that differ per omic. The function fields whose functions are still in an R/mod_*.R
+# file at the start commit (proteomics' final state, copy gate, integration file name and writer, report template and
+# status; trx's final state, integration writer and the export step's choices, availability, parameters and status
+# text; every omic's session-state payload) are optional and absent until the W3 (lipid, metab, trx) and W4
+# (proteomics) merges wire them; W6 makes them required.
 
 # ------------------------------------------------------------------------------------------------
 # The entry point.
@@ -82,8 +94,8 @@
 
 #' The shared GUI layer's configuration of one omic, validated.
 #' @param omic_type One of `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
-#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc`, `norm`, `da` and
-#'   `enrichment`.
+#' @return A plain list with the groups `shell`, `binding`, `import`, `design`, `qc`, `norm`, `da`,
+#'   `enrichment` and `summary`.
 #' @noRd
 omicGuiConfig <- function(omic_type) {
     builders <- list(proteomics = omicGuiConfigProteomics, lipidomics = omicGuiConfigLipidomics,
@@ -110,7 +122,7 @@ validateOmicGuiConfig <- function(config) {
     schema <- omicGuiConfigSchema()
     groups <- c(shell = "named_list", binding = "named_list", import = "named_list",
         design = "named_list", qc = "named_list", norm = "named_list_or_null", da = "named_list",
-        enrichment = "named_list_or_null")
+        enrichment = "named_list_or_null", summary = "named_list")
     checkOmicGuiFields(config, groups)
     validateOmicGuiShell(config$shell, schema)
     validateOmicGuiBinding(config$binding, config$shell$omic_type, schema)
@@ -120,6 +132,7 @@ validateOmicGuiConfig <- function(config) {
     if (!is.null(config$norm)) validateOmicGuiNorm(config$norm, schema)
     validateOmicGuiDa(config$da, schema)
     if (!is.null(config$enrichment)) validateOmicGuiEnrichment(config$enrichment, schema)
+    validateOmicGuiSummary(config$summary, config$shell, schema)
     invisible(config)
 }
 
@@ -296,7 +309,45 @@ omicGuiConfigSchema <- function() {
         enrichment_annotation = c(resolve = "ref", match = "ref"),
         enrichment_kernel = c(select = "ref", test_double = "ref"),
         enrichment_organism_filter = c(mixed_species_from = "chr1"),
-        enrichment_organism_filter_optional = c(mapping = "ref", apply = "ref")
+        enrichment_organism_filter_optional = c(mapping = "ref", apply = "ref"),
+        # KIT-108 W1 (design 4.10, D1, D4, D9): the Summary & Export tab, every omic. The function fields still in an
+        # R/mod_*.R file at the start commit are optional (`*_optional`), checked by type when present, until the W3 and
+        # W4 merges wire them. `export_steps` is a list, possibly empty, of steps; `texts` the per-omic texts.
+        summary = c(module_id = "chr1", testid = "chr1", placeholder = "chr1", description = "chr1",
+            final_state = "named_list", copy = "named_list", integration = "named_list", report = "named_list",
+            texts = "named_chr0"),
+        summary_optional = c(record_class = "chr1_or_null", session_state = "ref"),
+        # The final state: the head's by its `context` function, or the first of `states` with its `read_ids` reader.
+        summary_final_state = c(context = "ref", states = "chr", read_ids = "ref"),
+        # `required`: NULL (failures not classified) or the required artifacts' display names, checked by the validator.
+        summary_copy = c(inherits = "lgl1"),
+        summary_copy_optional = c(gate = "ref_or_null"),
+        # `operation` and `requires` are present, NULL or a string; `filename` a string or a function; `write` the
+        # in-process writer (NULL: the final object's RDS).
+        summary_integration = c(requires = "chr1_or_null"),
+        summary_integration_optional = c(write = "ref_or_null", missing_message = "chr1"),
+        # `template`: a file name, or the route's resolver; a file name needs the `label` of the one-template status.
+        # KIT-108 W1's captures: the report flow's per-omic order (`render_after_failed_template`: metab renders after
+        # a failed template retrieval; `checking_progress_always`: proteomics shows the template check's progress when
+        # the template is already in the project; `record_after_success`: proteomics exports the record bundle after
+        # the report's success notice and outputs, the others before).
+        summary_report = c(dir = "chr1", label = "chr1_or_null", render_after_failed_template = "lgl1",
+            checking_progress_always = "lgl1", record_after_success = "lgl1"),
+        summary_report_optional = c(status = "ref_or_null"),
+        summary_export_step = c(id = "chr1", title = "chr1", help = "chr", choice = "named_list", button = "named_list",
+            status = "named_list", figure = "named_list", operation = "chr1", accept = "ref", run_reference = "ref",
+            publications = "list", error = "named_list"),
+        summary_export_step_optional = c(parameters = "ref"),
+        summary_export_choice = c(output = "chr1", input = "chr1", label = "chr1", selected = "chr1",
+            unavailable = "chr"),
+        summary_export_choice_optional = c(choices = "ref", available = "ref"),
+        summary_export_button = c(input = "chr1", label = "chr1", testid = "chr1", icon = "chr1", class = "chr1"),
+        summary_export_status = c(output = "chr1", idle = "chr1"),
+        summary_export_status_optional = c(text = "ref"),
+        summary_export_figure = c(output = "chr1", file = "chr1", dir = "chr1", height = "chr1", image = "named_chr",
+            alt = "chr1", alt_idle = "chr1"),
+        summary_export_publication = c(operation = "chr1", parameters = "named_list"),
+        summary_export_error = c(prefix = "chr1", type = "chr1", duration = "num1")
     )
 }
 
@@ -630,6 +681,82 @@ validateOmicGuiEnrichment <- function(enrichment, schema) {
         }
     }
     invisible(enrichment)
+}
+
+#' The summary group (KIT-108 D1, D4, D9): its fields and types; the module id is the shell's summary tab's (when the
+#' shell has one) and the test id the shell's; the final state is named by its `context`, or by `states` with their `read_ids` reader, not both; the copy's
+#' required artifacts are NULL or names; the integration's operation is NULL or a `*_integration_export` operation, its
+#' gate NULL or an export with its message, its file name a string or a function; a report template given as a file
+#' name has the label of the one-template status; each export step's panel strings and references.
+#' @noRd
+validateOmicGuiSummary <- function(summary, shell, schema) {
+    checkOmicGuiFields(summary, schema$summary, "summary")
+    checkOmicGuiFields(summary, schema$summary_optional, "summary", required = FALSE)
+    # A shell configured without its summary tab (a shell test's reduced tabs) has no module id to match.
+    tab <- Filter(function(tab) identical(tab$status_key, "session_summary"), shell$tabs)
+    if (length(tab) == 1L && !identical(summary$module_id, tab[[1L]]$module_id)) {
+        omicGuiConfigAbort("summary$module_id", "must be the module id of the shell's summary tab")
+    }
+    if (!identical(summary$testid, shell$testid)) omicGuiConfigAbort("summary$testid", "must be the shell's test id")
+    final <- summary$final_state
+    checkOmicGuiFields(final, schema$summary_final_state, "summary$final_state", required = FALSE)
+    if (!is.null(final$context) && !is.null(final$states)) {
+        omicGuiConfigAbort("summary$final_state", "must name the final state by `context` or by `states`, not both")
+    }
+    if (!is.null(final$states)) checkOmicGuiFields(final, c(read_ids = "ref"), "summary$final_state")
+    copy <- summary$copy
+    checkOmicGuiFields(copy, schema$summary_copy, "summary$copy")
+    checkOmicGuiFields(copy, schema$summary_copy_optional, "summary$copy", required = FALSE)
+    if (!"required" %in% names(copy)) omicGuiConfigAbort("summary$copy$required", "is missing")
+    if (!is.null(copy$required) && !omicGuiFieldHasType(copy$required, "chr")) {
+        omicGuiConfigAbort("summary$copy$required", "must be NULL or the required artifacts' names")
+    }
+    integration <- summary$integration
+    checkOmicGuiFields(integration, schema$summary_integration, "summary$integration")
+    checkOmicGuiFields(integration, schema$summary_integration_optional, "summary$integration", required = FALSE)
+    if (!"operation" %in% names(integration)) omicGuiConfigAbort("summary$integration$operation", "is missing")
+    operation <- integration$operation
+    if (!is.null(operation) && !(omicGuiFieldHasType(operation, "chr1") && endsWith(operation, "_integration_export"))) {
+        omicGuiConfigAbort("summary$integration$operation", "must be NULL or an `*_integration_export` operation")
+    }
+    if (!is.null(integration$requires)) {
+        checkOmicGuiFields(integration, c(missing_message = "chr1"), "summary$integration")
+    }
+    if ("filename" %in% names(integration) && !(omicGuiFieldHasType(integration$filename, "chr1") ||
+        is.function(integration$filename))) {
+        omicGuiConfigAbort("summary$integration$filename", "must be a file name or a function")
+    }
+    report <- summary$report
+    checkOmicGuiFields(report, schema$summary_report, "summary$report")
+    checkOmicGuiFields(report, schema$summary_report_optional, "summary$report", required = FALSE)
+    if ("template" %in% names(report)) {
+        if (omicGuiFieldHasType(report$template, "chr1")) {
+            checkOmicGuiFields(report, c(label = "chr1"), "summary$report")
+        } else if (!is.function(report$template)) {
+            omicGuiConfigAbort("summary$report$template", "must be a file name or a function")
+        }
+    }
+    steps <- summary$export_steps
+    if (!"export_steps" %in% names(summary)) omicGuiConfigAbort("summary$export_steps", "is missing")
+    if (!is.list(steps) || is.object(steps)) omicGuiConfigAbort("summary$export_steps", "must be a list of steps")
+    for (i in seq_along(steps)) {
+        path <- sprintf("summary$export_steps[[%d]]", i)
+        step <- steps[[i]]
+        checkOmicGuiFields(step, schema$summary_export_step, path)
+        checkOmicGuiFields(step, schema$summary_export_step_optional, path, required = FALSE)
+        checkOmicGuiFields(step$choice, schema$summary_export_choice, paste0(path, "$choice"))
+        checkOmicGuiFields(step$choice, schema$summary_export_choice_optional, paste0(path, "$choice"), required = FALSE)
+        checkOmicGuiFields(step$button, schema$summary_export_button, paste0(path, "$button"))
+        checkOmicGuiFields(step$status, schema$summary_export_status, paste0(path, "$status"))
+        checkOmicGuiFields(step$status, schema$summary_export_status_optional, paste0(path, "$status"), required = FALSE)
+        checkOmicGuiFields(step$figure, schema$summary_export_figure, paste0(path, "$figure"))
+        for (j in seq_along(step$publications)) {
+            checkOmicGuiFields(step$publications[[j]], schema$summary_export_publication,
+                sprintf("%s$publications[[%d]]", path, j))
+        }
+        checkOmicGuiFields(step$error, schema$summary_export_error, paste0(path, "$error"))
+    }
+    invisible(summary)
 }
 
 #' Check the fields a schema names: present (when required) and of their type.
@@ -1022,7 +1149,40 @@ omicGuiConfigProteomics <- function() {
         # KIT-105 D3 (P-20): proteomics keeps its own normalisation frame until KIT-111.
         norm = NULL,
         da = omicGuiProteomicsDa(),
-        enrichment = omicGuiProteomicsEnrichment())
+        enrichment = omicGuiProteomicsEnrichment(),
+        summary = omicGuiProteomicsSummary())
+}
+
+#' The proteomics Summary & Export tab at 5be34ee5 (mod_prot_summary_*.R; KIT-108 D1): the module id and test ids (the
+#' shell's tab, `omicGuiProteomicsShell`; mod_prot_summary_ui.R:33, :46, :64, :72, :106), the placeholder and
+#' description (:25, :27), the record and its bundle only on a `DIAStateAdapter` owner
+#' (mod_prot_summary_session_helpers.R:59; mod_prot_summary_report_helpers.R:545), the copy's failures unclassified and
+#' its `project_dirs` global looked up with `inherits = FALSE` (mod_prot_summary_publication_helpers.R:89-153, :105), no
+#' managed integration operation and no gate (mod_prot_summary_session_helpers.R:82-98), the package's template directory
+#' (mod_prot_summary_report_helpers.R:254), no one-template label (the route's status lists four templates, :29-61), no
+#' export step, the native integration's notification (mod_prot_summary_session_helpers.R:97-98), and the report flow's
+#' order (W1's captures): the progress "Detecting workflow type..." and the template check's progress always
+#' (mod_prot_summary_report_helpers.R:512, :520), a failed retrieval stopping the report (:528-530), the record bundle
+#' after the success notice and outputs (:534-550; `activateProtSummaryRenderedReport`, :389-408). Wired at the W4
+#' merge (their functions are in R/mod_prot_summary_*.R at the start commit): `final_state$context`
+#' (`resolveProtSummaryFinalS4State`, mod_prot_summary_report_helpers.R:1-27), `copy$gate` (today's
+#' `assertDIAExportReady(getDIAActiveManager())`, mod_prot_summary_publication_helpers.R:104), `integration$filename`
+#' and `$write` (native `%s_%s_final.msdia.tar` with the archive's refresh and copy, else `%s_%s_final_s4.RDS` and
+#' `saveRDS`; mod_prot_summary_session_helpers.R:82-93), `report$template` (`resolveProtSummaryReportTemplate`,
+#' mod_prot_summary_report_helpers.R:131-248), `report$status` (`buildProtSummaryTemplateStatus`, :29-61) and
+#' `session_state` (`prepareProtSummarySessionStateExport`, mod_prot_summary_session_helpers.R:181-215).
+#' @noRd
+omicGuiProteomicsSummary <- function() {
+    list(module_id = "session_summary", testid = "prot", placeholder = "e.g., my_proteomics_analysis",
+        description = "Full protein analysis workflow with config parameters",
+        final_state = list(),
+        record_class = "DIAStateAdapter",
+        copy = list(required = NULL, inherits = FALSE),
+        integration = list(operation = NULL, requires = NULL),
+        report = list(dir = "proteomics", label = NULL, render_after_failed_template = FALSE,
+            checking_progress_always = TRUE, record_after_success = TRUE),
+        export_steps = list(),
+        texts = c(integration_saved = "Saved Integration artifact", progress_detect = "Detecting workflow type..."))
 }
 
 #' The proteomics enrichment tab at 8e7294b6 (mod_prot_enrich*.R; KIT-107 D1): the tab, its status key and value
@@ -1310,7 +1470,45 @@ omicGuiConfigLipidomics <- function() {
         norm = omicGuiLipidNorm(),
         da = omicGuiLipidDa(),
         # KIT-107 D9: no enrichment tab.
-        enrichment = NULL)
+        enrichment = NULL,
+        summary = omicGuiLipidSummary())
+}
+
+#' The publication copy of lipid, metab and trx at 5be34ee5 (KIT-108 D1): no gate; the three required artifacts whose
+#' failure stops the copy (`classifyLipidSummaryCopyFailures`, mod_lipid_summary_state_helpers.R:211-227, called at
+#' mod_lipid_summary_workflow_helpers.R:268-277; metab's mod_metab_summary_observer_helpers.R:147-163, :617-626); the
+#' `project_dirs` global looked up with `exists`' default `inherits = TRUE` (mod_lipid_summary_workflow_helpers.R:255;
+#' mod_metab_summary_observer_helpers.R:603).
+#' @noRd
+omicGuiFeatureSummaryCopy <- function() {
+    list(gate = NULL, required = c("Contrasts Table", "Design Matrix", "Study Parameters"), inherits = TRUE)
+}
+
+#' The lipid Summary & Export tab at 5be34ee5 (mod_lipid_summary*.R; KIT-108 D1): the module id and test ids (the
+#' shell's tab; mod_lipid_summary.R:41, :61-134), the placeholder and description (:53, :55), the final state: the first
+#' of the six data states, head first, read as ids on a managed session (`readLipidWorkflowIds`,
+#' utils_workflow_lipid_declarations.R:130), else `getState` (`collectLipidSummaryWorkflowArgsContext`,
+#' mod_lipid_summary_state_helpers.R:312-377, states :322-329, :332, :336-337), the record whenever there is a bus
+#' (mod_lipid_summary_workflow_helpers.R:67, :479), the copy (`omicGuiFeatureSummaryCopy`), the integration file and its
+#' managed operation, else the final object's RDS in process (:89, :124-132), the template, its directory and its
+#' label (:359, :387; mod_lipid_summary_state_helpers.R:7-24), the report flow's order (the template check's progress
+#' only when the template is missing, :407-408; a failed retrieval stops the report, :444-446; the record bundle before
+#' the success notice, :477-494), no export step and no text of its own. Wired at the W3 merge: `session_state`
+#' (`prepareLipidSummarySessionState`, mod_lipid_summary_state_helpers.R:133-209).
+#' @noRd
+omicGuiLipidSummary <- function() {
+    list(module_id = "summary", testid = "lipid", placeholder = "e.g., my_lipidomics_analysis",
+        description = "Full lipidomics analysis workflow with normalization and DA",
+        final_state = list(states = c("lipid_correlation_filtered", "lipid_norm_complete", "lipid_ruv_corrected",
+            "lipid_normalized", "loaded_for_de", "lipid_qc_complete"), read_ids = readLipidWorkflowIds),
+        record_class = NULL,
+        copy = omicGuiFeatureSummaryCopy(),
+        integration = list(filename = "%s_%s_final_s4.RDS", operation = "lipid_integration_export", write = NULL,
+            requires = NULL),
+        report = list(dir = "lipidomics", template = "lipidomics_report.rmd", label = "Lipidomics", status = NULL,
+            render_after_failed_template = FALSE, checking_progress_always = FALSE, record_after_success = FALSE),
+        export_steps = list(),
+        texts = character())
 }
 
 #' The lipid DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
@@ -1499,7 +1697,34 @@ omicGuiConfigMetabolomics <- function() {
         norm = omicGuiMetabNorm(),
         da = omicGuiMetabDa(),
         # KIT-107 D9: no enrichment tab.
-        enrichment = NULL)
+        enrichment = NULL,
+        summary = omicGuiMetabSummary())
+}
+
+#' The metab Summary & Export tab at 5be34ee5 (mod_metab_summary*.R; KIT-108 D1): the module id and test ids (the
+#' shell's tab; mod_metab_summary.R:57, :70, :88, :96, :130), the placeholder and description (:49, :51), the final
+#' state: the first of the six data states, head first, read as ids on a managed session (`readMetabWorkflowIds`,
+#' utils_workflow_metab_declarations.R:124), else `getState` (mod_metab_summary_observer_helpers.R:310-328), the record
+#' whenever there is a bus (:395, :885), the copy (`omicGuiFeatureSummaryCopy`), the integration file and its managed
+#' operation, else the final object's RDS in process (:420-425, :459-467), the template, its directory and its label
+#' (:757, :784; mod_metab_summary_server_helpers.R:1-27), the report flow's order (the template check's progress only
+#' when the template is missing, :769-773; after a failed retrieval the report still renders, :819-846; the record bundle
+#' before the success notice, :883-900), no export step and no text of its own. Wired at the W3 merge:
+#' `session_state` (`prepareMetabSummarySessionState`, mod_metab_summary_observer_helpers.R:70-145).
+#' @noRd
+omicGuiMetabSummary <- function() {
+    list(module_id = "summary", testid = "metab", placeholder = "e.g., my_metabolomics_analysis",
+        description = "Full metabolomics analysis workflow with normalization and DA",
+        final_state = list(states = c("metab_correlation_filtered", "metab_norm_complete", "metab_ruv_corrected",
+            "metab_normalized", "loaded_for_de", "metab_qc_complete"), read_ids = readMetabWorkflowIds),
+        record_class = NULL,
+        copy = omicGuiFeatureSummaryCopy(),
+        integration = list(filename = "%s_%s_final_s4.RDS", operation = "metab_integration_export", write = NULL,
+            requires = NULL),
+        report = list(dir = "metabolomics", template = "metabolomics_report.rmd", label = "Metabolomics", status = NULL,
+            render_after_failed_template = TRUE, checking_progress_always = FALSE, record_after_success = FALSE),
+        export_steps = list(),
+        texts = character())
 }
 
 #' The metab DA tab at b75561de (the shared values are `omicGuiFeatureDa`'s). The columns
@@ -1702,7 +1927,67 @@ omicGuiConfigTranscriptomics <- function() {
         norm = omicGuiTrxNorm(),
         da = omicGuiTrxDa(),
         # KIT-107 D9: no enrichment tab.
-        enrichment = NULL)
+        enrichment = NULL,
+        summary = omicGuiTrxSummary())
+}
+
+#' The trx Summary & Export tab at 5be34ee5: the lipid tab under the profile's summary entries (KIT-108 D1, D4;
+#' `trxNormDaSummaryProfile`, mod_transcriptomics.R:45-57; `trxOmicProfile`, :39-41): the module id and test ids (the
+#' shell's tab; the profile's `testid`, :39; mod_lipid_summary.R:41), the placeholder and description (:52-53), the record
+#' whenever there is a bus, the copy (`omicGuiFeatureSummaryCopy`), the integration file and its managed operation
+#' (:54; mod_lipid_summary_workflow_helpers.R:89, :124-127) gated on the accepted RUVIII export with its message
+#' (mod_transcriptomics.R:56; `trxSummaryIntegrationReady`, mod_trx_summary.R:143; mod_lipid_summary_workflow_helpers.R:
+#' 119-122), the template, its directory and its label (mod_transcriptomics.R:39; mod_lipid_summary_state_helpers.R:17,
+#' :20), lipid's report flow (mod_lipid_summary_workflow_helpers.R:352-534), the RUVIII export step
+#' (`omicGuiTrxRuviiiExportStep`) and the save's text before that export
+#' (mod_lipid_summary_workflow_helpers.R:121). Wired at the W3 merge: `final_state$context` (`trxSummaryContext`,
+#' mod_trx_summary.R:121-126), `integration$write` (`trxSummaryIntegrationWrite`, :136-139) and `session_state` (the
+#' lipid payload with `trxSummaryStateObject`, :130-132; mod_lipid_summary_state_helpers.R:158, :168, :172).
+#' @noRd
+omicGuiTrxSummary <- function() {
+    list(module_id = "summary", testid = "trx", placeholder = "e.g., my_transcriptomics_analysis",
+        description = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export",
+        final_state = list(),
+        record_class = NULL,
+        copy = omicGuiFeatureSummaryCopy(),
+        integration = list(filename = "transcriptomics_normalized_data.tsv", operation = "trx_integration_export",
+            requires = "trx_ruviii_export",
+            missing_message = "The integration export needs the RUVIII export: run it in the panel above, then save again."),
+        report = list(dir = "transcriptomics", template = "transcriptomics_report.rmd", label = "Transcriptomics",
+            status = NULL, render_after_failed_template = FALSE, checking_progress_always = FALSE,
+            record_after_success = FALSE),
+        export_steps = list(omicGuiTrxRuviiiExportStep()),
+        texts = c(integration_not_written = "not written (no integration export yet)"))
+}
+
+#' Trx's RUVIII export at 5be34ee5 as an export step (KIT-108 D4; mod_trx_summary.R:23-117): the panel
+#' (`trxSummaryExportUi`, :43-54: title, help text, the choice's output, the button, the status and the figure), the
+#' choice (the radio input, its label and default, the unavailable text; `trxSummaryServer`, :99-104), the status's idle
+#' text (:110), the figure (`ruviii_before_and_after.png` in `publication_graphs_dir`, :111-115), the managed product
+#' and its acceptance on the head (`acceptTrxRuviiiExport`, utils_workflow_trx_declarations.R:411; mod_trx_summary.R:
+#' 76-83), the in-process run (`runTrxReferenceRuviiiExport`, utils_workflow_trx_declarations.R:815; mod_trx_summary.R:
+#' 88), the publications (:73) and the error notification (:68-71). Wired at the W3 merge: `choice$choices`
+#' (`trxRuviiiMChoices`, :25-29), `choice$available` (`trxHeadHasTechnicalReplicates`, :33-40), `parameters`
+#' (`trxRuviiiExportParameters`, new: :76-78) and `status$text` (`trxRuviiiStatusText`, :58-61).
+#' @noRd
+omicGuiTrxRuviiiExportStep <- function() {
+    list(id = "ruviii_export", title = "RUVIII Integration Export",
+        help = c("RUVIII (ruv::RUVIII) on the TMM logCPM, with the RUVs inferred negative controls and k, for the",
+            "integration export only: the DA results are not changed. M is the replicate structure: the group (the notebook),",
+            "or the design's technical replicates when it has them."),
+        choice = list(output = "ruviii_m_ui", input = "ruviii_m_source", label = "Replicate structure M:",
+            selected = "group", unavailable = c("Technical replicates: not available; the design has no technical",
+                "replicates (trx_ruviii_replicates_invalid).")),
+        button = list(input = "run_ruviii_export", label = "Run RUVIII Export", testid = "trx-summary-ruviii-export",
+            icon = "play", class = "btn-primary"),
+        status = list(output = "ruviii_status", idle = "Not run yet."),
+        figure = list(output = "ruviii_before_after", file = "ruviii_before_and_after.png", dir = "publication_graphs_dir",
+            height = "500px", image = c(content_type = "image/png", width = "100%", height = "auto"),
+            alt = "RUVIII before and after", alt_idle = "RUVIII export not run yet"),
+        operation = "trx_ruviii_export", accept = acceptTrxRuviiiExport, run_reference = runTrxReferenceRuviiiExport,
+        publications = list(list(operation = "trx_qc_figures", parameters = list(stage = "ruviii")),
+            list(operation = "trx_composite_figure", parameters = list(figure = "ruviii_before_and_after"))),
+        error = list(prefix = "RUVIII export error:", type = "error", duration = 15))
 }
 
 #' The trx DA tab at b75561de: lipid's tab under the profile's DA entries (mod_transcriptomics.R:49-53, mod_trx_da.R).
