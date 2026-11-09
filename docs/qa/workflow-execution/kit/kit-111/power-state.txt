@@ -1,0 +1,2 @@
+kit-journey-111p start 00:41:16 at 7c7c599e: AC 1, profile low-power, battery 100%, load 1.55, available 29 GiB
+kit-journey-111p end 01:28:36: AC 1, profile low-power, battery 100%, load 4.92, available 27 GiB
