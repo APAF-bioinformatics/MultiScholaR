@@ -4734,3 +4734,358 @@ test_that("(KIT-106 correction, F106-06) the volcano page's iframe opens no dial
     wait <- shiny::div(class = "alert alert-info", "Preparing the interactive plot...")
     expect_identical(omicDaVolcanoPageFrame(wait), wait)
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-112 W3 (D3, F112-02): the proteomics DA run plugin dispatches through the omics runner on a managed session.
+# The owner, bus and tab are KIT-106 W1's proteomics setup (`omicDaW1ProtSetup`: MCI-009's object on an on-disk DIA
+# owner), made before the session so that `omicsManagedChainMocks` (helper-workflow-omics-worker.R) holds the owner:
+# each action's request runs through the worker's entry point and the controller's acceptance in this process, and the
+# `da_publication` step (KIT-019) is polled, delivered and acknowledged as the browser does (`workflow_ack`).
+# Around the chain: the dispatch also checks the real dispatch's gates (`assertDIAExportReady` on the owner, the
+# operation's dispatchability and the named-input rule, as `runWorkflowAction` does); the request half (`diaDaRequest`)
+# and the runner's installs are counted; the poll can hold an action running or end the publication
+# `publication_pending`; the kernel can be forced to fail. Unmanaged, the same fixture runs the plugin in process
+# (prot_main and prot_load stay W1 (b)'s frozen captures, above).
+# ------------------------------------------------------------------------------------------------
+
+#' Proteomics' managed (or unmanaged) fixture. `full = TRUE` installs the proteomics runner first on another module's
+#' scope, as the normalisation shell does on a full session (KIT-111, `runProtNormModuleServerShell`).
+#' @param contrasts The contrasts table.
+omicDaK112ProtSetup <- function(contrasts = module_ci_prot_da_contrasts("two_group"), managed = TRUE, full = FALSE,
+    env = parent.frame()) {
+    root <- normalizePath(withr::local_tempdir(pattern = "kit112-prot-", .local_envir = env))
+    paths <- list(source_dir = file.path(root, "source"), da_output_dir = file.path(root, "da_output"),
+        publication_graphs_dir = file.path(root, "publication_graphs"))
+    for (path in paths) dir.create(path, recursive = TRUE)
+    design <- module_ci_prot_da_design()
+    rownames(design) <- NULL
+    quant <- module_ci_prot_da_table()
+    rownames(quant) <- NULL
+    object <- module_ci_prot_da_object(design = design, protein_quant_table = quant)
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(root, "kit106-prot", "DIA"), WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager), envir = env)
+    manager$.context$reference_states <- TRUE
+    manager$.context$experiment_paths <- paths
+    manager$saveState("correlation_filtered", object, list(), "MCI-009 fixture state")
+    bus <- shiny::reactiveValues(state_manager = manager, contrasts_tbl = contrasts,
+        tab_status = list(normalization = "complete", differential_expression = "pending", enrichment_analysis = "disabled"),
+        da_analysis_results_list = NULL, da_ui_params = NULL, uniprot_dat_cln = NULL, state_update_trigger = NULL)
+    probe <- new.env()
+    probe$installs <- 0L
+    probe$requests <- 0L
+    probe$runs <- 0L
+    if (managed) {
+        omicsManagedChainMocks(list(owner = manager, workflow = bus, paths = paths, source_dir = paths$source_dir), probe,
+            env = env)
+    }
+    ns <- asNamespace("MultiScholaR")
+    install <- get("installWorkflowOmicsActions", envir = ns)
+    request <- get("diaDaRequest", envir = ns)
+    dispatch <- get("runWorkflowAction", envir = ns)
+    kernel <- get("differentialAbundanceAnalysis", envir = ns)
+    testthat::local_mocked_bindings(
+        installWorkflowOmicsActions = function(...) {
+            runner <- install(...)
+            if (!is.null(runner)) probe$installs <- probe$installs + 1L
+            runner
+        },
+        diaDaRequest = function(...) {
+            probe$requests <- probe$requests + 1L
+            request(...)
+        },
+        runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
+            assertDIAExportReady(owner$manager)
+            assertWorkflowOperationDispatchable(operation)
+            assertWorkflowActionInputSelected(operation, owner$manager, input_references)
+            probe$parameters[[length(probe$parameters) + 1L]] <- list(operation = operation, names = names(parameters),
+                route = parameters$route, input = identical(input_references$state, getWorkflowStateReference(owner$manager)))
+            dispatch(operation, input_references, parameters, owner, reservation, completion_context)
+        },
+        pollWorkflowAction = function(owner) {
+            if (isTRUE(probe$hold)) return(list(status = "running"))
+            if (isTRUE(probe$pend) && identical(utils::tail(probe$operations, 1L), "da_publication")) {
+                probe$pend <- FALSE
+                return(list(status = "publication_pending"))
+            }
+            list(status = "complete")
+        },
+        differentialAbundanceAnalysis = function(...) {
+            if (isTRUE(probe$fail)) stop("forced DA kernel failure (KIT-112 W3)")
+            kernel(...)
+        },
+        .package = "MultiScholaR", .env = env)
+    tab <- shiny::reactiveVal("qc")
+    holder <- new.env(parent = emptyenv())
+    server <- function(acc) {
+        function(input, output, session) {
+            holder$session <- session
+            session$userData$dia_capacity_manager <- manager
+            if (full) {
+                holder$shared <- installWorkflowOmicsActions(session$makeScope("normalization"), bus, "proteomics", "kit106",
+                    paths)
+                run <- holder$shared$run
+                holder$shared$run <- function(...) {
+                    probe$runs <- probe$runs + 1L
+                    run(...)
+                }
+            }
+            holder$da <- mod_prot_da_server("differential_expression", bus, paths, "proteomics", "kit106",
+                selected_tab = function() tab())
+            session$userData$da <- holder$da
+            holder$runner <- session$userData$workflow_omics_actions[["proteomics"]]
+        }
+    }
+    list(omic = "prot", server = server, ns = "differential_expression", ui = mod_prot_da_ui, bus = function() bus,
+        roots = root, files_root = root, tab = tab, probe = if (managed) probe, counts = probe, holder = holder,
+        manager = manager)
+}
+
+#' The steps of a W3 case, each followed by what the plugin did: the request halves and the shared runner's runs so far,
+#' and whether the head holds a DA manifest.
+omicDaK112Steps <- function(setup, steps) {
+    probe <- setup$counts
+    holder <- setup$holder
+    lapply(steps, function(step) {
+        force(step)
+        function(ctx) {
+            step(ctx)
+            holder$session$flushReact()
+            ctx$keep("requests", probe$requests)
+            ctx$keep("runs", probe$runs)
+            ctx$keep("manifest", !is.null(setup$manager$.context$snapshot$da_results))
+        }
+    })
+}
+
+#' The run click, with the DA UI's inputs.
+omicDaK112Run <- function(n) {
+    function(ctx) {
+        ctx$set(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)
+        ctx$set(run_da_analysis = n)
+    }
+}
+
+#' The browser's acknowledgement of the publication (KIT-037: on its text; the reservation id is the chain's, the
+#' content id the step's plot identity).
+omicDaK112Ack <- function(holder) {
+    function(ctx) ctx$set(workflow_ack = list(request_id = "gui-da_publication",
+        content_id = shiny::isolate(holder$da$volcano_plot_identity), plot_ready = TRUE, stable_ms = 200))
+}
+
+#' Drive one W3 case on its own fixture (`...`: `omicDaK112ProtSetup`'s arguments); `steps(setup)` gives the named steps.
+#' The fixture's mocks and owner live for the drive only, so one block can drive a managed and an unmanaged case.
+#' @return `captures`, the fixture's `counts` and `holder`.
+omicDaK112Drive <- function(steps, ...) {
+    setup <- omicDaK112ProtSetup(..., env = environment())
+    list(captures = omicDaW1Drive(setup, omicDaK112Steps(setup, steps(setup)))$captures, counts = setup$counts,
+        holder = setup$holder)
+}
+
+#' Two contrasts on MCI-009's two groups.
+omicDaK112TwoContrasts <- function() {
+    data.frame(contrasts = c("groupB-groupA", "groupA-groupB"), full_format = c("B_vs_A=groupB-groupA", "A_vs_B=groupA-groupB"),
+        friendly_names = c("B_vs_A", "A_vs_B"), stringsAsFactors = FALSE)
+}
+
+#' The fields a managed run shares with the same run in process: the outputs' values, the selector updates, tab_status,
+#' the history, the states, the tab's values (the volcano identity is the managed step's acknowledgement), the
+#' manifest's rows and the published files (the store's entries are path-dependent by design, D6).
+omicDaK112Shared <- function(capture) {
+    tab <- capture$tab
+    if (is.character(tab) && "volcano_plot_identity" %in% names(tab)) tab[["volcano_plot_identity"]] <- "<masked>"
+    files <- capture$files
+    if (is.character(files) && !is.null(names(files))) files <- files[!startsWith(names(files), "<store entries>")]
+    list(values = capture$values, updates = capture$updates, tab_status = capture$tab_status, history = capture$history,
+        states = capture$states, tab = tab, rows = capture$rows, files = files)
+}
+
+omicDaK112Working <- "[default NULL da_working] Running differential abundance analysis..."
+omicDaK112RunnerNotes <- c("[default NULL proteomics_action_working] Applying proteomics step ...",
+    "remove proteomics_action_working")
+omicDaK112PublicationStart <- "[default NULL da_publication] Applying DA publication ..."
+omicDaK112PublicationDone <- c("remove da_publication", "[message 5 -] DA publication applied successfully")
+omicDaK112Steady <- function(setup) list(open = function(ctx) ctx$tab("da"), run = omicDaK112Run(1L),
+    ack = omicDaK112Ack(setup$holder))
+
+test_that("KIT-112 W3 (D3): a managed run with one contrast dispatches DA-contrast-output then da_publication and gives the in-process run's manifest, tab and bus", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    managed <- omicDaK112Drive(omicDaK112Steady)$captures
+    run <- managed$run
+    expect_identical(run$operations, c("DA-contrast-output", "da_publication"))
+    expect_identical(run$errors, character(0))
+    expect_identical(run$notes, c(omicDaK112Working, omicDaK112RunnerNotes, "remove da_working", omicDaK112PublicationStart))
+    expect_identical(run$requests, 1L)
+    expect_true(run$manifest)
+    expect_identical(managed$ack$notes, omicDaK112PublicationDone)
+    expect_identical(managed$ack$operations, character(0))
+    # The same run in process: W1 (b)'s prot_main (frozen above) on the same fixture.
+    expect_identical(omicDaK112Shared(run), omicDaK112Shared(omicDaW1Frozen[["prot_main"]]$run))
+})
+
+test_that("KIT-112 W3 (D3): a managed run with two contrasts dispatches DA-contrast-output twice then da_publication, each with the route on the head, and equals the run in process", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    # The manifests the bus, the tab and the head hold, read while the session lives.
+    steps <- function(setup) c(omicDaK112Steady(setup), list(inspect = function(ctx) {
+        ctx$keep("bus_manifest", shiny::isolate(setup$bus()$da_analysis_results_list))
+        ctx$keep("tab_manifest", shiny::isolate(setup$holder$da$da_results_list))
+        ctx$keep("head_manifest", resolveWorkflowStateValue(setup$manager$.context, setup$manager$.context$snapshot$da_results))
+    }))
+    case <- omicDaK112Drive(steps, omicDaK112TwoContrasts())
+    managed <- case$captures
+    run <- managed$run
+    expect_identical(run$operations, c("DA-contrast-output", "DA-contrast-output", "da_publication"))
+    expect_identical(run$notes, c(omicDaK112Working, omicDaK112RunnerNotes, omicDaK112RunnerNotes, "remove da_working",
+        omicDaK112PublicationStart))
+    expect_identical(run$values[["da_status"]], "[OK] Analysis Complete\n Contrasts analyzed: 2\n Results available in all tabs")
+    contrasts <- Filter(function(entry) identical(entry$operation, "DA-contrast-output"), case$counts$parameters)
+    expect_length(contrasts, 2L)
+    for (entry in contrasts) {
+        expect_identical(entry$route, "iq")
+        expect_true(entry$input)
+        expect_identical(entry$names, c("formula", "qvalue", "lfc", "weights", "contrast", "annotations", "name",
+            "comparison", "route"))
+    }
+    manifest <- managed$inspect$bus_manifest
+    expect_identical(names(manifest$results), c("groupB-groupA", "groupA-groupB"))
+    expect_identical(manifest, managed$inspect$tab_manifest)
+    expect_identical(manifest, managed$inspect$head_manifest)
+    expect_identical(managed$ack$notes, omicDaK112PublicationDone)
+    # The same fixture and steps in process.
+    unmanaged <- omicDaK112Drive(omicDaK112Steady, omicDaK112TwoContrasts(), managed = FALSE)$captures
+    expect_identical(unmanaged$run$notes, c(omicDaK112Working,
+        "[message 5 -] Differential abundance analysis completed successfully!", "remove da_working"))
+    expect_identical(omicDaK112Shared(run), omicDaK112Shared(unmanaged$run))
+})
+
+test_that("KIT-112 W3 (D3): a worker failure shows the DA error, removes da_working and leaves no manifest; a later click completes", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        fail = function(ctx) {
+            setup$counts$fail <- TRUE
+            omicDaK112Run(1L)(ctx)
+            setup$counts$fail <- FALSE
+        },
+        retry = omicDaK112Run(2L), ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    fail <- captures$fail
+    expect_identical(fail$operations, "DA-contrast-output")
+    expect_length(fail$notes, 6L)
+    expect_identical(fail$notes[1:3], c(omicDaK112Working, omicDaK112RunnerNotes))
+    expect_match(fail$notes[[4L]], "^\\[error 15 -\\] Error applying proteomics step: worker failed: .*forced DA kernel failure")
+    expect_match(fail$notes[[5L]], "^\\[error 10 -\\] Error in DA analysis: worker failed: .*forced DA kernel failure")
+    expect_identical(fail$notes[[6L]], "remove da_working")
+    expect_false(fail$manifest)
+    expect_identical(fail$tab, "<unchanged>")
+    expect_identical(fail$rows, "<unchanged>")
+    expect_identical(fail$tab_status, "<unchanged>")
+    retry <- captures$retry
+    expect_identical(retry$operations, c("DA-contrast-output", "da_publication"))
+    expect_identical(retry$notes, c(omicDaK112Working, omicDaK112RunnerNotes, "remove da_working", omicDaK112PublicationStart))
+    expect_true(retry$manifest)
+    expect_identical(retry$requests, 2L)
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
+    expect_identical(captures$ack$values[["da_status"]], "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs")
+})
+
+test_that("KIT-112 W3 (F112-02): a click while the runner's action runs is refused before the request half; the held run then completes", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        held = function(ctx) {
+            setup$counts$hold <- TRUE
+            omicDaK112Run(1L)(ctx)
+        },
+        click = omicDaK112Run(2L),
+        release = function(ctx) {
+            setup$counts$hold <- FALSE
+            setup$holder$session$elapse(100)
+        },
+        ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    expect_identical(captures$held$operations, "DA-contrast-output")
+    expect_identical(captures$held$notes, c(omicDaK112Working, omicDaK112RunnerNotes[[1L]]))
+    click <- captures$click
+    expect_identical(click$operations, character(0))
+    expect_identical(click$notes, c(omicDaK112Working, "[warning 5 -] A proteomics step action is already running",
+        "remove da_working"))
+    expect_identical(click$requests, 1L)
+    expect_identical(click$history, "<unchanged>")
+    expect_identical(click$states, "<unchanged>")
+    expect_false(click$manifest)
+    release <- captures$release
+    expect_identical(release$operations, "da_publication")
+    expect_identical(release$notes, c(omicDaK112RunnerNotes[[2L]], "remove da_working", omicDaK112PublicationStart))
+    expect_true(release$manifest)
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
+})
+
+test_that("KIT-112 W3 (F112-02): a click while the publication runs is refused before the request half", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"), run = omicDaK112Run(1L),
+        click = function(ctx) {
+            ctx$set(formula_string = "~ 0 + group", da_q_val_thresh = 0.01, treat_lfc_cutoff = 0)
+            ctx$set(run_da_analysis = 2L)
+        },
+        ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    expect_identical(captures$run$operations, c("DA-contrast-output", "da_publication"))
+    click <- captures$click
+    expect_identical(click$operations, character(0))
+    expect_identical(click$notes, c(omicDaK112Working, "[warning 5 -] A DA publication action is already running",
+        "remove da_working"))
+    # Nothing committed: the changed q-value's arguments are not on the head.
+    expect_identical(click$requests, 1L)
+    expect_identical(click$history, "<unchanged>")
+    expect_identical(click$states, "<unchanged>")
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
+    expect_identical(captures$ack$values[["da_status"]], "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs")
+})
+
+test_that("KIT-112 W3 (F112-02): a click while the publication holds a pending retry retries it without recomputing the contrasts", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        pending = function(ctx) {
+            setup$counts$pend <- TRUE
+            omicDaK112Run(1L)(ctx)
+        },
+        retry = omicDaK112Run(2L), ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    pending <- captures$pending
+    expect_identical(pending$operations, c("DA-contrast-output", "da_publication"))
+    expect_identical(pending$notes, c(omicDaK112Working, omicDaK112RunnerNotes, "remove da_working", omicDaK112PublicationStart,
+        "remove da_publication", "[error 15 -] Error applying DA publication: managed action ended: publication_pending"))
+    expect_true(pending$manifest)
+    retry <- captures$retry
+    expect_identical(retry$operations, "da_publication")
+    expect_identical(retry$notes, c(omicDaK112Working, "remove da_working", omicDaK112PublicationStart))
+    expect_identical(retry$requests, 1L)
+    expect_identical(retry$history, "<unchanged>")
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
+    expect_identical(captures$ack$values[["da_status"]], "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs")
+})
+
+test_that("KIT-112 W3 (D3): the plugin mounted alone on a managed session installs one runner; on a full session it reuses the normalisation's; unmanaged none", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    alone <- omicDaK112Drive(omicDaK112Steady)
+    captures <- alone$captures
+    expect_identical(alone$counts$installs, 1L)
+    expect_true(is.environment(alone$holder$runner))
+    expect_identical(captures$run$operations, c("DA-contrast-output", "da_publication"))
+    full <- omicDaK112Drive(omicDaK112Steady, full = TRUE)
+    captures <- full$captures
+    expect_identical(full$counts$installs, 1L)
+    expect_identical(full$holder$runner, full$holder$shared)
+    expect_identical(captures$run$runs, 1L)
+    expect_identical(captures$run$operations, c("DA-contrast-output", "da_publication"))
+    unmanaged <- omicDaK112Drive(omicDaK112Steady, managed = FALSE)
+    captures <- unmanaged$captures
+    expect_identical(unmanaged$counts$installs, 0L)
+    expect_null(unmanaged$holder$runner)
+    expect_true(captures$run$manifest)
+})

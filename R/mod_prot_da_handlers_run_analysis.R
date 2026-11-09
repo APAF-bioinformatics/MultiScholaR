@@ -22,6 +22,12 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
       NULL
     },
     read_result = readManagedDaResult)
+  # KIT-112 D3: the proteomics omics runner the contrasts dispatch through on a managed session: the one the
+  # normalisation tab installed (KIT-111, one per session), else this tab's own (the plugin mounted alone). An
+  # unmanaged session has none, and the DA runs in process as before.
+  runner <- if (inherits(session, c("ShinySession", "session_proxy", "MockShinySession")))
+    session$userData$workflow_omics_actions[["proteomics"]] %||% installWorkflowOmicsActions(session, workflow_data,
+      "proteomics", experiment_label %||% "dia_baseline_smoke", experiment_paths)
   shiny::observeEvent(input$run_da_analysis, {
     withDIAStateScope(getDIAActiveManager(), function() {
     cat("=== STARTING DIFFERENTIAL EXPRESSION ANALYSIS ===\n")
@@ -37,6 +43,14 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
 
     shiny::showNotification("Running differential abundance analysis...", id = "da_working", duration = NULL)
 
+    report_error <- function(e) {
+      cat(paste("*** ERROR in DA analysis:", e$message, "\n"))
+      shiny::showNotification(
+        paste("Error in DA analysis:", e$message),
+        type = "error",
+        duration = 10
+      )
+    }
     tryCatch(
       {
         contrasts <- workflow_data$contrasts_tbl
@@ -44,12 +58,56 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
         settings <- list(formula_string = input$formula_string, da_q_val_thresh = input$da_q_val_thresh,
           treat_lfc_cutoff = input$treat_lfc_cutoff)
         managed <- !is.null(workflowSessionApplication(session))
+        publication <- function() managed_step$apply(list(annotations =
+          if (is.data.frame(annotations) && nrow(annotations))
+            saveDIADisplayTable(workflow_data$state_manager, annotations) else NULL))
+        if (managed && !is.null(runner)) {
+          # KIT-112 F112-02: before the request half, which may commit the DA arguments (moving the head), a click while
+          # the contrasts or the publication run is refused, and a publication waiting for its retry is retried without
+          # recomputing the contrasts.
+          running <- if (!is.null(shiny::isolate(managed_step$active()))) "DA publication" else
+            if (!is.null(shiny::isolate(runner$step$active()))) "proteomics step"
+          if (!is.null(running)) {
+            shiny::showNotification(paste("A", running, "action is already running"), type = "warning")
+            shiny::removeNotification("da_working")
+            return(invisible(NULL))
+          }
+          if (!is.null(shiny::isolate(managed_step$pending()))) {
+            shiny::removeNotification("da_working")
+            publication()
+            return(invisible(NULL))
+          }
+          # KIT-112 D3: the request half here, one DA-contrast-output per contrast on the worker (its source named, its
+          # route in the request), then the accept half and the publication.
+          manager <- workflow_data$state_manager
+          entry <- proteomicsDiaBinding$da
+          request <- entry$request(manager, settings, da_data, workflow_data, contrasts, annotations)
+          route <- diaActiveRoute(manager)
+          results <- list()
+          deliver <- function(name) function(result) {
+            results[[name]] <<- result$value
+            # R1: the controller holds the base fit an in-process run would, for the manifest's model.
+            if (!is.null(result$display$base_fit)) manager$.context$da_base_fit_reference <- result$display$base_fit
+          }
+          runner$run(lapply(request$steps, function(step) protNormManagedAction(entry$operation, c(step, route = route),
+            request$source, NULL, deliver(step$name))),
+            # The runner calls `done` outside the owner's scope.
+            done = function() withDIAStateScope(manager, function() {
+              entry$accept(manager, request$manifest, results)
+              shiny::removeNotification("da_working")
+              publication()
+            }),
+            failed = function(e) {
+              report_error(e)
+              shiny::removeNotification("da_working")
+            })
+          return(invisible(NULL))
+        }
         manifest <- runDIAReferenceDaAnalysis(settings, da_data, workflow_data, experiment_paths,
           contrasts, annotations, publish = !managed)
         if (managed) {
           shiny::removeNotification("da_working")
-          managed_step$apply(list(annotations = if (is.data.frame(annotations) && nrow(annotations))
-            saveDIADisplayTable(workflow_data$state_manager, annotations) else NULL))
+          publication()
           return(invisible(NULL))
         }
         update_contrast_choices(manifest)
@@ -61,14 +119,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
         shiny::removeNotification("da_working")
         return(manifest)
       },
-      error = function(e) {
-        cat(paste("*** ERROR in DA analysis:", e$message, "\n"))
-        shiny::showNotification(
-          paste("Error in DA analysis:", e$message),
-          type = "error",
-          duration = 10
-        )
-      }
+      error = report_error
     )
 
     shiny::removeNotification("da_working")
