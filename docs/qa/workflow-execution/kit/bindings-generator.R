@@ -1323,6 +1323,23 @@ if (!is.null(b$builds$kit_111)) {
         list(purpose = "the correction pass: 111m once more (recorded, uncounted; KIT-111 D8)"))
 }
 
+# KIT-112 (proteomics DA's contrast kernel on the worker, measured; D8). The large baseline is 111q (KIT-111; W0), so no
+# 112p. After the install: 112a..t from 101<suffix> on kit_112; the lifecycle failure member 112f, 101l with a DA formula
+# the controller's validation accepts and the kernel refuses in process (W1 P3: a saturated model, "No finite residual
+# standard deviations"; the coordinator applies `driver_settings` over the journey); the large candidate 112q.
+if (!is.null(b$builds$kit_112)) {
+    kit_112 <- list(build = "kit_112", purpose = "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("112", suffix)]] <- utils::modifyList(from, kit_112)
+    }
+    if (!is.null(b$tickets[["101l"]])) b$tickets[["112f"]] <- utils::modifyList(b$tickets[["101l"]], list(build = "kit_112",
+        driver_settings = list(da = list(formula = "~ 0 + group + Run")),
+        purpose = "the lifecycle test's failure half (recorded, uncounted; KIT-112 D8)"))
+    b$tickets[["112q"]] <- list(kind = "single_journey", build = "kit_112", corpus = "full", route = "DIA", whole_journey = TRUE,
+        ceiling_seconds = 14400L, purpose = "memory candidate, the DA kernel on the worker (recorded, uncounted; KIT-112 D8)")
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
