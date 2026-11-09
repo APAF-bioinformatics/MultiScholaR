@@ -1,0 +1,9 @@
+KIT-111 W4 merge checks (2026-11-10), against the start commit 6c04767f (R/ as kit_108's 7b52f535). R 4.6.1.
+
+1. DESCRIPTION Collate == R/*.R: 342 entries, 342 files, no duplicates. No R file was added or removed.
+2. NAMESPACE: byte-identical to 6c04767f.
+3. git diff 6c04767f -- man inst DESCRIPTION tools R/app_ui.R R/app_server.R R/mod_omic_workflow.R R/mod_proteomics.R R/mod_omic_norm.R R/mod_omic_norm_panels.R R/mod_prot_norm_ui.R R/mod_prot_norm_server.R: empty.
+4. The R files changed (10): mod_prot_da_handlers_run_analysis.R (F106-02), mod_prot_norm_observer_helpers.R and mod_prot_norm_workflow_helpers.R (W3), utils_workflow_dia_da_views.R (F106-03), utils_workflow_dia_products.R (W2), utils_workflow_execution.R (W2's two extensions; F111-03), utils_workflow_omics_actions.R (W2's input pass-through: D3 names it, but the ticket's files_to_modify list omits it; recorded), utils_workflow_omics_declarations.R (W2b, F111-01), utils_workflow_operations.R (W2's registry; F111-03's named_input flag), utils_workflow_prot_declarations.R (D4's adaptor entries). 599 insertions, 221 deletions.
+5. The declarations' bodies (diaNormalizationOperation, diaPearsonPairsOperation, diaPearsonSelectionOperation, diaRuvCovariatesOperation) are identical to 6c04767f's (the parsed expressions compared).
+6. Parse-data back-reference count: 2 (unchanged): the exported design-builder wrappers, mod_prot_design_builder_{server,ui} <- func_general_applets.R.
+7. roxygen2 was not run.

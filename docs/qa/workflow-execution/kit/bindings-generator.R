@@ -1301,6 +1301,23 @@ if (!is.null(b$builds$kit_108)) {
     b$tickets[["111p"]] <- list(kind = "single_journey", build = "kit_108", corpus = "full", route = "DIA", whole_journey = TRUE,
         ceiling_seconds = 14400L, purpose = "memory baseline, in process (recorded, uncounted; KIT-111 D8)")
 }
+if (!is.null(b$builds$kit_111)) {
+    kit_111 <- list(build = "kit_111", purpose = "exactness, the normalisation tab on the worker (recorded, uncounted; KIT-111)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("111", suffix)]] <- utils::modifyList(from, kit_111)
+    }
+    # 111f, the lifecycle test's failure half: 101l with automatic RUV, which the five-protein fixture cannot carry. The
+    # coordinator applies a corpus's normalisation over the member's (workflow_kit_coordinator.R:313), and lfq_fixture's
+    # is `skip`, so 111f reads a copy of that corpus whose override is `automatic`; nothing else differs.
+    if (!is.null(b$corpora$lfq_fixture) && !is.null(b$tickets[["101l"]])) {
+        b$corpora$lfq_fixture_auto <- utils::modifyList(b$corpora$lfq_fixture, list(normalisation = list(ruv_mode = "automatic")))
+        b$tickets[["111f"]] <- utils::modifyList(b$tickets[["101l"]], list(build = "kit_111", corpus = "lfq_fixture_auto",
+            normalisation = list(ruv_mode = "automatic"), purpose = "the lifecycle test's failure half (recorded, uncounted; KIT-111 D8)"))
+    }
+    b$tickets[["111q"]] <- list(kind = "single_journey", build = "kit_111", corpus = "full", route = "DIA", whole_journey = TRUE,
+        ceiling_seconds = 14400L, purpose = "memory candidate, on the worker (recorded, uncounted; KIT-111 D8)")
+}
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
