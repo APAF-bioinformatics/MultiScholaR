@@ -93,3 +93,7 @@ All of it sits under the DA-workbook loop of `copyToResultsSummary`, in `R/func_
   - M4's states and products equal the baselines'.
 
 **Recommendation (adopted by the lead):** W5 tries route A once and measures it with the replica at W4 and W5, then with `108v`/`108w` (M4). If it misses D8's threshold, the stop rule applies and P-30 is raised with routes B and C and these numbers. No second mechanism is tried.
+
+## Note on the run conditions
+
+While `108p` (the metab baseline) was live, a W3 agent ran a scratch test for about 3.5 minutes that grew to about 1.9 GB, against the host rule ([../findings.md](../findings.md)). The figures above are the application's own process (I2 per PID, cross-checked against the harness's controller trace), and `108p`'s replica reproduces its copy rise within 10%. So the attribution stands, but `108p`'s wall-clock timings were not taken alone.
