@@ -1,0 +1,78 @@
+KIT-112 W1 (a): runDIAReferenceDaAnalysis in process, at core level, captured and frozen on the start commit.
+Recorded 2026-11-10 by the W1 agent.
+
+Start commit 64e7c2ae (R/ = kit_111's source c568dfa5). The W1 agent's commit adds only new blocks to
+tests/testthat/test-workflow-saved-da.R (appended after :406; `git diff` shows one hunk, @@ -406,0 +407 @@, no line
+removed or changed) and files under docs/qa/workflow-execution/kit/kit-112/. Nothing in R/.
+R 4.6.1, R_LIBS = kit_111's library, load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true, TMPDIR on disk.
+
+## What is captured (the section header in the test lists it)
+
+Per case: the owner's and the head's current state and history; each committed state's record (science, `@args` with
+the DA arguments' time dropped, config, description, previous state, product names); the completed outputs; the head's
+products by fingerprint; the store's entities on disk by kind and checkpoint label / product layer, without the
+`state-head` snapshots; the fits' factors (da_fit base fits and full_results contrasted fits); the runner's manifest and
+the head's (canonical, store-local ids masked), with the model's unset fields of each; `da_dependencies` by key and value;
+the step provenance and the pending provenance; the analysis record's `differential_abundance`; the published files
+(names, md5 of .tsv/.txt/.tab); whether the head's publication request is keyed by `diaDaPublicationIdentity(manifest)`;
+the display fields (`da_results_list`, `analysis_complete`, `current_s4_object`, `workflow$da_analysis_results_list`,
+`tab_status`, `da_ui_params`); the value or refusal message; and the call counts of `runSavedOperation`,
+`commitDIAReferenceState`, `saveDIAStateValue`, `publishDIAActionOutputs`.
+Masks: store-local ids (32-64 hex), the fixture's root, and fields named timestamp/mtime/committed_at/dependencies/
+product_dependencies/owned_components/component_dependencies (so the DA arguments' `Sys.time()`, utils_workflow_dia_da.R:366,
+is masked).
+
+## The cases (D6), in the test's order
+
+Block 1, one DIA (`iq`) owner on the "small" recipe at correlation_filtered:
+  dia_one_contrast       one contrast, computed (base fit computed)
+  dia_two_contrasts      two contrasts: the first a product hit, the second computed on the saved base fit
+  dia_repeat             the same click again: every contrast a hit
+  dia_reopened_rerun     the owner closed and reopened from its store, the same click: fully cached, base-fit reference unset
+  dia_non_head           the tab on the state before the arguments' commit, arguments unchanged
+  dia_changed_arguments  TREAT 0.5: the arguments commit, then the run
+  dia_qvalue_only        q 0.01 (TREAT kept): new contrast products on the same base fit
+  dia_refused            formula "~ 0 + absent_factor": refused by the controller's validation, nothing committed or run
+Block 2, a fresh DIA owner:
+  dia_failure            the kernel forced to fail in process (differentialAbundanceAnalysis mocked to stop) after the arguments' commit
+  dia_retry              the same arguments again: no commit, computed, completes
+Block 3, a DIA_LIMPA owner (KIT-111 W1's builder reproduced, then the tab's pass-through, correlation 0.5 and RUV covariates):
+  limpa_one_contrast     dpcDE, no base fit
+
+Case order note: the reopened rerun and the non-head case run at q 0.05 without TREAT, where this fixture publishes no
+Glimma page. A rerun whose products hit and whose manifest differs fails today's in-process publication when the
+contrast's page was saved before (draft finding F112-03, w1/f112-03-republish.R). In a first draft order the two cases
+ran after the TREAT cases and hit that defect; the order was changed so the R1/R7 captures do not depend on it.
+
+## The two dumps (separate processes, the dump switch)
+
+  MULTISCHOLAR_KIT112_W1_DUMP=<file> R_LIBS=<kit_111 library> TMPDIR=/home/doktersmol/.cache/k112w1 MULTISCHOLAR_STRICT_SKIPS=1 \
+    NOT_CRAN=true Rscript tools/testing/test-baseline.R file load_all <worktree> <worktree>/tests/testthat/test-workflow-saved-da.R <out>
+  (MULTISCHOLAR_KIT112_W1_DUMP=1 prints the captures to the console instead of a file.)
+
+Attempt 1: the two dumps differed in `dependencies` only (26 lines): the value fingerprints kept the store-local names
+of `collectDIANativeReferences`' list. Fixed by unnaming them (an instrumentation fix, no value of the runner changed),
+then both dumps were rerun.
+Attempt 2 (frozen from it):
+  cmp w1/dumps/w1a-dump1.R w1/dumps/w1a-dump2.R  -> identical (exit 0)
+  sha256 7a898291cb94350f7e1e496f90bbaf45c20d7eebfb4b74ffd8f97d81c7a01d80 both, 29,337 bytes each
+The frozen values (`savedDaW1Frozen`) are the first dump pasted as R literals, with one citation comment.
+
+## The frozen blocks on the start commit's code
+
+  test-workflow-saved-da.R: 12 blocks run (9 existing + 3 new), 371 expectations: 369 passed, 0 failed, 0 errors,
+  0 skipped, 2 warnings (exit 0). The existing 9 blocks: as on the start commit (116 passed). The 2 warnings are
+  "Unknown or uninitialised column: `core_utilisation`" from rollUpPrecursorToPeptide in the DIA_LIMPA builder (the
+  same builder's calls show them in the probes); they are not expectations of the new blocks.
+
+## Read of the frozen values (for W2 and W3)
+
+- calls (runSavedOperation / commit / saveDIAStateValue / publish): one 1/1/10/1; two 2/0/7/1; repeat 2/0/4/1;
+  reopened 2/0/4/1; non-head 2/0/4/1; changed arguments 2/1/14/1; q only 2/1/12/1; refused 0/0/0/0; failure 1/1/2/0;
+  retry 1/0/8/1; limpa 1/1/9/1. (saveDIAStateValue counts the head snapshots too: publishWorkflowStateHead calls it.)
+- R1 confirmed in process: after the reopen, the manifest's `model` has group_id, technical_replicate_id, block_reason,
+  uses_duplicate_correlation and consensus_correlation NULL (the kernel did not run, `da_base_fit_reference` unset); the
+  non-head case after it too. On DIA_LIMPA, group_id, technical_replicate_id and consensus_correlation are NULL (block_reason
+  and uses_duplicate_correlation come from the dpcDE model).
+- The failure: the arguments' commit stays, the head has no manifest and no outputs, the step provenance is pending
+  (`pending` differs from the other cases); the retry commits nothing and completes.

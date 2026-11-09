@@ -1,0 +1,99 @@
+KIT-112 W1: the guarding tests on the start commit, unchanged (the "before" half), and D11's new registry expectations failing there.
+Recorded 2026-11-10 by the W1 agent.
+
+Start commit: 64e7c2ae (performance-v2; R/ equals kit_111's source c568dfa5: `git diff c568dfa5 64e7c2ae -- R` is empty).
+Tree: a `git archive 64e7c2ae` copy (no edits), so the W1 blocks being written beside it were not in these runs.
+R 4.6.1, R_LIBS = kit_111's library (core/browser-smoke.MlQroA/library), load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true,
+TMPDIR=/home/doktersmol/.cache/k112w1 (on disk). One process per file, at most 4 at once:
+  R_LIBS=<kit_111 library> TMPDIR=/home/doktersmol/.cache/k112w1 MULTISCHOLAR_STRICT_SKIPS=1 NOT_CRAN=true \
+    Rscript tools/testing/test-baseline.R file load_all <tree> <tree>/tests/testthat/<file> <outdir>
+
+## The guarding files (all exit 0)
+
+file                                     blocks run  expectations  passed  failed  errors  skipped  warnings  seconds
+test-workflow-saved-da.R                  9     9     116           116     0       0       0        0         27
+test-workflow-dia-products.R             18    18     189           189     0       0       0        0         50
+test-workflow-operation-registry.R       15    15    1030          1030     0       0       0        0         13
+test-workflow-operations.R                6     6      75            75     0       0       0        0         86
+test-workflow-prot-declarations.R        13    13     325           303     0       0       2       20        120
+test-workflow-analysis-record.R          23    23     278           274     0       0       0        4        181
+test-omic-gui-config.R                   24    24    1849          1849     0       0       0        0         27
+test-prot-07b-da-handlers-compat.R        9     9      37            35     0       0       2        0          6
+test-workflow-omics-worker.R              8     8     289           289     0       0       0        0        463
+test-workflow-omics-application-reads.R  18    27     230           230     0       0       0        0        531
+test-omic-da-module.R                    21    43    1260          1260     0       0       0        0        416
+test-omic-enrich-module.R                 5    13     975           975     0       0       0        0        250
+test-module-ci-prot-da.R                  8     8     219           218     0       0       1        0          9
+test-gui-entry-proteomics.R (frozen)      5     5     193           193     0       0       0        0        957
+
+("blocks" = static test_that blocks; "run" = blocks run, which exceeds the static count where a block is generated in a loop.)
+The 5 skips are all existing quarantines, Q-22 (KIT-048): MCI-009.5 in test-module-ci-prot-da.R; the two
+da_server_run_analysis_handler in-memory blocks in test-prot-07b-da-handlers-compat.R; the dedup and accession-cleanup
+in-memory comparisons in test-workflow-prot-declarations.R. The proteomics entry suite gives its frozen 193 with 0 failures.
+
+## D11: the two registry blocks with their new expectations, FAILING on the start commit
+
+Written only in a scratch copy of test-workflow-operation-registry.R (test-zz-kit112-d11-scratch.R in the archive copy);
+test-workflow-operation-registry.R itself is not edited (W2 owns it). The expectation changes (diff, original < scratch >):
+
+164,165c164,165
+< test_that("the whole-matrix DA declarations refuse worker dispatch (KIT-024); the normalisation tab's four run on the omics role (KIT-111 D11)", {
+<     for (name in c("DA-contrast-output", "enrichment")) {
+---
+> test_that("the enrichment declaration refuses worker dispatch (KIT-024); the normalisation tab's four and the DA contrast run on the omics role (KIT-111 D11, KIT-112 D11)", {
+>     for (name in c("enrichment")) {
+175c175,180
+<         `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction")
+---
+>         `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction",
+>         `DA-contrast-output` = "computeWorkflowDiaContrastAction")
+>     # KIT-112 D3: the DA contrast takes a named input and, by the omics loop's rule, no `@args` section.
+>     expect_true(isTRUE(workflowActionSpec("DA-contrast-output")$named_input))
+>     expect_true("section" %in% names(workflowActionSpec("DA-contrast-output")))
+>     expect_null(workflowActionSpec("DA-contrast-output")$section)
+333,334c338,339
+< test_that("KIT-111 F111-03: only the normalisation tab's four take a named input that is not the head; every other operation keeps the head rule", {
+<     named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates")
+---
+> test_that("KIT-111 F111-03, KIT-112 D11: only the normalisation tab's four and the DA contrast take a named input that is not the head; every other operation keeps the head rule", {
+>     named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates", "DA-contrast-output")
+336c341
+<     for (name in c("protein_intensity_filter", "precursor_rollup", "DA-contrast-output", "lipid_pearson_pairs"))
+---
+>     for (name in c("protein_intensity_filter", "precursor_rollup", "lipid_pearson_pairs"))
+
+(The first block keeps its handler loop, which now also expects DA-contrast-output's entry to be
+compute "omics", handler "computeWorkflowDiaContrastAction", validate "validateWorkflowOmicsParameters", completion and
+publication "omics", variants/default "whole", omic_type "proteomics", declaration name "DA-contrast-output", and
+assertWorkflowOperationDispatchable(...)$compute == "omics". The `"section" %in% names(...)` + NULL test is the rule
+test-workflow-operation-registry.R:250-256 already applies to worker steps without a section.)
+
+Result of the scratch copy on the start commit (per-file runner): 15 blocks run, 1025 expectations, 1021 passed,
+4 FAILED, 2 ERRORS (exit 0). Every failure and error is in the two changed blocks; the other 13 blocks pass unchanged.
+The failing output (testthat ListReporter, start commit):
+
+[expectation_failure] the enrichment declaration refuses worker dispatch (KIT-024); the normalisation tab's four and the DA contrast run on the omics role (KIT-111 D11, KIT-112 D11)
+  Expected `isTRUE(workflowActionSpec("DA-contrast-output")$named_input)` to be TRUE.  actual FALSE
+[expectation_failure] (same block)
+  Expected `"section" %in% names(workflowActionSpec("DA-contrast-output"))` to be TRUE.  actual FALSE
+[expectation_failure] (same block)
+  Expected `...[]` to be identical to `list(...)`.
+  `actual$compute`: "in_process"   `expected$compute`: "omics"
+  `actual$handler` is NULL         `expected$handler` is 'computeWorkflowDiaContrastAction'
+  `actual$validate`: "validateWorkflowInProcessParameters"   `expected$validate`: "validateWorkflowOmicsParameters"
+  `actual$completion`: "in_process" ...
+[expectation_error] (same block)
+  <workflow_execution_unsupported> Error in `assertWorkflowOperationDispatchable(name)`: operation "DA-contrast-output"
+  runs in process only (whole-matrix declaration); it cannot be dispatched to a worker
+[expectation_failure] KIT-111 F111-03, KIT-112 D11: only the normalisation tab's four and the DA contrast take a named input that is not the head; every other operation keeps the head rule
+  Expected `isTRUE(workflowActionSpec(name)$named_input)` to be TRUE.  actual FALSE  (info: DA-contrast-output)
+[expectation_error] (same block)
+  <workflow_execution_stale> Error in `assertWorkflowActionInputSelected(name, NULL, list(state = other))`:
+  action input is not the selected immutable checkpoint
+
+The unchanged blocks at :6, :66, :96 and :252-270 pass on the start commit (in the 1030/1030 run above).
+
+## W1 (a)
+
+See w1/test-first.txt: written and frozen on the start commit from two byte-identical dumps; 12 blocks, 369 passed,
+0 failed with the frozen values.

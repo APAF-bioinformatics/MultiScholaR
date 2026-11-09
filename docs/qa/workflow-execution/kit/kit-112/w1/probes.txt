@@ -1,0 +1,124 @@
+KIT-112 W1 probes P1 to P4 (scratch, not frozen). Recorded 2026-11-10 by the W1 agent.
+Start commit 64e7c2ae's R code (R/ = c568dfa5), R 4.6.1, kit_111's library, load_all, TMPDIR on disk.
+Scripts: w1/probes.R (P1, P2, P4; W1 (a)'s owner builders read from test-workflow-saved-da.R's definitions),
+w1/probe-p3.R (P3). Summary: P1 not reproduced; P2 not reproduced; P3 reproduced; P4 reproduced.
+
+## P1 (R2): a contrast product's hydrated value against run$value, computed and hit -- NOT REPRODUCED (no difference)
+
+Rscript docs/qa/workflow-execution/kit/kit-112/w1/probes.R <tree> P1
+On a DIA owner and a DIA_LIMPA owner, inside the owner's scope with the execution flags set (the compute half's
+prototype), each of two contrasts: runSavedOperation computed, then again (hit); and the whole in-process runner, then
+each manifest result against its head product.
+  P1 DIA contrast 1: status computed then hit; identical(hydrated$value, run$value) = TRUE; identical(hit$value, computed$value) = TRUE; identical(hydrated envelope, run$value) = FALSE
+  P1 DIA contrast 2: status computed then hit; identical(hydrated$value, run$value) = TRUE; identical(hit$value, computed$value) = TRUE; identical(hydrated envelope, run$value) = FALSE
+  P1 DIA manifest result treated.vs.control: 1 head product(s) for it; identical(hydrated$value, manifest result) = TRUE
+  P1 DIA manifest result control.vs.treated: 1 head product(s) for it; identical(hydrated$value, manifest result) = TRUE
+  P1 DIA_LIMPA contrast 1: status computed then hit; identical(hydrated$value, run$value) = TRUE; identical(hit$value, computed$value) = TRUE; identical(hydrated envelope, run$value) = FALSE
+  P1 DIA_LIMPA contrast 2: status computed then hit; identical(hydrated$value, run$value) = TRUE; identical(hit$value, computed$value) = TRUE; identical(hydrated envelope, run$value) = FALSE
+  P1 DIA_LIMPA manifest result treated.vs.control: 1 head product(s) for it; identical(hydrated$value, manifest result) = TRUE
+  P1 DIA_LIMPA manifest result control.vs.treated: 1 head product(s) for it; identical(hydrated$value, manifest result) = TRUE
+Read: `hydrateSavedWorkflowEntity(store, reference)` returns the product envelope; its `$value` is identical() to the
+in-process `run$value`, computed and hit, on both routes. `readManagedOmicsResult` returns exactly that `$value` as
+`result$value` (utils_workflow_omics_declarations.R:1381-1385), so the controller's delivered value equals what the
+in-process manifest holds. (The envelope itself is not the value: W3's `deliver` must keep `result$value`, as D3 says.)
+
+## P2 (R3; D3, the route): the compute prototype on a worker's reopened owner -- NOT REPRODUCED (no difference)
+
+Rscript docs/qa/workflow-execution/kit/kit-112/w1/probes.R <tree> P2
+Two twin owners per route (DIA, DIA_LIMPA). On the first, the in-process runner (publish = FALSE). On the second, a
+worker's owner as computeWorkflowOmicsAction opens it (a new store handle on the project and
+newWorkflowStateOwner(store, reopen = TRUE), with deferred roots), and in its scope (withWorkflowStateScope) the compute
+half's prototype (D3: flags set and restored, runSavedOperation(worker, diaContrastOperation(route), source, the
+in-process parameters)), once per contrast. Not through workflowWorkerMain: at the start commit DA-contrast-output has
+no registry handler; the completion (which publishes the deferred roots) is therefore not run here.
+  P2 DIA: session workflow_type DIA, reopened DIA; route session iq, reopened iq; reopened reference_states TRUE
+  P2 DIA contrast 1 on the worker: status computed; base fit delivered TRUE; deferred roots 3
+  P2 DIA contrast 2 on the worker: status computed; base fit delivered FALSE; deferred roots 5
+  P2 DIA fits: in process 3 [da_fit:base_fit, scientific_product:full_results x2]; worker 3 [the same]; same identities and factors (ids masked): TRUE
+  P2 DIA base-fit factors, in process and worker (identical): route iq, layer base_fit, uses_duplicate_correlation TRUE,
+     consensus_correlation -0.0235, group_id group, technical_replicate_id tech_rep_group, block_reason technical_replicates
+  P2 DIA entities added (no head snapshots): in process 22, worker 20 -- the 2 are the controller's arguments commit
+     (checkpoint:correlation_filtered) and the manifest (checkpoint:da-result-references); every other kind/layer count equal
+     (da_fit:base_fit 1, full_results 2, contrast_references 2, scientific_product 6, result_table 12)
+  P2 DIA base-fit reference: in process set TRUE; delivered 1; factors identical TRUE
+  P2 DIA contrast values (canonical, store-local ids masked, source excluded): identical TRUE for both
+  P2 DIA_LIMPA: session workflow_type DIA_LIMPA, reopened DIA_LIMPA; route session limpa, reopened limpa; reopened reference_states TRUE
+  P2 DIA_LIMPA contrast 1 on the worker: status computed; base fit delivered FALSE; deferred roots 1
+  P2 DIA_LIMPA contrast 2 on the worker: status computed; base fit delivered FALSE; deferred roots 2
+  P2 DIA_LIMPA fits: in process 0; worker 0 (dpcDE saves no base or contrasted fit); same: TRUE
+  P2 DIA_LIMPA entities added: in process 19, worker 17 (the same two controller entities); every other count equal
+  P2 DIA_LIMPA base-fit reference: in process unset; delivered 0; model unset fields group_id, technical_replicate_id, consensus_correlation
+  P2 DIA_LIMPA contrast values (canonical, ids masked, source excluded): identical TRUE for both (the worker read the owned limpa EList; R4)
+Read: on the reopened owner usesDIAReferenceStates holds, the active manager is the worker's owner, and the base fit and
+contrasted fits are saved with the same identities and factors as in process; the reopened workflow_type equals the
+session's on DIA and DIA_LIMPA, so diaActiveRoute (the fits' factors) agrees. The base fit is delivered on the contrast
+that fitted it (the first) and NULL on the one that hit it, as D3's adoption rule expects. Source excluded from the
+value comparison only because the twin ran without the arguments' commit (the request half's, in the controller).
+
+## P3 (for 112f): an input the controller accepts and the kernel refuses, on lfq101_fixture's fixture -- REPRODUCED
+
+Rscript docs/qa/workflow-execution/kit/kit-112/w1/probe-p3.R <tree> <copy of 111l's store>
+On a copy of 111l's own store (kit_111, the LFQ fixture, synthetic: kit/runtime/kit-journey-111l/candidate-1/project/
+dia_baseline_smoke/scripts/proteomics/.dia-native-1b244e1ef7a9c5, copied to /home/doktersmol/.cache/k112w1/p3; the
+original untouched), reopened; the DA source is the journey's (correlation_filtered, MAXQUANT-native/LFQ, workflow_type LFQ).
+Design: 6 samples (wt_1..3, ko_1..3); columns Run, group, factor1, factor2, factor3, batch, replicates, tech_reps (all NA),
+tech_rep_group. Contrast KO_vs_WT=groupKO-groupWT. Candidates among driver_settings$da (formula, q_value, treat_lfc),
+each: validateProtDaModelAndContrasts, then runDIAReferenceDaAnalysis in process (publish = FALSE).
+  the binding's own (control)   '~ 0 + group' q 0.05 lfc 0      accepted; kernel completed
+  q_value 1e-300 (082e's)       q 1e-300                        accepted; kernel completed
+  q_value 0 / 1 / -1                                            accepted; kernel completed (each)
+  treat_lfc 100 / -1                                            accepted; kernel completed (each)
+  '~ group' (intercept)                                         refused: contrast references terms absent from the model matrix: groupKO
+  '~ 0 + group + factor1'                                       accepted; kernel completed
+  '~ 0 + group + factor2|factor3|batch'                         refused: contrasts can be applied only to factors with 2 or more levels
+  '~ 0 + group + replicates'                                    accepted; kernel completed
+  '~ 0 + group + tech_reps'                                     ACCEPTED; kernel FAILED: contrasts can be applied only to factors with 2 or more levels
+  '~ 0 + group + tech_rep_group'                                ACCEPTED; kernel FAILED: No finite residual standard deviations
+  '~ 0 + group + Run'                                           ACCEPTED; kernel FAILED: No finite residual standard deviations
+Read: no q_value or treat_lfc value fails; three formulas pass the controller's validation and fail in the kernel.
+  - '~ 0 + group + Run' (or + tech_rep_group): a saturated model (one level per sample), no residual degrees of
+    freedom; limma stops in the kernel. An honest user input; the most natural candidate for 112f's `formula`.
+  - '~ 0 + group + tech_reps': an all-NA column. The validation builds the model frame with na.action = na.pass
+    (utils_workflow_dia_da_validation.R:143) and accepts it; the kernel's model frame drops the NA rows and fails.
+    This is a validation gap (a controller/kernel disagreement), recorded, not fixed (draft F112-04).
+  The decision whether 112f is bound (and with which formula) is the lead's (D8).
+
+## P4 (F112-01): the managed run shows neither the BH-fallback warning nor the completion notice -- REPRODUCED
+
+Rscript docs/qa/workflow-execution/kit/kit-112/w1/probes.R <tree> P4
+The run plugin's server (da_server_run_analysis_handler) in shiny::testServer on a DIA owner whose DA falls back to BH
+(the small recipe: q-value estimation fails for the contrast, 1 qvalue warning in the manifest); once unmanaged, once with
+workflowSessionApplication mocked to an application and installWorkflowManagedStep mocked (its apply counted);
+shiny::showNotification/removeNotification recorded.
+  P4 managed = FALSE: publication step applied 0 time(s); manifest on the head TRUE, with 1 q-value warning(s); notices:
+      show [default] (da_working) Running differential abundance analysis...
+      show [warning] Some contrasts used the existing BH fallback after q-value estimation failed.
+      show [message] Differential abundance analysis completed successfully!
+      remove (da_working)
+  P4 managed = TRUE: publication step applied 1 time(s); manifest on the head TRUE, with 1 q-value warning(s); notices:
+      show [default] (da_working) Running differential abundance analysis...
+      remove (da_working)
+Read: confirmed at the start commit. With the same manifest (1 BH fallback), the managed branch returns after
+removing da_working and applying the publication step (mod_prot_da_handlers_run_analysis.R:46-53); the warning and the
+completion notice are on the in-process branch only (:55-59). The step's own delivery (:19-23) shows neither (by
+reading; the step was mocked here). F112-01 stands; queued to KIT-109, not fixed here.
+
+## Found on the way (not a probe): draft F112-03, the in-process DA publication fails on a rerun that meets a saved page
+
+Rscript docs/qa/workflow-execution/kit/kit-112/w1/f112-03-republish.R <tree>
+On one DIA owner, the DA with two contrasts at TREAT 0.5, q 0.01 (Glimma publishes each contrast's page and saves it as a
+rendered asset), then the DA with the first contrast only on the same head (its product a hit, the manifest new):
+  == two contrasts TREAT -> ok
+  == one contrast TREAT hit -> invalid type/length (symbol/0) in vector allocation
+     publishDIAActionOutputs -> produceDIADaPublication -> writeDIAInteractiveVolcanoOutputs -> saveSelfContainedWidget
+     -> htmlwidgets::saveWidget -> ... -> devtools_loaded(package) -> .getNamespace(pkg)
+Cause (code): writeDIAInteractiveVolcanoOutputs (utils_workflow_dia_da.R:693-705) calls generateProtDAVolcanoPlotGlimma
+with the manifest; for a manifest it first looks up the saved page (KIT-016, func_prot_da_volcano_glimma.R:33-38) and
+returns a shiny iframe tag; saveSelfContainedWidget (func_general_plotting_qc_utility_helpers.R:210-214) sends anything that
+is not an htmlwidget to htmlwidgets::saveWidget, which stops. The manifest is already saved on the head; its "da" outputs
+stay pending. Any rerun whose products hit while its manifest differs (a contrast subset, a non-head source, a rerun after
+a reopen where the model's base-fit factors are unset, R1) meets it once a page was saved for that contrast and threshold.
+W1 (a)'s first draft order met it in the reopened and non-head cases (at TREAT); the frozen order avoids it. By reading,
+the worker's da_publication runs the same produceDIADaPublication on the head and would meet the same page. Outside
+D3's lines (the publication is D5's, unchanged); a non-methodology defect: the lead decides (fix with a failing-first test
+in its own item, or park).

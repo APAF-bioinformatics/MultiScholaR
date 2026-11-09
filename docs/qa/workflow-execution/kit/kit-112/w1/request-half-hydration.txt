@@ -1,0 +1,48 @@
+synthetic state: 4000 proteins x 300 samples; protein table 9.47 MiB in R
+-- the request half (runDIAReferenceDaAnalysis before the contrast loop, utils_workflow_dia_da.R:345-389) --
+:345 assertDIAExportReady(manager, allow_action = 'da')                                      heap peak cold +5.70 MiB, warm +9.40 MiB; value 0.00 MiB
+:353 readDIAStateMetadata(manager, source)$data (the state record)                           heap peak cold +2.30 MiB, warm +10.20 MiB; value 0.04 MiB
+:354 readDIAExecutionComponents(manager, source, fields = 'design_matrix')                   heap peak cold +140.00 MiB, warm +152.40 MiB; value 0.10 MiB
+    the prototype's protein_quant_table: 0 rows x 301 columns (a zero-row schema)
+:355 validateProtDaModelAndContrasts(prototype, formula, contrasts)                          heap peak cold +11.80 MiB, warm +17.30 MiB; value 0.03 MiB
+:367 readDIAStateMetadata(manager) (the head record)                                         heap peak cold +0.30 MiB, warm +0.30 MiB; value 0.04 MiB
+:383 commitDIAReferenceState(manager, current_state, checkpoint, config, description)        heap peak cold +45.00 MiB, warm +14.20 MiB; value 0.01 MiB
+-- the compute half's first statements (runSavedOperation, utils_workflow_operations.R:151-174) --
+utils_workflow_operations.R:151 workflowComponentScientificIdentity (the identity)           heap peak cold +0.40 MiB, warm +6.90 MiB; value 0.00 MiB
+utils_workflow_operations.R:174 runProjected's read: readWorkflowExecutionComponents(3 fields) heap peak cold +74.60 MiB, warm +73.90 MiB; value 10.08 MiB
+synthetic state: 16000 proteins x 300 samples; protein table 37.76 MiB in R
+-- the request half (runDIAReferenceDaAnalysis before the contrast loop, utils_workflow_dia_da.R:345-389) --
+:345 assertDIAExportReady(manager, allow_action = 'da')                                      heap peak cold +5.70 MiB, warm +9.40 MiB; value 0.00 MiB
+:353 readDIAStateMetadata(manager, source)$data (the state record)                           heap peak cold +2.30 MiB, warm +10.20 MiB; value 0.04 MiB
+:354 readDIAExecutionComponents(manager, source, fields = 'design_matrix')                   heap peak cold +140.00 MiB, warm +152.60 MiB; value 0.10 MiB
+    the prototype's protein_quant_table: 0 rows x 301 columns (a zero-row schema)
+:355 validateProtDaModelAndContrasts(prototype, formula, contrasts)                          heap peak cold +11.80 MiB, warm +17.30 MiB; value 0.03 MiB
+:367 readDIAStateMetadata(manager) (the head record)                                         heap peak cold +0.30 MiB, warm +0.30 MiB; value 0.04 MiB
+:383 commitDIAReferenceState(manager, current_state, checkpoint, config, description)        heap peak cold +45.00 MiB, warm +14.10 MiB; value 0.01 MiB
+-- the compute half's first statements (runSavedOperation, utils_workflow_operations.R:151-174) --
+utils_workflow_operations.R:151 workflowComponentScientificIdentity (the identity)           heap peak cold +0.60 MiB, warm +6.90 MiB; value 0.00 MiB
+utils_workflow_operations.R:174 runProjected's read: readWorkflowExecutionComponents(3 fields) heap peak cold +189.40 MiB, warm +145.00 MiB; value 40.02 MiB
+synthetic state: 4000 proteins x 100 samples; protein table 3.34 MiB in R
+-- the request half (runDIAReferenceDaAnalysis before the contrast loop, utils_workflow_dia_da.R:345-389) --
+:345 assertDIAExportReady(manager, allow_action = 'da')                                      heap peak cold +5.70 MiB, warm +9.30 MiB; value 0.00 MiB
+:353 readDIAStateMetadata(manager, source)$data (the state record)                           heap peak cold +2.40 MiB, warm +10.20 MiB; value 0.03 MiB
+:354 readDIAExecutionComponents(manager, source, fields = 'design_matrix')                   heap peak cold +135.90 MiB, warm +149.30 MiB; value 0.04 MiB
+    the prototype's protein_quant_table: 0 rows x 101 columns (a zero-row schema)
+:355 validateProtDaModelAndContrasts(prototype, formula, contrasts)                          heap peak cold +11.80 MiB, warm +17.20 MiB; value 0.01 MiB
+:367 readDIAStateMetadata(manager) (the head record)                                         heap peak cold +0.40 MiB, warm +0.40 MiB; value 0.03 MiB
+:383 commitDIAReferenceState(manager, current_state, checkpoint, config, description)        heap peak cold +45.10 MiB, warm +14.10 MiB; value 0.01 MiB
+-- the compute half's first statements (runSavedOperation, utils_workflow_operations.R:151-174) --
+utils_workflow_operations.R:151 workflowComponentScientificIdentity (the identity)           heap peak cold +0.50 MiB, warm +6.90 MiB; value 0.00 MiB
+utils_workflow_operations.R:174 runProjected's read: readWorkflowExecutionComponents(3 fields) heap peak cold +37.60 MiB, warm +37.10 MiB; value 3.92 MiB
+synthetic state: 4000 proteins x 600 samples; protein table 18.66 MiB in R
+-- the request half (runDIAReferenceDaAnalysis before the contrast loop, utils_workflow_dia_da.R:345-389) --
+:345 assertDIAExportReady(manager, allow_action = 'da')                                      heap peak cold +5.70 MiB, warm +9.30 MiB; value 0.00 MiB
+:353 readDIAStateMetadata(manager, source)$data (the state record)                           heap peak cold +2.40 MiB, warm +10.20 MiB; value 0.06 MiB
+:354 readDIAExecutionComponents(manager, source, fields = 'design_matrix')                   heap peak cold +146.10 MiB, warm +157.20 MiB; value 0.19 MiB
+    the prototype's protein_quant_table: 0 rows x 601 columns (a zero-row schema)
+:355 validateProtDaModelAndContrasts(prototype, formula, contrasts)                          heap peak cold +11.90 MiB, warm +17.30 MiB; value 0.05 MiB
+:367 readDIAStateMetadata(manager) (the head record)                                         heap peak cold +0.40 MiB, warm +0.40 MiB; value 0.07 MiB
+:383 commitDIAReferenceState(manager, current_state, checkpoint, config, description)        heap peak cold +45.20 MiB, warm +14.10 MiB; value 0.01 MiB
+-- the compute half's first statements (runSavedOperation, utils_workflow_operations.R:151-174) --
+utils_workflow_operations.R:151 workflowComponentScientificIdentity (the identity)           heap peak cold +0.50 MiB, warm +7.00 MiB; value 0.00 MiB
+utils_workflow_operations.R:174 runProjected's read: readWorkflowExecutionComponents(3 fields) heap peak cold +131.50 MiB, warm +130.80 MiB; value 19.33 MiB
