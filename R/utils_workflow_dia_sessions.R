@@ -1678,6 +1678,10 @@ refreshDIANativeSummaryArchive <- function(workflow, source_dir) {
     metadata$r6_state_history <- manager$state_history
     metadata$da_ui_params <- workflow$da_ui_params
     metadata$export_timestamp <- Sys.time()
+    # KIT-108 F104-01 (D5): a store exported before KIT-108 holds no template; it is filled as the report step resolves
+    # it. A stored value is kept.
+    metadata$report_template <- metadata$report_template %||%
+        resolveProtSummaryReportTemplate(workflow, catFn = function(...) invisible(NULL))$templateFilename
     runDIANativeSessionExport(manager, metadata, source_dir,
         extra_references = owned$extra_references,
         dependencies = collectDIANativeGuiFiles(manager, metadata),
@@ -1854,7 +1858,9 @@ collectDIANativeSessionMetadata <- function(workflow_data, norm_data, input) {
         # KIT-042: the owner's type (the store identity, KIT-020) is authoritative; the config and the state's
         # own record are fallbacks for stores written before the type was set at import.
         workflow_type = context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA",
-        report_template = global$report_template %||% summary$report_template,
+        # KIT-108 F104-01 (D5): the route's template as the report step resolves it (the route by type, a compatible
+        # requested template honoured, a stale one ignored), not the config's or the state's own value (NULL since KIT-046).
+        report_template = resolveProtSummaryReportTemplate(workflow_data, catFn = function(...) invisible(NULL))$templateFilename,
         # KIT-046 (KIT-042 audit F-08): the export's limpa flag follows the owner's type, nothing else.
         use_limpa = identical(context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA", "DIA_LIMPA"),
         limpa_applied = identical(context$store$identity$workflow_id %||% global$workflow_type %||% summary$workflow_type %||% "DIA", "DIA_LIMPA"),

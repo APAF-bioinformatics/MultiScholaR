@@ -1627,7 +1627,8 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     expect_identical(summaries$metabolomics$final_state, list(states = c("metab_correlation_filtered",
         "metab_norm_complete", "metab_ruv_corrected", "metab_normalized", "loaded_for_de", "metab_qc_complete"),
         read_ids = readMetabWorkflowIds))
-    expect_identical(summaries$proteomics$final_state, list())
+    # KIT-108 W4 wired proteomics' context (moved to utils_workflow_dia_summary.R).
+    expect_identical(summaries$proteomics$final_state, list(context = resolveProtSummaryFinalS4State))
     # KIT-108 W3 wired trx's context (moved to utils_workflow_summary.R).
     expect_identical(summaries$transcriptomics$final_state, list(context = trxSummaryContext))
     # The record's owner class; the copy.
@@ -1638,9 +1639,10 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
         expect_identical(summaries[[omic]]$copy, list(gate = NULL,
             required = c("Contrasts Table", "Design Matrix", "Study Parameters"), inherits = TRUE), info = omic)
     }
-    expect_identical(summaries$proteomics$copy, list(required = NULL, inherits = FALSE))
-    # The integration export.
-    expect_identical(summaries$proteomics$integration, list(operation = NULL, requires = NULL))
+    expect_identical(summaries$proteomics$copy, list(gate = protSummaryCopyGate, required = NULL, inherits = FALSE))
+    # The integration export (KIT-108 W4: proteomics' file name and writer, utils_workflow_dia_summary.R).
+    expect_identical(summaries$proteomics$integration, list(filename = protSummaryIntegrationFilename, operation = NULL,
+        write = protSummaryIntegrationWrite, requires = NULL))
     expect_identical(summaries$lipidomics$integration, list(filename = "%s_%s_final_s4.RDS",
         operation = "lipid_integration_export", write = NULL, requires = NULL))
     expect_identical(summaries$metabolomics$integration, list(filename = "%s_%s_final_s4.RDS",
@@ -1654,7 +1656,8 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     # the success notice.
     flags <- function(failed, checking, after) list(render_after_failed_template = failed,
         checking_progress_always = checking, record_after_success = after)
-    expect_identical(summaries$proteomics$report, c(list(dir = "proteomics", label = NULL), flags(FALSE, TRUE, TRUE)))
+    expect_identical(summaries$proteomics$report, c(list(dir = "proteomics", template = resolveProtSummaryReportTemplate,
+        label = NULL, status = buildProtSummaryTemplateStatus), flags(FALSE, TRUE, TRUE)))
     expect_identical(summaries$lipidomics$report, c(list(dir = "lipidomics", template = "lipidomics_report.rmd",
         label = "Lipidomics", status = NULL), flags(FALSE, FALSE, FALSE)))
     expect_identical(summaries$metabolomics$report, c(list(dir = "metabolomics", template = "metabolomics_report.rmd",
@@ -1664,15 +1667,15 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     for (summary in summaries) {
         expect_true(dir.exists(system.file("reports", summary$report$dir, package = "MultiScholaR")), info = summary$report$dir)
     }
-    # The session-state payload: KIT-108 W3 wired lipid's, metab's and trx's (utils_workflow_summary.R); proteomics' is
-    # still in an R/mod_*.R file (W4).
-    expect_false("session_state" %in% names(summaries$proteomics))
+    # The session-state payload: KIT-108 W3 wired lipid's, metab's and trx's (utils_workflow_summary.R); W4 proteomics'
+    # (utils_workflow_dia_summary.R).
+    expect_identical(summaries$proteomics$session_state, protSummarySessionState)
     expect_identical(summaries$lipidomics$session_state, prepareLipidSummarySessionState)
     expect_identical(summaries$metabolomics$session_state, prepareMetabSummarySessionState)
     expect_identical(summaries$transcriptomics$session_state, trxSummarySessionState)
     # The texts that differ per omic.
-    expect_identical(summaries$proteomics$texts, c(integration_saved = "Saved Integration artifact",
-        progress_detect = "Detecting workflow type..."))
+    # KIT-108 W4: proteomics' integration notice is its writer's (the native archive's or the S4 RDS's).
+    expect_identical(summaries$proteomics$texts, c(progress_detect = "Detecting workflow type..."))
     expect_identical(summaries$lipidomics$texts, character())
     expect_identical(summaries$metabolomics$texts, character())
     expect_identical(summaries$transcriptomics$texts, c(integration_not_written = "not written (no integration export yet)"))

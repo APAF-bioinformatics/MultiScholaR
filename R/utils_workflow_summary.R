@@ -46,7 +46,12 @@ workflowSummaryText <- function(config, name, default) {
 #' @noRd
 workflowSummaryFinalState <- function(config, workflowData, omicType, catFn = cat) {
     final <- config$final_state
-    if (!is.null(final$context)) return(final$context(workflowData, catFn = catFn))
+    if (!is.null(final$context)) {
+        state <- final$context(workflowData, catFn = catFn)
+        # KIT-108 W4: proteomics' context (`resolveProtSummaryFinalS4State`) names no contrasts; its save reads the bus's.
+        if (!"contrastsTbl" %in% names(state)) state["contrastsTbl"] <- list(workflowData$contrasts_tbl)
+        return(state)
+    }
     finalS4Object <- NULL
     dataStateUsed <- NULL
     manager <- workflowData$state_manager
@@ -121,13 +126,15 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
         state <- NULL # KIT-075: the object leaves this frame once written
         startWorkflowSummaryIntegrationExport(config, workflowData, omicType, file.path(integrationDir, filename),
             stateName, object, notify = notify, saveRDSFn = saveRDSFn, failed = summaryFailed,
-            done = function(written) {
-                # F108-03: a write the gate refused shows no "Saved Integration" notice.
-                if (isTRUE(written)) {
-                    notify(workflowSummaryText(config, "integration_saved", "Saved Integration S4 Object"), "message", 5)
+            sourceDir = paths$source_dir, done = function(written) {
+                # F108-03: a write the gate refused shows no "Saved Integration" notice. KIT-108 W4: a route writer's
+                # notice is its own (proteomics': the native archive's, or the S4 RDS's).
+                if (!isFALSE(written)) {
+                    notify(if (is.character(written)) written else
+                        workflowSummaryText(config, "integration_saved", "Saved Integration S4 Object"), "message", 5)
                 }
                 notify("Study parameters saved successfully", "message", 5)
-                done(list(studyParamsFile = studyParamsFile, integrationFile = if (isTRUE(written)) filename else
+                done(list(studyParamsFile = studyParamsFile, integrationFile = if (!isFALSE(written)) filename else
                     workflowSummaryText(config, "integration_not_written", filename)))
             })
     }, error = summaryFailed)
@@ -138,10 +145,12 @@ saveWorkflowSummaryParameters <- function(config, workflowData, projectDirs, omi
 #' in-process writer (`integration$write`, or the final object's RDS).
 #' @param stateName The final state's name (the managed product's).
 #' @param object The final object (the in-process RDS's content).
-#' @param done `function(written)`: `written` is FALSE when the gate refused the write.
+#' @param done `function(written)`: `written` is FALSE when the gate refused the write, else TRUE, or a route writer's
+#'   notice.
+#' @param sourceDir The project's source directory, for a route writer (KIT-108 W4: proteomics' native archive).
 #' @noRd
 startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType, path, stateName, object, notify, done,
-    failed, saveRDSFn = saveRDS) {
+    failed, saveRDSFn = saveRDS, sourceDir = NULL) {
     integration <- config$integration
     requires <- integration$requires
     if (!is.null(requires) && is.null(workflowData$state_manager$.context$snapshot$exports[[requires]])) {
@@ -155,9 +164,14 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
             function(result) invisible(NULL))), done = function() done(TRUE), failed = failed)
         return(invisible(path))
     }
-    if (is.null(integration$write)) saveRDSFn(object, path) else integration$write(workflowData, path)
+    write <- integration$write
+    # KIT-108 W4: a route writer (proteomics' `protSummaryIntegrationWrite`) also takes the final object, the source
+    # directory and the RDS writer, and returns the notice the save shows.
+    route <- !is.null(write) && "sourceDir" %in% names(formals(write))
+    notice <- if (route) write(workflowData, path, object = object, sourceDir = sourceDir, saveRDSFn = saveRDSFn) else
+        if (is.null(write)) saveRDSFn(object, path) else write(workflowData, path)
     object <- NULL
-    done(TRUE)
+    done(if (route) notice else TRUE)
 }
 
 #' Copy the results to the publication directory: the fallback `study_parameters.txt` when the parameters were not
@@ -243,7 +257,12 @@ renderWorkflowSummaryReport <- function(config, workflowData, projectDirs, omicT
     }
     report <- config$report
     within("Generating report...", {
+        # KIT-108 W4: proteomics shows the route's detection first; its resolver returns the template with the route's
+        # details (`templateFilename`).
+        detect <- workflowSummaryText(config, "progress_detect", NA_character_)
+        if (!is.na(detect)) progress(0.1, detect)
         template <- if (is.function(report$template)) report$template(workflowData) else report$template
+        if (is.list(template)) template <- template$templateFilename
         catFn(sprintf("REPORT: Selected template: %s\n", template))
         templatePath <- file.path(paths$base_dir, "scripts", omicType, template)
         templateSource <- "existing"

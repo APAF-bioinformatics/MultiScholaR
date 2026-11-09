@@ -1163,8 +1163,9 @@ omicGuiConfigProteomics <- function() {
 #' export step, the native integration's notification (mod_prot_summary_session_helpers.R:97-98), and the report flow's
 #' order (W1's captures): the progress "Detecting workflow type..." and the template check's progress always
 #' (mod_prot_summary_report_helpers.R:512, :520), a failed retrieval stopping the report (:528-530), the record bundle
-#' after the success notice and outputs (:534-550; `activateProtSummaryRenderedReport`, :389-408). Wired at the W4
-#' merge (their functions are in R/mod_prot_summary_*.R at the start commit): `final_state$context`
+#' after the success notice and outputs (:534-550; `activateProtSummaryRenderedReport`, :389-408). Wired by KIT-108 W4
+#' (utils_workflow_dia_summary.R; the integration writer returns the save's notice, :97-98, and the session-state
+#' payload is `protSummarySessionState`, today's export in the core's shape): `final_state$context`
 #' (`resolveProtSummaryFinalS4State`, mod_prot_summary_report_helpers.R:1-27), `copy$gate` (today's
 #' `assertDIAExportReady(getDIAActiveManager())`, mod_prot_summary_publication_helpers.R:104), `integration$filename`
 #' and `$write` (native `%s_%s_final.msdia.tar` with the archive's refresh and copy, else `%s_%s_final_s4.RDS` and
@@ -1175,14 +1176,19 @@ omicGuiConfigProteomics <- function() {
 omicGuiProteomicsSummary <- function() {
     list(module_id = "session_summary", testid = "prot", placeholder = "e.g., my_proteomics_analysis",
         description = "Full protein analysis workflow with config parameters",
-        final_state = list(),
+        # KIT-108 W4: the route's plugins (utils_workflow_dia_summary.R); the integration writer returns its notice
+        # ("Saved Integration artifact" on a native session, else "Saved Integration S4 Object").
+        final_state = list(context = resolveProtSummaryFinalS4State),
         record_class = "DIAStateAdapter",
-        copy = list(required = NULL, inherits = FALSE),
-        integration = list(operation = NULL, requires = NULL),
-        report = list(dir = "proteomics", label = NULL, render_after_failed_template = FALSE,
-            checking_progress_always = TRUE, record_after_success = TRUE),
+        copy = list(gate = protSummaryCopyGate, required = NULL, inherits = FALSE),
+        integration = list(filename = protSummaryIntegrationFilename, operation = NULL, write = protSummaryIntegrationWrite,
+            requires = NULL),
+        report = list(dir = "proteomics", template = resolveProtSummaryReportTemplate, label = NULL,
+            status = buildProtSummaryTemplateStatus, render_after_failed_template = FALSE, checking_progress_always = TRUE,
+            record_after_success = TRUE),
+        session_state = protSummarySessionState,
         export_steps = list(),
-        texts = c(integration_saved = "Saved Integration artifact", progress_detect = "Detecting workflow type..."))
+        texts = c(progress_detect = "Detecting workflow type..."))
 }
 
 #' The proteomics enrichment tab at 8e7294b6 (mod_prot_enrich*.R; KIT-107 D1): the tab, its status key and value

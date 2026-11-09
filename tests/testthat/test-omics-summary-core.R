@@ -64,7 +64,7 @@ omicsSummaryCoreCases <- c("lipid_main", "lipid_variants", "lipid_required_missi
 #' A W1 (b) case with its save, copy, report, export and RUVIII steps calling the core entries directly. The tab's
 #' values the frame would hold (saved, copied, the report) are kept in `held`, as the frame keeps them.
 omicsSummaryCoreSteps <- function(case, steps, setup) {
-    omic <- c(lipid = "lipidomics", metab = "metabolomics", trx = "transcriptomics")[[setup$omic]]
+    omic <- c(lipid = "lipidomics", metab = "metabolomics", trx = "transcriptomics", prot = "proteomics")[[setup$omic]]
     held <- new.env(parent = emptyenv())
     held$saved <- FALSE
     held$copied <- FALSE
@@ -120,6 +120,23 @@ omicsSummaryCoreSteps <- function(case, steps, setup) {
         ruviii = ruviii("group"), ruviii_unavailable = ruviii("technical_replicate"))
     # A report refused at the tab's gate (the copy failed) is the frame's, not the entry's.
     if (grepl("_required_missing$", case)) entries$report <- NULL
+    # KIT-108 W4: proteomics' owner variants, as W1 (b) drives them: the copy refused by the export gate (an export
+    # pending on the owner), then accepted once the export is no longer pending.
+    if (identical(case, "prot_owner_variants")) {
+        pending <- function(ctx, value) {
+            manager <- ctx$setup$manager()
+            manager$.context$export_pending <- value
+        }
+        entries$copy_gate_refuses <- function(ctx) {
+            ctx$fault("record", FALSE)
+            pending(ctx, list(label = "session-export"))
+            copy(ctx)
+        }
+        entries$copy <- function(ctx) {
+            pending(ctx, NULL)
+            copy(ctx)
+        }
+    }
     replaced <- intersect(names(steps), names(entries))
     steps[replaced] <- entries[replaced]
     list(steps = steps, replaced = replaced)
@@ -180,6 +197,63 @@ test_that("(W3, comparison side) the start commit's handlers give the core entri
                     expected <- setdiff(expected, "[message 5 -] Saved Integration S4 Object")
                 }
                 expect_identical(core$captures[[step]][[field]], expected, info = paste(case, step, field))
+            }
+        }
+    }
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-108 W4: proteomics on the core (its route pieces, utils_workflow_dia_summary.R).
+# ------------------------------------------------------------------------------------------------
+
+#' W1 (b)'s proteomics cases with an entry step (the refusals are the frame's).
+omicsSummaryCoreProtCases <- c("prot_route_dia", "prot_route_dia_limpa", "prot_route_tmt", "prot_route_lfq", "prot_stale",
+    "prot_owner", "prot_owner_variants", "prot_native", "prot_github_fallback")
+
+test_that("(W4) the seven moved proteomics functions and the route's plugins are in utils_workflow_dia_summary.R", {
+    moved <- c("resolveProtSummaryFinalS4State", "buildProtSummaryTemplateStatus", "resolveProtSummaryExpectedTemplate",
+        "resolveProtSummaryTemplateSelection", "resolveProtSummaryReportTemplate", "summariseProtSummaryWorkflowMetadata",
+        "prepareProtSummarySessionStateExport")
+    plugins <- c("protSummaryCopyGate", "protSummaryIntegrationFilename", "protSummaryIntegrationWrite",
+        "protSummarySessionState")
+    expect_length(moved, 7L)
+    ns <- asNamespace("MultiScholaR")
+    for (name in c(moved, plugins)) {
+        expect_true(exists(name, envir = ns, inherits = FALSE), info = name)
+        if (!exists(name, envir = ns, inherits = FALSE)) next
+        fn <- get(name, envir = ns, inherits = FALSE)
+        if (!is.null(utils::getSrcref(fn))) expect_identical(utils::getSrcFilename(fn), "utils_workflow_dia_summary.R", info = name)
+    }
+    if (!is.null(utils::getSrcref(get("protSummaryCopyGate", envir = ns)))) {
+        code <- sub("#.*$", "", readLines(testthat::test_path("..", "..", "R", "utils_workflow_dia_summary.R")))
+        expect_false(any(grepl("shiny::", code, fixed = TRUE)))
+    }
+})
+
+for (omicsSummaryCoreCase in omicsSummaryCoreProtCases) {
+    local({
+        case <- omicsSummaryCoreCase
+        test_that(sprintf("(W4, core side) %s: each entry gives W1 (b)'s notifications, progress, arguments, global and files", case), {
+            run <- omicsSummaryCoreRun(case)
+            expect_gt(length(run$replaced), 0L)
+            for (step in run$replaced) {
+                for (field in omicsSummaryCoreFields) {
+                    expect_identical(run$captures[[step]][[field]], omicSummaryW1Frozen[[case]][[step]][[field]],
+                        info = paste(case, step, field))
+                }
+            }
+        })
+    })
+}
+rm(omicsSummaryCoreCase)
+
+test_that("(W4, comparison side) the start commit's proteomics handlers give the core entries' notifications, progress, arguments, global and files", {
+    for (case in omicsSummaryCoreProtCases) {
+        core <- omicsSummaryCoreRun(case)
+        old <- omicSummaryW1Case(case)
+        for (step in core$replaced) {
+            for (field in omicsSummaryCoreFields) {
+                expect_identical(core$captures[[step]][[field]], old[[step]][[field]], info = paste(case, step, field))
             }
         }
     }
@@ -348,4 +422,77 @@ test_that("(W3, F108-03) a save the integration gate refuses shows the gate's wa
             expect_identical(written, character())
         }
     }
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-108 W4: F104-01 (D5), test 1 (the core): shown failing on the W3 merge 1cb2a79b (kit-108/w4/test-first.txt).
+# ------------------------------------------------------------------------------------------------
+
+#' A native owner of a route (`test-workflow-native-session.R`'s fixture, :5-21, as the LFQ block at :500-512 collects
+#' it): the store and the bus typed by the route, its final state, the native format.
+omicsSummaryCoreNativeOwner <- function(type, env = parent.frame()) {
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(.local_envir = env), "kit108-native", type),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager), envir = env)
+    manager$setWorkflowType(type)
+    final <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    manager$saveState("correlation_filtered", final, list(), "final")
+    manager$.context$session_format <- "native_v1"
+    workflow <- new.env(parent = emptyenv())
+    workflow$state_manager <- manager
+    workflow$config_list <- list(globalParameters = list(workflow_type = type))
+    workflow$contrasts_tbl <- data.frame(contrasts = "B-A", friendly_names = "B_vs_A")
+    workflow$design_matrix <- final@design_matrix
+    workflow
+}
+
+test_that("(W4, F104-01) the native export's metadata names the route's template as the report step resolves it", {
+    expected <- c(DIA = "DIANN_report.rmd", DIA_LIMPA = "DIANN_limpa_report.rmd", TMT = "TMT_report.rmd",
+        LFQ = "LFQ_report.rmd")
+    for (type in names(expected)) {
+        workflow <- omicsSummaryCoreNativeOwner(type)
+        norm <- new.env(parent = emptyenv())
+        norm$best_k <- NA
+        norm$correlation_threshold <- 0.5
+        collected <- withDIAStateScope(workflow$state_manager, function()
+            collectDIANativeSessionMetadata(workflow, norm, list(norm_method = "cyclicloess", ruv_mode = "skip")))
+        resolved <- resolveProtSummaryReportTemplate(workflow, catFn = function(...) invisible(NULL))$templateFilename
+        expect_identical(resolved, expected[[type]], info = type)
+        expect_identical(collected$metadata$report_template, resolved, info = type)
+    }
+})
+
+test_that("(W4, F104-01) the summary's archive refresh fills a missing stored template with the route's, and keeps a set one", {
+    refresh <- function(stored, type) {
+        source_dir <- withr::local_tempdir(.local_envir = parent.frame())
+        metadata <- list(final_protein_count = 120L, final_sample_count = 12L,
+            contrasts_tbl = data.frame(friendly_names = "B_vs_A"), normalization_method = "cyclicloess",
+            ruv_mode = "skip", ruv_k = NA, correlation_threshold = 0.5, workflow_type = type, report_template = stored)
+        manager <- new.env(parent = emptyenv())
+        manager$.context <- list(owned_export = list(metadata_reference = list(entity_id = "metadata"),
+            generation = "earlier", extra_references = list()), head = list(entity_id = "current"))
+        manager$current_state <- "correlation_filtered"
+        manager$state_history <- list("correlation_filtered")
+        workflow <- list(state_manager = manager, config_list = list(globalParameters = list(workflow_type = type)))
+        exported <- NULL
+        testthat::with_mocked_bindings(
+            suppressMessages(refreshDIANativeSummaryArchive(workflow, source_dir)),
+            assertDIAExportReady = function(...) invisible(TRUE),
+            resolveDIAStateValue = function(context, reference) metadata,
+            collectDIANativeGuiFiles = function(...) list(),
+            runDIANativeSessionExport = function(manager, metadata, source_dir, extra_references, dependencies,
+                prepare_outputs) {
+                exported <<- metadata
+                prepare_outputs(metadata, list(archive_name = "filtered_session_data_kit108.zip"))
+                list(status = "complete")
+            })
+        list(metadata = exported$report_template,
+            text = grep("Report Template", readLines(file.path(source_dir, "filtered_session_summary.txt")), value = TRUE))
+    }
+    filled <- refresh(NULL, "TMT")
+    expect_identical(filled$metadata, "TMT_report.rmd")
+    expect_identical(filled$text, "- Report Template: TMT_report.rmd")
+    kept <- refresh("default", "TMT")
+    expect_identical(kept$metadata, "default")
+    expect_identical(kept$text, "- Report Template: default")
 })
