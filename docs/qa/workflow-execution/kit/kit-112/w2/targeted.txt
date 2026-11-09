@@ -1,0 +1,31 @@
+KIT-112 W2 + F112-03: targeted files on 9e2ee21d (the final code commit). Recorded 2026-11-10 by the W2 agent.
+R 4.6.1, kit_111's library, load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true, TMPDIR on disk, one process per file
+through tools/testing/test-baseline.R file, at most 4 at once. Every file exit 0, status complete.
+
+file                                      run  expect  passed  failed  err  skip  warn  W1 start-commit record
+test-workflow-saved-da.R                   19   865     861     0      0    0     4     116 (9 blocks) + W1 (a) 369; + W2 + F112-03 blocks
+test-workflow-operation-registry.R         15  1036    1036     0      0    0     0     1030 (D11 retargets: +6 expectations)
+test-workflow-dia-products.R               18   189     189     0      0    0     0     189
+test-workflow-operations.R                  6    75      75     0      0    0     0     75
+test-workflow-prot-declarations.R          13   325     303     0      0    2    20     325/303/2 skips/20 warnings
+test-workflow-analysis-record.R            23   278     274     0      0    0     4     278/274/4 warnings
+test-omic-gui-config.R                     24  1849    1849     0      0    0     0     1849
+test-prot-07b-da-handlers-compat.R          9    37      35     0      0    2     0     37/35/2 (Q-22)
+test-module-ci-prot-da.R                    8   219     218     0      0    1     0     219/218/1 (Q-22)
+test-omic-da-module.R                      43  1260    1260     0      0    0     0     1260
+test-omic-enrich-module.R                  13   975     975     0      0    0     0     975
+test-workflow-omics-worker.R                8   289     289     0      0    0     0     289/0 (lipid/metab/trx worker unchanged)
+test-workflow-omics-application-reads.R    27   230     230     0      0    0     0     230/0
+test-gui-entry-proteomics.R (5 lanes)       5   193     193     0      0    0     0     193 frozen, 0 differences, no re-freeze (898 s)
+DIA session and memory set:
+test-workflow-native-session.R             24   742     733     0      0    2     7     733/2
+test-perf107-audit.R                       11   192     191     0      0    1     0     191/1
+test-perf107-checkpoints.R                  4    39      38     0      0    1     0     38/1
+test-workflow-checkpoint-dia-state.R       19   178     174     0      0    4     0     174/4
+test-workflow-gui-memory-lifetimes.R       17    91      80     0      0   11     0     80/11
+Dependents grep (diaDaRequest, computeDIAReferenceDaContrast, acceptDIADaManifest, commitDIADaArguments,
+computeWorkflowDiaContrastAction, runDIAReferenceDaAnalysis, writeDIAInteractiveVolcanoOutputs,
+saveDIAInteractiveVolcanoAsset, proteomicsDiaBinding over R/ tests/ tools/ (not tools/refactor) inst/), beyond the above:
+test-prot-norm-core.R                      19  1553    1541     0      0    0    12
+test-workflow-memory-mechanism-member.R    13    13       0     0      0   13     0     all 13 are opt-in member/experiment skips
+                                                                                   (existing; not runnable here)

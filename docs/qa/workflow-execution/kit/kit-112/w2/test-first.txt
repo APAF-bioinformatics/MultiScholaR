@@ -1,0 +1,38 @@
+KIT-112 W2 and F112-03: test first. Recorded 2026-11-10 by the W2 agent.
+R 4.6.1, kit_111's library, load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true, TMPDIR=/home/doktersmol/.cache/k112w2.
+"Before" = a `git archive` copy of the named commit with only the test file replaced by the new one.
+Columns: blocks run, expectations, passed, failed, error blocks, skipped blocks, warnings.
+
+## D11 (test-workflow-operation-registry.R), the retargets exactly as W1 recorded them (kit-112/test-first.txt)
+
+  before, 525cbd78:  15  1025  1021  4  2  0  0   (the 4 failures and 2 errors are W1's recorded ones, in the two
+                                                   changed blocks: compute in_process, handler NULL, no named_input,
+                                                   no section; dispatch refused; head rule refused the named input)
+  after, 8085d7d0:   15  1036  1036  0  0  0  0
+
+## W1 (a) after the split, before the W2 blocks were added (the split alone)
+
+  test-workflow-saved-da.R on the split tree:  12  371  369  0  0  0  2   (= W1's frozen record: 369 passed, 2 warnings
+                                                                            from the DIA_LIMPA builder)
+
+## W2 blocks (test-workflow-saved-da.R with the W2 blocks appended)
+
+  before, 525cbd78:  17  793  498  291  2  0  4   (the failures and errors are the W2 blocks' (per-block detail not
+                                                  split out; the first 12 blocks are W1's on unchanged code): diaDaRequest,
+                                                  acceptDIADaManifest, computeWorkflowDiaContrastAction and the
+                                                  adaptor's da entry do not exist; DA-contrast-output refused dispatch)
+  after, 8085d7d0:   17  852  848  0    0  0  4
+
+## F112-03 (two blocks appended after the W2 blocks; detail runner, the F112-03 blocks with the file's helpers)
+
+  before, 525cbd78:
+    [error] in-process block: Error in `.getNamespace(pkg)`: invalid type/length (symbol/0) in vector allocation
+            (the defect, as kit-112/w1/f112-03-republish.R reproduces it)
+    [error] managed block: could not find function "diaDaRequest" (the managed path does not exist there)
+  before, 8085d7d0 (W2, without the fix):
+    [error] in-process block: Error in `.getNamespace(pkg)`: invalid type/length (symbol/0) in vector allocation
+    [error] managed block: invalid type/length (symbol/0) in vector allocation (the worker's da_publication meets it)
+  after, 9e2ee21d: both blocks pass, no failure.
+  With the writer fix alone (before the asset guard), the managed rerun published but left two assets under the
+  page's identity (probe-f11203-worker-on-writer-fix-only.txt: "asset lookup for the reused page: multiple"); the
+  managed block's last expectation (one asset, "hit") guards it.

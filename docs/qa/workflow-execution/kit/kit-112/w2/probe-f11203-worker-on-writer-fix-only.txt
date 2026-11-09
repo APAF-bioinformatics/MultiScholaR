@@ -1,0 +1,4 @@
+two contrasts: ok 
+one contrast (hit, new manifest): ok 
+head outputs: da 
+asset lookup for the reused page: multiple 
