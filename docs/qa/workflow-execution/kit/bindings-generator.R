@@ -1317,6 +1317,10 @@ if (!is.null(b$builds$kit_111)) {
     }
     b$tickets[["111q"]] <- list(kind = "single_journey", build = "kit_111", corpus = "full", route = "DIA", whole_journey = TRUE,
         ceiling_seconds = 14400L, purpose = "memory candidate, on the worker (recorded, uncounted; KIT-111 D8)")
+    # D8's correction pass: 111m rose 0.10 to 0.13 GiB on the controller from `rollup` on (a floor that is not released,
+    # not larger spikes); 111n is 111m again, once, to tell a reproducible retention from a one-off.
+    if (!is.null(b$tickets[["111m"]])) b$tickets[["111n"]] <- utils::modifyList(b$tickets[["111m"]],
+        list(purpose = "the correction pass: 111m once more (recorded, uncounted; KIT-111 D8)"))
 }
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
