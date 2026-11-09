@@ -1272,6 +1272,27 @@ if (!is.null(b$builds$kit_107)) {
     }
 }
 
+# KIT-108 (the shared summary; the report-step memory diagnosis and fix). The memory members (KIT-108 D7, M1 and M2): on the
+# start commit's build kit_107, the lifecycle screen member 108d and the two large baselines 108p (metab) and 108q (lipid),
+# as KIT-086 bound them (single_084, the kit-086 oracles re-fingerprinted by KIT-092). After the install: 108a..t from
+# 101<suffix> on kit_108, and the post-fix large members 108v (metab) and 108w (lipid) on kit_108 (M4).
+if (!is.null(b$builds$kit_107) && exists("single_084")) {
+    if (!is.null(b$oracles$lipid86s_import)) b$tickets[["108d"]] <- single_084("kit_107", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L)
+    if (!is.null(b$oracles$metab86_import)) b$tickets[["108p"]] <- single_084("kit_107", "metab_large_missing", "metabolomics", "metab86", 14400L)
+    if (!is.null(b$oracles$lipid86_import)) b$tickets[["108q"]] <- single_084("kit_107", "lipid_large_missing", "lipidomics", "lipid86", 14400L)
+}
+if (!is.null(b$builds$kit_108)) {
+    kit_108 <- list(build = "kit_108", purpose = "exactness (recorded, uncounted; KIT-108)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("108", suffix)]] <- utils::modifyList(from, kit_108)
+    }
+    if (exists("single_084")) {
+        if (!is.null(b$oracles$metab86_import)) b$tickets[["108v"]] <- single_084("kit_108", "metab_large_missing", "metabolomics", "metab86", 14400L)
+        if (!is.null(b$oracles$lipid86_import)) b$tickets[["108w"]] <- single_084("kit_108", "lipid_large_missing", "lipidomics", "lipid86", 14400L)
+    }
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
