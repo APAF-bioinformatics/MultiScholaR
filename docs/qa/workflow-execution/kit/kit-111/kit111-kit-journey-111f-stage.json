@@ -1,0 +1,120 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-111",
+  "stage": "kit111-kit-journey-111f",
+  "date": "2026-11-10",
+  "dispatches": {
+    "normalization-ruv": {
+      "requests": 1,
+      "complete": 0
+    },
+    "protein_accession_cleanup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_duplicate_removal": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_replicate_filter": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 684048384,
+    "phase_peak_anon_bytes": {
+      "import": 569073664,
+      "design": 578015232,
+      "accession": 672133120,
+      "protein_intensity": 678375424,
+      "duplicates": 684011520,
+      "protein_replicate": 684048384,
+      "normalisation_ruv": 620290048
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "verifier_accepted",
+    "steps": ["import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "protein",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "lfq_fixture_auto",
+    "build": "3dc0648e58b72752c13037d80b8b96b7b50fff11e067fcb27cb678638413750a",
+    "status": "journey_failed",
+    "exact": false,
+    "elapsed_seconds": 69.75,
+    "peak_bytes": 1421570048,
+    "peak_anon_bytes": 1390604288,
+    "resident_end_bytes": 990035968,
+    "phase_seconds": {
+      "import": 4.83999999999651,
+      "design": 11.1899999999732,
+      "accession": 8.69000000000233,
+      "protein_intensity": 8.36999999999534,
+      "duplicates": 6.84000000002561,
+      "protein_replicate": 7.85999999998603,
+      "normalisation_ruv": 10.5199999999895,
+      "8": null,
+      "9": null,
+      "10": null,
+      "11": null
+    },
+    "phase_peak_anon_bytes": {
+      "import": 936185856,
+      "design": 945127424,
+      "accession": 1333567488,
+      "protein_intensity": 1364238336,
+      "duplicates": 1368457216,
+      "protein_replicate": 1378971648,
+      "normalisation_ruv": 1390604288,
+      "8": null,
+      "9": null,
+      "10": null,
+      "11": null
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "failed",
+      "8": null,
+      "9": null,
+      "10": null,
+      "11": null
+    },
+    "max_sample_interval": 0.0600000000267755,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": false,
+    "guard": null,
+    "failed_step": "journey_failed",
+    "error": "production action failed: proteomics_workflow-normalization-run_normalization ×Error applying proteomics step: managed action ended: worker_failed"
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": null,
+    "populations": null,
+    "oracle_mismatches": null,
+    "canonical_form_differences": null,
+    "files": null,
+    "failure": null
+  }
+}
