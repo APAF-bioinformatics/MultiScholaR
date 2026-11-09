@@ -727,6 +727,10 @@ diaInteractiveVolcanoIdentity <- function(manager, manifest, contrast, qvalue) {
 #' @noRd
 saveDIAInteractiveVolcanoAsset <- function(manager, manifest, contrast, qvalue, bytes) {
     identity <- diaInteractiveVolcanoIdentity(manager, manifest, contrast, qvalue)
+    # KIT-112 F112-03: a page already saved for this result and threshold (a worker's publication that reused it) is
+    # kept; a second asset under one identity would make every later lookup of the page ambiguous.
+    saved <- resolveSavedWorkflowEntity(manager$.context$store, "rendered_asset", identity, hydrate = FALSE)
+    if (identical(saved$status, "hit")) return(saved$reference)
     # The page's display box in the module (the asset envelope needs positive dimensions).
     asset <- newSavedWorkflowRenderedAsset(bytes, "text/html", c(1200L, 820L))
     reference <- saveWorkflowConsumerEntity(manager$.context$store, asset,
@@ -775,10 +779,13 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
     dir.create(temporary)
     on.exit(unlink(temporary, recursive = TRUE), add = TRUE)
     for (contrast in manifest$contrasts$friendly_names) {
-        widget <- generateProtDAVolcanoPlotGlimma(manifest, contrast,
+        # KIT-112 F112-03: a page already saved for this result and threshold (KIT-016; a rerun whose contrast products
+        # hit under a new manifest) is the page: it is written as saved, not rebuilt, re-serialised or saved again.
+        page <- resolveDIAInteractiveVolcanoAsset(manifest, contrast, qvalue)
+        widget <- if (is.null(page)) generateProtDAVolcanoPlotGlimma(manifest, contrast,
             uniprot_tbl = annotations, args_row_id = manifest$protein_id_column,
             da_q_val_thresh = qvalue)
-        if (is.null(widget)) {
+        if (is.null(page) && is.null(widget)) {
             writeLines(diaInteractiveVolcanoUnavailableText(contrast), diaInteractiveVolcanoUnavailablePath(target, contrast))
             next
         }
@@ -786,13 +793,13 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         # One self-contained file, written in R (KIT-036): saveWidget's pandoc pass over this page is the DA
         # step's memory peak (KIT-017 audit PH-01). Only the HTML belongs to the durable publication inventory.
         html <- file.path(temporary, filename)
-        saveSelfContainedWidget(widget, html)
+        if (is.null(page)) saveSelfContainedWidget(widget, html) else writeBin(charToRaw(page), html)
         if (!file.copy(html, file.path(target, filename), overwrite = TRUE))
             cli::cli_abort("cannot stage interactive volcano HTML",
                 class = "saved_entity_outputs_pending")
         # KIT-016: the self-contained page is also a saved rendered asset, so the module renders it on demand
         # without rebuilding the widget (and without loading Glimma) in the application process.
-        if (!is.null(manager)) saveDIAInteractiveVolcanoAsset(manager, manifest, contrast, qvalue,
+        if (is.null(page) && !is.null(manager)) saveDIAInteractiveVolcanoAsset(manager, manifest, contrast, qvalue,
             readBin(html, "raw", n = file.size(html)))
         widget <- NULL
     }

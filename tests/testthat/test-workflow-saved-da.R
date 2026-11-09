@@ -1412,3 +1412,72 @@ test_that("KIT-112 W2 (D4): the DIA adaptor's `da` entry names the registered om
     expect_identical(names(formals(runDIAReferenceDaAnalysis)),
         c("settings", "da_data", "workflow", "paths", "contrasts", "annotations", "publish"))
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-112 F112-03: a DA rerun whose contrast products hit while its manifest is new (here a subset of the contrasts),
+# after an earlier run saved a Glimma page for that contrast and threshold (KIT-016), publishes: the saved page is the
+# page, written as saved, neither re-serialised nor saved again. Reproducer: kit-112/w1/f112-03-republish.R.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-112 F112-03: a DA rerun that meets a saved Glimma page publishes and reuses the page as saved", {
+    skip_if_not_installed("Glimma")
+    fixture <- savedDaW1Owner("kit112-f112-03")
+    manager <- fixture$workflow$state_manager
+    settings <- list(formula_string = "~ 0 + group", da_q_val_thresh = 0.01, treat_lfc_cutoff = 0.5)
+    run <- function(contrasts) {
+        value <- NULL
+        utils::capture.output(value <- suppressWarnings(suppressMessages(runDIAReferenceDaAnalysis(settings, fixture$da,
+            fixture$workflow, fixture$paths, contrasts, NULL))))
+        value
+    }
+    page_file <- file.path(fixture$paths$publication_graphs_dir, "Interactive_Volcano_Plots", "treated_vs_control.html")
+    first <- run(savedDaW1Contrasts(2L))
+    saved <- withDIAStateScope(manager, function() resolveDIAInteractiveVolcanoAsset(first, "treated.vs.control", 0.01))
+    expect_true(is.character(saved) && nchar(saved) > 1000)
+    expect_identical(readBin(page_file, "raw", n = file.size(page_file)), charToRaw(saved))
+    writer <- saveSelfContainedWidget
+    serialised <- 0L
+    second <- testthat::with_mocked_bindings(run(savedDaW1Contrasts(1L)),
+        saveSelfContainedWidget = function(...) {
+            serialised <<- serialised + 1L
+            writer(...)
+        })
+    expect_true(isDIAResultManifest(second))
+    expect_false(identical(second$contrasts, first$contrasts))
+    expect_identical(serialised, 0L)
+    expect_identical(readBin(page_file, "raw", n = file.size(page_file)), charToRaw(saved))
+    snapshot <- withDIAStateScope(manager, function() manager$.context$snapshot)
+    expect_identical(unlist(snapshot$completed_outputs[[getDIAStateReference(manager)$entity_id]]), c(da = TRUE))
+    # One saved page for the contrast and threshold (a second would make the lookup ambiguous).
+    expect_identical(withDIAStateScope(manager, function() resolveDIAInteractiveVolcanoAsset(second, "treated.vs.control", 0.01)),
+        saved)
+})
+
+test_that("KIT-112 F112-03: on the managed path the rerun publishes through the worker, reuses the saved page and keeps one asset", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    savedDaW2Mocks()
+    fixture <- savedDaW1Owner("kit112-f112-03-worker")
+    manager <- fixture$workflow$state_manager
+    dispatch <- savedDaW2Dispatcher(fixture, NULL)
+    settings <- list(formula_string = "~ 0 + group", da_q_val_thresh = 0.01, treat_lfc_cutoff = 0.5)
+    run <- function(contrasts) {
+        value <- NULL
+        utils::capture.output(value <- suppressWarnings(suppressMessages(savedDaW2Managed(fixture, dispatch, settings,
+            contrasts))))
+        value
+    }
+    page_file <- file.path(fixture$paths$publication_graphs_dir, "Interactive_Volcano_Plots", "treated_vs_control.html")
+    first <- run(savedDaW1Contrasts(2L))
+    saved <- withDIAStateScope(manager, function() resolveDIAInteractiveVolcanoAsset(first, "treated.vs.control", 0.01))
+    expect_true(is.character(saved) && nchar(saved) > 1000)
+    second <- run(savedDaW1Contrasts(1L))
+    expect_true(isDIAResultManifest(second))
+    expect_identical(readBin(page_file, "raw", n = file.size(page_file)), charToRaw(saved))
+    snapshot <- withDIAStateScope(manager, function() manager$.context$snapshot)
+    expect_identical(unlist(snapshot$completed_outputs[[getDIAStateReference(manager)$entity_id]]), c(da = TRUE))
+    # One saved page for the contrast and threshold: the controller's publication kept the one the worker reused.
+    identity <- withDIAStateScope(manager, function() diaInteractiveVolcanoIdentity(manager, second, "treated.vs.control", 0.01))
+    expect_identical(findSavedWorkflowEntities(manager$.context$store, list(kind = "rendered_asset", identity = identity))$status,
+        "hit")
+})
