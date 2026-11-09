@@ -42928,6 +42928,21 @@
       "ceiling_seconds": 14400,
       "purpose": "memory candidate, on the worker (recorded, uncounted; KIT-111 D8)"
     },
+    "111n": {
+      "kind": "single_journey",
+      "build": "kit_111",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "the correction pass: 111m once more (recorded, uncounted; KIT-111 D8)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
     "106x": {
       "kind": "single_journey",
       "build": "kit_906",
