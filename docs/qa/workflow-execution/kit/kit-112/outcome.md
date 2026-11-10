@@ -43,12 +43,14 @@
 | Run 7, journeys ([proof/chain-b.md](proof/chain-b.md)) | 112l, m, t, a, b, c accepted and exact. 112l/m/t add only `DA-contrast-output` 1/1; 112a/b/c dispatch as 111a/b/c |
 | M2, lifecycle | Completion as above. 112f fails at `da` as declared: `DA-contrast-output` 1/0, no `da_publication`, head `correlation_filtered`, `da_results` NULL |
 | M3, large pair ([memory-outcome.md](memory-outcome.md)) | Null check 111p against 111q: 0 different. 111q against 112q: 16 states, 105 comparisons with the `da_results` manifest, 0 different. Same 18 verifier mismatches. "Better" met; every "no worse" rule met |
-| Run 8, e2e ([e2e-final.txt](e2e-final.txt)) | RUN8 |
-| Run 9, skips ([skip-compare.md](skip-compare.md)) | RUN9 |
+| Run 8, e2e ([e2e-final.txt](e2e-final.txt)) | lipid 88, metab 190, trx 17, DIA 42, DIA_LIMPA 80, enrichment 98, TMT/LFQ 153: 0 failures, 0 skips |
+| Run 9, skips ([skip-compare.md](skip-compare.md)) | `load_all` has no change. Check mode has one: `test-workflow-saved-da.R`'s 8 new KIT-112 blocks error, all on the known source-tree read of the checkpoint fixture |
 
 ## Budget use
 
-- **GUI proof:** RUN_BUDGET
+- **GUI proof:**
+  - the correction pass was not used;
+  - one listing rerun, `test-workflow-saved-da.R` in check mode, recorded each block's message (run 9).
 - **Memory:**
   - the correction pass was not used;
   - no instrumentation rerun was needed.

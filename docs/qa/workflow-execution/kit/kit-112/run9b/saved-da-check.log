@@ -1,0 +1,340 @@
+Registered S3 methods overwritten by 'readr':
+  method                    from 
+  as.data.frame.spec_tbl_df vroom
+  as_tibble.spec_tbl_df     vroom
+  format.col_spec           vroom
+  print.col_spec            vroom
+  print.collector           vroom
+  print.date_names          vroom
+  print.locale              vroom
+  str.col_spec              vroom
+-------------------------------------------------------------------
+Welcome to MultiScholaR!
+
+IMPORTANT: Please run MultiScholaR::loadDependencies() 
+           to ensure all required packages are installed and loaded.
+-------------------------------------------------------------------
+
+Attaching package: ‘MultiScholaR’
+
+The following object is masked from ‘package:grDevices’:
+
+    savePlot
+
+The following object is masked from ‘package:base’:
+
+    %||%
+
+                                     contrasts
+1 treated_vs_control=grouptreated-groupcontrol
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "treated_vs_control=grouptreated-groupcontrol"
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "treated_vs_control=grouptreated-groupcontrol"
+[1] "S01" "S02" "S03" "S04" "S05" "S06" "S07" "S08"
+[1] "S01" "S02" "S03" "S04" "S05" "S06" "S07" "S08"
+[1] control control control control treated treated treated treated
+Levels: control treated
+[1] "group"      "replicates" "Run"       
+List of 1
+ $ :List of 1
+  ..$ treated_vs_control=grouptreated-groupcontrol:'data.frame':	200 obs. of  9 variables:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+[1] "treated_vs_control=grouptreated-groupcontrol"
+[1] "treated_vs_control=grouptreated-groupcontrol"
+[1] "treated_vs_control=grouptreated-groupcontrol"
+[1] "treated_vs_control=grouptreated-groupcontrol"
+   generateProtDAVolcanoStatic: Using ID column = Protein.Ids
+INFO [2026-11-10 14:43:32] --- Entering generateProtDAHeatmap ---
+INFO [2026-11-10 14:43:32]    selected_contrast = treated_vs_control, top_n_genes = 20
+INFO [2026-11-10 14:43:32]    Found 200 significant proteins
+INFO [2026-11-10 14:43:32]    Selected top 20 proteins for heatmap
+INFO [2026-11-10 14:43:32]    Expression matrix: 20 x 8
+INFO [2026-11-10 14:43:33] --- Exiting generateProtDAHeatmap (success) ---
+INFO [2026-11-10 14:43:35] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-10 14:43:35]    selected_contrast = treated_vs_control
+INFO [2026-11-10 14:43:35]    Glimma: Available contrasts in data: treated_vs_control
+INFO [2026-11-10 14:43:35]    Glimma: Target contrast: treated_vs_control
+INFO [2026-11-10 14:43:35]    Glimma: Grouping expression plot by 'group' with 8 samples
+INFO [2026-11-10 14:43:35]    Glimma: Unique groups detected: control, treated
+INFO [2026-11-10 14:43:35]    Glimma: Synchronized 200 proteins with expression data
+INFO [2026-11-10 14:43:35]    Glimma: Calling glimmaXY with 200 proteins and 8 samples
+INFO [2026-11-10 14:43:35]    Glimma: Highlighting 8 significant genes (8 up, 0 down)
+External counts supplied using counts argument will be transformed to log-cpm by default. Specify transform.counts='none' to override transformation.
+INFO [2026-11-10 14:43:35] --- Exiting generateProtDAVolcanoPlotGlimma ---
+Loading required package: shiny
+
+Attaching package: 'shiny'
+
+The following object is masked from 'package:MultiScholaR':
+
+    runTests
+
+*** ENTERING differentialAbundanceAnalysis METHOD ***
+*** METHOD SIGNATURE MATCHED: ProteinQuantitativeData ***
+*** Testing parameter access ***
+*** Parameter access successful ***
+--- Entering differentialAbundanceAnalysis ---
+   differentialAbundanceAnalysis: theObject class = ProteinQuantitativeData
+   differentialAbundanceAnalysis: contrasts_tbl provided = TRUE
+   differentialAbundanceAnalysis: contrasts_tbl dims = 1 x 1
+   differentialAbundanceAnalysis: contrasts_tbl content = treated_vs_control=grouptreated-groupcontrol
+   differentialAbundanceAnalysis: About to call differentialAbundanceAnalysisHelper...
+--- Entering differentialAbundanceAnalysisHelper ---
+   PARAMETER VALIDATION Step: Checking all input parameters...
+      theObject is NULL: FALSE
+      contrasts_tbl is NULL: FALSE
+      contrasts_tbl class: data.frame
+      contrasts_tbl type: list
+      contrasts_tbl print:
+                                     contrasts
+1 treated_vs_control=grouptreated-groupcontrol
+      Trying to access contrasts_tbl[[1]]...
+      SUCCESS: contrasts_tbl[[1]] class: character
+      SUCCESS: contrasts_tbl[[1]] length: 1
+      SUCCESS: contrasts_tbl[[1]] content: treated_vs_control=grouptreated-groupcontrol
+   DEBUG66: Initial parameter inspection
+      DEBUG66: theObject class = ProteinQuantitativeData
+      DEBUG66: contrasts_tbl param is.null = FALSE
+      DEBUG66: contrasts_tbl param class = data.frame
+      DEBUG66: contrasts_tbl param structure:
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "treated_vs_control=grouptreated-groupcontrol"
+   differentialAbundanceAnalysisHelper Step: Extracting parameters...
+   DEBUG66: After parameter extraction
+      DEBUG66: contrasts_tbl class = data.frame
+      DEBUG66: contrasts_tbl structure:
+'data.frame':	1 obs. of  1 variable:
+ $ contrasts: chr "treated_vs_control=grouptreated-groupcontrol"
+   differentialAbundanceAnalysisHelper: formula_string = ~0+group
+   differentialAbundanceAnalysisHelper: group_id = group
+   differentialAbundanceAnalysisHelper: da_q_val_thresh = 0.050000
+   differentialAbundanceAnalysisHelper Step: Processing group names...
+   differentialAbundanceAnalysisHelper: group_col length = 8
+   differentialAbundanceAnalysisHelper: group_col content = control, control, control, control, treated, treated, treated, treated
+   differentialAbundanceAnalysisHelper: any start with number? FALSE
+   differentialAbundanceAnalysisHelper Step: Updating S4 object parameters...
+   differentialAbundanceAnalysisHelper Step: Generating QC plots...
+[1] "S01" "S02" "S03" "S04" "S05" "S06" "S07" "S08"
+[1] "S01" "S02" "S03" "S04" "S05" "S06" "S07" "S08"
+[1] control control control control treated treated treated treated
+Levels: control treated
++===========================================================================+
+|  DEBUG66: Entering plotPcaHelper                                          |
++===========================================================================+
+   DEBUG66 [plotPcaHelper] Arg: nrow(data) = 200, ncol(data) = 8
+   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = 8
+   DEBUG66 [plotPcaHelper] Arg: grouping_variable = 'group'
+   DEBUG66 [plotPcaHelper] Arg: shape_variable = 'NULL'
+   DEBUG66 [plotPcaHelper] Arg: cv_percentile = 0.90
+   [plotPcaHelper] Filtering by CV. Rows before: 200, Rows after: 20
+   DEBUG66 [plotPcaHelper] data_filtered dims: 20 x 8
+   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca() with 2 component(s)...
+   DEBUG66 [plotPcaHelper] pca.res class: pca
+   DEBUG66 [plotPcaHelper] Step: Creating temp_tbl with left_join...
+   DEBUG66 [plotPcaHelper] temp_tbl dims: 8 x 5
+   DEBUG66 [plotPcaHelper] Step: Building ggplot object...
+   DEBUG66 [plotPcaHelper] output object size: 387.6 Kb
++===========================================================================+
+|  DEBUG66: Exiting plotPcaHelper                                           |
++===========================================================================+
++===========================================================================+
+|  DEBUG66: Entering plotPcaHelper                                          |
++===========================================================================+
+   DEBUG66 [plotPcaHelper] Arg: nrow(data) = 200, ncol(data) = 8
+   DEBUG66 [plotPcaHelper] Arg: nrow(design_matrix) = 8
+   DEBUG66 [plotPcaHelper] Arg: grouping_variable = 'group'
+   DEBUG66 [plotPcaHelper] Arg: shape_variable = 'NULL'
+   DEBUG66 [plotPcaHelper] Arg: cv_percentile = 0.90
+   [plotPcaHelper] Filtering by CV. Rows before: 200, Rows after: 20
+   DEBUG66 [plotPcaHelper] data_filtered dims: 20 x 8
+   DEBUG66 [plotPcaHelper] Step: Calling mixOmics::pca() with 2 component(s)...
+   DEBUG66 [plotPcaHelper] pca.res class: pca
+   DEBUG66 [plotPcaHelper] Step: Creating temp_tbl with left_join...
+   DEBUG66 [plotPcaHelper] temp_tbl dims: 8 x 5
+   DEBUG66 [plotPcaHelper] Step: Building ggplot object...
+   DEBUG66 [plotPcaHelper] output object size: 388.9 Kb
++===========================================================================+
+|  DEBUG66: Exiting plotPcaHelper                                           |
++===========================================================================+
+   differentialAbundanceAnalysisHelper Step: Running limma contrasts analysis...
+   DEBUG66: About to prepare design matrix rownames
+      DEBUG66: theObject@sample_id = Run
+      DEBUG66: design_matrix dims before = 8 x 3
+      DEBUG66: design_matrix column names:
+[1] "group"      "replicates" "Run"       
+      DEBUG66: design_matrix rownames set successfully
+   differentialAbundanceAnalysisHelper: About to call runTestsContrasts with 1 contrasts
+   differentialAbundanceAnalysisHelper: protein_quant_matrix dims = 200 x 8
+--- Entering runTestsContrasts ---
+   runTestsContrasts: data dims = 200 x 8, 1 contrasts
+   runTestsContrasts: contrasts = treated_vs_control=grouptreated-groupcontrol
+   runTestsContrasts: treat_lfc_cutoff = 0
+   runTestsContrasts: design_m dims = 8 x 2
+   runTestsContrasts: data_subset dims = 200 x 8
+   runTestsContrasts: Creating contrast matrix...
+   runTestsContrasts: contr.matrix dims = 2 x 1
+   runTestsContrasts: Running lmFit...
+   runTestsContrasts: Detected technical replicates. Calculating duplicateCorrelation...
+   runTestsContrasts: Block defined by replicates. 4 unique blocks for 8 samples.
+   runTestsContrasts: Consensus correlation = -0.0931
+   runTestsContrasts: Running lmFit with duplicateCorrelation...
+   runTestsContrasts: Running contrasts.fit...
+   runTestsContrasts: Running eBayes...
+   runTestsContrasts: Running treat analysis...
+   runTestsContrasts: Processing 1 contrasts with topTreat...
+      [map] Processing contrast: treated_vs_control=grouptreated-groupcontrol
+      About to call topTreat with coef = treated_vs_control=grouptreated-groupcontrol
+      [map] topTreat success: 200 rows
+      Adding qvalue column...
+      Diagnostic: Valid p-values: 200 of 200 total
+      Diagnostic: P-value range: [0.000003, 0.996457]
+      Diagnostic: P-value mean: 0.452666, median: 0.427340
+      qvalue() computation successful
+      Diagnostic: q_values_all has 200 non-NA values before assignment
+      Diagnostic: Assigned column has 200 non-NA values after mutate
+      qvalue column added
+      Adding FDR column...
+      FDR column added
+      Renaming P.Value column...
+      P.Value column renamed
+   [map] Completed processing contrast: treated_vs_control=grouptreated-groupcontrol
+--- Exiting runTestsContrasts ---
+   differentialAbundanceAnalysisHelper Step: runTestsContrasts completed successfully!
+   differentialAbundanceAnalysisHelper Step: Preparing data for visualization...
+   DEBUG66: contrast_name for list naming = treated_vs_control=grouptreated-groupcontrol
+--- Entering getSignificantData (DEBUG66) ---
+   getSignificantData: list_of_da_tables class = list
+   getSignificantData: list_of_da_tables length = 1
+   getSignificantData: list_of_da_tables structure:
+List of 1
+ $ :List of 1
+  ..$ treated_vs_control=grouptreated-groupcontrol:'data.frame':	200 obs. of  9 variables:
+   getSignificantData: About to call get_row_binded_table for each list element...
+   --- Entering get_row_binded_table (DEBUG66) ---
+      get_row_binded_table: de_table_list class = list
+      get_row_binded_table: de_table_list length = 1
+      get_row_binded_table: de_table_list names:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+         [map] Processing table, row_id_col = Protein.Group
+         [map] Table class = data.frame
+         [map] Table is data.frame = TRUE
+         [map] row_id already in columns
+      get_row_binded_table: processed_list created
+      get_row_binded_table: processed_list length = 1
+         [map2] Processing element with name: treated_vs_control=grouptreated-groupcontrol
+         [map2] comparison_column already exists: TRUE
+      get_row_binded_table: output table created
+      get_row_binded_table: output dims = 200 x 10
+      get_row_binded_table: Checking comparison column values:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+      get_row_binded_table: Any values contain '=' ? TRUE
+      get_row_binded_table: Separating on '=' delimiter
+      get_row_binded_table: Separation complete
+   --- Exiting get_row_binded_table (DEBUG66) ---
+   getSignificantData: All tables bound
+   getSignificantData: logfc_tbl_all dims = 200 x 11
+--- Exiting getSignificantData (DEBUG66) ---
+--- Entering countStatDaGenesHelper (DEBUG66) ---
+   countStatDaGenesHelper: da_table class = list
+   countStatDaGenesHelper: da_table is list = TRUE
+   countStatDaGenesHelper: da_table length = 1
+   countStatDaGenesHelper: da_table names:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+   countStatDaGenesHelper: da_table_updated created
+   countStatDaGenesHelper: da_table_updated length = 1
+   countStatDaGenesHelper: da_table_updated names:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+      [map2] Processing element with name: treated_vs_control=grouptreated-groupcontrol
+   countStatDaGenesHelper: list_of_tables created
+   countStatDaGenesHelper: About to bind_rows...
+   countStatDaGenesHelper: bound_tables dims = 3 x 3
+   countStatDaGenesHelper: facet column added
+   countStatDaGenesHelper: Checking comparison column values:
+[1] "treated_vs_control=grouptreated-groupcontrol"
+   countStatDaGenesHelper: About to separate_wider_delim on column: comparison
+   countStatDaGenesHelper: Looking for delimiter: =
+   countStatDaGenesHelper: Any values contain '=' ? TRUE
+   countStatDaGenesHelper: Separation complete
+--- Exiting countStatDaGenesHelper (DEBUG66) ---
+   differentialAbundanceAnalysisHelper Step: Creating results tables...
+   DEBUG66: createDaResultsLongFormat - Starting norm_counts processing
+      DEBUG66: norm_counts_input_tbl dims = 200 x 8
+      DEBUG66: group_pattern = (\d+)
+      DEBUG66: row_id = Protein.Group
+      DEBUG66: sample_id = Run
+      DEBUG66: group_id = group
+   DEBUG66: norm_counts processing completed
+   createDaResultsLongFormat: Renaming columns for contrast treated vs control
+   createDaResultsLongFormat: Renamed 16 columns
+--- Exiting differentialAbundanceAnalysisHelper ---
+   differentialAbundanceAnalysis: Helper function completed successfully!
+--- Exiting differentialAbundanceAnalysis ---
+--- Entering outputDaResultsAllContrasts ---
+   outputDaResultsAllContrasts: da_output_dir = /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-112/RtmpbVqM6L/file7d53637e27dce/source/.workflow-export/dia-da-93e073baa2f6e9ac37c5d7c088c48d05/files/da_output_dir
+   outputDaResultsAllContrasts: file_prefix = da_proteins
+   outputDaResultsAllContrasts: Normalized da_output_dir = /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-112/RtmpbVqM6L/file7d53637e27dce/source/.workflow-export/dia-da-93e073baa2f6e9ac37c5d7c088c48d05/files/da_output_dir
+   outputDaResultsAllContrasts: Normalized publication_graphs_dir = /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-112/RtmpbVqM6L/file7d53637e27dce/source/.workflow-export/dia-da-93e073baa2f6e9ac37c5d7c088c48d05/files/publication_graphs_dir
+   outputDaResultsAllContrasts: Processing 1 contrasts
+   outputDaResultsAllContrasts: Writing files for contrast: grouptreated-groupcontrol
+   outputDaResultsAllContrasts: Writing /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-112/RtmpbVqM6L/file7d53637e27dce/source/.workflow-export/dia-da-93e073baa2f6e9ac37c5d7c088c48d05/files/da_output_dir/da_proteins_grouptreated-groupcontrol_long_annot.tsv
+   outputDaResultsAllContrasts: SUCCESS - File written: da_proteins_grouptreated-groupcontrol_long_annot.tsv (84633 bytes)
+   outputDaResultsAllContrasts: Also wrote Excel: da_proteins_grouptreated-groupcontrol_long_annot.xlsx
+   outputDaResultsAllContrasts: Generating volcano plot for contrast: grouptreated-groupcontrol
+   outputDaResultsAllContrasts: Created volcano plots directory: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-112/RtmpbVqM6L/file7d53637e27dce/source/.workflow-export/dia-da-93e073baa2f6e9ac37c5d7c088c48d05/files/publication_graphs_dir/Volcano_Plots
+   outputDaResultsAllContrasts: Saved volcano plot PNG: grouptreated-groupcontrol.png
+   outputDaResultsAllContrasts: Saved volcano plot PDF: grouptreated-groupcontrol.pdf
+   outputDaResultsAllContrasts: Creating combined volcano plots PDF...
+   outputDaResultsAllContrasts: Created combined PDF with 1 volcano plots: all_volcano_plots_combined.pdf
+   outputDaResultsAllContrasts: Processing NumSigDaMolecules figures...
+   outputDaResultsAllContrasts: Created NumSigDaMolecules directory: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-112/RtmpbVqM6L/file7d53637e27dce/source/.workflow-export/dia-da-93e073baa2f6e9ac37c5d7c088c48d05/files/publication_graphs_dir/NumSigDaMolecules
+   outputDaResultsAllContrasts: Found NumSigDE table for contrast: grouptreated-groupcontrol
+   outputDaResultsAllContrasts: Wrote NumSigDE table: da_proteins_num_sig_da_molecules.tab
+   outputDaResultsAllContrasts: Wrote NumSigDE Excel: da_proteins_num_sig_da_molecules.xlsx
+   outputDaResultsAllContrasts: Saved NumSigDE barplot PNG: da_proteins_num_sig_da_molecules.png
+   outputDaResultsAllContrasts: Saved NumSigDE barplot PDF: da_proteins_num_sig_da_molecules.pdf
+--- Exiting outputDaResultsAllContrasts ---
+INFO [2026-11-10 14:43:43] --- Entering generateProtDAVolcanoPlotGlimma (glimmaXY refactor) ---
+INFO [2026-11-10 14:43:43]    selected_contrast = treated_vs_control
+INFO [2026-11-10 14:43:43]    Glimma: Available contrasts in data: treated_vs_control
+INFO [2026-11-10 14:43:43]    Glimma: Target contrast: treated_vs_control
+INFO [2026-11-10 14:43:43]    Glimma: Grouping expression plot by 'group' with 8 samples
+INFO [2026-11-10 14:43:43]    Glimma: Unique groups detected: control, treated
+INFO [2026-11-10 14:43:43]    Glimma: Synchronized 200 proteins with expression data
+INFO [2026-11-10 14:43:43]    Glimma: Calling glimmaXY with 200 proteins and 8 samples
+INFO [2026-11-10 14:43:43]    Glimma: Highlighting 8 significant genes (8 up, 0 down)
+External counts supplied using counts argument will be transformed to log-cpm by default. Specify transform.counts='none' to override transformation.
+INFO [2026-11-10 14:43:43] --- Exiting generateProtDAVolcanoPlotGlimma ---
+INFO [2026-11-10 14:43:43] --- Entering generateProtDAHeatmap ---
+INFO [2026-11-10 14:43:43]    selected_contrast = treated_vs_control, top_n_genes = 20
+INFO [2026-11-10 14:43:43]    Found 200 significant proteins
+INFO [2026-11-10 14:43:43]    Selected top 20 proteins for heatmap
+INFO [2026-11-10 14:43:43]    Expression matrix: 20 x 8
+INFO [2026-11-10 14:43:43]    Performing tree cutting: method=k_clusters
+INFO [2026-11-10 14:43:43]    Tree cutting complete: 3 clusters formed
+INFO [2026-11-10 14:43:43] --- Exiting generateProtDAHeatmap (success) ---
+INFO [2026-11-10 14:43:44] --- Entering generateProtDAHeatmap ---
+INFO [2026-11-10 14:43:44]    selected_contrast = treated_vs_control, top_n_genes = 20
+INFO [2026-11-10 14:43:44]    Found 20 significant proteins
+INFO [2026-11-10 14:43:44]    Selected top 20 proteins for heatmap
+INFO [2026-11-10 14:43:44]    Expression matrix: 20 x 8
+INFO [2026-11-10 14:43:44]    Performing tree cutting: method=k_clusters
+INFO [2026-11-10 14:43:44]    Tree cutting complete: 3 clusters formed
+INFO [2026-11-10 14:43:44] --- Exiting generateProtDAHeatmap (success) ---
+INFO [2026-11-10 14:43:44] --- Exiting generateProtDAHeatmap (success) ---
+ERROR BLOCK: KIT-112 W1 (a): the DIA DA clicks in process give the recorded states, products, fits, manifest, record, files and display 
+  MESSAGE: Error in `open.connection(con, "rb")`: cannot open the connection 
+ERROR BLOCK: KIT-112 W1 (a): a DA kernel failure in process, then a retry with the same arguments, give the recorded values 
+  MESSAGE: Error in `open.connection(con, "rb")`: cannot open the connection 
+ERROR BLOCK: KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) in process gives the recorded values 
+  MESSAGE: Error in `h(simpleError(msg, call))`: error in evaluating the argument 'theObject' in selecting a method for function 'rollUpPrecursorToPeptide': cannot open the connection 
+ERROR BLOCK: KIT-112 W2 (W1 (b)): the DIA DA clicks through the worker equal today's managed path and W1 (a)'s values 
+  MESSAGE: Error in `open.connection(con, "rb")`: cannot open the connection 
+ERROR BLOCK: KIT-112 W2 (W1 (b)): a worker failure, then a retry with the same arguments, give W1 (a)'s values 
+  MESSAGE: Error in `open.connection(con, "rb")`: cannot open the connection 
+ERROR BLOCK: KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE, no base fit) gives W1 (a)'s values 
+  MESSAGE: Error in `h(simpleError(msg, call))`: error in evaluating the argument 'theObject' in selecting a method for function 'rollUpPrecursorToPeptide': cannot open the connection 
+ERROR BLOCK: KIT-112 F112-03: a DA rerun that meets a saved Glimma page publishes and reuses the page as saved 
+  MESSAGE: Error in `open.connection(con, "rb")`: cannot open the connection 
+ERROR BLOCK: KIT-112 F112-03: on the managed path the rerun publishes through the worker, reuses the saved page and keeps one asset 
+  MESSAGE: Error in `open.connection(con, "rb")`: cannot open the connection 
