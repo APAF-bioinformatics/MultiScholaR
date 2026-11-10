@@ -379,14 +379,16 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
 #' @param binding The omic's binding.
 #' @param manager The session owner.
 #' @param settings The managed twin's settings, with `experiment_paths` (the QC figures' paths). `itsd_feature_ids` is not
-#'   read: the manual ITSD selection is resolved from selection tables rebuilt from the state read for this action (D8).
+#'   read: the manual ITSD selection is resolved here from `normData$itsd_selections` and the shown tables' feature ids
+#'   (`normData$itsd_candidate_ids`), as the managed twin's caller resolves it (P-19; it was rebuilt from the head, D8).
 #' @param normData The tab's reactive values.
 #' @param config The states' configuration.
 #' @param addLog The tab's log.
 #' @param advance `function(detail)`, one step of the progress display.
 #' @param notify `function(message, type)`, the tab's notification of a failure.
 #' @param finish Function run after the composite: the tab's completion.
-#' @param itsd_table `function(assay_data, id_col, annotation_cols)`, the ITSD selection table (`norm$itsd_table`).
+#' @param itsd_table `function(assay_data, id_col, annotation_cols)`, the ITSD selection table (`norm$itsd_table`). No
+#'   longer read (P-19); kept for the callers' signature.
 #' @return TRUE, or FALSE after a failure (logged and notified), invisibly.
 #' @noRd
 runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, normData, config, addLog, advance, notify, finish,
@@ -406,21 +408,9 @@ runWorkflowOmicsInProcessNormalisation <- function(binding, manager, settings, n
         advance("Applying ITSD normalization...")
         if (isTRUE(settings$apply_itsd)) {
             addLog(paste("Applying ITSD normalization (aggregation:", settings$itsd_aggregation, ")"))
-            feature_ids <- NULL
-            selections <- normData$itsd_selections
-            if (any(vapply(selections, function(rows) length(rows) > 0, logical(1)))) {
-                id_col <- methods::slot(current, binding$id_slot)
-                annotation_col <- methods::slot(current, "annotation_id_column")
-                feature_ids <- purrr::compact(purrr::imap(selections, function(rows, assay) {
-                    if (is.null(rows) || length(rows) == 0) return(NULL)
-                    assay_data <- methods::slot(current, binding$data_slot)[[assay]]
-                    if (is.null(assay_data)) return(NULL)
-                    ids <- itsd_table(assay_data, id_col, annotation_col)$feature_id[rows]
-                    addLog(paste("Assay", assay, ":", length(ids), "ITSD features selected"))
-                    ids
-                }))
-                if (length(feature_ids) == 0) feature_ids <- NULL
-            }
+            # P-19: the ticked rows index the table the tab showed, so they are resolved from its feature ids, as the
+            # managed twin resolves them; the head may have moved since (a second Run, a QC refilter).
+            feature_ids <- omicsManualItsdFeatureIds(normData$itsd_selections, normData$itsd_candidate_ids, addLog)
             current <- NULL
             normData$post_itsd_obj <- runWorkflowOmicsReferenceItsdNormalisation(binding, manager, settings$itsd_aggregation,
                 feature_ids, config)$reference

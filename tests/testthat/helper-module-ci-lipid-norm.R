@@ -364,6 +364,14 @@ module_ci_lipid_norm_run_pipeline <- function(input = module_ci_lipid_norm_input
                                                  stringsAsFactors = FALSE
                                                )
                                              }) {
+  # GUI audit R4, P-19: the in-process run resolves a manual ITSD selection from the shown tables' feature ids
+  # (`itsd_candidate_ids`), no longer from a table rebuilt at Run time. The lane's shown table is `itsd_table_fn`'s on
+  # the lane's object, which is the table the run rebuilt before, so every lane result is as it was.
+  if (is.null(norm_data$itsd_candidate_ids)) {
+    norm_data$itsd_candidate_ids <- lapply(object@lipid_data, function(assay) {
+      itsd_table_fn(assay_data = assay, lipid_id_col = object@lipid_id_column, annotation_cols = object@annotation_id_column)$feature_id
+    })
+  }
   logs <- character()
   # KIT-072: the declared operations call the namespace kernels, so the lane's kernels are bound there.
   kernels <- list(

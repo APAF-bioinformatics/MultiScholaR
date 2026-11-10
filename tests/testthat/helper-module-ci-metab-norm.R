@@ -333,6 +333,14 @@ module_ci_metab_norm_run_pipeline <- function(input = module_ci_metab_norm_ruv_i
                                                 theObject
                                               },
                                               itsd_table_fn = buildItsdSelectionTable) {
+  # GUI audit R4, P-19: the in-process run resolves a manual ITSD selection from the shown tables' feature ids
+  # (`itsd_candidate_ids`), no longer from a table rebuilt at Run time. The lane's shown table is `itsd_table_fn`'s on
+  # the lane's object, which is the table the run rebuilt before, so every lane result is as it was.
+  if (is.null(norm_data$itsd_candidate_ids)) {
+    norm_data$itsd_candidate_ids <- lapply(object@metabolite_data, function(assay) {
+      itsd_table_fn(assay_data = assay, metabolite_id_col = object@metabolite_id_column, annotation_cols = object@annotation_id_column)$feature_id
+    })
+  }
   logs <- character()
   seen <- new.env(parent = emptyenv())
   itsd_step <- runWorkflowOmicsReferenceItsdNormalisation
