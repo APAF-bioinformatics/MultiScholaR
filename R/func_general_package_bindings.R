@@ -21,7 +21,7 @@ utils::globalVariables(c(
   "annotation_id", "annotation_score", "assay", "AveExpr", "average_value", "Averagine",
   "avg_detected", "avg_intensity", "avg_peptides", "avg_proteins", "Avg.Log2.Protein.Imputed", "batch",
   "Batch", "best_k", "best_p_adj_value", "best_phos_pos", "best_phos_prob", "best_protein",
-  "best_uniprot_acc", "category", "cc", "ChEBI", "chebi_id", "clean_acc",
+  "best_uniprot_acc", "category", "cc", "ChEBI", "chebi_id",
   "cleaned_acc", "cleaned_id", "cleaned_peptide", "coefficient_of_variation", "Cohort_Sample", "col_name",
   "collaborator_patient_id", "colour", "compare_column", "comparision_short", "comparison", "composite_score",
   "contrast", "contrast_name", "Control", "core_enrichment", "Count", "counts",

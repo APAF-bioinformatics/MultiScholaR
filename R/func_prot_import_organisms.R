@@ -224,6 +224,17 @@ prepareProtImportOrganismSelectionChoices <- function(organismDistribution) {
   )
 }
 
+#' Strip the isoform suffix from UniProt accessions (GUI audit R3, P-07)
+#'
+#' The organism filters' default accession cleaner (`filterProtImportDataToOrganism`,
+#' `confirmProtImportOrganismSelection`, `applyProtEnrichOrganismFilter`). It was named as their default and never
+#' defined. It is the original rule, `sub("-\\d+$", "", acc)`, through the same call the organism side of each
+#' filter already makes.
+#' @param x Character vector of accessions.
+#' @return `x` without a trailing `-<digits>`.
+#' @noRd
+clean_acc <- function(x) normalizeUniprotAccession(x, remove_isoform = TRUE)
+
 filterProtImportDataToOrganism <- function(
     workflowData
     , organismMapping

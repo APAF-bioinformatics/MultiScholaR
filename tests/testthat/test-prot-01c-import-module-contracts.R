@@ -1891,6 +1891,44 @@ test_that("confirmProtImportOrganismSelection updates state and filters selected
   expect_true(any(notificationMessages == "Data import successful!"))
 })
 
+# GUI audit R3, P-07: `clean_acc` was a default argument only (and a `globalVariables` entry), so the import's
+# organism filter errored with "object 'clean_acc' not found" unless a cleaner was injected, as the block above does.
+test_that("(P-07) clean_acc strips the isoform suffix as the original rule and as the organism side's cleaning", {
+  accessions <- c("P12345", "P12345-2", "Q9Y6K9-12", "A0A024RBG1", "A0A024RBG1-3", "P1", NA)
+  expect_identical(clean_acc(accessions), sub("-\\d+$", "", accessions))
+  expect_identical(clean_acc(accessions), normalizeUniprotAccession(accessions, remove_isoform = TRUE))
+})
+
+test_that("(P-07) the import's organism filter completes with its default cleaning", {
+  importTable <- data.frame(Protein.Group = c("P1;P3", "P3", "P2-2"), value = c(1, 2, 3), stringsAsFactors = FALSE)
+  mapping <- data.frame(uniprot_acc = c("P1", "P2", "P3"), organism_name = c("Homo sapiens", "Homo sapiens", "Mus musculus"),
+    taxon_id = c(9606L, 9606L, 10090L), stringsAsFactors = FALSE)
+  workflowData <- list2env(list(data_tbl = importTable, data_cln = importTable,
+    column_mapping = list(protein_col = "Protein.Group")))
+  notes <- character()
+  counts <- filterProtImportDataToOrganism(workflowData, mapping, 9606L, "Homo sapiens", logInfo = function(...) NULL,
+    showNotification = function(message, ...) notes <<- c(notes, message))
+  expect_identical(counts, list(filtered_count = 2L, removed_count = 1L))
+  expect_identical(workflowData$data_tbl$Protein.Group, c("P1;P3", "P2-2"))
+  expect_identical(workflowData$data_cln$Protein.Group, c("P1;P3", "P2-2"))
+  expect_identical(notes, "Filtered to Homo sapiens: kept 2 rows, removed 1 rows")
+
+  confirmData <- list2env(list(data_tbl = importTable, data_cln = importTable,
+    column_mapping = list(protein_col = "Protein.Group"),
+    processing_log = list(setup_import = list(taxon_id = 10090L, organism = "Mus musculus")),
+    mixed_species_analysis = NULL, taxon_id = NULL, organism_name = NULL))
+  localData <- list2env(list(organism_distribution = data.frame(organism_name = c("Homo sapiens", "Mus musculus"),
+    taxon_id = c(9606L, 10090L), protein_count = c(2L, 1L), percentage = c(66.67, 33.33), stringsAsFactors = FALSE),
+    organism_mapping = mapping, waiting_for_organism_selection = TRUE))
+  confirmed <- confirmProtImportOrganismSelection(selectedTaxon = 9606L, filterToOrganism = TRUE,
+    workflowData = confirmData, localData = localData, session = structure(list(), class = "MockShinySession"),
+    updateNumericInput = function(...) NULL, updateTextInput = function(...) NULL,
+    showNotification = function(...) NULL, removeModal = function() NULL, logInfo = function(...) NULL)
+  expect_true(confirmed)
+  expect_identical(confirmData$data_tbl$Protein.Group, c("P1;P3", "P2-2"))
+  expect_true(confirmData$processing_log$setup_import$mixed_species_selection$filter_applied)
+})
+
 test_that("processProtImportFastaData stores FASTA results and persists helper outputs", {
   fixture <- makeImportFixture(withConfig = FALSE)
   on.exit(unlink(fixture$rootDir, recursive = TRUE, force = TRUE), add = TRUE)
