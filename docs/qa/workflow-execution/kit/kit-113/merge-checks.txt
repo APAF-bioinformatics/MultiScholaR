@@ -1,0 +1,15 @@
+# KIT-113 W4 merge checks at 0b770216 against the start 132e5445 (2026-11-10)
+## Collate equals R/*.R
+collate 342 R files 342 equal True
+## NAMESPACE byte-identical: yes
+## protected paths diff (must be empty):
+(end)
+## R/ files touched:
+ R/mod_omic_enrich.R           |  67 +++++++++
+ R/utils_workflow_dia_da.R     |  48 ++++++-
+ R/utils_workflow_enrichment.R | 307 +++++++++++++++++++++++++++++++++++++-----
+ R/utils_workflow_operations.R |  20 +--
+ 4 files changed, 388 insertions(+), 54 deletions(-)
+## diaEnrichmentOperation body md5:
+55fe4c284d7482d6e931109fbb85a0fa  132e5445
+55fe4c284d7482d6e931109fbb85a0fa  HEAD

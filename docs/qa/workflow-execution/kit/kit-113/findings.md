@@ -38,6 +38,17 @@
 - **F113-05 (lines) is recorded.** The excess is roxygen for 15 internal functions, and no logic is duplicated.
 - **The convention divergences are recorded:** two helpers carry 11 and 9 parameters, keeping today's statements.
 
+## Lead decisions at W3 and W4 (2026-11-10)
+
+- **W3 was cherry-picked** onto the generator commit (`752b2ad3`, `0b770216`), as KIT-112's W3 was.
+  - `mod_omic_enrich.R` +67 lines, insertions only. The unmanaged frame is byte-identical; the stop rule did not fire.
+  - The new blocks fail first on the start frame (101 failed, 2 errors) and pass after (2296/2296).
+  - Every targeted count equals the start; the five lanes are 193/0/0, with no re-freeze.
+- **F113-06 is accepted** as one more of D6's recorded exclusions, the same kind as the missing-table divergence. On the managed path an R7 refusal has already written `uniprot_dat_cln` and shown the no-mapping warning; nothing is saved or dispatched. In process there is no R7 refusal at all.
+- **F113-07 is information,** carried with P-39 (the click guards, F112-02). The pending-publication guard refuses enrichment while the shared proteomics runner holds any pending publication.
+- **W4's merge checks pass** (`merge-checks.txt`): `Collate` 342 = `R/*.R`; NAMESPACE identical; the protected paths unchanged; `R/` touches only the four files in scope; `diaEnrichmentOperation`'s body is unchanged.
+- **The targeted set** is KIT-112's 54 files plus five from the dependents grep (59).
+
 ## Findings
 
 | Id | Where | What | Decision |
@@ -47,3 +58,5 @@
 | F113-03 | `writeWorkflowExecutionMessage` (`utils_workflow_execution.R:1300-1302`) | F113-02's refusal happens earlier than stated: the worker's own handoff refuses a value over 8 MiB ("execution handoff must be bounded immutable metadata"), so the controller sees a worker failure, not an `invalid_result` acceptance. | Information. F113-02's fix covers it. |
 | F113-04 | the managed request half, the taxon refusal | On the managed path a Run refused at the method (an invalid taxon) does not write the bus's `enrichment_organism_filter` metadata. In process that write comes before the refusal. The notice is today's. | Accepted as one more of D6's recorded exclusions, the same kind as D6's worker-failure case. |
 | F113-05 | lines | `utils_workflow_enrichment.R` 1,134 → 1,369 (+235, against the expected +70 to +140): roxygen for 15 internal helpers and halves, no duplicated logic. `utils_workflow_dia_da.R` +38; `utils_workflow_operations.R` −6. | Recorded in the outcome. |
+| F113-06 | the managed request half (W2 order), R7 | The R7 identity check comes after the annotation resolve and the mapping. So a refused Run on the managed path has already written `uniprot_dat_cln` to the bus (when absent) and shown the no-mapping warning (filter on, no mapping). Nothing is saved or dispatched. In process there is no R7 refusal: a stale manifest is run and committed. | Accepted as a D6 recorded exclusion. |
+| F113-07 | the frame's guard (D3) | The pending-publication guard refuses enrichment while the shared proteomics runner holds any pending publication, including another proteomics tab's, which only that tab's button retries. The notice says "already running". | Information, carried with P-39 for the user. |
