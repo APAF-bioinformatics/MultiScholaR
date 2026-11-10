@@ -161,23 +161,23 @@ test_that("the DA publication is a registered worker operation with its own comp
     expect_null(validateWorkflowDaPublicationParameters(list(), NULL))
 })
 
-test_that("the enrichment declaration refuses worker dispatch (KIT-024); the normalisation tab's four and the DA contrast run on the omics role (KIT-111 D11, KIT-112 D11)", {
-    for (name in c("enrichment")) {
-        entry <- workflowActionSpec(name)
-        expect_identical(entry$compute, "in_process")
-        expect_null(entry$handler)
-        expect_identical(entry$completion, "in_process")
-        expect_identical(entry$declaration$name, name)
-        expect_error(assertWorkflowOperationDispatchable(name), class = "workflow_execution_unsupported")
-    }
+test_that("the normalisation tab's four, the DA contrast and the enrichment run on the omics role; no proteomics declaration is left in process (KIT-111 D11, KIT-112 D11, KIT-113 D11)", {
+    # KIT-113 D11, a deliberate contract change: the enrichment leaves KIT-024's in-process loop for the omics role, and
+    # that loop, which held the enrichment alone after KIT-112, is gone.
+    in_process <- Filter(\(name) identical(workflowActionSpec(name)$compute, "in_process") &&
+        identical(workflowActionSpec(name)$omic_type, "proteomics"), workflowOperationNames())
+    expect_identical(in_process, character())
     # KIT-111 D11, a deliberate contract change: the four move to the managed worker's omics role with their handlers.
     handlers <- c(`normalization-ruv` = "computeWorkflowDiaNormalizationAction", `pearson-pairs` = "computeWorkflowDiaPearsonPairsAction",
         `pearson-selection` = "computeWorkflowDiaPearsonSelectionAction", protein_ruv_covariates = "computeWorkflowDiaRuvCovariatesAction",
-        `DA-contrast-output` = "computeWorkflowDiaContrastAction")
-    # KIT-112 D3: the DA contrast takes a named input and, by the omics loop's rule, no `@args` section.
-    expect_true(isTRUE(workflowActionSpec("DA-contrast-output")$named_input))
-    expect_true("section" %in% names(workflowActionSpec("DA-contrast-output")))
-    expect_null(workflowActionSpec("DA-contrast-output")$section)
+        `DA-contrast-output` = "computeWorkflowDiaContrastAction", enrichment = "computeWorkflowDiaEnrichmentAction")
+    # KIT-112 D3, KIT-113 D3: the DA contrast and the enrichment take a named input and, by the omics loop's rule, no
+    # `@args` section.
+    for (name in c("DA-contrast-output", "enrichment")) {
+        expect_true(isTRUE(workflowActionSpec(name)$named_input), info = name)
+        expect_true("section" %in% names(workflowActionSpec(name)), info = name)
+        expect_null(workflowActionSpec(name)$section, info = name)
+    }
     for (name in names(handlers)) {
         entry <- workflowActionSpec(name)
         expect_identical(entry[c("compute", "handler", "validate", "completion", "publication", "variants", "default_variant", "omic_type")],
@@ -335,8 +335,8 @@ test_that("the RUV covariates step's ruv_mode is the tab's choice with no shippe
   expect_true("ruv_mode" %in% workflowActionSpec("protein_ruv_covariates")$parameters)
 })
 
-test_that("KIT-111 F111-03, KIT-112 D11: only the normalisation tab's four and the DA contrast take a named input that is not the head; every other operation keeps the head rule", {
-    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates", "DA-contrast-output")
+test_that("KIT-111 F111-03, KIT-112 D11, KIT-113 D11: only the normalisation tab's four, the DA contrast and the enrichment take a named input that is not the head; every other operation keeps the head rule", {
+    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates", "DA-contrast-output", "enrichment")
     for (name in named) expect_true(isTRUE(workflowActionSpec(name)$named_input), info = name)
     for (name in c("protein_intensity_filter", "precursor_rollup", "lipid_pearson_pairs"))
         expect_null(workflowActionSpec(name)$named_input, info = name)
