@@ -647,7 +647,7 @@ savedDaW1Expect <- function(case, capture) {
 
 #' A DIA (`iq` route) owner on the "small" recipe's protein state, accepted at `correlation_filtered`, with the paths
 #' the DA publication writes to, the tab's `da_data` and a plain-environment workflow. The owner is closed at the end.
-savedDaW1Owner <- function(project = "kit112-w1", envir = parent.frame()) {
+savedDaW1Owner <- function(project = "kit112-w1", envir = parent.frame(), before_save = NULL) {
     root <- normalizePath(withr::local_tempdir(.local_envir = envir))
     paths <- list(source_dir = file.path(root, "source"), da_output_dir = file.path(root, "da"),
         publication_graphs_dir = file.path(root, "graphs"))
@@ -656,6 +656,8 @@ savedDaW1Owner <- function(project = "kit112-w1", envir = parent.frame()) {
     manager$.context$reference_states <- TRUE
     manager$setWorkflowType("DIA")
     manager$.context$experiment_paths <- paths
+    # GUI audit A112-01: a test names the provenance the state is committed under (none pending is `legacy`).
+    if (is.function(before_save)) before_save(manager)
     manager$saveState("correlation_filtered", makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small")),
         list(), "fixture")
     workflow <- list2env(list(state_manager = manager, tab_status = list()))
@@ -1371,6 +1373,36 @@ test_that("KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE
         masked = "pending")
     expect_identical(savedDaW2Pending(fixture), "da_publication")
     expect_false(log$values[[1L]]$base_fit)
+})
+
+# GUI audit R1, A112-01 (F112-05): the `da_publication` completion commits no state, so it leaves no pending step
+# provenance; a later click with changed DA arguments recommits the head state and keeps the entry of the operation
+# that produced it (here the correlation's selection after its pairs), as in process.
+test_that("GUI audit A112-01: a managed DA publication leaves nothing pending, and a later arguments commit keeps the head state's provenance", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    savedDaW2Mocks()
+    fixture <- savedDaW1Owner("audit-a112-01", before_save = function(manager) {
+        setDIAStepProvenance(manager, "pearson-pairs", "whole", c("group", "tech_rep_remove_regex"), NULL,
+            values = list(group = "group", tech_rep_remove_regex = "pool"))
+        setDIAStepProvenance(manager, "pearson-selection", "whole", c("pairs", "threshold"), NULL, values = list(threshold = 0.5))
+    })
+    manager <- fixture$workflow$state_manager
+    dispatch <- savedDaW2Dispatcher(fixture, NULL)
+    entry <- function() withWorkflowStateScope(manager, function() manager$.context$snapshot$step_provenance$correlation_filtered)
+    kept <- c("operation", "variant", "parameter_names", "values", "preceded_by")
+    original <- entry()
+    expect_identical(original$operation, "pearson-selection")
+    expect_identical(lapply(original$preceded_by, `[[`, "operation"), list("pearson-pairs"))
+    first <- savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L))
+    expect_identical(first$error, NA_character_)
+    expect_identical(savedDaW2Pending(fixture), NA_character_)
+    # Changed DA arguments (TREAT at 0.5): the arguments commit onto the head state, then the run.
+    second <- savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L), lfc = 0.5)
+    expect_identical(second$error, NA_character_)
+    expect_identical(second$calls[["commitDIAReferenceState"]], 1L)
+    expect_identical(entry()[kept], original[kept])
+    expect_identical(savedDaW2Pending(fixture), NA_character_)
 })
 
 test_that("KIT-112 W2: the worker handler strips the route from the request, so the compute half takes the in-process parameters", {
