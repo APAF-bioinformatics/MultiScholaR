@@ -517,16 +517,30 @@ omicSummaryW1InstallRecorders <- function(acc, setup, fallback = FALSE, env = pa
     invisible(acc)
 }
 
+#' `study_parameters.txt`'s lines with the "Version Information" block read as one fixed line (GUI audit R5, A108-06;
+#' F108-04). The block names the repository, branch and commit of the checkout the test runs in, and its length differs
+#' too: `resolveWorkflowGitInfo()` finds a `.git` directory in the main checkout and none in a worktree (a `.git`
+#' file). The block runs from its heading to the blank line that ends it; the rest of the file is kept as written.
+omicSummaryW1MaskVersion <- function(lines) {
+    start <- which(lines == "Version Information:")
+    if (!length(start)) return(lines)
+    start <- start[[1L]]
+    blank <- which(!nzchar(lines) & seq_along(lines) > start)
+    end <- if (length(blank)) blank[[1L]] - 1L else length(lines)
+    c(lines[seq_len(start - 1L)], "Version Information: <masked>", lines[-seq_len(end)])
+}
+
 #' The project's files under the setup's base directory (the entry suite's artifacts: table digests, others present),
-#' `study_parameters.txt` (a digest of its masked text and its line count), the integration files (name; an RDS's
-#' class, `<reference>` for a saved reference; a table's digest) and the session-state RDS's fields (times masked).
+#' `study_parameters.txt` (a digest of its masked text and its line count, the version block masked), the integration
+#' files (name; an RDS's class, `<reference>` for a saved reference; a table's digest) and the session-state RDS's
+#' fields (times masked).
 omicSummaryW1Files <- function(setup) {
     roots <- setup$roots
     paths <- setup$paths
     files <- unlist(guiEntryArtifacts(paths$base_dir, roots))
     study <- file.path(paths$source_dir, "study_parameters.txt")
     study_text <- if (file.exists(study)) {
-        lines <- readLines(study, warn = FALSE)
+        lines <- omicSummaryW1MaskVersion(readLines(study, warn = FALSE))
         sprintf("%d lines %s", length(lines), substr(digest::digest(omicSummaryW1Text(lines, roots), algo = "sha256",
             serialize = FALSE), 1L, 16L))
     } else "<absent>"
@@ -1215,7 +1229,9 @@ omicSummaryW1Frozen[["lipid_main"]] <- list(
         files = c(
             `integration/lipidomics_kit108_final_s4.RDS` = "<present>",
             `source/analysis_record.json` = "<present>"),
-        study_parameters = "158 lines bcb087f5fa824d3d",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "151 lines 09ab17d2c1885369",
         integration = c(lipidomics_kit108_final_s4.RDS = "<RDS> LipidomicsAssayData 5093d18fc8ce6eca"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -1418,7 +1434,9 @@ omicSummaryW1Frozen[["lipid_variants"]] <- list(
             "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"),
         global = c(before = "the session's", after = "the session's"),
         files = c(`integration/lipidomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "158 lines bcb087f5fa824d3d",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "151 lines 09ab17d2c1885369",
         integration = c(lipidomics_kit108_final_s4.RDS = "<RDS> LipidomicsAssayData 5093d18fc8ce6eca"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -1701,7 +1719,9 @@ omicSummaryW1Frozen[["lipid_managed"]] <- list(
         files = c(
             `integration/lipidomics_kit108_final_s4.RDS` = "<present>",
             `source/analysis_record.json` = "<present>"),
-        study_parameters = "158 lines bcb087f5fa824d3d",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "151 lines 09ab17d2c1885369",
         integration = c(lipidomics_kit108_final_s4.RDS = "<RDS> LipidomicsAssayData 5093d18fc8ce6eca"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -2000,7 +2020,9 @@ omicSummaryW1Frozen[["metab_main"]] <- list(
         files = c(
             `integration/metabolomics_kit108_final_s4.RDS` = "<present>",
             `source/analysis_record.json` = "<present>"),
-        study_parameters = "127 lines 6f2dd5b056f531b5",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "120 lines 7754627448a8e334",
         integration = c(metabolomics_kit108_final_s4.RDS = "<RDS> MetaboliteAssayData 075de31ac869b80e"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -2204,7 +2226,9 @@ omicSummaryW1Frozen[["metab_variants"]] <- list(
             "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"),
         global = c(before = "the session's", after = "the session's"),
         files = c(`integration/metabolomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "127 lines 6f2dd5b056f531b5",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "120 lines 7754627448a8e334",
         integration = c(metabolomics_kit108_final_s4.RDS = "<RDS> MetaboliteAssayData 075de31ac869b80e"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -2495,7 +2519,9 @@ omicSummaryW1Frozen[["metab_managed"]] <- list(
         files = c(
             `integration/metabolomics_kit108_final_s4.RDS` = "<present>",
             `source/analysis_record.json` = "<present>"),
-        study_parameters = "127 lines 6f2dd5b056f531b5",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "120 lines 7754627448a8e334",
         integration = c(metabolomics_kit108_final_s4.RDS = "<RDS> MetaboliteAssayData 075de31ac869b80e"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -2669,7 +2695,9 @@ omicSummaryW1Frozen[["trx_main"]] <- list(
         files = c(
             `scripts/transcriptomics/analysis_record.json` = "<present>",
             `scripts/transcriptomics/study_parameters.txt` = "<present>"),
-        study_parameters = "54 lines 8209e0aae98f1f65",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "47 lines 96b3fdbde9b1bb30",
         integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)),
@@ -2753,7 +2781,9 @@ omicSummaryW1Frozen[["trx_main"]] <- list(
         global = c(before = "absent", after = "absent"),
         files = c(
             `integration/transcriptomics_normalized_data.tsv` = "7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e"),
-        study_parameters = "57 lines 6f90092f3d590fd4",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "50 lines 6309448be78f095c",
         integration = c(transcriptomics_normalized_data.tsv = "7b9d35dbf33331d1"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -3192,7 +3222,9 @@ omicSummaryW1Frozen[["trx_managed"]] <- list(
             `integration/transcriptomics_normalized_data.tsv` = "7b9d35dbf33331d16b6609caacbd9445879924bd8bb548b6821dfd649bfdd08e",
             `scripts/transcriptomics/analysis_record.json` = "<present>",
             `scripts/transcriptomics/study_parameters.txt` = "<present>"),
-        study_parameters = "57 lines 6f90092f3d590fd4",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "50 lines 6309448be78f095c",
         integration = c(transcriptomics_normalized_data.tsv = "7b9d35dbf33331d1"),
         session_state = "<unchanged>",
         errors = character(0)))
@@ -3400,7 +3432,9 @@ omicSummaryW1Frozen[["prot_route_dia"]] <- list(
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
         files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "60 lines 7a948751f37e3fd7",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "53 lines e784ac050188e7bb",
         integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -3552,7 +3586,9 @@ omicSummaryW1Frozen[["prot_route_dia_limpa"]] <- list(
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
         files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "60 lines 3d1983f1d34802ae",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "53 lines af0725c98c8784d4",
         integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -3704,7 +3740,9 @@ omicSummaryW1Frozen[["prot_route_tmt"]] <- list(
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
         files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "60 lines fe36eac93ca1aa4e",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "53 lines cba0c0582a2307ba",
         integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -3856,7 +3894,9 @@ omicSummaryW1Frozen[["prot_route_lfq"]] <- list(
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
         files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "60 lines 3497f04a3e6b5a31",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "53 lines 1b538d9f8d17648f",
         integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -4131,7 +4171,9 @@ omicSummaryW1Frozen[["prot_owner"]] <- list(
         files = c(
             `integration/proteomics_kit108_final_s4.RDS` = "<present>",
             `source/analysis_record.json` = "<present>"),
-        study_parameters = "102 lines db0514235ef41471",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "95 lines 0d7f7ba1f81361e1",
         integration = c(proteomics_kit108_final_s4.RDS = "<RDS> <reference>"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -4336,7 +4378,9 @@ omicSummaryW1Frozen[["prot_owner_variants"]] <- list(
             "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"),
         global = c(before = "the session's", after = "the session's"),
         files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
-        study_parameters = "102 lines db0514235ef41471",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "95 lines 0d7f7ba1f81361e1",
         integration = c(proteomics_kit108_final_s4.RDS = "<RDS> <reference>"),
         session_state = "<unchanged>",
         errors = character(0)),
@@ -4486,7 +4530,9 @@ omicSummaryW1Frozen[["prot_native"]] <- list(
             "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"),
         global = c(before = "absent", after = "absent"),
         files = c(`source/analysis_record.json` = "<present>"),
-        study_parameters = "102 lines db0514235ef41471",
+        # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
+        # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
+        study_parameters = "95 lines 0d7f7ba1f81361e1",
         integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)))

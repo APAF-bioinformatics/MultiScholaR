@@ -23,6 +23,28 @@ for (omicsSummaryCoreW1Expression in parse(testthat::test_path("test-omic-summar
 }
 rm(omicsSummaryCoreW1Expression)
 
+# GUI audit R5, item 7 (A108-06; F108-04): the `study_parameters` capture does not depend on the checkout. The version
+# block a local git repository gives (the main checkout) and the one the package information gives (a worktree, where
+# `.git` is a file) are captured alike; everything outside the block still counts.
+test_that("(R5 item 7, A108-06) the study_parameters capture masks the Version Information block, whatever the checkout wrote in it", {
+    expect_true(exists("omicSummaryW1MaskVersion", inherits = TRUE))
+    if (!exists("omicSummaryW1MaskVersion", inherits = TRUE)) return(invisible())
+    head <- c("Study Parameters", "================", "", "Basic Information:", "-----------------", "Workflow Name: kit108", "")
+    tail <- c("Organism Information:", "---------------------", "Organism Name: Homo sapiens", "")
+    local_git <- c("Version Information:", "--------------------", "Repository: MultiScholaR", "Branch: performance-v2",
+        "Commit: ec7db20", "Commit Timestamp: 2026-11-11T01:00:00+11:00", "Source: Local Git Repository", "")
+    package <- c("Version Information:", "--------------------", "Repository: MultiScholaR", "Branch: N/A", "Commit: N/A",
+        "Commit Timestamp: N/A", "Package Version: 0.5.0", "Source: Installed Package", "")
+    masked <- c(head, "Version Information: <masked>", "", tail)
+    expect_identical(omicSummaryW1MaskVersion(c(head, local_git, tail)), masked)
+    expect_identical(omicSummaryW1MaskVersion(c(head, package, tail)), masked)
+    # A block that ends the file, and a file without the block (the fallback study parameters).
+    expect_identical(omicSummaryW1MaskVersion(c(head, package[-length(package)])), c(head, "Version Information: <masked>"))
+    expect_identical(omicSummaryW1MaskVersion(c(head, tail)), c(head, tail))
+    # Outside the block every line still counts.
+    expect_false(identical(omicSummaryW1MaskVersion(c(head, package, tail, "Extra: 1")), masked))
+})
+
 test_that("(W3) the moved lipid, metab and trx functions are in the core file; the core calls no Shiny UI function", {
     moved <- c("buildLipidSummarySessionState", "lipidSummaryFirstNonNull", "getLipidSummaryWorkflowValue",
         "getLipidSummaryStateObject", "getLipidSummaryObjectArgs", "buildLipidSummaryParameterPayload",
