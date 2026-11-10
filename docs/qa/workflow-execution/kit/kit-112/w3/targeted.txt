@@ -1,0 +1,32 @@
+KIT-112 W3: targeted files on 661186bc (the W3 code commit). Recorded 2026-11-10 by the W3 agent.
+R 4.6.1, kit_111's library (core/browser-smoke.MlQroA), load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true,
+TMPDIR=/home/doktersmol/.cache/k112w3, one process per file through tools/testing/test-baseline.R file, at most 4 at
+once. Every file exit 0, status complete.
+
+file                                      run  expect  passed  failed  err  skip  warn  seconds  reference
+test-omic-da-module.R                      50  1339    1339     0      0    0     0     539.1   W2 1260 (43 blocks) + 7 W3 blocks (79)
+test-omic-enrich-module.R                  13   975     975     0      0    0     0     244.7   975
+test-module-ci-prot-da.R                    8   219     218     0      0    1     0       7.8   219/218/1 (Q-22)
+test-workflow-saved-da.R                   19   865     861     0      0    0     4     353.7   W2's 865/861/4 warnings
+test-prot-07b-da-handlers-compat.R          9    37      35     0      0    2     0       6.5   37/35/2 (Q-22)
+test-workflow-server-shared.R               7   204     204     0      0    0     0       7.4
+test-workflow-gui-memory-lifetimes.R       17    91      80     0      0   11     0       9.6   80/11
+test-workflow-checkpoint-dia-state.R       19   178     174     0      0    4     0      27.4   174/4
+test-workflow-saved-exports.R              23   280     276     0      0    4     0      31.4
+test-prot-norm-core.R                      19  1553    1541     0      0    0    12     787.7   W2's 1553/1541/12 warnings
+test-gui-entry-proteomics.R (5 lanes)       5   193     193     0      0    0     0     969.6   193 frozen, 0 differences,
+                                                                                               no re-freeze
+
+Dependents grep (workflow_omics_actions, mod_prot_da_server, da_server_run_analysis_handler, protNormManagedAction over
+tests/ and tools/ (not tools/refactor); R/ callers are the plugin itself), beyond the above:
+test-workflow-operation-registry.R         15  1036    1036     0      0    0     0      14.0   W2's 1036 (the handler body
+                                                                                               still binds `plot = NULL`)
+test-omic-gui-config.R                     24  1849    1849     0      0    0     0      28.5   1849
+test-omics-da-core.R                        8   131     129     0      0    2     0     105.8   2 skips: Q-130, Q-131
+test-omics-norm-core.R                     20    76      62     0      0   14     0      69.2   14 skips: existing KIT-105
+                                                                                               quarantines (Q-86..89, Q-108..111)
+test-trx-norm-core.R                        5    58      58     0      0    0     0      42.5
+
+Unmanaged identity: prot_main and prot_load (test-omic-da-module.R :1024-1026, frozen :3039, :3151) and every other W1 (b)
+frozen capture pass unchanged in the test-omic-da-module.R run above (no frozen value edited); the five proteomics entry
+lanes are identical to their oracles.

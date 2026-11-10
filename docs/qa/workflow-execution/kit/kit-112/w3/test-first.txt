@@ -1,0 +1,31 @@
+KIT-112 W3: test first. Recorded 2026-11-10 by the W3 agent.
+R 4.6.1, kit_111's library (core/browser-smoke.MlQroA), load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true,
+TMPDIR=/home/doktersmol/.cache/k112w3, tools/testing/test-baseline.R file, one process per file.
+"Before" = a `git archive` copy of the start commit 6f41a5dd with only tests/testthat/test-omic-da-module.R replaced
+by the W3 version (7 new blocks appended; the 43 existing blocks unchanged).
+Columns: blocks run, expectations, passed, failed, error blocks, skipped blocks, warnings, seconds.
+
+## test-omic-da-module.R, whole file
+
+  before, 6f41a5dd:  50  1320  1292  28  1  0  0  550.5   (the 43 existing blocks: 1260 passed, W2's record;
+                                                          every failure and the error are in the 7 W3 blocks)
+  after,  661186bc:  50  1339  1339   0  0  0  0  539.1
+
+## The 7 W3 blocks on 6f41a5dd, per block (scratch detail runner: the file's definitions, then the blocks)
+
+  one contrast            2 failures: operations are "da_publication" only (the kernel runs in the controller);
+                          notes lack the runner's working notice. Its comparison with prot_main's frozen run
+                          (values, updates, tab_status, history, states, tab, rows, published files) already
+                          passes: today's managed path equals the in-process run in those fields.
+  two contrasts           3 failures: operations; notes; no DA-contrast-output dispatch recorded.
+  worker failure, retry   3 failures + 1 error: the kernel error is reported in the controller ("Error in DA
+                          analysis: forced ...") with no dispatch and no runner notice.
+  click while runner      7 failures: no runner action exists; the second click recomputes (2 request halves) and
+                          the head holds a manifest.
+  click while publication 5 failures: the second click runs the request half again (commits the changed q-value's
+                          arguments: states change) and its new head supersedes the running publication
+                          ("Error applying DA publication: result was superseded"), as ticket D3 describes today.
+  pending retry           3 failures: the retry click runs the request half again (2 request halves).
+  runner install/reuse    5 failures: the plugin installs no runner (0 installs) and never runs the shared one.
+
+  Total on 6f41a5dd: 28 failures, 1 error. After 661186bc: 0.
