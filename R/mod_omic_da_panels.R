@@ -83,8 +83,8 @@ omicDaLayout <- function(da) {
 #' The DA tab of the omics that hold rows, as layout data (mod_lipid_da_ui.R:9-444 at 2269a45f): the settings column
 #' (the formula input or the model shown, the threshold and fold-change inputs, the contrasts, the session load when the
 #' group has its test id, the run and download buttons and the status) and the results column (the save note with the
-#' heatmap's, then the volcano, heatmap and table tabs the group names). The interactive volcano's box is unticked
-#' (D3: built on demand).
+#' heatmap's, then the volcano, heatmap and table tabs the group names). The interactive volcano's box is ticked by
+#' default (user, 2026-11-11); its page is still built only while the box is ticked and the output is shown (D3).
 #' @param da The omic's `da` group.
 #' @return The root node.
 #' @noRd
@@ -147,7 +147,7 @@ omicDaFeatureVolcanoTab <- function(da) {
     node("tabPanel", da$tabs[["volcano"]], children = list(node("br"),
         omicDaRow(list(4, omicDaSelect("volcano_contrast", "Select Contrast:", NULL, width = "100%")),
             list(4, omicDaSelect("volcano_assay", "Select Assay:", c("Combined"), width = "100%")),
-            list(4, node("checkboxInput", "Interactive Plot (Glimma)", value = FALSE, id = "volcano_interactive"))),
+            list(4, node("checkboxInput", "Interactive Plot (Glimma)", value = TRUE, id = "volcano_interactive"))),
         node("conditionalPanel", condition = "input.volcano_interactive == true", children = list(
             node("div", style = "height: 600px; background-color: white; border-radius: 8px; padding: 10px;",
                 ns_id = "volcano_glimma_container", children = list(node("htmlOutput", id = "volcano_glimma"))))),
@@ -431,7 +431,7 @@ omicDaDownloadData <- function(daResultsList, longTable) {
 #' Its own layout and values: the outer well, the sidebar heading and spacing, the archive chooser (the group's
 #' `archive` plugin), tab icons, column widths, the "Advanced Clustering Options" well with its choices and the
 #' dendrogram switch, `h5` for "Cluster Information", and the save note's output that no server renders (P-25). The
-#' interactive volcano's box is unticked (D3: built on demand).
+#' interactive volcano's box is ticked by default (user, 2026-11-11); the render still waits for the box (D3).
 #' @param da The omic's `da` group.
 #' @return The root node.
 #' @noRd
@@ -471,7 +471,7 @@ omicDaPluginVolcanoTab <- function(da) {
     static <- da$views$static_volcano
     node("tabPanel", da$tabs[["volcano"]], icon = "chart-area", children = list(node("br"),
         omicDaRow(list(6, omicDaSelect("volcano_contrast", "Select Contrast:", NULL, width = "100%")),
-            list(6, node("checkboxInput", "Interactive Plot (Glimma)", value = FALSE, id = "volcano_interactive"))),
+            list(6, node("checkboxInput", "Interactive Plot (Glimma)", value = TRUE, id = "volcano_interactive"))),
         node("hr"),
         node("conditionalPanel", condition = "input.volcano_interactive == true", children = list(
             node("div", style = "height: 600px; background-color: white; border-radius: 8px; padding: 10px;",

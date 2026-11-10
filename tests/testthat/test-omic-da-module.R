@@ -1456,7 +1456,50 @@ omicDaW1Frozen[["lipid_main"]] <- list(
             da_results_list = "<list: contrasts_results,da_lipids_long,per_assay_results,significant_counts,qvalue_warnings,da_q_val_thresh,treat_lfc_cutoff,failed_contrasts>",
             formula_from_s4 = "~ 0 + group"),
         rows = "<unchanged>",
-        files = "<unchanged>",
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: with the box ticked by
+        # default the tab's page (`lipid_volcano_page`, a store asset since KIT-106 D3) is built in process when an assay is
+        # selected: omics-volcano-html 1 and one more dia-state (its root). Nothing else in the field moved.
+        files = c(
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "5",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "3",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "46",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>` = "2",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "074f019210bb05e4db534de339e88fba7e321a2f2e9b0d50bb503d7d5bb8eb98",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "8597e926b23cddc4514ddec594433c871289662093c37c5f845074adafcdc8e3",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.tsv` = "3ef61cc44f484ab6f9f7c6a1fef40960ffe082360f5bed58ddbff740cdbcdd23",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.tsv` = "c10aa8e923a83d86c58b8e06db8c79d9917eeb185799fdb802622f5286c9e7e8",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_barplot.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>",
+            `source/lipid_filtered_session_data_latest.rds` = "<present>"),
         operations = NULL,
         errors = character(0)),
     tree_k = list(
@@ -1571,13 +1614,17 @@ omicDaW1Frozen[["lipid_main"]] <- list(
         files = c(
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "5",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "3",
-            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "45",
+            # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: with the box ticked by
+            # default the tab's page (`lipid_volcano_page`, a store asset since KIT-106 D3) is built in process when an assay is
+            # selected: omics-volcano-html 1 and one more dia-state (its root). Nothing else in the field moved.
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "46",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>` = "2",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>` = "2",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>` = "2",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
             `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "074f019210bb05e4db534de339e88fba7e321a2f2e9b0d50bb503d7d5bb8eb98",
             `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
             `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "8597e926b23cddc4514ddec594433c871289662093c37c5f845074adafcdc8e3",
@@ -1838,7 +1885,47 @@ omicDaW1Frozen[["lipid_no_friendly"]] <- list(
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        files = "<unchanged>",
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: with the box ticked by
+        # default the tab's page (`lipid_volcano_page`, a store asset since KIT-106 D3) is built in process when an assay is
+        # selected: omics-volcano-html 1 and one more dia-state (its root). Nothing else in the field moved.
+        files = c(
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "44",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "074f019210bb05e4db534de339e88fba7e321a2f2e9b0d50bb503d7d5bb8eb98",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "8597e926b23cddc4514ddec594433c871289662093c37c5f845074adafcdc8e3",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.tsv` = "3ef61cc44f484ab6f9f7c6a1fef40960ffe082360f5bed58ddbff740cdbcdd23",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.tsv` = "c10aa8e923a83d86c58b8e06db8c79d9917eeb185799fdb802622f5286c9e7e8",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_barplot.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
         operations = NULL,
         errors = c(
             "<unhandled> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found",
@@ -2215,7 +2302,50 @@ omicDaW1Frozen[["metab_main"]] <- list(
             da_results_list = "<list: contrasts_results,da_metabolites_long,per_assay_results,significant_counts,qvalue_warnings,da_q_val_thresh,treat_lfc_cutoff,failed_contrasts>",
             formula_from_s4 = "~ 0 + group"),
         rows = "<unchanged>",
-        files = "<unchanged>",
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: with the box ticked by
+        # default the tab's page (`metab_volcano_page`, a store asset since KIT-106 D3) is built in process when an assay is
+        # selected: omics-volcano-html 1 and one more dia-state (its root). Nothing else in the field moved.
+        files = c(
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "5",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "3",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "46",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/metab-da-fit-<ID>` = "2",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "8182dd547c4ecf1bfcd64eede3d2ca7fed28796be30db143270b4e1938b81f4a",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "751ac64ceb5f2d1bb8602c40f16806d39341ff1e4c25cdf5b9e31fb66604cfce",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv` = "cc3b4d6c4323e14b01e7caa7f564239f0dccf2816bee6c3c4d191ad2d90b273b",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.tsv` = "b557e8c011c4f6809ca4d940a91686b44fdc3ed0b2af331174826e78ff3dcb7b",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_barplot.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>",
+            `source/metab_filtered_session_data_latest.rds` = "<present>"),
         operations = NULL,
         errors = character(0)),
     tree_k = list(
@@ -2330,13 +2460,17 @@ omicDaW1Frozen[["metab_main"]] <- list(
         files = c(
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "5",
             `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "3",
-            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "45",
+            # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: with the box ticked by
+            # default the tab's page (`metab_volcano_page`, a store asset since KIT-106 D3) is built in process when an assay is
+            # selected: omics-volcano-html 1 and one more dia-state (its root). Nothing else in the field moved.
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-state-<ID>` = "46",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/metab-da-fit-<ID>` = "2",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>` = "2",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>` = "2",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
             `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-legacy-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
             `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "8182dd547c4ecf1bfcd64eede3d2ca7fed28796be30db143270b4e1938b81f4a",
             `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
             `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "751ac64ceb5f2d1bb8602c40f16806d39341ff1e4c25cdf5b9e31fb66604cfce",
@@ -2596,7 +2730,47 @@ omicDaW1Frozen[["metab_no_friendly"]] <- list(
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        files = "<unchanged>",
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: with the box ticked by
+        # default the tab's page (`metab_volcano_page`, a store asset since KIT-106 D3) is built in process when an assay is
+        # selected: omics-volcano-html 1 and one more dia-state (its root). Nothing else in the field moved.
+        files = c(
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "44",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "8182dd547c4ecf1bfcd64eede3d2ca7fed28796be30db143270b4e1938b81f4a",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "751ac64ceb5f2d1bb8602c40f16806d39341ff1e4c25cdf5b9e31fb66604cfce",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv` = "cc3b4d6c4323e14b01e7caa7f564239f0dccf2816bee6c3c4d191ad2d90b273b",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.tsv` = "b557e8c011c4f6809ca4d940a91686b44fdc3ed0b2af331174826e78ff3dcb7b",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_barplot.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
         operations = NULL,
         errors = "<unhandled> i In argument: `comparison == comparison_to_search | friendly_name == comparison_to_search`.\nCaused by error:\n! object 'friendly_name' not found"))
 
@@ -2832,8 +3006,12 @@ omicDaW1Frozen[["trx_main"]] <- list(
             formula_from_s4 = "<NULL>"),
         rows = c(da_genes_long = "187x11 121582784dc95c0a"),
         files = c(
-            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "28",
+            # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: trx's box was unticked
+            # before KIT-106 too. Ticked by default, the tab's page (`trx_volcano_page`) is built in process when the DA
+            # completes (trx has one assay): omics-volcano-html 1 and one more dia-state (its root) per request.
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "29",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "6",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>` = "2",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>` = "1",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>` = "1",
@@ -2887,7 +3065,42 @@ omicDaW1Frozen[["trx_main"]] <- list(
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        files = "<unchanged>",
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: trx's box was unticked
+        # before KIT-106 too. Ticked by default, the tab's page (`trx_volcano_page`) is built in process when the DA
+        # completes (trx has one assay): omics-volcano-html 1 and one more dia-state (its root) per request.
+        files = c(
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "30",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "6",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>` = "2",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-da_contrast-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_expression_filter-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruv_grid-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_ruvs-<ID>` = "1",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_tmm_logcpm-<ID>` = "1",
+            `results/transcriptomics/da_genes/de_results_Sera_vs_RPMI.csv` = "c11158b3af965955f4284fad607de9462097852a94c2b074ffab0e78c0a4af6b",
+            `results/transcriptomics/da_genes/ruv_optimization_summary.txt` = "<present>",
+            `results/transcriptomics/da_genes/top_de_genes.tsv` = "10aa0f7b3fa91cdc9137a9e4f11dca3a1413f4bd4e236542637c471bf87daa21",
+            `results/transcriptomics/gene_qc/ruv_normalised_log_values.tsv` = "83de1dbdd1018161c5ec6c1dac4dc179b0c1d0340fd2fe826d4b3c9b4ae93387",
+            `results/transcriptomics/gene_qc/trx_raw_pca.png` = "<present>",
+            `results/transcriptomics/gene_qc/trx_raw_rle.png` = "<present>",
+            `results/transcriptomics/gene_qc/trx_ruvs_pca.png` = "<present>",
+            `results/transcriptomics/gene_qc/trx_ruvs_rle.png` = "<present>",
+            `results/transcriptomics/gene_qc/trx_tmm_pca.png` = "<present>",
+            `results/transcriptomics/gene_qc/trx_tmm_rle.png` = "<present>",
+            `results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.pdf` = "<present>",
+            `results/transcriptomics/publication_graphs/NumSigDeMolecules/summary_barplot_Sera_vs_RPMI.png` = "<present>",
+            `results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.pdf` = "<present>",
+            `results/transcriptomics/publication_graphs/Volcano_Plots/volcano_plot_Sera_vs_RPMI.png` = "<present>",
+            `results/transcriptomics/publication_graphs/canonical_correlation_optimization_summary.xlsx` = "<present>",
+            `results/transcriptomics/publication_graphs/canonical_correlation_panels.pdf` = "<present>",
+            `results/transcriptomics/publication_graphs/canonical_correlation_panels.png` = "<present>",
+            `results/transcriptomics/publication_graphs/normalization_comparison_grid.pdf` = "<present>",
+            `results/transcriptomics/publication_graphs/normalization_comparison_grid.png` = "<present>",
+            `scripts/transcriptomics/design_matrix.tab` = "e3b6f40550967e975506c582126b035f5fcc887aae4ffe97e3200f3999a3584e",
+            `scripts/transcriptomics/import_sources/counts.tsv` = "2c9e3b6290daf902297e7dab06425b831bfeb6261bd5b5d1819e6fd3e21dde49"),
         operations = NULL,
         errors = character(0)),
     table_down = list(
@@ -3269,9 +3482,9 @@ omicDaW1Frozen[["prot_main"]] <- list(
             da_status = "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs",
             da_summary_stats = "Total genes: 6\nSignificant (q < 0.050): 4\nUp-regulated: 3\nDown-regulated: 1\nFold-change cutoff: 0.00",
             download_da_results = "<download>", heatmap_plot = "<plot> alt=Plot object",
-            # Re-frozen once (KIT-106 W5, D3; lead decision): the box is unticked by default, so the volcano is <req>
-            # (was the DA-time page, "<ui> 6c24457f..."). kit-106/w5/w1-refreeze.md.
-            volcano_glimma = "<req>",
+            # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once: the box is ticked by default again, so
+            # the volcano is the DA-time page. Back to the value frozen before KIT-106 W5's D3 re-freeze (8ebd07d6).
+            volcano_glimma = "<ui> 6c24457f4f3ce8d348007280dfd26da93e5791de2d3131cecd367fad73baee06",
             volcano_plot_static = "<plot> alt=Plot object"),
         calls = c(
             "generateProtDAVolcanoStatic(selected_contrast=B_vs_A, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=10) -> ggplot <HEX>",
@@ -4032,23 +4245,56 @@ omicDaW1Frozen[["lipid_managed"]] <- list(
         calls = c(
             "generateLipidDAVolcanoStatic(selected_contrast=RES_vs_WT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
             "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 6x7 <HEX>"),
-        # KIT-106 W3, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
-        # 2026-11-06), so the managed page is not requested at select. Was the page action's two notices
-        # ("[default NULL lipidomics_action_working] Applying lipidomics step ...", "remove lipidomics_action_working"); now none.
-        notes = character(0),
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once: the box is ticked by default again, so
+        # the managed page is requested at select. Back to the value frozen before KIT-106 W3's D3 re-freeze (96307945).
+        notes = c(
+            "[default NULL lipidomics_action_working] Applying lipidomics step ...",
+            "remove lipidomics_action_working"),
         updates = character(0),
         tab_status = "<unchanged>",
         history = "<unchanged>",
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        # KIT-106 W3, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
-        # 2026-11-06), so the managed page is not requested at select. Was the run step's files with the page's store
-        # entries added (omics-volcano-html 1; dia-state 14 -> 15); now "<unchanged>".
-        files = "<unchanged>",
-        # KIT-106 W3, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
-        # 2026-11-06), so the managed page is not requested at select. Was "lipid_volcano_page"; now none.
-        operations = character(0),
+        files = c(
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "15",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid-da-fit-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/lipid_da_contrast-da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.tsv` = "074f019210bb05e4db534de339e88fba7e321a2f2e9b0d50bb503d7d5bb8eb98",
+            `da_output/de_gcms_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.tsv` = "8597e926b23cddc4514ddec594433c871289662093c37c5f845074adafcdc8e3",
+            `da_output/de_gcms_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.tsv` = "3ef61cc44f484ab6f9f7c6a1fef40960ffe082360f5bed58ddbff740cdbcdd23",
+            `da_output/de_posmode_lipids_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.tsv` = "c10aa8e923a83d86c58b8e06db8c79d9917eeb185799fdb802622f5286c9e7e8",
+            `da_output/de_posmode_lipids_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_barplot.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
+            `publication_graphs/NumSigDeMolecules/lipids_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
+        operations = "lipid_volcano_page",
         errors = character(0)))
 
 omicDaW1Frozen[["metab_managed"]] <- list(
@@ -4165,23 +4411,56 @@ omicDaW1Frozen[["metab_managed"]] <- list(
         calls = c(
             "generateMetabDAVolcanoStatic(selected_contrast=RES_vs_WT, selected_assay=GCMS, da_q_val_thresh=0.05, lfc_threshold=0, show_labels=TRUE, n_labels=15) -> ggplot <HEX>",
             "DT::datatable(extensions=Buttons, rownames=FALSE, filter=top) -> data.frame 6x7 <HEX>"),
-        # KIT-106 W4, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
-        # 2026-11-06), so the managed page is not requested at select. Was the page action's two notices
-        # ("[default NULL metabolomics_action_working] Applying metabolomics step ...", "remove metabolomics_action_working"); now none.
-        notes = character(0),
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once: the box is ticked by default again, so
+        # the managed page is requested at select. Back to the value frozen before KIT-106 W4's D3 re-freeze (315959a0).
+        notes = c(
+            "[default NULL metabolomics_action_working] Applying metabolomics step ...",
+            "remove metabolomics_action_working"),
         updates = character(0),
         tab_status = "<unchanged>",
         history = "<unchanged>",
         states = "<unchanged>",
         tab = "<unchanged>",
         rows = "<unchanged>",
-        # KIT-106 W4, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
-        # 2026-11-06), so the managed page is not requested at select. Was the run step's files with the page's store
-        # entries added (omics-volcano-html 1; dia-state 14 -> 15); now "<unchanged>" (kit-106/w4/w1-refreeze.md).
-        files = "<unchanged>",
-        # KIT-106 W4, D3 (lead decision 2026-11-09, re-frozen once): the box is unticked by default (user unification
-        # 2026-11-06), so the managed page is not requested at select. Was "metab_volcano_page"; now none.
-        operations = character(0),
+        files = c(
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "15",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "7",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab-da-fit-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/metab_da_contrast-da_contrast-<ID>` = "2",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-<ID>` = "11",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-figure-asset-<ID>` = "19",
+            `<store entries>.source/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.tsv` = "8182dd547c4ecf1bfcd64eede3d2ca7fed28796be30db143270b4e1938b81f4a",
+            `da_output/de_gcms_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.tsv` = "751ac64ceb5f2d1bb8602c40f16806d39341ff1e4c25cdf5b9e31fb66604cfce",
+            `da_output/de_gcms_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.tsv` = "cc3b4d6c4323e14b01e7caa7f564239f0dccf2816bee6c3c4d191ad2d90b273b",
+            `da_output/de_posmode_metabolites_groupKO-groupWT_long_annot.xlsx` = "<present>",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.tsv` = "b557e8c011c4f6809ca4d940a91686b44fdc3ed0b2af331174826e78ff3dcb7b",
+            `da_output/de_posmode_metabolites_groupRES-groupWT_long_annot.xlsx` = "<present>",
+            `publication_graphs/Heatmaps/all_heatmaps_combined.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/gcms_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupKO-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.pdf` = "<present>",
+            `publication_graphs/Heatmaps/posmode_groupRES-groupWT_heatmap.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_barplot.png` = "<present>",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.tab` = "a36fe768533ac33524d9bd3b2697cf5a138ab567180f4533e9cfd91d13a15713",
+            `publication_graphs/NumSigDeMolecules/metabolites_num_sig_de_molecules.xlsx` = "<present>",
+            `publication_graphs/Volcano_Plots/all_volcano_plots_combined.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/gcms_groupRES-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupKO-groupWT.png` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.pdf` = "<present>",
+            `publication_graphs/Volcano_Plots/posmode_groupRES-groupWT.png` = "<present>"),
+        operations = "metab_volcano_page",
         errors = character(0)))
 
 omicDaW1Frozen[["trx_managed"]] <- list(
@@ -4277,7 +4556,12 @@ omicDaW1Frozen[["trx_managed"]] <- list(
             "[default NULL transcriptomics_action_working] Applying transcriptomics step ...",
             "remove transcriptomics_action_working", "remove da_running",
             "[message 5 -] Differential expression analysis complete!",
-            "[message 5 -] DA results saved to disk (tables, volcano plots, heatmaps)"),
+            # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: trx's box was unticked
+            # before KIT-106 too. Ticked by default, the worker's `trx_volcano_page` is requested when the DA completes (its
+            # operation, its two action notices, omics-volcano-html 1 and one more dia-state).
+            "[message 5 -] DA results saved to disk (tables, volcano plots, heatmaps)",
+            "[default NULL transcriptomics_action_working] Applying transcriptomics step ...",
+            "remove transcriptomics_action_working"),
         updates = c(
             "de-volcano_contrast: Sera_vs_RPMI -> Sera_vs_RPMI",
             "de-heatmap_contrast: Sera_vs_RPMI -> Sera_vs_RPMI",
@@ -4296,8 +4580,12 @@ omicDaW1Frozen[["trx_managed"]] <- list(
             formula_from_s4 = "<NULL>"),
         rows = c(da_genes_long = "187x11 121582784dc95c0a"),
         files = c(
-            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "44",
+            # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: trx's box was unticked
+            # before KIT-106 too. Ticked by default, the worker's `trx_volcano_page` is requested when the DA completes (its
+            # operation, its two action notices, omics-volcano-html 1 and one more dia-state).
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>` = "45",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>` = "6",
+            `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>` = "1",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>` = "2",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>` = "1",
             `<store entries>.scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>` = "1",
@@ -4327,7 +4615,11 @@ omicDaW1Frozen[["trx_managed"]] <- list(
             `results/transcriptomics/publication_graphs/normalization_comparison_grid.png` = "<present>",
             `scripts/transcriptomics/design_matrix.tab` = "e3b6f40550967e975506c582126b035f5fcc887aae4ffe97e3200f3999a3584e",
             `scripts/transcriptomics/import_sources/counts.tsv` = "2c9e3b6290daf902297e7dab06425b831bfeb6261bd5b5d1819e6fd3e21dde49"),
-        operations = c("trx_da_contrast", "trx_da_tab_results", "trx_da_publication"),
+        # GUI audit R5, item 1 (volcano default on; user, 2026-11-11), re-frozen once, a new value: trx's box was unticked
+        # before KIT-106 too. Ticked by default, the worker's `trx_volcano_page` is requested when the DA completes (its
+        # operation, its two action notices, omics-volcano-html 1 and one more dia-state).
+        operations = c(
+            "trx_da_contrast", "trx_da_tab_results", "trx_da_publication", "trx_volcano_page"),
         errors = character(0)),
     select = list(
         outputs = c(
@@ -4532,6 +4824,9 @@ omicDaW3Volcano <- function(setup, run, select) {
         ui_defaults <- omicsUiInputDefaults(setup$ui("x"))
         names(ui_defaults) <- sub("^x-", "", names(ui_defaults))
         put(ui_defaults)
+        # GUI audit R5, item 1: the box is ticked by default (user, 2026-11-11), so it is unticked here to show that
+        # no page is built or asked for until it is ticked.
+        put(list(volcano_interactive = FALSE))
         run(put)
         put(select)
         out$unticked <- glimma()
@@ -4561,13 +4856,14 @@ omicDaW3TrxRun <- function(put) {
     put(list(run_da_analysis = 1L))
 }
 
-test_that("(W3, D3) lipid's and trx's DA UIs have the interactive volcano unticked", {
+# GUI audit R5, item 1 (volcano default on; user, 2026-11-11): the box is ticked by default for every omic.
+test_that("(W3, D3; R5 item 1) lipid's and trx's DA UIs have the interactive volcano ticked", {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
     for (ui in list(lipid = mod_lipid_da_ui("de"), trx = mod_lipid_da_ui("de", profile = trxOmicProfile()))) {
         html <- as.character(htmltools::renderTags(ui)$html)
         expect_match(html, "<input id=\"de-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
-        expect_false(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))
-        expect_false(omicsUiInputDefaults(ui)[["de-volcano_interactive"]])
+        expect_true(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))
+        expect_true(omicsUiInputDefaults(ui)[["de-volcano_interactive"]])
     }
 })
 
@@ -4632,13 +4928,14 @@ test_that("(W3, F106-05) lipid: Run DA on an owner whose head is its initial sta
 # data, through the frame's handler.
 # ------------------------------------------------------------------------------------------------
 
-test_that("(W4, D3) metab's DA UI has the interactive volcano unticked", {
+# GUI audit R5, item 1 (volcano default on; user, 2026-11-11).
+test_that("(W4, D3; R5 item 1) metab's DA UI has the interactive volcano ticked", {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
     ui <- mod_metab_da_ui("de")
     html <- as.character(htmltools::renderTags(ui)$html)
     expect_match(html, "<input id=\"de-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
-    expect_false(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))
-    expect_false(omicsUiInputDefaults(ui)[["de-volcano_interactive"]])
+    expect_true(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))
+    expect_true(omicsUiInputDefaults(ui)[["de-volcano_interactive"]])
 })
 
 test_that("(W4, D3) metab in process: the volcano is <req> until ticked, then the metab_volcano_page iframe; the tab holds no state, widget or page", {
@@ -4690,13 +4987,14 @@ omicDaW5ProtRun <- function(setup) {
     }
 }
 
-test_that("(W5, D3) proteomics' DA UI has the interactive volcano unticked", {
+# GUI audit R5, item 1 (volcano default on; user, 2026-11-11).
+test_that("(W5, D3; R5 item 1) proteomics' DA UI has the interactive volcano ticked", {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
     ui <- mod_prot_da_ui("differential_expression")
     html <- as.character(htmltools::renderTags(ui)$html)
     expect_match(html, "<input id=\"differential_expression-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
-    expect_false(grepl("<input id=\"differential_expression-volcano_interactive\"[^>]*checked", html))
-    expect_false(omicsUiInputDefaults(ui)[["differential_expression-volcano_interactive"]])
+    expect_true(grepl("<input id=\"differential_expression-volcano_interactive\"[^>]*checked", html))
+    expect_true(omicsUiInputDefaults(ui)[["differential_expression-volcano_interactive"]])
 })
 
 test_that("(W5) the shared frame's proteomics UI is W1 (a)'s proteomics UI", {

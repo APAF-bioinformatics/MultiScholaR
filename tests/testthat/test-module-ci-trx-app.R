@@ -58,7 +58,7 @@ test_that("MCI-029.1 the module server holds the bus, the session's owner and th
   }))
 })
 
-test_that("MCI-029.2 the module in process: import, design, QC, normalisation and DA each complete; the DA's completion keeps every status, the digest reads it, and the interactive volcano is built only on demand", {
+test_that("MCI-029.2 the module in process: import, design, QC, normalisation and DA each complete; the DA's completion keeps every status, the digest reads it, and the interactive volcano's page is asked for once", {
   skip_if_not(workflowOwnerCapable())
   skip_if_not_installed("edgeR")
   root <- withr::local_tempdir()
@@ -123,6 +123,9 @@ test_that("MCI-029.2 the module in process: import, design, QC, normalisation an
     try(output[["de-volcano_glimma"]], silent = TRUE)
     seen$widgets_on_completion <- seen$widgets
     seen$static <- tryCatch({ output[["de-volcano_static"]]; "drawn" }, error = function(e) conditionMessage(e))
+    set(list(`de-volcano_interactive` = FALSE))
+    try(output[["de-volcano_glimma"]], silent = TRUE)
+    seen$widgets_unticked <- seen$widgets
     set(list(`de-volcano_interactive` = TRUE))
     try(output[["de-volcano_glimma"]], silent = TRUE)
     seen$widgets_on_demand <- seen$widgets
@@ -140,8 +143,13 @@ test_that("MCI-029.2 the module in process: import, design, QC, normalisation an
   expect_identical(seen$after_da$differential_analysis, "complete")
   expect_identical(seen$after_da$session_summary, "pending")
   expect_identical(seen$digest$step_status_per_omic$transcriptomics$differential_analysis, "complete")
-  # The interactive volcano is not built when the DA completes; the static one is, and the interactive one on demand.
-  expect_identical(seen$widgets_on_completion, 0L)
+  # GUI audit R5, item 1 (volcano default on; user, 2026-11-11): the box is ticked by default, so the page is asked for
+  # once when the tab shows the volcano after the DA (was 0 on completion and 1 on demand, with the box unticked by
+  # default). Unticked, nothing is asked for; ticked again, the page is asked for again. The static volcano is drawn
+  # as before.
+  expect_true(interactive_default)
+  expect_identical(seen$widgets_on_completion, 1L)
   expect_identical(seen$static, "drawn")
-  expect_identical(seen$widgets_on_demand, 1L)
+  expect_identical(seen$widgets_unticked, 1L)
+  expect_identical(seen$widgets_on_demand, 2L)
 })
