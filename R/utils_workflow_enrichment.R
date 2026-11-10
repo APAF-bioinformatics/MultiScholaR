@@ -1130,7 +1130,9 @@ computeWorkflowEnrichment <- function(manager, config, parameters) {
     list(reference = declared$reference,
         results = saveWorkflowEnrichmentValue(manager, portableWorkflowEnrichmentResults(declared$results),
             "enrichment-results"),
-        service = declared$service, parameters = declared$parameters, matching = matching$annotationMatchResults,
+        service = declared$service, parameters = declared$parameters,
+        # F113-02: the match results scale with the DA proteins, so they travel by reference, as the results do.
+        matching = saveWorkflowEnrichmentValue(manager, matching$annotationMatchResults, "enrichment-annotation-match"),
         filter = filtered[c("applied", "stats")])
 }
 
@@ -1154,7 +1156,7 @@ acceptWorkflowEnrichment <- function(workflow, config, context, delivered, progr
             declared$parameters$taxon_id)
         organism_filter <- persistWorkflowEnrichmentFilter(workflow, context$parameters, display$filter)
         publishWorkflowEnrichment(workflow, config, context, declared, context$method, context$parameters,
-            display$matching, organism_filter, progress)
+            readWorkflowEnrichmentValue(manager, display$matching), organism_filter, progress)
     })
 }
 

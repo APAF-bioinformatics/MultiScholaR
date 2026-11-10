@@ -337,8 +337,13 @@ omicsEnrichW2Dispatch <- function(manager, controller, paths, parameters, input,
         worker_cap = 12 * 1024^3)
     path <- file.path(export$request_dir, "request.rds")
     writeWorkflowExecutionMessage(path, request)
-    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"), suppressWarnings(suppressMessages(utils::capture.output(try(
-        workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))), silent = TRUE)))))
+    worker <- NULL
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"), suppressWarnings(suppressMessages(utils::capture.output(
+        worker <- try(workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))), silent = TRUE)))))
+    # A worker that could not hand its value off (the handoff's own 8 MiB bound) leaves no result: the controller sees
+    # the process fail.
+    if (!file.exists(file.path(export$request_dir, "worker-result.rds")))
+        return(list(acceptance = "no_result", error = conditionMessage(attr(worker, "condition"))))
     message <- readRDS(file.path(export$request_dir, "worker-result.rds"))
     if (!identical(message$status, "complete")) stop(message$error, call. = FALSE)
     controller$job <- list(request = list(token = token, operation = operation, config = list(mode = "adapters"),
@@ -376,6 +381,8 @@ omicsEnrichW2Managed <- function(log) {
         log$dispatches[[n]]$value <- as.numeric(object.size(delivered$result))
         if (!identical(delivered$acceptance, "complete")) stop("the acceptance refused the worker's value", call. = FALSE)
         log$dispatches[[n]]$pending <- manager$.context$pending_provenance$operation %||% "<none>"
+        log$dispatches[[n]]$matching <- if (is.null(delivered$display$matching)) "<NULL>" else
+            if (isSavedWorkflowReference(delivered$display$matching)) "<ref>" else "<inline>"
         out <- acceptWorkflowEnrichment(workflow, config, half$context, delivered, progress)
         log$dispatches[[n]]$pending_after <- manager$.context$pending_provenance$operation %||% "<none>"
         out
@@ -421,7 +428,8 @@ omicsEnrichW2Held <- function(captures, step, field) {
 omicsEnrichW2StateEntries <- "<store entries>..workflow-entities/entities/dia-state-<ID>"
 
 #' The transfer values one managed Run that completes adds to the store's `dia-state` entries (D6's first recorded
-#' exclusion): the annotation table and the results.
+#' exclusion): the annotation table and the results. The annotation match results (F113-02) are NULL on W1 (b)'s
+#' fixture and travel as NULL (asserted per dispatch); the F113-02 block covers a match that travels by reference.
 omicsEnrichW2Transfers <- 2L
 
 #' D6's recorded exclusions per case: `transfers`, the `dia-state` entries each step's managed Run adds (a Run the
@@ -505,6 +513,7 @@ for (case in c("gprofiler", "clusterprofiler", "kernel_gprofiler", "kernel_clust
                 if (identical(dispatch$acceptance, "complete")) {
                     expect_lte(dispatch$value, 8388608)
                     expect_identical(c(dispatch$pending, dispatch$pending_after), c("enrichment", "<none>"), info = name)
+                    expect_identical(dispatch$matching, "<NULL>", info = name)
                 }
             }
             expect_identical(vapply(run$dispatches, `[[`, "", "acceptance"), switch(name,
@@ -618,4 +627,51 @@ test_that("(KIT-113 W2) the kernel travels by name: the double and processEnrich
     for (name in list("identity", "base::eval", NULL, NA_character_, c("processEnrichments", "processEnrichments"), 1L)) {
         expect_error(workflowEnrichmentKernel(name), class = "workflow_enrichment_input")
     }
+})
+
+test_that("(KIT-113 F113-02) annotation match results over the 8 MiB acceptance limit travel by reference: accepted, and the accept half returns the in-process list", {
+    skip_if_not(workflowOwnerCapable())
+    omicsEnrichW2Mocks()
+    matched <- list(match_statistics = list(match_rate = 100), table = data.frame(value = seq_len(1100000L) + 0.5))
+    expect_gt(as.numeric(object.size(matched)), 8388608)
+    big <- function(ctx) {
+        env <- environment()
+        testthat::local_mocked_bindings(resolveProtEnrichAnnotationMatching = function(...) list(attempted = TRUE,
+            proteinIdColumn = "uniprot_acc", annotationMatchResults = matched, matchRate = 100, warning = NULL),
+            .package = "MultiScholaR", .env = env)
+        shiny::isolate({
+            bus <- ctx$bus()
+            manager <- bus$state_manager
+            manifest <- bus$da_analysis_results_list
+            config <- omicsEnrichCoreConfig()
+            inputs <- omicsEnrichCoreInputs("9606")
+            in_process <- runWorkflowEnrichment(bus, config, manifest, inputs, ctx$paths)
+            half <- requestWorkflowEnrichment(bus, config, manifest, inputs, ctx$paths)
+            delivered <- omicsEnrichW2Dispatch(manager, omicsWorkerController(list(owner = manager)), ctx$paths,
+                half$parameters, manifest$source, list(state_name = config$state_name, config = list(),
+                    description = "enrichment"))
+            managed <- if (identical(delivered$acceptance, "complete")) acceptWorkflowEnrichment(bus, config, half$context,
+                delivered)
+            ctx$keep("f113", list(acceptance = delivered$acceptance, error = delivered$error,
+                value = as.numeric(object.size(delivered$result)),
+                in_process = in_process, managed = managed))
+        })
+    }
+    w1 <- omicEnrichW1CaseSpec("gprofiler", environment())[[1L]]
+    seen <- omicEnrichW1Drive(w1$setup, c(w1$steps[c("da", "open", "select")], list(big = big)))
+    f113 <- seen$big$f113
+    expect_identical(seen$big$errors, character())
+    expect_identical(f113$acceptance, "complete", info = f113$error)
+    expect_lte(f113$value, 8388608)
+    expect_identical(f113$in_process$annotation_match, matched)
+    expect_identical(names(f113$managed), names(f113$in_process))
+    for (name in setdiff(names(f113$in_process), c("results", "reference", "organism_filter"))) {
+        expect_identical(f113$managed[[name]], f113$in_process[[name]], info = name)
+    }
+    # The results as D6 compares them (F107-05): two kernel calls give the plot widgets new generated ids.
+    fields <- function(x) list(x@enrichment_data, x@enrichment_summaries, x@contrasts,
+        lapply(x@enrichment_plots, function(p) lapply(p, class)))
+    expect_identical(fields(f113$managed$results), fields(f113$in_process$results))
+    same <- setdiff(names(f113$in_process$organism_filter), "timestamp")
+    expect_identical(f113$managed$organism_filter[same], f113$in_process$organism_filter[same])
 })
