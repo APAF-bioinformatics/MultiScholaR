@@ -72,4 +72,36 @@ for (omic in c("lipid", "metab")) local({
         expect_length(case$resolved, 2L)
         expect_identical(case$resolved[[2L]], case$ticked)
     })
+
+    # The first Run removed the ticked standard, so the second names a feature the state no longer holds. The kernel
+    # skipped the assay with a warning (none of the ids left) or used the standards that were left (some of them).
+    test_that(sprintf("P-19: a Run whose ticked standards are no longer in the state is refused, in process (%s)", omic), {
+        case <- itsdSelectionCase(omic, runs = 2L)
+        expect_identical(case$values, c(TRUE, FALSE))
+        refusal <- sprintf("1 selected internal standard(s) are no longer in assay 'LCMS_Pos': %s. Reset the normalisation",
+            case$ticked$LCMS_Pos)
+        expect_true(any(grepl(refusal, case$log, fixed = TRUE)))
+        expect_true(any(startsWith(case$notes, "[error]") & grepl(refusal, case$notes, fixed = TRUE)))
+        # Nothing was committed by the refused Run: one ITSD state, from the first.
+        expect_identical(sum(case$history == paste0(itsdSelectionSpec(omic)$binding$prefix, "_itsd_norm")), 1L)
+    })
+
+    test_that(sprintf("P-19: the worker refuses the same selection with the same message (%s)", omic), {
+        skip_if_not(workflowOwnerCapable())
+        # As test-workflow-omics-worker.R: the request's build identity needs an installed package.
+        testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64), .package = "MultiScholaR")
+        root <- withr::local_tempdir(pattern = paste0("r4-itsd-worker-", omic, "-"))
+        fixture <- if (identical(omic, "lipid")) lipidDeclarationsOwner(root) else metabDeclarationsOwner(root)
+        withr::defer(closeDIAStateAdapter(fixture$owner))
+        binding <- itsdSelectionSpec(omic)$binding
+        assays <- methods::slot(fixture$object, binding$data_slot)
+        present <- as.character(assays[[1L]][[methods::slot(fixture$object, binding$id_slot)]])[[1L]]
+        operation <- paste0(binding$prefix, "_itsd_normalisation")
+        stale <- stats::setNames(list(c(present, "R4_filtered_out")), names(assays)[[1L]])
+        result <- omicsWorkerRun(fixture, operation, list(itsd_aggregation = "median", itsd_feature_ids = stale))
+        expect_false(identical(result$status, "complete"))
+        expect_match(paste(unlist(result[intersect(c("error", "message"), names(result))]), collapse = " "),
+            sprintf("1 selected internal standard(s) are no longer in assay '%s': R4_filtered_out.", names(assays)[[1L]]),
+            fixed = TRUE)
+    })
 })

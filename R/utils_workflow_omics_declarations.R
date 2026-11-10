@@ -208,6 +208,30 @@ omicsStoreOperation <- function(binding, name) {
         kernel = function(object, parameters, store) list())
 }
 
+#' Refuse a manual internal-standard selection that names features the state no longer holds (P-19): the selection is
+#' the ids of the rows ticked in the table the tab showed, and the state may have moved since (a second Run without
+#' Reset removes the standards; a QC refilter removes features). The kernel would normalise by the standards that are
+#' left, or skip the assay with a warning. An assay the state does not hold is left to the kernel, as before.
+#' @param binding The omic's binding.
+#' @param object The state the step runs on.
+#' @param feature_ids The selection: feature ids per assay, or NULL for the pattern.
+#' @return TRUE, invisibly; else an error of class `omics_itsd_selection_stale` naming the assay and up to three ids.
+#' @noRd
+omicsAssertManualItsdPresent <- function(binding, object, feature_ids) {
+    if (!is.list(feature_ids) || !length(feature_ids)) return(invisible(TRUE))
+    assays <- methods::slot(object, binding$data_slot)
+    id_column <- methods::slot(object, binding$id_slot)
+    for (assay in intersect(names(feature_ids), names(assays))) {
+        absent <- setdiff(as.character(feature_ids[[assay]]), as.character(assays[[assay]][[id_column]]))
+        if (!length(absent)) next
+        rlang::abort(sprintf(paste("%d selected internal standard(s) are no longer in assay '%s': %s%s.",
+            "Reset the normalisation, or untick them in the ITSD selection table, then run again."),
+            length(absent), assay, paste(utils::head(absent, 3L), collapse = ", "), if (length(absent) > 3L) ", ..." else ""),
+            class = "omics_itsd_selection_stale", call = NULL)
+    }
+    invisible(TRUE)
+}
+
 #' Internal-standard normalisation (complete sample after the mean-factor pre-pass: one aggregate standard signal per
 #' sample, the mean over all samples, each sample scaled by mean / own aggregate; the standards removed afterwards).
 #' @noRd
@@ -218,6 +242,7 @@ omicsItsdNormalisationOperation <- function(binding) {
             "the mean over all samples of each assay's per-sample aggregate standard signal, computed once before any sample is scaled"),
         fixed = list(method = "ITSD"),
         kernel = function(object, parameters, store) {
+            omicsAssertManualItsdPresent(binding, object, parameters$itsd_feature_ids)
             normaliseUntransformedDataFn <- normaliseUntransformedData
             normalised <- normaliseUntransformedDataFn(theObject = object, method = "ITSD",
                 itsd_aggregation = parameters$itsd_aggregation, itsd_feature_ids = parameters$itsd_feature_ids)
