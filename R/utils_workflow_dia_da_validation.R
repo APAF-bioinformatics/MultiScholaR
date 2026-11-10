@@ -109,6 +109,50 @@ validateProtDaFilteredSession <- function(session_data, source_dir = NULL, manag
   invisible(TRUE)
 }
 
+#' Refuse a DA formula variable the design cannot carry as a model term (GUI audit A112-04, F112-04)
+#'
+#' The validation's model frame keeps missing values (`na.pass`), so a variable whose design column is missing in
+#' every sample passed it and failed later in the kernel, after the DA arguments were committed. A text or factor
+#' column with fewer than two levels was refused already, with `model.matrix`'s own message. A variable the design
+#' does not have is left to the model frame's message.
+#' @param formula_obj The DA formula.
+#' @param design_matrix The design table.
+#' @return `TRUE`, invisibly; an error of class `prot_da_design_term_invalid` that names the column otherwise.
+#' @noRd
+assertProtDaDesignTerms <- function(formula_obj, design_matrix) {
+  for (variable in intersect(all.vars(formula_obj), names(design_matrix))) {
+    values <- design_matrix[[variable]]
+    if (all(is.na(values))) {
+      rlang::abort(
+        sprintf(
+          "DA formula variable '%s' has no values in the design: it is missing for every sample. Remove it from the formula or fill in the design column.",
+          variable
+        ),
+        class = "prot_da_design_term_invalid",
+        call = NULL
+      )
+    }
+    levels_found <- if (is.factor(values)) {
+      nlevels(values)
+    } else if (is.character(values)) {
+      length(unique(values[!is.na(values)]))
+    } else {
+      2L
+    }
+    if (levels_found < 2L) {
+      rlang::abort(
+        sprintf(
+          "DA formula variable '%s' has a single level in the design; a model term needs at least two. Remove it from the formula.",
+          variable
+        ),
+        class = "prot_da_design_term_invalid",
+        call = NULL
+      )
+    }
+  }
+  invisible(TRUE)
+}
+
 validateProtDaModelAndContrasts <- function(theObject, formula_string, contrasts_tbl) {
   if (is.null(theObject) || !isS4(theObject) || !methods::is(theObject, "ProteinQuantitativeData")) {
     stop("DA analysis requires a ProteinQuantitativeData object.", call. = FALSE)
@@ -138,6 +182,7 @@ validateProtDaModelAndContrasts <- function(theObject, formula_string, contrasts
     stats::as.formula(formula_string),
     error = function(e) stop(sprintf("Invalid DA formula: %s", e$message), call. = FALSE)
   )
+  assertProtDaDesignTerms(formula_obj, design_matrix)
   design_model <- tryCatch(
     {
       model_frame <- stats::model.frame(formula_obj, design_matrix, na.action = stats::na.pass)

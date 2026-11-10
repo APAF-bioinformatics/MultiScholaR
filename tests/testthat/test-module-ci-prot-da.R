@@ -753,3 +753,40 @@ test_that("KIT-111 W1 (c), F106-03: the cluster summary with no clusters prints 
   printed <- utils::capture.output(diaDaClusterSummaryView("dynamic", NULL))
   expect_identical(printed, "No clusters defined. Enable clustering and tree cutting on the heatmap.")
 })
+
+# GUI audit R1, A112-04 (F112-04): a formula variable the design cannot carry as a term is refused by the validation,
+# before the DA arguments are committed, with a classed message that names the column. An all-NA logical or numeric
+# column passed before (the model frame is built with `na.pass`) and failed in the kernel; a one-level or all-NA text
+# column was refused with model.matrix's own message.
+test_that("GUI audit A112-04: validation refuses a formula variable whose design column is all NA or has one level, naming the column", {
+  design <- module_ci_prot_da_design()
+  design$tech_reps <- NA
+  design$tech_number <- NA_real_
+  design$tech_text <- NA_character_
+  design$site <- "one"
+  design$site_factor <- factor("one")
+  design$partial <- c("u", NA, "v", "v")
+  object <- module_ci_prot_da_object(design = design)
+  contrasts <- module_ci_prot_da_contrasts("two_group")
+  for (column in c("tech_reps", "tech_number", "tech_text", "site", "site_factor")) {
+    error <- expect_error(
+      validateProtDaModelAndContrasts(object, paste("~ 0 + group +", column), contrasts),
+      class = "prot_da_design_term_invalid"
+    )
+    expect_match(conditionMessage(error), sprintf("'%s'", column), fixed = TRUE)
+    expect_false(grepl("contrasts can be applied", conditionMessage(error), fixed = TRUE))
+  }
+  # What was valid stays valid: two levels, with or without some missing values.
+  expect_true(any(grepl("^batch", colnames(
+    validateProtDaModelAndContrasts(object, "~ 0 + group + batch", contrasts)$design_model
+  ))))
+  expect_true(any(grepl("^partial", colnames(
+    validateProtDaModelAndContrasts(object, "~ 0 + group + partial", contrasts)$design_model
+  ))))
+  # A variable the design does not have keeps its message.
+  expect_error(
+    validateProtDaModelAndContrasts(object, "~ 0 + missing_term", contrasts),
+    "Invalid DA formula: object 'missing_term' not found",
+    fixed = TRUE
+  )
+})
