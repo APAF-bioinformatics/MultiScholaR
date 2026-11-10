@@ -811,6 +811,8 @@ workflowEnrichmentEffectiveCorrection <- function(method, requested) {
 #' when the annotations are loaded, `enrichment_organism_filter`, `enrichment_analysis_results`,
 #' `enrichment_ui_params`, the completed state with its step provenance (F-16, `saveWorkflowEnrichmentState`), then
 #' `tab_status[[config$status_key]]`. Progress 0.2, 0.3, 0.5, 0.8 and 1.0 as today.
+#' GUI audit R3, A107-08: when the state's commit fails, the failure is notified as a warning and `tab_status` is left
+#' as it was; the returned `saved` says so (`saved$saved`, `saved$warning`).
 #' @param workflow The bus: an environment, or reactive values read inside an observer or `shiny::isolate()`.
 #' @param config The omic's `enrichment` group (`omicGuiConfig(<omic>)$enrichment`).
 #' @param manifest The accepted DA result manifest.
@@ -954,9 +956,15 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     updateProtEnrichStateManagerUiParams(workflowData = workflow, storedUiParams = ui_parameters$storedUiParams)
     saved <- saveWorkflowEnrichmentState(workflow, config, stamped, declared$parameters, method, parameters,
         directories$pathwayDir, outcomes = outcomes)
-    status <- workflow$tab_status
-    status[[config$status_key]] <- "complete"
-    workflow$tab_status <- status
+    if (isTRUE(saved$saved)) {
+        status <- workflow$tab_status
+        status[[config$status_key]] <- "complete"
+        workflow$tab_status <- status
+    } else {
+        # A107-08: the commit's failure was swallowed and the run reported complete.
+        notify(sprintf("The enrichment results were not saved to the workflow state: %s",
+            saved$warning %||% "unknown error"), "warning", 10)
+    }
     progress(1.0, "Complete!")
     list(results = results, method = method, contrasts = contrast_results, selected = shown,
         raw_contrast = selection$rawContrastName, contrasts_tbl = contrasts_tbl, pathway_dir = directories$pathwayDir,

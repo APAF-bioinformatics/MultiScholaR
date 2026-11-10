@@ -4317,3 +4317,28 @@ test_that("(R3, A107-05) a run the service answered records the database version
     expect_identical(seen$run$resources,
         "gprofiler2 ; e2e_fake_gost ; database_version ; enrichment of 1 contrasts, taxon 9606")
 })
+
+test_that("(R3, A107-08) a failed commit is shown as a warning, the tab is not marked complete, and the next Run completes", {
+    w1 <- omicEnrichW1CaseSpec("gprofiler", environment())[[1L]]
+    seen <- omicEnrichW1Drive(w1$setup, c(w1$steps[c("da", "open", "select")], list(
+        failed = function(ctx) {
+            testthat::local_mocked_bindings(saveDIAOwnerState = function(manager, ...) stop("disk full"),
+                .package = "MultiScholaR")
+            omicEnrichW1Run(1L)(ctx)
+        },
+        run = omicEnrichW1Run(2L))))
+    expect_identical(seen$failed$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
+        "[warning 10 -] The enrichment results were not saved to the workflow state: disk full",
+        "remove enrichment_working"))
+    expect_identical(seen$failed$tab_status, "<unchanged>")
+    expect_identical(seen$failed$history, "<unchanged>")
+    expect_identical(seen$failed$returned[["analysis_complete"]], "FALSE")
+    expect_identical(seen$failed$values[["enrichment_status"]], seen$select$values[["enrichment_status"]])
+    # The run's results are on the tab for inspection, although nothing was committed.
+    expect_identical(seen$failed$display, omicEnrichW1Frozen$gprofiler$run$display)
+    frozen <- omicEnrichW1Frozen$gprofiler$run
+    for (field in c("notes", "tab_status", "history", "states")) {
+        expect_identical(seen$run[[field]], frozen[[field]], info = field)
+    }
+    expect_identical(seen$run$returned[["analysis_complete"]], "TRUE")
+})

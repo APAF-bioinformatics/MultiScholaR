@@ -573,6 +573,8 @@ selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
 #' on the manifest the tab holds, inside the progress, then the tab's values from the core's returned list and the
 #' completion notice; on failure the error notice. The tab keeps its manifest (F107-01); the source reference is held
 #' after the run, as today's `on.exit` held it. A DA table missing at the Run is refused (F107-03).
+#' GUI audit R3, A107-08: the completion notice is shown only when the run's state was committed; when the commit
+#' failed the core has shown its warning, the tab holds the results and is not marked complete.
 #' @noRd
 runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, config) {
   cat("=== STARTING ENRICHMENT ANALYSIS ===\n")
@@ -580,7 +582,7 @@ runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, con
   shiny::req(input$organism_taxid)
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)
   completed <- tryCatch({
-    shiny::withProgress(message = "Running enrichment analysis...", value = 0,
+    run <- shiny::withProgress(message = "Running enrichment analysis...", value = 0,
       holdOmicEnrichRun(tab, runWorkflowEnrichment(workflowData, config, tab$da_results_data,
         parameters = list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
           up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,
@@ -589,7 +591,7 @@ runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, con
         notify = function(message, type, duration) shiny::showNotification(message, type = type, duration = duration),
         progress = function(value, detail) shiny::incProgress(value, detail = detail),
         refuse_missing_da = TRUE)))
-    TRUE
+    isTRUE(run$saved$saved)
   }, error = function(e) {
     message(sprintf("*** ERROR in enrichment analysis: %s", e$message))
     cat(sprintf("*** ERROR in enrichment analysis: %s ***\n", e$message))
@@ -616,7 +618,7 @@ holdOmicEnrichRun <- function(tab, run) {
   tab$all_enrichment_results <- run$contrasts
   if (run$selected$found) showOmicEnrichContrast(tab, run$selected)
   tab$enrichment_results_full <- run$results
-  tab$analysis_complete <- TRUE
+  tab$analysis_complete <- isTRUE(run$saved$saved) # A107-08: complete means committed
   tab$analysis_method <- run$method$method
   tab$organism_supported <- run$method$supported
   invisible(run)
