@@ -1,0 +1,58 @@
+KIT-113 W3: test first. Recorded 2026-11-10 by the W3 agent.
+R 4.6.1, R_LIBS = kit_112's library (core/browser-smoke.OftnRb/library), load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+NOT_CRAN=true, TMPDIR = kit/tmp-113 (on disk), tools/testing/test-baseline.R file, one process per file.
+"Before" = a `git archive` export of the start commit 1b5d7f44 (performance-v2's tip, W2 merged) with only
+tests/testthat/test-omic-enrich-module.R replaced by the W3 version (15 blocks appended, 8 of them from one loop; the
+existing blocks unchanged). "After" = the W3 code commit 6eacd081 (the same test file).
+Columns: static blocks, blocks run, expectations, passed, failed, error blocks, skipped, warnings, seconds.
+
+## test-omic-enrich-module.R, whole file
+
+  before, 1b5d7f44 + W3 tests:  14  29  2249  2148  101  2  0  0  648.2
+     (the 14 existing blocks pass as recorded at W2, 997/997; every failure and both errors are in the W3 blocks)
+  after,  6eacd081:             see targeted.txt (29 blocks, 0 failed)
+
+## The W3 blocks on the start frame, per block (scratch detail runner: the file's definitions, then only the
+## "KIT-113 W3" blocks; failing expectations / results)
+
+  managed: gprofiler               8/185  the Run is in process: shiny's progress is written and the runner records
+                                          none; no transfer values in the store (dia-state entries +0, not +2)
+                                          on the run step and every later step.
+  managed: clusterprofiler         8/185  as gprofiler.
+  managed: kernel_gprofiler        4/84   as gprofiler (run step).
+  managed: kernel_clusterprofiler  4/84   as gprofiler (run step).
+  managed: organism_filter         7/186  no_mapping/run and mapped/run: progress, runner progress, transfer values.
+  managed: refusals               12/248  pre_da/run_taxon_abc, q_cutoff/run_q_cutoff, table_removed/run_table_removed:
+                                          progress, runner progress, the bus (in process writes the filter metadata /
+                                          refuses the missing table before the annotation resolve), transfer values.
+  managed: restore                 5/105  as gprofiler (run step).
+  managed: prefill                 0/44   (no Run: nothing to dispatch; passes before and after, as it should)
+  second managed Run               3/12   no dispatch: the notes lack the runner's, 2 request halves expected 1 each,
+                                          the dispatch log is empty (error: subscript out of bounds).
+  worker failure, then a Run      19/31   the forced compute failure never runs: the in-process Run completes and
+                                          commits (tab_status, history, states, product, resources, display, returned
+                                          all move; kernel called); no runner notices; then the second Run.
+  missing DA table                 3/12   notes lack the runner's; no dispatch outcome (error: subscript out of bounds).
+  R7, held manifest differs       13/16   the in-process Run accepts the stale manifest and commits
+                                          enrichment_completed (history, states, product, resources, display, kernel,
+                                          store entries move); no refusal notice.
+  click while the step is active  10/27   the first Run completes in process (no runner notice, nothing held), the
+                                          second click runs again (a second Run, files and resources move).
+  click while pending publication  7/15   no pending publication arises; the second click runs again.
+  frame alone on a managed session 0/20   (no runner: in process; passes before and after, as it should)
+  -> 101 failed expectations + 2 errors (103 in the per-block runner, which counts each error as one result).
+
+## After (6eacd081), the same per-block runner
+
+  all 15 W3 blocks pass: 185/190 results become 190 (gprofiler, clusterprofiler), 89 (kernel_*), 194
+  (organism_filter), 254 (refusals), 110 (restore), 44 (prefill), 17 (second Run), 31 (worker failure), 13 (missing
+  table), 16 (R7), 27 (active), 15 (pending), 20 (frame alone); 0 failures, 0 errors.
+
+## One correction pass inside W3 (before the code commit)
+
+  The first managed run of the W3 blocks on the W3 frame failed the runner-progress expectation of every completing Run
+  (start, 0.2, 0.3, 0.5, close, 0.8, 1 instead of ... 0.8, 1, close) and one R7 expectation (the test read a held
+  "<unchanged>" files field). The first was a defect in the new managed `done`: `finish(completed)` closed the progress
+  before forcing its lazy `completed` argument, so the accept half ran after the close. Fixed with `force(completed)`
+  first in `finish`; the test was corrected to resolve the held files field. Both then passed (above). No unmanaged
+  value moved at any point.

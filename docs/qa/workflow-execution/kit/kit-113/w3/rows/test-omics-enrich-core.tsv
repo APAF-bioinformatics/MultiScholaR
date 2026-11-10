@@ -1,0 +1,2 @@
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-omics-enrich-core.R	load_all	12	22	0	1342	1341	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	347.3	complete

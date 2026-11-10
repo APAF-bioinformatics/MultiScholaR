@@ -1,0 +1,2 @@
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-omic-enrich-module.R	load_all	14	29	0	2249	2148	101	2	0	0	0	FALSE			FALSE		0	0	0	0	0	0	648.2	complete

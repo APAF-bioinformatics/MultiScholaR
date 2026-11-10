@@ -1,0 +1,24 @@
+KIT-113 W3: targeted runs on the W3 tree (code and tests 6eacd081). Recorded 2026-11-10 by the W3 agent.
+R 4.6.1, R_LIBS = kit_112's library (core/browser-smoke.OftnRb/library), load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+NOT_CRAN=true, TMPDIR = kit/tmp-113 (on disk). One process per file, at most 4 at once:
+  Rscript tools/testing/test-baseline.R file load_all <tree> tests/testthat/<file> <outdir>
+Per-file rows: w3/rows/<file>.tsv (after) and w3/rows/start-*.tsv (start runs made here). "start" = W2's rows
+(kit-113/w2/rows, on c2db9053, whose R/ and tests equal 1b5d7f44's) unless noted; test-workflow-server-shared.R and
+test-omic-da-module.R had no record and were run on a `git archive` export of the start commit 1b5d7f44.
+
+file                                   blocks run  results  passed  failed  errors  skipped  warnings  start                       equal?
+test-omic-enrich-module.R                 29        2296     2296     0       0       0        0         14 run, 997/997             existing 14 blocks as at start;
+                                                                                                                                       +15 W3 blocks, 1299 results, all pass
+test-omics-enrich-core.R                  22        1342     1341     0       0       1        0         22, 1342/1341, 1 skip       yes
+test-module-ci-prot-enrich.R               6          83       79     0       0       2        2         6, 83/79, 2 skip, 2 warn    yes
+test-workflow-dia-products.R              18         189      189     0       0       0        0         18, 189/189                 yes
+test-workflow-analysis-record.R           23         278      274     0       0       0        4         23, 278/274, 4 warn         yes
+test-workflow-server-shared.R              7         204      204     0       0       0        0         7, 204/204 (run at start)   yes
+test-workflow-gui-memory-lifetimes.R      17          91       80     0       0      11        0         17, 91/80, 11 skip          yes
+test-gui-entry-proteomics.R (5 lanes)      5         193      193     0       0       0        0         5, 193/193, frozen oracles  yes, no re-freeze
+test-omic-da-module.R (shares the runner) 50        1339     1339     0       0       0        0         50, 1339/1339 (run at start) yes
+
+The unmanaged frame: the 14 existing blocks of test-omic-enrich-module.R (W1 (a), W1 (b)'s eight in-process cases, the
+F107 blocks, the KIT-113 W1 block) pass unchanged; the five proteomics lanes (prot_dia runs the enrichment in process)
+hold 193/0/0 with no re-freeze. The stop rule did not fire.
+Test-first: w3/test-first.txt (the W3 blocks on the start frame: 101 failed, 2 errors; after: 0).
