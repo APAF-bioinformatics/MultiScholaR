@@ -807,6 +807,10 @@ omicEnrichW1Case <- function(case) {
 #   A107-03 (the correction the backend applied is the declared one): clusterprofiler and kernel_clusterprofiler `run`,
 #     the product's `parameters$correction_method` is BH (it froze the selected gSCS, which clusterProfiler does not
 #     use) and the notes gain the notice; the kernel's arguments and the services' calls are unchanged.
+#   A107-05 (the fake gost reports a database version, as the live service does): kernel_gprofiler `run`, the service is
+#     `gprofiler2:e2e_fake_gost` with its external resource (it froze `unavailable` and no resource; recording the
+#     resource publishes the head once more, one more state entry), and the digests of the results that hold the gost
+#     answer (the completed state, the bus payload and the tab's results) move with the answer's new field.
 omicEnrichW1Frozen <- list()
 omicEnrichW1Frozen[["gprofiler"]] <- list(
     start = list(
@@ -1687,8 +1691,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!",
-            "remove da_working"),
+            "[message 5 -] Differential abundance analysis completed successfully!", "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -1841,21 +1844,22 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
         history = c("initial", "correlation_filtered", "enrichment_completed"),
         states = c(
             initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "dbde2059c38a85f0"),
+            enrichment_completed = "8c77fa4a155a7678"),
         product = c(
-            schema = "dia_enrichment_product_v1", service = "unavailable", `parameters$taxon_id` = "9606",
-            `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0", `parameters$q_cutoff` = "0.05",
-            `parameters$exclude_iea` = "FALSE", `parameters$correction_method` = "gSCS",
-            `parameters$protein_id_column` = "gene_name", `parameters$contrast_names` = "groupB-groupA",
+            schema = "dia_enrichment_product_v1", service = "gprofiler2:e2e_fake_gost",
+            `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
+            `parameters$q_cutoff` = "0.05", `parameters$exclude_iea` = "FALSE",
+            `parameters$correction_method` = "gSCS", `parameters$protein_id_column` = "gene_name",
+            `parameters$contrast_names` = "groupB-groupA",
             `results$groupB-groupA` = "<manifest da_proteins_long>", contrasts = "groupB-groupA",
             summaries = "18ee1ae7f00ccf86"),
-        resources = "<unchanged>",
+        resources = "gprofiler2 ; e2e_fake_gost ; database_version ; enrichment of 1 contrasts, taxon 9606",
         kernel = "kernel=processEnrichments ; taxon_id=9606 ; up_cutoff=0 ; down_cutoff=0 ; q_cutoff=0.05 ; exclude_iea=FALSE ; protein_id_column=gene_name ; contrast_names=groupB-groupA ; correction_method=gSCS ; pathway_dir=<ROOT>/results/pathway_enrichment ; da_data=0656c115da47d5db ; da_names=groupB-groupA ; da_rows=6x17 ; da_contrasts=950ddbb7d830df8c ; da_design=bcd78aff6b352869 ; go_annotations=13df57c377de46dc",
         services = c(
             "gost ; organism=hsapiens ; sources=GO:BP|GO:MF|GO:CC|KEGG|REAC ; user_threshold=0.05 ; correction_method=gSCS ; exclude_iea=FALSE ; domain_scope=custom ; significant=TRUE ; query=3 80f1f68e42bf388e ; custom_bg=6 b6534d4a26da9fed",
             "gost ; organism=hsapiens ; sources=GO:BP|GO:MF|GO:CC|KEGG|REAC ; user_threshold=0.05 ; correction_method=gSCS ; exclude_iea=FALSE ; domain_scope=custom ; significant=TRUE ; query=1 907fd80ff1d231f2 ; custom_bg=6 b6534d4a26da9fed"),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters e17575402cc40036",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 8f176cb6ed7053c0",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -1880,7 +1884,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             `<store entries>..workflow-entities/entities/dia-base-fit-<ID>` = "1",
             `<store entries>..workflow-entities/entities/dia-contrasted-fit-<ID>` = "1",
             `<store entries>..workflow-entities/entities/dia-enrichment-<ID>` = "1",
-            `<store entries>..workflow-entities/entities/dia-state-<ID>` = "22",
+            `<store entries>..workflow-entities/entities/dia-state-<ID>` = "23",
             `<store entries>..workflow-entities/entities/dia-table-<ID>` = "10",
             `<store entries>..workflow-entities/entities/dia-volcano-html-<ID>` = "1",
             `publication_graphs/Interactive_Volcano_Plots/B_vs_A.html` = "<present>",
@@ -1906,9 +1910,10 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
             da_results_data = "<list> 00c45cf144cf6614", enrichment_plots = "<list> 28df520b992b4a4b",
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
-            enrichment_results_full = "<EnrichmentResults> dbde2059c38a85f0",
-            enrichment_service = "unavailable", gprofiler_results = "<data.frame> 7bb8700062d08b4b",
-            gprofiler_results_table = "<ref>", organism_supported = "TRUE", stringdb_results = "<NULL>"),
+            enrichment_results_full = "<EnrichmentResults> 8c77fa4a155a7678",
+            enrichment_service = "gprofiler2:e2e_fake_gost",
+            gprofiler_results = "<data.frame> 7bb8700062d08b4b", gprofiler_results_table = "<ref>",
+            organism_supported = "TRUE", stringdb_results = "<NULL>"),
         errors = character(0)))
 
 omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
@@ -3754,6 +3759,8 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
 #   declared names in the provenance and the record, and the product's value and the provenance digest move with them.
 #   A107-03: `clusterprofiler` and `kernel_clusterprofiler` record `correction_method` BH (provenance, record, product)
 #   and gain `config$outcomes` (the selected correction).
+#   A107-05: `kernel_gprofiler`, the product's value moves with its service (`gprofiler2:e2e_fake_gost`) and the
+#   committed `enrichment_data` with the gost answer's new field (`meta$version`).
 # ------------------------------------------------------------------------------------------------
 
 #' Store-local ids (each run of 64 hexadecimal characters) and the fixture's root masked in every character value of
@@ -3918,10 +3925,10 @@ omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
-        class = "EnrichmentResults", enrichment_data = "44eb85ee4343dfe8",
+        class = "EnrichmentResults", enrichment_data = "962ee51f2c925016",
         enrichment_summaries = "18ee1ae7f00ccf86", contrasts = "950ddbb7d830df8c", plots = "d504c602f8d509f5"),
     products = c(
-        type = "dia-enrichment-results", status = "available", value = "87efc2fc5a68fff4",
+        type = "dia-enrichment-results", status = "available", value = "387eecf6099e563f",
         identity = "ad3ef17b26bf1067",
         roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
     provenance = c(
@@ -4257,4 +4264,56 @@ test_that("(R3, A107-03) a g:Profiler run records the selected correction and sh
     expect_identical(r3$provenance$values$correction_method, "gSCS")
     expect_null(r3$step$outcomes$correction_method_requested)
     expect_false(any(grepl("warning", seen$run$notes, fixed = TRUE)))
+})
+
+#' A Run on the live kernel with `gost` replaced for that Run only. The kernel's retries are cut to two without the
+#' five-second wait (the kernel's call of `perform_enrichment` names neither).
+omicEnrichR3RunWithGost <- function(gost, n) function(ctx) {
+    real <- perform_enrichment
+    testthat::local_mocked_bindings(perform_enrichment = function(...) real(..., max_retries = 2, wait_time = 0),
+        .package = "MultiScholaR")
+    testthat::local_mocked_bindings(gost = gost, .package = "gprofiler2")
+    omicEnrichW1Run(n)(ctx)
+}
+
+test_that("(R3, A107-04) a service that never answers fails the Run with its message and saves nothing; the next Run completes", {
+    skip_if_not_installed("gprofiler2")
+    w1 <- omicEnrichW1CaseSpec("kernel_gprofiler", environment())[[1L]]
+    seen <- omicEnrichW1Drive(w1$setup, c(w1$steps[c("da", "open", "select")], list(
+        failed = omicEnrichR3RunWithGost(function(...) stop("could not resolve host"), 1L),
+        run = omicEnrichW1Run(2L))), live = TRUE)
+    expect_identical(seen$failed$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
+        paste("[error 10 -] Error in enrichment analysis: The enrichment service did not answer, so nothing was saved.",
+            "g:Profiler did not answer after 2 attempts: could not resolve host"),
+        "remove enrichment_working"))
+    for (field in c("tab_status", "history", "states", "product", "resources", "display")) {
+        expect_identical(seen$failed[[field]], "<unchanged>", info = field)
+    }
+    expect_identical(seen$failed$bus[["enrichment_analysis_results"]], "<NULL>")
+    expect_identical(seen$failed$values[["enrichment_status"]], seen$select$values[["enrichment_status"]])
+    # The same tab then runs to completion on the answering service, as W1 (b)'s kernel_gprofiler run does.
+    frozen <- omicEnrichW1Frozen$kernel_gprofiler$run
+    for (field in c("notes", "history", "states", "product", "resources", "display", "tab_status")) {
+        expect_identical(seen$run[[field]], frozen[[field]], info = field)
+    }
+})
+
+test_that("(R3, A107-04) a service that answers with no significant terms completes the Run, as before", {
+    skip_if_not_installed("gprofiler2")
+    w1 <- omicEnrichW1CaseSpec("kernel_gprofiler", environment())[[1L]]
+    seen <- omicEnrichW1Drive(w1$setup, c(w1$steps[c("da", "open", "select")], list(
+        run = omicEnrichR3RunWithGost(function(...) NULL, 1L))), live = TRUE)
+    expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
+        "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
+    expect_identical(seen$run$history, c("initial", "correlation_filtered", "enrichment_completed"))
+    # `gost` reports its database version with a result only, so a run of no terms names no service version.
+    expect_identical(seen$run$product[["service"]], "unavailable")
+    expect_identical(seen$run$resources, "<unchanged>")
+})
+
+test_that("(R3, A107-05) a run the service answered records the database version the answer reports", {
+    seen <- omicEnrichW3Drive("kernel_gprofiler", list())
+    expect_identical(seen$run$product[["service"]], "gprofiler2:e2e_fake_gost")
+    expect_identical(seen$run$resources,
+        "gprofiler2 ; e2e_fake_gost ; database_version ; enrichment of 1 contrasts, taxon 9606")
 })

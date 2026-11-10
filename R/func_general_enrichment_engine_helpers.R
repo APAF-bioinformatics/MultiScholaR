@@ -111,6 +111,10 @@ perform_enrichment <- function(data_subset,
 
   result <- NULL
   attempt <- 1
+  # GUI audit R3, A107-04: whether g:Profiler answered any attempt, and the last error when it did not. `gost` returns
+  # NULL for "no significant terms", so a NULL result alone does not say which of the two happened.
+  answered <- FALSE
+  last_error <- NULL
 
   message(sprintf("   perform_enrichment Step: Starting gprofiler2 gost() retry loop (max %d attempts)...", max_retries))
 
@@ -141,6 +145,7 @@ perform_enrichment <- function(data_subset,
         significant = TRUE,
         highlight = TRUE
       )
+      answered <- TRUE
       
       message("   perform_enrichment Step: gprofiler2::gost() completed successfully")
       message("      Data State (gost result): Checking gost result structure...")
@@ -171,6 +176,7 @@ perform_enrichment <- function(data_subset,
       }
       
     }, error = function(e) {
+      last_error <<- e$message
       message(sprintf("   perform_enrichment Attempt %d: ERROR in gprofiler2::gost(): %s", attempt, e$message))
       message(sprintf("   perform_enrichment Attempt %d: Will wait %d seconds before retry...", attempt, wait_time))
       Sys.sleep(wait_time)
@@ -181,6 +187,14 @@ perform_enrichment <- function(data_subset,
 
   if (is.null(result)) {
     message("   perform_enrichment Step: All retry attempts failed, returning NULL")
+    # A107-04: the return value stays NULL for every caller. When no attempt was answered, a classed condition is
+    # signalled first; it does nothing unless a caller handles `multischolar_enrichment_service_failure`
+    # (`diaEnrichmentOperation`'s kernel does, and fails the run instead of saving "no terms").
+    if (!answered) {
+      signalCondition(structure(class = c("multischolar_enrichment_service_failure", "condition"),
+        list(message = sprintf("g:Profiler did not answer after %d attempts: %s", max_retries,
+          last_error %||% "no attempt was made"), call = NULL)))
+    }
     message("--- Exiting perform_enrichment. Returning: NULL ---")
     return(NULL)
   }

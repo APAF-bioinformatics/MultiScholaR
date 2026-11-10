@@ -99,7 +99,8 @@ if (!methods::isClass("e2eEnrichResult")) {
 #' @param sources Ontology sources to filter (used to subset returned terms).
 #' @param as_short_link Return short link (accepted, ignored).
 #' @param highlight Highlight driver terms (accepted, ignored).
-#' @return List with $result data.frame and $meta matching gprofiler2 output.
+#' @return List with $result data.frame and $meta matching gprofiler2 output. `meta$version` is the database version
+#'   the live service reports there (GUI audit R3, A107-05); the double reports its own name.
 fake_gost <- function(
     query = character()
     , organism = "hsapiens"
@@ -135,6 +136,7 @@ fake_gost <- function(
                     sources
                 }
             )
+            , version = "e2e_fake_gost"
         )
     )
 }

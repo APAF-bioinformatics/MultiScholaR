@@ -619,6 +619,10 @@ diaEnrichmentServiceIdentity <- function(results) {
 #' and pathway directory as extra inputs beside the declared parameters; the output class is the KIT-003
 #' `EnrichmentResults`. The declaration is not cacheable (`factors$cacheable`): the g:Profiler database the
 #' call reaches is known only after the call, so its identity is saved with the product afterwards.
+#' GUI audit R3, A107-04: when g:Profiler answered no attempt of a query (`perform_enrichment` signals
+#' `multischolar_enrichment_service_failure` and returns NULL, as it does for "no significant terms"), the kernel's
+#' result is not accepted: the run fails with the service's message (class `workflow_enrichment_service`) before any
+#' product or state is saved. A query the service answered with no terms is a result, as before.
 #' GUI audit R3, P-28: the organism filter is declared (`organism_filter_enabled`, `organism_filter_taxon`). A run
 #' with the filter off declares the first nine names only (`diaEnrichmentDeclaredNames`), so its identity, its product
 #' and its record are what they were before the filter was declared.
@@ -638,7 +642,14 @@ diaEnrichmentOperation <- function() {
                 pathway_dir = parameters$pathway_dir, go_annotations = parameters$go_annotations,
                 exclude_iea = parameters$exclude_iea, protein_id_column = parameters$protein_id_column,
                 contrast_names = parameters$contrast_names, correction_method = parameters$correction_method)
-            results <- do.call(process, arguments)
+            failures <- character()
+            results <- withCallingHandlers(do.call(process, arguments),
+                multischolar_enrichment_service_failure = function(condition)
+                    failures <<- c(failures, conditionMessage(condition)))
+            if (length(failures)) {
+                rlang::abort(paste("The enrichment service did not answer, so nothing was saved.",
+                    paste(unique(failures), collapse = "; ")), class = "workflow_enrichment_service")
+            }
             if (!methods::is(results, "EnrichmentResults"))
                 cli::cli_abort("enrichment kernel returned no EnrichmentResults", class = "workflow_operation_output")
             list(results = results, service = diaEnrichmentServiceIdentity(results))

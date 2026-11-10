@@ -348,3 +348,47 @@ test_that("(R3, A107-02) the organism filter reports applied only when a contras
     expect_true(kept$filterApplied)
     expect_identical(kept$filterStats, list(proteins_before = 2, proteins_after = 2, proteins_removed = 0))
 })
+
+test_that("(R3, A107-04) perform_enrichment tells a service that never answered from one that found no terms; both return NULL", {
+    skip_if_not_installed("gprofiler2")
+    query <- function(gost) {
+        testthat::local_mocked_bindings(gost = gost, .package = "gprofiler2")
+        failures <- character()
+        value <- "unset"
+        suppressWarnings(suppressMessages(utils::capture.output(value <- withCallingHandlers(
+            perform_enrichment(data.frame(gene_name = c("A", "B"), stringsAsFactors = FALSE), species = "hsapiens",
+                threshold = 0.05, sources = "GO:BP", domain_scope = "custom", custom_bg = c("A", "B", "C"),
+                max_retries = 2, wait_time = 0, protein_id_column = "gene_name"),
+            multischolar_enrichment_service_failure = function(condition)
+                failures <<- c(failures, conditionMessage(condition))))))
+        list(value = value, failures = failures)
+    }
+    calls <- 0L
+    unreachable <- query(function(...) {
+        calls <<- calls + 1L
+        stop("could not resolve host")
+    })
+    expect_null(unreachable$value)
+    expect_identical(calls, 2L)
+    expect_identical(unreachable$failures, "g:Profiler did not answer after 2 attempts: could not resolve host")
+    # The service answers with no significant terms (`gost` returns NULL): a result, with no failure signalled.
+    no_terms <- query(function(...) NULL)
+    expect_null(no_terms$value)
+    expect_identical(no_terms$failures, character())
+    # One failed attempt, then an answer of no terms: the service answered.
+    calls <- 0L
+    recovered <- query(function(...) {
+        calls <<- calls + 1L
+        if (calls == 1L) stop("timeout")
+        NULL
+    })
+    expect_null(recovered$value)
+    expect_identical(recovered$failures, character())
+    # With no handler the signal changes nothing for a caller: NULL, as before.
+    testthat::local_mocked_bindings(gost = function(...) stop("could not resolve host"), .package = "gprofiler2")
+    plain <- "unset"
+    suppressWarnings(suppressMessages(utils::capture.output(plain <- perform_enrichment(
+        data.frame(gene_name = "A", stringsAsFactors = FALSE), species = "hsapiens", threshold = 0.05, sources = "GO:BP",
+        domain_scope = "custom", custom_bg = "A", max_retries = 1, wait_time = 0, protein_id_column = "gene_name"))))
+    expect_null(plain)
+})
