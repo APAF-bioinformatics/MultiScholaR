@@ -816,11 +816,37 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
 #'   contrast name; the contrasts table; the pathway directory; the annotation match (NULL when none); the
 #'   organism-filter metadata written to the bus; the service identity; the product reference; the 9 declared values
 #'   the product's identity used; and the state save's result.
+#' KIT-113 D3: the body is the helpers below, each a contiguous run of the start commit's statements, called in that
+#' order; `requestWorkflowEnrichment`, `computeWorkflowEnrichment` and `acceptWorkflowEnrichment` are the same helpers
+#' split at the worker.
 #' @noRd
 runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths, process_fn = NULL, notify = NULL,
     progress = NULL, refuse_missing_da = FALSE) {
     notify <- notify %||% function(message, type, duration) invisible(NULL)
     progress <- progress %||% function(value, detail) invisible(NULL)
+    context <- workflowEnrichmentContext(workflow, config, manifest, parameters, paths, progress)
+    da_results <- readWorkflowEnrichmentDa(config, context, refuse_missing_da)
+    annotations <- config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
+        currentS4Object = context$source_object, organismTaxid = parameters$organism_taxid)$uniprotDatCln
+    filtered <- workflowEnrichmentFilter(workflow, config, parameters, da_results, annotations, context$source_object,
+        notify)
+    progress(0.5, "Running enrichment analysis...")
+    # `[[` (exact): `$organism` would partially match `organism_filter`.
+    method <- config[["organism"]]$method(organismTaxid = parameters$organism_taxid,
+        supportedOrganisms = config[["organism"]]$supported())$methodInfo
+    declared <- workflowEnrichmentRun(config, workflow, manifest, filtered$da_results, annotations, method,
+        context$source_object, parameters, context$directories, process_fn)
+    publishWorkflowEnrichment(workflow, config, context, declared, method, parameters,
+        filtered$matching$annotationMatchResults, filtered$organism_filter, progress)
+}
+
+#' The run's context (KIT-113 D3; the start of `runWorkflowEnrichment`): the manifest check, the source's design and
+#' identifier table, progress 0.2 and 0.3, the contrasts table and the selection, the run's dependencies and the output
+#' directories. It reads no assay and no DA table.
+#' @inheritParams runWorkflowEnrichment
+#' @return `list(manager, source_object, selected, selection, contrasts_tbl, dependencies, directories)`.
+#' @noRd
+workflowEnrichmentContext <- function(workflow, config, manifest, parameters, paths, progress) {
     if (!isTRUE(config$da_source$manifest(manifest))) {
         rlang::abort("Enrichment needs an accepted DA result manifest.", class = "workflow_enrichment_input")
     }
@@ -843,41 +869,98 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
             "Please ensure DE analysis was completed successfully."), class = "workflow_enrichment_input")
     }
     directories <- resolveProtEnrichOutputDirectories(paths)
-    da_results <- config$da_source$read(contrasts_tbl = contrasts_tbl, design_matrix = dependencies$designMatrix,
-        da_output_dir = directories$daOutputDir)
+    list(manager = manager, source_object = source_object, selected = selected, selection = selection,
+        contrasts_tbl = contrasts_tbl, dependencies = dependencies, directories = directories)
+}
+
+#' The DA tables of every contrast, with the missing-table refusal (KIT-113 D3; F107-03).
+#' @param context `workflowEnrichmentContext`'s value (`contrasts_tbl`, `dependencies$designMatrix`,
+#'   `directories$daOutputDir`).
+#' @inheritParams runWorkflowEnrichment
+#' @return The DA results for enrichment.
+#' @noRd
+readWorkflowEnrichmentDa <- function(config, context, refuse_missing_da) {
+    da_results <- config$da_source$read(contrasts_tbl = context$contrasts_tbl,
+        design_matrix = context$dependencies$designMatrix, da_output_dir = context$directories$daOutputDir)
     missing <- names(Filter(is.null, da_results@da_data))
     if (isTRUE(refuse_missing_da) && length(missing)) {
         rlang::abort(sprintf("The DA results table is missing for contrast %s.", paste(missing, collapse = ", ")),
             class = "workflow_enrichment_input")
     }
-    annotations <- config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
-        currentS4Object = source_object, organismTaxid = parameters$organism_taxid)$uniprotDatCln
+    da_results
+}
+
+#' The annotation match and the organism filter (KIT-113 D3): the match, the mapping with its warning, the filter's
+#' application and the bus's filter metadata, in today's order. The managed halves call the three parts apart.
+#' @param da_results The DA results for enrichment.
+#' @param annotations The annotation table (`uniprot_dat_cln`), or NULL.
+#' @param source_object The source's design and identifier table.
+#' @inheritParams runWorkflowEnrichment
+#' @return `list(da_results, matching, organism_filter)`: the DA results the kernel takes, the match, and the filter
+#'   metadata written to the bus.
+#' @noRd
+workflowEnrichmentFilter <- function(workflow, config, parameters, da_results, annotations, source_object, notify) {
     matching <- config$annotation$match(uniprotDatCln = annotations, daResultsForEnrichment = da_results,
         currentS4Object = source_object)
-    filter_applied <- FALSE
-    filter_stats <- list(proteins_before = 0, proteins_after = 0, proteins_removed = 0)
-    if (isTRUE(parameters$enable_organism_filter) && !is.null(config$organism_filter)) {
-        target <- as.character(parameters$organism_taxid)
-        mapping <- config$organism_filter$mapping(workflowData = workflow, uniprotDatCln = annotations,
-            targetTaxon = target)$organismMapping
-        if (!is.null(mapping) && nrow(mapping) > 0) {
-            filtered <- config$organism_filter$apply(daResultsForEnrichment = da_results, organismMapping = mapping,
-                targetTaxon = target, currentS4Object = source_object)
-            da_results <- filtered$daResultsForEnrichment
-            filter_applied <- filtered$filterApplied
-            filter_stats <- filtered$filterStats
-        } else {
-            notify("Multi-species filtering enabled but no organism mapping available. Proceeding without filtering.",
-                "warning", 8)
-        }
+    mapping <- workflowEnrichmentMapping(workflow, config, parameters, annotations, notify)
+    filtered <- applyWorkflowEnrichmentFilter(config, parameters, da_results, mapping, source_object)
+    list(da_results = filtered$da_results, matching = matching,
+        organism_filter = persistWorkflowEnrichmentFilter(workflow, parameters, filtered))
+}
+
+#' The organism mapping from the bus when the filter is on (KIT-113 D3), else NULL; the warning when it is on and no
+#' mapping is found.
+#' @inheritParams workflowEnrichmentFilter
+#' @return The non-empty mapping, or NULL.
+#' @noRd
+workflowEnrichmentMapping <- function(workflow, config, parameters, annotations, notify) {
+    if (!isTRUE(parameters$enable_organism_filter) || is.null(config$organism_filter)) return(NULL)
+    mapping <- config$organism_filter$mapping(workflowData = workflow, uniprotDatCln = annotations,
+        targetTaxon = as.character(parameters$organism_taxid))$organismMapping
+    if (!is.null(mapping) && nrow(mapping) > 0) return(mapping)
+    notify("Multi-species filtering enabled but no organism mapping available. Proceeding without filtering.",
+        "warning", 8)
+    NULL
+}
+
+#' The organism filter's application to the DA tables (KIT-113 D3); nothing applied without a mapping.
+#' @param mapping `workflowEnrichmentMapping`'s value.
+#' @inheritParams workflowEnrichmentFilter
+#' @return `list(da_results, applied, stats)`.
+#' @noRd
+applyWorkflowEnrichmentFilter <- function(config, parameters, da_results, mapping, source_object) {
+    if (is.null(mapping)) {
+        return(list(da_results = da_results, applied = FALSE,
+            stats = list(proteins_before = 0, proteins_after = 0, proteins_removed = 0)))
     }
-    organism_filter <- persistProtEnrichOrganismFilterMetadata(workflowData = workflow,
-        organismFilterEnabled = parameters$enable_organism_filter, organismFilterApplied = filter_applied,
-        targetTaxonId = parameters$organism_taxid, filterStats = filter_stats)
-    progress(0.5, "Running enrichment analysis...")
-    # `[[` (exact): `$organism` would partially match `organism_filter`.
-    method <- config[["organism"]]$method(organismTaxid = parameters$organism_taxid,
-        supportedOrganisms = config[["organism"]]$supported())$methodInfo
+    filtered <- config$organism_filter$apply(daResultsForEnrichment = da_results, organismMapping = mapping,
+        targetTaxon = as.character(parameters$organism_taxid), currentS4Object = source_object)
+    list(da_results = filtered$daResultsForEnrichment, applied = filtered$filterApplied, stats = filtered$filterStats)
+}
+
+#' The bus's organism-filter metadata (KIT-113 D3).
+#' @param filtered `applyWorkflowEnrichmentFilter`'s value (`applied`, `stats`).
+#' @inheritParams runWorkflowEnrichment
+#' @return The metadata written to the bus.
+#' @noRd
+persistWorkflowEnrichmentFilter <- function(workflow, parameters, filtered) {
+    persistProtEnrichOrganismFilterMetadata(workflowData = workflow,
+        organismFilterEnabled = parameters$enable_organism_filter, organismFilterApplied = filtered$applied,
+        targetTaxonId = parameters$organism_taxid, filterStats = filtered$stats)
+}
+
+#' The kernel's run (KIT-113 D3): the identifier column, the kernel's arguments (validated), the kernel, the
+#' option-gated debug capture, then the declaration's run and its product.
+#' @param method The method information.
+#' @param directories The output directories (`daOutputDir`, `pathwayDir`).
+#' @param kernel The kernel; NULL selects `config$kernel$select()`.
+#' @param run `function(workflow, manifest, arguments, process_fn)`: `config$run` in process; the worker's runs
+#'   `computeDIAReferenceEnrichment`.
+#' @inheritParams workflowEnrichmentFilter
+#' @return The run's `list(results, service, reference, parameters)`.
+#' @noRd
+workflowEnrichmentRun <- function(config, workflow, manifest, da_results, annotations, method, source_object, parameters,
+    directories, kernel = NULL, run = config$run) {
     columns <- resolveProtEnrichAnalysisInputColumns(methodInfo = method, daResultsForEnrichment = da_results,
         currentS4Object = source_object)
     arguments <- buildProtEnrichProcessEnrichmentsArgs(daResultsForEnrichment = da_results,
@@ -885,9 +968,26 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         qCutoff = parameters$q_cutoff, pathwayDir = directories$pathwayDir, goAnnotations = annotations,
         proteinIdColumn = columns$idColumn, contrastNames = names(manifest$results),
         correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea)
-    kernel <- process_fn %||% config$kernel$select()
+    kernel <- kernel %||% config$kernel$select()
     .capture_checkpoint(arguments$checkpointArgs, "cp10", "enrichment_input")
-    declared <- config$run(workflow, manifest, arguments$processArgs, process_fn = kernel)
+    run(workflow, manifest, arguments$processArgs, process_fn = kernel)
+}
+
+#' The display and the commit (KIT-113 D3; the end of `runWorkflowEnrichment`): each contrast's display tables, the
+#' bus's results payload, the results' `@args`, the UI parameters, the state commit with its provenance, `tab_status`,
+#' progress 0.8 and 1.0.
+#' @param context `workflowEnrichmentContext`'s value.
+#' @param declared The run's `list(results, service, reference, parameters)`.
+#' @param matching The annotation match results, or NULL.
+#' @param organism_filter The filter metadata written to the bus.
+#' @inheritParams runWorkflowEnrichment
+#' @return `runWorkflowEnrichment`'s list.
+#' @noRd
+publishWorkflowEnrichment <- function(workflow, config, context, declared, method, parameters, matching,
+    organism_filter, progress) {
+    manager <- context$manager
+    selected <- context$selected
+    contrasts_tbl <- context$contrasts_tbl
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
     # KIT-018: each contrast's result tables are also saved display tables (content-addressed).
@@ -905,24 +1005,157 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         stringdbResults = if (shown$found) shown$stringdbResults, fullEnrichmentResults = results,
         selectedContrast = selected, analysisMethod = method$method, upCutoff = parameters$up_cutoff,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid)
-    stamped <- propagateProtEnrichResultsArgs(enrichmentResults = results, currentS4Object = source_object,
+    stamped <- propagateProtEnrichResultsArgs(enrichmentResults = results, currentS4Object = context$source_object,
         selectedContrast = selected, methodInfo = method, upCutoff = parameters$up_cutoff,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid,
-        pathwayDir = directories$pathwayDir)$enrichmentResults
-    ui_parameters <- propagateProtEnrichUiParams(currentS4Object = source_object, workflowData = workflow,
+        pathwayDir = context$directories$pathwayDir)$enrichmentResults
+    ui_parameters <- propagateProtEnrichUiParams(currentS4Object = context$source_object, workflowData = workflow,
         selectedContrast = selected, methodInfo = method, upCutoff = parameters$up_cutoff,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid)
     updateProtEnrichStateManagerUiParams(workflowData = workflow, storedUiParams = ui_parameters$storedUiParams)
     saved <- saveWorkflowEnrichmentState(workflow, config, stamped, declared$parameters, method, parameters,
-        directories$pathwayDir)
+        context$directories$pathwayDir)
     status <- workflow$tab_status
     status[[config$status_key]] <- "complete"
     workflow$tab_status <- status
     progress(1.0, "Complete!")
     list(results = results, method = method, contrasts = contrast_results, selected = shown,
-        raw_contrast = selection$rawContrastName, contrasts_tbl = contrasts_tbl, pathway_dir = directories$pathwayDir,
-        annotation_match = matching$annotationMatchResults, organism_filter = organism_filter, service = declared$service,
-        reference = declared$reference, parameters = declared$parameters, saved = saved)
+        raw_contrast = context$selection$rawContrastName, contrasts_tbl = contrasts_tbl,
+        pathway_dir = context$directories$pathwayDir, annotation_match = matching, organism_filter = organism_filter,
+        service = declared$service, reference = declared$reference, parameters = declared$parameters, saved = saved)
+}
+
+# ------------------------------------------------------------------------------------------------
+# The managed halves (KIT-113 D3): the request and the accept in the controller, the compute on the worker's `omics`
+# role (`computeWorkflowDiaEnrichmentAction`, utils_workflow_dia_da.R). Each is the in-process helpers above, split at
+# the worker; the values that cross are saved `rds` state values (W1's P1).
+# ------------------------------------------------------------------------------------------------
+
+#' The kernels a request may name; each is looked up by name when called, never captured (KIT-105 W4).
+#' @noRd
+workflowEnrichmentKernels <- c("runProtEnrichDeterministicProcessEnrichments", "processEnrichments")
+
+#' The selected kernel's name (KIT-113 D3); any other function is refused.
+#' @param kernel The function `config$kernel$select()` returned.
+#' @return One of `workflowEnrichmentKernels`.
+#' @noRd
+workflowEnrichmentKernelName <- function(kernel) {
+    ns <- asNamespace("MultiScholaR")
+    for (name in workflowEnrichmentKernels) if (identical(kernel, get(name, envir = ns))) return(name)
+    rlang::abort("The enrichment kernel is neither the deterministic test double nor processEnrichments.",
+        class = "workflow_enrichment_input")
+}
+
+#' The kernel a request names (KIT-113 D3), looked up when called; any other name is refused.
+#' @param name One of `workflowEnrichmentKernels`.
+#' @return The kernel.
+#' @noRd
+workflowEnrichmentKernel <- function(name) {
+    if (!(is.character(name) && length(name) == 1L && name %in% workflowEnrichmentKernels)) {
+        rlang::abort("The enrichment request names an unknown kernel.", class = "workflow_enrichment_input")
+    }
+    get(name, envir = asNamespace("MultiScholaR"))
+}
+
+#' Save a transfer value as an `rds` state value (KIT-113 D3, W1's P1); NULL stays NULL.
+#' @noRd
+saveWorkflowEnrichmentValue <- function(manager, value, label) {
+    if (is.null(value)) return(NULL)
+    saveWorkflowStateValue(manager$.context, value, label, codec = "rds")
+}
+
+#' Read a transfer value saved by `saveWorkflowEnrichmentValue`; NULL stays NULL.
+#' @noRd
+readWorkflowEnrichmentValue <- function(manager, reference) {
+    if (is.null(reference)) return(NULL)
+    resolveWorkflowStateValue(manager$.context, reference)
+}
+
+#' The managed request half (KIT-113 D3), in the controller: the context, the annotation resolve, the mapping and its
+#' warning, the method and the kernel's name. The manifest must be the head's `da_results`. No DA table or assay is
+#' read.
+#' @inheritParams runWorkflowEnrichment
+#' @return `list(context, parameters)`: the context the accept half takes (with the method and the run's inputs), and
+#'   the request's parameters (the manifest's reference, the contrasts table, the run's inputs, the two directories,
+#'   the annotation and mapping references, the method, the kernel's name).
+#' @noRd
+requestWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths, notify = NULL, progress = NULL) {
+    notify <- notify %||% function(message, type, duration) invisible(NULL)
+    progress <- progress %||% function(value, detail) invisible(NULL)
+    context <- workflowEnrichmentContext(workflow, config, manifest, parameters, paths, progress)
+    annotations <- config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
+        currentS4Object = context$source_object, organismTaxid = parameters$organism_taxid)$uniprotDatCln
+    mapping <- workflowEnrichmentMapping(workflow, config, parameters, annotations, notify)
+    progress(0.5, "Running enrichment analysis...")
+    method <- config[["organism"]]$method(organismTaxid = parameters$organism_taxid,
+        supportedOrganisms = config[["organism"]]$supported())$methodInfo
+    kernel <- workflowEnrichmentKernelName(config$kernel$select())
+    manager <- context$manager
+    held <- manager$.context$snapshot$da_results
+    if (is.null(held) || !identical(resolveWorkflowStateValue(manager$.context, held), manifest)) {
+        rlang::abort("The DA results the tab holds are not the current state's.", class = "workflow_enrichment_input")
+    }
+    list(context = c(context, list(method = method, parameters = parameters)),
+        parameters = list(manifest = held, contrasts_tbl = context$contrasts_tbl, inputs = parameters,
+            directories = context$directories[c("daOutputDir", "pathwayDir")],
+            annotations = saveWorkflowEnrichmentValue(manager, annotations, "enrichment-annotations"),
+            mapping = saveWorkflowEnrichmentValue(manager, mapping, "enrichment-organism-mapping"),
+            method = method, kernel = kernel))
+}
+
+#' The managed compute half (KIT-113 D3), worker-safe: the source's components, the DA tables with the refusal, the
+#' match, the filter's application and the run with its product. The kernel writes into the pathway directory, as in
+#' process. The results are made portable (F107-05) and saved as an `rds` state value.
+#' @param manager The worker's reopened owner.
+#' @param config The proteomics `enrichment` group.
+#' @param parameters `requestWorkflowEnrichment`'s parameters.
+#' @return `list(reference, results, service, parameters, matching, filter)`.
+#' @noRd
+computeWorkflowEnrichment <- function(manager, config, parameters) {
+    manifest <- resolveWorkflowStateValue(manager$.context, parameters$manifest)
+    workflow <- list(state_manager = manager)
+    source_object <- readDIAExecutionComponents(manager, manifest$source, fields = config$da_source$components)
+    dependencies <- resolveProtEnrichRunDependencies(source_object, manifest$results, workflow, parameters$contrasts_tbl)
+    da_results <- readWorkflowEnrichmentDa(config, list(contrasts_tbl = dependencies$contrastsTbl,
+        dependencies = dependencies, directories = parameters$directories), refuse_missing_da = TRUE)
+    annotations <- readWorkflowEnrichmentValue(manager, parameters$annotations)
+    matching <- config$annotation$match(uniprotDatCln = annotations, daResultsForEnrichment = da_results,
+        currentS4Object = source_object)
+    filtered <- applyWorkflowEnrichmentFilter(config, parameters$inputs, da_results,
+        readWorkflowEnrichmentValue(manager, parameters$mapping), source_object)
+    declared <- workflowEnrichmentRun(config, workflow, manifest, filtered$da_results, annotations, parameters$method,
+        source_object, parameters$inputs, parameters$directories, workflowEnrichmentKernel(parameters$kernel),
+        run = function(workflow, manifest, arguments, process_fn)
+            computeDIAReferenceEnrichment(workflow$state_manager, manifest, arguments, process_fn))
+    list(reference = declared$reference,
+        results = saveWorkflowEnrichmentValue(manager, portableWorkflowEnrichmentResults(declared$results),
+            "enrichment-results"),
+        service = declared$service, parameters = declared$parameters, matching = matching$annotationMatchResults,
+        filter = filtered[c("applied", "stats")])
+}
+
+#' The managed accept half (KIT-113 D3), in the controller, inside the owner's scope: the completion's provenance
+#' cleared, the results hydrated, the external-resource records, the bus's filter metadata, then the display and the
+#' commit as in process.
+#' @param context `requestWorkflowEnrichment`'s context.
+#' @param delivered The managed result (`readManagedOmicsResult`): `reference` and the handler's `display`.
+#' @inheritParams runWorkflowEnrichment
+#' @return `runWorkflowEnrichment`'s list.
+#' @noRd
+acceptWorkflowEnrichment <- function(workflow, config, context, delivered, progress = NULL) {
+    progress <- progress %||% function(value, detail) invisible(NULL)
+    manager <- context$manager
+    withDIAStateScope(manager, function() {
+        clearWorkflowStepProvenance(manager)
+        display <- delivered$display
+        declared <- list(results = readWorkflowEnrichmentValue(manager, display$results), service = display$service,
+            reference = delivered$reference, parameters = display$parameters)
+        recordDIAEnrichmentResources(manager, declared$service, declared$parameters$results,
+            declared$parameters$taxon_id)
+        organism_filter <- persistWorkflowEnrichmentFilter(workflow, context$parameters, display$filter)
+        publishWorkflowEnrichment(workflow, config, context, declared, context$method, context$parameters,
+            display$matching, organism_filter, progress)
+    })
 }
 
 #' Save the completed enrichment state with its step provenance (KIT-107 D3, D4; F-16)

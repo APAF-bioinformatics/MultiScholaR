@@ -652,9 +652,24 @@ diaEnrichmentOperation <- function() {
 #' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
 #'   parameters and the service identity; rooted on the source and the result tables).
+#' KIT-113 D3: the run and its product (`computeDIAReferenceEnrichment`), then the external-resource records
+#' (`recordDIAEnrichmentResources`), in today's order; under a managed application the worker runs the first and the
+#' controller makes the records.
 #' @noRd
 runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn = NULL) {
     manager <- workflow$state_manager
+    computed <- computeDIAReferenceEnrichment(manager, manifest, arguments, process_fn)
+    recordDIAEnrichmentResources(manager, computed$service, computed$parameters$results, arguments$taxon_id)
+    computed
+}
+
+#' The enrichment declaration's run, its identity and its product, saved and rooted (KIT-113 D3). Worker-safe: no
+#' external-resource record, no bus.
+#' @param manager Session owner, or the worker's reopened owner.
+#' @inheritParams runDIAReferenceEnrichment
+#' @return `list(results, service, reference, parameters)`, as `runDIAReferenceEnrichment` returns it.
+#' @noRd
+computeDIAReferenceEnrichment <- function(manager, manifest, arguments, process_fn = NULL) {
     if (!isDIAResultManifest(manifest)) cli::cli_abort("enrichment needs a DA result manifest", class = "saved_entity_invalid")
     declaration <- diaEnrichmentOperation()
     results <- vapply(names(manifest$results), function(name)
@@ -674,15 +689,38 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
         basename(tempfile("dia-enrichment-")), identity, "scientific_product", factors = declaration$factors)
     tables <- lapply(manifest$results, function(result) result$tables$da_proteins_long)
     rootDIAProduct(manager, reference, c(list(manifest$source), tables))
-    # KIT-026: the service each reported identity names, in the head beside the product.
-    for (service in setdiff(value$service, "unavailable")) {
+    list(results = value$results, service = value$service, reference = reference,
+        parameters = parameters[declaration$parameters]) # KIT-107 D4 (F-16): the declared values the identity used
+}
+
+#' KIT-026: the service each reported identity names, in the head beside the product (KIT-113 D3: the controller's,
+#' on both paths; a no-op on a worker).
+#' @param manager Session owner.
+#' @param service The reported service identities.
+#' @param results The contrasts' DA table ids (the declared `results`).
+#' @param taxon_id The kernel's taxon.
+#' @noRd
+recordDIAEnrichmentResources <- function(manager, service, results, taxon_id) {
+    for (service in setdiff(service, "unavailable")) {
         parts <- strsplit(service, ":", fixed = TRUE)[[1L]]
         recordWorkflowExternalResource(manager, parts[[1L]], paste(parts[-1L], collapse = ":"),
             if (identical(parts[[1L]], "clusterProfiler")) "package_version" else "database_version",
-            query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
+            query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), taxon_id %||% NA))
     }
-    list(results = value$results, service = value$service, reference = reference,
-        parameters = parameters[declaration$parameters]) # KIT-107 D4 (F-16): the declared values the identity used
+}
+
+#' The enrichment on the managed worker (`enrichment`, KIT-113 D3): the compute half on the request's named input, the
+#' manifest's source. The completion commits nothing (`commit = NULL`): the controller's accept half commits the state.
+#' The value holds references: the source's record, the product, the results' saved value and the declared values.
+#' @noRd
+computeWorkflowDiaEnrichmentAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    manifest <- resolveWorkflowStateValue(manager$.context, request$parameters$manifest)
+    if (!identical(manifest$source$entity_id, source$entity_id))
+        cli::cli_abort("the enrichment input is not the DA manifest's source", class = "workflow_execution_stale")
+    computed <- computeWorkflowEnrichment(manager, omicGuiConfig("proteomics")$enrichment, request$parameters)
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = computed$reference, commit = NULL,
+        display = computed[c("results", "service", "parameters", "matching", "filter")])
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's

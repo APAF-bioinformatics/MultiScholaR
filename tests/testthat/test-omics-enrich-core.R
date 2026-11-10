@@ -306,3 +306,316 @@ test_that("(F-16, D6 test 1) after a Run the record's enrichment step carries it
         "no_shipped_default", "no_shipped_default", "no_shipped_default", "input", "input", "input"))
     expect_false(any(grepl("enrichment_completed", seen$record$record$incomplete, fixed = TRUE)))
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-113 W2: the enrichment on the managed worker, at core level (D3, D6). The frame is today's (W3 changes it); its
+# call of the core is replaced by the managed halves as the runner runs them: `requestWorkflowEnrichment` in the
+# controller, one `enrichment` action through the worker's entry point (`workflowWorkerMain`) on the request's named
+# input (the DA manifest's source), the controller's acceptance and omics completion, then `acceptWorkflowEnrichment`.
+# Each of KIT-107's eight W1 (b) cases then runs its frozen steps and must give its frozen in-process values and the
+# KIT-113 W1 block's, apart from D6's recorded exclusions, each asserted as it is.
+# ------------------------------------------------------------------------------------------------
+
+#' One managed action, in this process (KIT-111 W2's `protNormW2Dispatch`, test-prot-norm-core.R, reproduced here:
+#' test files do not see each other's locals): the request with its named input through the worker's entry point, the
+#' acceptance and what the tab reads. A worker failure is raised with the worker's message; a refused acceptance
+#' returns its status and the worker's value only.
+omicsEnrichW2Dispatch <- function(manager, controller, paths, parameters, input, context) {
+    store <- manager$.context$store
+    operation <- "enrichment"
+    id <- paste0("wfx-", substr(digest::digest(list(tempfile(), operation), algo = "sha256"), 1L, 32L))
+    export <- workflowExportPaths(store$directory, id)
+    token <- list(request_id = id, incarnation = store$identity$incarnation, expected_head = workflowExecutionHead(store)$entity_id,
+        generation = controller$control$generation, controller_id = controller$control$controller_id)
+    writeWorkflowExecutionMessage(file.path(export$request_dir, "publication-context.rds"),
+        list(experiment_label = "core", experiment_paths = paths, omic_type = "proteomics"))
+    writeWorkflowExportJournal(export, list(schema = "multischolar.workflow_action.v1", request_id = id, status = "admitting",
+        expected_head = token$expected_head, token_hash = digest::digest(token, algo = "sha256")))
+    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = operation,
+        input_references = list(state = input), parameters = parameters, token = token, owner = store$identity,
+        project_root = dirname(store$directory), directory = export$request_dir, config = list(mode = "adapters"),
+        worker_cap = 12 * 1024^3)
+    path <- file.path(export$request_dir, "request.rds")
+    writeWorkflowExecutionMessage(path, request)
+    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"), suppressWarnings(suppressMessages(utils::capture.output(try(
+        workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))), silent = TRUE)))))
+    message <- readRDS(file.path(export$request_dir, "worker-result.rds"))
+    if (!identical(message$status, "complete")) stop(message$error, call. = FALSE)
+    controller$job <- list(request = list(token = token, operation = operation, config = list(mode = "adapters"),
+        parameters = parameters), paths = export, completion_context = validateWorkflowOmicsCompletionContext(operation, context))
+    receipt <- acceptWorkflowActionResult(controller, message[c("schema", "status", "token", "result")])
+    if (!identical(receipt$status, "complete")) return(list(acceptance = receipt$status, result = message$result))
+    accepted <- resumeWorkflowAction(controller, id)
+    c(readManagedOmicsResult(manager, accepted, NULL), list(acceptance = receipt$status, result = message$result))
+}
+
+#' The build identity fixed and the service teardown replaced (KIT-111 W2's `protNormW2Mocks`), for the life of `env`.
+omicsEnrichW2Mocks <- function(env = parent.frame()) {
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) { owner$job <- NULL; list(status = status) },
+        .package = "MultiScholaR", .env = env)
+}
+
+#' The managed path in place of the frame's core call (`runWorkflowEnrichment`'s signature): the request half, one
+#' dispatch on a controller kept per owner (the in-process test worker), then the accept half. `log` keeps each
+#' dispatch: its input and the head's state when it was made, the acceptance, the provenance the completion left
+#' pending, and the sizes the registry and the acceptance measure (`object.size`).
+omicsEnrichW2Managed <- function(log) {
+    function(workflow, config, manifest, parameters, paths, process_fn = NULL, notify = NULL, progress = NULL,
+        refuse_missing_da = FALSE) {
+        manager <- workflow$state_manager
+        half <- requestWorkflowEnrichment(workflow, config, manifest, parameters, paths, notify, progress)
+        key <- manager$.context$store$directory
+        if (is.null(log$controllers[[key]])) log$controllers[[key]] <- omicsWorkerController(list(owner = manager))
+        n <- length(log$dispatches) + 1L
+        log$dispatches[[n]] <- list(input = manifest$source$entity_id, head = getWorkflowStateReference(manager)$entity_id,
+            head_state = manager$current_state, parameters = as.numeric(object.size(half$parameters)), acceptance = "failed")
+        delivered <- omicsEnrichW2Dispatch(manager, log$controllers[[key]], paths, half$parameters, manifest$source,
+            list(state_name = config$state_name, config = list(), description = "enrichment"))
+        log$dispatches[[n]]$acceptance <- delivered$acceptance
+        log$dispatches[[n]]$value <- as.numeric(object.size(delivered$result))
+        if (!identical(delivered$acceptance, "complete")) stop("the acceptance refused the worker's value", call. = FALSE)
+        log$dispatches[[n]]$pending <- manager$.context$pending_provenance$operation %||% "<none>"
+        out <- acceptWorkflowEnrichment(workflow, config, half$context, delivered, progress)
+        log$dispatches[[n]]$pending_after <- manager$.context$pending_provenance$operation %||% "<none>"
+        out
+    }
+}
+
+omicsEnrichW2Runs <- new.env(parent = emptyenv())
+
+#' One W1 (b) case on the managed path, run once per process: each session's frozen steps, then the KIT-113 W1 block's
+#' capture (`kit113_d6`). Returns the captures by step (a session's steps prefixed as W1 (b) prefixes them) and the
+#' dispatches.
+omicsEnrichW2Case <- function(case) {
+    if (is.null(omicsEnrichW2Runs[[case]])) {
+        log <- new.env(parent = emptyenv())
+        log$controllers <- list()
+        log$dispatches <- list()
+        omicsEnrichW2Mocks()
+        testthat::local_mocked_bindings(runWorkflowEnrichment = omicsEnrichW2Managed(log), .package = "MultiScholaR")
+        sessions <- omicEnrichW1CaseSpec(case, environment())
+        captures <- list()
+        for (session_name in names(sessions) %||% "") {
+            spec <- if (nzchar(session_name)) sessions[[session_name]] else sessions[[1L]]
+            seen <- omicEnrichW1Drive(spec$setup, c(spec$steps,
+                list(kit113_d6 = function(ctx) ctx$keep("d6", omicEnrichW113Fields(ctx)))), live = spec$live)
+            if (nzchar(session_name)) names(seen) <- paste0(session_name, "/", names(seen))
+            captures <- c(captures, seen)
+        }
+        omicsEnrichW2Runs[[case]] <- list(captures = captures, dispatches = log$dispatches)
+    }
+    omicsEnrichW2Runs[[case]]
+}
+
+#' A field as a step holds it, "<unchanged>" resolved to the last step of the same session that set it.
+omicsEnrichW2Held <- function(captures, step, field) {
+    steps <- names(captures)
+    i <- match(step, steps)
+    while (i > 1L && identical(captures[[steps[[i]]]][[field]], "<unchanged>")) i <- i - 1L
+    captures[[steps[[i]]]][[field]]
+}
+
+#' The store's `dia-state` entries (the saved state values, the transfer values among them) apart from the rest of the
+#' project's files.
+omicsEnrichW2StateEntries <- "<store entries>..workflow-entities/entities/dia-state-<ID>"
+
+#' The transfer values one managed Run that completes adds to the store's `dia-state` entries (D6's first recorded
+#' exclusion): the annotation table and the results.
+omicsEnrichW2Transfers <- 2L
+
+#' D6's recorded exclusions per case: `transfers`, the `dia-state` entries each step's managed Run adds (a Run the
+#' worker refuses keeps the request's annotation table and mapping); `progress`, the steps whose progress gains the
+#' request half's 0.5 before the worker refuses (D3, the progress before dispatch); `annotations`, the steps whose
+#' request half writes `uniprot_dat_cln` before the worker refuses a missing DA table; `no_filter`, the steps whose
+#' failure (on the worker, or the request half's taxon refusal: F113-03) leaves `enrichment_organism_filter` unwritten.
+omicsEnrichW2Exclusions <- function(case) {
+    s <- omicsEnrichW2Transfers
+    switch(case,
+        gprofiler = , clusterprofiler = , kernel_gprofiler = , kernel_clusterprofiler = , restore = list(transfers = c(run = s)),
+        organism_filter = list(transfers = c(`no_mapping/run` = s, `mapped/run` = 2L), progress = "mapped/run"),
+        refusals = list(transfers = c(`pre_da/run_taxon_abc` = 0L, `q_cutoff/run_q_cutoff` = 1L,
+            `table_removed/run_table_removed` = 1L), progress = "table_removed/run_table_removed",
+            annotations = "table_removed/run_table_removed",
+            no_filter = c("pre_da/run_taxon_abc", "q_cutoff/run_q_cutoff")),
+        prefill = list(transfers = integer()))
+}
+
+#' The bus capture with `enrichment_organism_filter` unwritten.
+omicsEnrichW2NoFilter <- function(bus) {
+    at <- which(startsWith(names(bus), "enrichment_organism_filter$"))
+    c(bus[seq_len(at[[1L]] - 1L)], `enrichment_organism_filter$` = "<NULL>", bus[-seq_len(max(at))])
+}
+
+#' Compare one managed case with W1 (b)'s frozen captures: every field of every step identical, apart from D6's
+#' recorded exclusions, each asserted as it is.
+expectOmicsEnrichW2Case <- function(case) {
+    seen <- omicsEnrichW2Case(case)$captures
+    frozen <- omicEnrichW1Frozen[[case]]
+    excluded <- omicsEnrichW2Exclusions(case)
+    expect_identical(setdiff(names(seen), grep("kit113_d6$", names(seen), value = TRUE)), names(frozen))
+    added <- 0L
+    session <- ""
+    for (step in names(frozen)) {
+        prefix <- if (grepl("/", step, fixed = TRUE)) sub("/.*$", "", step) else ""
+        if (!identical(prefix, session)) {
+            session <- prefix
+            added <- 0L
+        }
+        if (step %in% names(excluded$transfers)) added <- added + excluded$transfers[[step]]
+        for (field in setdiff(union(names(frozen[[step]]), names(seen[[step]])), "files")) {
+            expected <- frozen[[step]][[field]]
+            if (identical(field, "progress") && step %in% excluded$progress) expected <- c(expected, "0.5 Running enrichment analysis...")
+            if (identical(field, "bus") && step %in% excluded$annotations) {
+                expected <- omicsEnrichW2Held(frozen, step, "bus")
+                expected[["uniprot_dat_cln"]] <- "5x9 13df57c377de46dc"
+            }
+            if (identical(field, "bus") && step %in% excluded$no_filter) expected <- omicsEnrichW2NoFilter(expected)
+            expect_identical(seen[[step]][[field]], expected, info = paste(case, step, field))
+        }
+        files <- omicsEnrichW2Held(seen, step, "files")
+        files_frozen <- omicsEnrichW2Held(frozen, step, "files")
+        others <- function(x) x[sort(setdiff(names(x), omicsEnrichW2StateEntries))]
+        expect_identical(others(files), others(files_frozen), info = paste(case, step, "files"))
+        expect_identical(as.integer(files[[omicsEnrichW2StateEntries]]) - as.integer(files_frozen[[omicsEnrichW2StateEntries]]),
+            added, info = paste(case, step, "transfer values"))
+    }
+}
+
+for (case in c("gprofiler", "clusterprofiler", "kernel_gprofiler", "kernel_clusterprofiler", "organism_filter", "refusals",
+    "restore", "prefill")) {
+    local({
+        name <- case
+        test_that(sprintf("(KIT-113 W2) managed at core level: %s gives W1 (b)'s frozen values, apart from D6's exclusions", name), {
+            skip_if_not(workflowOwnerCapable())
+            expectOmicsEnrichW2Case(name)
+            run <- omicsEnrichW2Case(name)
+            # The KIT-113 W1 block's fields after each session (the committed record, results, product, provenance and
+            # the analysis record's step).
+            for (key in grep("kit113_d6$", names(run$captures), value = TRUE)) {
+                session <- sub("/?kit113_d6$", "", key)
+                frozen <- if (nzchar(session)) paste0(name, "/", session) else name
+                expect_identical(run$captures[[key]]$d6, omicEnrichW113Frozen[[frozen]], info = frozen)
+            }
+            # Each dispatch names the DA manifest's source; the completion leaves the request's provenance pending and
+            # the accept half replaces it with the commit's; the request and the value are within their limits (R3).
+            for (dispatch in run$dispatches) {
+                expect_identical(dispatch$input, dispatch$head, info = name)
+                expect_lt(dispatch$parameters, 65536)
+                if (identical(dispatch$acceptance, "complete")) {
+                    expect_lte(dispatch$value, 8388608)
+                    expect_identical(c(dispatch$pending, dispatch$pending_after), c("enrichment", "<none>"), info = name)
+                }
+            }
+            expect_identical(vapply(run$dispatches, `[[`, "", "acceptance"), switch(name,
+                organism_filter = c("complete", "failed"), refusals = c("failed", "failed"), prefill = character(),
+                "complete"), info = name)
+        })
+    })
+}
+
+#' W1 (b)'s gprofiler session to its select step, then `steps` and the KIT-113 W1 block's capture, on the managed path.
+#' `log$fail` TRUE makes the worker's compute half fail. Returns the captures and the dispatches.
+omicsEnrichW2Drive <- function(steps, log = new.env(parent = emptyenv())) {
+    log$controllers <- list()
+    log$dispatches <- list()
+    omicsEnrichW2Mocks()
+    compute <- get("computeWorkflowEnrichment", envir = asNamespace("MultiScholaR"))
+    testthat::local_mocked_bindings(runWorkflowEnrichment = omicsEnrichW2Managed(log),
+        computeWorkflowEnrichment = function(manager, config, parameters) {
+            if (isTRUE(log$fail)) stop("forced worker failure", call. = FALSE)
+            compute(manager, config, parameters)
+        }, .package = "MultiScholaR")
+    w1 <- omicEnrichW1CaseSpec("gprofiler", environment())[[1L]]
+    seen <- omicEnrichW1Drive(w1$setup, c(w1$steps[c("da", "open", "select")], steps,
+        list(kit113_d6 = function(ctx) ctx$keep("d6", omicEnrichW113Fields(ctx)))))
+    list(captures = seen, dispatches = log$dispatches)
+}
+
+test_that("(KIT-113 W2, F107-01) a second managed Run names the DA manifest's source while the head is enrichment_completed, and gives the first Run's values", {
+    skip_if_not(workflowOwnerCapable())
+    run <- omicsEnrichW2Drive(list(run = omicEnrichW1Run(1L), again = omicEnrichW1Run(2L)))
+    seen <- run$captures
+    expect_identical(seen$again$errors, character())
+    expect_identical(seen$again$notes, seen$run$notes)
+    expect_identical(seen$again$progress, seen$run$progress)
+    for (field in c("history", "states", "product", "display")) expect_identical(seen$again[[field]], "<unchanged>", info = field)
+    expect_identical(seen$again$values, seen$run$values)
+    expect_gt(as.integer(seen$again$files[[omicsEnrichW2StateEntries]]),
+        as.integer(seen$run$files[[omicsEnrichW2StateEntries]]))
+    first <- run$dispatches[[1L]]
+    second <- run$dispatches[[2L]]
+    expect_identical(c(first$head_state, second$head_state), c("correlation_filtered", "enrichment_completed"))
+    expect_identical(second$input, first$input)
+    expect_false(identical(second$input, second$head))
+    expect_identical(c(first$acceptance, second$acceptance), c("complete", "complete"))
+    expect_identical(second$pending_after, "<none>")
+    fields <- c("history", "results", "provenance", "record")
+    expect_identical(seen$kit113_d6$d6[fields], omicEnrichW113Frozen$gprofiler[fields])
+    # The second commit's record is the first's, made on the first (as a second Run in process makes it).
+    state <- omicEnrichW113Frozen$gprofiler$state
+    state[["previous"]] <- "enrichment_completed"
+    expect_identical(seen$kit113_d6$d6$state, state)
+})
+
+test_that("(KIT-113 W2) a forced worker failure commits, records and publishes nothing; then a managed Run gives W1 (b)'s run step", {
+    skip_if_not(workflowOwnerCapable())
+    log <- new.env(parent = emptyenv())
+    fail <- function(ctx) {
+        log$fail <- TRUE
+        omicEnrichW1Run(1L)(ctx)
+        log$fail <- FALSE
+        ctx$keep("pending", shiny::isolate(ctx$bus()$state_manager)$.context$pending_provenance)
+    }
+    run <- omicsEnrichW2Drive(list(fail = fail, run = omicEnrichW1Run(2L)), log)
+    seen <- run$captures
+    failed <- seen$fail
+    expect_identical(failed$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
+        "[error 10 -] Error in enrichment analysis: forced worker failure", "remove enrichment_working"))
+    for (field in c("tab_status", "history", "states", "product", "resources", "display", "returned")) {
+        expect_identical(failed[[field]], "<unchanged>", info = field)
+    }
+    expect_identical(failed$kernel, character())
+    expect_null(failed$pending)
+    # D6: the request half has written the annotation table; the filter metadata is the accept half's.
+    expect_identical(failed$bus, c(enrichment_analysis_results = "<NULL>", `enrichment_ui_params$` = "<NULL>",
+        `enrichment_organism_filter$` = "<NULL>", uniprot_dat_cln = "5x9 13df57c377de46dc"))
+    expect_identical(as.integer(failed$files[[omicsEnrichW2StateEntries]]) -
+        as.integer(omicsEnrichW2Held(seen, "select", "files")[[omicsEnrichW2StateEntries]]), 1L)
+    expect_identical(vapply(run$dispatches, `[[`, "", "acceptance"), c("failed", "complete"))
+    frozen <- omicEnrichW1Frozen$gprofiler
+    for (field in c("values", "notes", "progress", "tab_status", "history", "states", "product", "resources", "kernel",
+        "services", "bus", "display", "returned", "errors")) {
+        expect_identical(omicsEnrichW2Held(seen, "run", field), omicsEnrichW2Held(frozen, "run", field), info = field)
+    }
+    expect_identical(seen$kit113_d6$d6, omicEnrichW113Frozen$gprofiler)
+})
+
+test_that("(KIT-113 W2) the kernel travels by name: the double and processEnrichments map both ways, looked up when called; any other is refused", {
+    ns <- asNamespace("MultiScholaR")
+    for (name in c("runProtEnrichDeterministicProcessEnrichments", "processEnrichments")) {
+        expect_identical(workflowEnrichmentKernelName(get(name, envir = ns)), name)
+        expect_identical(workflowEnrichmentKernel(name), get(name, envir = ns))
+    }
+    config <- omicGuiConfig("proteomics")$enrichment
+    expect_identical(workflowEnrichmentKernelName(resolveProtEnrichProcessEnrichmentsFn(isTestModeFn = function() TRUE)),
+        "runProtEnrichDeterministicProcessEnrichments")
+    expect_identical(workflowEnrichmentKernelName(resolveProtEnrichProcessEnrichmentsFn(isTestModeFn = function() FALSE)),
+        "processEnrichments")
+    # A recorder in the double's binding (KIT-107 W1 (b)'s) is what the selection returns and what the name finds; the
+    # double a configuration captured before it no longer matches.
+    local({
+        recorder <- function(...) "recorder"
+        testthat::local_mocked_bindings(runProtEnrichDeterministicProcessEnrichments = recorder, .package = "MultiScholaR")
+        selected <- withr::with_options(list(multischolar.test_mode = TRUE), config$kernel$select())
+        expect_identical(selected, recorder)
+        expect_identical(workflowEnrichmentKernelName(selected), "runProtEnrichDeterministicProcessEnrichments")
+        expect_identical(workflowEnrichmentKernel("runProtEnrichDeterministicProcessEnrichments"), recorder)
+        expect_error(workflowEnrichmentKernelName(config$kernel$test_double), class = "workflow_enrichment_input")
+    })
+    expect_error(workflowEnrichmentKernelName(function(...) NULL), class = "workflow_enrichment_input")
+    expect_error(workflowEnrichmentKernelName(base::identity), class = "workflow_enrichment_input")
+    for (name in list("identity", "base::eval", NULL, NA_character_, c("processEnrichments", "processEnrichments"), 1L)) {
+        expect_error(workflowEnrichmentKernel(name), class = "workflow_enrichment_input")
+    }
+})
