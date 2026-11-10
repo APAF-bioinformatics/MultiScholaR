@@ -1166,12 +1166,11 @@ test_that("KIT-112 W1 (a): the DIA_LIMPA DA click (dpcDE, no base fit) in proces
 # through today's managed path (the whole runner in the controller without its publication, then the same publication
 # step), and the two managed paths must be equal in every captured field but the `saveDIAStateValue` count (it counts
 # the head snapshots, which the worker's completions write; D6). Against W1 (a)'s frozen in-process values the worker
-# path must be equal too, except, by design: that count; the pending step provenance, which on both managed paths is the
-# `da_publication` completion's (KIT-019, unchanged; in process the accept half leaves none) and, after a worker
-# failure, is held by the worker's owner (D6); the committed step provenance of a DA-arguments commit that follows a
-# managed publication, which records that pending entry on both managed paths (draft finding, W2 notes); and in the
+# path must be equal too, except, by design: that count; the pending step provenance after a worker failure, which the
+# worker's owner held and the controller never saw (D6; in process the failed contrast's stays pending); and in the
 # non-head case the refused publication and what it leaves (R7: today's managed outcome, the publication refuses a
-# non-head manifest).
+# non-head manifest). GUI audit A112-01/A112-02: the `da_publication` completion leaves nothing pending, so the pending
+# and the committed step provenance are compared with the frozen in-process values in every other case.
 # ------------------------------------------------------------------------------------------------
 
 #' One managed action in this process: the request (with its named input) through the worker's entry point, the
@@ -1310,13 +1309,13 @@ test_that("KIT-112 W2 (W1 (b)): the DIA DA clicks through the worker equal today
         worker <- savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(n), ...)
         today <- savedDaW2Click(twin, twin_dispatch, savedDaW1Contrasts(n), ..., today = TRUE)
         savedDaW2Expect(case, worker, frozen = today)
-        savedDaW2Expect(case, worker, masked = c("pending", "provenance", masked), masked_calls = masked_calls)
+        savedDaW2Expect(case, worker, masked = masked, masked_calls = masked_calls)
         worker
     }
     first <- list(worker = fixture$da$current_s4_object, today = twin$da$current_s4_object)
     both("dia_one_contrast", 1L)
-    # The pending provenance on a managed path is the publication step's completion's.
-    expect_identical(c(savedDaW2Pending(fixture), savedDaW2Pending(twin)), c("da_publication", "da_publication"))
+    # GUI audit A112-01: the publication step's completion leaves nothing pending on either managed path.
+    expect_identical(c(savedDaW2Pending(fixture), savedDaW2Pending(twin)), c(NA_character_, NA_character_))
     both("dia_two_contrasts", 2L)
     both("dia_repeat", 2L)
     # R1: after the reopen every contrast hits, no base fit is delivered, and the model's base-fit fields stay NULL.
@@ -1357,8 +1356,8 @@ test_that("KIT-112 W2 (W1 (b)): a worker failure, then a retry with the same arg
     # The worker's owner, not the controller's, held the failed contrast's pending provenance (D6).
     savedDaW2Expect("dia_failure", savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L), fail = TRUE), masked = "pending")
     expect_identical(savedDaW2Pending(fixture), NA_character_)
-    savedDaW2Expect("dia_retry", savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L)), masked = "pending")
-    expect_identical(savedDaW2Pending(fixture), "da_publication")
+    savedDaW2Expect("dia_retry", savedDaW2Click(fixture, dispatch, savedDaW1Contrasts(1L)))
+    expect_identical(savedDaW2Pending(fixture), NA_character_)
 })
 
 test_that("KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE, no base fit) gives W1 (a)'s values", {
@@ -1369,9 +1368,8 @@ test_that("KIT-112 W2 (W1 (b)): the DIA_LIMPA DA click through the worker (dpcDE
     savedDaW2Mocks()
     log <- new.env(parent = emptyenv())
     fixture <- savedDaW1LimpaOwner()
-    savedDaW2Expect("limpa_one_contrast", savedDaW2Click(fixture, savedDaW2Dispatcher(fixture, log), savedDaW1Contrasts(1L)),
-        masked = "pending")
-    expect_identical(savedDaW2Pending(fixture), "da_publication")
+    savedDaW2Expect("limpa_one_contrast", savedDaW2Click(fixture, savedDaW2Dispatcher(fixture, log), savedDaW1Contrasts(1L)))
+    expect_identical(savedDaW2Pending(fixture), NA_character_)
     expect_false(log$values[[1L]]$base_fit)
 })
 
