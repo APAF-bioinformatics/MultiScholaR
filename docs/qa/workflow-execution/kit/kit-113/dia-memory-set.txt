@@ -1,0 +1,7 @@
+# KIT-113 run 4 (inside run 1): the DIA session and memory set. Decision: equal to 733/2, 191/1, 38/1, 174/4, 80/11. Result: all equal; 0 failed, 0 errors.
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-perf107-audit.R	load_all	11	11	0	192	191	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	21.5	complete
+test-perf107-checkpoints.R	load_all	4	4	0	39	38	0	0	1	0	1	FALSE			FALSE		0	0	0	1	0	0	20.8	complete
+test-workflow-checkpoint-dia-state.R	load_all	19	19	0	178	174	0	0	4	0	4	FALSE			FALSE		0	0	0	4	0	0	29.1	complete
+test-workflow-gui-memory-lifetimes.R	load_all	17	17	0	91	80	0	0	11	0	11	FALSE			FALSE		0	0	2	8	0	1	9.9	complete
+test-workflow-native-session.R	load_all	24	24	0	742	733	0	0	2	7	2	FALSE			FALSE		0	0	1	0	0	1	554.9	complete
