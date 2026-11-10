@@ -1613,12 +1613,14 @@ protNormW3ExpectW1 <- function(captures, label) {
     }
 }
 
-#' The notices without the runner's own (its working notice, and its error before the tab's), each error by its text up
-#' to the first colon: a worker's error reaches the tab as the controller words it ("managed action ended: <status>"
-#' through the service), not as the kernel's condition.
+#' The notices without the runner's own (its working notice, and its error before the tab's). GUI audit A111-03: an
+#' error notice is compared by its first line, which holds the reason (it was cut at the first colon, before the
+#' reason): a worker's own error reaches the tab as the kernel's condition, as in process. The lines after the first are
+#' the condition's hints, which the worker's handoff carries (`conditionMessage`) and the in-process notice (`$message`)
+#' does not.
 protNormW3TabNotes <- function(notes) {
     notes <- notes[!grepl("^\\[(default NULL|error 15)\\] (Applying|Error applying) proteomics step", notes)]
-    sub("(?s)^(\\[error [0-9]+\\] [^:]+:).*$", "\\1", notes, perl = TRUE)
+    sub("(?s)^(\\[error [0-9]+\\] [^\n]*)\n.*$", "\\1", notes, perl = TRUE)
 }
 
 #' Managed against unmanaged: every field but the store-local head id and the actions; the notices without the runner's.
@@ -1850,5 +1852,52 @@ test_that("GUI audit A111-01: RUV covariates queued behind a correlation re-appl
         for (field in c("history", "head_history", "states")) {
             expect_identical(managed[[field]], unmanaged$ruv_again[[field]], info = field)
         }
+    })
+})
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R2, A111-03: a worker's own error reaches the tab's notice (the service layer is mocked; the handoff file is
+# the one `workflowWorkerMain` writes on a failure).
+# ------------------------------------------------------------------------------------------------
+
+test_that("GUI audit A111-03: the poll keeps a failed worker's own error with the receipt", {
+    directory <- withr::local_tempdir()
+    owner <- new.env()
+    owner$job <- list2env(list(stage = "running", monitor_borrowed = FALSE, monitor_unit = "monitor", worker_unit = "worker",
+        paths = list(request_dir = directory), error = NULL))
+    owner$application <- list(config = list(root = directory, policy = list(monitor_interval = 0.01)))
+    owner$manager <- list(.context = list(store = NULL))
+    testthat::local_mocked_bindings(
+        workflowExecutionStoreValid = function(store) TRUE,
+        workflowServiceProperties = function(unit) if (identical(unit, "monitor")) list(available = TRUE, SubState = "running") else
+            list(available = TRUE, SubState = "failed", Result = "exit-code"),
+        finishWorkflowExecutionJob = function(owner, status) list(status = status, error = owner$job$error),
+        .package = "MultiScholaR")
+    # A worker that ended without a handoff has no reason to give.
+    expect_identical(pollWorkflowAction(owner), list(status = "worker_failed", error = NULL))
+    saveRDS(list(schema = 1L, status = "failed", token = list(), error = "No valid percentage found"),
+        file.path(directory, "worker-result.rds"))
+    expect_identical(pollWorkflowAction(owner), list(status = "worker_failed", error = "No valid percentage found"))
+})
+
+test_that("GUI audit A111-03: a managed worker failure shows the worker's reason in the step's and the tab's notices", {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- protNormCoreOwner()
+    working <- "[default NULL] Applying proteomics step ..."
+    protNormAuditManaged(fixture, new.env(), function(session, norm, log, output) {
+        do.call(session$setInputs, protNormW3Inputs("manual"))
+        click <- function(n, receipt) testthat::with_mocked_bindings({
+            log$notes <- character()
+            session$setInputs(run_normalization = n)
+            session$flushReact()
+        }, runWorkflowAction = function(...) "wfx-not-run", pollWorkflowAction = function(owner) receipt, .package = "MultiScholaR")
+        click(1, list(status = "worker_failed", error = "No valid percentage found"))
+        expect_identical(log$notes, c(working, "[error 15] Error applying proteomics step: No valid percentage found",
+            "[error 10] Error in normalization: No valid percentage found"))
+        # A failure that is not the worker's own error keeps the controller's wording.
+        click(2, list(status = "memory_guard", error = NULL))
+        expect_identical(log$notes, c(working, "[error 15] Error applying proteomics step: managed action ended: memory_guard",
+            "[error 10] Error in normalization: managed action ended: memory_guard"))
+        expect_identical(fixture$manager$current_state, "protein_replicate_filtered")
     })
 })

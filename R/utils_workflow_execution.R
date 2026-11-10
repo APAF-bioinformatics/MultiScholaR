@@ -752,7 +752,10 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
         if (inherits(result, "error")) { fail(action, result); return() }
         if (result$status %in% c("admitting", "running")) return()
         if (!identical(result$status, "complete")) {
-            fail(action, simpleError(paste("managed action ended:", result$status)), result$status)
+            # GUI audit A111-03: a worker that failed with its own error gives that reason, as the same step in process.
+            reason <- if (identical(result$status, "worker_failed") && is.character(result$error) &&
+                length(result$error) == 1L && nzchar(result$error)) result$error else paste("managed action ended:", result$status)
+            fail(action, simpleError(reason), result$status)
             return()
         }
         tryCatch({
@@ -1721,13 +1724,31 @@ pollWorkflowAction <- function(owner) {
         if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start"))
             return(finishWorkflowExecutionJob(owner, "monitor_lost"))
     }
-    if (!isTRUE(state$available) || !identical(state$Result, "success") || !file.exists(result_path))
-        return(finishWorkflowExecutionJob(owner, if (identical(state$Result, "oom-kill")) "memory_guard" else "worker_failed"))
+    if (!isTRUE(state$available) || !identical(state$Result, "success") || !file.exists(result_path)) {
+        if (identical(state$Result, "oom-kill")) return(finishWorkflowExecutionJob(owner, "memory_guard"))
+        job$error <- workflowWorkerFailureReason(result_path) %||% job$error
+        return(finishWorkflowExecutionJob(owner, "worker_failed"))
+    }
     if (file.size(result_path) > 8388608) return(finishWorkflowExecutionJob(owner, "invalid_result"))
     result <- readRDS(result_path)
-    if (!is.list(result) || !identical(result$schema, 1L) || !identical(result$status, "complete"))
+    if (!is.list(result) || !identical(result$schema, 1L) || !identical(result$status, "complete")) {
+        job$error <- workflowWorkerFailureReason(result_path) %||% job$error
         return(finishWorkflowExecutionJob(owner, "worker_failed"))
+    }
     acceptWorkflowActionResult(owner, result)
+}
+
+#' The error a failed worker wrote in its handoff (`workflowWorkerMain`), for the receipt and the tab's notice (GUI audit
+#' A111-03).
+#' @param result_path The request's `worker-result.rds`.
+#' @return The worker's error message (at most 1024 characters), or NULL when it wrote none.
+#' @noRd
+workflowWorkerFailureReason <- function(result_path) {
+    if (!file.exists(result_path) || file.size(result_path) > 8388608) return(NULL)
+    result <- readRDS(result_path)
+    if (!is.list(result) || !identical(result$status, "failed") || !is.character(result$error) ||
+        length(result$error) != 1L || is.na(result$error) || !nzchar(result$error)) return(NULL)
+    substr(result$error, 1L, 1024L)
 }
 
 #' Accept exactly the frozen token inside the controller lease, then publish separately.
