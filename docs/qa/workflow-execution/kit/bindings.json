@@ -700,6 +700,15 @@
       "install_member": "browser-smoke.OftnRb",
       "source_commit": "5ecc9fd1c7af1112f7f6fb083915e0a22834639b",
       "runtime_patch_bytes": 0
+    },
+    "kit_113": {
+      "ticket": "KIT-113",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.cmBMvS/library",
+      "build": "0241c41b316eb5340c061e4f8936b3383845794ccfa4f3f6f4fc5ac648ea67da",
+      "exact_sum": "7fae42de94daaa2103e74be8d5d6e98eee6e53c32b47c268f220afec44c1ea85",
+      "install_member": "browser-smoke.cmBMvS",
+      "source_commit": "9560098924c24780734d37f778dcfac4f373137f",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43074,6 +43083,41 @@
       "whole_journey": true,
       "ceiling_seconds": 14400,
       "purpose": "memory candidate, the DA kernel on the worker (recorded, uncounted; KIT-112 D8)"
+    },
+    "113l": {
+      "kind": "single_journey",
+      "build": "kit_113",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness and no worse, the enrichment on the worker (recorded, uncounted; KIT-113 D8)"
+    },
+    "113m": {
+      "kind": "single_journey",
+      "build": "kit_113",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness and no worse, the enrichment on the worker (recorded, uncounted; KIT-113 D8)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "113t": {
+      "kind": "single_journey",
+      "build": "kit_113",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness and no worse, the enrichment on the worker (recorded, uncounted; KIT-113 D8)"
     },
     "106x": {
       "kind": "single_journey",
