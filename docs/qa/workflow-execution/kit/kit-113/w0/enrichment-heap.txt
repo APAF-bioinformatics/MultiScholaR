@@ -1,0 +1,596 @@
+KIT-113 W0 M0p enrichment-heap probe; plan counted; R 4.6.1; tree /home/doktersmol/Projects/APAF/MultiScholaR; HEAD 2bad7519
+started 2026-11-10 15:18:45; TMPDIR /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-113/RtmpY9Y9xw
+
+== case 16000 proteins x 300 samples x 3 contrasts (6 s elapsed) ==
+  fixture: 16000 proteins x 300 samples, 3 groups, 3 contrasts; protein table 37.8 MiB in R
+  DA 218.7 s, publication 34.6 s; DA tables: da_proteins_groupB-groupA_long_annot.tsv 122.6 MB; da_proteins_groupC-groupA_long_annot.tsv 122.6 MB; da_proteins_groupC-groupB_long_annot.tsv 122.7 MB
+-- in process, 16000 x 300 x 3, live, pass 1 (cold)
+  [in process 16000 x 300 x 3, live pass 1 (cold)] start: live heap 882.9 MiB
+    G1   context (:822-845)                                               peak +    33.7 MiB over start (+   33.7 over before), live after +     2.2, value     4.52 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   293.1 MiB over start (+  290.8 over before), live after +   156.1, value   154.85 MiB,    0.9 s
+    G3   annotation resolve (:853-854)                                    peak +   156.1 MiB over start (+    0.0 over before), live after +   156.1, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +   734.4 MiB over start (+  578.3 over before), live after +   157.6, value     3.42 MiB,    0.8 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +   157.7 MiB over start (+    0.0 over before), live after +   157.6, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +   158.3 MiB over start (+    0.7 over before), live after +   157.7, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +   157.8 MiB over start (+    0.1 over before), live after +   157.7, value   155.95 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   839.1 MiB over start (+  681.4 over before), live after +   123.1, value    15.99 MiB,    2.8 s
+    G9a  display tables (:891-900)                                        peak +   160.4 MiB over start (+   37.3 over before), live after +   123.2, value     0.02 MiB,    4.0 s
+    G9b  bus payload (:901-907)                                           peak +   123.2 MiB over start (+    0.0 over before), live after +   123.1, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +   123.2 MiB over start (+    0.0 over before), live after +   123.1, value    15.98 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +   123.3 MiB over start (+    0.1 over before), live after +   123.2, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +  1261.7 MiB over start (+ 1138.5 over before), live after +   123.6, value     0.00 MiB,    6.3 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +   123.6 MiB over start (+    0.0 over before), live after +   123.5, value    19.32 MiB,    0.0 s
+  [in process 16000 x 300 x 3, live pass 1 (cold)] FIGURE: highest max used - live heap at start = 1261.7 MiB = 1.2321 GiB
+  [in process 16000 x 300 x 3, live pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.33 MiB
+-- in process, 16000 x 300 x 3, live, pass 2 (warm)
+  [in process 16000 x 300 x 3, live pass 2 (warm)] start: live heap 845.3 MiB
+    G1   context (:822-845)                                               peak +    45.6 MiB over start (+   45.2 over before), live after +     0.7, value     4.52 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   295.2 MiB over start (+  294.5 over before), live after +   153.6, value   154.85 MiB,    0.9 s
+    G3   annotation resolve (:853-854)                                    peak +   167.0 MiB over start (+   13.5 over before), live after +   153.6, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +   724.8 MiB over start (+  571.2 over before), live after +   155.2, value     3.42 MiB,    0.9 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +   155.2 MiB over start (+    0.0 over before), live after +   155.2, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +   159.3 MiB over start (+    4.1 over before), live after +   155.2, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +   170.4 MiB over start (+   15.2 over before), live after +   155.2, value   155.95 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   821.7 MiB over start (+  666.5 over before), live after +   162.3, value    15.99 MiB,    2.8 s
+    G9a  display tables (:891-900)                                        peak +   225.2 MiB over start (+   62.9 over before), live after +   162.4, value     0.02 MiB,    4.4 s
+    G9b  bus payload (:901-907)                                           peak +   162.4 MiB over start (+    0.0 over before), live after +   162.4, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +   170.1 MiB over start (+    7.8 over before), live after +   162.4, value    15.98 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +   171.3 MiB over start (+    8.9 over before), live after +   162.4, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +  1100.9 MiB over start (+  938.5 over before), live after +   162.7, value     0.00 MiB,    6.2 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +   162.6 MiB over start (+    0.0 over before), live after +   162.6, value    19.32 MiB,    0.0 s
+  [in process 16000 x 300 x 3, live pass 2 (warm)] FIGURE: highest max used - live heap at start = 1100.9 MiB = 1.0751 GiB
+  [in process 16000 x 300 x 3, live pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.81 MiB
+-- managed controller, 16000 x 300 x 3, live, pass 1 (cold)
+  [managed 16000 x 300 x 3, live pass 1 (cold)] start: live heap 846.9 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.52 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.9 MiB over start (+    0.6 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +    18.4 MiB over start (+   18.1 over before), live after +     0.4, value     0.14 MiB,    0.6 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.5 MiB over start (+   47.2 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   290.6 MiB over start (+  288.9 over before), live after +   154.5, value   154.85 MiB,    0.9 s
+    W3   annotation match                                               w peak +   722.9 MiB over start (+  568.4 over before), live after +   156.0, value     3.42 MiB,    0.8 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   851.9 MiB over start (+  695.9 over before), live after +   162.6, value    15.99 MiB,    2.6 s
+    W5   portable results saved as an rds state value                   w peak +  1099.4 MiB over start (+  936.8 over before), live after +   162.8, value    19.31 MiB,    4.5 s
+    -- the moved values removed and collected
+    live heap after removal +2.1 MiB over start; delivered value 3.435 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +  1833.7 MiB over start (+ 1831.6 over before), live after +   602.4, value   535.42 MiB,    4.9 s
+    A2   provenance cleared; external-resource records                    peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +   634.7 MiB over start (+   32.3 over before), live after +   602.5, value     0.02 MiB,    4.7 s
+    A5   bus payload (:901-907)                                           peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value   535.42 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +   602.5 MiB over start (+    0.1 over before), live after +   602.4, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +  2231.0 MiB over start (+ 1628.5 over before), live after +   602.5, value     0.00 MiB,    6.6 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value   538.87 MiB,    0.0 s
+  [managed 16000 x 300 x 3, live pass 1 (cold)] FIGURE: highest max used - live heap at start = 2231.0 MiB = 2.1787 GiB
+  [managed 16000 x 300 x 3, live pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.82 MiB
+-- managed controller, 16000 x 300 x 3, live, pass 2 (warm)
+  [managed 16000 x 300 x 3, live pass 2 (warm)] start: live heap 847.5 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.52 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.9 MiB over start (+    0.6 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     5.9 MiB over start (+    5.7 over before), live after +     0.3, value     0.14 MiB,    0.6 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.2 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   290.6 MiB over start (+  288.9 over before), live after +   154.5, value   154.85 MiB,    0.9 s
+    W3   annotation match                                               w peak +  1184.7 MiB over start (+ 1030.2 over before), live after +   156.0, value     3.42 MiB,    0.8 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +  1561.1 MiB over start (+ 1405.1 over before), live after +   162.6, value    15.99 MiB,    2.6 s
+    W5   portable results saved as an rds state value                   w peak +  1773.4 MiB over start (+ 1610.8 over before), live after +   162.8, value    19.31 MiB,    4.4 s
+    -- the moved values removed and collected
+    live heap after removal +2.1 MiB over start; delivered value 3.435 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +  1386.2 MiB over start (+ 1384.1 over before), live after +   602.4, value   535.42 MiB,    3.4 s
+    A2   provenance cleared; external-resource records                    peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +   635.0 MiB over start (+   32.6 over before), live after +   602.4, value     0.02 MiB,    4.7 s
+    A5   bus payload (:901-907)                                           peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value   535.42 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +   602.5 MiB over start (+    0.1 over before), live after +   602.4, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +  1773.4 MiB over start (+ 1171.0 over before), live after +   602.4, value     0.00 MiB,    7.5 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +   602.4 MiB over start (+    0.0 over before), live after +   602.4, value   538.87 MiB,    0.0 s
+  [managed 16000 x 300 x 3, live pass 2 (warm)] FIGURE: highest max used - live heap at start = 1773.4 MiB = 1.7319 GiB
+  [managed 16000 x 300 x 3, live pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.82 MiB
+== 16000 x 300 x 3, live: in process 1.2321 / 1.0751 GiB, managed controller 2.1787 / 1.7319 GiB, difference -0.9466 / -0.6568 GiB (cold / warm); portable 186.82 MiB; network calls: offline double gprofiler2::gost=24
+-- in process, 16000 x 300 x 3, double, pass 1 (cold)
+  [in process 16000 x 300 x 3, double pass 1 (cold)] start: live heap 848.1 MiB
+    G1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.52 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   289.2 MiB over start (+  288.9 over before), live after +   153.1, value   154.85 MiB,    0.9 s
+    G3   annotation resolve (:853-854)                                    peak +   153.2 MiB over start (+    0.0 over before), live after +   153.1, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +  1183.3 MiB over start (+ 1030.2 over before), live after +   154.6, value     3.42 MiB,    0.8 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +   154.6 MiB over start (+    0.0 over before), live after +   154.6, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +   155.2 MiB over start (+    0.5 over before), live after +   154.6, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +   154.7 MiB over start (+    0.1 over before), live after +   154.6, value   155.95 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   236.4 MiB over start (+   81.8 over before), live after +   154.8, value     0.11 MiB,    0.3 s
+    G9a  display tables (:891-900)                                        peak +   194.3 MiB over start (+   39.6 over before), live after +   154.8, value     0.02 MiB,    5.3 s
+    G9b  bus payload (:901-907)                                           peak +   154.8 MiB over start (+    0.0 over before), live after +   154.8, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +   154.8 MiB over start (+    0.0 over before), live after +   154.8, value     0.10 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +   154.9 MiB over start (+    0.1 over before), live after +   154.8, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +   230.0 MiB over start (+   75.2 over before), live after +   154.9, value     0.00 MiB,    0.8 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +   154.8 MiB over start (+    0.0 over before), live after +   154.8, value     3.55 MiB,    0.0 s
+  [in process 16000 x 300 x 3, double pass 1 (cold)] FIGURE: highest max used - live heap at start = 1183.3 MiB = 1.1556 GiB
+  [in process 16000 x 300 x 3, double pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+-- in process, 16000 x 300 x 3, double, pass 2 (warm)
+  [in process 16000 x 300 x 3, double pass 2 (warm)] start: live heap 848.2 MiB
+    G1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.52 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   289.2 MiB over start (+  288.9 over before), live after +   153.1, value   154.85 MiB,    1.0 s
+    G3   annotation resolve (:853-854)                                    peak +   153.2 MiB over start (+    0.0 over before), live after +   153.1, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +  1183.3 MiB over start (+ 1030.2 over before), live after +   154.6, value     3.42 MiB,    0.8 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +   154.6 MiB over start (+    0.0 over before), live after +   154.6, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +   155.2 MiB over start (+    0.5 over before), live after +   154.6, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +   154.7 MiB over start (+    0.1 over before), live after +   154.6, value   155.95 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   246.2 MiB over start (+   91.6 over before), live after +   154.8, value     0.11 MiB,    0.4 s
+    G9a  display tables (:891-900)                                        peak +   189.1 MiB over start (+   34.3 over before), live after +   154.8, value     0.02 MiB,    5.5 s
+    G9b  bus payload (:901-907)                                           peak +   154.8 MiB over start (+    0.0 over before), live after +   154.8, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +   154.8 MiB over start (+    0.0 over before), live after +   154.8, value     0.10 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +   154.8 MiB over start (+    0.1 over before), live after +   154.8, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +   231.0 MiB over start (+   76.2 over before), live after +   154.8, value     0.00 MiB,    0.8 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +   154.8 MiB over start (+    0.0 over before), live after +   154.8, value     3.55 MiB,    0.0 s
+  [in process 16000 x 300 x 3, double pass 2 (warm)] FIGURE: highest max used - live heap at start = 1183.3 MiB = 1.1556 GiB
+  [in process 16000 x 300 x 3, double pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+-- managed controller, 16000 x 300 x 3, double, pass 1 (cold)
+  [managed 16000 x 300 x 3, double pass 1 (cold)] start: live heap 848.3 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.52 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     6.2 MiB over start (+    5.9 over before), live after +     0.3, value     0.14 MiB,    0.6 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.2 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   290.6 MiB over start (+  288.9 over before), live after +   154.5, value   154.85 MiB,    1.0 s
+    W3   annotation match                                               w peak +  1184.7 MiB over start (+ 1030.2 over before), live after +   156.0, value     3.42 MiB,    0.8 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   215.9 MiB over start (+   59.9 over before), live after +   156.1, value     0.11 MiB,    0.2 s
+    W5   portable results saved as an rds state value                   w peak +   178.6 MiB over start (+   22.5 over before), live after +   156.1, value     3.53 MiB,    0.1 s
+    -- the moved values removed and collected
+    live heap after removal +1.8 MiB over start; delivered value 3.435 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +     9.6 MiB over start (+    7.8 over before), live after +     2.0, value     0.17 MiB,    0.0 s
+    A2   provenance cleared; external-resource records                    peak +    26.2 MiB over start (+   24.2 over before), live after +     2.0, value       NA MiB,    0.1 s
+    A3   bus filter metadata (:874-876)                                   peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +    36.6 MiB over start (+   34.6 over before), live after +     2.0, value     0.02 MiB,    5.6 s
+    A5   bus payload (:901-907)                                           peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value     0.17 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +     2.1 MiB over start (+    0.1 over before), live after +     2.0, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +    79.2 MiB over start (+   77.3 over before), live after +     2.0, value     0.00 MiB,    0.8 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value     3.62 MiB,    0.0 s
+  [managed 16000 x 300 x 3, double pass 1 (cold)] FIGURE: highest max used - live heap at start = 79.2 MiB = 0.0774 GiB
+  [managed 16000 x 300 x 3, double pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+-- managed controller, 16000 x 300 x 3, double, pass 2 (warm)
+  [managed 16000 x 300 x 3, double pass 2 (warm)] start: live heap 848.3 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.52 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     6.3 MiB over start (+    6.0 over before), live after +     0.3, value     0.14 MiB,    0.6 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.2 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   290.6 MiB over start (+  288.9 over before), live after +   154.5, value   154.85 MiB,    1.0 s
+    W3   annotation match                                               w peak +  1184.7 MiB over start (+ 1030.2 over before), live after +   156.0, value     3.42 MiB,    0.8 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   216.8 MiB over start (+   60.8 over before), live after +   156.1, value     0.11 MiB,    0.2 s
+    W5   portable results saved as an rds state value                   w peak +   178.6 MiB over start (+   22.5 over before), live after +   156.1, value     3.53 MiB,    0.1 s
+    -- the moved values removed and collected
+    live heap after removal +1.8 MiB over start; delivered value 3.435 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +     9.6 MiB over start (+    7.8 over before), live after +     2.0, value     0.17 MiB,    0.0 s
+    A2   provenance cleared; external-resource records                    peak +    27.1 MiB over start (+   25.1 over before), live after +     2.0, value       NA MiB,    0.1 s
+    A3   bus filter metadata (:874-876)                                   peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +    36.9 MiB over start (+   34.9 over before), live after +     2.0, value     0.02 MiB,    5.3 s
+    A5   bus payload (:901-907)                                           peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value     0.17 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +     2.1 MiB over start (+    0.1 over before), live after +     2.0, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +    80.3 MiB over start (+   78.3 over before), live after +     2.0, value     0.00 MiB,    0.8 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +     2.0 MiB over start (+    0.0 over before), live after +     2.0, value     3.62 MiB,    0.0 s
+  [managed 16000 x 300 x 3, double pass 2 (warm)] FIGURE: highest max used - live heap at start = 80.3 MiB = 0.0784 GiB
+  [managed 16000 x 300 x 3, double pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+== 16000 x 300 x 3, double: in process 1.1556 / 1.1556 GiB, managed controller 0.0774 / 0.0784 GiB, difference 1.0782 / 1.0772 GiB (cold / warm); portable 0.06 MiB; network calls: offline double gprofiler2::gost=24
+
+== case 4000 proteins x 300 samples x 3 contrasts (645 s elapsed) ==
+  fixture: 4000 proteins x 300 samples, 3 groups, 3 contrasts; protein table 9.5 MiB in R
+  DA 252.2 s, publication 10.5 s; DA tables: da_proteins_groupB-groupA_long_annot.tsv 30.7 MB; da_proteins_groupC-groupA_long_annot.tsv 30.7 MB; da_proteins_groupC-groupB_long_annot.tsv 30.7 MB
+-- in process, 4000 x 300 x 3, live, pass 1 (cold)
+  [in process 4000 x 300 x 3, live pass 1 (cold)] start: live heap 863.8 MiB
+    G1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   170.1 MiB over start (+  170.0 over before), live after +    38.6, value    38.99 MiB,    0.6 s
+    G3   annotation resolve (:853-854)                                    peak +    38.6 MiB over start (+    0.0 over before), live after +    38.6, value     0.77 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +   300.2 MiB over start (+  261.6 over before), live after +    38.9, value     0.86 MiB,    0.2 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    39.0 MiB over start (+    0.0 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    39.5 MiB over start (+    0.5 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    39.0 MiB over start (+    0.1 over before), live after +    38.9, value    39.27 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +  1340.9 MiB over start (+ 1301.9 over before), live after +    28.0, value    15.99 MiB,    2.5 s
+    G9a  display tables (:891-900)                                        peak +    65.2 MiB over start (+   37.3 over before), live after +    28.1, value     0.02 MiB,    5.3 s
+    G9b  bus payload (:901-907)                                           peak +    28.0 MiB over start (+    0.0 over before), live after +    28.0, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    28.0 MiB over start (+    0.0 over before), live after +    28.0, value    15.98 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    28.1 MiB over start (+    0.1 over before), live after +    28.0, value     0.61 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +  1758.2 MiB over start (+ 1730.2 over before), live after +    28.2, value     0.00 MiB,    6.1 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    28.2 MiB over start (+    0.0 over before), live after +    28.2, value    16.76 MiB,    0.0 s
+  [in process 4000 x 300 x 3, live pass 1 (cold)] FIGURE: highest max used - live heap at start = 1758.2 MiB = 1.7170 GiB
+  [in process 4000 x 300 x 3, live pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.82 MiB
+-- in process, 4000 x 300 x 3, live, pass 2 (warm)
+  [in process 4000 x 300 x 3, live pass 2 (warm)] start: live heap 846.6 MiB
+    G1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   170.1 MiB over start (+  170.0 over before), live after +    38.6, value    38.99 MiB,    0.6 s
+    G3   annotation resolve (:853-854)                                    peak +    38.6 MiB over start (+    0.0 over before), live after +    38.6, value     0.77 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +   300.2 MiB over start (+  261.6 over before), live after +    38.9, value     0.86 MiB,    0.2 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    39.0 MiB over start (+    0.0 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    39.5 MiB over start (+    0.5 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    39.0 MiB over start (+    0.1 over before), live after +    38.9, value    39.27 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +  1344.2 MiB over start (+ 1305.3 over before), live after +    45.6, value    15.99 MiB,    2.6 s
+    G9a  display tables (:891-900)                                        peak +    77.6 MiB over start (+   32.0 over before), live after +    45.6, value     0.02 MiB,    5.0 s
+    G9b  bus payload (:901-907)                                           peak +    45.6 MiB over start (+    0.0 over before), live after +    45.5, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    45.6 MiB over start (+    0.0 over before), live after +    45.5, value    15.98 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    45.6 MiB over start (+    0.1 over before), live after +    45.5, value     0.61 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +  1775.4 MiB over start (+ 1729.9 over before), live after +    45.8, value     0.00 MiB,    6.2 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    45.8 MiB over start (+    0.0 over before), live after +    45.8, value    16.76 MiB,    0.0 s
+  [in process 4000 x 300 x 3, live pass 2 (warm)] FIGURE: highest max used - live heap at start = 1775.4 MiB = 1.7338 GiB
+  [in process 4000 x 300 x 3, live pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.82 MiB
+-- managed controller, 4000 x 300 x 3, live, pass 1 (cold)
+  [managed 4000 x 300 x 3, live pass 1 (cold)] start: live heap 846.9 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.77 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.7 MiB over start (+    0.5 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.7 MiB over start (+    0.6 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +    12.3 MiB over start (+   12.2 over before), live after +     0.1, value     0.14 MiB,    0.7 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    34.0 MiB over start (+   33.8 over before), live after +     0.5, value     1.38 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   170.5 MiB over start (+  170.0 over before), live after +    38.9, value    38.99 MiB,    0.6 s
+    W3   annotation match                                               w peak +   300.6 MiB over start (+  261.6 over before), live after +    39.3, value     0.86 MiB,    0.2 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +  1344.3 MiB over start (+ 1304.9 over before), live after +    45.9, value    15.99 MiB,    2.7 s
+    W5   portable results saved as an rds state value                   w peak +  1775.1 MiB over start (+ 1729.2 over before), live after +    46.1, value    16.75 MiB,    4.5 s
+    -- the moved values removed and collected
+    live heap after removal +0.8 MiB over start; delivered value 0.871 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +  1384.7 MiB over start (+ 1383.9 over before), live after +   601.1, value   535.42 MiB,    3.8 s
+    A2   provenance cleared; external-resource records                    peak +   601.1 MiB over start (+    0.0 over before), live after +   601.1, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +   601.1 MiB over start (+    0.0 over before), live after +   601.1, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +   633.4 MiB over start (+   32.3 over before), live after +   601.2, value     0.02 MiB,    4.8 s
+    A5   bus payload (:901-907)                                           peak +   601.1 MiB over start (+    0.0 over before), live after +   601.1, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +   601.2 MiB over start (+    0.0 over before), live after +   601.1, value   535.42 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +   601.2 MiB over start (+    0.1 over before), live after +   601.1, value     0.61 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +  1775.1 MiB over start (+ 1174.0 over before), live after +   601.2, value     0.00 MiB,    6.5 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +   601.2 MiB over start (+    0.0 over before), live after +   601.2, value   536.30 MiB,    0.0 s
+  [managed 4000 x 300 x 3, live pass 1 (cold)] FIGURE: highest max used - live heap at start = 1775.1 MiB = 1.7335 GiB
+  [managed 4000 x 300 x 3, live pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.82 MiB
+-- managed controller, 4000 x 300 x 3, live, pass 2 (warm)
+  [managed 4000 x 300 x 3, live pass 2 (warm)] start: live heap 847.5 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.77 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.7 MiB over start (+    0.5 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.7 MiB over start (+    0.6 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     5.8 MiB over start (+    5.7 over before), live after +     0.1, value     0.14 MiB,    0.6 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    34.0 MiB over start (+   33.8 over before), live after +     0.5, value     1.38 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   170.5 MiB over start (+  170.0 over before), live after +    38.9, value    38.99 MiB,    0.6 s
+    W3   annotation match                                               w peak +   300.6 MiB over start (+  261.6 over before), live after +    39.3, value     0.86 MiB,    0.2 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +  1343.7 MiB over start (+ 1304.4 over before), live after +    45.9, value    15.99 MiB,    2.7 s
+    W5   portable results saved as an rds state value                   w peak +  1774.5 MiB over start (+ 1728.6 over before), live after +    46.1, value    16.75 MiB,    4.6 s
+    -- the moved values removed and collected
+    live heap after removal +0.8 MiB over start; delivered value 0.871 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +  1384.1 MiB over start (+ 1383.3 over before), live after +   601.1, value   535.42 MiB,    3.5 s
+    A2   provenance cleared; external-resource records                    peak +   601.1 MiB over start (+    0.0 over before), live after +   601.1, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +   601.1 MiB over start (+    0.0 over before), live after +   601.1, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +   633.7 MiB over start (+   32.6 over before), live after +   601.2, value     0.02 MiB,    5.1 s
+    A5   bus payload (:901-907)                                           peak +   601.1 MiB over start (+    0.0 over before), live after +   601.1, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +   601.2 MiB over start (+    0.0 over before), live after +   601.1, value   535.42 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +   601.2 MiB over start (+    0.1 over before), live after +   601.1, value     0.61 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +  1774.5 MiB over start (+ 1173.4 over before), live after +   601.2, value     0.00 MiB,    6.5 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +   601.2 MiB over start (+    0.0 over before), live after +   601.1, value   536.30 MiB,    0.0 s
+  [managed 4000 x 300 x 3, live pass 2 (warm)] FIGURE: highest max used - live heap at start = 1774.5 MiB = 1.7329 GiB
+  [managed 4000 x 300 x 3, live pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 186.82 MiB
+== 4000 x 300 x 3, live: in process 1.7170 / 1.7338 GiB, managed controller 1.7335 / 1.7329 GiB, difference -0.0165 / 0.0009 GiB (cold / warm); portable 186.82 MiB; network calls: offline double gprofiler2::gost=48
+-- in process, 4000 x 300 x 3, double, pass 1 (cold)
+  [in process 4000 x 300 x 3, double pass 1 (cold)] start: live heap 848.1 MiB
+    G1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   170.1 MiB over start (+  170.0 over before), live after +    38.6, value    38.99 MiB,    0.6 s
+    G3   annotation resolve (:853-854)                                    peak +    38.6 MiB over start (+    0.0 over before), live after +    38.6, value     0.77 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +   300.2 MiB over start (+  261.6 over before), live after +    38.9, value     0.86 MiB,    0.2 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    39.0 MiB over start (+    0.0 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    39.5 MiB over start (+    0.5 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    39.0 MiB over start (+    0.1 over before), live after +    38.9, value    39.27 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   117.4 MiB over start (+   78.5 over before), live after +    39.1, value     0.11 MiB,    0.3 s
+    G9a  display tables (:891-900)                                        peak +    78.6 MiB over start (+   39.6 over before), live after +    39.1, value     0.02 MiB,    5.6 s
+    G9b  bus payload (:901-907)                                           peak +    39.1 MiB over start (+    0.0 over before), live after +    39.1, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    39.1 MiB over start (+    0.0 over before), live after +    39.1, value     0.10 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    39.1 MiB over start (+    0.1 over before), live after +    39.1, value     0.61 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +   114.3 MiB over start (+   75.2 over before), live after +    39.1, value     0.00 MiB,    0.7 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    39.1 MiB over start (+    0.0 over before), live after +    39.1, value     0.98 MiB,    0.0 s
+  [in process 4000 x 300 x 3, double pass 1 (cold)] FIGURE: highest max used - live heap at start = 300.2 MiB = 0.2931 GiB
+  [in process 4000 x 300 x 3, double pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+-- in process, 4000 x 300 x 3, double, pass 2 (warm)
+  [in process 4000 x 300 x 3, double pass 2 (warm)] start: live heap 848.2 MiB
+    G1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   170.1 MiB over start (+  170.0 over before), live after +    38.6, value    38.99 MiB,    0.7 s
+    G3   annotation resolve (:853-854)                                    peak +    38.6 MiB over start (+    0.0 over before), live after +    38.6, value     0.77 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +   300.2 MiB over start (+  261.6 over before), live after +    38.9, value     0.86 MiB,    0.2 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    39.0 MiB over start (+    0.0 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    39.5 MiB over start (+    0.5 over before), live after +    38.9, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    39.0 MiB over start (+    0.1 over before), live after +    38.9, value    39.27 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   119.2 MiB over start (+   80.3 over before), live after +    39.1, value     0.11 MiB,    0.2 s
+    G9a  display tables (:891-900)                                        peak +    73.4 MiB over start (+   34.3 over before), live after +    39.1, value     0.02 MiB,    5.3 s
+    G9b  bus payload (:901-907)                                           peak +    39.1 MiB over start (+    0.0 over before), live after +    39.1, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    39.1 MiB over start (+    0.0 over before), live after +    39.1, value     0.10 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    39.1 MiB over start (+    0.1 over before), live after +    39.1, value     0.61 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +   115.3 MiB over start (+   76.2 over before), live after +    39.1, value     0.00 MiB,    0.7 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    39.1 MiB over start (+    0.0 over before), live after +    39.1, value     0.98 MiB,    0.0 s
+  [in process 4000 x 300 x 3, double pass 2 (warm)] FIGURE: highest max used - live heap at start = 300.2 MiB = 0.2931 GiB
+  [in process 4000 x 300 x 3, double pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+-- managed controller, 4000 x 300 x 3, double, pass 1 (cold)
+  [managed 4000 x 300 x 3, double pass 1 (cold)] start: live heap 848.2 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.77 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.7 MiB over start (+    0.5 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     6.0 MiB over start (+    5.9 over before), live after +     0.1, value     0.14 MiB,    0.7 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    34.0 MiB over start (+   33.8 over before), live after +     0.5, value     1.38 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   170.5 MiB over start (+  170.0 over before), live after +    38.9, value    38.99 MiB,    0.7 s
+    W3   annotation match                                               w peak +   300.6 MiB over start (+  261.6 over before), live after +    39.3, value     0.86 MiB,    0.2 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +    99.2 MiB over start (+   59.9 over before), live after +    39.4, value     0.11 MiB,    0.2 s
+    W5   portable results saved as an rds state value                   w peak +    61.9 MiB over start (+   22.5 over before), live after +    39.4, value     0.97 MiB,    0.0 s
+    -- the moved values removed and collected
+    live heap after removal +0.5 MiB over start; delivered value 0.871 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +     8.3 MiB over start (+    7.8 over before), live after +     0.7, value     0.17 MiB,    0.0 s
+    A2   provenance cleared; external-resource records                    peak +    24.9 MiB over start (+   24.2 over before), live after +     0.7, value       NA MiB,    0.1 s
+    A3   bus filter metadata (:874-876)                                   peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +    35.3 MiB over start (+   34.6 over before), live after +     0.7, value     0.02 MiB,    5.1 s
+    A5   bus payload (:901-907)                                           peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value     0.17 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +     0.8 MiB over start (+    0.1 over before), live after +     0.7, value     0.61 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +    78.0 MiB over start (+   77.3 over before), live after +     0.8, value     0.00 MiB,    0.7 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value     1.06 MiB,    0.0 s
+  [managed 4000 x 300 x 3, double pass 1 (cold)] FIGURE: highest max used - live heap at start = 78.0 MiB = 0.0761 GiB
+  [managed 4000 x 300 x 3, double pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+-- managed controller, 4000 x 300 x 3, double, pass 2 (warm)
+  [managed 4000 x 300 x 3, double pass 2 (warm)] start: live heap 848.2 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    24.9 MiB over start (+   24.9 over before), live after +     0.1, value     1.22 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.77 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.7 MiB over start (+    0.5 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.1 MiB over start (+    0.0 over before), live after +     0.1, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     6.1 MiB over start (+    6.0 over before), live after +     0.1, value     0.14 MiB,    0.6 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    34.0 MiB over start (+   33.8 over before), live after +     0.5, value     1.38 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   170.5 MiB over start (+  170.0 over before), live after +    38.9, value    38.99 MiB,    0.7 s
+    W3   annotation match                                               w peak +   300.6 MiB over start (+  261.6 over before), live after +    39.3, value     0.86 MiB,    0.2 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   100.1 MiB over start (+   60.8 over before), live after +    39.4, value     0.11 MiB,    0.2 s
+    W5   portable results saved as an rds state value                   w peak +    61.9 MiB over start (+   22.5 over before), live after +    39.4, value     0.97 MiB,    0.1 s
+    -- the moved values removed and collected
+    live heap after removal +0.5 MiB over start; delivered value 0.871 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +     8.3 MiB over start (+    7.8 over before), live after +     0.7, value     0.17 MiB,    0.0 s
+    A2   provenance cleared; external-resource records                    peak +    25.8 MiB over start (+   25.1 over before), live after +     0.7, value       NA MiB,    0.1 s
+    A3   bus filter metadata (:874-876)                                   peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +    35.6 MiB over start (+   34.9 over before), live after +     0.7, value     0.02 MiB,    5.0 s
+    A5   bus payload (:901-907)                                           peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value     0.17 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +     0.8 MiB over start (+    0.1 over before), live after +     0.7, value     0.61 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +    79.0 MiB over start (+   78.3 over before), live after +     0.8, value     0.00 MiB,    0.7 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +     0.7 MiB over start (+    0.0 over before), live after +     0.7, value     1.06 MiB,    0.0 s
+  [managed 4000 x 300 x 3, double pass 2 (warm)] FIGURE: highest max used - live heap at start = 79.0 MiB = 0.0771 GiB
+  [managed 4000 x 300 x 3, double pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.06 MiB
+== 4000 x 300 x 3, double: in process 0.2931 / 0.2931 GiB, managed controller 0.0761 / 0.0771 GiB, difference 0.2170 / 0.2160 GiB (cold / warm); portable 0.06 MiB; network calls: offline double gprofiler2::gost=48
+
+== case 16000 proteins x 300 samples x 1 contrasts (1300 s elapsed) ==
+  fixture: 16000 proteins x 300 samples, 2 groups, 1 contrasts; protein table 37.8 MiB in R
+  DA 110.6 s, publication 13.9 s; DA tables: da_proteins_groupB-groupA_long_annot.tsv 182.2 MB
+-- in process, 16000 x 300 x 1, live, pass 1 (cold)
+  [in process 16000 x 300 x 1, live pass 1 (cold)] start: live heap 928.9 MiB
+    G1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   144.1 MiB over start (+  143.8 over before), live after +    75.7, value    77.43 MiB,    0.5 s
+    G3   annotation resolve (:853-854)                                    peak +    75.7 MiB over start (+    0.0 over before), live after +    75.7, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +  1105.9 MiB over start (+ 1030.2 over before), live after +    77.2, value     3.42 MiB,    0.8 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    77.2 MiB over start (+    0.0 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    77.7 MiB over start (+    0.5 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    77.3 MiB over start (+    0.1 over before), live after +    77.2, value    78.53 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   897.9 MiB over start (+  820.7 over before), live after +     0.3, value    10.85 MiB,    1.0 s
+    G9a  display tables (:891-900)                                        peak +    16.2 MiB over start (+   15.9 over before), live after +     0.3, value     0.01 MiB,    1.7 s
+    G9b  bus payload (:901-907)                                           peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value    10.84 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +     0.4 MiB over start (+    0.1 over before), live after +     0.3, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +  1955.0 MiB over start (+ 1954.8 over before), live after +     0.4, value     0.00 MiB,    2.5 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +     0.4 MiB over start (+    0.0 over before), live after +     0.4, value    14.25 MiB,    0.0 s
+  [in process 16000 x 300 x 1, live pass 1 (cold)] FIGURE: highest max used - live heap at start = 1955.0 MiB = 1.9092 GiB
+  [in process 16000 x 300 x 1, live pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 64.17 MiB
+-- in process, 16000 x 300 x 1, live, pass 2 (warm)
+  [in process 16000 x 300 x 1, live pass 2 (warm)] start: live heap 850.7 MiB
+    G1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   144.1 MiB over start (+  143.8 over before), live after +    75.7, value    77.43 MiB,    0.5 s
+    G3   annotation resolve (:853-854)                                    peak +    75.7 MiB over start (+    0.0 over before), live after +    75.7, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +  1105.9 MiB over start (+ 1030.2 over before), live after +    77.2, value     3.42 MiB,    0.8 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    77.2 MiB over start (+    0.0 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    77.7 MiB over start (+    0.5 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    77.3 MiB over start (+    0.1 over before), live after +    77.2, value    78.53 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   899.3 MiB over start (+  822.1 over before), live after +    78.6, value    10.85 MiB,    1.0 s
+    G9a  display tables (:891-900)                                        peak +    89.0 MiB over start (+   10.5 over before), live after +    78.5, value     0.01 MiB,    1.6 s
+    G9b  bus payload (:901-907)                                           peak +    78.5 MiB over start (+    0.0 over before), live after +    78.5, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    78.6 MiB over start (+    0.0 over before), live after +    78.5, value    10.84 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    78.6 MiB over start (+    0.1 over before), live after +    78.5, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +  1652.9 MiB over start (+ 1574.4 over before), live after +    78.6, value     0.00 MiB,    2.5 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    78.6 MiB over start (+    0.0 over before), live after +    78.6, value    14.25 MiB,    0.0 s
+  [in process 16000 x 300 x 1, live pass 2 (warm)] FIGURE: highest max used - live heap at start = 1652.9 MiB = 1.6142 GiB
+  [in process 16000 x 300 x 1, live pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 64.17 MiB
+-- managed controller, 16000 x 300 x 1, live, pass 1 (cold)
+  [managed 16000 x 300 x 1, live pass 1 (cold)] start: live heap 850.9 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.9 MiB over start (+    0.6 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +    18.2 MiB over start (+   17.9 over before), live after +     0.4, value     0.11 MiB,    0.7 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.1 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   145.5 MiB over start (+  143.8 over before), live after +    77.1, value    77.43 MiB,    0.5 s
+    W3   annotation match                                               w peak +  1107.3 MiB over start (+ 1030.2 over before), live after +    78.6, value     3.42 MiB,    0.9 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   901.3 MiB over start (+  822.8 over before), live after +    79.9, value    10.85 MiB,    1.0 s
+    W5   portable results saved as an rds state value                   w peak +  1596.2 MiB over start (+ 1516.3 over before), live after +    80.0, value    14.24 MiB,    1.7 s
+    -- the moved values removed and collected
+    live heap after removal +1.9 MiB over start; delivered value 3.434 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +  1305.1 MiB over start (+ 1303.2 over before), live after +   206.9, value   183.04 MiB,    1.2 s
+    A2   provenance cleared; external-resource records                    peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +   217.4 MiB over start (+   10.6 over before), live after +   206.9, value     0.01 MiB,    1.6 s
+    A5   bus payload (:901-907)                                           peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value   183.04 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +   207.0 MiB over start (+    0.1 over before), live after +   206.9, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +  1652.8 MiB over start (+ 1445.9 over before), live after +   206.9, value     0.00 MiB,    2.6 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value   186.48 MiB,    0.0 s
+  [managed 16000 x 300 x 1, live pass 1 (cold)] FIGURE: highest max used - live heap at start = 1652.8 MiB = 1.6141 GiB
+  [managed 16000 x 300 x 1, live pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 64.17 MiB
+-- managed controller, 16000 x 300 x 1, live, pass 2 (warm)
+  [managed 16000 x 300 x 1, live pass 2 (warm)] start: live heap 851.1 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.9 MiB over start (+    0.6 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     5.7 MiB over start (+    5.4 over before), live after +     0.3, value     0.11 MiB,    0.7 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.1 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   145.5 MiB over start (+  143.8 over before), live after +    77.1, value    77.43 MiB,    0.5 s
+    W3   annotation match                                               w peak +  1107.3 MiB over start (+ 1030.2 over before), live after +    78.6, value     3.42 MiB,    0.9 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   902.0 MiB over start (+  823.4 over before), live after +    79.9, value    10.85 MiB,    1.0 s
+    W5   portable results saved as an rds state value                   w peak +  1596.2 MiB over start (+ 1516.3 over before), live after +    80.0, value    14.24 MiB,    1.7 s
+    -- the moved values removed and collected
+    live heap after removal +1.9 MiB over start; delivered value 3.434 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +  1304.8 MiB over start (+ 1303.0 over before), live after +   206.9, value   183.04 MiB,    1.2 s
+    A2   provenance cleared; external-resource records                    peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +   217.5 MiB over start (+   10.7 over before), live after +   206.9, value     0.01 MiB,    1.6 s
+    A5   bus payload (:901-907)                                           peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value   183.04 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +   207.0 MiB over start (+    0.1 over before), live after +   206.9, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +  1652.6 MiB over start (+ 1445.7 over before), live after +   206.9, value     0.00 MiB,    2.6 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +   206.9 MiB over start (+    0.0 over before), live after +   206.9, value   186.48 MiB,    0.0 s
+  [managed 16000 x 300 x 1, live pass 2 (warm)] FIGURE: highest max used - live heap at start = 1652.6 MiB = 1.6139 GiB
+  [managed 16000 x 300 x 1, live pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 64.17 MiB
+== 16000 x 300 x 1, live: in process 1.9092 / 1.6142 GiB, managed controller 1.6141 / 1.6139 GiB, difference 0.2951 / 0.0004 GiB (cold / warm); portable 64.17 MiB; network calls: offline double gprofiler2::gost=56
+-- in process, 16000 x 300 x 1, double, pass 1 (cold)
+  [in process 16000 x 300 x 1, double pass 1 (cold)] start: live heap 851.3 MiB
+    G1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   144.1 MiB over start (+  143.8 over before), live after +    75.7, value    77.43 MiB,    0.5 s
+    G3   annotation resolve (:853-854)                                    peak +    75.7 MiB over start (+    0.0 over before), live after +    75.7, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +  1105.9 MiB over start (+ 1030.2 over before), live after +    77.2, value     3.42 MiB,    0.8 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    77.2 MiB over start (+    0.0 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    77.7 MiB over start (+    0.5 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    77.3 MiB over start (+    0.1 over before), live after +    77.2, value    78.53 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   136.0 MiB over start (+   58.8 over before), live after +    77.3, value     0.06 MiB,    0.2 s
+    G9a  display tables (:891-900)                                        peak +    93.9 MiB over start (+   16.6 over before), live after +    77.3, value     0.01 MiB,    1.7 s
+    G9b  bus payload (:901-907)                                           peak +    77.3 MiB over start (+    0.0 over before), live after +    77.2, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    77.3 MiB over start (+    0.0 over before), live after +    77.2, value     0.05 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    77.3 MiB over start (+    0.1 over before), live after +    77.2, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +   124.5 MiB over start (+   47.3 over before), live after +    77.3, value     0.00 MiB,    0.5 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    77.3 MiB over start (+    0.0 over before), live after +    77.3, value     3.49 MiB,    0.0 s
+  [in process 16000 x 300 x 1, double pass 1 (cold)] FIGURE: highest max used - live heap at start = 1105.9 MiB = 1.0800 GiB
+  [in process 16000 x 300 x 1, double pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.02 MiB
+-- in process, 16000 x 300 x 1, double, pass 2 (warm)
+  [in process 16000 x 300 x 1, double pass 2 (warm)] start: live heap 851.4 MiB
+    G1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    G2   DA tables + refusal (:846-852) [moves]                           peak +   144.1 MiB over start (+  143.8 over before), live after +    75.7, value    77.43 MiB,    0.5 s
+    G3   annotation resolve (:853-854)                                    peak +    75.7 MiB over start (+    0.0 over before), live after +    75.7, value     3.05 MiB,    0.0 s
+    G4   annotation match (:855-856) [moves]                              peak +  1105.9 MiB over start (+ 1030.2 over before), live after +    77.2, value     3.42 MiB,    0.9 s
+    G5   organism filter, bus metadata (:857-876) [filter off]            peak +    77.2 MiB over start (+    0.0 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G6   progress 0.5, method (:877-880)                                  peak +    77.7 MiB over start (+    0.5 over before), live after +    77.2, value     0.00 MiB,    0.0 s
+    G7   id column, kernel args, kernel, cp10 (:881-889)                  peak +    77.3 MiB over start (+    0.1 over before), live after +    77.2, value    78.53 MiB,    0.0 s
+    G8   config$run: runDIAReferenceEnrichment (:890) [moves]             peak +   137.4 MiB over start (+   60.2 over before), live after +    77.3, value     0.06 MiB,    0.2 s
+    G9a  display tables (:891-900)                                        peak +    88.4 MiB over start (+   11.2 over before), live after +    77.2, value     0.01 MiB,    1.6 s
+    G9b  bus payload (:901-907)                                           peak +    77.2 MiB over start (+    0.0 over before), live after +    77.2, value       NA MiB,    0.0 s
+    G9c  results' @args stamped (:908-911)                                peak +    77.3 MiB over start (+    0.0 over before), live after +    77.2, value     0.05 MiB,    0.0 s
+    G9d  UI parameters (:912-915)                                         peak +    77.3 MiB over start (+    0.1 over before), live after +    77.2, value     2.26 MiB,    0.0 s
+    G9e  state commit (:916-917)                                          peak +   125.3 MiB over start (+   48.0 over before), live after +    77.3, value     0.00 MiB,    0.5 s
+    G9f  tab_status, progress, the returned list (:918-925)               peak +    77.3 MiB over start (+    0.0 over before), live after +    77.3, value     3.49 MiB,    0.0 s
+  [in process 16000 x 300 x 1, double pass 2 (warm)] FIGURE: highest max used - live heap at start = 1105.9 MiB = 1.0800 GiB
+  [in process 16000 x 300 x 1, double pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.02 MiB
+-- managed controller, 16000 x 300 x 1, double, pass 1 (cold)
+  [managed 16000 x 300 x 1, double pass 1 (cold)] start: live heap 851.4 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     5.9 MiB over start (+    5.7 over before), live after +     0.3, value     0.11 MiB,    0.7 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.1 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   145.5 MiB over start (+  143.8 over before), live after +    77.1, value    77.43 MiB,    0.5 s
+    W3   annotation match                                               w peak +  1107.3 MiB over start (+ 1030.2 over before), live after +    78.6, value     3.42 MiB,    0.9 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   125.9 MiB over start (+   47.4 over before), live after +    78.6, value     0.06 MiB,    0.2 s
+    W5   portable results saved as an rds state value                   w peak +    89.7 MiB over start (+   11.1 over before), live after +    78.6, value     3.48 MiB,    0.0 s
+    -- the moved values removed and collected
+    live heap after removal +1.8 MiB over start; delivered value 3.434 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +     5.6 MiB over start (+    3.8 over before), live after +     1.8, value     0.07 MiB,    0.0 s
+    A2   provenance cleared; external-resource records                    peak +    18.1 MiB over start (+   16.2 over before), live after +     1.9, value       NA MiB,    0.0 s
+    A3   bus filter metadata (:874-876)                                   peak +     1.9 MiB over start (+    0.0 over before), live after +     1.8, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +    13.1 MiB over start (+   11.3 over before), live after +     1.9, value     0.01 MiB,    1.7 s
+    A5   bus payload (:901-907)                                           peak +     1.9 MiB over start (+    0.0 over before), live after +     1.9, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +     1.9 MiB over start (+    0.0 over before), live after +     1.9, value     0.07 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +     1.9 MiB over start (+    0.1 over before), live after +     1.9, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +    50.7 MiB over start (+   48.8 over before), live after +     1.9, value     0.00 MiB,    0.5 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +     1.9 MiB over start (+    0.0 over before), live after +     1.9, value     3.51 MiB,    0.0 s
+  [managed 16000 x 300 x 1, double pass 1 (cold)] FIGURE: highest max used - live heap at start = 50.7 MiB = 0.0495 GiB
+  [managed 16000 x 300 x 1, double pass 1 (cold)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.02 MiB
+-- managed controller, 16000 x 300 x 1, double, pass 2 (warm)
+  [managed 16000 x 300 x 1, double pass 2 (warm)] start: live heap 851.4 MiB
+    -- the request half (controller)
+    R1   context (:822-845)                                               peak +    29.0 MiB over start (+   29.0 over before), live after +     0.3, value     4.51 MiB,    0.1 s
+    R2   annotation resolve (:853-854)                                    peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     3.05 MiB,    0.0 s
+    R3   mapping and its warning [filter off]                             peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R4   progress 0.5, method (:877-880)                                  peak +     0.8 MiB over start (+    0.5 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R5   the kernel's name                                                peak +     0.3 MiB over start (+    0.0 over before), live after +     0.3, value     0.00 MiB,    0.0 s
+    R6   transfer values: annotations as a saved display table            peak +     6.0 MiB over start (+    5.7 over before), live after +     0.3, value     0.11 MiB,    0.7 s
+    -- the worker's compute half (emulated in this process; not counted)
+    W1   source components, annotations materialized                    w peak +    47.4 MiB over start (+   47.1 over before), live after +     1.7, value     5.31 MiB,    0.1 s
+    W2   DA tables + refusal                                            w peak +   145.5 MiB over start (+  143.8 over before), live after +    77.1, value    77.43 MiB,    0.5 s
+    W3   annotation match                                               w peak +  1107.3 MiB over start (+ 1030.2 over before), live after +    78.6, value     3.42 MiB,    0.9 s
+    W4   kernel inputs, run, product, roots (computeDIAReferenceEnrichment) w peak +   126.6 MiB over start (+   48.1 over before), live after +    78.6, value     0.06 MiB,    0.2 s
+    W5   portable results saved as an rds state value                   w peak +    89.7 MiB over start (+   11.1 over before), live after +    78.6, value     3.48 MiB,    0.0 s
+    -- the moved values removed and collected
+    live heap after removal +1.8 MiB over start; delivered value 3.434 MiB
+    -- the accept half (controller)
+    A1   results hydrated from the rds state value                        peak +     5.6 MiB over start (+    3.8 over before), live after +     1.8, value     0.07 MiB,    0.0 s
+    A2   provenance cleared; external-resource records                    peak +    18.8 MiB over start (+   16.9 over before), live after +     1.9, value       NA MiB,    0.1 s
+    A3   bus filter metadata (:874-876)                                   peak +     1.9 MiB over start (+    0.0 over before), live after +     1.8, value     0.00 MiB,    0.0 s
+    A4   display tables (:891-900)                                        peak +    13.2 MiB over start (+   11.4 over before), live after +     1.9, value     0.01 MiB,    1.8 s
+    A5   bus payload (:901-907)                                           peak +     1.9 MiB over start (+    0.0 over before), live after +     1.9, value       NA MiB,    0.0 s
+    A6   results' @args stamped (:908-911)                                peak +     1.9 MiB over start (+    0.0 over before), live after +     1.9, value     0.07 MiB,    0.0 s
+    A7   UI parameters (:912-915)                                         peak +     1.9 MiB over start (+    0.1 over before), live after +     1.9, value     2.26 MiB,    0.0 s
+    A8   state commit (:916-917)                                          peak +    51.5 MiB over start (+   49.6 over before), live after +     1.9, value     0.00 MiB,    0.5 s
+    A9   tab_status, progress, the returned list (:918-925)               peak +     1.9 MiB over start (+    0.0 over before), live after +     1.9, value     3.51 MiB,    0.0 s
+  [managed 16000 x 300 x 1, double pass 2 (warm)] FIGURE: highest max used - live heap at start = 51.5 MiB = 0.0503 GiB
+  [managed 16000 x 300 x 1, double pass 2 (warm)] committed: enrichment_completed (saved = TRUE); portable results serialized 0.02 MiB
+== 16000 x 300 x 1, double: in process 1.0800 / 1.0800 GiB, managed controller 0.0495 / 0.0503 GiB, difference 1.0305 / 1.0297 GiB (cold / warm); portable 0.02 MiB; network calls: offline double gprofiler2::gost=56
+CEILING: 1744 s elapsed; case 4000 x 300 x 1 not started
+
+== summary (GiB = 2^30 bytes) ==
+(6 cases)
+16000 x 300 x 3, live        in process 1.2321 / 1.0751, managed 2.1787 / 1.7319, difference -0.9466 / -0.6568 (cold / warm), portable 186.82 MiB
+16000 x 300 x 3, double      in process 1.1556 / 1.1556, managed 0.0774 / 0.0784, difference 1.0782 / 1.0772 (cold / warm), portable 0.06 MiB
+4000 x 300 x 3, live         in process 1.7170 / 1.7338, managed 1.7335 / 1.7329, difference -0.0165 / 0.0009 (cold / warm), portable 186.82 MiB
+4000 x 300 x 3, double       in process 0.2931 / 0.2931, managed 0.0761 / 0.0771, difference 0.2170 / 0.2160 (cold / warm), portable 0.06 MiB
+16000 x 300 x 1, live        in process 1.9092 / 1.6142, managed 1.6141 / 1.6139, difference 0.2951 / 0.0004 (cold / warm), portable 64.17 MiB
+16000 x 300 x 1, double      in process 1.0800 / 1.0800, managed 0.0495 / 0.0503, difference 1.0305 / 1.0297 (cold / warm), portable 0.02 MiB
+network calls over the whole probe: offline double gprofiler2::gost=56
+finished 2026-11-10 15:47:45; 1744 s elapsed

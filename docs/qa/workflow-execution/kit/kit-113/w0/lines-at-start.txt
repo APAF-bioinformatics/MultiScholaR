@@ -1,0 +1,202 @@
+KIT-113 W0: the line map (every file:line the ticket names, re-checked on the start commit)
+=========================================================================================
+
+VERDICT: W0 DOES NOT STOP ON THE LINE MAP.
+  Every function the ticket names exists at HEAD, and every named body is byte-identical to 525cbd78, apart
+  from moving. The only changed bodies are the three KIT-112 changes the ticket anticipated, by name, at
+  line 26 and in D3/D4/D11:
+    - registerBuiltinWorkflowOperations' in-process loop and omics loop (utils_workflow_operations.R): the
+      DA contrast moved from the first loop to the second. The in-process loop now holds `enrichment` alone,
+      which is the state D3 expects ("After KIT-112 the in-process loop holds only `enrichment`").
+    - test-workflow-operation-registry.R, the KIT-024/KIT-111 block and the F111-03 block: retargeted by KIT-112's
+      D11. The `enrichment` expectations D11 retargets are unchanged: the in-process loop at :165-172, and
+      `enrichment` absent from both lists in the named-input block.
+    - proteomicsDiaBinding (utils_workflow_prot_declarations.R): gained the `da` entry (KIT-112 D4). KIT-113 D4
+      leaves it unchanged.
+  One cited precedent moved: the DA tab's `saveDIADisplayTable` call for the annotations
+  (mod_prot_da_handlers_run_analysis.R:51-52) is now :61-63, inside a `publication` closure. The call and its
+  arguments are unchanged. It is cited as a pattern only; KIT-113 does not change it.
+
+Commits
+  ticket's checked commit .... 525cbd78794c7e425de8526b07ac1bce1f4a73f6
+  start commit ............... 6dce329d (KIT-112 closure)
+  HEAD when checked .......... 2bad751953d76bc4f4edcea4c3dc047456b4882b. It differs from 6dce329d only by
+                               docs/qa/.../kit-113/memory/baseline-screen.tsv (git diff --stat 6dce329d HEAD).
+  R/ at HEAD ................. identical to 5ecc9fd1, kit_112's source (`git diff --quiet 5ecc9fd1 HEAD -- R/` exits 0).
+
+Method
+  `git diff --stat 525cbd78 HEAD -- R/ tests/ tools/ DESCRIPTION NAMESPACE` changes exactly 7 files:
+    R/mod_prot_da_handlers_run_analysis.R, R/utils_workflow_dia_da.R, R/utils_workflow_operations.R,
+    R/utils_workflow_prot_declarations.R, tests/testthat/test-omic-da-module.R,
+    tests/testthat/test-workflow-operation-registry.R, tests/testthat/test-workflow-saved-da.R.
+  docs/qa/workflow-execution/kit/bindings-generator.R also changed: KIT-112's block, +17 lines after :1323.
+  Any other file the ticket cites is byte-identical between 525cbd78 and HEAD (`git diff --quiet` per file), so its
+  lines are "same" by identity. Each of those lines was also printed at HEAD and checked against what the ticket
+  says is there. For the changed files, the moved bodies were compared with
+  `diff <(git show 525cbd78:<file> | sed -n a,b) <(sed -n a',b' <file>)`.
+
+Lines in scope (the ticket's Facts table): 525cbd78 -> HEAD
+  utils_workflow_enrichment.R ........ 1,134 -> 1,134  same
+  utils_workflow_dia_da.R ............ 1,025 -> 1,116  changed (KIT-112: +91, all of it in the DA runner's split above
+                                                       the enrichment code (+82) and F112-03 below it (+9))
+  utils_workflow_operations.R .......... 762 -> 766    changed (KIT-112 D3: +4)
+  mod_omic_enrich.R .................... 692 -> 692    same
+  test-omics-enrich-core.R ............. 308 -> 308    same
+  test-omic-enrich-module.R .......... 3,669 -> 3,669  same
+  test-workflow-operation-registry.R ... 353 -> 358    changed (KIT-112 D11: +5)
+  utils_workflow_execution.R ......... 3,295 -> 3,295  same
+  utils_workflow_omics_actions.R ....... 568 -> 568    same
+  utils_workflow_dia_enrichment.R ...... 653 -> 653    same
+
+---------------------------------------------------------------------------------------------------------
+Format: [ticket line] reference (what the ticket says is there) -> line(s) at HEAD -> status
+---------------------------------------------------------------------------------------------------------
+
+== R/utils_workflow_dia_da.R (changed by KIT-112; enrichment code moved +84, bodies identical) ==
+  Body check: 525cbd78 :530-610 and HEAD :614-694 are byte-identical (diff empty). This span covers
+  diaEnrichmentServiceIdentity's tail, diaEnrichmentOperation and runDIAReferenceEnrichment with its closing brace.
+  [15, 106, 73] :572-601 runDIAReferenceEnrichment ........... -> :656-685 (closing brace :686)   moved +84, body same
+  [26] :572 (KIT-112's DA runner split lands above it) ....... -> :656                            moved to :656; the split is :333-518 (runDIAReferenceDaAnalysis :343 to computeWorkflowDiaContrastAction :504-518)
+  [58] :539-559 diaEnrichmentOperation (its body) ............. -> :623-643                        moved +84, body same
+  [73] :539-540 runProjected's design-only fields ............ -> :623-624                        moved +84, same
+  [96] :540 output_class = "EnrichmentResults" ............... -> :624                            moved +84, same
+  [111] :542 factors$cacheable = FALSE ....................... -> :626                            moved +84, same
+  [106] :573-592 (computeDIAReferenceEnrichment's statements) -> :657-676                        moved +84, same
+  [73, 106] :593-599 the external-resource records ........... -> :677-683                        moved +84, same
+  [73] :584-592 product saved and rooted ..................... -> :668-676                        moved +84, same
+
+== R/utils_workflow_operations.R (changed by KIT-112 D3; anticipated, not a stop) ==
+  The in-process loop at 525cbd78 :692-701 was `for (declaration in list(diaContrastOperation(), diaEnrichmentOperation()))`.
+  At HEAD it is `for (declaration in list(diaEnrichmentOperation()))`, with one added comment line (:694, "KIT-112 D3: the DA
+  contrast left this loop for the omics one below; the enrichment stays in process (KIT-113)"). The registerWorkflowOperation
+  call in it is unchanged.
+  The omics loop gained `DA-contrast-output = "computeWorkflowDiaContrastAction"` in `handlers` and diaContrastOperation()
+  in its list, plus two comment lines. Its registerWorkflowOperation call is unchanged.
+  [15, 78] :692-701 the in-process loop ...................... -> :692-702                        changed: holds `enrichment` alone (as D3 expects)
+  [94] :692-693 the loop's comment ........................... -> :692-693 (+ :694 KIT-112 line)  same text, one line added
+  [15] :702-717 the KIT-111 omics loop ....................... -> :703-721                        changed: + DA-contrast-output (KIT-112 D3)
+  [26, 94] :692-717 both loops ............................... -> :692-721                        changed as above
+  [94] :716 `section = NULL` rule ............................ -> :720                            moved +4, same text
+
+== R/utils_workflow_prot_declarations.R (changed by KIT-112 D4; not touched by KIT-113) ==
+  [26] :1333-1386 proteomicsDiaBinding ....................... -> :1333-1393                      changed: + `da` entry (:1386-1392)
+
+== R/mod_prot_da_handlers_run_analysis.R (changed by KIT-112; a cited precedent only) ==
+  [112] :51-52 managed_step$apply(list(annotations = ... saveDIADisplayTable(...)))
+                                                                -> :61-63                         changed: the same call, now inside
+                                                                                                   `publication <- function() ...`
+
+== tests/testthat/test-workflow-operation-registry.R (changed by KIT-112 D11) ==
+  [15] :164-187 the KIT-024/KIT-111 block .................... -> :164-192 (block ends :196)      changed: title, the in-process list is
+                                                                                                   c("enrichment"), + DA-contrast-output
+                                                                                                   handler and 3 named-input expectations (:177-180)
+  [78, 196, 426] :164-172 the in-process expectations ........ -> :164-172                        changed: loops over "enrichment" only;
+                                                                                                   the six expectations (:166-171) unchanged
+  [15, 197, 426] :333-337 the F111-03 block's sets ........... -> :338-342                        changed: DA-contrast-output moved from the
+                                                                                                   head-rule list to `named`; `enrichment` in
+                                                                                                   neither list (as at 525cbd78)
+  [199] :6 (block :3, registry names) ........................ -> :6                              same
+  [199] :66 (block :3, handlers exist) ....................... -> :66                             same
+  [199] :96 (block :70, operation names) ..................... -> :96                             same
+  [199] :252-270 (block :250, sections) ...................... -> :257-275 (block :255)          moved +5, same
+
+== docs/qa/workflow-execution/kit/bindings-generator.R (KIT-112 block added after :1323) ==
+  [319] :1304-1309 KIT-111's block (the pattern) ............. -> :1304-1309                      same (KIT-112 block is :1326-1341)
+
+== R/utils_workflow_enrichment.R (byte-identical) ==
+  [15, 64, 98, 280] :820-926 runWorkflowEnrichment ........... -> :820-926                        same
+  [66, 99] :822-845 / :824-845 the context group ............. -> same                            same
+  [66] :829 readDIAExecutionComponents(..., config$da_source$components) -> :829                same
+  [67, 100] :846-852 the DA tables and the refusal ........... -> same                            same
+  [147] :849-852 the refusal ................................. -> same                            same
+  [68, 101] :853-854 the annotation resolve; [147] :853 ...... -> same                            same
+  [69] :855-856 the annotation match ......................... -> same                            same
+  [70, 102] :857-876 / :855-876 the organism filter .......... -> same                            same
+  [148] :874-876 persistProtEnrichOrganismFilterMetadata ..... -> same                            same
+  [71, 103] :877-880 progress 0.5, the method ................ -> same                            same
+  [72] :881-889 columns, arguments, kernel, cp10; [104] :881-890 -> same                          same
+  [149] :889 .capture_checkpoint(..., "cp10", ...) ........... -> same                            same
+  [73] :890 config$run(...) .................................. -> same                            same
+  [74, 105] :891-925 the display and commit .................. -> same                            same
+  [72] :210-218 resolveProtEnrichProcessEnrichmentsFn ........ -> same                            same
+  [74] :944-977 saveWorkflowEnrichmentState .................. -> same                            same
+  [74] :991 portableWorkflowEnrichmentResults ................ -> same                            same
+  [119] :1060 restoreWorkflowEnrichment ...................... -> same                            same
+  [157] :1110 produceDIADaPublication in the replay .......... -> same                            same
+  [98] :1116 runWorkflowEnrichment in the replay ............. -> same                            same
+  [423] :1102-1134 replayWorkflowEnrichmentStep .............. -> same                            same
+
+== R/mod_omic_enrich.R (byte-identical) ==
+  [15, 76, 114, 298] :577-608 runOmicEnrichAnalysis .......... -> same                            same
+  [76] :465-466 the observer ................................. -> same                            same
+  [114] :579-581 req() and the working notice; [76] :581 ..... -> same                            same
+  [76] :583-591 withProgress around the core ................. -> same                            same
+  [98] :584 runWorkflowEnrichment call ....................... -> same                            same
+  [117] :593-598 the error handler; [76] :596 ("Error in enrichment analysis") -> same            same
+  [76] :601-605 `if (completed)` (completion notice) ......... -> same                            same
+  [76] :606 removeNotification("enrichment_working") ......... -> same                            same
+  [76] :612-623 holdOmicEnrichRun ............................ -> same                            same
+  [121] :30 the header naming KIT-113 (not an ExtendedTask) .. -> same                            same
+
+== R/utils_workflow_execution.R (byte-identical) ==
+  [24, 85, 188, 270, 443] :1133 workflowLaunchService(..., "application", ...) -> same            same
+  [84] :1152-1178 workflowLaunchService; [84] :1158-1175; [85] :1163-1175; [188, 270, 443] :1152-1176, :1158-1176 -> same  same
+  [85] :1176 Rscript --vanilla ............................... -> same                            same
+  [89] :476 deadline = 1800L ................................. -> same                            same
+  [89] :2921-2923 workflowActionWorkerDeadline ............... -> same                            same
+  [95] :2933-2937 assertWorkflowActionInputSelected .......... -> same                            same
+  [96, 117] :3040 commit = NULL path ......................... -> same                            same
+  [97] :3002-3003 setWorkflowStepProvenance at completion .... -> same                            same
+  [97] :3039 product-only path ............................... -> same                            same
+  [112] :2610-2611 materializeWorkflowTable .................. -> same                            same
+  [113] :2687-2694 publishWorkflowOmicsResult ................ -> same                            same
+  [116] :695-697 "already running" guard ..................... -> same                            same
+  [117] :563-570 validateWorkflowOmicsCompletionContext ...... -> same                            same
+  [117, 189] :1586-1587 its call ............................. -> same                            same
+  [120] :640-653 "Error applying <label>:" ................... -> same                            same
+  [187] :1771-1772 / [189] :1771-1773 acceptance checks ...... -> same                            same
+  [189] :1536 assertDIAExportReady; :1540-1541; :1565; :1566; :1567 -> same                       same
+
+== R/utils_workflow_omics_actions.R (byte-identical) ==
+  [116] :72-76 the queue; :65-70 behind a retry; [117] :81-86 runner$progress -> same             same
+
+== R/utils_workflow_dia_enrichment.R (byte-identical) ==
+  [68] :478-596 resolveProtEnrichUniprotAnnotations; [68, 83] :557-584 UniProt fallback -> same   same
+
+== R/utils_workflow_dia_state.R (byte-identical) ==
+  [106] :2924 recordWorkflowExternalResource's worker no-op .. -> same                            same
+  [112] :46 saveWorkflowStateValue(..., codec) ............... -> same                            same
+
+== R/utils_omic_gui_config.R (byte-identical) ==
+  [66] :1226-1227 da_source; [106] :1225 run = runDIAReferenceEnrichment; [123] :1222-1242 omicGuiProteomicsEnrichment -> same  same
+
+== other R/ files (byte-identical) ==
+  [67] func_general_s4_objects.R:164-197 createDAResultsForEnrichment -> same                     same
+  [67] func_prot_da_results_long_format.R:147-150 (log2norm / raw maps) -> same                   same
+  [73] func_general_enrichment_orchestration.R:20 processEnrichments; :571, :588 enricher; :426-455, :677-679,
+       :786-816 (writes into pathway_dir; :677-679 is a readr::write_tsv into pathway_dir) -> same  same
+  [73, 83] func_general_enrichment_engine_helpers.R:130 gprofiler2::gost; :17 max_retries = 5 -> same  same
+  [86] utils_test_mode.R:24-29 is_test_mode ...................... -> same                         same
+  [113] utils_workflow_saved_exports.R:339-341 ................... -> same                         same
+  [117] mod_prot_norm_workflow_helpers.R:303-306 protNormManagedAction -> same                     same
+  [118] mod_prot_norm_observer_helpers.R:193-197 the runner ...... -> same                         same
+  [149] utils_shiny_logging.R:80-81 the capture option .......... -> same                         same
+
+== tests/ and tools/ (byte-identical) ==
+  [80] tools/profiling/workflow_kit.R:12-111 kitJourneySteps; [437] same; [217] :159-166 kitSetupRefusal -> same  same
+  [80] helper-gui-entry.R:275-276 closed-port proxy; :759-773 the prot_dia enrichment -> same     same
+  [80] helper-e2e-browser.R:129-130 test mode ................... -> same                         same
+  [91] helper-workflow-omics-worker.R:38-48 omicsWorkerController; [136] :107 omicsManagedChainMocks -> same  same
+  [91] helper-e2e-enrichment-doubles.R:181-200 install_enrichment_doubles -> same                 same
+  [98] test-omics-enrich-core.R:133-209; [133] :40, :133, :168, :187, :209, :237, :288 -> same    same
+  [108] test-omic-enrich-module.R:329-341 omicEnrichW1InstallKernel; [132] :3579-3586, :3598; [143] :3644;
+        [299] :602 omicEnrichW1Setup .............................. -> same                         same
+  [136] test-prot-norm-core.R:1176-1200 protNormW2Dispatch; [266] :369, :532 -> same              same
+  [262] test-workflow-dia-products.R:489 the restore ............ -> same                         same
+
+---------------------------------------------------------------------------------------------------------
+For the ticket's files_to_modify and later phases, read these HEAD lines instead of the 525cbd78 ones:
+  utils_workflow_dia_da.R ....... runDIAReferenceEnrichment :656-685, diaEnrichmentOperation :623-643
+  utils_workflow_operations.R ... the in-process loop :692-702, the omics loop :703-721
+  test-workflow-operation-registry.R ... the KIT-024/KIT-111/KIT-112 block :164-196, the F111-03 block :338-342
+All other references are unchanged.
