@@ -1761,3 +1761,94 @@ test_that("KIT-111 W3 (R5): a click while the tab's action runs waits for it; a 
         expect_length(probe$actions, 2L)
     })))
 })
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R2 (2026-11-11), A111-01: a click queued behind the tab's running action resolves its source when it starts,
+# as the in-process tab does (there the click is handled after the run).
+# ------------------------------------------------------------------------------------------------
+
+#' The managed tab driven by `drive(session, norm, log, output)` under the chain mocks; `probe$hold` keeps the action
+#' running.
+protNormAuditManaged <- function(fixture, probe, drive) {
+    log <- new.env(parent = emptyenv())
+    protNormW3Notices(log, fixture$root)
+    protNormW3Managed(fixture, probe)
+    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
+        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
+        experiment_label = "core"), drive(session, session$getReturned(), log, output))))
+    invisible(log)
+}
+
+test_that("GUI audit A111-01: a correlation click queued behind a normalisation re-run runs on that re-run's final", {
+    skip_if_not(workflowOwnerCapable())
+    fixture <- protNormCoreOwner()
+    probe <- new.env()
+    protNormAuditManaged(fixture, probe, function(session, norm, log, output) {
+        do.call(session$setInputs, protNormW3Inputs("skip"))
+        session$setInputs(run_normalization = 1)
+        session$flushReact()
+        session$setInputs(apply_correlation_filter = 1)
+        session$flushReact()
+        previous <- shiny::isolate(norm$ruv_normalized_obj)$entity_id
+        expect_identical(probe$actions[[2L]]$input, previous)
+        # The re-run is in flight when the correlation button is pressed.
+        probe$hold <- TRUE
+        session$setInputs(ruv_mode = "manual")
+        session$setInputs(run_normalization = 2)
+        session$setInputs(apply_correlation_filter = 2)
+        expect_length(probe$actions, 4L)
+        probe$hold <- FALSE
+        for (i in 1:3) {
+            session$elapse(100)
+            session$flushReact()
+        }
+        final <- shiny::isolate(norm$ruv_normalized_obj)$entity_id
+        expect_false(identical(final, previous))
+        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("normalization-ruv", "pearson-pairs",
+            "pearson-selection", "normalization-ruv", "pearson-pairs", "pearson-selection"))
+        expect_identical(vapply(probe$actions[5:6], `[[`, "", "input"), c(final, final))
+        expect_identical(withWorkflowStateScope(fixture$manager, function() fixture$manager$.context$snapshot$current_state),
+            "correlation_filtered")
+    })
+})
+
+test_that("GUI audit A111-01: RUV covariates queued behind a correlation re-apply run on that re-apply's result (DIA_LIMPA)", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    # In process the five clicks run one after the other; the second covariates run on the second correlation result.
+    click <- protNormW3Clicker()
+    unmanaged <- protNormW3Drive(protNormW1LimpaOwner(), list(
+        pass_through = do.call(click, c(list("run_normalization"), protNormW3Inputs("covariates"))),
+        correlation = click("apply_correlation_filter"), ruv = click("apply_ruv_covariates"),
+        correlation_again = click("apply_correlation_filter"), ruv_again = click("apply_ruv_covariates")), managed = FALSE)
+    fixture <- protNormW1LimpaOwner()
+    probe <- new.env()
+    protNormAuditManaged(fixture, probe, function(session, norm, log, output) {
+        do.call(session$setInputs, protNormW3Inputs("covariates"))
+        session$setInputs(run_normalization = 1)
+        session$flushReact()
+        session$setInputs(apply_correlation_filter = 1)
+        session$flushReact()
+        session$setInputs(apply_ruv_covariates = 1)
+        session$flushReact()
+        previous <- shiny::isolate(norm$correlation_filtered_obj)$entity_id
+        # The correlation re-apply is in flight when the covariates button is pressed.
+        probe$hold <- TRUE
+        session$setInputs(apply_correlation_filter = 2)
+        session$setInputs(apply_ruv_covariates = 2)
+        expect_length(probe$actions, 4L)
+        probe$hold <- FALSE
+        for (i in 1:3) {
+            session$elapse(100)
+            session$flushReact()
+        }
+        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("pearson-pairs", "pearson-selection",
+            "protein_ruv_covariates", "pearson-pairs", "pearson-selection", "protein_ruv_covariates"))
+        expect_false(identical(probe$actions[[6L]]$input, previous))
+        managed <- protNormW3Capture(fixture, norm, output, log, list())
+        for (field in c("history", "head_history", "states")) {
+            expect_identical(managed[[field]], unmanaged$ruv_again[[field]], info = field)
+        }
+    })
+})

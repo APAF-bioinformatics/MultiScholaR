@@ -36,11 +36,20 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         run$actions <- NULL
         if (is.function(done)) done()
         # A tab's own sequence (`done` starting the next) comes before a click that waited.
+        advance()
+    }
+    # GUI audit A111-01: actions given as a function are resolved when they start, not when they are queued, so a click
+    # that waited reads what the action before it left (in process the click is handled after that run).
+    resolve <- function(actions) if (is.function(actions)) actions() else actions
+    advance <- function() {
         queued <- run$queued
-        if (length(queued) && is.null(shiny::isolate(step$active()))) {
-            run$queued <- queued[-1L]
-            begin(queued[[1L]]$actions, queued[[1L]]$done, queued[[1L]]$failed, queued[[1L]]$dropped)
-        }
+        if (!length(queued) || !is.null(shiny::isolate(step$active()))) return(invisible(NULL))
+        run$queued <- queued[-1L]
+        actions <- tryCatch(resolve(queued[[1L]]$actions), error = function(error) error)
+        if (!inherits(actions, "error")) return(begin(actions, queued[[1L]]$done, queued[[1L]]$failed, queued[[1L]]$dropped))
+        # What can no longer start is told as its own failure; the next that waited has its turn.
+        if (is.function(queued[[1L]]$failed)) queued[[1L]]$failed(actions)
+        advance()
     }
     step <- installWorkflowManagedStep(session, NULL, workflow_data, NULL,
         publication = list(experiment_label = experiment_label, experiment_paths = experiment_paths, omic_type = omic_type),
@@ -59,14 +68,16 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
         read_result = readManagedOmicsResult)
     runner$step <- step
     #' Run a tab's actions in order: `done()` after the last, `failed(error)` if one fails (the step has reported it).
-    #' `dropped()`, when given, replaces `failed` if another action's failure drops these before they start.
+    #' `dropped()`, when given, replaces `failed` if another action's failure drops these before they start. `actions` may
+    #' be a function giving the list, called when the actions start.
     runner$run <- function(actions, done = NULL, failed = NULL, dropped = NULL) {
         waiting <- list(list(actions = actions, done = done, failed = failed, dropped = dropped))
         if (runner$retrying()) {
             # A publication that failed is retried from the action it stopped at; its science is never recomputed. The same
             # actions are that retry, and the first request's callbacks finish it. Anything else waits its turn.
             operations <- function(list) vapply(list, function(action) action$operation, character(1))
-            if (length(actions) && !identical(operations(actions), operations(run$actions))) run$queued <- c(run$queued, waiting)
+            resolved <- resolve(actions)
+            if (length(resolved) && !identical(operations(resolved), operations(run$actions))) run$queued <- c(run$queued, waiting)
             return(start())
         }
         # The tab's button can be pressed while another tab's action runs (the pre-normalisation figures, opening the tab).
@@ -74,7 +85,7 @@ installWorkflowOmicsActions <- function(session, workflow_data, omic_type, exper
             run$queued <- c(run$queued, waiting)
             return(invisible(NULL))
         }
-        begin(actions, done, failed, dropped)
+        begin(resolve(actions), done, failed, dropped)
     }
     #' A failed publication waiting for its retry.
     runner$retrying <- function() !is.null(shiny::isolate(step$pending())) && length(run$actions) > 0L

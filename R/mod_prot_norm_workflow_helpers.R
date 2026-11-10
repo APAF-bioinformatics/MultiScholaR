@@ -315,23 +315,28 @@ protNormManagedAction <- function(operation, parameters, input, stateName, deliv
 dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normData, experimentPaths, ruvQc, grouping,
                                           finish, failed) {
   manager <- workflowData$state_manager
-  request <- withDIAStateScope(manager, function() {
-    assertDIAExportReady(manager, allow_action = "ruv-covariates")
-    source <- normData$correlation_filtered_obj %||% getDIAStateReference(manager)
-    if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
-    list(source = source, parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, grouping(),
-      settings$ruv_mode %||% "covariates"))
-  })
+  group <- grouping()
   entry <- proteomicsDiaBinding$norm$ruv_covariates
   state <- if (identical(settings$ruv_mode, "correction")) "ruv_corrected" else "ruv_covariates"
-  runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
-    prior_plot <- ggplot2::get_last_plot()
-    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
-    # Published before the tab's completion reads it (an argument would be a promise).
-    accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, result[c("value", "reference")],
-      workflowData, normData, experimentPaths, ruvQc))
-    finish(accepted)
-  })), failed = failed)
+  # GUI audit A111-01: the gate and the source are read when the action starts, so a click that waited behind a
+  # correlation re-apply runs on that re-apply's result, as in process. The step's observer does not depend on the reads.
+  runner$run(function() shiny::isolate({
+    request <- withDIAStateScope(manager, function() {
+      assertDIAExportReady(manager, allow_action = "ruv-covariates")
+      source <- normData$correlation_filtered_obj %||% getDIAStateReference(manager)
+      if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
+      list(source = source, parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, group,
+        settings$ruv_mode %||% "covariates"))
+    })
+    list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
+      prior_plot <- ggplot2::get_last_plot()
+      on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+      # Published before the tab's completion reads it (an argument would be a promise).
+      accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, result[c("value", "reference")],
+        workflowData, normData, experimentPaths, ruvQc))
+      finish(accepted)
+    }))
+  }), failed = failed)
   invisible(TRUE)
 }
 
@@ -621,24 +626,29 @@ runProtNormApplyCorrelationObserver <- function(
 dispatchProtNormCorrelation <- function(runner, workflowData, normData, experimentPaths, threshold, omicType,
                                         experimentLabel, grouping, aesthetics, finish, failed) {
   manager <- workflowData$state_manager
-  source <- withDIAStateScope(manager, function() {
-    assertDIAExportReady(manager, allow_action = "correlation")
-    source <- normData$ruv_normalized_obj
-    if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
-    readDIAStateMetadata(manager, source)
-    source
-  })
+  group <- grouping()
   entry <- proteomicsDiaBinding$norm$correlation
   held <- new.env(parent = emptyenv())
   select <- function() runner$run(list(protNormManagedAction(entry$selection,
-    list(pairs = held$pairs$reference$entity_id, threshold = threshold), source, "correlation_filtered", function(result) {
+    list(pairs = held$pairs$reference$entity_id, threshold = threshold), held$source, "correlation_filtered", function(result) {
       run <- list(pairs = held$pairs$reference, final = result$value)
       final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
         threshold, FALSE, omicType, experimentLabel, aesthetics))
       finish(final)
     })), failed = failed)
-  runner$run(list(protNormManagedAction(entry$pairs, diaPearsonPairsParameters(grouping()), source, NULL,
-    function(result) held$pairs <- result)), done = select, failed = failed)
+  # GUI audit A111-01: the gate and the source are read when the pairs start, so a click that waited behind a
+  # normalisation re-run runs on that re-run's final, as in process. The step's observer does not depend on the reads.
+  runner$run(function() shiny::isolate({
+    held$source <- withDIAStateScope(manager, function() {
+      assertDIAExportReady(manager, allow_action = "correlation")
+      source <- normData$ruv_normalized_obj
+      if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+      readDIAStateMetadata(manager, source)
+      source
+    })
+    list(protNormManagedAction(entry$pairs, diaPearsonPairsParameters(group), held$source, NULL,
+      function(result) held$pairs <- result))
+  }), done = select, failed = failed)
   invisible(TRUE)
 }
 
