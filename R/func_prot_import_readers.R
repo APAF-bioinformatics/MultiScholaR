@@ -1,4 +1,138 @@
 # ----------------------------------------------------------------------------
+# Quantity columns: missing-value tokens and non-numeric text (P-05)
+# ----------------------------------------------------------------------------
+#' The text a proteomics quantity column may hold for a missing value (P-05, user-approved 2026-11-11): it is read as
+#' NA, and the import gives a notice with the count per text token (an empty cell and "NA" are the file format's own
+#' missing value and are not counted). Case-sensitive, after trimming blanks. Any other text that is not a number
+#' refuses the import (`checkProtImportQuantityColumns`).
+#' @noRd
+PROT_IMPORT_MISSING_TOKENS <- c("", "NA", "NaN", "Filtered", "n.q.")
+
+#' Check a proteomics reader's quantity columns as its file read returned them, before the table is reshaped (P-05).
+#' A text column: a missing-value token (`PROT_IMPORT_MISSING_TOKENS`) becomes NA and the rest must be numeric-like
+#' (`omicsImportValuesAreNumericLike`, the lipid, metab and trx rule: finite numbers), and is converted to doubles.
+#' A column vroom typed itself: the cells it could not parse as a number (it reads them as NA and records them) are
+#' judged by the same rule, NaN becomes NA, and a column it read as a "number" (digit-grouping marks dropped, so a
+#' decimal comma moves the decimal point) is refused. A column of plain numbers is returned as it was read.
+#' @param data The table as the file read returned it, with its columns in file order.
+#' @param columns The quantity columns' names in `data`; absent names are ignored.
+#' @param path The file, read again only for the example values of a refused "number" column; NULL for none.
+#' @return `data`. The text tokens read as NA (NaN, Filtered, n.q.) are signalled as a message of class
+#'   `prot_import_missing_tokens` (field `counts`: the count per token); empty cells and "NA", the file format's own
+#'   missing value, are not counted. Other text is an error of class `prot_import_non_numeric_quantity` naming the
+#'   first such column and up to three values.
+#' @noRd
+checkProtImportQuantityColumns <- function(data, columns, path = NULL) {
+    columns <- intersect(columns, names(data))
+    from_vroom <- identical(typeof(attr(data, "problems")), "externalptr")
+    # vroom's own "parsing issues" warning is replaced by the notice or the refusal below.
+    quiet <- function(expr) withCallingHandlers(expr, warning = function(w) {
+        if (grepl("parsing issues", conditionMessage(w), fixed = TRUE)) invokeRestart("muffleWarning")
+    })
+    # An empty cell or "NA" is the file format's own missing value: read as NA as before, and not counted (a file
+    # with empty cells and plain numbers imports exactly as it did, with no notice).
+    labels <- setdiff(PROT_IMPORT_MISSING_TOKENS, c("", "NA"))
+    counts <- stats::setNames(integer(length(labels)), labels)
+    count <- function(tokens) {
+        found <- table(tokens[tokens %in% labels])
+        counts[names(found)] <<- counts[names(found)] + as.integer(found)
+    }
+    refused <- list()
+    missing <- list()
+    unparsed <- list()
+    if (from_vroom) {
+        # vroom parses lazily: reading a column's missing values parses it and records the cells it could not parse.
+        plain <- columns[vapply(columns, function(column) is.double(data[[column]]) && !is.object(data[[column]]), logical(1))]
+        for (column in plain) missing[[column]] <- quiet(is.na(data[[column]]))
+        problems <- quiet(vroom::problems(data, lazy = TRUE))
+        unparsed <- split(trimws(problems$actual), names(data)[problems$col])
+    }
+    for (column in columns) {
+        values <- data[[column]]
+        if (is.logical(values) || is.integer(values)) next
+        if (is.double(values) && !is.object(values)) {
+            if (!from_vroom) next
+            if (inherits(attr(data, "spec")$cols[[match(column, names(data))]], "collector_number")) {
+                refused[[column]] <- protImportNumberColumnExamples(path, match(column, names(data)), attr(data, "spec")$delim)
+                next
+            }
+            if (!any(missing[[column]])) next
+            text <- unparsed[[column]] %||% character()
+            other <- unique(text[!text %in% PROT_IMPORT_MISSING_TOKENS])
+            if (length(other)) {
+                refused[[column]] <- other
+                next
+            }
+            not_a_number <- is.nan(values)
+            count(text)
+            counts[["NaN"]] <- counts[["NaN"]] + sum(not_a_number)
+            if (any(not_a_number)) data[[column]][not_a_number] <- NA_real_
+            next
+        }
+        text <- trimws(as.character(values))
+        text[is.na(text)] <- ""
+        token <- text %in% PROT_IMPORT_MISSING_TOKENS
+        if (!omicsImportValuesAreNumericLike(text[!token])) {
+            number <- suppressWarnings(as.numeric(text[!token]))
+            refused[[column]] <- unique(text[!token][is.na(number) | !is.finite(number)])
+            next
+        }
+        count(text[token])
+        number <- rep(NA_real_, length(text))
+        number[!token] <- as.numeric(text[!token])
+        data[[column]] <- number
+    }
+    if (length(refused)) {
+        examples <- utils::head(refused[[1L]], 3L)
+        rlang::abort(paste0(
+            sprintf("Quantity column '%s' contains text that is not a number", names(refused)[[1L]]),
+            if (length(examples)) paste0(": ", paste(sprintf("\"%s\"", examples), collapse = ", ")),
+            if (length(refused) > 1L) sprintf(" (and %d other quantity column(s))", length(refused) - 1L),
+            ". Only empty cells, ", paste(setdiff(PROT_IMPORT_MISSING_TOKENS, ""), collapse = ", "),
+            " are read as missing values, and numbers need a decimal point and no thousands separators.",
+            " Correct the file and import it again."),
+            class = "prot_import_non_numeric_quantity", column = names(refused)[[1L]], examples = examples, call = NULL)
+    }
+    counts <- counts[counts > 0L]
+    if (length(counts)) {
+        rlang::inform(sprintf("Missing-value text in the quantity column(s) was read as NA: %s.",
+            paste(sprintf("%d x %s", counts, names(counts)), collapse = ", ")),
+            class = "prot_import_missing_tokens", counts = counts)
+    }
+    data
+}
+
+#' Up to the first 100 values of a column vroom read as a "number" that are not plain numbers, as the file writes them
+#' (the examples of `checkProtImportQuantityColumns`'s refusal).
+#' @param path The file, or NULL.
+#' @param index The column's position in the file.
+#' @param delim The delimiter the first read used (its column specification's).
+#' @return The values; none when there is no file, it cannot be read again, or its first rows are plain numbers.
+#' @noRd
+protImportNumberColumnExamples <- function(path, index, delim = NULL) {
+    if (is.null(path)) return(character())
+    # The refusal stands without examples: a failed second read only drops them.
+    text <- tryCatch(vroom::vroom(path, delim = delim, col_select = dplyr::all_of(index), n_max = 100L,
+        show_col_types = FALSE, col_types = vroom::cols(.default = vroom::col_character()))[[1L]],
+        error = function(e) character())
+    text <- trimws(text[!is.na(text)])
+    unique(text[is.na(suppressWarnings(as.numeric(text)))])
+}
+
+#' Re-signal an import error under a prefix, as the readers' own `stop(prefix, message)`, keeping the class of a
+#' quantity-column refusal (P-05) so a caller can tell it from a failed read.
+#' @param prefix The text put before the error's message.
+#' @param error The error.
+#' @noRd
+stopProtImport <- function(prefix, error) {
+    if (inherits(error, "prot_import_non_numeric_quantity")) {
+        rlang::abort(paste0(prefix, conditionMessage(error)), class = "prot_import_non_numeric_quantity",
+            column = error$column, examples = error$examples, call = NULL)
+    }
+    stop(prefix, conditionMessage(error))
+}
+
+# ----------------------------------------------------------------------------
 # importDIANNData
 # ----------------------------------------------------------------------------
 #' @title Import DIA-NN Data
@@ -37,6 +171,11 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
     stop("Missing required DIA-NN columns: ", paste(missing_cols, collapse = ", "))
   }
   
+  # P-05: missing-value tokens in the quantity column are read as NA with a notice; other text refuses the import.
+  data <- checkProtImportQuantityColumns(data,
+    if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) "Precursor.Normalised" else "Precursor.Quantity",
+    filepath)
+
   # Convert Precursor.Normalised if needed
   if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
     log_info("Converting Precursor.Normalised to numeric")
@@ -79,9 +218,9 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
 #' @export
 importSpectronautData <- function(filepath, quantity_type = "pg") {
   data <- vroom::vroom(filepath, show_col_types = FALSE)
-  # KIT-102 parity: a text-numeric quantity column is read as numbers; other text is left as it is (P-05).
-  data <- coerceOmicsNumericLikeColumns(data,
-    intersect(if (quantity_type == "pg") "PG.Quantity" else "PEP.Quantity", names(data)))
+  # KIT-102 parity: a text-numeric quantity column is read as numbers. P-05: missing-value tokens are read as NA with
+  # a notice; other text refuses the import.
+  data <- checkProtImportQuantityColumns(data, if (quantity_type == "pg") "PG.Quantity" else "PEP.Quantity", filepath)
   
   data_type <- if (quantity_type == "pg") "protein" else "peptide"
   
@@ -181,6 +320,9 @@ importFragPipeData <- function(filepath, use_maxlfq = TRUE) {
     stop("No suitable intensity columns found. Check use_maxlfq parameter and file format.")
   }
   
+  # P-05: missing-value tokens in the intensity columns are read as NA with a notice; other text refuses the import.
+  data <- checkProtImportQuantityColumns(data, intensity_cols, filepath)
+
   # Extract sample names by removing " Intensity" or " MaxLFQ Intensity" suffix
   sample_names <- gsub("\\s+(MaxLFQ\\s+)?Intensity$", "", intensity_cols, ignore.case = TRUE)
   
@@ -267,6 +409,12 @@ importMaxQuantData <- function(filepath, use_lfq = TRUE, filter_contaminants = T
   col_types <- do.call(vroom::cols, c(list(.default = vroom::col_guess()),
     stats::setNames(rep(list(vroom::col_character()), length(flags)), flags)))
   data <- vroom::vroom(filepath, delim = "\t", show_col_types = FALSE, col_types = col_types)
+  # P-05: missing-value tokens in the intensity columns are read as NA with a notice; other text refuses the import.
+  # Checked under the file's own names, before the rows are filtered (the choice of columns is the one made below).
+  dotted <- normaliseMaxQuantColumnNames(names(data))
+  lfq <- grepl("^LFQ\\.intensity\\.", dotted)
+  data <- checkProtImportQuantityColumns(data,
+    names(data)[if (use_lfq && any(lfq)) lfq else grepl("^Intensity\\.", dotted)], filepath)
   # Genuine MaxQuant output writes its column names with spaces ("LFQ intensity <experiment>", "Potential
   # contaminant", "Majority protein IDs"); the reader's tests and fixtures carry the dotted form R's readers once
   # produced. The known MaxQuant names are mapped to the dotted form (the experiment part of an intensity column is
@@ -403,6 +551,6 @@ importProteomicsData <- function(
     )
   }, error = function(e) {
     logError(paste("Error in data import function:", e$message))
-    stop("Failed to import data: ", e$message)
+    stopProtImport("Failed to import data: ", e)
   })
 }

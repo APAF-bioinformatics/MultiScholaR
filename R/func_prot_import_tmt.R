@@ -152,8 +152,10 @@ importProteomeDiscovererTMTData <- function(filepath) {
     log_info(sprintf("Found %d abundance columns to pivot", length(abundance_cols)))
 
     # KIT-102 parity: text-numeric abundance columns (Excel cells stored as text) are read as numbers before
-    # the pivot, so a mix of text and numeric columns pivots and the F-26 step applies; other text is left (P-05).
-    data <- coerceOmicsNumericLikeColumns(data, abundance_cols)
+    # the pivot, so a mix of text and numeric columns pivots and the F-26 step applies. P-05: missing-value tokens
+    # are read as NA with a notice, and other text refuses the import here, naming the column (it was a pivot error
+    # for a mix of columns and a silent text column otherwise).
+    data <- checkProtImportQuantityColumns(data, abundance_cols, file_path)
 
     # Pivot the uniquely named columns
     message(sprintf("      Step: Pivoting %d columns to long format...", length(abundance_cols)))
@@ -235,6 +237,9 @@ importProteomeDiscovererTMTData <- function(filepath) {
       }, error = function(e) {
         message(sprintf("   !!!!! ERROR IN FILE %d (%s) !!!!!", .y, basename(.x)))
         message(sprintf("   Error message: %s", e$message))
+        if (inherits(e, "prot_import_non_numeric_quantity")) {
+          stopProtImport(paste0("Error processing file ", .y, " (", basename(.x), "): "), e)
+        }
         stop("Error processing file ", .y, " (", basename(.x), "): ", e$message, call. = FALSE)
       })
       

@@ -244,11 +244,13 @@ readProtImportDataWithStatus <- function(
     , logError = logger::log_error
     , captureCheckpoint = .capture_checkpoint
     , messageFn = message
+    , showNotification = shiny::showNotification
 ) {
   updateStatus(sprintf("Reading %s data...", toupper(format)))
   logInfo(sprintf("Reading %s data from %s", format, searchResultsPath))
 
-  data_import_result <- importDataByFormat(
+  # P-05: the readers' notice (missing-value text read as NA, with the count per token) is shown to the user.
+  data_import_result <- withCallingHandlers(importDataByFormat(
     format = format
     , searchResultsPath = searchResultsPath
     , input = input
@@ -258,7 +260,11 @@ readProtImportDataWithStatus <- function(
     , importMaxquant = importMaxquant
     , importPdTmt = importPdTmt
     , logError = logError
-  )
+  ), prot_import_missing_tokens = function(notice) {
+    logInfo(conditionMessage(notice))
+    showNotification(conditionMessage(notice), type = "warning", duration = NULL)
+    rlang::cnd_muffle(notice)
+  })
 
   recordImportedData(
     dataImportResult = data_import_result

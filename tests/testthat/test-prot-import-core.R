@@ -157,13 +157,28 @@ test_that("PD-TMT parity: text-numeric Excel abundances import as doubles and a 
     expect_identical(mixed$data$Abundance, c(10, 7, NA, NA))
 })
 
-test_that("PD-TMT leaves a non-numeric abundance column unconverted (P-05), so the pivot refuses the mix", {
+# GUI audit R4, P-05 (user-approved rule, 2026-11-11): this block pinned KIT-102's behaviour, "PD-TMT leaves a
+# non-numeric abundance column unconverted (P-05), so the pivot refuses the mix" (expect_error "Failed to pivot data").
+# Now "n.q." is a missing-value token, read as NA with a notice, and other text refuses the import naming the column.
+test_that("PD-TMT reads a missing-value token as NA and refuses other text naming the column (P-05), not at the pivot", {
     path <- withr::local_tempfile(fileext = ".xlsx")
     writexl::write_xlsx(data.frame(Accession = c("P1", "P2"),
         `Abundance: F1: 126, Sample_A` = c("10", "n.q."),
         `Abundance: F1: 127N, Sample_B` = c("7", "0"),
         check.names = FALSE), path)
-    expect_error(suppressMessages(importProteomeDiscovererTMTData(path)), "Failed to pivot data")
+    notices <- list()
+    token <- suppressMessages(withCallingHandlers(importProteomeDiscovererTMTData(path),
+        prot_import_missing_tokens = function(notice) notices[[length(notices) + 1L]] <<- notice))
+    expect_identical(token$data$Abundance, c(10, 7, NA, NA))
+    expect_identical(notices[[1L]]$counts, c(n.q. = 1L))
+
+    writexl::write_xlsx(data.frame(Accession = c("P1", "P2"),
+        `Abundance: F1: 126, Sample_A` = c("10", "#DIV/0!"),
+        `Abundance: F1: 127N, Sample_B` = c("7", "0"),
+        check.names = FALSE), path)
+    expect_error(suppressMessages(importProteomeDiscovererTMTData(path)),
+        "Quantity column '126_Sample_A' contains text that is not a number: \"#DIV/0!\"", fixed = TRUE,
+        class = "prot_import_non_numeric_quantity")
 })
 
 test_that("Spectronaut parity: a character, numeric-like quantity column is converted to doubles", {
@@ -184,9 +199,13 @@ test_that("Spectronaut parity: a character, numeric-like quantity column is conv
     expect_identical(peptide$data$PEP.Quantity, c(4, NA, 0.5))
     expect_identical(peptide$data$PG.Quantity, report$PG.Quantity)
 
-    # Non-numeric text stays as the reader leaves it today (P-05).
+    # GUI audit R4, P-05 (user-approved rule, 2026-11-11): this pinned "Non-numeric text stays as the reader leaves it
+    # today (P-05)" (the column stayed character). Now "Filtered" is a missing-value token, read as NA, and other
+    # text refuses the import.
     report$PG.Quantity <- c("12.5", "Filtered", "3")
-    expect_identical(read("pg")$data$PG.Quantity, report$PG.Quantity)
+    expect_identical(suppressMessages(read("pg"))$data$PG.Quantity, c(12.5, NA, 3))
+    report$PG.Quantity <- c("12.5", "1,5", "3")
+    expect_error(read("pg"), class = "prot_import_non_numeric_quantity")
 })
 
 test_that("DIA-NN, FragPipe and MaxQuant give identical output on their test inputs", {
