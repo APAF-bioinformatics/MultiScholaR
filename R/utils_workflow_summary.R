@@ -213,8 +213,10 @@ copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicTy
             catFn("SESSION SUMMARY: Setting project_dirs in global environment\n")
             assign("project_dirs", projectDirs, envir = .GlobalEnv)
         }
-        failures <- copyFn(omic_type = omicType, experiment_label = label, contrasts_tbl = contrastsTbl,
-            design_matrix = designMatrix, force = TRUE)
+        # P-30 route B: the copy's workbook transients are freed by R but kept by the allocator, so its free pages are
+        # returned once the copy has returned or failed. `copyToResultsSummary` itself is unchanged for notebook callers.
+        failures <- tryCatch(copyFn(omic_type = omicType, experiment_label = label, contrasts_tbl = contrastsTbl,
+            design_matrix = designMatrix, force = TRUE), finally = reclaimWorkflowSummaryCopyMemory())
         required <- list()
         optional <- list()
         failed <- list()
@@ -270,6 +272,18 @@ workflowSummaryIsWorkbookFailure <- function(failure) {
 workflowSummaryWorkbookFailureText <- function(failed) {
     paste(vapply(failed, function(failure) sprintf("%s (%s)", basename(failure$path %||% failure$source %||% "?"),
         failure$error %||% "failed"), character(1)), collapse = "; ")
+}
+
+#' Return the allocator's free pages to the system after the publication copy (P-30 route B): the package's
+#' `reclaimWorkflowMemory()` (a full collection, then glibc's `malloc_trim(0)`; "unsupported" elsewhere). Optional: a
+#' failure is logged and the copy's outcome stands.
+#' @return The reclaim's status list, invisibly.
+#' @noRd
+reclaimWorkflowSummaryCopyMemory <- function() {
+    invisible(tryCatch(reclaimWorkflowMemory(), workflow_reclaim_error = function(error) {
+        logger::log_warn(logger::skip_formatter(paste("Optional memory reclamation failed:", conditionMessage(error))))
+        list(status = "failed")
+    }))
 }
 
 #' Generate the report: the template (`report$template`, a file name or the route's resolver), ensured in the project's

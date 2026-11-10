@@ -400,6 +400,60 @@ test_that("(R5 item 5, A108-04) the copy reports a failed combined workbook for 
         "Files copied to publication directory with optional missing artifacts [WARNING]")
 })
 
+# ------------------------------------------------------------------------------------------------
+# GUI audit R5, item 6 (P-30 route B): after copyToResultsSummary returns or fails, the copy asks the allocator once to
+# return its free pages (`reclaimWorkflowMemory`). No memory is measured here; the copy's content is unchanged.
+# ------------------------------------------------------------------------------------------------
+
+test_that("(R5 item 6, P-30 route B) the copy calls reclaimWorkflowMemory once after copyToResultsSummary, on success and on failure; a failed reclaim does not fail the copy", {
+    dirs <- omicsSummaryCoreDirs()
+    had <- exists("project_dirs", envir = .GlobalEnv, inherits = FALSE)
+    old <- if (had) get("project_dirs", envir = .GlobalEnv)
+    withr::defer(if (had) assign("project_dirs", old, envir = .GlobalEnv) else if (exists("project_dirs", envir = .GlobalEnv,
+        inherits = FALSE)) rm("project_dirs", envir = .GlobalEnv))
+    config <- omicGuiConfig("lipidomics")$summary
+    events <- character()
+    reclaim <- function(...) {
+        events <<- c(events, "reclaim")
+        list(status = "released")
+    }
+    testthat::local_mocked_bindings(reclaimWorkflowMemory = function(...) reclaim(...), .package = "MultiScholaR")
+    copy <- function(fail) function(...) {
+        events <<- c(events, "copy")
+        if (fail) stop("the copy failed")
+        list()
+    }
+    run <- function(fail) {
+        events <<- character()
+        notes <- omicsSummaryCoreNotes()
+        out <- copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = TRUE,
+            notify = notes$notify, copyFn = copy(fail))
+        list(out = out, notes = notes$shown)
+    }
+    done <- run(fail = FALSE)
+    expect_identical(events, c("copy", "reclaim"))
+    expect_null(done$out$error)
+    expect_identical(done$notes, "[message 5] Publication files copied")
+    failed <- run(fail = TRUE)
+    expect_identical(events, c("copy", "reclaim"))
+    expect_identical(failed$out$error, "the copy failed")
+    expect_identical(failed$notes, "[error 10] Copy error: the copy failed")
+    # The reclaim is optional: its failure is logged and the copy's outcome stands.
+    reclaim <- function(...) {
+        events <<- c(events, "reclaim")
+        cli::cli_abort("injected", class = "workflow_reclaim_error")
+    }
+    done <- suppressMessages(run(fail = FALSE))
+    expect_identical(events, c("copy", "reclaim"))
+    expect_null(done$out$error)
+    expect_identical(done$notes, "[message 5] Publication files copied")
+    # A copy the gate stops is not followed by a reclaim: nothing was copied.
+    config$copy$gate <- function() stop("gate")
+    gated <- run(fail = FALSE)
+    expect_identical(events, character())
+    expect_identical(gated$out$error, "gate")
+})
+
 test_that("(W3) the report ensures its template in order: the project's copy, the package's, the GitHub download; a failed retrieval stops it unless render_after_failed_template", {
     config <- omicGuiConfig("lipidomics")$summary
     rendered <- character()
