@@ -1,9 +1,9 @@
 {
   "lane": "trx_screen",
-  "source_sha": "e76e1e14f167d168a9659ba9d8f796dbc656cc70",
+  "source_sha": "79d6bc726fe1361264ef12a15ca8cbc490e07d52",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
-  "frozen": "2026-11-08",
+  "frozen": "2026-11-11",
   "steps": {
     "import_refusal": {
       "step": "import_refusal",
@@ -1243,7 +1243,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -1327,8 +1327,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 34,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 35,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
@@ -1416,7 +1417,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -1500,8 +1501,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 34,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 35,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
@@ -1586,7 +1588,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -1670,8 +1672,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 38,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
@@ -1751,7 +1754,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -1835,8 +1838,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 38,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
@@ -1928,7 +1932,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -2013,8 +2017,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 38,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
@@ -2121,7 +2126,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -2207,8 +2212,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 38,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
@@ -2324,7 +2330,7 @@
         "transcriptomics_workflow-de-da_summary_stats": "Total genes: 187\nSignificant (FDR (BH) < 0.050): 23 (12.3%)\n  Up-regulated: 9\n  Down-regulated: 14",
         "transcriptomics_workflow-de-download_da_results": "<download>",
         "transcriptomics_workflow-de-formula_display": "Formula: ~ 0 + group + W_1 + W_2\nFit: glmQLFit(robust = TRUE)\nTest: QL F-test (glmQLFTest)\nAdjustment: BH (FDR)",
-        "transcriptomics_workflow-de-volcano_glimma": "<req>",
+        "transcriptomics_workflow-de-volcano_glimma": "<ui> 1c783a3d7c9f512ee5d91f96edaad798d372bee601fa991bbde048ca6b529169",
         "transcriptomics_workflow-de-volcano_static": "<plot> alt=Plot object",
         "transcriptomics_workflow-design-assays_preview": "Included assays: counts",
         "transcriptomics_workflow-design-builder-available_factors_display": "<ui> 44497af161025023a52c6d8b8f4d52ebe312d1c54ada6e0cb01faeb19c3bca05",
@@ -2410,8 +2416,9 @@
       },
       "artifacts": {
         "<store entries>": {
-          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 37,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID>": 38,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/dia-table-<ID>": 6,
+          "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/omics-volcano-html-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/partitioned-table-<ID>": 2,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx-da-fit-<ID>": 1,
           "scripts/transcriptomics/.dia-native-<ID>/.workflow-entities/entities/trx_da_contrast-<ID>": 1,
