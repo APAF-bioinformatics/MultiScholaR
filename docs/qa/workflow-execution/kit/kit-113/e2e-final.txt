@@ -1,0 +1,9 @@
+# KIT-113 e2e lanes at 95600989 on browser-smoke.cmBMvS 2026-11-10T19:35:49+11:00
+COUNTS test-e2e-lipidomics-canonical.R pass 88 fail 0 error 0 skip 0 exit 0 wall 87s
+COUNTS test-e2e-metabolomics-lc-gc.R pass 190 fail 0 error 0 skip 0 exit 0 wall 212s
+COUNTS test-e2e-transcriptomics-screen.R pass 17 fail 0 error 0 skip 0 exit 0 wall 65s
+COUNTS test-e2e-proteomics-dia.R pass 42 fail 0 error 0 skip 0 exit 0 wall 209s
+COUNTS test-e2e-proteomics-dia-limpa.R pass 80 fail 0 error 0 skip 0 exit 0 wall 152s
+COUNTS test-e2e-proteomics-enrichment.R pass 98 fail 0 error 0 skip 0 exit 0 wall 425s
+COUNTS test-e2e-proteomics-tmt-lfq.R pass 153 fail 0 error 0 skip 0 exit 0 wall 219s
+DONE
