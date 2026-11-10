@@ -691,6 +691,15 @@
       "install_member": "browser-smoke.MlQroA",
       "source_commit": "c568dfa5ab8ff5573fa6b59974466390dc6ad42f",
       "runtime_patch_bytes": 0
+    },
+    "kit_112": {
+      "ticket": "KIT-112",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.OftnRb/library",
+      "build": "0bed823ef57a905c3df5d95104d684e712fd2bbf826ac54dd4eba53614ed8ff5",
+      "exact_sum": "18c2637c189bfe24e102cd3e852982ae52b2aa7012555d1744b95620b7af6c5d",
+      "install_member": "browser-smoke.OftnRb",
+      "source_commit": "5ecc9fd1c7af1112f7f6fb083915e0a22834639b",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -42942,6 +42951,129 @@
         "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }
+    },
+    "112a": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "112b": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "112c": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "112m": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "112l": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)"
+    },
+    "112t": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, the DA kernel on the worker (recorded, uncounted; KIT-112)"
+    },
+    "112f": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the lifecycle test's failure half (recorded, uncounted; KIT-112 D8)",
+      "driver_settings": {
+        "da": {
+          "formula": "~ 0 + group + Run"
+        }
+      }
+    },
+    "112q": {
+      "kind": "single_journey",
+      "build": "kit_112",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "memory candidate, the DA kernel on the worker (recorded, uncounted; KIT-112 D8)"
     },
     "106x": {
       "kind": "single_journey",
