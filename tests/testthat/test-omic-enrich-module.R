@@ -3667,3 +3667,364 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
         })
     })
 }
+
+# ------------------------------------------------------------------------------------------------
+# KIT-113 W1: the D6 fields W1 (b)'s captures do not hold, written first and frozen on KIT-113's start commit
+# (132e5445; R/ equals kit_112's source) from two byte-identical dumps made in separate processes
+# (docs/qa/workflow-execution/kit/kit-113/test-first.txt). W1 (b) holds the states' digests, the history, the product's
+# schema, service, parameters and summaries, the external resources, the bus, the display, the files and the store's
+# entries by kind. This block adds, after the last step of each W1 (b) session: the committed `enrichment_completed`
+# record (config, description, previous state, product names), the committed results by `enrichment_data`,
+# `enrichment_summaries`, `contrasts` and the plots' classes, the head's enrichment product by type and fingerprint
+# with its roots, the step provenance and the analysis record's enrichment step (store-local ids, times and builds
+# masked). It passes before and after KIT-113; W2 and W3 compare the managed path with these values.
+# MULTISCHOLAR_KIT113_W1_DUMP=<file> appends the capture as R code (how the frozen values were made).
+# ------------------------------------------------------------------------------------------------
+
+#' Store-local ids (each run of 64 hexadecimal characters) and the fixture's root masked in every character value of
+#' plain lists.
+omicEnrichW113Mask <- function(x, root) {
+    if (is.character(x)) return(gsub("[a-f0-9]{64}", "<id>", gsub(root, "<root>", x, fixed = TRUE)))
+    if (is.list(x) && !is.object(x)) {
+        x[] <- lapply(x, omicEnrichW113Mask, root = root)
+        if (!is.null(names(x))) names(x) <- omicEnrichW113Mask(names(x), root)
+    }
+    x
+}
+
+#' The D6 fields after a session's last step (see the section's header).
+omicEnrichW113Fields <- function(ctx) {
+    bus <- ctx$bus()
+    root <- ctx$roots
+    manager <- shiny::isolate(bus$state_manager)
+    manifest <- shiny::isolate(bus$da_analysis_results_list)
+    snapshot <- withWorkflowStateScope(manager, function() manager$.context$snapshot)
+    out <- list(history = as.character(unlist(snapshot$state_history)))
+    reference <- snapshot$states[["enrichment_completed"]]
+    if (is.null(reference)) {
+        out$state <- "<none>"
+        out$results <- "<none>"
+    } else {
+        record <- readComponentMetadata(manager, reference)
+        out$state <- c(stats::setNames(omicEnrichW1Scalars(record$config, root), paste0("config$", names(record$config))),
+            description = record$description, previous = record$previous_state,
+            products = paste(sort(names(record$data$products)), collapse = "|"))
+        state <- withWorkflowStateScope(manager, function() manager$getState("enrichment_completed"))
+        out$results <- c(class = class(state)[[1L]],
+            enrichment_data = omicEnrichW1Digest(state@enrichment_data, root),
+            enrichment_summaries = omicEnrichW1Digest(state@enrichment_summaries, root),
+            contrasts = omicEnrichW1Digest(state@contrasts, root),
+            plots = omicEnrichW1Short(lapply(state@enrichment_plots, function(x) lapply(x, class))))
+    }
+    # The head's enrichment products: the type, a fingerprint of the hydrated value and the identity (ids masked; a
+    # DA table by its manifest contrast), and the roots by kind and role.
+    tables <- unlist(lapply(manifest$results %||% list(), function(result) result$tables$da_proteins_long$entity_id))
+    role <- function(id) {
+        if (identical(id, manifest$source$entity_id)) return("source")
+        if (id %in% tables) return(paste0("da_table:", names(tables)[match(id, tables)]))
+        "other"
+    }
+    products <- Filter(function(product) identical(product$kind, "scientific_product"), unname(snapshot$products))
+    shown <- unlist(lapply(products, function(product) {
+        hydrated <- hydrateSavedWorkflowEntity(manager$.context$store, product)
+        if (!identical(hydrated$product_type, "dia-enrichment-results")) return(NULL)
+        value <- hydrated$value
+        value$results <- vapply(value$results, role, "")
+        roots <- vapply(snapshot$product_dependencies[[product$entity_id]], function(dependency)
+            paste0(dependency$kind, ":", role(dependency$entity_id)), "")
+        c(type = hydrated$product_type, status = hydrated$status,
+            value = omicEnrichW1Short(omicEnrichW113Mask(value, root)),
+            identity = omicEnrichW1Short(omicEnrichW113Mask(product$identity, root)),
+            roots = paste(sort(roots), collapse = "|"))
+    }))
+    out$products <- if (length(shown)) shown else "<none>"
+    provenance <- snapshot$step_provenance[["enrichment_completed"]]
+    out$provenance <- if (is.null(provenance)) "<none>" else c(operation = provenance$operation,
+        variant = provenance$variant %||% NA_character_,
+        parameter_names = paste(provenance$parameter_names, collapse = "|"),
+        rest = omicEnrichW1Short(omicEnrichW113Mask(provenance[setdiff(names(provenance),
+            c("committed_at", "build", "source_commit", "operation", "variant", "parameter_names"))], root)))
+    steps <- tryCatch(buildWorkflowAnalysisRecord(manager)$steps, error = function(e) paste("<error>", conditionMessage(e)))
+    step <- if (is.list(steps)) Filter(function(step) identical(step$operation, "enrichment"), steps) else steps
+    out$record <- if (is.character(step)) step else if (!length(step)) "<none>" else {
+        step <- step[[length(step)]]
+        c(state = step$state, operation = step$operation, variant = step$variant, step_label = step$step_label,
+            description = step$description, products = length(step$products),
+            stats::setNames(vapply(step$parameters, function(parameter) omicEnrichW113Mask(paste(parameter$source,
+                parameter$provenance, workflowRecordValueText(parameter$value), sep = " ; "), root), ""),
+                paste0("parameters$", vapply(step$parameters, `[[`, "", "name"))))
+    }
+    out
+}
+
+omicEnrichW113DumpPath <- function() {
+    path <- Sys.getenv("MULTISCHOLAR_KIT113_W1_DUMP")
+    if (nzchar(path)) path else NULL
+}
+
+# OMIC_ENRICH_W113_FROZEN_START
+omicEnrichW113Frozen <- list()
+omicEnrichW113Frozen[["gprofiler"]] <- list(
+    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    state = c(
+        `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
+        `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
+        `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
+        `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
+        previous = "correlation_filtered", products = ""),
+    results = c(
+        class = "EnrichmentResults", enrichment_data = "ab5dd21b32dbb33d",
+        enrichment_summaries = "6122a4961d0ad898", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
+    products = c(
+        type = "dia-enrichment-results", status = "available", value = "e3f94d9e3b685fcb",
+        identity = "ad3ef17b26bf1067",
+        roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
+    provenance = c(
+        operation = "enrichment", variant = "whole",
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
+        rest = "032782518e99aba7"),
+    record = c(
+        state = "enrichment_completed", operation = "enrichment", variant = "whole",
+        step_label = "enrichment_completed",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A", products = "0",
+        `parameters$taxon_id` = "provenance ; input ; 9606",
+        `parameters$up_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
+        `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$protein_id_column` = "provenance ; input ; gene_name",
+        `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+
+omicEnrichW113Frozen[["clusterprofiler"]] <- list(
+    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    state = c(
+        `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "clusterprofiler",
+        `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
+        `config$q_cutoff` = "0.05", `config$organism_taxid` = "999999",
+        `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
+        previous = "correlation_filtered", products = ""),
+    results = c(
+        class = "EnrichmentResults", enrichment_data = "f3960c635154ee90",
+        enrichment_summaries = "5d6736b697306a94", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
+    products = c(
+        type = "dia-enrichment-results", status = "available", value = "e925104dbcd988a2",
+        identity = "ad3ef17b26bf1067",
+        roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
+    provenance = c(
+        operation = "enrichment", variant = "whole",
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
+        rest = "c8a3cb1a81388c5c"),
+    record = c(
+        state = "enrichment_completed", operation = "enrichment", variant = "whole",
+        step_label = "enrichment_completed",
+        description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
+        products = "0", `parameters$taxon_id` = "provenance ; input ; 999999",
+        `parameters$up_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
+        `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$protein_id_column` = "provenance ; input ; uniprot_acc",
+        `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+
+omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
+    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    state = c(
+        `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
+        `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
+        `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
+        `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
+        previous = "correlation_filtered", products = ""),
+    results = c(
+        class = "EnrichmentResults", enrichment_data = "44eb85ee4343dfe8",
+        enrichment_summaries = "18ee1ae7f00ccf86", contrasts = "950ddbb7d830df8c", plots = "d504c602f8d509f5"),
+    products = c(
+        type = "dia-enrichment-results", status = "available", value = "87efc2fc5a68fff4",
+        identity = "ad3ef17b26bf1067",
+        roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
+    provenance = c(
+        operation = "enrichment", variant = "whole",
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
+        rest = "032782518e99aba7"),
+    record = c(
+        state = "enrichment_completed", operation = "enrichment", variant = "whole",
+        step_label = "enrichment_completed",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A", products = "0",
+        `parameters$taxon_id` = "provenance ; input ; 9606",
+        `parameters$up_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
+        `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$protein_id_column` = "provenance ; input ; gene_name",
+        `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+
+omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
+    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    state = c(
+        `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "clusterprofiler",
+        `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
+        `config$q_cutoff` = "0.05", `config$organism_taxid` = "999999",
+        `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
+        previous = "correlation_filtered", products = ""),
+    results = c(
+        class = "EnrichmentResults", enrichment_data = "46a64d167ddd9c1b",
+        enrichment_summaries = "28df520b992b4a4b", contrasts = "950ddbb7d830df8c", plots = "d504c602f8d509f5"),
+    products = c(
+        type = "dia-enrichment-results", status = "available", value = "612a3a88ea25d819",
+        identity = "ad3ef17b26bf1067",
+        roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
+    provenance = c(
+        operation = "enrichment", variant = "whole",
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
+        rest = "c8a3cb1a81388c5c"),
+    record = c(
+        state = "enrichment_completed", operation = "enrichment", variant = "whole",
+        step_label = "enrichment_completed",
+        description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
+        products = "0", `parameters$taxon_id` = "provenance ; input ; 999999",
+        `parameters$up_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
+        `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$protein_id_column` = "provenance ; input ; uniprot_acc",
+        `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+
+omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
+    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    state = c(
+        `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
+        `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
+        `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
+        `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
+        previous = "correlation_filtered", products = ""),
+    results = c(
+        class = "EnrichmentResults", enrichment_data = "ab5dd21b32dbb33d",
+        enrichment_summaries = "6122a4961d0ad898", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
+    products = c(
+        type = "dia-enrichment-results", status = "available", value = "e3f94d9e3b685fcb",
+        identity = "ad3ef17b26bf1067",
+        roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
+    provenance = c(
+        operation = "enrichment", variant = "whole",
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
+        rest = "032782518e99aba7"),
+    record = c(
+        state = "enrichment_completed", operation = "enrichment", variant = "whole",
+        step_label = "enrichment_completed",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A", products = "0",
+        `parameters$taxon_id` = "provenance ; input ; 9606",
+        `parameters$up_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
+        `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$protein_id_column` = "provenance ; input ; gene_name",
+        `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+
+omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
+    history = c("initial", "correlation_filtered"),
+    state = "<none>",
+    results = "<none>",
+    products = "<none>",
+    provenance = "<none>",
+    record = "<none>")
+
+omicEnrichW113Frozen[["refusals/pre_da"]] <- list(
+    history = c("initial", "correlation_filtered"),
+    state = "<none>",
+    results = "<none>",
+    products = "<none>",
+    provenance = "<none>",
+    record = "<none>")
+
+omicEnrichW113Frozen[["refusals/q_cutoff"]] <- list(
+    history = c("initial", "correlation_filtered"),
+    state = "<none>",
+    results = "<none>",
+    products = "<none>",
+    provenance = "<none>",
+    record = "<none>")
+
+omicEnrichW113Frozen[["refusals/table_removed"]] <- list(
+    history = c("initial", "correlation_filtered"),
+    state = "<none>",
+    results = "<none>",
+    products = "<none>",
+    provenance = "<none>",
+    record = "<none>")
+
+omicEnrichW113Frozen[["restore"]] <- list(
+    history = c("initial", "correlation_filtered", "enrichment_completed"),
+    state = c(
+        `config$selected_contrast` = "B_vs_A", `config$analysis_method` = "gprofiler2",
+        `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
+        `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
+        `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
+        previous = "correlation_filtered", products = ""),
+    results = c(
+        class = "EnrichmentResults", enrichment_data = "ab5dd21b32dbb33d",
+        enrichment_summaries = "6122a4961d0ad898", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
+    products = c(
+        type = "dia-enrichment-results", status = "available", value = "e3f94d9e3b685fcb",
+        identity = "ad3ef17b26bf1067",
+        roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
+    provenance = c(
+        operation = "enrichment", variant = "whole",
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
+        rest = "032782518e99aba7"),
+    record = c(
+        state = "enrichment_completed", operation = "enrichment", variant = "whole",
+        step_label = "enrichment_completed",
+        description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A", products = "0",
+        `parameters$taxon_id` = "provenance ; input ; 9606",
+        `parameters$up_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
+        `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
+        `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$protein_id_column` = "provenance ; input ; gene_name",
+        `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+
+omicEnrichW113Frozen[["prefill"]] <- list(
+    history = c("initial", "correlation_filtered"),
+    state = "<none>",
+    results = "<none>",
+    products = "<none>",
+    provenance = "<none>",
+    record = "<none>")
+# OMIC_ENRICH_W113_FROZEN_END
+
+test_that("(KIT-113 W1) each W1 (b) session's committed record, results, product, provenance and analysis record step", {
+    for (case in c("gprofiler", "clusterprofiler", "kernel_gprofiler", "kernel_clusterprofiler", "organism_filter",
+        "refusals", "restore", "prefill")) {
+        sessions <- omicEnrichW1CaseSpec(case, environment())
+        for (session_name in names(sessions) %||% "") {
+            spec <- if (nzchar(session_name)) sessions[[session_name]] else sessions[[1L]]
+            key <- if (nzchar(session_name)) paste0(case, "/", session_name) else case
+            seen <- omicEnrichW1Drive(spec$setup, c(spec$steps,
+                list(kit113_d6 = function(ctx) ctx$keep("d6", omicEnrichW113Fields(ctx)))), live = spec$live)
+            capture <- seen$kit113_d6$d6
+            if (!is.null(omicEnrichW113DumpPath())) {
+                cat(sprintf("omicEnrichW113Frozen[[\"%s\"]] <- %s\n\n", key, omicEnrichW1Code(capture)),
+                    file = omicEnrichW113DumpPath(), append = TRUE)
+            }
+            expect_false(is.null(omicEnrichW113Frozen[[key]]), info = key)
+            expect_identical(capture, omicEnrichW113Frozen[[key]], info = key)
+        }
+    }
+})
