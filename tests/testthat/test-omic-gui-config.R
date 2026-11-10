@@ -382,7 +382,12 @@ test_that("the design group holds today's values per omic", {
     expect_identical(design$lipidomics$design_import$qc_baseline, updateLipidFiltering)
     expect_identical(design$metabolomics$design_import$qc_baseline, updateMetaboliteFiltering)
     expect_true(design$lipidomics$design_import$preflight)
-    expect_false(design$metabolomics$design_import$preflight)
+    # GUI audit R4, P-11 (user-approved 2026-11-11): was expect_false; the metab import now runs the preflight and
+    # refuses an invalid design before anything is written. It keeps the file's contrasts (`preflight_contrasts`
+    # FALSE; lipid takes the preflight's normalised table, as before), so no valid metab import changes.
+    expect_true(design$metabolomics$design_import$preflight)
+    expect_true(design$lipidomics$design_import$preflight_contrasts)
+    expect_false(design$metabolomics$design_import$preflight_contrasts)
     expect_identical(design$metabolomics$design_import$id_candidates$annotation,
         c("Metabolite name", "Metabolite.name", "Name", "name"))
     expect_identical(design$lipidomics$design_import$state_description,

@@ -183,7 +183,7 @@ omicGuiConfigSchema <- function() {
             contrast_group_prefix = "chr1", contrast_as_is = "chr1", replicate_suffix = "chr1"),
         design_import = c(plugin = "chr1", import_dir_path = "chr1"),
         design_import_feature_table = c(id_candidates = "named_list", qc_baseline = "ref",
-            preflight = "lgl1", state_description = "chr1", reader = "ref",
+            preflight = "lgl1", preflight_contrasts = "lgl1", state_description = "chr1", reader = "ref",
             record_design_file = "lgl1", check_files_first = "lgl1"),
         id_candidates = c(id = "chr", annotation = "chr"),
         dia_design = c(initial_state = "ref", rename = "ref", subset = "ref", commit = "chr1"),
@@ -951,18 +951,20 @@ omicGuiFeatureDesign <- function(prefix, label_lower, builder_word, id_mapping_k
 
 #' The import-existing-design values of lipid and metab (mod_lipid_design_import_helpers.R;
 #' mod_metab_design_import_helpers.R at 3c657c14): the column-mapping inference when
-#' `column_mapping.json` is absent, the QC baseline, whether the import runs the DA preflight, and
-#' the state's description. The output `import_dir_path` waits for a path (`req`). The reader is
+#' `column_mapping.json` is absent, the QC baseline, whether the import runs the DA preflight
+#' (`preflight`: both since P-11, an invalid imported design is refused before anything is written),
+#' whether the preflight's normalised contrasts replace the file's (`preflight_contrasts`: lipid, as
+#' before; metab keeps the file's, so no valid metab import changes), and the state's description. The output `import_dir_path` waits for a path (`req`). The reader is
 #' the core's (`readOmicsDesignImport`, KIT-103 W2). `record_design_file`: whether the provenance
 #' records the imported design file (lipid) or the owner's source directory (metab, P-14).
 #' `check_files_first`: whether the files are checked before the modal closes (metab, P-11).
 #' @noRd
 omicGuiFeatureDesignImport <- function(annotation_candidates, qc_baseline, preflight, class,
-                                       record_design_file, check_files_first) {
+                                       record_design_file, check_files_first, preflight_contrasts) {
     list(plugin = "feature_table", import_dir_path = "req",
         id_candidates = list(id = c("Peak ID", "Alignment ID", "Alignment.ID", "peak id",
             "alignment id"), annotation = annotation_candidates),
-        qc_baseline = qc_baseline, preflight = preflight,
+        qc_baseline = qc_baseline, preflight = preflight, preflight_contrasts = preflight_contrasts,
         state_description = paste(class, "S4 object created from imported design"),
         reader = readOmicsDesignImport, record_design_file = record_design_file,
         check_files_first = check_files_first)
@@ -1638,7 +1640,7 @@ omicGuiLipidDesign <- function() {
         # mod_lipid_design_import_helpers.R:230, :388 (func_lipid_qc.R:134), :293-305, :383
         design_import = omicGuiFeatureDesignImport(c("Lipid name", "Lipid.name", "Name", "name"),
             updateLipidFiltering, preflight = TRUE, class = "LipidomicsAssayData",
-            record_design_file = TRUE, check_files_first = FALSE)))
+            record_design_file = TRUE, check_files_first = FALSE, preflight_contrasts = TRUE)))
 }
 
 #' The lipid panel (the provenance abbreviations are the file header's).
@@ -1858,11 +1860,12 @@ omicGuiMetabDesign <- function() {
         build_object = metabDesignObject,
         # mod_metab_design.R:62-68
         record_excluded_runs = FALSE, multi_assay_banner = TRUE,
-        # mod_metab_design_import_helpers.R:250, :433 (func_metab_qc.R:268), :424; the import runs
-        # no DA preflight
+        # mod_metab_design_import_helpers.R:250, :433 (func_metab_qc.R:268), :424; the import ran
+        # no DA preflight until P-11 (GUI audit R4): it now refuses an invalid design as lipid's does,
+        # and keeps the file's contrasts
         design_import = omicGuiFeatureDesignImport(c("Metabolite name", "Metabolite.name", "Name",
-            "name"), updateMetaboliteFiltering, preflight = FALSE, class = "MetaboliteAssayData",
-            record_design_file = FALSE, check_files_first = TRUE)))
+            "name"), updateMetaboliteFiltering, preflight = TRUE, class = "MetaboliteAssayData",
+            record_design_file = FALSE, check_files_first = TRUE, preflight_contrasts = FALSE)))
 }
 
 #' The metab panel (the provenance abbreviations are the file header's). Its ids, labels and

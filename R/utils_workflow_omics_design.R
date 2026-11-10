@@ -246,7 +246,8 @@ readOmicsDesignImport <- function(importPath, config, sourceDir = NULL) {
 }
 
 #' C10. Commit an imported design, as today's imports: the omic's preflight when
-#' `design_import$preflight` (lipid; its normalised contrasts replace the file's), the bus
+#' `design_import$preflight` (lipid, and metab since P-11; with `design_import$preflight_contrasts`,
+#' lipid, its normalised contrasts replace the file's), the bus
 #' (configuration, mapping, design, contrasts, owner binding at import, the tables as `data_tbl`
 #' and `data_cln`, the design's `tech_rep_group`), the object, the owner binding at design, the
 #' provenance (with the imported design file when `design_import$record_design_file`, lipid; else
@@ -271,7 +272,7 @@ commitOmicsDesignImport <- function(workflowData, imported, sourceDir, config) {
                 paste(preflight$errors, collapse = "; ")))
         }
         normalised <- preflight$contrast_validation$contrasts_tbl
-        if (!is.null(normalised) && nrow(normalised) > 0L) contrasts <- normalised
+        if (isTRUE(importConfig$preflight_contrasts) && !is.null(normalised) && nrow(normalised) > 0L) contrasts <- normalised
     }
     workflowData$config_list <- imported$config_list
     workflowData$column_mapping <- imported$column_mapping
