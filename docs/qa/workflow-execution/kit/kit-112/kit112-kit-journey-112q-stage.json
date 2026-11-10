@@ -1,0 +1,204 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-112",
+  "stage": "kit112-kit-journey-112q",
+  "date": "2026-11-10",
+  "dispatches": {
+    "da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "DA-contrast-output": {
+      "requests": 1,
+      "complete": 1
+    },
+    "minimum_peptides_per_sample": {
+      "requests": 1,
+      "complete": 1
+    },
+    "normalization-ruv": {
+      "requests": 1,
+      "complete": 1
+    },
+    "pearson-pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "pearson-selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_imputation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_protein_evidence_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_qvalue_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_replicate_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "precursor_rollup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_accession_cleanup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_duplicate_removal": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_iq_rollup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_replicate_filter": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 2734661632,
+    "phase_peak_anon_bytes": {
+      "import": 2560405504,
+      "design": 2733543424,
+      "qvalue": 2734661632,
+      "protein_peptide": 2043039744,
+      "rollup": 2043502592,
+      "intensity": 2043502592,
+      "sample": 2043502592,
+      "replicate": 2043502592,
+      "imputation": 2043502592,
+      "iq": 2027634688,
+      "accession": 2027864064,
+      "protein_intensity": 2027962368,
+      "duplicates": 2028994560,
+      "protein_replicate": 1965195264,
+      "normalisation_ruv": 2703867904,
+      "correlation": 1746612224,
+      "session_export": 1675493376,
+      "da": 1690980352,
+      "report": 2028621824
+    }
+  },
+  "decision": {
+    "status": "rejected",
+    "rule": "exactness_and_completion",
+    "failing_rule": "oracle_mismatch",
+    "steps": ["import", "design", "qvalue", "protein_peptide", "rollup", "intensity", "sample", "replicate", "imputation", "iq", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "DIA",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "full",
+    "build": "0bed823ef57a905c3df5d95104d684e712fd2bbf826ac54dd4eba53614ed8ff5",
+    "status": "complete",
+    "exact": false,
+    "elapsed_seconds": 2270.06,
+    "peak_bytes": 8108277760,
+    "peak_anon_bytes": 5897211904,
+    "resident_end_bytes": 2505183232,
+    "phase_seconds": {
+      "import": 45.8999999999942,
+      "design": 119.070000000007,
+      "qvalue": 272.340000000026,
+      "protein_peptide": 206.670000000013,
+      "rollup": 73.4199999999837,
+      "intensity": 152.950000000012,
+      "sample": 33.1600000000035,
+      "replicate": 106.739999999991,
+      "imputation": 404.179999999993,
+      "iq": 158.539999999979,
+      "accession": 15.210000000021,
+      "protein_intensity": 15.9700000000012,
+      "duplicates": 20.7900000000081,
+      "protein_replicate": 12.1800000000221,
+      "normalisation_ruv": 377.889999999985,
+      "correlation": 19.7699999999895,
+      "session_export": 29.9399999999732,
+      "da": 82.9400000000023,
+      "report": 26.8700000000244
+    },
+    "phase_peak_anon_bytes": {
+      "import": 2931470336,
+      "design": 3105501184,
+      "qvalue": 5063471104,
+      "protein_peptide": 4078391296,
+      "rollup": 5897211904,
+      "intensity": 4062982144,
+      "sample": 3071082496,
+      "replicate": 4008595456,
+      "imputation": 4402372608,
+      "iq": 4441952256,
+      "accession": 2893991936,
+      "protein_intensity": 2839650304,
+      "duplicates": 3055112192,
+      "protein_replicate": 2970025984,
+      "normalisation_ruv": 3092815872,
+      "correlation": 2491281408,
+      "session_export": 2064441344,
+      "da": 3040821248,
+      "report": 2417569792
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "qvalue": "complete",
+      "protein_peptide": "complete",
+      "rollup": "complete",
+      "intensity": "complete",
+      "sample": "complete",
+      "replicate": "complete",
+      "imputation": "complete",
+      "iq": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 0.259999999980209,
+    "gaps_above_250ms": 1,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": ["design/summary", "qvalue/summary", "protein_peptide/summary", "rollup/summary", "intensity/summary", "sample/summary", "replicate/summary", "imputation/summary", "iq/summary", "accession/summary", "protein_intensity/summary", "duplicates/summary", "protein_replicate/summary", "normalisation_ruv/products/normalization_science", "normalisation_ruv/summary", "correlation/summary", "session_export/summary", "da/summary"],
+    "populations": null,
+    "oracle_mismatches": ["design/summary", "qvalue/summary", "protein_peptide/summary", "rollup/summary", "intensity/summary", "sample/summary", "replicate/summary", "imputation/summary", "iq/summary", "accession/summary", "protein_intensity/summary", "duplicates/summary", "protein_replicate/summary", "normalisation_ruv/products/normalization_science", "normalisation_ruv/summary", "correlation/summary", "session_export/summary", "da/summary"],
+    "canonical_form_differences": [],
+    "files": 515,
+    "failure": null
+  }
+}
