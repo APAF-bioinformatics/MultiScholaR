@@ -182,11 +182,12 @@ RunApplet <- function(applet_type, omic_type, experiment_label,
   
   # --- Run the appropriate applet ---
   if (applet_type == "designMatrix") {
-    result <- .runDesignMatrixApplet(
+    result <- runDesignMatrixAppletFrom(
       source_dir = source_dir,
       output_dir = output_dir,
       omic_type = omic_type,
-      force = force
+      force = force,
+      caller_env = parent.frame()
     )
   }
   
@@ -195,20 +196,50 @@ RunApplet <- function(applet_type, omic_type, experiment_label,
 
 
 #' @title Run Design Matrix Builder Applet (internal)
-#' @description Internal function that launches the design matrix builder as a standalone Shiny app.
-#' @param source_dir Path to source directory containing sample files.
+#' @description Internal function that launches the proteomics design matrix builder as a
+#'   standalone Shiny app for the notebook workbooks. The applet works on the caller's long
+#'   peptide table (`data_tbl`, with its `Run` column) and `config_list`, as the workbooks'
+#'   data-management chunk defines them, and holds the table in its own session owner over a
+#'   temporary store, which is closed and removed when the applet ends (KIT-048: the builder has
+#'   one path, the owner's). On save it writes `design_matrix.tab`, `data_cln.tab` and, when
+#'   contrasts were defined, `contrast_strings.tab` to `source_dir`, and
+#'   `design_matrix_results.rds` to `output_dir`, and assigns `design_matrix`, `data_cln`,
+#'   `config_list` and `contrasts_tbl` in the caller's environment, where the workbooks' later
+#'   chunks read them.
+#' @param source_dir Path to the project's source directory, where the design files are written.
 #' @param output_dir Path to output directory for saving results.
-#' @param omic_type The omics type (proteomics, metabolomics, etc.)
+#' @param omic_type The omics type. Only `"proteomics"` has a standalone applet.
 #' @param force Logical; if TRUE, skips confirmation for overwriting.
 #' @return List containing design_matrix, data_cln, contrasts_tbl, config_list
 #' @keywords internal
 .runDesignMatrixApplet <- function(source_dir, output_dir, omic_type, force = FALSE) {
-  
+  runDesignMatrixAppletFrom(source_dir, output_dir, omic_type, force, caller_env = parent.frame())
+}
+
+#' The design matrix applet (`.runDesignMatrixApplet()`), run for a given calling environment:
+#' `RunApplet()` passes its own caller's.
+#' @param source_dir,output_dir,omic_type,force As `.runDesignMatrixApplet()`.
+#' @param caller_env The environment holding `data_tbl` and `config_list`, which receives the
+#'   saved design.
+#' @return As `.runDesignMatrixApplet()`.
+#' @noRd
+runDesignMatrixAppletFrom <- function(source_dir, output_dir, omic_type, force, caller_env) {
+  if (!identical(omic_type, "proteomics")) {
+    cli::cli_abort(
+      c(
+        "the design matrix applet has no standalone builder for {.val {omic_type}}.",
+        i = "It serves proteomics only; build other designs in the app's design step."
+      ),
+      class = "design_applet_omic_unsupported"
+    )
+  }
+  inputs <- readDesignAppletInputs(caller_env)
+
   # Check for existing output
   output_file <- file.path(output_dir, "design_matrix_results.rds")
   if (file.exists(output_file) && !force) {
     response <- readline(prompt = paste0(
-      "Design matrix results already exist at:\n  ", output_file, 
+      "Design matrix results already exist at:\n  ", output_file,
       "\nOverwrite? (y/n): "
     ))
     if (!tolower(response) %in% c("y", "yes")) {
@@ -216,90 +247,155 @@ RunApplet <- function(applet_type, omic_type, experiment_label,
       return(invisible(NULL))
     }
   }
-  
-  # Read sample files from source directory
-  sample_files <- list.files(source_dir, pattern = "\\.(tsv|csv|txt)$", full.names = TRUE)
-  if (length(sample_files) == 0) {
-    stop(paste0("No sample files (tsv/csv/txt) found in: ", source_dir))
-  }
-  
-  # Read the first file to get column structure (assuming all files have same structure)
-  # This is used to build the initial data table
-  first_file <- sample_files[1]
-  if (grepl("\\.tsv$", first_file)) {
-    sample_data <- utils::read.delim(first_file, stringsAsFactors = FALSE, nrows = 5)
-  } else {
-    sample_data <- utils::read.csv(first_file, stringsAsFactors = FALSE, nrows = 5)
-  }
-  
-  # Build initial data table with file info
-  data_tbl <- data.frame(
-    File = basename(sample_files),
-    FullPath = sample_files,
-    SampleName = gsub("\\.(tsv|csv|txt)$", "", basename(sample_files)),
-    stringsAsFactors = FALSE
-  )
-  
-  # Default config for standalone mode
-  config_list <- list(
-    omic_type = omic_type,
-    source_dir = source_dir,
-    output_dir = output_dir,
-    formula = "~ 0 + Condition"
-  )
-  
 
-  # Default column mapping for standalone mode
-  column_mapping <- list(
-    sample_id_col = "SampleName",
-    run_col = "File",
-    intensity_col = NULL
-  )
-  
-  # Create reactive wrappers for module
-  data_tbl_reactive <- shiny::reactiveVal(data_tbl)
-  config_list_reactive <- shiny::reactiveVal(config_list)
-  column_mapping_reactive <- shiny::reactiveVal(column_mapping)
-  
-  # Result storage
-  applet_result <- NULL
-  
-  # Build and run the Shiny app
-  ui <- mod_prot_design_builder_ui("designBuilder")
-  
-  server <- function(input, output, session) {
-    # Call the module server
-    result <- mod_prot_design_builder_server(
-      id = "designBuilder",
-      data_tbl = data_tbl_reactive,
-      config_list = config_list_reactive,
-      column_mapping = column_mapping_reactive
-    )
-    
-    # Observe the result and stop app when saved
-    shiny::observe({
-      res <- result()
-      if (!is.null(res)) {
-        # Save to file
-        saveRDS(res, output_file)
-        message("Design matrix saved to: ", output_file)
-        
-        # Store result and stop app
-        applet_result <<- res
-        shiny::stopApp(res)
-      }
-    })
-  }
-  
+  # The applet's own session store, removed with its owner when the applet ends.
+  store_root <- tempfile("design-applet-store-")
+  dir.create(store_root)
+  applet <- new.env(parent = emptyenv())
+  on.exit(closeDesignAppletStore(applet$owner, store_root), add = TRUE)
+
   # Run the app (blocking)
   message("Launching Design Matrix Builder...")
-  message("Source directory: ", source_dir)
+  message("Design files will be written to: ", source_dir)
   message("Output will be saved to: ", output_file)
-  
+
   result <- shiny::runApp(
-    shiny::shinyApp(ui = ui, server = server),
+    shiny::shinyApp(
+      ui = mod_prot_design_builder_ui("designBuilder"),
+      server = designAppletServer(inputs, source_dir, output_file, store_root, applet)
+    ),
     launch.browser = TRUE
   )
-  
+
+  # The workbooks' later chunks read these from the environment the applet was run in.
+  for (name in names(result)) {
+    if (!is.null(result[[name]])) assign(name, result[[name]], envir = caller_env)
+  }
+
   return(result)
+}
+
+#' The standalone design applet's inputs, as the workbooks define them before the design chunk:
+#' the long peptide table `data_tbl` (a `Run` column names each row's run) and `config_list`.
+#' @param caller_env The environment the applet was called from.
+#' @return A list: `data_tbl`, `config_list` and the builder's `column_mapping` (the run column
+#'   and, when present, DIA-NN's precursor quantity column, as the DIA-NN import maps them).
+#' @noRd
+readDesignAppletInputs <- function(caller_env) {
+  data_tbl <- get0("data_tbl", envir = caller_env)
+  if (!is.data.frame(data_tbl)) {
+    cli::cli_abort(
+      c(
+        "the design matrix applet found no {.code data_tbl} table where it was called.",
+        i = "Read the search report into {.code data_tbl} first (the workbook's data chunk)."
+      ),
+      class = "design_applet_input_missing"
+    )
+  }
+  if (!"Run" %in% names(data_tbl)) {
+    cli::cli_abort(
+      "the design matrix applet needs a {.code Run} column in {.code data_tbl}.",
+      class = "design_applet_input_invalid"
+    )
+  }
+  config_list <- get0("config_list", envir = caller_env)
+  if (!is.list(config_list)) {
+    cli::cli_abort(
+      c(
+        "the design matrix applet found no {.code config_list} where it was called.",
+        i = "Read the configuration first (the workbook's {.code readConfigFile()} call)."
+      ),
+      class = "design_applet_input_missing"
+    )
+  }
+  quantity_col <- intersect(c("Precursor.Normalised", "Precursor.Quantity"), names(data_tbl))
+  column_mapping <- list(run_col = "Run")
+  if (length(quantity_col) > 0) column_mapping$quantity_col <- quantity_col[[1]]
+  list(data_tbl = data_tbl, config_list = config_list, column_mapping = column_mapping)
+}
+
+#' The standalone design applet's server. It creates the session's owner over the applet's
+#' temporary store as the app does (`createDIASessionOwner`, bound to the DIA route as a DIA-NN
+#' import binds it), hands the table to the owner as the import does, and runs the design tab's
+#' builder on it. A saved design is written out and ends the app.
+#' @param inputs The applet's inputs (`readDesignAppletInputs()`).
+#' @param source_dir,output_file Where the design files and the result file are written.
+#' @param store_root The directory holding the applet's temporary store.
+#' @param applet An environment; `owner` is set to the session's owner, for the applet's cleanup.
+#' @return A Shiny server function.
+#' @noRd
+designAppletServer <- function(inputs, source_dir, output_file, store_root, applet) {
+  function(input, output, session) {
+    workflow_data <- shiny::reactiveValues(config_list = inputs$config_list)
+    store_paths <- list(source_dir = store_root)
+    shiny::isolate({
+      workflow_data$state_manager <- createDIASessionOwner(workflow_data, store_paths, session)
+      applet$owner <- initializeDIANativeImport(
+        workflow_data, store_paths, session,
+        format = "diann", data_type = "peptide"
+      )
+      withDIAStateScope(applet$owner, function() {
+        applyProtImportResultToWorkflow(
+          workflowData = workflow_data,
+          dataImportResult = list(
+            data = inputs$data_tbl,
+            data_type = "peptide",
+            column_mapping = inputs$column_mapping
+          ),
+          format = "diann",
+          fastaPath = NULL
+        )
+      })
+    })
+
+    saved_design <- registerProtDesignBuilderModule(workflow_data, moduleId = "designBuilder")
+
+    # Write the saved design out and stop the app with it
+    shiny::observeEvent(getDIAReactiveReference(saved_design), {
+      withDIAStateScope(applet$owner, function() {
+        saved <- saved_design()
+        shiny::req(saved)
+        shiny::stopApp(writeDesignAppletResult(saved, applet$owner, source_dir, output_file))
+      })
+    }, ignoreNULL = TRUE)
+  }
+}
+
+#' Write a saved design as the workbooks read it and return it with its table in memory.
+#' @param saved The builder's saved result (`design_matrix`, `contrasts_tbl`, `config_list` and
+#'   the cleaned table's `data_reference`).
+#' @param owner The applet's session owner.
+#' @param source_dir,output_file Where the design files and the result file are written.
+#' @return A list: `design_matrix`, `data_cln`, `contrasts_tbl` and `config_list`.
+#' @noRd
+writeDesignAppletResult <- function(saved, owner, source_dir, output_file) {
+  result <- list(
+    design_matrix = saved$design_matrix,
+    data_cln = resolveDIAOwnedValue(saved$data_reference, owner),
+    contrasts_tbl = saved$contrasts_tbl,
+    config_list = saved$config_list
+  )
+  utils::write.table(
+    result$design_matrix,
+    file = file.path(source_dir, "design_matrix.tab"),
+    sep = "\t", row.names = FALSE, quote = FALSE
+  )
+  writeDIADesignTable(owner, saved$data_reference, file.path(source_dir, "data_cln.tab"))
+  if (!is.null(result$contrasts_tbl) && nrow(result$contrasts_tbl) > 0) {
+    writeLines(result$contrasts_tbl$contrasts, file.path(source_dir, "contrast_strings.tab"))
+  }
+  saveRDS(result, output_file)
+  message("Design matrix saved to: ", source_dir)
+  result
+}
+
+#' Close the standalone design applet's owner (the session's end has usually closed it already)
+#' and remove its temporary store.
+#' @param owner The applet's session owner, or NULL when no session started.
+#' @param store_root The directory holding the applet's temporary store.
+#' @return NULL, invisibly.
+#' @noRd
+closeDesignAppletStore <- function(owner, store_root) {
+  tryCatch(closeDIAStateAdapter(owner), finally = unlink(store_root, recursive = TRUE))
+  invisible(NULL)
 }

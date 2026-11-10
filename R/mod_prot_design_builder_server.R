@@ -15,7 +15,8 @@
 #' @export
 mod_prot_design_builder_server <- function(id, data_tbl, config_list, column_mapping) {
     # KIT-103 W6: back-reference #5, a wrapper over the shared builder server with the proteomics
-    # configuration (the `dia_long` adapter); `.runDesignMatrixApplet` calls it with plain reactives.
+    # configuration (the `dia_long` adapter). The standalone applet reaches it as the design tab does, through
+    # `registerProtDesignBuilderModule` on its own owner (GUI audit R9, P-15).
     mod_omic_design_builder_server(id, data_tbl, config_list, column_mapping,
         config = omicGuiConfig("proteomics"))
 }
