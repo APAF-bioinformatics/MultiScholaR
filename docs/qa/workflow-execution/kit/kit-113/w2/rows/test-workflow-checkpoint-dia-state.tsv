@@ -1,0 +1,2 @@
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-workflow-checkpoint-dia-state.R	load_all	19	19	0	178	174	0	0	4	0	4	FALSE			FALSE		0	0	0	4	0	0	32.4	complete

@@ -1,0 +1,39 @@
+KIT-113 W2: targeted runs on the final tree (code 2984636c + F113-02 c2db9053). Recorded 2026-11-10 by the W2 agent.
+R 4.6.1, R_LIBS = kit_112's library (core/browser-smoke.OftnRb/library), load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+NOT_CRAN=true, TMPDIR = kit/tmp-113 (on disk). One process per file, at most 4 at once:
+  Rscript tools/testing/test-baseline.R file load_all <tree> tests/testthat/<file> <outdir>
+Per-file rows: w2/rows/*.tsv. "start" = kit-113/test-first.txt (W1, on the start commit) unless noted.
+
+file                                     blocks run  results  passed  failed  errors  skipped  warnings  start                      equal?
+-- W1's list --
+test-omic-enrich-module.R                  14         997      997     0       0       0        0         997/997 (after W1's freeze) yes
+test-omics-enrich-core.R                   22        1342     1341     0       0       1        0         10 run, 224/223, 1 skip    new blocks (below)
+test-module-ci-prot-enrich.R                6          83       79     0       0       2        2         83/79, 2 skip, 2 warn      yes
+test-workflow-operation-registry.R         15        1044     1044     0       0       0        0         1033/1028, 5 fail, 2 err   D11 now passing
+test-workflow-operations.R                  6          75       75     0       0       0        0         75/75                      yes
+test-workflow-dia-products.R               18         189      189     0       0       0        0         189/189                    yes
+test-workflow-analysis-record.R            23         278      274     0       0       0        4         278/274, 4 warn            yes
+test-omic-gui-config.R                     24        1849     1849     0       0       0        0         1849/1849                  yes
+test-workflow-omics-worker.R                8         289      289     0       0       0        0         289/289                    yes (lipid/metab/trx worker)
+test-workflow-omics-application-reads.R    27         230      230     0       0       0        0         230/230                    yes
+test-gui-entry-proteomics.R (5 lanes)       5         193      193     0       0       0        0         193/193, frozen oracles    yes, no re-freeze
+-- the DIA session and memory set --
+test-workflow-native-session.R             24         742      733     0       0       2        7         733 passed / 2 skipped     yes
+test-perf107-audit.R                       11         192      191     0       0       1        0         191 / 1                    yes
+test-perf107-checkpoints.R                  4          39       38     0       0       1        0         38 / 1                     yes
+test-workflow-checkpoint-dia-state.R       19         178      174     0       0       4        0         174 / 4                    yes
+test-workflow-gui-memory-lifetimes.R       17          91       80     0       0      11        0         80 / 11                    yes
+-- dependents grep (the changed names and the registry's in-process role), start measured on an export of dcdc4a3f --
+test-workflow-omics-binding-steps.R         7          57       57     0       0       0        0         57/57 (start tree)         yes
+test-workflow-partitions.R                 27         453      437     0       0       2       14         453/437, 2 skip, 14 warn   yes
+test-prot-11-enrichment-module-contracts.R  not run: quarantined file-level skip Q-163 (no executable block).
+
+test-omics-enrich-core.R: the 7 existing blocks are unchanged (10 run, 223 passed, 1 skipped Q-166, as at the start);
+the new blocks add 12 (8 per-case, the second Run, the worker failure then a Run, the kernel name, F113-02) and 1,118
+results, all passing. The skip is Q-166 (existing).
+The dependents grep (R/, tests/, tools/ excluding tools/refactor/, inst/) for every new or changed name and for the
+registry's in-process role found, beyond the files above, only R/zzz.R (calls registerBuiltinWorkflowOperations),
+R/mod_omic_enrich.R and R/utils_omic_gui_config.R (callers of runWorkflowEnrichment / runDIAReferenceEnrichment, covered
+by the module, config and entry tests) and the omic-type-filtered lipid/metab/trx registry tests (proteomics-free).
+Nothing hit the stop rule: every in-process guard, the five proteomics lanes, the DIA set and the lipid/metab/trx worker
+tests are identical to the start; the registry change stands.

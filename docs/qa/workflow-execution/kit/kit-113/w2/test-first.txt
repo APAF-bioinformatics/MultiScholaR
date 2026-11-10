@@ -1,0 +1,47 @@
+KIT-113 W2: test-first evidence. Recorded 2026-11-10 by the W2 agent.
+Environment: R 4.6.1, R_LIBS = kit_112's library (core/browser-smoke.OftnRb/library), load_all, MULTISCHOLAR_STRICT_SKIPS=1,
+NOT_CRAN=true, TMPDIR = kit/tmp-113 (on disk). Start commit dcdc4a3f (performance-v2's tip; R/ = kit_112's source).
+
+## D11: the two registry blocks (committed by W1 with their new expectations, unchanged here)
+
+Before (W1, on the start commit; kit-113/test-first.txt): 15 blocks, 1033 results, 1028 passed, 5 failed, 2 error blocks
+  (`in_process` is "enrichment"; enrichment not named_input, no `section`, compute/handler/validate/completion/publication
+  in process; assertWorkflowOperationDispatchable("enrichment") refused "runs in process only";
+  assertWorkflowActionInputSelected("enrichment", NULL, list(state = other)) refused stale).
+After (W2 code commit 2984636c and the final tree, per-file runner):
+  test-workflow-operation-registry.R  15 blocks run, 1044 expectations, 1044 passed, 0 failed, 0 errors, 0 skipped.
+  (1044 = W1's 1036 passing results on the start commit, less the 6 in-process expectations W1 retargeted, plus the
+  new expectations that now run past the two former error points.)
+
+## F113-02: the annotation match results travel as an rds state value reference
+
+Test: "(KIT-113 F113-02) annotation match results over the 8 MiB acceptance limit travel by reference: accepted, and the
+accept half returns the in-process list" (test-omics-enrich-core.R). On W1 (b)'s gprofiler fixture, the matcher
+(`resolveProtEnrichAnnotationMatching`, looked up by the configuration when built) returns match results of
+8.8 MB (object.size > 8,388,608); the in-process Run, then the managed Run (request half, the worker's entry point,
+the acceptance, the accept half) on the same session.
+
+Before the fix (the code commit 2984636c: the handler's value carried `matching` inline), the final test text,
+run alone (scratch one-block runner):
+  results: 1 error, 12 failures, 4 successes
+  FAIL `f113$acceptance` is "no_result", expected "complete"; the worker's error:
+       "execution handoff must be bounded immutable metadata"
+  (then every comparison of the accept half's list fails: there is no list.)
+  So the refusal comes earlier than F113-02 says: the worker's own handoff (`writeWorkflowExecutionMessage`,
+  utils_workflow_execution.R:1300-1302, the same 8 MiB bound) refuses to write worker-result.rds after the worker has
+  computed, so the controller would see the worker fail, not an "invalid_result" acceptance (draft F113-03 below).
+
+After the fix (computeWorkflowEnrichment saves the match results with saveWorkflowEnrichmentValue, codec rds; the accept
+half reads them back), the same test:
+  results: 18 successes, 0 failures
+  acceptance "complete"; the value within 8 MiB; the accept half's list has the in-process names, and every element
+  identical() except `reference` (a new product per Run, the declaration is not cacheable) and the filter metadata's
+  timestamp; `results` compared as D6 compares them (enrichment_data, enrichment_summaries, contrasts, plot classes):
+  two kernel calls give the plotly widgets new generated ids (as W1's P2 found for the .html pages).
+  The annotation match the accept half returns is identical() to the matcher's 8.8 MB value.
+
+## The W2 blocks (new; test-omics-enrich-core.R)
+
+Written against the code commit; the core file's first full run (before the second-Run block's `previous` correction)
+had 1 failure, in the second-Run block: after two commits the record's previous state is "enrichment_completed", as a
+second Run in process makes it, not a managed-path difference. The block now asserts it.

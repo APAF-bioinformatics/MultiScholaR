@@ -1,0 +1,2 @@
+file	mode	static_blocks	blocks_run	hidden_blocks	expectations	passed	failed	error_blocks	skipped_blocks	warnings	skip_results	file_skip	file_skip_reason	file_skip_category	file_error	file_error_message	skip_file_guard	skip_binding_guard	skip_environment	skip_quarantine	skip_fixture	skip_other	seconds	status
+test-workflow-gui-memory-lifetimes.R	load_all	17	17	0	91	80	0	0	11	0	11	FALSE			FALSE		0	0	2	8	0	1	11.8	complete
