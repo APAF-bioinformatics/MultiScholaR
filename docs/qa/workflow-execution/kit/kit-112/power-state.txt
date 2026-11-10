@@ -1,0 +1,2 @@
+kit-journey-112l start 12:30:30 at 9e4896e1: AC 1, profile low-power, battery 100%, load 2.30, available 28 GiB
+kit-journey-112l end 12:34:11: AC 1, profile low-power, battery 100%, load 2.74, available 28 GiB
