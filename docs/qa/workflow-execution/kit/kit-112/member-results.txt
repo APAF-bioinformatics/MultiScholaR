@@ -4,3 +4,4 @@ kit-journey-112t accepted failing none failed_step none error none
 kit-journey-112f invalid failing verifier_accepted failed_step da error production action failed: proteomics_workflow-differential_expression-run_da_analysis ×Error applying proteomics step: managed action ended: worker_failed 
 kit-journey-112a accepted failing none failed_step none error none 
 kit-journey-112b accepted failing none failed_step none error none 
+kit-journey-112c accepted failing none failed_step none error none 
