@@ -1257,7 +1257,9 @@ savedDaW2Front <- function(fixture, dispatch, settings, contrasts, today = FALSE
 savedDaW2Managed <- function(fixture, dispatch, settings, contrasts, today = FALSE) {
     manager <- fixture$workflow$state_manager
     manifest <- savedDaW2Front(fixture, dispatch, settings, contrasts, today)
-    published <- dispatch("da_publication", list(annotations = NULL), getDIAStateReference(manager))
+    # GUI audit A112-06: the annotation table travels as the run plugin sends it, a saved display table (none: NULL).
+    published <- dispatch("da_publication", list(annotations = saveDIADisplayTable(manager, fixture$workflow$uniprot_dat_cln)),
+        getDIAStateReference(manager))
     delivered <- withDIAStateScope(manager, function() readManagedDaResult(manager, published$accepted, NULL))
     completeDIADaDisplay(fixture$da, fixture$workflow, delivered$manifest)
     manifest
@@ -1537,4 +1539,112 @@ test_that("KIT-112 F112-03: on the managed path the rerun publishes through the 
     identity <- withDIAStateScope(manager, function() diaInteractiveVolcanoIdentity(manager, second, "treated.vs.control", 0.01))
     expect_identical(findSavedWorkflowEntities(manager$.context$store, list(kind = "rendered_asset", identity = identity))$status,
         "hit")
+})
+
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R1, A112-06: the saved Glimma page is reused on a rerun only when it was built with this run's annotations.
+# A first run without annotations, the annotations loaded, then a rerun whose contrast product hits under a new
+# manifest (1 of the 2 contrasts): the page is rebuilt with the gene names, published, and is the page the tab resolves;
+# it equals the page of the same run on a fresh owner. A further rerun with the same annotations reuses it. A rerun with
+# an unchanged manifest after the annotations change republishes too (the publication's key names the annotations).
+# ------------------------------------------------------------------------------------------------
+
+#' An annotation table for a manifest's proteins: one gene name per protein, recognisable in a page.
+savedDaA11206Annotations <- function(manager, manifest) {
+    ids <- withDIAStateScope(manager, function() readDIAContrastOutput(manifest$results[[1L]], "da_proteins_long",
+        manifest$protein_id_column)$da_proteins_long[[manifest$protein_id_column]])
+    annotations <- data.frame(Entry = unique(as.character(ids)), stringsAsFactors = FALSE)
+    annotations$gene_names <- paste0("AUDITGENE", seq_len(nrow(annotations)))
+    annotations
+}
+
+#' The A112-06 case on one path: `run(fixture, contrasts, annotations)` is one DA click returning its manifest.
+savedDaA11206Case <- function(run, owner) {
+    page_of <- function(fixture, contrast = "treated_vs_control") file.path(fixture$paths$publication_graphs_dir,
+        "Interactive_Volcano_Plots", paste0(contrast, ".html"))
+    read <- function(path) readBin(path, "raw", n = file.size(path))
+    # Two builds of one page differ only in the widget's random element id.
+    built_page <- function(path) gsub("htmlwidget-[0-9a-f]+", "htmlwidget-<id>", rawToChar(read(path)))
+    named <- function(path) grepl("AUDITGENE", rawToChar(read(path)), fixed = TRUE)
+    shown <- function(fixture, manifest, contrast = "treated.vs.control") withDIAStateScope(fixture$workflow$state_manager,
+        function() resolveDIAInteractiveVolcanoAsset(manifest, contrast, 0.01))
+    pages <- function(fixture, manifest, contrast = "treated.vs.control") {
+        manager <- fixture$workflow$state_manager
+        identity <- withDIAStateScope(manager, function() diaInteractiveVolcanoIdentity(manager, manifest, contrast, 0.01))
+        findSavedWorkflowEntities(manager$.context$store, list(kind = "rendered_asset", identity = identity))$matches
+    }
+    fixture <- owner("stale")
+    first <- run(fixture, savedDaW1Contrasts(2L), NULL)
+    annotations <- savedDaA11206Annotations(fixture$workflow$state_manager, first)
+    expect_false(named(page_of(fixture)))
+    expect_length(pages(fixture, first), 1L)
+    writer <- saveSelfContainedWidget
+    serialised <- 0L
+    counted <- function(code) testthat::with_mocked_bindings(code, saveSelfContainedWidget = function(...) {
+        serialised <<- serialised + 1L
+        writer(...)
+    })
+    # The rerun after the annotations are loaded: rebuilt, published, and the page the tab resolves.
+    second <- counted(run(fixture, savedDaW1Contrasts(1L), annotations))
+    expect_identical(serialised, 1L)
+    expect_true(named(page_of(fixture)))
+    expect_identical(charToRaw(shown(fixture, second)), read(page_of(fixture)))
+    built <- pages(fixture, second)
+    expect_length(built, 2L)
+    digests <- lapply(built[order(vapply(built, `[[`, 0L, "revision"))], function(page) page$metadata$factors$annotations)
+    # The digest of the table in memory is the digest recorded with the page on either path (the worker reads it back).
+    expect_identical(digests, list(NULL, diaAnnotationDigest(annotations)))
+    # The same run on a fresh owner gives the same page.
+    fresh <- owner("fresh")
+    run(fresh, savedDaW1Contrasts(1L), annotations)
+    expect_identical(built_page(page_of(fixture)), built_page(page_of(fresh)))
+    # A rerun with the same annotations under a new manifest reuses the first contrast's page as saved; the second
+    # contrast's page, built without annotations, is rebuilt.
+    serialised <- 0L
+    third <- counted(run(fixture, savedDaW1Contrasts(2L), annotations))
+    expect_identical(serialised, 1L)
+    expect_length(pages(fixture, third), 2L)
+    expect_identical(charToRaw(shown(fixture, third)), read(page_of(fixture)))
+    expect_true(named(page_of(fixture, "control_vs_treated")))
+    expect_identical(charToRaw(shown(fixture, third, "control.vs.treated")), read(page_of(fixture, "control_vs_treated")))
+    # An unchanged manifest: the rerun after the annotations change republishes.
+    same <- owner("same")
+    run(same, savedDaW1Contrasts(1L), NULL)
+    expect_false(named(page_of(same)))
+    again <- run(same, savedDaW1Contrasts(1L), annotations)
+    expect_true(named(page_of(same)))
+    expect_identical(charToRaw(shown(same, again)), read(page_of(same)))
+    expect_identical(built_page(page_of(same)), built_page(page_of(fresh)))
+}
+
+savedDaA11206Settings <- list(formula_string = "~ 0 + group", da_q_val_thresh = 0.01, treat_lfc_cutoff = 0.5)
+
+test_that("GUI audit A112-06: in process, a rerun after the annotations change rebuilds the saved Glimma page; unchanged annotations reuse it", {
+    skip_if_not_installed("Glimma")
+    env <- environment()
+    run <- function(fixture, contrasts, annotations) {
+        value <- NULL
+        utils::capture.output(value <- suppressWarnings(suppressMessages(runDIAReferenceDaAnalysis(savedDaA11206Settings,
+            fixture$da, fixture$workflow, fixture$paths, contrasts, annotations))))
+        value
+    }
+    savedDaA11206Case(run, function(name) savedDaW1Owner(paste0("audit-a112-06-", name), envir = env))
+})
+
+test_that("GUI audit A112-06: on the managed path, a rerun after the annotations change rebuilds the saved Glimma page; unchanged annotations reuse it", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    savedDaW2Mocks()
+    env <- environment()
+    dispatchers <- list()
+    run <- function(fixture, contrasts, annotations) {
+        if (is.null(dispatchers[[fixture$project]])) dispatchers[[fixture$project]] <<- savedDaW2Dispatcher(fixture, NULL)
+        fixture$workflow$uniprot_dat_cln <- annotations
+        value <- NULL
+        utils::capture.output(value <- suppressWarnings(suppressMessages(savedDaW2Managed(fixture, dispatchers[[fixture$project]],
+            savedDaA11206Settings, contrasts))))
+        value
+    }
+    savedDaA11206Case(run, function(name) savedDaW1Owner(paste0("audit-a112-06-worker-", name), envir = env))
 })

@@ -366,7 +366,7 @@ runDIAReferenceDaAnalysis <- function(settings, da_data, workflow, paths, contra
         if (publish) publishDIAActionOutputs(manager, getDIAStateReference(manager), "da",
             paths[c("da_output_dir", "publication_graphs_dir")], function(staged)
                 produceDIADaPublication(manager, manifest, request$annotations, settings$da_q_val_thresh, staged),
-            identity = diaDaPublicationIdentity(manifest))
+            identity = diaDaPublicationIdentity(manifest, diaAnnotationDigest(request$annotations)))
         if (publish) completeDIADaDisplay(da_data, workflow, manifest)
         manifest
     })
@@ -517,8 +517,11 @@ computeWorkflowDiaContrastAction <- function(manager, request, variant) {
 }
 
 #' The publication identity of one accepted DA manifest (the request key of its action outputs).
+#' @param annotations `diaAnnotationDigest` of the run's annotation table (GUI audit A112-06): a rerun after the
+#'   annotations change is another publication. Without a table the identity is the manifest's alone, as before.
 #' @noRd
-diaDaPublicationIdentity <- function(manifest) digest::digest(list(manifest, output_schema = 2L), algo = "sha256")
+diaDaPublicationIdentity <- function(manifest, annotations = NULL) digest::digest(c(list(manifest, output_schema = 2L),
+    if (!is.null(annotations)) list(annotations = annotations)), algo = "sha256")
 
 #' The DA tab's status text once a manifest is accepted (the render and the managed step's expected text).
 #' @noRd
@@ -755,32 +758,74 @@ diaInteractiveVolcanoIdentity <- function(manager, manifest, contrast, qvalue) {
         list(result = selected$tables$da_proteins_long$entity_id, qvalue = as.numeric(qvalue)))
 }
 
+#' The digest of the annotation table a page is built with (GUI audit A112-06): its displayable columns (those
+#' `saveWorkflowDisplayTable` keeps for the worker) as text, so the table in memory and the worker's read-back of it give
+#' the same value.
+#' @param annotations Annotation table, or NULL.
+#' @return A sha256 string; NULL for no table or an empty one.
+#' @noRd
+diaAnnotationDigest <- function(annotations) {
+    if (!is.data.frame(annotations) || !nrow(annotations) || !ncol(annotations)) return(NULL)
+    columns <- as.list(as.data.frame(annotations, stringsAsFactors = FALSE))
+    columns <- columns[vapply(columns, function(column) is.atomic(column) && is.null(dim(column)), logical(1))]
+    if (!length(columns)) return(NULL)
+    digest::digest(lapply(columns, function(column) as.character(unname(column))), algo = "sha256")
+}
+
+#' The current saved page of one identity (GUI audit A112-06): the store keeps every page saved for a result and
+#' threshold, each a revision of the one before it; the latest is the page.
+#' @param store The owner's store.
+#' @param identity `diaInteractiveVolcanoIdentity`.
+#' @return The latest page's descriptor, or NULL.
+#' @noRd
+diaInteractiveVolcanoPage <- function(store, identity) {
+    pages <- findSavedWorkflowEntities(store, list(kind = "rendered_asset", identity = identity))$matches
+    if (!length(pages)) return(NULL)
+    revisions <- vapply(pages, function(page) page$revision, integer(1))
+    if (sum(revisions == max(revisions)) != 1L)
+        cli::cli_abort("ambiguous saved consumer identity", class = "saved_entity_conflict")
+    pages[[which.max(revisions)]]
+}
+
 #' Save one contrast's self-contained interactive volcano page as a rendered asset (KIT-016), rooted on the
 #' source state and the contrast's result table.
+#' @param annotations `diaAnnotationDigest` of the table the page was built with (GUI audit A112-06). It is recorded
+#'   with the page (its factors), not in its identity; a page built with other annotations is saved as the next
+#'   revision of the current one.
 #' @noRd
-saveDIAInteractiveVolcanoAsset <- function(manager, manifest, contrast, qvalue, bytes) {
+saveDIAInteractiveVolcanoAsset <- function(manager, manifest, contrast, qvalue, bytes, annotations = NULL) {
     identity <- diaInteractiveVolcanoIdentity(manager, manifest, contrast, qvalue)
-    # KIT-112 F112-03: a page already saved for this result and threshold (a worker's publication that reused it) is
-    # kept; a second asset under one identity would make every later lookup of the page ambiguous.
-    saved <- resolveSavedWorkflowEntity(manager$.context$store, "rendered_asset", identity, hydrate = FALSE)
-    if (identical(saved$status, "hit")) return(saved$reference)
+    # KIT-112 F112-03: a page already saved for this result and threshold with these annotations (a worker's
+    # publication that reused it) is kept.
+    current <- diaInteractiveVolcanoPage(manager$.context$store, identity)
+    if (!is.null(current) && identical(current$metadata$factors$annotations, annotations)) return(current)
     # The page's display box in the module (the asset envelope needs positive dimensions).
     asset <- newSavedWorkflowRenderedAsset(bytes, "text/html", c(1200L, 820L))
     reference <- saveWorkflowConsumerEntity(manager$.context$store, asset,
-        basename(tempfile("dia-volcano-html-")), identity, "rendered_asset")
+        basename(tempfile("dia-volcano-html-")), identity, "rendered_asset",
+        factors = if (is.null(annotations)) list() else list(annotations = annotations),
+        lineage = if (!is.null(current)) list(parent_id = current$entity_id, revision = current$revision + 1L))
     rootDIAProduct(manager, reference, list(manifest$source, selectDIAContrastReference(manifest, contrast)$tables$da_proteins_long))
     reference
 }
 
 #' Resolve one contrast's saved interactive volcano page (KIT-016).
+#' @param annotations Given by the publication only (GUI audit A112-06): the `diaAnnotationDigest` of this run's
+#'   table, or NULL for none; the page is then resolved only when it was built with it. The DA tab gives none and
+#'   takes the current page.
 #' @return The HTML as a string, or NULL when no asset exists for the result and threshold.
 #' @noRd
-resolveDIAInteractiveVolcanoAsset <- function(manifest, contrast, qvalue) {
+resolveDIAInteractiveVolcanoAsset <- function(manifest, contrast, qvalue, annotations) {
     manager <- getDIAActiveManager()
-    identity <- diaInteractiveVolcanoIdentity(manager, manifest, contrast, qvalue)
-    hit <- resolveSavedWorkflowEntity(manager$.context$store, "rendered_asset", identity)
-    if (!identical(hit$status, "hit") || !identical(hit$value$status, "available")) return(NULL)
-    rawToChar(hit$value$bytes)
+    store <- manager$.context$store
+    current <- diaInteractiveVolcanoPage(store, diaInteractiveVolcanoIdentity(manager, manifest, contrast, qvalue))
+    if (is.null(current) || !missing(annotations) && !identical(current$metadata$factors$annotations, annotations))
+        return(NULL)
+    validateSavedWorkflowReference(store, current)
+    value <- hydrateSavedWorkflowEntity(store, current, validated = TRUE)
+    checkSavedWorkflowConsumerPayload("rendered_asset", value)
+    if (!identical(value$status, "available")) return(NULL)
+    rawToChar(value$bytes)
 }
 
 #' Why a contrast has no interactive volcano (KIT-101 F-08): the publication's record and the DA tab's message.
@@ -811,11 +856,19 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
     temporary <- tempfile("dia-volcano-assets-")
     dir.create(temporary)
     on.exit(unlink(temporary, recursive = TRUE), add = TRUE)
+    built_with <- diaAnnotationDigest(annotations)
     for (contrast in manifest$contrasts$friendly_names) {
         # KIT-112 F112-03: a page already saved for this result and threshold (KIT-016; a rerun whose contrast products
         # hit under a new manifest) is the page: it is written as saved, not rebuilt, re-serialised or saved again.
-        page <- resolveDIAInteractiveVolcanoAsset(manifest, contrast, qvalue)
-        widget <- if (is.null(page)) generateProtDAVolcanoPlotGlimma(manifest, contrast,
+        # GUI audit A112-06: only when it was built with this run's annotations. Otherwise the page is built as on a
+        # first run, from the contrast's saved tables read here: given the manifest, the kernel would return the saved
+        # page.
+        page <- resolveDIAInteractiveVolcanoAsset(manifest, contrast, qvalue, built_with)
+        owner <- getDIAActiveManager()
+        outdated <- is.null(page) && !is.null(diaInteractiveVolcanoPage(owner$.context$store,
+            diaInteractiveVolcanoIdentity(owner, manifest, contrast, qvalue)))
+        widget <- if (is.null(page)) generateProtDAVolcanoPlotGlimma(
+            if (outdated) readDIAResultDisplay(manifest, contrast, expression = TRUE) else manifest, contrast,
             uniprot_tbl = annotations, args_row_id = manifest$protein_id_column,
             da_q_val_thresh = qvalue)
         if (is.null(page) && is.null(widget)) {
@@ -833,7 +886,7 @@ writeDIAInteractiveVolcanoOutputs <- function(manifest, directory, annotations, 
         # KIT-016: the self-contained page is also a saved rendered asset, so the module renders it on demand
         # without rebuilding the widget (and without loading Glimma) in the application process.
         if (is.null(page) && !is.null(manager)) saveDIAInteractiveVolcanoAsset(manager, manifest, contrast, qvalue,
-            readBin(html, "raw", n = file.size(html)))
+            readBin(html, "raw", n = file.size(html)), built_with)
         widget <- NULL
     }
     list.files(target, recursive = TRUE, full.names = TRUE)

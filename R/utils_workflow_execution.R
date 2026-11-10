@@ -2647,9 +2647,14 @@ computeWorkflowDaPublicationAction <- function(manager, request, variant) {
     withWorkflowStateScope(manager, function()
         produceDIADaPublication(manager, manifest, annotations, manifest$parameters$qvalue, staged, save_assets = FALSE))
     files <- list.files(root, recursive = TRUE)
+    # GUI audit A112-06: the digest of the annotation table the pages were built with travels in the summary, the part
+    # of this value the acceptance keeps for the controller's publication (its key and the saved pages' record). It is
+    # absent without a table, so that value is as before.
+    built_with <- diaAnnotationDigest(annotations)
     list(checkpoint = head_record, reference = head, state_reference = head,
         state_name = manager$current_state, manifest_reference = manifest_reference,
-        summary = list(files = length(files), bytes = sum(file.size(file.path(root, files)))), files = files)
+        summary = c(list(files = length(files), bytes = sum(file.size(file.path(root, files)))),
+            if (!is.null(built_with)) list(annotations_digest = built_with)), files = files)
 }
 
 #' Complete a DA publication (KIT-019): nothing new is committed (the manifest was committed before the request);
@@ -2705,9 +2710,9 @@ publishWorkflowDaResult <- function(owner, paths, result) {
             assertDIADaPublicationFiles(manifest, staged, ifelse(available, pages,
                 diaInteractiveVolcanoUnavailablePath(interactive, manifest$contrasts$friendly_names)))
             for (i in which(available)) saveDIAInteractiveVolcanoAsset(manager, manifest, manifest$contrasts$friendly_names[[i]],
-                manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])))
+                manifest$parameters$qvalue, readBin(pages[[i]], "raw", n = file.size(pages[[i]])), result$summary$annotations_digest)
             list(completed = TRUE)
-        }, identity = diaDaPublicationIdentity(manifest))
+        }, identity = diaDaPublicationIdentity(manifest, result$summary$annotations_digest))
     invisible(NULL)
 }
 
