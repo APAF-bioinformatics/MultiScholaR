@@ -80,9 +80,26 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
             shiny::removeNotification("da_working")
             return(invisible(NULL))
           }
-          if (!is.null(shiny::isolate(managed_step$pending()))) {
+          # GUI audit A112-05 / P-39 (a): the runner is shared by the proteomics tabs. While it holds another tab's
+          # publication for a retry, a click here commits nothing (the runner would resume that tab's retry on a moved head).
+          held <- shiny::isolate(runner$step$pending())
+          if (!is.null(held) && !identical(held$reservation$operation, proteomicsDiaBinding$da$operation)) {
+            shiny::showNotification(paste0("An earlier proteomics step", if (is.character(held$reservation$operation))
+              paste0(" (", held$reservation$operation, ")"), " could not write its files. Press that step's button again, ",
+              "then run the differential abundance analysis."), type = "warning", duration = 10)
             shiny::removeNotification("da_working")
-            publication()
+            return(invisible(NULL))
+          }
+          pending <- shiny::isolate(managed_step$pending())
+          if (!is.null(held) || !is.null(pending)) {
+            # (b): the retry keeps the earlier run's request, and says so. (c): the publication is retried with its own
+            # parameters, so annotations changed since the failure do not refuse it; a pending contrast (F112-06) is the
+            # runner's retry, finished by the first request's callbacks.
+            shiny::showNotification(paste("Retrying the earlier differential abundance run, whose files could not be written,",
+              "with that run's settings. Run again afterwards to apply changed settings."), type = "warning", duration = 10)
+            if (is.null(pending)) return(runner$run(list()))
+            shiny::removeNotification("da_working")
+            managed_step$apply(pending$parameters)
             return(invisible(NULL))
           }
           # KIT-112 D3: the request half here, one DA-contrast-output per contrast on the worker (its source named, its

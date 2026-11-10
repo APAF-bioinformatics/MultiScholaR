@@ -716,7 +716,14 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
                 action$owner <- pending$owner
                 action$worker_request_id <- pending$worker_request_id
                 action$parameters <- pending$parameters
-                accepted <- resumeWorkflowAction(action$owner, action$worker_request_id)
+                # GUI audit A112-05 (c): a publication whose state was superseded can never be retried; it is dropped, so
+                # that the step can run afresh.
+                accepted <- tryCatch(resumeWorkflowAction(action$owner, action$worker_request_id),
+                    workflow_execution_stale = function(error) {
+                        pending_publication(NULL)
+                        stop("the earlier publication belongs to a superseded state and was dropped; run the step again",
+                            call. = FALSE)
+                    })
                 deliver_action(action, read_result(manager, accepted, workflow_data))
                 pending_publication(NULL)
                 return(invisible(NULL))

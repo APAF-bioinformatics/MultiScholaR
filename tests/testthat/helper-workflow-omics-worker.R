@@ -134,7 +134,8 @@ omicsManagedChainMocks <- function(fixture, probe, env = parent.frame(), window 
       probe$publication <- publication
       probe$active <- TRUE
       probe$operations <- c(probe$operations, operation)
-      list2env(list(id = paste0("gui-", operation), closed = FALSE))
+      # The reservation names its operation, as the real one does (GUI audit A112-05).
+      list2env(list(id = paste0("gui-", operation), closed = FALSE, operation = operation))
     },
     finishWorkflowGUIAction = function(reservation, status, ...) {
       probe$active <- FALSE

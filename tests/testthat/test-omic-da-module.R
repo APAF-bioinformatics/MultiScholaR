@@ -4907,6 +4907,9 @@ omicDaK112RunnerNotes <- c("[default NULL proteomics_action_working] Applying pr
     "remove proteomics_action_working")
 omicDaK112PublicationStart <- "[default NULL da_publication] Applying DA publication ..."
 omicDaK112PublicationDone <- c("remove da_publication", "[message 5 -] DA publication applied successfully")
+# GUI audit A112-05 (b): what a retry of a pending publication (or of a pending contrast) says.
+omicDaK112RetryNote <- paste("[warning 10 -] Retrying the earlier differential abundance run, whose files could not be written, with",
+    "that run's settings. Run again afterwards to apply changed settings.")
 omicDaK112Steady <- function(setup) list(open = function(ctx) ctx$tab("da"), run = omicDaK112Run(1L),
     ack = omicDaK112Ack(setup$holder))
 
@@ -5065,11 +5068,117 @@ test_that("KIT-112 W3 (F112-02): a click while the publication holds a pending r
     expect_true(pending$manifest)
     retry <- captures$retry
     expect_identical(retry$operations, "da_publication")
-    expect_identical(retry$notes, c(omicDaK112Working, "remove da_working", omicDaK112PublicationStart))
+    # GUI audit A112-05 (b): the retry says that it keeps the earlier run's settings.
+    expect_identical(retry$notes, c(omicDaK112Working, omicDaK112RetryNote, "remove da_working", omicDaK112PublicationStart))
     expect_identical(retry$requests, 1L)
     expect_identical(retry$history, "<unchanged>")
     expect_identical(captures$ack$notes, omicDaK112PublicationDone)
     expect_identical(captures$ack$values[["da_status"]], "[OK] Analysis Complete\n Contrasts analyzed: 1\n Results available in all tabs")
+})
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R2 (2026-11-11), A112-05 / P-39: the click guards of the managed DA run.
+# ------------------------------------------------------------------------------------------------
+
+#' A step run with the poll ending every action `publication_pending` (its files could not be written).
+omicDaAuditPending <- function(setup, step) {
+    function(ctx) testthat::with_mocked_bindings({
+        step(ctx)
+        setup$holder$session$flushReact()
+    }, pollWorkflowAction = function(owner) list(status = "publication_pending"), .package = "MultiScholaR")
+}
+
+test_that("GUI audit A112-05 (a): a DA click while the shared runner holds another tab's pending publication is refused before the request half", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        # Another proteomics tab's action on the shared runner; its dispatch is not what is tested.
+        other = omicDaAuditPending(setup, function(ctx) testthat::with_mocked_bindings(
+            shiny::isolate(setup$holder$shared$run(list(protNormManagedAction("pearson-pairs", list(), NULL, NULL,
+                function(result) NULL)))),
+            runWorkflowAction = function(...) "wfx-other-tab", .package = "MultiScholaR")),
+        held = function(ctx) ctx$keep("retrying", shiny::isolate(setup$holder$runner$retrying())),
+        click = omicDaK112Run(1L))
+    captures <- omicDaK112Drive(steps, full = TRUE)$captures
+    expect_identical(captures$other$operations, "pearson-pairs")
+    expect_true(captures$held$retrying)
+    click <- captures$click
+    expect_identical(click$operations, character(0))
+    expect_identical(click$notes, c(omicDaK112Working, paste("[warning 10 -] An earlier proteomics step (pearson-pairs) could not",
+        "write its files. Press that step's button again, then run the differential abundance analysis."), "remove da_working"))
+    expect_identical(click$requests, 0L)
+    expect_identical(click$history, "<unchanged>")
+    expect_identical(click$states, "<unchanged>")
+    expect_false(click$manifest)
+})
+
+test_that("GUI audit A112-05 (a): a DA click while the runner holds this tab's own pending contrast retries it with the earlier request", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        pending = omicDaAuditPending(setup, omicDaK112Run(1L)),
+        retry = function(ctx) {
+            ctx$set(formula_string = "~ 0 + group", da_q_val_thresh = 0.01, treat_lfc_cutoff = 0)
+            ctx$set(run_da_analysis = 2L)
+        },
+        ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    expect_identical(captures$pending$operations, "DA-contrast-output")
+    expect_identical(captures$pending$requests, 1L)
+    retry <- captures$retry
+    expect_identical(retry$operations, c("DA-contrast-output", "da_publication"))
+    expect_identical(retry$requests, 1L)
+    expect_identical(retry$notes[1:2], c(omicDaK112Working, omicDaK112RetryNote))
+    expect_true(retry$manifest)
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
+})
+
+test_that("GUI audit A112-05 (c): a pending publication is retried with its own parameters when the annotations changed since", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        pending = function(ctx) {
+            setup$counts$pend <- TRUE
+            omicDaK112Run(1L)(ctx)
+        },
+        retry = function(ctx) {
+            bus <- setup$bus()
+            bus$uniprot_dat_cln <- data.frame(Entry = "P00001", gene_names = "GENE1", stringsAsFactors = FALSE)
+            omicDaK112Run(2L)(ctx)
+        },
+        ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    retry <- captures$retry
+    expect_identical(retry$operations, "da_publication")
+    expect_identical(retry$notes, c(omicDaK112Working, omicDaK112RetryNote, "remove da_working", omicDaK112PublicationStart))
+    expect_identical(retry$requests, 1L)
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
+})
+
+test_that("GUI audit A112-05 (c): a pending publication whose state was superseded is dropped, and the next click runs afresh", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    steps <- function(setup) list(open = function(ctx) ctx$tab("da"),
+        pending = function(ctx) {
+            setup$counts$pend <- TRUE
+            omicDaK112Run(1L)(ctx)
+        },
+        superseded = function(ctx) testthat::with_mocked_bindings({
+            omicDaK112Run(2L)(ctx)
+            setup$holder$session$flushReact()
+        }, resumeWorkflowAction = function(owner, request_id) cli::cli_abort("publication belongs to a superseded state",
+            class = "workflow_execution_stale"), .package = "MultiScholaR"),
+        fresh = omicDaK112Run(3L), ack = omicDaK112Ack(setup$holder))
+    captures <- omicDaK112Drive(steps)$captures
+    superseded <- captures$superseded
+    expect_identical(superseded$operations, "da_publication")
+    expect_identical(utils::tail(superseded$notes, 1L), paste("[error 15 -] Error applying DA publication: the earlier publication",
+        "belongs to a superseded state and was dropped; run the step again"))
+    expect_identical(superseded$requests, 1L)
+    fresh <- captures$fresh
+    expect_identical(fresh$operations, c("DA-contrast-output", "da_publication"))
+    expect_identical(fresh$requests, 2L)
+    expect_identical(captures$ack$notes, omicDaK112PublicationDone)
 })
 
 test_that("KIT-112 W3 (D3): the plugin mounted alone on a managed session installs one runner; on a full session it reuses the normalisation's; unmanaged none", {
