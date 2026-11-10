@@ -25,9 +25,25 @@
 - **The `.html` plot pages** differ between two in-process Runs too (generated widget ids). D6 compares names, and sha256 for TSVs only, so this is not a difference the move introduces.
 - **F113-02 is accepted into W2's design.**
 
+## Lead decisions at W2 (2026-11-10)
+
+- **Merged** fast-forward (`2984636c`, `c2db9053`, `b11be207`). No stop rule fired. Equal to the start:
+  - the in-process guards;
+  - the five proteomics lanes (193/0/0, no re-freeze);
+  - the DIA set (733/2, 191/1, 38/1, 174/4, 80/11);
+  - the other omics' worker tests (289/0).
+- **D11's blocks fail first and now pass** (registry 1044/1044). **F113-02 was fixed test first.** The core equivalence holds on all eight W1 (b) cases, each difference being one of D6's recorded exclusions, asserted exactly.
+- **F113-03 is information.** It corrects F113-02's mechanism; the fix is unchanged.
+- **F113-04 is accepted** as one more of D6's recorded exclusions. It is the same kind as D6's worker-failure case: a notice-identical refusal on the managed path whose bus metadata write is the accept half's, so it does not happen.
+- **F113-05 (lines) is recorded.** The excess is roxygen for 15 internal functions, and no logic is duplicated.
+- **The convention divergences are recorded:** two helpers carry 11 and 9 parameters, keeping today's statements.
+
 ## Findings
 
 | Id | Where | What | Decision |
 |---|---|---|---|
 | F113-01 | — | (used and dropped at the ticket's review: the proxy variables; no difference by the code) | — |
 | F113-02 | the handler's value (D3, R3) | **The value carries the annotation match results, about 416 B per DA protein.** At 16,000 proteins they are 6.66 MB of the 6.76 MB value, against the 8 MiB acceptance limit (`utils_workflow_execution.R:1771-1774`). By linear scaling, a Run on about 19,900 or more proteins would be refused at acceptance (`invalid_result`) after the worker has computed, although the same Run completes in process today. Found by P4. | **Fixed in W2, inside D3, test first:** the match results are saved as an `rds` state value, as the results are, and the value sends the reference. A value over the limit is shown refused before the fix and accepted after, with the returned list identical. No methodology change. |
+| F113-03 | `writeWorkflowExecutionMessage` (`utils_workflow_execution.R:1300-1302`) | F113-02's refusal happens earlier than stated: the worker's own handoff refuses a value over 8 MiB ("execution handoff must be bounded immutable metadata"), so the controller sees a worker failure, not an `invalid_result` acceptance. | Information. F113-02's fix covers it. |
+| F113-04 | the managed request half, the taxon refusal | On the managed path a Run refused at the method (an invalid taxon) does not write the bus's `enrichment_organism_filter` metadata. In process that write comes before the refusal. The notice is today's. | Accepted as one more of D6's recorded exclusions, the same kind as D6's worker-failure case. |
+| F113-05 | lines | `utils_workflow_enrichment.R` 1,134 → 1,369 (+235, against the expected +70 to +140): roxygen for 15 internal helpers and halves, no duplicated logic. `utils_workflow_dia_da.R` +38; `utils_workflow_operations.R` −6. | Recorded in the outcome. |
