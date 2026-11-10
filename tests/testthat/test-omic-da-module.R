@@ -4811,7 +4811,10 @@ omicDaK112ProtSetup <- function(contrasts = module_ci_prot_da_contrasts("two_gro
         },
         differentialAbundanceAnalysis = function(...) {
             if (isTRUE(probe$fail)) stop("forced DA kernel failure (KIT-112 W3)")
-            kernel(...)
+            result <- kernel(...)
+            # GUI audit A112-03: the kernel's own account of a BH fallback, forced (this fixture's q-values estimate).
+            if (isTRUE(probe$fallback)) result$qvalue_warnings <- list(forced = TRUE)
+            result
         },
         .package = "MultiScholaR", .env = env)
     tab <- shiny::reactiveVal("qc")
@@ -5088,4 +5091,25 @@ test_that("KIT-112 W3 (D3): the plugin mounted alone on a managed session instal
     expect_identical(unmanaged$counts$installs, 0L)
     expect_null(unmanaged$holder$runner)
     expect_true(captures$run$manifest)
+})
+
+# GUI audit R1, A112-03 (a) (F112-01): a contrast that fell back to BH is reported on the managed path as in process,
+# with the in-process warning, from the manifest the publication step delivers.
+test_that("GUI audit A112-03: a managed run whose contrast fell back to BH shows the in-process run's fallback warning", {
+    skip_if_not_installed("Glimma")
+    skip_if_not(workflowOwnerCapable())
+    fallback <- "[warning NULL -] Some contrasts used the existing BH fallback after q-value estimation failed."
+    steps <- function(setup) {
+        setup$counts$fallback <- TRUE
+        omicDaK112Steady(setup)
+    }
+    shown <- function(captures) sum(unlist(lapply(captures, `[[`, "notes")) == fallback)
+    unmanaged <- omicDaK112Drive(steps, managed = FALSE)$captures
+    expect_identical(shown(unmanaged), 1L)
+    managed <- omicDaK112Drive(steps)$captures
+    expect_identical(managed$run$operations, c("DA-contrast-output", "da_publication"))
+    expect_identical(shown(managed), 1L)
+    # No fallback, no warning, on either path.
+    expect_identical(shown(omicDaK112Drive(omicDaK112Steady)$captures), 0L)
+    expect_identical(shown(omicDaK112Drive(omicDaK112Steady, managed = FALSE)$captures), 0L)
 })

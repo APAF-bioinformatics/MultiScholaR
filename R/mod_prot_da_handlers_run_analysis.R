@@ -8,6 +8,13 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
     for (id in c("volcano_contrast", "heatmap_contrast", "table_contrast"))
       shiny::updateSelectInput(session, id, choices = choices)
   }
+  # GUI audit A112-03 (F112-01): one notice for both paths, from the manifest's contrast records: in process when the
+  # run returns, on a managed session when the publication step delivers the manifest.
+  warn_bh_fallback <- function(manifest) {
+    warnings <- unlist(lapply(manifest$results, function(result) result$qvalue_warnings), recursive = FALSE)
+    if (length(warnings)) shiny::showNotification(
+      "Some contrasts used the existing BH fallback after q-value estimation failed.", type = "warning", duration = NULL)
+  }
   managed_step <- installWorkflowManagedStep(session, input, workflow_data, "da_publication",
     publication = list(experiment_label = experiment_label %||% "dia_baseline_smoke", experiment_paths = experiment_paths,
       omic_type = omic_type),
@@ -19,6 +26,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
     deliver = function(result) {
       completeDIADaDisplay(da_data, workflow_data, result$manifest)
       update_contrast_choices(result$manifest)
+      warn_bh_fallback(result$manifest)
       NULL
     },
     read_result = readManagedDaResult)
@@ -111,9 +119,7 @@ da_server_run_analysis_handler <- function(input, output, session, ns, da_data, 
           return(invisible(NULL))
         }
         update_contrast_choices(manifest)
-        warnings <- unlist(lapply(manifest$results, function(result) result$qvalue_warnings), recursive = FALSE)
-        if (length(warnings)) shiny::showNotification(
-          "Some contrasts used the existing BH fallback after q-value estimation failed.", type = "warning", duration = NULL)
+        warn_bh_fallback(manifest)
         shiny::showNotification("Differential abundance analysis completed successfully!", type = "message", duration = 5)
         # KIT-111 F106-02: the in-process run returns here, so it removes its working notice first.
         shiny::removeNotification("da_working")
