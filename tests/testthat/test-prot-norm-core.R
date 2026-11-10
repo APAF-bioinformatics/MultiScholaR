@@ -936,6 +936,8 @@ protNormW1Frozen <- function() list(
             resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
             finalizeProtNormWorkflowState = 0L),
         callbacks = character(0)),
+    # GUI audit P-35 (F111-02), 2026-11-11: `norm_fields` gains the step's recorded input
+    # (`ruv_covariates_input_reference`); every other field is KIT-111 W1 (a)'s.
     limpa_covariates_ruv = list(
         current = "ruv_covariates",
         history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
@@ -959,8 +961,8 @@ protNormW1Frozen <- function() list(
             correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
             final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
             normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
-            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8f53dc8138ce299d", ruv_optimization_result = "eeae0389f229a0bd", 
-            ruv_optimization_table = "bf419098d53c4e33"),
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_covariates_input_reference = "7e1a356bda20ce87", ruv_normalized_obj = "8f53dc8138ce299d", 
+            ruv_optimization_result = "eeae0389f229a0bd", ruv_optimization_table = "bf419098d53c4e33"),
         ruv_result = "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6",
         workflow = "1aea9a4f60d498c1d539b6ced76fa6d4522eb4875db793ea53cf2a73fe2e049d",
         value = "8f53dc8138ce299d67fb2dbeb73332a20afa4f5e15c31dd7f3aefd09892e4f32",
@@ -970,6 +972,8 @@ protNormW1Frozen <- function() list(
             resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
             finalizeProtNormWorkflowState = 0L),
         callbacks = "ruv:e1c1cd4c99f5"),
+    # GUI audit P-35 (F111-02), re-frozen 2026-11-11 from two byte-identical dumps: the repeat runs on the recorded
+    # input (the correlation result), a hit that commits nothing. Before, it ran RUV-III again on the committed RUV state.
     limpa_covariates_ruv_repeat = list(
         current = "ruv_covariates",
         history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
@@ -979,12 +983,12 @@ protNormW1Frozen <- function() list(
             "ruv_covariates"),
         states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
             peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935", 
-            ruv_covariates = "49a8e114895c4afeb722b4f41bb56e96c18da6abc6351d3014c5f8c571b92722"),
+            ruv_covariates = "b2442669d93f3fbceeca3c61238b3fef1991c236c7ab4391e9f2dbe650ec072e"),
         outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
                 ruv_covariates = c("ruv-covariates" = TRUE)),
         products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia-ruv-covariates:52b9cf17c41aa8c0", 
-            "dia-ruv-covariates:63c261200c1ced1e", "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", 
-            "output/dia-protein-qc-output:8b8101851eb54168", "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+            "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
         provenance = "b277eb8197ce4789839d312cf291fed25eae7f1c6b5450795b7b6706b9c33067",
         record = "4a271d4fbb4ee0107c841aa8738df37ceaa193138ffcbc27f137f8c354350b38",
         files = "b8e5c65e86cc0c32a8345221bfe52f4ecf30b8bdf26b4a213f5cd207ba3e4803",
@@ -993,17 +997,17 @@ protNormW1Frozen <- function() list(
             correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
             final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
             normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
-            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8f53dc8138ce299d", ruv_optimization_result = "eeae0389f229a0bd", 
-            ruv_optimization_table = "bf419098d53c4e33"),
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_covariates_input_reference = "7e1a356bda20ce87", ruv_normalized_obj = "8f53dc8138ce299d", 
+            ruv_optimization_result = "eeae0389f229a0bd", ruv_optimization_table = "bf419098d53c4e33"),
         ruv_result = "dd5a614c8a2494b1c66e75e08ce2a65e9259d557dcfa5a4058b9f720b5e8f4e6",
         workflow = "1aea9a4f60d498c1d539b6ced76fa6d4522eb4875db793ea53cf2a73fe2e049d",
         value = "8f53dc8138ce299d67fb2dbeb73332a20afa4f5e15c31dd7f3aefd09892e4f32",
         error = NA_character_,
-        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
-            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 2L, 
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 0L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 0L, 
             resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
             finalizeProtNormWorkflowState = 0L),
-        callbacks = "ruv:60a06748b674"),
+        callbacks = character(0)),
     limpa_correction_pass_through = list(
         current = "peptide_count_filtered",
         history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered"),
@@ -1062,6 +1066,8 @@ protNormW1Frozen <- function() list(
             resolveDIAReferenceQcPlot = 1L, resolveProtNormCorrelationResultFilenames = 1L, generateProtNormCompositeQcFigure = 0L, 
             finalizeProtNormWorkflowState = 0L),
         callbacks = character(0)),
+    # GUI audit P-35 (F111-02), 2026-11-11: `norm_fields` gains the step's recorded input
+    # (`ruv_covariates_input_reference`); every other field is KIT-111 W1 (a)'s.
     limpa_correction_ruv = list(
         current = "ruv_corrected",
         history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
@@ -1085,8 +1091,8 @@ protNormW1Frozen <- function() list(
             correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
             final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
             normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
-            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "8422092ca23581c1", ruv_optimization_result = "d91a80603a5612cd", 
-            ruv_optimization_table = "bf419098d53c4e33"),
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_covariates_input_reference = "7e1a356bda20ce87", ruv_normalized_obj = "8422092ca23581c1", 
+            ruv_optimization_result = "d91a80603a5612cd", ruv_optimization_table = "bf419098d53c4e33"),
         ruv_result = "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f",
         workflow = "3707fc6f2eed26843082dd0112a28f8f6ac8ebb623036e6eb1d80a9782cf17c0",
         value = "8422092ca23581c14e7503c24ccac8c235a1f244336f28163c3fe6d6bd7533f7",
@@ -1096,6 +1102,8 @@ protNormW1Frozen <- function() list(
             resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
             finalizeProtNormWorkflowState = 0L),
         callbacks = "ruv:e1c1cd4c99f5"),
+    # GUI audit P-35 (F111-02), re-frozen 2026-11-11 from two byte-identical dumps: the repeat runs on the recorded
+    # input (the correlation result), a hit that commits nothing. Before, it ran RUV-III again on the committed RUV state.
     limpa_correction_ruv_repeat = list(
         current = "ruv_corrected",
         history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
@@ -1105,31 +1113,31 @@ protNormW1Frozen <- function() list(
             "ruv_corrected"),
         states = c(protein_dpc_quant = "41dfd92a6007ea8f051ed9a447d3688f61902363a2b9aa84aedf596e4c0e9549", protein_normalised = "ab8d0aac28c16422de25afd8b64efc63a80bdf5670f34d7bfe526bc0d88edd64", 
             peptide_count_filtered = "75c25ed13486d80bb56c8e3691369dde2d61de37bcacecf3224cdc3573723fd0", correlation_filtered = "312ee5d40ac0d3f3c809c3864a1d440e1dbc000c8cc75a98cfdd9c95b96f5935", 
-            ruv_corrected = "0c680e295e60bf593b7864d35762f69e81dd99629cd7662359be16c81285cb8d"),
+            ruv_corrected = "e1206824d8302e3581c57eeb39d5e7535da216dec6881f1b0575d03077085598"),
         outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
                 ruv_corrected = c("ruv-covariates" = TRUE)),
         products = c("dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:36ea8f5f2e373570", "dia-ruv-covariates:8cc4809c5a4a073b", 
-            "dia-ruv-covariates:8f30ef662db854de", "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", 
-            "output/dia-protein-qc-output:8b8101851eb54168", "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
+            "dia_normalization_pca:d9b5720af8d8a298", "output/dia-protein-filtering-counts:67049a631f7b624a", "output/dia-protein-qc-output:8b8101851eb54168", 
+            "output/dia-protein-qc-output:deef48a7ebdbcb3a"),
         provenance = "22d6232c9a55eab50e0d9d1c186d266c5e8bd33368999fa3af0e8ac982064470",
-        record = "548a545e77a0fb5d09953a780b89dc4ffbf5d9dd5cb217eee5a4847fab89fe01",
-        files = "09d8cbcc30ea9902537d19ee36c7e73843b1f1638ce516c1853f6b39a0545f64",
-        norm_state = "1d6de9a50ebc818aa87294c77c8f5847eed7f02e38bcbeb691544c0c5510aa75",
-        norm_fields = c(best_k = "a7b8541c0f557ee0", control_genes_index = "19d490e85cf85a3f", correlation_filtered_obj = "aebfcf21f9e83b32", 
+        record = "8c98ca3f561320405afd44b86f07d53fa0ceda8f03b8fc7e635869dfb2bcfeb1",
+        files = "b8e5c65e86cc0c32a8345221bfe52f4ecf30b8bdf26b4a213f5cd207ba3e4803",
+        norm_state = "25f3c43b9d26b351078901bd372606692d82831c945aa7393aa91c10e6d3b672",
+        norm_fields = c(best_k = "a7b8541c0f557ee0", control_genes_index = "1c497b478576b300", correlation_filtered_obj = "8422092ca23581c1", 
             correlation_threshold = "acf06dd9ce0cc864", correlation_vector = "9eaece3602f93d46", filtering_summary_text = "1ba7030e9325c39d", 
             final_filtering_plot = "1cc1786a46386211", final_qc_plot = "1252e1714ac6c9a2", normalization_complete = "21dd4c7bf548536a", 
             normalization_input_reference = "7e1a356bda20ce87", normalized_protein_obj = "7e1a356bda20ce87", publication_paths = "71557d1c8bac9bbe", 
-            ruv_covariates_complete = "21dd4c7bf548536a", ruv_normalized_obj = "aebfcf21f9e83b32", ruv_optimization_result = "8faef6229524df22", 
-            ruv_optimization_table = "4dd1aab74e24f986"),
-        ruv_result = "3b26a46b119a2ad250fc602170716a5883a82760a3b572c920ff3d5f5766fe5f",
-        workflow = "87e84fcf3901962127a4b85055f3d423299d2eadabe3987a1a98c90eb4f91d4e",
-        value = "aebfcf21f9e83b325a4c92d9d1d81c8b1cda3d82cf6a607e1cc5e84a71a2e59b",
+            ruv_covariates_complete = "21dd4c7bf548536a", ruv_covariates_input_reference = "7e1a356bda20ce87", ruv_normalized_obj = "8422092ca23581c1", 
+            ruv_optimization_result = "d91a80603a5612cd", ruv_optimization_table = "bf419098d53c4e33"),
+        ruv_result = "1a23a1e795d23d37e619847429154a4ed2c177b269d98f0e463d4e920589b81f",
+        workflow = "3707fc6f2eed26843082dd0112a28f8f6ac8ebb623036e6eb1d80a9782cf17c0",
+        value = "8422092ca23581c14e7503c24ccac8c235a1f244336f28163c3fe6d6bd7533f7",
         error = NA_character_,
-        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIADisplayTable = 1L, 
-            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 2L, 
+        calls = c(assertDIAExportReady = 1L, runSavedOperation = 1L, commitDIAReferenceState = 0L, saveDIADisplayTable = 1L, 
+            publishDIAActionOutputs = 1L, readDIAProteinProgress = 0L, updateProteinFiltering = 0L, writeDIADesignTable = 0L, 
             resolveDIAReferenceQcPlot = 0L, resolveProtNormCorrelationResultFilenames = 0L, generateProtNormCompositeQcFigure = 0L, 
             finalizeProtNormWorkflowState = 0L),
-        callbacks = "ruv:5e9abad6fbec")
+        callbacks = character(0))
 )
 
 test_that("KIT-111 W1 (a): the DIA normalisation and correlation clicks give the recorded states, products, provenance, files and display", {
@@ -1157,8 +1165,8 @@ test_that("KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covar
         protNormW1Expect(paste0("limpa_", mode, "_pass_through"), clicks$pass_through())
         protNormW1Expect(paste0("limpa_", mode, "_correlation"), clicks$correlation(0.5))
         protNormW1Expect(paste0("limpa_", mode, "_ruv"), clicks$ruv_covariates(mode))
-        # The same click again, as today: its source is the committed RUV state (the runner sets
-        # correlation_filtered_obj to it), so the declaration runs again and commits.
+        # The same click again. GUI audit P-35 (F111-02): its source is the step's recorded input (the correlation
+        # result), not the committed RUV state, so the saved product is reused and nothing is committed (re-frozen).
         protNormW1Expect(paste0("limpa_", mode, "_ruv_repeat"), clicks$ruv_covariates(mode))
     }
 })
@@ -1236,9 +1244,8 @@ protNormW2RuvCovariates <- function(fixture, dispatch, norm, mode, ruv_qc) {
     manager <- fixture$manager
     request <- withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "ruv-covariates")
-        source <- norm$correlation_filtered_obj %||% getDIAStateReference(manager)
-        if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
-        list(source = source, parameters = resolveDIARuvCovariatesParameters(fixture$workflow$config_list, "group", mode))
+        list(source = diaRuvCovariatesSource(manager, norm),
+            parameters = resolveDIARuvCovariatesParameters(fixture$workflow$config_list, "group", mode))
     })
     result <- dispatch("protein_ruv_covariates", request$parameters, request$source,
         if (identical(mode, "correction")) "ruv_corrected" else "ruv_covariates")
@@ -1348,10 +1355,12 @@ test_that("KIT-111 W2 (W1 (b)): the DIA_LIMPA correlation and RUV covariates thr
         protNormW2Expect(paste0("limpa_", mode, "_pass_through"), clicks$pass_through())
         protNormW2Expect(paste0("limpa_", mode, "_correlation"), clicks$correlation(0.5))
         protNormW2Expect(paste0("limpa_", mode, "_ruv"), clicks$ruv_covariates(mode))
-        # F111-02, today's behaviour on both paths: the repeat's source is the committed RUV state, and it commits again.
+        # GUI audit P-35 (F111-02), on both paths: the repeat's source is the step's recorded input, a hit that commits nothing.
         protNormW2Expect(paste0("limpa_", mode, "_ruv_repeat"), clicks$ruv_covariates(mode))
         covariates <- Filter(function(result) identical(result$operation, "protein_ruv_covariates"), clicks$results())
         expect_length(covariates, 2L)
+        expect_identical(covariates[[2L]]$input, covariates[[1L]]$input, info = mode)
+        expect_null(covariates[[2L]]$commit, info = mode)
         # R4, on the covariates case: under the worker value's 8 MiB.
         expect_true(all(vapply(covariates, `[[`, 0, "bytes") < 8388608), info = mode)
         expect_identical(covariates[[1L]]$commit$state_name, if (identical(mode, "correction")) "ruv_corrected" else "ruv_covariates")
@@ -1725,10 +1734,11 @@ test_that("KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give
         actions <- lapply(managed, `[[`, "actions")
         expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(character(),
             c("pearson-pairs", "pearson-selection"), "protein_ruv_covariates", "protein_ruv_covariates"), info = mode)
-        # The covariates' input is the tab's correlation result (the selection's checkpoint, as in process); F111-02, as
-        # today: the repeat's is the committed RUV state.
-        expect_false(identical(actions[[3L]][[1L]]$input, actions[[4L]][[1L]]$input), info = mode)
-        expect_identical(actions[[4L]][[1L]]$input, managed[[3L]]$head_id, info = mode)
+        # The covariates' input is the tab's correlation result (the selection's checkpoint, as in process). GUI audit
+        # P-35 (F111-02): the repeat's is the same recorded input, not the committed RUV state, and the head stays.
+        expect_identical(actions[[4L]][[1L]]$input, actions[[3L]][[1L]]$input, info = mode)
+        expect_false(identical(actions[[4L]][[1L]]$input, managed[[3L]]$head_id), info = mode)
+        expect_identical(managed[[4L]]$head_id, managed[[3L]]$head_id, info = mode)
     }
 })
 
@@ -1907,4 +1917,34 @@ test_that("GUI audit A111-03: a managed worker failure shows the worker's reason
             "[error 10] Error in normalization: managed action ended: memory_guard"))
         expect_identical(fixture$manager$current_state, "protein_replicate_filtered")
     })
+})
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R2, P-35 (F111-02): the RUV covariates step records its input once, so a mode switch starts from the
+# correlation result as the first click did. The switched run must give the state the frozen first click of that mode
+# gives (`value`: the accepted state's science), in process and through the worker.
+# ------------------------------------------------------------------------------------------------
+
+test_that("GUI audit P-35: covariates then correction (and back) each run on the correlation result, in process and through the worker", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    frozen <- protNormW1Frozen()
+    for (path in c("in process", if (workflowOwnerCapable()) "worker")) {
+        if (identical(path, "worker")) protNormW2Mocks()
+        fixture <- protNormW1LimpaOwner()
+        clicks <- if (identical(path, "worker")) protNormW2Clicks(fixture) else protNormW1Clicks(fixture)
+        clicks$pass_through()
+        clicks$correlation(0.5)
+        first <- clicks$ruv_covariates("covariates")
+        expect_identical(first$value, frozen$limpa_covariates_ruv$value, info = path)
+        switched <- clicks$ruv_covariates("correction")
+        expect_identical(switched$error, NA_character_, info = path)
+        expect_identical(switched$current, "ruv_corrected", info = path)
+        expect_identical(switched$value, frozen$limpa_correction_ruv$value, info = path)
+        # The analysis record still builds with both RUV states in the history.
+        expect_true(is.list(protNormW1RecordSteps(fixture$manager, fixture$root)), info = path)
+        back <- clicks$ruv_covariates("covariates")
+        expect_identical(back$current, "ruv_covariates", info = path)
+        expect_identical(back$value, frozen$limpa_covariates_ruv$value, info = path)
+    }
 })

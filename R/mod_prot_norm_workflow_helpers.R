@@ -323,10 +323,8 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
   runner$run(function() shiny::isolate({
     request <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "ruv-covariates")
-      source <- normData$correlation_filtered_obj %||% getDIAStateReference(manager)
-      if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
-      list(source = source, parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, group,
-        settings$ruv_mode %||% "covariates"))
+      list(source = diaRuvCovariatesSource(manager, normData),
+        parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, group, settings$ruv_mode %||% "covariates"))
     })
     list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
       prior_plot <- ggplot2::get_last_plot()

@@ -873,14 +873,28 @@ runDIAReferenceRuvCovariates <- function(settings, workflow, norm_data, paths, o
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "ruv-covariates")
-        source <- norm_data$correlation_filtered_obj %||% getDIAStateReference(manager)
-        if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
+        source <- diaRuvCovariatesSource(manager, norm_data)
         parameters <- resolveDIARuvCovariatesParameters(workflow$config_list, grouping(), settings$ruv_mode %||% "covariates")
         run <- computeDIAReferenceRuvCovariates(manager, source, parameters)
         commit <- diaRuvCovariatesCommit(manager, parameters, run)
         if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
         publishDIAReferenceRuvCovariates(manager, settings, run, workflow, norm_data, paths, ruv_qc)
     })
+}
+
+#' The RUV covariates' source, as the tab sends it in process and to the worker (GUI audit P-35, F111-02): the recorded
+#' input, else the tab's correlation result, else the head. The source is recorded as the step's input, as the
+#' normalisation records its own (`diaNormalizationRequest`), because the publication half points the tab's correlation
+#' result at the committed RUV state: a repeated click or a mode switch then starts from the correlation result again,
+#' never from a state that already holds the correction or the W terms. The correlation's publication clears the record.
+#' @param manager,norm_data Session owner and the tab's state.
+#' @return The source reference.
+#' @noRd
+diaRuvCovariatesSource <- function(manager, norm_data) {
+    source <- norm_data$ruv_covariates_input_reference %||% norm_data$correlation_filtered_obj %||% getDIAStateReference(manager)
+    if (!isSavedWorkflowReference(source)) cli::cli_abort("the correlation step must complete before the RUV covariates")
+    norm_data$ruv_covariates_input_reference <- source
+    source
 }
 
 #' The RUV covariates' compute half (KIT-111 D3): the declaration on the source, reused on a hit. Worker-safe.
@@ -1034,6 +1048,8 @@ publishDIAReferenceCorrelation <- function(manager, run, workflow, norm_data, pa
     final <- run$final
     if (!skipped) norm_data$correlation_vector <- run$pairs
     norm_data$correlation_filtered_obj <- final
+    # GUI audit P-35: a new correlation result is the RUV covariates' new input.
+    if (!is.null(norm_data$ruv_covariates_input_reference)) norm_data$ruv_covariates_input_reference <- NULL
     norm_data$correlation_threshold <- if (skipped) 0 else threshold
     spec <- readDIAStateMetadata(manager, final)$data
     accepted <- getDIAStateReference(manager)

@@ -341,6 +341,7 @@ resetProtNormReactiveState <- function(
   workflowData
 ) {
   normData$normalization_input_reference <- NULL
+  if (!is.null(normData$ruv_covariates_input_reference)) normData$ruv_covariates_input_reference <- NULL
   normData$normalization_complete <- FALSE
   normData$ruv_complete <- FALSE
   normData$correlation_filtering_complete <- FALSE
