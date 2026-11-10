@@ -34,7 +34,11 @@ omicDesignCaptureEvents <- function(env = parent.frame()) {
 
 omicDesignFrozen <- list(
     lipid_frame = "e988e3400e2b9882fb67bd5c69054034e17c7857c9dac965b936de9bc5a7d44a",
-    trx_frame = "32e9a8da7eaa7bdf516456f77bce804b1f3b7967e8f2f6e78e62b398c4ef2b07",
+    # GUI audit R5, item 2 (P-12; user, 2026-11-11), re-frozen once: trx's two builder texts name transcriptomics. The
+    # frame (which holds the builder) was "32e9a8da7eaa7bdf516456f77bce804b1f3b7967e8f2f6e78e62b398c4ef2b07"; trx's
+    # builder was lipid's `builder`. The test below shows the two texts are the only difference from lipid's builder.
+    trx_frame = "09b5d7a5cab886d22d5d91f662b6690445cc53569aab25655c57a36694dcbab3",
+    trx_builder = "803b52ed3982ea4b7e15c9b01b97a51d2a485fa752edadf499d54d961a54dd0a",
     builder = "6a09783df4d081979c18d5156c6775c1ac6240c135209a8cbabfe0dc9df47588",
     modal_test = "b1acb5e622d9c60d2edc7acc66d0d2255129529a717b1273c3d05f2323df7b2f",
     modal_app = "2f465045936f7f8796cf0d16d34b9af52e5a7f6015b9e41375627529f343b3bb",
@@ -63,9 +67,16 @@ test_that("W4 the shared frame, builder, import modal and reset modal render tod
         omicDesignFrozen$trx_frame)
     expect_identical(omicDesignUiDigest(mod_omic_design_builder_ui("builder", omicGuiConfig("lipidomics"))),
         omicDesignFrozen$builder)
-    # Trx renders the lipid builder (its builder texts are lipid's).
+    # GUI audit R5, item 2 (P-12): trx renders the shared builder with its own two texts; with them read back as
+    # lipid's, its bytes are lipid's builder.
+    trx_builder <- as.character(htmltools::renderTags(mod_omic_design_builder_ui("builder", omicGuiConfig("transcriptomics")))$html)
     expect_identical(omicDesignUiDigest(mod_omic_design_builder_ui("builder", omicGuiConfig("transcriptomics"))),
-        omicDesignFrozen$builder)
+        omicDesignFrozen$trx_builder)
+    expect_identical(lengths(regmatches(trx_builder, gregexpr("[Tt]ranscriptomics", trx_builder))), 2L)
+    as_lipid <- sub("This transcriptomics workflow supports", "This lipidomics workflow supports", trx_builder, fixed = TRUE)
+    as_lipid <- sub("Current Design Matrix (All Samples) - Transcriptomics", "Current Design Matrix (All Samples) - Lipidomics",
+        as_lipid, fixed = TRUE)
+    expect_identical(omicDesignUiDigest(htmltools::HTML(as_lipid)), omicDesignFrozen$builder)
     ns <- shiny::NS("design")
     config <- omicGuiConfig("lipidomics")
     expect_identical(omicDesignUiDigest(buildOmicsDesignImportModal(ns, config, testMode = TRUE)),

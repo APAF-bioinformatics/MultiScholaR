@@ -346,9 +346,14 @@ test_that("the design group holds today's values per omic", {
         lipidomics = TRUE, metabolomics = TRUE, transcriptomics = FALSE))
     expect_identical(design$metabolomics$matrix_heading,
         "Current Design Matrix (All Samples) - Metabolomics")
+    # GUI audit R5, item 2 (P-12; user, 2026-11-11): trx's two builder texts name transcriptomics (they named lipidomics,
+    # "... - Lipidomics" and "This lipidomics workflow ..."); lipid's are unchanged.
     expect_identical(design$transcriptomics$matrix_heading,
-        "Current Design Matrix (All Samples) - Lipidomics")
+        "Current Design Matrix (All Samples) - Transcriptomics")
     expect_identical(design$transcriptomics$multi_assay_note,
+        "<b>Multi-Assay Note:</b> This transcriptomics workflow supports multiple assays ")
+    expect_identical(design$lipidomics$matrix_heading, "Current Design Matrix (All Samples) - Lipidomics")
+    expect_identical(design$lipidomics$multi_assay_note,
         "<b>Multi-Assay Note:</b> This lipidomics workflow supports multiple assays ")
     expect_identical(design$proteomics$no_data_text, paste(" Please complete the 'Setup & Import'",
         "step first. The builder will appear here once data is available."))

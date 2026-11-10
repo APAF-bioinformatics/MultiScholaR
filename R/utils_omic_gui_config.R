@@ -919,7 +919,7 @@ omicGuiFeatureStatusModes <- function() {
 #' (mod_lipid_design_builder_ui.R:218, :246; mod_metab_design_builder_ui.R:245, :273), with the
 #' same texts in their servers. Trx rendered the lipid frame and builder under its profile. Since
 #' KIT-103 W4/W5 they are the shared frame and builder (mod_omic_design.R, mod_omic_design_builder.R).
-#' @param builder_word The omic word in the builder UI (trx: lipid's).
+#' @param builder_word The omic word in the builder UI (trx showed lipid's until P-12, 2026-11-11).
 #' @noRd
 omicGuiFeatureDesign <- function(prefix, label_lower, builder_word, id_mapping_key) {
     list(module_id = "design",
@@ -2138,7 +2138,7 @@ omicGuiTrxQc <- function() {
 #' (`trxDesignObject`) are func_trx_design.R's (KIT-103 W2).
 #' @noRd
 omicGuiTrxDesign <- function() {
-    design <- c(omicGuiFeatureDesign("trx", "transcriptomics", "lipidomics", "lipid_id_col"), list(
+    design <- c(omicGuiFeatureDesign("trx", "transcriptomics", "transcriptomics", "lipid_id_col"), list(
         # mod_transcriptomics.R:36-38
         help = paste("Samples are matched to the count columns by sample name only, in the counts",
             "file's order; there is no positional mapping. Each group needs at least two samples.",
