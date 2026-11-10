@@ -1,0 +1,7 @@
+# KIT-112 W4 merge checks at f6cdf762 (start 64e7c2ae; W1 b388d082, W2 8085d7d0/9e2ee21d, W3 47e779eb cherry-picked from 661186bc after the generator commit 8a97ee22)
+Collate equals R/*.R: yes (unchanged)
+NAMESPACE, man/, inst/, DESCRIPTION, tools/: unchanged (git diff 64e7c2ae HEAD empty)
+The protected R files (app_ui, app_server, mod_omic_workflow, mod_proteomics, mod_omic_da, mod_omic_da_panels, mod_prot_da_ui, mod_prot_da_server, mod_prot_da_handlers_init, mod_prot_da_handlers_load_session, utils_workflow_execution, utils_workflow_omics_actions, utils_workflow_omics_declarations, utils_workflow_analysis_record): unchanged
+R/ diff touches only files_to_modify: mod_prot_da_handlers_run_analysis.R (+50 net), utils_workflow_dia_da.R (1025 -> 1116; the split, the handler, F112-03 in writeDIAInteractiveVolcanoOutputs and saveDIAInteractiveVolcanoAsset), utils_workflow_operations.R (the two loops), utils_workflow_prot_declarations.R (the da entry)
+diaContrastOperation body: byte-identical (md5 8bc66b6f... before and after)
+Dependents grep (new and changed names across R/, tests/, tools/ excl. tools/refactor/, inst/): 15 test files, 2 helpers; the targeted set is KIT-111's 49 plus these and W1-W3's lists: 54 files (scratchpad kit-112-lead/targeted-files.txt; recorded in targeted.txt)
