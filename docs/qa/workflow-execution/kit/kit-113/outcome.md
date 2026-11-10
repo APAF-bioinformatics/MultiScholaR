@@ -53,7 +53,7 @@ Without a managed application, everything runs in process exactly as before.
 | Run 7 / M1, journeys ([proof/chain-b.md](proof/chain-b.md)) | 113l, m, t accepted and exact; dispatches identical to 112l/m/t; "no worse" met |
 | M0p, the probe ([w0/enrichment-heap.md](w0/enrichment-heap.md)) | "Better" unreachable: in process 1.075, managed controller 1.732 GiB |
 | Run 8, e2e ([e2e-final.txt](e2e-final.txt)) | lipid 88, metab 190, trx 17, DIA 42, DIA_LIMPA 80, enrichment 98, TMT/LFQ 153: 0 failures, 0 skips |
-| Run 9, skips ([skip-compare.md](skip-compare.md)) | RUN9 |
+| Run 9, skips ([skip-compare.md](skip-compare.md)) | No change in either mode (the baseline rebuilt and checked against KIT-112's recorded comparison) |
 
 ## Budget use
 
