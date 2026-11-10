@@ -573,12 +573,79 @@ selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
 #' on the manifest the tab holds, inside the progress, then the tab's values from the core's returned list and the
 #' completion notice; on failure the error notice. The tab keeps its manifest (F107-01); the source reference is held
 #' after the run, as today's `on.exit` held it. A DA table missing at the Run is refused (F107-03).
+#' KIT-113 D3: on a managed session the omic's runner (the one the normalisation shell installs; the frame installs none)
+#' takes the run to the worker: a click while the runner's step runs or holds a pending publication is refused, then the
+#' request half in the controller, one `enrichment` action on the manifest's source, and the accept half when it is
+#' delivered. With no runner the run is in process, as before.
 #' @noRd
 runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, config) {
   cat("=== STARTING ENRICHMENT ANALYSIS ===\n")
   shiny::req(input$selected_contrast, tab$da_results_data)
   shiny::req(input$organism_taxid)
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)
+  operation <- config$operation()$name
+  omic <- workflowActionSpec(operation)$omic_type
+  runner <- workflowOmicsManagedActions(omic)
+  if (!is.null(runner)) {
+    # KIT-112's F112-02 guard: the runner would queue the action behind the running one (or its retry), and a DA run
+    # completing in between would rewrite the tables the worker reads under this manifest's identity.
+    if (!is.null(shiny::isolate(runner$step$active())) || !is.null(shiny::isolate(runner$step$pending()))) {
+      shiny::showNotification(paste("A", omic, "step action is already running"), type = "warning")
+      shiny::removeNotification("enrichment_working")
+      return(invisible(FALSE))
+    }
+    manifest <- tab$da_results_data
+    selected <- input$selected_contrast
+    report <- function(e) {
+      message(sprintf("*** ERROR in enrichment analysis: %s", e$message))
+      cat(sprintf("*** ERROR in enrichment analysis: %s ***\n", e$message))
+      shiny::showNotification(sprintf("Error in enrichment analysis: %s", e$message), type = "error", duration = 10)
+    }
+    progress <- runner$progress("Running enrichment analysis...")
+    advance <- function(value, detail) progress$inc(value, detail = detail)
+    # The tab holds the source reference after the run, success or failure, as in process.
+    finish <- function(completed) {
+      force(completed)
+      progress$close()
+      tab$current_s4_object <- manifest$source
+      if (completed) {
+        shiny::showNotification(paste("Enrichment analysis completed successfully for contrast:", selected),
+          type = "message", duration = 5)
+        cat("=== ENRICHMENT ANALYSIS COMPLETED ===\n")
+      }
+      shiny::removeNotification("enrichment_working")
+      invisible(completed)
+    }
+    request <- tryCatch(requestWorkflowEnrichment(workflowData, config, manifest,
+      parameters = list(selected_contrast = selected, organism_taxid = input$organism_taxid,
+        up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,
+        correction_method = input$correction_method, enable_organism_filter = input$enable_organism_filter),
+      paths = experimentPaths,
+      notify = function(message, type, duration) shiny::showNotification(message, type = type, duration = duration),
+      progress = advance), error = function(e) {
+        report(e)
+        NULL
+      })
+    if (is.null(request)) return(finish(FALSE))
+    delivered <- NULL
+    # The context names the controller's commit, which the handler's `commit = NULL` replaces: the accept half commits.
+    runner$run(list(list(operation = operation, parameters = request$parameters, input = manifest$source,
+      deliver = function(result) delivered <<- result,
+      context = list(state_name = config$state_name, config = list(), description = operation))),
+      # The runner calls `done` and `failed` from its step's observers: the tab and the bus are read without depending.
+      done = function() shiny::isolate(finish(tryCatch({
+        holdOmicEnrichRun(tab, acceptWorkflowEnrichment(workflowData, config, request$context, delivered, advance))
+        TRUE
+      }, error = function(e) {
+        report(e)
+        FALSE
+      }))),
+      failed = function(e) shiny::isolate({
+        report(e)
+        finish(FALSE)
+      }))
+    return(invisible(TRUE))
+  }
   completed <- tryCatch({
     shiny::withProgress(message = "Running enrichment analysis...", value = 0,
       holdOmicEnrichRun(tab, runWorkflowEnrichment(workflowData, config, tab$da_results_data,
