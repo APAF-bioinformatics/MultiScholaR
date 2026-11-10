@@ -146,7 +146,10 @@ for (case in names(omicsEnrichCoreCases)) {
             expect_identical(run$run_display, frozen$run$display, info = case)
             # The progress steps (the frame's withProgress start line is the frame's).
             expect_identical(run$progress, frozen$run$progress[-1L], info = case)
-            expect_identical(run$notes, character(), info = case)
+            # GUI audit R3, A107-03: a clusterProfiler run with another correction selected tells the user, through the
+            # core's `notify` (W1 (b)'s frozen notice); a g:Profiler run notifies nothing, as before.
+            expect_identical(run$notes, if (identical(omicsEnrichCoreCases[[case]]$taxon, "9606")) character() else
+                frozen$run$notes[[2L]], info = case)
             expect_identical(run$result[["names"]], paste(c("results", "method", "contrasts", "selected", "raw_contrast",
                 "contrasts_tbl", "pathway_dir", "annotation_match", "organism_filter", "service", "reference", "parameters",
                 "saved"), collapse = ","))

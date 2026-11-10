@@ -788,6 +788,20 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
 # The entries (KIT-107 D3, D4, D5).
 # ------------------------------------------------------------------------------------------------
 
+#' The multiple-testing correction an enrichment run's backend applies (GUI audit R3, A107-03)
+#'
+#' The kernel's clusterProfiler branch calls `clusterProfiler::enricher(pAdjustMethod = "BH")` whatever correction was
+#' selected (func_general_enrichment_orchestration.R); its g:Profiler branch passes the selection to `gost`. The
+#' kernel takes the clusterProfiler branch exactly when the taxon is not a supported g:Profiler organism, which is
+#' when `method$method` is `clusterprofiler` (the two organism lists are the same thirteen taxa).
+#' @param method The method information (`resolveProtEnrichAnalysisMethod`).
+#' @param requested The selected correction.
+#' @return The correction applied: `"BH"` on the clusterProfiler backend, else `requested`.
+#' @noRd
+workflowEnrichmentEffectiveCorrection <- function(method, requested) {
+    if (identical(method$method, "clusterprofiler")) "BH" else requested
+}
+
 #' Run the enrichment on an accepted DA manifest (KIT-107 D3)
 #'
 #' The module's manifest path at the start commit (`runProtEnrichAnalysisBody`, its setup, finalise and persist steps,
@@ -804,7 +818,8 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
 #'   `correction_method`, `enable_organism_filter`.
 #' @param paths Experiment paths (`da_output_dir`, `pathway_dir`, `results_dir`, `source_dir`).
 #' @param process_fn The kernel; NULL selects `config$kernel$select()` when called (the double in test mode).
-#' @param notify `function(message, type, duration)`: the organism filter's warning; NULL notifies nobody.
+#' @param notify `function(message, type, duration)`: the organism filter's warning, and the notice that the backend
+#'   applies another correction than the selected one (A107-03); NULL notifies nobody.
 #' @param progress `function(value, detail)`; NULL reports nothing.
 #' @param refuse_missing_da TRUE refuses a run whose DA table is missing for a contrast before anything is written
 #'   (class `workflow_enrichment_input`; F107-03). FALSE is the start commit's behaviour: the run continues on the
@@ -892,12 +907,24 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
     # outcomes (provenance only). A run with the filter off declares and records what it did before.
     run_arguments <- arguments$processArgs
     outcomes <- NULL
+    # A107-03: the correction the backend applies is the declared one; the kernel is still called with the selection.
+    correction <- workflowEnrichmentEffectiveCorrection(method, parameters$correction_method)
+    if (!identical(correction, parameters$correction_method)) {
+        run_arguments$correction_method_effective <- correction
+        outcomes <- list(correction_method_requested = parameters$correction_method)
+        # g:Profiler's `fdr` is Benjamini-Hochberg under another name: nothing to tell the user.
+        if (!isTRUE(parameters$correction_method %in% c("fdr", "BH"))) {
+            notify(sprintf(paste("clusterProfiler adjusts p-values with %s (Benjamini-Hochberg). The selected",
+                "correction, %s, applies to g:Profiler only and was not used."), correction,
+                parameters$correction_method), "warning", 8)
+        }
+    }
     if (filter_enabled) {
         run_arguments$organism_filter_enabled <- TRUE
         run_arguments$organism_filter_taxon <- as.character(parameters$organism_taxid)
-        outcomes <- list(organism_filter_applied = isTRUE(filter_applied),
+        outcomes <- c(outcomes, list(organism_filter_applied = isTRUE(filter_applied),
             organism_filter_rows_before = filter_stats$proteins_before,
-            organism_filter_rows_after = filter_stats$proteins_after)
+            organism_filter_rows_after = filter_stats$proteins_after))
     }
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
     results <- declared$results
@@ -954,7 +981,7 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
 #' @param parameters The run's inputs (`selected_contrast`, cutoffs, `organism_taxid`).
 #' @param pathway_dir The pathway directory.
 #' @param outcomes Named list of provenance-only values of the run (the organism filter's applied flag and row
-#'   counts), or NULL for none.
+#'   counts; the selected correction when the backend applied another, A107-03), or NULL for none.
 #' @return `list(attempted, saved, warning)`.
 #' @noRd
 saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,

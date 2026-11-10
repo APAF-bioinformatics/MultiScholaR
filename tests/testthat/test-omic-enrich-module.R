@@ -804,6 +804,9 @@ omicEnrichW1Case <- function(case) {
 #     "object 'clean_acc' not found" error notice and an unchanged session); nothing else moved.
 #   P-28 (the organism filter declared when it is on): organism_filter `no_mapping/run` and `mapped/run`, the product's
 #     `parameters$organism_filter_enabled` and `parameters$organism_filter_taxon` (new); an unfiltered run is unchanged.
+#   A107-03 (the correction the backend applied is the declared one): clusterprofiler and kernel_clusterprofiler `run`,
+#     the product's `parameters$correction_method` is BH (it froze the selected gSCS, which clusterProfiler does not
+#     use) and the notes gain the notice; the kernel's arguments and the services' calls are unchanged.
 omicEnrichW1Frozen <- list()
 omicEnrichW1Frozen[["gprofiler"]] <- list(
     start = list(
@@ -1299,8 +1302,7 @@ omicEnrichW1Frozen[["clusterprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!",
-            "remove da_working"),
+            "[message 5 -] Differential abundance analysis completed successfully!", "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -1444,6 +1446,7 @@ omicEnrichW1Frozen[["clusterprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL enrichment_working] Running enrichment analysis...",
+            "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.",
             "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A",
             "remove enrichment_working"),
         updates = character(0),
@@ -1461,7 +1464,7 @@ omicEnrichW1Frozen[["clusterprofiler"]] <- list(
         product = c(
             schema = "dia_enrichment_product_v1", service = "unavailable", `parameters$taxon_id` = "999999",
             `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0", `parameters$q_cutoff` = "0.05",
-            `parameters$exclude_iea` = "FALSE", `parameters$correction_method` = "gSCS",
+            `parameters$exclude_iea` = "FALSE", `parameters$correction_method` = "BH",
             `parameters$protein_id_column` = "uniprot_acc", `parameters$contrast_names` = "groupB-groupA",
             `results$groupB-groupA` = "<manifest da_proteins_long>", contrasts = "groupB-groupA",
             summaries = "5d6736b697306a94"),
@@ -1930,8 +1933,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL da_working] Running differential abundance analysis...",
-            "[message 5 -] Differential abundance analysis completed successfully!",
-            "remove da_working"),
+            "[message 5 -] Differential abundance analysis completed successfully!", "remove da_working"),
         updates = c(
             "differential_expression-formula_string: <same> -> ~ 0 + group",
             "differential_expression-volcano_contrast: groupB-groupA -> <none>",
@@ -2077,6 +2079,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
             stringdb_summary_stats = "STRING-DB analysis not yet implemented.\nThis will show network enrichment statistics."),
         notes = c(
             "[default NULL enrichment_working] Running enrichment analysis...",
+            "[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS, applies to g:Profiler only and was not used.",
             "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A",
             "remove enrichment_working"),
         updates = character(0),
@@ -2094,7 +2097,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
         product = c(
             schema = "dia_enrichment_product_v1", service = "unavailable", `parameters$taxon_id` = "999999",
             `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0", `parameters$q_cutoff` = "0.05",
-            `parameters$exclude_iea` = "FALSE", `parameters$correction_method` = "gSCS",
+            `parameters$exclude_iea` = "FALSE", `parameters$correction_method` = "BH",
             `parameters$protein_id_column` = "uniprot_acc", `parameters$contrast_names` = "groupB-groupA",
             `results$groupB-groupA` = "<manifest da_proteins_long>", contrasts = "groupB-groupA",
             summaries = "28df520b992b4a4b"),
@@ -3749,6 +3752,8 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
 # fields (it froze "<none>": the Run failed on the undefined `clean_acc`).
 #   P-28: `organism_filter/no_mapping` and `organism_filter/mapped` (the filter on) gain `config$outcomes`, the two
 #   declared names in the provenance and the record, and the product's value and the provenance digest move with them.
+#   A107-03: `clusterprofiler` and `kernel_clusterprofiler` record `correction_method` BH (provenance, record, product)
+#   and gain `config$outcomes` (the selected correction).
 # ------------------------------------------------------------------------------------------------
 
 #' Store-local ids (each run of 64 hexadecimal characters) and the fixture's root masked in every character value of
@@ -3875,19 +3880,20 @@ omicEnrichW113Frozen[["clusterprofiler"]] <- list(
         `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "999999",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> 1ee7e26ac226ba3c",
         description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
         class = "EnrichmentResults", enrichment_data = "f3960c635154ee90",
         enrichment_summaries = "5d6736b697306a94", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
     products = c(
-        type = "dia-enrichment-results", status = "available", value = "e925104dbcd988a2",
+        type = "dia-enrichment-results", status = "available", value = "9f26ed375c4b34a4",
         identity = "ad3ef17b26bf1067",
         roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "c8a3cb1a81388c5c"),
+        rest = "b0ebc0294fa2a808"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -3897,7 +3903,7 @@ omicEnrichW113Frozen[["clusterprofiler"]] <- list(
         `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
         `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
         `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
-        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; BH",
         `parameters$protein_id_column` = "provenance ; input ; uniprot_acc",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
         `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
@@ -3943,19 +3949,20 @@ omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
         `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "999999",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> 1ee7e26ac226ba3c",
         description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
         class = "EnrichmentResults", enrichment_data = "46a64d167ddd9c1b",
         enrichment_summaries = "28df520b992b4a4b", contrasts = "950ddbb7d830df8c", plots = "d504c602f8d509f5"),
     products = c(
-        type = "dia-enrichment-results", status = "available", value = "612a3a88ea25d819",
+        type = "dia-enrichment-results", status = "available", value = "8d7955ab39314468",
         identity = "ad3ef17b26bf1067",
         roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
     provenance = c(
         operation = "enrichment", variant = "whole",
         parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "c8a3cb1a81388c5c"),
+        rest = "b0ebc0294fa2a808"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -3965,7 +3972,7 @@ omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
         `parameters$down_cutoff` = "provenance ; no_shipped_default ; 0",
         `parameters$q_cutoff` = "provenance ; no_shipped_default ; 0.050000000000000003",
         `parameters$exclude_iea` = "provenance ; no_shipped_default ; FALSE",
-        `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
+        `parameters$correction_method` = "provenance ; no_shipped_default ; BH",
         `parameters$protein_id_column` = "provenance ; input ; uniprot_acc",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
         `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
@@ -4223,4 +4230,31 @@ test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its recor
     expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
     expect_identical(names(r3$step$outcomes), c("rows", "columns"))
     expect_identical(r3$d6, omicEnrichW113Frozen$gprofiler)
+})
+
+test_that("(R3, A107-03) a clusterProfiler run records the correction it applied (BH), keeps the selected one and tells the user", {
+    seen <- omicEnrichW3Drive("kernel_clusterprofiler", list(record = omicEnrichR3Record))
+    r3 <- seen$record$r3
+    # The kernel is called as before, with the selection; its clusterProfiler branch adjusts with BH.
+    expect_match(seen$run$kernel, "correction_method=gSCS", fixed = TRUE)
+    expect_true(all(grepl("pAdjustMethod=BH", seen$run$services, fixed = TRUE)))
+    expect_gt(length(seen$run$services), 0L)
+    expect_identical(r3$provenance$values$correction_method, "BH")
+    expect_identical(omicEnrichR3Parameters(r3$step)[["correction_method"]], "provenance ; no_shipped_default ; BH")
+    expect_identical(seen$run$product[["parameters$correction_method"]], "BH")
+    expect_identical(r3$step$outcomes$correction_method_requested, "gSCS")
+    expect_identical(seen$run$notes, c("[default NULL enrichment_working] Running enrichment analysis...",
+        paste("[warning 8 -] clusterProfiler adjusts p-values with BH (Benjamini-Hochberg). The selected correction, gSCS,",
+            "applies to g:Profiler only and was not used."),
+        "[message 5 -] Enrichment analysis completed successfully for contrast: B_vs_A", "remove enrichment_working"))
+})
+
+test_that("(R3, A107-03) a g:Profiler run records the selected correction and shows no notice", {
+    seen <- omicEnrichW3Drive("kernel_gprofiler", list(record = omicEnrichR3Record))
+    r3 <- seen$record$r3
+    expect_true(all(grepl("correction_method=gSCS", seen$run$services, fixed = TRUE)))
+    expect_gt(length(seen$run$services), 0L)
+    expect_identical(r3$provenance$values$correction_method, "gSCS")
+    expect_null(r3$step$outcomes$correction_method_requested)
+    expect_false(any(grepl("warning", seen$run$notes, fixed = TRUE)))
 })

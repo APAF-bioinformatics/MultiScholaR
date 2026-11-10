@@ -663,7 +663,9 @@ diaEnrichmentDeclaredNames <- function(declared, arguments) {
 #' @param arguments The module's `processEnrichments` arguments (`da_results`, `taxon_id`, cutoffs,
 #'   `pathway_dir`, `go_annotations`, `exclude_iea`, `protein_id_column`, `contrast_names`,
 #'   `correction_method`), and `organism_filter_enabled = TRUE` with `organism_filter_taxon` when the organism filter
-#'   is on (P-28; the kernel takes neither).
+#'   is on (P-28; the kernel takes neither). `correction_method_effective`, when given, is the correction the backend
+#'   applies (A107-03): it is the declared `correction_method` of the identity, the product and the returned values,
+#'   while the kernel is called with the selected one, as before.
 #' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
 #' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
@@ -680,10 +682,13 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
         da_results = arguments$da_results, pathway_dir = arguments$pathway_dir,
         go_annotations = arguments$go_annotations, process_fn = process_fn))
     value <- runProjected(manager, declaration, manifest$source, parameters)
+    declared_values <- parameters[declared]
+    if (!is.null(arguments$correction_method_effective))
+        declared_values$correction_method <- arguments$correction_method_effective # A107-03
     identity <- diaComponentScientificIdentity(manager, manifest$source, "enrichment",
-        c(parameters[declared], list(service = value$service)))
+        c(declared_values, list(service = value$service)))
     product <- list(schema = "dia_enrichment_product_v1", service = value$service,
-        parameters = parameters[setdiff(declared, "results")], results = results,
+        parameters = declared_values[setdiff(declared, "results")], results = results,
         contrasts = names(value$results@enrichment_data), summaries = value$results@enrichment_summaries)
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
         newSavedWorkflowScientificProduct(product, declaration$product_type,
@@ -699,7 +704,7 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
             query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
     }
     list(results = value$results, service = value$service, reference = reference,
-        parameters = parameters[declared]) # KIT-107 D4 (F-16): the declared values the identity used
+        parameters = declared_values) # KIT-107 D4 (F-16): the declared values the identity used
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's
