@@ -872,7 +872,8 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     expect_identical(vapply(record$steps, function(s) s$operation, ""), c("import", "design_builder", "enrichment"))
     step <- record$steps[[3L]]
     expect_identical(step$variant, "whole")
-    expect_identical(vapply(step$parameters, `[[`, "", "name"), diaEnrichmentOperation()$parameters)
+    # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names).
+    expect_identical(vapply(step$parameters, `[[`, "", "name"), utils::head(diaEnrichmentOperation()$parameters, 9L))
     expect_identical(vapply(step$parameters, `[[`, "", "source"), rep("provenance", 9L))
     expect_false(is.null(record$analyses$differential_abundance))
     state <- withDIAStateScope(manager, function() manager$getState("enrichment_completed"))
@@ -934,6 +935,43 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     prepared_changed <- h$kitPrepareReplayProject(copy_changed, c("initial", "correlation_filtered"), api)
     utils::capture.output(expect_error(suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(changed, prepared_changed,
         character(), paths, withr::local_tempdir()))), regexp = "protein_id_column", class = "workflow_replay_invalid"))
+    # GUI audit R3, P-28: a record that declares the organism filter replays with the filter on, and what the filter
+    # did must equal the record's outcomes. The record is the unfiltered one with the declaration and the outcomes added
+    # as a filtered run records them: the replay resolves its mapping from the test-mode annotation table, which gives
+    # none of the six proteins to the taxon.
+    as_json <- function(value) jsonlite::fromJSON(jsonlite::toJSON(value, auto_unbox = TRUE, digits = I(17), null = "null",
+        na = "null"), simplifyVector = FALSE)
+    filtered <- record
+    filtered$steps[[3L]]$parameters <- c(filtered$steps[[3L]]$parameters, as_json(list(
+        list(name = "organism_filter_enabled", source = "provenance", value = encodeWorkflowRecordValue(TRUE),
+            provenance = "no_shipped_default"),
+        list(name = "organism_filter_taxon", source = "provenance", value = encodeWorkflowRecordValue("9606"),
+            provenance = "input"))))
+    filtered$steps[[3L]]$outcomes[c("organism_filter_applied", "organism_filter_rows_before",
+        "organism_filter_rows_after")] <- list(TRUE, 6, 0)
+    copy_filtered <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy_filtered)) == 0L)
+    prepared_filtered <- h$kitPrepareReplayProject(copy_filtered, c("initial", "correlation_filtered"), api)
+    replayed_filter <- list()
+    utils::capture.output(suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(filtered, prepared_filtered,
+        character(), paths, withr::local_tempdir(), on_step = function(step, manager) {
+            if (!identical(step$operation, "enrichment")) return(invisible())
+            replayed_filter$provenance <<- manager$.context$snapshot$step_provenance$enrichment_completed
+            replayed_filter$config <<- readComponentMetadata(manager, manager$.context$snapshot$states$enrichment_completed)$config
+        }))))
+    expect_identical(replayed_filter$provenance$parameter_names, diaEnrichmentOperation()$parameters)
+    expect_identical(replayed_filter$provenance$values[c("organism_filter_enabled", "organism_filter_taxon")],
+        list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
+    expect_identical(replayed_filter$config$outcomes, list(organism_filter_applied = TRUE,
+        organism_filter_rows_before = 6, organism_filter_rows_after = 0))
+    differing <- filtered
+    differing$steps[[3L]]$outcomes$organism_filter_rows_after <- 3
+    copy_differing <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy_differing)) == 0L)
+    prepared_differing <- h$kitPrepareReplayProject(copy_differing, c("initial", "correlation_filtered"), api)
+    utils::capture.output(expect_error(suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(differing,
+        prepared_differing, character(), paths, withr::local_tempdir()))), regexp = "organism_filter_rows_after",
+        class = "workflow_replay_invalid"))
     # A record with an enrichment step and no DA analysis is refused before any step runs.
     no_da <- record
     no_da$analyses$differential_abundance <- NULL

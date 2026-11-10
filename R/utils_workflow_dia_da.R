@@ -619,13 +619,16 @@ diaEnrichmentServiceIdentity <- function(results) {
 #' and pathway directory as extra inputs beside the declared parameters; the output class is the KIT-003
 #' `EnrichmentResults`. The declaration is not cacheable (`factors$cacheable`): the g:Profiler database the
 #' call reaches is known only after the call, so its identity is saved with the product afterwards.
+#' GUI audit R3, P-28: the organism filter is declared (`organism_filter_enabled`, `organism_filter_taxon`). A run
+#' with the filter off declares the first nine names only (`diaEnrichmentDeclaredNames`), so its identity, its product
+#' and its record are what they were before the filter was declared.
 #' @noRd
 diaEnrichmentOperation <- function() {
     newWorkflowOperation("enrichment", "ProteinQuantitativeData", fields = "design_matrix", unit = "whole_matrix",
         output_class = "EnrichmentResults", product_type = "dia-enrichment-results",
         factors = list(cacheable = FALSE, service = "enrichment"),
         parameters = c("taxon_id", "up_cutoff", "down_cutoff", "q_cutoff", "exclude_iea", "correction_method",
-            "protein_id_column", "contrast_names", "results"),
+            "protein_id_column", "contrast_names", "results", "organism_filter_enabled", "organism_filter_taxon"),
         global_statistics = c(per_contrast_da_table =
             "the background universe and the significant set are the complete DA table of each contrast"),
         kernel = function(object, parameters, store) {
@@ -642,12 +645,25 @@ diaEnrichmentOperation <- function() {
         })
 }
 
+#' The declared parameter names one enrichment run uses (GUI audit R3, P-28): the organism filter's two only when the
+#' run's arguments switch the filter on. Before P-28 no completed run had the filter applied (it failed on the undefined
+#' `clean_acc`, P-07, or ran unfiltered for want of a mapping), so a run without the two names is an unfiltered run.
+#' @param declared The declaration's parameter names.
+#' @param arguments The run's arguments (`organism_filter_enabled`).
+#' @return The names, in the declaration's order.
+#' @noRd
+diaEnrichmentDeclaredNames <- function(declared, arguments) {
+    filter <- c("organism_filter_enabled", "organism_filter_taxon")
+    if (isTRUE(arguments$organism_filter_enabled)) declared else setdiff(declared, filter)
+}
+
 #' Run the enrichment declaration on a DA manifest's source state and record its product (KIT-016).
 #' @param workflow Session owner (`state_manager`).
 #' @param manifest Accepted `dia.da_results.v1` manifest.
 #' @param arguments The module's `processEnrichments` arguments (`da_results`, `taxon_id`, cutoffs,
 #'   `pathway_dir`, `go_annotations`, `exclude_iea`, `protein_id_column`, `contrast_names`,
-#'   `correction_method`).
+#'   `correction_method`), and `organism_filter_enabled = TRUE` with `organism_filter_taxon` when the organism filter
+#'   is on (P-28; the kernel takes neither).
 #' @param process_fn The selected kernel: `processEnrichments`, or the deterministic double in test mode.
 #' @return `list(results, service, reference)`: the `EnrichmentResults`, the reported service identity and
 #'   the saved product reference (identity: source state, the contrast result tables, the declared
@@ -657,16 +673,17 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
     manager <- workflow$state_manager
     if (!isDIAResultManifest(manifest)) cli::cli_abort("enrichment needs a DA result manifest", class = "saved_entity_invalid")
     declaration <- diaEnrichmentOperation()
+    declared <- diaEnrichmentDeclaredNames(declaration$parameters, arguments) # P-28
     results <- vapply(names(manifest$results), function(name)
         manifest$results[[name]]$tables$da_proteins_long$entity_id %||% NA_character_, character(1))
-    parameters <- c(arguments[setdiff(declaration$parameters, "results")], list(results = results,
+    parameters <- c(arguments[setdiff(declared, "results")], list(results = results,
         da_results = arguments$da_results, pathway_dir = arguments$pathway_dir,
         go_annotations = arguments$go_annotations, process_fn = process_fn))
     value <- runProjected(manager, declaration, manifest$source, parameters)
     identity <- diaComponentScientificIdentity(manager, manifest$source, "enrichment",
-        c(parameters[declaration$parameters], list(service = value$service)))
+        c(parameters[declared], list(service = value$service)))
     product <- list(schema = "dia_enrichment_product_v1", service = value$service,
-        parameters = parameters[setdiff(declaration$parameters, "results")], results = results,
+        parameters = parameters[setdiff(declared, "results")], results = results,
         contrasts = names(value$results@enrichment_data), summaries = value$results@enrichment_summaries)
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
         newSavedWorkflowScientificProduct(product, declaration$product_type,
@@ -682,7 +699,7 @@ runDIAReferenceEnrichment <- function(workflow, manifest, arguments, process_fn 
             query_summary = sprintf("enrichment of %d contrasts, taxon %s", length(results), arguments$taxon_id %||% NA))
     }
     list(results = value$results, service = value$service, reference = reference,
-        parameters = parameters[declaration$parameters]) # KIT-107 D4 (F-16): the declared values the identity used
+        parameters = parameters[declared]) # KIT-107 D4 (F-16): the declared values the identity used
 }
 
 #' The static volcano display as a saved product (KIT-016): the selected display columns of one contrast's

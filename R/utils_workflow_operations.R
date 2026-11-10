@@ -335,7 +335,8 @@ workflowOperationDefaults <- local({
         da_publication = list(annotations = "input"),
         enrichment = list(taxon_id = "input", up_cutoff = "no_shipped_default", down_cutoff = "no_shipped_default", q_cutoff = "no_shipped_default",
             exclude_iea = "no_shipped_default", correction_method = "no_shipped_default", protein_id_column = "input",
-            contrast_names = "input", results = "input"),
+            contrast_names = "input", results = "input",
+            organism_filter_enabled = "no_shipped_default", organism_filter_taxon = "input"), # GUI audit R3, P-28
         # KIT-031: the lipidomics declarations. `config.ini` ships no lipid filter section (the module's defaults
         # apply); the between-sample method, the RUV grouping/k and the DA settings share the proteomics keys.
         lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "no_shipped_default",
@@ -446,7 +447,8 @@ workflowParameterLabels <- local({
         enrichment = list(taxon_id = "Taxon id", up_cutoff = "Up-regulation cutoff", down_cutoff = "Down-regulation cutoff",
             q_cutoff = "Enrichment q-value threshold", exclude_iea = "Exclude electronic GO annotations",
             correction_method = "Multiple-testing correction", protein_id_column = "Protein id column (input)",
-            contrast_names = "Contrasts (input)", results = "Differential results (input)"),
+            contrast_names = "Contrasts (input)", results = "Differential results (input)",
+            organism_filter_enabled = "Organism filter enabled", organism_filter_taxon = "Organism filter target taxon"),
         # KIT-031: the lipidomics declarations.
         lipid_intensity_filter = list(lipids_intensity_cutoff_percentile = "Intensity cutoff percentile (per assay)",
             lipids_proportion_of_samples_below_cutoff = "Maximum proportion of samples below the cutoff"),

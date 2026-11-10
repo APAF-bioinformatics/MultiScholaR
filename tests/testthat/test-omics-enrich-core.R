@@ -274,7 +274,10 @@ test_that("(F-16, D6 test 4) the enrichment state records its provenance, and a 
     entry <- manager$.context$snapshot$step_provenance$enrichment_completed
     expect_identical(entry$operation, "enrichment")
     expect_identical(entry$variant, "whole")
-    expect_identical(entry$parameter_names, diaEnrichmentOperation()$parameters)
+    # GUI audit R3, P-28: the declaration also names the organism filter's two parameters; a run with the filter off
+    # (these declared values) records the nine it used, as before.
+    expect_identical(entry$parameter_names, utils::head(diaEnrichmentOperation()$parameters, 9L))
+    expect_identical(entry$parameter_names, names(declared))
     expect_identical(entry$values, declared)
     expect_null(entry$fixed)
     # The state's config and description as today's save writes them (a result-class state: KIT-101 F-15's read).
@@ -300,7 +303,8 @@ test_that("(F-16, D6 test 1) after a Run the record's enrichment step carries it
     expect_identical(step$operation, "enrichment")
     expect_identical(step$variant, "whole")
     parameters <- step$parameters
-    expect_identical(vapply(parameters, `[[`, "", "name"), diaEnrichmentOperation()$parameters)
+    # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names).
+    expect_identical(vapply(parameters, `[[`, "", "name"), utils::head(diaEnrichmentOperation()$parameters, 9L))
     expect_identical(vapply(parameters, `[[`, "", "source"), rep("provenance", 9L))
     expect_identical(vapply(parameters, `[[`, "", "provenance"), c("input", "no_shipped_default", "no_shipped_default",
         "no_shipped_default", "no_shipped_default", "no_shipped_default", "input", "input", "input"))

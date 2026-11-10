@@ -814,8 +814,8 @@ updateProtEnrichStateManagerUiParams <- function(workflowData,
 #'   (the completed state carries it with the source's `@args`); the method information; every contrast's display
 #'   results (with their saved tables); the selected contrast's (`resolveProtEnrichSelectedContrastResults`); the raw
 #'   contrast name; the contrasts table; the pathway directory; the annotation match (NULL when none); the
-#'   organism-filter metadata written to the bus; the service identity; the product reference; the 9 declared values
-#'   the product's identity used; and the state save's result.
+#'   organism-filter metadata written to the bus; the service identity; the product reference; the declared values
+#'   the product's identity used (9, and the organism filter's 2 when it is on; P-28); and the state save's result.
 #' @noRd
 runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths, process_fn = NULL, notify = NULL,
     progress = NULL, refuse_missing_da = FALSE) {
@@ -856,7 +856,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         currentS4Object = source_object)
     filter_applied <- FALSE
     filter_stats <- list(proteins_before = 0, proteins_after = 0, proteins_removed = 0)
-    if (isTRUE(parameters$enable_organism_filter) && !is.null(config$organism_filter)) {
+    filter_enabled <- isTRUE(parameters$enable_organism_filter) && !is.null(config$organism_filter)
+    if (filter_enabled) {
         target <- as.character(parameters$organism_taxid)
         mapping <- config$organism_filter$mapping(workflowData = workflow, uniprotDatCln = annotations,
             targetTaxon = target)$organismMapping
@@ -887,7 +888,18 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         correctionMethod = parameters$correction_method, excludeIea = config$exclude_iea)
     kernel <- process_fn %||% config$kernel$select()
     .capture_checkpoint(arguments$checkpointArgs, "cp10", "enrichment_input")
-    declared <- config$run(workflow, manifest, arguments$processArgs, process_fn = kernel)
+    # GUI audit R3, P-28: the organism filter is declared when it is on, and what it did is recorded as the step's
+    # outcomes (provenance only). A run with the filter off declares and records what it did before.
+    run_arguments <- arguments$processArgs
+    outcomes <- NULL
+    if (filter_enabled) {
+        run_arguments$organism_filter_enabled <- TRUE
+        run_arguments$organism_filter_taxon <- as.character(parameters$organism_taxid)
+        outcomes <- list(organism_filter_applied = isTRUE(filter_applied),
+            organism_filter_rows_before = filter_stats$proteins_before,
+            organism_filter_rows_after = filter_stats$proteins_after)
+    }
+    declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
     # KIT-018: each contrast's result tables are also saved display tables (content-addressed).
@@ -914,7 +926,7 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         downCutoff = parameters$down_cutoff, qCutoff = parameters$q_cutoff, organismTaxid = parameters$organism_taxid)
     updateProtEnrichStateManagerUiParams(workflowData = workflow, storedUiParams = ui_parameters$storedUiParams)
     saved <- saveWorkflowEnrichmentState(workflow, config, stamped, declared$parameters, method, parameters,
-        directories$pathwayDir)
+        directories$pathwayDir, outcomes = outcomes)
     status <- workflow$tab_status
     status[[config$status_key]] <- "complete"
     workflow$tab_status <- status
@@ -931,6 +943,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
 #' name, config object, description and failure warning. Immediately before the commit it sets the step's provenance as
 #' the protein steps set theirs (utils_workflow_prot_declarations.R:1158-1164): the registry entry's operation, its
 #' default variant, its declared parameter names and fixed values, and the declared values the product's identity used.
+#' GUI audit R3, P-28: the names are those of the declared values the run used (the organism filter's two only when it
+#' is on), and `outcomes` is committed in the state's config, where the analysis record reads a step's outcomes.
 #' A failed commit clears the pending provenance, so the next commit is not attributed to the enrichment.
 #' @param workflow The bus (its `state_manager`).
 #' @param config The omic's `enrichment` group (`operation`, `state_name`).
@@ -939,9 +953,12 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
 #' @param method The method information (`method`, `supported`).
 #' @param parameters The run's inputs (`selected_contrast`, cutoffs, `organism_taxid`).
 #' @param pathway_dir The pathway directory.
+#' @param outcomes Named list of provenance-only values of the run (the organism filter's applied flag and row
+#'   counts), or NULL for none.
 #' @return `list(attempted, saved, warning)`.
 #' @noRd
-saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir) {
+saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,
+    outcomes = NULL) {
     cat("   ENRICHMENT Step: Saving results to R6 state manager...\n")
     manager <- workflow$state_manager
     warning_message <- NULL
@@ -949,12 +966,12 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
     tryCatch({
         results <- portableWorkflowEnrichmentResults(results) # F107-05
         entry <- workflowOperationEntry(config$operation()$name)
-        setWorkflowStepProvenance(manager, entry$name, entry$default_variant, entry$parameters, entry$declaration$fixed,
-            values = declared)
+        setWorkflowStepProvenance(manager, entry$name, entry$default_variant,
+            intersect(entry$parameters, names(declared)), entry$declaration$fixed, values = declared)
         saveDIAOwnerState(manager,
             state_name = config$state_name,
             s4_data_object = results,
-            config_object = list(
+            config_object = c(list(
                 selected_contrast = parameters$selected_contrast,
                 analysis_method = method$method,
                 organism_supported = method$supported,
@@ -963,6 +980,7 @@ saveWorkflowEnrichmentState <- function(workflow, config, results, declared, met
                 q_cutoff = parameters$q_cutoff,
                 organism_taxid = parameters$organism_taxid,
                 pathway_dir = pathway_dir),
+                if (length(outcomes)) list(outcomes = outcomes)),
             description = paste("Enrichment analysis completed using", method$method, "for contrast:",
                 parameters$selected_contrast))
         saved <- TRUE
@@ -1078,18 +1096,21 @@ restoreWorkflowEnrichment <- function(manager, config) {
 #'    publication body the GUI uses (`produceDIADaPublication`, assets not saved), with the annotation table the GUI's
 #'    DA would have had: the prepared project's `<source_dir>/uniprot_dat_cln.RDS`, else none.
 #' 2. `runWorkflowEnrichment` runs on a bus holding the owner and the record's DA contrasts, with the record's taxon,
-#'    cutoffs and correction, the organism filter off, the first contrast's friendly name selected (a display choice)
-#'    and the kernel the GUI would select. Its annotation resolver takes the GUI's order with an empty bus: the
-#'    prepared project's `uniprot_dat_cln.RDS`, then the test-mode table, then the network.
+#'    cutoffs and correction, the organism filter on when the record declares it (P-28), the first contrast's friendly
+#'    name selected (a display choice) and the kernel the GUI would select. Its annotation resolver takes the GUI's
+#'    order with an empty bus: the prepared project's `uniprot_dat_cln.RDS`, then the test-mode table, then the
+#'    network.
 #' 3. The run commits the completed state with the same provenance (D4). The declared values it produced must equal
 #'    the record's 9 (`protein_id_column` and `contrast_names` among them); a difference refuses the replay, naming
 #'    the parameter. `results` is compared by its contrasts: its values are the DA tables' entity ids, which are
 #'    store-local (a saved entity's id hashes its payload's file name, `saveWorkflowTable`), so the replay store's ids
 #'    never equal the origin's; the tables' content is the replayed DA's (proposed F107-04).
+#' 4. A recorded organism filter (P-28) is applied with the mapping the replay can resolve: the prepared project's
+#'    annotation table (the import's organism mapping is not in the record). What it did must equal the record's
+#'    outcomes (applied, rows before and after); a difference refuses the replay.
 #'
 #' Limits: a live g:Profiler result reproduces only when the service's database version is the recorded one (the
-#' record's `external_resources`); the annotation table is the prepared project's and is not hash-checked; the organism
-#' filter is not in the record (P-28), so the step replays unfiltered.
+#' record's `external_resources`); the annotation table is the prepared project's and is not hash-checked.
 #' @param manager The replay's owner.
 #' @param step The record's enrichment step.
 #' @param parameters The step's declared values, decoded (`workflowReplayParameters`).
@@ -1116,7 +1137,8 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
     run <- runWorkflowEnrichment(workflow, config, manifest, list(selected_contrast = contrasts$friendly_names[[1L]],
         organism_taxid = format(parameters$taxon_id, scientific = FALSE, trim = TRUE), up_cutoff = parameters$up_cutoff,
         down_cutoff = parameters$down_cutoff, q_cutoff = parameters$q_cutoff,
-        correction_method = parameters$correction_method, enable_organism_filter = FALSE), run_paths)
+        correction_method = parameters$correction_method,
+        enable_organism_filter = isTRUE(parameters$organism_filter_enabled)), run_paths)
     # The record holds each value through its JSON encoding; the produced values are compared in the same form.
     as_recorded <- function(value) decodeWorkflowRecordValue(jsonlite::fromJSON(jsonlite::toJSON(
         encodeWorkflowRecordValue(value), auto_unbox = TRUE, digits = I(17), null = "null", na = "null"),
@@ -1128,6 +1150,17 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
         if (!identical(as_recorded(produced[[name]]), parameters[[name]])) {
             cli::cli_abort("replayed step {.val {step$state}} produced a different {.val {name}} from the record",
                 class = "workflow_replay_invalid")
+        }
+    }
+    if (isTRUE(parameters$organism_filter_enabled)) {
+        produced_filter <- list(organism_filter_applied = isTRUE(run$organism_filter$filter_applied),
+            organism_filter_rows_before = run$organism_filter$proteins_before,
+            organism_filter_rows_after = run$organism_filter$proteins_after)
+        for (name in names(produced_filter)) {
+            if (!isTRUE(all.equal(produced_filter[[name]], step$outcomes[[name]]))) {
+                cli::cli_abort("replayed step {.val {step$state}} produced a different {.val {name}} from the record",
+                    class = "workflow_replay_invalid")
+            }
         }
     }
     run

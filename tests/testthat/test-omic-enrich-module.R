@@ -802,6 +802,8 @@ omicEnrichW1Case <- function(case) {
 # repair moves:
 #   P-07 (`clean_acc` defined): organism_filter `mapped/run` is a completed run on the filtered tables (it froze the
 #     "object 'clean_acc' not found" error notice and an unchanged session); nothing else moved.
+#   P-28 (the organism filter declared when it is on): organism_filter `no_mapping/run` and `mapped/run`, the product's
+#     `parameters$organism_filter_enabled` and `parameters$organism_filter_taxon` (new); an unfiltered run is unchanged.
 omicEnrichW1Frozen <- list()
 omicEnrichW1Frozen[["gprofiler"]] <- list(
     start = list(
@@ -2341,7 +2343,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
             `parameters$q_cutoff` = "0.05", `parameters$exclude_iea` = "FALSE",
             `parameters$correction_method` = "gSCS", `parameters$protein_id_column` = "gene_name",
-            `parameters$contrast_names` = "groupB-groupA",
+            `parameters$contrast_names` = "groupB-groupA", `parameters$organism_filter_enabled` = "TRUE",
+            `parameters$organism_filter_taxon` = "9606",
             `results$groupB-groupA` = "<manifest da_proteins_long>", contrasts = "groupB-groupA",
             summaries = "6122a4961d0ad898"),
         resources = "gprofiler2 ; gprofiler2_test_double ; database_version ; enrichment of 1 contrasts, taxon 9606",
@@ -2614,7 +2617,8 @@ omicEnrichW1Frozen[["organism_filter"]] <- list(
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
             `parameters$q_cutoff` = "0.05", `parameters$exclude_iea` = "FALSE",
             `parameters$correction_method` = "gSCS", `parameters$protein_id_column` = "gene_name",
-            `parameters$contrast_names` = "groupB-groupA",
+            `parameters$contrast_names` = "groupB-groupA", `parameters$organism_filter_enabled` = "TRUE",
+            `parameters$organism_filter_taxon` = "9606",
             `results$groupB-groupA` = "<manifest da_proteins_long>", contrasts = "groupB-groupA",
             summaries = "6122a4961d0ad898"),
         resources = "gprofiler2 ; gprofiler2_test_double ; database_version ; enrichment of 1 contrasts, taxon 9606",
@@ -3743,6 +3747,8 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
 # MULTISCHOLAR_KIT113_W1_DUMP=<file> appends the capture as R code (how the frozen values were made).
 # GUI audit R3 re-freezes (two byte-identical dumps each): P-07, `organism_filter/mapped` holds the completed run's
 # fields (it froze "<none>": the Run failed on the undefined `clean_acc`).
+#   P-28: `organism_filter/no_mapping` and `organism_filter/mapped` (the filter on) gain `config$outcomes`, the two
+#   declared names in the provenance and the record, and the product's value and the provenance digest move with them.
 # ------------------------------------------------------------------------------------------------
 
 #' Store-local ids (each run of 64 hexadecimal characters) and the fixture's root masked in every character value of
@@ -3971,19 +3977,20 @@ omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> 71f9f8d6291b09ed",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
         class = "EnrichmentResults", enrichment_data = "ab5dd21b32dbb33d",
         enrichment_summaries = "6122a4961d0ad898", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
     products = c(
-        type = "dia-enrichment-results", status = "available", value = "e3f94d9e3b685fcb",
+        type = "dia-enrichment-results", status = "available", value = "64dbb43f7ac98b4f",
         identity = "ad3ef17b26bf1067",
         roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
     provenance = c(
         operation = "enrichment", variant = "whole",
-        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "032782518e99aba7"),
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|organism_filter_enabled|organism_filter_taxon",
+        rest = "db53d45b43df9549"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -3996,7 +4003,9 @@ omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
         `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
         `parameters$protein_id_column` = "provenance ; input ; gene_name",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
-        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
+        `parameters$organism_filter_enabled` = "provenance ; no_shipped_default ; TRUE",
+        `parameters$organism_filter_taxon` = "provenance ; input ; 9606"))
 
 omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
     history = c("initial", "correlation_filtered", "enrichment_completed"),
@@ -4005,19 +4014,20 @@ omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> d2948c1dcddd10c7",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
         class = "EnrichmentResults", enrichment_data = "ab5dd21b32dbb33d",
         enrichment_summaries = "6122a4961d0ad898", contrasts = "950ddbb7d830df8c", plots = "e7dada16ba17cceb"),
     products = c(
-        type = "dia-enrichment-results", status = "available", value = "e3f94d9e3b685fcb",
+        type = "dia-enrichment-results", status = "available", value = "64dbb43f7ac98b4f",
         identity = "ad3ef17b26bf1067",
         roots = "checkpoint:source|result_table:da_table:groupB-groupA|result_table:other|result_table:other|result_table:other"),
     provenance = c(
         operation = "enrichment", variant = "whole",
-        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results",
-        rest = "032782518e99aba7"),
+        parameter_names = "taxon_id|up_cutoff|down_cutoff|q_cutoff|exclude_iea|correction_method|protein_id_column|contrast_names|results|organism_filter_enabled|organism_filter_taxon",
+        rest = "db53d45b43df9549"),
     record = c(
         state = "enrichment_completed", operation = "enrichment", variant = "whole",
         step_label = "enrichment_completed",
@@ -4030,7 +4040,9 @@ omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
         `parameters$correction_method` = "provenance ; no_shipped_default ; gSCS",
         `parameters$protein_id_column` = "provenance ; input ; gene_name",
         `parameters$contrast_names` = "provenance ; input ; groupB-groupA",
-        `parameters$results` = "provenance ; input ; groupB-groupA=<id>"))
+        `parameters$results` = "provenance ; input ; groupB-groupA=<id>",
+        `parameters$organism_filter_enabled` = "provenance ; no_shipped_default ; TRUE",
+        `parameters$organism_filter_taxon` = "provenance ; input ; 9606"))
 
 omicEnrichW113Frozen[["refusals/pre_da"]] <- list(
     history = c("initial", "correlation_filtered"),
@@ -4150,4 +4162,65 @@ test_that("(R3, P-07) a Run with the organism filter applied completes on the ta
     expect_identical(seen$run$history, c("initial", "correlation_filtered", "enrichment_completed"))
     expect_identical(omicEnrichR3Filter(seen$run), c(enabled = "TRUE", filter_applied = "TRUE", target_taxon_id = "9606",
         proteins_before = "6", proteins_after = "3", proteins_removed = "3"))
+})
+
+#' After a session's steps: the record's enrichment step, the head's step provenance of the completed state and KIT-113
+#' W1's fields (the committed record, the product, the provenance and the record step as that block freezes them).
+omicEnrichR3Record <- function(ctx) {
+    manager <- shiny::isolate(ctx$bus()$state_manager)
+    snapshot <- withWorkflowStateScope(manager, function() manager$.context$snapshot)
+    steps <- Filter(function(step) identical(step$operation, "enrichment"), buildWorkflowAnalysisRecord(manager)$steps)
+    ctx$keep("r3", list(step = if (length(steps)) steps[[length(steps)]],
+        provenance = snapshot$step_provenance$enrichment_completed, d6 = omicEnrichW113Fields(ctx)))
+}
+
+#' A record step's parameters as `source ; provenance ; value` by name.
+omicEnrichR3Parameters <- function(step) stats::setNames(vapply(step$parameters, function(parameter) paste(parameter$source,
+    parameter$provenance, workflowRecordValueText(parameter$value), sep = " ; "), ""),
+    vapply(step$parameters, `[[`, "", "name"))
+
+omicEnrichR3FilterNames <- c("organism_filter_enabled", "organism_filter_taxon")
+
+test_that("(R3, P-28) a filtered run declares the organism filter, records what it did and has its own identity", {
+    seen <- omicEnrichR3FilterDrive(list(record = omicEnrichR3Record))
+    r3 <- seen$record$r3
+    expect_identical(utils::tail(diaEnrichmentOperation()$parameters, 2L), omicEnrichR3FilterNames)
+    expect_identical(r3$provenance$parameter_names, diaEnrichmentOperation()$parameters)
+    expect_identical(r3$provenance$values[omicEnrichR3FilterNames],
+        list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
+    expect_identical(omicEnrichR3Parameters(r3$step)[omicEnrichR3FilterNames],
+        c(organism_filter_enabled = "provenance ; no_shipped_default ; TRUE", organism_filter_taxon = "provenance ; input ; 9606"))
+    # What the filter did is provenance only: the step's outcomes, not its declared parameters or its identity.
+    expect_identical(r3$step$outcomes[c("organism_filter_applied", "organism_filter_rows_before", "organism_filter_rows_after")],
+        list(organism_filter_applied = TRUE, organism_filter_rows_before = 6, organism_filter_rows_after = 3))
+})
+
+test_that("(R3, P-28) the product's identity changes while the filter is on, and only then", {
+    # One session, three Runs on the same DA manifest: the filter off, on, off. KIT-113 W1's `identity` field masks the
+    # digests an identity is made of, so the identities are compared whole here.
+    identity <- function(ctx) ctx$keep("identity", shiny::isolate(ctx$returned()$enrichment_product)$identity)
+    seen <- omicEnrichR3FilterDrive(list(on = identity,
+        off = function(ctx) {
+            ctx$set(enable_organism_filter = FALSE)
+            omicEnrichW1Run(2L)(ctx)
+            identity(ctx)
+        },
+        on_again = function(ctx) {
+            ctx$set(enable_organism_filter = TRUE)
+            omicEnrichW1Run(3L)(ctx)
+            identity(ctx)
+        }))
+    expect_false(is.null(seen$on$identity))
+    expect_false(identical(seen$on$identity, seen$off$identity))
+    expect_identical(seen$on_again$identity, seen$on$identity)
+})
+
+test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its record, its product and its identity", {
+    seen <- omicEnrichW3Drive("gprofiler", list(record = omicEnrichR3Record))
+    r3 <- seen$record$r3
+    expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters, omicEnrichR3FilterNames))
+    expect_length(r3$provenance$parameter_names, 9L)
+    expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
+    expect_identical(names(r3$step$outcomes), c("rows", "columns"))
+    expect_identical(r3$d6, omicEnrichW113Frozen$gprofiler)
 })
