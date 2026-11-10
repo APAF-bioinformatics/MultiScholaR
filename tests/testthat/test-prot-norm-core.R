@@ -1515,10 +1515,9 @@ protNormW3Capture <- function(fixture, norm, output, log, actions) {
     history <- as.character(unlist(snapshot$state_history))
     committed <- setdiff(history, "initial")
     fields <- shiny::isolate(shiny::reactiveValuesToList(norm))
-    # The RUV covariates' publication leaves its QC paths in the staging directory, named by store-local ids (draft
-    # F111-05), on both paths; masked to the staged role.
-    if (!is.null(fields$qc_plot_paths)) fields$qc_plot_paths <- rapply(list(fields$qc_plot_paths), function(path)
-        sub("^.*/[.]workflow-export/[^/]+/files/", "<staged>/", path), classes = "character", how = "replace")[[1L]]
+    # GUI audit A111-08 (F111-05): the RUV covariates' publication left its QC paths in the staging directory, named by
+    # store-local ids, and this capture masked them to the staged role. The paths are now the published ones on both
+    # paths, kept here (`qc_paths`) with the root masked.
     workflow <- mget(setdiff(sort(ls(fixture$workflow)), c("state_manager", "design_matrix", "config_list",
         "state_update_trigger")), envir = fixture$workflow)
     text <- function(name) tryCatch(protNormW1Mask(output[[name]], root), error = function(e) NA_character_)
@@ -1536,6 +1535,7 @@ protNormW3Capture <- function(fixture, norm, output, log, actions) {
         norm = vapply(fields[sort(names(fields))], function(field)
             substr(protNormW1Sha(protNormW1Canonical(field, manager, root)), 1L, 16L), ""),
         workflow = protNormW1Sha(protNormW1Canonical(workflow, manager, root)),
+        qc_paths = protNormW1Mask(unlist(fields$qc_plot_paths), root),
         outputs = c(correlation = text("correlation_filter_summary"), ruv_covariates = text("ruv_covariates_summary")),
         notes = log$notes,
         head_id = snapshot$states[[snapshot$current_state]]$entity_id,
@@ -1710,11 +1710,18 @@ test_that("KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give
         state <- if (identical(mode, "correction")) "ruv_corrected" else "ruv_covariates"
         summary <- unmanaged[[paste0("limpa_", mode, "_ruv")]]$outputs[["ruv_covariates"]]
         expect_true(endsWith(summary, paste0("State saved as: '", state, "'")), info = mode)
+        # GUI audit A111-08 (F111-05): after the covariates the tab's QC images are the published files.
+        published <- function(capture) {
+            expect_true(length(capture$qc_paths) > 0L, info = mode)
+            expect_true(all(startsWith(capture$qc_paths, "<root>/results/proteomics/protein_qc/")), info = mode)
+        }
+        published(unmanaged[[paste0("limpa_", mode, "_ruv")]])
         if (!workflowOwnerCapable()) next
         fixture <- protNormW1LimpaOwner()
         managed <- protNormW3Drive(fixture, protNormW3LimpaSteps(mode), managed = TRUE)
         protNormW3ExpectW1(managed, "managed")
         protNormW3ExpectSame(managed, unmanaged)
+        published(managed[[paste0("limpa_", mode, "_ruv")]])
         actions <- lapply(managed, `[[`, "actions")
         expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(character(),
             c("pearson-pairs", "pearson-selection"), "protein_ruv_covariates", "protein_ruv_covariates"), info = mode)

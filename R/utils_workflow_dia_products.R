@@ -952,9 +952,16 @@ publishDIAReferenceRuvCovariates <- function(manager, settings, run, workflow, n
                 file.path(staged$protein_qc_dir, "ruv_covariates_cancor.png"),
                 saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
             ruv_qc(saved$adjusted)
-            list(completed = TRUE, qc_paths = norm_data$qc_plot_paths)
+            list(completed = TRUE, qc_paths = norm_data$qc_plot_paths, staged_qc_dir = staged$protein_qc_dir)
         }, identity = list(product = product$entity_id, color = settings$color_variable,
             shape = settings$shape_variable, output_schema = 1L))
+    # GUI audit A111-08 (F111-05): the tab's QC images are the published files, not the staging copy, as after the
+    # normalisation. A display saved before this fix names no staging directory and is left as it was.
+    if (!is.null(display$staged_qc_dir) && length(display$qc_paths)) {
+        norm_data$qc_plot_paths <- lapply(display$qc_paths, function(group) lapply(group, function(path) {
+            if (is.character(path)) sub(display$staged_qc_dir, paths$protein_qc_dir, path, fixed = TRUE) else path
+        }))
+    }
     norm_data$ruv_covariates_complete <- TRUE
     accepted
 }
