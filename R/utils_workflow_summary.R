@@ -177,10 +177,11 @@ startWorkflowSummaryIntegrationExport <- function(config, workflowData, omicType
 #' Copy the results to the publication directory: the fallback `study_parameters.txt` when the parameters were not
 #' saved; the contrasts and design from the bus, else the source directory's tables; the `project_dirs` global, assigned
 #' only when absent (`copy$inherits`); the gate (`copy$gate`); the exported `copyToResultsSummary(..., force = TRUE)`;
-#' its failures classified by `copy$required` (a required one stops the copy).
+#' its failures classified by `copy$required` (a required one stops the copy). A combined workbook that could not be
+#' read into or saved (A108-04) is reported as `failed` for every omic, whatever `copy$required` names.
 #' @param argsSaved Whether the parameters were saved.
-#' @return `list(fallbackWritten, required, optional, contrastsTbl, designMatrix, error)`; `error` is the failure's
-#'   message, or NULL.
+#' @return `list(fallbackWritten, required, optional, failed, contrastsTbl, designMatrix, error)`; `error` is the
+#'   failure's message, or NULL.
 #' @noRd
 copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicType, label, description, argsSaved, notify,
     copyFn = copyToResultsSummary, catFn = cat) {
@@ -216,6 +217,12 @@ copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicTy
             design_matrix = designMatrix, force = TRUE)
         required <- list()
         optional <- list()
+        failed <- list()
+        if (is.list(failures) && length(failures) > 0L) {
+            workbook <- vapply(failures, workflowSummaryIsWorkbookFailure, logical(1))
+            failed <- failures[workbook]
+            failures <- failures[!workbook]
+        }
         if (!is.null(config$copy$required) && length(failures) > 0L && !isTRUE(failures)) {
             isRequired <- vapply(failures, function(failure) {
                 !is.null(failure$display_name) && failure$display_name %in% config$copy$required
@@ -227,16 +234,42 @@ copyWorkflowSummaryResults <- function(config, workflowData, projectDirs, omicTy
             stop(sprintf("Required publication artifacts missing: %s",
                 paste(vapply(required, function(failure) failure$display_name, character(1)), collapse = ", ")))
         }
-        notify(if (length(optional) > 0L) "Publication files copied with optional missing artifacts" else
-            "Publication files copied", if (length(optional) > 0L) "warning" else "message", 5)
-        list(fallbackWritten = fallbackWritten, required = required, optional = optional, contrastsTbl = contrastsTbl,
-            designMatrix = designMatrix, error = NULL)
+        if (length(failed) > 0L) {
+            notify(paste("Publication files copied, but the combined results workbook failed:",
+                workflowSummaryWorkbookFailureText(failed)), "error", 10)
+            logger::log_error(logger::skip_formatter(paste("Combined results workbook failed:",
+                workflowSummaryWorkbookFailureText(failed))))
+        } else {
+            notify(if (length(optional) > 0L) "Publication files copied with optional missing artifacts" else
+                "Publication files copied", if (length(optional) > 0L) "warning" else "message", 5)
+        }
+        list(fallbackWritten = fallbackWritten, required = required, optional = optional, failed = failed,
+            contrastsTbl = contrastsTbl, designMatrix = designMatrix, error = NULL)
     }, error = function(e) {
         notify(paste("Copy error:", conditionMessage(e)), "error", 10)
         logger::log_error(logger::skip_formatter(paste("Failed to copy files:", conditionMessage(e))))
-        list(fallbackWritten = fallbackWritten, required = list(), optional = list(), contrastsTbl = NULL,
+        list(fallbackWritten = fallbackWritten, required = list(), optional = list(), failed = list(), contrastsTbl = NULL,
             designMatrix = NULL, error = conditionMessage(e))
     })
+}
+
+#' Whether one of the copy's failure records concerns a combined results workbook (A108-04): a DA or enrichment table
+#' that could not be read into it, or a workbook that could not be saved (`copyToResultsSummary`'s `da_excel_read`,
+#' `enrichment_tsv_read` and `workbook_save` records).
+#' @param failure One element of `copyToResultsSummary`'s return value.
+#' @return TRUE or FALSE.
+#' @noRd
+workflowSummaryIsWorkbookFailure <- function(failure) {
+    is.list(failure) && isTRUE(failure$type %in% c("workbook_save", "da_excel_read", "enrichment_tsv_read"))
+}
+
+#' The workbook failures as one line: each file's name and its error.
+#' @param failed The copy's workbook failure records.
+#' @return A string.
+#' @noRd
+workflowSummaryWorkbookFailureText <- function(failed) {
+    paste(vapply(failed, function(failure) sprintf("%s (%s)", basename(failure$path %||% failure$source %||% "?"),
+        failure$error %||% "failed"), character(1)), collapse = "; ")
 }
 
 #' Generate the report: the template (`report$template`, a file name or the route's resolver), ensured in the project's

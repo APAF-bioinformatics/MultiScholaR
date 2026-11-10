@@ -326,6 +326,80 @@ test_that("(W3) the copy classifies copyToResultsSummary's failures by copy$requ
         notify = notes$notify, copyFn = copy)$fallbackWritten)
 })
 
+# ------------------------------------------------------------------------------------------------
+# GUI audit R5, item 5 (A108-04; F108-01): a combined workbook that cannot be read into or saved reaches
+# copyToResultsSummary's failure record, the copy's notice and the summary's status line. Shown failing on ec7db20e:
+# the handlers assigned the record to a local copy, W5 dropped the DA-read record, and the summary said "[OK]".
+# ------------------------------------------------------------------------------------------------
+
+test_that("(R5 item 5, A108-04) copyToResultsSummary returns a workbook save that fails and a DA table it cannot read", {
+    root <- withr::local_tempdir()
+    paths <- list(results_dir = file.path(root, "results"), results_summary_dir = file.path(root, "results_summary", "metabolomics_R5"),
+        publication_graphs_dir = file.path(root, "publication_graphs"), time_dir = file.path(root, "time"),
+        qc_dir = file.path(root, "qc"), da_output_dir = file.path(root, "da"), pathway_dir = file.path(root, "pathway"),
+        source_dir = file.path(root, "source"), feature_qc_dir = file.path(root, "feature_qc"))
+    for (path in paths) dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    openxlsx::write.xlsx(data.frame(metabolite_id = "M1", logFC = 1), file.path(paths$da_output_dir,
+        "de_gcms_metabolites_groupWT-groupKO_long_annot.xlsx"))
+    unreadable <- file.path(paths$da_output_dir, "de_posmode_metabolites_groupWT-groupKO_long_annot.xlsx")
+    writeLines("not a workbook", unreadable)
+    # The save fails as a full or read-only target does; the D8 test's project double supplies the paths.
+    testthat::local_mocked_bindings(saveWorkbook = function(wb, file, ...) stop("cannot write ", basename(file)),
+        .package = "openxlsx")
+    copy <- copyToResultsSummary
+    environment(copy) <- list2env(list(getProjectPaths = function(...) paths), parent = environment(copyToResultsSummary))
+    warned <- character()
+    failures <- NULL
+    utils::capture.output(withCallingHandlers(
+        failures <- copy("metabolomics", "R5", data.frame(contrasts = "B-A"), data.frame(Sample_ID = "S1"), force = TRUE),
+        warning = function(w) {
+            warned <<- c(warned, conditionMessage(w))
+            invokeRestart("muffleWarning")
+        }))
+    of_type <- function(type) Filter(function(failure) identical(failure$type, type), failures)
+    saves <- of_type("workbook_save")
+    expect_identical(vapply(saves, function(failure) basename(failure$path), ""),
+        c("DA_results_metabolomics.xlsx", "Pathway_enrichment_results_metabolomics.xlsx"))
+    expect_identical(vapply(saves, `[[`, "", "error"),
+        c("cannot write DA_results_metabolomics.xlsx", "cannot write Pathway_enrichment_results_metabolomics.xlsx"))
+    reads <- of_type("da_excel_read")
+    expect_identical(lapply(reads, `[[`, "source"), list(unreadable))
+    expect_true(any(grepl("Failed to save DA results workbook", warned, fixed = TRUE)))
+    expect_true(any(grepl("Failed to save Enrichment results workbook", warned, fixed = TRUE)))
+    expect_false(file.exists(file.path(paths$results_summary_dir, "Publication_tables", "DA_results_metabolomics.xlsx")))
+})
+
+test_that("(R5 item 5, A108-04) the copy reports a failed combined workbook for every omic, and the summary's status says so instead of [OK]", {
+    dirs <- omicsSummaryCoreDirs()
+    had <- exists("project_dirs", envir = .GlobalEnv, inherits = FALSE)
+    old <- if (had) get("project_dirs", envir = .GlobalEnv)
+    withr::defer(if (had) assign("project_dirs", old, envir = .GlobalEnv) else if (exists("project_dirs", envir = .GlobalEnv,
+        inherits = FALSE)) rm("project_dirs", envir = .GlobalEnv))
+    save_failure <- list(type = "workbook_save", path = "/p/Publication_tables/DA_results_lipidomics.xlsx", error = "disk full")
+    read_failure <- list(type = "da_excel_read", source = "/p/da/de_gcms_lipids_B-A_long_annot.xlsx", error = "Failed to read")
+    optional <- list(type = "directory", display_name = "Heatmaps", error = "Source not found")
+    text <- "DA_results_lipidomics.xlsx (disk full); de_gcms_lipids_B-A_long_annot.xlsx (Failed to read)"
+    # Lipid classifies by copy$required; proteomics classifies nothing (copy$required = NULL). Both report the workbook.
+    for (required in list(omicGuiConfig("lipidomics")$summary$copy$required, NULL)) {
+        config <- omicGuiConfig("lipidomics")$summary
+        config$copy$required <- required
+        notes <- omicsSummaryCoreNotes()
+        out <- copyWorkflowSummaryResults(config, list(), dirs, "lipidomics", "kit108", "d", argsSaved = TRUE,
+            notify = notes$notify, copyFn = function(...) list(save_failure, optional, read_failure))
+        expect_null(out$error)
+        expect_identical(out$failed, list(save_failure, read_failure))
+        expect_identical(out$optional, if (is.null(required)) list() else list(optional))
+        expect_identical(notes$shown, paste("[error 10] Publication files copied, but the combined results workbook failed:", text))
+        expect_identical(omicSummaryCopyStatusText(out),
+            paste("Files copied to publication directory, but the combined results workbook failed:", text, "[FAIL]"))
+    }
+    # Without a workbook failure the status lines are today's.
+    expect_identical(omicSummaryCopyStatusText(list(failed = list(), optional = list())),
+        "Files copied to publication directory successfully [OK]")
+    expect_identical(omicSummaryCopyStatusText(list(failed = list(), optional = list(optional))),
+        "Files copied to publication directory with optional missing artifacts [WARNING]")
+})
+
 test_that("(W3) the report ensures its template in order: the project's copy, the package's, the GitHub download; a failed retrieval stops it unless render_after_failed_template", {
     config <- omicGuiConfig("lipidomics")$summary
     rendered <- character()

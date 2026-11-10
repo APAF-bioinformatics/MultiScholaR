@@ -276,22 +276,37 @@ omicSummaryCopy <- function(output, values, label, description, projectDirs, omi
         return(invisible(copied))
     }
     values$files_copied <- TRUE
-    output$copy_status <- shiny::renderText(
-        if (length(copied$optional) > 0L) {
-            "Files copied to publication directory with optional missing artifacts [WARNING]"
-        } else {
-            "Files copied to publication directory successfully [OK]"
-        }
-    )
+    output$copy_status <- shiny::renderText(omicSummaryCopyStatusText(copied))
     output$session_summary <- shiny::renderText({
         paste(
             "Workflow args created for:", label,
             "\nDescription:", description,
             "\nTimestamp:", Sys.time(),
-            "\nStatus: Arguments saved [OK], Files copied [OK]"
+            if (length(copied$failed) > 0L) {
+                "\nStatus: Arguments saved [OK], Files copied [FAIL: combined results workbook]"
+            } else {
+                "\nStatus: Arguments saved [OK], Files copied [OK]"
+            }
         )
     })
     invisible(copied)
+}
+
+#' The copy status line: a failed combined results workbook (A108-04) first, then optional missing artifacts, else
+#' success.
+#' @param copied `copyWorkflowSummaryResults`'s value, without an `error`.
+#' @return A string.
+#' @noRd
+omicSummaryCopyStatusText <- function(copied) {
+    if (length(copied$failed) > 0L) {
+        return(paste("Files copied to publication directory, but the combined results workbook failed:",
+            workflowSummaryWorkbookFailureText(copied$failed), "[FAIL]"))
+    }
+    if (length(copied$optional) > 0L) {
+        "Files copied to publication directory with optional missing artifacts [WARNING]"
+    } else {
+        "Files copied to publication directory successfully [OK]"
+    }
 }
 
 #' The report: the core's `renderWorkflowSummaryReport` under the progress display, then the rendered report's values,

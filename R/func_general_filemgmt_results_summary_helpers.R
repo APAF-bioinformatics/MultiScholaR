@@ -183,7 +183,8 @@ copyToResultsSummary <- function(omic_type,
             },
             error = function(e) {
                 warning(sprintf("Failed to save/copy Rmd file: %s", e$message))
-                failed_copies[[length(failed_copies) + 1]] <- list(type = "rmd_copy", source = current_rmd, destination = current_paths$source_dir, display_name = "Current Rmd File", error = e$message)
+                # A108-04 (F108-01): the handler is a closure, so the record is assigned in the function's frame.
+                failed_copies[[length(failed_copies) + 1]] <<- list(type = "rmd_copy", source = current_rmd, destination = current_paths$source_dir, display_name = "Current Rmd File", error = e$message)
             }
         )
     }
@@ -652,8 +653,9 @@ copyToResultsSummary <- function(omic_type,
 
     # KIT-108 W5: one sheet at a time. The read's garbage is collected before the sheet is written, and the sheet's data
     # and the write's garbage before the next sheet is read, so no two of these transients overlap (the report step's
-    # memory, kit-108/memory). The index, sheet names and order are unchanged. A failed read warns as before; its record
-    # was local to the former purrr::imap closure and never reached `failed_copies`, so none is added here either.
+    # memory, kit-108/memory). The index, sheet names and order are unchanged. A failed read warns as before and, since
+    # A108-04 (F108-01), its record reaches `failed_copies` (in the former purrr::imap closure it was assigned to a local
+    # copy and lost).
     for (idx in seq_along(da_files)) {
         file <- da_files[[idx]]
         sheet_name <- sprintf("DA_Sheet%d", idx)
@@ -671,6 +673,7 @@ copyToResultsSummary <- function(omic_type,
             openxlsx::writeData(da_wb, sheet_name, data_content)
         } else {
             warning(paste0("Failed to read DA Excel file: ", file))
+            failed_copies[[length(failed_copies) + 1]] <- list(type = "da_excel_read", source = file, error = "Failed to read")
         }
         rm(data_content)
         gc(FALSE)
@@ -697,7 +700,7 @@ copyToResultsSummary <- function(omic_type,
             openxlsx::writeData(enrichment_wb, sheet_name, data_content)
         } else {
             warning(paste0("Failed to read Enrichment TSV file: ", file))
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "enrichment_tsv_read", source = file, error = "Failed to read")
+            failed_copies[[length(failed_copies) + 1]] <<- list(type = "enrichment_tsv_read", source = file, error = "Failed to read")
         }
     })
     openxlsx::writeDataTable(enrichment_wb, "Enrichment_Index", enrichment_index_data, tableStyle = "TableStyleLight9", headerStyle = openxlsx::createStyle(textDecoration = "bold"), withFilter = TRUE)
@@ -710,7 +713,8 @@ copyToResultsSummary <- function(omic_type,
             cat(paste("Successfully saved DA results to:", da_results_excel_path, "\n"))
         },
         error = function(e) {
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = da_results_excel_path, error = e$message)
+            warning(sprintf("Failed to save DA results workbook %s: %s", da_results_excel_path, e$message))
+            failed_copies[[length(failed_copies) + 1]] <<- list(type = "workbook_save", path = da_results_excel_path, error = e$message)
         }
     )
 
@@ -720,7 +724,8 @@ copyToResultsSummary <- function(omic_type,
             cat(paste("Successfully saved Enrichment results to:", enrichment_excel_path, "\n"))
         },
         error = function(e) {
-            failed_copies[[length(failed_copies) + 1]] <- list(type = "workbook_save", path = enrichment_excel_path, error = e$message)
+            warning(sprintf("Failed to save Enrichment results workbook %s: %s", enrichment_excel_path, e$message))
+            failed_copies[[length(failed_copies) + 1]] <<- list(type = "workbook_save", path = enrichment_excel_path, error = e$message)
         }
     )
     rm(da_wb, enrichment_wb)
