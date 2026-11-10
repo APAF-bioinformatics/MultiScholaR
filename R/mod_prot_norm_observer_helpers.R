@@ -225,6 +225,8 @@ runProtNormModuleServerShell <- function(
       normData$ruv_normalized_obj <- extra$ruv_normalized_obj %||%
         getDIAStateReference(manager, "ruv_corrected") %||% getDIAStateReference(manager, "normalized")
       normData$correlation_filtered_obj <- getDIAStateReference(manager, "correlation_filtered")
+      # GUI audit P-35 (review): a restored session's RUV covariates start from its own correlation result.
+      normData$ruv_covariates_input_reference <- NULL
       active_history <- diaStateHistory(manager)
       normalized_active <- any(c("normalized", "ruv_corrected", "correlation_filtered") %in% active_history)
       normData$normalization_complete <- normalized_active && !is.null(normData$normalized_protein_obj)
