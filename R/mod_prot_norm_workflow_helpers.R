@@ -639,8 +639,7 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
   runner$run(function() shiny::isolate({
     held$source <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "correlation")
-      source <- normData$ruv_normalized_obj
-      if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+      source <- diaCorrelationSource(manager, normData)
       readDIAStateMetadata(manager, source)
       source
     })

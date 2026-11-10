@@ -1227,8 +1227,7 @@ protNormW2Correlation <- function(fixture, dispatch, norm, threshold, aesthetics
     manager <- fixture$manager
     source <- withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "correlation")
-        source <- norm$ruv_normalized_obj
-        if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+        source <- diaCorrelationSource(manager, norm)
         readDIAStateMetadata(manager, source)
         source
     })
@@ -1946,5 +1945,42 @@ test_that("GUI audit P-35: covariates then correction (and back) each run on the
         back <- clicks$ruv_covariates("covariates")
         expect_identical(back$current, "ruv_covariates", info = path)
         expect_identical(back$value, frozen$limpa_covariates_ruv$value, info = path)
+    }
+})
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R2, P-35 (second route): after the RUV covariates the tab's `ruv_normalized_obj` is the committed RUV state,
+# and the correlation read its source there. A correlation re-apply then filtered the RUV state, and the covariates that
+# followed compounded. The re-apply now starts from the normalisation's final, so the repeated correlation and covariates
+# give the frozen first-run values (`value`: the result's science), in process and through the worker. Not covered: the
+# normalisation pass-through pressed again on the RUV head designates that head as the input (its definition is pinned).
+# ------------------------------------------------------------------------------------------------
+
+test_that("GUI audit P-35: a correlation re-apply after the RUV covariates starts from the normalisation's final", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    frozen <- protNormW1Frozen()
+    for (path in c("in process", if (workflowOwnerCapable()) "worker")) {
+        if (identical(path, "worker")) protNormW2Mocks()
+        for (mode in c("covariates", "correction")) {
+            info <- paste(path, mode)
+            correlation <- frozen[[paste0("limpa_", mode, "_correlation")]]$value
+            ruv <- frozen[[paste0("limpa_", mode, "_ruv")]]$value
+            fixture <- protNormW1LimpaOwner()
+            clicks <- if (identical(path, "worker")) protNormW2Clicks(fixture) else protNormW1Clicks(fixture)
+            clicks$pass_through()
+            expect_identical(clicks$correlation(0.5)$value, correlation, info = info)
+            expect_identical(clicks$ruv_covariates(mode)$value, ruv, info = info)
+            # The correlation again, then the covariates.
+            again <- clicks$correlation(0.5)
+            expect_identical(again$error, NA_character_, info = info)
+            expect_identical(again$value, correlation, info = info)
+            expect_identical(clicks$ruv_covariates(mode)$value, ruv, info = info)
+            if (identical(path, "worker")) {
+                inputs <- vapply(Filter(function(result) identical(result$operation, "pearson-pairs"), clicks$results()), `[[`, "", "input")
+                expect_length(inputs, 2L)
+                expect_length(unique(inputs), 1L)
+            }
+        }
     }
 })

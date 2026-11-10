@@ -992,8 +992,7 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
     manager <- workflow$state_manager
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "correlation")
-        source <- norm_data$ruv_normalized_obj
-        if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+        source <- diaCorrelationSource(manager, norm_data)
         original <- readDIAStateMetadata(manager, source)$data
         run <- if (skipped) list(final = source) else computeDIAReferenceCorrelation(manager, source, grouping(), threshold)
         commit <- diaCorrelationCommit(manager, run$final, threshold, skipped)
@@ -1001,6 +1000,22 @@ runDIAReferenceCorrelation <- function(workflow, norm_data, paths, threshold,
         publishDIAReferenceCorrelation(manager, run, workflow, norm_data, paths, threshold, skipped, omic_type,
             experiment_label, aesthetics)
     })
+}
+
+#' The correlation filter's source, as the tab sends it in process and to the worker (GUI audit P-35): the normalisation's
+#' final. On the DIA_LIMPA route that is the pass-through's recorded input (`normalization_input_reference`), not the
+#' tab's `ruv_normalized_obj`, which the RUV covariates' publication points at the committed RUV state: a correlation
+#' re-apply after the covariates then starts where the first correlation did, never from a state that already holds the
+#' correction or the W terms. On a first click the two are the same reference. Every other route reads
+#' `ruv_normalized_obj`, as before.
+#' @param manager,norm_data Session owner and the tab's state.
+#' @return The source reference.
+#' @noRd
+diaCorrelationSource <- function(manager, norm_data) {
+    source <- if (identical(manager$workflow_type, "DIA_LIMPA"))
+        norm_data$normalization_input_reference %||% norm_data$ruv_normalized_obj else norm_data$ruv_normalized_obj
+    if (!isSavedWorkflowReference(source)) cli::cli_abort("normalization must complete before correlation filtering")
+    source
 }
 
 #' The within-group Pearson pairs' parameters (KIT-111 D3): the grouping and the pool-sample pattern the tab removes.
