@@ -6,3 +6,5 @@ kit-journey-112t start 12:41:01 at e7fbe349: AC 1, profile low-power, battery 10
 kit-journey-112t end 12:44:41: AC 1, profile low-power, battery 100%, load 2.26, available 28 GiB
 kit-journey-112f start 12:45:01 at f60804bf: AC 1, profile low-power, battery 100%, load 1.85, available 28 GiB
 kit-journey-112f end 12:47:41: AC 1, profile low-power, battery 100%, load 2.04, available 28 GiB
+kit-journey-112a start 12:48:01 at fcb14ddf: AC 1, profile low-power, battery 100%, load 1.60, available 28 GiB
+kit-journey-112a end 12:52:01: AC 1, profile low-power, battery 100%, load 2.04, available 28 GiB
