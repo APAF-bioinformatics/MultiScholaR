@@ -180,6 +180,24 @@ workflowRecordExportAnalysis <- function(context, snapshot, export, shipped) {
             list(data = list(products = product)), list()))
 }
 
+#' The multiple-testing method one proteomics contrast's `fdr_qvalue` column holds (GUI audit A112-03, F112-01)
+#'
+#' The proteomics kernels (limma and dpcDE, through `adjustProtDaResultTable`) fill `fdr_qvalue` from `qvalue()` and
+#' fall back to Benjamini-Hochberg when it cannot be used; the contrast's saved record says so in `qvalue_warnings`.
+#' The kernel does not record which of its three fallback conditions applied, so the reason lists them.
+#' @param operation The manifest's producing operation.
+#' @param result One contrast's saved record (`dia.contrast_reference.v1`).
+#' @return `list(fdr_method)`, with `fdr_fallback_reason` after a fallback; NULL for another omic's operation, whose
+#'   result entries are unchanged.
+#' @noRd
+workflowRecordDaFdrMethod <- function(operation, result) {
+    if (!identical(operation, "DA-contrast-output")) return(NULL)
+    if (!length(result$qvalue_warnings)) return(list(fdr_method = "qvalue"))
+    list(fdr_method = "BH", fdr_fallback_reason = paste("qvalue() could not be used for this contrast (it failed, or",
+        "fewer than 3 p-values were valid, or every p-value was 0 or 1); fdr_qvalue holds Benjamini-Hochberg adjusted",
+        "p-values"))
+}
+
 #' Build the analysis record from head metadata (schema `multischolar.analysis_record.v1`).
 #' @param manager On-disk DIA owner (`DIAStateAdapter`).
 #' @param now Generation time.
@@ -317,9 +335,10 @@ buildWorkflowAnalysisRecord <- function(manager, now = Sys.time()) {
             results = if (identical(output$version, 2L)) unlist(lapply(names(manifest$results), function(name) {
                 lapply(manifest$results[[name]]$assays, function(entry) list(contrast = name, assay = entry$assay,
                     entity_id = entry$tables[[long_table]]$entity_id %||% NA_character_, rows = entry$rows %||% NA_integer_))
-            }), recursive = FALSE, use.names = FALSE) else lapply(names(manifest$results), function(name) list(contrast = name,
+            }), recursive = FALSE, use.names = FALSE) else lapply(names(manifest$results), function(name) c(list(contrast = name,
                 entity_id = manifest$results[[name]]$tables[[long_table]]$entity_id %||% NA_character_,
-                rows = manifest$results[[name]]$rows %||% NA_integer_)))
+                rows = manifest$results[[name]]$rows %||% NA_integer_),
+                workflowRecordDaFdrMethod(da_operation, manifest$results[[name]]))))
         if (identical(output$version, 2L)) {
             analyses$differential_abundance$failures <- unlist(lapply(names(manifest$results), function(name) {
                 errors <- manifest$results[[name]]$errors

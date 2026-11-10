@@ -198,6 +198,40 @@ test_that("KIT-027 audit PH-01/02/03: declared values come from provenance, both
     expect_identical(da$model$block_reason, "no_duplicates")
 })
 
+# GUI audit R1, A112-03 (b) (F112-01): the record names, per proteomics contrast, the multiple-testing method the
+# `fdr_qvalue` column holds: `qvalue`, or `BH` with the reason when the kernel reported its fallback.
+test_that("GUI audit A112-03: the record's DA results name the method each contrast's fdr_qvalue holds, and why when it fell back to BH", {
+    fixture <- analysisRecordFixture(withr::local_tempdir())
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    manifest <- list(schema = "dia.da_results.v1", source = getDIAStateReference(manager, "protein_accession_cleaned"),
+        contrasts = data.frame(contrasts = c("B-A", "C-A"), friendly_names = c("B_vs_A", "C_vs_A"),
+            full_format = c("B_vs_A=B-A", "C_vs_A=C-A")),
+        results = list(
+            `B-A` = list(schema = "dia.contrast_reference.v1", tables = list(), rows = 3L, qvalue_warnings = list(`B-A` = TRUE)),
+            `C-A` = list(schema = "dia.contrast_reference.v1", tables = list(), rows = 3L, qvalue_warnings = NULL)),
+        parameters = list(formula = "~ 0 + group", qvalue = 0.05, lfc = 0, weights = NA), model = list(model = "limma"))
+    snapshot <- manager$.context$snapshot
+    snapshot$da_results <- saveDIAStateValue(manager$.context, manifest, "da-manifest", codec = "rds")
+    publishDIAStateHead(manager$.context, snapshot)
+    record <- buildWorkflowAnalysisRecord(manager)
+    expect_true(validateWorkflowAnalysisRecord(record)$valid)
+    results <- stats::setNames(record$analyses$differential_abundance$results, c("B-A", "C-A"))
+    expect_identical(vapply(results, `[[`, "", "contrast"), c(`B-A` = "B-A", `C-A` = "C-A"))
+    expect_identical(results$`B-A`$fdr_method, "BH")
+    expect_match(results$`B-A`$fdr_fallback_reason, "Benjamini-Hochberg", fixed = TRUE)
+    expect_identical(results$`C-A`$fdr_method, "qvalue")
+    expect_null(results$`C-A`$fdr_fallback_reason)
+    # The fields a result entry had are unchanged and come first.
+    expect_identical(names(results$`C-A`), c("contrast", "entity_id", "rows", "fdr_method"))
+    expect_identical(names(results$`B-A`), c("contrast", "entity_id", "rows", "fdr_method", "fdr_fallback_reason"))
+    # The written record carries them.
+    json <- file.path(withr::local_tempdir(), "analysis_record.json")
+    writeWorkflowAnalysisRecord(manager, json)
+    written <- jsonlite::read_json(json, simplifyVector = FALSE)$analyses$differential_abundance$results
+    expect_identical(vapply(written, `[[`, "", "fdr_method"), c("BH", "qvalue"))
+})
+
 test_that("KIT-027 audit PH-04/07/08: backfilled steps, exact default comparison and a visible record failure", {
     fixture <- analysisRecordFixture(withr::local_tempdir())
     manager <- fixture$manager

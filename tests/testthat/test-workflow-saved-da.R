@@ -412,7 +412,9 @@ test_that("invalidateDIAVisibleResults keeps accepted results on every DA-ready 
 # arguments' time dropped, config, description, previous state and product names); the completed outputs; the head's
 # products by fingerprint; the store's entities by kind and layer without the head snapshots (`state-head`) and the
 # fits' factors; the runner's manifest and the head's, the model's unset fields; `da_dependencies` by key and value; the
-# step provenance and the pending provenance; the analysis record's `differential_abundance`; the published files;
+# step provenance and the pending provenance; the analysis record's `differential_abundance` (GUI audit A112-03 (b):
+# without the per-contrast method fields the record gained after the freeze, which are captured on their own as `fdr`,
+# so the frozen `record` values stay those of the start commit); the published files;
 # whether the head's publication request is keyed by `diaDaPublicationIdentity` of the manifest; the display fields;
 # the value or refusal; and the call counts of the halves' callees. Store-local ids, times and the root are masked.
 # MULTISCHOLAR_KIT112_W1_DUMP=<file> appends each case's capture as R code (`1` prints it): how the frozen values were made.
@@ -544,6 +546,20 @@ savedDaW1Dependencies <- function(manager, snapshot, root, memo) {
         USE.NAMES = FALSE))
 }
 
+#' GUI audit A112-03 (b): the method each contrast's `fdr_qvalue` holds, by contrast, as the record states it; and the
+#' record without those fields (`fdr_method`, `fdr_fallback_reason`), which is what the frozen `record` values hash.
+savedDaW1RecordFdr <- function(record) {
+    if (!is.list(record)) return(NULL)
+    vapply(record$results, function(entry) entry$fdr_method %||% NA_character_, "") |>
+        stats::setNames(vapply(record$results, `[[`, "", "contrast"))
+}
+
+savedDaW1RecordWithoutFdr <- function(record) {
+    if (!is.list(record)) return(record)
+    record$results <- lapply(record$results, function(entry) entry[setdiff(names(entry), c("fdr_method", "fdr_fallback_reason"))])
+    record
+}
+
 #' Files under `root` (relative names), with the md5 of each text table; images, PDFs, workbooks and pages by name only.
 savedDaW1Files <- function(root) {
     files <- sort(list.files(root, recursive = TRUE))
@@ -610,7 +626,8 @@ savedDaW1Capture <- function(fixture, run) {
         provenance = savedDaW1Sha(savedDaW1Mask(lapply(snapshot$step_provenance, function(entry)
             entry[setdiff(names(entry), c("committed_at", "build", "source_commit"))]), root)),
         pending = savedDaW1Sha(savedDaW1Mask(manager$.context$pending_provenance, root)),
-        record = savedDaW1Sha(savedDaW1Mask(record, root)),
+        record = savedDaW1Sha(savedDaW1Mask(savedDaW1RecordWithoutFdr(record), root)),
+        fdr = savedDaW1RecordFdr(record),
         files = savedDaW1Sha(savedDaW1Files(root)),
         publication = if (is.null(request) || is.null(manifest)) NA else identical(request$request_id, paste0("dia-da-",
             substr(digest::digest(list(state = head$entity_id, action = "da", identity = diaDaPublicationIdentity(manifest)),
@@ -766,6 +783,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "830e51cbaa1a574f079f5de593d9cd74d20625dc2e4dffb7af58d8de2fdf76c6",
+        fdr = c(treated.vs.control = "BH"),
         files = "eb6592a02532ef8b8be372cb584ad6bb8daa96c89b27bcacb1e618f175b5faab",
         publication = TRUE,
         display = c(da_results_list = "0b61131aa2fafaae", analysis_complete = "TRUE", current_s4_object = "f41d17b919c2ce82", 
@@ -797,6 +815,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "0a3492d186cc1aafb17b836c6748ca23a6faf441c19fd9a90fb95150ee0488c0",
+        fdr = c(treated.vs.control = "BH", control.vs.treated = "BH"),
         files = "68ed9d605f1e3214d0b7ee1de1bae6a86b15c67de8492452b450b90758534ec6",
         publication = TRUE,
         display = c(da_results_list = "a46b71d99173a593", analysis_complete = "TRUE", current_s4_object = "f41d17b919c2ce82", 
@@ -828,6 +847,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "0a3492d186cc1aafb17b836c6748ca23a6faf441c19fd9a90fb95150ee0488c0",
+        fdr = c(treated.vs.control = "BH", control.vs.treated = "BH"),
         files = "68ed9d605f1e3214d0b7ee1de1bae6a86b15c67de8492452b450b90758534ec6",
         publication = TRUE,
         display = c(da_results_list = "a46b71d99173a593", analysis_complete = "TRUE", current_s4_object = "f41d17b919c2ce82", 
@@ -862,6 +882,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "af820274ca19065c235d79240275bee252bbca52f2e934ed90320dbb97391dee",
+        fdr = c(treated.vs.control = "BH", control.vs.treated = "BH"),
         files = "68ed9d605f1e3214d0b7ee1de1bae6a86b15c67de8492452b450b90758534ec6",
         publication = TRUE,
         display = c(da_results_list = "71d301329ba75b06", analysis_complete = "TRUE", current_s4_object = "f41d17b919c2ce82", 
@@ -896,6 +917,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "f53317e704c4ec41d7adfb19c969e4adff7555cb581320a473b9cbb666b4f6ba",
+        fdr = c(treated.vs.control = "BH", control.vs.treated = "BH"),
         files = "68ed9d605f1e3214d0b7ee1de1bae6a86b15c67de8492452b450b90758534ec6",
         publication = TRUE,
         display = c(da_results_list = "e4491943192ae294", analysis_complete = "TRUE", current_s4_object = "6d9fd5ca0fe42b72", 
@@ -932,6 +954,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "f740ed077607f0c239dde97d94d46835cafbb9cefca664e4ed3a11380f570d4d",
+        fdr = c(treated.vs.control = "qvalue", control.vs.treated = "qvalue"),
         files = "f5079a9e29f77a2489e71865c757fc3442631e095fa3ef321f6b2e0624531c20",
         publication = TRUE,
         display = c(da_results_list = "51141afd59bb292e", analysis_complete = "TRUE", current_s4_object = "78960fb694e3791b", 
@@ -970,6 +993,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "a9ec539f90c1241cacb7c8c29e9e55441b7cf5d66bed968eb1e3bd8be34036f9",
+        fdr = c(treated.vs.control = "qvalue", control.vs.treated = "qvalue"),
         files = "f5079a9e29f77a2489e71865c757fc3442631e095fa3ef321f6b2e0624531c20",
         publication = TRUE,
         display = c(da_results_list = "93645907ca87d854", analysis_complete = "TRUE", current_s4_object = "718d0ef3e308dbcd", 
@@ -1008,6 +1032,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "a9ec539f90c1241cacb7c8c29e9e55441b7cf5d66bed968eb1e3bd8be34036f9",
+        fdr = c(treated.vs.control = "qvalue", control.vs.treated = "qvalue"),
         files = "f5079a9e29f77a2489e71865c757fc3442631e095fa3ef321f6b2e0624531c20",
         publication = NA,
         display = c(da_results_list = "93645907ca87d854", analysis_complete = "TRUE", current_s4_object = "718d0ef3e308dbcd", 
@@ -1063,6 +1088,7 @@ savedDaW1Frozen <- function() list(
         provenance = "25fda8778949dd0cf7a79409fbc976e93c89159d1a72b0f1c16813b9135237d1",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "830e51cbaa1a574f079f5de593d9cd74d20625dc2e4dffb7af58d8de2fdf76c6",
+        fdr = c(treated.vs.control = "BH"),
         files = "eb6592a02532ef8b8be372cb584ad6bb8daa96c89b27bcacb1e618f175b5faab",
         publication = TRUE,
         display = c(da_results_list = "0b61131aa2fafaae", analysis_complete = "TRUE", current_s4_object = "f41d17b919c2ce82", 
@@ -1100,6 +1126,7 @@ savedDaW1Frozen <- function() list(
         provenance = "b277eb8197ce4789839d312cf291fed25eae7f1c6b5450795b7b6706b9c33067",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "e2c78f55bc3748ad827e2ac8cb66d8414304e4c035940dcc2bb41f98a548ebe8",
+        fdr = c(treated.vs.control = "BH"),
         files = "c983c2965d1b14c7ab12169b6d2a50dad95db689680af6bc3a5d439e1562f0b1",
         publication = TRUE,
         display = c(da_results_list = "dd86ce37c0f1928e", analysis_complete = "TRUE", current_s4_object = "5d94fbb7979cd1eb", 
