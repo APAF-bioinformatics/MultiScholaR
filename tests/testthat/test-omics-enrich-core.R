@@ -306,3 +306,38 @@ test_that("(F-16, D6 test 1) after a Run the record's enrichment step carries it
         "no_shipped_default", "no_shipped_default", "no_shipped_default", "input", "input", "input"))
     expect_false(any(grepl("enrichment_completed", seen$record$record$incomplete, fixed = TRUE)))
 })
+
+# ------------------------------------------------------------------------------------------------
+# GUI audit R3 (2026-11-11): the enrichment repairs after the post-hoc audit, at core level, each written before its fix.
+# ------------------------------------------------------------------------------------------------
+
+#' DA results for enrichment holding `tables` by contrast.
+omicsEnrichCoreR3Da <- function(tables) methods::new("da_results_for_enrichment",
+    contrasts = tibble::tibble(contrasts = names(tables)), da_data = tables,
+    design_matrix = data.frame(sample = character(), stringsAsFactors = FALSE))
+
+test_that("(R3, A107-02) the organism filter reports applied only when a contrast table was tested against the mapping", {
+    mapping <- data.frame(uniprot_acc = c("P1", "P2", "P9"), taxon_id = c("9606", "9606", "10090"), stringsAsFactors = FALSE)
+    apply <- function(tables) {
+        out <- NULL
+        utils::capture.output(out <- applyProtEnrichOrganismFilter(omicsEnrichCoreR3Da(tables), mapping, "9606"))
+        out
+    }
+    # No table carries the id column (`uniprot_acc` without a source object): nothing is tested, nothing is applied.
+    other <- data.frame(gene_name = c("A", "B"), stringsAsFactors = FALSE)
+    untested <- apply(list(contrast_a = other, contrast_b = NULL))
+    expect_false(untested$filterApplied)
+    expect_identical(untested$filterStats, list(proteins_before = 0, proteins_after = 0, proteins_removed = 0))
+    expect_identical(untested$daResultsForEnrichment@da_data, list(contrast_a = other, contrast_b = NULL))
+    # One table tested (isoform and group ids through the default cleaning, P-07), one without the column.
+    tested <- apply(list(contrast_a = data.frame(uniprot_acc = c("P1-2;Q1", "P3", "P9"), stringsAsFactors = FALSE),
+        contrast_b = other))
+    expect_true(tested$filterApplied)
+    expect_identical(tested$filterStats, list(proteins_before = 3, proteins_after = 1, proteins_removed = 2))
+    expect_identical(tested$daResultsForEnrichment@da_data$contrast_a$uniprot_acc, "P1-2;Q1")
+    expect_identical(tested$daResultsForEnrichment@da_data$contrast_b, other)
+    # A tested table that loses nothing is still applied; the counts say that nothing was removed.
+    kept <- apply(list(contrast_a = data.frame(uniprot_acc = c("P1", "P2"), stringsAsFactors = FALSE)))
+    expect_true(kept$filterApplied)
+    expect_identical(kept$filterStats, list(proteins_before = 2, proteins_after = 2, proteins_removed = 0))
+})

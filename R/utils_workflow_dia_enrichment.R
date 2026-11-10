@@ -440,6 +440,9 @@ applyProtEnrichOrganismFilter <- function(daResultsForEnrichment,
         proteinsBefore <<- proteinsBefore + originalCount
         proteinsAfter <<- proteinsAfter + filteredCount
         proteinsRemoved <<- proteinsRemoved + (originalCount - filteredCount)
+        # GUI audit R3, A107-02: applied means a contrast table was tested against the mapping. A table without the id
+        # column, or a missing table, is passed on untested and does not count.
+        filterApplied <<- TRUE
 
         return(filteredData)
       }
@@ -449,7 +452,6 @@ applyProtEnrichOrganismFilter <- function(daResultsForEnrichment,
     names(filteredDeData) <- names(daResultsForEnrichment@da_data)
 
     daResultsForEnrichment@da_data <- filteredDeData
-    filterApplied <- TRUE
 
     catFn(sprintf(
       "*** ENRICHMENT Step: Organism filtering complete - kept %d/%d proteins (%.1f%%) ***\n",
