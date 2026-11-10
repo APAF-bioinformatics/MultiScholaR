@@ -790,3 +790,54 @@ test_that("GUI audit A112-04: validation refuses a formula variable whose design
     fixed = TRUE
   )
 })
+
+# GUI audit R5, item 4 (P-26; F106-04): "Download All Results" is the long DA results table of every contrast, as CSV,
+# as lipid, metab and trx download theirs. Shown failing on ec7db20e, where it wrote one placeholder line into
+# `DA_results_<date>.zip`. The end-to-end bytes are W1 (b)'s prot_main download capture (test-omic-da-module.R).
+test_that("(R5 item 4, P-26) proteomics' DA download is every contrast's long results table as CSV: a column one contrast lacks is NA, a results list is written as it is", {
+  da <- omicGuiConfig("proteomics")$da
+  expect_identical(da$download, list(stem = "proteomics_da_results_", extension = "csv"))
+  first <- data.frame(Protein.Ids = c("P1", "P2"), comparison = "A_vs_B", log2FC = c(1.5, -1.5), fdr_qvalue = c(0.01, 0.5),
+    log2norm.S1.left = c(5.5, 6.5), stringsAsFactors = FALSE)
+  second <- data.frame(Protein.Ids = "P1", comparison = "C_vs_B", log2FC = 2.5, fdr_qvalue = 0.02,
+    log2norm.S9.left = 7.5, stringsAsFactors = FALSE)
+  tables <- list(first = first, second = second)
+  # The accepted manifest's shape (diaDaRequest, diaContrastOperation): a contrast record names its long table's columns
+  # and holds the saved table's reference; the store read is doubled (the reference here is the table's name).
+  manifest <- list(schema = "dia.da_results.v1", protein_id_column = "Protein.Ids", results = list(
+    `A-B` = list(schema = "dia.contrast_reference.v1", columns = names(first), tables = list(da_proteins_long = "first")),
+    `C-B` = list(schema = "dia.contrast_reference.v1", columns = names(second), tables = list(da_proteins_long = "second"))))
+  read <- character()
+  testthat::local_mocked_bindings(materializeDIATable = function(context, reference, selected_columns = NULL, ...) {
+    read <<- c(read, reference)
+    expect_null(selected_columns)
+    tables[[reference]]
+  }, .package = "MultiScholaR")
+  manager <- structure(list(.context = list()), class = "DIAStateAdapter")
+  file <- withr::local_tempfile(fileext = ".csv")
+  diaDaDownloadContent(manifest, file, manager = manager)
+  expect_identical(read, c("first", "second"))
+  expect_identical(readLines(file, n = 1L),
+    '"Protein.Ids","comparison","log2FC","fdr_qvalue","log2norm.S1.left","log2norm.S9.left"')
+  written <- utils::read.csv(file, check.names = FALSE, stringsAsFactors = FALSE)
+  expect_identical(written$Protein.Ids, c("P1", "P2", "P1"))
+  expect_identical(written$comparison, c("A_vs_B", "A_vs_B", "C_vs_B"))
+  expect_identical(written$log2FC, c(1.5, -1.5, 2.5))
+  expect_identical(written$log2norm.S1.left, c(5.5, 6.5, NA))
+  expect_identical(written$log2norm.S9.left, c(NA, NA, 7.5))
+  # Without an owner the manifest's tables cannot be read; a list that holds the long table is written as it is.
+  expect_error(diaDaDownloadContent(manifest, file, manager = NULL), class = "dia_owner_missing")
+  diaDaDownloadContent(list(da_proteins_long = first), file, manager = NULL)
+  expect_identical(utils::read.csv(file, check.names = FALSE, stringsAsFactors = FALSE), first)
+  # The handler reads the tab's results at each click, and names the file as the feature omics do.
+  output <- new.env(parent = emptyenv())
+  tab <- new.env(parent = emptyenv())
+  testthat::local_mocked_bindings(downloadHandler = function(filename, content, ...) list(filename = filename, content = content),
+    renderText = function(expr, ...) NULL, .package = "shiny")
+  testthat::local_mocked_bindings(renderDT = function(expr, ...) NULL, .package = "DT")
+  registerOmicDaPluginTableOutputs(output, list(), tab, da)
+  expect_match(output$download_da_results$filename(), "^proteomics_da_results_[0-9]{4}-[0-9]{2}-[0-9]{2}[.]csv$")
+  tab$da_results_list <- list(da_proteins_long = second)
+  output$download_da_results$content(file)
+  expect_identical(utils::read.csv(file, check.names = FALSE, stringsAsFactors = FALSE), second)
+})

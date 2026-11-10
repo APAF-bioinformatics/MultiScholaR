@@ -562,8 +562,9 @@ registerOmicDaPluginTableOutputs <- function(output, input, tab, da) {
         server = TRUE, funcFilter = diaDisplayTableFilter(pager))
     output$da_summary_stats <- shiny::renderText(diaDaSummaryStatsView(tab$da_results_list, input$table_contrast,
         input$da_q_val_thresh, input$treat_lfc_cutoff))
+    # The tab's results are read at each click, as the feature omics' download reads them.
     output$download_da_results <- shiny::downloadHandler(
         filename = function() paste0(da$download$stem, Sys.Date(), ".", da$download$extension),
-        content = diaDaDownloadContent)
+        content = function(file) diaDaDownloadContent(tab$da_results_list, file))
     invisible(output)
 }

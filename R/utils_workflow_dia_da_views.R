@@ -323,9 +323,35 @@ diaDaSummaryStatsView <- function(daResultsList, tableContrast, daQValThresh, lf
     )
 }
 
-#' The download's content (mod_prot_da_render_table.R:156-159 at fe97aac1): a placeholder (F106-04, P-26).
+#' The download's content (P-26; it was a placeholder line, F106-04): the long DA results table of every contrast as
+#' CSV, as lipid, metab and trx download theirs. On the native session each contrast's saved long table (the table the
+#' tab pages) is read from the store in turn, one contrast in memory at a time, and appended; a column a contrast's
+#' table lacks is written as NA. A results list that holds `da_proteins_long` is written as it is.
+#' @param daResultsList The tab's results: the accepted manifest, or a list with `da_proteins_long`.
+#' @param file The file to write.
+#' @param manager The session owner whose store holds the manifest's tables.
+#' @return `file`, invisibly.
 #' @noRd
-diaDaDownloadContent <- function(file) {
-    # Placeholder for creating downloadable zip file
-    writeLines("Differential expression results would be packaged here", file)
+diaDaDownloadContent <- function(daResultsList, file, manager = getDIAActiveManager()) {
+    shiny::req(daResultsList)
+    if (!isDIAResultManifest(daResultsList)) {
+        shiny::req(daResultsList$da_proteins_long)
+        utils::write.csv(daResultsList$da_proteins_long, file, row.names = FALSE)
+        return(invisible(file))
+    }
+    if (!inherits(manager, "DIAStateAdapter")) {
+        cli::cli_abort("no state owner for the results download", class = "dia_owner_missing")
+    }
+    results <- Filter(function(result) !is.null(result$tables$da_proteins_long), daResultsList$results)
+    shiny::req(length(results) > 0L)
+    columns <- unique(unlist(lapply(results, `[[`, "columns"), use.names = FALSE))
+    first <- TRUE
+    for (result in results) {
+        table <- as.data.frame(materializeDIATable(manager$.context, result$tables$da_proteins_long, NULL))
+        for (absent in setdiff(columns, names(table))) table[[absent]] <- NA
+        utils::write.table(table[, columns, drop = FALSE], file, sep = ",", dec = ".", qmethod = "double",
+            row.names = FALSE, col.names = first, append = !first)
+        first <- FALSE
+    }
+    invisible(file)
 }

@@ -3984,8 +3984,10 @@ omicDaW1Frozen[["prot_main"]] <- list(
         operations = NULL,
         errors = character(0),
         download = c(
-            file = "DA_results_<DATE>.zip",
-            sha256 = "48ae2a71a12d601ce240dceb9160e6a184a5938ca69d24578091ab8b94bc1bcb")))
+            # GUI audit R5, item 4 (P-26; F106-04), re-frozen once: the download is the long DA results table of every contrast as
+            # CSV, named as the feature omics' (was file = "DA_results_<DATE>.zip", the placeholder line's sha256 48ae2a71...).
+            file = "proteomics_da_results_<DATE>.csv",
+            sha256 = "2da3b1087dc3d9df1a557c3509fd2c44abbeb5b5f2e6466cc84fb47bd0876fac")))
 
 omicDaW1Frozen[["prot_invalid_preflight"]] <- list(
     open = list(

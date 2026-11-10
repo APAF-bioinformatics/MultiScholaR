@@ -1283,7 +1283,7 @@ omicGuiProteomicsDa <- function() {
         status_text = diaDaStatusText,
         texts = c(status_waiting = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             contrasts_none = "No contrasts available.\nComplete normalization and\ncorrelation filtering first."),
-        download = list(stem = "DA_results_", extension = "zip"),
+        download = list(stem = "proteomics_da_results_", extension = "csv"),
         plugins = c(init = "da_server_init_handlers", load = "da_server_load_session_handler",
             run = "da_server_run_analysis_handler", archive = "prot_da_session_archive"))
 }
