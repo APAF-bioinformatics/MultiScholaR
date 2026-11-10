@@ -2632,7 +2632,7 @@ completeDIADaPublication <- function(workflow, value) {
     # GUI audit A112-01 (F112-05): no state is committed here, so the provenance `completeWorkflowAction` set is
     # dropped; left pending, the next DA-arguments commit would record it over the head state's own entry.
     clearWorkflowStepProvenance(manager)
-    head <-getWorkflowStateReference(manager)
+    head <- getWorkflowStateReference(manager)
     if (!identical(head$entity_id, value$reference$entity_id))
         cli::cli_abort("DA publication result belongs to a superseded head", class = "workflow_execution_stale")
     context <- manager$.context
