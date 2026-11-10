@@ -1,0 +1,161 @@
+KIT-113 W1 probes P1 to P5 (scratch, not frozen). Recorded 2026-11-10 by the W1 agent.
+Start commit 132e5445's R code (R/ = kit_112's source 5ecc9fd1), R 4.6.1, kit_112's library (R_LIBS), load_all,
+NOT_CRAN=true, TMPDIR on disk (kit/tmp-113). Nothing under R/ was edited.
+Scripts (w1/): probe-lib.R (the shared emulation), probe-p1-tables.R (P1, the tables), probe-managed.R (P1, the
+results; P2; P4 at the lane fixtures; the guards on W1 (b)'s fixture), probe-p5.R (P5), probe-p4.R (P4 at 16,000 x 300).
+
+How the missing halves were emulated (probe-lib.R): the managed halves do not exist on the start commit, so D3's groups
+were built from today's statements (runWorkflowEnrichment :822-925, runDIAReferenceEnrichment :656-685):
+  - request half (controller): the context, the annotation resolve, the mapping and its warning, the method, the
+    kernel's name (identical() against the namespace's double and processEnrichments, looked up when called), the held
+    manifest checked identical() to the head snapshot's `da_results`; the parameters hold references, no DA table;
+  - handler `computeWorkflowDiaEnrichmentAction` (defined in the global environment; the registry's `get(name, mode =
+    "function")` reaches it): the manifest's source checked against the request's input, the DA tables with the
+    refusal, the match, the filter's application, the kernel's arguments, runDIAReferenceEnrichment (its records are a
+    no-op on a worker), the results made portable and saved as an `rds` state value; returns checkpoint (the source's
+    record), reference (the product), commit = NULL, display;
+  - accept half (controller, in the owner's scope): clearWorkflowStepProvenance, the results hydrated, the records,
+    the bus's filter metadata, the display tables, payload, stamp, UI parameters, saveWorkflowEnrichmentState, tab_status.
+  - D3's registry entry (omics, the handler, omics completion/publication, validateWorkflowOmicsParameters,
+    named_input = TRUE, section = NULL) registered in the probe's process only (registerWorkflowOperation(replace = TRUE)).
+  - Dispatch: the request (named input) through the worker's entry point `workflowWorkerMain` and the controller's
+    `acceptWorkflowActionResult` in this process (KIT-111 W2's protNormW2Dispatch; omicsWorkerController; KIT-111 W2's
+    mocks for the build identity and the service teardown).
+  - The network: the lane's closed-port proxy and the e2e doubles (W1 (b)'s drive installs them; P4 installs them).
+
+## P1 (R1, R2) -- NO DIFFERENCE (does not reproduce); the codec for the transfer values is `rds`
+
+(a) The tables (probe-p1-tables.R): each through a KIT-019 display table (saveDIADisplayTable -> materializeWorkflowTable)
+and through an rds state value (saveWorkflowStateValue(codec = "rds") -> resolveWorkflowStateValue):
+  table                                                          display table        rds
+  the lane's UniProt cache (testdata/gui-entry/uniprot, 400 x 13)  identical TRUE       identical TRUE
+  the deterministic table on W1 (b)'s object (6 x 9)              identical TRUE       identical TRUE
+  the deterministic table, default identifiers (5 x 9)            identical TRUE       identical TRUE
+  W1 (b)'s no_mapping fixture (0 x 2)                              NULL (not identical) identical TRUE
+  W1 (b)'s mapped session's mapping (6 x 2)                        identical TRUE       identical TRUE
+  Why: saveWorkflowDisplayTable returns NULL for a zero-row table and drops every non-atomic column
+  (utils_workflow_dia_products.R:396-403); it also coerces to a plain data.frame. A zero-row annotation table is a real
+  input (the `full` corpus's uniprot_dat_cln.RDS is empty, D8), and in process both reach the kernel as they are (D3).
+  So the display-table round trip is not identical() on every input; D3's rule selects `rds` for the annotation table
+  and the mapping. Each rds reference is 5,600 bytes (object.size), so the request stays small.
+(b) The portable results through an rds state value (probe-managed.R rds, each of the four core cases, first and
+second Run): the controller's hydrated results against the in-process live results: enrichment_data,
+enrichment_summaries, contrasts and the plots' classes identical() on gprofiler, clusterprofiler, kernel_gprofiler and
+kernel_clusterprofiler; the committed `enrichment_completed` digest equal in process and managed, and equal to W1 (b)'s
+frozen run step (61dae2e69108addd, a62a41b234214817, dbde2059c38a85f0, 9421e4861d18927e), on both Runs.
+
+## P2 (D3, the files) -- NO DIFFERENCE within D6's definition (names; TSV sha256); the HTML pages differ run to run
+
+probe-managed.R rds, the four core cases, each: an in-process session (runWorkflowEnrichment twice) and a managed
+session (the emulated halves twice; the second Run with the manifest's source as input while the head is
+enrichment_completed), on W1 (b)'s fixture.
+  - Deterministic double (gprofiler, clusterprofiler): 2 files each, names and bytes identical, both Runs.
+  - Live kernel over the doubles (kernel_gprofiler, kernel_clusterprofiler): 6 files each (per direction: the results
+    .tsv, the .png, the self-contained .html); names identical; the .tsv and .png byte-identical (raw sha256), both Runs.
+    The two .html pages differ in bytes between in process and managed. They also differ between the in-process first
+    and second Run on the same inputs and path (kernel_gprofiler down: c319dea7... then b66df488...), so they are not
+    reproducible run to run in process either (an htmlwidget page carries generated ids). W1 (b) records them as
+    "<present>" and D6 asks names and TSV sha256 only. Not a difference the move introduces.
+  - Also identical in the same comparison: the kernel's arguments and the fake services' queries, the states, the
+    history, tab_status, the external resources, the bus, the project's files (store entries excluded), and every field
+    of the new KIT-113 W1 capture (the committed record, results, product fingerprint and roots, provenance, the
+    analysis record's step). The store's `dia-state` entries are +2 per managed Run (the rds transfer values: the
+    annotation table and the results), D6's recorded exclusion.
+
+## P3 (D2, R4) -- CONFIRMED BY READING: the same launcher, the same environment apart from TMPDIR and the worker flag
+
+  - The managed application: launchWorkflowApplication calls workflowLaunchService(config, config$controller_unit,
+    "application", ...) (R/utils_workflow_execution.R:1133). The worker: workflowLaunchService(app$config, job$worker_unit,
+    "worker", job$worker_request, ...) (:1689). The monitor too (:1122, :1620).
+  - workflowLaunchService (:1152-1178) runs `systemctl --user`'s `systemd-run` (workflowSystemd, :395-405, always
+    `--user`) with the same `--setenv` list for every role: R_LIBS (config$library then .libPaths()), OMP/OPENBLAS/MKL
+    threads = 1, DUCKPLYR_FALLBACK_AUTOUPLOAD=0, DUCKPLYR_FALLBACK_COLLECT=0, TMPDIR = <request dir>/<role>-scratch; only
+    the worker adds MULTISCHOLAR_WORKFLOW_WORKER=1 (:1175). The command is `Rscript --vanilla -e <entry>` for each role
+    (:1176), so neither process reads .Renviron/.Rprofile nor inherits the launching shell's environment; both get the
+    user manager's environment. No network property is set (no PrivateNetwork, IPAddressDeny, RestrictAddressFamilies).
+    Differences that are not environment variables: the worker's MemoryMax/OOMPolicy (cap), --remain-after-exit, its
+    RuntimeMaxSec (deadline) and BindsTo; the application's --wait in some modes.
+  - R_LIBS: the application's is unique(c(config$library, .libPaths())) of the launching session; the worker's is the
+    same expression evaluated in the application (whose .libPaths() begin with that R_LIBS), so the same libraries.
+  - `systemctl --user show-environment` (names only, read only, 2026-11-10): HOME LANG LC_ADDRESS LC_IDENTIFICATION
+    LC_MEASUREMENT LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER LC_TELEPHONE LC_TIME LOGNAME PATH SHELL USER XDG_RUNTIME_DIR
+    DBUS_SESSION_BUS_ADDRESS DEBUGINFOD_URLS DESKTOP_SESSION DISPLAY ICEAUTHORITY KDE_APPLICATIONS_AS_SCOPE KDE_FULL_SESSION
+    KDE_SESSION_UID KDE_SESSION_VERSION MAIL MOTD_SHOWN PAM_KWALLET5_LOGIN PWD QT_WAYLAND_RECONNECT ROCM_PATH
+    SESSION_MANAGER VSSCRIPT_PATH WAYLAND_DISPLAY XAUTHORITY XDG_CONFIG_DIRS XDG_CURRENT_DESKTOP XDG_MENU_PREFIX XDG_SEAT
+    XDG_SEAT_PATH XDG_SESSION_CLASS XDG_SESSION_DESKTOP XDG_SESSION_ID XDG_SESSION_PATH XDG_SESSION_TYPE XDG_VTNR
+    XKB_DEFAULT_LAYOUT _JAVA_AWT_WM_NONREPARENTING. No proxy variable (http_proxy, https_proxy, no_proxy or upper case)
+    on this host's user manager, so neither the managed controller nor a worker has one.
+  - By grep, R/ sets no proxy variable and no gprofiler2 base URL; its only Sys.setenv is RAYON_NUM_THREADS for the
+    fastlimpadpc engine (func_prot_s4_missingness.R:340), not on the enrichment path.
+  - Read: F113-01 stays dropped; nothing reaches the kernel differently. P-41's two items (options, the 1,800 s
+    deadline) stand as written.
+
+## P4 (R3) -- WITHIN both limits at every size probed, but the value is data-scaled: 81% of its limit at 16,000 proteins
+
+Sizes as the code measures them (object.size, validateWorkflowActionParameters :2101-2105 and acceptWorkflowActionResult
+:1772), plus the serialized size:
+  fixture                                 request parameters (limit 65,536)     handler value (limit 8,388,608)
+  W1 (b) gprofiler / kernel_gprofiler      16,848 B (serialized 3,918)           65,224 / 65,192 B (serialized ~14,500)
+  W1 (b) clusterprofiler / kernel_cp       16,808 B (serialized 3,940)           65,192 B (serialized ~14,500)
+  KIT-112's managed DA fixture (P5)        16,840 B (serialized 3,900)           65,224 B (serialized 14,511)
+  W0's 16,000 x 300 x 3, live kernel       17,296 B (serialized 4,011)           6,762,040 B (serialized 4,087,705)
+  W0's 16,000 x 300 x 3, the double        17,312 B (serialized 4,037)           6,762,072 B (serialized 4,087,726)
+The parameters hold the manifest reference, the contrasts table, the run's inputs, the two directories, the annotation
+and mapping references, the method and the kernel's name; the value holds the source's record (the checkpoint), the
+product reference, the results' rds reference, the service, the 9 declared values, the match results and the filter's
+outcome, and the omics completion's roots.
+At 16,000 x 300 x 3 (probe-p4.R: W0's buildCase and newBus, read from w0/enrichment-heap.R; DA 218 s, publication 35 s,
+the three published DA tables 122.6 MB each; then each kernel through the request half, the worker's entry point and
+the acceptance; acceptance "complete" for both; 296 s in all, inside the 30-minute ceiling):
+  - the request's parameters do not scale (17.3 KB; the largest parts are the two 5,600 B references);
+  - the value is data-scaled: value$display$matching (the annotation match results, D3's "the match results") is
+    6,660,696 B (object.size) of the 6,762,040 B, about 416 B per protein; everything else is ~101 KB (the source's
+    record 51,848 B, the roots 31,296 B, the product reference 6,560 B, the results' reference 5,840 B).
+    The acceptance measures object.size (:1772) and returns "invalid_result" above 8,388,608 B, so by linear scaling a
+    Run on about 19,900 or more DA proteins would be refused after the worker has computed. The results themselves
+    travel by reference (an rds state value: 186.33 MiB on disk with the live kernel, as W0 found; 0.06 MiB with the
+    double), so they do not count against the limit.
+  - Not a P1/P2/P5 difference; recorded as draft finding F113-0x (below) for the lead.
+
+## P5 (R5, R6) -- NO REFUSAL, NO DIFFERENCE (does not reproduce)
+
+probe-p5.R: KIT-112 W3's managed DA fixture (omicDaK112ProtSetup(managed = TRUE)): the DA tab's run dispatched
+DA-contrast-output then da_publication through the worker's entry point; then the enrichment's real request.
+  First Run (head correlation_filtered = the manifest's source; input = manifest$source = head):
+    - with the start commit's registry entry: every guard passes except :1540 assertWorkflowOperationDispatchable,
+      REFUSED [workflow_execution_unsupported] "runs in process only" (the D11 contract change);
+    - with D3's entry: :1536 assertDIAExportReady, :1540, :1541 validateWorkflowActionParameters (resolved = FALSE),
+      :1542-1544 the input's shape, :1565 validateSavedWorkflowReference, :1566 assertWorkflowActionInputSelected,
+      :1567 validateWorkflowActionInput (the source's record is a component checkpoint), :1568
+      resolveWorkflowActionParameters, :1586-1587 validateWorkflowOmicsCompletionContext (context = the state name,
+      config list(), description) all pass; the worker computes; the acceptance's checks (:1771-1774) all TRUE; receipt
+      "complete".
+  Second Run (head enrichment_completed; input = manifest$source, not the head): every guard passes with D3's entry
+    (:1566 passes because of named_input; the start commit's head rule refuses a non-head input, as the D11 registry
+    block shows failing); acceptance TRUE throughout; receipt "complete".
+  R6, the completion on a product-only value of a declaration with an output class, both Runs: history unchanged, head
+    state unchanged (nothing committed: commit = NULL takes precedence, :3040), the product rooted with 5 roots
+    (the source and the DA table and the source's components), action_outputs unchanged, external_resources unchanged
+    (the worker's records are no-ops), 0 files staged under omics-publication (publishWorkflowOmicsResult returns at
+    once). The completion leaves a pending provenance (operation "enrichment", no values: completeWorkflowAction
+    passes the request's parameters, which hold none of the 9 declared names). The accept half clears it and
+    saveWorkflowEnrichmentState sets its own: after the accept, history initial,correlation_filtered,enrichment_completed,
+    the step provenance "enrichment" with the 9 declared values, nothing pending, external resources 1 then 2.
+  The same guards, checks and completion also pass on W1 (b)'s fixture (in-process DA) for all four core cases, both Runs.
+
+## Findings
+
+No probe reproduces a difference that D3 cannot absorb (P1, P2, P5: no stop). One draft finding from P4 (the lead's
+row and number; F113-01 was used and dropped at review, so it is called F113-0x here):
+  F113-0x (draft; R3; P4). The handler's value carries the annotation match results, which scale with the DA
+  proteins (~416 B each by object.size). At W0's 16,000 x 300 x 3 the value is 6.76 MB of the acceptance's 8 MiB
+  limit (:1772, object.size); above about 19,900 proteins the acceptance would refuse the result ("invalid_result")
+  after the worker has computed, where in process the same Run completes. Fix inside D3, no methodology change: the
+  handler saves the match results as an `rds` state value (as it saves the results) and the value carries the
+  reference; the accept half hydrates it. Test first: a value-size test on a fixture whose match results exceed the
+  limit (or the limit lowered locally) refused before the fix, accepted after, with the returned list identical.
+Two observations for W2/W3 (not defects):
+  - the transfer codec is `rds` (P1 (a)); the zero-row case rules out the display table;
+  - the completion's pending provenance carries no values (P5). saveWorkflowEnrichmentState replaces it with the 9
+    values right before its commit, so the clear D3 puts first matters when the accept half fails before that point:
+    without it, the next commit would be attributed to `enrichment` with no values.

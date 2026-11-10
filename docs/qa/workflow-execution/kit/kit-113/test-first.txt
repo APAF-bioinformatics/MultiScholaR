@@ -1,0 +1,111 @@
+KIT-113 W1: the guarding tests on the start commit, unchanged (the "before" half), D11's new registry expectations
+failing there, and the coverage check's new capture block. Recorded 2026-11-10 by the W1 agent.
+
+Start commit: 132e5445 (performance-v2; R/ equals kit_112's source 5ecc9fd1: `git diff --quiet 5ecc9fd1 132e5445 -- R/`).
+Tree: the W1 agent's worktree reset to 132e5445; the "before" runs were made before any test file was edited.
+R 4.6.1, R_LIBS = kit_112's library (core/browser-smoke.OftnRb/library; the default library lacks duckplyr, which the
+package's configure needs), load_all, MULTISCHOLAR_STRICT_SKIPS=1, NOT_CRAN=true,
+TMPDIR=/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/tmp-113 (on disk).
+One process per file, at most 4 at once:
+  Rscript tools/testing/test-baseline.R file load_all <tree> <tree>/tests/testthat/<file> <outdir>
+
+## The guarding files (all exit 0)
+
+file                                     blocks run  expectations  passed  failed  errors  skipped  warnings  seconds
+test-omic-enrich-module.R                 5    13     975           975     0       0       0        0         232
+test-omics-enrich-core.R                  7    10     224           223     0       0       1        0         109
+test-module-ci-prot-enrich.R              6     6      83            79     0       0       2        2           6
+test-workflow-operation-registry.R       15    15    1036          1036     0       0       0        0          12
+test-workflow-operations.R                6     6      75            75     0       0       0        0          89
+test-workflow-dia-products.R             18    18     189           189     0       0       0        0          57
+test-workflow-analysis-record.R          23    23     278           274     0       0       0        4         190
+test-omic-gui-config.R                   24    24    1849          1849     0       0       0        0          28
+test-workflow-omics-worker.R              8     8     289           289     0       0       0        0         443
+test-workflow-omics-application-reads.R  18    27     230           230     0       0       0        0         531
+test-gui-entry-proteomics.R (frozen)      5     5     193           193     0       0       0        0         905
+
+("blocks" = static test_that blocks; "run" = blocks run, which exceeds the static count where a block is generated in
+a loop. "expectations" counts every result, so it includes skips and warnings.)
+The 3 skips are existing quarantines: Q-02 (MCI-010.2) and Q-165 (MCI-010.6) in test-module-ci-prot-enrich.R; Q-166
+(the comparison side) in test-omics-enrich-core.R. The warnings are the files' existing ones (KIT-112 recorded the
+analysis record's 4). The proteomics entry suite gives its frozen 193 with 0 failures. Every count equals KIT-112's W1
+record where the file is in both, except the registry (1030 there; KIT-112's D11 retarget added 6).
+
+## D11: the two registry blocks with their new expectations, FAILING on the start commit
+
+Committed in test-workflow-operation-registry.R (commit 9f9cbccc), only those two blocks changed:
+  - the KIT-024/KIT-111/KIT-112 block (:164-196): retitled; the in-process loop's six expectations replaced by "no
+    proteomics operation is registered `in_process`" (the loop is gone); `enrichment = "computeWorkflowDiaEnrichmentAction"`
+    added to the omics handlers, so the existing loop checks compute/handler/validate/completion/publication/variants/
+    omic_type (`omics`, the handler, `validateWorkflowOmicsParameters`, `omics`, `omics`, `whole`, `whole`,
+    `proteomics`), the declaration's name and `assertWorkflowOperationDispatchable(...)$compute == "omics"`; the
+    named-input and `section = NULL` expectations now cover `DA-contrast-output` and `enrichment`;
+  - the F111-03 block (:338-342): retitled; `enrichment` joins the `named` set (named input; a non-head input accepted).
+Run on the start commit (R/ unchanged), the same runner: 15 blocks, 1033 results, 1028 passed, 5 failed, 2 error blocks.
+  Block "the normalisation tab's four, the DA contrast and the enrichment run on the omics role; no proteomics
+  declaration is left in process (KIT-111 D11, KIT-112 D11, KIT-113 D11)":
+    - FAIL `in_process` is "enrichment", expected character();
+    - FAIL enrichment: `named_input` is not TRUE;
+    - FAIL enrichment: "section" is not among the entry's names;
+    - FAIL enrichment: compute "in_process" (expected "omics"), handler NULL (expected computeWorkflowDiaEnrichmentAction),
+      validate "validateWorkflowInProcessParameters" (expected "validateWorkflowOmicsParameters"), completion and
+      publication "in_process" (expected "omics");
+    - ERROR assertWorkflowOperationDispatchable("enrichment"): workflow_execution_unsupported, "operation "enrichment"
+      runs in process only (whole-matrix declaration); it cannot be dispatched to a worker" (ends the block).
+  Block "KIT-111 F111-03, KIT-112 D11, KIT-113 D11: only the normalisation tab's four, the DA contrast and the
+  enrichment take a named input that is not the head; every other operation keeps the head rule":
+    - FAIL enrichment: `named_input` is not TRUE;
+    - ERROR assertWorkflowActionInputSelected("enrichment", NULL, list(state = other)): workflow_execution_stale,
+      "action input is not the selected immutable checkpoint" (ends the block).
+These are the new expectations; W2 makes them pass.
+
+## The coverage check: KIT-107 W1 (b)'s captures against D6's list
+
+W1 (b) holds, per step: the tab's outputs and values, notices, selector updates, progress, tab_status, the history,
+each state's digest (the committed EnrichmentResults with its @args; store references and paths masked), the
+product's schema, service, parameters, results (by manifest table), contrasts and summaries, the head's external
+resources (service, release, kind, query summary; the date not captured), the kernel's arguments, the fake services'
+queries, the bus (enrichment_analysis_results, enrichment_ui_params, enrichment_organism_filter with times masked,
+uniprot_dat_cln), the display tables, the project's files (names; sha256 of every .tsv/.tab/.csv's lines, roots masked;
+so the pathway directory's files are covered) and the store's committed entries counted per entity kind, and the
+server's returned values. The F107-05 blocks compare the committed results' enrichment_data, enrichment_summaries,
+contrasts and plot classes with the tab's, in the run (not frozen).
+
+D6 field                                                         W1 (b)
+the committed state, its @args                                    yes (state digest)
+the committed state's config and description                      NO
+the history                                                       yes
+the product's 9 declared parameters                               yes (8 in the hydrated product; `results` as the manifest's tables)
+the product by fingerprint, its roots                             NO
+the analysis record's enrichment step (operation, variant, 9 values) NO (KIT-107 excluded provenance and the record)
+the head's external_resources (date masked)                       yes
+the pathway directory's files (names; TSV sha256)                 yes (lines with roots masked)
+the bus values and the tab's values and outputs                   yes
+the results by enrichment_data, summaries, contrasts, plot classes covered by the state digest; compared live only
+the store's entity counts by kind                                 yes (the ticket expected this one missing; it is held)
+
+So one new capture block was added (test-omic-enrich-module.R, after the F107-05 blocks; env flag
+MULTISCHOLAR_KIT113_W1_DUMP): after the last step of each W1 (b) session (the 8 cases; organism_filter and refusals
+have 2 and 3 sessions, so 11 sessions), the history; the committed `enrichment_completed` record (config scalars with
+the root masked, description, previous state, product names); the committed results (class, digests of
+enrichment_data, enrichment_summaries, contrasts and the plots' classes); the head's enrichment product (type, status,
+a fingerprint of its hydrated value with the DA tables by manifest contrast and every 64-hex id masked, a fingerprint of
+its identity, ids masked, and its roots by kind and role: source, da_table:<contrast>, other); the step provenance
+(operation, variant, parameter names, a fingerprint of the rest without times and builds); the analysis record's
+enrichment step (state, operation, variant, step label, description, products, each parameter's source, provenance and
+value text with ids masked).
+
+## The new block's freeze
+
+Written first (with an empty frozen list), then dumped on the start commit's R code in two separate processes, run at
+the same time, each running test-omic-enrich-module.R with MULTISCHOLAR_KIT113_W1_DUMP=<file> (same environment as
+above). The two dumps are byte-identical: sha256 f561a88e82d4e779d9aadeccf524723b7305e374fc1d3bd017ea0d80f0625e9c, 11
+entries (gprofiler, clusterprofiler, kernel_gprofiler, kernel_clusterprofiler, organism_filter/no_mapping,
+organism_filter/mapped, refusals/pre_da, refusals/q_cutoff, refusals/table_removed, restore, prefill). Pasted between
+OMIC_ENRICH_W113_FROZEN_START and _END.
+An earlier dump (not used) left a store id unmasked inside the record's `results` value text ("groupB-groupA=<64 hex>");
+two processes gave different ids, so the mask was widened to every 64-hex run before the two counted dumps.
+After the freeze, the per-file runner (same environment), commit a4b871e7:
+  test-omic-enrich-module.R   6 blocks, 14 run, 997 results, 997 passed, 0 failed, 0 errors, 0 skipped (975 + 22 new)
+  test-omics-enrich-core.R    7 blocks, 10 run, 224 results, 223 passed, 0 failed, 0 errors, 1 skipped (Q-166): unchanged
+    (it evaluates every top-level assignment of test-omic-enrich-module.R, so it now also defines the new helpers)
