@@ -68,3 +68,12 @@
 - regenerate the bindings after reverting the generator block (`b495ae89`).
 
 No entry oracle needs restoring. Route A is its own commit (`f5131643`) and reverts alone.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- The after-report fall (0.60/0.36 GiB) is not isolated to route A: single runs across two builds, and the replica shows the retained rise unchanged. Attributable to route A: the replica's copy peak, -0.32/-0.36 GiB.
+- The report step is not the workflow's peak (slice 2.82/2.90 GiB against 4.04/4.10 at normalisation), so the D8 miss does not set the machine's memory requirement.
+- Route B needs no new native code and `readxl` is already imported; route B is implemented (R5 `040be345`), not yet measured.
+- `test-omics-summary-core.R` failed 16 expectations in the main checkout; fixed by R5 (`86e3648d`). F108-01 fixed by R5 (`171e7205`).

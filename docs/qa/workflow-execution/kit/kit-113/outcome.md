@@ -74,3 +74,12 @@ Without a managed application, everything runs in process exactly as before.
   - **P-42:** information, the worker writes the pathway files directly.
   - **P-43:** keep or revert the placement; the lead recommends reverting.
   - **F113-07**, with P-39.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- **The placement is reverted** (P-43, user 2026-11-11; R3 `13c9115d`). Enrichment runs in process on every path.
+- "+0.66 GiB higher" holds in one of three probe cases (the others +0.0009 and +0.0004 GiB), and "the gap does not grow with the data" contradicts the probe's table. Robust: no peak benefit in any case, and the managed application kept about 180 MiB per contrast after the Run.
+- Without plot objects in the results the managed application peaks at 0.08 GiB against 1.08 to 1.16 in process: the follow-up ticket.
+- The applied organism filter completed in no test on either path; fixed with P-07 (R3 `6a3cea17`).

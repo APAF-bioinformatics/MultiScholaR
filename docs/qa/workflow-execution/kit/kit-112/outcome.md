@@ -71,3 +71,12 @@
   - **P-37** (information): proteomics' DA tab reads its saved tables in the application.
   - **P-39** (information): the two click guards (F112-02).
   - P-36 and P-38 were not raised.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- The supportable memory claim is the DA step's own rise: +0.46 and +0.50 GiB in two in-process runs, +0.02 in one worker run. The absolute 2.208 to 1.575 GiB includes an unexplained 0.15 to 0.36 GiB offset arising in `design`. The application's maximum on this corpus is unchanged (DA is not its peak step).
+- 112m was compared with the outlier 111m; against 111n it is +0.096 GiB. It ended on battery.
+- F112-05 was deferred to KIT-109; it is fixed (R1 `4d8716ee`), with F112-01 (`37f8bd93`, `c1abd709`), F112-04 (`f48f05c6`) and the guards' gaps (R2 `f2e6bd3f`).
+- The W2 comparison masked `pending` and `provenance` in all 8 cases; the masks are removed (`8868faf0`).

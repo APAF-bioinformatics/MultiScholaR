@@ -55,3 +55,11 @@
 ## Rollback
 
 `git revert` of the KIT-110 commits, in reverse order. This restores `R/mod_trx_norm.R`, the `profile` branches and trx's `norm = NULL`. No oracle or quarantine needs restoring.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- "No product defect found" is overstated: the "native reference roots contain a live payload" error on a managed retry after a refusal was filed as a harness note; KIT-111 fixed a real defect with that message (F111-01) and says it "probably" explains this case. No test drives a trx refusal then a retry in one managed session. Queued to KIT-109's table (AX-10).
+- "Only the two new files differ": `test-omic-gui-config.R` (16 to 18 blocks) and `test-omic-norm-module.R` (15 to 19) also grew.
+- `lane-changes.md`, listed in the ticket's evidence, does not exist; the statement is in `entry-suite.md`.

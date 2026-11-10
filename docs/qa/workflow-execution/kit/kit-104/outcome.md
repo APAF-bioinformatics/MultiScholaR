@@ -52,3 +52,13 @@
 ## Rollback
 
 `git revert` of the KIT-104 commits; restore `tests/testdata/gui-entry/prot_dia_limpa.json` from `8b7f3eae^`. The exported module functions keep their signatures, and the quarantined tests are restorable from `quarantined-tests.md`.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- The skip-rule box was ticked on a check-mode table showing 17 + 1 failures; the post-fix proof is `kit-105/skips-check.tsv`.
+- "8,980 passed, 0 failed, under strict skips" omits 193 skips.
+- The metab parity change is narrower than stated: the only new metab refusal is a blank group, which design save already refuses.
+- 10 of 15 blocks of the new core test were quarantined inside the ticket, so the core equivalence proof is one-time.
+- The P-16 re-freeze is verified: 32 captures, tab status and stepper only.

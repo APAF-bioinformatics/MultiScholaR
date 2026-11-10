@@ -86,3 +86,12 @@
 ## Rollback
 
 `git revert` of the KIT-106 commits, in reverse order. Restore `tests/testdata/gui-entry/{lipid_canonical,metab_lc,metab_gc,metab_combined}.json` from `8420bb06^` and `de484cee^`. Remove the Q-130 onwards skip lines. Revert `0034c4aa` (the driver), then regenerate the bindings.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- "Interactive volcano off by default" was not a user decision; it is reversed (user, 2026-11-11; R5 `a61e82f4`).
+- The managed trx volcano page never ran in a real browser (the trx e2e lane runs in process); proteomics' DA views rest on `testServer` only.
+- The two "no whole state" boxes hold on the managed path only.
+- 106a's `correlation` controller peak rose 19.9% against 110a (0.590 to 0.708 GiB); not a KIT-106 step, unrecorded.

@@ -46,3 +46,52 @@ Each entry gives: the ticket, the question, the evidence (links), the options wi
 | P-41 | KIT-113 | **Information: what the worker does not inherit.** The app and the worker start with the same environment variables, proxies included. R options set inside the app session do not reach the worker; the package sets none, and a managed GUI has no console. The worker's 1,800 s deadline also bounds a Run that in process has none. | KIT-113 D2, W1 P3 | Accept (recommended: five g:Profiler attempts fit well inside the deadline) / carry more of the session in the request | Nothing |
 | P-42 | KIT-113 | **Information: the worker writes the enrichment's files straight into the project's pathway folder,** not staged through the controller's output journal (KIT-078's pattern). Staging would add an `action_outputs` entry the head has never recorded for enrichment. Writing directly keeps today's files and today's overwrite and partial-file behaviour. | KIT-113 D3 | Accept (recommended) / stage and journal, as a separate bookkeeping decision | Nothing |
 | P-43 | KIT-113 | **Moving enrichment to the worker cannot lower the app's peak, and the probe projects it about 0.66 GiB higher.** On the probe (16,000 proteins × 300 samples × 3 contrasts, live kernel over offline doubles) the app's figure is 1.08 GiB in process and 1.73 GiB on the managed path. The results carry interactive plots (about 31 MiB each). In process they share memory with the loaded packages (16 MiB). The copy read back from the worker shares nothing (535 MiB), and the state commit adds about 1.2 GiB on both paths. The gap does not grow with the data. The move was made as the ticket declared, and every result is identical. ([kit-113/w0/enrichment-heap.md](kit-113/w0/enrichment-heap.md), [kit-113/memory-outcome.md](kit-113/memory-outcome.md)) | KIT-113 D8 | **Revert the placement** (keep enrichment in process; KIT-113 touches only four `R/` files; the lead's recommendation, since the only evidence says the move costs the app memory) / **accept** (your placement decision stands) / measure it anyway with P-40's harness ticket | Nothing in the GUI series |
+
+## Answers and corrections (2026-11-11)
+
+After the post-hoc audit ([gui-workover-audit-20261111.md](gui-workover-audit-20261111.md)) the user answered: "i want everything fixed according to your recommendations" (the audit's decision matrix), "no - i want it on" (the interactive volcano), and, for the standalone design applet, "Repair it". The rows above are as the lead wrote them; where the audit found a row inaccurate, the correction is here. Commits are in [gui-workover-remediation-20261111.md](gui-workover-remediation-20261111.md).
+
+| # | Answer | State | Correction to the row |
+|---|---|---|---|
+| P-01 | Measure first, and redo the measurement | KIT-114 | The 88 false positives and q-value 41 against BH 23 are from the unnormalised, group-confounded fixture, one seed; centred, q-value and BH give 19/18 and 22/20. |
+| P-02 | Keep the default `none`; label or withdraw quantile and scale on DIA_LIMPA until measured | KIT-114 | The GUI offers no method that is exact at E level. |
+| P-03 | Message now; settle before the real-data LFQ gate | KIT-114; **blocks the real-data gate** | After F-18 RUV may refuse on real LFQ data (51.8% missing recorded). |
+| P-04 | Re-record at the gate, after counting complete controls (aggregate only) | real-data gate | `recorded_before` in the bindings covers `kc_lfq` only; the row also names `kc_lfq_dotted`. |
+| P-05 | Refuse non-numeric quantity text at import, every proteomics reader; `NaN`, `Filtered`, `n.q.` read as NA with a counted notice | done (R4) | The row was wrong: in a managed GUI session every reader's character quantity column became silent NA at the design step. Decimal commas were read 100 times too large. `kit-102/parity.md` is committed now. |
+| P-06 | Keep | closed | The key is also written to `column_mapping.json`, a file contract. |
+| P-07 | Define `clean_acc` | done (R3) | On a mixed-species import the filter box is ticked automatically, so every enrichment Run failed. |
+| P-08 | Keep out of provenance | closed | `kit-103/run-order.md` exists. |
+| P-09 | Keep now; align the import to the builder at the next re-record of the affected oracles | deferred | A builder design exported and re-imported is relabelled, and relabelled back on reopening. Only group names with a dot. |
+| P-10 | Keep for the series; add the shared preflight to proteomics afterwards (parity) | deferred | |
+| P-11 | Add the preflight to the metab import | done (R4) | The metab import half-wrote state on an invalid design. An unknown contrast term is now refused for metab too. |
+| P-12 | Reword | done (R5) | Done with the `trx_screen` re-freeze the volcano default forced. |
+| P-13 | Keep | closed | |
+| P-14 | Align metab with lipid at the next re-record | deferred | |
+| P-15 | Repair the applet | done (R9) | Broken since 2025-12-01, before KIT-048; it could not start. Proteomics only, as the original. Metabolomics and lipidomics: post-publication. |
+| P-16 | Keep the fix | closed | Verified: 32 captures, tab status and stepper only. |
+| P-17 | Keep | closed | Alignment comes from the realignment after each sample-removing filter, not from `transformDIADesignTable`. |
+| P-18 | One rule (lipid's design-sample count) at the next re-record | deferred | Only `utils_workflow_saved_exports.R:216-217` reads `feature_counts`; no DA code does. |
+| P-19 | Candidate ids on both paths | done (R4) | Reproduced: a second Run without Reset used a different standard in process. A selection naming features no longer present is now refused on both paths. |
+| P-20 | As decided | closed | Its premise held for the run only; see P-32. |
+| P-21 | Keep | closed | |
+| P-22, P-24, P-29 | One harness revision, right after KIT-109 | deferred | `workflow_kit.R:20-30` also names `mod_trx_summary` and `mod_lipid_* (trxOmicProfile)`. P-27's notebook goes with it. |
+| P-23 | As done | closed | With the volcano ticked by default the tick is a no-op. DA-step figures are not comparable across this change. |
+| P-25 | Keep hidden; fix the wording before ever rendering | KIT-109 | The note is wrong for lipid, whose export saves heatmaps. |
+| P-26 | Build the download | done (R5) | It predates the series: one text line in a file named `.zip`. |
+| P-27 | Drop `GeneID`, GUI and notebook together | deferred to the harness revision | The notebook is hash-pinned in `tools/profiling/trx_notebook_reference.R` and the bindings. |
+| P-28 | Declare the filter | done (R3) | Declared only when the filter is on, so unfiltered records are unchanged. |
+| P-30 | Route B through the existing `reclaimWorkflowMemory()`; retire D8's peak criterion | implemented (R5); **measurement pending** | Route B needed no new native code; `readxl` is already imported; the report step is not the workflow's peak. |
+| P-31 | Drop the map | closed | |
+| P-32 | Keep proteomics' tab as the recorded exception | closed; KIT-109's closure names it | |
+| P-33 | Accept | closed | The session's peak is at `qvalue`/`design`, not normalisation. |
+| P-34 (new) | Raise: the `m` member's unreleased floor is intermittent (111m, 112m; 2 of 4 on builds with KIT-111's code, 0 of 9 before), cause unknown | open: accept as intermittent, or authorise more `m` members | KIT-111's D8 rule required it. |
+| P-35 | Fix, covering the mode switch | done (R2) | Wider than a double click: covariates then correction compounded too. |
+| P-37 | Leave | closed | |
+| P-39 | Keep, with a third guard and notices | done (R2) | |
+| P-40 | Accept the probe as "no benefit shown" | closed | |
+| P-41, P-42 | Moot | closed with the revert | |
+| P-43 | Revert; the no-plot-objects redesign is its own ticket | reverted (R3) | "+0.66 GiB" held in one of three probe cases; the application kept about 180 MiB per contrast after the Run. |
+| P-45 (new) | Park: lipid and metab keep 0 as log2(0+1) while their import validation counts 0 as missing (the F-18 mechanism) | KIT-114 (e) | Not in any finding before the audit. |
+
+Also answered: the interactive volcano is ticked by default for every omic (R5); KIT-101's F-23, F-24, F-26, F-27 and F-28 approvals are recorded as unverified.
+

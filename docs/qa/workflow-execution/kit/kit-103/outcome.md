@@ -46,3 +46,11 @@
 ## Rollback
 
 `git revert` of the KIT-103 commits. The exported module functions keep their signatures, and the quarantined tests are restorable from `quarantined-tests.md`.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- The applet item was unmet at close although its box was ticked; the applet could not start. Repaired by R9 (`60e84761`, `a26d5d11`).
+- The note explaining native-session 733 against 725 as "W3 added blocks" is wrong: the file is unchanged in the range; it is runner counting.
+- F103-02 ("no half-written fields") held only for read failures; the metab import half-wrote state on an invalid design until R4 (`f93e38f7`).

@@ -43,3 +43,11 @@
 ## Rollback
 
 `git revert` of the KIT-102 commits. The exported module functions keep their signatures throughout, and the quarantined tests are restorable from `quarantined-tests.md`.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- "Changes only input that is refused or fails today" does not hold for the GUI: the design step already converted character quantity columns silently. PD-TMT changed in ways the ticket did not declare. See `parity.md`, committed now.
+- `test-e2e-test-mode-integration.R` fell from 63 to 61 expectations in both modes (retargeted blocks); not in the "only changes" list.
+- P-05 and P-07 are implemented by the remediation (R4, R3).

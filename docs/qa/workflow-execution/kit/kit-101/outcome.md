@@ -59,3 +59,12 @@
 ## Rollback
 
 `git revert` of the KIT-101 commits. Tests, fixtures and docs revert cleanly. The R fixes are independent, one per finding.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- The ticket's boxes "no production file changed" were false: revisions 2.1 to 2.3 fixed findings in about 20 `R/` commits. The user's approvals of F-23, F-24, F-26, F-27 and F-28 are recorded as unverified (user, 2026-11-11: "i think so? i cant remember").
+- 101m, 101l and 101t were recorded as rejected by the run; "accepted and exact" is an offline re-verification re-run after a script edit, and 101l/101t are judged against same-build oracles.
+- F-19's figures (88 false positives; q-value 41 against BH 23) are from the unnormalised, group-confounded fixture, one seed. KIT-114 re-measures.
+- Lipid and metab still keep 0 as a value while their import validation counts 0 as missing (the F-18 mechanism); parked as P-45.

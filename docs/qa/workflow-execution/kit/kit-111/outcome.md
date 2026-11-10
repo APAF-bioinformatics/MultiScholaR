@@ -66,3 +66,12 @@
   - **P-32:** proteomics' normalisation tab and the shared frame: the ticket recommends a container-join ticket; the lead prefers the recorded exception.
   - **P-33:** the publication half to the worker, or accept.
   - **P-35:** a repeated DIA_LIMPA RUV covariates click re-applies RUV.
+
+## Audit corrections (2026-11-11)
+
+From [gui-workover-audit-20261111.md](../gui-workover-audit-20261111.md); repairs in [gui-workover-remediation-20261111.md](../gui-workover-remediation-20261111.md). The text above is as the lead wrote it.
+
+- 111m's floor is not a one-off: it recurs in 112m. The cause is unknown; P-34 is raised.
+- "No duplicated logic" is wrong: the dispatchers repeat the in-process gate and resolution.
+- The identity comparison drops `config_list` (the RUV audit trail), most `@args`, the dependency sets and the record lineage.
+- Managed users saw "worker_failed" without the kernel's reason; unrecorded here. Fixed by R2 (`81c726ee`), with the stale-source race (`2db1c3e5`), F111-05 (`f6e2667a`) and P-35 (`8b4bcd3d`).
