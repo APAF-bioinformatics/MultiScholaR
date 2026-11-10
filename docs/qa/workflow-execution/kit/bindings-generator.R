@@ -1340,6 +1340,16 @@ if (!is.null(b$builds$kit_112)) {
         ceiling_seconds = 14400L, purpose = "memory candidate, the DA kernel on the worker (recorded, uncounted; KIT-112 D8)")
 }
 
+# KIT-113 (proteomics enrichment on the worker; D8). No journey reaches enrichment, so only the screen members run, for
+# "no worse" and exactness: 113l, 113m, 113t from 101<suffix> on kit_113 (baselines 112l/m/t). No large member (D8).
+if (!is.null(b$builds$kit_113)) {
+    kit_113 <- list(build = "kit_113", purpose = "exactness and no worse, the enrichment on the worker (recorded, uncounted; KIT-113 D8)")
+    for (suffix in c("l", "m", "t")) {
+        from <- b$tickets[[paste0("101", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("113", suffix)]] <- utils::modifyList(from, kit_113)
+    }
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
