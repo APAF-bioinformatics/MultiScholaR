@@ -222,6 +222,16 @@ trxNormW1Steps <- function(case) {
             refused = function(ctx) {
                 run(ctx, 1L, `norm-ruv_mode` = "manual", `norm-ruv_k` = 4L, `norm-ruv_percentage` = 10)
                 ctx$capture("refused")
+            }),
+        # KIT-116 (AX-10, audit A110-01): the refusal, then a run in the same managed session.
+        managed_refused_then_run = list(
+            refused = function(ctx) {
+                run(ctx, 1L, `norm-ruv_mode` = "manual", `norm-ruv_k` = 4L, `norm-ruv_percentage` = 10)
+                ctx$capture("refused")
+            },
+            run = function(ctx) {
+                run(ctx, 2L, `norm-ruv_mode` = "automatic")
+                ctx$capture("run")
             }))
 }
 
@@ -786,4 +796,21 @@ test_that("(b-trx) managed: an automatic run on the worker, its operations in or
 
 test_that("(b-trx) managed: a manual k above the cap, refused by the worker's grid", {
     expectTrxNormW1Case("managed_refused")
+})
+
+# KIT-116 (AX-10, audit A110-01): KIT-110 recorded that a managed run after a refused run in one session failed under
+# the in-test worker ("native reference roots contain a live payload"), and kept the refusal in its own session; the
+# message was later a real defect (KIT-111 F111-01). The refusal then a run, in one session: the refusal is the
+# frozen refusal and the run completes with the frozen managed run's state and outcomes.
+test_that("(KIT-116 AX-10) managed: a refused run, then an automatic run in the same session, completes as a first run does", {
+    seen <- trxNormW1Case("managed_refused_then_run")
+    refused <- trxNormW1Frozen[["managed_refused"]][["refused"]]
+    for (field in names(refused)) {
+        expect_identical(seen$refused[[field]], refused[[field]], info = paste("refused", field))
+    }
+    first <- trxNormW1Frozen[["managed"]][["run"]]
+    expect_false(any(grepl("live payload", seen$run$notes, fixed = TRUE)))
+    for (field in c("history", "states", "outcomes", "norm", "tab_status", "gene_qc_files", "publication_files")) {
+        expect_identical(seen$run[[field]], first[[field]], info = paste("run", field))
+    }
 })
