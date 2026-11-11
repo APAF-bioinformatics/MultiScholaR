@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-11-11",
+  "created": "2026-11-12",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -726,6 +726,15 @@
       "exact_sum": "8dbc7a8d2b2a62044c1a71ce9e72dc1b1242c93c69b0cdc48a081e542a622a39",
       "install_member": "browser-smoke.uWhPRZ",
       "source_commit": "aa729025f9c446d3b07a128a91a89d379ff986a2",
+      "runtime_patch_bytes": 0
+    },
+    "kit_922": {
+      "ticket": "KIT-922",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.iZxvdt/library",
+      "build": "6e6494150f9bbc90d81e898bc869c7ac1f1e79dbeb34e5ddeafb547f2c8d65dd",
+      "exact_sum": "7313a4b9659749f3e7c89f200b47b8750d8c8a4d5ecd7d15cf365298d91332e2",
+      "install_member": "browser-smoke.iZxvdt",
+      "source_commit": "63ce6d6c2dc980b62a980e5ae6adab61269c56bb",
       "runtime_patch_bytes": 0
     }
   },
@@ -40203,7 +40212,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-11-11",
+        "date": "2026-11-12",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -43258,6 +43267,90 @@
         "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }
+    },
+    "922a": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness after the removals (recorded, uncounted; KIT-109)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "922b": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness after the removals (recorded, uncounted; KIT-109)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "922c": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness after the removals (recorded, uncounted; KIT-109)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "922l": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness after the removals (recorded, uncounted; KIT-109)"
+    },
+    "922t": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness after the removals (recorded, uncounted; KIT-109)"
     },
     "106x": {
       "kind": "single_journey",
