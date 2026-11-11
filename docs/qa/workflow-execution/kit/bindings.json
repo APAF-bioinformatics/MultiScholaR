@@ -718,6 +718,15 @@
       "install_member": "browser-smoke.kH2HPy",
       "source_commit": "afcb3854e22492597ed8fcd085c4f8c35ccf37da",
       "runtime_patch_bytes": 0
+    },
+    "kit_921": {
+      "ticket": "KIT-921",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.uWhPRZ/library",
+      "build": "988c0b7adb255caf471e1949c2adf03813856a9ab0a66814ae12966b81da0547",
+      "exact_sum": "8dbc7a8d2b2a62044c1a71ce9e72dc1b1242c93c69b0cdc48a081e542a622a39",
+      "install_member": "browser-smoke.uWhPRZ",
+      "source_commit": "aa729025f9c446d3b07a128a91a89d379ff986a2",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43157,6 +43166,96 @@
         "apply_itsd": true,
         "norm_method": "cyclicloess",
         "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "921a": {
+      "kind": "single_journey",
+      "build": "kit_921",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "921b": {
+      "kind": "single_journey",
+      "build": "kit_921",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "921c": {
+      "kind": "single_journey",
+      "build": "kit_921",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "921d": {
+      "kind": "single_journey",
+      "build": "kit_921",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "921e": {
+      "kind": "single_journey",
+      "build": "kit_921",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "921f": {
+      "kind": "single_journey",
+      "build": "kit_921",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }
     },
