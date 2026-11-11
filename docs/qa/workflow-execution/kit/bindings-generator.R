@@ -1350,6 +1350,14 @@ if (!is.null(b$builds$kit_113)) {
     }
 }
 
+# GUI audit remediation (2026-11-11), P-30 route B: the report step's memory after `reclaimWorkflowMemory()` runs once
+# the publication copy returns (040be345). The two large members of KIT-108 M4 rerun once on the remediation build under
+# new keys: 920v (metab, as 108v) and 920w (lipid, as 108w). Build key kit_920 (the 900s are no ticket's).
+if (!is.null(b$builds$kit_920) && exists("single_084")) {
+    if (!is.null(b$oracles$metab86_import)) b$tickets[["920v"]] <- single_084("kit_920", "metab_large_missing", "metabolomics", "metab86", 14400L)
+    if (!is.null(b$oracles$lipid86_import)) b$tickets[["920w"]] <- single_084("kit_920", "lipid_large_missing", "lipidomics", "lipid86", 14400L)
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
