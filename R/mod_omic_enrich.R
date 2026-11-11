@@ -442,13 +442,16 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
   cat(sprintf("Module ID: %s\n", id))
 
   tab <- omicEnrichTabState()
+  # KIT-115 (A107-09): the cutoffs of the run whose results the tab shows (this session's Run, or the restored state's
+  # provenance); NULL before either. The status text and the download describe that run, not the current inputs.
+  ran <- shiny::reactiveVal(NULL)
   cat("   mod_prot_enrich_server Step: Reactive values initialized\n")
   supported <- shiny::reactive(config[["organism"]]$supported())
   method <- createProtEnrichCurrentAnalysisMethodReactive(input = input, enrichmentData = tab,
     supportedOrganismsFn = supported, resolveAnalysisMethodFn = config[["organism"]]$method)
 
   registerOmicEnrichBusObservers(session, workflowData, config)
-  registerOmicEnrichSelectedContrastObserver(input, tab, workflowData, config)
+  registerOmicEnrichSelectedContrastObserver(input, tab, workflowData, config, ran)
   if (!is.null(selectedTab)) {
     cat("   mod_prot_enrich_server Step: Setting up tab selection observer\n")
     shiny::observeEvent(selectedTab(), selectOmicEnrichTab(session, selectedTab(), tab, workflowData, config),
@@ -461,16 +464,18 @@ runOmicEnrichServer <- function(input, output, session, id, workflowData, experi
     holdOmicEnrichManifest(session, tab, workflowData$da_analysis_results_list)
   }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
-  registerOmicEnrichStatusOutputs(output, input, tab, method)
+  registerOmicEnrichStatusOutputs(output, input, tab, method, ran)
   shiny::observeEvent(input$run_enrichment_analysis,
-    runOmicEnrichAnalysis(input, tab, workflowData, experimentPaths, config))
+    runOmicEnrichAnalysis(input, tab, workflowData, experimentPaths, config, ran))
   registerOmicEnrichResultOutputs(output, input, tab, workflowData, config)
   output$download_enrichment_results <- shiny::downloadHandler(
     filename = function() buildProtEnrichResultsDownloadFilename(input$selected_contrast),
     content = function(file) {
+      used <- ran()
       writeProtEnrichResultsDownloadArchive(file = file, selectedContrast = input$selected_contrast,
-        methodInfo = method(), organismTaxid = input$organism_taxid, upCutoff = input$up_cutoff,
-        downCutoff = input$down_cutoff, qCutoff = input$q_cutoff, gprofilerResults = tab$gprofiler_results,
+        methodInfo = method(), organismTaxid = used$organism_taxid %||% input$organism_taxid,
+        upCutoff = used$up_cutoff %||% input$up_cutoff, downCutoff = used$down_cutoff %||% input$down_cutoff,
+        qCutoff = used$q_cutoff %||% input$q_cutoff, gprofilerResults = tab$gprofiler_results,
         clusterprofilerResults = tab$clusterprofiler_results, stringdbResults = tab$stringdb_results)
     })
 
@@ -504,10 +509,14 @@ registerOmicEnrichBusObservers <- function(session, workflowData, config) {
 #' The selected contrast: after an Open the results are restored from the completed state on first use (KIT-024,
 #' F107-02); then the contrast's results are shown (mod_prot_enrich_registration_helpers.R:580-671 at 6129b546).
 #' @noRd
-registerOmicEnrichSelectedContrastObserver <- function(input, tab, workflowData, config) {
+registerOmicEnrichSelectedContrastObserver <- function(input, tab, workflowData, config, ran = function(...) NULL) {
   shiny::observe({
     shiny::req(input$selected_contrast)
-    restoreProtEnrichResultsFromState(tab, workflowData, config)
+    if (restoreProtEnrichResultsFromState(tab, workflowData, config)) {
+      # KIT-115 (A107-09): the restored run's cutoffs, when its step provenance holds them (KIT-107 D4).
+      recorded <- shiny::isolate(workflowData$state_manager)$.context$snapshot$step_provenance[[config$state_name]]$values
+      ran(recorded[intersect(c("up_cutoff", "down_cutoff", "q_cutoff"), names(recorded))])
+    }
     shiny::req(tab$analysis_complete)
     shiny::req(tab$all_enrichment_results)
     cat(sprintf("*** CONTRAST CHANGED: User selected '%s' ***\n", input$selected_contrast))
@@ -576,17 +585,18 @@ selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
 #' GUI audit R3, A107-08: the completion notice is shown only when the run's state was committed; when the commit
 #' failed the core has shown its warning, the tab holds the results and is not marked complete.
 #' @noRd
-runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, config) {
+runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, config, ran = function(...) NULL) {
   cat("=== STARTING ENRICHMENT ANALYSIS ===\n")
   shiny::req(input$selected_contrast, tab$da_results_data)
   shiny::req(input$organism_taxid)
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)
+  parameters <- list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
+    up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,
+    correction_method = input$correction_method, enable_organism_filter = input$enable_organism_filter)
   completed <- tryCatch({
     run <- shiny::withProgress(message = "Running enrichment analysis...", value = 0,
       holdOmicEnrichRun(tab, runWorkflowEnrichment(workflowData, config, tab$da_results_data,
-        parameters = list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
-          up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,
-          correction_method = input$correction_method, enable_organism_filter = input$enable_organism_filter),
+        parameters = parameters,
         paths = experimentPaths,
         notify = function(message, type, duration) shiny::showNotification(message, type = type, duration = duration),
         progress = function(value, detail) shiny::incProgress(value, detail = detail),
@@ -601,6 +611,7 @@ runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, con
   # The tab holds the source reference after the run, success or failure (the start commit's `on.exit`).
   tab$current_s4_object <- tab$da_results_data$source
   if (completed) {
+    ran(parameters) # KIT-115 (A107-09)
     shiny::showNotification(paste("Enrichment analysis completed successfully for contrast:", input$selected_contrast),
       type = "message", duration = 5)
     cat("=== ENRICHMENT ANALYSIS COMPLETED ===\n")
@@ -630,13 +641,15 @@ holdOmicEnrichRun <- function(tab, run) {
 
 #' The method, contrasts and status texts (mod_prot_enrich_registration_helpers.R at 6129b546).
 #' @noRd
-registerOmicEnrichStatusOutputs <- function(output, input, tab, method) {
+registerOmicEnrichStatusOutputs <- function(output, input, tab, method, ran = function(...) NULL) {
   output$analysis_method_display <- shiny::renderText(formatProtEnrichAnalysisMethodText(method()))
   output$contrasts_display <- shiny::renderText(formatProtEnrichContrastsText(tab$contrasts_available))
   output$enrichment_status <- shiny::renderText({
+    used <- ran() # KIT-115 (A107-09)
     formatProtEnrichStatusText(analysisComplete = tab$analysis_complete,
       methodInfo = if (tab$analysis_complete) method(), selectedContrast = input$selected_contrast,
-      upCutoff = input$up_cutoff, downCutoff = input$down_cutoff, qCutoff = input$q_cutoff,
+      upCutoff = used$up_cutoff %||% input$up_cutoff, downCutoff = used$down_cutoff %||% input$down_cutoff,
+      qCutoff = used$q_cutoff %||% input$q_cutoff,
       gprofilerResults = tab$gprofiler_results, clusterprofilerResults = tab$clusterprofiler_results,
       stringdbResults = tab$stringdb_results)
   })

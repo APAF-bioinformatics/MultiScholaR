@@ -3686,6 +3686,18 @@ test_that("(W3, F107-01) a second Run on the same tab gives the first run's prod
     expect_identical(seen$again$values, seen$run$values)
 })
 
+# KIT-115 item 4 (A107-09): the status text and the download's summary describe the run that produced the results. A
+# cutoff changed after the Run is the next run's, not this one's.
+test_that("(KIT-115 A107-09) the status text and the download's summary keep the run's cutoffs when the inputs change", {
+    seen <- omicEnrichW3Drive("gprofiler", list(before = omicEnrichW1Download,
+        changed = function(ctx) ctx$set(up_cutoff = 2, down_cutoff = 2, q_cutoff = 0.01), after = omicEnrichW1Download))
+    expect_identical(seen$changed$errors, character())
+    expect_match(seen$run$values[["enrichment_status"]], "Q-value cutoff: 0.050", fixed = TRUE)
+    expect_identical(seen$changed$values[["enrichment_status"]], seen$run$values[["enrichment_status"]])
+    expect_false(is.null(seen$before$download))
+    expect_identical(seen$after$download, seen$before$download)
+})
+
 test_that("(W3, F107-02) after an Open on an owner that holds enrichment_completed, selecting a contrast shows the restored tables", {
     reopen <- function(ctx) {
         # An Open: a fresh tab (its initial values) mounted on the bus whose owner holds the completed state.
@@ -3710,6 +3722,22 @@ test_that("(W3, F107-02) after an Open on an owner that holds enrichment_complet
     expect_identical(reopened$display, seen$run$display)
     expect_identical(reopened$shown[["gprofiler_summary_stats"]], seen$run$values[["gprofiler_summary_stats"]])
     expect_identical(reopened$shown[["enrichment_status"]], seen$run$values[["enrichment_status"]])
+})
+
+test_that("(KIT-115 A107-09) after an Open, the status text gives the completed run's cutoffs, not the fresh tab's inputs", {
+    reopen <- function(ctx) {
+        session <- shiny::getDefaultReactiveDomain()
+        tab <- mod_prot_enrich_server("reopened115", ctx$bus(), ctx$paths, "proteomics", "kit107", selected_tab = function() ctx$tab())
+        defaults <- omicsUiInputDefaults(mod_prot_enrich_ui("x"))
+        names(defaults) <- paste0("reopened115-", sub("^x-", "", names(defaults)))
+        do.call(session$setInputs, defaults)
+        session$setInputs(`reopened115-organism_taxid` = "9606", `reopened115-selected_contrast` = "B_vs_A",
+            `reopened115-up_cutoff` = 3, `reopened115-down_cutoff` = 3, `reopened115-q_cutoff` = 0.2)
+        ctx$keep("reopened", guiEntryOutputValue(tryCatch(session$output[["reopened115-enrichment_status"]],
+            error = function(e) paste("<error>", conditionMessage(e))), ctx$roots))
+    }
+    seen <- omicEnrichW3Drive("gprofiler", list(reopen = reopen))
+    expect_identical(seen$reopen$reopened, seen$run$values[["enrichment_status"]])
 })
 
 for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
