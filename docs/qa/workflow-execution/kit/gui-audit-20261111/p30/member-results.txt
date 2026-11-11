@@ -1,1 +1,2 @@
 kit-journey-920v accepted failing none failed_step none error none 
+kit-journey-920w accepted failing none failed_step none error none 
