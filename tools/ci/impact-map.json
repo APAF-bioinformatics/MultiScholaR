@@ -44,12 +44,14 @@
         {"name": "ci-release-gate", "omic": "all", "module": "ci_release_gate", "runtime": "unit-contract"},
         {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
         {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
-        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "transcriptomics", "omic": "transcriptomics", "module": "all", "runtime": "unit-contract"}
       ],
       "e2e": [
         {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
         {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
-        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"},
+        {"name": "transcriptomics-screen", "lane": "trx_screen", "filter": "^e2e-transcriptomics-screen$"}
       ],
       "browser": [
         {"name": "harness", "filter": "^(module-ci-harness|e2e-browser-harness)$"}
@@ -71,12 +73,14 @@
         {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"},
         {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
         {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
-        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "transcriptomics", "omic": "transcriptomics", "module": "all", "runtime": "unit-contract"}
       ],
       "e2e": [
         {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
         {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
-        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"},
+        {"name": "transcriptomics-screen", "lane": "trx_screen", "filter": "^e2e-transcriptomics-screen$"}
       ],
       "run_cross_omic": true,
       "reason": "Workflow state/session changes can corrupt cross-omic R6/S4 state and must run broad checks."
@@ -105,6 +109,27 @@
       "run_report_export": true,
       "run_cross_omic": true,
       "reason": "Shared report/export/file-management changes affect every omic's publication and report fidelity."
+    },
+    {
+      "id": "shared-gui-layer",
+      "owner": "qa",
+      "paths": ["^R/mod_omic_.*\\.R$", "^R/func_omics_.*\\.R$", "^R/utils_omic_gui_config\\.R$"],
+      "impact_level": "broad",
+      "module_ci": [
+        {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "transcriptomics", "omic": "transcriptomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
+        {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"},
+        {"name": "transcriptomics-screen", "lane": "trx_screen", "filter": "^e2e-transcriptomics-screen$"}
+      ],
+      "run_cross_omic": true,
+      "reason": "KIT-109: the shared GUI layer (mod_omic_*, func_omics_*, the omic GUI configuration) is every omic's tabs, so a change there runs every omic's module matrix and lane."
     },
     {
       "id": "proteomics-import",
@@ -330,6 +355,19 @@
       "reason": "Unclassified lipidomics source changes run the full lipidomics module matrix."
     },
     {
+      "id": "transcriptomics-source",
+      "owner": "transcriptomics",
+      "paths": ["^R/(mod|func)_trx_.*\\.R$", "^R/mod_transcriptomics\\.R$", "^R/.*(trx|transcriptomics).*\\.R$"],
+      "impact_level": "omic",
+      "module_ci": [
+        {"name": "transcriptomics", "omic": "transcriptomics", "module": "all", "runtime": "unit-contract"}
+      ],
+      "e2e": [
+        {"name": "transcriptomics-screen", "lane": "trx_screen", "filter": "^e2e-transcriptomics-screen$"}
+      ],
+      "reason": "KIT-109: transcriptomics source changes run the transcriptomics module matrix (MCI-026 to MCI-032) and its screen lane."
+    },
+    {
       "id": "tests-broad-fallback",
       "owner": "qa",
       "paths": ["^tests/testthat/.*\\.R$", "^tests/testdata/.*"],
@@ -339,12 +377,14 @@
         {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"},
         {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
         {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
-        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"}
+        {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "transcriptomics", "omic": "transcriptomics", "module": "all", "runtime": "unit-contract"}
       ],
       "e2e": [
         {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
         {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
-        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"},
+        {"name": "transcriptomics-screen", "lane": "trx_screen", "filter": "^e2e-transcriptomics-screen$"}
       ],
       "run_cross_omic": true,
       "reason": "Test and fixture changes can invalidate CI evidence and must run broad verification."
@@ -358,12 +398,14 @@
         {"name": "proteomics", "omic": "proteomics", "module": "all", "runtime": "unit-contract"},
         {"name": "metabolomics", "omic": "metabolomics", "module": "all", "runtime": "unit-contract"},
         {"name": "lipidomics", "omic": "lipidomics", "module": "all", "runtime": "unit-contract"},
+        {"name": "transcriptomics", "omic": "transcriptomics", "module": "all", "runtime": "unit-contract"},
         {"name": "cross-module-integrity", "omic": "all", "module": "cross_module_integrity", "runtime": "unit-contract"}
       ],
       "e2e": [
         {"name": "proteomics-dia", "lane": "prot_dia", "filter": "^e2e-proteomics-dia$"},
         {"name": "metabolomics-lc-gc", "lane": "metab_lc,metab_gc,metab_combined", "filter": "^e2e-metabolomics-lc-gc$"},
-        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"}
+        {"name": "lipidomics-canonical", "lane": "lipid_canonical", "filter": "^e2e-lipidomics-canonical$"},
+        {"name": "transcriptomics-screen", "lane": "trx_screen", "filter": "^e2e-transcriptomics-screen$"}
       ],
       "run_cross_omic": true,
       "reason": "Unknown R source changes fail closed to broad module and representative E2E coverage."

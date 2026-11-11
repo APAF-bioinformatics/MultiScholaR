@@ -6,7 +6,13 @@ test_that("ci impact audit covers representative routing bundles", {
     metab_da = list(path = "R/mod_metab_da_server.R", impact = "targeted", module = "metabolomics/differential_abundance", e2e = "^e2e-metabolomics-lc-gc$"),
     prot_limpa = list(path = "R/func_prot_limpa_qc_helpers.R", impact = "targeted", module = "proteomics/normalization", e2e = "^e2e-proteomics-dia-limpa$"),
     state = list(path = "R/utils_workflow_state.R", impact = "broad", module = "proteomics/all", e2e = "^e2e-proteomics-dia$"),
-    ci = list(path = ".github/workflows/module-ci.yml", impact = "broad", module = "all/ci_release_gate", e2e = "^e2e-lipidomics-canonical$")
+    ci = list(path = ".github/workflows/module-ci.yml", impact = "broad", module = "all/ci_release_gate", e2e = "^e2e-lipidomics-canonical$"),
+    # KIT-109: the trx lane and the shared GUI layer.
+    trx = list(path = "R/func_trx_ruv.R", impact = "omic", module = "transcriptomics/all", e2e = "^e2e-transcriptomics-screen$"),
+    shared_gui = list(path = "R/mod_omic_norm.R", impact = "broad", module = "transcriptomics/all",
+      e2e = "^e2e-transcriptomics-screen$"),
+    state_trx = list(path = "R/utils_workflow_state.R", impact = "broad", module = "transcriptomics/all",
+      e2e = "^e2e-transcriptomics-screen$")
   )
 
   for (case in cases) {

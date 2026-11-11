@@ -6,7 +6,8 @@ library(testthat)
 
 omics_module_sources <- function() {
     root <- testthat::test_path("..", "..", "R")
-    files <- list.files(root, pattern = "^(mod|func)_(lipid|metab)[A-Za-z0-9_]*\\.R$", full.names = TRUE)
+    # KIT-109: the shared layer (mod_omic_*, func_omics_*) holds what the lipid and metab copies held.
+    files <- list.files(root, pattern = "^(mod|func)_(lipid|metab|omic|omics)[A-Za-z0-9_]*\\.R$", full.names = TRUE)
     stats::setNames(lapply(files, readLines, warn = FALSE), basename(files))
 }
 
@@ -22,7 +23,10 @@ omics_global_hits <- function(sources, pattern, allow = character()) {
 
 test_that("KIT-030: no lipid or metab module or kernel reads or writes the global environment", {
     sources <- omics_module_sources()
-    expect_gt(length(sources), 100L)
+    # KIT-109: one or more files per family (the `> 100` count assumed the duplicate copies the series deleted).
+    for (family in c("^mod_lipid_", "^func_lipid_", "^mod_metab_", "^func_metab_", "^mod_omic_", "^func_omics_")) {
+        expect_true(any(grepl(family, names(sources))), info = family)
+    }
 
     # The summaries' `globalEnv` parameter is the script/test seam the module-CI tests drive; its one
     # remaining use is the guarded `project_dirs` write the report templates read by name (the
@@ -43,9 +47,10 @@ test_that("KIT-030: the super-assignments in the lipid and metab code are the li
     sources <- omics_module_sources()
     # Each is a `<<-` to a variable of the enclosing function (an accumulator inside a tryCatch handler,
     # purrr callback or local helper), never to a global: listed so a new one is a review item.
+    # KIT-109: the design validation's accumulators moved to the shared core (func_omics_design_shared.R); the deleted
+    # lipid/metab design-validation and duplicates-helper files left the list.
     allowed_files <- c(
-        "mod_lipid_design_validation.R", "mod_metab_design_validation.R",
-        "mod_lipid_qc_duplicates_server_helpers.R", "mod_metab_qc_duplicates_server_helpers.R",
+        "func_omics_design_shared.R",
         "func_lipid_da_model.R", "func_metab_da_core_engine.R",
         "func_lipid_da_results.R", "func_metab_da_orchestration.R",
         "func_lipid_s4_correlation_methods.R", "func_metab_s4_qc_methods.R"

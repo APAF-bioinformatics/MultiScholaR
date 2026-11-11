@@ -195,12 +195,14 @@ broad_fallback_rules <- function(reason) {
       list(name = "cross-module-integrity", omic = "all", module = "cross_module_integrity", runtime = "unit-contract"),
       list(name = "proteomics", omic = "proteomics", module = "all", runtime = "unit-contract"),
       list(name = "metabolomics", omic = "metabolomics", module = "all", runtime = "unit-contract"),
-      list(name = "lipidomics", omic = "lipidomics", module = "all", runtime = "unit-contract")
+      list(name = "lipidomics", omic = "lipidomics", module = "all", runtime = "unit-contract"),
+      list(name = "transcriptomics", omic = "transcriptomics", module = "all", runtime = "unit-contract")
     ),
     e2e = list(
       list(name = "proteomics-dia", lane = "prot_dia", filter = "^e2e-proteomics-dia$"),
       list(name = "metabolomics-lc-gc", lane = "metab_lc,metab_gc,metab_combined", filter = "^e2e-metabolomics-lc-gc$"),
-      list(name = "lipidomics-canonical", lane = "lipid_canonical", filter = "^e2e-lipidomics-canonical$")
+      list(name = "lipidomics-canonical", lane = "lipid_canonical", filter = "^e2e-lipidomics-canonical$"),
+      list(name = "transcriptomics-screen", lane = "trx_screen", filter = "^e2e-transcriptomics-screen$")
     ),
     browser = list(list(name = "harness", filter = "^(module-ci-harness|e2e-browser-harness)$")),
     run_cross_omic = TRUE,

@@ -22,7 +22,12 @@ test_that("ci impact source map routes canonical source families", {
     lipid_design = list(path = "R/mod_lipid_design_builder_helpers.R", module = "lipidomics/design", rule = "lipidomics-design"),
     prot_limpa = list(path = "R/func_prot_limpa_qc_helpers.R", module = "proteomics/normalization", rule = "proteomics-normalization-limpa"),
     metab_da = list(path = "R/mod_metab_da_server.R", module = "metabolomics/differential_abundance", rule = "metabolomics-da"),
-    shared_state = list(path = "R/utils_workflow_state.R", module = "proteomics/all", rule = "shared-state-and-workflow")
+    shared_state = list(path = "R/utils_workflow_state.R", module = "proteomics/all", rule = "shared-state-and-workflow"),
+    # KIT-109: the shared GUI layer reaches every omic, transcriptomics included; trx's own files run its lane.
+    shared_gui = list(path = "R/mod_omic_da.R", module = "transcriptomics/all", rule = "shared-gui-layer"),
+    shared_gui_config = list(path = "R/utils_omic_gui_config.R", module = "lipidomics/all", rule = "shared-gui-layer"),
+    trx = list(path = "R/func_trx_ruv.R", module = "transcriptomics/all", rule = "transcriptomics-source"),
+    trx_shell = list(path = "R/mod_transcriptomics.R", module = "transcriptomics/all", rule = "transcriptomics-source")
   )
 
   for (case in cases) {

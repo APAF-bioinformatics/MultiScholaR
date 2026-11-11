@@ -16,7 +16,7 @@ usage <- function() {
       "Usage: Rscript tools/ci/run-module-ci.R [options]",
       "",
       "Options:",
-      "  --omic <all|proteomics|metabolomics|lipidomics>",
+      "  --omic <all|proteomics|metabolomics|lipidomics|transcriptomics>",
       "  --module <all|foundation|fixtures|import|design|qc|qc_peptide|qc_protein|normalization|differential_abundance|enrichment|summary_report|cross_module_integrity|ci_release_gate|browser|e2e>",
       "  --modules <proteomics-peptide-qc>  Compatibility alias for a named module lane",
       "  --runtime <unit-contract|module-browser|module-artifact|workflow-e2e|release-full>",
@@ -286,6 +286,15 @@ tests_for_selection <- function(scenarios) {
       identical(scenario$module, "summary_report") && identical(scenario$omic, "lipidomics")
     }, logical(1)))) {
       tests <- c(tests, "module-ci-lipid-summary")
+    }
+  }
+  # KIT-109: the transcriptomics scenarios (MCI-026 to MCI-032), one test file per module family.
+  trx_tests <- c(import = "module-ci-trx-import", design = "module-ci-trx-design", qc = "module-ci-trx-qc",
+    workflow_shell = "module-ci-trx-app", normalization = "module-ci-trx-norm",
+    differential_abundance = "module-ci-trx-da", summary_report = "module-ci-trx-summary")
+  for (scenario in scenarios) {
+    if (identical(scenario$omic, "transcriptomics") && scenario$module %in% names(trx_tests)) {
+      tests <- c(tests, trx_tests[[scenario$module]])
     }
   }
   if ("fixtures" %in% modules) {
