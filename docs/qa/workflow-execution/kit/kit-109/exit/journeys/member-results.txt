@@ -1,0 +1,5 @@
+kit-journey-922a accepted failing none failed_step none error none 
+kit-journey-922b accepted failing none failed_step none error none 
+kit-journey-922c accepted failing none failed_step none error none 
+kit-journey-922l accepted failing none failed_step none error none 
+kit-journey-922t accepted failing none failed_step none error none 

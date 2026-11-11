@@ -1,0 +1,10 @@
+kit-journey-922a start 09:06:59 at a15d64c0: AC 1, profile low-power, battery 100%, load 5.26, available 42 GiB
+kit-journey-922a end 09:14:19: AC 1, profile low-power, battery 100%, load 5.74, available 41 GiB
+kit-journey-922b start 09:14:29 at a15d64c0: AC 1, profile low-power, battery 100%, load 5.15, available 41 GiB
+kit-journey-922b end 09:21:49: AC 1, profile low-power, battery 100%, load 5.50, available 41 GiB
+kit-journey-922c start 09:21:59 at a15d64c0: AC 1, profile low-power, battery 100%, load 5.27, available 41 GiB
+kit-journey-922c end 09:26:59: AC 1, profile low-power, battery 100%, load 4.88, available 41 GiB
+kit-journey-922l start 09:27:29 at a15d64c0: AC 1, profile low-power, battery 100%, load 4.54, available 41 GiB
+kit-journey-922l end 09:33:09: AC 1, profile low-power, battery 100%, load 5.06, available 41 GiB
+kit-journey-922t start 09:33:29 at a15d64c0: AC 1, profile low-power, battery 100%, load 4.69, available 41 GiB
+kit-journey-922t end 09:38:49: AC 1, profile low-power, battery 100%, load 4.84, available 41 GiB
