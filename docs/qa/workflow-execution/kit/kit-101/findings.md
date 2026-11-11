@@ -145,3 +145,15 @@ The fixtures report found these. F-17 is confirmed: the trx QC sub-servers start
 | F-27 | the LFQ route's RUV on `lfq_300` after F-18 (`findBestNegCtrlPercentageFn`, the KIT-005 k-validity rule) | The F-18 re-record on `kit_101` stopped at normalisation after 920 s: "No valid percentage found". With zeros read as NA, the synthetic `lfq_300` corpus (8% missing, at random over every protein, 300 samples) leaves no control protein observed in every sample (0.92^300 ≈ 0). The rule then refuses k at every percentage. Before F-18 every protein looked complete, because the zeros counted as values. This is a valid unfavourable result, not an instrumentation fault, and the run was not retried. Two questions follow: (a) the corpus's missingness is not realistic, since real LFQ has a complete high-abundance core and intensity-dependent missingness; (b) the GUI refuses with a bare error rather than saying that no complete control proteins exist. | `scripts-101/record-lfq.sh` on `kit_101` (`record-lfq.out`). | KIT-101 (oracles), KIT-105 / KIT-114 | **fixed**: message `5213a6e2`; corpus `lfq_300_mnar` (`23558bbe`) recorded on kit_101 (`57e249be`, RUV 3%); the control-selection method goes to KIT-114 (d) |
 
 | F-28 | `getUniprotAnnotationsFull`'s error handler (`R/func_prot_annotation_uniprot_full_helpers.R`) | When a live UniProt chunk timed out, the handler returned a "minimal" table without `Entry` or `gene_names`. The DA exports join any non-empty annotation table on `Entry`, so DA failed ("Join columns in `y` must be present"), its outputs stayed pending, and the summary refused, failing the report download. This broke all three TMT/LFQ e2e sub-lanes on the final-build run (`e2e-final.txt`). | Lane `test-e2e-proteomics-tmt-lfq.R` with a UniProt timeout. | KIT-101 | **fixed** `b91a2b13` (returns `createEmptyUniprotTable()`, not cached, so a retry fetches again; annotations are display metadata, no statistic changes); e2e lanes moved off the live network (in progress) |
+
+## Status corrections (KIT-109, 2026-11-12)
+
+The table above still reads "fixing" for five rows that KIT-101 closed (the GUI workover audit, 2026-11-11). Their status, from the commits:
+
+| Id | Status | Evidence |
+|---|---|---|
+| F-06 | fixed | `88661446`: the generator reproduces every committed fixture or records why not; checked by the manifest pins (`60cc2605`) |
+| F-07 | fixed | `88661446`: the richer proteomics fixtures; the one stale pin it left fixed at `a68872ef` |
+| F-13 | fixed | `958273df`: the entry suite's second correction (the store captured as its committed entries) |
+| F-14 | fixed | `60cc2605`: the ticket's parallelism corrected to the checkpoint's value; the 6-way baseline stands as recorded |
+| F-22 | fixed | `6314065a`: the third correction (random widget and request ids masked); all ten lanes deterministic over two runs and frozen at `724c10be` |
