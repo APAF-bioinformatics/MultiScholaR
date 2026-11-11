@@ -1,0 +1,2 @@
+kit-journey-920v start 11:49:47 at 4b659276: AC 1, profile low-power, battery 99%, load 2.10, available 42 GiB
+kit-journey-920v end 12:28:08: AC 1, profile low-power, battery 100%, load 2.05, available 41 GiB
