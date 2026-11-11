@@ -41,9 +41,13 @@ mod_prot_qc_protein_normalisation_ui <- function(id) {
           shiny::p("Optionally normalise the DPC-quantified log2 protein matrix between samples. The limpa workflow carries the quantified matrix unchanged (none)."),
           shiny::hr(),
           shiny::selectInput(ns("norm_method"), "Normalisation method",
-            choices = c("None (limpa default)" = "none", "Cyclic loess" = "cyclicloess", "Quantile" = "quantile", "Scale (median absolute value)" = "scale"),
+            # KIT-116 (P-02 interim): the values are unchanged; quantile and scale say they are approximate here (F-23).
+            choices = c("None (limpa default)" = "none", "Cyclic loess" = "cyclicloess",
+              "Quantile (approximate on limpa)" = "quantile", "Scale (median absolute value; approximate on limpa)" = "scale"),
             selected = "none", width = "100%"),
           shiny::helpText("The method and the resulting state are recorded; none commits the quantified matrix unchanged."),
+          shiny::helpText(paste("Quantile and scale are applied to the DPC-quantified matrix without rescaling its standard errors,",
+            "so their DA results are approximate.")),
           shiny::hr(),
           shiny::div(
             shiny::actionButton(ns("apply_protein_normalisation"), "Apply", class = "btn-primary", width = "48%"),

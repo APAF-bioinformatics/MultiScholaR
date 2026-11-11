@@ -199,3 +199,19 @@ test_that("KIT-101 F-09: before the peptide stage has made its state, the DIA_LI
   expect_length(errors, 3L)
   expect_identical(manager$current_state, "raw_data_s4")
 })
+
+# KIT-116 (P-02 interim, user 2026-11-11): on DIA_LIMPA a chosen method is applied to the DPC-quantified matrix and its
+# standard errors are not rescaled (KIT-101 F-23). That is exact for a shift, close for cyclic loess, and approximate
+# for quantile and scale, so those two say so where they are chosen. The choice values are unchanged.
+test_that("(KIT-116 P-02) the DIA_LIMPA normalisation choices label quantile and scale as approximate", {
+  ui <- mod_prot_qc_protein_normalisation_ui("x")
+  html <- as.character(ui)
+  options <- regmatches(html, gregexpr('<option value="[^"]+"[^>]*>[^<]*</option>', html))[[1L]]
+  labels <- stats::setNames(sub('.*>([^<]*)</option>$', "\\1", options), sub('^<option value="([^"]+)".*$', "\\1", options))
+  expect_identical(names(labels), c("none", "cyclicloess", "quantile", "scale"))
+  expect_identical(unname(labels[c("none", "cyclicloess")]), c("None (limpa default)", "Cyclic loess"))
+  expect_identical(unname(labels[["quantile"]]), "Quantile (approximate on limpa)")
+  expect_identical(unname(labels[["scale"]]), "Scale (median absolute value; approximate on limpa)")
+  expect_match(html, paste("Quantile and scale are applied to the DPC-quantified matrix without rescaling its standard errors,",
+    "so their DA results are approximate."), fixed = TRUE)
+})
