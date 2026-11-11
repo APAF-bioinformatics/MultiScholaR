@@ -841,26 +841,3 @@ test_that("(KIT-115 F112-06) a publication left pending by a replaced project is
         expect_identical(utils::tail(seen$errors, 1L), "retry pending publication with its original parameters first")
     })
 })
-
-# KIT-115 item 10: a failed worker hands over the error's message, as the same step shows it in process (`$message`).
-# The condition's hint lines stay in the worker's own log.
-test_that("(KIT-115) a failed worker hands over the error's message without its hint lines", {
-    handed <- NULL
-    testthat::local_mocked_bindings(
-        readWorkflowExecutionRequest = function(arguments) list(operation = "kit115", token = "token", directory = tempdir()),
-        workflowActionSpec = function(operation) list(compute = "omics"),
-        computeWorkflowOmicsAction = function(request) cli::cli_abort(c("No valid percentage found",
-            i = "lower the k-validity threshold"), class = "kit115_kernel"),
-        writeWorkflowExecutionMessage = function(path, message) handed <<- message,
-        .package = "MultiScholaR")
-    withr::local_envvar(MULTISCHOLAR_WORKFLOW_WORKER = "1")
-    logged <- tryCatch(workflowWorkerMain(character()), error = function(error) conditionMessage(error))
-    expect_identical(handed$status, "failed")
-    expect_identical(handed$error, "No valid percentage found")
-    expect_match(logged, "lower the k-validity threshold", fixed = TRUE)
-    # A plain error is handed over whole, as before.
-    testthat::local_mocked_bindings(computeWorkflowOmicsAction = function(request) stop("first line\nsecond line"),
-        .package = "MultiScholaR")
-    tryCatch(workflowWorkerMain(character()), error = function(error) NULL)
-    expect_identical(handed$error, "first line\nsecond line")
-})

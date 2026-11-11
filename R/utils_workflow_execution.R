@@ -1515,18 +1515,10 @@ workflowWorkerMain <- function(arguments) {
             omics = computeWorkflowOmicsAction(request),
             cli::cli_abort("operation adapter unavailable", class = "workflow_execution_unsupported"))
         list(schema = 1L, status = "complete", token = request$token, result = value)
-    }, error = function(error) {
-        # KIT-115: the handoff carries the error's message, as the same step shows it in process; the condition's hint
-        # lines go to the worker's own log.
-        reason <- if (is.character(error$message) && length(error$message) == 1L && nzchar(error$message)) error$message else
-            conditionMessage(error)
-        list(schema = 1L, status = "failed", token = request$token, error = substr(unname(reason), 1L, 1024L),
-            logged = conditionMessage(error))
-    })
-    logged <- result$logged
-    result$logged <- NULL
+    }, error = function(error) list(schema = 1L, status = "failed", token = request$token,
+        error = substr(conditionMessage(error), 1L, 1024L)))
     writeWorkflowExecutionMessage(file.path(request$directory, "worker-result.rds"), result)
-    if (result$status != "complete") stop(logged, call. = FALSE)
+    if (result$status != "complete") stop(result$error, call. = FALSE)
     invisible(NULL)
 }
 
