@@ -438,6 +438,9 @@ buildOmicsDesignContrastState <- function(existingContrasts) {
     }
     parsed <- lapply(existingContrasts$contrasts, function(contrastString) {
         parts <- strsplit(gsub("^group", "", contrastString), "-group")[[1]]
+        # KIT-115 (A103-06): a contrast saved under a formula without the `group` prefix is `A-B`.
+        if (length(parts) != 2) parts <- strsplit(contrastString, "-", fixed = TRUE)[[1]]
+        if (length(parts) == 2 && !all(nzchar(parts))) parts <- contrastString
         if (length(parts) == 2) {
             return(list(contrast_name = paste0(parts[1], ".vs.", parts[2]), numerator = parts[1],
                 denominator = parts[2]))
@@ -710,6 +713,9 @@ buildOmicsDesignSaveContrastsTable <- function(contrastData, formulaString) {
     } else {
         paste0(contrastData$numerator, "-", contrastData$denominator)
     }
+    # KIT-115 (A103-06): a reopened contrast that could not be split has no denominator and is written as it was read.
+    whole <- !nzchar(contrastData$denominator)
+    contrastStrings[whole] <- contrastData$numerator[whole]
     data.frame(contrasts = contrastStrings, friendly_names = friendlyNames,
         full_format = paste0(friendlyNames, "=", contrastStrings), stringsAsFactors = FALSE)
 }

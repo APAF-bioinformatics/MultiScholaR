@@ -433,6 +433,26 @@ test_that("C5 the save payload is today's lipid payload", {
     expect_identical(buildOmicsDesignSaveContrastsTable(contrasts, "~ group")$contrasts, c("KO-WT", "WT.1-KO"))
 })
 
+# KIT-115 item 5 (A103-06): a saved contrasts table reopened and saved again is the table that was saved, under either
+# formula. Without the `group` prefix the reopened contrast had no denominator and was saved as "KO-WT-".
+test_that("(KIT-115 A103-06) saved contrasts survive reopening and saving, with and without the group prefix", {
+    contrasts <- appendOmicsDesignContrast(buildOmicsDesignContrastState(NULL), "KO", "WT")
+    contrasts <- appendOmicsDesignContrast(contrasts, "WT.1", "KO")
+    for (formula in c("~ 0 + group", "~ group")) {
+        saved <- buildOmicsDesignSaveContrastsTable(contrasts, formula)
+        reopened <- buildOmicsDesignContrastState(saved)
+        expect_identical(reopened$numerator, c("KO", "WT.1"), info = formula)
+        expect_identical(reopened$denominator, c("WT", "KO"), info = formula)
+        expect_identical(buildOmicsDesignSaveContrastsTable(reopened, formula), saved, info = formula)
+    }
+    # A contrast that cannot be split into two groups is kept whole and written back as it was read.
+    odd <- data.frame(contrasts = c("A-B-C", "interaction"), stringsAsFactors = FALSE)
+    reopened <- buildOmicsDesignContrastState(odd)
+    expect_identical(reopened$denominator, c("", ""))
+    expect_identical(buildOmicsDesignSaveContrastsTable(reopened, "~ group")$contrasts, odd$contrasts)
+    expect_identical(buildOmicsDesignSaveContrastsTable(reopened, "~ 0 + group")$contrasts, odd$contrasts)
+})
+
 # One builder session on today's builder server: factors, assignment, a rename, technical
 # replicates, a removal, a contrast, then save.
 omicsDesignBuilderSession <- function(server, assays, mapping, extra_args = list()) {
