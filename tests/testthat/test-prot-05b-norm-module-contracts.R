@@ -605,6 +605,14 @@ test_that("KIT-101 F-20 (KIT-105 W3): on the DIA_LIMPA route the tab recognises 
   expect_identical(entry("protein_normalised", "in_progress"), list(generated = 0L, warned = 1L))
   # Another route is unchanged.
   expect_identical(entry("intensity_filtered", "pending", "DIA"), list(generated = 0L, warned = 1L))
+  # KIT-116 F116-01 (user, 2026-11-11: fix it): the protein QC's last state and the states after it can only be reached
+  # once the QC has finished, so they need no status. A session whose status was not written (a restore, or the DA
+  # tab's load-session, which marks normalisation complete and leaves QC as it was) gives no warning there.
+  for (status in list(NULL, "pending", "disabled")) for (state in c("peptide_count_filtered", "ruv_covariates")) {
+    expect_identical(entry(state, status), list(generated = 0L, warned = 0L), info = paste(state, status %||% "NULL"))
+  }
+  # Before the QC's last state the status still decides.
+  expect_identical(entry("protein_normalised", NULL), list(generated = 0L, warned = 1L))
 })
 
 test_that("regenerateProtNormQcForAestheticChange runs only the available regeneration steps", {

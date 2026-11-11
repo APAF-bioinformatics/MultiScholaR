@@ -428,6 +428,12 @@ runProtNormTabEntryWorkflow <- function(
         identical(workflowData$tab_status$quality_control, "complete")) {
       return(invisible(FALSE))
     }
+    # KIT-116 F116-01: on DIA_LIMPA the protein QC's last state and the RUV covariates after it are reached only once
+    # the QC has finished, so they need no status (a restored session, or the DA tab's load-session, may not have one).
+    if (identical(workflowData$state_manager$workflow_type, "DIA_LIMPA") &&
+        current_state %in% c("peptide_count_filtered", "ruv_covariates")) {
+      return(invisible(FALSE))
+    }
     return(notifyInvalidStateFn(currentState = current_state))
   }
 
