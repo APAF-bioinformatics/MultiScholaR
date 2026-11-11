@@ -781,3 +781,63 @@ test_that("KIT-044: the value and file hashes and the flushes give the same resu
         expect_error(syncWorkflowExportPaths(big, file.path(root, "s2")), class = "saved_entity_path")
     })
 })
+
+# KIT-115 item 6 (F112-06, remainder): a publication left pending belongs to the project it ran in. After the project
+# is replaced it can never be retried there, so it is dropped and the step runs afresh on the new project. On the same
+# project the retry still needs its original parameters.
+test_that("(KIT-115 F112-06) a publication left pending by a replaced project is dropped, and the step runs afresh", {
+    seen <- new.env()
+    seen$runs <- 0L
+    seen$errors <- character()
+    newManager <- function() {
+        manager <- structure(new.env(), class = c("DIAStateAdapter", "environment"))
+        manager$.context <- list(store = list(execution_owner = NULL))
+        manager
+    }
+    first <- newManager()
+    second <- newManager()
+    workflow_data <- shiny::reactiveValues(state_manager = first)
+    ui <- list(label = "kit115", notification = "kit115_working",
+        failed = function(error) seen$errors <- c(seen$errors, conditionMessage(error)))
+    testthat::local_mocked_bindings(
+        workflowSessionApplication = function(session) list(),
+        beginWorkflowGUIAction = function(...) {
+            reservation <- new.env()
+            reservation$closed <- FALSE
+            reservation
+        },
+        finishWorkflowGUIAction = function(reservation, status, ...) reservation$closed <- TRUE,
+        usesWorkflowReferenceStates = function(manager) TRUE,
+        newWorkflowExecutionController = function(manager, application) list(manager = manager, job = NULL),
+        runWorkflowAction = function(...) {
+            seen$runs <- seen$runs + 1L
+            "wfx-kit115"
+        },
+        workflowManagedCompletionContext = function(...) NULL,
+        getWorkflowStateReference = function(manager) "reference",
+        pollWorkflowAction = function(owner) list(status = "publication_pending"),
+        .package = "MultiScholaR")
+    step <- NULL
+    shiny::testServer(function(input, output, session) {
+        step <<- installWorkflowManagedStep(session, input, workflow_data, "kit115-operation", NULL, ui, function(result) NULL)
+    }, {
+        click <- function(parameters) {
+            shiny::isolate(step$apply(parameters))
+            session$flushReact()
+        }
+        click(list(a = 1))
+        expect_identical(seen$runs, 1L)
+        expect_identical(seen$errors, "managed action ended: publication_pending")
+        expect_false(is.null(shiny::isolate(step$pending())))
+        # The project is replaced: the pending publication is the other project's.
+        workflow_data$state_manager <- second
+        click(list(a = 1))
+        expect_identical(seen$runs, 2L)
+        expect_identical(seen$errors, rep("managed action ended: publication_pending", 2L))
+        expect_identical(shiny::isolate(step$pending())$owner$manager, second)
+        # The same project, other parameters: still refused.
+        click(list(a = 2))
+        expect_identical(seen$runs, 2L)
+        expect_identical(utils::tail(seen$errors, 1L), "retry pending publication with its original parameters first")
+    })
+})

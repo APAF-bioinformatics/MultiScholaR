@@ -710,8 +710,13 @@ installWorkflowManagedStep <- function(session, input, workflow_data, operation,
             if (!inherits(manager, "DIAStateAdapter") || !usesWorkflowReferenceStates(manager))
                 stop("the managed worker needs the on-disk state owner")
             pending <- shiny::isolate(pending_publication())
+            # KIT-115 (F112-06): a publication left pending by a replaced project can never be retried here.
+            if (!is.null(pending) && !identical(pending$owner$manager, manager)) {
+                pending_publication(NULL)
+                pending <- NULL
+            }
             if (!is.null(pending)) {
-                if (!identical(pending$owner$manager, manager) || !identical(pending$parameters, parameters))
+                if (!identical(pending$parameters, parameters))
                     stop("retry pending publication with its original parameters first")
                 action$owner <- pending$owner
                 action$worker_request_id <- pending$worker_request_id
