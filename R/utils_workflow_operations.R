@@ -683,8 +683,8 @@ registerBuiltinWorkflowOperations <- function() {
         variants = "whole", default_variant = "whole", diagnostic_only = FALSE,
         inclusion_absence = FALSE, declaration = diaProteinPeptideCountFilterOperation()))
     # KIT-019: the DA publication phase (the annotated exports, the static volcano and NumSig figures and the
-    # interactive Glimma pages) as a worker operation on the accepted DA manifest; the DA kernel (limma) stays in
-    # process. Completion records nothing new (the manifest is already committed); publication moves the worker's
+    # interactive Glimma pages) as a worker operation on the accepted DA manifest; the DA kernel (limma) is its own
+    # operation (KIT-112 D3, the omics one below). Completion records nothing new (the manifest is already committed); publication moves the worker's
     # staged files into the project and saves the pages as the KIT-016 rendered assets.
     registerWorkflowOperation(list(name = "da_publication", input = "checkpoint", input_class = "ProteinQuantitativeData",
         compute = "protein", handler = "computeWorkflowDaPublicationAction", validate = "validateWorkflowDaPublicationParameters",

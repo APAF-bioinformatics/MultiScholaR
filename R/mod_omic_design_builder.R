@@ -387,7 +387,7 @@ applyOmicsDesignResetState <- function(scope, initialState, state, updateFormula
 #' @param id Module id.
 #' @param data_tbl A function (or reactive) returning the assay tables, read per use (KIT-075). For
 #'   `dia_long`, the table's provider with its `dia_reference` attribute (`registerProtDesignBuilderModule`),
-#'   or a plain reactive (the standalone applet).
+#'   the standalone applet's included (its own owner since GUI audit R9, P-15); otherwise a plain reactive.
 #' @param config_list,column_mapping Reactives of the workflow configuration and column mapping.
 #' @param existing_design_matrix,existing_contrasts Optional reactives of an existing design (an
 #'   imported one) and its contrasts: a design with an assigned group is the initial state
