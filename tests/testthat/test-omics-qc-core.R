@@ -34,10 +34,10 @@ qcCoreError <- function(code) tryCatch({
 # The intensity filter's counts table.
 # ------------------------------------------------------------------------------------------------
 
-# KIT-116 W2 (Q-64): blocks that compared the core with functions KIT-104 W5 deleted now compare it with those
-# functions' values, frozen at 7b99e7e8, where the comparison passed, by
-# docs/qa/workflow-execution/kit/kit-116/freeze/q64-qc.R, which also checked each old value against the core of that
-# commit. Small values are literals; others are the sha256 of the value the block compared with expect_identical. The
+# KIT-116 W2 (Q-64, Q-75): blocks that compared the core with functions KIT-104 W5 and W6 deleted now compare it with
+# those functions' values, frozen where the comparison passed (7b99e7e8 for Q-64, 827f2328 for Q-75) by
+# docs/qa/workflow-execution/kit/kit-116/freeze/q64-qc.R and q75-qc.R, which also checked each old value against the
+# core of that commit. Small values are literals; others are the sha256 of the value the block compared with expect_identical. The
 # core side stays live.
 qcCoreDigest <- function(x) digest::digest(x, algo = "sha256")
 
@@ -202,36 +202,54 @@ test_that("F104 (W2): a NULL pattern is read as an empty one, as metab reads it 
         analyzeWorkflowOmicsItsd(lipidomicsDeclarationBinding, workflow$state_manager, "", itsd))
 })
 
-test_that("analyzeWorkflowOmicsItsd gives metab's analysis (analyzeMetabQcItsdData on readMetabQcItsdState)", {
-    testthat::skip("quarantined: Q-75 (KIT-104 W6) it compares the core with analyzeMetabQcItsdData and readMetabQcItsdState, which W6 deleted; the comparison passed at 827f2328")
+# Metab's ITSD analysis (analyzeMetabQcItsdData on readMetabQcItsdState), frozen from 827f2328 (KIT-116): the same
+# metrics, long data and per-assay metrics (sha256) and total for every pattern; the pattern it used and its text (an
+# empty or NULL pattern used "^IS_"); and the three refusals' texts.
+qcCoreFrozenMetabItsdText <- function(pattern) {
+    paste0("Internal Standard Analysis Complete\n====================================\nPattern used: ", pattern,
+        "\nTotal IS detected: 4\n\nCV Statistics:\n  Median CV: 0.9%\n  Max CV: 0.9%\n  IS with CV > 30%: 0\n\n",
+        "Per-Assay IS Counts:\n  LCMS_Pos: 2 internal standards\n  GCMS: 2 internal standards")
+}
+qcCoreFrozenMetabItsd <- list(
+    metrics = "4eb7294989b0e74ae594757e9f48804d1634b6e4378b351693afb742b4e7b790",
+    long = "8a5f51eadfa26985695b67d26b5269707bd469c97d10118787e4b410f5a48f93",
+    by_assay = "a7e4b7e7cebead1695fada1db483742ac50dd17b1c67be10b2df21a3dffad240",
+    total = 4L,
+    pattern = c("^IS_", "^IS_", "^NO_MATCH$", "^IS_"),
+    refusal_no_standard = paste("No internal standards found. Pattern: ^IS_",
+        "Columns searched: database_identifier, Name, metabolite",
+        "Tip: Check if your data has a column with metabolite names (e.g., 'Metabolite name')", sep = "\n"),
+    refusal_no_pattern = "No internal standard pattern provided. Please enter a regex pattern to identify IS.",
+    refusal_other_omic = "no slot of name \"metabolite_id_column\" for this object of class \"LipidomicsAssayData\"")
+
+test_that("analyzeWorkflowOmicsItsd gives metab's analysis (analyzeMetabQcItsdData on readMetabQcItsdState) (frozen from 827f2328, KIT-116)", {
     itsd <- omicGuiConfig("metabolomics")$qc$itsd
-    for (pattern in list("", "^IS_", "^NO_MATCH$", NULL)) {
+    patterns <- list("", "^IS_", "^NO_MATCH$", NULL)
+    for (i in seq_along(patterns)) {
+        pattern <- patterns[[i]]
         workflow <- module_ci_metab_qc_workflow(module_ci_metab_qc_object(layout = "combined"))
         manager <- workflow$state_manager
-        today <- analyzeMetabQcItsdData(readMetabQcItsdState(manager, pattern), inputPattern = pattern,
-            logInfoFn = function(...) invisible(NULL))
         core <- analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, manager, pattern, itsd)
         info <- paste("pattern", format(pattern))
-        expect_identical(core$metrics, today$metrics, info = info)
-        expect_identical(core$long_data, today$longData, info = info)
-        expect_identical(core$result_text, today$resultText, info = info)
-        expect_identical(core$total, today$nIsTotal, info = info)
-        expect_identical(core$pattern, today$pattern, info = info)
-        expect_identical(core$metrics_by_assay, today$metricsByAssay, info = info)
+        expect_identical(qcCoreDigest(core$metrics), qcCoreFrozenMetabItsd$metrics, info = info)
+        expect_identical(qcCoreDigest(core$long_data), qcCoreFrozenMetabItsd$long, info = info)
+        expect_identical(core$result_text, qcCoreFrozenMetabItsdText(qcCoreFrozenMetabItsd$pattern[[i]]), info = info)
+        expect_identical(core$total, qcCoreFrozenMetabItsd$total, info = info)
+        expect_identical(core$pattern, qcCoreFrozenMetabItsd$pattern[[i]], info = info)
+        expect_identical(qcCoreDigest(core$metrics_by_assay), qcCoreFrozenMetabItsd$by_assay, info = info)
     }
-    for (case in list(list(object = module_ci_metab_qc_object(layout = "gc", include_itsd = FALSE), pattern = "^IS_"),
-        list(object = module_ci_metab_qc_object(layout = "gc", internal_standard_regex = NA_character_), pattern = ""))) {
+    for (case in list(list(object = module_ci_metab_qc_object(layout = "gc", include_itsd = FALSE), pattern = "^IS_",
+        today = qcCoreFrozenMetabItsd$refusal_no_standard),
+        list(object = module_ci_metab_qc_object(layout = "gc", internal_standard_regex = NA_character_), pattern = "",
+            today = qcCoreFrozenMetabItsd$refusal_no_pattern))) {
         manager <- module_ci_metab_qc_workflow(case$object)$state_manager
-        today <- qcCoreError(analyzeMetabQcItsdData(readMetabQcItsdState(manager, case$pattern), inputPattern = case$pattern,
-            logInfoFn = function(...) invisible(NULL)))
-        expect_false(is.null(today))
-        expect_identical(qcCoreError(analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, manager, case$pattern, itsd)), today)
+        expect_identical(qcCoreError(analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, manager, case$pattern, itsd)),
+            case$today)
     }
     # Another omic's state is refused as today (the shell reader fails on the binding's id slot).
     manager <- module_ci_lipid_qc_workflow()$state_manager
-    today <- qcCoreError(analyzeMetabQcItsdData(readMetabQcItsdState(manager, ""), inputPattern = ""))
-    expect_false(is.null(today))
-    expect_identical(qcCoreError(analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, manager, "", itsd)), today)
+    expect_identical(qcCoreError(analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, manager, "", itsd)),
+        qcCoreFrozenMetabItsd$refusal_other_omic)
 })
 
 # The ITSD figures, frozen from 7b99e7e8 (KIT-116): the sha256 of metab's analysis (analyzeMetabQcItsdData) metrics
@@ -292,40 +310,43 @@ test_that("validateWorkflowOmicsQcFinalize is lipid's finalise validation: passe
     cases <- list(misaligned = misaligned, zero_rows = zero_rows, no_design = no_design, no_assays = no_assays,
         other_class = other_class)
     for (name in names(cases)) {
-        today <- qcCoreFrozenLipidFinalise[[name]]
-        expect_false(is.null(today))
         expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(cases[[name]], qc, lipidomicsDeclarationBinding)),
-            today, info = name)
+            qcCoreFrozenLipidFinalise[[name]], info = name)
     }
     expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(misaligned, qc, lipidomicsDeclarationBinding)),
         "Current LipidomicsAssayData object has assay/design mismatch: Design matrix group column 'group' contains blank assignments.")
 })
 
-test_that("validateWorkflowOmicsQcFinalize for metab: today's passes and refusals, and the alignment (parity)", {
-    testthat::skip("quarantined: Q-75 (KIT-104 W6) it compares the core with validateMetabQcS4FinalizeState, which W6 deleted; the comparison passed at 827f2328")
+# validateMetabQcS4FinalizeState, frozen from 827f2328 (KIT-116): the aligned shell and the zero-row shell passed and
+# were returned unchanged (identical to their input; the shell carries its owner's per-run entity reference, so the
+# frozen value is that identity, not a digest of the shell); the three refusals' texts; and a blank group passed
+# (a MetaboliteAssayData was returned).
+qcCoreFrozenMetabFinalise <- list(
+    no_design = "Current MetaboliteAssayData object has no design matrix rows to finalize.",
+    no_assays = "Current MetaboliteAssayData object has no assay data to finalize.",
+    other_class = "Current state is not a MetaboliteAssayData object")
+
+test_that("validateWorkflowOmicsQcFinalize for metab: today's passes and refusals, and the alignment (parity) (frozen from 827f2328, KIT-116)", {
     qc <- qcCoreConfig("metabolomics")
     aligned <- readMetabWorkflowShell(module_ci_metab_qc_workflow()$state_manager, measures = "features")
-    expect_identical(validateWorkflowOmicsQcFinalize(aligned, qc, metabolomicsDeclarationBinding),
-        validateMetabQcS4FinalizeState(aligned))
+    expect_identical(validateWorkflowOmicsQcFinalize(aligned, qc, metabolomicsDeclarationBinding), aligned)
     # D2: metab refuses only an empty assay list; a zero-row assay passes, as today.
     zero_rows <- aligned
     attr(zero_rows, "assay_rows")[[1L]] <- 0L
-    expect_identical(validateWorkflowOmicsQcFinalize(zero_rows, qc, metabolomicsDeclarationBinding),
-        validateMetabQcS4FinalizeState(zero_rows))
+    expect_identical(validateWorkflowOmicsQcFinalize(zero_rows, qc, metabolomicsDeclarationBinding), zero_rows)
     no_design <- aligned
     no_design@design_matrix <- no_design@design_matrix[0L, , drop = FALSE]
     no_assays <- aligned
     no_assays@metabolite_data <- list()
     attr(no_assays, "assay_rows") <- integer()
     other_class <- readLipidWorkflowShell(module_ci_lipid_qc_workflow()$state_manager)
-    for (case in list(no_design, no_assays, other_class)) {
-        today <- qcCoreError(validateMetabQcS4FinalizeState(case))
-        expect_false(is.null(today))
-        expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(case, qc, metabolomicsDeclarationBinding)), today)
+    cases <- list(no_design = no_design, no_assays = no_assays, other_class = other_class)
+    for (name in names(cases)) {
+        expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(cases[[name]], qc, metabolomicsDeclarationBinding)),
+            qcCoreFrozenMetabFinalise[[name]], info = name)
     }
-    # Parity (D11): a blank group passes today's metab finalise and is refused by the core with lipid's text.
+    # Parity (D11): a blank group passed metab's finalise (frozen above) and is refused by the core with lipid's text.
     misaligned <- readMetabWorkflowShell(module_ci_metab_qc_workflow(qcCoreBlankGroup(module_ci_metab_qc_object()))$state_manager)
-    expect_s4_class(validateMetabQcS4FinalizeState(misaligned), "MetaboliteAssayData")
     expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(misaligned, qc, metabolomicsDeclarationBinding)),
         "Current MetaboliteAssayData object has assay/design mismatch: Design matrix group column 'group' contains blank assignments.")
     # Every omic's alignment is called: a configuration without one is refused, not skipped.
@@ -346,7 +367,7 @@ test_that("omicsQcFinalizeAlignment is lipid's alignment call (validateLipidDesi
     expect_identical(omicsQcFinalizeAlignment(shell, "metabolomics"), list(valid = TRUE, errors = character()))
 })
 
-test_that("trxDesignAlignment passes on the trx_screen shell and refuses what validateTrxDesign refuses", {
+test_that("trxDesignAlignment passes on the trx_screen shell and refuses what validateTrxDesign refuses (frozen from 827f2328, KIT-116)", {
     skip_if_not(workflowOwnerCapable())
     fixture <- trxDeclarationsOwner(withr::local_tempdir(), module_ci_trx_corpus())
     withr::defer(closeDIAStateAdapter(fixture$owner))
@@ -369,19 +390,15 @@ test_that("trxDesignAlignment passes on the trx_screen shell and refuses what va
     absent@design_matrix <- rbind(absent@design_matrix, extra)
     expect_match(trxDesignAlignment(absent)$errors, "S_absent", fixed = TRUE)
 
-    testthat::skip("quarantined: Q-75 (KIT-104 W6) the rest compares the core with trxQcFinalizeCollaborators, which W6 deleted; it passed at 827f2328")
-    # The finalise: today's trx checks (on the metadata) give the same passes and texts; the alignment is the parity.
+    # The finalise: today's trx checks (trxQcFinalizeCollaborators()$validateFinalizeStateFn, on the metadata) passed
+    # the metadata unchanged and refused a zero-row assay with the text below (frozen from 827f2328, KIT-116); the
+    # alignment is the parity.
     qc <- qcCoreConfig("transcriptomics")
-    today <- trxQcFinalizeCollaborators()$validateFinalizeStateFn
-    metadata <- readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, fixture$owner)
-    expect_identical(today(metadata), metadata)
     expect_identical(validateWorkflowOmicsQcFinalize(shell, qc, transcriptomicsDeclarationBinding), shell)
     zero_rows <- shell
     attr(zero_rows, "assay_rows")[[1L]] <- 0L
-    metadata_zero <- metadata
-    metadata_zero$assay_rows[[1L]] <- 0L
     expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(zero_rows, qc, transcriptomicsDeclarationBinding)),
-        qcCoreError(today(metadata_zero)))
+        "Current TranscriptomicsAssayData object has no genes or no design rows to finalize.")
     expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(blank, qc, transcriptomicsDeclarationBinding)),
         paste("Current TranscriptomicsAssayData object has assay/design mismatch:", trxDesignAlignment(blank)$errors))
 })
