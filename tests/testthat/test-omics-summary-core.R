@@ -82,17 +82,18 @@ test_that("(KIT-115 F108-04) the git information never comes from the working di
 })
 
 test_that("(W3) the moved lipid, metab and trx functions are in the core file; the core calls no Shiny UI function", {
-    moved <- c("buildLipidSummarySessionState", "lipidSummaryFirstNonNull", "getLipidSummaryWorkflowValue",
+    # KIT-109 deleted two that nothing called: buildLipidSummarySessionState and trxSummaryIntegrationReady.
+    moved <- c("lipidSummaryFirstNonNull", "getLipidSummaryWorkflowValue",
         "getLipidSummaryStateObject", "getLipidSummaryObjectArgs", "buildLipidSummaryParameterPayload",
         "prepareLipidSummarySessionState", "metabSummaryFirstNonNull", "getMetabSummaryWorkflowValue",
         "getMetabSummaryStateObject", "getMetabSummaryObjectArgs", "buildMetabSummaryParameterPayload",
         "prepareMetabSummarySessionState", "trxRuviiiMChoices", "trxHeadHasTechnicalReplicates", "trxRuviiiStatusText",
-        "trxSummaryContext", "trxSummaryStateObject", "trxSummaryIntegrationWrite", "trxSummaryIntegrationReady")
+        "trxSummaryContext", "trxSummaryStateObject", "trxSummaryIntegrationWrite")
     entries <- c("workflowSummaryFinalState", "saveWorkflowSummaryParameters", "startWorkflowSummaryIntegrationExport",
         "copyWorkflowSummaryResults", "renderWorkflowSummaryReport", "writeWorkflowSummarySessionState",
         "workflowSummaryTemplateStatus", "runWorkflowSummaryExportStep", "trxRuviiiExportParameters",
         "trxSummarySessionState")
-    expect_length(moved, 20L)
+    expect_length(moved, 18L)
     ns <- asNamespace("MultiScholaR")
     for (name in c(moved, entries)) {
         expect_true(exists(name, envir = ns, inherits = FALSE), info = name)

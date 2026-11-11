@@ -500,10 +500,6 @@ trxSummaryIntegrationWrite <- function(workflowData, path) {
     withWorkflowStateScope(manager, function() trxWriteIntegrationExport(manager, list(), path))
 }
 
-#' Whether the RUVIII export the integration file is written from has been accepted.
-#' @noRd
-trxSummaryIntegrationReady <- function(workflowData) !is.null(workflowData$state_manager$.context$snapshot$exports$trx_ruviii_export)
-
 #' The RUVIII export's parameters (D4; `runTrxRuviiiExport`'s at 5be34ee5, mod_trx_summary.R:76-78): the head's RUVs
 #' logCPM and grid entities, and M.
 #' @param source The head's reference.
@@ -526,26 +522,6 @@ trxSummarySessionState <- function(inputValues, projectDirs, omicType, values, t
 # ------------------------------------------------------------------------------------------------
 # Lipidomics' session-state functions (moved unchanged from mod_lipid_summary_state_helpers.R, D3).
 # ------------------------------------------------------------------------------------------------
-
-buildLipidSummarySessionState <- function(
-    input,
-    values,
-    projectDirs,
-    omicType,
-    timeFn = Sys.time
-) {
-    list(
-        experiment_label = input$experiment_label,
-        description = input$description,
-        timestamp = timeFn(),
-        omic_type = omicType,
-        workflow_args_saved = values$workflow_args_saved,
-        files_copied = values$files_copied,
-        report_generated = values$report_generated,
-        report_path = values$report_path,
-        project_dirs = projectDirs
-    )
-}
 
 lipidSummaryFirstNonNull <- function(...) {
     values <- list(...)
