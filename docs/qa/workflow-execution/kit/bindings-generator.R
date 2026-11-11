@@ -1366,6 +1366,17 @@ if (!is.null(b$builds$kit_921) && !is.null(b$tickets[["101m"]])) {
     for (suffix in letters[1:6]) b$tickets[[paste0("921", suffix)]] <- utils::modifyList(b$tickets[["101m"]], kit_921)
 }
 
+# KIT-109 (exit): exactness after the removals, one member each on one build, keys 922a/b/c (lipid, metab and trx
+# screen, from 112a/b/c) and 922l/922t (the LFQ and TMT protein journeys, from 112l/t: the default normalisation runs the
+# one normaliser lookup of W5). Build key kit_922 (the 900s are no ticket's).
+if (!is.null(b$builds$kit_922)) {
+    kit_922 <- list(build = "kit_922", purpose = "exactness after the removals (recorded, uncounted; KIT-109)")
+    for (suffix in c("a", "b", "c", "l", "t")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("922", suffix)]] <- utils::modifyList(from, kit_922)
+    }
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
