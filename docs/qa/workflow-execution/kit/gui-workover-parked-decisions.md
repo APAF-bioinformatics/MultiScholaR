@@ -95,3 +95,34 @@ After the post-hoc audit ([gui-workover-audit-20261111.md](gui-workover-audit-20
 
 Also answered: the interactive volcano is ticked by default for every omic (R5); KIT-101's F-23, F-24, F-26, F-27 and F-28 approvals are recorded as unverified.
 
+
+## Open for the user after plan 4.2 (2026-11-11)
+
+The remaining open items are cut into KIT-115 to KIT-119, with KIT-109 and KIT-114 re-scoped (plan 4.2). Three things wait for the user's word. None blocks KIT-115's first ten items.
+
+### 1. KIT-101's five fixes recorded as unverified
+
+| Finding | What changed | Result change | Recommended |
+|---|---|---|---|
+| F-24 | Lipid, metab and trx QC apply, revert and finalise ignore a click made before the server started (twelve sites, one helper). | none | approve |
+| F-26 | The TMT reader reads a numeric 0 abundance as missing, as the LFQ readers do. | none on any corpus (no TMT corpus has a zero) | approve |
+| F-28 | A UniProt timeout no longer returns a table without `Entry`, which made DA fail on a join. | none | approve |
+| F-23 | A normalisation chosen on DIA_LIMPA is also applied to the matrix the DA fits. Before, it had no effect on DA. Quantile and scale are approximate there. | yes, when a method other than `none` is chosen | provisional until KIT-114 (c) |
+| F-27 | The message shown when RUV finds no control observed in every sample. | none (a message) | provisional until KIT-114 (d) |
+
+### 2. Behaviour changes the lead made with no review row (audit AX-11)
+
+None changes a number. F113-04 and F113-06 are moot with the KIT-113 revert.
+
+| Change | Before | Now | Recommended |
+|---|---|---|---|
+| F107-03 | An enrichment Run with a DA results table missing completed on an empty table and saved a product, with a warning. | The Run is refused before anything is written. | approve: a product for a missing input is a wrong record |
+| Blank taxon | The Run wrote to the bus and showed an empty error message. | It stops silently. | approve the stop; add a one-line notice (KIT-115, if wanted) |
+| F111-03 | The worker refused any input that was not the head, so a managed correlation or covariates run would have been refused. | The four normalisation-tab operations may name a saved checkpoint; every other operation keeps the head rule. | approve: without it KIT-111's outcome could not work. Its real-worker proof is KIT-116. |
+| KIT-111 W2, error path | A failed commit or selection could leave the normalisation tab partly updated. | The tab's state is written after the commit. | approve |
+| F102-01 | Metab's "high proportion of missing values" warning was computed on text, so an empty cell did not count. | It is computed after conversion, so an empty cell counts as missing. Only the warning changes. | approve |
+
+### 3. Two authorisations
+
+- **P-34:** six more `m` members with the sampler (about 5 minutes each), inside KIT-116. Without it the row stays "intermittent, cause unknown".
+- **P-02 interim:** label quantile and scale "approximate" on DIA_LIMPA now (KIT-115 item 11). It re-freezes the proteomics entry-lane captures that show the choice list.
