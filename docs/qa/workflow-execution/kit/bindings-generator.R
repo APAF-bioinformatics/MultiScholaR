@@ -1358,6 +1358,14 @@ if (!is.null(b$builds$kit_920) && exists("single_084")) {
     if (!is.null(b$oracles$lipid86_import)) b$tickets[["920w"]] <- single_084("kit_920", "lipid_large_missing", "lipidomics", "lipid86", 14400L)
 }
 
+# KIT-116 (P-34, user 2026-11-11: six more `m` members): the screen journey's `m` member (DIA_LIMPA) six times on one
+# build, keys 921a to 921f from 101m. Build key kit_921 (the 900s are no ticket's). The measure and its cut point are
+# fixed in kit-116/p34-cut.md before any of them runs.
+if (!is.null(b$builds$kit_921) && !is.null(b$tickets[["101m"]])) {
+    kit_921 <- list(build = "kit_921", purpose = "P-34: the rollup floor, one of six (recorded, uncounted; KIT-116)")
+    for (suffix in letters[1:6]) b$tickets[[paste0("921", suffix)]] <- utils::modifyList(b$tickets[["101m"]], kit_921)
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.

@@ -83,7 +83,26 @@ test_that("E2E-006 DIA limpa workflow preserves imputation metadata through repo
     filtered_summary <- paste(readLines(session_artifacts$summary, warn = FALSE), collapse = "\n")
     expect_match(filtered_summary, "limpa DPC-Quant: yes", fixed = TRUE)
 
-    report_download <- e2e_run_prot_da_summary_report(
+    e2e_run_prot_da(driver, timeout = 240000L)
+    e2e_wait_for_step_status(driver, "proteomics", "differential_expression", "complete", timeout = 240000L)
+    # KIT-116 (audit A106-03, F106-01): the proteomics DA views in the browser, which until now only testServer covered.
+    # The interactive volcano page (ticked by default since the remediation's R5), the heatmap, the results table and
+    # the results download.
+    da_id <- function(input) e2e_input_id("proteomics", "da", input)
+    has <- function(output_id, selector) sprintf(
+      "(function(){var el = document.getElementById(%s); return !!(el && el.querySelector(%s));})()",
+      jsonlite::toJSON(output_id, auto_unbox = TRUE), jsonlite::toJSON(selector, auto_unbox = TRUE))
+    expect_no_error(e2e_wait_for_js(driver, script = has(da_id("volcano_glimma"), "iframe"), timeout = 240000L))
+    e2e_set_input_and_idle(driver, da_id("da_results_tabs"), "Heatmap", timeout = 240000L)
+    expect_no_error(e2e_wait_for_js(driver, script = has(da_id("heatmap_plot"), "img"), timeout = 240000L))
+    e2e_set_input_and_idle(driver, da_id("da_results_tabs"), "DA Results Table", timeout = 240000L)
+    expect_no_error(e2e_wait_for_js(driver, script = has(da_id("da_results_table"), "tbody tr td"), timeout = 240000L))
+    da_download <- e2e_get_download(driver, da_id("download_da_results"), artifact_dir = e2e_case_artifact_dir(case_id),
+      filename = "downloaded-da-results.csv")
+    e2e_assert_file_nonempty(da_download)
+    # P-26: the long DA results of every contrast, as CSV.
+    expect_gt(nrow(utils::read.csv(da_download, check.names = FALSE)), 0L)
+    report_download <- e2e_run_prot_summary_report(
       driver,
       lane = lane,
       project_base_dir = project_base,
@@ -92,7 +111,6 @@ test_that("E2E-006 DIA limpa workflow preserves imputation metadata through repo
       description = "E2E-006 DIA limpa GUI workflow with DPC-Quant imputation branch",
       timeout = 240000L
     )
-    e2e_wait_for_step_status(driver, "proteomics", "differential_expression", "complete", timeout = 240000L)
     e2e_assert_file_nonempty(report_download)
     e2e_assert_file_nonempty(file.path(paths$source_dir, "study_parameters.txt"))
     e2e_assert_file_nonempty(file.path(paths$source_dir, lane$report_template))
