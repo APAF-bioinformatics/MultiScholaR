@@ -4,28 +4,6 @@
 # finalise validation and its alignment, and the QC action's two branches (D6). Back-reference #9
 # (`resolveMetabDuplicateAssayData`) and trx's QC figure functions are checked where they moved.
 
-#' Run `code` with a namespace function wrapped so that its result is kept in `captured[[name]]`.
-qcCoreSpy <- function(name, captured, env = parent.frame()) {
-    real <- get(name, envir = asNamespace("MultiScholaR"))
-    spy <- function(...) {
-        result <- real(...)
-        captured[[name]] <- result
-        result
-    }
-    do.call(testthat::local_mocked_bindings, c(stats::setNames(list(spy), name), list(.package = "MultiScholaR", .env = env)))
-}
-
-#' Capture shiny's notifications as "[type] text" (test-omic-qc-module.R's construction).
-qcCoreNotes <- function(env = parent.frame()) {
-    seen <- new.env(parent = emptyenv())
-    seen$notes <- character()
-    testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
-        seen$notes <- c(seen$notes, paste0("[", type, "] ", paste(as.character(ui), collapse = " ")))
-        invisible(NULL)
-    }, .package = "shiny", .env = env)
-    seen
-}
-
 #' The ggplot of a figure with its built layer data, for comparing two builders of the same figure.
 qcCorePlotParts <- function(plot) {
     list(data = plot$data, labels = plot$labels, layers = ggplot2::ggplot_build(plot)$data)
@@ -56,84 +34,91 @@ qcCoreError <- function(code) tryCatch({
 # The intensity filter's counts table.
 # ------------------------------------------------------------------------------------------------
 
-test_that("omicsQcCountsTable is today's lipid (inline) and metab (buildMetabIntensityFilterStats) table", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with registerLipidIntensityApplyFilterObserver, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+# KIT-116 W2 (Q-64): blocks that compared the core with functions KIT-104 W5 deleted now compare it with those
+# functions' values, frozen at 7b99e7e8, where the comparison passed, by
+# docs/qa/workflow-execution/kit/kit-116/freeze/q64-qc.R, which also checked each old value against the core of that
+# commit. Small values are literals; others are the sha256 of the value the block compared with expect_identical. The
+# core side stays live.
+qcCoreDigest <- function(x) digest::digest(x, algo = "sha256")
+
+# The table lipid's apply-filter observer (registerLipidIntensityApplyFilterObserver) showed for its reference step's
+# counts (40th percentile, proportion 0.5), and metab's buildMetabIntensityFilterStats on the same counts and on `odd`,
+# frozen from 7b99e7e8 (KIT-116).
+qcCoreFrozenCounts <- list(
+    lipid = structure(list(Assay = c("LCMS_Pos", "LCMS_Neg"), Original = c(11, 11), Filtered = c(8, 8),
+        Removed = c(3, 3), Percent_Retained = c(72.7, 72.7)), row.names = c(NA, -2L), class = "data.frame"),
+    metab = structure(list(Assay = c("LCMS_Pos", "LCMS_Neg"), Original = c(11, 11), Filtered = c(8, 8),
+        Removed = c(3, 3), Percent_Retained = c(72.7, 72.7)), row.names = c(NA, -2L), class = "data.frame"),
+    odd_metab = structure(list(Assay = c("A", "B"), Original = c(3, 7), Filtered = c(1, 7), Removed = c(2, 0),
+        Percent_Retained = c(33.3, 100)), row.names = c(NA, -2L), class = "data.frame"))
+
+test_that("omicsQcCountsTable is today's lipid (inline) and metab (buildMetabIntensityFilterStats) table (frozen from 7b99e7e8, KIT-116)", {
     workflow <- module_ci_lipid_qc_workflow()
-    captured <- new.env(parent = emptyenv())
-    qcCoreSpy("runLipidReferenceIntensityFilter", captured)
-    stats <- shiny::reactiveVal(NULL)
-    suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
-        registerLipidIntensityApplyFilterObserver(input, workflow, output, stats, shiny::reactiveVal(NULL), "lipidomics",
-            updateLipidFilteringFn = function(...) NULL)
-    }, {
-        session$setInputs(intensity_cutoff_percentile = 40L, proportion_below_cutoff = 0.5, apply_filter = 1L)
-        captured$stats <- stats()
-    }))))
-    counts <- captured$runLipidReferenceIntensityFilter$value$counts
-    expect_true(is.data.frame(captured$stats))
-    expect_identical(omicsQcCountsTable(counts), captured$stats)
-    expect_identical(omicsQcCountsTable(counts), buildMetabIntensityFilterStats(originalCounts = counts$before,
-        filteredCounts = counts$after))
+    # The reference step the observer ran, with its inputs.
+    counts <- runLipidReferenceIntensityFilter(workflow$state_manager, 40L, 0.5, workflow$config_list)$value$counts
+    expect_identical(omicsQcCountsTable(counts), qcCoreFrozenCounts$lipid)
+    expect_identical(omicsQcCountsTable(counts), qcCoreFrozenCounts$metab)
     # Rounding to one decimal, as both tabs round.
     odd <- list(before = c(A = 3L, B = 7L), after = c(A = 1L, B = 7L))
     expect_identical(omicsQcCountsTable(odd)$Percent_Retained, c(33.3, 100))
-    expect_identical(omicsQcCountsTable(odd), buildMetabIntensityFilterStats(originalCounts = odd$before,
-        filteredCounts = odd$after))
+    expect_identical(omicsQcCountsTable(odd), qcCoreFrozenCounts$odd_metab)
 })
 
 # ------------------------------------------------------------------------------------------------
 # Duplicates.
 # ------------------------------------------------------------------------------------------------
 
-test_that("detectWorkflowOmicsDuplicates finds today's duplicates (lipid and metab detection)", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with handleLipidDuplicateDetection, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+# handleLipidDuplicateDetection and detectMetabDuplicateFeatures: the sha256 of the duplicates lists, the totals, and
+# lipid's refusal of a metab state, frozen from 7b99e7e8 (KIT-116).
+qcCoreFrozenDuplicates <- list(
+    lipid_list = "97f418a7cf2cf55b4f66ee26c7b00f9b875d49d274f19462e8b4a2b174c4f2b1",
+    lipid_total = 4,
+    metab_list = "541bc986115f4812f522ee0de42666b1685abc4893e3874fd3509f9d558341a2",
+    metab_total = 4L,
+    none_total = 0,
+    other_omic = "no slot of name \"lipid_id_column\" for this object of class \"MetaboliteAssayData\"")
+
+test_that("detectWorkflowOmicsDuplicates finds today's duplicates (lipid and metab detection) (frozen from 7b99e7e8, KIT-116)", {
     lipid <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
-    today <- handleLipidDuplicateDetection(lipid, logInfoFn = function(...) invisible(NULL))
     core <- detectWorkflowOmicsDuplicates(lipidomicsDeclarationBinding, lipid$state_manager)
-    expect_identical(core$duplicates, today$duplicatesList)
-    expect_equal(core$total, today$totalDuplicates)
+    expect_identical(qcCoreDigest(core$duplicates), qcCoreFrozenDuplicates$lipid_list)
+    expect_equal(core$total, qcCoreFrozenDuplicates$lipid_total)
     expect_gt(core$total, 0)
 
     metab <- module_ci_metab_qc_workflow(module_ci_metab_qc_object(layout = "combined"))
-    today <- detectMetabDuplicateFeatures(metab$state_manager)
     core <- detectWorkflowOmicsDuplicates(metabolomicsDeclarationBinding, metab$state_manager)
-    expect_identical(core$duplicates, today$duplicatesList)
-    expect_equal(core$total, today$totalDuplicates)
+    expect_identical(qcCoreDigest(core$duplicates), qcCoreFrozenDuplicates$metab_list)
+    expect_equal(core$total, qcCoreFrozenDuplicates$metab_total)
 
     none <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(include_duplicates = FALSE))
     expect_equal(detectWorkflowOmicsDuplicates(lipidomicsDeclarationBinding, none$state_manager)$total,
-        handleLipidDuplicateDetection(none, logInfoFn = function(...) invisible(NULL))$totalDuplicates)
+        qcCoreFrozenDuplicates$none_total)
     # Another omic's state is refused as today (the id reader fails on the binding's id slot).
-    today <- qcCoreError(handleLipidDuplicateDetection(metab, logInfoFn = function(...) invisible(NULL)))
-    expect_false(is.null(today))
-    expect_identical(qcCoreError(detectWorkflowOmicsDuplicates(lipidomicsDeclarationBinding, metab$state_manager)), today)
+    expect_identical(qcCoreError(detectWorkflowOmicsDuplicates(lipidomicsDeclarationBinding, metab$state_manager)),
+        qcCoreFrozenDuplicates$other_omic)
 })
 
-test_that("omicsDuplicateResolutionStats reads both products as today's lipid and metab resolutions do", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with handleLipidDuplicateResolution, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+# The statistics handleLipidDuplicateResolution returned and runMetabDuplicateResolutionWorkflow showed, frozen from
+# 7b99e7e8 (KIT-116).
+qcCoreFrozenResolution <- list(
+    lipid = list(LCMS_Pos = list(original = 13L, resolved = 11L, removed = 2L),
+        GCMS = list(original = 13L, resolved = 11L, removed = 2L)),
+    metab = list(LCMS_Pos = list(original = 13L, resolved = 11L, removed = 2L),
+        GCMS = list(original = 13L, resolved = 11L, removed = 2L)))
+
+test_that("omicsDuplicateResolutionStats reads both products as today's lipid and metab resolutions do (frozen from 7b99e7e8, KIT-116)", {
+    # The reference steps those callers ran, with their inputs.
     lipid <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
-    captured <- new.env(parent = emptyenv())
-    qcCoreSpy("runLipidReferenceDuplicateResolution", captured)
     names_before <- readLipidWorkflowMetadata(lipid$state_manager)$assay_names
-    today <- handleLipidDuplicateResolution(lipid, "lipidomics", updateFilteringFn = function(...) NULL,
-        logWarnFn = function(...) invisible(NULL))
-    value <- captured$runLipidReferenceDuplicateResolution$value
+    value <- runLipidReferenceDuplicateResolution(lipid$state_manager, lipid$config_list)$value
     expect_true("counts" %in% names(value) && !"stats" %in% names(value))
-    expect_identical(omicsDuplicateResolutionStats(value, names_before), today$statsList)
+    expect_identical(omicsDuplicateResolutionStats(value, names_before), qcCoreFrozenResolution$lipid)
 
     metab <- module_ci_metab_qc_workflow(module_ci_metab_qc_object(layout = "combined"))
-    qcCoreSpy("runMetabReferenceDuplicateResolution", captured)
-    shown <- new.env(parent = emptyenv())
-    runMetabDuplicateResolutionWorkflow(metab, "metabolomics", setResolutionStatsFn = function(stats) shown$stats <- stats,
-        setFilterPlotFn = function(plot) invisible(NULL),
-        applyResolutionStateFn = function(currentS4, statsList, setResolutionStatsFn, ...) {
-            setResolutionStatsFn(statsList)
-            list(stateName = "metab_duplicates_resolved")
-        })
-    value <- captured$runMetabReferenceDuplicateResolution$value
+    value <- runMetabReferenceDuplicateResolution(metab$state_manager, metab$config_list)$value
     expect_true("stats" %in% names(value))
     expect_identical(omicsDuplicateResolutionStats(value, readMetabWorkflowMetadata(metab$state_manager)$assay_names),
-        shown$stats)
+        qcCoreFrozenResolution$metab)
     # An empty statistics list stays empty (metab's "No assay statistics available").
     expect_identical(omicsDuplicateResolutionStats(list(stats = list()), character()), list())
 })
@@ -159,53 +144,60 @@ test_that("#9: metabolomicsDeclarationBinding$resolve_duplicates works through t
 # ITSD.
 # ------------------------------------------------------------------------------------------------
 
-#' Today's lipid analysis: the exported ITSD server's inline analysis, its values and its text.
-qcCoreLipidItsd <- function(workflow, pattern) {
-    notes <- qcCoreNotes()
-    out <- new.env(parent = emptyenv())
-    suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(mod_lipid_qc_itsd_server,
-        args = list(workflow_data = workflow, omic_type = "lipidomics", experiment_label = "kit104"), {
-            session$setInputs(is_pattern = pattern, analyze_is = 1L)
-            out$metrics <- is_metrics()
-            out$long <- is_data_long()
-            out$text <- tryCatch(output$is_results, error = function(error) NULL)
-        }))))
-    out$notes <- notes$notes
-    as.list(out)
+# Lipid's inline ITSD analysis (mod_lipid_qc_itsd_server before W5) per pattern: the sha256 of its metrics and long
+# data, its result text and its second notification; and its notifications for the two refusals. Frozen from 7b99e7e8
+# (KIT-116).
+qcCoreFrozenLipidItsdText <- function(pattern) {
+    paste0("Internal Standard Analysis Complete\n====================================\nPattern used: ", pattern,
+        "\nTotal IS detected: 4\n\nCV Statistics:\n  Median CV: 0.9%\n  Max CV: 0.9%\n  IS with CV > 30%: 0\n\n",
+        "Per-Assay IS Counts:\n  LCMS_Pos: 2 internal standards\n  GCMS: 2 internal standards")
 }
+qcCoreFrozenLipidItsd <- list(
+    metrics = "27cc90f8c1a941238c8c0c85e4cfa45369c8df0bb293e3616ddbb1a7d91916a8",
+    long = "6b65c82ecf0f39a92294f505785ec0f9ee2b802f89c9426336830e03d1e593d0",
+    # Lipid's inline analysis showed "^IS_" when the pattern was empty (its default).
+    text = c(qcCoreFrozenLipidItsdText("^IS_"), qcCoreFrozenLipidItsdText("^IS_By_Name$"),
+        qcCoreFrozenLipidItsdText("^NO_MATCH$")),
+    note = "[message] Found 4 internal standards",
+    refusal_no_standard = paste("[error] Error analyzing internal standards: No internal standards found. Pattern: ^IS_",
+        "Columns searched: lipid_id, lipid", "Tip: Check if your data has a column with lipid names (e.g., 'Lipid name')",
+        sep = "\n"),
+    refusal_no_pattern = paste("[error] Error analyzing internal standards: No internal standard pattern provided.",
+        "Please enter a regex pattern to identify IS."))
 
-test_that("analyzeWorkflowOmicsItsd gives lipid's inline analysis: values, text and refusals", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with the lipid ITSD server's inline analysis, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+test_that("analyzeWorkflowOmicsItsd gives lipid's inline analysis: values, text and refusals (frozen from 7b99e7e8, KIT-116)", {
     itsd <- omicGuiConfig("lipidomics")$qc$itsd
-    for (pattern in c("", "^IS_By_Name$", "^NO_MATCH$")) {
+    patterns <- c("", "^IS_By_Name$", "^NO_MATCH$")
+    for (i in seq_along(patterns)) {
+        pattern <- patterns[[i]]
         workflow <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
-        today <- qcCoreLipidItsd(workflow, pattern)
         core <- analyzeWorkflowOmicsItsd(lipidomicsDeclarationBinding, workflow$state_manager, pattern, itsd)
-        expect_identical(core$metrics, today$metrics, info = pattern)
-        expect_identical(core$long_data, today$long, info = pattern)
-        expect_identical(core$result_text, today$text, info = pattern)
-        expect_identical(sprintf("Found %d internal standards", core$total), sub("^\\[message\\] ", "", today$notes[[2L]]))
+        expect_identical(qcCoreDigest(core$metrics), qcCoreFrozenLipidItsd$metrics, info = pattern)
+        expect_identical(qcCoreDigest(core$long_data), qcCoreFrozenLipidItsd$long, info = pattern)
+        expect_identical(core$result_text, qcCoreFrozenLipidItsd$text[[i]], info = pattern)
+        expect_identical(sprintf("Found %d internal standards", core$total),
+            sub("^\\[message\\] ", "", qcCoreFrozenLipidItsd$note))
     }
     # The refusals, with their texts: no standard found (the tip names lipid's column), no pattern at all.
-    cases <- list(list(object = module_ci_lipid_qc_object(layout = "gc", include_itsd = FALSE), pattern = "^IS_"),
-        list(object = module_ci_lipid_qc_object(layout = "gc", internal_standard_regex = NA_character_), pattern = ""))
+    cases <- list(list(object = module_ci_lipid_qc_object(layout = "gc", include_itsd = FALSE), pattern = "^IS_",
+        note = qcCoreFrozenLipidItsd$refusal_no_standard),
+        list(object = module_ci_lipid_qc_object(layout = "gc", internal_standard_regex = NA_character_), pattern = "",
+            note = qcCoreFrozenLipidItsd$refusal_no_pattern))
     for (case in cases) {
         workflow <- module_ci_lipid_qc_workflow(case$object)
-        today <- qcCoreLipidItsd(workflow, case$pattern)
         message <- qcCoreError(analyzeWorkflowOmicsItsd(lipidomicsDeclarationBinding, workflow$state_manager, case$pattern, itsd))
         expect_false(is.null(message))
-        expect_identical(paste("[error] Error analyzing internal standards:", message), today$notes[[2L]])
+        expect_identical(paste("[error] Error analyzing internal standards:", message), case$note)
     }
     expect_match(message, "No internal standard pattern provided", fixed = TRUE)
 })
 
-test_that("F104 (W2): a NULL pattern is read as an empty one, as metab reads it (lipid's inline analysis errors)", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with the lipid ITSD server's inline analysis, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+test_that("F104 (W2): a NULL pattern is read as an empty one, as metab reads it (lipid's inline analysis errors) (frozen from 7b99e7e8, KIT-116)", {
     itsd <- omicGuiConfig("lipidomics")$qc$itsd
     workflow <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
-    # Today's lipid server fails on a NULL input (nzchar(NULL)); only a test session leaves the input NULL.
-    today <- qcCoreLipidItsd(workflow, NULL)
-    expect_identical(today$notes[[2L]], "[error] Error analyzing internal standards: argument is of length zero")
+    # Lipid's inline analysis failed on a NULL input (nzchar(NULL)), notifying "[error] Error analyzing internal
+    # standards: argument is of length zero" (checked by q64-qc.R at 7b99e7e8); only a test session leaves the input
+    # NULL. The core reads it as an empty pattern.
     expect_identical(analyzeWorkflowOmicsItsd(lipidomicsDeclarationBinding, workflow$state_manager, NULL, itsd),
         analyzeWorkflowOmicsItsd(lipidomicsDeclarationBinding, workflow$state_manager, "", itsd))
 })
@@ -242,43 +234,52 @@ test_that("analyzeWorkflowOmicsItsd gives metab's analysis (analyzeMetabQcItsdDa
     expect_identical(qcCoreError(analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, manager, "", itsd)), today)
 })
 
-test_that("omicsItsdCvPlot and omicsItsdIntensityPlot are today's ITSD figures", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with registerLipidItsdCvPlotOutput, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+# The ITSD figures, frozen from 7b99e7e8 (KIT-116): the sha256 of metab's analysis (analyzeMetabQcItsdData) metrics
+# and long data on the combined fixture, of qcCorePlotParts of buildMetabQcItsdCvPlot and
+# buildMetabQcItsdIntensityPlot on them, and of the data lipid's registerLipidItsdCvPlotOutput drew.
+qcCoreFrozenFigures <- list(
+    metab_metrics = "4eb7294989b0e74ae594757e9f48804d1634b6e4378b351693afb742b4e7b790",
+    metab_long = "8a5f51eadfa26985695b67d26b5269707bd469c97d10118787e4b410f5a48f93",
+    cv_plot = "e6185c5e3acd9ace3ddb152fea8dc5d03d9d63ae58d50aba2da0baa2df625c41",
+    intensity_plot = "43cb1d8c54688a54fd4e43ea1738c26c344bf133d6d225c1f8f2ac3e9d454e34",
+    lipid_cv_data = "1f47d6d60a4c04449a1da75ec3c5a349eb5e981077c8feb7efa1b192ecc3c92e")
+
+test_that("omicsItsdCvPlot and omicsItsdIntensityPlot are today's ITSD figures (frozen from 7b99e7e8, KIT-116)", {
     workflow <- module_ci_metab_qc_workflow(module_ci_metab_qc_object(layout = "combined"))
-    analysis <- analyzeMetabQcItsdData(readMetabQcItsdState(workflow$state_manager, ""), inputPattern = "",
-        logInfoFn = function(...) invisible(NULL))
-    expect_identical(qcCorePlotParts(omicsItsdCvPlot(analysis$metrics)), qcCorePlotParts(buildMetabQcItsdCvPlot(analysis$metrics)))
-    expect_identical(qcCorePlotParts(omicsItsdIntensityPlot(analysis$longData)),
-        qcCorePlotParts(buildMetabQcItsdIntensityPlot(analysis$longData)))
-    # Lipid's inline CV figure: the data its output draws.
-    drawn <- new.env(parent = emptyenv())
-    ggplot <- ggplot2::ggplot
-    testthat::local_mocked_bindings(ggplot = function(data = NULL, ...) {
-        drawn$data <- c(drawn$data, list(data))
-        ggplot(data, ...)
-    }, .package = "ggplot2")
+    # The figures' input: the core's metab analysis, the same values as the deleted metab analysis gave.
+    analysis <- analyzeWorkflowOmicsItsd(metabolomicsDeclarationBinding, workflow$state_manager, "",
+        omicGuiConfig("metabolomics")$qc$itsd)
+    expect_identical(qcCoreDigest(analysis$metrics), qcCoreFrozenFigures$metab_metrics)
+    expect_identical(qcCoreDigest(analysis$long_data), qcCoreFrozenFigures$metab_long)
+    expect_identical(qcCoreDigest(qcCorePlotParts(omicsItsdCvPlot(analysis$metrics))), qcCoreFrozenFigures$cv_plot)
+    expect_identical(qcCoreDigest(qcCorePlotParts(omicsItsdIntensityPlot(analysis$long_data))),
+        qcCoreFrozenFigures$intensity_plot)
+    # Lipid's inline CV figure: the data its output drew (one ggplot call) for the same metrics.
     lipid <- module_ci_lipid_qc_workflow(module_ci_lipid_qc_object(layout = "combined"))
     metrics <- analyzeWorkflowOmicsItsd(lipidomicsDeclarationBinding, lipid$state_manager, "",
         omicGuiConfig("lipidomics")$qc$itsd)$metrics
-    suppressWarnings(utils::capture.output(shiny::testServer(function(input, output, session) {
-        registerLipidItsdCvPlotOutput(output, shiny::reactiveVal(metrics))
-    }, {
-        output$cv_plot
-    })))
-    expect_length(drawn$data, 1L)
-    expect_identical(omicsItsdCvPlot(metrics)$data, drawn$data[[1L]])
+    expect_identical(qcCoreDigest(omicsItsdCvPlot(metrics)$data), qcCoreFrozenFigures$lipid_cv_data)
 })
 
 # ------------------------------------------------------------------------------------------------
 # The finalise.
 # ------------------------------------------------------------------------------------------------
 
-test_that("validateWorkflowOmicsQcFinalize is lipid's finalise validation: passes, refusals and their texts", {
-    testthat::skip("quarantined: Q-64 (KIT-104 W5) it compares the core with validateLipidQcS4FinalizeState, which W5 deleted; the comparison passed at 7b99e7e8 (W2)")
+# validateLipidQcS4FinalizeState, frozen from 7b99e7e8 (KIT-116): the aligned shell passed and was returned unchanged
+# (identical to its input; the shell carries its owner's per-run entity reference, so the frozen value is that
+# identity, not a digest of the shell), and the five refusals' texts.
+qcCoreFrozenLipidFinalise <- list(
+    misaligned = paste("Current LipidomicsAssayData object has assay/design mismatch:",
+        "Design matrix group column 'group' contains blank assignments."),
+    zero_rows = "Current LipidomicsAssayData object has no assay data to finalize.",
+    no_design = "Current LipidomicsAssayData object has no design matrix rows to finalize.",
+    no_assays = "Current LipidomicsAssayData object has no assay data to finalize.",
+    other_class = "Current state is not a LipidomicsAssayData object")
+
+test_that("validateWorkflowOmicsQcFinalize is lipid's finalise validation: passes, refusals and their texts (frozen from 7b99e7e8, KIT-116)", {
     qc <- qcCoreConfig("lipidomics")
     aligned <- readLipidWorkflowShell(module_ci_lipid_qc_workflow()$state_manager, measures = "features")
-    expect_identical(validateWorkflowOmicsQcFinalize(aligned, qc, lipidomicsDeclarationBinding),
-        validateLipidQcS4FinalizeState(aligned))
+    expect_identical(validateWorkflowOmicsQcFinalize(aligned, qc, lipidomicsDeclarationBinding), aligned)
     misaligned <- readLipidWorkflowShell(module_ci_lipid_qc_workflow(qcCoreBlankGroup(module_ci_lipid_qc_object()))$state_manager)
     zero_rows <- aligned
     attr(zero_rows, "assay_rows")[[1L]] <- 0L
@@ -288,10 +289,13 @@ test_that("validateWorkflowOmicsQcFinalize is lipid's finalise validation: passe
     no_assays@lipid_data <- list()
     attr(no_assays, "assay_rows") <- integer()
     other_class <- readMetabWorkflowShell(module_ci_metab_qc_workflow()$state_manager)
-    for (case in list(misaligned, zero_rows, no_design, no_assays, other_class)) {
-        today <- qcCoreError(validateLipidQcS4FinalizeState(case))
+    cases <- list(misaligned = misaligned, zero_rows = zero_rows, no_design = no_design, no_assays = no_assays,
+        other_class = other_class)
+    for (name in names(cases)) {
+        today <- qcCoreFrozenLipidFinalise[[name]]
         expect_false(is.null(today))
-        expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(case, qc, lipidomicsDeclarationBinding)), today)
+        expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(cases[[name]], qc, lipidomicsDeclarationBinding)),
+            today, info = name)
     }
     expect_identical(qcCoreError(validateWorkflowOmicsQcFinalize(misaligned, qc, lipidomicsDeclarationBinding)),
         "Current LipidomicsAssayData object has assay/design mismatch: Design matrix group column 'group' contains blank assignments.")
