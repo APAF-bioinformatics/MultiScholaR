@@ -1145,7 +1145,7 @@ restoreWorkflowEnrichment <- function(manager, config) {
 #'    outcomes (applied, rows before and after); a difference refuses the replay.
 #'
 #' Limits: a live g:Profiler result reproduces only when the service's database version is the recorded one (the
-#' record's `external_resources`); the annotation table is the prepared project's and is not hash-checked.
+#' record's `external_resources`; the replay warns when it is not); the annotation table is the prepared project's and is not hash-checked.
 #' @param manager The replay's owner.
 #' @param step The record's enrichment step.
 #' @param parameters The step's declared values, decoded (`workflowReplayParameters`).
@@ -1153,9 +1153,12 @@ restoreWorkflowEnrichment <- function(manager, config) {
 #' @param contrasts The record's DA contrasts table.
 #' @param paths Experiment paths of the prepared project.
 #' @param scratch Directory for the publication and the pathway files.
+#' @param recorded_resources The record's `external_resources`; a service the replay queried that is not among them
+#'   (by name and release) gives a warning of class `workflow_replay_resource`.
 #' @return The run's result (`runWorkflowEnrichment`).
 #' @noRd
-replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, contrasts, paths, scratch) {
+replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, contrasts, paths, scratch,
+    recorded_resources = NULL) {
     config <- omicGuiConfig("proteomics")$enrichment
     staged <- list(da_output_dir = file.path(scratch, "enrichment", "da"),
         publication_graphs_dir = file.path(scratch, "enrichment", "graphs"))
@@ -1197,6 +1200,15 @@ replayWorkflowEnrichmentStep <- function(manager, step, parameters, manifest, co
                     class = "workflow_replay_invalid")
             }
         }
+    }
+    # KIT-115 (A107-07): the declared values do not name the service's release, and a result depends on it.
+    as_named <- function(service, release) sub(":$", "", paste(service, release %||% "", sep = ":"))
+    recorded <- vapply(recorded_resources %||% list(), function(resource) as_named(resource$service, resource$release), "")
+    unrecorded <- setdiff(sub(":$", "", setdiff(run$service, "unavailable")), recorded)
+    if (length(unrecorded)) {
+        cli::cli_warn(c("replayed step {.val {step$state}} queried {.val {unrecorded}}, which the record does not name",
+            i = "the record names {.val {recorded}}; an enrichment result depends on the release of its service"),
+            class = "workflow_replay_resource")
     }
     run
 }

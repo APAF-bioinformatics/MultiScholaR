@@ -889,7 +889,8 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     prepared <- h$kitPrepareReplayProject(copy, c("initial", "correlation_filtered"), api)
     seen <- character()
     replayed <- list()
-    utils::capture.output(replay <- suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(record, prepared,
+    replay_warnings <- character()
+    utils::capture.output(replay <- suppressMessages(withCallingHandlers(replayWorkflowAnalysisRecord(record, prepared,
         character(), paths, withr::local_tempdir(), on_step = function(step, manager) {
             seen <<- c(seen, step$operation)
             if (identical(step$operation, "enrichment")) {
@@ -899,8 +900,15 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
                 replayed$tables <<- lapply(replayed$product$results, function(id)
                     describeSavedWorkflowEntity(manager$.context$store, id)$identity)
             }
-        }))))
+        }), warning = function(warning) {
+            replay_warnings <<- c(replay_warnings, class(warning)[[1L]])
+            invokeRestart("muffleWarning")
+        })))
     expect_identical(replay$states, c("initial", "correlation_filtered", "enrichment_completed"))
+    # KIT-115 item 3 (A107-07): the replay queried the service release the record names, so it says nothing of it.
+    recorded_services <- vapply(record$external_resources, function(resource) resource$service, "")
+    expect_true("gprofiler2" %in% recorded_services)
+    expect_false("workflow_replay_resource" %in% replay_warnings)
     expect_identical(seen, c("DA-contrast-output", "enrichment"))
     # The KIT-016 measure: the enrichment data and summaries, and the product's parameters and results; the plot slots
     # carry random widget ids and are not compared. `results` holds the DA tables' entity ids, which are store-local (an
@@ -935,6 +943,25 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     prepared_changed <- h$kitPrepareReplayProject(copy_changed, c("initial", "correlation_filtered"), api)
     utils::capture.output(expect_error(suppressMessages(suppressWarnings(replayWorkflowAnalysisRecord(changed, prepared_changed,
         character(), paths, withr::local_tempdir()))), regexp = "protein_id_column", class = "workflow_replay_invalid"))
+    # KIT-115 item 3 (A107-07): a record naming another release of the service still replays (the declared values are
+    # equal on the double), and the replay warns that the service it queried is not the recorded one.
+    other_release <- record
+    for (i in seq_along(other_release$external_resources)) other_release$external_resources[[i]]$release <- "kit115-other-release"
+    copy_release <- withr::local_tempdir()
+    stopifnot(system2("cp", c("-a", file.path(root, "."), copy_release)) == 0L)
+    prepared_release <- h$kitPrepareReplayProject(copy_release, c("initial", "correlation_filtered"), api)
+    release_warnings <- list()
+    utils::capture.output(suppressMessages(withCallingHandlers(replayWorkflowAnalysisRecord(other_release, prepared_release,
+        character(), paths, withr::local_tempdir()), warning = function(warning) {
+            release_warnings[[length(release_warnings) + 1L]] <<- warning
+            invokeRestart("muffleWarning")
+        })))
+    release_warning <- Filter(function(warning) inherits(warning, "workflow_replay_resource"), release_warnings)
+    expect_length(release_warning, 1L)
+    if (length(release_warning)) {
+        expect_match(conditionMessage(release_warning[[1L]]), "kit115-other-release", fixed = TRUE)
+        expect_match(conditionMessage(release_warning[[1L]]), "enrichment_completed", fixed = TRUE)
+    }
     # GUI audit R3, P-28: a record that declares the organism filter replays with the filter on, and what the filter
     # did must equal the record's outcomes. The record is the unfiltered one with the declaration and the outcomes added
     # as a filtered run records them: the replay resolves its mapping from the test-mode annotation table, which gives

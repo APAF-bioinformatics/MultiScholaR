@@ -659,7 +659,7 @@ replayWorkflowAnalysisRecord <- function(record, project_root, inputs, paths, sc
                 cli::cli_abort("step {.val {step$state}} cannot be replayed without a proteomics DA manifest", class = "workflow_replay_unsupported")
             parameters <- workflowReplayParameters(step$parameters, workflowOperationEntry("enrichment")$parameters)
             withWorkflowStateScope(manager, function() replayWorkflowEnrichmentStep(manager, step, parameters, da_manifest,
-                contrasts, paths, scratch))
+                contrasts, paths, scratch, recorded_resources = record$external_resources))
             if (!identical(manager$current_state, step$state))
                 cli::cli_abort("replayed step {.val {step$state}} committed {.val {manager$current_state}}", class = "workflow_replay_invalid")
             if (is.function(on_step)) on_step(step, manager)
