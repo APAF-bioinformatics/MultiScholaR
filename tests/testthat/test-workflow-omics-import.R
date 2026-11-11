@@ -43,13 +43,39 @@ omicsImportArtifactBytes <- function(artifacts, root) {
     stats::setNames(unname(tools::md5sum(files)), gsub(root, "<root>", files, fixed = TRUE))
 }
 
-# One case on today's path and on the core: a refusal gives the same message and writes nothing; a
-# success gives the same tables, mapping, log, validation and artifact bytes.
-expectOmicsImportLikeToday <- function(old, new, old_root, new_paths, info) {
-    if (is.null(old$tables)) {
-        expect_true(inherits(new, "error"), info = paste(info, old$message))
+# KIT-116 W2 (Q-30): the comparison blocks compared the core with the pre-KIT-102 lipid, metab and trx
+# import functions, which KIT-102 W5 deleted. Their old side is now frozen: literals, and sha256 digests
+# of the canonical forms below, computed from the old functions at d469cea3 (kit-102/w2), where the
+# comparison passed, by docs/qa/workflow-execution/kit/kit-116/freeze/q30-import.R (which also checked
+# each old value against the core of that commit). A canonical form is the block's own comparison
+# (expect_identical; paths under the run's root made relative). The core side stays live.
+omicsImportDigest <- function(x) digest::digest(x, algo = "sha256")
+
+# A successful import as the block compared it.
+omicsImportRecord <- function(tables, sample_columns, data_format, column_mapping, log, validation,
+                              artifacts, root) {
+    list(tables = tables, sample_columns = sample_columns, data_format = data_format,
+        column_mapping = column_mapping, log = omicsImportLogWithoutTime(log, root),
+        validation = validation[c("valid", "errors", "warnings")],
+        artifacts = omicsImportArtifactBytes(artifacts, root))
+}
+
+# A preview's fields as the block compared them, paths under `root` made relative.
+omicsImportPreviewRecord <- function(headers, detected_format, format_confidence, import_result, id,
+                                     annotation, is_pattern, assay_data, root) {
+    omicsImportRelative(list(headers = headers, detected_format = detected_format,
+        format_confidence = format_confidence, import_result = import_result, assay_data = assay_data,
+        id = id, annotation = annotation, is_pattern = is_pattern), root)
+}
+
+# One case on the core against its frozen value: a refusal gives the frozen message and writes nothing;
+# a success gives the frozen tables, mapping, log, validation and artifact bytes.
+expectOmicsImportFrozen <- function(frozen, new, new_paths, info) {
+    expect_false(is.null(frozen), info = info)
+    if (!is.null(frozen$message)) {
+        expect_true(inherits(new, "error"), info = paste(info, frozen$message))
         if (!inherits(new, "error")) return(invisible(NULL))
-        expect_identical(conditionMessage(new), old$message, info = info)
+        expect_identical(conditionMessage(new), frozen$message, info = info)
         expect_length(list.files(new_paths$source_dir, recursive = TRUE), 0L)
         return(invisible(NULL))
     }
@@ -57,103 +83,59 @@ expectOmicsImportLikeToday <- function(old, new, old_root, new_paths, info) {
         conditionMessage(new)
     }))
     if (inherits(new, "error")) return(invisible(NULL))
-    expect_identical(new$assays, old$tables, info = info)
-    expect_identical(new$sample_columns, old$sample_columns, info = info)
-    expect_identical(new$data_format, old$data_format, info = info)
-    expect_identical(new$column_mapping, old$column_mapping, info = info)
-    expect_identical(omicsImportLogWithoutTime(new$processing_log, new_paths$base_dir),
-        omicsImportLogWithoutTime(old$log, old_root), info = info)
-    expect_identical(new$validation[c("valid", "errors", "warnings")],
-        old$validation[c("valid", "errors", "warnings")], info = info)
-    expect_identical(omicsImportArtifactBytes(new$artifacts, new_paths$base_dir),
-        omicsImportArtifactBytes(old$artifacts, old_root), info = info)
+    expect_identical(omicsImportDigest(omicsImportRecord(new$assays, new$sample_columns,
+        new$data_format, new$column_mapping, new$processing_log, new$validation, new$artifacts,
+        new_paths$base_dir)), frozen$digest, info = info)
 }
 
-# Today's lipid import (runLipidImportProcessing, through the MCI-018 helper) and the core.
+# The core's lipid import against the frozen pre-KIT-102 run (runLipidImportProcessing, through the
+# MCI-018 helper).
 compareLipidImport <- function(assay, info, assay_file = NULL, vendor_format = "lipidsearch",
                                detected_format = vendor_format, lipid_id_col = "LipidName",
                                annotation_col = "LipidClass",
                                sample_cols = module_ci_lipid_sample_cols(), assay_name = "LCMS_Pos",
                                assay2_file = NULL, assay2_name = "", sanitize_names = FALSE) {
-    old_paths <- module_ci_lipid_import_paths()
+    new_paths <- module_ci_lipid_import_paths()
     if (is.null(assay_file)) {
-        assay_file <- module_ci_lipid_write_table(assay, file.path(old_paths$raw_dir,
+        assay_file <- module_ci_lipid_write_table(assay, file.path(new_paths$raw_dir,
             paste0(gsub("[/\\\\]", "_", assay_name), ".tsv")))
     }
-    old <- module_ci_lipid_import_run(assay = assay, paths = old_paths, assay_name = assay_name,
-        assay_file = assay_file, assay2_file = assay2_file, assay2_name = assay2_name,
-        vendor_format = vendor_format, detected_format = detected_format,
-        lipid_id_col = lipid_id_col, annotation_col = annotation_col, sample_cols = sample_cols,
-        sanitize_names = sanitize_names)
-    today <- if (is.null(old$result)) {
-        list(message = sub("^Error processing import: ", "", old$error_messages[[1]]))
-    } else {
-        list(tables = old$result$assayList, sample_columns = old$result$sampleColumns,
-            data_format = old$workflow$data_format, column_mapping = old$workflow$column_mapping,
-            log = old$workflow$processing_log$setup_import,
-            validation = old$result$validationResult, artifacts = old$result$artifactResult)
-    }
-    new_paths <- module_ci_lipid_import_paths()
     new <- omicsImportRun(omicsImportRequest(assay, new_paths, assay_file, assay_name, assay2_file,
         assay2_name, vendor_format, detected_format, lipid_id_col, annotation_col, sample_cols,
         sanitize_names), "lipidomics")
-    expectOmicsImportLikeToday(today, new, old_paths$base_dir, new_paths, info)
+    expectOmicsImportFrozen(omicsImportFrozen_i5_lipid[[info]], new, new_paths, info)
     invisible(new)
 }
 
-# Today's metab import (runMetabImportProcessing, through the MCI-012 helper) and the core.
+# The core's metab import against the frozen pre-KIT-102 run (runMetabImportProcessing, through the
+# MCI-012 helper).
 compareMetabImport <- function(assay, info, assay_file = NULL, vendor_format = "custom",
                                detected_format = vendor_format, metabolite_col = "Feature.Name",
                                annotation_col = "Annotation",
                                sample_cols = grep("^(WT|KO|Sample|QC)", names(assay), value = TRUE),
                                assay_name = "LCMS_Pos", assay2_file = NULL, assay2_name = "",
                                sanitize_names = FALSE) {
-    old_paths <- module_ci_metab_import_paths()
+    new_paths <- module_ci_metab_import_paths()
     if (is.null(assay_file)) {
-        assay_file <- module_ci_metab_write_table(assay, file.path(old_paths$raw_dir,
+        assay_file <- module_ci_metab_write_table(assay, file.path(new_paths$raw_dir,
             paste0(gsub("[/\\\\]", "_", assay_name), ".tsv")))
     }
-    old <- module_ci_metab_import_run(assay = assay, paths = old_paths, assay_name = assay_name,
-        assay_file = assay_file, assay2_file = assay2_file, assay2_name = assay2_name,
-        vendor_format = vendor_format, detected_format = detected_format,
-        metabolite_col = metabolite_col, annotation_col = annotation_col,
-        sample_cols = sample_cols, sanitize_names = sanitize_names)
-    today <- if (identical(old$result$status, "error")) {
-        list(message = conditionMessage(old$result$error))
-    } else {
-        payload <- old$result$workflowPayload
-        list(tables = payload$assayList, sample_columns = payload$sampleCols,
-            data_format = old$workflow$data_format, column_mapping = old$workflow$column_mapping,
-            log = old$workflow$processing_log$setup_import,
-            validation = old$result$validationResult, artifacts = old$result$artifactResult)
-    }
-    new_paths <- module_ci_metab_import_paths()
     new <- omicsImportRun(omicsImportRequest(assay, new_paths, assay_file, assay_name, assay2_file,
         assay2_name, vendor_format, detected_format, metabolite_col, annotation_col, sample_cols,
         sanitize_names), "metabolomics")
-    expectOmicsImportLikeToday(today, new, old_paths$base_dir, new_paths, info)
+    expectOmicsImportFrozen(omicsImportFrozen_i5_metab[[info]], new, new_paths, info)
     invisible(new)
 }
 
-# Today's trx import (runTrxImportProcessing, through the MCI-026 helper) and the core.
+# The core's trx import against the frozen pre-KIT-102 run (runTrxImportProcessing, through the MCI-026
+# helper); the key is the fixture directory's name.
 compareTrxImport <- function(counts_file, info) {
-    fixture <- module_ci_trx_fixture_owner()
-    old <- module_ci_trx_import(fixture, counts_file)
-    today <- if (is.null(old$result)) {
-        list(message = sub("^Error processing import: ", "", old$errors[[1]]))
-    } else {
-        list(tables = old$result$assayList, sample_columns = old$result$sampleColumns,
-            data_format = fixture$workflow$data_format,
-            column_mapping = fixture$workflow$column_mapping,
-            log = fixture$workflow$processing_log$setup_import,
-            validation = old$result$validationResult, artifacts = old$result$artifactResult)
-    }
     new_paths <- module_ci_lipid_import_paths()
     preview <- previewTrxCountsImport(counts_file)
     new <- omicsImportRun(omicsImportRequest(preview$assay_data, new_paths, counts_file, "counts",
         NULL, "", "trx_counts", preview$detected_format, preview$updates$id$selected,
         preview$updates$annotation$selected, NULL, NULL, ""), "transcriptomics")
-    expectOmicsImportLikeToday(today, new, fixture$paths$base_dir, new_paths, info)
+    expectOmicsImportFrozen(omicsImportFrozen_i5_trx[[info]], new, new_paths, info)
     invisible(new)
 }
 
@@ -161,10 +143,22 @@ compareTrxImport <- function(counts_file, info) {
 # I1, I2: headers and preview.
 # ------------------------------------------------------------------------------------------------
 
-test_that("I1 the header reader is today's default reader (lipid and metab)", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
-    lipid_default <- eval(formals(loadLipidImportAssayPreview)$readHeaders)
-    metab_default <- eval(formals(prepareMetabImportAssaySelectionState)$readHeadersFn)
+# The headers read by the pre-KIT-102 lipid (loadLipidImportAssayPreview) and metab
+# (prepareMetabImportAssaySelectionState) default readers, frozen from d469cea3 (KIT-116).
+omicsImportFrozen_i1_lipid <- list(
+    tsv = c("Peak ID", "Name", "RT (min)", "Precursor m/z", "Adduct", "Formula", "Ontology", "Ion mode",
+        "Total Score", "WT_1", "WT_2", "KO_1", "KO_2"),
+    malformed = c("not", "a", "valid"),
+    missing = character(0),
+    csv = c("lipid_id", "annotation", "WT_1", "WT_2", "KO_1", "KO_2"))
+omicsImportFrozen_i1_metab <- list(
+    tsv = c("Peak ID", "Name", "RT (min)", "Precursor m/z", "Adduct", "Formula", "Ontology", "Ion mode",
+        "Total Score", "WT_1", "WT_2", "KO_1", "KO_2"),
+    malformed = c("not", "a", "valid"),
+    missing = character(0),
+    csv = c("lipid_id", "annotation", "WT_1", "WT_2", "KO_1", "KO_2"))
+
+test_that("I1 the header reader is today's default reader (lipid and metab) (frozen from d469cea3, KIT-116)", {
     paths <- module_ci_lipid_import_paths()
     files <- c(
         tsv = module_ci_lipid_write_table(module_ci_lipid_msdial_assay(),
@@ -176,14 +170,30 @@ test_that("I1 the header reader is today's default reader (lipid and metab)", {
     files <- c(files, csv = csv)
     for (name in names(files)) {
         headers <- suppressWarnings(readOmicsImportHeaders(files[[name]]))
-        expect_identical(headers, suppressWarnings(lipid_default(files[[name]])), info = name)
-        expect_identical(headers, suppressWarnings(metab_default(files[[name]])), info = name)
+        expect_identical(headers, omicsImportFrozen_i1_lipid[[name]], info = name)
+        expect_identical(headers, omicsImportFrozen_i1_metab[[name]], info = name)
     }
     expect_identical(suppressWarnings(readOmicsImportHeaders(files[["missing"]])), character(0))
 })
 
-test_that("I2 the feature-table preview is today's lipid and metab preview", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
+# The pre-KIT-102 previews (loadLipidImportAssayPreview, prepareMetabImportAssaySelectionState and
+# trxImportPreview), as sha256 of omicsImportPreviewRecord, frozen from d469cea3 (KIT-116). The
+# block compared import_result and the lipid assay_data with expect_equal; at d469cea3 they were
+# identical, so the digest holds them to identity.
+omicsImportFrozen_i2_lipid <- list(
+    lipidsearch = "367c941b05e85813ade6b7da05bc3cc2bc37ab36af3dead72f35d328cccc1954",
+    msdial = "c1f74268aa5e253cf58db05ab395724d797ca1368b51cbae4bd5c701b26a0707",
+    no_annotation = "5c09c824a94d7a3c1cf83d6416160405dc09aaf8fbccedbf11d6d38acb5988fc",
+    custom = "d6d49c2fe3b8a0831152feb04900148cb1bf411a37c14abb95723ffe15d91b5c",
+    malformed = "0405d2d917a16835bb4b0ef14416e8a3051f013119898c61cae53cf55ad0861d")
+omicsImportFrozen_i2_metab <- list(
+    msdial = "4dafeb9431acac7eed9eaec249c4d34cbf48e4f5eb5bfac7e40142c488fd024b",
+    custom = "a21786b3d6bca9f67dabd05dcbee846499e3a385e3a1fd87710dbb89f42cc628")
+omicsImportFrozen_i2_trx <- list(
+    trx_screen = "4ddf739c1b81961996334b712d83a73281175be90d424227b5676c88683ebb53",
+    counts_negative = "cc331cc3dac4fc7778710164b15c939c16b77262db33356a416a4a415b2c839b")
+
+test_that("I2 the feature-table preview is today's lipid and metab preview (frozen from d469cea3, KIT-116)", {
     paths <- module_ci_lipid_import_paths()
     lipid_files <- c(
         lipidsearch = module_ci_lipid_write_table(module_ci_lipid_lipidsearch_assay(),
@@ -198,17 +208,11 @@ test_that("I2 the feature-table preview is today's lipid and metab preview", {
         malformed = module_ci_lipid_write_malformed(file.path(paths$raw_dir, "malformed.tsv")))
     lipid <- omicGuiConfig("lipidomics")$import
     for (name in names(lipid_files)) {
-        old <- suppressWarnings(loadLipidImportAssayPreview(lipid_files[[name]],
-            logInfo = function(...) NULL))
         new <- suppressWarnings(previewOmicsImport(lipid_files[[name]], lipid))
-        expect_identical(new$headers, old$headers, info = name)
-        expect_identical(new$detected_format, old$detectedFormat, info = name)
-        expect_identical(new$format_confidence, old$formatConfidence, info = name)
-        expect_equal(new$import_result, old$importResult, info = name)
-        expect_equal(new$assay_data, old$assayData, info = name)
-        expect_identical(new$updates$id, old$updates$lipidId, info = name)
-        expect_identical(new$updates$annotation, old$updates$annotation, info = name)
-        expect_identical(new$updates$is_pattern, old$updates$isPattern, info = name)
+        expect_identical(omicsImportDigest(omicsImportPreviewRecord(new$headers, new$detected_format,
+            new$format_confidence, new$import_result, new$updates$id, new$updates$annotation,
+            new$updates$is_pattern, new$assay_data, paths$base_dir)), omicsImportFrozen_i2_lipid[[name]],
+            info = name)
     }
     metab <- omicGuiConfig("metabolomics")$import
     metab_paths <- module_ci_metab_import_paths()
@@ -218,35 +222,24 @@ test_that("I2 the feature-table preview is today's lipid and metab preview", {
         custom = module_ci_metab_write_table(module_ci_metab_custom_assay(),
             file.path(metab_paths$raw_dir, "custom.tsv")))
     for (name in names(metab_files)) {
-        old <- suppressWarnings(prepareMetabImportAssaySelectionState(metab_files[[name]]))
         new <- suppressWarnings(previewOmicsImport(metab_files[[name]], metab))
-        expect_identical(new$headers, old$headers, info = name)
-        expect_identical(list(format = new$detected_format, confidence = new$format_confidence),
-            old$formatInfo[c("format", "confidence")], info = name)
-        expect_equal(new$import_result, old$importResult, info = name)
-        expect_identical(new$updates$id, list(choices = old$metaboliteIdChoices,
-            selected = old$selectedMetaboliteId), info = name)
-        expect_identical(new$updates$annotation, list(choices = old$annotationChoices,
-            selected = old$selectedAnnotation), info = name)
-        expect_identical(new$updates$is_pattern, old$isPattern, info = name)
+        # The metab comparison did not include the assay data.
+        expect_identical(omicsImportDigest(omicsImportPreviewRecord(new$headers, new$detected_format,
+            new$format_confidence, new$import_result, new$updates$id, new$updates$annotation,
+            new$updates$is_pattern, NULL, metab_paths$base_dir)), omicsImportFrozen_i2_metab[[name]],
+            info = name)
     }
     absent <- file.path(paths$raw_dir, "absent.tsv")
     expect_error(suppressWarnings(previewOmicsImport(absent, lipid)),
         "Could not read headers from file", fixed = TRUE, class = "omics_import_invalid")
 })
 
-test_that("I2 the trx preview is today's trxImportPreview", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
+test_that("I2 the trx preview is today's trxImportPreview (frozen from d469cea3, KIT-116)", {
     for (dir in c(module_ci_trx_corpus(), module_ci_trx_fixture("counts_negative"))) {
-        old <- trxImportPreview(file.path(dir, "counts.tsv"))
         new <- previewTrxCountsImport(file.path(dir, "counts.tsv"))
-        expect_identical(new$headers, old$headers, info = dir)
-        expect_identical(new$detected_format, old$detectedFormat, info = dir)
-        expect_identical(new$format_confidence, old$formatConfidence, info = dir)
-        expect_identical(new$import_result, old$importResult, info = dir)
-        expect_identical(new$assay_data, old$assayData, info = dir)
-        expect_identical(new$updates$id, old$updates$lipidId, info = dir)
-        expect_identical(new$updates$annotation, old$updates$annotation, info = dir)
+        expect_identical(omicsImportDigest(omicsImportPreviewRecord(new$headers, new$detected_format,
+            new$format_confidence, new$import_result, new$updates$id, new$updates$annotation, NULL,
+            new$assay_data, dir)), omicsImportFrozen_i2_trx[[basename(dir)]], info = dir)
         expect_true("is_pattern" %in% names(new$updates))
         expect_null(new$updates$is_pattern)
     }
@@ -256,8 +249,46 @@ test_that("I2 the trx preview is today's trxImportPreview", {
 # I3, I4: sample and column resolution.
 # ------------------------------------------------------------------------------------------------
 
-test_that("I3, I4 the sample and column resolution is today's (lipid and metab)", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
+# The pre-KIT-102 resolutions, frozen from d469cea3 (KIT-116): resolveLipidImportSampleColumns (case,
+# excludeNormalized), resolveMetabImportSampleColumns (case), resolveLipidImportEffectiveColumn and
+# metab's column rule (resolveMetabImportColumnName for custom, else the selection) (vendor, name).
+omicsImportFrozen_i3_lipid <- list(
+    `1 FALSE` = c("Sample A", "Sample B", "Sample_normalized"),
+    `1 TRUE` = c("Sample A", "Sample B", "Sample_normalized"),
+    `2 FALSE` = c("Sample A", "Sample B", "QC-01", "QC-02", "Sample_normalized"),
+    `2 TRUE` = c("Sample A", "Sample B", "QC-01", "QC-02"),
+    `3 FALSE` = c("Sample A", "QC-01", "Sample_normalized"),
+    `3 TRUE` = c("Sample A", "QC-01"),
+    `4 FALSE` = c("Sample A", "QC-01", "Sample_normalized"),
+    `4 TRUE` = c("Sample A", "QC-01"),
+    `5 FALSE` = c("Sample A", "Sample B", "QC-01", "QC-02", "Sample_normalized"),
+    `5 TRUE` = c("Sample A", "Sample B", "QC-01", "QC-02"))
+omicsImportFrozen_i3_metab <- list(
+    `1` = c("Sample A", "Sample B", "Sample_normalized"),
+    `2` = c("Sample A", "Sample B", "QC-01", "QC-02", "Sample_normalized"),
+    `3` = c("Sample A", "QC-01", "Sample_normalized"),
+    `4` = c("Sample A", "QC-01", "Sample_normalized"),
+    `5` = c("Sample A", "Sample B", "QC-01", "QC-02", "Sample_normalized"))
+omicsImportFrozen_i4_lipid <- list(
+    `custom LIPID_ID` = "lipid_id",
+    `custom absent` = "absent",
+    `custom ` = "",
+    `custom NULL` = NULL,
+    `msdial LIPID_ID` = "selected",
+    `msdial absent` = "selected",
+    `msdial ` = "selected",
+    `msdial NULL` = "selected")
+omicsImportFrozen_i4_metab <- list(
+    `custom LIPID_ID` = "lipid_id",
+    `custom absent` = "absent",
+    `custom ` = "",
+    `custom NULL` = NULL,
+    `msdial LIPID_ID` = "selected",
+    `msdial absent` = "selected",
+    `msdial ` = "selected",
+    `msdial NULL` = "selected")
+
+test_that("I3, I4 the sample and column resolution is today's (lipid and metab) (frozen from d469cea3, KIT-116)", {
     custom <- module_ci_lipid_custom_assay(sample_prefix = "sample")
     custom$Sample_normalized <- 1
     import_result <- list(sample_columns = c("Sample A", "QC-01", "Sample_normalized"))
@@ -270,29 +301,25 @@ test_that("I3, I4 the sample and column resolution is today's (lipid and metab)"
     for (i in seq_along(cases)) {
         case <- cases[[i]]
         for (exclude in c(FALSE, TRUE)) {
+            key <- paste(i, exclude)
+            expect_true(key %in% names(omicsImportFrozen_i3_lipid), info = key)
             expect_identical(
                 resolveOmicsImportSampleColumns(custom, case$vendor, case$pattern, case$result,
                     if (exclude) OMICS_IMPORT_NORMALISED_COLUMNS else NULL),
-                resolveLipidImportSampleColumns(custom, case$result, case$vendor,
-                    case$pattern %||% "", excludeNormalized = exclude), info = paste(i, exclude))
+                omicsImportFrozen_i3_lipid[[key]], info = key)
         }
         expect_identical(
             resolveOmicsImportSampleColumns(custom, case$vendor, case$pattern, case$result),
-            resolveMetabImportSampleColumns(custom, case$vendor, case$pattern, case$result),
-            info = i)
+            omicsImportFrozen_i3_metab[[as.character(i)]], info = i)
     }
     headers <- names(custom)
     for (vendor in c("custom", "msdial")) {
         for (custom_name in list("LIPID_ID", "absent", "", NULL)) {
             new <- resolveOmicsImportColumn(headers, vendor, "selected", custom_name)
-            expect_identical(new, resolveLipidImportEffectiveColumn(custom, vendor, "selected",
-                custom_name), info = paste(vendor, custom_name %||% "NULL"))
-            metab_today <- if (identical(vendor, "custom")) {
-                resolveMetabImportColumnName(headers, custom_name)
-            } else {
-                "selected"
-            }
-            expect_identical(new, metab_today, info = paste(vendor, custom_name %||% "NULL"))
+            key <- paste(vendor, custom_name %||% "NULL")
+            expect_true(key %in% names(omicsImportFrozen_i4_lipid), info = key)
+            expect_identical(new, omicsImportFrozen_i4_lipid[[key]], info = key)
+            expect_identical(new, omicsImportFrozen_i4_metab[[key]], info = key)
         }
     }
 })
@@ -301,8 +328,46 @@ test_that("I3, I4 the sample and column resolution is today's (lipid and metab)"
 # I5 to I13 through the orchestration, against today's runs.
 # ------------------------------------------------------------------------------------------------
 
-test_that("I5 to I13 the lipid import is today's on the MCI-018 matrix", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
+# The pre-KIT-102 lipid runs (runLipidImportProcessing through the MCI-018 helper), frozen from d469cea3
+# (KIT-116): a refusal's message, or the sha256 of omicsImportRecord.
+omicsImportFrozen_i5_lipid <- list(
+    ls_pos = list(digest = "b72fc8114f40fed8373d86ccce42746379304835fad0d0c3bb044f7cd4ca3a2e"),
+    ls_zero = list(digest = "4cd303057d7fa8169fe3e95e43583de5855fdcad823128c13a34182a4740aff6"),
+    ls_no_class = list(digest = "fb6af95a0c1bfdc29374d1b4ff48ba31f778d617e5a70e729afd2f93d8b355e5"),
+    ls_duplicate_ids = list(digest = "cb911979e5b0726a5ea1356e48f64f5050b4cc361d59a2865fcf699bf34af512"),
+    missing_id = list(message = "Invalid lipidomics import: Assay 'LCMS_Pos': Lipid ID column not found: LipidName"),
+    missing_id_column = list(
+        message = "Invalid lipidomics import: Assay 'LCMS_Pos': Lipid ID column not found: MissingLipid"),
+    no_samples = list(message = paste("Invalid lipidomics import: No sample columns specified;",
+        "Assay 'LCMS_Pos': No sample columns specified")),
+    non_numeric = list(message = "Invalid lipidomics import: Assay 'LCMS_Pos' has non-numeric sample columns: WT_1"),
+    mismatched = list(
+        message = "Invalid lipidomics import: Assay 'LCMS_Pos': Sample columns not found: Missing_1, Missing_2"),
+    no_numeric = list(message = "Invalid lipidomics import: Assay 'LCMS_Pos' has non-numeric sample columns: WT_1"),
+    msdial = list(digest = "9df45aaebe49594566baab1c4d10733510db82679acf5e70849ab96621780273"),
+    vendor_mismatch = list(digest = "66362a421c931dbdeb927a21b78a4e02d93115dae30819f193d65b33880fdde6"),
+    custom_override = list(digest = "db23fe88f5c761bf063125054b47fde2a643d6ff224399778dc1dd4087a96f19"),
+    custom_null_detected = list(digest = "24a7c2966c6fa7492906ddc614d56a35ac8f33744e220c31b61522db0f8a2f2c"),
+    path_name = list(message = "Assay names must not contain path separators"),
+    empty_name = list(message = "Primary lipidomics assay name is required"),
+    pair = list(digest = "36054f6ebe48000976819a1f620b3f298a81a0389352186f4313c57a836c599a"),
+    pair_unusual = list(digest = "027d1f4e79fe712e455f9eccb3c3f91293b7d99fe1957d367cf52391fb3ab046"),
+    pair_duplicate = list(message = "Duplicate lipidomics assay names are not allowed"),
+    pair_no_name = list(message = "Second lipidomics assay requires both a file and an assay name"),
+    pair_no_file = list(message = "Second lipidomics assay requires both a file and an assay name"),
+    pair_path = list(message = "Assay names must not contain path separators"),
+    pair_empty_file = list(message = paste("Invalid lipidomics import: Assay 'LCMS_Neg': Lipid ID column not found:",
+        "LipidName; Sample columns not found: WT_1, WT_2, KO_1, KO_2")),
+    pair_msdial_reader = list(
+        message = "Invalid lipidomics import: Assay 'LCMS_Neg': Lipid ID column not found: LipidName"))
+# sanitizeLipidImportSampleNames: the sha256 of its assay list, and its sample columns.
+omicsImportFrozen_i5_sanitize <- list(
+    `TRUE` = list(assays = "697cb56fec881bdee42eda5705967b40a88e1a5cf120b877adeb461a963fda7b",
+        sample_columns = c("sample_a", "sample_b", "qc_01", "qc_02")),
+    `FALSE` = list(assays = "b246cd6e9108409d83bb767c905d915d0d527270217aec4405fe9ebc831b2fd5",
+        sample_columns = c("Sample A", "Sample B", "QC-01", "QC-02")))
+
+test_that("I5 to I13 the lipid import is today's on the MCI-018 matrix (frozen from d469cea3, KIT-116)", {
     skip_if_not(workflowOwnerCapable())
     paths <- module_ci_lipid_import_paths()
     for (case in list(
@@ -340,11 +405,10 @@ test_that("I5 to I13 the lipid import is today's on the MCI-018 matrix", {
     custom <- module_ci_lipid_custom_assay(sample_prefix = "sample")
     assays <- list(a = custom, b = custom[c("lipid_id", "Sample A", "QC-02")])
     for (sanitize in c(TRUE, FALSE)) {
-        old <- sanitizeLipidImportSampleNames(assays, samples, sanitize,
-            logInfo = function(...) NULL, notify = function(...) NULL)
+        frozen <- omicsImportFrozen_i5_sanitize[[as.character(sanitize)]]
         new <- sanitizeOmicsImportSampleNames(assays, samples, sanitize)
-        expect_identical(new$assays, old$assayList, info = sanitize)
-        expect_identical(new$sample_columns, old$sampleColumns, info = sanitize)
+        expect_identical(omicsImportDigest(new$assays), frozen$assays, info = sanitize)
+        expect_identical(new$sample_columns, frozen$sample_columns, info = sanitize)
         expect_identical(new$sanitized, sanitize)
     }
     # The second assay: read by the detected format's reader with the id and annotation columns.
@@ -367,8 +431,37 @@ test_that("I5 to I13 the lipid import is today's on the MCI-018 matrix", {
         detected_format = "msdial", assay2_file = msdial_neg, assay2_name = "LCMS_Neg")
 })
 
-test_that("I5 to I13 the metab import is today's on the MCI-012 matrix", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
+# The pre-KIT-102 metab runs (runMetabImportProcessing through the MCI-012 helper), frozen from
+# d469cea3 (KIT-116): a refusal's message, or the sha256 of omicsImportRecord.
+omicsImportFrozen_i5_metab <- list(
+    annotation_present = list(digest = "fb16f3b5fa21456363a6b177d521427711c65b8acd97621ee16eec1be14b9e68"),
+    annotation_absent = list(digest = "efe3283a6676cf7a2485b8f0cfec0fe2e8b8cf43fb66333bb050c0a630da3e55"),
+    text_numeric = list(digest = "ef7034f51eff11297e19f50b766957158eb74cddf46152c148d49b0359cf44b6"),
+    msdial = list(digest = "77d279335289fbc2aede92b380e7b690b28801358725c96ae6d0939edf0270df"),
+    missing_id_column = list(message = "Invalid metabolomics import: Metabolite ID column not found: Missing.ID"),
+    empty_id = list(message = paste("Invalid metabolomics import: Metabolite ID column is not specified.;",
+        "Metabolite ID column is not specified")),
+    no_samples = list(message = "Invalid metabolomics import: No sample columns specified.; No sample columns specified"),
+    non_numeric = list(
+        message = "Invalid metabolomics import: Assay 'LCMS_Pos' has non-numeric sample column(s): WT_1"),
+    infinite = list(message = "Invalid metabolomics import: Assay 'LCMS_Pos' has non-numeric sample column(s): WT_1"),
+    mismatched = list(message = "Invalid metabolomics import: Sample columns not found: Missing_1"),
+    malformed = list(message = paste("Invalid metabolomics import: Metabolite ID column not found: Feature.Name;",
+        "Sample columns not found: WT_1")),
+    sanitised = list(digest = "a00f11fdace064662eb10e18ab0a31edd79c65f94e18fc4414324ea6df25878e"),
+    path_name = list(message = paste("Invalid metabolomics import: Assay names must not contain path separators",
+        "or control characters.")),
+    control_name = list(message = paste("Invalid metabolomics import: Assay names must not contain path separators",
+        "or control characters.")),
+    empty_name = list(message = "Metabolomics import requires non-empty assay names."),
+    pair = list(digest = "83c534c6ad93db05247d3620c66a6fe479eab059d12c10ce6e88522846536215"),
+    pair_unusual = list(digest = "9a2e963b7abcd989dfa3dd947e8e64aee8667eb811f4c85144929e016d40fb9e"),
+    pair_duplicate = list(message = "Duplicate metabolomics assay names are not allowed: LCMS_Pos"),
+    pair_no_name = list(digest = "331658c189fa97ae57cf3f41fb2047f83aa1f266490f154cfb8a35de478ed5b6"),
+    pair_path = list(message = paste("Invalid metabolomics import: Assay names must not contain path separators",
+        "or control characters.")))
+
+test_that("I5 to I13 the metab import is today's on the MCI-012 matrix (frozen from d469cea3, KIT-116)", {
     skip_if_not(workflowOwnerCapable())
     paths <- module_ci_metab_import_paths()
     valid <- module_ci_metab_custom_assay()
@@ -410,13 +503,23 @@ test_that("I5 to I13 the metab import is today's on the MCI-012 matrix", {
     compareMetabImport(valid, "pair_path", assay2_file = secondary, assay2_name = "LCMS\nNeg")
 })
 
-test_that("I5 to I13 the trx import is today's on the MCI-026 corpus and fixtures", {
-    skip("quarantined: Q-30 (KIT-102 W5) it compared the core with the pre-KIT-102 lipid/metab/trx import functions, deleted by W5; the comparison passed at d469cea3 (kit-102/w2), and the core is covered by MCI-012, MCI-018, MCI-026 and the entry lanes")
+# The pre-KIT-102 trx runs (runTrxImportProcessing through the MCI-026 helper), frozen from d469cea3
+# (KIT-116): a refusal's message, or the sha256 of omicsImportRecord.
+omicsImportFrozen_i5_trx <- list(
+    trx_screen = list(digest = "5f44b8b14a194af5e365b1722a325767545d1249e18a13625eed7f6890b6e04d"),
+    counts_whole_double = list(digest = "c694fe5c0e2286ce7e2fdc0edbbcc436c61d6719495026d1340871f3192cf265"),
+    counts_na = list(message = "NA or NaN count (1 cell(s); first: gene 1, sample RPMI_03_r2) (trx_counts_na)"),
+    counts_negative = list(
+        message = "negative count (1 cell(s); first: gene 1, sample RPMI_03_r2) (trx_counts_negative)"),
+    counts_fractional = list(
+        message = "non-whole count (1 cell(s); first: gene 1, sample RPMI_03_r2) (trx_counts_fractional)"))
+
+test_that("I5 to I13 the trx import is today's on the MCI-026 corpus and fixtures (frozen from d469cea3, KIT-116)", {
     skip_if_not(workflowOwnerCapable())
     for (dir in c(module_ci_trx_corpus(), module_ci_trx_fixture("counts_whole_double"),
         module_ci_trx_fixture("counts_na"), module_ci_trx_fixture("counts_negative"),
         module_ci_trx_fixture("counts_fractional"))) {
-        compareTrxImport(file.path(dir, "counts.tsv"), dir)
+        compareTrxImport(file.path(dir, "counts.tsv"), basename(dir))
     }
     # Refused by the count policy's class, as today.
     refused <- c(counts_na = "trx_counts_na", counts_negative = "trx_counts_negative",
@@ -446,7 +549,7 @@ test_that("the import adds no copy of an assay that needs no conversion (scoping
 # The shared conversion helper and the parity (failed first).
 # ------------------------------------------------------------------------------------------------
 
-test_that("coerceOmicsNumericLikeColumns converts only numeric-like text and factor columns", {
+test_that("coerceOmicsNumericLikeColumns converts only numeric-like text and factor columns (frozen from d469cea3, KIT-116)", {
     table <- data.frame(id = c("a", "b", "c"), text = c(" 1.5", "", NA),
         factor = factor(c("2", "3", "4")), word = c("1", "x", "2"), number = c(1, 2, 3),
         flag = c(NA, NA, NA), unlisted = c("7", "8", "9"), infinite = c("1", "Inf", "2"),
@@ -465,17 +568,18 @@ test_that("coerceOmicsNumericLikeColumns converts only numeric-like text and fac
     numeric_only <- table[c("id", "number")]
     expect_identical(rlang::obj_address(coerceOmicsNumericLikeColumns(numeric_only, "number")),
         rlang::obj_address(numeric_only))
-    skip("quarantined: Q-30 (KIT-102 W5) the cross-check below compared with metab's pre-KIT-102 conversion functions, deleted by W5")
-    # The rule is metab's (metabImportValuesAreNumericLike,
-    # coerceMetabImportWorkflowPayloadSamples).
+    # The rule is metab's (metabImportValuesAreNumericLike, coerceMetabImportWorkflowPayloadSamples);
+    # their results on this table, frozen from d469cea3 (KIT-116).
+    numeric_like <- c(id = FALSE, text = TRUE, factor = TRUE, word = FALSE, number = TRUE, flag = FALSE,
+        unlisted = TRUE, infinite = FALSE)
     for (column in names(table)) {
-        expect_identical(omicsImportValuesAreNumericLike(table[[column]]),
-            metabImportValuesAreNumericLike(table[[column]]), info = column)
+        expect_identical(omicsImportValuesAreNumericLike(table[[column]]), numeric_like[[column]],
+            info = column)
     }
     small <- table[c("id", "text", "factor")]
-    payload <- coerceMetabImportWorkflowPayloadSamples(list(assayList = list(a = small),
-        columnMapping = list(sample_columns = c("text", "factor"))))
-    expect_identical(coerceOmicsNumericLikeColumns(small, c("text", "factor")), payload$assayList$a)
+    payload <- structure(list(id = c("a", "b", "c"), text = c(1.5, NA, NA), factor = c(2, 3, 4)),
+        row.names = c(NA, -3L), class = "data.frame")
+    expect_identical(coerceOmicsNumericLikeColumns(small, c("text", "factor")), payload)
 })
 
 test_that("parity: lipid text-numeric sample columns are converted, not refused (failed first)", {
