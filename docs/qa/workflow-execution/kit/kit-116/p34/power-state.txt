@@ -8,3 +8,5 @@ kit-journey-921d start 19:06:34 at 322e924f: AC 1, profile low-power, battery 10
 kit-journey-921d end 19:15:35: AC 1, profile low-power, battery 100%, load 3.32, available 41 GiB
 kit-journey-921e start 19:15:35 at 64ef32b9: AC 1, profile low-power, battery 100%, load 3.32, available 41 GiB
 kit-journey-921e end 19:24:55: AC 1, profile low-power, battery 100%, load 2.93, available 41 GiB
+kit-journey-921f start 19:24:56 at 526fd7b3: AC 1, profile low-power, battery 100%, load 2.93, available 41 GiB
+kit-journey-921f end 19:33:56: AC 1, profile low-power, battery 100%, load 4.20, available 41 GiB
