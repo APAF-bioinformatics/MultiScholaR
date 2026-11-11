@@ -179,19 +179,36 @@ test_that("C1 the shared validator is today's lipid and metab validator, labels 
     expect_true("Metabolomics design requires a non-empty assay list." %in% metab$errors)
 })
 
-test_that("C1 the save preflight is today's commit preflight (lipid, metab)", {
+# KIT-116 W2 (A103-03): since KIT-103 W4/W5 the lipid and metab preflights and builder servers are wrappers over the
+# shared code, so the two parity tests below compared it with itself. They now compare it with the old functions'
+# values, frozen at 616e1147, the last commit where those functions existed as separate code (its child 5d077268,
+# W4, made the lipid ones wrappers; metab's followed at c56d1c64, W5), where both tests passed, by
+# docs/qa/workflow-execution/kit/kit-116/freeze/a103-03-design.R, which also checked each old value against the core of
+# that commit. Each value is the sha256 of the value the test compared with expect_identical.
+omicsDesignDigest <- function(x) digest::digest(x, algo = "sha256")
+
+# validateLipidDesignDaPreflight and validateMetabDesignDaPreflight (requireContrasts = FALSE) on the combined fixture's
+# payload, the payload without WT_1 in its first assay, and the payload with an empty formula.
+omicsDesignFrozenSavePreflight <- list(
+    `lipidomics payload` = "ccbd65694600b9515a4b7da5027e933c029b29f2443a68ff484d61ad0087ccdf",
+    `lipidomics drifted` = "3719369e906c6bb692cd7cda1ea981f68383cdcde7139a0fe84670017aca8cf1",
+    `lipidomics no_formula` = "ccbd65694600b9515a4b7da5027e933c029b29f2443a68ff484d61ad0087ccdf",
+    `metabolomics payload` = "ccbd65694600b9515a4b7da5027e933c029b29f2443a68ff484d61ad0087ccdf",
+    `metabolomics drifted` = "3719369e906c6bb692cd7cda1ea981f68383cdcde7139a0fe84670017aca8cf1",
+    `metabolomics no_formula` = "ccbd65694600b9515a4b7da5027e933c029b29f2443a68ff484d61ad0087ccdf")
+
+test_that("C1 the save preflight is today's commit preflight (lipid, metab) (frozen from 616e1147, KIT-116)", {
     for (omic in c("lipidomics", "metabolomics")) {
         fixture <- omicsDesignFixture(omic, layout = "combined")
-        old <- if (identical(omic, "lipidomics")) validateLipidDesignDaPreflight else validateMetabDesignDaPreflight
         drifted <- fixture$payload
         drifted$data_cln[[1]]$WT_1 <- NULL
         no_formula <- fixture$payload
         no_formula$config_list$deAnalysisParameters$formula_string <- ""
-        for (results in list(fixture$payload, drifted, no_formula)) {
-            expect_identical(validateOmicsDesignSave(results, results$column_mapping, omic),
-                old(designMatrix = results$design_matrix, assayList = results$data_cln,
-                    contrastsTbl = results$contrasts_tbl, formulaString = "~ 0 + group",
-                    columnMapping = results$column_mapping, requireContrasts = FALSE), info = omic)
+        cases <- list(payload = fixture$payload, drifted = drifted, no_formula = no_formula)
+        for (name in names(cases)) {
+            results <- cases[[name]]
+            expect_identical(omicsDesignDigest(validateOmicsDesignSave(results, results$column_mapping, omic)),
+                omicsDesignFrozenSavePreflight[[paste(omic, name)]], info = paste(omic, name))
         }
     }
 })
@@ -453,38 +470,8 @@ test_that("(KIT-115 A103-06) saved contrasts survive reopening and saving, with 
     expect_identical(buildOmicsDesignSaveContrastsTable(reopened, "~ 0 + group")$contrasts, odd$contrasts)
 })
 
-# One builder session on today's builder server: factors, assignment, a rename, technical
-# replicates, a removal, a contrast, then save.
-omicsDesignBuilderSession <- function(server, assays, mapping, extra_args = list()) {
-    out <- new.env()
-    shiny::testServer(server, args = c(list(data_tbl = function() assays,
-        config_list = shiny::reactive(list(deAnalysisParameters = list(formula_string = "~ 0 + group"))),
-        column_mapping = shiny::reactive(mapping)), extra_args), {
-        session$setInputs(new_factor = "WT")
-        session$setInputs(add_factor = 1)
-        session$setInputs(new_factor = "KO")
-        session$setInputs(add_factor = 2)
-        session$setInputs(sample_to_rename = "KO_3", new_sample_name = "KO_3x")
-        session$setInputs(rename_sample = 1)
-        session$setInputs(selected_runs = c("WT_1", "WT_2", "WT_3"), factor1_select = "WT", factor2_select = "",
-            factor3_select = "", replicate_start = 1L)
-        session$setInputs(assign_metadata = 1)
-        session$setInputs(selected_runs = c("KO_1", "KO_2", "KO_3x"), factor1_select = "KO", replicate_start = 1L)
-        session$setInputs(assign_metadata = 2)
-        session$setInputs(tech_rep_samples = c("WT_2", "WT_3"), tech_rep_assignment_mode = "lowest")
-        session$setInputs(assign_tech_reps = 1)
-        session$setInputs(samples_to_remove = "KO_1")
-        session$setInputs(remove_samples = 1)
-        session$setInputs(contrast_group1 = "KO", contrast_group2 = "WT", formula_string = "~ 0 + group")
-        session$setInputs(add_contrast = 1)
-        session$setInputs(save_results = 1)
-        out$result <- shiny::isolate(session$returned())
-        out$factors <- shiny::isolate(factors())
-    })
-    out
-}
-
-# The same session through the core.
+# One builder session through the core: factors, assignment, a rename, technical replicates, a removal, a contrast,
+# then save. (The same session on the old builder servers, omicsDesignBuilderSession, is in this file at 616e1147.)
 omicsDesignCoreSession <- function(assays, mapping, config) {
     state <- buildOmicsDesignInitialState(assays, list(deAnalysisParameters = list(formula_string = "~ 0 + group")),
         mapping, config)
@@ -501,30 +488,33 @@ omicsDesignCoreSession <- function(assays, mapping, config) {
     list(payload = payload, factors = factors, removed = removed)
 }
 
-test_that("C3 to C5 a builder session through the core gives today's result (lipid, metab, trx)", {
+# The saved result of that session (omicsDesignBuilderSession) on the old mod_lipid_design_builder_server
+# (lipid, and trx through its profile) and mod_metab_design_builder_server, frozen from 616e1147 (KIT-116).
+omicsDesignFrozenBuilder <- list(
+    lipidomics = "11a59ca29cf5b12dede0502b7e84852c0f869324473a26e21b15dfa0cc4f03c5",
+    metabolomics = "f8d50d24ad3cb21777edecbeea2aac908dd67a35a3a9639303f26347cc17cc16",
+    transcriptomics = "92a7662db208ef04f2e3916017dd96c6dd6a1a8330e40713e59039943723435a")
+
+test_that("C3 to C5 a builder session through the core gives today's result (lipid, metab, trx) (frozen from 616e1147, KIT-116)", {
     samples <- c("WT_2", "KO_1", "WT_1", "KO_3", "WT_3", "KO_2")
     lipid_assays <- module_ci_lipid_design_assays("lc_pair", samples = samples)
     lipid_mapping <- module_ci_lipid_design_column_mapping(samples)
-    today <- omicsDesignBuilderSession(mod_lipid_design_builder_server, lipid_assays, lipid_mapping)
     core <- omicsDesignCoreSession(lipid_assays, lipid_mapping, omicsDesignTestConfig("lipidomics"))
-    expect_identical(core$payload, today$result)
+    expect_identical(omicsDesignDigest(core$payload), omicsDesignFrozenBuilder$lipidomics)
     expect_identical(core$payload$design_matrix$Run, c("KO_2", "KO_3x", "WT_1", "WT_2", "WT_3"))
 
     metab_assays <- module_ci_metab_design_assays("lc_pair", samples = samples)
     metab_mapping <- module_ci_metab_design_column_mapping(samples)
-    today <- suppressMessages(omicsDesignBuilderSession(mod_metab_design_builder_server, metab_assays, metab_mapping))
     core <- omicsDesignCoreSession(metab_assays, metab_mapping, omicsDesignTestConfig("metabolomics"))
-    expect_identical(core$payload, today$result)
+    expect_identical(omicsDesignDigest(core$payload), omicsDesignFrozenBuilder$metabolomics)
 
     trx <- omicsDesignTestConfig("transcriptomics")
-    today <- omicsDesignBuilderSession(mod_lipid_design_builder_server, lipid_assays, lipid_mapping,
-        list(profile = trxOmicProfile()))
     core <- omicsDesignCoreSession(lipid_assays, lipid_mapping, trx)
     # The builder adds the level order and the removed runs (`record_excluded_runs`).
     expect_true(trx$design$record_excluded_runs)
     core$payload$group_levels <- trx$design$group_levels(core$payload$design_matrix, core$factors)
     core$payload$excluded_runs <- core$removed
-    expect_identical(core$payload, today$result)
+    expect_identical(omicsDesignDigest(core$payload), omicsDesignFrozenBuilder$transcriptomics)
     expect_identical(core$payload$design_matrix$Run, c("WT_2", "WT_1", "KO_3x", "WT_3", "KO_2"))
 })
 
