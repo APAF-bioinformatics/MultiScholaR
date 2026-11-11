@@ -161,6 +161,40 @@ test_that("the design step's UniProt annotation is unchanged through the offline
         "Protein column not found in column_mapping. Cannot get annotations.", fixed = TRUE)
 })
 
+# KIT-115 item 2 (A101-09): a failed UniProt retrieval gives an empty table (F-28). The design step then says so, and
+# writes no `uniprot_dat_cln.RDS`: the readers of that file take an existing one as the project's annotations.
+test_that("(KIT-115 A101-09) a failed UniProt retrieval writes no annotation file and is not reported as a success", {
+    manager <- newProtDesignCoreManager("design-uniprot-failed")
+    withr::defer(closeDIAStateAdapter(manager))
+    source <- saveDIATableComponent(manager$.context, protDesignCoreTable())
+    root <- withr::local_tempdir()
+    paths <- list(results_dir = file.path(root, "results"), source_dir = file.path(root, "scripts"))
+    dir.create(paths$results_dir)
+    dir.create(paths$source_dir)
+    notes <- character()
+    testthat::local_mocked_bindings(getUniprotAnnotationsFull = function(...) createEmptyUniprotTable(),
+        .package = "MultiScholaR")
+    testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
+        notes <<- c(notes, paste0("[", type, "] ", ui))
+        invisible(NULL)
+    }, .package = "shiny")
+    workflow_data <- new.env(parent = emptyenv())
+    workflow_data$state_manager <- manager
+    workflow_data$data_cln <- source
+    workflow_data$column_mapping <- list(protein_col = "Protein.Group")
+    workflow_data$taxon_id <- 9606
+    workflow_data$tab_status <- list(design_matrix = "pending")
+    session <- shiny::MockShinySession$new()
+    utils::capture.output(suppressMessages(shiny::withReactiveDomain(session,
+        completeProtDesignPostCheckpoint(workflow_data, paths, session, successMessage = "saved"))))
+    expect_false(file.exists(file.path(paths$source_dir, "uniprot_dat_cln.RDS")))
+    expect_identical(nrow(workflow_data$uniprot_dat_cln), 0L)
+    expect_false(any(grepl("retrieved successfully", notes, fixed = TRUE)))
+    expect_identical(notes[[1L]], paste("[warning] No UniProt annotations were retrieved (the UniProt service may be",
+        "unavailable). Accession IDs will be used as gene names. Save the design again to retry."))
+    expect_identical(workflow_data$tab_status$design_matrix, "complete")
+})
+
 test_that("the imported-FASTA annotation step is unchanged", {
     root <- withr::local_tempdir()
     import_dir <- file.path(root, "import")

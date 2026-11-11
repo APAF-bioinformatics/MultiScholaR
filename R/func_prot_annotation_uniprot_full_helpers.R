@@ -379,7 +379,8 @@ retrieveProtDesignUniprotAnnotations <- function(manager, dataCln, proteinColumn
         progress_callback = progressCallback
     )
 
-    if (!is.null(sourceDir)) {
+    # KIT-115 (A101-09): an empty table is a failed retrieval (F-28) and is not written as the project's annotations.
+    if (!is.null(sourceDir) && nrow(uniprotDatCln) > 0) {
         scriptsUniprotPath <- file.path(sourceDir, "uniprot_dat_cln.RDS")
         saveRDS(uniprotDatCln, scriptsUniprotPath)
         log_info(sprintf("Saved uniprot_dat_cln to scripts directory: %s", scriptsUniprotPath))

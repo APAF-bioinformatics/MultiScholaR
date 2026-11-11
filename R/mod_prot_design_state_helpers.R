@@ -51,9 +51,20 @@ completeProtDesignPostCheckpoint <- function(
     )
 
     workflowData$uniprot_dat_cln <- uniprotDatCln
-    log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprotDatCln)))
     shiny::removeModal()
-    shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
+    if (nrow(uniprotDatCln) > 0) {
+      log_info(sprintf("UniProt annotations retrieved successfully. Found %d annotations", nrow(uniprotDatCln)))
+      shiny::showNotification("UniProt annotations retrieved successfully.", type = "message")
+    } else {
+      # KIT-115 (A101-09): a failed retrieval returns an empty table without an error (F-28).
+      log_warn("No UniProt annotations were retrieved.")
+      shiny::showNotification(
+        paste("No UniProt annotations were retrieved (the UniProt service may be unavailable).",
+          "Accession IDs will be used as gene names. Save the design again to retry."),
+        type = "warning",
+        duration = 8
+      )
+    }
   }, error = function(e) {
     log_warn(paste("Error getting UniProt annotations:", e$message))
     workflowData$uniprot_dat_cln <- NULL
