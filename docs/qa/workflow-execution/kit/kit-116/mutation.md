@@ -1,6 +1,6 @@
 # KIT-116 W2, A101-10: the mutation check on a proteomics lane (2026-11-11)
 
-KIT-101's check (b) was run on the trx lane only. Here it is run on `prot_dia_limpa`, KIT-101's procedure: a scratch copy of the tree at HEAD (`2ab897a0`'s parent tree plus nothing else), one default changed, the lane alone against its committed oracle (`tests/testdata/gui-entry/prot_dia_limpa.json`, frozen at `08e9b25e`), `load_all`.
+KIT-101's check (b) was run on the trx lane only. Here it is run on `prot_dia_limpa`, KIT-101's procedure: a scratch copy of the tree at `3c2f9866` (`git archive`), one default changed, the lane alone against its committed oracle (`tests/testdata/gui-entry/prot_dia_limpa.json`, frozen at `08e9b25e`), `load_all`.
 
 | Attempt | Change in the copy | Result |
 |---|---|---|
