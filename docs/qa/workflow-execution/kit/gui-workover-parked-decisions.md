@@ -126,3 +126,15 @@ None changes a number. F113-04 and F113-06 are moot with the KIT-113 revert.
 
 - **P-34:** six more `m` members with the sampler (about 5 minutes each), inside KIT-116. Without it the row stays "intermittent, cause unknown".
 - **P-02 interim:** label quantile and scale "approximate" on DIA_LIMPA now (KIT-115 item 11). It re-freezes the proteomics entry-lane captures that show the choice list.
+
+### Answers (user, 2026-11-11: "take all recommendations")
+
+| Item | Answer | Where it lands |
+|---|---|---|
+| KIT-101 F-23, F-24, F-26, F-27, F-28 | **Approved, all five.** F-23 makes a chosen DIA_LIMPA normalisation reach the DA; before, it had no effect. Whether quantile and scale are adequate there is P-02, not the fix. F-27 is a message; its method is P-03. | closed |
+| AX-11: F107-03, F111-03, KIT-111 W2 error path, F102-01 | **Approved.** | closed |
+| AX-11: blank taxon | **Approved, with a one-line notice** in place of the silent stop. | KIT-116 |
+| P-34 | **Six more `m` members authorised** with the I2 sampler. 0 of 6: accept as intermittent. 1 or more: diagnose from the trace. | KIT-116 |
+| P-02 interim | **Label quantile and scale "approximate" on DIA_LIMPA now**; removed again if KIT-114 (c) moves the normalisation point. The proteomics entry-lane captures are re-frozen once. | KIT-116 |
+| KIT-115 9b, `.xlsx` error cells | **Recorded as a known limitation.** `readxl` reads an error cell as NA, so it becomes a missing value, never a wrong number. Revisit only if a real file shows it. | closed |
+| KIT-115 10, the managed failure notice | **Keep the hint lines on both paths:** the in-process notice gains them. This changes in-process notice captures, so it lands with the combined re-record. | KIT-118 |
