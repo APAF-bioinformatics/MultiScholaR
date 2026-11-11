@@ -1,0 +1,5 @@
+member	corpus	align_error_s	da_peak	before_save	after_save	after_save_range	after_copy	after_copy_range	after_render	report_peak	teardown	teardown_min5s	slice_resident_end	save_s	copy_s	render_s	render_s_range	save_rise_min	save_rise_max	copy_rise_min	copy_rise_max	render_rise_min	render_rise_max	report_rise
+108v	metab_large_missing	0.754	1.527	1.527	1.864	1.407-1.866	2.342	2.340-2.342	2.342	2.458	2.342	2.342	2.702	7.629	47.066	0.754	-0.000-1.508	-0.12	0.339	0.476	0.933	0	0.002	0.815
+108w	lipid_large_missing	0.74	1.499	1.435	1.716	1.252-1.782	2.309	2.306-2.308	2.308	2.543	2.308	2.308	2.666	7.361	48.599	0.74	-0.000-1.480	-0.183	0.347	0.526	1.054	-0.001	0.002	0.873
+920v	metab_large_missing	1.275	1.468	1.31	1.744	1.323-1.744	1.236	1.108-1.415	1.415	2.385	1.418	1.418	1.775	13.046	84.799	1.275	-0.000-2.550	0.013	0.434	-0.508	-0.215	0	0.307	0.105
+920w	lipid_large_missing	1.278	1.502	1.391	1.663	1.211-1.725	1.269	1.135-1.451	1.451	2.437	1.453	1.452	1.81	12.79	81.802	1.278	0.000-2.556	-0.18	0.334	-0.394	-0.076	0	0.316	0.06

@@ -21,8 +21,8 @@ One bounded item per row. Each is test-first, runs its targeted files under `loa
 | R4 import, design, standards | P-05 refuse non-numeric quantity text at import, with a short vendor-token list; P-11 metab import preflight; P-19 manual standards by candidate id on both paths | merged |
 | R5 DA display and report | volcano default on; P-26 proteomics results download; P-27 drop `GeneID`; P-12 if the trx lane is re-frozen; A108-04 (F108-01) silent save failure; P-30 route B through `reclaimWorkflowMemory()`; A108-06 | merged; P-27 stopped |
 | R6 check layout | A111-06: resolve the checkpoint fixture root from the test path | merged |
-| R7 records | parked rows corrected and answered; ticked boxes; outcome rewordings; P-34 raised; lipid/metab zeros parked; KIT-114 wording; KIT-109 re-authored with one queue table | **for the implementer** |
-| R8 verification | install, `R CMD check`, full suite in both modes against `kit-105`'s tables; P-30 measured once | **for the implementer** |
+| R7 records | parked rows corrected and answered; ticked boxes; outcome rewordings; P-34 raised; lipid/metab zeros parked; KIT-114 wording; KIT-109 re-authored with one queue table | done (`44ae04c0`; tickets are git-ignored) |
+| R8 verification | install, `R CMD check`, full suite in both modes against `kit-105`'s tables; P-30 measured once | done: suite at `cc8764a4` ([entry/suite.md](gui-audit-20261111/entry/suite.md), `0f4725af`); P-30 on `kit_920` ([p30/outcome.md](gui-audit-20261111/p30/outcome.md), `640e2d75`) |
 
 ## Deferred by the matrix (not in this remediation)
 
@@ -76,7 +76,7 @@ R2 left alone: after the covariates, `ruv_normalized_obj` is the RUV state, so a
 | P-12 (R5) | Trx's design builder texts say transcriptomics; done because `trx_screen` was re-frozen by the volcano change. No lane value moved; `test-omic-design-module.R:40-41` re-frozen. | `f23cc186` |
 | P-26 (R5) | Proteomics' "Download All Results" writes every contrast's saved long table as `proteomics_da_results_<date>.csv`, one contrast at a time. `prot_main` download capture re-frozen (`test-omic-da-module.R:3987`). Not tried in a real browser. | `a5704be3` |
 | A108-04, F108-01 (R5) | The copy's handlers assign into the function's frame, a failed save warns, the DA-read record is restored; `copyWorkflowSummaryResults` returns workbook failures as `failed`, raises an error notice and the status line says so. The copy still counts as done, so the report is not blocked (the agent's choice, for review). | `171e7205` |
-| P-30 route B (R5) | `reclaimWorkflowMemory()` runs once after the copy returns or fails. **Not measured.** | `040be345` |
+| P-30 route B (R5) | `reclaimWorkflowMemory()` runs once after the copy returns or fails. Measured on `kit_920` against `108v`/`108w`: the level after the report is 2.342 → 1.418 GiB (metab) and 2.308 → 1.453 GiB (lipid), which meets D8's teardown criterion on both; the peak is 2.458 → 2.385 and 2.543 → 2.437, so no effect, as predicted ([p30/outcome.md](gui-audit-20261111/p30/outcome.md)). | `040be345`; members `920v`/`920w` accepted, exact |
 | A108-06 (R5) | The summary capture masks the Version Information block; 16 `study_parameters` values re-frozen in `test-omic-summary-module.R`. | `86e3648d` |
 | P-27 (R5) | **Stopped.** The notebook holding the column list (`dev/distributable/plans/transcriptomics_workflow.rmd:684`) is hash-pinned in `tools/profiling/trx_notebook_reference.R:19` and the bindings. Options: GUI and `test-trx-publication.R:152` only (the notebook then differs by one column); both, with a harness revision; leave. | for the implementer, with P-22, P-24, P-29 |
 
@@ -93,6 +93,11 @@ R1 and R4 counts are from the main checkout after the merge, `load_all`, one pro
 Found by R9: the applet had been broken since 2025-12-01 (`be8dd1e4`), before KIT-048. The two metabolomics workbooks call `RunApplet("designMatrix")` without an omic type and expect `metabolite_design_matrix` and `design_matrix_metabolomics.tab`, which no package code has ever produced. `DIA_workflow_limpa.rmd:39-41` removes `RunApplet` and holds a hard-coded Windows `load_all` path. `man/dot-runDesignMatrixApplet.Rd` is stale until the next `document()`.
 
 ## Handover to the implementer (2026-11-11)
+
+**Update, end of 2026-11-11:** items 1 to 5 below are done, except A107-06 (moved to the enrichment redesign) and P-27 (moved to the harness revision), both by the user's decision. The details:
+- A112-06 is `383dd37e`. The RUV routes are `4f1391bb` and `c11527dd`. R7 is `44ae04c0`. The full suite in both modes is [entry/suite.md](gui-audit-20261111/entry/suite.md): no regression. The bindings are on `kit_920` (`4b659276`). P-30 is [p30/outcome.md](gui-audit-20261111/p30/outcome.md).
+- The user kept two behaviours: the stale-ITSD refusal, and a failed workbook not blocking the copy. Empty cells and "NA" give no notice, by design.
+- **Next: KIT-109 (revision 1.1).** The text below is the state when the handover was written.
 
 State: `performance-v2` at `86e3648d` plus this record, local only, nothing pushed. R1 to R6 and R9 are merged; each diff was read line by line before merging. Branches `audit-r1` to `audit-r5` and `audit-r9` and their worktrees under `.claude/worktrees/` are left in place.
 

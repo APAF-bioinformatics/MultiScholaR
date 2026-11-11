@@ -80,7 +80,7 @@ After the post-hoc audit ([gui-workover-audit-20261111.md](gui-workover-audit-20
 | P-26 | Build the download | done (R5) | It predates the series: one text line in a file named `.zip`. |
 | P-27 | Drop `GeneID`, GUI and notebook together | deferred to the harness revision | The notebook is hash-pinned in `tools/profiling/trx_notebook_reference.R` and the bindings. |
 | P-28 | Declare the filter | done (R3) | Declared only when the filter is on, so unfiltered records are unchanged. |
-| P-30 | Route B through the existing `reclaimWorkflowMemory()`; retire D8's peak criterion | implemented (R5); **measurement pending** | Route B needed no new native code; `readxl` is already imported; the report step is not the workflow's peak. |
+| P-30 | Route B through the existing `reclaimWorkflowMemory()`; retire D8's peak criterion | implemented (R5); measured 2026-11-11 (`920v`/`920w`, [p30/outcome.md](gui-audit-20261111/p30/outcome.md)): after-report level 2.34 → 1.42 and 2.31 → 1.45 GiB, D8's teardown met; peak unchanged (−0.07/−0.11). **Closed.** | Route B needed no new native code; `readxl` is already imported; the report step is not the workflow's peak. |
 | P-31 | Drop the map | closed | |
 | P-32 | Keep proteomics' tab as the recorded exception | closed; KIT-109's closure names it | |
 | P-33 | Accept | closed | The session's peak is at `qvalue`/`design`, not normalisation. |
