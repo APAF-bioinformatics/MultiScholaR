@@ -1256,14 +1256,14 @@ omicGuiProteomicsEnrichment <- function() {
 #' (mod_prot_da_render_table.R:12-28), the static volcano with its label inputs' defaults (mod_prot_da_render_volcano.R:
 #' 32-44), the heatmap (generateProtDAHeatmap, which routes a DA manifest to generateDIAReferenceHeatmap,
 #' func_prot_da_heatmap.R:56-57; mod_prot_da_render_heatmap.R:31-99), its tree-cut defaults (mod_prot_da_ui.R:306-362)
-#' and save prefix (mod_prot_da_render_heatmap.R:152), no save note (P-25), the status and contrasts texts and the
-#' completed status (mod_prot_da_handlers_init.R:320-335; `diaDaStatusText`, utils_workflow_dia_da.R:441), the
+#' and save prefix (mod_prot_da_render_heatmap.R:152), no save note (P-25), the status and contrasts texts (the
+#' completed status, `diaDaStatusText`, is the plugins' own: KIT-109 removed the unread field), the
 #' download (mod_prot_da_render_table.R:151-160). The init, load, run and archive steps are plugins (D5): each is the
 #' handler today's server calls (mod_prot_da_server.R:36-45) or the archive chooser (mod_prot_da_ui.R:80-88).
 #' @noRd
 omicGuiProteomicsDa <- function() {
+    # KIT-109 (A106-05): `status_keys` and `status_text` removed; the plugin server read neither.
     list(module_id = "differential_expression", status_key = "differential_expression",
-        status_keys = c("differential_abundance", "enrichment_analysis"),
         testids = c(load_session = "prot-da-load-session", run = "prot-da-run", download = "prot-da-download",
             results_tabs = "prot-da-results-tabs"),
         model = list(editable = TRUE, label = "Model Formula:", default = "~ 0 + group",
@@ -1284,7 +1284,6 @@ omicGuiProteomicsDa <- function() {
                 tree_cut = list(default = "k_clusters", n_clusters = 4, cut_height = 0.5, min_cluster_size = 3),
                 save_prefix = "prot_", save_note = FALSE),
             table = list(significance = "significant", max_rows = 1000)),
-        status_text = diaDaStatusText,
         texts = c(status_waiting = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
             contrasts_none = "No contrasts available.\nComplete normalization and\ncorrelation filtering first."),
         download = list(stem = "proteomics_da_results_", extension = "csv"),

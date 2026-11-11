@@ -1218,7 +1218,8 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
     }
     expect_identical(c(lipid$module_id, lipid$status_key), c("de", "differential_analysis"))
     expect_identical(c(prot$module_id, prot$status_key), c("differential_expression", "differential_expression"))
-    expect_identical(prot$status_keys, c("differential_abundance", "enrichment_analysis"))
+    # KIT-109 (A106-05): proteomics' unread `status_keys` and `status_text` are gone (the plugin server read neither).
+    expect_null(prot$status_keys)
     # The test ids (trx has no load section).
     for (prefix in c("lipid", "metab", "prot")) {
         da <- list(lipid = lipid, metab = metab, prot = prot)[[prefix]]
@@ -1340,7 +1341,7 @@ test_that("KIT-106 W1 (D1): the da group holds each omic's DA tab values at the 
         stats::setNames(c("status_ready", "status_waiting")))
     expect_identical(prot$texts, c(status_waiting = "[WAITING] Waiting for analysis...\nClick 'Run DA Analysis' to start",
         contrasts_none = "No contrasts available.\nComplete normalization and\ncorrelation filtering first."))
-    expect_identical(prot$status_text, diaDaStatusText)
+    expect_null(prot$status_text)
     # GUI audit R5, item 4 (P-26): proteomics downloads its long results table as CSV, named as the feature omics' (was
     # a placeholder line in `DA_results_<date>.zip`).
     expect_identical(lapply(configs, `[[`, "download"), list(proteomics = list(stem = "proteomics_da_results_", extension = "csv"),
