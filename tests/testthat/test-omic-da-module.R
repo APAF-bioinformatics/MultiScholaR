@@ -324,7 +324,9 @@ omicDaW1FrozenUi <- list(
             `de-table_significance` = "significant", `de-treat_lfc_cutoff` = "0",
             `de-volcano_assay` = "Combined")),
     prot = list(
-        html = "469abf274e873a5d9b607a8d4f7635d318cca6d8048d2d6cb4543356b450a765",
+        # KIT-109 W4 (P-25): the empty `heatmap_manual_save_warning` slot, which no proteomics server filled, is deleted;
+        # the HTML digest and the outputs list change by that node only.
+        html = "a0d3d62b591bd917545753be8d505703c39dbeb69e4cb5259a544ef08b694e7d",
         inputs = c(
             "differential_expression-da_q_val_thresh", "differential_expression-da_results_tabs",
             "differential_expression-download_da_results", "differential_expression-formula_string",
@@ -347,7 +349,7 @@ omicDaW1FrozenUi <- list(
         outputs = c(
             "differential_expression-cluster_summary", "differential_expression-contrasts_display",
             "differential_expression-da_results_table", "differential_expression-da_status",
-            "differential_expression-da_summary_stats", "differential_expression-heatmap_manual_save_warning",
+            "differential_expression-da_summary_stats",
             "differential_expression-heatmap_plot", "differential_expression-volcano_glimma",
             "differential_expression-volcano_plot_static"),
         testids = c(

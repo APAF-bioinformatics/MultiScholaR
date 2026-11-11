@@ -430,8 +430,8 @@ omicDaDownloadData <- function(daResultsList, longTable) {
 #' The DA tab of an omic whose group has plugins, as layout data: proteomics' (mod_prot_da_ui.R:13-493 at fe97aac1).
 #' Its own layout and values: the outer well, the sidebar heading and spacing, the archive chooser (the group's
 #' `archive` plugin), tab icons, column widths, the "Advanced Clustering Options" well with its choices and the
-#' dendrogram switch, `h5` for "Cluster Information", and the save note's output that no server renders (P-25). The
-#' interactive volcano's box is ticked by default (user, 2026-11-11); the render still waits for the box (D3).
+#' dendrogram switch and `h5` for "Cluster Information" (KIT-109 deleted the save note's output, which no server rendered:
+#' P-25). The interactive volcano's box is ticked by default (user, 2026-11-11); the render still waits for the box (D3).
 #' @param da The omic's `da` group.
 #' @return The root node.
 #' @noRd
@@ -461,7 +461,7 @@ omicDaPluginLayout <- function(da) {
     tabset <- node("tabsetPanel", ns_id = "da_results_tabs", testid = da$testids[["results_tabs"]],
         children = list(omicDaPluginVolcanoTab(da), omicDaPluginHeatmapTab(da), omicDaPluginTableTab(da)))
     node("wellPanel", children = list(node("fluidRow", children = list(node("column", 3, children = list(sidebar)),
-        node("column", 9, children = list(node("uiOutput", id = "heatmap_manual_save_warning"), tabset))))))
+        node("column", 9, children = list(tabset))))))
 }
 
 #' Proteomics' volcano tab (mod_prot_da_ui.R:136-204 at fe97aac1).
