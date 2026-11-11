@@ -66,11 +66,9 @@ resolveWorkflowGitInfo <- function() {
                     if (nzchar(pkg_ns_path) && dir.exists(file.path(dirname(pkg_ns_path), ".git"))) {
                         dirname(pkg_ns_path)
                     } else {
-                        dev_paths <- c(
-                            getwd(),
-                            Sys.getenv("MULTISCHOLAR_PATH", unset = NA),
-                            file.path(Sys.getenv("HOME"), "Documents", "MultiScholaR")
-                        )
+                        # KIT-115 (F108-04): only the package's own checkout or the path the user names. The working
+                        # directory and `~/Documents/MultiScholaR` may be another repository.
+                        dev_paths <- Sys.getenv("MULTISCHOLAR_PATH", unset = NA)
                         found_path <- NA_character_
                         for (p in dev_paths) {
                             if (!is.na(p) && nzchar(p) && dir.exists(file.path(p, ".git"))) {

@@ -45,6 +45,42 @@ test_that("(R5 item 7, A108-06) the study_parameters capture masks the Version I
     expect_false(identical(omicSummaryW1MaskVersion(c(head, package, tail, "Extra: 1")), masked))
 })
 
+# KIT-115 item 1 (F108-04): the version block names the package's own checkout or none. A git repository that is only
+# the working directory, or `~/Documents/MultiScholaR`, is not the package's source and is never reported.
+test_that("(KIT-115 F108-04) the git information never comes from the working directory or the home directory", {
+    skip_if(!nzchar(Sys.which("git")), "git is not installed")
+    foreignRepo <- function(path) {
+        dir.create(path, recursive = TRUE)
+        system2("git", c("-C", path, "init", "--quiet", "--initial-branch=kit115-foreign"), stdout = FALSE, stderr = FALSE)
+        path
+    }
+    withr::local_envvar(MULTISCHOLAR_PATH = NA)
+    reported <- function() {
+        utils::capture.output(info <- resolveWorkflowGitInfo())
+        info
+    }
+    # The working directory is an unrelated repository.
+    foreign <- foreignRepo(file.path(withr::local_tempdir(), "kit115-unrelated"))
+    info <- withr::with_dir(foreign, reported())
+    expect_false(identical(info$branch, "kit115-foreign"))
+    expect_false(identical(info$repo, "kit115-unrelated"))
+    expect_true(info$source %in% c("local_git", "package_info"))
+    # The home directory holds a `Documents/MultiScholaR` repository.
+    home <- withr::local_tempdir()
+    foreignRepo(file.path(home, "Documents", "MultiScholaR"))
+    withr::local_envvar(HOME = home)
+    info <- withr::with_dir(withr::local_tempdir(), reported())
+    expect_false(identical(info$branch, "kit115-foreign"))
+    # The explicit path is still honoured.
+    withr::local_envvar(MULTISCHOLAR_PATH = foreign)
+    info <- withr::with_dir(withr::local_tempdir(), reported())
+    if (identical(info$source, "local_git") && !identical(info$branch, "kit115-foreign")) {
+        succeed("the package's own checkout comes first")
+    } else {
+        expect_identical(info$branch, "kit115-foreign")
+    }
+})
+
 test_that("(W3) the moved lipid, metab and trx functions are in the core file; the core calls no Shiny UI function", {
     moved <- c("buildLipidSummarySessionState", "lipidSummaryFirstNonNull", "getLipidSummaryWorkflowValue",
         "getLipidSummaryStateObject", "getLipidSummaryObjectArgs", "buildLipidSummaryParameterPayload",
