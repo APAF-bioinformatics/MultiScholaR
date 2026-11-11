@@ -24,9 +24,9 @@ omics_global_hits <- function(sources, pattern, allow = character()) {
 test_that("KIT-030: no lipid or metab module or kernel reads or writes the global environment", {
     sources <- omics_module_sources()
     # KIT-109: one or more files per family (the `> 100` count assumed the duplicate copies the series deleted).
-    for (family in c("^mod_lipid_", "^func_lipid_", "^mod_metab_", "^func_metab_", "^mod_omic_", "^func_omics_")) {
-        expect_true(any(grepl(family, names(sources))), info = family)
-    }
+    families <- c("^mod_lipid_", "^func_lipid_", "^mod_metab_", "^func_metab_", "^mod_omic_", "^func_omics_")
+    missing <- families[!vapply(families, function(family) any(grepl(family, names(sources))), logical(1))]
+    expect_identical(missing, character(0))
 
     # The summaries' `globalEnv` parameter is the script/test seam the module-CI tests drive; its one
     # remaining use is the guarded `project_dirs` write the report templates read by name (the
