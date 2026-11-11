@@ -1546,10 +1546,24 @@ protNormW3Capture <- function(fixture, norm, output, log, actions) {
             substr(protNormW1Sha(protNormW1Canonical(field, manager, root)), 1L, 16L), ""),
         workflow = protNormW1Sha(protNormW1Canonical(workflow, manager, root)),
         qc_paths = protNormW1Mask(unlist(fields$qc_plot_paths), root),
+        # KIT-116 (A111-05): the audit fields the masks above drop, compared managed against unmanaged: the bus's
+        # `config_list` (the RUV audit trail) and every committed state's whole `@args`.
+        config_list = protNormW1Sha(protNormW1Canonical(fixture$workflow$config_list, manager, root)),
+        args = vapply(stats::setNames(nm = committed), function(state) protNormW1Sha(protNormW1Canonical(
+            protNormW3Args(manager, snapshot$states[[state]]), manager, root)), ""),
         outputs = c(correlation = text("correlation_filter_summary"), ruv_covariates = text("ruv_covariates_summary")),
         notes = log$notes,
         head_id = snapshot$states[[snapshot$current_state]]$entity_id,
         actions = actions)
+}
+
+#' A committed state's whole `@args` (KIT-116, A111-05); a state that is not an S4 object gives NULL.
+protNormW3Args <- function(manager, reference) {
+    withWorkflowStateScope(manager, function() {
+        object <- resolveDIAStateValue(manager$.context, reference)$data
+        if (!isS4(object)) object <- rebuildDIACheckpointObject(manager$.context, object, TRUE, list())
+        if (isS4(object) && "args" %in% methods::slotNames(object)) object@args else NULL
+    })
 }
 
 #' Drive the tab through `steps` (named `function(session)`), capturing after each; managed under the runner.
@@ -1683,6 +1697,13 @@ test_that("KIT-111 W3: managed, the tab's run, apply and refusal run on the work
     managed <- protNormW3Drive(fixture, protNormW3DiaSteps(), managed = TRUE, probe = probe)
     protNormW3ExpectW1(managed, "managed")
     protNormW3ExpectSame(managed, unmanaged)
+    # KIT-116 (A111-05): the audit fields compared above are not empty on either side.
+    empty <- c(list = protNormW1Sha(protNormW1Canonical(list(), fixture$manager, fixture$root)),
+        null = protNormW1Sha(protNormW1Canonical(NULL, fixture$manager, fixture$root)))
+    for (case in names(managed)) {
+        expect_false(managed[[case]]$config_list %in% empty, info = case)
+        expect_true(length(managed[[case]]$args) > 0L && !any(managed[[case]]$args %in% empty), info = case)
+    }
     operations <- lapply(managed, function(capture) vapply(capture$actions, `[[`, "", "operation"))
     expect_identical(operations, list(dia_normalization_skip = "normalization-ruv", dia_normalization_skip_repeat = "normalization-ruv",
         dia_normalization_manual = "normalization-ruv", dia_correlation_apply = c("pearson-pairs", "pearson-selection"),
