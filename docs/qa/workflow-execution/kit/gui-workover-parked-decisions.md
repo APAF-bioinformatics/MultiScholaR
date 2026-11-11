@@ -84,7 +84,7 @@ After the post-hoc audit ([gui-workover-audit-20261111.md](gui-workover-audit-20
 | P-31 | Drop the map | closed | |
 | P-32 | Keep proteomics' tab as the recorded exception | closed; KIT-109's closure names it | |
 | P-33 | Accept | closed | The session's peak is at `qvalue`/`design`, not normalisation. |
-| P-34 (new) | Raise: the `m` member's unreleased floor is intermittent (111m, 112m; 2 of 4 on builds with KIT-111's code, 0 of 9 before), cause unknown | open: accept as intermittent, or authorise more `m` members | KIT-111's D8 rule required it. |
+| P-34 (new) | Raise: the `m` member's unreleased floor is intermittent (111m, 112m; 2 of 4 on builds with KIT-111's code, 0 of 9 before), cause unknown | **closed (KIT-116):** six more members, 0 of 6 above the 0.80 GiB cut fixed beforehand ([kit-116/outcome.md](kit-116/outcome.md)); 2 of 19 overall; intermittent and rare | KIT-111's D8 rule required it. |
 | P-35 | Fix, covering the mode switch | done (R2) | Wider than a double click: covariates then correction compounded too. |
 | P-37 | Leave | closed | |
 | P-39 | Keep, with a third guard and notices | done (R2) | |
