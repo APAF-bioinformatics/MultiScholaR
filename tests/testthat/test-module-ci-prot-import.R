@@ -23,8 +23,9 @@ test_that("MCI-004.1 DIA-NN matrix preserves peptide/protein/run contracts and r
   zero_na <- module_ci_prot_make_diann(variant = "zero_na")
   zero_import <- suppressMessages(importDIANNData(zero_na, use_precursor_norm = FALSE))
   expect_identical(zero_import$column_mapping$quantity_col, "Precursor.Quantity")
-  expect_true(any(zero_import$data$Precursor.Quantity == 0, na.rm = TRUE))
-  expect_true(any(is.na(zero_import$data$Precursor.Quantity)))
+  # KIT-109 follow-up (user, 2026-11-12): DIA-NN's 0 is a missing value, read as NA like the empty cell (it was kept as 0).
+  expect_false(any(zero_import$data$Precursor.Quantity == 0, na.rm = TRUE))
+  expect_identical(which(is.na(zero_import$data$Precursor.Quantity)), c(1L, 2L))
 
   bad_names <- module_ci_prot_make_diann(variant = "bad_run_names")
   bad_import <- suppressMessages(importDIANNData(bad_names))

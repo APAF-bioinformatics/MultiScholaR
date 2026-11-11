@@ -258,3 +258,28 @@ test_that("(KIT-115) a DIA-NN parquet report's quantity column is checked as a t
     expect_s3_class(report("div0_late")$result, "prot_import_non_numeric_quantity")
 })
 
+
+# KIT-109 follow-up (user, 2026-11-12, after the A101-07 adjudication): DIA-NN writes 0 for a precursor it identified
+# but did not quantify. That is a missing value, not a quantity (as for LFQ and TMT, KIT-101 F-18/F-26): before, a 0
+# was counted as observed and entered the technical-replicate imputation's mean. Both quantity columns, either setting.
+test_that("(KIT-109) DIA-NN's non-positive precursor quantities are read as missing, in both columns", {
+    n <- protQuantityRows
+    zero <- c(5L, 500L)
+    negative <- 750L
+    values <- protQuantityValues()
+    other <- rev(values)
+    path <- protQuantityWrite(data.frame(Protein.Group = sprintf("P%05d", seq_len(n)),
+        Stripped.Sequence = paste0("PEPTIDE", seq_len(n)), Run = rep(c("S1", "S2"), n / 2),
+        Precursor.Normalised = replace(values, c(zero, negative), c(0, 0, -1)),
+        Precursor.Quantity = replace(other, c(zero, negative), c(0, 0, -1)), Q.Value = 0.001, PG.Q.Value = 0.001))
+    for (use_norm in c(TRUE, FALSE)) {
+        read <- protQuantityRead(list(path = path), read = function(p) importDIANNData(p, use_precursor_norm = use_norm))
+        expect_false(inherits(read$result, "error"))
+        data <- read$result$data
+        expect_identical(which(is.na(data$Precursor.Normalised)), sort(c(zero, negative)), info = paste("use_precursor_norm", use_norm))
+        expect_identical(which(is.na(data$Precursor.Quantity)), sort(c(zero, negative)), info = paste("use_precursor_norm", use_norm))
+        kept <- setdiff(seq_len(n), c(zero, negative))
+        expect_identical(data$Precursor.Normalised[kept], values[kept], info = paste("use_precursor_norm", use_norm))
+        expect_identical(data$Precursor.Quantity[kept], other[kept], info = paste("use_precursor_norm", use_norm))
+    }
+})

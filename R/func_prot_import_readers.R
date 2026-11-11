@@ -182,7 +182,20 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
     log_info("Converting Precursor.Normalised to numeric")
     data$Precursor.Normalised <- as.numeric(data$Precursor.Normalised)
   }
-  
+
+  # DIA-NN writes 0 for a precursor it identified but did not quantify: a missing value, not a quantity (as LFQ and
+  # TMT read theirs, KIT-101 F-18/F-26; iq and limpa read it so too). Both columns: the IQ route reads
+  # Precursor.Quantity whichever column is selected (user, 2026-11-12, after the A101-07 adjudication).
+  for (column in intersect(c("Precursor.Normalised", "Precursor.Quantity"), names(data))) {
+    if (is.numeric(data[[column]])) {
+      nonpositive <- !is.na(data[[column]]) & data[[column]] <= 0
+      if (any(nonpositive)) {
+        log_info(sprintf("%s: %d non-positive values read as missing", column, sum(nonpositive)))
+        data[[column]][nonpositive] <- NA_real_
+      }
+    }
+  }
+
   # Determine quantity column
   quantity_col <- if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
     "Precursor.Normalised"
