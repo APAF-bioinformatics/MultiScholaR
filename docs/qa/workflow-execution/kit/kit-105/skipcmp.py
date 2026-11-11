@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# KIT-105 run 8: per-file skip comparison against KIT-104, one load mode. Usage: skipcmp.py <kit-104 tsv> <kit-105 tsv>
+# KIT-105 run 8: per-file skip comparison against KIT-104, one load mode. Usage: skipcmp.py <old tsv> <new tsv> [<targeted list>]
 # A file is reported when, against KIT-104: it is new or gone; it gains a file-level skip; hidden blocks rise; blocks run
 # fall; passed falls; failed or error blocks rise; skip results rise; or a skip category appears. Each report carries the
 # Q-ids its file names in a quarantine skip, so the reader can check it is a recorded quarantine.
@@ -13,7 +13,14 @@ def num(r, k):
     try: return float(v)
     except (TypeError, ValueError): return 0.0
 cats = ["skip_file_guard", "skip_binding_guard", "skip_environment", "skip_quarantine", "skip_fixture", "skip_other"]
+# KIT-116 (A105-03): optional third argument, a file naming the targeted test files one per line. Every one must have a
+# row in the new table, or the comparison stops: a targeted file that did not run is never filtered out silently.
 old, new = load(sys.argv[1]), load(sys.argv[2])
+if len(sys.argv) > 3:
+    targeted = [l.strip() for l in open(sys.argv[3]) if l.strip() and not l.startswith("#")]
+    absent = [f for f in targeted if f not in new]
+    if absent:
+        sys.exit("targeted file(s) with no row in the new table: " + ", ".join(absent))
 def qids(f):
     p = os.path.join(TESTS, f)
     if not os.path.exists(p): return ""
@@ -29,6 +36,9 @@ for f in sorted(set(old) | set(new)):
     if f not in new: print(f"{f}\tgone\t\t"); continue
     a, b = old[f], new[f]; ch = []
     if b["file_skip"] == "TRUE" and a["file_skip"] != "TRUE": ch.append("new file-level skip")
+    # KIT-116 (A105-03): a file that no longer parses or loads, and blocks gone from the file's text.
+    if b.get("file_error") == "TRUE" and a.get("file_error") != "TRUE": ch.append("new file error: " + (b.get("file_error_message") or "")[:120])
+    if num(b, "static_blocks") < num(a, "static_blocks"): ch.append(f"static blocks {num(a,'static_blocks'):.0f}->{num(b,'static_blocks'):.0f}")
     for k, sign, label in (("hidden_blocks", 1, "hidden blocks"), ("blocks_run", -1, "blocks run"), ("passed", -1, "passed"),
                            ("failed", 1, "failed"), ("error_blocks", 1, "error blocks"), ("skip_results", 1, "skips")):
         d = num(b, k) - num(a, k)
