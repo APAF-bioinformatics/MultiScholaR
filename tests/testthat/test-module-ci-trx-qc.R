@@ -14,7 +14,7 @@ trxQcTabServer <- function(fixture, managed) {
       runner$progress <- function(message) list(set = function(...) invisible(NULL), inc = function(...) invisible(NULL), close = function() invisible(NULL))
     }
     session$userData$shown <- mod_trx_qc_filter_server("filter", fixture$workflow, "transcriptomics", "kit096")
-    mod_lipid_qc_s4_server("finalize", fixture$workflow, "transcriptomics", "kit096", profile = trxOmicProfile())
+    mod_omic_qc_finalize_server("finalize", fixture$workflow, "transcriptomics", "kit096", omicGuiConfig("transcriptomics"))
   }
 }
 
@@ -98,7 +98,7 @@ test_that("MCI-028.3 under a managed session the metrics and figures are the wor
 })
 
 test_that("MCI-028.4 the QC tab under the transcriptomics profile: the filter and finalise sub-tabs, the orchestrator's class", {
-  html <- htmltools::renderTags(mod_lipid_qc_ui("qc", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_qc_ui("qc", omicGuiConfig("transcriptomics")))$html
   expect_match(html, "Transcriptomics Quality Control", fixed = TRUE)
   # KIT-104 W6: the profile's QC tabs are the shared shell's tabset under the transcriptomics configuration.
   tabs <- htmltools::renderTags(omicQcTabsetUi(shiny::NS("qc"), omicGuiConfig("transcriptomics"), "TRANSCRIPTOMICS"))$html
@@ -143,8 +143,8 @@ test_that("KIT-101 F-17: a filter click made before the QC sub-modules start is 
   workflow$state_manager <- NULL
   suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
     session$userData$trigger <- shiny::reactiveVal(NULL)
-    mod_lipid_qc_server("qc", workflow, fixture$paths, "transcriptomics", "kit101", session$userData$trigger,
-      profile = trxOmicProfile())
+    mod_omic_qc_server("qc", workflow, fixture$paths, "transcriptomics", "kit101", session$userData$trigger,
+      config = omicGuiConfig("transcriptomics"))
   }, {
     session$setInputs(`qc-filter-apply_filter` = 1L)
     # The design is saved: the state exists and the trigger starts the sub-modules.
@@ -173,8 +173,8 @@ test_that("KIT-101 F-24: a trx QC revert or finalise click made before the QC su
     out <- new.env(parent = emptyenv())
     suppressWarnings(suppressMessages(utils::capture.output(shiny::testServer(function(input, output, session) {
       session$userData$trigger <- shiny::reactiveVal(NULL)
-      mod_lipid_qc_server("qc", workflow, fixture$paths, "transcriptomics", "kit101", session$userData$trigger,
-        profile = trxOmicProfile())
+      mod_omic_qc_server("qc", workflow, fixture$paths, "transcriptomics", "kit101", session$userData$trigger,
+        config = omicGuiConfig("transcriptomics"))
     }, {
       click <- function(value) do.call(session$setInputs, stats::setNames(list(value), paste0("qc-", button)))
       click(1L)

@@ -3,7 +3,7 @@
 # and frozen on the start commit (5be34ee5; R/ identical to kit_107's source 8b92d7ac;
 # docs/qa/workflow-execution/kit/kit-108/w1/test-first.txt).
 #   (a) Identity: the HTML digests of `mod_prot_summary_ui("session_summary")`, `mod_lipid_summary_ui("summary")`,
-#       `mod_metab_summary_ui("summary")` and `mod_lipid_summary_ui("summary", profile = trxOmicProfile())` under
+#       `mod_metab_summary_ui("summary")` and trx's (KIT-109: `mod_omic_summary_ui` under its configuration) under
 #       MULTISCHOLAR_TEST_MODE=true, and their namespaced input and output ids, test ids, labels, button texts,
 #       placeholders, text areas, conditions, help texts and defaults (`omicsUiInputDefaults`).
 #   (b) The server in process: each exported server under `testServer`, mounted as the shell mounts it
@@ -79,7 +79,7 @@ omicSummaryW1Uis <- function() {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
     list(proteomics = mod_prot_summary_ui("session_summary"), lipidomics = mod_lipid_summary_ui("summary"),
         metabolomics = mod_metab_summary_ui("summary"),
-        transcriptomics = mod_lipid_summary_ui("summary", profile = trxOmicProfile()))
+        transcriptomics = mod_omic_summary_ui("summary", omicGuiConfig("transcriptomics")$summary))
 }
 
 #' The UI's HTML digest and its parts: inputs (every namespaced `id` that is not an output or a label), outputs,
@@ -788,14 +788,14 @@ omicSummaryW1TrxSetup <- function(technical = FALSE, managed = FALSE, label = "k
                 runner <- installWorkflowOmicsActions(session, fixture$workflow, "transcriptomics", "kit108", paths)
                 runner$progress <- module_ci_trx_quiet_progress
             }
-            profile <- trxOmicProfile()
-            mod_lipid_norm_server("norm", fixture$workflow, paths, "transcriptomics", "kit108", profile = profile)
-            mod_lipid_da_server("de", fixture$workflow, paths, "transcriptomics", "kit108", profile = profile)
-            mod_lipid_summary_server("summary", fixture$project_dirs, "transcriptomics", label, fixture$workflow,
-                profile = profile)
+            config <- omicGuiConfig("transcriptomics")
+            mod_omic_norm_server("norm", fixture$workflow, paths, "transcriptomics", "kit108", config = config$norm)
+            mod_omic_da_server("de", fixture$workflow, paths, "transcriptomics", "kit108", config = config$da)
+            mod_omic_summary_server("summary", fixture$project_dirs, "transcriptomics", label, fixture$workflow,
+                config$summary)
         }
     }
-    list(omic = "trx", server = server, ns = "summary", ui = function(id) mod_lipid_summary_ui(id, profile = trxOmicProfile()),
+    list(omic = "trx", server = server, ns = "summary", ui = function(id) mod_omic_summary_ui(id, omicGuiConfig("transcriptomics")$summary),
         bus = function() fixture$workflow, project_dirs = fixture$project_dirs, paths = paths,
         roots = omicSummaryW1Roots(project, paths$base_dir), global = global, fallback = FALSE, owner = fixture$owner,
         description = "Full transcriptomics analysis workflow with normalization, DE and the RUVIII integration export",

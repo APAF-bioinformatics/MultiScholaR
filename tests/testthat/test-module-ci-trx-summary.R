@@ -131,7 +131,7 @@ test_that("MCI-032.4 under a managed session the export, its figure and the inte
 })
 
 test_that("MCI-032.5 the summary tab under the transcriptomics profile: the RUVIII export and its M, the transcriptomics template", {
-  html <- htmltools::renderTags(mod_lipid_summary_ui("summary", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_summary_ui("summary", omicGuiConfig("transcriptomics")$summary))$html
   # The M choice is rendered by the server (its options follow the design's technical replicates).
   for (text in c("RUVIII", "summary-ruviii_m_ui", "trx-summary-ruviii-export", "trx-summary-generate-report", "trx-summary-save-args",
     "trx-summary-copy-publication", "trx-summary-export-state")) expect_match(html, text, fixed = TRUE)

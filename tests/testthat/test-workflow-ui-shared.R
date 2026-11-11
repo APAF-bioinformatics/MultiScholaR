@@ -200,16 +200,22 @@ test_that("top-level workflow UIs render orchestrator tabs with stubbed module b
 
 # KIT-102 W4: the shared shell (`mod_omic_workflow_ui`) and the import frame (`mod_omic_import_ui`).
 
-# Every tab module UI stubbed; the stub shows the module id and, for trx, the profile it was given.
+# Every tab module UI stubbed; the stub shows the module id and, for trx, that it was given trx's configuration.
+# KIT-109: trx's tabs are the shared modules under its configuration (the lipid modules under trxOmicProfile() before);
+# their stubs keep the lipid labels and `data-profile`, so the frozen pre-KIT-102 digests still compare the shell.
 localWorkflowTabUiStubs <- function(.local_envir = parent.frame()) {
   stub <- function(label) {
     force(label)
-    function(id, profile = NULL) shiny::div(class = "stub", `data-module-id` = id, `data-profile` = profile$omic_type, label)
+    function(id, config = NULL) {
+      shiny::div(class = "stub", `data-module-id` = id, `data-profile` = if (!is.null(config)) "transcriptomics", label)
+    }
   }
+  tabs <- c("import", "design", "qc", "norm", "da", "summary")
   names <- c(paste0("mod_prot_", c("import", "design", "qc", "norm", "da", "enrich", "summary"), "_ui"),
-    paste0("mod_lipid_", c("import", "design", "qc", "norm", "da", "summary"), "_ui"),
-    paste0("mod_metab_", c("import", "design", "qc", "norm", "da", "summary"), "_ui"))
-  localNamespaceBindings(asNamespace("MultiScholaR"), stats::setNames(lapply(names, stub), names), .local_envir = .local_envir)
+    paste0("mod_lipid_", tabs, "_ui"), paste0("mod_metab_", tabs, "_ui"))
+  stubs <- stats::setNames(lapply(names, stub), names)
+  stubs[paste0("mod_omic_", tabs, "_ui")] <- lapply(paste0("mod_lipid_", tabs, "_ui"), stub)
+  localNamespaceBindings(asNamespace("MultiScholaR"), stubs, .local_envir = .local_envir)
 }
 
 # The tabset's random ids (`tab-<n>-<i>`, `data-tabsetid`) normalised.
@@ -266,7 +272,7 @@ test_that("KIT-102 W4: the component registry resolves every configured tab and 
       expect_true(exists(component$server, envir = asNamespace("MultiScholaR"), mode = "function"), info = id)
     }
   }
-  expect_identical(omicGuiComponent("trx_norm")$ui, "mod_lipid_norm_ui")
+  expect_identical(omicGuiComponent("trx_norm")$ui, "mod_omic_norm_ui")
   expect_error(omicGuiComponent("lipid_enrich"), class = "omic_gui_config_invalid")
 })
 

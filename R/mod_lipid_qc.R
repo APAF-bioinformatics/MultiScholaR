@@ -20,8 +20,7 @@
 # Purpose: Lipidomics QC orchestrator module
 #
 # KIT-104 W5: the exported wrappers over the shared QC shell (mod_omic_qc.R) under the lipid
-# configuration, or the profile's omic (trx) under its own (KIT-104 W6: its tab is wholly the shared
-# shell's, with the filter plugin and the shared finalise).
+# configuration (KIT-109: trx calls the shared shell itself).
 # ============================================================================
 
 #' @title Lipidomics Quality Control Orchestrator Module
@@ -30,15 +29,14 @@
 #'              duplicate resolution, internal standard QC, and finalization.
 #' @name mod_lipid_qc
 #' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
-#' @param profile An omic profile (KIT-096): its `omic_type` selects that omic's configuration. `NULL`, the default, is lipidomics.
 NULL
 
 #' @rdname mod_lipid_qc
 #' @export
 #' @importFrom shiny NS tagList fluidRow column wellPanel h3 uiOutput
-mod_lipid_qc_ui <- function(id, profile = NULL) {
-    # KIT-104 W5: the shared shell under the lipid configuration, or the profile's omic (trx) under its own.
-    mod_omic_qc_ui(id, omicGuiConfig(profile$omic_type %||% "lipidomics"))
+mod_lipid_qc_ui <- function(id) {
+    # KIT-104 W5: the shared shell under the lipid configuration.
+    mod_omic_qc_ui(id, omicGuiConfig("lipidomics"))
 }
 
 #' @rdname mod_lipid_qc
@@ -51,8 +49,8 @@ initializeLipidQcSubmodules <- function(workflow_data, omic_type, experiment_lab
     startOmicQcSubtabs(workflow_data, NULL, omic_type, experiment_label, config, config$shell$routes[[1L]])
 }
 
-mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL, profile = NULL) {
-    # KIT-104 W5/W6: the shared shell under the lipid configuration, or the profile's omic (trx) under its own.
+mod_lipid_qc_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger = NULL) {
+    # KIT-104 W5/W6: the shared shell under the lipid configuration.
     mod_omic_qc_server(id, workflow_data, experiment_paths, omic_type, experiment_label, qc_trigger,
-        config = omicGuiConfig(profile$omic_type %||% "lipidomics"))
+        config = omicGuiConfig("lipidomics"))
 }

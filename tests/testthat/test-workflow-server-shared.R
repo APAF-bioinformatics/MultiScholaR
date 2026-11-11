@@ -586,7 +586,8 @@ workflowTabServers <- function(omic) {
 
 # Stub every tab server of an omic (the recording stub, with the call order), the owner and the stepper.
 localWorkflowServerStubs <- function(omic, captured, .local_envir = parent.frame()) {
-  module <- c(proteomics = "prot", lipidomics = "lipid", metabolomics = "metab", transcriptomics = "lipid")[[omic]]
+  # KIT-109: trx's tabs are the shared modules under its configuration (the lipid modules under a profile before).
+  module <- c(proteomics = "prot", lipidomics = "lipid", metabolomics = "metab", transcriptomics = "omic")[[omic]]
   captured$calls <- list()
   captured$order <- character()
   stubs <- lapply(names(workflowTabServers(omic)), function(tab) {
@@ -621,8 +622,8 @@ test_that("KIT-102 W4: each shell calls its tab servers in today's order with to
   feature <- list(import = c("", "", "volumes"), design = c("", "", "volumes", "qc_trigger"), qc = c("", "", "", "", ""),
     norm = c("", "", "", "", "selected_tab"), da = c("", "", "", ""), summary = c("", "", "", ""))
   shapes <- list(lipidomics = feature, metabolomics = feature,
-    transcriptomics = c(lapply(feature[c("import", "design", "qc")], c, "profile"), list(norm = c("", "", "", "", "profile")),
-      lapply(feature[c("da", "summary")], c, "profile")),
+    transcriptomics = c(lapply(feature[c("import", "design", "qc")], c, "config"), list(norm = c("", "", "", "", "config")),
+      lapply(feature[c("da", "summary")], c, "config")),
     proteomics = list(import = c("", "", "volumes"), design = c("", "", "volumes", "qc_trigger"),
       qc = c("", "", "", "", "qc_trigger"), norm = c("", "", "", "", ""), da = c("", "", "", "", ""),
       enrich = c("", "", "", "", ""), summary = c("", "", "", "")))
@@ -656,7 +657,10 @@ test_that("KIT-102 W4: each shell calls its tab servers in today's order with to
       expect_identical(captured$calls$design$args$qc_trigger, qc_trigger, info = omic)
       expect_s3_class(qc_trigger, "reactiveVal")
       if (identical(omic, "transcriptomics")) {
-        for (tab in names(tabs)) expect_identical(captured$calls[[tab]]$args$profile, trxOmicProfile(), info = tab)
+        config <- omicGuiConfig("transcriptomics")
+        groups <- list(import = config, design = config, qc = config, norm = config$norm, da = config$da,
+          summary = config$summary)
+        for (tab in names(tabs)) expect_identical(captured$calls[[tab]]$args$config, groups[[tab]], info = tab)
       }
       selected <- switch(omic, proteomics = captured$calls$norm$args[[5L]], transcriptomics = NULL,
         captured$calls$norm$args$selected_tab)

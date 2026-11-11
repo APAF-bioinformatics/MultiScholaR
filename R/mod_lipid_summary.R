@@ -33,15 +33,13 @@ NULL
 #' @rdname mod_lipid_summary
 #' @export
 #' @importFrom shiny NS tagList fluidPage h3 fluidRow column wellPanel h4 textInput textAreaInput actionButton icon br hr downloadButton verbatimTextOutput checkboxInput conditionalPanel textOutput
-#' @param profile An omic profile (KIT-097: `trxOmicProfile()`): its export panel, labels, test ids, integration export and
-#'   report template; `NULL`, the default, is lipidomics, unchanged.
-mod_lipid_summary_ui <- function(id, profile = NULL) {
-    # KIT-108 W3 (D2): the shared tab (mod_omic_summary.R) under the omic's `summary` group; the profile selects the omic.
-    mod_omic_summary_ui(id, omicGuiConfig(profile$omic_type %||% "lipidomics")$summary)
+mod_lipid_summary_ui <- function(id) {
+    # KIT-108 W3 (D2): the shared tab (mod_omic_summary.R) under lipid's `summary` group.
+    mod_omic_summary_ui(id, omicGuiConfig("lipidomics")$summary)
 }
 #' @rdname mod_lipid_summary
 #' @export
-mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics", experiment_label = NULL, workflow_data = NULL, profile = NULL) {
+mod_lipid_summary_server <- function(id, project_dirs, omic_type = "lipidomics", experiment_label = NULL, workflow_data = NULL) {
     mod_omic_summary_server(id, project_dirs, omic_type, experiment_label, workflow_data,
-        omicGuiConfig(profile$omic_type %||% "lipidomics")$summary)
+        omicGuiConfig("lipidomics")$summary)
 }

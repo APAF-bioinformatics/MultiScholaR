@@ -96,7 +96,7 @@ test_that("MCI-031.3 the volcanoes: the static one is the notebook's on FDR (BH)
 })
 
 test_that("MCI-031.4 the DA tab under the transcriptomics profile names the model, labels FDR (BH), keeps the fold change display-only", {
-  html <- htmltools::renderTags(mod_lipid_da_ui("de", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_da_ui("de", omicGuiConfig("transcriptomics")$da))$html
   for (text in c("edgeR", "glmQLFit(robust = TRUE)", "glmQLFTest", "FDR (BH) threshold", "display only", "trx-da-run", "trx-da-download",
     "trx-da-results-tabs", "de-formula_display")) expect_match(html, text, fixed = TRUE)
   expect_false(grepl("Q-value|q-value|TREAT|\\blimma\\b|Heatmap|Load Filtered Session", html))

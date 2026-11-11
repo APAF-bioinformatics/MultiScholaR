@@ -224,8 +224,10 @@ test_that("no configuration function is defined in an R/mod_*.R file (srcref, un
     }
 })
 
-test_that("the trx shell and import values equal trxOmicProfile()'s fields today (design 4.12)", {
-    profile <- trxOmicProfile()
+test_that("the trx shell and import values equal the transcriptomics profile's fields (design 4.12)", {
+    # KIT-109 removed `trxOmicProfile()`; its values at 35769a54 (mod_transcriptomics.R:38-44) are pinned here as literals.
+    profile <- list(omic_type = "transcriptomics", prefix = "trx", testid = "trx", label = "Transcriptomics",
+        label_lower = "transcriptomics", workflow_type = "TRANSCRIPTOMICS", binding = transcriptomicsDeclarationBinding)
     config <- omicGuiConfig("transcriptomics")
     for (field in c("omic_type", "prefix", "testid", "label", "label_lower")) {
         expect_identical(config$shell[[field]], profile[[field]], info = field)
@@ -508,7 +510,7 @@ test_that("run_order is required with no default; each required design field is 
     expectGuiConfigRefused(bad, "design$commit")
 })
 
-test_that("the trx design values equal trxOmicProfile()'s eight design fields today (design 4.12)", {
+test_that("the trx design values equal the transcriptomics profile's eight design fields (design 4.12)", {
     # KIT-103 W5 removed the eight fields from the profile; their values at 283f5eee are frozen here
     # (mod_transcriptomics.R:36-41 then; group_levels, validate and build_object are the
     # func_trx_design.R functions, W2, wired by W7).
@@ -522,11 +524,8 @@ test_that("the trx design values equal trxOmicProfile()'s eight design fields to
     for (field in names(frozen)) {
         expect_identical(design[[field]], frozen[[field]], info = field)
     }
-    expect_false(any(c("design_help", "run_order", "group_levels", "validate_design", "build_object",
-        "record_provenance", "state_name", "state_description") %in% names(trxOmicProfile())))
     expect_true(design$record_excluded_runs)
     expect_identical(design$label_lower, "transcriptomics")
-    expect_identical(trxOmicProfile()$omic_type, "transcriptomics")
 })
 
 test_that("the DIA binding adaptor's design entries call today's core functions", {
@@ -1697,11 +1696,10 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     expect_identical(summaries$lipidomics$texts, character())
     expect_identical(summaries$metabolomics$texts, character())
     expect_identical(summaries$transcriptomics$texts, c(integration_not_written = "not written (no integration export yet)"))
-    # Trx's template values equal trxOmicProfile()'s (mod_transcriptomics.R:39); KIT-108 W3 removed the profile's summary
-    # entries (`trxNormDaSummaryProfile`), whose values are pinned above as literals, unchanged.
-    profile <- trxOmicProfile()
+    # Trx's template values equal the transcriptomics profile's (mod_transcriptomics.R:39; KIT-109 removed the profile,
+    # its values at 35769a54 pinned here); KIT-108 W3 removed the profile's summary entries, pinned above as literals.
     trx <- summaries$transcriptomics
-    expect_identical(c(trx$report$template, trx$report$dir), c(profile$report_template, profile$report_dir))
+    expect_identical(c(trx$report$template, trx$report$dir), c("transcriptomics_report.rmd", "transcriptomics"))
     # The export steps: none for proteomics, lipid and metab; trx's RUVIII export (D4).
     for (omic in c("proteomics", "lipidomics", "metabolomics")) expect_identical(summaries[[omic]]$export_steps, list(), info = omic)
     expect_length(trx$export_steps, 1L)
@@ -1729,14 +1727,14 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
         list(operation = "trx_composite_figure", parameters = list(figure = "ruviii_before_and_after"))))
     expect_identical(step$error, list(prefix = "RUVIII export error:", type = "error", duration = 15))
     # The panel today renders these strings (mod_trx_summary.R:43-54 at the start commit).
-    html <- as.character(htmltools::renderTags(mod_lipid_summary_ui("summary", profile = profile))$html)
+    html <- as.character(htmltools::renderTags(mod_omic_summary_ui("summary", omicGuiConfig("transcriptomics")$summary))$html)
     for (text in c(step$title, step$help, step$button$label, step$button$testid, paste0("summary-", step$choice$output),
         paste0("summary-", step$button$input), paste0("summary-", step$status$output), paste0("summary-", step$figure$output))) {
         expect_true(grepl(text, html, fixed = TRUE), info = text)
     }
     # The UIs' placeholders and descriptions today are the group's.
     uis <- list(proteomics = mod_prot_summary_ui("x"), lipidomics = mod_lipid_summary_ui("x"),
-        metabolomics = mod_metab_summary_ui("x"), transcriptomics = mod_lipid_summary_ui("x", profile = profile))
+        metabolomics = mod_metab_summary_ui("x"), transcriptomics = mod_omic_summary_ui("x", omicGuiConfig("transcriptomics")$summary))
     for (omic in guiConfigOmics) {
         html <- as.character(htmltools::renderTags(uis[[omic]])$html)
         expect_true(grepl(sprintf("placeholder=\"%s\"", summaries[[omic]]$placeholder), html, fixed = TRUE), info = omic)

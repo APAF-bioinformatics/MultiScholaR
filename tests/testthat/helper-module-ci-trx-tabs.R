@@ -67,10 +67,10 @@ module_ci_trx_corpus_design <- function(dir = module_ci_trx_corpus()) {
 module_ci_trx_build_design <- function(fixture, design, levels, technical = TRUE, remove = character(), contrast = TRUE) {
   workflow <- fixture$workflow
   out <- new.env(parent = emptyenv())
-  shiny::testServer(mod_lipid_design_builder_server, args = list(
+  shiny::testServer(mod_omic_design_builder_server, args = list(
     data_tbl = function() getWorkflowOmicsBusTables(workflow, "data_tbl"), config_list = shiny::reactive(workflow$config_list),
     column_mapping = shiny::reactive(workflow$column_mapping), state_owner = function() workflow$state_manager,
-    profile = trxOmicProfile()), {
+    config = omicGuiConfig("transcriptomics")), {
     for (i in seq_along(levels)) {
       session$setInputs(new_factor = levels[[i]])
       session$setInputs(add_factor = i)
@@ -203,12 +203,12 @@ module_ci_trx_tabs_server <- function(fixture, managed = FALSE) {
       runner <- installWorkflowOmicsActions(session, fixture$workflow, "transcriptomics", "kit097", fixture$paths)
       runner$progress <- module_ci_trx_quiet_progress
     }
-    profile <- trxOmicProfile()
+    config <- omicGuiConfig("transcriptomics")
     # A tab that cannot start is recorded, so that the journey's assertions report what is missing.
     start <- function(name, expr) tryCatch(expr, error = function(error) session$userData$start_errors[[name]] <- conditionMessage(error))
-    start("norm", mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile))
-    start("de", session$userData$da <- mod_lipid_da_server("de", fixture$workflow, fixture$paths, "transcriptomics", "kit097", profile = profile))
-    start("summary", mod_lipid_summary_server("summary", fixture$project_dirs, "transcriptomics", "kit097", fixture$workflow, profile = profile))
+    start("norm", mod_omic_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit097", config = config$norm))
+    start("de", session$userData$da <- mod_omic_da_server("de", fixture$workflow, fixture$paths, "transcriptomics", "kit097", config = config$da))
+    start("summary", mod_omic_summary_server("summary", fixture$project_dirs, "transcriptomics", "kit097", fixture$workflow, config$summary))
   }
 }
 

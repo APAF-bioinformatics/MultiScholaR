@@ -78,7 +78,7 @@ test_that("MCI-029.2 the module in process: import, design, QC, normalisation an
     seen$widgets <- seen$widgets + 1L
     list(display = list(page = NULL))
   }, .package = "MultiScholaR")
-  html <- htmltools::renderTags(mod_lipid_da_ui("de", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_da_ui("de", omicGuiConfig("transcriptomics")$da))$html
   interactive_default <- grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html)
   testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
     if (identical(type, "error")) seen$errors <- c(seen$errors, paste(as.character(ui), collapse = " "))

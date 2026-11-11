@@ -80,7 +80,7 @@ test_that("MCI-030.3 under a managed session the norm tab runs on the worker and
 })
 
 test_that("MCI-030.4 the norm tab under the transcriptomics profile: automatic or manual RUVs, inferred controls, no skip, the stage figures", {
-  html <- htmltools::renderTags(mod_lipid_norm_ui("norm", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_norm_ui("norm", omicGuiConfig("transcriptomics")$norm))$html
   expect_match(html, "inferred negative controls (the least significant genes in a preliminary group GLM)", fixed = TRUE)
   expect_match(html, "trx-norm-run", fixed = TRUE)
   expect_match(html, "trx-norm-ruv-mode", fixed = TRUE)

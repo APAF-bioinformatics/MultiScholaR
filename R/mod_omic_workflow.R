@@ -188,8 +188,8 @@ advanceOmicWorkflowStatus <- function(status, done, next_key, after = NULL, bypa
 # ------------------------------------------------------------------------------------------------
 
 #' A GUI component by id: today's public tab module (`ui`, `server`: function names, looked up when the UI is built or
-#' the server starts, so a test's namespace stub replaces them), how the shell calls its server (`call`) and whether it
-#' takes the transcriptomics profile. An extra (`peptide_checkpoint`) has `ui(ns)` and `server(input, output, session,
+#' the server starts, so a test's namespace stub replaces them), how the shell calls its server (`call`) and the
+#' configuration it is given (`config`, trx's). An extra (`peptide_checkpoint`) has `ui(ns)` and `server(input, output, session,
 #' context)` only.
 #' @param id A component id, as `shell$tabs[[i]]$component` or `shell$extras` name it.
 #' @noRd
@@ -202,19 +202,24 @@ omicGuiComponent <- function(id) {
 }
 
 #' The registry. Lipid and metab call their own tab modules (the pre-KIT-102 mod_lipidomics.R:207-263, the same lines
-#' in mod_metabolomics.R); trx calls the lipid modules under its profile, its normalisation without `selected_tab`
-#' (mod_transcriptomics.R:258-264); proteomics its own (mod_proteomics.R:328-374).
+#' in mod_metabolomics.R); trx calls the shared modules under its configuration, its normalisation without
+#' `selected_tab` (mod_transcriptomics.R:258-264; KIT-109: no longer the lipid modules under a profile); proteomics its
+#' own (mod_proteomics.R:328-374). A component with `config` (an omic and the configuration group its module takes,
+#' NULL for the whole configuration) is given that configuration as `config`.
 #' @noRd
 omicGuiComponents <- function() {
-    component <- function(module, call, profile = FALSE) {
+    component <- function(module, call, config = NULL) {
         list(ui = paste0("mod_", module, "_ui"), server = paste0("mod_", module, "_server"), call = call,
-            profile = profile)
+            config = config)
     }
-    feature <- function(prefix, module = prefix, profile = FALSE) {
-        calls <- c(import = "import", design = "design", qc = "qc", norm = if (profile) "tab" else "tab_selected",
+    feature <- function(prefix, module = prefix, omic = NULL) {
+        calls <- c(import = "import", design = "design", qc = "qc", norm = if (is.null(omic)) "tab_selected" else "tab",
             da = "tab", summary = "summary")
-        stats::setNames(lapply(names(calls), function(tab) component(paste0(module, "_", tab), calls[[tab]], profile)),
-            paste0(prefix, "_", names(calls)))
+        groups <- list(norm = "norm", da = "da", summary = "summary")
+        stats::setNames(lapply(names(calls), function(tab) {
+            config <- if (!is.null(omic)) list(omic = omic, group = groups[[tab]])
+            component(paste0(module, "_", tab), calls[[tab]], config)
+        }), paste0(prefix, "_", names(calls)))
     }
     prot <- list(prot_import = component("prot_import", "import"), prot_design = component("prot_design", "design"),
         prot_qc = component("prot_qc", "qc_named"), prot_norm = component("prot_norm", "tab_selected_positional"),
@@ -222,7 +227,7 @@ omicGuiComponents <- function() {
         prot_enrich = component("prot_enrich", "tab_selected_positional"),
         prot_summary = component("prot_summary", "summary"))
     extras <- list(peptide_checkpoint = list(ui = "protPeptideCheckpointUi", server = "protPeptideCheckpointServer"))
-    c(feature("lipid"), feature("metab"), feature("trx", "lipid", profile = TRUE), prot, extras)
+    c(feature("lipid"), feature("metab"), feature("trx", "omic", omic = "transcriptomics"), prot, extras)
 }
 
 #' A component's UI under its module id.
@@ -230,7 +235,14 @@ omicGuiComponents <- function() {
 omicGuiComponentUi <- function(id, module_id) {
     component <- omicGuiComponent(id)
     ui <- omicGuiFunction(component$ui)
-    if (component$profile) ui(module_id, profile = trxOmicProfile()) else ui(module_id)
+    if (is.null(component$config)) ui(module_id) else ui(module_id, omicGuiComponentConfig(component$config))
+}
+
+#' A component's configuration: the omic's, or its named group.
+#' @noRd
+omicGuiComponentConfig <- function(spec) {
+    config <- omicGuiConfig(spec$omic)
+    if (is.null(spec$group)) config else config[[spec$group]]
 }
 
 #' A component's server under its module id, with the arguments its call names.
@@ -238,13 +250,14 @@ omicGuiComponentUi <- function(id, module_id) {
 omicGuiComponentServer <- function(id, module_id, context) {
     component <- omicGuiComponent(id)
     server <- omicGuiFunction(component$server)
-    if (component$profile) {
-        return(callOmicGuiComponent(component$call, server, module_id, context, profile = trxOmicProfile()))
+    if (!is.null(component$config)) {
+        return(callOmicGuiComponent(component$call, server, module_id, context,
+            config = omicGuiComponentConfig(component$config)))
     }
     callOmicGuiComponent(component$call, server, module_id, context)
 }
 
-#' The tab servers' argument shapes, as the pre-KIT-102 shells passed them; `...` is trx's `profile`.
+#' The tab servers' argument shapes, as the pre-KIT-102 shells passed them; `...` is trx's `config`.
 #' @noRd
 callOmicGuiComponent <- function(call, server, module_id, context, ...) {
     data <- context$workflow_data

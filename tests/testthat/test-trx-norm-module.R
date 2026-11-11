@@ -1,5 +1,5 @@
 # KIT-110 W1 (b-trx): the transcriptomics normalisation tab through its public entry point,
-# `mod_lipid_norm_server("norm", ..., "transcriptomics", ..., profile = trxOmicProfile())`, in
+# `mod_lipid_norm_server("norm", ..., "transcriptomics", ..., profile = trxOmicProfile())` (KIT-109: the shared frame under trx's configuration), in
 # `testServer`, written before the trx normalisation core (W2) and trx's move onto the shared frame
 # (W3). The fixture is MCI-030's (the shipped MCI corpus, `module_ci_trx_project(module_ci_trx_corpus())`),
 # so the file runs in check mode as MCI-029 does.
@@ -106,8 +106,8 @@ trxNormW1Server <- function(fixture, managed) {
             runner <- installWorkflowOmicsActions(session, fixture$workflow, "transcriptomics", "kit110", fixture$paths)
             runner$progress <- module_ci_trx_quiet_progress
         }
-        session$userData$norm <- mod_lipid_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit110",
-            profile = trxOmicProfile())
+        session$userData$norm <- mod_omic_norm_server("norm", fixture$workflow, fixture$paths, "transcriptomics", "kit110",
+            config = omicGuiConfig("transcriptomics")$norm)
     }
 }
 

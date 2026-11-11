@@ -514,12 +514,13 @@ trxRuviiiExportParameters <- function(manager, source, m_source) {
 }
 
 #' The session-state payload: lipid's, with the head's metadata (`trxSummaryStateObject`), the omic and its template
-#' (`prepareLipidSummarySessionState` under the profile's entries at 5be34ee5, mod_transcriptomics.R:39, :45-57).
+#' (`prepareLipidSummarySessionState` under the transcriptomics profile's entries at 5be34ee5, mod_transcriptomics.R:39,
+#' :45-57; KIT-109 passes them as arguments).
 #' @noRd
 trxSummarySessionState <- function(inputValues, projectDirs, omicType, values, timestamp, workflowData = NULL) {
     prepareLipidSummarySessionState(inputValues = inputValues, projectDirs = projectDirs, omicType = omicType,
-        values = values, timestamp = timestamp, workflowData = workflowData, profile = list(omic_type = "transcriptomics",
-            report_template = "transcriptomics_report.rmd", summary_state_object = trxSummaryStateObject))
+        values = values, timestamp = timestamp, workflowData = workflowData, stateObject = trxSummaryStateObject,
+        workflowType = "transcriptomics", reportTemplate = "transcriptomics_report.rmd")
 }
 
 # ------------------------------------------------------------------------------------------------
@@ -624,7 +625,9 @@ prepareLipidSummarySessionState <- function(
     values,
     timestamp,
     workflowData = NULL,
-    profile = NULL
+    stateObject = getLipidSummaryStateObject,
+    workflowType = "lipidomics",
+    reportTemplate = "lipidomics_report.rmd"
 ) {
     sessionState <- list(
         experiment_label = inputValues$experiment_label,
@@ -642,7 +645,7 @@ prepareLipidSummarySessionState <- function(
         return(sessionState)
     }
 
-    finalS4Object <- if (is.null(profile)) getLipidSummaryStateObject(workflowData) else profile$summary_state_object(workflowData)
+    finalS4Object <- stateObject(workflowData)
     parameterPayload <- buildLipidSummaryParameterPayload(workflowData, finalS4Object)
     globalParameters <- lipidSummaryFirstNonNull(
         parameterPayload$config_list$globalParameters,
@@ -652,11 +655,11 @@ prepareLipidSummarySessionState <- function(
 
     sessionState$workflow_type <- lipidSummaryFirstNonNull(
         globalParameters$workflow_type,
-        profile$omic_type %||% "lipidomics"
+        workflowType
     )
     sessionState$report_template <- lipidSummaryFirstNonNull(
         globalParameters$report_template,
-        profile$report_template %||% "lipidomics_report.rmd"
+        reportTemplate
     )
     sessionState$parameter_payload <- parameterPayload
 

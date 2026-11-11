@@ -722,7 +722,7 @@ trxProbeServer <- function(fixture, managed, holding = FALSE) {
       runner$progress <- function(message) list(set = function(...) invisible(NULL), inc = function(...) invisible(NULL), close = function() invisible(NULL))
     }
     mod_trx_qc_filter_server("filter", fixture$workflow, "transcriptomics", "kit082")
-    mod_lipid_qc_s4_server("finalize", fixture$workflow, "transcriptomics", "kit082", profile = trxOmicProfile())
+    mod_omic_qc_finalize_server("finalize", fixture$workflow, "transcriptomics", "kit082", omicGuiConfig("transcriptomics"))
     if (holding) shiny::observeEvent(input[["finalize-finalize_qc"]], {
       session$userData$held <- withWorkflowStateScope(fixture$owner, function() readTrxWorkflowState(fixture$owner))
     })

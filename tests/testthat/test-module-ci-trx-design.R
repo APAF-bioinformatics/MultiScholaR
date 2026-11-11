@@ -161,7 +161,7 @@ test_that("MCI-027.3 removed runs leave the design and the counts; three groups 
 })
 
 test_that("MCI-027.4 the design tab under the transcriptomics profile: the shared builder ids, matching by name stated", {
-  html <- htmltools::renderTags(mod_lipid_design_ui("design", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_design_ui("design", omicGuiConfig("transcriptomics")))$html
   expect_match(html, "by sample name", fixed = TRUE)
   expect_false(grepl("design-show_import_modal", html, fixed = TRUE))
   expect_false(grepl("Multi-Assay Workflow", html, fixed = TRUE))

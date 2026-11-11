@@ -5,7 +5,7 @@
 #       D3 pins it separately) and their namespaced input and output ids, test ids, tab titles, labels,
 #       help texts, choice lists and defaults (`volcano_interactive`'s left out).
 #   (b) Server captures, in process, through `mod_{lipid,metab,prot}_da_server` and the trx mount
-#       (`mod_lipid_da_server(profile = trxOmicProfile())`) in `testServer`, on the MCI fixtures: lipid
+#       (`mod_omic_da_server` under the trx configuration; KIT-109) in `testServer`, on the MCI fixtures: lipid
 #       MCI-022 (helper-module-ci-lipid-da.R), metab MCI-016, trx MCI-030/031
 #       (`module_ci_trx_project(module_ci_trx_corpus())`, the normalisation run first on the same
 #       session) and proteomics MCI-009 (helper-module-ci-prot-da.R; its object on a DIA owner, opened
@@ -87,7 +87,7 @@ omicDaW1Dump <- function(name, value) {
 omicDaW1Uis <- function() {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
     list(lipid = mod_lipid_da_ui("de"), metab = mod_metab_da_ui("de"),
-        trx = mod_lipid_da_ui("de", profile = trxOmicProfile()), prot = mod_prot_da_ui("differential_expression"))
+        trx = mod_omic_da_ui("de", omicGuiConfig("transcriptomics")$da), prot = mod_prot_da_ui("differential_expression"))
 }
 
 #' The rendered HTML with shiny's random tabset ids masked, and the `checked` attribute of the
@@ -812,13 +812,13 @@ omicDaW1TrxSetup <- function(managed = FALSE, env = parent.frame()) {
                 runner <- installWorkflowOmicsActions(session, fixture$workflow, "transcriptomics", "kit106", paths)
                 runner$progress <- module_ci_trx_quiet_progress
             }
-            profile <- trxOmicProfile()
-            mod_lipid_norm_server("norm", fixture$workflow, paths, "transcriptomics", "kit106", profile = profile)
-            session$userData$da <- mod_lipid_da_server("de", fixture$workflow, paths, "transcriptomics", "kit106",
-                profile = profile)
+            config <- omicGuiConfig("transcriptomics")
+            mod_omic_norm_server("norm", fixture$workflow, paths, "transcriptomics", "kit106", config = config$norm)
+            session$userData$da <- mod_omic_da_server("de", fixture$workflow, paths, "transcriptomics", "kit106",
+                config = config$da)
         }
     }
-    list(omic = "trx", server = server, ns = "de", ui = function(id) mod_lipid_da_ui(id, profile = trxOmicProfile()),
+    list(omic = "trx", server = server, ns = "de", ui = function(id) mod_omic_da_ui(id, omicGuiConfig("transcriptomics")$da),
         bus = function() fixture$workflow, roots = unique(c(normalizePath(project, mustWork = FALSE), project)),
         files_root = project, probe = probe)
 }
@@ -4861,7 +4861,7 @@ omicDaW3TrxRun <- function(put) {
 # GUI audit R5, item 1 (volcano default on; user, 2026-11-11): the box is ticked by default for every omic.
 test_that("(W3, D3; R5 item 1) lipid's and trx's DA UIs have the interactive volcano ticked", {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
-    for (ui in list(lipid = mod_lipid_da_ui("de"), trx = mod_lipid_da_ui("de", profile = trxOmicProfile()))) {
+    for (ui in list(lipid = mod_lipid_da_ui("de"), trx = mod_omic_da_ui("de", omicGuiConfig("transcriptomics")$da))) {
         html <- as.character(htmltools::renderTags(ui)$html)
         expect_match(html, "<input id=\"de-volcano_interactive\" type=\"checkbox\"", fixed = TRUE)
         expect_true(grepl("<input id=\"de-volcano_interactive\"[^>]*checked", html))

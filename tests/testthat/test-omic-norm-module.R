@@ -181,7 +181,7 @@ omicNormFrozenUi <- list(
 
 test_that("(a) the lipid, metab and trx-profile norm UIs keep their HTML, ids, test ids and tab titles", {
     actual <- list(lipid = omicNormUiParts(mod_lipid_norm_ui("norm")), metab = omicNormUiParts(mod_metab_norm_ui("norm")),
-        trx = omicNormUiParts(mod_lipid_norm_ui("norm", profile = trxOmicProfile())))
+        trx = omicNormUiParts(mod_omic_norm_ui("norm", omicGuiConfig("transcriptomics")$norm)))
     if (!is.null(omicNormDumpPath())) omicNormDump("omicNormFrozenUi", actual)
     expect_named(actual, names(omicNormFrozenUi))
     for (omic in names(omicNormFrozenUi)) {
@@ -1878,9 +1878,8 @@ test_that("KIT-110 W3 (D4): the frame calls an omic's own run and reset handlers
 
 test_that("KIT-110 W3: the trx norm module file's functions and the six norm_* profile entries are gone (fails before)", {
     ns <- asNamespace("MultiScholaR")
-    for (name in c("trxNormOptionsPanel", "mod_trx_norm_server")) {
+    # KIT-109 removed the profile itself, entries and all.
+    for (name in c("trxNormOptionsPanel", "mod_trx_norm_server", "trxOmicProfile")) {
         expect_false(exists(name, envir = ns, inherits = FALSE), info = name)
     }
-    expect_identical(intersect(c("norm_options", "norm_server", "norm_tabs", "norm_stage_labels", "norm_ruv_heading",
-        "norm_ruv_help"), names(trxOmicProfile())), character())
 })

@@ -5,9 +5,8 @@
 #' @importFrom logger log_info log_error log_warn
 #' @importFrom purrr imap map walk set_names
 #' @importFrom DT renderDataTable datatable formatStyle styleEqual
-mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL, profile = NULL) {
-    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R). KIT-110 D1: `profile` only selects the omic's
-    # configuration (trx: `trxOmicProfile()`); NULL is lipidomics.
+mod_lipid_norm_server <- function(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab = NULL) {
+    # KIT-105 W4: the shared normalisation frame (mod_omic_norm.R) under the lipid configuration.
     mod_omic_norm_server(id, workflow_data, experiment_paths, omic_type, experiment_label, selected_tab,
-        config = omicGuiConfig(profile$omic_type %||% "lipidomics")$norm)
+        config = omicGuiConfig("lipidomics")$norm)
 }

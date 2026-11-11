@@ -1930,7 +1930,7 @@ omicGuiMetabImport <- function() {
 # Transcriptomics.
 # ------------------------------------------------------------------------------------------------
 
-#' The transcriptomics configuration: `trxOmicProfile()`'s fields at c1041c56
+#' The transcriptomics configuration: the transcriptomics profile's fields at c1041c56
 #' (mod_transcriptomics.R:32-49; KIT-102 W5 removed the import-only ones) and the lipid panel's
 #' values it rendered under that profile (design 4.12).
 #' @noRd
@@ -1953,7 +1953,7 @@ omicGuiConfigTranscriptomics <- function() {
 }
 
 #' The trx Summary & Export tab at 5be34ee5: the lipid tab under the profile's summary entries (KIT-108 D1, D4;
-#' `trxNormDaSummaryProfile`, mod_transcriptomics.R:45-57; `trxOmicProfile`, :39-41): the module id and test ids (the
+#' the profile's normalisation, DA and summary entries, mod_transcriptomics.R:45-57; the profile, :39-41): the module id and test ids (the
 #' shell's tab; the profile's `testid`, :39; mod_lipid_summary.R:41), the placeholder and description (:52-53), the record
 #' whenever there is a bus, the copy (`omicGuiFeatureSummaryCopy`), the integration file and its managed operation
 #' (:54; mod_lipid_summary_workflow_helpers.R:89, :124-127) gated on the accepted RUVIII export with its message
@@ -2087,7 +2087,7 @@ omicGuiTrxNorm <- function() {
         testids = c(ruv_mode = "trx-norm-ruv-mode", run = "trx-norm-run", reset = "trx-norm-reset"))
 }
 
-#' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under `trxOmicProfile()`'s QC
+#' The trx QC tab: at b423b764 the lipid QC orchestrator and finalise under the transcriptomics profile's QC
 #' fields (mod_transcriptomics.R:38-41; mod_trx_qc_filter.R): the expression-filter plugin and the
 #' shared finalise with one table. Since KIT-104 W6 the profile has no QC field: the tab is the
 #' shared shell under this configuration, with the figure, alignment and shell read below.
@@ -2136,7 +2136,7 @@ omicGuiTrxQc <- function() {
         notification_ids = stats::setNames(character(), character()))
 }
 
-#' The trx design tab: at 3c657c14 the lipid frame and builder under `trxOmicProfile()`'s design
+#' The trx design tab: at 3c657c14 the lipid frame and builder under the transcriptomics profile's design
 #' fields (mod_transcriptomics.R:36-41; design 4.12; KIT-103 W5 removed them from the profile).
 #' `group_levels` (`trxDesignGroupLevels`), `validate` (`trxDesignCheck`) and `build_object`
 #' (`trxDesignObject`) are func_trx_design.R's (KIT-103 W2).

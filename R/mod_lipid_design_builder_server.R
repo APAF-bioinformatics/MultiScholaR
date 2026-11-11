@@ -11,19 +11,15 @@
 #'   contrasts table (e.g., from "Import Existing Design").
 #' @param state_owner Optional function returning the session's state owner; the builder
 #'   then holds its tables by reference. Without it they stay plain values.
-#' @param profile An omic profile (KIT-096): its run order for a fresh design, and the level order and removed runs on
-#'   the saved result. `NULL`, the default, is lipidomics.
 #'
 #' @rdname lipidomicsDesignMatrixBuilderModule
 #' @export
 mod_lipid_design_builder_server <- function(id, data_tbl, config_list, column_mapping
                                             , existing_design_matrix = NULL
                                             , existing_contrasts = NULL
-                                            , state_owner = NULL
-                                            , profile = NULL) {
-    # KIT-103 W4: the shared builder (mod_omic_design_builder.R) under the lipid configuration, or
-    # the profile's omic (trx) under its own.
+                                            , state_owner = NULL) {
+    # KIT-103 W4: the shared builder (mod_omic_design_builder.R) under the lipid configuration.
     mod_omic_design_builder_server(id, data_tbl, config_list, column_mapping,
         existing_design_matrix = existing_design_matrix, existing_contrasts = existing_contrasts,
-        state_owner = state_owner, config = omicGuiConfig(profile$omic_type %||% "lipidomics"))
+        state_owner = state_owner, config = omicGuiConfig("lipidomics"))
 }

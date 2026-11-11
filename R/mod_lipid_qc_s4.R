@@ -20,8 +20,7 @@
 # Purpose: Final S4 state confirmation module for lipidomics QC
 #
 # KIT-104 W5: the exported wrappers over the shared finalise sub-tab (mod_omic_qc_tabs.R) under the
-# lipid configuration, or the profile's omic (trx) under its own (KIT-104 W6 removed trx's own
-# finalise path).
+# lipid configuration (KIT-109: trx calls the shared finalise itself).
 # ============================================================================
 
 #' @title Lipidomics QC Finalization Module
@@ -29,7 +28,6 @@
 #'              Displays QC summary statistics and state history.
 #' @name mod_lipid_qc_s4
 #' @param id,workflow_data,omic_type,experiment_label Runtime inputs used by this function; see the usage section for accepted values.
-#' @param profile An omic profile (KIT-096): its `omic_type` selects that omic's configuration. `NULL`, the default, is lipidomics.
 NULL
 
 #' @rdname mod_lipid_qc_s4
@@ -37,8 +35,8 @@ NULL
 #' @importFrom shiny NS tagList tabPanel br fluidRow column wellPanel h4 h5 p hr div actionButton verbatimTextOutput uiOutput icon tags plotOutput
 #' @importFrom DT DTOutput
 #' @importFrom shinyjqui jqui_resizable
-mod_lipid_qc_s4_ui <- function(id, profile = NULL) {
-    mod_omic_qc_finalize_ui(id, omicGuiConfig(profile$omic_type %||% "lipidomics"))
+mod_lipid_qc_s4_ui <- function(id) {
+    mod_omic_qc_finalize_ui(id, omicGuiConfig("lipidomics"))
 }
 
 #' @rdname mod_lipid_qc_s4
@@ -47,7 +45,7 @@ mod_lipid_qc_s4_ui <- function(id, profile = NULL) {
 #' @importFrom DT renderDT datatable
 #' @importFrom logger log_info log_error
 #' @importFrom grid grid.draw
-mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_label, profile = NULL) {
+mod_lipid_qc_s4_server <- function(id, workflow_data, omic_type, experiment_label) {
     mod_omic_qc_finalize_server(id, workflow_data, omic_type, experiment_label,
-        omicGuiConfig(profile$omic_type %||% "lipidomics"))
+        omicGuiConfig("lipidomics"))
 }

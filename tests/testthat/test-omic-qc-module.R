@@ -239,7 +239,6 @@ omicQcIdentity <- function(env = parent.frame()) {
         workflow <- shiny::reactiveValues(state_manager = list(workflow_type = route))
         rendered[[paste0("prot_", route)]] <- omicQcRendered("prot_qc", "proteomics", workflow)
     }
-    trx_profile <- trxOmicProfile()
     subtabs <- c(
         lipid_intensity = omicQcDigest(mod_lipid_qc_intensity_ui("x")),
         lipid_duplicates = omicQcDigest(mod_lipid_qc_duplicates_ui("x")),
@@ -250,7 +249,7 @@ omicQcIdentity <- function(env = parent.frame()) {
         metab_itsd = omicQcDigest(mod_metab_qc_itsd_ui("x")),
         metab_finalize = omicQcDigest(mod_metab_qc_s4_ui("x")),
         trx_filter = omicQcDigest(mod_trx_qc_filter_ui("x")),
-        trx_finalize = omicQcDigest(mod_lipid_qc_s4_ui("x", profile = trx_profile)),
+        trx_finalize = omicQcDigest(mod_omic_qc_finalize_ui("x", omicGuiConfig("transcriptomics"))),
         prot_peptide_DIA = omicQcDigest(mod_prot_qc_peptide_ui("x", workflowType = "DIA")),
         prot_peptide_DIA_LIMPA = omicQcDigest(mod_prot_qc_peptide_ui("x", workflowType = "DIA_LIMPA")),
         prot_protein_DIA = omicQcDigest(mod_prot_qc_protein_ui("x", workflow_type = "DIA")),
@@ -694,11 +693,8 @@ test_that("W6 metab's and trx's QC copies are deleted; their exports are wrapper
             expect_match(utils::getSrcFilename(get(name, envir = ns)), "func_trx_qc_plots.R", fixed = TRUE, info = name)
         }
     }
-    profile <- trxOmicProfile()
-    # KIT-104 W8: `class` and `read_state` too, once test-omic-gui-config.R pinned their values.
-    expect_identical(intersect(c("qc_title", "qc_tabs", "qc_init", "register_qc_summary", "finalize", "read_metadata",
-        "class", "read_state"), names(profile)), character())
-    expect_identical(profile$omic_type, "transcriptomics")
+    # KIT-104 W8 emptied the profile of its QC fields, `class` and `read_state`; KIT-109 removed the profile.
+    expect_false(exists("trxOmicProfile", envir = ns, inherits = FALSE))
     # Every finalise checks its alignment; trx's is its own design check (D10).
     for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
         expect_true(is.function(omicGuiConfig(omic)$qc$finalize_alignment), info = omic)

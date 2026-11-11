@@ -55,7 +55,7 @@ omicDesignFrozen <- list(
 
 test_that("W4 the design tab's UI through the lipid wrappers is today's bytes (lipid, trx; frame and builder)", {
     expect_identical(omicDesignUiDigest(mod_lipid_design_ui("design")), omicDesignFrozen$lipid_frame)
-    expect_identical(omicDesignUiDigest(mod_lipid_design_ui("design", profile = trxOmicProfile())),
+    expect_identical(omicDesignUiDigest(mod_omic_design_ui("design", omicGuiConfig("transcriptomics"))),
         omicDesignFrozen$trx_frame)
     expect_identical(omicDesignUiDigest(mod_lipid_design_builder_ui("builder")), omicDesignFrozen$builder)
 })
@@ -89,11 +89,14 @@ test_that("W4 the shared frame, builder, import modal and reset modal render tod
 
 test_that("W4 the design tab's server keeps today's outputs; the two status outputs read as today's error", {
     withr::local_envvar(MULTISCHOLAR_TEST_MODE = "true")
-    for (profile in list(NULL, trxOmicProfile())) {
+    # KIT-109: trx is the shared tab under its configuration (the lipid wrapper under trxOmicProfile() before).
+    servers <- list(list(server = mod_lipid_design_server, args = list()),
+        list(server = mod_omic_design_server, args = list(config = omicGuiConfig("transcriptomics"))))
+    for (case in servers) {
         payload <- module_ci_lipid_design_payload(layout = "lc_pair")
         workflow <- module_ci_lipid_design_workflow(payload)
-        shiny::testServer(mod_lipid_design_server, args = list(workflow_data = workflow,
-            experiment_paths = module_ci_lipid_design_paths(), profile = profile), {
+        shiny::testServer(case$server, args = c(list(workflow_data = workflow,
+            experiment_paths = module_ci_lipid_design_paths()), case$args), {
             session$flushReact()
             outputs <- sort(sub("^proxy[0-9]+-", "", names(session$.__enclos_env__$private$outs)))
             expect_identical(outputs, omicDesignFrozen$outputs)
@@ -115,12 +118,12 @@ test_that("W4 the builder keeps its reactive `design_matrix` and no name that ma
     test_names <- c("design", "levels", "runs", "group", "clicks", "tech", "set", "remove", "contrast",
         "technical", "out", "workflow", "fixture", "i", "result", "samples", "assays", "mapping", "seen")
     # The fresh design's run order: lipid mixedsort, trx the input order.
-    cases <- list(list(profile = NULL, runs = c("KO_1", "KO_2", "WT_1", "WT_2")),
-        list(profile = trxOmicProfile(), runs = c("WT_1", "WT_2", "KO_1", "KO_2")))
+    cases <- list(list(server = mod_lipid_design_builder_server, args = list(), runs = c("KO_1", "KO_2", "WT_1", "WT_2")),
+        list(server = mod_omic_design_builder_server, args = list(config = omicGuiConfig("transcriptomics")), runs = c("WT_1", "WT_2", "KO_1", "KO_2")))
     for (case in cases) {
-        shiny::testServer(mod_lipid_design_builder_server, args = list(data_tbl = function() payload$data_cln,
-            config_list = shiny::reactive(payload$config_list), column_mapping = shiny::reactive(payload$column_mapping),
-            profile = case$profile), {
+        shiny::testServer(case$server, args = c(list(data_tbl = function() payload$data_cln,
+            config_list = shiny::reactive(payload$config_list), column_mapping = shiny::reactive(payload$column_mapping)),
+            case$args), {
             module_names <- c(ls(session$env, all.names = TRUE), ls(parent.env(session$env), all.names = TRUE))
             expect_true("design_matrix" %in% ls(session$env))
             expect_s3_class(design_matrix, "reactiveVal")
@@ -279,12 +282,13 @@ test_that("W4 the shared import (MCI-019.4's path): the bus, the texts in order,
 })
 
 test_that("W4 the lipid design wrappers keep their signatures", {
-    expect_identical(names(formals(mod_lipid_design_ui)), c("id", "profile"))
+    # KIT-109 removed `profile` (KIT-096's), returning the wrappers to their signatures on main.
+    expect_identical(names(formals(mod_lipid_design_ui)), "id")
     expect_identical(names(formals(mod_lipid_design_server)),
-        c("id", "workflow_data", "experiment_paths", "volumes", "qc_trigger", "profile"))
+        c("id", "workflow_data", "experiment_paths", "volumes", "qc_trigger"))
     expect_identical(names(formals(mod_lipid_design_builder_ui)), "id")
     expect_identical(names(formals(mod_lipid_design_builder_server)), c("id", "data_tbl", "config_list",
-        "column_mapping", "existing_design_matrix", "existing_contrasts", "state_owner", "profile"))
+        "column_mapping", "existing_design_matrix", "existing_contrasts", "state_owner"))
     expect_identical(names(formals(validateLipidDesignAlignment)), c("designMatrix", "assayList", "columnMapping",
         "sampleIdCol", "groupCol", "requireGroups", "requireReplicates"))
     expect_identical(names(formals(validateLipidDesignContrasts)), c("designMatrix", "contrastsTbl", "formulaString",

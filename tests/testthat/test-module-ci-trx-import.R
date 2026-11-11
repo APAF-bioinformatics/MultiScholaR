@@ -78,7 +78,7 @@ test_that("MCI-026.2 a count table without its chosen name column, or with a non
 })
 
 test_that("MCI-026.3 the import tab under the transcriptomics profile: one format, gene columns, no sanitisation, the policy stated", {
-  html <- htmltools::renderTags(mod_lipid_import_ui("import", profile = trxOmicProfile()))$html
+  html <- htmltools::renderTags(mod_omic_import_ui("import", omicGuiConfig("transcriptomics")))$html
   expect_match(html, "Transcriptomics Data Import", fixed = TRUE)
   expect_match(html, "Gene ID Column", fixed = TRUE)
   expect_match(html, "Gene Name Column", fixed = TRUE)

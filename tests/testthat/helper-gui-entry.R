@@ -473,8 +473,9 @@ guiEntryReadDesign <- function(api) {
 # qc_trigger), so a click before the import reaches no observer, and the filter observer, created later without
 # ignoreInit, then runs that earlier click at the design (development run on 2cfe18a1).
 guiEntryTrxSteps <- function(lane) {
-  profile <- trxOmicProfile()
-  ui <- function(fn) function(id) fn(id, profile = profile)
+  # KIT-109: the shared modules under the transcriptomics configuration (the lipid modules under trxOmicProfile() before).
+  config <- omicGuiConfig("transcriptomics")
+  ui <- function(fn, group = NULL) function(id) fn(id, if (is.null(group)) config else config[[group]])
   list(
     guiEntryStep("import_refusal", "import", refusal = "message", function(api) {
       # A count table with one negative count (KIT-040's counts_negative case) is refused with no state.
@@ -485,7 +486,7 @@ guiEntryTrxSteps <- function(lane) {
       bad <- file.path(api$inputs$scratch, "negative", "counts.tsv")
       dir.create(dirname(bad), showWarnings = FALSE)
       writeLines(lines, bad)
-      api$defaults(ui(mod_lipid_import_ui), "import")
+      api$defaults(ui(mod_omic_import_ui), "import")
       api$upload("import-assay1_file_std", bad)
       api$set(list(`import-process_import` = 1L))
     }),
@@ -505,31 +506,31 @@ guiEntryTrxSteps <- function(lane) {
       api$set(list(`qc-filter-apply_filter` = 1L))
     }),
     guiEntryStep("qc_finalize", "qc", function(api) {
-      api$defaults(ui(mod_lipid_qc_s4_ui), "qc-s4_finalize")
+      api$defaults(ui(mod_omic_qc_finalize_ui), "qc-s4_finalize")
       api$set(list(`qc-s4_finalize-finalize_qc` = 1L))
     }),
     guiEntryStep("da_refusal", "de", refusal = "message", function(api) {
       # DA before the normalisation: the head has no RUVs factors.
-      api$defaults(ui(mod_lipid_da_ui), "de")
+      api$defaults(ui(mod_omic_da_ui, "da"), "de")
       api$set(list(`de-run_da_analysis` = 1L))
     }),
     guiEntryStep("norm_refusal", "norm", refusal = "message", function(api) {
       # A manual k above the cap (MCI-030.2), refused with its class.
-      api$defaults(ui(mod_lipid_norm_ui), "norm")
+      api$defaults(ui(mod_omic_norm_ui, "norm"), "norm")
       api$set(list(`norm-ruv_mode` = "manual", `norm-ruv_k` = 50L))
       api$set(list(`norm-run_normalization` = 1L))
     }),
     guiEntryStep("norm", "norm", function(api) {
-      api$defaults(ui(mod_lipid_norm_ui), "norm")
+      api$defaults(ui(mod_omic_norm_ui, "norm"), "norm")
       api$set(list(`norm-run_normalization` = 2L))
     }),
     guiEntryStep("da", "de", function(api) {
-      api$defaults(ui(mod_lipid_da_ui), "de")
+      api$defaults(ui(mod_omic_da_ui, "da"), "de")
       api$set(list(`de-run_da_analysis` = 2L))
     }),
     guiEntryStep("summary_refusal", "summary", refusal = "message", function(api) {
       # The report before the publication copy: refused with a message (KIT-101 rev 2.2, F-11; before it, silent).
-      api$defaults(ui(mod_lipid_summary_ui), "summary")
+      api$defaults(ui(mod_omic_summary_ui, "summary"), "summary")
       api$set(list(`summary-experiment_label` = "trx_screen"))
       api$set(list(`summary-generate_report` = 1L))
     }),

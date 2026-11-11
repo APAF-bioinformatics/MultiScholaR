@@ -280,7 +280,7 @@ test_that("C3 the sample discovery and initial state are today's (lipid, trx, me
                 expect_identical(
                     buildOmicsDesignInitialState(assays, config_list, mapping, trx_config, existing_design, existing_contrasts),
                     buildLipidDesignInitialState(assays, config_list, mapping, existing_design, existing_contrasts,
-                        mixedsortFn = trxOmicProfile()$run_order, logErrorFn = quietDesign, messageFn = quietDesign))
+                        mixedsortFn = NULL, logErrorFn = quietDesign, messageFn = quietDesign))
             }
         }
     }
