@@ -35,7 +35,9 @@ protNormCoreBodyDigests <- c(
     buildProtNormTitlePlot = "5993ca10f9e4080ef7ec0b14dfb4de7e56628c532ca0a2eda8b726b83441c538",
     buildProtNormLabelPlot = "3f45f763cb05b83ed873e523c33d019800e5719c06c1cbf6b771b98d8fa9bf69",
     loadProtNormImageAsPlot = "6b9882f8594382fdabaf741c05fad43452517a5a37fdd07cad65b2a87e02e7ff",
-    runDIAReferenceLimpaNormalisationPassThrough = "63aea4d328e48d7d42e5230e89d05cea930220b8f389942017c8f3c9bb607729"
+    # Re-pinned by the GUI audit (P-35, 2026-11-11): pressed again on the tab's own RUV state, the pass-through keeps the
+    # input it designated before (was 63aea4d3...); the only change to this definition.
+    runDIAReferenceLimpaNormalisationPassThrough = "fe852d7a3086ab62b9bb8fadf6214da74668265e0d7bccf60d001d1eae01fbbf"
 )
 
 # Recorded at aa79fe3f (before W3) through the core callers on the fixtures below.
@@ -1950,13 +1952,13 @@ test_that("GUI audit P-35: covariates then correction (and back) each run on the
 
 # ------------------------------------------------------------------------------------------------
 # GUI audit R2, P-35 (second route): after the RUV covariates the tab's `ruv_normalized_obj` is the committed RUV state,
-# and the correlation read its source there. A correlation re-apply then filtered the RUV state, and the covariates that
-# followed compounded. The re-apply now starts from the normalisation's final, so the repeated correlation and covariates
-# give the frozen first-run values (`value`: the result's science), in process and through the worker. Not covered: the
-# normalisation pass-through pressed again on the RUV head designates that head as the input (its definition is pinned).
+# and the correlation read its source there. A correlation re-apply (directly, or after pressing the normalisation
+# pass-through again) then filtered the RUV state, and the covariates that followed compounded. Both now start from the
+# normalisation's final, so the repeated correlation and covariates give the frozen first-run values (`value`: the
+# result's science), in process and through the worker.
 # ------------------------------------------------------------------------------------------------
 
-test_that("GUI audit P-35: a correlation re-apply after the RUV covariates starts from the normalisation's final", {
+test_that("GUI audit P-35: a correlation re-apply after the RUV covariates, directly or after the pass-through, starts from the normalisation's final", {
     skip_if_not_installed("limpa")
     skip_if_not_installed("mixOmics")
     frozen <- protNormW1Frozen()
@@ -1976,9 +1978,13 @@ test_that("GUI audit P-35: a correlation re-apply after the RUV covariates start
             expect_identical(again$error, NA_character_, info = info)
             expect_identical(again$value, correlation, info = info)
             expect_identical(clicks$ruv_covariates(mode)$value, ruv, info = info)
+            # The pass-through again on the RUV head, then the correlation and the covariates.
+            expect_identical(clicks$pass_through()$error, NA_character_, info = info)
+            expect_identical(clicks$correlation(0.5)$value, correlation, info = info)
+            expect_identical(clicks$ruv_covariates(mode)$value, ruv, info = info)
             if (identical(path, "worker")) {
                 inputs <- vapply(Filter(function(result) identical(result$operation, "pearson-pairs"), clicks$results()), `[[`, "", "input")
-                expect_length(inputs, 2L)
+                expect_length(inputs, 3L)
                 expect_length(unique(inputs), 1L)
             }
         }
