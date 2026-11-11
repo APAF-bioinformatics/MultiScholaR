@@ -31,7 +31,9 @@ protQuantityText <- function(kind) {
         empty_late = replace(text, protQuantityLate, ""),
         div0_late = replace(text, protQuantityLate, "#DIV/0!"),
         filtered_sampled = replace(text, protQuantitySampled, "Filtered"),
-        div0_sampled = replace(text, protQuantitySampled, "#DIV/0!"))
+        div0_sampled = replace(text, protQuantitySampled, "#DIV/0!"),
+        hex_late = replace(text, protQuantityLate, "0x1A"),
+        hex_sampled = replace(text, protQuantitySampled, "0x1A"))
 }
 
 protQuantityEdited <- function(kind) {
@@ -214,3 +216,45 @@ test_that("P-05: after the import check no reader leaves a quantity column for t
         expect_true(is.double(column) && is.null(attributes(column)), info = paste(reader, kind))
     }
 })
+
+# KIT-115 item 8: R reads "0x1A" as the number 26. A quantity file does not write numbers that way, so it is text that
+# is not a number, in a row vroom samples (a text column) as in a late one.
+test_that("(KIT-115) hexadecimal text in a quantity column refuses the import, naming the value", {
+    for (reader in protQuantityReaders) for (kind in c("hex_late", "hex_sampled")) {
+        info <- paste(reader, kind)
+        fixture <- protQuantityFixture(reader, kind)
+        read <- protQuantityRead(fixture)
+        expect_s3_class(read$result, "prot_import_non_numeric_quantity")
+        if (inherits(read$result, "error")) expect_match(conditionMessage(read$result), "\"0x1A\"", fixed = TRUE, info = info)
+    }
+    # The shared rule (lipid, metab and trx sample columns): the same text is not numeric-like.
+    expect_false(omicsImportValuesAreNumericLike(c("1.5", "0x1A")))
+    expect_false(omicsImportValuesAreNumericLike(c("1.5", " -0X1p3 ")))
+    expect_true(omicsImportValuesAreNumericLike(c("1.5", "1e5", "", NA, "0")))
+})
+
+# KIT-115 item 9: a DIA-NN parquet report goes through the same check. A quantity column stored as text is read as
+# numbers, a missing-value token is counted, and other text refuses the import.
+test_that("(KIT-115) a DIA-NN parquet report's quantity column is checked as a text report's is", {
+    skip_if_not_installed("arrow")
+    n <- protQuantityRows
+    report <- function(kind) {
+        path <- withr::local_tempfile(fileext = ".parquet", .local_envir = parent.frame())
+        arrow::write_parquet(data.frame(Protein.Group = sprintf("P%05d", seq_len(n)),
+            Stripped.Sequence = paste0("PEPTIDE", seq_len(n)), Run = rep(c("S1", "S2"), n / 2),
+            Precursor.Normalised = protQuantityText(kind), Precursor.Quantity = rev(protQuantityValues()),
+            Q.Value = 0.001, PG.Q.Value = 0.001), path)
+        protQuantityRead(list(path = path, read = importDIANNData))
+    }
+    clean <- report("clean")
+    expect_false(inherits(clean$result, "error"))
+    expect_identical(clean$result$data$Precursor.Normalised, protQuantityValues())
+    expect_length(clean$notices, 0L)
+    token <- report("filtered_late")
+    expect_false(inherits(token$result, "error"))
+    expect_identical(which(is.na(token$result$data$Precursor.Normalised)), protQuantityLate)
+    expect_identical(token$notices[[1L]]$counts, c(Filtered = 3L))
+    expect_s3_class(report("decimal_comma")$result, "prot_import_non_numeric_quantity")
+    expect_s3_class(report("div0_late")$result, "prot_import_non_numeric_quantity")
+})
+

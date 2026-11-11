@@ -74,7 +74,8 @@ checkProtImportQuantityColumns <- function(data, columns, path = NULL) {
         token <- text %in% PROT_IMPORT_MISSING_TOKENS
         if (!omicsImportValuesAreNumericLike(text[!token])) {
             number <- suppressWarnings(as.numeric(text[!token]))
-            refused[[column]] <- unique(text[!token][is.na(number) | !is.finite(number)])
+            refused[[column]] <- unique(text[!token][is.na(number) | !is.finite(number) |
+                grepl("^[+-]?0[xX]", text[!token])])
             next
         }
         count(text[token])

@@ -253,7 +253,7 @@ sanitizeOmicsImportSampleNames <- function(assays, sample_columns, sanitize) {
 # ------------------------------------------------------------------------------------------------
 
 #' Whether values are numeric-like: numeric and finite or NA; or text (or factor) whose every value,
-#' trimmed, is empty, NA or a finite number (metab's rule at c1041c56).
+#' trimmed, is empty, NA or a finite number not written in hexadecimal (metab's rule at c1041c56; KIT-115).
 #' @noRd
 omicsImportValuesAreNumericLike <- function(values) {
     if (is.numeric(values)) return(all(is.na(values) | is.finite(values)))
@@ -262,7 +262,9 @@ omicsImportValuesAreNumericLike <- function(values) {
     trimmed <- trimws(values)
     missing_like <- is.na(trimmed) | !nzchar(trimmed)
     coerced <- suppressWarnings(as.numeric(trimmed))
-    all(missing_like | (!is.na(coerced) & is.finite(coerced)))
+    # KIT-115: `as.numeric` reads hexadecimal text ("0x1A" is 26); a quantity file does not write a number that way.
+    hexadecimal <- grepl("^[+-]?0[xX]", trimmed)
+    all(missing_like | (!is.na(coerced) & is.finite(coerced) & !hexadecimal))
 }
 
 #' I9. The shared parity conversion (KIT-102): each named column that is text or factor and
