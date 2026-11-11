@@ -588,7 +588,12 @@ selectOmicEnrichTab <- function(session, selected, tab, workflowData, config) {
 runOmicEnrichAnalysis <- function(input, tab, workflowData, experimentPaths, config, ran = function(...) NULL) {
   cat("=== STARTING ENRICHMENT ANALYSIS ===\n")
   shiny::req(input$selected_contrast, tab$da_results_data)
-  shiny::req(input$organism_taxid)
+  if (!nzchar(trimws(input$organism_taxid %||% ""))) {
+    # KIT-116 (AX-11): the Run stops before anything is written, as since KIT-107, and now says why.
+    shiny::showNotification("Enter the organism's taxonomy ID before running the enrichment analysis.",
+      type = "warning", duration = 8)
+    return(invisible(FALSE))
+  }
   shiny::showNotification("Running enrichment analysis...", id = "enrichment_working", duration = NULL)
   parameters <- list(selected_contrast = input$selected_contrast, organism_taxid = input$organism_taxid,
     up_cutoff = input$up_cutoff, down_cutoff = input$down_cutoff, q_cutoff = input$q_cutoff,

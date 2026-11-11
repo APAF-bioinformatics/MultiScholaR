@@ -3686,6 +3686,20 @@ test_that("(W3, F107-01) a second Run on the same tab gives the first run's prod
     expect_identical(seen$again$values, seen$run$values)
 })
 
+# KIT-116 (AX-11, user 2026-11-11): a Run with a blank taxon stops before anything is written, as since KIT-107, and
+# now says why.
+test_that("(KIT-116 AX-11) a Run with a blank taxon says why it did not run, and writes nothing", {
+    seen <- omicEnrichW3Drive("gprofiler", list(blank = function(ctx) {
+        ctx$set(organism_taxid = "")
+        ctx$set(run_enrichment_analysis = 2L)
+    }))
+    expect_identical(seen$blank$errors, character())
+    added <- setdiff(seen$blank$notes, seen$run$notes)
+    expect_identical(added, "[warning 8 -] Enter the organism's taxonomy ID before running the enrichment analysis.")
+    expect_identical(seen$blank$history, "<unchanged>")
+    expect_identical(seen$blank$product, "<unchanged>")
+})
+
 # KIT-115 item 4 (A107-09): the status text and the download's summary describe the run that produced the results. A
 # cutoff changed after the Run is the next run's, not this one's.
 test_that("(KIT-115 A107-09) the status text and the download's summary keep the run's cutoffs when the inputs change", {
