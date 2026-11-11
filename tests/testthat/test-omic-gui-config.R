@@ -1161,6 +1161,12 @@ test_that("KIT-110 W3 (D8): the validator requires a norm field with the tab or 
             removed$norm[[path]] <- NULL
             mistyped$norm[path] <- list(NA)
         }
+        # KIT-115 item 7 (A110-04): an omic's own run handler is called with `run$settings(input)`, so the settings
+        # cannot be left out while the handler stays.
+        if (identical(path, c("run", "settings"))) {
+            expectGuiConfigRefused(removed, "norm$run$settings")
+            removed$norm$run$handler <- NULL
+        }
         expect_identical(validateOmicGuiConfig(removed), removed, info = paste(path, collapse = "$"))
         expectGuiConfigRefused(mistyped, paste0("norm$", paste(path, collapse = "$")))
     }

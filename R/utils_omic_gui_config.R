@@ -557,6 +557,10 @@ validateOmicGuiNorm <- function(norm, schema) {
     if (length(norm$stage_labels) != 3L) omicGuiConfigAbort("norm$stage_labels", "must hold the three stages' captions")
     checkOmicGuiFields(norm$run, schema$norm_action, "norm$run")
     checkOmicGuiFields(norm$run, schema$norm_run_optional, "norm$run", required = FALSE)
+    # KIT-115 (A110-04): the frame calls an omic's own handler with `run$settings(input)`.
+    if (!is.null(norm$run$handler) && is.null(norm$run$settings)) {
+        omicGuiConfigAbort("norm$run$settings", "is required with norm$run$handler")
+    }
     if ("correlation_filter" %in% tabs) {
         checkOmicGuiFields(norm$correlation, schema$norm_action, "norm$correlation")
         checkOmicGuiChoice(norm$skip_correlation_flags, "norm$skip_correlation_flags", c("before_commit", "after_commit"))
