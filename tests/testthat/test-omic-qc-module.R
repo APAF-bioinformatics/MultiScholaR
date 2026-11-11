@@ -161,7 +161,9 @@ omicQcFrozen <- list(
         metab_qc = "b63cab30bb386095e8b2e2a7dee290eded2495f5eb7a277032f560c9ccdf2a6d",
         trx_qc = "9d6924956f5e70f8076fdebdb31e9ea728df900fe36cfd527760ead918d7bfc1",
         prot_DIA = "002b2539c64a30b9dba67cc8d603a598206fcfad00c42642039bf1fa7044cb2f",
-        prot_DIA_LIMPA = "ef0c045f70768b03f435c3c8ca55dd350b66a31e67b254fc933cf3cf173758b5",
+        # KIT-116 P-02 (08e9b25e): the DIA_LIMPA normalisation choices labelled "approximate on limpa", with one line of
+        # help; re-frozen at KIT-109 (the file passes at 08e9b25e~1 and fails at 08e9b25e by these two digests only).
+        prot_DIA_LIMPA = "e61f42bfb37301ba6c76b6a8d38ca59b89780e89b2b5069caf3c17bb162cf064",
         prot_TMT = "fcc59ebc749699d96e0392876691d3da5fe783c39b0914e9ac287bc73186f7d3",
         prot_LFQ = "fcc59ebc749699d96e0392876691d3da5fe783c39b0914e9ac287bc73186f7d3"),
     # The exported sub-tab and group UIs.
@@ -178,7 +180,7 @@ omicQcFrozen <- list(
         prot_peptide_DIA = "0754b131dad654c76c6f02cf822f907b42f3cdf209e37938257f9cb236220b67",
         prot_peptide_DIA_LIMPA = "0e907c496b7023350eacd8c7ff8c08010d70cc53ce332a3fee123117e65c6528",
         prot_protein_DIA = "7b635143802b8c07789b657c54b5a537f6e21730b9984e10a801191b931d9f52",
-        prot_protein_DIA_LIMPA = "617f4c9e7a720ca96b12a5ee0332771fb0c2ee31d61885016c49f9e6c648f5eb",
+        prot_protein_DIA_LIMPA = "867a7906fedbf87c8df88320a631a6ba9517485b2bf3d77eed2fc7a1ef819c93", # P-02, as above
         prot_protein_TMT = "0619511dd8d0da9ee2f8b023f49bc7e9ce4dfb6b7082e9eed5305a397a8ba6c9",
         prot_protein_LFQ = "0619511dd8d0da9ee2f8b023f49bc7e9ce4dfb6b7082e9eed5305a397a8ba6c9"),
     # The namespaced ids and test ids in the rendered tabset.
