@@ -72,20 +72,16 @@ setMethod(
 
     print(paste0("normalisation_method = ", normalisation_method))
 
-    switch(normalisation_method,
-      cyclicloess = {
-        normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer("normalizeCyclicLoess")(frozen_protein_matrix)
-      },
-      quantile = {
-        normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer("normalizeQuantiles")(frozen_protein_matrix)
-      },
-      scale = {
-        normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer("normalizeMedianAbsValues")(frozen_protein_matrix)
-      },
-      none = {
-        normalised_frozen_protein_matrix <- frozen_protein_matrix
-      }
+    # KIT-109 (A101-08): one method-to-normaliser lookup for the protein table and, below, the DPC EList. `none` (and
+    # any other name) has no normaliser and leaves the matrix as it is.
+    normaliser <- switch(normalisation_method,
+      cyclicloess = "normalizeCyclicLoess",
+      quantile = "normalizeQuantiles",
+      scale = "normalizeMedianAbsValues"
     )
+    if (!is.null(normaliser)) {
+      normalised_frozen_protein_matrix <- resolveProtLimmaNormalizer(normaliser)(frozen_protein_matrix)
+    }
 
     normalised_frozen_protein_matrix[!is.finite(normalised_frozen_protein_matrix)] <- NA
 
@@ -104,11 +100,6 @@ setMethod(
     limpa_results <- theObject@args$limpa_dpc_quant_results
     if (!identical(normalisation_method, "none") && is.list(limpa_results) &&
         !is.null(limpa_results$quantified_elist)) {
-      normaliser <- switch(normalisation_method,
-        cyclicloess = "normalizeCyclicLoess",
-        quantile = "normalizeQuantiles",
-        scale = "normalizeMedianAbsValues"
-      )
       if (!is.null(normaliser)) {
         elist_matrix <- limpa_results$quantified_elist$E
         elist_matrix[!is.finite(elist_matrix)] <- NA
