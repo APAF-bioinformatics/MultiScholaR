@@ -736,6 +736,15 @@
       "install_member": "browser-smoke.iZxvdt",
       "source_commit": "63ce6d6c2dc980b62a980e5ae6adab61269c56bb",
       "runtime_patch_bytes": 0
+    },
+    "kit_923": {
+      "ticket": "KIT-923",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.KaJpsV/library",
+      "build": "ed378704ad1060a0d97faba513828e12fa3385df24750226a5dca4004732800d",
+      "exact_sum": "0cf6f3e5af17ec7571604753bd4b8c1f3ae68959e35fa8876e33d62345d884dc",
+      "install_member": "browser-smoke.KaJpsV",
+      "source_commit": "9a16bfa30697405bc2169cc89a11425ac2a640e2",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43351,6 +43360,80 @@
       "oracles": "tmt101_fixture",
       "ceiling_seconds": 1800,
       "purpose": "exactness after the removals (recorded, uncounted; KIT-109)"
+    },
+    "923m": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, proteomics' normalisation tab on the shared frame (recorded, uncounted; KIT-120)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "923l": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, proteomics' normalisation tab on the shared frame (recorded, uncounted; KIT-120)"
+    },
+    "923t": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, proteomics' normalisation tab on the shared frame (recorded, uncounted; KIT-120)"
+    },
+    "923q": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "exactness, proteomics' normalisation tab on the shared frame (recorded, uncounted; KIT-120)"
+    },
+    "923r": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa_corr_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "exactness, proteomics' normalisation tab on the shared frame (recorded, uncounted; KIT-120)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "correction",
+        "correlation_threshold": 0.5
+      }
+    },
+    "922r": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa_corr_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "the correction journey on the build before KIT-120 (recorded, uncounted; KIT-120)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "correction",
+        "correlation_threshold": 0.5
+      }
     },
     "106x": {
       "kind": "single_journey",
