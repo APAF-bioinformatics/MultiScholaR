@@ -259,27 +259,103 @@ test_that("(KIT-115) a DIA-NN parquet report's quantity column is checked as a t
 })
 
 
-# KIT-109 follow-up (user, 2026-11-12, after the A101-07 adjudication): DIA-NN writes 0 for a precursor it identified
-# but did not quantify. That is a missing value, not a quantity (as for LFQ and TMT, KIT-101 F-18/F-26): before, a 0
-# was counted as observed and entered the technical-replicate imputation's mean. Both quantity columns, either setting.
-test_that("(KIT-109) DIA-NN's non-positive precursor quantities are read as missing, in both columns", {
+# KIT-118 (user, 2026-11-12, after the A101-07 adjudication and its audit): a DIA-NN quantity of exactly 0 is a precursor
+# DIA-NN did not quantify, a missing value (as for LFQ and TMT, KIT-101 F-18/F-26). Before, a 0 was counted as observed
+# and entered the technical-replicate imputation's mean. The rule covers both quantity columns whatever the
+# selection: the analysis reads both (IQ from Precursor.Quantity; the filters and limpa from Precursor.Normalised). A negative or infinite quantity refuses the import.
+protDiannZeroFile <- function(quantity, normalised, env = parent.frame()) {
+    n <- length(quantity)
+    protQuantityWrite(data.frame(Protein.Group = sprintf("P%05d", seq_len(n)),
+        Stripped.Sequence = paste0("PEPTIDE", seq_len(n)), Run = rep(c("S1", "S2"), length.out = n),
+        Precursor.Normalised = normalised, Precursor.Quantity = quantity, Q.Value = 0.001, PG.Q.Value = 0.001), env = env)
+}
+
+test_that("(KIT-118) DIA-NN's zero quantities are read as missing in the columns the workflow reads, with a notice", {
     n <- protQuantityRows
     zero <- c(5L, 500L)
-    negative <- 750L
     values <- protQuantityValues()
     other <- rev(values)
-    path <- protQuantityWrite(data.frame(Protein.Group = sprintf("P%05d", seq_len(n)),
-        Stripped.Sequence = paste0("PEPTIDE", seq_len(n)), Run = rep(c("S1", "S2"), n / 2),
-        Precursor.Normalised = replace(values, c(zero, negative), c(0, 0, -1)),
-        Precursor.Quantity = replace(other, c(zero, negative), c(0, 0, -1)), Q.Value = 0.001, PG.Q.Value = 0.001))
-    for (use_norm in c(TRUE, FALSE)) {
-        read <- protQuantityRead(list(path = path), read = function(p) importDIANNData(p, use_precursor_norm = use_norm))
-        expect_false(inherits(read$result, "error"))
-        data <- read$result$data
-        expect_identical(which(is.na(data$Precursor.Normalised)), sort(c(zero, negative)), info = paste("use_precursor_norm", use_norm))
-        expect_identical(which(is.na(data$Precursor.Quantity)), sort(c(zero, negative)), info = paste("use_precursor_norm", use_norm))
-        kept <- setdiff(seq_len(n), c(zero, negative))
-        expect_identical(data$Precursor.Normalised[kept], values[kept], info = paste("use_precursor_norm", use_norm))
-        expect_identical(data$Precursor.Quantity[kept], other[kept], info = paste("use_precursor_norm", use_norm))
+    path <- protDiannZeroFile(replace(other, zero, 0), replace(values, zero, 0))
+    kept <- setdiff(seq_len(n), zero)
+    selected <- protQuantityRead(list(path = path), read = function(p) importDIANNData(p, use_precursor_norm = TRUE))
+    expect_false(inherits(selected$result, "error"))
+    expect_identical(which(is.na(selected$result$data$Precursor.Normalised)), zero)
+    expect_identical(which(is.na(selected$result$data$Precursor.Quantity)), zero)
+    expect_identical(selected$result$data$Precursor.Normalised[kept], values[kept])
+    expect_identical(selected$result$data$Precursor.Quantity[kept], other[kept])
+    expect_length(selected$notices, 1L)
+    expect_identical(selected$notices[[1L]]$counts, c(Precursor.Normalised = 2L, Precursor.Quantity = 2L))
+    # Precursor.Quantity selected: the same, because the analysis reads both columns whatever the selection.
+    raw <- protQuantityRead(list(path = path), read = function(p) importDIANNData(p, use_precursor_norm = FALSE))
+    expect_identical(which(is.na(raw$result$data$Precursor.Quantity)), zero)
+    expect_identical(which(is.na(raw$result$data$Precursor.Normalised)), zero)
+    expect_identical(raw$notices[[1L]]$counts, c(Precursor.Normalised = 2L, Precursor.Quantity = 2L))
+    # No zero, no notice: the file imports as before.
+    clean <- protQuantityRead(list(path = protDiannZeroFile(other, values)), read = importDIANNData)
+    expect_length(clean$notices, 0L)
+    expect_identical(clean$result$data$Precursor.Quantity, other)
+})
+
+test_that("(KIT-118) a text Precursor.Quantity is checked and its zeros read as missing when Precursor.Normalised is selected", {
+    # Before, P-05 checked only the selected column: a text Precursor.Quantity stayed text and its "0" survived.
+    quantity <- c("10", "0", "Filtered", "12.5", "", "30")
+    read <- protQuantityRead(list(path = protDiannZeroFile(quantity, c(1, 2, 3, 4, 5, 6))),
+        read = function(p) importDIANNData(p, use_precursor_norm = TRUE))
+    expect_false(inherits(read$result, "error"))
+    expect_identical(read$result$data$Precursor.Quantity, c(10, NA, NA, 12.5, NA, 30))
+    counts <- lapply(read$notices, `[[`, "counts")
+    expect_identical(counts, list(c(Filtered = 1L), c(Precursor.Quantity = 1L)))
+    refused <- protQuantityRead(list(path = protDiannZeroFile(c("10", "abc", "1", "2", "3", "4"), 1:6)),
+        read = function(p) importDIANNData(p, use_precursor_norm = TRUE))
+    expect_s3_class(refused$result, "prot_import_non_numeric_quantity")
+})
+
+test_that("(KIT-118) a negative or infinite DIA-NN quantity refuses the import, naming the column", {
+    for (bad in c(-1, Inf)) {
+        read <- protQuantityRead(list(path = protDiannZeroFile(c(10, bad, 3, 4), c(1, 2, 3, 4))),
+            read = function(p) importDIANNData(p, use_precursor_norm = TRUE))
+        expect_s3_class(read$result, "error")
+        expect_match(conditionMessage(read$result), "Quantity column 'Precursor.Quantity' contains negative or infinite value\\(s\\) \\(e.g. .*, row 2\\)")
     }
+})
+
+test_that("(KIT-118) a DIA-NN zero beside a missing technical replicate no longer lowers the imputed value", {
+    # Import, precursor rollup and technical-replicate imputation on Precursor.Quantity, as the IQ route runs them
+    # (raw_quantity_column, func_pept_s4_missingness.R). Peptide PEPA in four technical replicates: 100, 200, 0 and
+    # missing. Before, the 0 was observed: it stayed 0 and the missing run was imputed with mean(100, 200, 0) = 100.
+    runs <- c("R1", "R2", "R3", "R4")
+    report <- data.frame(Protein.Group = "P1", Protein.Ids = "P1", Stripped.Sequence = rep(c("PEPA", "PEPB"), each = 4),
+        Modified.Sequence = rep(c("PEPA", "PEPB"), each = 4), Precursor.Id = rep(c("PEPA2", "PEPB2"), each = 4),
+        Precursor.Charge = 2L, Run = rep(runs, 2), Precursor.Quantity = c(100, 200, 0, NA, 10, 20, 30, 40),
+        Precursor.Normalised = c(100, 200, 0, NA, 10, 20, 30, 40), Q.Value = 0.001, PG.Q.Value = 0.001)
+    imported <- suppressMessages(importDIANNData(protQuantityWrite(report), use_precursor_norm = TRUE))$data
+    peptides <- suppressMessages(rollUpPrecursorToPeptideHelper(as.data.frame(imported), core_utilisation = NA))
+    imputed <- suppressMessages(peptideMissingValueImputationHelper(as.data.frame(peptides),
+        data.frame(Run = runs, technical_group = "G1"), Run, Run, technical_group, Protein.Ids, Stripped.Sequence,
+        Peptide.RawQuantity, Peptide.Imputed, core_utilisation = NA))
+    pepa <- imputed[imputed$Stripped.Sequence == "PEPA", ]
+    pepa <- pepa[match(runs, pepa$Run), ]
+    expect_identical(pepa$Peptide.Imputed, c(100, 200, 150, 150))
+    expect_identical(pepa$is_imputed, c(FALSE, FALSE, TRUE, TRUE))
+    pepb <- imputed[imputed$Stripped.Sequence == "PEPB", ]
+    expect_identical(pepb$Peptide.Imputed[match(runs, pepb$Run)], c(10, 20, 30, 40))
+})
+
+test_that("(KIT-118) every zero in the synthetic DIA journey corpus is read as missing at import, and nothing else changes", {
+    # The DIA journeys import this generator's report (tools/profiling/workflow_perf107_synthetic.R writes ~2% zeros
+    # into Precursor.Quantity); here its small calibration cohort, through the reader with Precursor.Normalised selected.
+    code <- new.env(parent = asNamespace("MultiScholaR"))
+    sys.source(file.path(normalizePath(test_path("..", "..")), "tools/profiling/workflow_perf107_synthetic.R"), code)
+    recipe <- code$perf107SyntheticRecipe("calibration", small = TRUE)
+    catalogue <- code$perf107SyntheticCatalogue(recipe)
+    report <- do.call(rbind, lapply(seq_len(recipe$samples), function(i) code$perf107SyntheticSample(recipe, catalogue, i)))
+    zero <- !is.na(report$Precursor.Quantity) & report$Precursor.Quantity == 0
+    expect_gt(sum(zero), 0L)
+    read <- protQuantityRead(list(path = protQuantityWrite(report)), read = importDIANNData)
+    expect_false(inherits(read$result, "error"))
+    data <- read$result$data
+    expect_identical(sum(is.na(data$Precursor.Quantity)), sum(is.na(report$Precursor.Quantity)) + sum(zero))
+    # write.table keeps 15 significant digits: the other values equal the generator's to that precision.
+    expect_equal(data$Precursor.Quantity[!zero], report$Precursor.Quantity[!zero], tolerance = 1e-14)
+    expect_identical(read$notices[[1L]]$counts, c(Precursor.Quantity = sum(zero)))
 })

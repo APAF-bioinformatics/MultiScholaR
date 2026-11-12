@@ -172,10 +172,12 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
     stop("Missing required DIA-NN columns: ", paste(missing_cols, collapse = ", "))
   }
   
-  # P-05: missing-value tokens in the quantity column are read as NA with a notice; other text refuses the import.
-  data <- checkProtImportQuantityColumns(data,
-    if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) "Precursor.Normalised" else "Precursor.Quantity",
-    filepath)
+  # Both quantity columns are checked whatever `use_precursor_norm` says: the analysis reads both (the S4 constructor
+  # fixes raw_quantity_column = Precursor.Quantity for the IQ rollup and imputation, and norm_quantity_column =
+  # Precursor.Normalised for the peptide filters and limpa; func_pept_s4_core.R).
+  read_columns <- intersect(c("Precursor.Normalised", "Precursor.Quantity"), names(data))
+  # P-05: missing-value tokens in a quantity column are read as NA with a notice; other text refuses the import.
+  data <- checkProtImportQuantityColumns(data, read_columns, filepath)
 
   # Convert Precursor.Normalised if needed
   if (use_precursor_norm && "Precursor.Normalised" %in% names(data)) {
@@ -183,17 +185,46 @@ importDIANNData <- function(filepath, use_precursor_norm = TRUE) {
     data$Precursor.Normalised <- as.numeric(data$Precursor.Normalised)
   }
 
-  # DIA-NN writes 0 for a precursor it identified but did not quantify: a missing value, not a quantity (as LFQ and
-  # TMT read theirs, KIT-101 F-18/F-26; iq and limpa read it so too). Both columns: the IQ route reads
-  # Precursor.Quantity whichever column is selected (user, 2026-11-12, after the A101-07 adjudication).
-  for (column in intersect(c("Precursor.Normalised", "Precursor.Quantity"), names(data))) {
-    if (is.numeric(data[[column]])) {
-      nonpositive <- !is.na(data[[column]]) & data[[column]] <= 0
-      if (any(nonpositive)) {
-        log_info(sprintf("%s: %d non-positive values read as missing", column, sum(nonpositive)))
-        data[[column]][nonpositive] <- NA_real_
+  # A quantity of exactly 0 is a precursor DIA-NN did not quantify: a missing value, not a quantity, as the LFQ and TMT
+  # readers read theirs (KIT-101 F-18/F-26) and as iq reads it (user, 2026-11-12, after the A101-07 adjudication).
+  # It is read as NA with a notice of the count per column. A negative or infinite quantity is not a missing value
+  # but a damaged file: it refuses the import, as the rollup does (rollUpPrecursorToPeptideHelper).
+  # Memory: a file read by vroom keeps its columns on disk until they are used. Each column is scanned in blocks, so
+  # no whole column is held for the scan; a column is rebuilt in memory only when it has zeros (8 bytes per row).
+  zeros <- integer()
+  rows <- nrow(data)
+  block <- 500000L
+  starts <- if (rows > 0L) seq.int(1L, rows, by = block) else integer()
+  for (column in read_columns) {
+    if (!is.numeric(data[[column]])) next
+    zero <- integer()
+    for (first in starts) {
+      at <- first:min(first + block - 1L, rows)
+      part <- data[[column]][at]
+      damaged <- which(part < 0 | is.infinite(part))
+      if (length(damaged)) {
+        rlang::abort(sprintf(paste0("Quantity column '%s' contains negative or infinite value(s) (e.g. %s, row %d). ",
+            "Quantities must be zero or positive; correct the file and import it again."),
+            column, paste(utils::head(part[damaged], 3L), collapse = ", "), at[[damaged[[1L]]]]), call = NULL)
       }
+      zero <- c(zero, at[which(part == 0)])
     }
+    if (length(zero)) {
+      zeros[[column]] <- length(zero)
+      values <- numeric(rows)
+      for (first in starts) {
+        at <- first:min(first + block - 1L, rows)
+        values[at] <- data[[column]][at]
+      }
+      values[zero] <- NA_real_
+      data[[column]] <- values
+      values <- NULL
+    }
+  }
+  if (length(zeros)) {
+    rlang::inform(sprintf("Zero quantities (precursors DIA-NN did not quantify) were read as NA: %s.",
+        paste(sprintf("%d x %s", zeros, names(zeros)), collapse = ", ")),
+        class = "prot_import_missing_tokens", counts = zeros)
   }
 
   # Determine quantity column

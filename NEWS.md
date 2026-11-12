@@ -1,5 +1,15 @@
 # MultiScholaR NEWS
 
+## Development version
+
+### Scientific changes
+
+ * DIA-NN import: a precursor quantity of exactly 0 (a precursor DIA-NN did not quantify) is now read as a
+   missing value in both quantity columns (`Precursor.Quantity` and `Precursor.Normalised`),
+   with a notice of the count per column, as the LFQ and TMT readers already did. Before, a 0 counted as an
+   observed value in the peptide rollup and lowered the technical-replicate imputation's mean. A negative
+   or infinite quantity now refuses the import. Results change only for reports that contain zeros.
+
 ## Version 0.5.0 (Release Candidate)
 
 This release candidate captures the large janitor-branch stabilization campaign:
