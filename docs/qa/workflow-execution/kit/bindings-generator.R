@@ -1401,6 +1401,18 @@ if (!is.null(b$builds$kit_923)) {
         purpose = "923q once more: the release after the import (recorded, uncounted; KIT-120)"))
 }
 
+# KIT-120 (diagnosis of the memory finding, user 2026-11-13): the DIA full journey stopped after `design`, where 922q's
+# application released about 0.74 GiB and 923q's and 923s's did not. One member each on the build before the ticket
+# (922d), the exit build (923d) and two builds inside the ticket: kit_924 at W2 (7a0b3b60: the group and the frame's
+# code present, the tab on its own code) and kit_925 at W4 (dc2a05b2: the switch).
+for (key in c("922", "923", "924", "925")) {
+    if (!is.null(b$builds[[paste0("kit_", key)]])) {
+        b$tickets[[paste0(key, "d")]] <- utils::modifyList(b$tickets[["112q"]], list(build = paste0("kit_", key),
+            stop_after = "design", whole_journey = NULL, ceiling_seconds = 1800,
+            purpose = "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)"))
+    }
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
