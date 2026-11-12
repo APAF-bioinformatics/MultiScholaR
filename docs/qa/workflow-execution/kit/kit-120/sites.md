@@ -6,7 +6,7 @@ Read at `8ca68e93`. Reading only: no product code changed, no runs. Every line r
 
 - **The join is feasible without touching the harness.** Every input id the journey harness sets or clicks exists in both frames or is configurable. The module id stays `normalization`.
 - **It retires about 1,150 lines, not 3,900.** The ticket's figure counted every `mod_prot_norm_*.R` file. About 2,700 of those lines are action handlers (run, RUV, correlation, export, reset, QC generation) that the core and worker depend on for their field names and file products. They stay, behind declared hooks, as trx's run handler does.
-- **Three findings change the plan** (section 6): a scientific default the frame does not have, the Log tab, and the image decision.
+- **Two findings change the plan** (section 6): the Log tab and the image decision. A third, an RUV grouping default, was a misreading and is withdrawn there.
 
 ## 1. The two frames today
 
@@ -65,7 +65,7 @@ Fate codes: **F** = the frame already has it; **C** = the frame has it once a co
 | 9 | RUV covariates panel and `apply_ruv_covariates` observer | none | N + H |
 | 10 | S4 download handler | none | N + H |
 | 11 | `installWorkflowOmicsActions(session, workflowData, "proteomics", ...)` | the omics frame installs its own runner | H: part of proteomics' server hook |
-| 12 | Design-driven choices | `omicNormDesignChoices` | **differs, see section 6** |
+| 12 | Design-driven choices | `omicNormDesignChoices` | F: the same choices and selections (section 6, item 1) |
 | 13 | Reactive state | `omicNormReactiveState` | N: proteomics' extra fields (`normalized_protein_obj`, `ruv_normalized_obj`, `best_k`, `control_genes_index`, `ruv_optimization_result`, `correlation_threshold`, `publication_paths`, and others) declared as initial state. The core reads them by name (`utils_workflow_dia_products.R`, `utils_workflow_dia_norm.R`, `utils_workflow_dia_sessions.R`), so no field is renamed |
 | 14 | Plot aesthetics getter | `omicNormPlotAestheticsGetter` | F: the same rule |
 
@@ -115,7 +115,7 @@ Two gaps to settle when the runs are declared: the recent sets hold **no exact D
 
 ## 6. Findings that change the plan
 
-1. **A scientific default the frame does not have.** Proteomics preselects the RUV grouping variable as `batch` when the design has a batch column with values, else `group` (`mod_prot_norm_qc_support_helpers.R:157-170`; this is the TMT default). The frame always preselects `group` (`mod_omic_norm.R:159-176`). The join must keep proteomics' rule: `updateProtNormDesignDrivenChoices` stays, behind the server hook or a config field. A test must pin it before the switch.
+1. **Withdrawn (2026-11-12, W1): there is no RUV grouping difference.** W0 read `mod_prot_norm_qc_support_helpers.R:157-170` only to its first line. With a batch column the function prints a message suggesting `batch`, but it selects `group`, exactly as the frame does (`mod_omic_norm.R:159-176`). `test-prot-05b-norm-module-contracts.R:355-392` already pins `group` with a batch column present. The two functions give the same choices and selections; proteomics takes the frame's, and only the console message goes.
 2. **The Log tab.** The frame's log shows what its own pipeline writes through `addLog`. Proteomics' handlers write nothing to it, so the tab would be empty. The tabs are chosen by `norm$plot_tabs`, so proteomics simply does not declare it. The ticket said proteomics gains the Log tab: **this reverses that line.** Filling the log would mean editing every handler, which is new behaviour.
 3. **Decision 3, the images: neither option as written.** KIT-111 D5's "images from recorded paths" is out of date: the display reads twelve fixed file names in `protein_qc_dir` (`pre_norm_pca.png`, `post_norm_pca.png`, `ruv_corrected_pca.png` and so on; `mod_prot_norm_render_helpers.R:20-93`). The frame builds `<stem>_<stage prefix>_<kind>.png`. Proteomics' stage prefixes are already the frame's defaults; only the stem is absent. **Answer: the frame accepts an empty stem (no stem, no underscore) and a QC directory key from `norm` (`protein_qc_dir`; `proteomicsDiaBinding` has no `qc_dir_role`).** No file is renamed.
 4. **A visible addition:** the frame puts an assay label above each image row ("Assay: <name>"). Proteomics has one table, so it would show one label. Either it shows a fixed name, or the label row is omitted for a single unnamed assay (a small optional field). To decide at W1.
