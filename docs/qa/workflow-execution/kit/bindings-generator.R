@@ -1395,6 +1395,10 @@ if (!is.null(b$builds$kit_923)) {
     # build before the ticket (its verifier decision is KIT-065's known oracle mismatch set on every build).
     b$tickets[["922q"]] <- utils::modifyList(b$tickets[["112q"]], list(build = "kit_922",
         purpose = "the DIA full journey on the build before KIT-120 (recorded, uncounted; KIT-120)"))
+    # 923s is 923q once more (user, 2026-11-13): 923q's application did not release its memory after the import, and one
+    # pair cannot tell a run-level floor from a cost of the ticket. Both results are kept.
+    b$tickets[["923s"]] <- utils::modifyList(b$tickets[["112q"]], list(build = "kit_923",
+        purpose = "923q once more: the release after the import (recorded, uncounted; KIT-120)"))
 }
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
