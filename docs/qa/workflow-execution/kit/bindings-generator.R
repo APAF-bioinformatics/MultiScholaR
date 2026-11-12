@@ -1405,7 +1405,12 @@ if (!is.null(b$builds$kit_923)) {
 # application released about 0.74 GiB and 923q's and 923s's did not. One member each on the build before the ticket
 # (922d), the exit build (923d) and two builds inside the ticket: kit_924 at W2 (7a0b3b60: the group and the frame's
 # code present, the tab on its own code) and kit_925 at W4 (dc2a05b2: the switch).
-for (key in c("922", "923", "924", "925")) {
+# Second round: kit_926 at W1 (6b1011b3) and kit_927 at W3 (fa60b6a5); 922e is 922d again, run last (the build before the
+# ticket ran first in both earlier batches).
+if (!is.null(b$builds$kit_922)) b$tickets[["922e"]] <- utils::modifyList(b$tickets[["112q"]], list(build = "kit_922",
+    stop_after = "design", whole_journey = NULL, ceiling_seconds = 1800,
+    purpose = "922d again, run last (recorded, uncounted; KIT-120 diagnosis)"))
+for (key in c("922", "923", "924", "925", "926", "927")) {
     if (!is.null(b$builds[[paste0("kit_", key)]])) {
         b$tickets[[paste0(key, "d")]] <- utils::modifyList(b$tickets[["112q"]], list(build = paste0("kit_", key),
             stop_after = "design", whole_journey = NULL, ceiling_seconds = 1800,
