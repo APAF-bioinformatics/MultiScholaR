@@ -1464,8 +1464,10 @@ test_that("KIT-111 W2: the DIA adaptor's norm entries name registered omics oper
         expect_identical(as.character(body(entries[[name]])[[1L]]), calls[[name]], info = name)
         expect_true(exists(calls[[name]], envir = asNamespace("MultiScholaR"), mode = "function"), info = name)
     }
-    # The configuration stays valid and proteomics does not join the shared normalisation frame (D5).
-    expect_null(omicGuiConfig("proteomics")$norm)
+    # The configuration stays valid. KIT-120: proteomics has joined the shared normalisation frame (D5 kept it out, with
+    # `norm` NULL); its actions are still this adaptor's entries, called by proteomics' own server on the frame.
+    expect_identical(omicGuiConfig("proteomics")$norm$server, "protNormFrameServer")
+    expect_false(any(c("run", "correlation") %in% names(omicGuiConfig("proteomics")$norm)))
 })
 
 # ------------------------------------------------------------------------------------------------
