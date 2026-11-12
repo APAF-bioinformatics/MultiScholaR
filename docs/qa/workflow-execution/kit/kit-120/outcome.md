@@ -71,7 +71,17 @@ Nine blocks, each in `quarantined-tests.md` with what covers it now: Q-184 (the 
 - [x] Every proteomics entry-lane data capture identical; the UI ids re-frozen once, attributed.
 - [x] Lipid, metab and trx normalisation captures unchanged.
 - [x] Proteomics journeys: three exact against their oracles; the correction and DIA full journeys identical store against store to the build before the ticket. Harness files unchanged.
-- [x] Memory: level on the DIA_LIMPA pair; on the DIA full pair the difference is uncollected garbage whose collection time moved (diagnosed above), not memory the ticket holds.
+- [x] **Memory, with a recorded exception.** Level on the DIA_LIMPA pair. On the DIA full pair the declared rule ("no worse beyond the recorded spread") is **not met numerically**: the application sits 0.3 to 0.54 GiB higher from `design` on. Accepted on the user's decision (2026-11-13) because the cause is diagnosed (above): uncollected garbage whose collection time moved, not memory the ticket holds. The cause, that the application frees the import's table by chance, is owned by KIT-121.
 - [x] e2e lanes, module CI, `R CMD check` at baseline, install, full suite in both modes.
 - [x] `mod_prot_norm_ui` and `mod_prot_norm_server` exported and working as wrappers.
 - [x] The series closure: 28 of 28 omic x stage cells are on the shared frame (P-32 closed).
+
+## Diagnosis branches (deleted 2026-11-13; commits kept here)
+
+`kit120-diag-a` `2edcbb71` (W3 plus W2's configuration), `kit120-diag-b` `40dfaaa2` (W3 plus W2's tab code), `kit120-diag-c` `7569415d` (the exit tree plus one `gc(full = TRUE)` after the design save: KIT-121's prototype). Their builds `kit_928` to `kit_930` stay in the bindings as recorded members.
+
+## Closure
+
+Completed 2026-11-13 (user: "do all that then"). The GUI workover series' 28 omic x stage cells are all on the shared frame; P-32 is closed.
+
+**Protocol lesson:** on the large corpus one before-and-after pair cannot judge the application's memory; a repeat and the before-build run last were both needed to separate a real effect from collection timing.
