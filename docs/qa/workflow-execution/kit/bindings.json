@@ -43435,6 +43435,15 @@
         "correlation_threshold": 0.5
       }
     },
+    "922q": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "the DIA full journey on the build before KIT-120 (recorded, uncounted; KIT-120)"
+    },
     "106x": {
       "kind": "single_journey",
       "build": "kit_906",
