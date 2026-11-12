@@ -5,3 +5,14 @@ kit-journey-923r rejected failing oracle_mismatch failed_step none error none
 kit-journey-922r rejected failing oracle_mismatch failed_step none error none 
 kit-journey-922q rejected failing oracle_mismatch failed_step none error none 
 kit-journey-923q rejected failing oracle_mismatch failed_step none error none 
+kit-journey-923s rejected failing oracle_mismatch failed_step none error none 
+kit-journey-922d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-923d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-924d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-925d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-926d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-927d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-922e rejected failing oracle_mismatch failed_step none error none 
+kit-journey-928d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-929d rejected failing oracle_mismatch failed_step none error none 
+kit-journey-930d rejected failing oracle_mismatch failed_step none error none 

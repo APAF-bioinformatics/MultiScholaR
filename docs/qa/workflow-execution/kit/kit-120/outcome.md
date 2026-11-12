@@ -1,6 +1,6 @@
 # KIT-120: proteomics' normalisation tab on the shared frame (2026-11-12)
 
-**Outcome:** done except one open finding (memory on the DIA full journey, under Exit runs). The tab runs on the shared frame for all five proteomics routes. No numeric result, file product, input id or harness file changed. All counts below are `load_all`, one process per file, unless a row says otherwise.
+**Outcome:** done. The memory finding on the DIA full journey is diagnosed as a shifted garbage collection, not memory the ticket holds (under Exit runs). The tab runs on the shared frame for all five proteomics routes. No numeric result, file product, input id or harness file changed. All counts below are `load_all`, one process per file, unless a row says otherwise.
 
 ## What the join is
 
@@ -59,12 +59,11 @@ Nine blocks, each in `quarantined-tests.md` with what covers it now: Q-184 (the 
 
 - **The correction journey's mismatch predates this ticket:** it is the same on the build before it, and the two builds' stores are identical. **Finding for KIT-118:** the correction-mode oracle is stale; that journey has had no exact reference since kit_056. Which step first differs was not established.
 - **Memory, DIA_LIMPA (922r against 923r, the same journey before and after):** the normalisation steps' slice peaks are `protein_normalisation_limpa` 1.53 and 1.53 GiB, `correlation` 1.56 and 1.57, `ruv_covariates` 1.75 and 1.76; whole member 1.94 and 1.94. No change.
-- **Memory, DIA (IQ) full (922q against 923q): OPEN FINDING.** 923q's application process sits 0.3 to 0.54 GiB above 922q's from the `design` step to the end (`exit/journeys/memory-922q-923q.txt`). The declared rule was "no worse beyond the recorded member-to-member spread"; the recorded spread is up to 0.37 GiB (KIT-112, 111q against 112q, on steps no ticket changed), so this is outside it and is not accepted on one pair. What the traces show:
-  - **It starts before the normalisation tab is used.** `import` is equal (peak 2.316 and 2.300 GiB). During `design` 922q's application falls to 1.323 GiB and 923q's only to 2.048: the release after the import did not happen in 923q. From there the offset is constant to the last step.
-  - **The normalisation step's own rise is the same:** 922q 1.036 to 2.084 GiB (+1.05), 923q 1.574 to 2.547 (+0.97).
-  - **The screen pair shows no offset at all:** 922r against 923r, the application is within 0.016 GiB at every step (`exit/journeys/memory-922r-923r.txt`); 923m's `rollup` minimum is 0.729 GiB, in the released group of P-34.
-  - **Reading:** this has the form of the run-level release floor of P-34 and KIT-112 (an import-time floor that is sometimes not released, on code no ticket changed), not of a cost in the tab. One pair cannot separate the two on the large corpus. **Decision needed from the user:** one more 923q run (about an hour). If its application releases after the import as 922q's did, the offset is run-level and the finding closes; if not, it is this ticket's and is diagnosed before closure.
-
+- **Memory, DIA (IQ) full: explained (diagnosis 2026-11-13, [exit/journeys/memory-bisect.md](exit/journeys/memory-bisect.md)).** 923q's application process sat 0.3 to 0.54 GiB above 922q's from `design` to the end, outside the recorded spread (0.37). A repeat on the exit build (923s, user's decision) also did not release, so it was diagnosed:
+  - **Where:** the before-ticket build frees about 0.74 GiB about 48 s into `design` (a collection while the design builder works); later builds never do. The DIA steps after `design` run on the worker, so the application allocates too little to trigger a full collection again, and the difference stays to the end of the journey.
+  - **Which commit:** a bisect on the journey stopped after `design` (about five minutes a run, ten runs). W1 and W3 release; W2 does not; **each half of W2 alone stops it** (its configuration change and its tab-code change, side branches `kit120-diag-a/b`). The before-ticket build run last still releases: not an order effect. The dependency libraries are identical.
+  - **What it is:** one `gc(full = TRUE)` after the design save on the exit tree (side branch `kit120-diag-c`, diagnosis only) frees 0.74 GiB at once (2.61 to 1.87 GiB), ending the step lower than the before-ticket build (2.20). **The memory is the import's garbage, collectable at any time; nothing in KIT-120 holds it.** Any change to what the application allocates around the import moves R's next full collection; in the before-ticket build it happened to fall after the import's table became garbage.
+  - **Consequence beyond this ticket:** the application frees the import's table by chance. A deterministic collection after import and design exists in the code (`requestDIAReclamation`, `reclaimDIACompletedMemory`, `reclaimWorkflowMemory`) but has never been switched on (`reclaim_enabled <- FALSE` since `117c4d23`, 2026-10-02). Switching it on is a memory change with its own measurement: a decision for the user, not part of this ticket.
 ## Acceptance
 
 - [x] W0 recorded; the three decisions and the three later ones answered.
@@ -72,7 +71,7 @@ Nine blocks, each in `quarantined-tests.md` with what covers it now: Q-184 (the 
 - [x] Every proteomics entry-lane data capture identical; the UI ids re-frozen once, attributed.
 - [x] Lipid, metab and trx normalisation captures unchanged.
 - [x] Proteomics journeys: three exact against their oracles; the correction and DIA full journeys identical store against store to the build before the ticket. Harness files unchanged.
-- [ ] **Memory no worse: open** on the DIA full pair (above). Level on the DIA_LIMPA pair.
+- [x] Memory: level on the DIA_LIMPA pair; on the DIA full pair the difference is uncollected garbage whose collection time moved (diagnosed above), not memory the ticket holds.
 - [x] e2e lanes, module CI, `R CMD check` at baseline, install, full suite in both modes.
 - [x] `mod_prot_norm_ui` and `mod_prot_norm_server` exported and working as wrappers.
-- [ ] The series closure (28 of 28 cells) is stated when the memory finding is settled.
+- [x] The series closure: 28 of 28 omic x stage cells are on the shared frame (P-32 closed).

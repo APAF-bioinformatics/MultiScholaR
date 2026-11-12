@@ -12,3 +12,25 @@ kit-journey-922q start 23:54:06 at 9f0886af: AC 1, profile low-power, battery 10
 kit-journey-922q end 01:12:47: AC 1, profile low-power, battery 100%, load 2.20, available 38 GiB
 kit-journey-923q start 01:13:06 at 9f0886af: AC 1, profile low-power, battery 100%, load 1.93, available 38 GiB
 kit-journey-923q end 02:32:07: AC 1, profile low-power, battery 100%, load 1.99, available 38 GiB
+kit-journey-923s start 04:21:44 at 1ab018cd: AC 1, profile low-power, battery 100%, load 4.66, available 36 GiB
+kit-journey-923s end 05:58:45: AC 1, profile low-power, battery 100%, load 4.40, available 38 GiB
+kit-journey-922d start 06:24:51 at 7a2c9468: AC 1, profile low-power, battery 100%, load 2.46, available 39 GiB
+kit-journey-922d end 06:31:32: AC 1, profile low-power, battery 100%, load 2.18, available 39 GiB
+kit-journey-923d start 06:31:51 at 7a2c9468: AC 1, profile low-power, battery 100%, load 2.00, available 39 GiB
+kit-journey-923d end 06:38:52: AC 1, profile low-power, battery 100%, load 1.83, available 39 GiB
+kit-journey-924d start 06:39:22 at 7a2c9468: AC 1, profile low-power, battery 100%, load 1.35, available 39 GiB
+kit-journey-924d end 06:46:02: AC 1, profile low-power, battery 100%, load 1.98, available 39 GiB
+kit-journey-925d start 06:46:22 at 7a2c9468: AC 1, profile low-power, battery 100%, load 1.71, available 39 GiB
+kit-journey-925d end 06:53:22: AC 1, profile low-power, battery 100%, load 1.63, available 39 GiB
+kit-journey-926d start 07:13:10 at 2b98ef86: AC 1, profile low-power, battery 100%, load 2.05, available 39 GiB
+kit-journey-926d end 07:19:50: AC 1, profile low-power, battery 100%, load 2.20, available 39 GiB
+kit-journey-927d start 07:20:10 at 2b98ef86: AC 1, profile low-power, battery 100%, load 1.86, available 39 GiB
+kit-journey-927d end 07:26:50: AC 1, profile low-power, battery 100%, load 2.27, available 39 GiB
+kit-journey-922e start 07:27:10 at 2b98ef86: AC 1, profile low-power, battery 100%, load 1.82, available 39 GiB
+kit-journey-922e end 07:33:50: AC 1, profile low-power, battery 100%, load 2.13, available 39 GiB
+kit-journey-928d start 07:53:43 at 5fff14eb: AC 1, profile low-power, battery 100%, load 2.33, available 39 GiB
+kit-journey-928d end 08:00:43: AC 1, profile low-power, battery 100%, load 1.76, available 39 GiB
+kit-journey-929d start 08:01:13 at 5fff14eb: AC 1, profile low-power, battery 100%, load 1.64, available 39 GiB
+kit-journey-929d end 08:07:53: AC 1, profile low-power, battery 100%, load 2.19, available 39 GiB
+kit-journey-930d start 08:26:31 at af2a38d9: AC 1, profile low-power, battery 100%, load 2.22, available 39 GiB
+kit-journey-930d end 08:33:31: AC 1, profile low-power, battery 100%, load 1.92, available 40 GiB
