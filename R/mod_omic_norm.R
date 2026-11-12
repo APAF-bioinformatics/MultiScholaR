@@ -73,15 +73,24 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
     } else {
         normData$assay_names <- norm$assay_names
     }
-    if (!is.null(selectedTab) && isTRUE(norm$pre_qc_on_entry)) {
+    if (!is.null(selectedTab) && isTRUE(norm$pre_qc_on_entry) && is.null(norm$server)) {
         shiny::observeEvent(selectedTab(), runOmicNormTabEntry(selectedTab(), workflowData, experimentPaths, normData, addLog,
             getPlotAesthetics, config), ignoreInit = FALSE)
     }
     if (any(c("aesthetics", "ruv_iii") %in% panels)) shiny::observe(omicNormDesignChoices(session, workflowData))
+    # KIT-120: an omic with its own server (`norm$server`; proteomics) registers its actions and its other outputs
+    # itself, on the frame's state. The frame keeps the design's choices above and the stage grid.
+    if (!is.null(norm$server)) {
+        registerOmicNormStageGrid(output, normData, experimentPaths, norm, norm$qc_dir %||% config$binding$binding$qc_dir_role)
+        norm$server(input, output, session, list(workflow_data = workflowData, experiment_paths = experimentPaths,
+            omic_type = omicType, experiment_label = experimentLabel, selected_tab = selectedTab, norm_data = normData,
+            add_log = addLog, plot_aesthetics = getPlotAesthetics, config = config))
+        return(invisible(normData))
+    }
     registerOmicNormLogOutput(output, omicNormLogRenderer(normData))
     if ("itsd" %in% tabs) output$itsd_selection_ui <- omicNormItsdSelectionUi(normData, session$ns)
     registerOmicNormRuvQcOutput(output, omicNormRuvQcUiRenderer(normData, session$ns))
-    registerOmicNormStageGrid(output, normData, experimentPaths, norm, config$binding$binding$qc_dir_role)
+    registerOmicNormStageGrid(output, normData, experimentPaths, norm, norm$qc_dir %||% config$binding$binding$qc_dir_role)
     if ("itsd" %in% tabs) {
         shiny::observe(omicNormItsdTables(output, workflowData, normData, config))
         registerOmicNormItsdSelectionTracking(input, normData)
@@ -118,7 +127,7 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
 #' @noRd
 registerOmicNormStageGrid <- function(output, normData, experimentPaths, norm, qcDirKey) {
     slots <- norm$output_assay_slots %||% norm$assay_slots
-    stem <- norm$image_stem
+    stem <- if (isTRUE(norm$image_stemless)) "" else norm$image_stem
     renderer <- if (is.null(stem)) {
         omicNormQcImageRenderer(normData, experimentPaths, qcDirKey = qcDirKey)
     } else {
@@ -129,7 +138,7 @@ registerOmicNormStageGrid <- function(output, normData, experimentPaths, norm, q
     } else {
         registerOmicNormQcImageOutputs(output, renderer, stagePrefixes = norm$stage_prefixes, assaySlots = slots)
     }
-    registerOmicNormAssayLabelOutputs(output, omicNormAssayLabelRenderer(normData), slots)
+    if (!isFALSE(norm$assay_labels)) registerOmicNormAssayLabelOutputs(output, omicNormAssayLabelRenderer(normData), slots)
 }
 
 # ------------------------------------------------------------------------------------------------

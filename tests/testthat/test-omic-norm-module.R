@@ -1883,3 +1883,118 @@ test_that("KIT-110 W3: the trx norm module file's functions and the six norm_* p
         expect_false(exists(name, envir = ns, inherits = FALSE), info = name)
     }
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-120 W3: the frame's entries for an omic with its own server (proteomics' tab; kit-120/sites.md section 2).
+# The group here has proteomics' shape; proteomics' own group is W2's.
+# ------------------------------------------------------------------------------------------------
+
+omicNormKit120Group <- function(server = function(input, output, session, context) NULL) {
+    list(module_id = "normalization",
+        panels = list(aesthetics = list(),
+            between_sample = list(methods = c("Cyclic Loess" = "cyclicloess", "None" = "none"), default = "cyclicloess",
+                help = "Method for between-sample normalization (default: Cyclic Loess)"),
+            ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
+                "Skip RUV (troublesome datasets)" = "skip"), default = "automatic", percentage = 5, k = NULL, noun = "Proteins",
+                help = c(grouping = "GROUPING HELP", automatic = "AUTOMATIC HELP", range = "RANGE HELP", metric = "METRIC HELP",
+                    penalty = "PENALTY HELP", adaptive = "ADAPTIVE HELP", manual_k = "MANUAL K HELP", skip = "SKIP HELP",
+                    skip_alternative = "SKIP ALTERNATIVE HELP")),
+            actions = list(run_label = "Run Normalization & RUV"),
+            export = list(button = "export_filtered_session", label = "Export Filtered Data Session", help = "EXPORT HELP"),
+            s4_download = list(button = "export_s4_compatibility", label = "Export S4 compatibility RDS", help = "S4 HELP")),
+        plot_tabs = c("ruv", "pca", "density", "rle", "correlation", "post_norm_qc", "correlation_filter"),
+        stage_labels = c("Post-Filtering", "Post-Normalization", "RUV-Corrected"), assay_slots = 1L,
+        ruv_heading = "RUV Parameter Optimization Results", ruv_help = "RUV TAB HELP",
+        post_norm_qc = list(heading = "Filtering Progression Summary", help = "POST NORM HELP"),
+        correlation_slot = "ruv_covariates_panel", server = server,
+        assay_names = "proteins", image_stemless = TRUE, qc_dir = "protein_qc_dir", assay_labels = FALSE,
+        testids = c(method = "prot-norm-method", ruv_mode = "prot-norm-ruv-mode", run = "prot-norm-run",
+            export = "prot-norm-export-session"))
+}
+
+test_that("KIT-120 W3: the frame's UI under a group with its own texts, S4 download, Post-Normalisation QC tab and slot (fails before)", {
+    html <- as.character(htmltools::renderTags(mod_omic_norm_ui("normalization", omicNormKit120Group()))$html)
+    ids <- unlist(regmatches(html, gregexpr('id="normalization-[A-Za-z0-9_]+"', html)))
+    ids <- sub('"$', "", sub('^id="normalization-', "", ids))
+    # Every input proteomics' tab has today (mod_prot_norm_ui.R at 8ca68e93), under the same ids.
+    inputs <- c("norm_method", "color_variable", "shape_variable", "ruv_mode", "ruv_grouping_variable", "auto_percentage_min",
+        "auto_percentage_max", "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k",
+        "run_normalization", "reset_normalization", "export_filtered_session", "export_s4_compatibility", "norm_qc_tabs",
+        "min_pearson_correlation_threshold", "apply_correlation_filter", "skip_correlation_filter")
+    expect_identical(setdiff(inputs, ids), character())
+    # The outputs the omic's server fills, and the stage grid's one assay row without a label row.
+    expect_identical(setdiff(c("ruv_qc_ui", "post_norm_filtering_summary", "filtering_summary_text", "correlation_filter_summary",
+        "ruv_covariates_panel", "final_qc_plot", "pca_post_filter_assay1", "density_post_norm_assay1",
+        "correlation_ruv_corrected_assay1"), ids), character())
+    expect_false(any(grepl("^assay[0-9]_label_|_assay2$|^norm_log$", ids)))
+    # The tabs, in the frame's order, without a Log tab.
+    titles <- unlist(regmatches(html, gregexpr('data-value="[^"]+"', html)))
+    # (each title is on its tab link and on its pane)
+    expect_identical(unique(sub('"$', "", sub('^data-value="', "", titles))),
+        c("RUV QC", "PCA", "Density", "RLE", "Correlation", "Post-Normalisation QC", "Correlation Filtering"))
+    # The omic's own texts, each once; the library's texts they replace are absent.
+    for (text in c("Method for between-sample normalization (default: Cyclic Loess)", "GROUPING HELP", "AUTOMATIC HELP", "RANGE HELP",
+        "METRIC HELP", "PENALTY HELP", "ADAPTIVE HELP", "MANUAL K HELP", "SKIP HELP", "SKIP ALTERNATIVE HELP",
+        "Run Normalization &amp; RUV", "Export Filtered Data Session", "EXPORT HELP", "Export S4 compatibility RDS", "S4 HELP",
+        "Filtering Progression Summary", "POST NORM HELP", "% Proteins as Negative Controls:")) {
+        expect_identical(lengths(regmatches(html, gregexpr(text, html, fixed = TRUE))), 1L, info = text)
+    }
+    for (text in c("Run Normalization Pipeline", "Export Normalized Data", "Auto-optimization runs independently",
+        "Number of unwanted variation factors to remove")) {
+        expect_false(grepl(text, html, fixed = TRUE), info = text)
+    }
+    # The manual k has no starting value; the test ids are the group's.
+    expect_false(grepl('id="normalization-ruv_k"[^>]*value=', html))
+    for (id in c("prot-norm-method", "prot-norm-ruv-mode", "prot-norm-run", "prot-norm-export-session")) {
+        expect_true(grepl(sprintf('data-testid="%s"', id), html, fixed = TRUE), info = id)
+    }
+    # The slot is under the correlation summary, in the same well.
+    expect_true(grepl('id="normalization-correlation_filter_summary"[^<]*</pre>\\s*<div[^>]*id="normalization-ruv_covariates_panel"', html))
+})
+
+test_that("KIT-120 W3: with its own server, the frame registers the state and the stage grid and leaves the actions to the omic (fails before)", {
+    qc_dir <- withr::local_tempdir()
+    file.create(file.path(qc_dir, c("pre_norm_pca.png", "ruv_corrected_correlation.png")))
+    calls <- new.env(parent = emptyenv())
+    calls$server <- list()
+    testthat::local_mocked_bindings(
+        runOmicNormPipeline = function(...) stop("the frame's run was called"),
+        runOmicNormHandler = function(...) stop("the frame's run handler was called"),
+        resetOmicNorm = function(...) stop("the frame's reset was called"),
+        applyOmicNormCorrelation = function(...) stop("the frame's correlation was called"),
+        skipOmicNormCorrelation = function(...) stop("the frame's correlation skip was called"),
+        exportOmicNormSession = function(...) stop("the frame's export was called"),
+        runOmicNormTabEntry = function(...) stop("the frame's tab entry was called"))
+    norm <- omicNormKit120Group(server = function(input, output, session, context) {
+        calls$server[[length(calls$server) + 1L]] <- context
+        output$correlation_filter_summary <- shiny::renderText("the omic's summary")
+        shiny::observeEvent(input$run_normalization, calls$run <- input$run_normalization)
+    })
+    bus <- shiny::reactiveValues(state_manager = "owner", design_matrix = data.frame(group = c("a", "b"), batch = c("x", "y")),
+        config_list = list(kit = 120L), tab_status = list(normalization = "pending"))
+    selected <- shiny::reactiveVal("norm")
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "normalization", workflow_data = bus,
+        experiment_paths = list(protein_qc_dir = qc_dir), omic_type = "lipidomics", experiment_label = "kit120",
+        selected_tab = selected, config = norm), {
+        session$setInputs(color_variable = "group", shape_variable = "group", run_normalization = 1L, reset_normalization = 1L,
+            apply_correlation_filter = 1L, skip_correlation_filter = 1L, export_filtered_session = 1L)
+        # The omic's server was called once, with the frame's state and callbacks.
+        expect_length(calls$server, 1L)
+        context <- calls$server[[1L]]
+        expect_identical(sort(names(context)), sort(c("workflow_data", "experiment_paths", "omic_type", "experiment_label",
+            "selected_tab", "norm_data", "add_log", "plot_aesthetics", "config")))
+        expect_identical(context$norm_data, session$returned)
+        expect_identical(context$experiment_label, "kit120")
+        expect_identical(context$plot_aesthetics(), list(color_var = "group", shape_var = "group"))
+        expect_identical(calls$run, 1L)
+        expect_identical(output$correlation_filter_summary, "the omic's summary")
+        # The stage grid: the fixed assay, the files `<stage prefix>_<kind>.png` in the group's QC directory.
+        expect_identical(shiny::isolate(session$returned$assay_names), "proteins")
+        # (a slot whose file exists shows it, with the alt `<kind> - <assay>`; one without names the file it looks for)
+        expect_identical(output$pca_post_filter_assay1$alt, "pca - proteins")
+        expect_match(output$pca_post_filter_assay1$src, "^data:image/png")
+        expect_identical(output$correlation_ruv_corrected_assay1$alt, "correlation - proteins")
+        expect_identical(output$density_post_norm_assay1$alt, "Plot not generated yet: post_norm_density.png")
+        expect_identical(output$rle_post_filter_assay1$alt, "Plot not generated yet: pre_norm_rle.png")
+    })))
+})

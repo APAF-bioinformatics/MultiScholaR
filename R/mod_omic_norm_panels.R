@@ -36,7 +36,8 @@ omicNormDesignSelect <- function(ns, id, label) {
 
 #' The option sections `norm$panels` names, in its order: each a list of tags in the well panel
 #' (mod_lipid_norm_ui_helpers.R:6-261 at f8d4c5fc; KIT-110: trx's `tmm_logcpm` and `ruv_grid`, mod_trx_norm.R:26-47 at
-#' 38d9d25e). Only the named sections are built. `norm` is the omic's `norm` group.
+#' 38d9d25e). Only the named sections are built. `norm` is the omic's `norm` group. KIT-120: a section shows the
+#' omic's own text where its options name one (`help`, `run_label`, `label`), else the library's.
 #' @noRd
 omicNormOptionSections <- function(ns, norm) {
     panels <- norm$panels
@@ -57,20 +58,24 @@ omicNormOptionSections <- function(ns, norm) {
         between_sample = list(shiny::hr(), shiny::h4("Between-Sample Normalization"),
             testid(shiny::selectInput(ns("norm_method"), "Normalization Method:", choices = panels$between_sample$methods,
                 selected = panels$between_sample$default, width = "100%"), norm$testids[["method"]]),
-            shiny::helpText("Method for between-sample normalization")),
+            shiny::helpText(panels$between_sample$help %||% "Method for between-sample normalization")),
         tmm_logcpm = list(shiny::hr(), shiny::h4("TMM and logCPM"),
             shiny::helpText("edgeR TMM normalisation factors of the filtered counts; log2 counts per million with a prior count of 2.")),
         ruv_iii = omicNormRuvSection(ns, panels$ruv_iii, norm$testids[["ruv_mode"]]),
         ruv_grid = omicNormRuvGridSection(ns, panels$ruv_grid, norm$testids[["ruv_mode"]]),
         actions = list(shiny::hr(),
-            testid(shiny::actionButton(ns("run_normalization"), "Run Normalization Pipeline", class = "btn-primary", width = "100%",
+            testid(shiny::actionButton(ns("run_normalization"), panels$actions$run_label %||% "Run Normalization Pipeline",
+                class = "btn-primary", width = "100%",
                 icon = shiny::icon("play")), norm$testids[["run"]]),
             shiny::br(), shiny::br(),
             omicNormResetButton(ns, if ("reset" %in% names(norm$testids)) norm$testids[["reset"]])),
         export = list(shiny::br(), shiny::br(),
-            testid(shiny::actionButton(ns(panels$export$button), "Export Normalized Data", class = "btn-success", width = "100%",
-                icon = shiny::icon("download")), norm$testids[["export"]]),
-            shiny::helpText("Save normalized data for later analysis")))
+            testid(shiny::actionButton(ns(panels$export$button), panels$export$label %||% "Export Normalized Data",
+                class = "btn-success", width = "100%", icon = shiny::icon("download")), norm$testids[["export"]]),
+            shiny::helpText(panels$export$help %||% "Save normalized data for later analysis")),
+        # KIT-120: a download button; its handler is the omic's server's (proteomics' S4 compatibility file).
+        s4_download = list(shiny::downloadButton(ns(panels$s4_download$button), panels$s4_download$label),
+            shiny::helpText(panels$s4_download$help)))
     lapply(stats::setNames(names(panels), names(panels)), section)
 }
 
@@ -112,39 +117,51 @@ omicNormRuvGridSection <- function(ns, grid, testId) {
 #' (mod_lipid_norm_ui_helpers.R:88-222 at f8d4c5fc), with the omic's control noun.
 #' @noRd
 omicNormRuvSection <- function(ns, ruv, testId) {
+    # KIT-120: the omic's own help text by name (`ruv$help`), else the library's; a text only an omic has is shown
+    # when it names one.
+    help <- function(name, default = NULL) {
+        text <- if (name %in% names(ruv$help)) ruv$help[[name]] else default
+        if (is.null(text)) NULL else shiny::helpText(text)
+    }
     list(shiny::hr(), shiny::h4("RUV-III Batch Correction"),
         testid(shiny::radioButtons(ns("ruv_mode"), "RUV Parameter Tuning:", choices = ruv$modes, selected = ruv$default,
             width = "100%"), testId),
         omicNormDesignSelect(ns, "ruv_grouping_variable", "RUV Grouping Variable:"),
-        shiny::helpText("Experimental factor to preserve during batch correction (shared across assays)"),
+        help("grouping", "Experimental factor to preserve during batch correction (shared across assays)"),
         shiny::conditionalPanel(condition = "input.ruv_mode == 'automatic'", ns = ns,
             shiny::h5("Automatic Optimization Parameters"),
-            shiny::helpText("Auto-optimization runs independently for each assay (pos/neg)"),
+            help("automatic", "Auto-optimization runs independently for each assay (pos/neg)"),
             shiny::fluidRow(
                 shiny::column(6, shiny::numericInput(ns("auto_percentage_min"), "Min %:", value = 1, min = 1, max = 50, width = "100%")),
                 shiny::column(6, shiny::numericInput(ns("auto_percentage_max"), "Max %:", value = 20, min = 1, max = 50, width = "100%"))),
-            shiny::helpText("Range of percentages to test (1-50%)"),
+            help("range", "Range of percentages to test (1-50%)"),
             shiny::selectInput(ns("separation_metric"), "Separation Quality Metric:", choices = list(
                 "Maximum Difference (recommended)" = "max_difference", "Mean Difference" = "mean_difference",
                 "Area Under Curve" = "auc", "Weighted Difference (deprecated)" = "weighted_difference"),
                 selected = "max_difference", width = "100%"),
+            help("metric"),
             shiny::sliderInput(ns("k_penalty_weight"), "K Value Penalty Weight:", min = 0.1, max = 0.9, value = 0.5, step = 0.1,
                 width = "100%"),
-            shiny::helpText("Controls penalty for high k values (0.1 = lenient, 0.9 = strict)"),
+            help("penalty", "Controls penalty for high k values (0.1 = lenient, 0.9 = strict)"),
             shiny::checkboxInput(ns("adaptive_k_penalty"), "Adaptive K Penalty (sample size aware)", value = TRUE, width = "100%"),
+            help("adaptive"),
             shiny::br()),
         shiny::conditionalPanel(condition = "input.ruv_mode == 'manual'", ns = ns,
             shiny::sliderInput(ns("ruv_percentage"), sprintf("%% %s as Negative Controls:", ruv$noun), min = 1, max = 20,
                 value = ruv$percentage, step = 1, width = "100%"),
-            shiny::helpText(sprintf("Percentage of most stable %s used as negative controls", tolower(ruv$noun))),
+            help("manual", sprintf("Percentage of most stable %s used as negative controls", tolower(ruv$noun))),
             shiny::numericInput(ns("ruv_k"), "Number of Factors (k):", value = ruv$k, min = 1, max = 10, width = "100%"),
-            shiny::helpText("Number of unwanted variation factors to remove"),
+            help("manual_k", "Number of unwanted variation factors to remove"),
             shiny::br()),
         shiny::conditionalPanel(condition = "input.ruv_mode == 'skip'", ns = ns,
             shiny::tags$div(style = "background-color: #fff3cd; border: 1px solid #ffc107; padding: 10px; border-radius: 4px;",
                 shiny::h5("RUV-III Will Be Skipped", style = "color: #856404; margin-top: 0;"),
-                shiny::helpText("Batch correction will not be applied. Consider including batch as a covariate in DE model if batch effects are present.",
-                    style = "margin-bottom: 0;")),
+                shiny::helpText(if ("skip" %in% names(ruv$help)) ruv$help[["skip"]] else
+                    "Batch correction will not be applied. Consider including batch as a covariate in DE model if batch effects are present.",
+                    style = "margin-bottom: 0;"),
+                if ("skip_alternative" %in% names(ruv$help)) {
+                    shiny::helpText(ruv$help[["skip_alternative"]], style = "margin-bottom: 0; font-style: italic;")
+                }),
             shiny::br()))
 }
 
@@ -164,10 +181,10 @@ omicNormOptionsColumn <- function(ns, norm) {
 #' @param labels The three stages' captions.
 #' @param assays The assay rows.
 #' @noRd
-omicNormStageRows <- function(ns, kind, labels, assays) {
+omicNormStageRows <- function(ns, kind, labels, assays, assayLabels = TRUE) {
     stages <- c("post_filter", "post_norm", "ruv_corrected")
     rows <- lapply(assays, function(n) shiny::tagList(
-        shiny::fluidRow(shiny::column(12, shiny::h5(shiny::textOutput(ns(sprintf("assay%d_label_%s", n, kind))), style = "margin-bottom: 5px;"))),
+        if (assayLabels) shiny::fluidRow(shiny::column(12, shiny::h5(shiny::textOutput(ns(sprintf("assay%d_label_%s", n, kind))), style = "margin-bottom: 5px;"))),
         shiny::fluidRow(lapply(seq_along(stages), function(i) shiny::column(4,
             shiny::tags$small(labels[[i]], style = "display: block; text-align: center;"),
             shinyjqui::jqui_resizable(shiny::imageOutput(ns(sprintf("%s_%s_assay%d", kind, stages[[i]], n)), height = "300px")))))))
@@ -182,7 +199,7 @@ omicNormStageRows <- function(ns, kind, labels, assays) {
 omicNormQcTabset <- function(ns, view) {
     assays <- seq_len(view$assay_slots)
     figure <- function(title, icon, kind) shiny::tabPanel(title, icon = shiny::icon(icon), shiny::br(),
-        omicNormStageRows(ns, kind, view$stage_labels, assays))
+        omicNormStageRows(ns, kind, view$stage_labels, assays, !isFALSE(view$assay_labels)))
     centred <- function(title, icon, heading, help, ...) shiny::tabPanel(title, icon = shiny::icon(icon), shiny::br(),
         shiny::fluidRow(shiny::column(12, shiny::h5(heading, style = "text-align: center;"), shiny::helpText(help), shiny::hr(), ...)))
     tabs <- list(
@@ -194,7 +211,13 @@ omicNormQcTabset <- function(ns, view) {
         density = figure("Density", "chart-area", "density"),
         rle = figure("RLE", "chart-bar", "rle"),
         correlation = figure("Correlation", "th", "correlation"),
-        correlation_filter = omicNormCorrelationFilterTab(ns),
+        # KIT-120: the filtering-progression figure and text, filled by the omic's server (proteomics).
+        post_norm_qc = shiny::tabPanel("Post-Normalisation QC", icon = shiny::icon("chart-bar"), shiny::br(),
+            shiny::fluidRow(shiny::column(12, shiny::h5(view$post_norm_qc$heading, style = "text-align: center;"),
+                shiny::helpText(view$post_norm_qc$help),
+                shinyjqui::jqui_resizable(shiny::plotOutput(ns("post_norm_filtering_summary"), height = "600px")), shiny::br(),
+                shiny::verbatimTextOutput(ns("filtering_summary_text"))))),
+        correlation_filter = omicNormCorrelationFilterTab(ns, view$correlation_slot),
         log = shiny::tabPanel("Log", icon = shiny::icon("list-alt"), shiny::br(), shiny::fluidRow(shiny::column(12,
             shiny::h5("Normalization Pipeline Log", style = "text-align: center;"), shiny::verbatimTextOutput(ns("norm_log"))))))
     shiny::column(9, do.call(shiny::tabsetPanel, c(list(id = ns("norm_qc_tabs")), unname(tabs[view$plot_tabs]))))
@@ -202,7 +225,7 @@ omicNormQcTabset <- function(ns, view) {
 
 #' The correlation filtering tab, the normalisation's final step (mod_lipid_norm_ui_helpers.R:311-371 at f8d4c5fc).
 #' @noRd
-omicNormCorrelationFilterTab <- function(ns) {
+omicNormCorrelationFilterTab <- function(ns, slot = NULL) {
     shiny::tabPanel("Correlation Filtering", icon = shiny::icon("filter"), shiny::br(), shiny::fluidRow(
         shiny::column(4, shiny::wellPanel(
             shiny::h5("Sample Correlation Filtering"),
@@ -219,7 +242,9 @@ omicNormCorrelationFilterTab <- function(ns) {
             shiny::helpText("Bypass sample filtering and proceed directly to DE"),
             shiny::br(), shiny::br(),
             shiny::h5("Filter Results"),
-            shiny::verbatimTextOutput(ns("correlation_filter_summary")))),
+            shiny::verbatimTextOutput(ns("correlation_filter_summary")),
+            # KIT-120: an omic's own panel under the summary (`norm$correlation_slot`; proteomics' DIA_LIMPA covariates).
+            if (!is.null(slot)) shiny::uiOutput(ns(slot)))),
         shiny::column(8,
             shiny::h5("Final Filtered Data QC", style = "text-align: center;"),
             shiny::helpText("QC plots for the final dataset after correlation filtering"),
@@ -280,7 +305,9 @@ omicNormQcImageRenderer <- function(normData, experimentPaths,
             assay_names <- normData$assay_names
             if (is.null(assay_names) || length(assay_names) < assaySlot) return(list(src = "", alt = "Assay not detected yet"))
             assay_name <- assay_names[[assaySlot]]
-            filename <- paste0(sanitizeAssayNameFn(assay_name), "_", stagePrefix, "_", plotType, ".png")
+            # KIT-120: an empty stem gives `<stagePrefix>_<plotType>.png` (`norm$image_stemless`).
+            stem <- sanitizeAssayNameFn(assay_name)
+            filename <- paste0(if (nzchar(stem)) paste0(stem, "_"), stagePrefix, "_", plotType, ".png")
             qc_dir <- experimentPaths[[qcDirKey]]
             if (is.null(qc_dir)) return(list(src = "", alt = "QC directory not configured"))
             img_path <- file.path(qc_dir, filename)
