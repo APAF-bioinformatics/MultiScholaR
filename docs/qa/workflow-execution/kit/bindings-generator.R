@@ -1391,6 +1391,10 @@ if (!is.null(b$builds$kit_923)) {
     b$tickets[["923r"]] <- utils::modifyList(b$tickets[["056"]], kit_923)
     b$tickets[["922r"]] <- utils::modifyList(b$tickets[["056"]], list(build = "kit_922",
         purpose = "the correction journey on the build before KIT-120 (recorded, uncounted; KIT-120)"))
+    # 922q is 923q's twin on kit_922: the DIA full journey is judged store against store and by memory against the
+    # build before the ticket (its verifier decision is KIT-065's known oracle mismatch set on every build).
+    b$tickets[["922q"]] <- utils::modifyList(b$tickets[["112q"]], list(build = "kit_922",
+        purpose = "the DIA full journey on the build before KIT-120 (recorded, uncounted; KIT-120)"))
 }
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
