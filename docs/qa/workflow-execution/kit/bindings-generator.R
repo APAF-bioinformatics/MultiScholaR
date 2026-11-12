@@ -1412,7 +1412,9 @@ if (!is.null(b$builds$kit_922)) b$tickets[["922e"]] <- utils::modifyList(b$ticke
     purpose = "922d again, run last (recorded, uncounted; KIT-120 diagnosis)"))
 # Third round: W2 split on the side branches kit120-diag-a (kit_928: W3 plus W2's configuration only, 2edcbb71) and
 # kit120-diag-b (kit_929: W3 plus W2's tab code only, 40dfaaa2).
-for (key in c("922", "923", "924", "925", "926", "927", "928", "929")) {
+# Fourth round: kit_930 is the exit tree plus one full collection after the design is saved (side branch
+# kit120-diag-c, 7569415d, diagnosis only): uncollected garbage or held data.
+for (key in c("922", "923", "924", "925", "926", "927", "928", "929", "930")) {
     if (!is.null(b$builds[[paste0("kit_", key)]])) {
         b$tickets[[paste0(key, "d")]] <- utils::modifyList(b$tickets[["112q"]], list(build = paste0("kit_", key),
             stop_after = "design", whole_journey = NULL, ceiling_seconds = 1800,
