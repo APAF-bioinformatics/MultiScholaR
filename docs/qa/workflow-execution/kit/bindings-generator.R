@@ -1377,6 +1377,22 @@ if (!is.null(b$builds$kit_922)) {
     }
 }
 
+# KIT-120 (exit): proteomics' normalisation tab on the shared frame. One member each on the exit build kit_923: 923m
+# (DIA_LIMPA covariates, from 112m), 923l and 923t (the LFQ and TMT protein journeys, from 112l/t), 923q (the DIA full
+# journey, from 112q: exact against the DIA oracles, and the memory comparison) and 923r (DIA_LIMPA in correction mode,
+# from 056, its only earlier member). 922r is 923r's twin on kit_922, the build before the ticket: the correction
+# journey has not run since kit_056, so a difference from its oracles on both builds predates this ticket.
+if (!is.null(b$builds$kit_923)) {
+    kit_923 <- list(build = "kit_923", purpose = "exactness, proteomics' normalisation tab on the shared frame (recorded, uncounted; KIT-120)")
+    for (suffix in c("m", "l", "t", "q")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("923", suffix)]] <- utils::modifyList(from, kit_923)
+    }
+    b$tickets[["923r"]] <- utils::modifyList(b$tickets[["056"]], kit_923)
+    b$tickets[["922r"]] <- utils::modifyList(b$tickets[["056"]], list(build = "kit_922",
+        purpose = "the correction journey on the build before KIT-120 (recorded, uncounted; KIT-120)"))
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
