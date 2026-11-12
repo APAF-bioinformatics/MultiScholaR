@@ -217,17 +217,27 @@ omicGuiConfigSchema <- function() {
         # KIT-105 W1 (design 4.7), checked when the omic has the group. KIT-110 D8: these always; the
         # others with the tab or panel that uses them (`norm_by_tab`, `norm_by_panel`), or by type when present.
         norm = c(module_id = "chr1", panels = "named_list", plot_tabs = "chr", stage_labels = "chr",
-            assay_slots = "int1", ruv_heading = "chr1", ruv_help = "chr1", run = "named_list",
-            pre_qc_on_entry = "lgl1", testids = "named_chr"),
-        norm_by_tab = list(itsd = c(itsd_table = "ref"),
+            assay_slots = "int1", ruv_heading = "chr1", ruv_help = "chr1", testids = "named_chr"),
+        # KIT-120 W1: the fields of the frame's own actions, required unless the omic registers its own server
+        # (`norm$server`): the run and the pre-QC on entry always, the others with their tab or panel.
+        norm_frame = c(run = "named_list", pre_qc_on_entry = "lgl1"),
+        norm_frame_by_tab = list(
             correlation_filter = c(correlation = "named_list", skip_correlation_flags = "chr1", final_pca = "named_list",
                 # KIT-105 W5 (D7): whether a failed managed correlation is also shown as an error notification.
                 managed_correlation_notify = "lgl1")),
-        norm_by_panel = list(export = c(export = "named_list")),
+        norm_frame_by_panel = list(export = c(export = "named_list")),
+        # KIT-120 W1: the Post-Normalisation QC tab's heading and help (`norm_post_norm_qc`).
+        norm_by_tab = list(itsd = c(itsd_table = "ref"), post_norm_qc = c(post_norm_qc = "named_list")),
+        norm_post_norm_qc = c(heading = "chr1", help = "chr1"),
         # KIT-110 D3, D4, D7: an omic's own reset handler; the stage grid's fixed assay names, file stem, stage file
         # prefixes (`norm_stage_prefixes`) and registered assay rows.
+        # KIT-120 W1: an omic's own server registrations (`server(input, output, session, context)`: its actions and its
+        # outputs, in place of the frame's); the QC directory's key in the experiment paths (else the binding's
+        # `qc_dir_role`); whether the stage grid shows an assay label row (shown unless FALSE) and names its files
+        # `<stage prefix>_<kind>.png`, with no assay stem; the id of a UI output under the correlation tab's summary.
         norm_optional = c(reset = "ref", assay_names = "chr", image_stem = "chr1", stage_prefixes = "named_chr",
-            output_assay_slots = "int1"),
+            output_assay_slots = "int1", server = "ref", qc_dir = "chr1", assay_labels = "lgl1", image_stemless = "lgl1",
+            correlation_slot = "chr1"),
         norm_stage_prefixes = c("pre_norm", "post_norm", "ruv_corrected"),
         # `run` and `correlation`: the managed function and its in-process twin (the core's; D6).
         norm_action = c(managed = "ref", in_process = "ref"),
@@ -249,12 +259,21 @@ omicGuiConfigSchema <- function() {
             log2 = c(offset = "num1"), between_sample = c(methods = "named_chr", default = "chr1"),
             # KIT-110 D2: trx's TMM/logCPM and RUV grid.
             tmm_logcpm = character(),
-            ruv_iii = c(modes = "named_chr", default = "chr1", percentage = "num1", k = "num1", noun = "chr1"),
+            # KIT-120 W1: the manual k may be unset (proteomics fills it from the canonical correlation).
+            ruv_iii = c(modes = "named_chr", default = "chr1", percentage = "num1", k = "num1_or_null", noun = "chr1"),
             ruv_grid = c(modes = "named_chr", default = "chr1", percentage_min = "num1", percentage_max = "num1",
                 percentage_step = "num1", k_penalty_weight = "num1", percentage = "num1", k = "num1"),
-            actions = character(), export = c(button = "chr1")),
+            actions = character(), export = c(button = "chr1"),
+            # KIT-120 W1: a download button (proteomics' S4 compatibility file; its handler is the omic's server's).
+            s4_download = c(button = "chr1", label = "chr1", help = "chr1")),
+        # KIT-120 W1: a section's own texts in place of the library's, by type when present; the RUV-III section's help
+        # texts by name (`norm_ruv_help`).
+        norm_panel_optional = list(between_sample = c(help = "chr1"), ruv_iii = c(help = "named_chr"),
+            actions = c(run_label = "chr1"), export = c(label = "chr1", help = "chr1")),
+        norm_ruv_help = c("grouping", "automatic", "range", "metric", "penalty", "adaptive", "manual", "manual_k", "skip",
+            "skip_alternative"),
         # The QC tabs a frame can show, in their order.
-        norm_plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "correlation_filter", "log"),
+        norm_plot_tabs = c("itsd", "ruv", "pca", "density", "rle", "correlation", "post_norm_qc", "correlation_filter", "log"),
         # KIT-106 W1 (design 4.8, D1, D8): the DA tab. These always; `views$heatmap` with the heatmap tab;
         # `session_load` with the load section (its test id) unless the `load` plugin renders it; `run` unless the
         # `run` plugin is present; `source` unless the `init` plugin is present; the rest by type when present.
@@ -537,6 +556,12 @@ validateOmicGuiNorm <- function(norm, schema) {
     }
     for (panel in panels) {
         checkOmicGuiFields(norm$panels[[panel]], schema$norm_panels[[panel]], paste0("norm$panels$", panel))
+        checkOmicGuiFields(norm$panels[[panel]], schema$norm_panel_optional[[panel]], paste0("norm$panels$", panel),
+            required = FALSE)
+    }
+    if (!all(names(norm$panels$ruv_iii$help) %in% schema$norm_ruv_help)) {
+        omicGuiConfigAbort("norm$panels$ruv_iii$help", sprintf("must name help texts of the RUV-III section (%s)",
+            paste(schema$norm_ruv_help, collapse = ", ")))
     }
     for (panel in intersect(c("between_sample", "ruv_iii", "ruv_grid"), panels)) {
         choices <- norm$panels[[panel]][[if (identical(panel, "between_sample")) "methods" else "modes"]]
@@ -548,25 +573,36 @@ validateOmicGuiNorm <- function(norm, schema) {
             paste(schema$norm_plot_tabs, collapse = ", ")))
     }
     for (tab in intersect(names(schema$norm_by_tab), tabs)) checkOmicGuiFields(norm, schema$norm_by_tab[[tab]], "norm")
-    for (panel in intersect(names(schema$norm_by_panel), panels)) checkOmicGuiFields(norm, schema$norm_by_panel[[panel]], "norm")
+    if ("post_norm_qc" %in% tabs) checkOmicGuiFields(norm$post_norm_qc, schema$norm_post_norm_qc, "norm$post_norm_qc")
     checkOmicGuiFields(norm, schema$norm_optional, "norm", required = FALSE)
+    # KIT-120 W1: an omic with its own server registers its actions itself; the frame's action fields are then unused.
+    framed <- is.null(norm$server)
+    if (framed) {
+        checkOmicGuiFields(norm, schema$norm_frame, "norm")
+        for (tab in intersect(names(schema$norm_frame_by_tab), tabs)) checkOmicGuiFields(norm, schema$norm_frame_by_tab[[tab]], "norm")
+        for (panel in intersect(names(schema$norm_frame_by_panel), panels)) {
+            checkOmicGuiFields(norm, schema$norm_frame_by_panel[[panel]], "norm")
+        }
+    }
     if (!is.null(norm$stage_prefixes) && !setequal(names(norm$stage_prefixes), schema$norm_stage_prefixes)) {
         omicGuiConfigAbort("norm$stage_prefixes", sprintf("must name exactly the stages %s",
             paste(schema$norm_stage_prefixes, collapse = ", ")))
     }
     if (length(norm$stage_labels) != 3L) omicGuiConfigAbort("norm$stage_labels", "must hold the three stages' captions")
-    checkOmicGuiFields(norm$run, schema$norm_action, "norm$run")
-    checkOmicGuiFields(norm$run, schema$norm_run_optional, "norm$run", required = FALSE)
-    # KIT-115 (A110-04): the frame calls an omic's own handler with `run$settings(input)`.
-    if (!is.null(norm$run$handler) && is.null(norm$run$settings)) {
-        omicGuiConfigAbort("norm$run$settings", "is required with norm$run$handler")
+    if (framed) {
+        checkOmicGuiFields(norm$run, schema$norm_action, "norm$run")
+        checkOmicGuiFields(norm$run, schema$norm_run_optional, "norm$run", required = FALSE)
+        # KIT-115 (A110-04): the frame calls an omic's own handler with `run$settings(input)`.
+        if (!is.null(norm$run$handler) && is.null(norm$run$settings)) {
+            omicGuiConfigAbort("norm$run$settings", "is required with norm$run$handler")
+        }
     }
-    if ("correlation_filter" %in% tabs) {
+    if (framed && "correlation_filter" %in% tabs) {
         checkOmicGuiFields(norm$correlation, schema$norm_action, "norm$correlation")
         checkOmicGuiChoice(norm$skip_correlation_flags, "norm$skip_correlation_flags", c("before_commit", "after_commit"))
         checkOmicGuiFields(norm$final_pca, schema$norm_final_pca, "norm$final_pca")
     }
-    if ("export" %in% panels) {
+    if (framed && "export" %in% panels) {
         checkOmicGuiFields(norm$export, schema$norm_export, "norm$export")
         checkOmicGuiChoice(norm$export$samples, "norm$export$samples", c("design", "columns"))
         checkOmicGuiFields(norm$export$progress, schema$norm_export_progress, "norm$export$progress")
@@ -793,7 +829,7 @@ checkOmicGuiFields <- function(values, schema, path = NULL, required = TRUE) {
 #' non-empty character vector; `chr0` a character vector; `named_chr`; `named_chr0` a possibly
 #' empty named character vector; `by_route` one non-empty string, or non-empty strings named by
 #' route; `route_map_or_null` NULL, or non-empty strings named by route (a route not named has no
-#' value); `lgl1`; `num1` one number; `int1` one positive whole number; `ref` a function;
+#' value); `lgl1`; `num1` one number; `num1_or_null`; `int1` one positive whole number; `ref` a function;
 #' `ref_or_null`; `refs` a named list of functions; `list` a non-empty list; `named_list`;
 #' `named_list_or_null`.
 #' @noRd
@@ -805,6 +841,7 @@ omicGuiFieldHasType <- function(value, type) {
     is_num1 <- is.numeric(value) && length(value) == 1L && !is.na(value)
     isTRUE(switch(type,
         num1 = is_num1,
+        num1_or_null = is.null(value) || is_num1,
         int1 = is_num1 && value >= 1 && value == round(value),
         chr1 = is_chr1,
         chr1_or_null = is.null(value) || is_chr1,

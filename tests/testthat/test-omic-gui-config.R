@@ -1927,3 +1927,101 @@ test_that("KIT-108 W1 (D9): each summary field is refused by class when missing 
         expectGuiConfigRefused(removed, paste0("summary$export_steps[[1]]$", path))
     }
 })
+
+# KIT-120 W1: the contract fields proteomics' normalisation tab needs on the shared frame (kit-120/sites.md, section 2).
+# A group of this shape is validated here under lipid's configuration: the validator does not depend on the omic.
+guiConfigKit120Norm <- function() {
+    list(module_id = "normalization",
+        panels = list(aesthetics = list(),
+            between_sample = list(methods = c("Cyclic Loess" = "cyclicloess", "None" = "none"), default = "cyclicloess",
+                help = "Method for between-sample normalization (default: Cyclic Loess)"),
+            ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Skip RUV (troublesome datasets)" = "skip"),
+                default = "automatic", percentage = 5, k = NULL, noun = "Proteins",
+                help = c(grouping = "Experimental factor to preserve.", manual_k = "Will be auto-populated.")),
+            actions = list(run_label = "Run Normalization & RUV"),
+            export = list(button = "export_filtered_session", label = "Export Filtered Data Session",
+                help = "Save filtered data and contrasts for later DE analysis"),
+            s4_download = list(button = "export_s4_compatibility", label = "Export S4 compatibility RDS",
+                help = "Optional export for older tools; requires a guarded session.")),
+        plot_tabs = c("ruv", "pca", "density", "rle", "correlation", "post_norm_qc", "correlation_filter"),
+        stage_labels = c("Post-Filtering", "Post-Normalization", "RUV-Corrected"), assay_slots = 1L,
+        ruv_heading = "RUV Parameter Optimization Results", ruv_help = "Canonical correlation plot and optimization summary.",
+        post_norm_qc = list(heading = "Filtering Progression Summary", help = "Summary of protein filtering steps."),
+        correlation_slot = "ruv_covariates_panel",
+        server = function(input, output, session, context) NULL,
+        assay_names = "proteins", image_stemless = TRUE, qc_dir = "protein_qc_dir", assay_labels = FALSE,
+        testids = c(method = "prot-norm-method", ruv_mode = "prot-norm-ruv-mode", run = "prot-norm-run",
+            export = "prot-norm-export-session"))
+}
+
+test_that("KIT-120 W1: a norm group with its own server validates without the frame's run, correlation and export actions", {
+    config <- omicGuiConfig("lipidomics")
+    config$norm <- guiConfigKit120Norm()
+    expect_identical(validateOmicGuiConfig(config), config)
+    # Without `server` the frame runs the actions itself, so its fields are required as before.
+    for (field in c("run", "pre_qc_on_entry", "correlation", "skip_correlation_flags", "final_pca",
+        "managed_correlation_notify", "export")) {
+        framed <- config
+        framed$norm$server <- NULL
+        others <- setdiff(c("run", "pre_qc_on_entry", "correlation", "skip_correlation_flags", "final_pca",
+            "managed_correlation_notify", "export"), field)
+        framed$norm[others] <- omicGuiConfig("lipidomics")$norm[others]
+        expectGuiConfigRefused(framed, paste0("norm$", field))
+    }
+})
+
+test_that("KIT-120 W1: each new norm field is checked by type, and only with the tab or section that uses it", {
+    config <- omicGuiConfig("lipidomics")
+    config$norm <- guiConfigKit120Norm()
+    mistype <- function(path, value = NA) {
+        bad <- config
+        if (length(path) == 1L) bad$norm[path] <- list(value) else bad$norm[[path[[1L]]]][[path[[2L]]]][path[[3L]]] <- list(value)
+        bad
+    }
+    for (field in c("server", "qc_dir", "assay_labels", "image_stemless", "correlation_slot")) {
+        expectGuiConfigRefused(mistype(field), paste0("norm$", field))
+        # Each is optional (`server` apart: without it the frame's own action fields are required, the block above).
+        if (identical(field, "server")) next
+        absent <- config
+        absent$norm[[field]] <- NULL
+        expect_identical(validateOmicGuiConfig(absent), absent, info = field)
+    }
+    # The Post-Normalisation QC tab needs its heading and help; another omic's frame does not.
+    expectGuiConfigRefused(mistype("post_norm_qc"), "norm$post_norm_qc")
+    for (text in c("heading", "help")) {
+        removed <- config
+        removed$norm$post_norm_qc[[text]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$post_norm_qc$", text))
+    }
+    removed <- config
+    removed$norm$post_norm_qc <- NULL
+    expectGuiConfigRefused(removed, "norm$post_norm_qc")
+    expect_false("post_norm_qc" %in% omicGuiConfig("lipidomics")$norm$plot_tabs)
+    # The S4 download section's three values.
+    for (option in c("button", "label", "help")) {
+        removed <- config
+        removed$norm$panels$s4_download[[option]] <- NULL
+        expectGuiConfigRefused(removed, paste0("norm$panels$s4_download$", option))
+    }
+    # A section's optional texts, by type when present; the RUV help's names are the section's own.
+    for (path in list(c("panels", "between_sample", "help"), c("panels", "actions", "run_label"), c("panels", "export", "label"),
+        c("panels", "export", "help"), c("panels", "ruv_iii", "help"))) {
+        expectGuiConfigRefused(mistype(path), paste(c("norm", path), collapse = "$"))
+    }
+    expectGuiConfigRefused(mistype(c("panels", "ruv_iii", "help"), c(nonsense = "x")), "norm$panels$ruv_iii$help")
+    # The manual k may be unset (proteomics: filled from the canonical correlation); it is still a number otherwise.
+    expectGuiConfigRefused(mistype(c("panels", "ruv_iii", "k"), "two"), "norm$panels$ruv_iii$k")
+    removed <- config
+    removed$norm$panels$ruv_iii["k"] <- NULL
+    expectGuiConfigRefused(removed, "norm$panels$ruv_iii$k")
+})
+
+test_that("KIT-120 W1: the four omics' configurations are unchanged by the new fields", {
+    expect_null(omicGuiConfig("proteomics")$norm)
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        norm <- omicGuiConfig(omic)$norm
+        expect_false(any(c("server", "qc_dir", "assay_labels", "image_stemless", "correlation_slot", "post_norm_qc") %in% names(norm)),
+            info = omic)
+        expect_false("s4_download" %in% names(norm$panels), info = omic)
+    }
+})
