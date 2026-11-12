@@ -63,3 +63,7 @@ All eight `audit-r*` branches had their commits on `performance-v2` (`git cherry
 ## Next
 
 KIT-117 (harness revision), with KIT-114 alongside, then KIT-118 and KIT-119. Each needs the user's go.
+
+## Correction, 2026-11-12
+
+"P-32; user, 2026-11-11: keep the exception" overstates the record. The user did not choose P-32 specifically: "keep the exception" was the audit table's recommendation, adopted with the rest of the table ("i want everything fixed according to your recommendations"). On 2026-11-12 the user asked for the deep join to be planned: KIT-120. The closure above is the state at this ticket's date.

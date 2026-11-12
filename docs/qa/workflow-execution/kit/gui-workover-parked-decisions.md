@@ -82,7 +82,7 @@ After the post-hoc audit ([gui-workover-audit-20261111.md](gui-workover-audit-20
 | P-28 | Declare the filter | done (R3) | Declared only when the filter is on, so unfiltered records are unchanged. |
 | P-30 | Route B through the existing `reclaimWorkflowMemory()`; retire D8's peak criterion | implemented (R5); measured 2026-11-11 (`920v`/`920w`, [p30/outcome.md](gui-audit-20261111/p30/outcome.md)): after-report level 2.34 → 1.42 and 2.31 → 1.45 GiB, D8's teardown met; peak unchanged (−0.07/−0.11). **Closed.** | Route B needed no new native code; `readxl` is already imported; the report step is not the workflow's peak. |
 | P-31 | Drop the map | closed | |
-| P-32 | Keep proteomics' tab as the recorded exception | closed; KIT-109's closure names it | |
+| P-32 | Keep proteomics' tab as the recorded exception | **reopened 2026-11-12: KIT-120 (the deep join)** | Closed on 2026-11-11 through the blanket approval of the audit's table, not a specific choice. The user, 2026-11-12: plan the deep join as its own ticket. KIT-109's closure (27 of 28) is the state at its date. |
 | P-33 | Accept | closed | The session's peak is at `qvalue`/`design`, not normalisation. |
 | P-34 (new) | Raise: the `m` member's unreleased floor is intermittent (111m, 112m; 2 of 4 on builds with KIT-111's code, 0 of 9 before), cause unknown | **closed (KIT-116):** six more members, 0 of 6 above the 0.80 GiB cut fixed beforehand ([kit-116/outcome.md](kit-116/outcome.md)); 2 of 19 overall; intermittent and rare | KIT-111's D8 rule required it. |
 | P-35 | Fix, covering the mode switch | done (R2) | Wider than a double click: covariates then correction compounded too. |
