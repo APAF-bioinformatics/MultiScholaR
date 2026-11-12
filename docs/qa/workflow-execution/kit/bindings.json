@@ -781,6 +781,24 @@
       "install_member": "browser-smoke.RASXHZ",
       "source_commit": "fa60b6a54ff0ad4699bb3a942eb42042d63b5702",
       "runtime_patch_bytes": 0
+    },
+    "kit_928": {
+      "ticket": "KIT-928",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.AqEvi0/library",
+      "build": "77d7df54a2c45f6ab822bad66dc88d6da3d406f462e0e605a43948e0dafe0b3e",
+      "exact_sum": "cdc07861903a11f7edc8cfe8831bfaa935cf38b19106fafdcbb83583826bda93",
+      "install_member": "browser-smoke.AqEvi0",
+      "source_commit": "2edcbb7123a1e60f3a2d7fe95cdb3bfb8da472ee",
+      "runtime_patch_bytes": 0
+    },
+    "kit_929": {
+      "ticket": "KIT-929",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.al591f/library",
+      "build": "1237692fb027375d1cced9570b23fa70a326d5b3182022e12c8e4fab89a7b4e2",
+      "exact_sum": "8a2dbeaeb9136db192ff694bc1d6255dc748b5ee2c61e362b12250cda18e3540",
+      "install_member": "browser-smoke.al591f",
+      "source_commit": "40dfaaa27505739ad2ee60312efd8cf90d5d3cc1",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43546,6 +43564,24 @@
     "927d": {
       "kind": "single_journey",
       "build": "kit_927",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "928d": {
+      "kind": "single_journey",
+      "build": "kit_928",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "929d": {
+      "kind": "single_journey",
+      "build": "kit_929",
       "corpus": "full",
       "route": "DIA",
       "ceiling_seconds": 1800,
