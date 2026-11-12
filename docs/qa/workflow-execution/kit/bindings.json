@@ -799,6 +799,15 @@
       "install_member": "browser-smoke.al591f",
       "source_commit": "40dfaaa27505739ad2ee60312efd8cf90d5d3cc1",
       "runtime_patch_bytes": 0
+    },
+    "kit_930": {
+      "ticket": "KIT-930",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.v7vzBc/library",
+      "build": "d09623b5712e405da3600ca0bcf64747698dd3609278757ce48a1f4a79467ba2",
+      "exact_sum": "bf437a9ec9b906f53731bea9ff6707a269e07f9af4b50bef224c542b327c6eea",
+      "install_member": "browser-smoke.v7vzBc",
+      "source_commit": "7569415d9cf5560e96d6d49a9a7f19398228e93e",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43582,6 +43591,15 @@
     "929d": {
       "kind": "single_journey",
       "build": "kit_929",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "930d": {
+      "kind": "single_journey",
+      "build": "kit_930",
       "corpus": "full",
       "route": "DIA",
       "ceiling_seconds": 1800,
