@@ -857,7 +857,8 @@ guiConfigNormWired <- c(run.in_process = "runWorkflowOmicsInProcessNormalisation
 test_that("the norm group holds today's values for lipid and metab, trx has one (KIT-110) and proteomics' is NULL", {
     configs <- lapply(stats::setNames(guiConfigOmics, guiConfigOmics), omicGuiConfig)
     expect_true("norm" %in% names(configs$proteomics))
-    expect_null(configs$proteomics$norm)
+    # KIT-120 W2: proteomics has a group too (its values are pinned in the KIT-120 block below).
+    expect_true(is.list(configs$proteomics$norm))
     # KIT-110 W3: trx's group is no longer NULL, and it validates.
     expect_false(is.null(configs$transcriptomics$norm))
     expect_identical(validateOmicGuiConfig(configs$transcriptomics), configs$transcriptomics)
@@ -1948,7 +1949,7 @@ guiConfigKit120Norm <- function() {
         ruv_heading = "RUV Parameter Optimization Results", ruv_help = "Canonical correlation plot and optimization summary.",
         post_norm_qc = list(heading = "Filtering Progression Summary", help = "Summary of protein filtering steps."),
         correlation_slot = "ruv_covariates_panel",
-        server = function(input, output, session, context) NULL,
+        server = "protNormFrameServer",
         assay_names = "proteins", image_stemless = TRUE, qc_dir = "protein_qc_dir", assay_labels = FALSE,
         testids = c(method = "prot-norm-method", ruv_mode = "prot-norm-ruv-mode", run = "prot-norm-run",
             export = "prot-norm-export-session"))
@@ -2016,12 +2017,48 @@ test_that("KIT-120 W1: each new norm field is checked by type, and only with the
     expectGuiConfigRefused(removed, "norm$panels$ruv_iii$k")
 })
 
-test_that("KIT-120 W1: the four omics' configurations are unchanged by the new fields", {
-    expect_null(omicGuiConfig("proteomics")$norm)
+test_that("KIT-120 W1: lipid's, metab's and trx's configurations are unchanged by the new fields", {
     for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
         norm <- omicGuiConfig(omic)$norm
         expect_false(any(c("server", "qc_dir", "assay_labels", "image_stemless", "correlation_slot", "post_norm_qc") %in% names(norm)),
             info = omic)
         expect_false("s4_download" %in% names(norm$panels), info = omic)
     }
+})
+
+test_that("KIT-120 W2: proteomics' norm group holds its tab's values (mod_prot_norm_ui.R at 8ca68e93) and its own server (fails before)", {
+    norm <- omicGuiConfig("proteomics")$norm
+    expect_identical(norm$module_id, "normalization")
+    expect_identical(names(norm$panels), c("aesthetics", "between_sample", "ruv_iii", "actions", "export", "s4_download"))
+    expect_identical(norm$panels$between_sample[c("methods", "default")], list(methods = c("Cyclic Loess" = "cyclicloess",
+        "Quantile" = "quantile", "Scale (Median Absolute Values)" = "scale", "None" = "none"), default = "cyclicloess"))
+    expect_identical(norm$panels$ruv_iii[c("modes", "default", "percentage", "k", "noun")], list(
+        modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
+            "Skip RUV (troublesome datasets)" = "skip"), default = "automatic", percentage = 5, k = NULL, noun = "Proteins"))
+    expect_identical(names(norm$panels$ruv_iii$help), c("grouping", "automatic", "range", "metric", "penalty", "adaptive",
+        "manual_k", "skip", "skip_alternative"))
+    expect_identical(norm$panels$actions, list(run_label = "Run Normalization & RUV"))
+    expect_identical(norm$panels$export$button, "export_filtered_session")
+    expect_identical(norm$panels$s4_download$button, "export_s4_compatibility")
+    expect_identical(norm$plot_tabs, c("ruv", "pca", "density", "rle", "correlation", "post_norm_qc", "correlation_filter"))
+    expect_identical(norm[c("assay_slots", "assay_names", "image_stemless", "qc_dir", "assay_labels", "correlation_slot")],
+        list(assay_slots = 1L, assay_names = "proteins", image_stemless = TRUE, qc_dir = "protein_qc_dir", assay_labels = FALSE,
+            correlation_slot = "ruv_covariates_panel"))
+    expect_identical(norm$testids, c(method = "prot-norm-method", ruv_mode = "prot-norm-ruv-mode", run = "prot-norm-run",
+        export = "prot-norm-export-session"))
+    # By name, as the DA plugins are: a module function stays in its R/mod_*.R file.
+    expect_identical(norm$server, "protNormFrameServer")
+    expect_true(is.function(omicGuiFunction(norm$server)))
+    # The frame's actions are proteomics' own: none of the frame's action fields.
+    expect_false(any(c("run", "correlation", "export", "reset", "pre_qc_on_entry") %in% names(norm)))
+    # The frame's UI has every input of the tab's own UI at 8ca68e93 with the same starting value (frozen from
+    # `omicsUiInputDefaults(mod_prot_norm_ui("normalization"))` there; the sections' order is the library's).
+    defaults <- omicsUiInputDefaults(mod_omic_norm_ui("normalization", norm))
+    expect_identical(defaults[sort(names(defaults))], list(`normalization-adaptive_k_penalty` = TRUE,
+        `normalization-auto_percentage_max` = 20, `normalization-auto_percentage_min` = 1,
+        `normalization-color_variable` = "group", `normalization-k_penalty_weight` = 0.5,
+        `normalization-min_pearson_correlation_threshold` = 0.5, `normalization-norm_method` = "cyclicloess",
+        `normalization-ruv_grouping_variable` = "group", `normalization-ruv_mode` = "automatic",
+        `normalization-ruv_percentage` = 5, `normalization-separation_metric` = "max_difference",
+        `normalization-shape_variable` = "group"))
 })

@@ -151,10 +151,13 @@ checkProtNormMemoryUsage <- function(
   invisible(mem_used_gb)
 }
 
-createProtNormReactiveState <- function(
-  reactiveValuesFn = shiny::reactiveValues
-) {
-  reactiveValuesFn(
+#' The fields of proteomics' normalisation tab state and their starting values. KIT-120: the tab's own shell makes its
+#' reactive values of them (`createProtNormReactiveState`); on the shared frame proteomics' server sets them on the
+#' frame's state (`protNormFrameServer`). The core reads several by name (utils_workflow_dia_products.R,
+#' utils_workflow_dia_norm.R, utils_workflow_dia_sessions.R).
+#' @noRd
+protNormStateFields <- function() {
+  list(
     pre_norm_qc_generated = FALSE,
     normalization_complete = FALSE,
     ruv_complete = FALSE,
@@ -195,6 +198,12 @@ createProtNormReactiveState <- function(
     ruv_optimization_result = NULL,
     ruv_optimization_table = NULL
   )
+}
+
+createProtNormReactiveState <- function(
+  reactiveValuesFn = shiny::reactiveValues
+) {
+  do.call(reactiveValuesFn, protNormStateFields())
 }
 
 renderProtNormFilteringSummaryText <- function(

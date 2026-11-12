@@ -1998,3 +1998,31 @@ test_that("KIT-120 W3: with its own server, the frame registers the state and th
         expect_identical(output$rle_post_filter_assay1$alt, "Plot not generated yet: pre_norm_rle.png")
     })))
 })
+
+test_that("KIT-120 W2: proteomics' server on the frame sets the tab's state and registers its outputs and route panel (fails before)", {
+    testthat::local_mocked_bindings(installWorkflowOmicsActions = function(...) invisible(NULL))
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
+        tab_status = list(normalization = "pending"), state_update_trigger = 0L)
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "normalization", workflow_data = bus,
+        experiment_paths = list(protein_qc_dir = withr::local_tempdir()), omic_type = "proteomics", experiment_label = "kit120",
+        selected_tab = shiny::reactiveVal("import"), config = omicGuiConfig("proteomics")$norm), {
+        state <- shiny::isolate(shiny::reactiveValuesToList(session$returned))
+        # The tab's own fields at their starting values, and the frame's fixed assay.
+        fields <- protNormStateFields()
+        expect_true(all(names(fields) %in% names(state)))
+        expect_identical(state[names(fields)], fields)
+        expect_null(state$qc_plot_paths)
+        expect_identical(state$assay_names, "proteins")
+        # The RUV QC tab's content: proteomics' plot, summary and table under their ids.
+        html <- as.character(output$ruv_qc_ui$html)
+        for (id in c("ruv_canonical_correlation_plot", "ruv_optimization_summary", "ruv_optimization_table")) {
+            expect_true(grepl(sprintf('id="normalization-%s"', id), html, fixed = TRUE), info = id)
+        }
+        # The covariates panel: on the DIA_LIMPA route only.
+        expect_null(output$ruv_covariates_panel)
+        bus$state_manager <- list(workflow_type = "DIA_LIMPA")
+        bus$state_update_trigger <- 1L
+        session$flushReact()
+        expect_true(grepl('id="normalization-apply_ruv_covariates"', as.character(output$ruv_covariates_panel$html), fixed = TRUE))
+    })))
+})

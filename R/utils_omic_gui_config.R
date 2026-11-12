@@ -231,12 +231,12 @@ omicGuiConfigSchema <- function() {
         norm_post_norm_qc = c(heading = "chr1", help = "chr1"),
         # KIT-110 D3, D4, D7: an omic's own reset handler; the stage grid's fixed assay names, file stem, stage file
         # prefixes (`norm_stage_prefixes`) and registered assay rows.
-        # KIT-120 W1: an omic's own server registrations (`server(input, output, session, context)`: its actions and its
-        # outputs, in place of the frame's); the QC directory's key in the experiment paths (else the binding's
+        # KIT-120 W1: an omic's own server registrations, by name as the DA plugins are (a module function in an
+        # R/mod_*.R file: `server(input, output, session, context)`, its actions and its outputs, in place of the frame's); the QC directory's key in the experiment paths (else the binding's
         # `qc_dir_role`); whether the stage grid shows an assay label row (shown unless FALSE) and names its files
         # `<stage prefix>_<kind>.png`, with no assay stem; the id of a UI output under the correlation tab's summary.
         norm_optional = c(reset = "ref", assay_names = "chr", image_stem = "chr1", stage_prefixes = "named_chr",
-            output_assay_slots = "int1", server = "ref", qc_dir = "chr1", assay_labels = "lgl1", image_stemless = "lgl1",
+            output_assay_slots = "int1", server = "chr1", qc_dir = "chr1", assay_labels = "lgl1", image_stemless = "lgl1",
             correlation_slot = "chr1"),
         norm_stage_prefixes = c("pre_norm", "post_norm", "ruv_corrected"),
         # `run` and `correlation`: the managed function and its in-process twin (the core's; D6).
@@ -1195,11 +1195,67 @@ omicGuiConfigProteomics <- function() {
         import = omicGuiProteomicsImport(),
         design = omicGuiProteomicsDesign(),
         qc = omicGuiProteomicsQc(),
-        # KIT-105 D3 (P-20): proteomics keeps its own normalisation frame until KIT-111.
-        norm = NULL,
+        # KIT-120: proteomics' tab on the shared frame (P-32 closed).
+        norm = omicGuiProteomicsNorm(),
         da = omicGuiProteomicsDa(),
         enrichment = omicGuiProteomicsEnrichment(),
         summary = omicGuiProteomicsSummary())
+}
+
+#' Proteomics' normalisation tab on the shared frame (KIT-120; mod_prot_norm_ui.R and
+#' mod_prot_norm_observer_helpers.R at 8ca68e93, mapped in kit-120/sites.md). The sections are the library's in its
+#' order, with proteomics' own inputs, defaults, help texts, labels and test ids; the manual k starts unset (it is
+#' filled from the canonical correlation). The tabs are the frame's without ITSD and the log, with the
+#' Post-Normalisation QC tab. The stage grid shows the protein table's twelve figures under their existing file names
+#' (`pre_norm_pca.png` ...) in `protein_qc_dir`, without an assay label. The actions and the other outputs are
+#' proteomics' own (`protNormFrameServer`), for all five routes; the DIA_LIMPA route's covariates panel is rendered by
+#' that server under the correlation summary.
+#' @noRd
+omicGuiProteomicsNorm <- function() {
+    list(module_id = "normalization",
+        panels = list(aesthetics = list(),
+            between_sample = list(methods = c("Cyclic Loess" = "cyclicloess", "Quantile" = "quantile",
+                "Scale (Median Absolute Values)" = "scale", "None" = "none"), default = "cyclicloess",
+                help = "Method for between-sample normalization (default: Cyclic Loess)"),
+            ruv_iii = list(modes = c("Automatic (recommended)" = "automatic", "Manual (advanced users)" = "manual",
+                "Skip RUV (troublesome datasets)" = "skip"), default = "automatic", percentage = 5, k = NULL, noun = "Proteins",
+                help = c(
+                    grouping = paste("Experimental factor to preserve during batch correction. RUV-III will remove unwanted",
+                        "variation while preserving differences between groups defined by this variable. For TMT workflows",
+                        "with batches, select 'batch' to remove batch effects."),
+                    automatic = paste("These parameters control the automatic optimization of RUV-III negative control",
+                        "selection. The function tests different percentages and finds the optimal balance between",
+                        "separation quality and k value."),
+                    range = paste("Range of percentages to test (1-50%). Start with 1-20% for most datasets. Larger datasets",
+                        "may benefit from higher ranges."),
+                    metric = paste("Method for evaluating separation between All and Control groups in canonical correlation",
+                        "plots. Max difference is most robust for typical datasets."),
+                    penalty = paste("Controls how strongly high k values are penalized (0.1 = lenient, 0.9 = strict). Higher",
+                        "values favor lower k to preserve biological signal."),
+                    adaptive = "Automatically adjusts penalty thresholds based on dataset size. Recommended for most analyses.",
+                    manual_k = "Will be auto-populated from canonical correlation analysis",
+                    skip = paste("Batch correction will not be applied. Use this option for datasets where RUV-III is",
+                        "problematic or unnecessary."),
+                    skip_alternative = paste("Alternative approach: Consider including batch as a covariate in your",
+                        "differential expression model if batch effects are present."))),
+            actions = list(run_label = "Run Normalization & RUV"),
+            export = list(button = "export_filtered_session", label = "Export Filtered Data Session",
+                help = "Save filtered data and contrasts for later DE analysis"),
+            s4_download = list(button = "export_s4_compatibility", label = "Export S4 compatibility RDS",
+                help = "Optional export for older tools; requires a guarded session.")),
+        plot_tabs = c("ruv", "pca", "density", "rle", "correlation", "post_norm_qc", "correlation_filter"),
+        stage_labels = c("Post-Filtering", "Post-Normalization", "RUV-Corrected"), assay_slots = 1L,
+        ruv_heading = "RUV Parameter Optimization Results",
+        ruv_help = paste("Canonical correlation plot and optimization summary for RUV-III parameter selection. This plot",
+            "shows the separation between 'All' and 'Control' protein groups across different k values."),
+        post_norm_qc = list(heading = "Filtering Progression Summary",
+            help = paste("Summary of protein filtering steps through normalization and RUV correction. This step removes",
+                "proteins with excessive missing values after RUV processing.")),
+        correlation_slot = "ruv_covariates_panel",
+        server = "protNormFrameServer",
+        assay_names = "proteins", image_stemless = TRUE, qc_dir = "protein_qc_dir", assay_labels = FALSE,
+        testids = c(method = "prot-norm-method", ruv_mode = "prot-norm-ruv-mode", run = "prot-norm-run",
+            export = "prot-norm-export-session"))
 }
 
 #' The proteomics Summary & Export tab at 5be34ee5 (mod_prot_summary_*.R; KIT-108 D1): the module id and test ids (the
