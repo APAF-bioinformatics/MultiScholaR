@@ -2026,3 +2026,24 @@ test_that("KIT-120 W2: proteomics' server on the frame sets the tab's state and 
         expect_true(grepl('id="normalization-apply_ruv_covariates"', as.character(output$ruv_covariates_panel$html), fixed = TRUE))
     })))
 })
+
+test_that("KIT-120 W4: the proteomics norm wrappers are thin wrappers over the shared frame (fails before)", {
+    for (wrapper in list(mod_prot_norm_ui, mod_prot_norm_server)) {
+        names <- all.names(body(wrapper))
+        expect_true(any(c("mod_omic_norm_ui", "mod_omic_norm_server") %in% names))
+        expect_true("omicGuiConfig" %in% names)
+        expect_false(any(c("runProtNormModuleServerPublicWrapper", "wellPanel", "tabsetPanel") %in% names))
+    }
+    # The exported signatures are unchanged (notebook and applet callers).
+    expect_identical(names(formals(mod_prot_norm_ui)), "id")
+    expect_identical(names(formals(mod_prot_norm_server)), c("id", "workflow_data", "experiment_paths", "omic_type",
+        "experiment_label", "selected_tab"))
+    # The wrapper's UI is the frame's under proteomics' group (two renders differ only by the resizable plots' random ids).
+    ids <- function(ui) {
+        html <- as.character(htmltools::renderTags(ui)$html)
+        sort(unlist(regmatches(html, gregexpr('id="normalization-[A-Za-z0-9_]+"', html))))
+    }
+    expect_identical(ids(mod_prot_norm_ui("normalization")),
+        ids(mod_omic_norm_ui("normalization", omicGuiConfig("proteomics")$norm)))
+})
+

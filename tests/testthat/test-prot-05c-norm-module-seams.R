@@ -214,6 +214,9 @@ test_that("runProtNormModuleServerPublicWrapper preserves breadcrumb public-wrap
 })
 
 test_that("mod_prot_norm_server routes through the top-level public seam", {
+  skip(paste("quarantined: Q-184 (KIT-120 W4) mod_prot_norm_server no longer calls runProtNormModuleServerPublicWrapper:",
+    "it is a thin wrapper over the shared frame (mod_omic_norm_server) under proteomics' configuration, covered by",
+    "test-omic-norm-module.R (KIT-120 W2, W3, W4) and the five proteomics entry lanes"))
   module_env <- loadProtNormModuleEnv()
   captured <- new.env(parent = emptyenv())
 
