@@ -1,0 +1,7 @@
+kit-journey-923m accepted failing none failed_step none error none 
+kit-journey-923l accepted failing none failed_step none error none 
+kit-journey-923t accepted failing none failed_step none error none 
+kit-journey-923r rejected failing oracle_mismatch failed_step none error none 
+kit-journey-922r rejected failing oracle_mismatch failed_step none error none 
+kit-journey-922q rejected failing oracle_mismatch failed_step none error none 
+kit-journey-923q rejected failing oracle_mismatch failed_step none error none 

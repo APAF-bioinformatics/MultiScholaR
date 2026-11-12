@@ -1,0 +1,14 @@
+kit-journey-923m start 23:00:45 at 1d21b062: AC 1, profile low-power, battery 100%, load 2.18, available 38 GiB
+kit-journey-923m end 23:08:45: AC 1, profile low-power, battery 100%, load 2.34, available 38 GiB
+kit-journey-923l start 23:09:15 at 1d21b062: AC 1, profile low-power, battery 100%, load 1.68, available 38 GiB
+kit-journey-923l end 23:13:55: AC 1, profile low-power, battery 100%, load 2.03, available 38 GiB
+kit-journey-923t start 23:14:15 at 1d21b062: AC 1, profile low-power, battery 100%, load 1.74, available 38 GiB
+kit-journey-923t end 23:18:55: AC 1, profile low-power, battery 100%, load 2.20, available 38 GiB
+kit-journey-923r start 23:19:15 at 1d21b062: AC 1, profile low-power, battery 100%, load 1.94, available 38 GiB
+kit-journey-923r end 23:27:16: AC 1, profile low-power, battery 100%, load 2.58, available 38 GiB
+kit-journey-922r start 23:27:45 at 1d21b062: AC 1, profile low-power, battery 100%, load 1.96, available 38 GiB
+kit-journey-922r end 23:35:46: AC 1, profile low-power, battery 100%, load 2.22, available 38 GiB
+kit-journey-922q start 23:54:06 at 9f0886af: AC 1, profile low-power, battery 100%, load 1.79, available 38 GiB
+kit-journey-922q end 01:12:47: AC 1, profile low-power, battery 100%, load 2.20, available 38 GiB
+kit-journey-923q start 01:13:06 at 9f0886af: AC 1, profile low-power, battery 100%, load 1.93, available 38 GiB
+kit-journey-923q end 02:32:07: AC 1, profile low-power, battery 100%, load 1.99, available 38 GiB
