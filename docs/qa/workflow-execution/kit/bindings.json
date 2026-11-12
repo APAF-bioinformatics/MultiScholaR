@@ -745,6 +745,24 @@
       "install_member": "browser-smoke.KaJpsV",
       "source_commit": "9a16bfa30697405bc2169cc89a11425ac2a640e2",
       "runtime_patch_bytes": 0
+    },
+    "kit_924": {
+      "ticket": "KIT-924",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.wqrAKX/library",
+      "build": "7b199b06889174e4e56fc867b879f1f5db65d61330eed82af7602d700dc5c3cf",
+      "exact_sum": "e8efde89b7b373b8d50edea9c0920dc0b1e833087f9a819b3d36cce5de0ccab4",
+      "install_member": "browser-smoke.wqrAKX",
+      "source_commit": "7a0b3b60d1b125389ca29a135080e8969c57cd3d",
+      "runtime_patch_bytes": 0
+    },
+    "kit_925": {
+      "ticket": "KIT-925",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.kXwg5F/library",
+      "build": "5d0474438cb70bf5f2b9e3e50ac3ee5e689616f07a6a155cde2cd3d6d5bb08bf",
+      "exact_sum": "16f5b4acdce8cf78804839e9322c1c9a56e83320a5c136a7ef2df1f3dfe8c29f",
+      "install_member": "browser-smoke.kXwg5F",
+      "source_commit": "dc2a05b22464b76e33f46eac3da8720ebefaf81a",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43452,6 +43470,42 @@
       "whole_journey": true,
       "ceiling_seconds": 14400,
       "purpose": "923q once more: the release after the import (recorded, uncounted; KIT-120)"
+    },
+    "922d": {
+      "kind": "single_journey",
+      "build": "kit_922",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "923d": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "924d": {
+      "kind": "single_journey",
+      "build": "kit_924",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "925d": {
+      "kind": "single_journey",
+      "build": "kit_925",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
     },
     "106x": {
       "kind": "single_journey",
