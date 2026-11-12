@@ -1,100 +1,3 @@
-renderProtNormQcImage <- function(
-  filename,
-  altText,
-  normData,
-  proteinQcDir,
-  renderImageFn = shiny::renderImage,
-  buildQcImagePayloadFn = buildProtNormQcImagePayload
-) {
-  renderImageFn({
-    normData$plot_refresh_trigger
-
-    buildQcImagePayloadFn(proteinQcDir, filename, altText)
-  }, deleteFile = FALSE)
-}
-
-registerProtNormQcImageOutputs <- function(
-  output,
-  normData,
-  proteinQcDir,
-  renderQcImageFn = renderProtNormQcImage
-) {
-  output$pca_post_filtering <- renderQcImageFn(
-    filename = "pre_norm_pca.png",
-    altText = "PCA Post-Filtering",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$density_post_filtering <- renderQcImageFn(
-    filename = "pre_norm_density.png",
-    altText = "Density Post-Filtering",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$rle_post_filtering <- renderQcImageFn(
-    filename = "pre_norm_rle.png",
-    altText = "RLE Post-Filtering",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$correlation_post_filtering <- renderQcImageFn(
-    filename = "pre_norm_correlation.png",
-    altText = "Correlation Post-Filtering",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$pca_post_normalization <- renderQcImageFn(
-    filename = "post_norm_pca.png",
-    altText = "PCA Post-Normalization",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$density_post_normalization <- renderQcImageFn(
-    filename = "post_norm_density.png",
-    altText = "Density Post-Normalization",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$rle_post_normalization <- renderQcImageFn(
-    filename = "post_norm_rle.png",
-    altText = "RLE Post-Normalization",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$correlation_post_normalization <- renderQcImageFn(
-    filename = "post_norm_correlation.png",
-    altText = "Correlation Post-Normalization",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$pca_ruv_corrected <- renderQcImageFn(
-    filename = "ruv_corrected_pca.png",
-    altText = "PCA RUV Corrected",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$density_ruv_corrected <- renderQcImageFn(
-    filename = "ruv_corrected_density.png",
-    altText = "Density RUV Corrected",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$rle_ruv_corrected <- renderQcImageFn(
-    filename = "ruv_corrected_rle.png",
-    altText = "RLE RUV Corrected",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-  output$correlation_ruv_corrected <- renderQcImageFn(
-    filename = "ruv_corrected_correlation.png",
-    altText = "Correlation RUV Corrected",
-    normData = normData,
-    proteinQcDir = proteinQcDir
-  )
-
-  invisible(output)
-}
-
 renderProtNormPostNormFilteringSummary <- function(
   normData,
   renderPlotFn = shiny::renderPlot,
@@ -151,9 +54,8 @@ checkProtNormMemoryUsage <- function(
   invisible(mem_used_gb)
 }
 
-#' The fields of proteomics' normalisation tab state and their starting values. KIT-120: the tab's own shell makes its
-#' reactive values of them (`createProtNormReactiveState`); on the shared frame proteomics' server sets them on the
-#' frame's state (`protNormFrameServer`). The core reads several by name (utils_workflow_dia_products.R,
+#' The fields of proteomics' normalisation tab state and their starting values. KIT-120: proteomics' server sets them
+#' on the shared frame's state (`protNormFrameServer`; the tab's own shell made its reactive values of them). The core reads several by name (utils_workflow_dia_products.R,
 #' utils_workflow_dia_norm.R, utils_workflow_dia_sessions.R).
 #' @noRd
 protNormStateFields <- function() {
@@ -198,12 +100,6 @@ protNormStateFields <- function() {
     ruv_optimization_result = NULL,
     ruv_optimization_table = NULL
   )
-}
-
-createProtNormReactiveState <- function(
-  reactiveValuesFn = shiny::reactiveValues
-) {
-  do.call(reactiveValuesFn, protNormStateFields())
 }
 
 renderProtNormFilteringSummaryText <- function(

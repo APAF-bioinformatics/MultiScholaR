@@ -8,9 +8,10 @@ skipIfMissingMultiScholaRBindings <- function(...) {
   }
 }
 
+# KIT-120 W5: the guard names live functions only (the image payload builder and renderer are deleted, Q-186).
 skipIfMissingMultiScholaRBindings(
-  "buildProtNormQcImagePayload",
-  "renderProtNormQcImage",
+  "registerProtNormRenderOutputs",
+  "protNormStateFields",
   "runProtNormNormalizationWorkflow"
 )
 
@@ -21,6 +22,7 @@ test_that("KIT-101 F-05: runProtNormNormalizationWorkflow takes no parameter its
 })
 
 test_that("buildProtNormQcImagePayload returns image payload when file exists", {
+  skip("quarantined: Q-186 (KIT-120 W5) it calls the tab's own image renderer, registrar or state constructor (deleted); the images are the shared frame's stage grid (registerOmicNormStageGrid) and the state's fields are protNormStateFields, covered by test-omic-norm-module.R (KIT-120 W2, W3) and the five proteomics entry lanes")
   img_path <- tempfile(fileext = ".png")
   writeLines("placeholder", img_path)
 
@@ -34,6 +36,7 @@ test_that("buildProtNormQcImagePayload returns image payload when file exists", 
 })
 
 test_that("buildProtNormQcImagePayload returns placeholder when file is missing", {
+  skip("quarantined: Q-186 (KIT-120 W5) it calls the tab's own image renderer, registrar or state constructor (deleted); the images are the shared frame's stage grid (registerOmicNormStageGrid) and the state's fields are protNormStateFields, covered by test-omic-norm-module.R (KIT-120 W2, W3) and the five proteomics entry lanes")
   payload <- buildProtNormQcImagePayload(tempdir(), "missing.png", "QC plot")
 
   expect_equal(payload$src, "")
@@ -41,6 +44,7 @@ test_that("buildProtNormQcImagePayload returns placeholder when file is missing"
 })
 
 test_that("renderProtNormQcImage delegates through renderImage with QC payload builder", {
+  skip("quarantined: Q-186 (KIT-120 W5) it calls the tab's own image renderer, registrar or state constructor (deleted); the images are the shared frame's stage grid (registerOmicNormStageGrid) and the state's fields are protNormStateFields, covered by test-omic-norm-module.R (KIT-120 W2, W3) and the five proteomics entry lanes")
   norm_data <- new.env(parent = emptyenv())
   norm_data$plot_refresh_trigger <- Sys.time()
   payload_call <- NULL
@@ -72,6 +76,7 @@ test_that("renderProtNormQcImage delegates through renderImage with QC payload b
 })
 
 test_that("registerProtNormQcImageOutputs assigns all QC image outputs", {
+  skip("quarantined: Q-186 (KIT-120 W5) it calls the tab's own image renderer, registrar or state constructor (deleted); the images are the shared frame's stage grid (registerOmicNormStageGrid) and the state's fields are protNormStateFields, covered by test-omic-norm-module.R (KIT-120 W2, W3) and the five proteomics entry lanes")
   output <- new.env(parent = emptyenv())
   norm_data <- new.env(parent = emptyenv())
   calls <- list()
@@ -2971,6 +2976,7 @@ test_that("checkProtNormMemoryUsage reports memory usage and warns only above th
 })
 
 test_that("createProtNormReactiveState initializes the normalization reactive defaults", {
+  skip("quarantined: Q-186 (KIT-120 W5) it calls the tab's own image renderer, registrar or state constructor (deleted); the images are the shared frame's stage grid (registerOmicNormStageGrid) and the state's fields are protNormStateFields, covered by test-omic-norm-module.R (KIT-120 W2, W3) and the five proteomics entry lanes")
   state <- createProtNormReactiveState(
     reactiveValuesFn = function(...) list(...)
   )

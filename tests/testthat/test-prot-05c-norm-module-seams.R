@@ -32,6 +32,7 @@ loadProtNormModuleEnv <- function() {
 }
 
 test_that("runProtNormModuleServerShell preserves normalization entry-shell orchestration", {
+  skip("quarantined: Q-185 (KIT-120 W5) it calls the tab's own server shell (runProtNormModuleServerShell, its entry shell and public wrapper: deleted); the tab is the shared frame (mod_omic_norm_server) with proteomics' server protNormFrameServer, covered by test-omic-norm-module.R (KIT-120 W2, W3, W4) and the five proteomics entry lanes")
   module_env <- loadProtNormModuleEnv()
   captured <- new.env(parent = emptyenv())
   output <- new.env(parent = emptyenv())
@@ -148,6 +149,7 @@ test_that("runProtNormModuleServerShell preserves normalization entry-shell orch
 })
 
 test_that("runProtNormModuleServerEntryShell preserves moduleServer handoff", {
+  skip("quarantined: Q-185 (KIT-120 W5) it calls the tab's own server shell (runProtNormModuleServerShell, its entry shell and public wrapper: deleted); the tab is the shared frame (mod_omic_norm_server) with proteomics' server protNormFrameServer, covered by test-omic-norm-module.R (KIT-120 W2, W3, W4) and the five proteomics entry lanes")
   module_env <- loadProtNormModuleEnv()
   captured <- new.env(parent = emptyenv())
 
@@ -188,6 +190,7 @@ test_that("runProtNormModuleServerEntryShell preserves moduleServer handoff", {
 })
 
 test_that("runProtNormModuleServerPublicWrapper preserves breadcrumb public-wrapper handoff", {
+  skip("quarantined: Q-185 (KIT-120 W5) it calls the tab's own server shell (runProtNormModuleServerShell, its entry shell and public wrapper: deleted); the tab is the shared frame (mod_omic_norm_server) with proteomics' server protNormFrameServer, covered by test-omic-norm-module.R (KIT-120 W2, W3, W4) and the five proteomics entry lanes")
   module_env <- loadProtNormModuleEnv()
   captured <- new.env(parent = emptyenv())
 

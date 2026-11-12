@@ -1,23 +1,3 @@
-buildProtNormQcImagePayload <- function(proteinQcDir, filename, altText) {
-  img_path <- if (!is.null(proteinQcDir)) {
-    file.path(proteinQcDir, filename)
-  } else {
-    ""
-  }
-
-  if (img_path != "" && file.exists(img_path)) {
-    return(list(
-      src = img_path,
-      contentType = "image/png",
-      width = "100%",
-      height = "auto",
-      alt = altText
-    ))
-  }
-
-  list(src = "", alt = "Plot not generated yet")
-}
-
 getProtNormFilteringSummaryText <- function(filteringSummaryText) {
   if (!is.null(filteringSummaryText)) {
     return(filteringSummaryText)

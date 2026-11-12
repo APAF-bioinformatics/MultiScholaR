@@ -5051,7 +5051,7 @@ test_that("(KIT-106 correction, F106-06) the volcano page's iframe opens no dial
 # ------------------------------------------------------------------------------------------------
 
 #' Proteomics' managed (or unmanaged) fixture. `full = TRUE` installs the proteomics runner first on another module's
-#' scope, as the normalisation shell does on a full session (KIT-111, `runProtNormModuleServerShell`).
+#' scope, as the normalisation tab's server does on a full session (KIT-111; KIT-120: `protNormFrameServer`).
 #' @param contrasts The contrasts table.
 omicDaK112ProtSetup <- function(contrasts = module_ci_prot_da_contrasts("two_group"), managed = TRUE, full = FALSE,
     env = parent.frame()) {
