@@ -808,6 +808,15 @@
       "install_member": "browser-smoke.v7vzBc",
       "source_commit": "7569415d9cf5560e96d6d49a9a7f19398228e93e",
       "runtime_patch_bytes": 0
+    },
+    "kit_931": {
+      "ticket": "KIT-931",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.DMsn8u/library",
+      "build": "5a6a15636fb971cd9b17faf61f9fa41ab38bdaa5efa83d9a964a88bbfc25ed59",
+      "exact_sum": "58040a1d1371facc6066a995213ecbe84541b60fc1be95fe8427b4f769bea63a",
+      "install_member": "browser-smoke.DMsn8u",
+      "source_commit": "57661c2b985fdf8d76f8eb166b267203678db1ee",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43605,6 +43614,127 @@
       "ceiling_seconds": 1800,
       "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
       "stop_after": "design"
+    },
+    "923f": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "before the reclaim, run first (recorded, uncounted; KIT-121)",
+      "stop_after": "design"
+    },
+    "923g": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "before the reclaim, run last (recorded, uncounted; KIT-121)",
+      "stop_after": "design"
+    },
+    "931u": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on, stopped after design (recorded, uncounted; KIT-121)",
+      "stop_after": "design"
+    },
+    "931v": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on, stopped after design (recorded, uncounted; KIT-121)",
+      "stop_after": "design"
+    },
+    "931w": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on, stopped after design (recorded, uncounted; KIT-121)",
+      "stop_after": "design"
+    },
+    "931q": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "the reclaim on (recorded, uncounted; KIT-121)"
+    },
+    "931m": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on (recorded, uncounted; KIT-121)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "931l": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on (recorded, uncounted; KIT-121)"
+    },
+    "931t": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on (recorded, uncounted; KIT-121)"
+    },
+    "931a": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on (recorded, uncounted; KIT-121)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "931b": {
+      "kind": "single_journey",
+      "build": "kit_931",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on (recorded, uncounted; KIT-121)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
     },
     "106x": {
       "kind": "single_journey",
