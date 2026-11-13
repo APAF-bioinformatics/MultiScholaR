@@ -1427,6 +1427,10 @@ for (key in c("922", "923", "924", "925", "926", "927", "928", "929", "930")) {
 # screen journeys exact on kit_931: 931m (DIA_LIMPA), 931l (LFQ), 931t (TMT), 931a (lipid) and 931b (metab), from 112m/l/t/a/b.
 short <- function(build, purpose) utils::modifyList(b$tickets[["112q"]], list(build = build, stop_after = "design",
     whole_journey = NULL, ceiling_seconds = 1800, purpose = purpose))
+# KIT-121 correction pass: kit_932 is kit_931 plus messages at every reclaim request, check and outcome (side branch
+# kit121-diag, b60d18ef, diagnosis only); 932d is the stopped-after-design journey on it.
+if (!is.null(b$builds$kit_932)) b$tickets[["932d"]] <- short("kit_932",
+    "the reclaim's requests, checks and outcomes (recorded, uncounted; KIT-121 diagnosis)")
 if (!is.null(b$builds$kit_931)) {
     b$tickets[["923f"]] <- short("kit_923", "before the reclaim, run first (recorded, uncounted; KIT-121)")
     b$tickets[["923g"]] <- short("kit_923", "before the reclaim, run last (recorded, uncounted; KIT-121)")
