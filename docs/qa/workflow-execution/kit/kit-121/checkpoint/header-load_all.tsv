@@ -1,0 +1,10 @@
+field	value
+sha	da5b9c82a701e3fe2fdeb5f634ad9424a6433a3f
+r_version	R version 4.6.1 (2026-06-24)
+load_mode	load_all
+r_files	342
+r_file_list_sha256	58e5b62cb5646e76bdd35728e554c7d4527d61660cd297c2baeea94566b5190b
+lib_paths	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.ZzEGOQ/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+not_cran	true
+strict_skips	
+generated	2026-11-13T20:51:41+1100
