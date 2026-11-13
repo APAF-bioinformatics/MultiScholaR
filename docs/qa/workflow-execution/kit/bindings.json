@@ -817,6 +817,15 @@
       "install_member": "browser-smoke.DMsn8u",
       "source_commit": "57661c2b985fdf8d76f8eb166b267203678db1ee",
       "runtime_patch_bytes": 0
+    },
+    "kit_932": {
+      "ticket": "KIT-932",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.6ZkN8r/library",
+      "build": "8a2d435c26de6848b668bdaeee6b05b997b927492346f92e5952b480a4477231",
+      "exact_sum": "1ef908fb49ac32906debda803c143d075ff55ead2aac6c052ebd3926c99c9025",
+      "install_member": "browser-smoke.6ZkN8r",
+      "source_commit": "b60d18ef252e1f8be3972cd4046f1e9617380b4a",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43613,6 +43622,15 @@
       "route": "DIA",
       "ceiling_seconds": 1800,
       "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
+      "stop_after": "design"
+    },
+    "932d": {
+      "kind": "single_journey",
+      "build": "kit_932",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim's requests, checks and outcomes (recorded, uncounted; KIT-121 diagnosis)",
       "stop_after": "design"
     },
     "923f": {
