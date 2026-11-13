@@ -826,6 +826,15 @@
       "install_member": "browser-smoke.6ZkN8r",
       "source_commit": "b60d18ef252e1f8be3972cd4046f1e9617380b4a",
       "runtime_patch_bytes": 0
+    },
+    "kit_933": {
+      "ticket": "KIT-933",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.encpwV/library",
+      "build": "35f9379851c352170c8ab793db2481b060cb375338e0bf186ddf4c8a63977073",
+      "exact_sum": "d2923a6821bb31bf9d10a663879cf91608c9f8f333481fc5d01e76dbe79bfe93",
+      "install_member": "browser-smoke.encpwV",
+      "source_commit": "30514bafb54491b58876a451baa708119487840b",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -43623,6 +43632,127 @@
       "ceiling_seconds": 1800,
       "purpose": "the release after the import, stopped after design (recorded, uncounted; KIT-120 diagnosis)",
       "stop_after": "design"
+    },
+    "923h": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "before the reclaim, run first (recorded, uncounted; KIT-121 correction pass)",
+      "stop_after": "design"
+    },
+    "923i": {
+      "kind": "single_journey",
+      "build": "kit_923",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "before the reclaim, run last (recorded, uncounted; KIT-121 correction pass)",
+      "stop_after": "design"
+    },
+    "933u": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner, stopped after design (recorded, uncounted; KIT-121 correction pass)",
+      "stop_after": "design"
+    },
+    "933v": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner, stopped after design (recorded, uncounted; KIT-121 correction pass)",
+      "stop_after": "design"
+    },
+    "933w": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner, stopped after design (recorded, uncounted; KIT-121 correction pass)",
+      "stop_after": "design"
+    },
+    "933q": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)"
+    },
+    "933m": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "933l": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)"
+    },
+    "933t": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)"
+    },
+    "933a": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "933b": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
     },
     "932d": {
       "kind": "single_journey",
