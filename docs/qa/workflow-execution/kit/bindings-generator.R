@@ -1427,6 +1427,19 @@ for (key in c("922", "923", "924", "925", "926", "927", "928", "929", "930")) {
 # screen journeys exact on kit_931: 931m (DIA_LIMPA), 931l (LFQ), 931t (TMT), 931a (lipid) and 931b (metab), from 112m/l/t/a/b.
 short <- function(build, purpose) utils::modifyList(b$tickets[["112q"]], list(build = build, stop_after = "design",
     whole_journey = NULL, ceiling_seconds = 1800, purpose = purpose))
+# KIT-121 correction pass, the measurement repeated with unchanged criteria on kit_933 (the switch in
+# attachDIAStateSession): 923h first, 933u/v/w, 923i last; 933q; 933m/l/t/a/b.
+if (!is.null(b$builds$kit_933)) {
+    b$tickets[["923h"]] <- short("kit_923", "before the reclaim, run first (recorded, uncounted; KIT-121 correction pass)")
+    b$tickets[["923i"]] <- short("kit_923", "before the reclaim, run last (recorded, uncounted; KIT-121 correction pass)")
+    for (suffix in c("u", "v", "w")) b$tickets[[paste0("933", suffix)]] <- short("kit_933",
+        "the reclaim on every app owner, stopped after design (recorded, uncounted; KIT-121 correction pass)")
+    kit_933 <- list(build = "kit_933", purpose = "the reclaim on every app owner (recorded, uncounted; KIT-121 correction pass)")
+    for (suffix in c("q", "m", "l", "t", "a", "b")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("933", suffix)]] <- utils::modifyList(from, kit_933)
+    }
+}
 # KIT-121 correction pass: kit_932 is kit_931 plus messages at every reclaim request, check and outcome (side branch
 # kit121-diag, b60d18ef, diagnosis only); 932d is the stopped-after-design journey on it.
 if (!is.null(b$builds$kit_932)) b$tickets[["932d"]] <- short("kit_932",

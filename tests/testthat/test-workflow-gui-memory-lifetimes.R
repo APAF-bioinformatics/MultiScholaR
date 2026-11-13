@@ -80,6 +80,10 @@ test_that("completed publication release respects real owners and adapter replac
         calls <<- calls + 1L
         list(status = "released")
     })
+    # KIT-121: an owner attached to an app session has the reclaim on (it was off by default before); switched off, it
+    # refuses a request.
+    expect_true(isTRUE(context$reclaim_enabled))
+    context$reclaim_enabled <- FALSE
     expect_false(requestDIAReclamation(manager, reference, "one", "qc"))
     context$reclaim_enabled <- TRUE
     expect_false(requestDIAReclamation(manager, reference, "one", "unmeasured"))

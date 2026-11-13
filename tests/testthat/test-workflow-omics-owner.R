@@ -141,7 +141,7 @@ test_that("KIT-070: no lipidomics or metabolomics module constructs an in-memory
   expect_identical(hits, character())
 })
 
-test_that("KIT-121: the app's session owner has the memory reclaim on; an owner made outside a session has it off (fails before)", {
+test_that("KIT-121: an owner attached to an app session has the memory reclaim on; one outside a session has it off (fails before)", {
   skip_if_not(workflowOwnerCapable())
   for (omic in c("proteomics", "lipidomics", "metabolomics")) {
     root <- withr::local_tempdir()
@@ -157,4 +157,13 @@ test_that("KIT-121: the app's session owner has the memory reclaim on; an owner 
   other <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
   withr::defer(closeDIAStateAdapter(other))
   expect_false(isTRUE(other$.context$reclaim_enabled))
+  # The correction pass: the owner the import binds (a new adapter, bindDIASessionOwnerType) is attached to the session
+  # too. kit_931 set the reclaim only on the session's first owner, so the import's and the design's requests found it
+  # off (the diagnosis journey 932d: "request-call import enabled=FALSE").
+  root <- withr::local_tempdir()
+  source_dir <- file.path(root, "source"); dir.create(source_dir)
+  session <- omicsOwnerSession()
+  workflow <- list2env(list(state_update_trigger = NULL))
+  attached <- attachDIAStateSession(other, session, workflow, omic_type = "proteomics")
+  expect_true(isTRUE(attached$.context$reclaim_enabled))
 })
