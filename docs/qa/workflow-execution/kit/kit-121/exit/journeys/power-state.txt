@@ -44,3 +44,17 @@ kit-journey-933b start 16:55:59 at afca1b46: AC 1, profile low-power, battery 95
 kit-journey-933b end 17:01:39: AC 1, profile low-power, battery 95%, load 2.52, available 41 GiB
 kit-journey-933q start 17:01:59 at afca1b46: AC 1, profile low-power, battery 95%, load 2.01, available 41 GiB
 kit-journey-933q end 18:20:20: AC 1, profile low-power, battery 95%, load 2.21, available 41 GiB
+kit-journey-117d start 18:59:59 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 2.36, available 41 GiB
+kit-journey-117d end 19:06:39: AC 1, profile low-power, battery 95%, load 2.08, available 41 GiB
+kit-journey-117a start 19:06:59 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 1.71, available 41 GiB
+kit-journey-117a end 19:12:59: AC 1, profile low-power, battery 95%, load 2.48, available 41 GiB
+kit-journey-117b start 19:13:29 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 1.96, available 41 GiB
+kit-journey-117b end 19:19:09: AC 1, profile low-power, battery 95%, load 2.33, available 41 GiB
+kit-journey-117c start 19:19:29 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 2.01, available 41 GiB
+kit-journey-117c end 19:23:29: AC 1, profile low-power, battery 95%, load 2.10, available 41 GiB
+kit-journey-117m start 19:23:59 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 1.67, available 41 GiB
+kit-journey-117m end 19:31:59: AC 1, profile low-power, battery 95%, load 2.42, available 41 GiB
+kit-journey-117l start 19:32:29 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 1.73, available 41 GiB
+kit-journey-117l end 19:37:09: AC 1, profile low-power, battery 95%, load 2.06, available 41 GiB
+kit-journey-117t start 19:37:29 at cb9a0dc0: AC 1, profile low-power, battery 95%, load 1.69, available 41 GiB
+kit-journey-117t end 19:42:10: AC 1, profile low-power, battery 95%, load 2.13, available 41 GiB

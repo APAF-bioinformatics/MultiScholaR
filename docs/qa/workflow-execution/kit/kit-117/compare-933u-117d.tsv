@@ -1,0 +1,16 @@
+item	field	identical
+initial	class	TRUE
+initial	rows	TRUE
+initial	components	TRUE
+initial	support	TRUE
+initial	summary_sha256	TRUE
+initial	products	TRUE
+raw_data_s4	class	TRUE
+raw_data_s4	rows	TRUE
+raw_data_s4	components	TRUE
+raw_data_s4	support	TRUE
+raw_data_s4	summary_sha256	TRUE
+raw_data_s4	products	TRUE
+head	product fingerprints (not rendered)	TRUE
+head	rendered page count	TRUE
+da_results	present	TRUE
