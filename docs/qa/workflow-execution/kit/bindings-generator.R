@@ -1422,6 +1422,23 @@ for (key in c("922", "923", "924", "925", "926", "927", "928", "929", "930")) {
     }
 }
 
+# KIT-121: the memory reclaim switched on (build kit_931). The DIA full journey stopped after `design`: 923f first and
+# 923g last on kit_923 (before), 931u, 931v and 931w on kit_931 (after). The whole DIA full journey once (931q), and the
+# screen journeys exact on kit_931: 931m (DIA_LIMPA), 931l (LFQ), 931t (TMT), 931a (lipid) and 931b (metab), from 112m/l/t/a/b.
+short <- function(build, purpose) utils::modifyList(b$tickets[["112q"]], list(build = build, stop_after = "design",
+    whole_journey = NULL, ceiling_seconds = 1800, purpose = purpose))
+if (!is.null(b$builds$kit_931)) {
+    b$tickets[["923f"]] <- short("kit_923", "before the reclaim, run first (recorded, uncounted; KIT-121)")
+    b$tickets[["923g"]] <- short("kit_923", "before the reclaim, run last (recorded, uncounted; KIT-121)")
+    for (suffix in c("u", "v", "w")) b$tickets[[paste0("931", suffix)]] <- short("kit_931",
+        "the reclaim on, stopped after design (recorded, uncounted; KIT-121)")
+    kit_931 <- list(build = "kit_931", purpose = "the reclaim on (recorded, uncounted; KIT-121)")
+    for (suffix in c("q", "m", "l", "t", "a", "b")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("931", suffix)]] <- utils::modifyList(from, kit_931)
+    }
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.

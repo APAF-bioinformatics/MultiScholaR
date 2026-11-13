@@ -140,3 +140,21 @@ test_that("KIT-070: no lipidomics or metabolomics module constructs an in-memory
   }))
   expect_identical(hits, character())
 })
+
+test_that("KIT-121: the app's session owner has the memory reclaim on; an owner made outside a session has it off (fails before)", {
+  skip_if_not(workflowOwnerCapable())
+  for (omic in c("proteomics", "lipidomics", "metabolomics")) {
+    root <- withr::local_tempdir()
+    source_dir <- file.path(root, "source"); dir.create(source_dir)
+    session <- omicsOwnerSession()
+    workflow <- list2env(list(state_update_trigger = NULL))
+    manager <- createDIASessionOwner(workflow, list(source_dir = source_dir), session, omic_type = omic)
+    expect_true(isTRUE(manager$.context$reclaim_enabled), info = omic)
+    closeDIAStateAdapter(manager)
+  }
+  store_dir <- withr::local_tempdir()
+  store <- newWorkflowEntityStore(store_dir, "KIT121", "OFF", max_cache_bytes = 0)
+  other <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+  withr::defer(closeDIAStateAdapter(other))
+  expect_false(isTRUE(other$.context$reclaim_enabled))
+})

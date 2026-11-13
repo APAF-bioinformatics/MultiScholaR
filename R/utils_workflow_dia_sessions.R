@@ -892,6 +892,11 @@ createWorkflowSessionOwner <- function(workflow_data, experiment_paths, session,
     manager$.context$reference_states <- TRUE
     manager$.context$experiment_paths <- experiment_paths
     manager$.context$omic_type <- omic_type
+    # KIT-121: the app's session owner releases memory after a completed import, design, QC or normalisation
+    # publication (requestDIAReclamation; carried out at the end of a flush when the owner is idle,
+    # reclaimDIACompletedMemory). Without it the imported table was freed only when R's next full collection happened to
+    # fall after it became garbage (KIT-120's diagnosis). Other owners (notebooks, tests) keep it off.
+    manager$.context$reclaim_enabled <- TRUE
     attachDIAStateSession(manager, session, workflow_data, omic_type = omic_type)
 }
 
