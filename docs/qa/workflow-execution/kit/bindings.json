@@ -43884,6 +43884,114 @@
         "correlation_threshold": 0.5
       }
     },
+    "117a": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the harness after protocol v1.10 (recorded, uncounted; KIT-117)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "117b": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the harness after protocol v1.10 (recorded, uncounted; KIT-117)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "117c": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "the harness after protocol v1.10 (recorded, uncounted; KIT-117)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "117m": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa65_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "the harness after protocol v1.10 (recorded, uncounted; KIT-117)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "117l": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the harness after protocol v1.10 (recorded, uncounted; KIT-117)"
+    },
+    "117t": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the harness after protocol v1.10 (recorded, uncounted; KIT-117)"
+    },
+    "117d": {
+      "kind": "single_journey",
+      "build": "kit_933",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA route's harness after protocol v1.10, stopped after design (recorded, uncounted; KIT-117)",
+      "stop_after": "design"
+    },
     "106x": {
       "kind": "single_journey",
       "build": "kit_906",
@@ -43960,9 +44068,9 @@
     "member": "tools/profiling/workflow_kit_member.R",
     "runner": "tools/profiling/run_workflow_kit.sh",
     "protocol": "docs/qa/workflow-execution/kit/protocol.md",
-    "protocol_sha256": "bfc325eecfed74a3bc9f879ee55c8720bf6be0931835aef312cd4efd53797c79",
+    "protocol_sha256": "4f7b0e3d63ce087976b063f8c1dbbc9dd38674b3fa80e6388e9b5984c5f35e14",
     "step_map": "docs/qa/workflow-execution/kit/kit-001/step-map.json",
-    "step_map_sha256": "755bc7e6d6670aaf16d5fe8ebc5cdbe168a28794dba46a212b4986dbee1ef3ca",
+    "step_map_sha256": "9e6d4d09e061000d428cb9e84476aba889fe1790a1084f21971f124393775d45",
     "step_map_protein": "docs/qa/workflow-execution/kit/kit-001/step-map-protein.json",
     "step_map_protein_sha256": "9b58ddbfca35454c28a12c79f81651029ee9484384919d1f7d416b63f6953498",
     "step_map_limpa": "docs/qa/workflow-execution/kit/kit-001/step-map-limpa.json",
@@ -43975,8 +44083,8 @@
     "step_map_trx_sha256": "8c53f0e4813cd2a0bd56f5d554ccd7015254c560fcadfd7218b29ac61ee6618d",
     "core_pinned_unchanged": true,
     "files": {
-      "tools/profiling/workflow_kit.R": "0de08508a8bb06d64c238c0755303a3d9765470e425e522ee20ff6e9612ada5a",
-      "tools/profiling/workflow_kit_driver.R": "191d78551e2cdd0b7cad331af3ba112cf14e88e8fdcce8abef35b5c3062f289d",
+      "tools/profiling/workflow_kit.R": "07bf611264d2c66aef97034bb5e699597a9acc850df0b866286e9ff740184d56",
+      "tools/profiling/workflow_kit_driver.R": "5dd7d63cb3e6f2f46df0ab91b52bbc64594fa9a1985ba85daeac9a381a9132fc",
       "tools/profiling/workflow_kit_coordinator.R": "06ac285a83dde94c2886a7565a51bd8c4af452034c4a14a7dcb2f73ec66c3631",
       "tools/profiling/workflow_kit_member.R": "6ed650f14dee6f2bf1b24b843933610d477f4ccd6e02ec5bd70a92d8f966ba57",
       "tools/profiling/run_workflow_kit.sh": "381f4645cd8966cd59de5dc85cb9201bb4ad01935b515afcba52b10305556369",
