@@ -1456,6 +1456,18 @@ if (!is.null(b$builds$kit_931)) {
     }
 }
 
+# KIT-117 (protocol v1.10, labels only): one member per route on kit_933 (KIT-121's build), showing the regenerated
+# harness binding runs every route exactly: 117a (lipid), 117b (metab), 117c (trx), 117m (DIA_LIMPA), 117l (LFQ),
+# 117t (TMT) from 112<suffix>, and 117d (the DIA full journey stopped after design).
+if (!is.null(b$builds$kit_933)) {
+    kit_117 <- list(build = "kit_933", purpose = "the harness after protocol v1.10 (recorded, uncounted; KIT-117)")
+    for (suffix in c("a", "b", "c", "m", "l", "t")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("117", suffix)]] <- utils::modifyList(from, kit_117)
+    }
+    b$tickets[["117d"]] <- short("kit_933", "the DIA route's harness after protocol v1.10, stopped after design (recorded, uncounted; KIT-117)")
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.

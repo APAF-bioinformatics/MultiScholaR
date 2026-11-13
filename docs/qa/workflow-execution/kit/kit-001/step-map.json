@@ -701,7 +701,7 @@
       "unit": "whole_matrix",
       "grouping": "per contrast",
       "in_journey": false,
-      "module": "R/mod_prot_enrich_analysis_helpers.R: runProtEnrichAnalysisBody :493 -> prepareProtEnrichProcessExecution :81 -> executeProtEnrichProcessEnrichments :119-138 (aborts for native DIA manifests at :531-534)",
+      "module": "R/mod_omic_enrich.R: runOmicEnrichAnalysis :588 -> runWorkflowEnrichment (R/utils_workflow_enrichment.R:837; the kernel from the configuration's kernel$select at :906, the declared run at :931) -> saveWorkflowEnrichmentState :995 (KIT-117, P-29: KIT-107 replaced the mod_prot_enrich_* helpers with the shared module and the core)",
       "kernel": "processEnrichments (R/func_general_enrichment_orchestration.R:20) -> perform_enrichment (R/func_general_enrichment_engine_helpers.R:10; gprofiler2::gost :130-143) or clusterProfiler::enricher (:575-599)",
       "evidence": [
         "R/func_general_enrichment_orchestration.R:119-123, 163, 190 significant/up/down subsets per contrast; :217-218 custom background = the contrast's whole DA table; :240-250 gost(domain_scope = custom)"
@@ -722,8 +722,7 @@
       ],
       "merge": null,
       "holders": [
-        "R/mod_prot_enrich_registration_helpers.R:401-402, :527, :539 duplicate copies of the S4 and the DA list",
-        "R/mod_prot_enrich_state_helpers.R:225 saveState(enrichment_completed), :435, :438 duplicate results, :474 diverged S4 copy"
+        "R/utils_workflow_enrichment.R:995 saveWorkflowEnrichmentState: saveDIAOwnerState(state_name = enrichment_completed) (KIT-117, P-29: the deleted mod_prot_enrich_registration/state helpers held duplicate copies; the shared module holds the source reference, mod_omic_enrich.R:617)"
       ],
       "mode": "in_process; not in the KIT-001 journey (KIT-016 owns the enrichment declaration)",
       "flag": null,

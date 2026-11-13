@@ -17,17 +17,19 @@ kitJourneySteps <- function(route = "DIA", ruv_mode = "covariates") {
     # button runs three worker steps (TMM/logCPM and the grid are products, RUVs the state); the DA and the RUVIII export
     # leave the RUVs head and add products; the session export is the summary tab's, after the report.
     if (identical(route, "transcriptomics")) {
-        module <- function(name) paste0("mod_", name, " (trxOmicProfile)")
+        # KIT-117 (P-22, P-24): the trx tabs are the shared modules under the transcriptomics configuration (KIT-109; the
+        # lipid modules under trxOmicProfile() before), its expression filter trx's own sub-tab.
+        module <- function(name) paste0("mod_omic_", name, " (transcriptomics)")
         return(list(
-            step("import", "Import", NULL, "store", module("lipid_import"), "import-process_import"),
-            step("design", "Design", "trx_raw_data_s4", "store", module("lipid_design"), "design-builder-save_results"),
+            step("import", "Import", NULL, "store", module("import"), "import-process_import"),
+            step("design", "Design", "trx_raw_data_s4", "store", module("design"), "design-builder-save_results"),
             step("expression_filter", "Expression Filter", "trx_expression_filtered", "omics_qc", "mod_trx_qc_filter", "qc-filter-apply_filter"),
-            step("qc_finalize", "Finalize QC", "trx_qc_complete", "omics_qc", module("lipid_qc"), "qc-s4_finalize-finalize_qc"),
-            step("normalisation", "TMM/logCPM, RUV grid, RUVs", "trx_ruvs", "omics_norm", "mod_trx_norm", "norm-run_normalization"),
-            step("da", "Differential expression", "trx_ruvs", "da", "mod_trx_da", "de-run_da_analysis"),
-            step("ruviii_export", "RUVIII export", "trx_ruvs", "omics_export", "mod_trx_summary", "summary-run_ruviii_export"),
-            step("report", "Report", NULL, "report", module("lipid_summary"), "summary-save_workflow_args, copy_to_publication, generate_report"),
-            step("session_export", "Session export", NULL, "store", module("lipid_summary"), "summary-export_session_state")))
+            step("qc_finalize", "Finalize QC", "trx_qc_complete", "omics_qc", module("qc"), "qc-s4_finalize-finalize_qc"),
+            step("normalisation", "TMM/logCPM, RUV grid, RUVs", "trx_ruvs", "omics_norm", module("norm"), "norm-run_normalization"),
+            step("da", "Differential expression", "trx_ruvs", "da", module("da"), "de-run_da_analysis"),
+            step("ruviii_export", "RUVIII export", "trx_ruvs", "omics_export", module("summary"), "summary-run_ruviii_export"),
+            step("report", "Report", NULL, "report", module("summary"), "summary-save_workflow_args, copy_to_publication, generate_report"),
+            step("session_export", "Session export", NULL, "store", module("summary"), "summary-export_session_state")))
     }
     # KIT-068: the lipidomics and metabolomics routes (the twin modules: import, design, QC, normalisation, DE, summary).
     # The import writes files only (no state); the design commits the assay object; the QC tab's intensity filter,
