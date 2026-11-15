@@ -65,12 +65,16 @@ test_that("allocator release reports capability and never changes live scientifi
     support <- workflowAllocatorRelease(FALSE)
     expect_true(identical(support, TRUE) || identical(support, NA))
     expect_true(reclaimWorkflowMemory()$status %in%
-        c("released", "no_pages_released", "unsupported"))
+        c("released", "no_pages_released", "collected"))
     expect_identical(serialize(live, NULL), before)
     expect_error(workflowAllocatorRelease(NA), "non-missing logical")
     expect_error(workflowAllocatorRelease(1), "non-missing logical")
-    expect_identical(reclaimWorkflowMemory(function(release) NA,
-        function(...) stop("unsupported platform must not collect"))$status, "unsupported")
+    # KIT-121 (audit F1): a platform without the allocator's page release still collects (it returned "unsupported"
+    # without collecting, so the import's garbage was freed only by chance there), and never asks for a release.
+    calls <- character()
+    expect_identical(reclaimWorkflowMemory(function(release) { calls <<- c(calls, if (release) "release" else "probe"); NA },
+        function(full) { expect_true(full); calls <<- c(calls, "gc") })$status, "collected")
+    expect_identical(calls, c("probe", "gc"))
     calls <- character()
     native <- function(release) { calls <<- c(calls, if (release) "release" else "probe"); !release }
     collect <- function(full) { expect_true(full); calls <<- c(calls, "gc") }

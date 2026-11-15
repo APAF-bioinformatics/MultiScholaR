@@ -2034,6 +2034,13 @@ test_that("KIT-120 W4: the proteomics norm wrappers are thin wrappers over the s
         expect_true("omicGuiConfig" %in% names)
         expect_false(any(c("runProtNormModuleServerPublicWrapper", "wellPanel", "tabsetPanel") %in% names))
     }
+    # (audit F4) The frame looks up no configuration for an omic with its own server, so the exported wrapper still
+    # accepts any `omic_type` label, as it did when it used the label for file names only.
+    testthat::local_mocked_bindings(installWorkflowOmicsActions = function(...) invisible(NULL))
+    expect_no_error(suppressWarnings(suppressMessages(shiny::testServer(mod_prot_norm_server, args = list(id = "normalization",
+        workflow_data = shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, state_update_trigger = 0L),
+        experiment_paths = list(protein_qc_dir = withr::local_tempdir()), omic_type = "proteomics_tmt",
+        experiment_label = "kit120"), expect_identical(shiny::isolate(session$returned$assay_names), "proteins")))))
     # The exported signatures are unchanged (notebook and applet callers).
     expect_identical(names(formals(mod_prot_norm_ui)), "id")
     expect_identical(names(formals(mod_prot_norm_server)), c("id", "workflow_data", "experiment_paths", "omic_type",

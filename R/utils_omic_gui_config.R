@@ -577,6 +577,9 @@ validateOmicGuiNorm <- function(norm, schema) {
     checkOmicGuiFields(norm, schema$norm_optional, "norm", required = FALSE)
     # KIT-120 W1: an omic with its own server registers its actions itself; the frame's action fields are then unused.
     framed <- is.null(norm$server)
+    # (audit F4) The frame looks nothing up for an omic with its own server, so the group names the stage grid's
+    # QC directory and assay itself.
+    if (!framed) checkOmicGuiFields(norm, c(qc_dir = "chr1", assay_names = "chr"), "norm")
     if (framed) {
         checkOmicGuiFields(norm, schema$norm_frame, "norm")
         for (tab in intersect(names(schema$norm_frame_by_tab), tabs)) checkOmicGuiFields(norm, schema$norm_frame_by_tab[[tab]], "norm")

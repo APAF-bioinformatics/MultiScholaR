@@ -2341,9 +2341,10 @@ getDIAReactiveReference <- getWorkflowReactiveReference
 #' @noRd
 attachDIAStateSession <- function(manager, session, workflow_data, receipt_dir = NULL,
     scope = "dia-native-session", omic_type = manager$.context$omic_type %||% "proteomics") {
-    # KIT-121: an owner attached to an app session releases memory after a completed import, design, QC or normalisation
-    # publication (requestDIAReclamation; carried out by the end-of-flush callback below when the owner is idle,
-    # reclaimDIACompletedMemory). Every app owner comes through here: the session's first owner, the one the import binds,
+    # KIT-121: an owner attached to an app session releases memory after the request sites that exist today, all
+    # proteomics': the import, the design builder's save, the q-value display and a normalisation publication
+    # (requestDIAReclamation; carried out by the end-of-flush callback below when the owner is idle,
+    # reclaimDIACompletedMemory). The lipid, metab and trx owners have no request site, so the switch is inert for them. Every app owner comes through here: the session's first owner, the one the import binds,
     # and restored or reopened ones. Without it the imported table was freed only when R's next full collection happened
     # to fall after it became garbage (KIT-120's diagnosis). Owners not attached to a session (notebooks, tests) keep it off.
     manager$.context$reclaim_enabled <- TRUE

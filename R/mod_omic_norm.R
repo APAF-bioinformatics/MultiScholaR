@@ -17,7 +17,8 @@
 # KIT-105 W4: the shared normalisation frame (kit-101 design 4.7), from the lipid tab's server at f8d4c5fc
 # (mod_lipid_norm_server.R and its helper files, deleted by W4). `mod_omic_norm_ui(id, config)` renders the options
 # column and the QC tabset of an omic's `norm` group from the panel library (mod_omic_norm_panels.R);
-# `mod_omic_norm_server(...)` holds the tab's reactive state (state references only, KIT-075), its log, the pre-QC on
+# `mod_omic_norm_server(...)` holds the tab's reactive state (state references only, KIT-075; an omic with its own
+# server may add small display objects, as proteomics does: a RUV result and three plot objects), its log, the pre-QC on
 # tab entry and the run, reset, correlation apply and skip, and export actions. Each action calls the core: the
 # managed function with the omic's runner, the in-process twin without one (D6). KIT-110: trx's tab too; the frame
 # registers only what an omic's tabs and panels use, and calls an omic's own run and reset handlers when its `norm`
@@ -60,7 +61,9 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
     norm) {
     logger::log_info("=== METABOLOMICS NORMALIZATION MODULE STARTED ===")
     logger::log_info(paste("Module ID:", id))
-    config <- omicGuiConfig(omicType)
+    # KIT-120 (audit F4): an omic with its own server needs only its `norm` group, so the exported proteomics wrapper
+    # keeps accepting any `omic_type` label (it used it for file names only).
+    config <- if (is.null(norm$server)) omicGuiConfig(omicType) else list()
     config$norm <- norm
     tabs <- norm$plot_tabs
     panels <- names(norm$panels)

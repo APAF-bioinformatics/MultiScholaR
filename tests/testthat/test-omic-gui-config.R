@@ -1981,7 +1981,14 @@ test_that("KIT-120 W1: each new norm field is checked by type, and only with the
     }
     for (field in c("server", "qc_dir", "assay_labels", "image_stemless", "correlation_slot")) {
         expectGuiConfigRefused(mistype(field), paste0("norm$", field))
-        # Each is optional (`server` apart: without it the frame's own action fields are required, the block above).
+        # Each is optional (`server` apart: without it the frame's own action fields are required, the block above;
+        # and, audit F4, `qc_dir` with a server, which names the stage grid's directory itself).
+        if (identical(field, "qc_dir")) {
+            absent <- config
+            absent$norm$qc_dir <- NULL
+            expectGuiConfigRefused(absent, "norm$qc_dir")
+            next
+        }
         if (identical(field, "server")) next
         absent <- config
         absent$norm[[field]] <- NULL

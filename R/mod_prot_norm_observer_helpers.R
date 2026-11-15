@@ -160,15 +160,17 @@ registerProtNormServerObservers <- function(
   invisible(TRUE)
 }
 
-#' KIT-120: proteomics' registrations on the shared normalisation frame (`omicGuiConfig("proteomics")$norm$server`;
-#' mod_omic_norm.R calls it with the frame's state and callbacks). It is the body of the tab's own server shell
+#' KIT-120: proteomics' registrations on the shared normalisation frame, named by
+#' `omicGuiConfig("proteomics")$norm$server`; mod_omic_norm.R calls it with the frame's state and callbacks. It is the body of the tab's own server shell
 #' (`runProtNormModuleServerShell`, removed by KIT-120 W5) on the frame's state: the tab's own fields, the managed actions, the S4 download, the restore, the QC generators, the
 #' observers (`registerProtNormServerObservers`) and the outputs (`registerProtNormRenderOutputs`). The frame registers
 #' the design's choices and the stage grid's images itself, so neither is registered here; the RUV QC tab's content
 #' (the frame's `ruv_qc_ui`) is proteomics' plot, summary and table under their own ids.
 #' @param input,output,session The frame's module session.
 #' @param context The frame's `workflow_data`, `experiment_paths`, `omic_type`, `experiment_label`, `selected_tab`,
-#'   `norm_data` and `plot_aesthetics`.
+#'   `norm_data`, `add_log`, `plot_aesthetics` and `config` (the last three are not used here).
+#'   On a managed session the heavy steps are dispatched to the worker, but the QC figures are still drawn in the app
+#'   process from the hydrated state (audit F3, an exception to the render-only rule; KIT-122).
 #' @return The tab's state, invisibly.
 #' @noRd
 protNormFrameServer <- function(input, output, session, context) {
@@ -189,7 +191,7 @@ protNormFrameServer <- function(input, output, session, context) {
     restoreProtNormTabState(session, workflowData, normData)
   }, ignoreInit = TRUE)
   getPlotAesthetics <- context$plot_aesthetics
-  getRuvGroupingVariable <- function() getProtNormRuvGroupingVariable(input$ruv_grouping_variable)
+  getRuvGroupingVariable <- \() getProtNormRuvGroupingVariable(input$ruv_grouping_variable)
   generators <- protNormQcGenerators(workflowData, normData, experimentPaths, getPlotAesthetics)
   registerProtNormServerObservers(
     input = input, output = output, session = session, selectedTab = context$selected_tab,
@@ -199,7 +201,7 @@ protNormFrameServer <- function(input, output, session, context) {
     generateRuvCorrectedQcFn = generators$ruv,
     getPlotAestheticsFn = getPlotAesthetics, getRuvGroupingVariableFn = getRuvGroupingVariable,
     # The frame registers the design's choices (omicNormDesignChoices: the same choices and selections).
-    updateDesignDrivenChoicesFn = function(session, designMatrix) invisible(NULL)
+    updateDesignDrivenChoicesFn = \(session, designMatrix) invisible(NULL)
   )
   ns <- session$ns
   output$ruv_qc_ui <- shiny::renderUI(shiny::fluidRow(

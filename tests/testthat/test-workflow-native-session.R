@@ -772,7 +772,7 @@ test_that("ten native normalization revert style export cycles release GUI-owned
             session$setInputs(method = method, cycle = cycle)
             session$flushReact()
             release <- manager$.context$reclaim_result
-            expect_true(release$status %in% c("released", "no_pages_released", "unsupported"))
+            expect_true(release$status %in% c("released", "no_pages_released", "collected"))
             expect_identical(release$label, "normalization")
             expect_identical(release$state, getDIAStateReference(manager)$entity_id)
             expect_null(manager$.context$reclaim_pending)

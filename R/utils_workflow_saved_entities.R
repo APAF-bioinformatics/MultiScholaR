@@ -1431,11 +1431,17 @@ workflowAllocatorRelease <- function(release = FALSE) {
 #' Reclaim free pages at a caller-verified completed-action boundary.
 #' @param native_fn Registered capability/release operation, injectable for checks.
 #' @param gc_fn Existing collector, injectable for lifecycle checks.
-#' @return Bounded status; no scientific objects or allocation estimates.
+#' @return Bounded status (`released`, `no_pages_released`, or `collected` where the allocator's page release is
+#'   unsupported); no scientific objects or allocation estimates.
 #' @noRd
 reclaimWorkflowMemory <- function(native_fn = workflowAllocatorRelease, gc_fn = gc) {
     tryCatch({
-        if (!isTRUE(native_fn(FALSE))) return(list(status = "unsupported"))
+        # KIT-121 (audit F1): without glibc's malloc_trim (macOS, Windows, musl) the collection still runs, so garbage such
+        # as the imported table is freed at the same points on every platform; only the page release is skipped.
+        if (!isTRUE(native_fn(FALSE))) {
+            gc_fn(full = TRUE)
+            return(list(status = "collected", note = "allocator page release unsupported on this platform"))
+        }
         before <- snapshotWorkflowMemory()
         collected <- gc_fn(full = TRUE)
         after_gc <- snapshotWorkflowMemory()

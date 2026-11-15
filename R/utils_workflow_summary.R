@@ -275,7 +275,7 @@ workflowSummaryWorkbookFailureText <- function(failed) {
 }
 
 #' Return the allocator's free pages to the system after the publication copy (P-30 route B): the package's
-#' `reclaimWorkflowMemory()` (a full collection, then glibc's `malloc_trim(0)`; "unsupported" elsewhere). Optional: a
+#' `reclaimWorkflowMemory()` (a full collection, then glibc's `malloc_trim(0)`; the collection alone elsewhere). Optional: a
 #' failure is logged and the copy's outcome stands.
 #' @return The reclaim's status list, invisibly.
 #' @noRd
