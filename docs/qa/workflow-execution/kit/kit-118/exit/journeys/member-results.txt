@@ -19,3 +19,10 @@ kit-journey-936b accepted failing none failed_step none error none
 kit-journey-936c accepted failing none failed_step none error none 
 kit-journey-936s accepted failing none failed_step none error none 
 kit-journey-936v accepted failing none failed_step none error none 
+kit-journey-937m accepted failing none failed_step none error none 
+kit-journey-937l invalid failing verifier_accepted failed_step normalisation_ruv error production action failed: proteomics_workflow-normalization-run_normalization ×another heavy action is active 
+kit-journey-937t invalid failing verifier_accepted failed_step normalisation_ruv error production action failed: proteomics_workflow-normalization-run_normalization ×another heavy action is active 
+kit-journey-937a accepted failing none failed_step none error none 
+kit-journey-937b accepted failing none failed_step none error none 
+kit-journey-937c accepted failing none failed_step none error none 
+kit-journey-937q rejected failing oracle_mismatch failed_step none error none 

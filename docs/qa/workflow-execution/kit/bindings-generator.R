@@ -1527,6 +1527,13 @@ if (!is.null(b$builds$kit_937)) {
     }
     if (!is.null(b$tickets[["935m"]])) b$tickets[["937m"]] <- utils::modifyList(b$tickets[["935m"]], kit_937)
 }
+# kit_938: KIT-122's one correction pass (937l and 937t were refused at tab entry while the last QC step's action was
+# still active; the figures dispatch now declines and the tab draws in process). 938l and 938t once.
+if (!is.null(b$builds$kit_938)) for (suffix in c("l", "t")) {
+    from <- b$tickets[[paste0("112", suffix)]]
+    if (!is.null(from)) b$tickets[[paste0("938", suffix)]] <- utils::modifyList(from, list(build = "kit_938",
+        purpose = "KIT-122 correction pass: tab-entry figures decline while the application is held (recorded, uncounted)"))
+}
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
