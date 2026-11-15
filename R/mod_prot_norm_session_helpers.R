@@ -386,24 +386,17 @@ resetProtNormReactiveState <- function(
   invisible(NULL)
 }
 
+#' The reset's output: the correlation summary's default text (each correlation step assigns that output its own
+#' text). KIT-122 (audit F10): the filtering and RUV summaries are not reassigned here; they render the tab's state
+#' (`registerProtNormRenderOutputs`), which `resetProtNormReactiveState` clears, so they show their placeholders after a
+#' reset and a later run's summaries again (a constant assigned here stayed for the rest of the session).
+#' @noRd
 resetProtNormOutputs <- function(
   output,
-  ruvMode,
-  groupingVariable,
   renderTextFn = shiny::renderText
 ) {
   output$correlation_filter_summary <- renderTextFn(
     getProtNormDefaultCorrelationFilterSummaryText()
-  )
-  output$filtering_summary_text <- renderTextFn(
-    getProtNormFilteringSummaryText(NULL)
-  )
-  output$ruv_optimization_summary <- renderTextFn(
-    buildProtNormRuvOptimizationSummary(
-      ruvOptimizationResult = NULL,
-      ruvMode = ruvMode,
-      groupingVariable = groupingVariable
-    )
   )
 
   invisible(NULL)
@@ -426,8 +419,6 @@ runProtNormResetWorkflow <- function(
   workflowData,
   normData,
   output,
-  ruvMode,
-  groupingVariable,
   revertStateManagerFn = revertProtNormStateManagerToPreNormalization,
   resetReactiveStateFn = resetProtNormReactiveState,
   resetOutputsFn = resetProtNormOutputs,
@@ -446,9 +437,7 @@ runProtNormResetWorkflow <- function(
   )
 
   resetOutputsFn(
-    output = output,
-    ruvMode = ruvMode,
-    groupingVariable = groupingVariable
+    output = output
   )
 
   showNotificationFn(

@@ -2056,3 +2056,41 @@ test_that("KIT-120 W4: the proteomics norm wrappers are thin wrappers over the s
         ids(mod_omic_norm_ui("normalization", omicGuiConfig("proteomics")$norm)))
 })
 
+# ------------------------------------------------------------------------------------------------
+# KIT-122: the proteomics tab's leftovers (gui-journey-audit-20261115.md, F2 and F5 to F10).
+# ------------------------------------------------------------------------------------------------
+
+#' The proteomics tab on the frame with no session owner and no runner, driven by `drive(session, output, state)`.
+omicNormK122ProtTab <- function(drive, env = parent.frame()) {
+    testthat::local_mocked_bindings(installWorkflowOmicsActions = function(...) invisible(NULL), .env = env)
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
+        tab_status = list(normalization = "pending"), state_update_trigger = 0L)
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "normalization", workflow_data = bus,
+        experiment_paths = list(protein_qc_dir = withr::local_tempdir(.local_envir = env)), omic_type = "proteomics",
+        experiment_label = "kit122", selected_tab = shiny::reactiveVal("import"), config = omicGuiConfig("proteomics")$norm),
+        drive(session, output, session$returned))))
+}
+
+test_that("KIT-122 (audit F10): after a reset a later run's filtering and RUV summaries show again (fails before)", {
+    omicNormK122ProtTab(function(session, output, state) {
+        session$setInputs(ruv_mode = "manual", ruv_grouping_variable = "group")
+        # What a run's publication leaves on the tab's state.
+        run <- function(text) {
+            state$filtering_summary_text <- text
+            state$ruv_optimization_result <- list(best_percentage = 5, best_k = 2L, best_control_genes_index = c(TRUE, FALSE),
+                separation_metric_used = "manual")
+            session$flushReact()
+        }
+        run("first run")
+        expect_identical(output$filtering_summary_text, "first run")
+        expect_match(output$ruv_optimization_summary, "Manual RUV Parameters", fixed = TRUE)
+        session$setInputs(reset_normalization = 1)
+        expect_identical(output$filtering_summary_text, getProtNormFilteringSummaryText(NULL))
+        expect_identical(output$ruv_optimization_summary, "Run normalization to see RUV optimization results")
+        expect_identical(output$correlation_filter_summary, getProtNormDefaultCorrelationFilterSummaryText())
+        run("second run")
+        expect_identical(output$filtering_summary_text, "second run")
+        expect_match(output$ruv_optimization_summary, "Manual RUV Parameters", fixed = TRUE)
+    })
+})
+

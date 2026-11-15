@@ -762,8 +762,6 @@ runProtNormResetObserver <- function(
   workflowData,
   normData,
   output,
-  ruvMode,
-  groupingVariable,
   runResetWorkflowFn = runProtNormResetWorkflow,
   handleResetErrorFn = handleProtNormResetError,
   messageFn = message
@@ -775,9 +773,7 @@ runProtNormResetObserver <- function(
     runResetWorkflowFn(
       workflowData = workflowData,
       normData = normData,
-      output = output,
-      ruvMode = ruvMode,
-      groupingVariable = groupingVariable
+      output = output
     )
   }, error = function(e) {
     handleResetErrorFn(e)

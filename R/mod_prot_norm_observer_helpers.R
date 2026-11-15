@@ -142,9 +142,7 @@ registerProtNormServerObservers <- function(
     runResetObserverFn(
       workflowData = workflowData,
       normData = normData,
-      output = output,
-      ruvMode = input$ruv_mode,
-      groupingVariable = getRuvGroupingVariableFn()
+      output = output
     )
   })
 

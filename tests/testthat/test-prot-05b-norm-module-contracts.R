@@ -2805,8 +2805,6 @@ test_that("resetProtNormOutputs restores the default reset text", {
 
   resetProtNormOutputs(
     output = output,
-    ruvMode = "automatic",
-    groupingVariable = "group",
     renderTextFn = function(text) text
   )
 
@@ -2814,15 +2812,9 @@ test_that("resetProtNormOutputs restores the default reset text", {
     output$correlation_filter_summary,
     "No correlation filtering applied yet"
   )
-  expect_equal(
-    output$filtering_summary_text,
-    "Filtering summary will be available after normalization and RUV correction."
-  )
-  expect_match(
-    output$ruv_optimization_summary,
-    "Run normalization to see RUV optimization results",
-    fixed = TRUE
-  )
+  # KIT-122 (audit F10): the filtering and RUV summaries render the tab's state, which the reset clears; they are not
+  # reassigned (test-omic-norm-module.R shows a later run's summaries after a reset).
+  expect_identical(ls(output), "correlation_filter_summary")
 })
 
 test_that("runProtNormResetWorkflow sequences reset helpers and notification", {
@@ -2837,8 +2829,6 @@ test_that("runProtNormResetWorkflow sequences reset helpers and notification", {
     workflowData = workflow_data,
     normData = norm_data,
     output = output,
-    ruvMode = "manual",
-    groupingVariable = "condition",
     revertStateManagerFn = function(workflowData, messageFn) {
       calls$revert <<- list(workflowData = workflowData)
       list(previousState = "sample_filtered", revertedS4 = "state")
@@ -2847,12 +2837,8 @@ test_that("runProtNormResetWorkflow sequences reset helpers and notification", {
       calls$resetReactive <<- list(normData = normData, workflowData = workflowData)
       invisible(NULL)
     },
-    resetOutputsFn = function(output, ruvMode, groupingVariable) {
-      calls$resetOutputs <<- list(
-        output = output,
-        ruvMode = ruvMode,
-        groupingVariable = groupingVariable
-      )
+    resetOutputsFn = function(output) {
+      calls$resetOutputs <<- list(output = output)
       invisible(NULL)
     },
     buildNotificationMessageFn = function(previousState) {
@@ -2870,8 +2856,6 @@ test_that("runProtNormResetWorkflow sequences reset helpers and notification", {
   expect_identical(calls$revert$workflowData, workflow_data)
   expect_identical(calls$resetReactive$normData, norm_data)
   expect_identical(calls$resetOutputs$output, output)
-  expect_equal(calls$resetOutputs$ruvMode, "manual")
-  expect_equal(calls$resetOutputs$groupingVariable, "condition")
   expect_equal(calls$buildNotification, "sample_filtered")
   expect_equal(notification$message, "reset to sample_filtered")
   expect_equal(notification$type, "warning")
@@ -2907,15 +2891,11 @@ test_that("runProtNormResetObserver delegates to reset workflow and error handle
     workflowData = "workflow",
     normData = "norm",
     output = "output",
-    ruvMode = "automatic",
-    groupingVariable = "group",
-    runResetWorkflowFn = function(workflowData, normData, output, ruvMode, groupingVariable) {
+    runResetWorkflowFn = function(workflowData, normData, output) {
       calls$run <<- list(
         workflowData = workflowData,
         normData = normData,
-        output = output,
-        ruvMode = ruvMode,
-        groupingVariable = groupingVariable
+        output = output
       )
       "reset_done"
     },
@@ -2928,8 +2908,6 @@ test_that("runProtNormResetObserver delegates to reset workflow and error handle
   expect_equal(calls$run$workflowData, "workflow")
   expect_equal(calls$run$normData, "norm")
   expect_equal(calls$run$output, "output")
-  expect_equal(calls$run$ruvMode, "automatic")
-  expect_equal(calls$run$groupingVariable, "group")
   expect_null(calls$error)
   expect_equal(result, "reset_done")
 })
@@ -3088,13 +3066,11 @@ test_that("registerProtNormServerObservers wires the observer shell through help
         checkMemoryUsageFn = checkMemoryUsageFn
       )
     },
-    runResetObserverFn = function(workflowData, normData, output, ruvMode, groupingVariable) {
+    runResetObserverFn = function(workflowData, normData, output) {
       calls$reset <<- list(
         workflowData = workflowData,
         normData = normData,
-        output = output,
-        ruvMode = ruvMode,
-        groupingVariable = groupingVariable
+        output = output
       )
     },
     runExportObserverFn = function(input, workflowData, normData, experimentPaths) {
@@ -3127,8 +3103,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
   expect_equal(calls$normalize$omicType, "proteomics")
   expect_equal(calls$apply$experimentLabel, "label")
   expect_equal(calls$skip$checkMemoryUsageFn, "check_memory")
-  expect_equal(calls$reset$ruvMode, "manual")
-  expect_equal(calls$reset$groupingVariable, "group")
+  expect_equal(calls$reset$normData, "norm_data")
   expect_equal(calls$export$normData, "norm_data")
   expect_length(calls$events, 8) # KIT-053: the DIA_LIMPA route's apply_ruv_covariates observer joins the seven
 })
