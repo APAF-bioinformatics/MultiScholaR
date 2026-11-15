@@ -1516,6 +1516,18 @@ if (!is.null(b$builds$kit_936)) {
         single_084("kit_936", "metab_screen_missing", "metabolomics", "metab86s", 1800L), kit_936)
 }
 
+# KIT-122 (and the final tree of KIT-118 and KIT-119) on kit_937: the proteomics normalisation tab's QC figures on the
+# worker. The proteomics routes against today's oracles (937l/t/a/b/c, 937m DIA_LIMPA), and 937q, the DIA full journey,
+# judged against 935q store against store and read for the application's rise in the normalisation step.
+if (!is.null(b$builds$kit_937)) {
+    kit_937 <- list(build = "kit_937", purpose = "KIT-122: normalisation QC figures on the worker (recorded, uncounted)")
+    for (suffix in c("q", "l", "t", "a", "b", "c")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("937", suffix)]] <- utils::modifyList(from, kit_937)
+    }
+    if (!is.null(b$tickets[["935m"]])) b$tickets[["937m"]] <- utils::modifyList(b$tickets[["935m"]], kit_937)
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.
