@@ -2997,10 +2997,6 @@ test_that("registerProtNormServerObservers wires the observer shell through help
     getPlotAestheticsFn = function() list(color_var = "group", shape_var = "batch"),
     getRuvGroupingVariableFn = function() "group",
     checkMemoryUsageFn = "check_memory",
-    updateDesignDrivenChoicesFn = function(session, designMatrix) {
-      calls$observe <<- calls$observe + 1
-      calls$design <<- list(session = session, designMatrix = designMatrix)
-    },
     runTabEntryWorkflowFn = function(selectedTab, workflowData, normData, generatePreNormalizationQcFn) {
       calls$tab_entry <<- list(
         selectedTab = selectedTab,
@@ -3072,6 +3068,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
       )
     },
     observeFn = function(expr) {
+      calls$observe <<- calls$observe + 1
       eval(substitute(expr), parent.frame())
       invisible("observe")
     },
@@ -3083,9 +3080,10 @@ test_that("registerProtNormServerObservers wires the observer shell through help
     }
   )
 
+  # KIT-122 (audit F8): one plain observer, the DIA_LIMPA route's RUV modes; the design's choices are the frame's
+  # registration, and the registrar takes no updater for them (its observer ran a no-op on the frame).
   expect_equal(calls$observe, 1)
-  expect_equal(calls$design$session, session)
-  expect_equal(calls$design$designMatrix, "design")
+  expect_false("updateDesignDrivenChoicesFn" %in% names(formals(registerProtNormServerObservers)))
   expect_equal(calls$tab_entry$selectedTab, "normalization")
   expect_equal(calls$regenerate$normData, "norm_data")
   # KIT-101 F-05: the normalisation workflow no longer takes checkMemoryUsageFn (it never read it).

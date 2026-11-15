@@ -14,7 +14,6 @@ registerProtNormServerObservers <- function(
   getPlotAestheticsFn,
   getRuvGroupingVariableFn,
   checkMemoryUsageFn = checkProtNormMemoryUsage,
-  updateDesignDrivenChoicesFn = updateProtNormDesignDrivenChoices,
   runTabEntryWorkflowFn = runProtNormTabEntryWorkflow,
   regenerateQcForAestheticChangeFn = regenerateProtNormQcForAestheticChange,
   runNormalizationWorkflowFn = runProtNormNormalizationWorkflow,
@@ -28,10 +27,8 @@ registerProtNormServerObservers <- function(
   renderUIFn = shiny::renderUI,
   runRuvCovariatesObserverFn = runProtNormRuvCovariatesObserver
 ) {
-  observeFn({
-    updateDesignDrivenChoicesFn(session, workflowData$design_matrix)
-  })
-
+  # KIT-122 (audit F8): the design's choices are the frame's registration (`omicNormDesignChoices`); the observer that
+  # called this registrar's own updater ran a no-op on the frame and is gone, with its argument.
   if (!is.null(selectedTab)) {
     observeEventFn(selectedTab(), {
       runTabEntryWorkflowFn(
@@ -198,9 +195,7 @@ protNormFrameServer <- function(input, output, session, context) {
     omicType = omicType, experimentLabel = experimentLabel,
     generatePreNormalizationQcFn = generators$pre, generatePostNormalizationQcFn = generators$post,
     generateRuvCorrectedQcFn = generators$ruv,
-    getPlotAestheticsFn = getPlotAesthetics, getRuvGroupingVariableFn = getRuvGroupingVariable,
-    # The frame registers the design's choices (omicNormDesignChoices: the same choices and selections).
-    updateDesignDrivenChoicesFn = \(session, designMatrix) invisible(NULL)
+    getPlotAestheticsFn = getPlotAesthetics, getRuvGroupingVariableFn = getRuvGroupingVariable
   )
   # KIT-122 (audit F2): the RUV summary reads its run's mode and grouping from the session's owner.
   registerProtNormRenderOutputs(output = output, normData = normData, getManagerFn = \() workflowData$state_manager)
