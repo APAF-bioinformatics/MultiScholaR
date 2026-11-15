@@ -853,6 +853,15 @@
       "install_member": "browser-smoke.PL5f7K",
       "source_commit": "91e81f91c518dd21fb8bbcc76e31a3a8a5e910fb",
       "runtime_patch_bytes": 0
+    },
+    "kit_936": {
+      "ticket": "KIT-936",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.FliOmZ/library",
+      "build": "516e3781e936d5485d90f0fcf462768ab8f8010d3cefad7563f4c15db85d5b7d",
+      "exact_sum": "abb75812e77c5c516482d253fdc07619d7404f865d09c67488883d6e8c2926a8",
+      "install_member": "browser-smoke.FliOmZ",
+      "source_commit": "da3320b6010918e473f3cdf5954f730cc2763cf0",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -46265,6 +46274,173 @@
       "normalisation": {
         "norm_method": "none",
         "ruv_mode": "correction",
+        "correlation_threshold": 0.5
+      }
+    },
+    "934u": {
+      "kind": "single_journey",
+      "build": "kit_934",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "before the DIA-NN zero rule, stopped after design (recorded, uncounted; KIT-118 M1 memory gate)",
+      "stop_after": "design"
+    },
+    "935u": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule, stopped after design (recorded, uncounted; KIT-118 M1 memory gate)",
+      "stop_after": "design"
+    },
+    "934v": {
+      "kind": "single_journey",
+      "build": "kit_934",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "before the DIA-NN zero rule, stopped after design (recorded, uncounted; KIT-118 M1 memory gate)",
+      "stop_after": "design"
+    },
+    "935v": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "full",
+      "route": "DIA",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule, stopped after design (recorded, uncounted; KIT-118 M1 memory gate)",
+      "stop_after": "design"
+    },
+    "936l": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)"
+    },
+    "936t": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)"
+    },
+    "936a": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "936b": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "936c": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "936m": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa118_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
+        "correlation_threshold": 0.5
+      }
+    },
+    "936s": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "936v": {
+      "kind": "single_journey",
+      "build": "kit_936",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-118 M3 and M4 (recorded, uncounted)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
         "correlation_threshold": 0.5
       }
     },
