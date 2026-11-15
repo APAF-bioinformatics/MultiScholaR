@@ -344,8 +344,10 @@ test_that("(KIT-118) a DIA-NN zero beside a missing technical replicate no longe
 test_that("(KIT-118) every zero in the synthetic DIA journey corpus is read as missing at import, and nothing else changes", {
     # The DIA journeys import this generator's report (tools/profiling/workflow_perf107_synthetic.R writes ~2% zeros
     # into Precursor.Quantity); here its small calibration cohort, through the reader with Precursor.Normalised selected.
+    corpus_tool <- file.path(normalizePath(test_path("..", "..")), "tools/profiling/workflow_perf107_synthetic.R")
+    testthat::skip_if_not(file.exists(corpus_tool), "the corpus generator is in the source tree only")
     code <- new.env(parent = asNamespace("MultiScholaR"))
-    sys.source(file.path(normalizePath(test_path("..", "..")), "tools/profiling/workflow_perf107_synthetic.R"), code)
+    sys.source(corpus_tool, code)
     recipe <- code$perf107SyntheticRecipe("calibration", small = TRUE)
     catalogue <- code$perf107SyntheticCatalogue(recipe)
     report <- do.call(rbind, lapply(seq_len(recipe$samples), function(i) code$perf107SyntheticSample(recipe, catalogue, i)))
