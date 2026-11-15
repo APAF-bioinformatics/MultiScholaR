@@ -21,8 +21,8 @@ for (member in args[-1L]) {
         m <- as.matrix(table[vapply(table, is.double, logical(1))]); rownames(m) <- as.character(table[[key]]); m
     }
     cat(basename(dirname(member)), "states:", paste(names(snapshot$states), collapse = " "), "\n")
-    if (!all(c("protein_replicate_filtered", "ruv_corrected") %in% names(snapshot$states))) next
-    a <- read("protein_replicate_filtered"); b <- read("ruv_corrected")
+    before <- intersect(c("protein_replicate_filtered", "peptide_count_filtered", "protein_s4_created"), names(snapshot$states)); if (!length(before) || !"ruv_corrected" %in% names(snapshot$states)) next
+    a <- read(before[[1L]]); b <- read("ruv_corrected")
     common <- intersect(rownames(a), rownames(b)); samples <- intersect(colnames(a), colnames(b))
     a <- a[common, samples]; b <- b[common, samples]
     offset <- rowMeans(b, na.rm = TRUE) - rowMeans(a, na.rm = TRUE)

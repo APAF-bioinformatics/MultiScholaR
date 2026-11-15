@@ -12,6 +12,8 @@
 #   cov_wide    as cov_sel, with those wide controls
 #   *_k         today, cov_sel, cov_wide at k limited to calculateAdaptiveMaxK(samples) (KIT-123 R1)
 # Usage (from the repository root): Rscript <this> <out.tsv> [seeds = 20] [cores = 4]
+# Sensitivity runs (diagnostic, KIT-123): KIT123_PI1 (share of true effects, default 0.20), KIT123_FACTOR_SD (sd of the
+# unwanted factor's loadings, default 0.5; 0 = no unwanted factor), KIT123_N (per-group sizes, default "6,12").
 args <- commandArgs(TRUE)
 seeds <- if (length(args) > 1L) as.integer(args[[2L]]) else 20L
 cores <- if (length(args) > 2L) as.integer(args[[3L]]) else 4L
@@ -19,7 +21,10 @@ suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
 try(RUVIIIC::omp_set_num_threads(1L), silent = TRUE)
 quietly <- function(expr) suppressWarnings(suppressMessages(utils::capture.output(value <- expr, type = "output")))
-simulate <- function(seed, n, missing, m = 1000L, pi1 = 0.20, effect = 1.0, d0 = 4, s0 = 0.25) {
+pi1_setting <- as.numeric(Sys.getenv("KIT123_PI1", "0.20"))
+factor_sd <- as.numeric(Sys.getenv("KIT123_FACTOR_SD", "0.5"))
+sizes <- as.integer(strsplit(Sys.getenv("KIT123_N", "6,12"), ",")[[1L]])
+simulate <- function(seed, n, missing, m = 1000L, pi1 = pi1_setting, effect = 1.0, d0 = 4, s0 = 0.25) {
     set.seed(seed)
     mu <- rnorm(m, 22, 2)
     sd <- sqrt(d0 * s0^2 / rchisq(m, d0))
@@ -27,7 +32,7 @@ simulate <- function(seed, n, missing, m = 1000L, pi1 = 0.20, effect = 1.0, d0 =
     delta <- ifelse(de, effect * sample(c(-1, 1), m, replace = TRUE), 0)
     groups <- rep(c("control", "treated"), each = n)
     w <- rnorm(2 * n)                       # one unwanted factor per sample
-    alpha <- rnorm(m, 0, 0.5)               # its loading per protein
+    alpha <- rnorm(m, 0, factor_sd)         # its loading per protein
     x <- sapply(seq_len(2 * n), function(j) mu + (groups[[j]] == "treated") * delta + alpha * w[[j]] + rnorm(m, 0, sd))
     if (missing > 0) {                      # intensity-dependent missingness at the target overall share
         p_at <- function(lod) mean(stats::plogis((lod - x) / 1.0))
@@ -126,7 +131,7 @@ one <- function(n, missing, seed) {
     correction("today_k", selected, k_bound); covariates("cov_sel_k", selected, k_bound); covariates("cov_wide_k", wide, k_bound)
     do.call(rbind, rows)
 }
-cells <- expand.grid(seed = seq_len(seeds), missing = c(0, 0.25, 0.50), n = c(6L, 12L))
+cells <- expand.grid(seed = seq_len(seeds), missing = c(0, 0.25, 0.50), n = sizes)
 out <- do.call(rbind, parallel::mclapply(seq_len(nrow(cells)), function(i) one(cells$n[[i]], cells$missing[[i]], cells$seed[[i]]),
     mc.cores = cores, mc.preschedule = FALSE))
 utils::write.table(out, args[[1L]], sep = "\t", quote = FALSE, row.names = FALSE)
