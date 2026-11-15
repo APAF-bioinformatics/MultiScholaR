@@ -1,0 +1,24 @@
+simulator: S2 (DIA_LIMPA route), KIT-124 revision 1.2
+commit: 75aaced4a5991b9a41bfe97c39d4923d6e3d1238
+branch: worktree-agent-a362b05e69532b216
+script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+script md5: fc2b475726cd488af19d61726d21aca1
+script differs from commit: FALSE
+changes under R/, tests/, tools/: FALSE
+command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-pilot 20 5 2
+K124_FIRST_RUN: 9001
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR/.claude/worktrees/agent-a362b05e69532b216
+R_LIBS: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+R: R version 4.6.1 (2026-06-24)
+platform: x86_64-pc-linux-gnu
+BLAS: /usr/lib/libblas.so.3.12.0
+packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+cores: 2
+runs per core cell: 20 ; runs per stress cell: 5
+seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  data set.seed(seed); arm a set.seed(100 * seed + a); sweep on arm 3's stream; E seed 100 * seed + 99
+cells completed in this invocation: C0,C1,C2,C3,C4,C5,C6,C7,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14
+started: 2026-11-16 08:41:24 AEDT
+finished: 2026-11-16 10:20:28 AEDT
