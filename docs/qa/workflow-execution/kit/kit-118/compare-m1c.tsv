@@ -1,0 +1,174 @@
+step	field	identical	note
+import	class	TRUE	
+import	rows	TRUE	NA -> NA
+import	summary_sha256	TRUE	
+design	class	TRUE	
+design	rows	TRUE	320872 -> 320872
+design	components/peptide_data	FALSE	
+design	components/design_matrix	TRUE	8 -> 8
+design	summary_sha256	TRUE	
+qvalue	class	TRUE	
+qvalue	rows	TRUE	320872 -> 320872
+qvalue	components/peptide_data	FALSE	320872 -> 320872
+qvalue	components/design_matrix	TRUE	8 -> 8
+qvalue	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+qvalue	products/qvalue_progress	TRUE	
+qvalue	summary_sha256	TRUE	
+rollup	class	TRUE	
+rollup	rows	TRUE	303000 -> 303000
+rollup	components/peptide_data	FALSE	303000 -> 303000
+rollup	components/design_matrix	TRUE	8 -> 8
+rollup	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+rollup	products/qvalue_progress	TRUE	
+rollup	products/qc_progress	FALSE	
+rollup	summary_sha256	FALSE	
+peptide_log2	class	TRUE	
+peptide_log2	rows	TRUE	303000 -> 303000
+peptide_log2	components/peptide_data	FALSE	303000 -> 303000
+peptide_log2	components/design_matrix	TRUE	8 -> 8
+peptide_log2	components/peptide_matrix	TRUE	
+peptide_log2	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+peptide_log2	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+peptide_log2	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+peptide_log2	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+peptide_log2	products/qvalue_progress	TRUE	
+peptide_log2	products/qc_progress	FALSE	
+peptide_log2	summary_sha256	FALSE	
+peptide_accession	class	TRUE	
+peptide_accession	rows	TRUE	303000 -> 303000
+peptide_accession	components/peptide_data	FALSE	303000 -> 303000
+peptide_accession	components/design_matrix	TRUE	8 -> 8
+peptide_accession	components/peptide_matrix	TRUE	
+peptide_accession	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+peptide_accession	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+peptide_accession	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+peptide_accession	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+peptide_accession	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+peptide_accession	products/qvalue_progress	TRUE	
+peptide_accession	products/qc_progress	FALSE	
+peptide_accession	summary_sha256	FALSE	
+dpc_quant	class	TRUE	
+dpc_quant	rows	TRUE	2500 -> 2500
+dpc_quant	components/design_matrix	TRUE	8 -> 8
+dpc_quant	components/protein_quant_table	TRUE	2500 -> 2500
+dpc_quant	components/protein_id_table	TRUE	2500 -> 2500
+dpc_quant	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+dpc_quant	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+dpc_quant	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+dpc_quant	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+dpc_quant	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+dpc_quant	products/qvalue_progress	TRUE	
+dpc_quant	products/qc_progress	FALSE	
+dpc_quant	summary_sha256	FALSE	
+protein_normalisation_limpa	class	TRUE	
+protein_normalisation_limpa	rows	TRUE	2500 -> 2500
+protein_normalisation_limpa	components/design_matrix	TRUE	8 -> 8
+protein_normalisation_limpa	components/protein_quant_table	TRUE	2500 -> 2500
+protein_normalisation_limpa	components/protein_id_table	TRUE	2500 -> 2500
+protein_normalisation_limpa	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+protein_normalisation_limpa	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+protein_normalisation_limpa	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+protein_normalisation_limpa	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+protein_normalisation_limpa	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+protein_normalisation_limpa	products/qvalue_progress	TRUE	
+protein_normalisation_limpa	products/qc_progress	FALSE	
+protein_normalisation_limpa	summary_sha256	FALSE	
+peptide_count	class	TRUE	
+peptide_count	rows	TRUE	2500 -> 2500
+peptide_count	components/design_matrix	TRUE	8 -> 8
+peptide_count	components/protein_quant_table	TRUE	2500 -> 2500
+peptide_count	components/protein_id_table	TRUE	2500 -> 2500
+peptide_count	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+peptide_count	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+peptide_count	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+peptide_count	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+peptide_count	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+peptide_count	products/qvalue_progress	TRUE	
+peptide_count	products/qc_progress	FALSE	
+peptide_count	summary_sha256	FALSE	
+correlation	class	TRUE	
+correlation	rows	TRUE	2500 -> 2500
+correlation	components/design_matrix	TRUE	8 -> 8
+correlation	components/protein_quant_table	TRUE	2500 -> 2500
+correlation	components/protein_id_table	TRUE	2500 -> 2500
+correlation	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+correlation	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+correlation	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+correlation	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+correlation	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+correlation	support/filterSamplesFn/pearson_correlation_per_pair	TRUE	7 -> 7
+correlation	products/qvalue_progress	TRUE	
+correlation	products/qc_progress	FALSE	
+correlation	products/dia_normalization_pca:2f44fb05d4a2	TRUE	
+correlation	products/dia-pearson-selection:97df6bb7da17	FALSE	
+correlation	products/dia-pearson-pairs:f0ef714864b1	TRUE	
+correlation	products/dia-pearson-selection:3f0e8025e2d3	FALSE	
+correlation	summary_sha256	FALSE	
+ruv_covariates	class	TRUE	
+ruv_covariates	rows	TRUE	2500 -> 2500
+ruv_covariates	components/design_matrix	TRUE	8 -> 8
+ruv_covariates	components/protein_quant_table	TRUE	2500 -> 2500
+ruv_covariates	components/protein_id_table	TRUE	2500 -> 2500
+ruv_covariates	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+ruv_covariates	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+ruv_covariates	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+ruv_covariates	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+ruv_covariates	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+ruv_covariates	support/filterSamplesFn/pearson_correlation_per_pair	TRUE	7 -> 7
+ruv_covariates	products/qvalue_progress	TRUE	
+ruv_covariates	products/qc_progress	FALSE	
+ruv_covariates	products/ruv_covariates_science	FALSE	
+ruv_covariates	products/dia_normalization_pca:479b0c17354b	TRUE	
+ruv_covariates	products/dia_normalization_density:58c133946135	TRUE	
+ruv_covariates	products/dia-ruv-covariates:6147b839a9f4	FALSE	
+ruv_covariates	products/dia_normalization_rle:730bf3692cb7	TRUE	
+ruv_covariates	products/dia_normalization_correlation:b94339c057d3	TRUE	
+ruv_covariates	products/dia-ruv-covariates:cf867c28c31a	FALSE	
+ruv_covariates	summary_sha256	FALSE	
+session_export	class	TRUE	
+session_export	rows	TRUE	2500 -> 2500
+session_export	components/design_matrix	TRUE	8 -> 8
+session_export	components/protein_quant_table	TRUE	2500 -> 2500
+session_export	components/protein_id_table	TRUE	2500 -> 2500
+session_export	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+session_export	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+session_export	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+session_export	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+session_export	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+session_export	support/filterSamplesFn/pearson_correlation_per_pair	TRUE	7 -> 7
+session_export	products/qvalue_progress	TRUE	
+session_export	products/qc_progress	FALSE	
+session_export	products/ruv_covariates_science	FALSE	
+session_export	summary_sha256	FALSE	
+da	class	TRUE	
+da	rows	TRUE	2500 -> 2500
+da	components/design_matrix	TRUE	8 -> 8
+da	components/protein_quant_table	TRUE	2500 -> 2500
+da	components/protein_id_table	TRUE	2500 -> 2500
+da	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+da	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+da	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+da	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+da	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+da	support/filterSamplesFn/pearson_correlation_per_pair	TRUE	7 -> 7
+da	products/qvalue_progress	TRUE	
+da	products/qc_progress	FALSE	
+da	products/ruv_covariates_science	FALSE	
+da	products/dia-contrast-references:ff048503c441	FALSE	
+da	products/dia-contrast-references:3c4e84a50939	FALSE	
+da	summary_sha256	FALSE	
+report	class	TRUE	
+report	rows	TRUE	2500 -> 2500
+report	components/design_matrix	TRUE	8 -> 8
+report	components/protein_quant_table	TRUE	2500 -> 2500
+report	components/protein_id_table	TRUE	2500 -> 2500
+report	support/srlQvalueProteotypicPeptideClean/biological_exclusion_ledger	TRUE	0 -> 0
+report	support/srlQvalueProteotypicPeptideClean/biological_exclusion_summary	TRUE	1 -> 1
+report	support/.arguments/peptide_feature_key_map	TRUE	60000 -> 60000
+report	support/.arguments/protein_accession_provenance	TRUE	2500 -> 2500
+report	support/chooseBestProteinAccessionFn/seqinr_obj	TRUE	2727 -> 2727
+report	support/filterSamplesFn/pearson_correlation_per_pair	TRUE	7 -> 7
+report	products/qvalue_progress	TRUE	
+report	products/qc_progress	FALSE	
+report	products/ruv_covariates_science	FALSE	
+report	summary_sha256	FALSE	
