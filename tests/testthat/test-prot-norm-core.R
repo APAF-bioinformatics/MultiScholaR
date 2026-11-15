@@ -3,6 +3,11 @@
 # blocks show where they live, that their definitions are the ones the module files held, and that their core
 # callers (the normalisation and correlation actions, the pass-through, the legacy restore, the summary archive and
 # the lipid/metab RUV declaration) give the output recorded before the move through them.
+#
+# KIT-122: the fixtures this file shares with test-prot-norm-worker-figures.R (protNormCoreQuiet, protNormCoreOwner,
+# protNormW1Sha, protNormW1Mask, protNormW1LimpaOwner, protNormW2Dispatch, protNormW3Inputs, protNormW3Notices,
+# protNormW3Managed, protNormW3Clicker) are in helper-prot-norm-core.R, moved unchanged. The worker-figures drives
+# (the managed-equals-unmanaged image tests) are in that file: this one reached the suite's per-file ceiling.
 
 protNormCoreMoved <- c(
     "buildProtNormSkippedRuvResult", "resolveProtRuvParameters", "validateProtNormRuvK", "stripProtNormQcPlotOwners",
@@ -89,8 +94,6 @@ protNormCoreCountCalls <- function(names, code) {
     list(value = value, calls = unlist(calls))
 }
 
-protNormCoreQuiet <- function(code) suppressWarnings(suppressMessages(code))
-
 # Files under `root` (relative names), with the md5 of each text table; images, PDFs and RDS files by name only.
 protNormCoreFiles <- function(root) {
     files <- sort(list.files(root, recursive = TRUE))
@@ -101,33 +104,6 @@ protNormCoreFiles <- function(root) {
 
 protNormCoreWithoutPlots <- function(value) {
     value[!vapply(value, function(x) inherits(x, c("gg", "ggplot", "grob", "gtable")), logical(1))]
-}
-
-# A native DIA owner (the iq route) on the "small" protein recipe of test-workflow-checkpoint-dia-state.R, with
-# the paths and the plain-environment workflow the GUI's actions read.
-protNormCoreOwner <- function(envir = parent.frame()) {
-    withr::local_options(multischolar.dia_native_sessions = TRUE, multischolar.capture_test_checkpoints = FALSE,
-        .local_envir = envir)
-    root <- withr::local_tempdir(.local_envir = envir)
-    paths <- list(source_dir = file.path(root, "scripts", "proteomics"),
-        protein_qc_dir = file.path(root, "results", "proteomics", "protein_qc"),
-        peptide_qc_dir = file.path(root, "results", "proteomics", "peptide_qc"))
-    paths$publication_graphs_dir <- file.path(root, "results", "proteomics", "publication_graphs")
-    paths$time_dir <- file.path(paths$publication_graphs_dir, "filtering_qc")
-    for (path in unlist(paths)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
-    session <- new.env(parent = emptyenv())
-    session$userData <- new.env(parent = emptyenv())
-    session$onFlush <- session$onFlushed <- session$onSessionEnded <- function(...) function() invisible(NULL)
-    original <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
-    workflow <- new.env(parent = emptyenv())
-    workflow$state_manager <- WorkflowState$new(audit_enabled = FALSE)
-    workflow$design_matrix <- original@design_matrix
-    workflow$config_list <- original@args
-    initializeDIANativeImport(workflow, paths, session, "diann", "iq")
-    manager <- workflow$state_manager
-    withr::defer(closeDIAStateAdapter(manager), envir = envir)
-    manager$saveState("protein_replicate_filtered", original, list(), "source")
-    list(root = root, paths = paths, workflow = workflow, manager = manager, original = original)
 }
 
 protNormCoreSettings <- function(ruv_mode) {
@@ -376,21 +352,6 @@ protNormW1Callees <- c("assertDIAExportReady", "runSavedOperation", "commitDIARe
     "resolveDIAReferenceQcPlot", "resolveProtNormCorrelationResultFilenames", "generateProtNormCompositeQcFigure",
     "finalizeProtNormWorkflowState")
 
-protNormW1Sha <- function(x) digest::digest(x, algo = "sha256")
-
-#' Store-local ids and the fixture's temporary root masked in every character value of plain lists.
-protNormW1Mask <- function(x, root) {
-    if (is.character(x)) {
-        x[!is.na(x) & grepl("^[a-f0-9]{64}$", x)] <- "<id>"
-        return(gsub(root, "<root>", x, fixed = TRUE))
-    }
-    if (is.list(x) && !is.object(x)) {
-        x[] <- lapply(x, protNormW1Mask, root = root)
-        if (!is.null(names(x))) names(x) <- protNormW1Mask(names(x), root)
-    }
-    x
-}
-
 #' A saved checkpoint's science: protNormCoreState's slots, with the limpa and RUV covariates entries of its args.
 protNormW1State <- function(manager, reference) {
     withWorkflowStateScope(manager, function() {
@@ -549,45 +510,6 @@ protNormW1Expect <- function(case, capture) {
     for (field in union(names(frozen), names(capture))) {
         expect_identical(capture[[field]], frozen[[field]], info = paste(case, field))
     }
-}
-
-#' A DIA_LIMPA owner (the KIT-053 record fixture of test-workflow-analysis-record.R): the "small" recipe rolled up and
-#' quantified by the limpa DPC engine, then the protein QC stage's between-sample normalisation (none) and peptide
-#' count filter, committed as the route commits them, with protNormCoreOwner's paths.
-protNormW1LimpaOwner <- function(envir = parent.frame()) {
-    withr::local_options(multischolar.dia_native_sessions = TRUE, multischolar.capture_test_checkpoints = FALSE,
-        .local_envir = envir)
-    root <- withr::local_tempdir(.local_envir = envir)
-    paths <- list(source_dir = file.path(root, "scripts", "proteomics"),
-        protein_qc_dir = file.path(root, "results", "proteomics", "protein_qc"),
-        peptide_qc_dir = file.path(root, "results", "proteomics", "peptide_qc"))
-    paths$publication_graphs_dir <- file.path(root, "results", "proteomics", "publication_graphs")
-    paths$time_dir <- file.path(paths$publication_graphs_dir, "filtering_qc")
-    for (path in unlist(paths)) dir.create(path, recursive = TRUE, showWarnings = FALSE)
-    manager <- newDIAStateAdapter(newWorkflowEntityStore(paths$source_dir, "kit111-limpa", "DIA"),
-        WorkflowState$new(audit_enabled = FALSE))
-    withr::defer(closeDIAStateAdapter(manager), envir = envir)
-    manager$.context$reference_states <- TRUE
-    manager$setWorkflowType("DIA_LIMPA")
-    manager$.context$experiment_paths <- paths
-    rolled <- rollUpPrecursorToPeptide(makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small")), core_utilisation = NA)
-    quantified <- protNormCoreQuiet(proteinMissingValueImputationLimpa(log2TransformPeptideMatrix(calcPeptideMatrix(rolled)),
-        dpc_slope = 0.8, verbose = FALSE, chunk = 1000, engine = "limpa"))
-    setDIAStepProvenance(manager, "design_builder")
-    manager$saveState("protein_dpc_quant", quantified, list(), "fixture")
-    workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
-    protNormCoreQuiet(withDIAStateScope(manager, function() {
-        v1 <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), list(norm_method = "none"))
-        setDIAStepProvenance(manager, "protein_between_sample_normalisation", "whole", "norm_method", NULL,
-            values = list(norm_method = "none"))
-        finishDIAReferenceProteinStep(workflow, v1, publish = FALSE)
-        v2 <- computeDIAReferenceProteinPeptideCountFilter(manager, getDIAStateReference(manager),
-            list(num_peptides_per_protein_thresh = 1, num_peptidoforms_per_protein_thresh = 2))
-        setDIAStepProvenance(manager, "protein_peptide_count_filter", "whole",
-            c("num_peptides_per_protein_thresh", "num_peptidoforms_per_protein_thresh"), NULL, values = v2$config[1:2])
-        finishDIAReferenceProteinStep(workflow, v2, publish = FALSE)
-    }))
-    list(root = root, paths = paths, workflow = workflow, manager = manager)
 }
 
 #' The tab's clicks on one owner, each captured as protNormW1Capture describes. The callbacks record the science
@@ -1182,35 +1104,6 @@ test_that("KIT-111 W1 (a): the DIA_LIMPA pass-through, correlation and RUV covar
 # the compute half and the completion commits) and are not compared.
 # ------------------------------------------------------------------------------------------------
 
-#' One managed action, in this process: the frozen request (with its named input) through the worker's entry point,
-#' the acceptance and what the tab reads. A worker failure is raised with the worker's message.
-protNormW2Dispatch <- function(fixture, controller, operation, parameters, input, context = NULL) {
-    store <- fixture$manager$.context$store
-    id <- paste0("wfx-", substr(digest::digest(list(tempfile(), operation), algo = "sha256"), 1L, 32L))
-    paths <- workflowExportPaths(store$directory, id)
-    token <- list(request_id = id, incarnation = store$identity$incarnation, expected_head = workflowExecutionHead(store)$entity_id,
-        generation = controller$control$generation, controller_id = controller$control$controller_id)
-    writeWorkflowExecutionMessage(file.path(paths$request_dir, "publication-context.rds"),
-        list(experiment_label = "core", experiment_paths = fixture$paths, omic_type = "proteomics"))
-    writeWorkflowExportJournal(paths, list(schema = "multischolar.workflow_action.v1", request_id = id, status = "admitting",
-        expected_head = token$expected_head, token_hash = digest::digest(token, algo = "sha256")))
-    request <- list(schema = 1L, build = workflowExecutionBuildIdentity(), operation = operation,
-        input_references = list(state = input), parameters = parameters, token = token, owner = store$identity,
-        project_root = dirname(store$directory), directory = paths$request_dir, config = list(mode = "adapters"),
-        worker_cap = 12 * 1024^3)
-    path <- file.path(paths$request_dir, "request.rds")
-    writeWorkflowExecutionMessage(path, request)
-    withr::with_envvar(c(MULTISCHOLAR_WORKFLOW_WORKER = "1"), suppressWarnings(suppressMessages(utils::capture.output(try(
-        workflowWorkerMain(c(path, digest::digest(file = path, algo = "sha256"))), silent = TRUE)))))
-    message <- readRDS(file.path(paths$request_dir, "worker-result.rds"))
-    if (!identical(message$status, "complete")) stop(message$error, call. = FALSE)
-    controller$job <- list(request = list(token = token, operation = operation, config = list(mode = "adapters"),
-        parameters = parameters), paths = paths, completion_context = validateWorkflowOmicsCompletionContext(operation, context))
-    receipt <- acceptWorkflowActionResult(controller, message[c("schema", "status", "token", "result")])
-    accepted <- resumeWorkflowAction(controller, id)
-    c(readManagedOmicsResult(fixture$manager, accepted, NULL), list(acceptance = receipt$status, result = message$result))
-}
-
 #' The managed normalisation click: the gate and the request in the controller, the worker, the publication half.
 protNormW2Normalization <- function(fixture, dispatch, norm, settings, post_qc, ruv_qc) {
     manager <- fixture$manager
@@ -1495,44 +1388,6 @@ test_that("KIT-111 W2: the DIA adaptor's norm entries name registered omics oper
 # summary texts and the notices; managed, each action's operation and input.
 # ------------------------------------------------------------------------------------------------
 
-protNormW3Inputs <- function(mode, ...) utils::modifyList(list(norm_method = "quantile", ruv_mode = mode,
-    ruv_percentage = 50, ruv_k = 1, color_variable = "group", ruv_grouping_variable = "group",
-    min_pearson_correlation_threshold = 0.5), list(...))
-
-#' The notices shown (`[type duration] text`) and the ids removed, recorded in `log`.
-protNormW3Notices <- function(log, root, env = parent.frame()) {
-    notify <- function(ui, action = NULL, duration = 5, closeButton = TRUE, id = NULL,
-        type = c("default", "message", "warning", "error"), session = NULL) {
-        log$notes <- c(log$notes, sprintf("[%s %s] %s", type[[1L]], if (is.null(duration)) "NULL" else format(duration),
-            protNormW1Mask(paste(as.character(ui), collapse = " "), root)))
-        invisible(id %||% "notification")
-    }
-    remove <- function(id, session = NULL) {
-        log$removed <- c(log$removed, id)
-        invisible(id)
-    }
-    testthat::local_mocked_bindings(showNotification = notify, removeNotification = remove, .package = "shiny", .env = env)
-    testthat::local_mocked_bindings(showNotification = notify, removeNotification = remove, .package = "MultiScholaR", .env = env)
-}
-
-#' The managed session: the chain mocks, with each action's request run on its named input and recorded in `probe`
-#' (`actions`: operation and input entity id; `values`: the worker's values). `probe$hold` keeps the action running.
-protNormW3Managed <- function(fixture, probe, env = parent.frame()) {
-    controller <- omicsManagedChainMocks(list(owner = fixture$manager, paths = fixture$paths), probe, env = env)
-    testthat::local_mocked_bindings(
-        runWorkflowAction = function(operation, input_references, parameters, owner, reservation, completion_context = NULL) {
-            probe$actions <- c(probe$actions, list(list(operation = operation, input = input_references$state$entity_id)))
-            out <- protNormW2Dispatch(fixture, controller, operation, parameters, input_references$state, completion_context)
-            probe$values <- c(probe$values, list(out$result))
-            probe$handoff <- list(accepted = list(operation = operation, reference = out$reference,
-                state_reference = out$stateReference, display = out$display))
-            paste0("worker-", operation)
-        },
-        pollWorkflowAction = function(owner) list(status = if (isTRUE(probe$hold)) "running" else "complete"),
-        .package = "MultiScholaR", .env = env)
-    controller
-}
-
 #' The capture after one click (see the section's header). `head_id` is local to the store.
 protNormW3Capture <- function(fixture, norm, output, log, actions) {
     manager <- fixture$manager
@@ -1603,19 +1458,6 @@ protNormW3Drive <- function(fixture, steps, managed, probe = new.env()) {
         }
     })))
     acc$captures
-}
-
-#' A click on `button` (after setting `inputs`), counted per drive.
-protNormW3Clicker <- function() {
-    counts <- new.env(parent = emptyenv())
-    function(button, ...) {
-        inputs <- list(...)
-        function(session) {
-            if (length(inputs)) do.call(session$setInputs, inputs)
-            counts[[button]] <- (counts[[button]] %||% 0) + 1
-            do.call(session$setInputs, stats::setNames(list(counts[[button]]), button))
-        }
-    }
 }
 
 #' W1 (a)'s DIA clicks as the tab's buttons.
@@ -2085,142 +1927,4 @@ test_that("KIT-122 (audit F2): after a second RUV run in another mode the tab's 
         session$flushReact()
         expect_match(output$ruv_optimization_summary, "RUV-III Correction (negative-control sweep):", fixed = TRUE)
     })))
-})
-
-# ------------------------------------------------------------------------------------------------
-# KIT-122 (audit E1, F3): the tab's QC figures as a worker product. On a managed session the worker saves the QC plot
-# products and the stage images (`normalization-qc-figures`) before the tab's generators and publication halves run, at
-# every place the tab draws them: tab entry, the normalisation's publication, an aesthetics change, the correlation's
-# publication (applied and skipped) and, on DIA_LIMPA, the pass-through and the RUV covariates. The tab is driven
-# unmanaged (it computes and draws in the application, as before) and managed, on the same fixture. Compared after each
-# step: the md5 of every stage image in the QC directory (the files are byte-identical) and the correlation tab's PCA.
-# Counted, in the application and in the worker (`MULTISCHOLAR_WORKFLOW_WORKER`, set around the worker's entry point):
-# the saves of a QC plot product (one per product computed from a hydrated state) and of a rendered image (one per
-# image drawn).
-# ------------------------------------------------------------------------------------------------
-
-#' The md5 of every stage image in the fixture's protein QC directory.
-protNormK122Images <- function(fixture) {
-    directory <- fixture$paths$protein_qc_dir
-    files <- sort(list.files(directory, pattern = "^(pre_norm|post_norm|ruv_corrected)_(pca|rle|density|correlation)[.]png$"))
-    stats::setNames(unname(tools::md5sum(file.path(directory, files))), files)
-}
-
-#' Drive the tab through `steps` (named `function(session, selected)`; `selected` is the workflow's selected tab).
-#' @return `images` and `final` (the correlation tab's PCA: its data and title) after each step, the `counts`, and the
-#'   managed actions' operations per step.
-protNormK122Drive <- function(fixture, steps, managed) {
-    probe <- new.env()
-    log <- new.env(parent = emptyenv())
-    protNormW3Notices(log, fixture$root)
-    if (managed) protNormW3Managed(fixture, probe)
-    counts <- new.env(parent = emptyenv())
-    counted <- function(name) {
-        original <- get(name, envir = asNamespace("MultiScholaR"))
-        function(...) {
-            key <- paste(if (identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) "worker" else "application", name)
-            counts[[key]] <- (counts[[key]] %||% 0L) + 1L
-            original(...)
-        }
-    }
-    testthat::local_mocked_bindings(saveWorkflowDiaQcProduct = counted("saveWorkflowDiaQcProduct"),
-        saveWorkflowDiaQcAsset = counted("saveWorkflowDiaQcAsset"), .package = "MultiScholaR")
-    selected <- shiny::reactiveVal("import")
-    out <- new.env(parent = emptyenv())
-    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
-        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
-        experiment_label = "core", selected_tab = selected), {
-        # The application's session names its owner (the generators resolve it outside a publication's scope).
-        session$userData$dia_capacity_manager <- fixture$manager
-        norm <- session$getReturned()
-        for (case in names(steps)) {
-            seen <- length(probe$actions)
-            steps[[case]](session, selected)
-            for (i in 1:3) {
-                session$elapse(100)
-                session$flushReact()
-            }
-            out$images[[case]] <- protNormK122Images(fixture)
-            plot <- shiny::isolate(norm$final_qc_plot)
-            out$final[[case]] <- if (!is.null(plot)) list(data = protNormW1Sha(as.data.frame(plot$data)), title = plot$labels$title)
-            out$actions[[case]] <- vapply(probe$actions[seq_along(probe$actions) > seen], `[[`, "", "operation")
-            out$generated[[case]] <- shiny::isolate(norm$pre_norm_qc_generated)
-        }
-    })))
-    list(images = out$images, final = out$final, actions = out$actions, generated = out$generated,
-        counts = unlist(mget(sort(ls(counts)), envir = counts)), notes = log$notes)
-}
-
-#' The DIA route's steps: tab entry, two normalisations, an aesthetics change, the correlation applied and skipped.
-protNormK122DiaSteps <- function() {
-    click <- protNormW3Clicker()
-    press <- function(...) {
-        step <- click(...)
-        function(session, selected) step(session)
-    }
-    list(
-        tab_entry = function(session, selected) {
-            do.call(session$setInputs, protNormW3Inputs("skip"))
-            selected("normalization")
-        },
-        normalization_skip = press("run_normalization"),
-        normalization_manual = press("run_normalization", ruv_mode = "manual"),
-        aesthetics = function(session, selected) session$setInputs(color_variable = "batch"),
-        correlation_apply = press("apply_correlation_filter"),
-        correlation_skip = press("skip_correlation_filter"))
-}
-
-test_that("KIT-122 (E1): managed, the worker saves the tab's QC figures and the application draws none; the images are byte-identical to the unmanaged tab's (fails before)", {
-    skip_if_not(workflowOwnerCapable())
-    unmanaged <- protNormK122Drive(protNormCoreOwner(), protNormK122DiaSteps(), managed = FALSE)
-    managed <- protNormK122Drive(protNormCoreOwner(), protNormK122DiaSteps(), managed = TRUE)
-    # Unmanaged: every figure is computed and drawn in the application, at each of the tab's places (today's path).
-    expect_identical(names(unmanaged$images$tab_entry), paste0("pre_norm_", c("correlation", "density", "pca", "rle"), ".png"))
-    expect_length(unmanaged$images$normalization_skip, 8L)
-    expect_length(unmanaged$images$normalization_manual, 12L)
-    expect_false(identical(unmanaged$images$aesthetics, unmanaged$images$normalization_manual))
-    expect_true(all(unmanaged$counts[c("application saveWorkflowDiaQcAsset", "application saveWorkflowDiaQcProduct")] > 0L))
-    expect_false(any(startsWith(names(unmanaged$counts), "worker")))
-    for (case in names(unmanaged$actions)) expect_length(unmanaged$actions[[case]], 0L)
-    # Managed: the same files, byte for byte, after every step; the same PCA on the correlation tab.
-    expect_identical(managed$images, unmanaged$images)
-    expect_identical(managed$final, unmanaged$final)
-    expect_identical(managed$generated, unmanaged$generated)
-    # The worker computed every product and drew every image; the application saved none (it found each one saved).
-    expect_identical(names(managed$counts), c("worker saveWorkflowDiaQcAsset", "worker saveWorkflowDiaQcProduct"))
-    expect_identical(managed$counts[["worker saveWorkflowDiaQcAsset"]], unmanaged$counts[["application saveWorkflowDiaQcAsset"]])
-    expect_identical(managed$counts[["worker saveWorkflowDiaQcProduct"]], unmanaged$counts[["application saveWorkflowDiaQcProduct"]])
-    # The actions: each place's figures after its science and before its publication; the skipped correlation's PCA is
-    # the normalisation's final's, which the worker saved with that step, so it dispatches nothing.
-    figures <- "normalization-qc-figures"
-    expect_identical(managed$actions, list(tab_entry = figures, normalization_skip = c("normalization-ruv", figures),
-        normalization_manual = c("normalization-ruv", figures, figures), aesthetics = c(figures, figures, figures),
-        correlation_apply = c("pearson-pairs", "pearson-selection", figures), correlation_skip = character()))
-})
-
-test_that("KIT-122 (E1): on DIA_LIMPA the pass-through's and the RUV covariates' figures are the worker's, byte-identical (fails before)", {
-    skip_if_not(workflowOwnerCapable())
-    skip_if_not_installed("limpa")
-    skip_if_not_installed("mixOmics")
-    steps <- function() {
-        click <- protNormW3Clicker()
-        press <- function(...) {
-            step <- click(...)
-            function(session, selected) step(session)
-        }
-        list(pass_through = do.call(press, c(list("run_normalization"), protNormW3Inputs("covariates"))),
-            correlation = press("apply_correlation_filter"), ruv = press("apply_ruv_covariates"))
-    }
-    unmanaged <- protNormK122Drive(protNormW1LimpaOwner(), steps(), managed = FALSE)
-    managed <- protNormK122Drive(protNormW1LimpaOwner(), steps(), managed = TRUE)
-    expect_length(unmanaged$images$pass_through, 4L)
-    expect_length(unmanaged$images$ruv, 8L)
-    expect_identical(managed$images, unmanaged$images)
-    expect_identical(managed$final, unmanaged$final)
-    expect_false(any(startsWith(names(unmanaged$counts), "worker")))
-    expect_identical(names(managed$counts), c("worker saveWorkflowDiaQcAsset", "worker saveWorkflowDiaQcProduct"))
-    expect_identical(unname(managed$counts), unname(unmanaged$counts))
-    figures <- "normalization-qc-figures"
-    expect_identical(managed$actions, list(pass_through = figures, correlation = c("pearson-pairs", "pearson-selection", figures),
-        ruv = c("protein_ruv_covariates", figures)))
 })
