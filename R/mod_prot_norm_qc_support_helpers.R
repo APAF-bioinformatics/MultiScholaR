@@ -105,67 +105,6 @@ getProtNormDefaultCorrelationFilterSummaryText <- function() {
   "No correlation filtering applied yet"
 }
 
-updateProtNormDesignDrivenChoices <- function(session, designMatrix, updateSelectInputFn = shiny::updateSelectInput, messageFn = message) {
-  if (is.null(designMatrix)) {
-    return(invisible(NULL))
-  }
-
-  design_cols <- colnames(designMatrix)
-
-  plot_available_vars <- intersect(
-    design_cols,
-    c("group", "factor1", "factor2", "batch", "technical_replicate_id", "sample_id")
-  )
-
-  if (length(plot_available_vars) > 0) {
-    default_plot_var <- if ("group" %in% plot_available_vars) "group" else plot_available_vars[1]
-
-    updateSelectInputFn(
-      session,
-      "color_variable",
-      choices = plot_available_vars,
-      selected = default_plot_var
-    )
-    updateSelectInputFn(
-      session,
-      "shape_variable",
-      choices = plot_available_vars,
-      selected = default_plot_var
-    )
-  }
-
-  ruv_available_vars <- intersect(design_cols, c("group", "factor1", "factor2", "batch"))
-
-  if (length(ruv_available_vars) > 0) {
-    default_ruv <- if ("batch" %in% ruv_available_vars && any(!is.na(designMatrix$batch))) {
-      messageFn("*** RUV: Batch column detected with values - suggesting 'batch' as RUV variable to set to shapes ***")
-      "group"
-    } else if ("group" %in% ruv_available_vars) {
-      "group"
-    } else {
-      ruv_available_vars[1]
-    }
-
-    updateSelectInputFn(
-      session,
-      "ruv_grouping_variable",
-      choices = ruv_available_vars,
-      selected = default_ruv
-    )
-
-    messageFn(sprintf("*** RUV: Updated grouping variable choices to: %s ***", paste(ruv_available_vars, collapse = ", ")))
-  }
-
-  invisible(NULL)
-}
-
-getProtNormPlotAesthetics <- function(colorVariable, shapeVariable) {
-  list(
-    color_var = if (is.null(colorVariable) || colorVariable == "") "group" else colorVariable,
-    shape_var = if (is.null(shapeVariable) || shapeVariable == "") "group" else shapeVariable
-  )
-}
-
 getProtNormRuvGroupingVariable <- function(ruvGroupingVariable) {
   if (is.null(ruvGroupingVariable) || ruvGroupingVariable == "") {
     return("group")

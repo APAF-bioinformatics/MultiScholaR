@@ -1196,8 +1196,6 @@ test_that("prot norm shared plotting and choice helpers preserve defaults and ar
   skipIfMissingMultiScholaRBindings(
     "prepareProtNormOptimizationResultsTable",
     "getProtNormRuvCanonicalCorrelationPlot",
-    "updateProtNormDesignDrivenChoices",
-    "getProtNormPlotAesthetics",
     "getProtNormRuvGroupingVariable",
     "buildProtNormLabelPlot",
     "buildProtNormTitlePlot",
@@ -1209,8 +1207,8 @@ test_that("prot norm shared plotting and choice helpers preserve defaults and ar
 
   prepare_table <- getMultiScholaRBinding("prepareProtNormOptimizationResultsTable")
   get_cancor_plot <- getMultiScholaRBinding("getProtNormRuvCanonicalCorrelationPlot")
-  update_choices <- getMultiScholaRBinding("updateProtNormDesignDrivenChoices")
-  get_plot_aesthetics <- getMultiScholaRBinding("getProtNormPlotAesthetics")
+  # KIT-122 (Q-188): updateProtNormDesignDrivenChoices and getProtNormPlotAesthetics are deleted (unreferenced since
+  # KIT-120; the shared frame registers the design's choices and the aesthetics); their assertions are removed here.
   get_ruv_grouping <- getMultiScholaRBinding("getProtNormRuvGroupingVariable")
   build_label_plot <- getMultiScholaRBinding("buildProtNormLabelPlot")
   build_title_plot <- getMultiScholaRBinding("buildProtNormTitlePlot")
@@ -1231,38 +1229,10 @@ test_that("prot norm shared plotting and choice helpers preserve defaults and ar
 
   expect_equal(get_cancor_plot(list(best_cancor_plot = "plot_obj")), "plot_obj")
   expect_null(get_cancor_plot(list(best_cancor_plot = NULL)))
-  expect_equal(get_plot_aesthetics(NULL, ""), list(color_var = "group", shape_var = "group"))
   expect_equal(get_ruv_grouping(NULL), "group")
   expect_equal(get_ruv_grouping("batch"), "batch")
   expect_true(should_auto_pre_qc("normalization", "protein_replicate_filtered", FALSE))
   expect_false(should_auto_pre_qc("qc", "protein_replicate_filtered", FALSE))
-
-  design_calls <- list()
-  design_messages <- character()
-  update_choices(
-    session = "session",
-    designMatrix = data.frame(
-      group = c("A", "B"),
-      batch = c("x", "y"),
-      sample_id = c("s1", "s2"),
-      stringsAsFactors = FALSE
-    ),
-    updateSelectInputFn = function(session, inputId, choices, selected) {
-      design_calls[[length(design_calls) + 1]] <<- list(
-        session = session,
-        inputId = inputId,
-        choices = choices,
-        selected = selected
-      )
-    },
-    messageFn = function(text) {
-      design_messages <<- c(design_messages, text)
-    }
-  )
-  expect_length(design_calls, 3)
-  expect_equal(design_calls[[1]]$inputId, "color_variable")
-  expect_equal(design_calls[[3]]$inputId, "ruv_grouping_variable")
-  expect_true(any(grepl("Updated grouping variable choices", design_messages, fixed = TRUE)))
 
   label_plot <- build_label_plot("a)")
   title_plot <- build_title_plot("Pre-Normalisation")
@@ -1279,40 +1249,24 @@ test_that("prot norm shared plotting and choice helpers preserve defaults and ar
 
 test_that("prot norm shared normalization and RUV helpers preserve workflow building blocks", {
   skipIfMissingMultiScholaRBindings(
-    "prepareProtNormNormalizationRun",
     "runProtNormBetweenSamplesStep",
-    "runProtNormPostNormalizationQcStep",
     "buildProtNormSkippedRuvResult",
-    "applyProtNormSkippedRuvState",
     "buildProtNormManualRuvResult",
     "updateProtNormRuvAuditTrail",
     "persistProtNormRuvResult"
   )
 
-  prepare_run <- getMultiScholaRBinding("prepareProtNormNormalizationRun")
+  # KIT-122 (Q-188): prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep and
+  # applyProtNormSkippedRuvState are deleted (unreferenced since before KIT-120; the run is the reference declaration,
+  # runDIAReferenceNormalization); their assertions are removed here.
   run_between_samples <- getMultiScholaRBinding("runProtNormBetweenSamplesStep")
-  run_post_qc <- getMultiScholaRBinding("runProtNormPostNormalizationQcStep")
   build_skipped_result <- getMultiScholaRBinding("buildProtNormSkippedRuvResult")
-  apply_skipped_state <- getMultiScholaRBinding("applyProtNormSkippedRuvState")
   build_manual_result <- getMultiScholaRBinding("buildProtNormManualRuvResult")
   update_audit_trail <- getMultiScholaRBinding("updateProtNormRuvAuditTrail")
   persist_ruv_result <- getMultiScholaRBinding("persistProtNormRuvResult")
 
   current_s4 <- makeProtNormCharacterizationData(label = "norm-current")
   norm_data <- new.env(parent = emptyenv())
-  run_context <- prepare_run(
-    stateManager = list(
-      current_state = "protein_replicate_filtered",
-      getState = function(state) current_s4
-    ),
-    normData = norm_data,
-    reqFn = function(x) x,
-    initialiseGridFn = function() "grid_obj",
-    messageFn = function(...) NULL
-  )
-  expect_equal(run_context$currentState, "protein_replicate_filtered")
-  expect_identical(run_context$currentS4, current_s4)
-  expect_equal(norm_data$QC_composite_figure, "grid_obj")
 
   saved_matrix <- NULL
   checkpoint_call <- NULL
@@ -1338,46 +1292,11 @@ test_that("prot norm shared normalization and RUV helpers preserve workflow buil
   expect_equal(checkpoint_call$checkpoint, "cp05")
   expect_true(grepl("normalized_protein_matrix_pre_ruv.tsv$", saved_matrix$path))
 
-  post_qc_calls <- list()
-  run_post_qc(
-    normalizedS4 = current_s4,
-    normData = norm_data,
-    generatePostNormalizationQcFn = function(object) {
-      post_qc_calls[[length(post_qc_calls) + 1]] <<- object
-    },
-    messageFn = function(...) NULL
-  )
-  expect_true(isTRUE(norm_data$normalization_complete))
-  expect_identical(post_qc_calls[[1]], current_s4)
-
   skipped_result <- build_skipped_result()
   expect_true(isTRUE(skipped_result$ruv_skipped))
   expect_match(skipped_result$skip_reason, "User selected skip", fixed = TRUE)
 
   workflow_data <- new.env(parent = emptyenv())
-  workflow_data$state_manager <- new.env(parent = emptyenv())
-  saved_state <- NULL
-  workflow_data$state_manager$saveState <- function(...) {
-    saved_state <<- list(...)
-  }
-  saved_rds <- NULL
-  apply_skipped_state(
-    normalizedS4 = current_s4,
-    normMethod = "cyclicloess",
-    normData = norm_data,
-    workflowData = workflow_data,
-    sourceDir = tempdir(),
-    skipResult = skipped_result,
-    saveRdsFn = function(object, path) {
-      saved_rds <<- list(object = object, path = path)
-    },
-    messageFn = function(...) NULL
-  )
-  expect_identical(norm_data$ruv_normalized_obj, current_s4)
-  expect_true(isTRUE(norm_data$ruv_complete))
-  expect_true(is.na(norm_data$best_k))
-  expect_equal(saved_state$state_name, "normalized")
-  expect_true(grepl("ruv_optimization_results.RDS$", saved_rds$path))
 
   manual_result <- build_manual_result(
     percentageAsNegCtrl = 5,
@@ -1430,8 +1349,6 @@ test_that("prot norm shared RUV cleanup and composite helpers preserve orchestra
     "resolveProtNormRuvParameters",
     "applyProtNormRuvCorrectionStep",
     "finalizeProtNormRuvCleanupStep",
-    "resolveProtNormStep6QcObject",
-    "runProtNormStep6RuvQc",
     "resolveProtNormCompositeFigureInputs",
     "generateProtNormCompositeQcFigure",
     "finalizeProtNormWorkflowState",
@@ -1441,8 +1358,8 @@ test_that("prot norm shared RUV cleanup and composite helpers preserve orchestra
   resolve_ruv_params <- getMultiScholaRBinding("resolveProtNormRuvParameters")
   apply_ruv_step <- getMultiScholaRBinding("applyProtNormRuvCorrectionStep")
   finalize_cleanup <- getMultiScholaRBinding("finalizeProtNormRuvCleanupStep")
-  resolve_step6_qc <- getMultiScholaRBinding("resolveProtNormStep6QcObject")
-  run_step6_qc <- getMultiScholaRBinding("runProtNormStep6RuvQc")
+  # KIT-122 (Q-188): resolveProtNormStep6QcObject and runProtNormStep6RuvQc are deleted (unreferenced since before
+  # KIT-120; the RUV QC figures and the cancor file are the publication half's); their assertions are removed here.
   resolve_composite_inputs <- getMultiScholaRBinding("resolveProtNormCompositeFigureInputs")
   generate_composite_qc <- getMultiScholaRBinding("generateProtNormCompositeQcFigure")
   finalize_workflow <- getMultiScholaRBinding("finalizeProtNormWorkflowState")
@@ -1524,24 +1441,6 @@ test_that("prot norm shared RUV cleanup and composite helpers preserve orchestra
   expect_equal(saved_state$state_name, "ruv_corrected")
 
   fallback_norm_data <- new.env(parent = emptyenv())
-  fallback_norm_data$ruv_normalized_obj <- normalized_s4
-  expect_identical(
-    resolve_step6_qc(step5Object = NULL, normData = fallback_norm_data, messageFn = function(...) NULL),
-    normalized_s4
-  )
-
-  fallback_norm_data$ruv_optimization_result <- list(best_cancor_plot = "plot_obj")
-  run_step6_qc(
-    ruvMode = "automatic",
-    step6Object = normalized_s4,
-    normData = fallback_norm_data,
-    qcDir = tempdir(),
-    generateRuvCorrectedQcFn = function(object) expect_identical(object, normalized_s4),
-    ggsaveFn = function(...) NULL,
-    initPathsFn = function(paths) getMultiScholaRBinding("initializeProtNormQcPlotPaths")(paths),
-    messageFn = function(...) NULL
-  )
-  expect_true(grepl("ruv_corrected_cancor.png$", fallback_norm_data$qc_plot_paths$ruv_corrected$cancor))
 
   skip_inputs <- resolve_composite_inputs("skip", tempdir())
   full_inputs <- resolve_composite_inputs("automatic", tempdir())

@@ -351,6 +351,7 @@ test_that("getProtNormDefaultCorrelationFilterSummaryText returns the reset defa
 })
 
 test_that("updateProtNormDesignDrivenChoices updates plot and RUV choices from design matrix", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   calls <- list()
   capture_update <- function(session, inputId, choices, selected) {
     calls[[length(calls) + 1]] <<- list(
@@ -390,6 +391,7 @@ test_that("updateProtNormDesignDrivenChoices updates plot and RUV choices from d
 })
 
 test_that("updateProtNormDesignDrivenChoices is a no-op without design matrix", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   calls <- list()
   updateProtNormDesignDrivenChoices(
     session = "session",
@@ -403,14 +405,8 @@ test_that("updateProtNormDesignDrivenChoices is a no-op without design matrix", 
 })
 
 test_that("getProtNormPlotAesthetics and getProtNormRuvGroupingVariable apply defaults", {
-  expect_equal(
-    getProtNormPlotAesthetics(NULL, "") ,
-    list(color_var = "group", shape_var = "group")
-  )
-  expect_equal(
-    getProtNormPlotAesthetics("batch", "factor1"),
-    list(color_var = "batch", shape_var = "factor1")
-  )
+  # KIT-122 (Q-188): getProtNormPlotAesthetics is deleted (unreferenced since KIT-120; the tab's aesthetics are the
+  # shared frame's omicNormPlotAestheticsGetter, tested in test-omic-norm-module.R); its two assertions are removed.
   expect_equal(getProtNormRuvGroupingVariable(NULL), "group")
   expect_equal(getProtNormRuvGroupingVariable(""), "group")
   expect_equal(getProtNormRuvGroupingVariable("batch"), "batch")
@@ -902,6 +898,7 @@ test_that("generateProtNormPreNormalizationQcArtifacts records pre-normalization
 })
 
 test_that("prepareProtNormNormalizationRun returns current state and seeds the QC composite", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   state_manager <- new.env(parent = emptyenv())
   state_manager$current_state <- "protein_replicate_filtered"
   state_manager$getState <- function(state) {
@@ -982,6 +979,7 @@ test_that("runProtNormBetweenSamplesStep normalizes data and saves the pre-RUV m
 })
 
 test_that("runProtNormPostNormalizationQcStep marks normalization complete after QC generation", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   norm_data <- new.env(parent = emptyenv())
   calls <- character()
 
@@ -1008,6 +1006,7 @@ test_that("buildProtNormSkippedRuvResult returns the expected skip payload", {
 })
 
 test_that("applyProtNormSkippedRuvState stores skip results and saves normalized state", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   norm_data <- new.env(parent = emptyenv())
   workflow_data <- new.env(parent = emptyenv())
   saved_state <- NULL
@@ -1273,6 +1272,7 @@ test_that("finalizeProtNormRuvCleanupStep tracks protein counts and saves normal
 })
 
 test_that("resolveProtNormStep6QcObject prefers step5 output and falls back to norm_data", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   norm_data <- new.env(parent = emptyenv())
   norm_data$ruv_normalized_obj <- "fallback_obj"
 
@@ -1296,6 +1296,7 @@ test_that("resolveProtNormStep6QcObject prefers step5 output and falls back to n
 })
 
 test_that("runProtNormStep6RuvQc runs RUV QC generation and saves cancor plot", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   norm_data <- new.env(parent = emptyenv())
   norm_data$ruv_optimization_result <- list(best_cancor_plot = "plot_obj")
   norm_data$qc_plot_paths <- NULL
@@ -1323,6 +1324,7 @@ test_that("runProtNormStep6RuvQc runs RUV QC generation and saves cancor plot", 
 })
 
 test_that("runProtNormStep6RuvQc skips generation when RUV was skipped", {
+  skip("quarantined: Q-187 (KIT-122) it calls a function KIT-122 deleted as unreferenced since before KIT-120 (updateProtNormDesignDrivenChoices, prepareProtNormNormalizationRun, runProtNormPostNormalizationQcStep, applyProtNormSkippedRuvState, resolveProtNormStep6QcObject or runProtNormStep6RuvQc); the design's choices are the shared frame's (omicNormDesignChoices) and the run is the reference declaration (runDIAReferenceNormalization), covered by test-omic-norm-module.R and test-prot-norm-core.R")
   norm_data <- new.env(parent = emptyenv())
   norm_data$ruv_optimization_result <- list(best_cancor_plot = "plot_obj")
   generated <- FALSE
