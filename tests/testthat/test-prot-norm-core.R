@@ -1566,17 +1566,19 @@ test_that("KIT-111 W3: managed, the tab's run, apply and refusal run on the work
     # KIT-122 (re-frozen: the operations and the working notices only): each step's QC figures are a worker action
     # after its science and before its publication (`normalization-qc-figures`: the normalised state's, and the
     # final's unless RUV is skipped; the selection's PCA). The refused run fails before its figures.
+    # KIT-122 (composite; re-frozen: the operations and the working notices only): a normalisation's last figures
+    # action builds its composite QC figure, after the stage figures and before the publication.
     figures <- "normalization-qc-figures"
-    expect_identical(operations, list(dia_normalization_skip = c("normalization-ruv", figures),
-        dia_normalization_skip_repeat = c("normalization-ruv", figures),
-        dia_normalization_manual = c("normalization-ruv", figures, figures),
+    expect_identical(operations, list(dia_normalization_skip = c("normalization-ruv", figures, figures),
+        dia_normalization_skip_repeat = c("normalization-ruv", figures, figures),
+        dia_normalization_manual = c("normalization-ruv", figures, figures, figures),
         dia_correlation_apply = c("pearson-pairs", "pearson-selection", figures),
         dia_correlation_reapply = c("pearson-pairs", "pearson-selection", figures), dia_correlation_skip = character(),
-        dia_normalization_refused = "normalization-ruv", dia_normalization_retry = c("normalization-ruv", figures, figures)))
+        dia_normalization_refused = "normalization-ruv", dia_normalization_retry = c("normalization-ruv", figures, figures, figures)))
     # The completion texts are today's, after the runner's working notices (one per action).
     working <- "[default NULL] Applying proteomics step ..."
-    expect_identical(managed$dia_normalization_skip$notes, c(working, working, paste("[message 10]", buildProtNormCompletionNotification("skip"))))
-    expect_identical(managed$dia_normalization_manual$notes, c(working, working, working, paste("[message 10]", buildProtNormCompletionNotification("manual"))))
+    expect_identical(managed$dia_normalization_skip$notes, c(working, working, working, paste("[message 10]", buildProtNormCompletionNotification("skip"))))
+    expect_identical(managed$dia_normalization_manual$notes, c(working, working, working, working, paste("[message 10]", buildProtNormCompletionNotification("manual"))))
     expect_identical(managed$dia_correlation_apply$notes, c(working, working, working,
         "[message 5] Correlation filtering completed! Ready for differential expression analysis."))
     # The worker's failure: the runner's error, then the tab's; nothing committed (W1 (a)'s states, above); the retry completes.
@@ -1663,12 +1665,14 @@ test_that("KIT-111 W3 (R5): a click while the tab's action runs waits for it; a 
         session$elapse(100)
         session$flushReact()
         # KIT-122 (re-frozen: the operations only): the first run's figures come before the click that waited.
-        expect_identical(probe$operations, c("normalization-ruv", "normalization-qc-figures", "normalization-ruv",
-            "normalization-qc-figures"))
+        # KIT-122 (composite; re-frozen: the operations and the actions' positions only): each run's figures are the
+        # stage's and the composite's.
+        expect_identical(probe$operations, c("normalization-ruv", "normalization-qc-figures", "normalization-qc-figures",
+            "normalization-ruv", "normalization-qc-figures", "normalization-qc-figures"))
         expect_identical(sum(log$notes == done), 2L)
         expect_identical(as.character(unlist(fixture$manager$state_history)), c("initial", "protein_replicate_filtered", "normalized"))
-        expect_identical(probe$values[[3L]]$operation, "normalization-ruv")
-        expect_null(probe$values[[3L]]$commit)
+        expect_identical(probe$values[[4L]]$operation, "normalization-ruv")
+        expect_null(probe$values[[4L]]$commit)
         # Another heavy action holds the application: the click is refused with that notice and the tab's error.
         log$notes <- character()
         testthat::with_mocked_bindings({
@@ -1679,7 +1683,7 @@ test_that("KIT-111 W3 (R5): a click while the tab's action runs waits for it; a 
         expect_identical(log$notes, c("[error 15] another heavy action is active",
             "[error 10] Error in normalization: another heavy action is active"))
         expect_identical(fixture$manager$current_state, "normalized")
-        expect_length(probe$actions, 4L)
+        expect_length(probe$actions, 6L)
     })))
 })
 
@@ -1712,14 +1716,17 @@ test_that("GUI audit A111-01: a correlation click queued behind a normalisation 
         session$flushReact()
         previous <- shiny::isolate(norm$ruv_normalized_obj)$entity_id
         # KIT-122 (re-frozen: the actions' positions and operations only): each step's QC figures are a worker action.
+        # KIT-122 (composite; re-frozen: the actions' positions and operations only): a normalisation's last figures
+        # action builds its composite QC figure, so the pairs are the fourth action, and the re-run's the eleventh.
         figures <- "normalization-qc-figures"
-        expect_identical(probe$actions[[3L]]$input, previous)
+        expect_identical(probe$actions[[4L]]$operation, "pearson-pairs")
+        expect_identical(probe$actions[[4L]]$input, previous)
         # The re-run is in flight when the correlation button is pressed.
         probe$hold <- TRUE
         session$setInputs(ruv_mode = "manual")
         session$setInputs(run_normalization = 2)
         session$setInputs(apply_correlation_filter = 2)
-        expect_length(probe$actions, 6L)
+        expect_length(probe$actions, 7L)
         probe$hold <- FALSE
         for (i in 1:3) {
             session$elapse(100)
@@ -1727,9 +1734,10 @@ test_that("GUI audit A111-01: a correlation click queued behind a normalisation 
         }
         final <- shiny::isolate(norm$ruv_normalized_obj)$entity_id
         expect_false(identical(final, previous))
-        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("normalization-ruv", figures, "pearson-pairs",
-            "pearson-selection", figures, "normalization-ruv", figures, figures, "pearson-pairs", "pearson-selection", figures))
-        expect_identical(vapply(probe$actions[9:10], `[[`, "", "input"), c(final, final))
+        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("normalization-ruv", figures, figures, "pearson-pairs",
+            "pearson-selection", figures, "normalization-ruv", figures, figures, figures, "pearson-pairs", "pearson-selection",
+            figures))
+        expect_identical(vapply(probe$actions[11:12], `[[`, "", "input"), c(final, final))
         expect_identical(withWorkflowStateScope(fixture$manager, function() fixture$manager$.context$snapshot$current_state),
             "correlation_filtered")
     })

@@ -107,9 +107,11 @@ test_that("KIT-122 (E1): managed, the worker saves the tab's QC figures and the 
     expect_identical(managed$counts[["worker saveWorkflowDiaQcProduct"]], unmanaged$counts[["application saveWorkflowDiaQcProduct"]])
     # The actions: each place's figures after its science and before its publication; the skipped correlation's PCA is
     # the normalisation's final's, which the worker saved with that step, so it dispatches nothing.
+    # KIT-122 (composite; re-frozen: the operations only): a normalisation's last figures action builds its composite
+    # QC figure, after the stage figures.
     figures <- "normalization-qc-figures"
-    expect_identical(managed$actions, list(tab_entry = figures, normalization_skip = c("normalization-ruv", figures),
-        normalization_manual = c("normalization-ruv", figures, figures), aesthetics = c(figures, figures, figures),
+    expect_identical(managed$actions, list(tab_entry = figures, normalization_skip = c("normalization-ruv", figures, figures),
+        normalization_manual = c("normalization-ruv", figures, figures, figures), aesthetics = c(figures, figures, figures),
         correlation_apply = c("pearson-pairs", "pearson-selection", figures), correlation_skip = character()))
 })
 
@@ -138,4 +140,134 @@ test_that("KIT-122 (E1): on DIA_LIMPA the pass-through's and the RUV covariates'
     figures <- "normalization-qc-figures"
     expect_identical(managed$actions, list(pass_through = figures, correlation = c("pearson-pairs", "pearson-selection", figures),
         ruv = c("protein_ruv_covariates", figures)))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-122 (composite): the normalisation's composite QC figure as a worker product. Assembled in the application, its
+# rasters were the normalisation step's largest memory event there. On a managed session the worker builds it after the
+# stage figures and before the publication half (the `composite` figures of `normalization-qc-figures`) and saves its
+# three files; the publication half writes their bytes inside its journaled `produce`, where the builder wrote them.
+# The tab is driven unmanaged and managed on the DIA fixture through the tab entry (the pre-normalisation images), a
+# normalisation with RUV skipped (two columns), one with RUV applied (three columns and the canonical-correlation
+# image) and that one pressed again. Counted, in the application and in the worker: the builder's calls. Recorded: the
+# staged file set of each normalisation publication, and the published figure's files after each step (the image by
+# its md5; the PDF and the RDS, which are not byte-stable between two builds, by their size).
+# ------------------------------------------------------------------------------------------------
+
+#' Drive the tab through `steps` (as `protNormK122Drive`), counting the composite's builder by process.
+#' @return `builds` (the builder's calls: `application`, `worker`), `staged` (per normalisation publication, the files
+#'   of each staged role), `figure` (after each step: the image's md5 and the three files' sizes) and the managed
+#'   actions' operations per step.
+protNormK122CompositeDrive <- function(fixture, steps, managed) {
+    probe <- new.env()
+    log <- new.env(parent = emptyenv())
+    protNormW3Notices(log, fixture$root)
+    if (managed) protNormW3Managed(fixture, probe)
+    out <- new.env(parent = emptyenv())
+    build <- generateProtNormCompositeQcFigure
+    publish <- publishDIAActionOutputs
+    testthat::local_mocked_bindings(
+        generateProtNormCompositeQcFigure = function(...) {
+            process <- if (identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) "worker" else "application"
+            out$builds[[process]] <- (out$builds[[process]] %||% 0L) + 1L
+            build(...)
+        },
+        publishDIAActionOutputs = function(manager, reference, label, destinations, produce, identity = NULL) {
+            publish(manager, reference, label, destinations, function(staged) {
+                display <- produce(staged)
+                if (identical(label, "normalization")) out$staged <- c(out$staged,
+                    list(lapply(staged, function(directory) sort(list.files(directory, recursive = TRUE)))))
+                display
+            }, identity)
+        }, .package = "MultiScholaR")
+    selected <- shiny::reactiveVal("import")
+    files <- file.path(fixture$paths$protein_qc_dir, paste0("proteomics_composite_QC_figure.", c("png", "pdf", "rds")))
+    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
+        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
+        experiment_label = "core", selected_tab = selected), {
+        session$userData$dia_capacity_manager <- fixture$manager
+        for (case in names(steps)) {
+            seen <- length(probe$actions)
+            steps[[case]](session, selected)
+            for (i in 1:3) {
+                session$elapse(100)
+                session$flushReact()
+            }
+            out$figure[[case]] <- list(image = unname(tools::md5sum(files[[1L]])), bytes = file.size(files))
+            out$actions[[case]] <- vapply(probe$actions[seq_along(probe$actions) > seen], `[[`, "", "operation")
+        }
+    })))
+    list(builds = out$builds, staged = out$staged, figure = out$figure, actions = out$actions)
+}
+
+test_that("KIT-122 (composite): managed, the worker builds the composite QC figure and the application writes its saved files; the image is byte-identical to the unmanaged tab's (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    # The last step presses the button again with nothing changed.
+    steps <- function() {
+        dia <- protNormK122DiaSteps()
+        c(dia[c("tab_entry", "normalization_skip", "normalization_manual")], list(normalization_repeat = dia$normalization_skip))
+    }
+    runs <- c("normalization_skip", "normalization_manual", "normalization_repeat")
+    unmanaged <- protNormK122CompositeDrive(protNormCoreOwner(), steps(), managed = FALSE)
+    managed <- protNormK122CompositeDrive(protNormCoreOwner(), steps(), managed = TRUE)
+    # Unmanaged: the application builds the figure in each publication (today's path); no figure before the first, and
+    # none for the repeated click, whose publication is already journaled.
+    expect_identical(unmanaged$builds, list(application = 2L))
+    expect_identical(unmanaged$figure$tab_entry, list(image = NA_character_, bytes = rep(NA_real_, 3L)))
+    for (case in runs) {
+        expect_false(is.na(unmanaged$figure[[case]]$image), info = case)
+        expect_true(all(unmanaged$figure[[case]]$bytes > 0), info = case)
+    }
+    # RUV skipped and RUV applied are two layouts: two images.
+    expect_false(identical(unmanaged$figure$normalization_skip$image, unmanaged$figure$normalization_manual$image))
+    expect_identical(unmanaged$figure$normalization_repeat, unmanaged$figure$normalization_manual)
+    # Managed: the worker builds each figure and the application builds none; for the repeated click the worker finds
+    # the figure saved and builds nothing.
+    expect_identical(managed$builds, list(worker = 2L))
+    # The image is the unmanaged tab's, byte for byte, after every step; the PDF and the RDS are there and not empty.
+    expect_identical(lapply(managed$figure, `[[`, "image"), lapply(unmanaged$figure, `[[`, "image"))
+    for (case in runs) expect_true(all(managed$figure[[case]]$bytes > 0), info = case)
+    # The staged file set of each normalisation publication is the same: the figure's three files are in the journal's
+    # inventory on both paths, with the stage images and, when RUV is applied, the canonical-correlation image.
+    expect_length(unmanaged$staged, 2L)
+    expect_identical(managed$staged, unmanaged$staged)
+    composite <- paste0("proteomics_composite_QC_figure.", c("pdf", "png", "rds"))
+    for (publication in managed$staged) expect_true(all(composite %in% publication$protein_qc_dir))
+    expect_false("ruv_corrected_cancor.png" %in% managed$staged[[1L]]$protein_qc_dir)
+    expect_true("ruv_corrected_cancor.png" %in% managed$staged[[2L]]$protein_qc_dir)
+    # The actions: the composite's after the stage figures of the states the publication draws.
+    figures <- "normalization-qc-figures"
+    expect_identical(managed$actions, list(tab_entry = figures, normalization_skip = c("normalization-ruv", figures, figures),
+        normalization_manual = c("normalization-ruv", figures, figures, figures),
+        normalization_repeat = c("normalization-ruv", figures, figures, figures)))
+    for (case in names(unmanaged$actions)) expect_length(unmanaged$actions[[case]], 0L)
+})
+
+test_that("KIT-122 (composite): a figure is found saved only for the stage images it was built from", {
+    manager <- list(.context = list(software = "test-build"))
+    product <- list(entity_id = strrep("a", 64L))
+    directory <- withr::local_tempdir()
+    images <- c("pre_norm_pca.png", "post_norm_pca.png", "ruv_corrected_pca.png", "ruv_corrected_cancor.png")
+    for (image in images) writeLines(image, file.path(directory, image))
+    identities <- diaCompositeFigureIdentities(manager, product, "manual", directory)
+    expect_identical(names(identities), c("png", "pdf", "rds"))
+    expect_identical(anyDuplicated(identities), 0L)
+    expect_identical(diaCompositeFigureIdentities(manager, product, "manual", directory), identities)
+    # Another directory with the same images is the same figure; the canonical-correlation image is not read.
+    copy <- withr::local_tempdir()
+    file.copy(file.path(directory, images[1:3]), copy)
+    writeLines("another rendering", file.path(copy, images[[4L]]))
+    expect_identical(diaCompositeFigureIdentities(manager, product, "manual", copy), identities)
+    # Another image (other aesthetics), a missing image, another layout or another run is another figure.
+    writeLines("redrawn", file.path(copy, images[[2L]]))
+    expect_false(identical(diaCompositeFigureIdentities(manager, product, "manual", copy)$png, identities$png))
+    file.copy(file.path(directory, images[[2L]]), copy, overwrite = TRUE)
+    expect_identical(diaCompositeFigureIdentities(manager, product, "manual", copy), identities)
+    unlink(file.path(copy, images[[1L]]))
+    expect_false(identical(diaCompositeFigureIdentities(manager, product, "manual", copy)$png, identities$png))
+    expect_false(identical(diaCompositeFigureIdentities(manager, product, "skip", directory)$png, identities$png))
+    expect_false(identical(diaCompositeFigureIdentities(manager, list(entity_id = strrep("b", 64L)), "manual", directory)$png,
+        identities$png))
+    # With no directory nothing is looked up or written: the caller builds, as before.
+    expect_false(writeDIACompositeFigureFiles(manager, product, "manual", NULL, "proteomics"))
 })
