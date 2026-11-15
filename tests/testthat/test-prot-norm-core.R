@@ -1554,6 +1554,17 @@ test_that("KIT-111 W3: managed, the tab's run, apply and refusal run on the work
     probe <- new.env()
     managed <- protNormW3Drive(fixture, protNormW3DiaSteps(), managed = TRUE, probe = probe)
     protNormW3ExpectW1(managed, "managed")
+    # KIT-122 (composite): managed, the head also roots the composite QC figure's three files of each normalisation
+    # run, rendered assets the worker saved (unmanaged, the figure is built in the application and nothing is saved):
+    # three after the skipped run, six from the manual run on. They are counted here and set aside; every other
+    # product, and every other field, is compared as before.
+    composite_files <- c(3L, 3L, 6L, 6L, 6L, 6L, 6L, 6L)
+    for (i in seq_along(managed)) {
+        assets <- which(managed[[i]]$products == "rendered_asset")
+        expect_identical(length(assets) - sum(unmanaged[[i]]$products == "rendered_asset"), composite_files[[i]],
+            info = names(managed)[[i]])
+        managed[[i]]$products <- managed[[i]]$products[-utils::tail(assets, composite_files[[i]])]
+    }
     protNormW3ExpectSame(managed, unmanaged)
     # KIT-116 (A111-05): the audit fields compared above are not empty on either side.
     empty <- c(list = protNormW1Sha(protNormW1Canonical(list(), fixture$manager, fixture$root)),
