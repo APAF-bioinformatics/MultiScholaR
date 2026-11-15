@@ -52,6 +52,10 @@ App memory in `normalisation_ruv`, one run each (`app-memory-by-step.tsv`):
 - By reading only, not reproduced: a managed retry after a failed publication may be refused (`assertDIAExportReady` with no `allow_action`).
 - DIA_LIMPA gets no pre-normalisation QC on tab entry. With RUV skipped the RUV summary still reads "Manual RUV Parameters" with NA values.
 
+## Final tree
+
+Full suite in both modes, `R CMD check` and seven e2e lanes at `ed99a0a8`: no regression ([final/suite.md](final/suite.md)). `test-prot-norm-core.R` now runs for about 1,600 s and reached the suite's 1,800 s per-file ceiling once in check mode (it passes alone). The two drives this ticket added to it should move to a file of their own.
+
 ## Acceptance
 
-Met: F2, F5 to F8, F10, the dead code, figures byte-identical, journeys exact, no numeric result changed. Not met: E1's memory aim on the DIA full journey. The full suite, `R CMD check` and the e2e lanes for the final tree are in [final/suite.md](final/suite.md).
+Met: F2, F5 to F8, F10, the dead code, figures byte-identical, journeys exact, no numeric result changed. Not met: E1's memory aim on the DIA full journey.
