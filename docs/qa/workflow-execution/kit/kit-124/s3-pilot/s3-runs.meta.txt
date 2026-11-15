@@ -1,0 +1,13 @@
+simulator: S3 (transcriptomics), KIT-124 revision 1.2
+commit: e8fdebb4daf95fcd2e1ed17a768fe115aa65364d
+script sha256: ad9567c02534bf12fee3b7efbc9dfce2cf0b7610c8248bdd944e41a13df8c508
+command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s3_trx.R docs/qa/workflow-execution/kit/kit-124/s3-pilot 20 20 4 all 9001
+cells run by this command: C0,C1,C2,C3,C4,C5,C6,C7,S1,S2,S3,S4,S5,S7,S8,S9,S10,S11,S12,S13,S14; cells in the tables: C0,C1,C2,C3,C4,C5,C6,C7,S1,S2,S3,S4,S5,S7,S8,S9,S10,S11,S12,S13,S14
+runs: core 20, stress 20, first run 9001; cores 4
+seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+R: R version 4.6.1 (2026-06-24); BLAS /usr/lib/libblas.so.3.12.0
+MultiScholaR (load_all): 0.5.0
+packages: edgeR 4.10.1; limma 3.68.4; RUVSeq 1.46.0; EDASeq 2.46.0; sva 3.60.0; ruv 0.9.7.1; pkgload 1.5.3
+started 2026-11-16 06:50:48; finished 2026-11-16 07:48:14
+wall seconds per cell: C0 118; C1 241; C2 197; C3 179; C4 199; C5 194; C6 226; C7 205; S1 139; S2 160; S3 162; S4 181; S5 100; S7 172; S8 169; S9 160; S10 168; S11 133; S12 142; S13 99; S14 87

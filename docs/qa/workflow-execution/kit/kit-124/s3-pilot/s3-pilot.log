@@ -1,0 +1,24 @@
+Loading required namespace: edgeR
+Loading required namespace: RUVSeq
+Loading required namespace: sva
+C0: 20 runs in 118 s on 4 cores
+C1: 20 runs in 241 s on 4 cores
+C2: 20 runs in 197 s on 4 cores
+C3: 20 runs in 179 s on 4 cores
+C4: 20 runs in 199 s on 4 cores
+C5: 20 runs in 194 s on 4 cores
+C6: 20 runs in 226 s on 4 cores
+C7: 20 runs in 205 s on 4 cores
+S1: 20 runs in 139 s on 4 cores
+S2: 20 runs in 160 s on 4 cores
+S3: 20 runs in 162 s on 4 cores
+S4: 20 runs in 181 s on 4 cores
+S5: 20 runs in 100 s on 4 cores
+S7: 20 runs in 172 s on 4 cores
+S8: 20 runs in 169 s on 4 cores
+S9: 20 runs in 160 s on 4 cores
+S10: 20 runs in 168 s on 4 cores
+S11: 20 runs in 133 s on 4 cores
+S12: 20 runs in 142 s on 4 cores
+S13: 20 runs in 99 s on 4 cores
+S14: 20 runs in 87 s on 4 cores
