@@ -65,6 +65,22 @@ runProtDesignBuilderSaveFlow <- function(
     return(FALSE)
   }
 
+  # KIT-118 (P-10): the contrasts are checked against the design's model matrix before anything is
+  # written, as lipid and metab do at save (`validateOmicsDesignSave`): a contrast naming a term the
+  # formula does not produce is refused here, not later at differential abundance. The sample
+  # alignment half of that preflight does not apply: the builder lists the data's own runs.
+  preflight <- validateOmicsDesignContrasts(
+    designMatrix = results$design_matrix, contrastsTbl = results$contrasts_tbl,
+    rules = list(label = "Proteomics"),
+    formulaString = resolveOmicsDesignFormula(results$config_list), allowEmpty = TRUE
+  )
+  if (!isTRUE(preflight$valid)) {
+    msg <- paste("Invalid proteomics design:", paste(preflight$errors, collapse = "; "))
+    logger::log_error(msg)
+    shiny::showNotification(msg, type = "error", duration = 15)
+    return(FALSE)
+  }
+
   tryCatch({
     persistProtDesignBuilderArtifacts(
       results = results,
