@@ -1964,7 +1964,7 @@ omicGuiMetabDesign <- function() {
         # and keeps the file's contrasts
         design_import = omicGuiFeatureDesignImport(c("Metabolite name", "Metabolite.name", "Name",
             "name"), updateMetaboliteFiltering, preflight = TRUE, class = "MetaboliteAssayData",
-            record_design_file = FALSE, check_files_first = TRUE, preflight_contrasts = FALSE)))
+            record_design_file = TRUE, check_files_first = TRUE, preflight_contrasts = FALSE)))
 }
 
 #' The metab panel (the provenance abbreviations are the file header's). Its ids, labels and

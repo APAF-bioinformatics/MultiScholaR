@@ -903,3 +903,25 @@ test_that("W2 finding: the design import holds vroom's tables (today's fails: 'p
         }
     }
 })
+
+test_that("KIT-118 (P-14): lipid and metab both record the imported design file and the experiment's source directory", {
+    omicsDesignPlainReads()
+    for (omic in c("lipidomics", "metabolomics")) {
+        root <- omicsDesignImportCase(omic)
+        fixture <- omicsDesignFixture(omic)
+        config <- omicsDesignTestConfig(omic)
+        config$design$design_import$qc_baseline <- function(...) invisible(NULL)
+        recorded <- NULL
+        record <- config$design$record_provenance
+        config$design$record_provenance <- function(manager, object, source_dir = NULL, design_file = NULL) {
+            recorded <<- list(source_dir = source_dir, design_file = design_file)
+            record(manager, object, source_dir = source_dir, design_file = design_file)
+        }
+        shiny::withReactiveDomain(omicsOwnerSession(), {
+            imported <- readOmicsDesignImport(root, config, fixture$paths$source_dir)
+            commitOmicsDesignImport(fixture$workflow, imported, fixture$paths$source_dir, config)
+        })
+        expect_identical(recorded, list(source_dir = fixture$paths$source_dir,
+            design_file = file.path(root, "design_matrix.tab")), info = omic)
+    }
+})

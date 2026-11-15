@@ -418,7 +418,8 @@ test_that("the design group holds today's values per omic", {
         expect_identical(design[[omic]]$design_import$reader, readOmicsDesignImport, info = omic)
     }
     expect_true(isTRUE(design$lipidomics$design_import$record_design_file))
-    expect_identical(design$metabolomics$design_import$record_design_file, FALSE)
+    # KIT-118 (P-14): metab records its imported design file, as lipid does.
+    expect_true(isTRUE(design$metabolomics$design_import$record_design_file))
     # Metab checks the import's files before the modal closes (P-11); lipid after.
     expect_identical(design$lipidomics$design_import$check_files_first, FALSE)
     expect_true(isTRUE(design$metabolomics$design_import$check_files_first))
