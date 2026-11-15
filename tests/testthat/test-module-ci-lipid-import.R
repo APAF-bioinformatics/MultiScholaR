@@ -71,7 +71,10 @@ test_that("MCI-018.2 MS-DIAL matrix preserves annotation, duplicate, and intensi
 
   expect_identical(run$result$status, "success")
   expect_identical(run$workflow$data_format, "msdial")
-  expect_true(any(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1 == 0))
+  # KIT-118 M3: the fixture's exact 0 in WT_1 is read as missing, with a warning.
+  expect_true(anyNA(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1))
+  expect_false(any(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1 == 0, na.rm = TRUE))
+  expect_true(any(grepl("zero value(s) read as missing", run$result$validationResult$warnings, fixed = TRUE)))
   expect_true(any(is.na(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_2)))
   expect_true(any(grepl("duplicate lipid IDs", run$result$validationResult$warnings, fixed = TRUE)))
 

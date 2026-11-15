@@ -46,7 +46,7 @@ omicsImportAbort <- function(message, class = character()) {
 #' @return A list: `messages`, `assay_prefix` (mapping errors and warnings prefixed by the assay),
 #'   `unique` (errors and warnings de-duplicated), `numeric_like` (the numeric check is
 #'   `omicsImportValuesAreNumericLike`, else `is.numeric`), `samples` (`request` or
-#'   `all_but_id`), `refusal_class`.
+#'   `all_but_id`), `refusal_class`, `zero_is_missing` (KIT-118 M3: an intensity of 0 is "not detected").
 #' @noRd
 omicsImportRules <- function(omic_type) {
     lipid <- list(
@@ -57,11 +57,12 @@ omicsImportRules <- function(omic_type) {
             not_data_frame = "Assay '%s' is not a data frame",
             non_numeric = "Assay '%s' has non-numeric sample columns: %s"),
         assay_prefix = TRUE, unique = FALSE, numeric_like = FALSE, samples = "request",
-        refusal_class = character())
+        refusal_class = character(), zero_is_missing = TRUE)
     switch(omic_type,
         lipidomics = lipid,
+        # A count of 0 is a measurement: transcriptomics keeps its zeros.
         transcriptomics = utils::modifyList(lipid, list(samples = "all_but_id",
-            refusal_class = c("trx_counts_invalid", "trx_error"))),
+            refusal_class = c("trx_counts_invalid", "trx_error"), zero_is_missing = FALSE)),
         metabolomics = list(
             messages = c(no_assays = "No assay data provided.",
                 unnamed = "All assays must have non-empty names.",
@@ -71,7 +72,7 @@ omicsImportRules <- function(omic_type) {
                 not_data_frame = "Assay '%s' is not a data frame.",
                 non_numeric = "Assay '%s' has non-numeric sample column(s): %s"),
             assay_prefix = FALSE, unique = TRUE, numeric_like = TRUE, samples = "request",
-            refusal_class = character()),
+            refusal_class = character(), zero_is_missing = TRUE),
         cli::cli_abort("no import rules for omic {.val {omic_type}}.",
             class = "omics_import_invalid"))
 }
@@ -356,6 +357,39 @@ validateOmicsImportTables <- function(assays, id_col, sample_columns, validate_m
     list(valid = length(errors) == 0L, errors = errors, warnings = warnings, summary = summary)
 }
 
+#' KIT-118 M3 (KIT-114 (e)): in a lipid or metab feature table an intensity of exactly 0 is "not detected", a missing
+#' value, not a measurement. Kept as 0 it became log2(0 + 1) = 0 beside values near 2^18, which cost 14 to 49 points of
+#' power and distorted fold changes in the measurement (kit-114/outcome.md). A negative intensity is a damaged table.
+#' An assay without zeros is returned as it came (no copy).
+#' @param assays The validated assays (numeric sample columns).
+#' @param sample_columns The sample columns.
+#' @return `list(assays, zeros, negative)`: the assays with zeros as NA, and the zero and negative counts by assay
+#'   (assays with none are left out).
+#' @noRd
+omicsImportZerosAsMissing <- function(assays, sample_columns) {
+    zeros <- integer()
+    negative <- integer()
+    for (name in names(assays)) {
+        present <- intersect(sample_columns, names(assays[[name]]))
+        count <- 0L
+        below <- 0L
+        for (column in present) {
+            values <- assays[[name]][[column]]
+            if (!is.numeric(values)) next
+            below <- below + sum(values < 0, na.rm = TRUE)
+            at <- which(values == 0)
+            if (length(at)) {
+                count <- count + length(at)
+                values[at] <- NA
+                assays[[name]][[column]] <- values
+            }
+        }
+        if (count > 0L) zeros[[name]] <- count
+        if (below > 0L) negative[[name]] <- below
+    }
+    list(assays = assays, zeros = zeros, negative = negative)
+}
+
 # ------------------------------------------------------------------------------------------------
 # I10 to I12: the column mapping, the artifacts and the processing log.
 # ------------------------------------------------------------------------------------------------
@@ -449,7 +483,7 @@ describeOmicsImport <- function(assays, data_format, id_col, sample_columns, cou
 #'   `sanitize_names`, `is_pattern`, `experiment_paths`.
 #' @param config The omic's `omicGuiConfig()`.
 #' @return A list: `assays`, `sample_columns`, `data_format`, `column_mapping`, `processing_log`,
-#'   `validation`, `artifacts` and `sanitized`. A refusal is an `omics_import_invalid` error (trx:
+#'   `validation`, `artifacts` and `sanitized`; and `zeros_as_missing` when a lipid or metab zero was read as missing. A refusal is an `omics_import_invalid` error (trx:
 #'   also `trx_counts_invalid`) with today's message; the check plugin's and readers' errors pass
 #'   through unchanged.
 #' @noRd
@@ -490,6 +524,21 @@ importOmicsTables <- function(request, config) {
         omicsImportAbort(paste0(import$refusal_prefix, ": ",
             paste(validation$errors, collapse = "; "), suffix), rules$refusal_class)
     }
+    zeros <- NULL
+    if (isTRUE(rules$zero_is_missing)) {
+        missing <- omicsImportZerosAsMissing(assays, sample_columns)
+        if (length(missing$negative)) {
+            omicsImportAbort(paste0(import$refusal_prefix, ": ", paste(sprintf(
+                "Assay '%s' has %d negative value(s) in its sample columns; intensities must be zero or positive",
+                names(missing$negative), missing$negative), collapse = "; ")), rules$refusal_class)
+        }
+        assays <- missing$assays
+        zeros <- missing$zeros
+        if (length(zeros)) {
+            validation$warnings <- c(validation$warnings, sprintf(
+                "Assay '%s': %d zero value(s) read as missing (not detected)", names(zeros), zeros))
+        }
+    }
     data_format <- if (custom) "custom" else request$detected_format
     column_mapping <- buildOmicsImportColumnMapping(import$id_mapping_key, id_col, annotation_col,
         sample_columns, request$is_pattern)
@@ -497,9 +546,12 @@ importOmicsTables <- function(request, config) {
         assay2 = if (omicsImportSecondAssayCounts(assay2_file, assay2_name)) assay2_file)
     artifacts <- writeOmicsImportArtifacts(assays, column_mapping, request$experiment_paths,
         source_files, import$summary_file)
-    list(assays = assays, sample_columns = sample_columns, data_format = data_format,
+    result <- list(assays = assays, sample_columns = sample_columns, data_format = data_format,
         column_mapping = column_mapping,
         processing_log = describeOmicsImport(assays, data_format, id_col, sample_columns,
             import$count_key, artifacts),
         validation = validation, artifacts = artifacts, sanitized = sanitized$sanitized)
+    # KIT-118 M3: the zero counts by assay, present only when a zero was read as missing.
+    if (length(zeros)) result$zeros_as_missing <- zeros
+    result
 }

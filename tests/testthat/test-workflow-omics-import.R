@@ -330,9 +330,13 @@ test_that("I3, I4 the sample and column resolution is today's (lipid and metab) 
 
 # The pre-KIT-102 lipid runs (runLipidImportProcessing through the MCI-018 helper), frozen from d469cea3
 # (KIT-116): a refusal's message, or the sha256 of omicsImportRecord.
+# KIT-118 M3 (2026-11-15): the digests of the cases whose fixtures hold an exact 0 in a
+# sample column were re-frozen, because 0 is now read as missing with a warning: lipid
+# `ls_zero`, `msdial`, `vendor_mismatch`, `pair`, `pair_unusual`; metabolomics `msdial`.
+# Every other digest is unchanged.
 omicsImportFrozen_i5_lipid <- list(
     ls_pos = list(digest = "b72fc8114f40fed8373d86ccce42746379304835fad0d0c3bb044f7cd4ca3a2e"),
-    ls_zero = list(digest = "4cd303057d7fa8169fe3e95e43583de5855fdcad823128c13a34182a4740aff6"),
+    ls_zero = list(digest = "dffc369a5dba3f11dc541d20e3dd6c95fefd46a4079bebb077ad504a1072592f"),
     ls_no_class = list(digest = "fb6af95a0c1bfdc29374d1b4ff48ba31f778d617e5a70e729afd2f93d8b355e5"),
     ls_duplicate_ids = list(digest = "cb911979e5b0726a5ea1356e48f64f5050b4cc361d59a2865fcf699bf34af512"),
     missing_id = list(message = "Invalid lipidomics import: Assay 'LCMS_Pos': Lipid ID column not found: LipidName"),
@@ -344,14 +348,14 @@ omicsImportFrozen_i5_lipid <- list(
     mismatched = list(
         message = "Invalid lipidomics import: Assay 'LCMS_Pos': Sample columns not found: Missing_1, Missing_2"),
     no_numeric = list(message = "Invalid lipidomics import: Assay 'LCMS_Pos' has non-numeric sample columns: WT_1"),
-    msdial = list(digest = "9df45aaebe49594566baab1c4d10733510db82679acf5e70849ab96621780273"),
-    vendor_mismatch = list(digest = "66362a421c931dbdeb927a21b78a4e02d93115dae30819f193d65b33880fdde6"),
+    msdial = list(digest = "e688ffde6df5b16e0fbef99911384e84e7d30d66d7cc8f9db23eac39daddcf3c"),
+    vendor_mismatch = list(digest = "aa32ac9e94e4b9f63bb0773d38615a8841e3afe950aaa8f58879c21b44968070"),
     custom_override = list(digest = "db23fe88f5c761bf063125054b47fde2a643d6ff224399778dc1dd4087a96f19"),
     custom_null_detected = list(digest = "24a7c2966c6fa7492906ddc614d56a35ac8f33744e220c31b61522db0f8a2f2c"),
     path_name = list(message = "Assay names must not contain path separators"),
     empty_name = list(message = "Primary lipidomics assay name is required"),
-    pair = list(digest = "36054f6ebe48000976819a1f620b3f298a81a0389352186f4313c57a836c599a"),
-    pair_unusual = list(digest = "027d1f4e79fe712e455f9eccb3c3f91293b7d99fe1957d367cf52391fb3ab046"),
+    pair = list(digest = "26eb547810b2707b61f3252059f56ca13583284ff1012d320980e5aaac787d96"),
+    pair_unusual = list(digest = "86efcb2344d992fa01ffd582d33c699ce60e2a771371175f1bd7cb6a0233e19c"),
     pair_duplicate = list(message = "Duplicate lipidomics assay names are not allowed"),
     pair_no_name = list(message = "Second lipidomics assay requires both a file and an assay name"),
     pair_no_file = list(message = "Second lipidomics assay requires both a file and an assay name"),
@@ -437,7 +441,7 @@ omicsImportFrozen_i5_metab <- list(
     annotation_present = list(digest = "fb16f3b5fa21456363a6b177d521427711c65b8acd97621ee16eec1be14b9e68"),
     annotation_absent = list(digest = "efe3283a6676cf7a2485b8f0cfec0fe2e8b8cf43fb66333bb050c0a630da3e55"),
     text_numeric = list(digest = "ef7034f51eff11297e19f50b766957158eb74cddf46152c148d49b0359cf44b6"),
-    msdial = list(digest = "77d279335289fbc2aede92b380e7b690b28801358725c96ae6d0939edf0270df"),
+    msdial = list(digest = "f244efc758d4e01d113eb839b37802f2ef452cbac1a8995947fb0a7db7c87850"),
     missing_id_column = list(message = "Invalid metabolomics import: Metabolite ID column not found: Missing.ID"),
     empty_id = list(message = paste("Invalid metabolomics import: Metabolite ID column is not specified.;",
         "Metabolite ID column is not specified")),
@@ -647,4 +651,49 @@ test_that("F102-01: metab's missing-value warning counts empty text cells, after
     expect_true(payload$validation$valid)
     expect_identical(payload$validation$warnings, "High proportion of missing values: 58.3%")
     expect_identical(payload$assays$LCMS_Pos$WT_1, rep(NA_real_, 3))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-118 M3 (KIT-114 (e); user's call 2026-11-15): for lipid and metab a 0 in a sample column is "not detected", read as
+# missing with its count reported; a negative refuses the import. Transcriptomics counts keep their zeros.
+# ------------------------------------------------------------------------------------------------
+
+test_that("(KIT-118 M3) lipid and metab read a zero as missing and report the count; a negative refuses (fails before)", {
+    samples <- module_ci_lipid_sample_cols()
+    request <- function(assay) omicsImportRequest(assay, module_ci_lipid_import_paths(), NULL, vendor_format = "custom",
+        detected_format = NULL, id_col = "lipid_id", annotation_col = "annotation", sample_cols = samples)
+    for (omic in c("lipidomics", "metabolomics")) {
+        config <- omicsImportConfig(omic)
+        clean <- module_ci_lipid_custom_assay(numeric_as_character = FALSE)
+        untouched <- importOmicsTables(request(clean), config)
+        expect_identical(untouched$assays[[1L]][samples], clean[samples], info = omic)
+        expect_null(untouched$zeros_as_missing, info = omic)
+        with_zero <- clean
+        with_zero[[samples[[1L]]]][c(1L, 2L)] <- 0
+        with_zero[[samples[[2L]]]][[3L]] <- 0
+        payload <- importOmicsTables(request(with_zero), config)
+        got <- payload$assays[[1L]]
+        expect_identical(which(is.na(got[[samples[[1L]]]])), c(1L, 2L), info = omic)
+        expect_identical(which(is.na(got[[samples[[2L]]]])), 3L, info = omic)
+        expected <- clean[samples]
+        expected[[samples[[1L]]]][c(1L, 2L)] <- NA_real_
+        expected[[samples[[2L]]]][[3L]] <- NA_real_
+        expect_identical(got[samples], expected, info = omic)
+        expect_identical(payload$zeros_as_missing, stats::setNames(3L, names(payload$assays)[[1L]]), info = omic)
+        expect_true(any(grepl("3 zero value(s) read as missing", payload$validation$warnings, fixed = TRUE)), info = omic)
+        negative <- clean
+        negative[[samples[[1L]]]][[1L]] <- -5
+        expect_error(importOmicsTables(request(negative), config), "1 negative value(s)", fixed = TRUE,
+            class = "omics_import_invalid")
+    }
+})
+
+test_that("(KIT-118 M3) transcriptomics counts keep their zeros", {
+    table <- data.frame(GeneID = c("G1", "G2", "G3"), GeneName = c("N1", "N2", "N3"), S1 = c(0, 4, 9), S2 = c(5, 0, 7),
+        stringsAsFactors = FALSE)
+    payload <- importOmicsTables(omicsImportRequest(table, module_ci_lipid_import_paths(), NULL, "counts",
+        vendor_format = "trx_counts", id_col = "GeneID", annotation_col = "GeneName", sample_cols = NULL, is_pattern = ""),
+        omicsImportConfig("transcriptomics"))
+    expect_identical(payload$assays$counts$S1, c(0, 4, 9))
+    expect_null(payload$zeros_as_missing)
 })

@@ -65,7 +65,13 @@ test_that("MCI-012.2 MS-DIAL-style import matrix preserves metadata and edge int
   expect_identical(run$result$status, "success")
   expect_identical(run$workflow$data_format, "msdial")
   expect_true(any(is.na(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_2)))
-  expect_true(any(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1 == 0))
+  # KIT-118 M3: the fixture's exact 0 in WT_1 is read as missing, with a warning.
+  expect_true(anyNA(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1))
+  expect_false(any(getWorkflowOmicsBusTables(run$workflow, "data_tbl")$LCMS_Pos$WT_1 == 0, na.rm = TRUE))
+  expect_true(any(grepl("zero value(s) read as missing", run$result$payload$validation$warnings, fixed = TRUE)))
+  expect_true(any(vapply(run$notifications, function(note) {
+    grepl("zero value(s) read as missing", note$message, fixed = TRUE) && identical(note$type, "warning")
+  }, logical(1))))
   expect_identical(run$workflow$processing_log$setup_import$n_assays, 1L)
 })
 

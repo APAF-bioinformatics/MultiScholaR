@@ -359,6 +359,12 @@ processOmicImportFeatureTable <- function(workflow_data, request, config, comple
             logInfo(sprintf("Sanitized %d sample column names.", length(payload$sample_columns)))
             showNotification("Sample names sanitized for R compatibility.", type = "message")
         }
+        if (length(payload$zeros_as_missing)) {
+            zero_notice <- sprintf("Assay '%s': %d zero value(s) read as missing (not detected).",
+                names(payload$zeros_as_missing), payload$zeros_as_missing)
+            logInfo(paste(zero_notice, collapse = " "))
+            showNotification(paste(zero_notice, collapse = " "), type = "warning", duration = 10)
+        }
         commitOmicImportFeatureTable(workflow_data, payload, config, logInfo)
         removeNotification(working)
         complete()

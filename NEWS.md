@@ -9,6 +9,10 @@
    with a notice of the count per column, as the LFQ and TMT readers already did. Before, a 0 counted as an
    observed value in the peptide rollup and lowered the technical-replicate imputation's mean. A negative
    or infinite quantity now refuses the import. Results change only for reports that contain zeros.
+ * Lipidomics and metabolomics import: an intensity of exactly 0 in a sample column (a feature the vendor
+   software did not detect) is now read as a missing value, with a warning of the count per assay, as
+   proteomics does. Before, a 0 was kept as a measured intensity. A negative intensity now refuses the
+   import. Transcriptomics counts keep their zeros. Results change only for tables that contain zeros.
 
 ## Version 0.5.0 (Release Candidate)
 
