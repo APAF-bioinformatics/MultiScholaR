@@ -1262,11 +1262,12 @@ computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
 diaCompositeFigureMediaTypes <- c(png = "image/png", pdf = "application/pdf", rds = "application/octet-stream")
 
 #' The identities of the composite QC figure's files for the stage images in a QC directory: the normalisation run's
-#' product, the RUV mode (the layout), each stage image the builder reads there by name and content, and the file's
-#' kind. The images' content carries the aesthetics they were drawn with and a missing or older pre-normalisation
-#' image, so a figure is found saved only for the images it was built from. The canonical-correlation image is not
-#' read here: it is the product's own plot at a fixed size. The worker computes the identities on the directory it
-#' builds the figure in, the application on the publication's staged directory.
+#' product, the RUV mode (the layout), each stage image there by name and content (the builder's inputs,
+#' `resolveProtNormCompositeFigureInputs`), and the file's kind. The images' content carries the aesthetics they were
+#' drawn with and a missing or older pre-normalisation image, so a figure is found saved only for the images it was
+#' built from. The canonical-correlation image is not read here: it is the product's own plot at a fixed size. The
+#' worker computes the identities on the directory it builds the figure in, the application on the publication's
+#' staged directory.
 #' @param manager The session owner.
 #' @param product The normalisation run's product reference.
 #' @param ruv_mode The run's RUV mode.
@@ -1274,9 +1275,10 @@ diaCompositeFigureMediaTypes <- c(png = "image/png", pdf = "application/pdf", rd
 #' @return The identities, named by kind (`diaCompositeFigureMediaTypes`).
 #' @noRd
 diaCompositeFigureIdentities <- function(manager, product, ruv_mode, qc_dir) {
-    files <- resolveProtNormCompositeFigureInputs(ruv_mode, qc_dir)$plotFiles
-    files <- files[!is.na(files) & basename(files) != "ruv_corrected_cancor.png" & file.exists(files)]
-    images <- stats::setNames(vapply(files, function(file) digest::digest(file = file, algo = "sha256"), ""), basename(files))
+    files <- sort(list.files(qc_dir, pattern = "^(pre_norm|post_norm|ruv_corrected)_(pca|density|rle|correlation)[.]png$"),
+        method = "radix")
+    images <- stats::setNames(vapply(file.path(qc_dir, files), function(file) digest::digest(file = file, algo = "sha256"), ""),
+        files)
     parameters <- digest::digest(list(ruv_mode = ruv_mode, images = images), algo = "sha256")
     lapply(stats::setNames(nm = names(diaCompositeFigureMediaTypes)), function(kind) newSavedWorkflowScientificIdentity(
         product$entity_id, "dia-composite-qc-figure-v1", parameters, kind, manager$.context$software))
