@@ -1490,6 +1490,32 @@ if (!is.null(b$builds$kit_935)) {
     }
 }
 
+# KIT-118 M1 memory gate, the one correction pass (declared in the ticket before the runs): the DIA full journey stopped
+# after design, 934u first, 935u, 935v, 934v last.
+if (!is.null(b$builds$kit_934) && !is.null(b$builds$kit_935)) {
+    for (suffix in c("u", "v")) {
+        b$tickets[[paste0("934", suffix)]] <- short("kit_934", "before the DIA-NN zero rule, stopped after design (recorded, uncounted; KIT-118 M1 memory gate)")
+        b$tickets[[paste0("935", suffix)]] <- short("kit_935", "the DIA-NN zero rule, stopped after design (recorded, uncounted; KIT-118 M1 memory gate)")
+    }
+}
+
+# KIT-118 M3 and M4 on kit_936 (lipid and metab zeros as missing; P-09, P-10, P-14, P-18; the DIA-NN checkbox removed).
+# No corpus holds a zero in a sample column, so every member is judged against today's oracles: 936l/t/a/b/c (the routes'
+# screen journeys), 936m (DIA_LIMPA, against M1's limpa118_screen), 936s and 936v (lipid and metab on the corpora with
+# missing values: the steps after import on tables with missing values).
+if (!is.null(b$builds$kit_936)) {
+    kit_936 <- list(build = "kit_936", purpose = "KIT-118 M3 and M4 (recorded, uncounted)")
+    for (suffix in c("l", "t", "a", "b", "c")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("936", suffix)]] <- utils::modifyList(from, kit_936)
+    }
+    if (!is.null(b$tickets[["935m"]])) b$tickets[["936m"]] <- utils::modifyList(b$tickets[["935m"]], kit_936)
+    if (!is.null(b$oracles$lipid86s_import)) b$tickets[["936s"]] <- utils::modifyList(
+        single_084("kit_936", "lipid_screen_missing", "lipidomics", "lipid86s", 1800L), kit_936)
+    if (!is.null(b$oracles$metab86s_import)) b$tickets[["936v"]] <- utils::modifyList(
+        single_084("kit_936", "metab_screen_missing", "metabolomics", "metab86s", 1800L), kit_936)
+}
+
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
 # volcano, rerun once on the corrected build under new keys (106x lipid from 101a, 106y metab from 101b). The build key is
 # kit_906 (build keys are kit_ plus three digits; the 900s are no ticket's), the KIT-106 correction build.

@@ -1,0 +1,18 @@
+kit-journey-935m start 18:05:20 at 447b8165: AC 1, profile low-power, battery 87%, load 4.56, available 40 GiB
+kit-journey-935m end 18:11:40: AC 1, profile low-power, battery 87%, load 4.62, available 40 GiB
+kit-journey-935r start 18:11:50 at 447b8165: AC 1, profile low-power, battery 87%, load 4.45, available 40 GiB
+kit-journey-935r end 18:17:30: AC 1, profile low-power, battery 87%, load 4.65, available 41 GiB
+kit-journey-935l start 18:17:50 at 7cfdfe7e: AC 1, profile low-power, battery 87%, load 4.18, available 41 GiB
+kit-journey-935l end 18:21:10: AC 1, profile low-power, battery 87%, load 4.34, available 41 GiB
+kit-journey-935t start 18:21:20 at f1d39e8b: AC 1, profile low-power, battery 87%, load 4.06, available 41 GiB
+kit-journey-935t end 18:24:40: AC 1, profile low-power, battery 87%, load 4.24, available 40 GiB
+kit-journey-935a start 18:24:50 at 5b6cc3b9: AC 1, profile low-power, battery 87%, load 4.05, available 40 GiB
+kit-journey-935a end 18:29:30: AC 1, profile low-power, battery 87%, load 4.13, available 41 GiB
+kit-journey-935b start 18:29:50 at 5b6cc3b9: AC 1, profile low-power, battery 87%, load 3.87, available 41 GiB
+kit-journey-935b end 18:34:10: AC 1, profile low-power, battery 87%, load 5.70, available 38 GiB
+kit-journey-935c start 18:34:20 at 5b6cc3b9: AC 1, profile low-power, battery 87%, load 5.51, available 38 GiB
+kit-journey-935c end 18:37:40: AC 1, profile low-power, battery 87%, load 5.23, available 39 GiB
+kit-journey-934q start 18:37:50 at 5b6cc3b9: AC 1, profile low-power, battery 87%, load 4.97, available 39 GiB
+kit-journey-934q end 19:26:30: AC 1, profile low-power, battery 87%, load 3.59, available 40 GiB
+kit-journey-935q start 19:26:50 at bdbc0286: AC 1, profile low-power, battery 87%, load 3.14, available 41 GiB
+kit-journey-935q end 20:15:51: AC 1, profile low-power, battery 87%, load 4.50, available 38 GiB
