@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-11-13",
+  "created": "2026-11-15",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -834,6 +834,24 @@
       "exact_sum": "d2923a6821bb31bf9d10a663879cf91608c9f8f333481fc5d01e76dbe79bfe93",
       "install_member": "browser-smoke.encpwV",
       "source_commit": "30514bafb54491b58876a451baa708119487840b",
+      "runtime_patch_bytes": 0
+    },
+    "kit_934": {
+      "ticket": "KIT-934",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.wInRpt/library",
+      "build": "a6f1d92bcc854b1ed86921b0a14e2dde6eaeb1fc0f9326651e6beeaf2e8acefb",
+      "exact_sum": "f274e8a7d36265894bf080525a1586aabfc41d19a0a07dfa93a536b1d9f1664c",
+      "install_member": "browser-smoke.wInRpt",
+      "source_commit": "2688ffa8fe985834596772d0777543d80cff5685",
+      "runtime_patch_bytes": 0
+    },
+    "kit_935": {
+      "ticket": "KIT-935",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.PL5f7K/library",
+      "build": "9267ef9321e8824323c9bf5bfd422443e4e133ec86e0e9f2b36a6d55d283512b",
+      "exact_sum": "2bdf4baf2cd597fc11e4c9d54d6112a430fbcfe5bc02ed4fd1d093b9bbdff754",
+      "install_member": "browser-smoke.PL5f7K",
+      "source_commit": "91e81f91c518dd21fb8bbcc76e31a3a8a5e910fb",
       "runtime_patch_bytes": 0
     }
   },
@@ -40311,7 +40329,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-11-13",
+        "date": "2026-11-15",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -43991,6 +44009,108 @@
       "ceiling_seconds": 1800,
       "purpose": "the DIA route's harness after protocol v1.10, stopped after design (recorded, uncounted; KIT-117)",
       "stop_after": "design"
+    },
+    "934q": {
+      "kind": "single_journey",
+      "build": "kit_934",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "the DIA full journey before the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)"
+    },
+    "935q": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)"
+    },
+    "935l": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)"
+    },
+    "935t": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)"
+    },
+    "935a": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "935b": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "935c": {
+      "kind": "single_journey",
+      "build": "kit_935",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
     },
     "106x": {
       "kind": "single_journey",
