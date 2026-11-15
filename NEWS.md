@@ -13,6 +13,10 @@
    software did not detect) is now read as a missing value, with a warning of the count per assay, as
    proteomics does. Before, a 0 was kept as a measured intensity. A negative intensity now refuses the
    import. Transcriptomics counts keep their zeros. Results change only for tables that contain zeros.
+ * Enrichment through g:Profiler (`processEnrichments()`): the custom background ids are now stripped of a
+   colon suffix as the query ids always were (`P12345:iso1` is read as `P12345` in both). Before, the
+   background kept the suffix, so such a query id was missing from its own background. Results change only
+   for ids that contain a colon; standard UniProt accessions and gene names are unchanged.
 
 ## Version 0.5.0 (Release Candidate)
 

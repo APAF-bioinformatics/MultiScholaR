@@ -1,3 +1,17 @@
+# stripEnrichmentIdSuffix
+# ----------------------------------------------------------------------------
+#' An enrichment id without its colon suffix (KIT-119)
+#'
+#' The one rule `processEnrichments` applies to the ids it sends to g:Profiler, the query and the custom background
+#' alike: everything from the first colon is dropped (`P12345:iso1` becomes `P12345`). An id without a colon is
+#' unchanged.
+#' @param ids Character vector of ids.
+#' @return `ids` without their colon suffixes.
+#' @noRd
+stripEnrichmentIdSuffix <- function(ids) {
+  stringr::str_remove(ids, ":.*")
+}
+
 # processEnrichments
 # ----------------------------------------------------------------------------
 #' Process Enrichments
@@ -119,7 +133,7 @@ processEnrichments <- function(da_results,
 
          subset_sig <- de_data |>
             dplyr::mutate(
-              !!rlang::sym(protein_id_column) := stringr::str_remove(.data[[protein_id_column]], ":.*")
+              !!rlang::sym(protein_id_column) := stripEnrichmentIdSuffix(.data[[protein_id_column]])
             ) |>
            dplyr::filter(.data$fdr_qvalue < q_cutoff)
          
@@ -214,8 +228,9 @@ processEnrichments <- function(da_results,
                          down_cutoff, if(nrow(subset_sig) > 0) min(subset_sig$log2FC, na.rm = TRUE) else NA))
         }
 
-        # Get background IDs from the full de_data for this contrast
-        custom_bg <- de_data[[protein_id_column]] |>
+        # Get background IDs from the full de_data for this contrast. KIT-119: stripped as the query ids are
+        # (they were not, so a query id with a colon suffix was missing from its own background).
+        custom_bg <- stripEnrichmentIdSuffix(de_data[[protein_id_column]]) |>
           unique()
 
         message(sprintf("Using %d unique proteins as background for enrichment analysis", length(custom_bg)))

@@ -708,7 +708,12 @@ test_that("processEnrichments supported-organism branch preserves contrast remap
   expect_identical(enrichment_results@enrichment_plotly, list())
   expect_equal(captured$perform[[1]]$ids, "P1")
   expect_equal(captured$perform[[2]]$ids, "P2")
-  expect_equal(captured$perform[[1]]$custom_bg, c("P1:iso1", "P2:iso2", "P3:iso3"))
+  # KIT-119: the background ids are stripped as the query ids are (the background kept `P1:iso1`, so the query
+  # `P1` was not in it); every query is within its background.
+  expect_equal(captured$perform[[1]]$custom_bg, c("P1", "P2", "P3"))
+  expect_equal(captured$perform[[3]]$custom_bg, c("P4", "P5"))
+  for (call in captured$perform) expect_true(all(call$ids %in% call$custom_bg))
+  expect_identical(stripEnrichmentIdSuffix(c("P12345", "P12345-2", "P1:iso1:x", NA)), c("P12345", "P12345-2", "P1", NA))
   expect_equal(captured$perform[[1]]$species, "hsapiens")
   expect_false(captured$perform[[1]]$exclude_iea)
   expect_equal(captured$perform[[1]]$correction_method, "bonferroni")
