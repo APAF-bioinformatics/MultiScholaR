@@ -1256,20 +1256,52 @@ test_that("KEGG and Reactome helpers preserve mapped enrichment formatting on su
   expect_match(kegg_results$mappedIDs[[1]], "cpd:C00001", fixed = TRUE)
   expect_equal(kegg_results$genesMapped[[1]], 2L)
 
-  reactome_results <- runReactomeEnrichment(
+  # KIT-119: the organism is matched in full, ignoring case (this call passed the substring "sapiens" before).
+  run_reactome <- function(reactome_organism) runReactomeEnrichment(
     ranked_list = c(`CHEBI:1` = 1.5, `CHEBI:2` = 0.4, `CHEBI:3` = -0.7),
     mapping_table = mapping_table,
     project_dirs = list(),
     omic_type = "metabolomics",
     experiment_label = "demo",
     assay_name = "assay_gc",
-    reactome_organism = "sapiens"
+    reactome_organism = reactome_organism
   )
+  reactome_results <- run_reactome("homo sapiens")
   expect_equal(nrow(reactome_results), 1L)
   expect_identical(reactome_results$termDescription[[1]], "Path A")
   expect_identical(reactome_results$comparison[[1]], "assay_gc")
   expect_identical(reactome_results$genesMapped[[1]], 2L)
   expect_match(reactome_results$mappedIDs[[1]], "CHEBI:1/CHEBI:2", fixed = TRUE)
+  expect_identical(run_reactome("Homo sapiens"), reactome_results)
+
+  # A substring no longer matches, and an unknown organism no longer falls back to Homo sapiens: both stop the run
+  # with the supported names.
+  expect_error(run_reactome("sapiens"), class = "multischolar_reactome_organism")
+  unknown <- expect_error(run_reactome("Klebsiella pneumoniae"), class = "multischolar_reactome_organism")
+  unknown_text <- gsub("\\s+", " ", conditionMessage(unknown)) # cli wraps the message to the console width
+  expect_match(unknown_text, "Klebsiella pneumoniae", fixed = TRUE)
+  expect_match(unknown_text, "Homo sapiens", fixed = TRUE)
+  expect_match(unknown_text, "Mus musculus", fixed = TRUE)
+  expect_error(run_reactome(c("Homo sapiens", "Mus musculus")), class = "multischolar_reactome_organism")
+})
+
+test_that("resolveReactomeOrganism matches the full name and refuses an unknown or ambiguous one (KIT-119)", {
+  available <- c("Homo sapiens", "Saccharomyces cerevisiae", "Schizosaccharomyces pombe", NA, "Homo sapiens")
+  expect_identical(resolveReactomeOrganism("Homo sapiens", available), "Homo sapiens")
+  expect_identical(resolveReactomeOrganism("saccharomyces CEREVISIAE", available), "Saccharomyces cerevisiae")
+  # "saccharomyces" was a substring of two species and took the first.
+  expect_error(resolveReactomeOrganism("saccharomyces", available), class = "multischolar_reactome_organism")
+  expect_error(resolveReactomeOrganism("", available), class = "multischolar_reactome_organism")
+  expect_error(resolveReactomeOrganism(NA_character_, available), class = "multischolar_reactome_organism")
+  # Two spellings that differ only by case: the exact one is taken, another case is ambiguous.
+  spellings <- c("Homo sapiens", "homo sapiens")
+  expect_identical(resolveReactomeOrganism("homo sapiens", spellings), "homo sapiens")
+  ambiguous <- expect_error(resolveReactomeOrganism("HOMO SAPIENS", spellings), class = "multischolar_reactome_organism")
+  expect_match(gsub("\\s+", " ", conditionMessage(ambiguous)), "several species", fixed = TRUE)
+  # Every supported name is listed, however many there are.
+  many <- sprintf("Species %02d", 1:30)
+  unknown <- expect_error(resolveReactomeOrganism("Species", many), class = "multischolar_reactome_organism")
+  expect_true(all(vapply(many, grepl, logical(1), x = gsub("\\s+", " ", conditionMessage(unknown)), fixed = TRUE)))
 })
 
 test_that("STRING validation and discovery helpers preserve current fallback branches", {

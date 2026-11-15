@@ -17,6 +17,11 @@
    colon suffix as the query ids always were (`P12345:iso1` is read as `P12345` in both). Before, the
    background kept the suffix, so such a query id was missing from its own background. Results change only
    for ids that contain a colon; standard UniProt accessions and gene names are unchanged.
+ * `runReactomeEnrichment()`: the organism name is now matched in full, ignoring case, against the species of
+   the Reactome mapping file, and a name that matches no species (or several) stops with an error that
+   lists the supported names. Before, the name was matched as a substring and the first hit taken
+   ("saccharomyces" picked one of two yeasts), and an unmatched name fell back to *Homo sapiens* without
+   notice. Results change only where the name given was not a species' full name.
 
 ## Version 0.5.0 (Release Candidate)
 

@@ -27,7 +27,9 @@ runReactomeEnrichment(
 
 \item{assay_name}{Name of the assay}
 
-\item{reactome_organism}{Organism to use for Reactome (e.g., "Klebsiella pneumoniae")}
+\item{reactome_organism}{Organism to use for Reactome (e.g., "Homo sapiens"), matched in full against the
+organism names of the Reactome mapping file, ignoring case. A name that matches no species, or several, is an
+error of class \code{multischolar_reactome_organism} that lists the supported names. NULL uses every organism.}
 }
 \value{
 A data frame with Reactome pathway enrichment results

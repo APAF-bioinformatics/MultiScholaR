@@ -1,3 +1,38 @@
+# resolveReactomeOrganism
+# ----------------------------------------------------------------------------
+#' The Reactome species a run filters on (KIT-119)
+#'
+#' The requested name is matched in full against the species of the mapping file, ignoring case. A name that matches
+#' no species, or several, stops the run: before, a name was matched as a substring (the first hit taken) and an
+#' unmatched name fell back to Homo sapiens without a word.
+#' @param reactome_organism The requested organism name.
+#' @param available The organism names of the mapping file.
+#' @return The matching name, as the mapping file spells it.
+#' @noRd
+resolveReactomeOrganism <- function(reactome_organism, available) {
+  available <- sort(unique(available[!is.na(available)]))
+  if (!is.character(reactome_organism) || length(reactome_organism) != 1L || is.na(reactome_organism)) {
+    cli::cli_abort("{.arg reactome_organism} must be one organism name, or NULL for every organism.",
+      class = "multischolar_reactome_organism")
+  }
+  if (reactome_organism %in% available) {
+    return(reactome_organism)
+  }
+  matched <- available[tolower(available) == tolower(reactome_organism)]
+  if (length(matched) == 1L) {
+    return(matched)
+  }
+  # Every supported name is listed (cli shortens a vector of more than 20 otherwise).
+  available <- cli::cli_vec(available, list("vec-trunc" = length(available)))
+  supported <- c(i = "the organism name is matched in full, ignoring case; supported names: {.val {available}}")
+  if (length(matched) > 1L) {
+    cli::cli_abort(c("reactome organism {.val {reactome_organism}} matches several species: {.val {matched}}",
+      supported), class = "multischolar_reactome_organism")
+  }
+  cli::cli_abort(c("reactome organism {.val {reactome_organism}} is not a species of the Reactome mapping", supported),
+    class = "multischolar_reactome_organism")
+}
+
 # runReactomeEnrichment
 # ----------------------------------------------------------------------------
 #' Run Reactome Pathway Enrichment Analysis for Metabolites
@@ -8,7 +43,9 @@
 #' @param omic_type Omics type for directory access
 #' @param experiment_label Experiment label for directory access
 #' @param assay_name Name of the assay
-#' @param reactome_organism Organism to use for Reactome (e.g., "Klebsiella pneumoniae")
+#' @param reactome_organism Organism to use for Reactome (e.g., "Homo sapiens"), matched in full against the
+#'   organism names of the Reactome mapping file, ignoring case. A name that matches no species, or several, is an
+#'   error of class `multischolar_reactome_organism` that lists the supported names. NULL uses every organism.
 #' @return A data frame with Reactome pathway enrichment results
 #' @export
 
@@ -59,29 +96,12 @@ runReactomeEnrichment <- function(ranked_list,
     unique_organisms <- unique(chebi_to_reactome$organism)
     message(paste("Available organisms in Reactome data:", paste(unique_organisms, collapse=", ")))
     
-    # FIXED: Improved organism handling with flexible matching
+    # KIT-119: the organism is matched in full (ignoring case); an unknown or ambiguous name stops the run.
     if (!is.null(reactome_organism)) {
-      # Try exact match first
-      if (reactome_organism %in% unique_organisms) {
-        message(paste("Filtering Reactome data for organism:", reactome_organism))
-        chebi_to_reactome <- chebi_to_reactome |> 
-          dplyr::filter(organism == reactome_organism)
-      } else {
-        # Try partial matching if exact match fails
-        message(sprintf("   runReactomeEnrichment DEBUG: Trying partial match for '%s'", reactome_organism))
-        possible_matches <- unique_organisms[grepl(reactome_organism, unique_organisms, ignore.case = TRUE)]
-        if (length(possible_matches) > 0) {
-          selected_organism <- possible_matches[1]  # Use first match
-          message(paste("Using closest matching organism:", selected_organism))
-          chebi_to_reactome <- chebi_to_reactome |> 
-            dplyr::filter(organism == selected_organism)
-        } else {
-          # Fallback to Human if no match
-          message("No matching organism found. Using 'Homo sapiens' as fallback...")
-          chebi_to_reactome <- chebi_to_reactome |> 
-            dplyr::filter(organism == "Homo sapiens")
-        }
-      }
+      selected_organism <- resolveReactomeOrganism(reactome_organism, unique_organisms)
+      message(paste("Filtering Reactome data for organism:", selected_organism))
+      chebi_to_reactome <- chebi_to_reactome |>
+        dplyr::filter(organism == selected_organism)
       message(sprintf("   runReactomeEnrichment: After organism filtering, %d rows remain", nrow(chebi_to_reactome)))
     } else {
       message("Using all organisms in Reactome data (no filtering)")
@@ -420,6 +440,10 @@ runReactomeEnrichment <- function(ranked_list,
     return(reactome_results)
     
   }, error = function(e) {
+    # KIT-119: an unknown or ambiguous organism is the caller's error, not an empty result.
+    if (inherits(e, "multischolar_reactome_organism")) {
+      rlang::cnd_signal(e)
+    }
     message(paste("Error processing Reactome data:", e$message))
     return(tibble(
       termDescription = character(),
