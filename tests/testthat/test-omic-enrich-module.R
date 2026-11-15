@@ -3813,6 +3813,11 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
 #   committed `enrichment_data` with the gost answer's new field (`meta$version`).
 # KIT-119 (1) re-freeze (two byte-identical dumps): `kernel_gprofiler` and `kernel_clusterprofiler`, `results$plots` is
 #   the digest of an empty list (28df520b992b4a4b; it held the stored plots' classes): the live kernel stores no plots.
+# KIT-119 (2), A107-06 re-freeze (two byte-identical dumps): the seven captures that hold a completed state (`gprofiler`,
+#   `clusterprofiler`, `kernel_gprofiler`, `kernel_clusterprofiler`, `organism_filter/no_mapping`,
+#   `organism_filter/mapped`, `restore`), `state$config$outcomes` only: the outcomes gain `annotation_sha256` and
+#   `da_inputs_sha256` (the three runs that recorded no outcome before gain the entry; the same inputs give the same
+#   digest, 83c639e0603586f8). Nothing else in these captures moved, and W1 (b)'s captures did not move.
 # ------------------------------------------------------------------------------------------------
 
 #' Store-local ids (each run of 64 hexadecimal characters) and the fixture's root masked in every character value of
@@ -3905,6 +3910,7 @@ omicEnrichW113Frozen[["gprofiler"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> 83c639e0603586f8",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -3939,7 +3945,7 @@ omicEnrichW113Frozen[["clusterprofiler"]] <- list(
         `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "999999",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
-        `config$outcomes` = "<digest> 1ee7e26ac226ba3c",
+        `config$outcomes` = "<digest> 50149aa3bd860548",
         description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -3974,6 +3980,7 @@ omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> 83c639e0603586f8",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -4008,7 +4015,7 @@ omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
         `config$organism_supported` = "FALSE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "999999",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
-        `config$outcomes` = "<digest> 1ee7e26ac226ba3c",
+        `config$outcomes` = "<digest> 50149aa3bd860548",
         description = "Enrichment analysis completed using clusterprofiler for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -4043,7 +4050,7 @@ omicEnrichW113Frozen[["organism_filter/no_mapping"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
-        `config$outcomes` = "<digest> 71f9f8d6291b09ed",
+        `config$outcomes` = "<digest> a3fad64ece50efbd",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -4080,7 +4087,7 @@ omicEnrichW113Frozen[["organism_filter/mapped"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
-        `config$outcomes` = "<digest> d2948c1dcddd10c7",
+        `config$outcomes` = "<digest> e219d467ecf658c4",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -4141,6 +4148,7 @@ omicEnrichW113Frozen[["restore"]] <- list(
         `config$organism_supported` = "TRUE", `config$up_cutoff` = "0", `config$down_cutoff` = "0",
         `config$q_cutoff` = "0.05", `config$organism_taxid` = "9606",
         `config$pathway_dir` = "<ROOT>/results/pathway_enrichment",
+        `config$outcomes` = "<digest> 83c639e0603586f8",
         description = "Enrichment analysis completed using gprofiler2 for contrast: B_vs_A",
         previous = "correlation_filtered", products = ""),
     results = c(
@@ -4287,7 +4295,9 @@ test_that("(R3, P-28) an unfiltered run keeps its nine declared names, its recor
     expect_identical(r3$provenance$parameter_names, setdiff(diaEnrichmentOperation()$parameters, omicEnrichR3FilterNames))
     expect_length(r3$provenance$parameter_names, 9L)
     expect_identical(names(omicEnrichR3Parameters(r3$step)), r3$provenance$parameter_names)
-    expect_identical(names(r3$step$outcomes), c("rows", "columns"))
+    # KIT-119 (2), A107-06: every run records its inputs' identities beside the outcomes every step has (it recorded
+    # `rows` and `columns` only); the organism filter's outcomes are still absent from an unfiltered run.
+    expect_identical(names(r3$step$outcomes), c("rows", "columns", "annotation_sha256", "da_inputs_sha256"))
     expect_identical(r3$d6, omicEnrichW113Frozen$gprofiler)
 })
 

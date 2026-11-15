@@ -875,6 +875,14 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     # GUI audit R3, P-28: an unfiltered run records its nine (the declaration's first nine names).
     expect_identical(vapply(step$parameters, `[[`, "", "name"), utils::head(diaEnrichmentOperation()$parameters, 9L))
     expect_identical(vapply(step$parameters, `[[`, "", "source"), rep("provenance", 9L))
+    # KIT-119 (A107-06): the step records the identities of the inputs it read, the annotation table and each contrast's
+    # DA table (the table's sha256, `diaAnnotationDigest`), beside the outcomes every step has.
+    expect_identical(names(step$outcomes), c("rows", "columns", "annotation_sha256", "da_inputs_sha256"))
+    expect_true(is.data.frame(workflow$uniprot_dat_cln) && nrow(workflow$uniprot_dat_cln) > 0L)
+    expect_identical(step$outcomes$annotation_sha256, diaAnnotationDigest(workflow$uniprot_dat_cln))
+    da_read <- suppressWarnings(createDAResultsForEnrichment(contrasts, design, paths$da_output_dir))@da_data
+    expect_identical(step$outcomes$da_inputs_sha256, lapply(da_read, diaAnnotationDigest))
+    expect_match(unlist(step$outcomes[c("annotation_sha256", "da_inputs_sha256")]), "^[0-9a-f]{64}$")
     expect_false(is.null(record$analyses$differential_abundance))
     state <- withDIAStateScope(manager, function() manager$getState("enrichment_completed"))
     product <- recordEnrichmentProduct(manager)
@@ -897,6 +905,8 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
                 replayed$state <<- manager$getState("enrichment_completed")
                 replayed$product <<- recordEnrichmentProduct(manager)
                 replayed$provenance <<- manager$.context$snapshot$step_provenance$enrichment_completed
+                replayed$outcomes <<- readComponentMetadata(manager,
+                    manager$.context$snapshot$states$enrichment_completed)$config$outcomes
                 replayed$tables <<- lapply(replayed$product$results, function(id)
                     describeSavedWorkflowEntity(manager$.context$store, id)$identity)
             }
@@ -925,6 +935,8 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     keep <- setdiff(names(recorded), "results")
     expect_identical(replayed$provenance$values[keep], recorded[keep])
     expect_identical(names(replayed$provenance$values$results), names(recorded$results))
+    # KIT-119 (A107-06): the replay read inputs with the recorded identities.
+    expect_identical(replayed$outcomes, step$outcomes[c("annotation_sha256", "da_inputs_sha256")])
     # A record whose enrichment step is legacy (a store written before F-16) is still refused by name.
     legacy <- record
     legacy$steps[[3L]]$operation <- "legacy"
@@ -989,8 +1001,10 @@ test_that("KIT-107 F-16: a DIA record's enrichment step replays after the DA to 
     expect_identical(replayed_filter$provenance$parameter_names, diaEnrichmentOperation()$parameters)
     expect_identical(replayed_filter$provenance$values[c("organism_filter_enabled", "organism_filter_taxon")],
         list(organism_filter_enabled = TRUE, organism_filter_taxon = "9606"))
-    expect_identical(replayed_filter$config$outcomes, list(organism_filter_applied = TRUE,
+    # KIT-119 (A107-06): the outcomes also hold the input identities (the three filter outcomes are as before).
+    expect_identical(replayed_filter$config$outcomes[1:3], list(organism_filter_applied = TRUE,
         organism_filter_rows_before = 6, organism_filter_rows_after = 0))
+    expect_identical(names(replayed_filter$config$outcomes)[4:5], c("annotation_sha256", "da_inputs_sha256"))
     differing <- filtered
     differing$steps[[3L]]$outcomes$organism_filter_rows_after <- 3
     copy_differing <- withr::local_tempdir()

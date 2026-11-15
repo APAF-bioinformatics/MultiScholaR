@@ -867,6 +867,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
         rlang::abort(sprintf("The DA results table is missing for contrast %s.", paste(missing, collapse = ", ")),
             class = "workflow_enrichment_input")
     }
+    # KIT-119 (A107-06): each contrast's DA table as the run read it, before the organism filter.
+    da_inputs <- lapply(da_results@da_data, function(table) diaAnnotationDigest(table) %||% NA_character_)
     annotations <- config$annotation$resolve(workflowData = workflow, experimentPaths = paths,
         currentS4Object = source_object, organismTaxid = parameters$organism_taxid)$uniprotDatCln
     matching <- config$annotation$match(uniprotDatCln = annotations, daResultsForEnrichment = da_results,
@@ -928,6 +930,11 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
             organism_filter_rows_before = filter_stats$proteins_before,
             organism_filter_rows_after = filter_stats$proteins_after))
     }
+    # KIT-119 (A107-06): the identities of the inputs the run read, recorded with the step's outcomes (provenance
+    # only): the sha256 of the annotation table and of each contrast's DA table (`diaAnnotationDigest`: a table's
+    # displayable columns as text, so the table in memory and a read-back of it agree). NA for no table or an empty one.
+    outcomes <- c(outcomes, list(annotation_sha256 = diaAnnotationDigest(annotations) %||% NA_character_,
+        da_inputs_sha256 = da_inputs))
     declared <- config$run(workflow, manifest, run_arguments, process_fn = kernel)
     results <- declared$results
     contrast_results <- buildProtEnrichAllContrastResults(enrichmentResults = results, methodInfo = method)
@@ -989,7 +996,8 @@ runWorkflowEnrichment <- function(workflow, config, manifest, parameters, paths,
 #' @param parameters The run's inputs (`selected_contrast`, cutoffs, `organism_taxid`).
 #' @param pathway_dir The pathway directory.
 #' @param outcomes Named list of provenance-only values of the run (the organism filter's applied flag and row
-#'   counts; the selected correction when the backend applied another, A107-03), or NULL for none.
+#'   counts; the selected correction when the backend applied another, A107-03; the sha256 of the annotation table and
+#'   of each contrast's DA table the run read, KIT-119 A107-06), or NULL for none.
 #' @return `list(attempted, saved, warning)`.
 #' @noRd
 saveWorkflowEnrichmentState <- function(workflow, config, results, declared, method, parameters, pathway_dir,
