@@ -1,0 +1,18 @@
+diff --git a/R/func_prot_norm_optimization_helpers.R b/R/func_prot_norm_optimization_helpers.R
+index 1fe25f3d..4117b1b3 100644
+--- a/R/func_prot_norm_optimization_helpers.R
++++ b/R/func_prot_norm_optimization_helpers.R
+@@ -582,6 +582,13 @@ getNegCtrlProtAnovaHelper <- function(data_matrix
+   filtered_list <- aov[aov > ruv_qval_cutoff]
+   message(sprintf("   DEBUG66: Proteins with q > %.4f: %d", ruv_qval_cutoff, length(filtered_list)))
+ 
++  # KIT-118 M2 (P-03), measurement switch, off by default: candidates restricted to features observed in every sample
++  # (RUV-III can only use complete controls; today incomplete ones are chosen and then not counted). The count asked
++  # for is unchanged, so a table without missing values gives the same controls.
++  if (isTRUE(getOption("MultiScholaR.ruv_controls_complete_only", FALSE))) {
++    complete <- rownames(data_matrix)[rowSums(!is.finite(as.matrix(data_matrix))) == 0L]
++    filtered_list <- filtered_list[names(filtered_list) %in% complete]
++  }
+   list_size <- ifelse(num_neg_ctrl > length(filtered_list), length(filtered_list), num_neg_ctrl)
+   message(sprintf("   DEBUG66: Selecting top %d proteins", list_size))
+ 
