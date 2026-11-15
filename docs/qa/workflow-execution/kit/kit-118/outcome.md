@@ -33,4 +33,4 @@ Full suite in both modes, `R CMD check` and seven e2e lanes at `e94b92b1`: no re
 
 ## Acceptance
 
-Met for M3 and M4. M1 is met on results and not met on its memory gate. M2 did not land. The ticket is closed as completed with those two exceptions recorded, not as fully accepted.
+Met for M3 and M4. M1 is met on results; its import memory gate was missed by 0.02 GiB and the user accepted that on 2026-11-16 (parked row 15). M2 did not land: its question is taken up by KIT-123 (the control rule and the DA model of the classic RUV path).
