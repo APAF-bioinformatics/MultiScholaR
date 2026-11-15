@@ -859,7 +859,9 @@ if (!is.null(b$builds$kit_057)) b$outcomes[[length(b$outcomes) + 1L]] <- list(ti
 # candidate oracles; the control keeps KIT-053's).
 limpa_oracle_dirs <- c(`limpa` = "kit-053", `limpa57` = "kit-057", `limpa_corr` = "kit-056", # KIT-056: the correction-mode record
     `limpa48` = "kit-048", # KIT-048: the covariates-mode screen record on the kit_048 build (KIT-057's predates KIT-056's ruv_mode fields)
-    `limpa65` = "kit-065") # KIT-065: the screen record with the report step on the KIT-065 build
+    `limpa65` = "kit-065", # KIT-065: the screen record with the report step on the KIT-065 build
+    # KIT-118 M1 (DIA-NN zeros as missing): the covariates and the correction records on kit_935
+    `limpa118` = "kit-118/m1", `limpa118c` = "kit-118/m1c")
 for (ticket_dir in limpa_oracle_dirs) for (key in c("screen", "full")) {
     prefix <- names(which(limpa_oracle_dirs == ticket_dir))
     if (is.null(b$corpora[[key]])) next
@@ -1466,6 +1468,26 @@ if (!is.null(b$builds$kit_933)) {
         if (!is.null(from)) b$tickets[[paste0("117", suffix)]] <- utils::modifyList(from, kit_117)
     }
     b$tickets[["117d"]] <- short("kit_933", "the DIA route's harness after protocol v1.10, stopped after design (recorded, uncounted; KIT-117)")
+}
+
+# KIT-118 M1 (DIA-NN: an exact 0 is missing). kit_934 is the tree before (2688ffa8), kit_935 after (91e81f91).
+# 934q and 935q: the DIA full journey, judged as a pair, store against store. 935m and 935r: DIA_LIMPA covariates and
+# correction against the records made on kit_935 (limpa118_screen, limpa118c_screen; bound once those files exist).
+# 935l/t/a/b/c: the routes the change must not touch, against today's oracles.
+if (!is.null(b$builds$kit_934)) b$tickets[["934q"]] <- utils::modifyList(b$tickets[["112q"]], list(build = "kit_934",
+    purpose = "the DIA full journey before the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)"))
+if (!is.null(b$builds$kit_935)) {
+    kit_935 <- list(build = "kit_935", purpose = "the DIA-NN zero rule (recorded, uncounted; KIT-118 M1)")
+    for (suffix in c("q", "l", "t", "a", "b", "c")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("935", suffix)]] <- utils::modifyList(from, kit_935)
+    }
+    if (!is.null(b$oracles[["limpa118_screen_import"]]) || any(startsWith(names(b$oracles), "limpa118_screen_"))) {
+        b$tickets[["935m"]] <- utils::modifyList(b$tickets[["112m"]], c(kit_935, list(oracles = "limpa118_screen")))
+    }
+    if (any(startsWith(names(b$oracles), "limpa118c_screen_"))) {
+        b$tickets[["935r"]] <- utils::modifyList(b$tickets[["056"]], c(kit_935, list(oracles = "limpa118c_screen")))
+    }
 }
 
 # KIT-106 correction pass (F106-06: the volcano iframe sandboxed, b9820d9e): the two journeys that tick the interactive
