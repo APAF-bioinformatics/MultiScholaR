@@ -358,23 +358,6 @@ resetProtNormReactiveState <- function(
   normData$filtering_summary_text <- NULL
   normData$ruv_optimization_result <- NULL
 
-  if (is.null(normData$qc_plots)) {
-    normData$qc_plots <- list()
-  }
-
-  normData$qc_plots$post_normalization <- list(
-    pca = NULL,
-    density = NULL,
-    rle = NULL,
-    correlation = NULL
-  )
-  normData$qc_plots$ruv_corrected <- list(
-    pca = NULL,
-    density = NULL,
-    rle = NULL,
-    correlation = NULL
-  )
-
   workflowData$ruv_normalised_for_da_analysis_obj <- NULL
   workflowData$da_analysis_results_list <- NULL
   workflowData$state_update_trigger <- Sys.time()

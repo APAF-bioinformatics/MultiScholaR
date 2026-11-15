@@ -56,7 +56,9 @@ checkProtNormMemoryUsage <- function(
 
 #' The fields of proteomics' normalisation tab state and their starting values. KIT-120: proteomics' server sets them
 #' on the shared frame's state (`protNormFrameServer`; the tab's own shell made its reactive values of them). The core reads several by name (utils_workflow_dia_products.R,
-#' utils_workflow_dia_norm.R, utils_workflow_dia_sessions.R).
+#' utils_workflow_dia_norm.R, utils_workflow_dia_sessions.R). KIT-122 (audit F6): `QC_composite_figure` and `qc_plots`
+#' are no longer fields; nothing read them, and only code that is not called gave them a value (the composite is built
+#' from the saved images, and the stage figures are the frame's image slots).
 #' @noRd
 protNormStateFields <- function() {
   list(
@@ -64,27 +66,6 @@ protNormStateFields <- function() {
     normalization_complete = FALSE,
     ruv_complete = FALSE,
     correlation_filtering_complete = FALSE,
-    QC_composite_figure = NULL,
-    qc_plots = list(
-      post_filtering = list(
-        pca = NULL,
-        density = NULL,
-        rle = NULL,
-        correlation = NULL
-      ),
-      post_normalization = list(
-        pca = NULL,
-        density = NULL,
-        rle = NULL,
-        correlation = NULL
-      ),
-      ruv_corrected = list(
-        pca = NULL,
-        density = NULL,
-        rle = NULL,
-        correlation = NULL
-      )
-    ),
     normalized_protein_obj = NULL,
     ruv_normalized_obj = NULL,
     correlation_filtered_obj = NULL,

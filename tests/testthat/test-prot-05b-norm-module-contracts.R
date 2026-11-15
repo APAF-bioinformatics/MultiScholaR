@@ -2758,10 +2758,6 @@ test_that("resetProtNormReactiveState clears normalization state and tab status"
   norm_data$post_norm_filtering_plot <- "post"
   norm_data$filtering_summary_text <- "summary"
   norm_data$ruv_optimization_result <- list(best_k = 2)
-  norm_data$qc_plots <- list(
-    post_normalization = list(pca = "plot"),
-    ruv_corrected = list(pca = "plot")
-  )
 
   workflow_data <- new.env(parent = emptyenv())
   workflow_data$ruv_normalised_for_da_analysis_obj <- "da_obj"
@@ -2787,14 +2783,8 @@ test_that("resetProtNormReactiveState clears normalization state and tab status"
   expect_null(norm_data$post_norm_filtering_plot)
   expect_null(norm_data$filtering_summary_text)
   expect_null(norm_data$ruv_optimization_result)
-  expect_equal(
-    norm_data$qc_plots$post_normalization,
-    list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
-  )
-  expect_equal(
-    norm_data$qc_plots$ruv_corrected,
-    list(pca = NULL, density = NULL, rle = NULL, correlation = NULL)
-  )
+  # KIT-122 (audit F6): `qc_plots` is not a field of the tab's state; the reset writes none.
+  expect_false("qc_plots" %in% ls(norm_data))
   expect_null(workflow_data$ruv_normalised_for_da_analysis_obj)
   expect_equal(workflow_data$tab_status$normalization, "pending")
   expect_equal(workflow_data$tab_status$differential_expression, "disabled")

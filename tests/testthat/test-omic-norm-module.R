@@ -2102,6 +2102,23 @@ test_that("KIT-122 (audit F5): the RUV tab's single-result content is a library 
     expect_error(validateOmicGuiConfig(config), "ruv_single_result")
 })
 
+test_that("KIT-122 (audit F6): the tab's state has no field that only uncalled code gave a value (fails before)", {
+    fields <- names(protNormStateFields())
+    expect_false(any(c("QC_composite_figure", "qc_plots") %in% fields))
+    # The reset gives neither a value.
+    omicNormK122ProtTab(function(session, output, state) {
+        session$setInputs(reset_normalization = 1)
+        expect_false(any(c("QC_composite_figure", "qc_plots") %in% names(shiny::isolate(shiny::reactiveValuesToList(state)))))
+    })
+    # Every field proteomics adds to the frame's state is read or written by name in the package's code.
+    directory <- testthat::test_path("..", "..", "R")
+    skip_if_not(dir.exists(directory), "the package sources are read under load_all only")
+    sources <- unlist(lapply(list.files(directory, pattern = "[.]R$", full.names = TRUE), readLines, warn = FALSE))
+    sources <- sources[!grepl("^\\s*#", sources)]
+    used <- vapply(fields, function(field) sum(grepl(paste0("$", field), sources, fixed = TRUE)) > 0L, NA)
+    expect_identical(names(used)[!used], character())
+})
+
 test_that("KIT-122 (audit F10): after a reset a later run's filtering and RUV summaries show again (fails before)", {
     omicNormK122ProtTab(function(session, output, state) {
         session$setInputs(ruv_mode = "manual", ruv_grouping_variable = "group")
