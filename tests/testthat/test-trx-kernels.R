@@ -296,3 +296,42 @@ test_that("KIT-093 revision 1.2: a four-group design runs end to end with three 
     expect_identical(dim(r$M), c(12L, 4L))
     expect_identical(dim(r$newY), rev(dim(n$log_cpm_tmm)))
 })
+
+# KIT-124 W1: the reference match by direct calls (the first test of this file compares against KIT-040's stored hashes of
+# the notebook's products, and skips where they are not shipped). RUVSeq::RUVs and edgeR are called here as the RUVSeq
+# vignette calls them: RUVs on the SeqExpressionSet with the replicate groups, then W in the design given to edgeR.
+test_that("(KIT-124 W1) the RUVs kernel's W is RUVSeq::RUVs', the DE design carries it, and the display matrix is removeBatchEffect's", {
+    input <- trxFourGroupInput()
+    x <- trxAssayInputs(createTranscriptomicsAssayData(list(counts = input$counts), input$design, c("control", "T1", "T2", "T3")))
+    f <- trxExpressionFilter(x$counts, x$design$group)
+    n <- trxTmmLogCpm(f$filtered_counts, x$design$group)
+    g <- trxRuvGrid(f$filtered_counts, n$log_cpm_tmm, x$design)
+    k <- g$best$best_k
+    w_names <- paste0("W_", seq_len(k))
+    s <- trxRuvs(f$filtered_counts, n$log_cpm_tmm, x$design, g$control_genes, k)
+
+    set <- EDASeq::newSeqExpressionSet(counts = f$filtered_counts, phenoData = data.frame(x$design, row.names = x$design$Run))
+    set_ruvs <- withr::with_package("BiocGenerics", RUVSeq::RUVs(set, cIdx = g$control_genes, k = k, scIdx = RUVSeq::makeGroups(x$design$group)))
+    pdata <- Biobase::pData(set_ruvs)
+    w <- as.matrix(pdata[, w_names, drop = FALSE])
+    expect_identical(as.matrix(s$W), w)
+    expect_identical(s$ruvs_counts, BiocGenerics::counts(set_ruvs))
+    # the display matrix: limma::removeBatchEffect with those covariates, the group protected
+    expect_identical(s$log_cpm_ruvs, limma::removeBatchEffect(n$log_cpm_tmm, covariates = w, design = stats::model.matrix(~ group, data = pdata)))
+
+    # edgeR with W in the design (the package's model: no intercept, TMM, the robust QL fit and F-test)
+    design <- stats::model.matrix(stats::as.formula(paste("~ 0 + group +", paste(w_names, collapse = " + "))), data = pdata)
+    y <- edgeR::calcNormFactors(edgeR::DGEList(counts = BiocGenerics::counts(set_ruvs), group = pdata$group), method = "TMM")
+    fit <- edgeR::glmQLFit(edgeR::estimateDisp(y, design, robust = TRUE), design, robust = TRUE)
+    contrast <- limma::makeContrasts(contrasts = "groupT1-groupcontrol", levels = design)
+    top <- edgeR::topTags(edgeR::glmQLFTest(fit, contrast = contrast[, 1L]), n = Inf, sort.by = "PValue")$table
+    d <- trxDaContrast(s$ruvs_counts, s$pdata, "T1_vs_control=groupT1-groupcontrol")
+    expect_identical(colnames(d$design_final), c("groupcontrol", "groupT1", "groupT2", "groupT3", w_names))
+    expect_identical(unname(d$design_final[, w_names, drop = FALSE]), unname(w))
+    expect_identical(unname(d$fit$coefficients), unname(fit$coefficients))
+    expect_identical(d$top_table, top)
+    # the session's declaration fits the same model (R/utils_workflow_trx_declarations.R)
+    declared <- trxDaFit(s$ruvs_counts, s$pdata, trxDaFormula(s$pdata))
+    expect_identical(unname(declared$design[, w_names, drop = FALSE]), unname(w))
+    expect_identical(unname(declared$coefficients), unname(fit$coefficients))
+})

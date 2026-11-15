@@ -560,3 +560,35 @@ test_that("computeRuvCovariates appends W1..Wk from RUV-III with the design's re
   expect_error(computeRuvCovariates(object, k = 2L, controls = controls[-1], ruv_grouping_variable = "group"))
   expect_error(computeRuvCovariates(object, k = 50L, controls = controls, ruv_grouping_variable = "group"))
 })
+
+# KIT-124 W1: the block above runs on the small fixture, whose design has technical replicates (six replicate sets).
+# This is the other replicate structure, the group, on a seeded matrix; the reference's replicate matrix is built here
+# (`ruv::replicate.matrix`), not by the package's helper.
+test_that("(KIT-124 W1) computeRuvCovariates matches ruv::RUVIII when the group is the replicate structure", {
+  set.seed(20261116)
+  runs <- sprintf("R%02d", 1:8)
+  ids <- sprintf("P%02d", 1:40)
+  group <- rep(c("A", "B"), each = 4L)
+  values <- matrix(stats::rnorm(40L, 22, 2), 40L, 8L, dimnames = list(ids, runs)) + outer(stats::rnorm(40L), stats::rnorm(8L)) +
+    matrix(stats::rnorm(320L, sd = 0.2), 40L, 8L)
+  table <- data.frame(Protein.Ids = ids, values, check.names = FALSE, row.names = NULL)
+  object <- ProteinQuantitativeData(protein_quant_table = table, protein_id_column = "Protein.Ids", protein_id_table = table["Protein.Ids"],
+    design_matrix = data.frame(Run = runs, group = group, replicates = rep(1:4, 2L)), sample_id = "Run", group_id = "group",
+    technical_replicate_id = "replicates", args = list())
+  controls <- seq_along(ids) %% 3L == 0L
+  for (k in 1:2) {
+    result <- computeRuvCovariates(object, k = k, controls = controls, ruv_grouping_variable = "group")
+    expect_identical(result$replicate_structure, "group")
+    Y <- t(values)
+    fit <- ruv::RUVIII(Y = Y, M = ruv::replicate.matrix(group), ctl = controls, k = k, return.info = TRUE)
+    alpha <- fit$fullalpha[seq_len(k), , drop = FALSE]
+    ac <- alpha[, controls, drop = FALSE]
+    expected_w <- sweep(Y[, controls], 2, colMeans(Y[, controls])) %*% t(ac) %*% solve(ac %*% t(ac))
+    expect_equal(unname(result$alpha), unname(alpha), tolerance = 1e-10, info = paste("k", k))
+    expect_equal(unname(result$W), unname(expected_w), tolerance = 1e-10, info = paste("k", k))
+    expect_equal(unname(result$adjusted), unname(t(Y - expected_w %*% alpha)), tolerance = 1e-10, info = paste("k", k))
+    # RUV-III's own corrected matrix (which depends on its controls) is the adjusted matrix up to a constant per protein
+    shift <- result$adjusted - t(fit$newY)
+    expect_equal(unname(apply(shift, 1, function(row) diff(range(row)))), rep(0, nrow(shift)), tolerance = 1e-8, info = paste("k", k))
+  }
+})

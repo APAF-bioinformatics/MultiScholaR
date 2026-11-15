@@ -618,3 +618,58 @@ test_that("lipidomics S4 ruvIII_C_Varying forwards per-assay controls and cleans
   expect_identical(corrected@args$ruv_number_k$`Positive Mode`, 2)
   expect_identical(corrected@args$ctrl$`Positive Mode`, c("L2", "L3"))
 })
+
+# KIT-124 W1: the reference match, with nothing replaced. The method's output is RUVIIIC::RUVIII_C_Varying's own, value
+# for value: this method does not restore each lipid's level after the correction (the proteomics method does since
+# KIT-123 R2). That is today's behaviour, recorded here and not a statement of what it should be.
+test_that("(KIT-124 W1) lipidomics ruvIII_C_Varying returns RUVIIIC::RUVIII_C_Varying's values exactly, per assay", {
+  design_matrix <- data.frame(
+    Sample_ID = sprintf("Sample_%d", c(3, 1, 2, 4, 7, 5, 8, 6)),
+    group = rep(c("A", "B"), each = 4L),
+    TechRep = sprintf("T%d", 1:8),
+    stringsAsFactors = FALSE
+  )
+  ids <- sprintf("L%02d", 1:24)
+  controls <- ids[13:24]
+
+  for (missing in c(FALSE, TRUE)) for (k in 1:2) {
+    case <- sprintf("missing values %s, k %d", missing, k)
+    set.seed(20261116)
+    values <- matrix(stats::rnorm(24L, 18, 2), 24L, 8L, dimnames = list(ids, sprintf("Sample_%d", 1:8))) +
+      outer(stats::rnorm(24L), stats::rnorm(8L)) + matrix(stats::rnorm(192L, sd = 0.2), 24L, 8L)
+    if (missing) values[cbind(c(2L, 5L, 9L, 9L, 14L), c(1L, 6L, 2L, 7L, 4L))] <- NA
+    assay_tbl <- tibble::add_column(
+      tibble::as_tibble(values),
+      database_identifier = ids,
+      lipid_identification = paste0("name_", ids),
+      .before = 1L
+    )
+
+    corrected <- suppressMessages(
+      suppressWarnings(
+        ruvIII_C_Varying(
+          newLipidRuvObject(assay_tbl = assay_tbl, design_matrix = design_matrix),
+          ruv_grouping_variable = "group",
+          ruv_number_k = k,
+          ctrl = controls
+        )
+      )
+    )
+    corrected_assay <- corrected@lipid_data$`Positive Mode`
+    after <- as.matrix(corrected_assay[, design_matrix$Sample_ID])
+    rownames(after) <- corrected_assay$database_identifier
+
+    # The reference, called directly: Y in the design's sample order, M from the group.
+    Y <- t(values[, design_matrix$Sample_ID])
+    M <- ruv::replicate.matrix(design_matrix$group)
+    rownames(M) <- rownames(Y)
+    reference <- t(RUVIIIC::RUVIII_C_Varying(
+      k = k, Y = Y, M = M, toCorrect = colnames(Y), potentialControls = controls, progress = FALSE
+    ))
+
+    expect_identical(after, reference, info = case)
+    expect_identical(sum(is.na(after)), if (missing) 5L else 0L, info = case)
+    # the levels are the reference's, not the input's
+    expect_gt(max(abs(rowMeans(after, na.rm = TRUE) - rowMeans(values, na.rm = TRUE))), 1, label = paste("the level shift,", case))
+  }
+})

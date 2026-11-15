@@ -49,3 +49,48 @@ test_that("ruvIII_C_Varying keeps every protein's mean and still corrects within
     expect_lt(max(spread), 1e-8)
     expect_gt(max(abs(rowMeans(raw[kept, samples, drop = FALSE], na.rm = TRUE) - rowMeans(before[kept, samples, drop = FALSE], na.rm = TRUE))), 0.01)
 })
+
+# KIT-124 W1: the reference match on complete data and on data with missing values, k of 1 and 2 (the test above is one
+# four-sample fixture at k 1). The reference's replicate matrix is built here (`ruv::replicate.matrix`), not by the
+# package's helper.
+protRuvReferenceInput <- function(missing) {
+    set.seed(20261116)
+    samples <- sprintf("S%02d", 1:8); ids <- sprintf("P%02d", 1:30)
+    group <- rep(c("A", "B"), each = 4L)
+    values <- matrix(stats::rnorm(30L, 22, 2), 30L, 8L, dimnames = list(ids, samples)) + outer(stats::rnorm(30L), stats::rnorm(8L)) +
+        matrix(stats::rnorm(240L, sd = 0.2), 30L, 8L)
+    values[1:6, group == "B"] <- values[1:6, group == "B"] + 1.5
+    # seven missing values, three of them in control proteins (P14, P20, P27)
+    if (missing) values[cbind(c(2L, 5L, 9L, 9L, 14L, 20L, 27L), c(1L, 6L, 2L, 7L, 4L, 8L, 3L))] <- NA
+    table <- data.frame(Protein.Ids = ids, values, check.names = FALSE, row.names = NULL)
+    object <- ProteinQuantitativeData(protein_quant_table = table, protein_id_column = "Protein.Ids", protein_id_table = table["Protein.Ids"],
+        design_matrix = data.frame(Run = samples, group = group, replicates = rep(1:4, 2L)), sample_id = "Run", group_id = "group",
+        technical_replicate_id = "replicates", args = list())
+    list(object = object, values = values, group = group, ctrl = stats::setNames(seq_along(ids) > 12L, ids))
+}
+
+test_that("(KIT-124 W1) ruvIII_C_Varying is RUVIIIC::RUVIII_C_Varying up to a constant per protein, with each protein's mean kept", {
+    for (missing in c(FALSE, TRUE)) for (k in 1:2) {
+        case <- sprintf("missing values %s, k %d", missing, k)
+        input <- protRuvReferenceInput(missing)
+        corrected <- suppressMessages(ruvIII_C_Varying(input$object, ruv_grouping_variable = "group", ruv_number_k = k, ctrl = input$ctrl))
+        after <- as.matrix(corrected@protein_quant_table[, colnames(input$values)])
+        rownames(after) <- corrected@protein_quant_table$Protein.Ids
+        expect_identical(dimnames(after), dimnames(input$values), info = case)
+        Y <- t(input$values)
+        M <- ruv::replicate.matrix(input$group)
+        rownames(M) <- rownames(Y)
+        raw <- t(RUVIIIC::RUVIII_C_Varying(k = k, Y = Y, M = M, toCorrect = colnames(Y), potentialControls = names(input$ctrl)[input$ctrl],
+            progress = FALSE))
+        expect_identical(is.na(after), is.na(raw), info = case)
+        expect_identical(sum(is.na(after)), if (missing) 7L else 0L, info = case)
+        # equal up to a constant per protein
+        spread <- apply(after - raw, 1L, function(row) diff(range(row, na.rm = TRUE)))
+        expect_lt(max(spread), 1e-8, label = paste("the largest spread of package minus reference within a protein,", case))
+        # the constant is the level: the package's mean is the mean before, the reference's is not
+        both <- is.finite(after) & is.finite(input$values)
+        mean_in <- function(m) rowSums(replace(m, !both, 0)) / rowSums(both)
+        expect_equal(mean_in(after), mean_in(input$values), tolerance = 1e-9, info = case)
+        expect_gt(max(abs(mean_in(raw) - mean_in(input$values))), 1, label = paste("the reference's level shift,", case))
+    }
+})
