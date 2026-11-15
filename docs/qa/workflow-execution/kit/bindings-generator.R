@@ -1527,6 +1527,17 @@ if (!is.null(b$builds$kit_937)) {
     }
     if (!is.null(b$tickets[["935m"]])) b$tickets[["937m"]] <- utils::modifyList(b$tickets[["935m"]], kit_937)
 }
+# kit_939: KIT-122 revision 1.1, the composite QC figure built by the worker. 939l/t/a/b/c against today's oracles, 939m
+# (DIA_LIMPA), and 939q, the DIA full journey, against 935q store against store and read for the application's rise in
+# the normalisation step (0.91 to 1.84 GiB on 937q).
+if (!is.null(b$builds$kit_939)) {
+    kit_939 <- list(build = "kit_939", purpose = "KIT-122 rev 1.1: the composite QC figure on the worker (recorded, uncounted)")
+    for (suffix in c("q", "l", "t", "a", "b", "c")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("939", suffix)]] <- utils::modifyList(from, kit_939)
+    }
+    if (!is.null(b$tickets[["935m"]])) b$tickets[["939m"]] <- utils::modifyList(b$tickets[["935m"]], kit_939)
+}
 # kit_938: KIT-122's one correction pass (937l and 937t were refused at tab entry while the last QC step's action was
 # still active; the figures dispatch now declines and the tab draws in process). 938l and 938t once.
 if (!is.null(b$builds$kit_938)) for (suffix in c("l", "t")) {
