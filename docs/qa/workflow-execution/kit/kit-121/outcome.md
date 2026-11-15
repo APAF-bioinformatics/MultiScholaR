@@ -38,3 +38,8 @@ Tests: `test-workflow-omics-owner.R` 79/0 (new; the attached-owner case fails on
 - The harness's `reclaim_memory` launch option is dead (nothing in `R/` reads it): for KIT-117.
 - The diagnosis branch `kit121-diag` (`b60d18ef`) is deleted; its build stays in the bindings as a recorded member.
 - Evidence: `exit/journeys/` (decisions, store comparisons, member results).
+
+## Corrections after the independent review (2026-11-15, `gui-journey-audit-20261115.md`)
+
+- **Reach.** "After a completed import, design, QC or normalisation" overstated it. The request sites are proteomics' only: the import, the design builder's save, the q-value display, and a normalisation publication (not the DIA_LIMPA pass-through). Lipid, metab and trx owners have no request site, so the switch is inert for them.
+- **Platforms (F1, fixed).** `reclaimWorkflowMemory` returned "unsupported" without collecting where glibc's `malloc_trim` is absent, so off Linux this ticket did nothing. It now collects on every platform and skips only the page release (status `collected`).

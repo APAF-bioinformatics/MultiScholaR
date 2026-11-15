@@ -85,3 +85,10 @@ Nine blocks, each in `quarantined-tests.md` with what covers it now: Q-184 (the 
 Completed 2026-11-13 (user: "do all that then"). The GUI workover series' 28 omic x stage cells are all on the shared frame; P-32 is closed.
 
 **Protocol lesson:** on the large corpus one before-and-after pair cannot judge the application's memory; a repeat and the before-build run last were both needed to separate a real effect from collection timing.
+
+## Corrections after the independent review (2026-11-15, `gui-journey-audit-20261115.md`)
+
+- `sites.md` section 3 lists `registerProtNormRenderOutputs` as retired at W5. It is live (proteomics' server calls it).
+- Not recorded above: the stage plots are the frame's 300 px image slots (they were 400 px plot outputs), and proteomics sessions log the frame's start line ("=== METABOLOMICS NORMALIZATION MODULE STARTED ===", for KIT-122).
+- F4 (fixed): the frame no longer looks up the configuration for an omic with its own server, so the exported `mod_prot_norm_server` accepts any `omic_type` label again.
+- The exception to the render-only rule that this ticket carried onto the frame unchanged: proteomics draws its normalisation QC figures in the app process (KIT-122).
