@@ -878,12 +878,20 @@ findBestNegCtrlPercentage <- function(normalised_protein_matrix_obj,
     }
 
     # Step 4: Score the result
-    separation_score <- calculateSeparationScore(cancorplot, separation_metric)
+    # KIT-123 R1: k is bounded. The score and the elbow read the curve up to `max_acceptable_k` (2 to 5 by sample
+    # size when adaptive), as `findBestNegCtrlPercentageCapped` limits it for DIA_LIMPA; before, the limit entered
+    # only the penalty that ranks percentages and the elbow could return any K (44 on a 297-sample corpus). The
+    # plot that is kept and shown is the whole curve.
+    bounded_curve <- cancorplot
+    if (is.data.frame(bounded_curve$data) && "K" %in% names(bounded_curve$data)) {
+      bounded_curve$data <- bounded_curve$data[bounded_curve$data$K <= max_acceptable_k, , drop = FALSE]
+    }
+    separation_score <- calculateSeparationScore(bounded_curve, separation_metric)
     message(sprintf("      DEBUG66: separation_score = %.4f",
       ifelse(is.finite(separation_score), separation_score, NaN)))
 
     best_k <- tryCatch(
-      findBestKElbow(cancorplot),
+      findBestKElbow(bounded_curve),
       error = function(e) NA_integer_
     )
 

@@ -298,6 +298,22 @@ test_that("findBestNegCtrlPercentage uses findBestKElbow (not findBestK)", {
   expect_true(elbow_called)
 })
 
+test_that("(KIT-123 R1) the sweep's k is bounded by max_acceptable_k; the kept plot is the whole curve", {
+  helper_env <- environment(findBestNegCtrlPercentage)
+  # All-minus-control separation rises to its maximum at K = 8: unbounded, the elbow returns 8.
+  curve <- data.frame(featureset = rep(c("Control", "All"), each = 10L), K = rep(1:10, times = 2L),
+    cc = c(rep(0.1, 10L), 0.1 + c(0.10, 0.20, 0.22, 0.30, 0.40, 0.50, 0.60, 0.70, 0.65, 0.60)))
+  localBinding(helper_env, "getNegCtrlProtAnova", function(...) rep(TRUE, 6L))
+  localBinding(helper_env, "ruvCancorFromInput", function(...) list(data = curve))
+  expect_identical(findBestKElbow(list(data = curve)), 8L)
+  result <- findBestNegCtrlPercentage(normalised_protein_matrix_obj = makeProteinRuvObject(), percentage_range = 5L,
+    adaptive_k_penalty = FALSE, max_acceptable_k = 3, verbose = FALSE)
+  # On K <= 3 the maximum separation is 0.22 at K = 3 and K = 2 (0.20) is not within 5% of it.
+  expect_identical(result$best_k, 3L)
+  expect_equal(result$best_separation_score, 0.22)
+  expect_identical(sort(unique(result$best_cancor_plot$data$K)), 1:10)
+})
+
 test_that("weighted_difference deprecation warning fires exactly once per optimizer call", {
   helper_env <- environment(findBestNegCtrlPercentage)
   localBinding(helper_env, "getNegCtrlProtAnova", function(...) rep(TRUE, 6L))
