@@ -235,9 +235,11 @@ omicGuiConfigSchema <- function() {
         # R/mod_*.R file: `server(input, output, session, context)`, its actions and its outputs, in place of the frame's); the QC directory's key in the experiment paths (else the binding's
         # `qc_dir_role`); whether the stage grid shows an assay label row (shown unless FALSE) and names its files
         # `<stage prefix>_<kind>.png`, with no assay stem; the id of a UI output under the correlation tab's summary.
+        # KIT-122 (audit F5): whether the RUV QC tab shows one result's plot, summary and table as static outputs (the
+        # library's `omicNormRuvSingleResult`) in place of the per-assay `ruv_qc_ui`.
         norm_optional = c(reset = "ref", assay_names = "chr", image_stem = "chr1", stage_prefixes = "named_chr",
             output_assay_slots = "int1", server = "chr1", qc_dir = "chr1", assay_labels = "lgl1", image_stemless = "lgl1",
-            correlation_slot = "chr1"),
+            correlation_slot = "chr1", ruv_single_result = "lgl1"),
         norm_stage_prefixes = c("pre_norm", "post_norm", "ruv_corrected"),
         # `run` and `correlation`: the managed function and its in-process twin (the core's; D6).
         norm_action = c(managed = "ref", in_process = "ref"),
@@ -1251,6 +1253,7 @@ omicGuiProteomicsNorm <- function() {
         ruv_heading = "RUV Parameter Optimization Results",
         ruv_help = paste("Canonical correlation plot and optimization summary for RUV-III parameter selection. This plot",
             "shows the separation between 'All' and 'Control' protein groups across different k values."),
+        ruv_single_result = TRUE,
         post_norm_qc = list(heading = "Filtering Progression Summary",
             help = paste("Summary of protein filtering steps through normalization and RUV correction. This step removes",
                 "proteins with excessive missing values after RUV processing.")),

@@ -206,7 +206,8 @@ omicNormQcTabset <- function(ns, view) {
         itsd = centred("ITSD Selection", "flask", "Internal Standard Selection per Assay",
             "Select internal standards for each assay. Pre-selected candidates are auto-detected from naming patterns (ITSD, IS, labeled compounds).",
             shiny::uiOutput(ns("itsd_selection_ui"))),
-        ruv = centred("RUV QC", "chart-line", view$ruv_heading, view$ruv_help, shiny::uiOutput(ns("ruv_qc_ui"))),
+        ruv = centred("RUV QC", "chart-line", view$ruv_heading, view$ruv_help,
+            if (isTRUE(view$ruv_single_result)) omicNormRuvSingleResult(ns) else shiny::uiOutput(ns("ruv_qc_ui"))),
         pca = figure("PCA", "project-diagram", "pca"),
         density = figure("Density", "chart-area", "density"),
         rle = figure("RLE", "chart-bar", "rle"),
@@ -221,6 +222,19 @@ omicNormQcTabset <- function(ns, view) {
         log = shiny::tabPanel("Log", icon = shiny::icon("list-alt"), shiny::br(), shiny::fluidRow(shiny::column(12,
             shiny::h5("Normalization Pipeline Log", style = "text-align: center;"), shiny::verbatimTextOutput(ns("norm_log"))))))
     shiny::column(9, do.call(shiny::tabsetPanel, c(list(id = ns("norm_qc_tabs")), unname(tabs[view$plot_tabs]))))
+}
+
+#' The RUV QC tab's content for an omic with one RUV result (`norm$ruv_single_result`; KIT-122, audit F5; proteomics):
+#' the canonical-correlation plot, the optimisation summary and the results table as static outputs, which the omic's
+#' server fills (`registerProtNormRenderOutputs`). They were created through a `renderUI` on `ruv_qc_ui`.
+#' @noRd
+omicNormRuvSingleResult <- function(ns) {
+    shiny::fluidRow(
+        shiny::column(8, shinyjqui::jqui_resizable(shiny::plotOutput(ns("ruv_canonical_correlation_plot"), height = "500px"))),
+        shiny::column(4, shiny::wellPanel(
+            shiny::h5("Optimization Summary"), shiny::verbatimTextOutput(ns("ruv_optimization_summary")), shiny::br(),
+            shiny::h5("Optimization Results"), shiny::helpText("Detailed results for all tested percentages:"),
+            DT::dataTableOutput(ns("ruv_optimization_table")))))
 }
 
 #' The correlation filtering tab, the normalisation's final step (mod_lipid_norm_ui_helpers.R:311-371 at f8d4c5fc).

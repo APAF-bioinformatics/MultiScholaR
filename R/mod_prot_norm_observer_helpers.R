@@ -163,7 +163,8 @@ registerProtNormServerObservers <- function(
 #' (`runProtNormModuleServerShell`, removed by KIT-120 W5) on the frame's state: the tab's own fields, the managed actions, the S4 download, the restore, the QC generators, the
 #' observers (`registerProtNormServerObservers`) and the outputs (`registerProtNormRenderOutputs`). The frame registers
 #' the design's choices and the stage grid's images itself, so neither is registered here; the RUV QC tab's content
-#' (the frame's `ruv_qc_ui`) is proteomics' plot, summary and table under their own ids.
+#' is the library's single-result entry (`norm$ruv_single_result`, KIT-122): proteomics' plot, summary and table under
+#' their own ids, filled here.
 #' @param input,output,session The frame's module session.
 #' @param context The frame's `workflow_data`, `experiment_paths`, `omic_type`, `experiment_label`, `selected_tab`,
 #'   `norm_data`, `add_log`, `plot_aesthetics` and `config` (the last three are not used here).
@@ -201,13 +202,6 @@ protNormFrameServer <- function(input, output, session, context) {
     # The frame registers the design's choices (omicNormDesignChoices: the same choices and selections).
     updateDesignDrivenChoicesFn = \(session, designMatrix) invisible(NULL)
   )
-  ns <- session$ns
-  output$ruv_qc_ui <- shiny::renderUI(shiny::fluidRow(
-    shiny::column(8, shinyjqui::jqui_resizable(shiny::plotOutput(ns("ruv_canonical_correlation_plot"), height = "500px"))),
-    shiny::column(4, shiny::wellPanel(
-      shiny::h5("Optimization Summary"), shiny::verbatimTextOutput(ns("ruv_optimization_summary")), shiny::br(),
-      shiny::h5("Optimization Results"), shiny::helpText("Detailed results for all tested percentages:"),
-      DT::dataTableOutput(ns("ruv_optimization_table"))))))
   # KIT-122 (audit F2): the RUV summary reads its run's mode and grouping from the session's owner.
   registerProtNormRenderOutputs(output = output, normData = normData, getManagerFn = \() workflowData$state_manager)
   invisible(normData)

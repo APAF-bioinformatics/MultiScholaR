@@ -2015,11 +2015,14 @@ test_that("KIT-120 W2: proteomics' server on the frame sets the tab's state and 
         expect_identical(state[names(fields)], fields)
         expect_null(state$qc_plot_paths)
         expect_identical(state$assay_names, "proteins")
-        # The RUV QC tab's content: proteomics' plot, summary and table under their ids.
-        html <- as.character(output$ruv_qc_ui$html)
+        # The RUV QC tab's content: proteomics' plot, summary and table under their ids. KIT-122 (audit F5): they are
+        # static outputs of the tab's UI (the library's single-result entry); the server renders no `ruv_qc_ui`.
+        html <- as.character(htmltools::renderTags(mod_omic_norm_ui("normalization", omicGuiConfig("proteomics")$norm))$html)
         for (id in c("ruv_canonical_correlation_plot", "ruv_optimization_summary", "ruv_optimization_table")) {
             expect_true(grepl(sprintf('id="normalization-%s"', id), html, fixed = TRUE), info = id)
         }
+        expect_false(grepl('id="normalization-ruv_qc_ui"', html, fixed = TRUE))
+        expect_error(output$ruv_qc_ui)
         # The covariates panel: on the DIA_LIMPA route only.
         expect_null(output$ruv_covariates_panel)
         bus$state_manager <- list(workflow_type = "DIA_LIMPA")
@@ -2070,6 +2073,34 @@ omicNormK122ProtTab <- function(drive, env = parent.frame()) {
         experiment_label = "kit122", selected_tab = shiny::reactiveVal("import"), config = omicGuiConfig("proteomics")$norm),
         drive(session, output, session$returned))))
 }
+
+test_that("KIT-122 (audit F5): the RUV tab's single-result content is a library entry of static outputs (fails before)", {
+    ids <- function(norm) {
+        html <- as.character(htmltools::renderTags(mod_omic_norm_ui("normalization", norm))$html)
+        sub('"$', "", sub('^id="normalization-', "", unlist(regmatches(html, gregexpr('id="normalization-[A-Za-z0-9_]+"', html)))))
+    }
+    single <- c("ruv_canonical_correlation_plot", "ruv_optimization_summary", "ruv_optimization_table")
+    # Proteomics' group names the entry; the three outputs are in the tab's UI and there is no `ruv_qc_ui` container.
+    proteomics <- omicGuiConfig("proteomics")$norm
+    expect_true(proteomics$ruv_single_result)
+    expect_true(all(single %in% ids(proteomics)))
+    expect_false("ruv_qc_ui" %in% ids(proteomics))
+    # The same group without the entry, and lipid's, metab's and trx's groups, keep the per-assay container.
+    proteomics$ruv_single_result <- NULL
+    expect_true("ruv_qc_ui" %in% ids(proteomics))
+    expect_false(any(single %in% ids(proteomics)))
+    for (omic in c("lipidomics", "metabolomics", "transcriptomics")) {
+        norm <- omicGuiConfig(omic)$norm
+        expect_null(norm$ruv_single_result, info = omic)
+        expect_true("ruv_qc_ui" %in% ids(norm), info = omic)
+    }
+    # Proteomics' server creates no output through a `renderUI` for that tab.
+    expect_false("renderUI" %in% all.names(body(protNormFrameServer)))
+    # The field is checked by type.
+    config <- omicGuiConfig("proteomics")
+    config$norm$ruv_single_result <- "yes"
+    expect_error(validateOmicGuiConfig(config), "ruv_single_result")
+})
 
 test_that("KIT-122 (audit F10): after a reset a later run's filtering and RUV summaries show again (fails before)", {
     omicNormK122ProtTab(function(session, output, state) {
