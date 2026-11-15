@@ -58,3 +58,14 @@ kit-journey-938l start 01:05:47 at 0764c3b5: AC 1, profile low-power, battery 88
 kit-journey-938l end 01:09:08: AC 1, profile low-power, battery 88%, load 3.39, available 42 GiB
 kit-journey-938t start 01:09:18 at 0764c3b5: AC 1, profile low-power, battery 88%, load 3.02, available 42 GiB
 kit-journey-938t end 01:12:18: AC 1, profile low-power, battery 88%, load 2.16, available 42 GiB
+kit-journey-939l start 06:43:17 at 953c44c6: AC 1, profile low-power, battery 87%, load 2.37, available 39 GiB
+kit-journey-939l end 06:47:37: AC 1, profile low-power, battery 87%, load 6.16, available 34 GiB
+kit-journey-939t start 06:47:47 at 953c44c6: AC 1, profile low-power, battery 87%, load 5.98, available 34 GiB
+kit-journey-939t end 06:52:28: AC 1, profile low-power, battery 87%, load 8.70, available 29 GiB
+kit-journey-939m start 06:52:47 at 953c44c6: AC 1, profile low-power, battery 87%, load 8.47, available 30 GiB
+kit-journey-939m end 07:06:48: AC 1, profile low-power, battery 87%, load 18.45, available 24 GiB
+kit-journey-939q start 07:07:18 at 953c44c6: AC 1, profile low-power, battery 87%, load 16.80, available 24 GiB
+kit-journey-939q end 08:13:58: AC 1, profile low-power, battery 87%, load 2.90, available 36 GiB
+kit-journey-939m (first attempt) invalid measurement_valid: sampling gap under machine load (simulator pilots ran alongside, load 18); verification passed; rerun once on a quiet machine
+kit-journey-939m start 08:40:25 at 953c44c6: AC 1, profile low-power, battery 87%, load 2.02, available 40 GiB
+kit-journey-939m refused at launch 08:40:25: exit 76, no member ran
