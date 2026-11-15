@@ -1,0 +1,252 @@
+{
+ "schema": "em.ticket_series_evidence_audit.result.v1",
+ "mode": "audit_only",
+ "scope": {
+  "ticket_ids": [
+   "KIT-124",
+   "KIT-123"
+  ],
+  "files": [
+   "tickets/kit/KIT-124.md",
+   "tickets/kit/KIT-123.md",
+   "docs/qa/workflow-execution/kit/kit-114/sim/b_ruv_modes.R",
+   "docs/qa/workflow-execution/kit/kit-114/b_ruv_modes-summary.tsv",
+   "docs/qa/workflow-execution/kit/kit-114/b_ruv_modes-pi40-summary.tsv",
+   "docs/qa/workflow-execution/kit/kit-114/b_ruv_modes-nofactor-summary.tsv"
+  ],
+  "claim_classes": [
+   "scientific_calibration",
+   "convention_conformance",
+   "decision_design",
+   "documentation_graph"
+  ]
+ },
+ "authority": {
+  "route_valid": true,
+  "artifacts": [
+   {
+    "path": "tickets/kit/KIT-124.md",
+    "sha256_prefix": "e3eb05d41b98c9fa"
+   },
+   {
+    "path": "tickets/kit/KIT-123.md",
+    "sha256_prefix": "5088ec093bee49c9"
+   },
+   {
+    "path": "docs/qa/workflow-execution/kit/kit-114/b_ruv_modes-summary.tsv",
+    "sha256_prefix": "da11282b63a7d879"
+   },
+   {
+    "path": "docs/qa/workflow-execution/kit/kit-114/b_ruv_modes-pi40-summary.tsv",
+    "sha256_prefix": "a5c6b87a4b0108fb"
+   },
+   {
+    "path": "docs/qa/workflow-execution/kit/kit-114/b_ruv_modes-nofactor-summary.tsv",
+    "sha256_prefix": "63ce4f4a0fbb9346"
+   },
+   {
+    "path": "docs/qa/workflow-execution/kit/kit-114/sim/b_ruv_modes.R",
+    "sha256_prefix": "47036378c6ace581"
+   }
+  ],
+  "user_request": "audit the ticket (2026-11-16); repairs not authorised"
+ },
+ "findings": [
+  {
+   "id": "F-01",
+   "severity": "high",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "pass rule tolerance is two standard errors of the candidate's own difference at 20 seeds (0.010 to 0.052); a 6 to 10 point excess can pass"
+  },
+  {
+   "id": "F-02",
+   "severity": "high",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "rule written with S1 outcomes visible; existing S1 runs are exploratory"
+  },
+  {
+   "id": "F-03",
+   "severity": "high",
+   "validity_layer": "controlled_incremental_utility",
+   "blocked_state": "decision",
+   "summary": "no arm is the field's alternative (true factor, RUV4, RUVinv, surrogate variables); best-in-class not concludable"
+  },
+  {
+   "id": "F-04",
+   "severity": "high",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "all candidate control rules and the sweep objective use the outcome; no outcome-free candidate"
+  },
+  {
+   "id": "F-05",
+   "severity": "high",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "no confounded or non-RUV-model scenario in the simulators"
+  },
+  {
+   "id": "F-06",
+   "severity": "high",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "k = 0 is not an outcome; rule 2 fails every RUV design where no unwanted factor exists"
+  },
+  {
+   "id": "F-07",
+   "severity": "high",
+   "validity_layer": "documentation_or_graph_integrity",
+   "blocked_state": "implementation",
+   "summary": "W4 and W5 not implementable from the ticket; ticket exceeds one bounded item"
+  },
+  {
+   "id": "F-08",
+   "severity": "medium",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "metrics lack per-test type I error, effect-size bias and the tail of the false discovery proportion"
+  },
+  {
+   "id": "F-09",
+   "severity": "medium",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "execution",
+   "summary": "null split lacks unit, minimum size and a criterion valid under a global null"
+  },
+  {
+   "id": "F-10",
+   "severity": "medium",
+   "validity_layer": "runtime_behavior",
+   "blocked_state": "execution",
+   "summary": "no cell or compute budget; settings imply 324 cells per simulator"
+  },
+  {
+   "id": "F-11",
+   "severity": "medium",
+   "validity_layer": "implementation_conformance",
+   "blocked_state": "implementation",
+   "summary": "consumers of the corrected matrix and W design not traced"
+  },
+  {
+   "id": "F-12",
+   "severity": "medium",
+   "validity_layer": "documentation_or_graph_integrity",
+   "blocked_state": "decision",
+   "summary": "references partly unverified at source; recommended-practice column over-generalises one example"
+  },
+  {
+   "id": "F-13",
+   "severity": "medium",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "decision",
+   "summary": "blocked designs, known batch in the model, peptide method and end-to-end path not covered"
+  },
+  {
+   "id": "F-14",
+   "severity": "medium",
+   "validity_layer": "semantic_or_construct_validity",
+   "blocked_state": "execution",
+   "summary": "lipid and metab simulator model fixed before the convention is read"
+  },
+  {
+   "id": "F-15",
+   "severity": "low",
+   "validity_layer": "documentation_or_graph_integrity",
+   "blocked_state": "implementation",
+   "summary": "series sections missing in KIT-123 and KIT-124; index entries carry KIT-122's description, priority and estimate"
+  },
+  {
+   "id": "F-16",
+   "severity": "low",
+   "validity_layer": "mechanical_validity",
+   "blocked_state": "execution",
+   "summary": "result files carry no commit, library or package versions"
+  },
+  {
+   "id": "F-17",
+   "severity": "low",
+   "validity_layer": "documentation_or_graph_integrity",
+   "blocked_state": "decision",
+   "summary": "title presumes one design"
+  },
+  {
+   "id": "F-18",
+   "severity": "low",
+   "validity_layer": "implementation_conformance",
+   "blocked_state": "none",
+   "summary": "closed in audit: limma 3.68.4 removeBatchEffect centres covariates; limpa 1.4.2 has simProteinDataSet"
+  }
+ ],
+ "repairs": [],
+ "tests": [
+  {
+   "name": "audit_inventory.py",
+   "result": "findings",
+   "validity_layer": "documentation_or_graph_integrity"
+  },
+  {
+   "name": "read of limma::removeBatchEffect, ruv namespace, limpa namespace in library browser-smoke.y5ordS",
+   "result": "pass",
+   "validity_layer": "implementation_conformance"
+  },
+  {
+   "name": "b_ruv_modes sensitivity runs (40% true effects; no unwanted factor), 20 seeds, 6 per group",
+   "result": "exploratory",
+   "validity_layer": "semantic_or_construct_validity"
+  }
+ ],
+ "graph": {
+  "duplicates": [],
+  "missing": [],
+  "cycles": [],
+  "ticket_count": 122
+ },
+ "evidence_layers": [
+  {
+   "layer": "documentation_or_graph_integrity",
+   "artifacts": [
+    "ticket inventory",
+    "index"
+   ],
+   "claim_limit": "no scientific claim"
+  },
+  {
+   "layer": "semantic_or_construct_validity",
+   "artifacts": [
+    "b_ruv_modes*.tsv"
+   ],
+   "claim_limit": "exploratory; one simulator; classic proteomics kernels only"
+  }
+ ],
+ "formal_verification": {
+  "used": false,
+  "obligations": [],
+  "limits": [
+   "calibration is empirical; no deterministic property here warrants proof"
+  ]
+ },
+ "closeout": {
+  "implementation_verified": false,
+  "execution_complete": false,
+  "decision_supported": false,
+  "promotion_authorized": false,
+  "claim_scope": "Audit of the ticket's design only. No RUV design is established as calibrated or as best practice."
+ },
+ "blockers": [
+  "F-01",
+  "F-02",
+  "F-03",
+  "F-04",
+  "F-05",
+  "F-06",
+  "F-07"
+ ],
+ "deviations": [
+  "author and auditor are the same session",
+  "the skill was invoked with 'repair' in its arguments; the user asked for an audit only, so no repair was applied",
+  "small read-only checks and two already-running sensitivity simulations were used as evidence"
+ ],
+ "next_action": "User decision: apply the repairs as KIT-124 revision 1.1 (measurement and gate only) and whether sva may be used as a comparator in a scratch library."
+}
