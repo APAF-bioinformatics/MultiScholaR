@@ -1,0 +1,1032 @@
+cell	run	arm	subset	status	assay	reason
+C0	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9008	4	full	refused	neg	k = 5 above 4 complete controls
+C0	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C0	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C1	9001	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9001	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9002	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9002	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9003	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9003	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9004	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9004	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9005	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9005	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9006	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9006	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9007	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9007	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9008	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9008	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9009	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9009	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9010	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9010	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9011	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9011	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9012	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9012	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9013	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9013	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9014	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9014	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9015	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9015	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9016	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9016	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9017	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9017	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9018	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9018	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9019	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9019	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9020	13	complete	refused	pos	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C1	9020	13	complete	refused	neg	RUVinv needs 22 controls (the residual dimensions), 5 standards are complete
+C2	9001	5	full	refused	neg	no residual degrees of freedom with k = 10
+C2	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9009	4	full	refused	neg	k = 4 above 3 complete controls
+C2	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C2	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C3	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9002	5	complete	refused	neg	no residual degrees of freedom with k = 10
+C4	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9004	5	full	refused	pos	no residual degrees of freedom with k = 10
+C4	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9005	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9005	5	complete	refused	neg	no residual degrees of freedom with k = 10
+C4	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9008	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9010	5	full	refused	pos	no residual degrees of freedom with k = 10
+C4	9010	5	complete	refused	pos	no residual degrees of freedom with k = 10
+C4	9010	5	complete	refused	neg	no residual degrees of freedom with k = 10
+C4	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9011	4	full	refused	neg	k = 1 above 0 complete controls
+C4	9011	5	full	refused	pos	no residual degrees of freedom with k = 10
+C4	9011	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9013	4	full	refused	pos	k = 4 above 3 complete controls
+C4	9013	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9015	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9015	5	complete	refused	neg	no residual degrees of freedom with k = 10
+C4	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9016	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9019	5	full	refused	pos	no residual degrees of freedom with k = 10
+C4	9019	5	complete	refused	pos	no residual degrees of freedom with k = 10
+C4	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9020	5	full	refused	neg	no residual degrees of freedom with k = 10
+C4	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C4	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9017	4	full	refused	pos	k = 4 above 3 complete controls
+C5	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C5	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+C6	9001	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9001	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9002	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9002	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9003	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9003	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9004	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9004	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9005	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9005	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9006	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9006	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9007	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9007	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9008	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9008	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9009	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9009	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9010	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9010	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9011	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9011	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9012	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9012	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9013	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9013	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9014	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9014	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9015	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9015	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9016	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9016	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9017	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9017	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9018	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9018	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9019	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9019	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9020	13	complete	refused	pos	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C6	9020	13	complete	refused	neg	RUVinv needs 14 controls (the residual dimensions), 5 standards are complete
+C7	9001	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9001	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9002	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9002	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9003	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9003	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9004	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9004	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9005	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9005	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9006	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9006	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9007	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9007	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9008	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9008	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9009	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9009	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9010	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9010	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9011	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9011	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9012	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9012	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9013	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9013	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9014	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9014	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9015	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9015	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9016	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9016	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9017	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9017	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9018	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9018	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9019	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9019	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9020	13	complete	refused	pos	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+C7	9020	13	complete	refused	neg	RUVinv needs 15 controls (the residual dimensions), 5 standards are complete
+S1	9001	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9001	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9001	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9001	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9002	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9002	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9002	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9003	4	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9003	4	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9003	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9003	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9004	4	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9004	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9004	4	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9004	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9004	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9004	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9005	4	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9005	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9005	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9005	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9005	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9006	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9007	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9007	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9007	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9008	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9008	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9008	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9009	4	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9009	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9009	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9009	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9010	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9010	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9010	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9010	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9010	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9011	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9011	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9011	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9012	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9012	4	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9012	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9012	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9013	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9013	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9013	6	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9013	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9013	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9014	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9014	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9014	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9015	4	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9015	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9015	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9015	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9015	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9015	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9016	4	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9016	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9016	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9016	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9016	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9017	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9017	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9017	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9017	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9017	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9018	4	full	refused	neg	k = 4 above 3 complete controls
+S1	9018	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9018	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9018	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9018	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9018	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9019	5	full	refused	pos	no residual degrees of freedom with k = 4
+S1	9019	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9019	4	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9019	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S1	9019	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S1	9020	5	full	refused	neg	no residual degrees of freedom with k = 4
+S1	9020	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S1	9020	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S2	9001	4	full	refused	neg	k = 4 above 3 complete controls
+S2	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S2	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S3	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9004	6	complete	refused	neg	no residual degrees of freedom with k = 10
+S4	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9014	4	full	refused	neg	k = 4 above 3 complete controls
+S4	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S4	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9001	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9001	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9002	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9002	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9003	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9003	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9004	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9004	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9005	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9005	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9006	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9006	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9007	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9007	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9008	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9008	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9009	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9009	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9010	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9010	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9011	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9011	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9012	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9012	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9013	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9013	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9014	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9014	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9015	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9015	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9016	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9016	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9017	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9017	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9018	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9018	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9019	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9019	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9020	13	full	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S5	9020	13	full	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9002	4	full	refused	neg	k = 5 above 4 complete controls
+S6	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9013	3	full	refused	neg	No valid percentage found: RUV-III needs control lipids observed in every sample; at 17 of the 20 control percentages tried (4-20%), only 1-3 were (k = 4-7). Filter for completeness first, lower k, or run normalisation without RUV.
+S6	9013	4	full	refused	neg	No valid percentage found: RUV-III needs control lipids observed in every sample; at 17 of the 20 control percentages tried (4-20%), only 1-3 were (k = 4-7). Filter for completeness first, lower k, or run normalisation without RUV.
+S6	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9020	6	full	refused	neg	no residual degrees of freedom with k = 10
+S6	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S6	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9001	5	complete	refused	pos	no residual degrees of freedom with k = 10
+S7	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S7	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S8	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S9	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9013	4	full	refused	neg	k = 4 above 3 complete controls
+S10	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S10	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S11	9001	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9002	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9002	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9002	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9002	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9003	4	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9003	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9003	4	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9003	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9004	4	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9004	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9004	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9004	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9004	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9005	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9005	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9005	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9006	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9006	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9006	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9007	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9007	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9007	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9008	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9008	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9008	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9008	6	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9008	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9009	4	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9009	4	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9009	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9009	4	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9009	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9009	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9010	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9010	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9010	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9010	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9010	6	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9010	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9011	4	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9011	4	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9011	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9011	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9011	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9011	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9012	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9012	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9012	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9012	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9013	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9013	6	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9013	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9013	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9014	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9014	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9014	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9014	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9015	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9015	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9015	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9016	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9016	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9016	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9016	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9016	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9017	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9017	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9017	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9018	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9018	5	full	refused	neg	no residual degrees of freedom with k = 4
+S11	9018	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9018	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9019	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S11	9019	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9019	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S11	9020	5	full	refused	pos	no residual degrees of freedom with k = 4
+S11	9020	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S11	9020	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9001	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9001	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9001	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9001	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9002	4	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9002	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9002	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9002	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9003	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9003	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9003	4	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9003	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9003	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9004	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9004	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9004	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9004	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9004	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9005	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9005	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9005	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9005	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9006	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9006	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9006	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9006	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9006	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9007	4	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9007	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9007	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9007	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9007	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9008	4	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9008	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9008	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9008	4	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9008	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9008	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9008	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9009	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9009	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9009	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9009	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9009	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9010	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9010	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9010	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9010	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9011	4	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9011	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9011	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9011	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9012	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9012	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9012	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9012	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9013	4	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9013	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9013	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9013	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9013	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9014	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9014	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9014	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9014	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9014	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9015	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9015	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9016	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9016	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9016	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9016	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9017	4	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9017	4	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9017	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9017	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9017	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9018	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9018	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9018	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9019	4	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9019	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9019	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9019	4	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9019	4	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9019	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9019	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9019	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S12	9020	4	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9020	5	full	refused	pos	no residual degrees of freedom with k = 4
+S12	9020	5	full	refused	neg	no residual degrees of freedom with k = 4
+S12	9020	4	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9020	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S12	9020	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S12	9020	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9001	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9002	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9003	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9004	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9005	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9006	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9008	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9009	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9010	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9011	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9012	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9013	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9014	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9015	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9016	5	complete	refused	pos	no residual degrees of freedom with k = 4
+S13	9016	6	complete	refused	pos	no residual degrees of freedom with k = 4
+S13	9016	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9017	5	complete	refused	neg	no residual degrees of freedom with k = 4
+S13	9017	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9018	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9019	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S13	9020	13	complete	crashed		In function invvar: The fourth-smallest eigenvalue is more than 10 times larger than the smallest eigenvalue.  This is not currently supported, and very likely means something is wrong (perhaps a dimension was removed during preprocessing?).
+S14	9001	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9001	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9002	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9002	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9003	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9003	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9004	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9004	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9005	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9005	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9006	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9006	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9007	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9007	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9008	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9008	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9009	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9009	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9010	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9010	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9011	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9011	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9012	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9012	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9013	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9013	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9014	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9014	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9015	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9015	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9016	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9016	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9017	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9017	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9018	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9018	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9019	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9019	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9020	13	complete	refused	pos	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete
+S14	9020	13	complete	refused	neg	RUVinv needs 10 controls (the residual dimensions), 5 standards are complete

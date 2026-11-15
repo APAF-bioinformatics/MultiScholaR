@@ -1,0 +1,15 @@
+simulator: S4 (lipidomics and metabolomics), KIT-124 revision 1.2
+commit: 9bb685a4f9e9803e7bc2d3047157c559a3cba79b
+script committed state: clean
+command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-pilot 20 20 2 all 9001
+cells: C0,C1,C2,C3,C4,C5,C6,C7,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14
+runs: core 20, stress 20, numbered from 9001
+cores: 2 (OMP_NUM_THREADS=1)
+seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+R: R version 4.6.1 (2026-06-24)
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+R_LIBS: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library
+MultiScholaR (pkgload::load_all): 0.5.0
+packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+lipid/metab sharing check (identical outputs through both classes): sweep TRUE, ruv TRUE, orchestrator TRUE, kernel_lipid_equals_metab TRUE, orchestrator_equals_kernel TRUE, kernel_equals_limma_trend_robust TRUE, itsd TRUE
+started: 2026-11-16 08:48:07 finished: 2026-11-16 10:19:42
