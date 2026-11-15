@@ -906,7 +906,8 @@ test_that("the norm group holds today's values for lipid and metab, trx has one 
     expect_identical(lipid$export[c("prefix", "counts_field", "samples")],
         list(prefix = "lipid_", counts_field = "lipid_counts", samples = "design"))
     expect_identical(metab$export[c("prefix", "counts_field", "samples")],
-        list(prefix = "metab_", counts_field = "metabolite_counts", samples = "columns"))
+        # KIT-118 (P-18): one sample-count rule, the design samples present as columns.
+        list(prefix = "metab_", counts_field = "metabolite_counts", samples = "design"))
     expect_identical(lipid$skip_correlation_flags, "before_commit")
     expect_identical(metab$skip_correlation_flags, "after_commit")
     expect_identical(lipid$final_pca, list(preparing_size = 5, error_size = 4))

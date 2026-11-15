@@ -1897,7 +1897,7 @@ omicGuiMetabDa <- function() {
 #' @noRd
 omicGuiMetabNorm <- function() {
     omicGuiFeatureNorm("metab", "Metabolites",
-        export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "columns",
+        export = list(prefix = "metab_", counts_field = "metabolite_counts", samples = "design",
             progress = list(gather = "Gathering data...", complete = character(0), steps = TRUE), summary_time = "written"),
         itsd_table = function(assay_data, id_col, annotation_cols) {
             buildItsdSelectionTable(assay_data = assay_data, metabolite_id_col = id_col, annotation_cols = annotation_cols)

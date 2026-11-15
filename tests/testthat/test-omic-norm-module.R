@@ -980,14 +980,16 @@ omicNormFrozen[["metab"]][["skip"]] <- list(
                 "itsd_applied", "itsd_aggregation", "log_offset", "correlation_threshold",
                 "ruv_grouping_variable", "feature_counts", "metabolite_counts", "qc_params",
                 "normalization_complete", "ruv_complete", "correlation_filtering_complete"),
-            feature_counts = c("LCMS_Pos: 14 features, 5 samples", "GCMS: 14 features, 5 samples"),
-            rds_values = "8956c7f7d24e3399f9eb87d62a74e55655b09c3a56fb16dbc2b8645e92eb86d1",
+            # KIT-118 (P-18): the count is the design samples present as columns (4); the fixture's fifth
+            # non-id column is not a sample. Re-frozen with the session file's hash.
+            feature_counts = c("LCMS_Pos: 14 features, 4 samples", "GCMS: 14 features, 4 samples"),
+            rds_values = "6a56ef10cc76522ddb6ef197a583618149fbc10780d45e87584c40b19becf290",
             current_s4_object = "60e0303f4e7398a75611b1092b5dda9b4c1da4d40f1253941b372de24d47039f",
             summary = c(
                 "Metabolomics Normalized Session Data Export Summary",
                 "===================================================", "", "Export Timestamp: <TIME>",
                 "Session File: metab_filtered_session_data_<TIME>.rds", "", "Data Summary:",
-                "  LCMS_Pos: 14 features, 5 samples", "  GCMS: 14 features, 5 samples", "",
+                "  LCMS_Pos: 14 features, 4 samples", "  GCMS: 14 features, 4 samples", "",
                 "Normalization Parameters:", "- Method: cyclicloess", "- ITSD applied: No",
                 "- ITSD aggregation: N/A", "- Log2 offset: 1", "- RUV mode: skip",
                 "- RUV grouping variable: group", "- Correlation threshold: 0.5", "",
