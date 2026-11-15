@@ -185,18 +185,26 @@ renderProtNormRuvCanonicalCorrelationPlot <- function(
   })
 }
 
+#' The RUV summary of the result the tab holds. KIT-122 (audit F2): the mode and the grouping are those of the run
+#' that produced the result, read from its saved product (`resolveDIARuvRunDescription`) each time the result changes,
+#' not the tab's inputs, which were read once and named the first run's mode for every later one.
+#' @noRd
 renderProtNormRuvOptimizationSummary <- function(
   normData,
-  ruvMode,
-  groupingVariable,
+  getManagerFn = getDIAActiveManager,
   renderTextFn = shiny::renderText,
-  buildSummaryFn = buildProtNormRuvOptimizationSummary
+  buildSummaryFn = buildProtNormRuvOptimizationSummary,
+  resolveRunFn = resolveDIARuvRunDescription
 ) {
   renderTextFn({
+    result <- normData$ruv_optimization_result
+    run <- if (!is.null(result)) resolveRunFn(getManagerFn())
     buildSummaryFn(
-      ruvOptimizationResult = normData$ruv_optimization_result,
-      ruvMode = ruvMode,
-      groupingVariable = groupingVariable
+      ruvOptimizationResult = result,
+      # Without a saved product (an in-memory owner) the result is described by what it carries itself.
+      ruvMode = run$ruv_mode %||% result$ruv_mode %||%
+        if (identical(result$separation_metric_used, "manual")) "manual" else "automatic",
+      groupingVariable = run$grouping %||% NA_character_
     )
   })
 }
@@ -266,8 +274,7 @@ resolveProtNormRuvOptimizationTable <- function(normData) {
 registerProtNormRenderOutputs <- function(
   output,
   normData,
-  ruvMode,
-  groupingVariable,
+  getManagerFn = getDIAActiveManager,
   renderPostNormFilteringSummaryFn = renderProtNormPostNormFilteringSummary,
   renderFilteringSummaryTextFn = renderProtNormFilteringSummaryText,
   renderFinalQcPlotFn = renderProtNormFinalQcPlot,
@@ -289,8 +296,7 @@ registerProtNormRenderOutputs <- function(
   )
   output$ruv_optimization_summary <- renderRuvOptimizationSummaryFn(
     normData = normData,
-    ruvMode = ruvMode,
-    groupingVariable = groupingVariable
+    getManagerFn = getManagerFn
   )
   output$ruv_optimization_table <- renderRuvOptimizationTableFn(
     normData = normData

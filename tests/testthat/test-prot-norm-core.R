@@ -2013,3 +2013,36 @@ test_that("GUI audit P-35: a correlation re-apply after the RUV covariates, dire
         }
     }
 })
+
+# ------------------------------------------------------------------------------------------------
+# KIT-122 (audit F2): the tab's RUV summary names the mode and the grouping of the run that produced the result it
+# shows, read from that run's saved product. They were the tab's inputs as first read, so a second run in another mode
+# kept the first run's name.
+# ------------------------------------------------------------------------------------------------
+
+test_that("KIT-122 (audit F2): after a second RUV run in another mode the tab's RUV summary names that run (fails before)", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    fixture <- protNormW1LimpaOwner()
+    log <- new.env(parent = emptyenv())
+    protNormW3Notices(log, fixture$root)
+    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
+        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
+        experiment_label = "core"), {
+        click <- protNormW3Clicker()
+        do.call(click, c(list("run_normalization"), protNormW3Inputs("covariates")))(session)
+        click("apply_correlation_filter")(session)
+        click("apply_ruv_covariates")(session)
+        session$flushReact()
+        expect_match(output$ruv_optimization_summary, "RUV-III Covariates (negative-control sweep):", fixed = TRUE)
+        expect_match(output$ruv_optimization_summary, "RUV grouping variable: group", fixed = TRUE)
+        click("apply_ruv_covariates", ruv_mode = "correction")(session)
+        session$flushReact()
+        expect_identical(fixture$manager$current_state, "ruv_corrected")
+        expect_match(output$ruv_optimization_summary, "RUV-III Correction (negative-control sweep):", fixed = TRUE)
+        # The inputs alone do not rename the run the summary describes.
+        session$setInputs(ruv_mode = "covariates")
+        session$flushReact()
+        expect_match(output$ruv_optimization_summary, "RUV-III Correction (negative-control sweep):", fixed = TRUE)
+    })))
+})

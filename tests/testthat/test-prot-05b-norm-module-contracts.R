@@ -198,8 +198,6 @@ test_that("registerProtNormRenderOutputs assigns all remaining render outputs", 
   registerProtNormRenderOutputs(
     output = output,
     normData = norm_data,
-    ruvMode = "automatic",
-    groupingVariable = "group",
     renderPostNormFilteringSummaryFn = function(normData) {
       calls$post_norm <<- normData
       "post_norm_plot"
@@ -216,12 +214,9 @@ test_that("registerProtNormRenderOutputs assigns all remaining render outputs", 
       calls$ruv_plot <<- normData
       "ruv_plot"
     },
-    renderRuvOptimizationSummaryFn = function(normData, ruvMode, groupingVariable) {
-      calls$ruv_summary <<- list(
-        normData = normData,
-        ruvMode = ruvMode,
-        groupingVariable = groupingVariable
-      )
+    # KIT-122 (audit F2): the summary takes the mode and the grouping from the tab's state, not as arguments.
+    renderRuvOptimizationSummaryFn = function(normData, getManagerFn) {
+      calls$ruv_summary <<- list(normData = normData)
       "ruv_summary"
     },
     renderRuvOptimizationTableFn = function(normData) {
@@ -235,8 +230,6 @@ test_that("registerProtNormRenderOutputs assigns all remaining render outputs", 
   expect_identical(calls$ruv_plot, norm_data)
   expect_identical(calls$ruv_table, norm_data)
   expect_identical(calls$ruv_summary$normData, norm_data)
-  expect_equal(calls$ruv_summary$ruvMode, "automatic")
-  expect_equal(calls$ruv_summary$groupingVariable, "group")
   expect_equal(output$post_norm_filtering_summary, "post_norm_plot")
   expect_equal(output$filtering_summary_text, "filtering_text")
   expect_equal(output$final_qc_plot, "final_qc")

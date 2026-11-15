@@ -210,8 +210,8 @@ protNormFrameServer <- function(input, output, session, context) {
       shiny::h5("Optimization Summary"), shiny::verbatimTextOutput(ns("ruv_optimization_summary")), shiny::br(),
       shiny::h5("Optimization Results"), shiny::helpText("Detailed results for all tested percentages:"),
       DT::dataTableOutput(ns("ruv_optimization_table"))))))
-  registerProtNormRenderOutputs(output = output, normData = normData, ruvMode = input$ruv_mode,
-    groupingVariable = getRuvGroupingVariable())
+  # KIT-122 (audit F2): the RUV summary reads its run's mode and grouping from the session's owner.
+  registerProtNormRenderOutputs(output = output, normData = normData, getManagerFn = \() workflowData$state_manager)
   invisible(normData)
 }
 

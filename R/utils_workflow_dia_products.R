@@ -522,6 +522,26 @@ resolveDIARuvOptimizationResult <- function(manager) {
     NULL
 }
 
+#' The RUV mode and grouping of the run that produced the accepted RUV result (KIT-122, audit F2): the declared
+#' parameters its saved product carries (`grouping` for the normalisation, `ruv_grouping_variable` for the DIA_LIMPA
+#' covariates), read from the head state's product, else from the newest state that references one (after the DIA
+#' route's correlation filter, or an Open). The tab's RUV summary reads this, never the tab's inputs.
+#' @param manager Session owner; NULL or a non-reference owner gives NULL.
+#' @return `list(ruv_mode, grouping)`, or NULL before normalisation.
+#' @noRd
+resolveDIARuvRunDescription <- function(manager) {
+    if (!usesDIAReferenceStates(manager)) return(NULL)
+    states <- unique(c(manager$current_state, rev(manager$getHistory())))
+    for (state in intersect(states, c("ruv_covariates", "correlation_filtered", "ruv_corrected", "normalized"))) {
+        record <- tryCatch(readDIAStateMetadata(manager, getDIAStateReference(manager, state))$data, error = function(e) NULL)
+        product <- record$products$ruv_covariates_science %||% record$products$normalization_science
+        if (is.null(product)) next
+        parameters <- hydrateSavedWorkflowEntity(manager$.context$store, product)$value$parameters
+        return(list(ruv_mode = parameters$ruv_mode, grouping = parameters$grouping %||% parameters$ruv_grouping_variable))
+    }
+    NULL
+}
+
 runDIAReferenceNormalization <- function(settings, workflow, norm_data, paths, omic_type,
     experiment_label, post_qc, ruv_qc, grouping) {
     prior_plot <- ggplot2::get_last_plot()
