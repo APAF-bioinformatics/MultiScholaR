@@ -184,7 +184,8 @@ readOmicsDesignImportContrasts <- function(path) {
     contrastStrings <- readLines(path)
     if (length(contrastStrings) == 0) return(NULL)
     cleanStrings <- gsub("-group", "-", gsub("^group", "", contrastStrings))
-    friendlyNames <- gsub("-", "_vs_", cleanStrings)
+    # KIT-118 (P-09): a dot in a group name is `_`, as the builder writes it.
+    friendlyNames <- gsub(".", "_", gsub("-", "_vs_", cleanStrings), fixed = TRUE)
     data.frame(contrasts = contrastStrings, friendly_names = friendlyNames,
         full_format = paste0(friendlyNames, "=", contrastStrings), stringsAsFactors = FALSE)
 }

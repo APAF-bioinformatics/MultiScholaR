@@ -239,14 +239,15 @@ omicsDesignContrastExpression <- function(contrastString) {
 }
 
 #' The friendly name the validator gives a contrast without one: `group` prefixes stripped, blanks
-#' removed, `-` as `_vs_`.
+#' removed, `-` as `_vs_`, and a dot in a group name as `_`, as the builder writes it
+#' (`buildOmicsDesignSaveContrastsTable`; KIT-118, P-09).
 #' @noRd
 omicsDesignFriendlyContrastName <- function(contrastString) {
     contrastString <- omicsDesignContrastExpression(contrastString)
     cleanString <- gsub("^group", "", contrastString)
     cleanString <- gsub("-group", "-", cleanString)
     cleanString <- gsub("\\s+", "", cleanString)
-    gsub("-", "_vs_", cleanString)
+    gsub(".", "_", gsub("-", "_vs_", cleanString), fixed = TRUE)
 }
 
 #' C1. A contrasts table in the contract's columns (`contrasts`, `friendly_names`, `full_format`),

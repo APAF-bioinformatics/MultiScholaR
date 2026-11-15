@@ -10,7 +10,8 @@ readProtDesignImportedContrasts <- function(contrastFile) {
 
   cleanStrings <- gsub("^group", "", contrastStrings)
   cleanStrings <- gsub("-group", "-", cleanStrings)
-  friendlyNames <- gsub("-", "_vs_", cleanStrings)
+  # KIT-118 (P-09): a dot in a group name is `_`, as the builder writes it.
+  friendlyNames <- gsub(".", "_", gsub("-", "_vs_", cleanStrings), fixed = TRUE)
 
   data.frame(
     contrasts = contrastStrings,

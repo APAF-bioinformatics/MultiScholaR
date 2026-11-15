@@ -862,13 +862,17 @@ test_that("C10 the reader infers the column mapping as today, by the omic's id k
     expect_identical(mapping$lipid_id_col, "Peak ID")
     expect_true("annotation_col" %in% names(mapping))
     expect_null(mapping$annotation_col)
-    # The contrasts' friendly names as today's import (P-09 keeps the two rules).
+    # The contrasts' friendly names (P-09: one rule since KIT-118).
     root <- omicsDesignImportCase("lipidomics", function(root) {
         writeLines(c("groupKO-groupWT", "groupA.1-groupB"), file.path(root, "contrast_strings.tab"))
     })
     contrasts <- readOmicsDesignImport(root, omicsDesignTestConfig("lipidomics"), NULL)$contrasts_tbl
-    expect_identical(contrasts$friendly_names, c("KO_vs_WT", "A.1_vs_B"))
-    expect_identical(contrasts$full_format, c("KO_vs_WT=groupKO-groupWT", "A.1_vs_B=groupA.1-groupB"))
+    # KIT-118 (P-09): a dotted group is named as the builder names it (`A_1_vs_B`).
+    expect_identical(contrasts$friendly_names, c("KO_vs_WT", "A_1_vs_B"))
+    expect_identical(contrasts$full_format, c("KO_vs_WT=groupKO-groupWT", "A_1_vs_B=groupA.1-groupB"))
+    built <- buildOmicsDesignSaveContrastsTable(data.frame(contrast_name = "A.1.vs.B", numerator = "A.1",
+        denominator = "B", stringsAsFactors = FALSE), "~ 0 + group")
+    expect_identical(built$friendly_names, contrasts$friendly_names[[2]])
 })
 
 test_that("W2 finding: the design import holds vroom's tables (today's fails: 'payload contains a nonportable resource')", {
