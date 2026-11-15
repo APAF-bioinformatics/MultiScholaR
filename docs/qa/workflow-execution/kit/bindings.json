@@ -862,6 +862,15 @@
       "install_member": "browser-smoke.FliOmZ",
       "source_commit": "da3320b6010918e473f3cdf5954f730cc2763cf0",
       "runtime_patch_bytes": 0
+    },
+    "kit_937": {
+      "ticket": "KIT-937",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.zpnOMI/library",
+      "build": "467a2aa255399b32dd1d74ec9bc925e2e31a8706757002570391b8c197e1d734",
+      "exact_sum": "7200141572e8e7e882453d12e06558227500f1dc7d7aa842f22dc46a9d326d56",
+      "install_member": "browser-smoke.zpnOMI",
+      "source_commit": "587f92b5b6f077672d335df83e0df6c40d3bc5df",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -46441,6 +46450,114 @@
         "apply_itsd": true,
         "norm_method": "cyclicloess",
         "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "937q": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)"
+    },
+    "937l": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)"
+    },
+    "937t": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)"
+    },
+    "937a": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "lipid_screen_missing",
+      "route": "lipidomics",
+      "whole_journey": true,
+      "oracles": "lipid86s",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "937b": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "metab_screen_missing",
+      "route": "metabolomics",
+      "whole_journey": true,
+      "oracles": "metab86s",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)",
+      "normalisation": {
+        "apply_itsd": true,
+        "norm_method": "cyclicloess",
+        "ruv_mode": "automatic",
+        "correlation_threshold": 0.5
+      }
+    },
+    "937c": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "trx_screen",
+      "route": "transcriptomics",
+      "whole_journey": true,
+      "oracles": "trx98a",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)",
+      "normalisation": {
+        "ruv_mode": "automatic",
+        "auto_percentage_min": 5,
+        "auto_percentage_max": 30,
+        "auto_percentage_step": 5,
+        "k_penalty_weight": 0.05
+      },
+      "driver_settings": {
+        "da": {
+          "q_value": 0.05,
+          "treat_lfc": 1
+        },
+        "ruviii_m_source": "group"
+      },
+      "worker_steps": [
+        "trx_expression_filter",
+        "trx_tmm_logcpm",
+        "trx_ruv_grid",
+        "trx_ruvs",
+        "trx_da_contrast",
+        "trx_ruviii_export"
+      ]
+    },
+    "937m": {
+      "kind": "single_journey",
+      "build": "kit_937",
+      "corpus": "screen",
+      "route": "DIA_LIMPA",
+      "whole_journey": true,
+      "oracles": "limpa118_screen",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122: normalisation QC figures on the worker (recorded, uncounted)",
+      "normalisation": {
+        "norm_method": "none",
+        "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }
     },
