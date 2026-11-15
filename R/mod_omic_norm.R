@@ -59,7 +59,8 @@ mod_omic_norm_server <- function(id, workflow_data, experiment_paths, omic_type,
 #' @noRd
 runOmicNormServer <- function(input, output, session, id, workflowData, experimentPaths, omicType, experimentLabel, selectedTab,
     norm) {
-    logger::log_info("=== METABOLOMICS NORMALIZATION MODULE STARTED ===")
+    # KIT-122 (audit F7): the line names the tab's omic (every omic's session logged "METABOLOMICS").
+    logger::log_info(sprintf("=== %s NORMALIZATION MODULE STARTED ===", toupper(omicType)))
     logger::log_info(paste("Module ID:", id))
     # KIT-120 (audit F4): an omic with its own server needs only its `norm` group, so the exported proteomics wrapper
     # keeps accepting any `omic_type` label (it used it for file names only).

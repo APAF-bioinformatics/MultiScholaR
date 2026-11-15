@@ -3458,7 +3458,9 @@ test_that("runLipidNormModuleServerShell keeps the wrapper shell handoff stable"
     expect_identical(
         log_messages,
         c(
-            "=== METABOLOMICS NORMALIZATION MODULE STARTED ===",
+            # KIT-122 (audit F7): the start line names the tab's omic. This file is quarantined whole (Q-95: its subject,
+            # the lipid tab's own shell, is deleted); the live line is the shared frame's, tested in test-omic-norm-module.R.
+            "=== LIPIDOMICS NORMALIZATION MODULE STARTED ===",
             "Module ID: norm"
         )
     )

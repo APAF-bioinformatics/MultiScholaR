@@ -2064,12 +2064,13 @@ test_that("KIT-120 W4: the proteomics norm wrappers are thin wrappers over the s
 # ------------------------------------------------------------------------------------------------
 
 #' The proteomics tab on the frame with no session owner and no runner, driven by `drive(session, output, state)`.
-omicNormK122ProtTab <- function(drive, env = parent.frame()) {
+#' `omic_type` is the tab's label (a group with its own server takes any, audit F4).
+omicNormK122ProtTab <- function(drive, env = parent.frame(), omic_type = "proteomics") {
     testthat::local_mocked_bindings(installWorkflowOmicsActions = function(...) invisible(NULL), .env = env)
     bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
         tab_status = list(normalization = "pending"), state_update_trigger = 0L)
     suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "normalization", workflow_data = bus,
-        experiment_paths = list(protein_qc_dir = withr::local_tempdir(.local_envir = env)), omic_type = "proteomics",
+        experiment_paths = list(protein_qc_dir = withr::local_tempdir(.local_envir = env)), omic_type = omic_type,
         experiment_label = "kit122", selected_tab = shiny::reactiveVal("import"), config = omicGuiConfig("proteomics")$norm),
         drive(session, output, session$returned))))
 }
@@ -2117,6 +2118,20 @@ test_that("KIT-122 (audit F6): the tab's state has no field that only uncalled c
     sources <- sources[!grepl("^\\s*#", sources)]
     used <- vapply(fields, function(field) sum(grepl(paste0("$", field), sources, fixed = TRUE)) > 0L, NA)
     expect_identical(names(used)[!used], character())
+})
+
+test_that("KIT-122 (audit F7): the module's start line names the tab's omic (fails before)", {
+    lines <- character()
+    testthat::local_mocked_bindings(log_info = function(...) {
+        lines <<- c(lines, paste0(...))
+        invisible(NULL)
+    }, .package = "logger")
+    omicNormK122ProtTab(function(session, output, state) NULL)
+    expect_identical(lines[1:2], c("=== PROTEOMICS NORMALIZATION MODULE STARTED ===", "Module ID: normalization"))
+    # The line follows the tab's `omic_type` (the frame is one function for every omic).
+    lines <- character()
+    omicNormK122ProtTab(function(session, output, state) NULL, omic_type = "lipidomics")
+    expect_identical(lines[[1L]], "=== LIPIDOMICS NORMALIZATION MODULE STARTED ===")
 })
 
 test_that("KIT-122 (audit F10): after a reset a later run's filtering and RUV summaries show again (fails before)", {
