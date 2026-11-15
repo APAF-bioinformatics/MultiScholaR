@@ -13,3 +13,9 @@ kit-journey-935v rejected failing oracle_mismatch failed_step none error none
 kit-journey-934v rejected failing oracle_mismatch failed_step none error none 
 kit-journey-936m accepted failing none failed_step none error none 
 kit-journey-936l accepted failing none failed_step none error none 
+kit-journey-936t accepted failing none failed_step none error none 
+kit-journey-936a accepted failing none failed_step none error none 
+kit-journey-936b accepted failing none failed_step none error none 
+kit-journey-936c accepted failing none failed_step none error none 
+kit-journey-936s accepted failing none failed_step none error none 
+kit-journey-936v accepted failing none failed_step none error none 
