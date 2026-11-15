@@ -676,6 +676,9 @@ test_that("KIT-122: with a figures dispatcher the tab entry and the aesthetics r
   # Failed: unmarked, so that the next entry asks again, and reported as the in-process failure is.
   failed <- entry(function(calls, norm_data, then, failed) failed(simpleError("worker failed")))
   expect_identical(failed[c("generated", "errors", "marked")], list(generated = 0L, errors = "worker failed", marked = FALSE))
+  # Declined (another module's action holds the application): drawn in process at the event, as with no dispatcher.
+  declined <- entry(function(calls, norm_data, then, failed) FALSE)
+  expect_identical(declined[c("generated", "errors", "marked")], list(generated = 1L, errors = character(), marked = TRUE))
 
   regenerate <- function(norm_data) {
     calls <- character()
@@ -700,6 +703,27 @@ test_that("KIT-122: with a figures dispatcher the tab entry and the aesthetics r
   # One dispatch for the stages that exist; the regeneration runs in its delivery.
   expect_identical(regenerate(list(pre_norm_qc_generated = TRUE, normalization_complete = TRUE, normalized_protein_obj = "norm_obj",
     ruv_complete = TRUE, ruv_normalized_obj = "ruv_obj")), list(dispatched = 1L, calls = c("pre", "post norm_obj", "ruv ruv_obj")))
+})
+
+test_that("KIT-122: the figures dispatcher declines while another module's action holds the application", {
+  ran <- 0L
+  runner <- list(run = function(...) ran <<- ran + 1L, step = list(active = function() NULL))
+  application <- new.env(parent = emptyenv())
+  local_mocked_bindings(workflowOmicsManagedActions = function(...) runner,
+    workflowSessionApplication = function(...) application)
+  dispatch <- protNormFiguresDispatcher(list(state_manager = NULL), function() list())
+  application$active <- "wfx-other"
+  expect_false(dispatch(function(manager) list(), function() NULL, function(e) stop(e)))
+  expect_identical(ran, 0L)
+  # Free, or held by the runner's own action (which queues): dispatched.
+  application$active <- NULL
+  expect_true(dispatch(function(manager) list(), function() NULL, function(e) stop(e)))
+  runner$step$active <- function() "own"
+  application$active <- "wfx-own"
+  local_mocked_bindings(workflowOmicsManagedActions = function(...) runner)
+  dispatch <- protNormFiguresDispatcher(list(state_manager = NULL), function() list())
+  expect_true(dispatch(function(manager) list(), function() NULL, function(e) stop(e)))
+  expect_identical(ran, 2L)
 })
 
 test_that("initializeProtNormQcPlotPaths preserves existing paths or creates defaults", {

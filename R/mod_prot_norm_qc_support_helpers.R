@@ -136,7 +136,7 @@ regenerateProtNormQcForAestheticChange <- function(
     post <- isTRUE(normData$normalization_complete) && !is.null(normData$normalized_protein_obj)
     ruv <- isTRUE(normData$ruv_complete) && !is.null(normData$ruv_normalized_obj)
     if (!isTRUE(normData$pre_norm_qc_generated) && !post && !ruv) return(invisible(NULL))
-    dispatchFiguresFn(
+    dispatched <- dispatchFiguresFn(
       sources = function(manager) c(
         if (isTRUE(normData$pre_norm_qc_generated)) list(resolveProtNormQcStateObject(manager, messageFn = messageFn)$currentS4),
         if (isTRUE(normData$normalization_complete)) list(normData$normalized_protein_obj),
@@ -144,7 +144,7 @@ regenerateProtNormQcForAestheticChange <- function(
       then = function() regenerateProtNormQcForAestheticChange(normData, generatePreNormalizationQcFn,
         generatePostNormalizationQcFn, generateRuvCorrectedQcFn, messageFn),
       failed = function(e) messageFn(paste("Error regenerating the QC figures:", conditionMessage(e))))
-    return(invisible(NULL))
+    if (!isFALSE(dispatched)) return(invisible(NULL))
   }
   withDIAStateScope(getDIAActiveManager(), function() {
   if (normData$pre_norm_qc_generated) {

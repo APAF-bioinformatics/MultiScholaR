@@ -171,7 +171,8 @@ protNormFiguresActions <- function(sources, aesthetics, deliver) {
 #' aesthetics change; KIT-122): NULL on a session with no runner, where the tab draws in process as before.
 #' @param workflowData The tab's bus.
 #' @param getPlotAestheticsFn The tab's aesthetics getter.
-#' @return NULL, or `function(sources, then, failed)`: `sources(manager)` gives the saved references, read in the
+#' @return NULL, or `function(sources, then, failed)`, which gives FALSE when nothing was dispatched because another
+#'   module's action holds the application (the caller then draws in process): `sources(manager)` gives the saved references, read in the
 #'   owner's scope when the actions start (a request that waited reads what the action before it left); `then()` runs in
 #'   the last delivery; `failed(error)` hears a failure.
 #' @noRd
@@ -180,6 +181,10 @@ protNormFiguresDispatcher <- function(workflowData, getPlotAestheticsFn) {
   if (is.null(runner)) return(NULL)
   manager <- workflowData$state_manager
   function(sources, then, failed) {
+    # Another module's action (a QC step still completing when the tab is opened) holds the application: the runner
+    # cannot queue behind it, so nothing is dispatched and the caller draws in process, as an unmanaged session does.
+    application <- workflowSessionApplication(shiny::getDefaultReactiveDomain())
+    if (!is.null(application$active) && is.null(shiny::isolate(runner$step$active()))) return(invisible(FALSE))
     tryCatch(runner$run(function() shiny::isolate({
       references <- Filter(isSavedWorkflowReference, withDIAStateScope(manager, function() sources(manager)))
       references <- references[!duplicated(vapply(references, function(reference) reference$entity_id, ""))]
@@ -355,7 +360,7 @@ runProtNormTabEntryWorkflow <- function(
     # image slots are refreshed when the files exist (in process they are written before the slots first render).
     if (is.function(dispatchFiguresFn)) {
       normData$pre_norm_qc_generated <- TRUE
-      dispatchFiguresFn(
+      dispatched <- dispatchFiguresFn(
         sources = function(manager) list(resolveProtNormQcStateObject(manager, messageFn = messageFn)$currentS4),
         then = function() {
           generatePreNormalizationQcFn()
@@ -365,7 +370,7 @@ runProtNormTabEntryWorkflow <- function(
           normData$pre_norm_qc_generated <- FALSE
           handlePreQcErrorFn(error = e)
         })
-      return(TRUE)
+      if (!isFALSE(dispatched)) return(TRUE)
     }
     generatePreNormalizationQcFn()
     normData$pre_norm_qc_generated <- TRUE
