@@ -26,3 +26,5 @@ kit-journey-937a accepted failing none failed_step none error none
 kit-journey-937b accepted failing none failed_step none error none 
 kit-journey-937c accepted failing none failed_step none error none 
 kit-journey-937q rejected failing oracle_mismatch failed_step none error none 
+kit-journey-938l accepted failing none failed_step none error none 
+kit-journey-938t accepted failing none failed_step none error none 
