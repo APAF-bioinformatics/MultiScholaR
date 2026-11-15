@@ -811,6 +811,14 @@ omicEnrichW1Case <- function(case) {
 #     `gprofiler2:e2e_fake_gost` with its external resource (it froze `unavailable` and no resource; recording the
 #     resource publishes the head once more, one more state entry), and the digests of the results that hold the gost
 #     answer (the completed state, the bus payload and the tab's results) move with the answer's new field.
+# KIT-119 (1) re-freeze, from two byte-identical dumps in separate processes, of exactly the values the change moves
+# (a run on the live kernel stores no plot objects; the tab builds the plot from the stored result, jitter seeded):
+#   kernel_gprofiler and kernel_clusterprofiler `run`: the completed state's digest (`states$enrichment_completed`),
+#     the bus payload that holds the results (`bus$enrichment_analysis_results`), the tab's results
+#     (`returned$enrichment_results_full`) and the state's store entries, two fewer (23 to 21, 21 to 19: the plot slots
+#     were saved as two opaque values);
+#   kernel_gprofiler `run`: the two plot outputs' text (the same plot with the seeded jitter).
+#   The deterministic kernel's cases (it stores its own plots, shown as stored) are unchanged.
 omicEnrichW1Frozen <- list()
 omicEnrichW1Frozen[["gprofiler"]] <- list(
     start = list(
@@ -1818,12 +1826,12 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             "stringdb_plot", "stringdb_results_table", "stringdb_summary_stats"),
         values = c(
             analysis_method_display = "[OK] SUPPORTED ORGANISM\n Method: gprofiler2\n Species: Homo sapiens\n All enrichment methods available",
-            clusterprofiler_plot = "<text> b8031f78fb587ac7a8c8072353259987c98528ec71467c76140c5c037e01a121",
+            clusterprofiler_plot = "<text> 991b6f09bc65802e79137a5184a1a40b1258fc2058b3328a4cfc110957e9522c",
             clusterprofiler_results_table = "<text> 0d4a07d6c799091f4ffb5599776586a0a562cb1b8ebe148b359df3930319390f",
             clusterprofiler_summary_stats = "No clusterProfileR results available.",
             contrasts_display = "B_vs_A", download_enrichment_results = "<download>",
             enrichment_status = "[OK] Analysis Complete\n\nMethod: gprofiler2\n\nContrast: B_vs_A\n\nUp log2FC cutoff: 0.0\n\nDown log2FC cutoff: 0.0\n\nQ-value cutoff: 0.050\n\nOrganism: Homo sapiens\n\n\nResults Available:\n* gprofiler2: 10 terms\n* clusterProfileR: 0 terms\n* STRING-DB: 0 networks\n\n[OK] Results saved to workflow state",
-            gprofiler_plot = "<text> b8031f78fb587ac7a8c8072353259987c98528ec71467c76140c5c037e01a121",
+            gprofiler_plot = "<text> 991b6f09bc65802e79137a5184a1a40b1258fc2058b3328a4cfc110957e9522c",
             gprofiler_results_table = "<text> 281a1e0abb3f2a5db8699c8ff6fe26dd252483b6a023ba73cf398fc1fa373202",
             gprofiler_summary_stats = "Total enrichment terms: 10\nUp-regulated pathways: 5\nDown-regulated pathways: 5\n\nResults displayed in table below.",
             stringdb_plot = "<text> b54fa6cb6edbb20c608dfc64ede6de6565c6567b1f2102fccf82f81af2280e51",
@@ -1844,7 +1852,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
         history = c("initial", "correlation_filtered", "enrichment_completed"),
         states = c(
             initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "8c77fa4a155a7678"),
+            enrichment_completed = "b8448caae3e5e28b"),
         product = c(
             schema = "dia_enrichment_product_v1", service = "gprofiler2:e2e_fake_gost",
             `parameters$taxon_id` = "9606", `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0",
@@ -1859,7 +1867,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             "gost ; organism=hsapiens ; sources=GO:BP|GO:MF|GO:CC|KEGG|REAC ; user_threshold=0.05 ; correction_method=gSCS ; exclude_iea=FALSE ; domain_scope=custom ; significant=TRUE ; query=3 80f1f68e42bf388e ; custom_bg=6 b6534d4a26da9fed",
             "gost ; organism=hsapiens ; sources=GO:BP|GO:MF|GO:CC|KEGG|REAC ; user_threshold=0.05 ; correction_method=gSCS ; exclude_iea=FALSE ; domain_scope=custom ; significant=TRUE ; query=1 907fd80ff1d231f2 ; custom_bg=6 b6534d4a26da9fed"),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 8f176cb6ed7053c0",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters ed8d744607ed6330",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05", `enrichment_ui_params$organism_selected` = "9606",
             `enrichment_ui_params$database_source` = "gprofiler2",
@@ -1884,7 +1892,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             `<store entries>..workflow-entities/entities/dia-base-fit-<ID>` = "1",
             `<store entries>..workflow-entities/entities/dia-contrasted-fit-<ID>` = "1",
             `<store entries>..workflow-entities/entities/dia-enrichment-<ID>` = "1",
-            `<store entries>..workflow-entities/entities/dia-state-<ID>` = "23",
+            `<store entries>..workflow-entities/entities/dia-state-<ID>` = "21",
             `<store entries>..workflow-entities/entities/dia-table-<ID>` = "10",
             `<store entries>..workflow-entities/entities/dia-volcano-html-<ID>` = "1",
             `publication_graphs/Interactive_Volcano_Plots/B_vs_A.html` = "<present>",
@@ -1910,7 +1918,7 @@ omicEnrichW1Frozen[["kernel_gprofiler"]] <- list(
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
             da_results_data = "<list> 00c45cf144cf6614", enrichment_plots = "<list> 28df520b992b4a4b",
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
-            enrichment_results_full = "<EnrichmentResults> 8c77fa4a155a7678",
+            enrichment_results_full = "<EnrichmentResults> b8448caae3e5e28b",
             enrichment_service = "gprofiler2:e2e_fake_gost",
             gprofiler_results = "<data.frame> 7bb8700062d08b4b", gprofiler_results_table = "<ref>",
             organism_supported = "TRUE", stringdb_results = "<NULL>"),
@@ -2098,7 +2106,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
         history = c("initial", "correlation_filtered", "enrichment_completed"),
         states = c(
             initial = "71557d1c8bac9bbe", correlation_filtered = "5acf333d81fb9c8a",
-            enrichment_completed = "9421e4861d18927e"),
+            enrichment_completed = "1167a2b0dbbd17a5"),
         product = c(
             schema = "dia_enrichment_product_v1", service = "unavailable", `parameters$taxon_id` = "999999",
             `parameters$up_cutoff` = "0", `parameters$down_cutoff` = "0", `parameters$q_cutoff` = "0.05",
@@ -2112,7 +2120,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
             "enricher ; gene=3 779b8ace99d9ed37 ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH",
             "enricher ; gene=1 b3c43de36f5ed92f ; universe=6 11a1f4f7bc6cf8ce ; TERM2GENE=bdb931bc333e84ee ; pvalueCutoff=0.05 ; pAdjustMethod=BH"),
         bus = c(
-            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters 882acdfd257a0a7e",
+            enrichment_analysis_results = "gprofiler_results,clusterprofiler_results,stringdb_results,full_enrichment_results,selected_contrast,analysis_method,parameters fc7c1dfff717789e",
             `enrichment_ui_params$up_log2fc_cutoff` = "0", `enrichment_ui_params$down_log2fc_cutoff` = "0",
             `enrichment_ui_params$q_value_cutoff` = "0.05",
             `enrichment_ui_params$organism_selected` = "999999",
@@ -2138,7 +2146,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
             `<store entries>..workflow-entities/entities/dia-base-fit-<ID>` = "1",
             `<store entries>..workflow-entities/entities/dia-contrasted-fit-<ID>` = "1",
             `<store entries>..workflow-entities/entities/dia-enrichment-<ID>` = "1",
-            `<store entries>..workflow-entities/entities/dia-state-<ID>` = "21",
+            `<store entries>..workflow-entities/entities/dia-state-<ID>` = "19",
             `<store entries>..workflow-entities/entities/dia-table-<ID>` = "10",
             `<store entries>..workflow-entities/entities/dia-volcano-html-<ID>` = "1",
             `publication_graphs/Interactive_Volcano_Plots/B_vs_A.html` = "<present>",
@@ -2164,7 +2172,7 @@ omicEnrichW1Frozen[["kernel_clusterprofiler"]] <- list(
             current_contrast_results = "<list> 28df520b992b4a4b", current_s4_object = "<ref>",
             da_results_data = "<list> 00c45cf144cf6614", enrichment_plots = "<list> 28df520b992b4a4b",
             enrichment_product = "<ref>", enrichment_results = "<NULL>",
-            enrichment_results_full = "<EnrichmentResults> 9421e4861d18927e",
+            enrichment_results_full = "<EnrichmentResults> 1167a2b0dbbd17a5",
             enrichment_service = "unavailable", gprofiler_results = "<NULL>",
             gprofiler_results_table = "<NULL>", organism_supported = "FALSE", stringdb_results = "<NULL>"),
         errors = character(0)))
@@ -3803,6 +3811,8 @@ for (case in c("kernel_gprofiler", "kernel_clusterprofiler")) {
 #   and gain `config$outcomes` (the selected correction).
 #   A107-05: `kernel_gprofiler`, the product's value moves with its service (`gprofiler2:e2e_fake_gost`) and the
 #   committed `enrichment_data` with the gost answer's new field (`meta$version`).
+# KIT-119 (1) re-freeze (two byte-identical dumps): `kernel_gprofiler` and `kernel_clusterprofiler`, `results$plots` is
+#   the digest of an empty list (28df520b992b4a4b; it held the stored plots' classes): the live kernel stores no plots.
 # ------------------------------------------------------------------------------------------------
 
 #' Store-local ids (each run of 64 hexadecimal characters) and the fixture's root masked in every character value of
@@ -3968,7 +3978,7 @@ omicEnrichW113Frozen[["kernel_gprofiler"]] <- list(
         previous = "correlation_filtered", products = ""),
     results = c(
         class = "EnrichmentResults", enrichment_data = "962ee51f2c925016",
-        enrichment_summaries = "18ee1ae7f00ccf86", contrasts = "950ddbb7d830df8c", plots = "d504c602f8d509f5"),
+        enrichment_summaries = "18ee1ae7f00ccf86", contrasts = "950ddbb7d830df8c", plots = "28df520b992b4a4b"),
     products = c(
         type = "dia-enrichment-results", status = "available", value = "387eecf6099e563f",
         identity = "ad3ef17b26bf1067",
@@ -4003,7 +4013,7 @@ omicEnrichW113Frozen[["kernel_clusterprofiler"]] <- list(
         previous = "correlation_filtered", products = ""),
     results = c(
         class = "EnrichmentResults", enrichment_data = "46a64d167ddd9c1b",
-        enrichment_summaries = "28df520b992b4a4b", contrasts = "950ddbb7d830df8c", plots = "d504c602f8d509f5"),
+        enrichment_summaries = "28df520b992b4a4b", contrasts = "950ddbb7d830df8c", plots = "28df520b992b4a4b"),
     products = c(
         type = "dia-enrichment-results", status = "available", value = "8d7955ab39314468",
         identity = "ad3ef17b26bf1067",

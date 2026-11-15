@@ -42,7 +42,8 @@ processEnrichments(
 \item{correction_method}{Method for FDR correction (default: "gSCS")}
 }
 \value{
-S4 EnrichmentResults object containing enrichment data, plots, and summaries
+S4 EnrichmentResults object containing enrichment data and summaries. Its plot slots are left empty: the
+plots are written to \code{pathway_dir} and rebuilt from the enrichment data when shown.
 }
 \description{
 Process Enrichments

@@ -307,23 +307,14 @@ renderProtEnrichGprofilerPlot <- function(analysisComplete,
     }
 
     tryCatch({
-      plots <- enrichmentResultsFullNow@enrichment_plotly[[rawContrastNow]]
-
-      if (identical(directionFilterNow, "up") && !is.null(plots$up)) {
-        return(plots$up)
-      }
-
-      if (identical(directionFilterNow, "down") && !is.null(plots$down)) {
-        return(plots$down)
-      }
-
-      if (identical(directionFilterNow, "all")) {
-        if (!is.null(plots$up)) {
-          return(plots$up)
-        }
-
-        if (!is.null(plots$down)) {
-          return(plots$down)
+      # KIT-119: a plot the results hold is shown as stored; otherwise it is built here from the stored result, by
+      # the builder the run wrote its saved file with (`resolveEnrichmentPlotly`). "all" shows up, else down.
+      directions <- if (identical(directionFilterNow, "all")) c("up", "down") else
+        intersect(directionFilterNow, c("up", "down"))
+      for (direction in directions) {
+        plot <- resolveEnrichmentPlotly(enrichmentResultsFullNow, rawContrastNow, direction)
+        if (!is.null(plot)) {
+          return(plot)
         }
       }
 
@@ -376,23 +367,14 @@ renderProtEnrichClusterProfilerPlot <- function(analysisComplete,
     }
 
     tryCatch({
-      plots <- enrichmentResultsFullNow@enrichment_plotly[[rawContrastNow]]
-
-      if (identical(directionFilterNow, "up") && !is.null(plots$up)) {
-        return(plots$up)
-      }
-
-      if (identical(directionFilterNow, "down") && !is.null(plots$down)) {
-        return(plots$down)
-      }
-
-      if (identical(directionFilterNow, "all")) {
-        if (!is.null(plots$up)) {
-          return(plots$up)
-        }
-
-        if (!is.null(plots$down)) {
-          return(plots$down)
+      # KIT-119: a plot the results hold is shown as stored; otherwise it is built here from the stored result, by
+      # the builder the run wrote its saved file with (`resolveEnrichmentPlotly`). "all" shows up, else down.
+      directions <- if (identical(directionFilterNow, "all")) c("up", "down") else
+        intersect(directionFilterNow, c("up", "down"))
+      for (direction in directions) {
+        plot <- resolveEnrichmentPlotly(enrichmentResultsFullNow, rawContrastNow, direction)
+        if (!is.null(plot)) {
+          return(plot)
         }
       }
 

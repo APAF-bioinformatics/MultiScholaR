@@ -703,7 +703,9 @@ test_that("processEnrichments supported-organism branch preserves contrast remap
   )
 
   expect_equal(names(enrichment_results@enrichment_data), c("internal.alpha", "internal.beta"))
-  expect_equal(names(enrichment_results@enrichment_plotly), c("internal.alpha", "internal.beta"))
+  # KIT-119: a run stores no plot objects (they were stored per contrast and direction before).
+  expect_identical(enrichment_results@enrichment_plots, list())
+  expect_identical(enrichment_results@enrichment_plotly, list())
   expect_equal(captured$perform[[1]]$ids, "P1")
   expect_equal(captured$perform[[2]]$ids, "P2")
   expect_equal(captured$perform[[1]]$custom_bg, c("P1:iso1", "P2:iso2", "P3:iso3"))
@@ -711,7 +713,6 @@ test_that("processEnrichments supported-organism branch preserves contrast remap
   expect_false(captured$perform[[1]]$exclude_iea)
   expect_equal(captured$perform[[1]]$correction_method, "bonferroni")
   expect_equal(getEnrichmentResult(enrichment_results, "internal.alpha", "up")$result$source[[1]], "GO:BP")
-  expect_equal(getEnrichmentPlotly(enrichment_results, "internal.alpha", "down")$kind, "internal.alpha::down")
   expect_equal(sort(getEnrichmentSummary(enrichment_results)$contrast), c("internal.alpha", "internal.beta"))
   expect_equal(getEnrichmentSummary(enrichment_results)$up_total, c(2, 2))
   expect_true(any(grepl("short_alpha_up_enrichment_plot.html$", captured$saved_html)))
@@ -803,12 +804,176 @@ test_that("processEnrichments unsupported-organism branch preserves GO annotatio
   )
 
   expect_equal(names(enrichment_results@enrichment_data), "short_gamma")
-  expect_s3_class(enrichment_results@enrichment_plots$short_gamma$up, "ggplot")
-  expect_equal(getEnrichmentPlotly(enrichment_results, "short_gamma", "down")$kind, "plotly")
+  # KIT-119: a run stores no plot objects; each stored result carries what its plot is rebuilt from, and its
+  # `@result` table is the kernel's own.
+  expect_identical(enrichment_results@enrichment_plots, list())
+  expect_identical(enrichment_results@enrichment_plotly, list())
+  stored_up <- getEnrichmentResult(enrichment_results, "short_gamma", "up")
+  expect_identical(names(stored_up@result), c("ID", "Description", "qvalue", "Count", "GeneRatio", "BgRatio"))
+  expect_identical(attr(stored_up, "enrichment_plot_inputs"), list(
+    go_terms = data.frame(ID = "GO:1001", source = "GO:BP", term = "Cell cycle term", stringsAsFactors = FALSE),
+    q_cutoff = 0.05
+  ))
   expect_s4_class(enrichment_results, "EnrichmentResults")
   expect_true(any(grepl("short_gamma_up_enrichment_plot.html$", captured$save_widget)))
   expect_true(any(grepl("short_gamma_down_enrichment_plot.png$", captured$save_png)))
   expect_equal(captured$plotly, c("text", "text"))
+  # The exported accessor rebuilds the plot from the stored result.
+  expect_equal(getEnrichmentPlotly(enrichment_results, "short_gamma", "down")$kind, "plotly")
+  expect_equal(captured$plotly, c("text", "text", "text"))
+})
+
+# ---- KIT-119: the enrichment plots are rebuilt from the stored result ------------------------------------
+
+# What a plot shows: the drawn layers of the static plot, and the traces and layout of the interactive one (a
+# plotly object also holds per-build identifiers, which are not part of the display).
+enrichmentPlotDisplay <- function(plots) {
+  built <- plotly::plotly_build(plots$interactive)
+  list(
+    layers = lapply(seq_along(plots$static$layers), function(i) ggplot2::layer_data(plots$static, i)),
+    traces = built$x$data,
+    layout = built$x$layout
+  )
+}
+
+buildSharedGostResult <- function() {
+  list(
+    meta = list(query_metadata = list(user_threshold = 0.05)),
+    result = data.frame(
+      source = rep(c("GO:BP", "GO:CC", "KEGG", "REAC"), each = 5),
+      p_value = 10^-seq(2, 11.5, by = 0.5),
+      term_name = paste("Term", 1:20),
+      term_id = paste0("T:", 1:20),
+      intersection_size = 1:20,
+      term_size = seq(10, 200, by = 10),
+      parents = I(rep(list("PARENT"), 20)),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+test_that("the enrichment plot of a stored result is the same plot on every build (KIT-119)", {
+  gost_result <- buildSharedGostResult()
+  # (ggplotly warns that it does not draw the repelled labels, as it always has.)
+  first <- suppressWarnings(buildEnrichmentPlot(gost_result, "contrast_a", "up"))
+  # The global random stream is not what places the points: another draw in between changes nothing.
+  stats::runif(10)
+  second <- suppressWarnings(buildEnrichmentPlot(gost_result, "contrast_a", "up"))
+  expect_s3_class(first$static, "ggplot")
+  expect_s3_class(first$interactive, "plotly")
+  expect_identical(enrichmentPlotDisplay(first), enrichmentPlotDisplay(second))
+  # The points are jittered (the seed fixes the jitter, it does not remove it).
+  expect_false(identical(ggplot2::layer_data(first$static, 2)$x, as.numeric(as.integer(factor(gost_result$result$source)))))
+
+  cluster_result <- setEnrichmentPlotInputs(
+    methods::new("mockClusterProfilerEnrichResultShared", result = data.frame(
+      ID = paste0("GO:", 1:6), Description = paste("Description", 1:6), qvalue = c(0.001, 0.004, 0.01, 0.03, 0.2, 0.6),
+      Count = 2:7, GeneRatio = "2/10", BgRatio = "5/100", stringsAsFactors = FALSE)),
+    data.frame(ID = paste0("GO:", 1:5), source = rep(c("GO:BP", "GO:MF"), c(3, 2)), term = paste("Name", 1:5)),
+    q_cutoff = 0.05
+  )
+  first <- suppressWarnings(buildEnrichmentPlot(cluster_result, "contrast_a", "down"))
+  second <- suppressWarnings(buildEnrichmentPlot(cluster_result, "contrast_a", "down"))
+  expect_identical(enrichmentPlotDisplay(first), enrichmentPlotDisplay(second))
+  # A term the GO maps did not name is `Other`, named by its description; the threshold is the carried cutoff.
+  drawn <- first$static$data
+  expect_identical(as.character(drawn$source), c(rep("GO:BP", 3), rep("GO:MF", 2), "Other"))
+  expect_identical(drawn$term, c(paste("Name", 1:5), "Description 6"))
+  expect_equal(ggplot2::layer_data(first$static, 1)$yintercept, -log10(0.05))
+
+  expect_identical(buildEnrichmentPlot(NULL, "contrast_a", "up"), list(static = NULL, interactive = NULL))
+})
+
+test_that("the tab's plot is the run's saved plot, and a stored plot is shown as stored (KIT-119)", {
+  localFakeClusterProfilerGeneral()
+  package_ns <- asNamespace("MultiScholaR")
+  saved <- new.env(parent = emptyenv())
+  localNamespaceBindings(package_ns, list(
+    saveSelfContainedWidget = function(widget, file, ...) {
+      saved$interactive[[basename(file)]] <- widget
+      invisible(file)
+    },
+    perform_enrichment = function(data_subset, ...) if (data_subset$log2FC[[1]] > 0) buildSharedGostResult()
+  ))
+  local_mocked_bindings(
+    ggsave = function(filename, plot, ...) {
+      saved$static[[basename(filename)]] <- plot
+      invisible(filename)
+    },
+    .package = "ggplot2"
+  )
+  local_mocked_bindings(
+    enricher = function(gene, universe, TERM2GENE, TERM2NAME, pvalueCutoff, pAdjustMethod, ...) {
+      methods::new("mockClusterProfilerEnrichResultShared", result = data.frame(
+        ID = c("GO:1001", "GO:2001", "GO:9999"), Description = c("Cell cycle term", "Signal term", "Unmapped term"),
+        qvalue = c(0.001, 0.01, 0.2), Count = c(4, 3, 2), GeneRatio = "2/3", BgRatio = "2/30",
+        stringsAsFactors = FALSE))
+    },
+    .package = "clusterProfiler"
+  )
+  pathway_dir <- tempfile("general-enrichment-rebuild-")
+  dir.create(pathway_dir, recursive = TRUE)
+  withr::defer(unlink(pathway_dir, recursive = TRUE, force = TRUE))
+  da_results <- buildSharedDaResultsForEnrichment(
+    contrast_names = "internal.gamma",
+    contrast_tables = list(data.frame(`Protein.IDs` = c("P1", "P2", "P3"), fdr_qvalue = c(0.01, 0.02, 0.5),
+      log2FC = c(2.3, -1.8, 0.1), stringsAsFactors = FALSE))
+  )
+  go_annotations <- data.frame(
+    Entry = c("P1", "P2"),
+    go_id_go_biological_process = c("GO:1001", "GO:1001"),
+    go_term_go_biological_process = c("Cell cycle name", "Cell cycle name"),
+    go_id_go_molecular_function = c("GO:2001", "GO:2001"),
+    go_term_go_molecular_function = c("Signal name", "Signal name"),
+    go_id_go_cellular_compartment = c("GO:3001", "GO:3001"),
+    go_term_go_cellular_compartment = c("Compartment name", "Compartment name"),
+    stringsAsFactors = FALSE
+  )
+  render <- function(results, contrast, direction) suppressWarnings(renderProtEnrichClusterProfilerPlot(
+    analysisComplete = TRUE, enrichmentResultsFull = results, rawContrast = contrast, directionFilter = direction,
+    renderPlotlyFn = function(expr) force(expr)))
+
+  # The clusterProfiler path: the run's saved widget and PNG plot against the tab's render from the stored result.
+  cluster <- suppressWarnings(processEnrichments(da_results = da_results, taxon_id = "999999", q_cutoff = 0.05,
+    pathway_dir = pathway_dir, go_annotations = go_annotations, exclude_iea = FALSE,
+    protein_id_column = "Protein.IDs", contrast_names = "short_gamma"))
+  expect_identical(cluster@enrichment_plots, list())
+  expect_identical(cluster@enrichment_plotly, list())
+  expect_setequal(names(saved$interactive), paste0("short_gamma_", c("up", "down"), "_enrichment_plot.html"))
+  for (direction in c("up", "down")) {
+    at_run <- list(static = saved$static[[paste0("short_gamma_", direction, "_enrichment_plot.png")]],
+      interactive = saved$interactive[[paste0("short_gamma_", direction, "_enrichment_plot.html")]])
+    at_render <- list(static = buildEnrichmentGgplot(cluster@enrichment_data$short_gamma[[direction]], "short_gamma",
+      direction), interactive = render(cluster, "short_gamma", direction))
+    expect_s3_class(at_render$interactive, "plotly")
+    expect_identical(enrichmentPlotDisplay(at_render), enrichmentPlotDisplay(at_run))
+  }
+  # The saved results table keeps its columns: the kernel's, the GO maps' and the plot's.
+  expect_identical(names(readr::read_tsv(file.path(pathway_dir, "short_gamma_up_enrichment_results.tsv"),
+    show_col_types = FALSE)), c("ID", "Description", "qvalue", "Count", "GeneRatio", "BgRatio", "ONTOLOGY", "source",
+    "term", "neg_log10_q", "gene_count", "significant"))
+
+  # The g:Profiler path (up answered with terms, down with none).
+  saved$interactive <- saved$static <- NULL
+  gprofiler <- suppressWarnings(processEnrichments(da_results = da_results, taxon_id = "9606", q_cutoff = 0.05,
+    pathway_dir = pathway_dir, exclude_iea = FALSE, protein_id_column = "Protein.IDs",
+    contrast_names = "short_gamma"))
+  expect_identical(gprofiler@enrichment_plots, list())
+  expect_identical(gprofiler@enrichment_plotly, list())
+  expect_identical(names(saved$interactive), "short_gamma_up_enrichment_plot.html")
+  at_run <- list(static = saved$static[["short_gamma_up_enrichment_plot.png"]],
+    interactive = saved$interactive[["short_gamma_up_enrichment_plot.html"]])
+  at_render <- list(static = buildEnrichmentGgplot(gprofiler@enrichment_data$internal.gamma$up, "internal.gamma", "up"),
+    interactive = render(gprofiler, "internal.gamma", "all"))
+  expect_identical(enrichmentPlotDisplay(at_render), enrichmentPlotDisplay(at_run))
+  placeholder <- renderProtEnrichGprofilerPlot(analysisComplete = TRUE, enrichmentResultsFull = gprofiler,
+    rawContrast = "internal.gamma", directionFilter = "down", renderPlotlyFn = function(expr) force(expr),
+    plotLyFn = function() list(), addTextFn = function(plot, x, y, text, showlegend) text)
+  expect_identical(placeholder, "No down-regulated enrichment data")
+
+  # A result that already holds a plot (a session saved before KIT-119, the deterministic kernel) shows it as stored.
+  gprofiler@enrichment_plotly <- list(internal.gamma = list(up = list(kind = "stored")))
+  expect_identical(render(gprofiler, "internal.gamma", "up"), list(kind = "stored"))
 })
 
 test_that("Revigo enrichment helpers preserve filtering, clustering, and file outputs", {

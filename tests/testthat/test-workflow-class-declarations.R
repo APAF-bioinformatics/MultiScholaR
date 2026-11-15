@@ -283,6 +283,33 @@ test_that("enrichment input and result classes round-trip", {
     expect_identical(restored@enrichment_plotly, list())
 })
 
+test_that("a saved enrichment result with no plots restores what its plot is rebuilt from (KIT-119)", {
+    contrasts <- tibble::tibble(contrasts = "a_vs_b")
+    # The clusterProfiler double's result (helper-e2e-enrichment-doubles.R), with its plot inputs as a run sets them.
+    result <- methods::new("e2eEnrichResult", result = .e2e_enricher_result_df)
+    plot_table <- cbind(result@result, source = c("GO:BP", "GO:BP", "GO:CC"),
+        term = c("apoptosis", "cycle", "mitochondrion"), stringsAsFactors = FALSE)
+    result <- setEnrichmentPlotInputs(result, plot_table, 0.05)
+    enrichment <- createEnrichmentResults(contrasts)
+    enrichment@enrichment_data <- list(a_vs_b = list(up = result, down = NULL))
+    manager <- newDeclarationTestManager("enrichment-plot-inputs")
+    manager$saveState("enrichment", enrichment, list(), "enrichment")
+    expect_setequal(names(readComponentMetadata(manager)$data$components), c("contrasts", "enrichment_data"))
+    restored <- manager$getState()
+    expect_identical(restored@enrichment_plots, list())
+    expect_identical(restored@enrichment_plotly, list())
+    expect_identical(attr(restored@enrichment_data$a_vs_b$up, "enrichment_plot_inputs"),
+        attr(result, "enrichment_plot_inputs"))
+    expect_identical(restored@enrichment_data$a_vs_b$up@result, result@result)
+    # The plot after an Open is the plot before the save.
+    display <- function(results) {
+        plot <- suppressWarnings(resolveEnrichmentPlotly(results, "a_vs_b", "up"))
+        plotly::plotly_build(plot)$x[c("data", "layout")]
+    }
+    expect_identical(display(restored), display(enrichment))
+    expect_null(resolveEnrichmentPlotly(restored, "a_vs_b", "down"))
+})
+
 # ---- KIT-047: a declared args entry stored out of line as one owned value ------------------------
 
 test_that("a declared owned args entry is saved out of line, reattached on hydrate and reused when unchanged (KIT-047)", {

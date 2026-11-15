@@ -14,7 +14,8 @@
 #' @param contrast_names Vector of contrast names for output labeling
 #' @param correction_method Method for FDR correction (default: "gSCS")
 #'
-#' @return S4 EnrichmentResults object containing enrichment data, plots, and summaries
+#' @return S4 EnrichmentResults object containing enrichment data and summaries. Its plot slots are left empty: the
+#'   plots are written to `pathway_dir` and rebuilt from the enrichment data when shown.
 #'
 #' @export
 processEnrichments <- function(da_results,
@@ -352,7 +353,9 @@ processEnrichments <- function(da_results,
     # Store enrichment results
     enrichment_results@enrichment_data <- results
 
-    # Generate and store both static and interactive plots
+    # Generate both static and interactive plots for the saved files. KIT-119: they are not stored; the
+    # `enrichment_plots` and `enrichment_plotly` slots stay empty and the tab rebuilds a plot from
+    # `enrichment_data` with the same builder (`buildEnrichmentPlot`).
     plot_results <- purrr::map(names(results), function(contrast) {
       list(
         up = if(!is.null(results[[contrast]]$up)) {
@@ -365,22 +368,6 @@ processEnrichments <- function(da_results,
       )
     }) |>
       purrr::set_names(names(results))
-
-    # Store static plots
-    enrichment_results@enrichment_plots <- purrr::map(plot_results, function(x) {
-      list(
-        up = if(!is.null(x$up)) x$up$static else NULL,
-        down = if(!is.null(x$down)) x$down$static else NULL
-      )
-    })
-
-    # Store interactive plotly objects
-    enrichment_results@enrichment_plotly <- purrr::map(plot_results, function(x) {
-      list(
-        up = if(!is.null(x$up)) x$up$interactive else NULL,
-        down = if(!is.null(x$down)) x$down$interactive else NULL
-      )
-    })
 
     # Generate and store summaries
     enrichment_results@enrichment_summaries <- purrr::map(names(results), function(contrast) {
@@ -680,64 +667,10 @@ processEnrichments <- function(da_results,
                             paste0(contrast, "_", direction, "_enrichment_results.tsv"))
                 )
 
-                # Generate static plot with q-value threshold line
-                # First identify top significant terms to label
-                top_terms <- plot_data %>%
-                  dplyr::filter(.data$qvalue < q_cutoff) %>%
-                  dplyr::arrange(.data$qvalue) %>%
-                  dplyr::slice_head(n = 5) # Label top 5 most significant terms
-                
-                static <- ggplot2::ggplot(plot_data,
-                                          ggplot2::aes(x = .data$source,
-                                                       y = .data$neg_log10_q,
-                                                       text = paste0(
-                                                         "Term: ", .data$term, "\n",
-                                                         "ID: ", .data$ID, "\n",
-                                                         "Genes: ", .data$Count, "\n",
-                                                         "Gene Ratio: ", .data$GeneRatio, "\n",
-                                                         "Background Ratio: ", .data$BgRatio, "\n",
-                                                         "Q-value: ", signif(.data$qvalue, 3)
-                                                       ))) +
-                  ggplot2::geom_hline(yintercept = -log10(q_cutoff),
-                                      linetype = "dashed",
-                                      color = "darkgrey") +
-                  ggplot2::geom_jitter(ggplot2::aes(size = .data$gene_count,
-                                                    color = -log10(.data$qvalue)),
-                                       alpha = 0.7,
-                                       width = 0.2) +
-                  # Add labels for significant terms
-                  ggrepel::geom_text_repel(
-                    data = top_terms,
-                    ggplot2::aes(label = .data$term),
-                    size = 3,
-                    max.overlaps = 15,
-                    box.padding = 0.5,
-                    point.padding = 0.3,
-                    force = 5
-                  ) +
-                  ggplot2::scale_color_gradient(low = "#FED976",
-                                                high = "#800026",
-                                                name = "-log10(q-value)") +
-                  ggplot2::scale_size_continuous(name = "Gene Count",
-                                                 range = c(3, 12)) +
-                  ggplot2::theme_minimal() +
-                  ggplot2::theme(
-                    axis.text.x = ggplot2::element_text(size = 10, angle = 0),
-                    axis.text.y = ggplot2::element_text(size = 8),
-                    plot.title = ggplot2::element_text(size = 12, face = "bold"),
-                    legend.title = ggplot2::element_text(size = 10),
-                    legend.text = ggplot2::element_text(size = 8)
-                  ) +
-                  ggplot2::labs(
-                    title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
-                    x = "GO Category",
-                    y = "-log10(q-value)"
-                  )
-
-                list(
-                  static = static,
-                  interactive = plotly::ggplotly(static, tooltip = "text")
-                )
+                # KIT-119: the stored result carries its terms' GO category and name and the cutoff, and the plot
+                # is built from that stored result by the builder the tab uses at render time.
+                result_data <- setEnrichmentPlotInputs(result_data, plot_data, q_cutoff)
+                c(buildEnrichmentPlot(result_data, contrast, direction), list(result = result_data))
             } else {
                 NULL # Return NULL if no results
             }
@@ -748,22 +681,23 @@ processEnrichments <- function(da_results,
     }) |> purrr::set_names(contrast_names_to_use)
     message("--- Finished Plot Generation Loop ---")
 
-    # --- Step 4: Store plots in S4 object using SHORT names ---
-    enrichment_results@enrichment_plots <- purrr::map(plot_results_list, function(x) {
-      list(up = x$up$static, down = x$down$static) # Handle NULLs gracefully if needed
-    })
-    enrichment_results@enrichment_plotly <- purrr::map(plot_results_list, function(x) {
-      list(up = x$up$interactive, down = x$down$interactive) # Handle NULLs
-    })
-    message("DEBUG: Assigned plot data to S4 object slots.")
-    message("DEBUG: Names in enrichment_results@enrichment_plotly:")
-    print(names(enrichment_results@enrichment_plotly))
+    # --- Step 4: Store what the plots are rebuilt from (KIT-119) ---
+    # No plot is stored: the `enrichment_plots` and `enrichment_plotly` slots stay empty. Each stored result
+    # carries its plot inputs, and the tab rebuilds the plot from it (`buildEnrichmentPlot`).
+    for (contrast in contrast_names_to_use) {
+      for (direction in c("up", "down")) {
+        stored_result <- plot_results_list[[contrast]][[direction]]$result
+        if (!is.null(stored_result)) {
+          enrichment_results@enrichment_data[[contrast]][[direction]] <- stored_result
+        }
+      }
+    }
 
     # --- Step 5: Save interactive plots using SHORT names ---
     message("--- Starting Final Save Loop ---")
     purrr::walk(contrast_names_to_use, function(contrast) {
-        # Access plot data using SHORT name (now stored with short names)
-        plots <- enrichment_results@enrichment_plotly[[contrast]]
+        # Access plot data using SHORT name
+        plots <- plot_results_list[[contrast]]
 
         if(is.null(plots)) {
             # This warning should NOT trigger if steps above worked
@@ -778,9 +712,9 @@ processEnrichments <- function(da_results,
         # Process both directions
         purrr::walk(c("up", "down"), function(direction) {
             # Check if interactive plot exists
-            if (!is.null(plots[[direction]])) { # Access up/down list
-                interactive_plot <- plots[[direction]] # The actual plotly object
-                static_plot <- enrichment_results@enrichment_plots[[contrast]][[direction]] # The static ggplot
+            if (!is.null(plots[[direction]]$interactive)) { # Access up/down list
+                interactive_plot <- plots[[direction]]$interactive # The actual plotly object
+                static_plot <- plots[[direction]]$static # The static ggplot
 
                 file_name <- paste0(sanitized_contrast, "_", direction, "_enrichment_plot.html")
                 file_path <- file.path(pathway_dir, file_name)
@@ -852,13 +786,14 @@ getEnrichmentResult <- function(enrichment_results, contrast, direction) {
 # Helper function to access plotly objects
 #' @export
 getEnrichmentPlotly <- function(enrichment_results, contrast, direction) {
-  if(!contrast %in% names(enrichment_results@enrichment_plotly)) {
+  # KIT-119: a run no longer stores its plots; the plot is rebuilt from the stored result unless one is stored.
+  if(!contrast %in% c(names(enrichment_results@enrichment_plotly), names(enrichment_results@enrichment_data))) {
     stop("Contrast not found")
   }
   if(!direction %in% c("up", "down")) {
     stop("Direction must be 'up' or 'down'")
   }
-  enrichment_results@enrichment_plotly[[contrast]][[direction]]
+  resolveEnrichmentPlotly(enrichment_results, contrast, direction)
 }
 
 

@@ -206,14 +206,29 @@ perform_enrichment <- function(data_subset,
 
 
 # ----------------------------------------------------------------------------
-# generate_enrichment_plots
+# Enrichment plots, built from the stored result (KIT-119)
 # ----------------------------------------------------------------------------
-# Plot generation function
-#' @export
-generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
+# The seed of the plots' point jitter and label placement: two builds from the same result are the same plot.
+ENRICHMENT_PLOT_SEED <- 119L
+
+#' The static enrichment plot of one contrast and direction, from its stored result (KIT-119)
+#'
+#' The one place the enrichment plots are drawn. The run writes its HTML and PNG files from it and the tab draws
+#' from it at render time, so the saved file and the tab show the same plot, and no plot is kept in the
+#' `EnrichmentResults` plot slots. The jitter and the label placement are seeded (`ENRICHMENT_PLOT_SEED`).
+#' @param enrichment_result One entry of `EnrichmentResults@enrichment_data[[contrast]][[direction]]`: a gprofiler2
+#'   `gost` result list (`result`, `meta`), or a clusterProfiler `enrichResult` (see `setEnrichmentPlotInputs`).
+#' @param contrast Contrast name, for the title.
+#' @param direction `"up"` or `"down"`, for the title.
+#' @return A ggplot, or NULL when the result is NULL or has no terms.
+#' @noRd
+buildEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
+  if (isS4(enrichment_result)) {
+    return(buildClusterProfilerEnrichmentGgplot(enrichment_result, contrast, direction))
+  }
   # Defensive check for empty or NULL results
   if (is.null(enrichment_result) || is.null(enrichment_result$result) || nrow(enrichment_result$result) == 0) {
-    return(list(static = NULL, interactive = NULL))
+    return(NULL)
   }
 
   # Extract the significance threshold from the result object metadata
@@ -237,7 +252,7 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
     dplyr::ungroup()
 
   # Create the static ggplot object
-  static_plot <- ggplot2::ggplot(plot_data, ggplot2::aes(x = source, y = neg_log10_p, text = paste0(
+  ggplot2::ggplot(plot_data, ggplot2::aes(x = source, y = neg_log10_p, text = paste0(
     "Term: ", term_name, "\n",
     "ID: ", term_id, "\n",
     "P-value: ", signif(p_value, 3), "\n",
@@ -245,11 +260,13 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
   ))) +
     # Add a line for the significance threshold
     ggplot2::geom_hline(yintercept = -log10(significance_threshold), linetype = "dashed", color = "red") +
-    ggplot2::geom_jitter(ggplot2::aes(color = source, size = term_size), alpha = 0.7, width = 0.2) +
+    ggplot2::geom_jitter(ggplot2::aes(color = source, size = term_size), alpha = 0.7,
+      position = ggplot2::position_jitter(width = 0.2, seed = ENRICHMENT_PLOT_SEED)) +
     ggrepel::geom_text_repel(
       data = top_terms,
       ggplot2::aes(label = term_name),
-      size = 3, max.overlaps = 15, box.padding = 0.5, point.padding = 0.3, force = 5
+      size = 3, max.overlaps = 15, box.padding = 0.5, point.padding = 0.3, force = 5,
+      seed = ENRICHMENT_PLOT_SEED
     ) +
     ggplot2::scale_color_manual(
       values = c(`GO:BP` = "#ff9900", `GO:CC` = "#109618", `GO:MF` = "#dc3912", 
@@ -269,6 +286,151 @@ generate_enrichment_plots <- function(enrichment_result, contrast, direction, pa
       x = "Annotation Source", y = "-log10(p-value)"
     ) +
     ggplot2::guides(color = "none")
+}
+
+#' Carry what a clusterProfiler result's plot needs beside its table (KIT-119)
+#'
+#' The plot needs each term's GO category and display name, which come from the run's GO annotation maps, and the
+#' run's q-value cutoff. They are carried as the attribute `enrichment_plot_inputs` of the stored `enrichResult`, so
+#' the plot can be rebuilt from the stored result alone. The `@result` table is not changed: the tab's results table
+#' and its downloads show that table whole.
+#' @param enrichment_result The `enrichResult`.
+#' @param plot_data The run's plot table: `@result` joined to the GO maps, with `ID`, `source` and `term`.
+#' @param q_cutoff The run's q-value cutoff.
+#' @return `enrichment_result` with the attribute: `list(go_terms, q_cutoff)`, `go_terms` the distinct `ID`,
+#'   `source` and `term` of `plot_data`, in its order.
+#' @noRd
+setEnrichmentPlotInputs <- function(enrichment_result, plot_data, q_cutoff) {
+  go_terms <- data.frame(ID = plot_data$ID, source = as.character(plot_data$source), term = plot_data$term,
+    stringsAsFactors = FALSE)
+  attr(enrichment_result, "enrichment_plot_inputs") <- list(go_terms = unique(go_terms), q_cutoff = q_cutoff)
+  enrichment_result
+}
+
+#' The static plot of a clusterProfiler result (KIT-119: `processEnrichments`' plot, moved here)
+#' @param enrichment_result The stored `enrichResult`, with `enrichment_plot_inputs` when the run set them. Without
+#'   them (a result stored before KIT-119) every term is `Other` and named by its `Description`, and the threshold is
+#'   the result's `pvalueCutoff`, which the run sets to its q-value cutoff.
+#' @param contrast,direction As `buildEnrichmentGgplot`.
+#' @return A ggplot, or NULL when the result has no terms.
+#' @noRd
+buildClusterProfilerEnrichmentGgplot <- function(enrichment_result, contrast, direction) {
+  if (nrow(enrichment_result@result) == 0) {
+    return(NULL)
+  }
+  inputs <- attr(enrichment_result, "enrichment_plot_inputs", exact = TRUE)
+  q_cutoff <- inputs$q_cutoff %||% enrichment_result@pvalueCutoff
+  go_terms <- inputs$go_terms %||%
+    data.frame(ID = character(), source = character(), term = character(), stringsAsFactors = FALSE)
+
+  plot_data <- enrichment_result@result |>
+    dplyr::left_join(go_terms, by = "ID") |>
+    dplyr::mutate(
+      source = dplyr::coalesce(.data$source, "Other"),
+      source = factor(.data$source, levels = c("GO:BP", "GO:CC", "GO:MF", "Other")),
+      neg_log10_q = -log10(.data$qvalue),  # Using qvalue directly from clusterProfiler output
+      gene_count = .data$Count,
+      term = dplyr::coalesce(.data$term, .data$Description)
+    )
+
+  # Generate static plot with q-value threshold line
+  # First identify top significant terms to label
+  top_terms <- plot_data %>%
+    dplyr::filter(.data$qvalue < q_cutoff) %>%
+    dplyr::arrange(.data$qvalue) %>%
+    dplyr::slice_head(n = 5) # Label top 5 most significant terms
+
+  ggplot2::ggplot(plot_data,
+                  ggplot2::aes(x = .data$source,
+                               y = .data$neg_log10_q,
+                               text = paste0(
+                                 "Term: ", .data$term, "\n",
+                                 "ID: ", .data$ID, "\n",
+                                 "Genes: ", .data$Count, "\n",
+                                 "Gene Ratio: ", .data$GeneRatio, "\n",
+                                 "Background Ratio: ", .data$BgRatio, "\n",
+                                 "Q-value: ", signif(.data$qvalue, 3)
+                               ))) +
+    ggplot2::geom_hline(yintercept = -log10(q_cutoff),
+                        linetype = "dashed",
+                        color = "darkgrey") +
+    ggplot2::geom_jitter(ggplot2::aes(size = .data$gene_count,
+                                      color = -log10(.data$qvalue)),
+                         alpha = 0.7,
+                         position = ggplot2::position_jitter(width = 0.2, seed = ENRICHMENT_PLOT_SEED)) +
+    # Add labels for significant terms
+    ggrepel::geom_text_repel(
+      data = top_terms,
+      ggplot2::aes(label = .data$term),
+      size = 3,
+      max.overlaps = 15,
+      box.padding = 0.5,
+      point.padding = 0.3,
+      force = 5,
+      seed = ENRICHMENT_PLOT_SEED
+    ) +
+    ggplot2::scale_color_gradient(low = "#FED976",
+                                  high = "#800026",
+                                  name = "-log10(q-value)") +
+    ggplot2::scale_size_continuous(name = "Gene Count",
+                                   range = c(3, 12)) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(size = 10, angle = 0),
+      axis.text.y = ggplot2::element_text(size = 8),
+      plot.title = ggplot2::element_text(size = 12, face = "bold"),
+      legend.title = ggplot2::element_text(size = 10),
+      legend.text = ggplot2::element_text(size = 8)
+    ) +
+    ggplot2::labs(
+      title = paste0(contrast, " ", tools::toTitleCase(direction), "-regulated"),
+      x = "GO Category",
+      y = "-log10(q-value)"
+    )
+}
+
+#' The static and interactive enrichment plot of one contrast and direction, from its stored result (KIT-119)
+#' @param enrichment_result,contrast,direction As `buildEnrichmentGgplot`.
+#' @return `list(static, interactive)`: the ggplot (`buildEnrichmentGgplot`) and its plotly conversion; both NULL
+#'   when the result is NULL or has no terms.
+#' @noRd
+buildEnrichmentPlot <- function(enrichment_result, contrast, direction) {
+  static <- buildEnrichmentGgplot(enrichment_result, contrast, direction)
+  if (is.null(static)) {
+    return(list(static = NULL, interactive = NULL))
+  }
+  list(static = static, interactive = plotly::ggplotly(static, tooltip = "text"))
+}
+
+#' The interactive plot the enrichment tab shows for one contrast and direction (KIT-119)
+#'
+#' A plot the results already hold (a session saved before KIT-119, or the deterministic test kernel's) is shown as
+#' stored; otherwise the plot is built from the stored result (`buildEnrichmentPlot`), as the run built its saved file.
+#' @param enrichment_results `EnrichmentResults`.
+#' @param contrast Contrast name, as the results' lists are named.
+#' @param direction `"up"` or `"down"`.
+#' @return A plotly object, or NULL when the contrast and direction have no result with terms.
+#' @noRd
+resolveEnrichmentPlotly <- function(enrichment_results, contrast, direction) {
+  stored <- enrichment_results@enrichment_plotly[[contrast]][[direction]]
+  if (!is.null(stored)) {
+    return(stored)
+  }
+  buildEnrichmentPlot(enrichment_results@enrichment_data[[contrast]][[direction]], contrast, direction)$interactive
+}
+
+
+# ----------------------------------------------------------------------------
+# generate_enrichment_plots
+# ----------------------------------------------------------------------------
+# Plot generation function
+#' @export
+generate_enrichment_plots <- function(enrichment_result, contrast, direction, pathway_dir) {
+  # KIT-119: the plot is drawn by the builder the tab uses at render time.
+  static_plot <- buildEnrichmentGgplot(enrichment_result, contrast, direction)
+  if (is.null(static_plot)) {
+    return(list(static = NULL, interactive = NULL))
+  }
 
   # Convert to an interactive plotly object
   interactive_plot <- tryCatch({
