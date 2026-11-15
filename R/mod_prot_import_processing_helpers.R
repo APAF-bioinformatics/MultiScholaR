@@ -51,8 +51,7 @@ importProtImportDataByFormat <- function(
     format = format
     , path = searchResultsPath
     , options = list(
-        use_precursor_norm = input$diann_use_precursor_norm
-        , quantity_type = input$spectronaut_quantity
+        quantity_type = input$spectronaut_quantity
         , use_maxlfq = input$fragpipe_use_maxlfq
         , use_lfq = input$maxquant_use_lfq
         , filter_contaminants = input$maxquant_filter_contaminants

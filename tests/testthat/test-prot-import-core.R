@@ -113,9 +113,10 @@ test_that("importProteomicsData reads by format with the options as a list; the 
         list(format = "pd_tmt", filepath = "report.tsv")))
 
     calls <- list()
-    options <- list(use_precursor_norm = FALSE, quantity_type = "pep", use_maxlfq = FALSE,
+    # KIT-118: the GUI has no DIA-NN option any more, so its call is the core's default (TRUE).
+    options <- list(use_precursor_norm = TRUE, quantity_type = "pep", use_maxlfq = FALSE,
         use_lfq = FALSE, filter_contaminants = FALSE)
-    input <- list(diann_use_precursor_norm = FALSE, spectronaut_quantity = "pep", fragpipe_use_maxlfq = FALSE,
+    input <- list(spectronaut_quantity = "pep", fragpipe_use_maxlfq = FALSE,
         maxquant_use_lfq = FALSE, maxquant_filter_contaminants = FALSE)
     for (format in names(readers)) {
         core <- importProteomicsData(format, "report.tsv", options, readers = readers)

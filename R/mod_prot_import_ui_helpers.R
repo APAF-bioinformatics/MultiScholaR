@@ -87,10 +87,11 @@ buildProtImportFormatSpecificOptionsUi <- function(format, ns) {
   switch(format,
     "diann" = shiny::tagList(
       shiny::h5("DIA-NN Specific Options"),
-      shiny::checkboxInput(ns("diann_use_precursor_norm"),
-        "Use Precursor.Normalised values",
-        value = TRUE
-      )
+      # KIT-118: the "Use Precursor.Normalised values" checkbox is gone: it changed nothing in the
+      # analysis, which reads both columns whatever it said.
+      shiny::helpText(paste("Both DIA-NN quantity columns are read. Protein quantification (IQ) and",
+        "the technical-replicate imputation use Precursor.Quantity; the peptide filters and limpa use",
+        "Precursor.Normalised."))
     ),
     "spectronaut" = shiny::tagList(
       shiny::h5("Spectronaut Specific Options"),

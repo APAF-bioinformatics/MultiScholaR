@@ -293,7 +293,9 @@ test_that("buildProtImportFormatSpecificOptionsUi renders per-format controls", 
   )$html
 
   expect_match(diannHtml, "DIA-NN Specific Options")
-  expect_match(diannHtml, "import-diann_use_precursor_norm")
+  # KIT-118: the checkbox is removed; a line says which column each step reads.
+  expect_no_match(diannHtml, "diann_use_precursor_norm")
+  expect_match(diannHtml, "Both DIA-NN quantity columns are read", fixed = TRUE)
 
   spectronautHtml <- htmltools::renderTags(
     buildProtImportFormatSpecificOptionsUi(
@@ -814,6 +816,7 @@ test_that("updateProtImportProcessingStatus logs and updates the processing labe
 })
 
 test_that("importProtImportDataByFormat dispatches DIANN options and wraps import errors", {
+  # KIT-118: the GUI no longer carries the option; a stale input value is not passed on.
   input <- list(diann_use_precursor_norm = FALSE)
 
   diannResult <- importProtImportDataByFormat(
@@ -822,7 +825,7 @@ test_that("importProtImportDataByFormat dispatches DIANN options and wraps impor
     input = input,
     importDiann = function(filepath, use_precursor_norm) {
       expect_identical(filepath, "report.tsv")
-      expect_false(use_precursor_norm)
+      expect_true(use_precursor_norm)
       list(data = data.frame(x = 1), data_type = "peptide", column_mapping = list())
     },
     importSpectronaut = function(...) stop("unexpected spectronaut call"),

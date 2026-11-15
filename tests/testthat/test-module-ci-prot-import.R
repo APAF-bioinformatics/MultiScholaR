@@ -232,5 +232,5 @@ test_that("KIT-102 W6: the proteomics import UI is the shared frame with the pro
   }
   # The entry suite calls the format options builder by name (helper-gui-entry.R:699).
   expect_match(as.character(buildProtImportFormatSpecificOptionsUi("diann", shiny::NS("x"))),
-    "x-diann_use_precursor_norm", fixed = TRUE)
+    "DIA-NN Specific Options", fixed = TRUE)
 })
