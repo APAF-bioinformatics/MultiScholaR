@@ -1,0 +1,67 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-118/exit/journeys",
+  "stage": "audit-kit-journey-934u",
+  "date": "2026-11-15",
+  "dispatches": [],
+  "controller": {
+    "peak_anon_bytes": 2472439808,
+    "phase_peak_anon_bytes": {
+      "import": 2472439808,
+      "design": 2404888576
+    }
+  },
+  "decision": {
+    "status": "rejected",
+    "rule": "exactness_and_completion",
+    "failing_rule": "oracle_mismatch",
+    "steps": ["import", "design"],
+    "stop_after": "design",
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "DIA",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "full",
+    "build": "a6f1d92bcc854b1ed86921b0a14e2dde6eaeb1fc0f9326651e6beeaf2e8acefb",
+    "status": "complete",
+    "exact": false,
+    "elapsed_seconds": 200.260000000009,
+    "peak_bytes": 3076591616,
+    "peak_anon_bytes": 2843582464,
+    "resident_end_bytes": 1946800128,
+    "phase_seconds": {
+      "import": 54.9100000000326,
+      "design": 127.130000000005
+    },
+    "phase_peak_anon_bytes": {
+      "import": 2843582464,
+      "design": 2778521600
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete"
+    },
+    "max_sample_interval": 0.130000000004657,
+    "gaps_above_250ms": 0,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": false,
+    "status": "failed",
+    "oracle": "design/summary",
+    "populations": null,
+    "oracle_mismatches": "design/summary",
+    "canonical_form_differences": [],
+    "files": 14,
+    "failure": null
+  }
+}

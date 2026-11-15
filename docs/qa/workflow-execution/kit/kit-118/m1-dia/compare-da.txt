@@ -1,0 +1,8 @@
+grouptreated-groupcontrol contrasts_results_table : rows 2476 -> 2476 ; columns Protein.Group, logFC, AveExpr, t, raw_pvalue, adj.P.Val, fdr_qvalue, fdr_value_bh_adjustment, comparison 
+  proteins only before 19 , only after 19 , common 2457 
+  raw_pvalue             changed 2457 of 2457; |change| median 0.113, 99% 0.479, max 0.68
+  fdr_qvalue             changed 2457 of 2457; |change| median 0.000525, 99% 0.000525, max 0.000525
+  fdr_value_bh_adjustment changed 2457 of 2457; |change| median 0.000525, 99% 0.000525, max 0.000525
+  significant at adj.P.Val < 0.05: before 0, after 0, both 0
+  significant at fdr_qvalue < 0.05: before 0, after 0, both 0
+  significant at fdr_value_bh_adjustment < 0.05: before 0, after 0, both 0

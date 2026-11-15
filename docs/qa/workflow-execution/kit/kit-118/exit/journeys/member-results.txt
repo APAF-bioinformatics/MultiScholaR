@@ -7,3 +7,5 @@ kit-journey-935b accepted failing none failed_step none error none
 kit-journey-935c accepted failing none failed_step none error none 
 kit-journey-934q rejected failing oracle_mismatch failed_step none error none 
 kit-journey-935q rejected failing oracle_mismatch failed_step none error none 
+kit-journey-934u rejected failing oracle_mismatch failed_step none error none 
+kit-journey-935u rejected failing oracle_mismatch failed_step none error none 
