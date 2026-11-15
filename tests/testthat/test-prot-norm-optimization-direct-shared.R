@@ -544,8 +544,19 @@ test_that("computeRuvCovariates appends W1..Wk from RUV-III with the design's re
   M <- getRuvIIIReplicateMatrixHelper(blocks$design, !!rlang::sym(object@sample_id), .ruv_replicate_block)[samples, , drop = FALSE]
   fit <- ruv::RUVIII(Y = Y, M = M, ctl = controls, k = 2L, return.info = TRUE)
   ac <- fit$fullalpha[1:2, controls, drop = FALSE]
-  expect_equal(unname(result$W), unname(Y[, controls] %*% t(ac) %*% solve(ac %*% t(ac))), tolerance = 1e-10)
-  expect_equal(unname(result$adjusted), unname(t(fit$newY)), tolerance = 1e-10)
+  # KIT-123 R2 (re-frozen with the rule): W is the script's formula on the controls centred on their means (the
+  # RUV-III-PRPS implementation's), so the controls' mean level does not enter it; alpha is RUV-III's own.
+  centred <- sweep(Y[, controls], 2, colMeans(Y[, controls]))
+  expected_w <- centred %*% t(ac) %*% solve(ac %*% t(ac))
+  expect_equal(unname(result$W), unname(expected_w), tolerance = 1e-10)
+  expect_equal(unname(result$alpha), unname(fit$fullalpha[1:2, , drop = FALSE]), tolerance = 1e-10)
+  expect_equal(unname(colMeans(result$W)), c(0, 0), tolerance = 1e-10)
+  expect_equal(unname(result$adjusted), unname(t(Y - expected_w %*% fit$fullalpha[1:2, , drop = FALSE])), tolerance = 1e-10)
+  # The adjusted matrix keeps every protein's level, and differs from RUV-III's own output by a constant per protein.
+  expect_equal(unname(rowMeans(result$adjusted)), unname(rowMeans(values)), tolerance = 1e-10)
+  shift <- result$adjusted - t(fit$newY)
+  expect_equal(unname(apply(shift, 1, function(row) diff(range(row)))), rep(0, nrow(shift)), tolerance = 1e-8)
+  expect_gt(max(abs(rowMeans(t(fit$newY)) - rowMeans(values))), 0.01)
   expect_error(computeRuvCovariates(object, k = 2L, controls = controls[-1], ruv_grouping_variable = "group"))
   expect_error(computeRuvCovariates(object, k = 50L, controls = controls, ruv_grouping_variable = "group"))
 })

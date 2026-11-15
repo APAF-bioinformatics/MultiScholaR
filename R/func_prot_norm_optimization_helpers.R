@@ -1141,11 +1141,29 @@ findBestNegCtrlPercentageCapped <- function(normalised_protein_matrix_obj,
        max_acceptable_k = max_acceptable_k, sample_size = sample_size)
 }
 
+#' Restore each feature's level after an RUV-III correction (KIT-123 R2). RUV-III estimates W from the controls'
+#' uncentred values, so the controls' mean level enters W and every feature is shifted by a constant. The shift is
+#' removed: each feature's mean over the samples it was corrected in is set back to its mean before. Differences
+#' between samples within a feature are not changed. On complete data this is the centred-W formula of the
+#' RUV-III-PRPS implementation.
+#' @param corrected,original Feature-by-sample matrices with the same dimension names.
+#' @return `corrected`, each row shifted by a constant.
+#' @noRd
+restoreRuvFeatureLevels <- function(corrected, original) {
+  stopifnot(is.matrix(corrected), is.matrix(original), identical(rownames(corrected), rownames(original)),
+    identical(colnames(corrected), colnames(original)))
+  both <- is.finite(corrected) & is.finite(original)
+  shift <- rowSums(replace(original - corrected, !both, 0)) / rowSums(both)
+  shift[!is.finite(shift)] <- 0
+  corrected + shift
+}
+
 #' RUV-III factors as covariates (KIT-041, the limpa script's chunk 19b): `ruv::RUVIII` on the sample-by-protein
 #' matrix with the replicate matrix of the design's replicate structure (KIT-035's rule: the declared technical
 #' replicate block when the design has one, else the RUV grouping variable), the W factors
 #' `Y[, ctl] %*% t(ac) %*% solve(ac %*% t(ac))` (`ac` the first `k` rows of `fullalpha` on the controls) named
-#' `W1..Wk`, and the RUV-adjusted matrix (`t(newY)`) for QC plots only. The quantified matrix is not changed.
+#' `W1..Wk` (the controls centred on their means, KIT-123 R2), and the RUV-adjusted matrix (`Y - W alpha`) for QC
+#' plots only. The quantified matrix is not changed.
 #' @param theObject A `ProteinQuantitativeData` object (a complete matrix).
 #' @param k Number of unwanted factors (a positive whole number).
 #' @param controls Logical vector over the protein rows naming the negative controls.
@@ -1174,10 +1192,14 @@ computeRuvCovariates <- function(theObject, k, controls, ruv_grouping_variable =
   ruv_res <- ruv::RUVIII(Y = Y, M = M, ctl = controls, k = k, return.info = TRUE)
   alpha <- ruv_res$fullalpha[seq_len(k), , drop = FALSE]
   ac <- alpha[, controls, drop = FALSE]
-  W <- Y[, controls, drop = FALSE] %*% t(ac) %*% solve(ac %*% t(ac))
+  # KIT-123 R2: W from the controls centred on their means (the RUV-III-PRPS implementation's formula). From the
+  # uncentred values, as `ruv::RUVIII` computes it, the controls' mean level (about 22 log2) enters W and the
+  # adjusted matrix carries a constant shift per protein. `alpha` is the same either way.
+  centred_controls <- sweep(Y[, controls, drop = FALSE], 2, colMeans(Y[, controls, drop = FALSE]))
+  W <- centred_controls %*% t(ac) %*% solve(ac %*% t(ac))
   colnames(W) <- paste0("W", seq_len(k))
   rownames(W) <- sample_ids
-  adjusted <- t(ruv_res$newY)
+  adjusted <- t(Y - W %*% alpha)
   list(W = W, adjusted = adjusted, alpha = alpha, k = k, controls = controls,
        replicate_structure = replicate_blocks$structure, block_reason = block$reason, blocks = replicate_blocks$blocks)
 }

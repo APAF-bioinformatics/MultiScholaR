@@ -265,6 +265,9 @@ setMethod(
       featureIds = feature_ids,
       sampleIds = sample_ids
     )
+    # KIT-123 R2: the correction keeps each protein's level (`restoreRuvFeatureLevels`).
+    cln_mat_4 <- restoreRuvFeatureLevels(cln_mat_4,
+      normalised_frozen_protein_matrix_filt[feature_ids, sample_ids, drop = FALSE])
     cln_mat_4 <- cln_mat_4[rowSums(is.finite(cln_mat_4)) > 0, , drop = FALSE]
     cln_mat_4 <- cln_mat_4[, colSums(is.finite(cln_mat_4)) > 0, drop = FALSE]
     if (nrow(cln_mat_4) == 0L || ncol(cln_mat_4) == 0L) {
