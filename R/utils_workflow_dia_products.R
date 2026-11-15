@@ -659,7 +659,11 @@ publishDIAReferenceNormalization <- function(manager, settings, run, workflow, n
                     file.path(staged$protein_qc_dir, "ruv_corrected_cancor.png"),
                     saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
             }
-            generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
+            # KIT-122: on a managed session the worker built the composite from these staged images and saved its files
+            # (`saveWorkflowDiaCompositeFigure`); their bytes are written here. Not found saved (no runner, or other
+            # images than the worker read), the figure is built here, as before.
+            if (!writeDIACompositeFigureFiles(manager, product, settings$ruv_mode, staged$protein_qc_dir, omic_type))
+                generateProtNormCompositeQcFigure(settings$ruv_mode, staged$protein_qc_dir, omic_type)
             list(qc_paths = norm_data$qc_plot_paths, filtering_plot = norm_data$post_norm_filtering_plot,
                 filtering_text = norm_data$filtering_summary_text, staged_qc_dir = staged$protein_qc_dir)
         }, identity = list(product = product$entity_id, color = settings$color_variable,
@@ -1187,12 +1191,15 @@ diaQcStageFigureSizes <- list(pca = c(8, 6), rle = c(10, 6), density = c(8, 6), 
 
 #' The QC figures action's parameters: the aesthetics the tab draws with, and which figures.
 #' @param aesthetics `list(color_var, shape_var)`.
-#' @param figures `stage` (the four figures of a stage, with their images) or `final_pca` (the correlation tab's PCA,
-#'   which the tab draws from the saved product; no image).
+#' @param figures `stage` (the four figures of a stage, with their images), `final_pca` (the correlation tab's PCA,
+#'   which the tab draws from the saved product; no image) or `composite` (the normalisation's composite QC figure, its
+#'   three files; `saveWorkflowDiaCompositeFigure`).
+#' @param composite For `composite` only: `list(product, ruv_mode)`, the entity id of the normalisation run's product
+#'   and the run's RUV mode.
 #' @return The parameters.
 #' @noRd
-diaQcFiguresParameters <- function(aesthetics, figures = "stage") {
-    list(color_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, figures = figures)
+diaQcFiguresParameters <- function(aesthetics, figures = "stage", composite = NULL) {
+    c(list(color_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, figures = figures), composite)
 }
 
 #' Index, in the controller's store handle, the products the head roots, when a QC figures action is delivered. The
@@ -1210,18 +1217,21 @@ indexWorkflowHeadProducts <- function(manager) {
 }
 
 #' The normalisation tab's QC figures on the worker (`normalization-qc-figures`): the products and images of the
-#' request's state under the request's aesthetics.
+#' request's state under the request's aesthetics; for `composite`, the composite QC figure of the normalisation run
+#' whose final state the request names.
 #' @noRd
 computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
     source <- request$input_references$state
     parameters <- request$parameters
-    if (!isTRUE(parameters$figures %in% c("stage", "final_pca")))
-        cli::cli_abort("the QC figures must be stage or final_pca", class = "workflow_operation_parameters")
+    if (!isTRUE(parameters$figures %in% c("stage", "final_pca", "composite")))
+        cli::cli_abort("the QC figures must be stage, final_pca or composite", class = "workflow_operation_parameters")
     aesthetics <- list(color_var = parameters$color_variable, shape_var = parameters$shape_variable)
     plot <- function(kind) resolveDIAReferenceQcPlot(source, aesthetics, kind, buildProtNormQcPlotProduct,
         plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
     if (identical(parameters$figures, "final_pca")) {
         plot("pca")
+    } else if (identical(parameters$figures, "composite")) {
+        saveWorkflowDiaCompositeFigure(manager, request, aesthetics)
     } else {
         directory <- tempfile("dia-qc-figures-")
         dir.create(directory)
@@ -1232,4 +1242,121 @@ computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
         }
     }
     list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
+}
+
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-122 (composite): the normalisation's composite QC figure as a worker product. Assembled in the application, its
+# rasters are the normalisation step's largest memory event there (as the lipid tab's were,
+# `computeWorkflowOmicsCompositeFigureAction`). The publication stays the journaled transaction it is: the figure's
+# three files are written inside its `produce`, where the builder wrote them. On a managed session the worker has built
+# the figure before the publication half runs (the `composite` figures of `normalization-qc-figures`) and saved the
+# files; the publication half finds them by identity and writes their bytes. With no runner, or when a file is not
+# found saved, it builds the figure as before and saves nothing.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The composite QC figure's files, by kind, with the media type each is saved under. The store holds each as a
+#' rendered asset under an identity of its own, as it holds the interactive volcano pages
+#' (`saveDIAInteractiveVolcanoAsset`): `newSavedWorkflowRenderIdentity` names image and page formats only, and the
+#' `rds` is the plot object `savePlot` writes beside its renderings.
+#' @noRd
+diaCompositeFigureMediaTypes <- c(png = "image/png", pdf = "application/pdf", rds = "application/octet-stream")
+
+#' The identities of the composite QC figure's files for the stage images in a QC directory: the normalisation run's
+#' product, the RUV mode (the layout), each stage image the builder reads there by name and content, and the file's
+#' kind. The images' content carries the aesthetics they were drawn with and a missing or older pre-normalisation
+#' image, so a figure is found saved only for the images it was built from. The canonical-correlation image is not
+#' read here: it is the product's own plot at a fixed size. The worker computes the identities on the directory it
+#' builds the figure in, the application on the publication's staged directory.
+#' @param manager The session owner.
+#' @param product The normalisation run's product reference.
+#' @param ruv_mode The run's RUV mode.
+#' @param qc_dir The directory that holds the stage images.
+#' @return The identities, named by kind (`diaCompositeFigureMediaTypes`).
+#' @noRd
+diaCompositeFigureIdentities <- function(manager, product, ruv_mode, qc_dir) {
+    files <- resolveProtNormCompositeFigureInputs(ruv_mode, qc_dir)$plotFiles
+    files <- files[!is.na(files) & basename(files) != "ruv_corrected_cancor.png" & file.exists(files)]
+    images <- stats::setNames(vapply(files, function(file) digest::digest(file = file, algo = "sha256"), ""), basename(files))
+    parameters <- digest::digest(list(ruv_mode = ruv_mode, images = images), algo = "sha256")
+    lapply(stats::setNames(nm = names(diaCompositeFigureMediaTypes)), function(kind) newSavedWorkflowScientificIdentity(
+        product$entity_id, "dia-composite-qc-figure-v1", parameters, kind, manager$.context$software))
+}
+
+#' Whether a composite QC figure's file is saved under `identity`, without reading it.
+#' @noRd
+diaCompositeFigureSaved <- function(manager, identity) {
+    identical(resolveSavedWorkflowEntity(manager$.context$store, "rendered_asset", identity, hydrate = FALSE)$status, "hit")
+}
+
+#' The composite QC figure on the worker (the `composite` figures of `normalization-qc-figures`). In a temporary
+#' directory the worker gathers what the publication half stages before it writes the figure
+#' (`publishDIAReferenceNormalization`): the published pre-normalisation images, the images of the normalised state and,
+#' unless RUV was skipped, of the final one (the stage figures saved them before this action, so their bytes are
+#' written and nothing is drawn again) and the canonical-correlation image. It runs the tab's unchanged builder there
+#' and saves the files it wrote, rooted on the run's product. A figure already saved for these images is not built again.
+#' @param manager The worker's owner.
+#' @param request The request: `parameters$product` names the normalisation run's product in the session,
+#'   `parameters$ruv_mode` its RUV mode.
+#' @param aesthetics `list(color_var, shape_var)`, the stage figures'.
+#' @return NULL, invisibly.
+#' @noRd
+saveWorkflowDiaCompositeFigure <- function(manager, request, aesthetics) {
+    store <- manager$.context$store
+    parameters <- request$parameters
+    product <- manager$.context$snapshot$products[[parameters$product]]
+    if (is.null(product)) cli::cli_abort("the normalisation product is not in the session", class = "workflow_operation_parameters")
+    saved <- hydrateSavedWorkflowEntity(store, product)$value
+    skipped <- identical(parameters$ruv_mode, "skip")
+    directory <- tempfile("dia-qc-composite-")
+    dir.create(directory)
+    on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+    published <- workflowRequestExperimentPaths(request)$protein_qc_dir
+    if (!is.null(published)) file.copy(list.files(published, pattern = "^pre_norm_.*[.]png$", full.names = TRUE), directory)
+    states <- c(list(post_norm = saved$normalized), if (!skipped) list(ruv_corrected = saved$final))
+    for (stage in names(states)) for (kind in names(diaQcStageFigureSizes)) {
+        size <- diaQcStageFigureSizes[[kind]]
+        plot <- resolveDIAReferenceQcPlot(states[[stage]], aesthetics, kind, buildProtNormQcPlotProduct,
+            plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
+        saveProtNormQcPlotArtifact(directory, paste0(stage, "_", kind, ".png"), plot, width = size[[1L]], height = size[[2L]])
+    }
+    identities <- diaCompositeFigureIdentities(manager, product, parameters$ruv_mode, directory)
+    absent <- names(identities)[!vapply(identities, function(identity) diaCompositeFigureSaved(manager, identity), NA)]
+    if (!length(absent)) return(invisible(NULL))
+    if (!skipped && !is.null(saved$ruv_result$best_cancor_plot)) ggplot2::ggsave(
+        file.path(directory, "ruv_corrected_cancor.png"), saved$ruv_result$best_cancor_plot, width = 8, height = 6, dpi = 150)
+    omic_type <- workflowActionSpec(request$operation)$omic_type
+    generateProtNormCompositeQcFigure(parameters$ruv_mode, directory, omic_type)
+    files <- stats::setNames(file.path(directory, paste0(omic_type, "_composite_QC_figure.", names(identities))), names(identities))
+    # The builder reports its own failure and leaves no file; nothing is saved, and the application builds as before.
+    if (!all(file.exists(files))) return(invisible(NULL))
+    # The figure's size in pixels, from the image's header (the asset envelope needs positive dimensions).
+    dimensions <- readBin(readBin(files[["png"]], "raw", n = 24L)[17:24], "integer", n = 2L, size = 4L, endian = "big")
+    for (kind in absent) {
+        asset <- newSavedWorkflowRenderedAsset(readBin(files[[kind]], "raw", n = file.size(files[[kind]])),
+            diaCompositeFigureMediaTypes[[kind]], dimensions)
+        reference <- saveWorkflowConsumerEntity(store, asset, basename(tempfile("dia-qc-composite-")), identities[[kind]],
+            "rendered_asset")
+        rootDIAProduct(manager, reference, list(product))
+    }
+    invisible(NULL)
+}
+
+#' Write the composite QC figure's files from the store into a QC directory, under the builder's names
+#' (`generateProtNormCompositeQcFigure`), when all three are saved for the stage images that are there.
+#' @param manager The session owner.
+#' @param product The normalisation run's product reference.
+#' @param ruv_mode The run's RUV mode.
+#' @param qc_dir The publication's staged QC directory.
+#' @param omic_type The omic, which names the files.
+#' @return TRUE when the files were written; FALSE when one is not saved (nothing is written).
+#' @noRd
+writeDIACompositeFigureFiles <- function(manager, product, ruv_mode, qc_dir, omic_type) {
+    if (is.null(qc_dir)) return(FALSE)
+    identities <- diaCompositeFigureIdentities(manager, product, ruv_mode, qc_dir)
+    if (!all(vapply(identities, function(identity) diaCompositeFigureSaved(manager, identity), NA))) return(FALSE)
+    for (kind in names(identities)) {
+        asset <- resolveSavedWorkflowEntity(manager$.context$store, "rendered_asset", identities[[kind]])$value
+        writeBin(asset$bytes, file.path(qc_dir, paste0(omic_type, "_composite_QC_figure.", kind)))
+    }
+    TRUE
 }

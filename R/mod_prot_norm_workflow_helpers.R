@@ -148,13 +148,15 @@ protNormManagedAction <- function(operation, parameters, input, stateName, deliv
 #' halves, run after its delivery, find them saved and neither hydrate the state nor draw.
 #' @param source The saved state reference the figures are of.
 #' @param aesthetics `list(color_var, shape_var)`.
-#' @param figures `stage` or `final_pca` (`diaQcFiguresParameters`).
+#' @param figures `stage`, `final_pca` or `composite` (`diaQcFiguresParameters`).
 #' @param deliver `function(result)`, run in the owner's scope when the worker has delivered, after the session's
 #'   store has indexed what the worker saved (`indexWorkflowHeadProducts`).
+#' @param composite For `composite`: `list(product, ruv_mode)` (`diaQcFiguresParameters`).
 #' @noRd
-protNormFiguresAction <- function(source, aesthetics, figures = "stage", deliver = function(result) invisible(NULL)) {
+protNormFiguresAction <- function(source, aesthetics, figures = "stage", deliver = function(result) invisible(NULL),
+                                  composite = NULL) {
   entry <- proteomicsDiaBinding$norm$figures
-  protNormManagedAction(entry$operation, entry$parameters(aesthetics, figures), source, NULL, function(result) {
+  protNormManagedAction(entry$operation, entry$parameters(aesthetics, figures, composite), source, NULL, function(result) {
     entry$accept(getDIAActiveManager())
     deliver(result)
   })
@@ -479,7 +481,8 @@ finishProtNormNormalization <- function(completed, settings, workflowData, normD
 #' The managed normalisation (KIT-111 D3): the gate and the request (`diaNormalizationRequest`, which records the
 #' source) in the controller, `normalization-ruv` on the worker on that source, then the publication half and `finish`.
 #' KIT-122: between the two, the worker saves the stage figures the publication half draws: the normalised state's and,
-#' unless RUV was skipped, the final's.
+#' unless RUV was skipped, the final's; then it builds the composite QC figure from them and saves its files, which the
+#' publication half writes (`writeDIACompositeFigureFiles`).
 #' @param postQc,ruvQc,grouping The module's QC callbacks and grouping function.
 #' @param finish `function(completed)`; `failed` `function(error)`.
 #' @return TRUE, invisibly, once dispatched.
@@ -503,8 +506,12 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   }
   figures <- function() {
     saved <- held$result$value
+    aesthetics <- omicNormPlotAestheticsGetter(settings)()
     sources <- c(list(saved$normalized), if (!identical(settings$ruv_mode, "skip")) list(saved$final))
-    runner$run(protNormFiguresActions(sources, omicNormPlotAestheticsGetter(settings)(), publish), failed = failed)
+    composite <- protNormFiguresAction(saved$final, aesthetics, "composite", publish,
+      list(product = held$result$reference$entity_id, ruv_mode = settings$ruv_mode))
+    runner$run(c(protNormFiguresActions(sources, aesthetics, function(result) invisible(NULL)), list(composite)),
+      failed = failed)
   }
   runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
     function(result) held$result <- result)), done = figures, failed = failed)
