@@ -8,6 +8,7 @@ test_that("the registry carries the built-in operations with every fact the exec
         "lipid_qc_figures", "lipid_qc_finalize", "lipid_reset", "lipid_ruv", "lipid_session_export", "lipid_volcano_page", "metab_between_sample_normalisation", "metab_composite_figure", "metab_da_contrast", "metab_da_output", "metab_da_publication", "metab_da_tab_results", "metab_duplicate_resolution", "metab_filtering_metrics", "metab_final_pca", "metab_integration_export", "metab_intensity_filter",
         "metab_itsd_normalisation", "metab_log2", "metab_norm_complete", "metab_pearson_pairs", "metab_pearson_selection",
         "metab_qc_figures", "metab_qc_finalize", "metab_reset", "metab_ruv", "metab_session_export", "metab_volcano_page", "minimum_peptides_per_sample",
+        "normalization-qc-figures", # KIT-122: the proteomics normalisation tab's QC figures as a worker product
         "normalization-ruv", "pearson-pairs", "pearson-selection", "peptide_accession_cleanup", "peptide_imputation",
         "peptide_intensity_filter", "peptide_log2_matrix", "peptide_protein_evidence_filter", "peptide_qvalue_filter",
         "peptide_replicate_filter", "precursor_rollup", "protein_accession_cleanup", "protein_between_sample_normalisation",
@@ -111,7 +112,9 @@ test_that("unregistered or malformed operations refuse with the execution layer'
         # KIT-082: what the tabs read from the whole matrix outside their steps.
         paste0(rep(c("lipid", "metab"), each = 6L), rep(c("_da_tab_results", "_filtering_metrics", "_final_pca", "_volcano_page", "_session_export", "_integration_export"), 2L)),
         # KIT-095: the transcriptomics declarations and publication operations.
-        "trx_composite_figure", "trx_da_contrast", "trx_da_publication", "trx_da_tab_results", "trx_expression_filter", "trx_filtering_metrics", "trx_final_pca", "trx_integration_export", "trx_qc_figures", "trx_qc_finalize", "trx_reset", "trx_ruv_grid", "trx_ruv_publication", "trx_ruviii_export", "trx_ruvs", "trx_session_export", "trx_tmm_logcpm", "trx_volcano_page")))
+        "trx_composite_figure", "trx_da_contrast", "trx_da_publication", "trx_da_tab_results", "trx_expression_filter", "trx_filtering_metrics", "trx_final_pca", "trx_integration_export", "trx_qc_figures", "trx_qc_finalize", "trx_reset", "trx_ruv_grid", "trx_ruv_publication", "trx_ruviii_export", "trx_ruvs", "trx_session_export", "trx_tmm_logcpm", "trx_volcano_page",
+        # KIT-122: what the proteomics normalisation tab's QC figures read from the matrix, in the worker.
+        "normalization-qc-figures")))
 })
 
 test_that("a fresh R process resolves the same registry from the operation name alone", {
@@ -336,7 +339,9 @@ test_that("the RUV covariates step's ruv_mode is the tab's choice with no shippe
 })
 
 test_that("KIT-111 F111-03, KIT-112 D11: only the normalisation tab's four and the DA contrast take a named input that is not the head; every other operation keeps the head rule", {
-    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates", "DA-contrast-output")
+    # KIT-122: and the normalisation tab's QC figures (a normalised state, a correlation result: not the head).
+    named <- c("normalization-ruv", "pearson-pairs", "pearson-selection", "protein_ruv_covariates", "DA-contrast-output",
+        "normalization-qc-figures")
     for (name in named) expect_true(isTRUE(workflowActionSpec(name)$named_input), info = name)
     for (name in c("protein_intensity_filter", "precursor_rollup", "lipid_pearson_pairs"))
         expect_null(workflowActionSpec(name)$named_input, info = name)

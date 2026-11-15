@@ -35,7 +35,9 @@ registerProtNormServerObservers <- function(
         selectedTab = selectedTab(),
         workflowData = workflowData,
         normData = normData,
-        generatePreNormalizationQcFn = generatePreNormalizationQcFn
+        generatePreNormalizationQcFn = generatePreNormalizationQcFn,
+        # KIT-122: on a managed session the worker saves the figures first (NULL with no runner).
+        dispatchFiguresFn = protNormFiguresDispatcher(workflowData, getPlotAestheticsFn)
       )
     }, ignoreInit = TRUE)
   }
@@ -45,7 +47,8 @@ registerProtNormServerObservers <- function(
       normData = normData,
       generatePreNormalizationQcFn = generatePreNormalizationQcFn,
       generatePostNormalizationQcFn = generatePostNormalizationQcFn,
-      generateRuvCorrectedQcFn = generateRuvCorrectedQcFn
+      generateRuvCorrectedQcFn = generateRuvCorrectedQcFn,
+      dispatchFiguresFn = protNormFiguresDispatcher(workflowData, getPlotAestheticsFn)
     )
   })
 
@@ -165,8 +168,10 @@ registerProtNormServerObservers <- function(
 #' @param input,output,session The frame's module session.
 #' @param context The frame's `workflow_data`, `experiment_paths`, `omic_type`, `experiment_label`, `selected_tab`,
 #'   `norm_data`, `add_log`, `plot_aesthetics` and `config` (the last three are not used here).
-#'   On a managed session the heavy steps are dispatched to the worker, but the QC figures are still drawn in the app
-#'   process from the hydrated state (audit F3, an exception to the render-only rule; KIT-122).
+#'   On a managed session the heavy steps are dispatched to the worker, and (KIT-122, audit F3) so are the QC figures:
+#'   the worker saves their products and images (`normalization-qc-figures`) before the generators below and the
+#'   publication halves run, which then write the saved images without hydrating the state. With no runner the
+#'   generators compute and draw in the application, as before.
 #' @return The tab's state, invisibly.
 #' @noRd
 protNormFrameServer <- function(input, output, session, context) {

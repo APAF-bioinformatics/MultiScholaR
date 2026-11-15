@@ -280,6 +280,49 @@ buildProtNormCorrelationPlot <- function(
   )
 }
 
+# KIT-122: moved unchanged, with its name kept, from R/mod_prot_norm_qc_support_helpers.R: the worker's QC figures
+# action (computeWorkflowDiaQcFiguresAction, utils_workflow_dia_products.R) renders through it, so that the image it
+# saves is the one the tab's generators would have drawn.
+saveProtNormQcPlotArtifact <- function(
+  qcDir,
+  filename,
+  plotObject,
+  width,
+  height,
+  dpi = 150,
+  savePlotFn = ggplot2::ggsave
+) {
+  if (is.null(qcDir)) {
+    return(NULL)
+  }
+
+  artifactPath <- file.path(qcDir, filename)
+  manager <- getDIAActiveManager()
+  product_reference <- attr(plotObject, "dia_product_reference", exact = TRUE)
+  if (isSavedWorkflowReference(product_reference)) {
+    dimensions <- as.integer(c(width, height) * dpi)
+    aesthetics <- attr(plotObject, "dia_render_aesthetics", exact = TRUE)
+    aesthetics <- aesthetics[!vapply(aesthetics, is.null, logical(1))]
+    identity <- newSavedWorkflowRenderIdentity(product_reference,
+      c(aesthetics, list(dpi = dpi)),
+      "png", dimensions, manager$.context$software)
+    hit <- resolveSavedWorkflowAsset(manager$.context$store, product_reference, identity)
+    if (identical(hit$status, "hit")) {
+      writeBin(hit$value$bytes, artifactPath)
+      return(artifactPath)
+    }
+    savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
+    asset <- newSavedWorkflowRenderedAsset(readBin(artifactPath, "raw", n = file.size(artifactPath)),
+      "image/png", dimensions)
+    reference <- saveWorkflowDiaQcAsset(manager$.context$store, asset,
+      basename(tempfile("dia-qc-image-")), identity)
+    rootDIAProduct(manager, reference, list(product_reference))
+    return(artifactPath)
+  }
+  savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
+  artifactPath
+}
+
 # --- The composite QC figure and the workflow's completion (#21, #22; the composite's callees) ---
 
 buildProtNormLabelPlot <- function(title) {
@@ -571,6 +614,18 @@ runDIAReferenceLimpaNormalisationPassThrough <- function(settings, workflow, nor
       ") and the peptide count filter are protein QC steps; RUV-III factors are computed as covariates after the correlation filter.")
     TRUE
   })
+}
+
+#' The source the DIA_LIMPA pass-through will designate, by its own rule (GUI audit P-35), for the managed tab (KIT-122):
+#' the worker saves that source's QC figures before the pass-through draws them. The pass-through stays the authority;
+#' were the two to differ, its figures would be drawn in process as before.
+#' @param manager,norm_data Session owner and the tab's state.
+#' @return The source reference.
+#' @noRd
+diaLimpaPassThroughSource <- function(manager, norm_data) {
+  if (manager$current_state %in% c("ruv_covariates", "ruv_corrected") &&
+    isSavedWorkflowReference(norm_data$normalization_input_reference)) return(norm_data$normalization_input_reference)
+  getDIAStateReference(manager)
 }
 
 # --- Correlation result files (#17, #18) ---

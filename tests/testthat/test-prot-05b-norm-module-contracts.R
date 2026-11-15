@@ -644,6 +644,64 @@ test_that("regenerateProtNormQcForAestheticChange runs only the available regene
   expect_true("ruv ruv_obj" %in% calls)
 })
 
+test_that("KIT-122: with a figures dispatcher the tab entry and the aesthetics regeneration draw in the delivery, not at the event", {
+  entry <- function(dispatch) {
+    workflow_data <- new.env(parent = emptyenv())
+    workflow_data$state_manager <- new.env(parent = emptyenv())
+    workflow_data$state_manager$current_state <- "protein_replicate_filtered"
+    norm_data <- new.env(parent = emptyenv())
+    norm_data$pre_norm_qc_generated <- FALSE
+    norm_data$plot_refresh_trigger <- 0
+    calls <- new.env(parent = emptyenv())
+    calls$generated <- 0L
+    calls$errors <- character()
+    runProtNormTabEntryWorkflow(
+      selectedTab = "normalization",
+      workflowData = workflow_data,
+      normData = norm_data,
+      generatePreNormalizationQcFn = function() calls$generated <- calls$generated + 1L,
+      handlePreQcErrorFn = function(error) calls$errors <- c(calls$errors, conditionMessage(error)),
+      messageFn = function(...) invisible(NULL),
+      dispatchFiguresFn = function(sources, then, failed) dispatch(calls, norm_data, then, failed)
+    )
+    list(generated = calls$generated, errors = calls$errors, marked = norm_data$pre_norm_qc_generated,
+      refreshed = norm_data$plot_refresh_trigger, held = calls$held)
+  }
+  # Dispatched: marked at once (a second entry dispatches nothing more), nothing drawn yet.
+  waiting <- entry(function(calls, norm_data, then, failed) calls$held <- norm_data$pre_norm_qc_generated)
+  expect_identical(waiting[c("generated", "marked", "refreshed", "held")], list(generated = 0L, marked = TRUE, refreshed = 0, held = TRUE))
+  # Delivered: the generator runs once and the image slots are refreshed.
+  delivered <- entry(function(calls, norm_data, then, failed) then())
+  expect_identical(delivered[c("generated", "marked", "refreshed")], list(generated = 1L, marked = TRUE, refreshed = 1))
+  # Failed: unmarked, so that the next entry asks again, and reported as the in-process failure is.
+  failed <- entry(function(calls, norm_data, then, failed) failed(simpleError("worker failed")))
+  expect_identical(failed[c("generated", "errors", "marked")], list(generated = 0L, errors = "worker failed", marked = FALSE))
+
+  regenerate <- function(norm_data) {
+    calls <- character()
+    dispatched <- 0L
+    regenerateProtNormQcForAestheticChange(
+      normData = norm_data,
+      generatePreNormalizationQcFn = function() calls <<- c(calls, "pre"),
+      generatePostNormalizationQcFn = function(x) calls <<- c(calls, paste("post", x)),
+      generateRuvCorrectedQcFn = function(x) calls <<- c(calls, paste("ruv", x)),
+      messageFn = function(...) invisible(NULL),
+      dispatchFiguresFn = function(sources, then, failed) {
+        dispatched <<- dispatched + 1L
+        expect_identical(calls, character())
+        then()
+      }
+    )
+    list(dispatched = dispatched, calls = calls)
+  }
+  # Nothing generated yet: nothing is dispatched.
+  expect_identical(regenerate(list(pre_norm_qc_generated = FALSE, normalization_complete = FALSE, ruv_complete = FALSE)),
+    list(dispatched = 0L, calls = character()))
+  # One dispatch for the stages that exist; the regeneration runs in its delivery.
+  expect_identical(regenerate(list(pre_norm_qc_generated = TRUE, normalization_complete = TRUE, normalized_protein_obj = "norm_obj",
+    ruv_complete = TRUE, ruv_normalized_obj = "ruv_obj")), list(dispatched = 1L, calls = c("pre", "post norm_obj", "ruv ruv_obj")))
+})
+
 test_that("initializeProtNormQcPlotPaths preserves existing paths or creates defaults", {
   existing_paths <- list(existing = TRUE)
 
@@ -2999,7 +3057,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
     getPlotAestheticsFn = function() list(color_var = "group", shape_var = "batch"),
     getRuvGroupingVariableFn = function() "group",
     checkMemoryUsageFn = "check_memory",
-    runTabEntryWorkflowFn = function(selectedTab, workflowData, normData, generatePreNormalizationQcFn) {
+    runTabEntryWorkflowFn = function(selectedTab, workflowData, normData, generatePreNormalizationQcFn, dispatchFiguresFn) {
       calls$tab_entry <<- list(
         selectedTab = selectedTab,
         workflowData = workflowData,
@@ -3007,7 +3065,7 @@ test_that("registerProtNormServerObservers wires the observer shell through help
         generatePreNormalizationQcFn = generatePreNormalizationQcFn
       )
     },
-    regenerateQcForAestheticChangeFn = function(normData, generatePreNormalizationQcFn, generatePostNormalizationQcFn, generateRuvCorrectedQcFn) {
+    regenerateQcForAestheticChangeFn = function(normData, generatePreNormalizationQcFn, generatePostNormalizationQcFn, generateRuvCorrectedQcFn, dispatchFiguresFn) {
       calls$regenerate <<- list(
         normData = normData,
         generatePreNormalizationQcFn = generatePreNormalizationQcFn,

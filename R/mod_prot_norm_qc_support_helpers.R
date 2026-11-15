@@ -127,8 +127,25 @@ regenerateProtNormQcForAestheticChange <- function(
   generatePreNormalizationQcFn,
   generatePostNormalizationQcFn,
   generateRuvCorrectedQcFn,
-  messageFn = message
+  messageFn = message,
+  dispatchFiguresFn = NULL
 ) {
+  # KIT-122: on a managed session the worker saves each existing stage's figures under the new aesthetics first, and
+  # the regeneration below runs in its delivery (this function again, without the dispatcher).
+  if (is.function(dispatchFiguresFn)) {
+    post <- isTRUE(normData$normalization_complete) && !is.null(normData$normalized_protein_obj)
+    ruv <- isTRUE(normData$ruv_complete) && !is.null(normData$ruv_normalized_obj)
+    if (!isTRUE(normData$pre_norm_qc_generated) && !post && !ruv) return(invisible(NULL))
+    dispatchFiguresFn(
+      sources = function(manager) c(
+        if (isTRUE(normData$pre_norm_qc_generated)) list(resolveProtNormQcStateObject(manager, messageFn = messageFn)$currentS4),
+        if (isTRUE(normData$normalization_complete)) list(normData$normalized_protein_obj),
+        if (isTRUE(normData$ruv_complete)) list(normData$ruv_normalized_obj)),
+      then = function() regenerateProtNormQcForAestheticChange(normData, generatePreNormalizationQcFn,
+        generatePostNormalizationQcFn, generateRuvCorrectedQcFn, messageFn),
+      failed = function(e) messageFn(paste("Error regenerating the QC figures:", conditionMessage(e))))
+    return(invisible(NULL))
+  }
   withDIAStateScope(getDIAActiveManager(), function() {
   if (normData$pre_norm_qc_generated) {
     messageFn("Regenerating pre-normalization QC plots with new aesthetics...")
@@ -171,46 +188,6 @@ initializeProtNormQcPlotPaths <- function(qcPlotPaths = NULL) {
     post_normalization = list(),
     ruv_corrected = list()
   )
-}
-
-saveProtNormQcPlotArtifact <- function(
-  qcDir,
-  filename,
-  plotObject,
-  width,
-  height,
-  dpi = 150,
-  savePlotFn = ggplot2::ggsave
-) {
-  if (is.null(qcDir)) {
-    return(NULL)
-  }
-
-  artifactPath <- file.path(qcDir, filename)
-  manager <- getDIAActiveManager()
-  product_reference <- attr(plotObject, "dia_product_reference", exact = TRUE)
-  if (isSavedWorkflowReference(product_reference)) {
-    dimensions <- as.integer(c(width, height) * dpi)
-    aesthetics <- attr(plotObject, "dia_render_aesthetics", exact = TRUE)
-    aesthetics <- aesthetics[!vapply(aesthetics, is.null, logical(1))]
-    identity <- newSavedWorkflowRenderIdentity(product_reference,
-      c(aesthetics, list(dpi = dpi)),
-      "png", dimensions, manager$.context$software)
-    hit <- resolveSavedWorkflowAsset(manager$.context$store, product_reference, identity)
-    if (identical(hit$status, "hit")) {
-      writeBin(hit$value$bytes, artifactPath)
-      return(artifactPath)
-    }
-    savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
-    asset <- newSavedWorkflowRenderedAsset(readBin(artifactPath, "raw", n = file.size(artifactPath)),
-      "image/png", dimensions)
-    reference <- saveWorkflowDiaQcAsset(manager$.context$store, asset,
-      basename(tempfile("dia-qc-image-")), identity)
-    rootDIAProduct(manager, reference, list(product_reference))
-    return(artifactPath)
-  }
-  savePlotFn(artifactPath, plotObject, width = width, height = height, dpi = dpi)
-  artifactPath
 }
 
 recordProtNormQcPlotPath <- function(qcPlotPaths, stage, plotType, path) {

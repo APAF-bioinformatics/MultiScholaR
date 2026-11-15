@@ -1169,3 +1169,67 @@ computeWorkflowDiaRuvCovariatesAction <- function(manager, request, variant) {
         rootDIAProduct(manager, run$reference, c(list(source), run$value[c("covariates", "adjusted", "final")]))
     diaWorkerCommitValue(manager, run, diaRuvCovariatesCommit(manager, request$parameters, run))
 }
+
+# ---------------------------------------------------------------------------------------------------------------
+# KIT-122 (audit E1, F3): the normalisation tab's QC figures as a worker product, as the lipid and metab tabs' are
+# (`lipid_qc_figures`, `lipid_final_pca`). The action commits nothing. It saves, for the request's named state, what the
+# tab's generators and publication halves would otherwise compute in the application: the QC plot products
+# (`resolveDIAReferenceQcPlot`, which hydrates the state on a miss) and, for the stage figures, their rendered images
+# (`saveProtNormQcPlotArtifact`). The controller's completion roots them. The tab's code is unchanged: run after the
+# delivery, it finds the product saved (no state is hydrated, nothing is computed) and writes the saved image's bytes
+# (nothing is drawn). With no runner, or if a figure is not found saved, it computes as before.
+# ---------------------------------------------------------------------------------------------------------------
+
+#' The stage figures' kinds, in the generators' order, with the width and height in inches each is saved at
+#' (`generateProtNorm*QcArtifacts`, mod_prot_norm_qc_generation_helpers.R).
+#' @noRd
+diaQcStageFigureSizes <- list(pca = c(8, 6), rle = c(10, 6), density = c(8, 6), correlation = c(10, 8))
+
+#' The QC figures action's parameters: the aesthetics the tab draws with, and which figures.
+#' @param aesthetics `list(color_var, shape_var)`.
+#' @param figures `stage` (the four figures of a stage, with their images) or `final_pca` (the correlation tab's PCA,
+#'   which the tab draws from the saved product; no image).
+#' @return The parameters.
+#' @noRd
+diaQcFiguresParameters <- function(aesthetics, figures = "stage") {
+    list(color_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, figures = figures)
+}
+
+#' Index, in the controller's store handle, the products the head roots, when a QC figures action is delivered. The
+#' worker saved them under its own handle and the completion rooted them in the head, but an identity lookup
+#' (`resolveSavedWorkflowEntity`) reads the handle's own index, which is otherwise rebuilt from the head's roots only when
+#' a store is reopened (`newDIAStateAdapter`). Without this the tab would not find the worker's products, would compute
+#' and save them again, and the two saves of one identity would be refused as ambiguous by the next reader.
+#' @param manager The session owner.
+#' @return NULL, invisibly.
+#' @noRd
+indexWorkflowHeadProducts <- function(manager) {
+    store <- manager$.context$store
+    for (reference in manager$.context$snapshot$products) registerSavedWorkflowMetadata(store, reference)
+    invisible(NULL)
+}
+
+#' The normalisation tab's QC figures on the worker (`normalization-qc-figures`): the products and images of the
+#' request's state under the request's aesthetics.
+#' @noRd
+computeWorkflowDiaQcFiguresAction <- function(manager, request, variant) {
+    source <- request$input_references$state
+    parameters <- request$parameters
+    if (!isTRUE(parameters$figures %in% c("stage", "final_pca")))
+        cli::cli_abort("the QC figures must be stage or final_pca", class = "workflow_operation_parameters")
+    aesthetics <- list(color_var = parameters$color_variable, shape_var = parameters$shape_variable)
+    plot <- function(kind) resolveDIAReferenceQcPlot(source, aesthetics, kind, buildProtNormQcPlotProduct,
+        plotPca, plotRle, buildProtNormDensityPlot, buildProtNormCorrelationPlot)
+    if (identical(parameters$figures, "final_pca")) {
+        plot("pca")
+    } else {
+        directory <- tempfile("dia-qc-figures-")
+        dir.create(directory)
+        on.exit(unlink(directory, recursive = TRUE), add = TRUE)
+        for (kind in names(diaQcStageFigureSizes)) {
+            size <- diaQcStageFigureSizes[[kind]]
+            saveProtNormQcPlotArtifact(directory, paste0(kind, ".png"), plot(kind), width = size[[1L]], height = size[[2L]])
+        }
+    }
+    list(checkpoint = readWorkflowStateMetadata(manager, source)$data, reference = source)
+}

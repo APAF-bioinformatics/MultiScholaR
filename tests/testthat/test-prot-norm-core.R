@@ -1464,6 +1464,20 @@ test_that("KIT-111 W2: the DIA adaptor's norm entries name registered omics oper
         expect_identical(as.character(body(entries[[name]])[[1L]]), calls[[name]], info = name)
         expect_true(exists(calls[[name]], envir = asNamespace("MultiScholaR"), mode = "function"), info = name)
     }
+    # KIT-122: the figures entry names its registered operation (a publication on the omics role: no declaration, a
+    # named input) and the core's functions.
+    figures <- workflowActionSpec(norm$figures$operation)
+    expect_identical(figures[c("name", "compute", "handler", "completion", "publication", "omic_type")], list(
+        name = "normalization-qc-figures", compute = "omics", handler = "computeWorkflowDiaQcFiguresAction", completion = "omics",
+        publication = "omics", omic_type = "proteomics"))
+    expect_null(figures$declaration)
+    expect_true(isTRUE(figures$named_input))
+    expect_true(exists(figures$handler, envir = asNamespace("MultiScholaR"), mode = "function"))
+    expect_identical(as.character(body(norm$figures$parameters)[[1L]]), "diaQcFiguresParameters")
+    expect_identical(as.character(body(norm$figures$accept)[[1L]]), "indexWorkflowHeadProducts")
+    expect_identical(norm$figures$parameters(list(color_var = "group", shape_var = NULL)),
+        list(color_variable = "group", shape_variable = NULL, figures = "stage"))
+    expect_identical(names(diaQcStageFigureSizes), c("pca", "rle", "density", "correlation"))
     # The configuration stays valid. KIT-120: proteomics has joined the shared normalisation frame (D5 kept it out, with
     # `norm` NULL); its actions are still this adaptor's entries, called by proteomics' own server on the frame.
     expect_identical(omicGuiConfig("proteomics")$norm$server, "protNormFrameServer")
@@ -1707,15 +1721,21 @@ test_that("KIT-111 W3: managed, the tab's run, apply and refusal run on the work
         expect_true(length(managed[[case]]$args) > 0L && !any(managed[[case]]$args %in% empty), info = case)
     }
     operations <- lapply(managed, function(capture) vapply(capture$actions, `[[`, "", "operation"))
-    expect_identical(operations, list(dia_normalization_skip = "normalization-ruv", dia_normalization_skip_repeat = "normalization-ruv",
-        dia_normalization_manual = "normalization-ruv", dia_correlation_apply = c("pearson-pairs", "pearson-selection"),
-        dia_correlation_reapply = c("pearson-pairs", "pearson-selection"), dia_correlation_skip = character(),
-        dia_normalization_refused = "normalization-ruv", dia_normalization_retry = "normalization-ruv"))
-    # The completion texts are today's, after the runner's working notice.
+    # KIT-122 (re-frozen: the operations and the working notices only): each step's QC figures are a worker action
+    # after its science and before its publication (`normalization-qc-figures`: the normalised state's, and the
+    # final's unless RUV is skipped; the selection's PCA). The refused run fails before its figures.
+    figures <- "normalization-qc-figures"
+    expect_identical(operations, list(dia_normalization_skip = c("normalization-ruv", figures),
+        dia_normalization_skip_repeat = c("normalization-ruv", figures),
+        dia_normalization_manual = c("normalization-ruv", figures, figures),
+        dia_correlation_apply = c("pearson-pairs", "pearson-selection", figures),
+        dia_correlation_reapply = c("pearson-pairs", "pearson-selection", figures), dia_correlation_skip = character(),
+        dia_normalization_refused = "normalization-ruv", dia_normalization_retry = c("normalization-ruv", figures, figures)))
+    # The completion texts are today's, after the runner's working notices (one per action).
     working <- "[default NULL] Applying proteomics step ..."
-    expect_identical(managed$dia_normalization_skip$notes, c(working, paste("[message 10]", buildProtNormCompletionNotification("skip"))))
-    expect_identical(managed$dia_normalization_manual$notes, c(working, paste("[message 10]", buildProtNormCompletionNotification("manual"))))
-    expect_identical(managed$dia_correlation_apply$notes, c(working, working,
+    expect_identical(managed$dia_normalization_skip$notes, c(working, working, paste("[message 10]", buildProtNormCompletionNotification("skip"))))
+    expect_identical(managed$dia_normalization_manual$notes, c(working, working, working, paste("[message 10]", buildProtNormCompletionNotification("manual"))))
+    expect_identical(managed$dia_correlation_apply$notes, c(working, working, working,
         "[message 5] Correlation filtering completed! Ready for differential expression analysis."))
     # The worker's failure: the runner's error, then the tab's; nothing committed (W1 (a)'s states, above); the retry completes.
     refused <- managed$dia_normalization_refused$notes
@@ -1724,14 +1744,24 @@ test_that("KIT-111 W3: managed, the tab's run, apply and refusal run on the work
     expect_match(refused[[3L]], "^\\[error 10\\] Error in normalization: ")
     # Each action's input: the normalisation's recorded source; the normalisation's final for the pairs and the selection,
     # on the reapply too, when the head is correlation_filtered.
-    inputs <- lapply(managed, function(capture) vapply(capture$actions, `[[`, "", "input"))
+    # KIT-122: the figures' actions are set aside here (their inputs are the states the step produced, below).
+    science <- function(capture) Filter(function(action) !identical(action$operation, figures), capture$actions)
+    inputs <- lapply(managed, function(capture) vapply(science(capture), `[[`, "", "input"))
     states <- withDIAStateScope(fixture$manager, function() fixture$manager$.context$snapshot$states)
     expect_identical(unique(unlist(inputs[grep("^dia_normalization", names(inputs))])), states$protein_replicate_filtered$entity_id)
     expect_identical(unique(inputs$dia_correlation_apply), inputs$dia_correlation_reapply[[1L]])
     expect_identical(unique(inputs$dia_correlation_reapply), inputs$dia_correlation_apply[[1L]])
     expect_false(identical(inputs$dia_correlation_reapply[[1L]], managed$dia_correlation_apply$head_id))
     # The repeated click is a hit whose commit description is NULL.
-    expect_identical(vapply(probe$values[1:2], function(value) is.null(value$commit), NA), c(FALSE, TRUE))
+    runs <- Filter(function(value) identical(value$operation, "normalization-ruv"), probe$values)
+    expect_identical(vapply(runs[1:2], function(value) is.null(value$commit), NA), c(FALSE, TRUE))
+    # KIT-122: a figures action's input is a state its step produced, never the step's source: after the manual run, the
+    # normalised state and the final; after the selection, its checkpoint (the correlation's input was that final).
+    drawn <- lapply(managed, function(capture) vapply(setdiff(capture$actions, science(capture)), `[[`, "", "input"))
+    expect_length(unique(drawn$dia_normalization_manual), 2L)
+    expect_false(any(unlist(drawn) %in% states$protein_replicate_filtered$entity_id))
+    expect_identical(drawn$dia_normalization_manual[[2L]], inputs$dia_correlation_apply[[1L]])
+    expect_false(identical(drawn$dia_correlation_apply, inputs$dia_correlation_apply[[1L]]))
 })
 
 test_that("KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give W1 (a)'s states, the summary and the inputs", {
@@ -1756,8 +1786,11 @@ test_that("KIT-111 W3: the DIA_LIMPA RUV covariates, unmanaged and managed, give
         protNormW3ExpectSame(managed, unmanaged)
         published(managed[[paste0("limpa_", mode, "_ruv")]])
         actions <- lapply(managed, `[[`, "actions")
-        expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(character(),
-            c("pearson-pairs", "pearson-selection"), "protein_ruv_covariates", "protein_ruv_covariates"), info = mode)
+        # KIT-122 (re-frozen: the operations only): each step's QC figures are a worker action, the pass-through's too.
+        figures <- "normalization-qc-figures"
+        expect_identical(unname(lapply(actions, function(list) vapply(list, `[[`, "", "operation"))), list(figures,
+            c("pearson-pairs", "pearson-selection", figures), c("protein_ruv_covariates", figures),
+            c("protein_ruv_covariates", figures)), info = mode)
         # The covariates' input is the tab's correlation result (the selection's checkpoint, as in process). GUI audit
         # P-35 (F111-02): the repeat's is the same recorded input, not the committed RUV state, and the head stays.
         expect_identical(actions[[4L]][[1L]]$input, actions[[3L]][[1L]]$input, info = mode)
@@ -1787,10 +1820,13 @@ test_that("KIT-111 W3 (R5): a click while the tab's action runs waits for it; a 
         probe$hold <- FALSE
         session$elapse(100)
         session$flushReact()
-        expect_identical(probe$operations, c("normalization-ruv", "normalization-ruv"))
+        # KIT-122 (re-frozen: the operations only): the first run's figures come before the click that waited.
+        expect_identical(probe$operations, c("normalization-ruv", "normalization-qc-figures", "normalization-ruv",
+            "normalization-qc-figures"))
         expect_identical(sum(log$notes == done), 2L)
         expect_identical(as.character(unlist(fixture$manager$state_history)), c("initial", "protein_replicate_filtered", "normalized"))
-        expect_null(probe$values[[2L]]$commit)
+        expect_identical(probe$values[[3L]]$operation, "normalization-ruv")
+        expect_null(probe$values[[3L]]$commit)
         # Another heavy action holds the application: the click is refused with that notice and the tab's error.
         log$notes <- character()
         testthat::with_mocked_bindings({
@@ -1801,7 +1837,7 @@ test_that("KIT-111 W3 (R5): a click while the tab's action runs waits for it; a 
         expect_identical(log$notes, c("[error 15] another heavy action is active",
             "[error 10] Error in normalization: another heavy action is active"))
         expect_identical(fixture$manager$current_state, "normalized")
-        expect_length(probe$actions, 2L)
+        expect_length(probe$actions, 4L)
     })))
 })
 
@@ -1833,13 +1869,15 @@ test_that("GUI audit A111-01: a correlation click queued behind a normalisation 
         session$setInputs(apply_correlation_filter = 1)
         session$flushReact()
         previous <- shiny::isolate(norm$ruv_normalized_obj)$entity_id
-        expect_identical(probe$actions[[2L]]$input, previous)
+        # KIT-122 (re-frozen: the actions' positions and operations only): each step's QC figures are a worker action.
+        figures <- "normalization-qc-figures"
+        expect_identical(probe$actions[[3L]]$input, previous)
         # The re-run is in flight when the correlation button is pressed.
         probe$hold <- TRUE
         session$setInputs(ruv_mode = "manual")
         session$setInputs(run_normalization = 2)
         session$setInputs(apply_correlation_filter = 2)
-        expect_length(probe$actions, 4L)
+        expect_length(probe$actions, 6L)
         probe$hold <- FALSE
         for (i in 1:3) {
             session$elapse(100)
@@ -1847,9 +1885,9 @@ test_that("GUI audit A111-01: a correlation click queued behind a normalisation 
         }
         final <- shiny::isolate(norm$ruv_normalized_obj)$entity_id
         expect_false(identical(final, previous))
-        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("normalization-ruv", "pearson-pairs",
-            "pearson-selection", "normalization-ruv", "pearson-pairs", "pearson-selection"))
-        expect_identical(vapply(probe$actions[5:6], `[[`, "", "input"), c(final, final))
+        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("normalization-ruv", figures, "pearson-pairs",
+            "pearson-selection", figures, "normalization-ruv", figures, figures, "pearson-pairs", "pearson-selection", figures))
+        expect_identical(vapply(probe$actions[9:10], `[[`, "", "input"), c(final, final))
         expect_identical(withWorkflowStateScope(fixture$manager, function() fixture$manager$.context$snapshot$current_state),
             "correlation_filtered")
     })
@@ -1880,15 +1918,17 @@ test_that("GUI audit A111-01: RUV covariates queued behind a correlation re-appl
         probe$hold <- TRUE
         session$setInputs(apply_correlation_filter = 2)
         session$setInputs(apply_ruv_covariates = 2)
-        expect_length(probe$actions, 4L)
+        # KIT-122 (re-frozen: the actions' positions and operations only): each step's QC figures are a worker action.
+        figures <- "normalization-qc-figures"
+        expect_length(probe$actions, 7L)
         probe$hold <- FALSE
         for (i in 1:3) {
             session$elapse(100)
             session$flushReact()
         }
-        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c("pearson-pairs", "pearson-selection",
-            "protein_ruv_covariates", "pearson-pairs", "pearson-selection", "protein_ruv_covariates"))
-        expect_false(identical(probe$actions[[6L]]$input, previous))
+        expect_identical(vapply(probe$actions, `[[`, "", "operation"), c(figures, "pearson-pairs", "pearson-selection", figures,
+            "protein_ruv_covariates", figures, "pearson-pairs", "pearson-selection", figures, "protein_ruv_covariates", figures))
+        expect_false(identical(probe$actions[[10L]]$input, previous))
         managed <- protNormW3Capture(fixture, norm, output, log, list())
         for (field in c("history", "head_history", "states")) {
             expect_identical(managed[[field]], unmanaged$ruv_again[[field]], info = field)
@@ -2045,4 +2085,142 @@ test_that("KIT-122 (audit F2): after a second RUV run in another mode the tab's 
         session$flushReact()
         expect_match(output$ruv_optimization_summary, "RUV-III Correction (negative-control sweep):", fixed = TRUE)
     })))
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-122 (audit E1, F3): the tab's QC figures as a worker product. On a managed session the worker saves the QC plot
+# products and the stage images (`normalization-qc-figures`) before the tab's generators and publication halves run, at
+# every place the tab draws them: tab entry, the normalisation's publication, an aesthetics change, the correlation's
+# publication (applied and skipped) and, on DIA_LIMPA, the pass-through and the RUV covariates. The tab is driven
+# unmanaged (it computes and draws in the application, as before) and managed, on the same fixture. Compared after each
+# step: the md5 of every stage image in the QC directory (the files are byte-identical) and the correlation tab's PCA.
+# Counted, in the application and in the worker (`MULTISCHOLAR_WORKFLOW_WORKER`, set around the worker's entry point):
+# the saves of a QC plot product (one per product computed from a hydrated state) and of a rendered image (one per
+# image drawn).
+# ------------------------------------------------------------------------------------------------
+
+#' The md5 of every stage image in the fixture's protein QC directory.
+protNormK122Images <- function(fixture) {
+    directory <- fixture$paths$protein_qc_dir
+    files <- sort(list.files(directory, pattern = "^(pre_norm|post_norm|ruv_corrected)_(pca|rle|density|correlation)[.]png$"))
+    stats::setNames(unname(tools::md5sum(file.path(directory, files))), files)
+}
+
+#' Drive the tab through `steps` (named `function(session, selected)`; `selected` is the workflow's selected tab).
+#' @return `images` and `final` (the correlation tab's PCA: its data and title) after each step, the `counts`, and the
+#'   managed actions' operations per step.
+protNormK122Drive <- function(fixture, steps, managed) {
+    probe <- new.env()
+    log <- new.env(parent = emptyenv())
+    protNormW3Notices(log, fixture$root)
+    if (managed) protNormW3Managed(fixture, probe)
+    counts <- new.env(parent = emptyenv())
+    counted <- function(name) {
+        original <- get(name, envir = asNamespace("MultiScholaR"))
+        function(...) {
+            key <- paste(if (identical(Sys.getenv("MULTISCHOLAR_WORKFLOW_WORKER"), "1")) "worker" else "application", name)
+            counts[[key]] <- (counts[[key]] %||% 0L) + 1L
+            original(...)
+        }
+    }
+    testthat::local_mocked_bindings(saveWorkflowDiaQcProduct = counted("saveWorkflowDiaQcProduct"),
+        saveWorkflowDiaQcAsset = counted("saveWorkflowDiaQcAsset"), .package = "MultiScholaR")
+    selected <- shiny::reactiveVal("import")
+    out <- new.env(parent = emptyenv())
+    protNormCoreQuiet(utils::capture.output(shiny::testServer(mod_prot_norm_server, args = list(
+        workflow_data = fixture$workflow, experiment_paths = fixture$paths, omic_type = "proteomics",
+        experiment_label = "core", selected_tab = selected), {
+        # The application's session names its owner (the generators resolve it outside a publication's scope).
+        session$userData$dia_capacity_manager <- fixture$manager
+        norm <- session$getReturned()
+        for (case in names(steps)) {
+            seen <- length(probe$actions)
+            steps[[case]](session, selected)
+            for (i in 1:3) {
+                session$elapse(100)
+                session$flushReact()
+            }
+            out$images[[case]] <- protNormK122Images(fixture)
+            plot <- shiny::isolate(norm$final_qc_plot)
+            out$final[[case]] <- if (!is.null(plot)) list(data = protNormW1Sha(as.data.frame(plot$data)), title = plot$labels$title)
+            out$actions[[case]] <- vapply(probe$actions[seq_along(probe$actions) > seen], `[[`, "", "operation")
+            out$generated[[case]] <- shiny::isolate(norm$pre_norm_qc_generated)
+        }
+    })))
+    list(images = out$images, final = out$final, actions = out$actions, generated = out$generated,
+        counts = unlist(mget(sort(ls(counts)), envir = counts)), notes = log$notes)
+}
+
+#' The DIA route's steps: tab entry, two normalisations, an aesthetics change, the correlation applied and skipped.
+protNormK122DiaSteps <- function() {
+    click <- protNormW3Clicker()
+    press <- function(...) {
+        step <- click(...)
+        function(session, selected) step(session)
+    }
+    list(
+        tab_entry = function(session, selected) {
+            do.call(session$setInputs, protNormW3Inputs("skip"))
+            selected("normalization")
+        },
+        normalization_skip = press("run_normalization"),
+        normalization_manual = press("run_normalization", ruv_mode = "manual"),
+        aesthetics = function(session, selected) session$setInputs(color_variable = "batch"),
+        correlation_apply = press("apply_correlation_filter"),
+        correlation_skip = press("skip_correlation_filter"))
+}
+
+test_that("KIT-122 (E1): managed, the worker saves the tab's QC figures and the application draws none; the images are byte-identical to the unmanaged tab's (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    unmanaged <- protNormK122Drive(protNormCoreOwner(), protNormK122DiaSteps(), managed = FALSE)
+    managed <- protNormK122Drive(protNormCoreOwner(), protNormK122DiaSteps(), managed = TRUE)
+    # Unmanaged: every figure is computed and drawn in the application, at each of the tab's places (today's path).
+    expect_identical(names(unmanaged$images$tab_entry), paste0("pre_norm_", c("correlation", "density", "pca", "rle"), ".png"))
+    expect_length(unmanaged$images$normalization_skip, 8L)
+    expect_length(unmanaged$images$normalization_manual, 12L)
+    expect_false(identical(unmanaged$images$aesthetics, unmanaged$images$normalization_manual))
+    expect_true(all(unmanaged$counts[c("application saveWorkflowDiaQcAsset", "application saveWorkflowDiaQcProduct")] > 0L))
+    expect_false(any(startsWith(names(unmanaged$counts), "worker")))
+    for (case in names(unmanaged$actions)) expect_length(unmanaged$actions[[case]], 0L)
+    # Managed: the same files, byte for byte, after every step; the same PCA on the correlation tab.
+    expect_identical(managed$images, unmanaged$images)
+    expect_identical(managed$final, unmanaged$final)
+    expect_identical(managed$generated, unmanaged$generated)
+    # The worker computed every product and drew every image; the application saved none (it found each one saved).
+    expect_identical(names(managed$counts), c("worker saveWorkflowDiaQcAsset", "worker saveWorkflowDiaQcProduct"))
+    expect_identical(managed$counts[["worker saveWorkflowDiaQcAsset"]], unmanaged$counts[["application saveWorkflowDiaQcAsset"]])
+    expect_identical(managed$counts[["worker saveWorkflowDiaQcProduct"]], unmanaged$counts[["application saveWorkflowDiaQcProduct"]])
+    # The actions: each place's figures after its science and before its publication; the skipped correlation's PCA is
+    # the normalisation's final's, which the worker saved with that step, so it dispatches nothing.
+    figures <- "normalization-qc-figures"
+    expect_identical(managed$actions, list(tab_entry = figures, normalization_skip = c("normalization-ruv", figures),
+        normalization_manual = c("normalization-ruv", figures, figures), aesthetics = c(figures, figures, figures),
+        correlation_apply = c("pearson-pairs", "pearson-selection", figures), correlation_skip = character()))
+})
+
+test_that("KIT-122 (E1): on DIA_LIMPA the pass-through's and the RUV covariates' figures are the worker's, byte-identical (fails before)", {
+    skip_if_not(workflowOwnerCapable())
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    steps <- function() {
+        click <- protNormW3Clicker()
+        press <- function(...) {
+            step <- click(...)
+            function(session, selected) step(session)
+        }
+        list(pass_through = do.call(press, c(list("run_normalization"), protNormW3Inputs("covariates"))),
+            correlation = press("apply_correlation_filter"), ruv = press("apply_ruv_covariates"))
+    }
+    unmanaged <- protNormK122Drive(protNormW1LimpaOwner(), steps(), managed = FALSE)
+    managed <- protNormK122Drive(protNormW1LimpaOwner(), steps(), managed = TRUE)
+    expect_length(unmanaged$images$pass_through, 4L)
+    expect_length(unmanaged$images$ruv, 8L)
+    expect_identical(managed$images, unmanaged$images)
+    expect_identical(managed$final, unmanaged$final)
+    expect_false(any(startsWith(names(unmanaged$counts), "worker")))
+    expect_identical(names(managed$counts), c("worker saveWorkflowDiaQcAsset", "worker saveWorkflowDiaQcProduct"))
+    expect_identical(unname(managed$counts), unname(unmanaged$counts))
+    figures <- "normalization-qc-figures"
+    expect_identical(managed$actions, list(pass_through = figures, correlation = c("pearson-pairs", "pearson-selection", figures),
+        ruv = c("protein_ruv_covariates", figures)))
 })

@@ -721,6 +721,13 @@ registerBuiltinWorkflowOperations <- function() {
             named_input = TRUE, declaration = declaration),
             if (!declaration$name %in% workflowAllSectionOperations()) list(section = NULL)))
     }
+    # KIT-122: the normalisation tab's QC figures on the same role, a publication that commits nothing (as the lipid,
+    # metab and trx `qc_figures` below: no declaration, free-form named parameters); its input is a named checkpoint.
+    registerWorkflowOperation(list(name = "normalization-qc-figures", input = "checkpoint", input_class = "ProteinQuantitativeData",
+        compute = "omics", handler = "computeWorkflowDiaQcFiguresAction", validate = "validateWorkflowOmicsParameters",
+        resolve = NULL, parameter_limit = 65536, parameters = character(), completion = "omics", publication = "omics",
+        step_label = NULL, omic_type = "proteomics", variants = "whole", default_variant = "whole",
+        diagnostic_only = FALSE, inclusion_absence = FALSE, named_input = TRUE, section = NULL))
     # KIT-031/032: the lipidomics and metabolomics declarations (the kit's rule that a new workflow adds declarations,
     # registry entries and module code only). KIT-073: both omics from the shared declaration core. KIT-078: the compute
     # declarations on the worker's `omics` role; the store steps (QC finalise, norm complete, reset) and the v1 DA stay

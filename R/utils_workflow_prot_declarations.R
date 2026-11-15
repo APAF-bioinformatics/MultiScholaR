@@ -1381,7 +1381,12 @@ proteomicsDiaBinding <- list(
             publish = function(...) publishDIAReferenceCorrelation(...)),
         ruv_covariates = list(operation = "protein_ruv_covariates",
             in_process = function(...) runDIAReferenceRuvCovariates(...),
-            publish = function(...) publishDIAReferenceRuvCovariates(...))
+            publish = function(...) publishDIAReferenceRuvCovariates(...)),
+        # KIT-122: the tab's QC figures as a worker product (utils_workflow_dia_products.R); in process the tab's
+        # generators and the publication halves compute them, as before.
+        figures = list(operation = "normalization-qc-figures",
+            parameters = function(...) diaQcFiguresParameters(...),
+            accept = function(...) indexWorkflowHeadProducts(...))
     ),
     # KIT-112 D4: the DA tab's runner (in process), its managed operation (one action per contrast) with the request
     # and accept halves the controller runs around it, and the publication step (utils_workflow_dia_da.R).

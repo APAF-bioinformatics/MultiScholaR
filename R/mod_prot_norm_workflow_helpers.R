@@ -143,8 +143,74 @@ protNormManagedAction <- function(operation, parameters, input, stateName, deliv
     context = if (!is.null(stateName)) list(state_name = stateName, config = list(), description = operation))
 }
 
+#' One managed QC-figures action of the tab (KIT-122, audit E1/F3): the worker saves the QC plot products of `source`
+#' and, for a stage's figures, their images (`normalization-qc-figures`), so that the tab's generators and publication
+#' halves, run after its delivery, find them saved and neither hydrate the state nor draw.
+#' @param source The saved state reference the figures are of.
+#' @param aesthetics `list(color_var, shape_var)`.
+#' @param figures `stage` or `final_pca` (`diaQcFiguresParameters`).
+#' @param deliver `function(result)`, run in the owner's scope when the worker has delivered, after the session's
+#'   store has indexed what the worker saved (`indexWorkflowHeadProducts`).
+#' @noRd
+protNormFiguresAction <- function(source, aesthetics, figures = "stage", deliver = function(result) invisible(NULL)) {
+  entry <- proteomicsDiaBinding$norm$figures
+  protNormManagedAction(entry$operation, entry$parameters(aesthetics, figures), source, NULL, function(result) {
+    entry$accept(getDIAActiveManager())
+    deliver(result)
+  })
+}
+
+#' The figures actions of several sources, in their order; `deliver` is the last one's.
+#' @noRd
+protNormFiguresActions <- function(sources, aesthetics, deliver) {
+  lapply(seq_along(sources), function(i) protNormFiguresAction(sources[[i]], aesthetics,
+    deliver = if (i == length(sources)) deliver else function(result) invisible(NULL)))
+}
+
+#' The tab's dispatcher of stage figures that no button's sequence owns (the pre-normalisation QC on tab entry, an
+#' aesthetics change; KIT-122): NULL on a session with no runner, where the tab draws in process as before.
+#' @param workflowData The tab's bus.
+#' @param getPlotAestheticsFn The tab's aesthetics getter.
+#' @return NULL, or `function(sources, then, failed)`: `sources(manager)` gives the saved references, read in the
+#'   owner's scope when the actions start (a request that waited reads what the action before it left); `then()` runs in
+#'   the last delivery; `failed(error)` hears a failure.
+#' @noRd
+protNormFiguresDispatcher <- function(workflowData, getPlotAestheticsFn) {
+  runner <- workflowOmicsManagedActions("proteomics")
+  if (is.null(runner)) return(NULL)
+  manager <- workflowData$state_manager
+  function(sources, then, failed) {
+    tryCatch(runner$run(function() shiny::isolate({
+      references <- Filter(isSavedWorkflowReference, withDIAStateScope(manager, function() sources(manager)))
+      references <- references[!duplicated(vapply(references, function(reference) reference$entity_id, ""))]
+      if (!length(references)) stop("there is no saved state to draw the QC figures of")
+      protNormFiguresActions(references, getPlotAestheticsFn(), function(result) then())
+    }), failed = failed), error = failed)
+    invisible(TRUE)
+  }
+}
+
+#' The managed DIA_LIMPA pass-through (KIT-122): the worker saves the QC figures of the source the pass-through will
+#' designate (`diaLimpaPassThroughSource`), then the pass-through runs in the delivery, as it does in process.
+#' @param settings The run's settings (its aesthetics).
+#' @param passThrough `function()`, the in-process pass-through with its notice; `failed` `function(error)`.
+#' @return TRUE, invisibly, once dispatched.
+#' @noRd
+dispatchProtNormPassThrough <- function(runner, settings, workflowData, normData, passThrough, failed) {
+  manager <- workflowData$state_manager
+  runner$run(function() shiny::isolate({
+    source <- withDIAStateScope(manager, function() {
+      assertDIAExportReady(manager, allow_action = "normalization")
+      diaLimpaPassThroughSource(manager, normData)
+    })
+    list(protNormFiguresAction(source, omicNormPlotAestheticsGetter(settings)(), deliver = function(result) passThrough()))
+  }), failed = failed)
+  invisible(TRUE)
+}
+
 #' The managed RUV covariates (DIA_LIMPA, KIT-111 D3): the gate, the source and the parameters as
 #' `runDIAReferenceRuvCovariates` resolves them, the declaration on the worker, then the publication half and `finish`.
+#' KIT-122: between the two, the worker saves the QC figures of the adjusted matrix the publication half draws.
 #' @param settings `ruv_mode`, `color_variable`, `shape_variable`.
 #' @param ruvQc,grouping The module's RUV QC callback and grouping function.
 #' @param finish `function(accepted)`; `failed` `function(error)`.
@@ -156,6 +222,17 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
   group <- grouping()
   entry <- proteomicsDiaBinding$norm$ruv_covariates
   state <- if (identical(settings$ruv_mode, "correction")) "ruv_corrected" else "ruv_covariates"
+  held <- new.env(parent = emptyenv())
+  publish <- function(result) {
+    prior_plot <- ggplot2::get_last_plot()
+    on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
+    # Published before the tab's completion reads it (an argument would be a promise).
+    accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, held$result[c("value", "reference")],
+      workflowData, normData, experimentPaths, ruvQc))
+    finish(accepted)
+  }
+  figures <- function() runner$run(list(protNormFiguresAction(held$result$value$adjusted,
+    omicNormPlotAestheticsGetter(settings)(), deliver = publish)), failed = failed)
   # GUI audit A111-01: the gate and the source are read when the action starts, so a click that waited behind a
   # correlation re-apply runs on that re-apply's result, as in process. The step's observer does not depend on the reads.
   runner$run(function() shiny::isolate({
@@ -164,15 +241,9 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
       list(source = diaRuvCovariatesSource(manager, normData),
         parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, group, settings$ruv_mode %||% "covariates"))
     })
-    list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
-      prior_plot <- ggplot2::get_last_plot()
-      on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
-      # Published before the tab's completion reads it (an argument would be a promise).
-      accepted <- withDIAStateScope(manager, function() entry$publish(manager, settings, result[c("value", "reference")],
-        workflowData, normData, experimentPaths, ruvQc))
-      finish(accepted)
-    }))
-  }), failed = failed)
+    list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
+      function(result) held$result <- result))
+  }), done = figures, failed = failed)
   invisible(TRUE)
 }
 
@@ -231,7 +302,8 @@ runProtNormTabEntryWorkflow <- function(
   shouldAutoGeneratePreQcFn = shouldProtNormAutoGeneratePreQc,
   notifyInvalidStateFn = notifyProtNormNormalizationPrereqWarning,
   handlePreQcErrorFn = handleProtNormPreQcGenerationError,
-  messageFn = message
+  messageFn = message,
+  dispatchFiguresFn = NULL
 ) {
   withDIAStateScope(getDIAActiveManager(), function() {
   if (is.null(selectedTab) || selectedTab != "normalization") {
@@ -278,6 +350,23 @@ runProtNormTabEntryWorkflow <- function(
   messageFn("*** AUTO-TRIGGERING PRE-NORMALIZATION QC (chunk 24) ***")
 
   tryCatch({
+    # KIT-122: on a managed session the worker saves the figures first and the generator runs in its delivery. The
+    # QC is marked generated when dispatched, as the shared frame's pre-QC is, and unmarked if the worker fails; the
+    # image slots are refreshed when the files exist (in process they are written before the slots first render).
+    if (is.function(dispatchFiguresFn)) {
+      normData$pre_norm_qc_generated <- TRUE
+      dispatchFiguresFn(
+        sources = function(manager) list(resolveProtNormQcStateObject(manager, messageFn = messageFn)$currentS4),
+        then = function() {
+          generatePreNormalizationQcFn()
+          normData$plot_refresh_trigger <- normData$plot_refresh_trigger + 1
+        },
+        failed = function(e) {
+          normData$pre_norm_qc_generated <- FALSE
+          handlePreQcErrorFn(error = e)
+        })
+      return(TRUE)
+    }
     generatePreNormalizationQcFn()
     normData$pre_norm_qc_generated <- TRUE
 
@@ -334,9 +423,16 @@ runProtNormNormalizationWorkflow <- function(
     settings <- resolveProtNormReferenceSettings(input)
     if (identical(workflowData$state_manager$workflow_type, "DIA_LIMPA")) {
       # KIT-041: the route's normalisation ran in the protein QC stage; RUV covariates follow the correlation step.
-      completed <- runDIAReferenceLimpaNormalisationPassThrough(settings, workflowData, normData, generatePostNormalizationQcFn)
-      showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode %||% "covariates"), type = "message", duration = 10)
-      return(completed)
+      pass_through <- function() {
+        completed <- runDIAReferenceLimpaNormalisationPassThrough(settings, workflowData, normData, generatePostNormalizationQcFn)
+        showNotificationFn(buildCompletionNotificationFn(settings$ruv_mode %||% "covariates"), type = "message", duration = 10)
+        completed
+      }
+      # KIT-122: on a managed session the worker saves the source's QC figures before the pass-through draws them.
+      runner <- workflowOmicsManagedActions("proteomics")
+      if (is.null(runner)) return(pass_through())
+      return(dispatchProtNormPassThrough(runner, settings, workflowData, normData, pass_through,
+        function(e) handleErrorFn(error = e)))
     }
     recordProtNormMethod(workflowData, settings$norm_method)
     finish <- function(completed) finishProtNormNormalization(completed, settings, workflowData, normData,
@@ -377,6 +473,8 @@ finishProtNormNormalization <- function(completed, settings, workflowData, normD
 
 #' The managed normalisation (KIT-111 D3): the gate and the request (`diaNormalizationRequest`, which records the
 #' source) in the controller, `normalization-ruv` on the worker on that source, then the publication half and `finish`.
+#' KIT-122: between the two, the worker saves the stage figures the publication half draws: the normalised state's and,
+#' unless RUV was skipped, the final's.
 #' @param postQc,ruvQc,grouping The module's QC callbacks and grouping function.
 #' @param finish `function(completed)`; `failed` `function(error)`.
 #' @return TRUE, invisibly, once dispatched.
@@ -390,13 +488,21 @@ dispatchProtNormNormalization <- function(runner, settings, workflowData, normDa
   })
   entry <- proteomicsDiaBinding$norm$run
   state <- if (identical(settings$ruv_mode, "skip")) "normalized" else "ruv_corrected"
-  runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state, function(result) {
+  held <- new.env(parent = emptyenv())
+  publish <- function(result) {
     prior_plot <- ggplot2::get_last_plot()
     on.exit(ggplot2::set_last_plot(prior_plot), add = TRUE)
-    completed <- withDIAStateScope(manager, function() entry$publish(manager, settings, result[c("value", "reference")],
+    completed <- withDIAStateScope(manager, function() entry$publish(manager, settings, held$result[c("value", "reference")],
       workflowData, normData, experimentPaths, omicType, experimentLabel, postQc, ruvQc))
     finish(completed)
-  })), failed = failed)
+  }
+  figures <- function() {
+    saved <- held$result$value
+    sources <- c(list(saved$normalized), if (!identical(settings$ruv_mode, "skip")) list(saved$final))
+    runner$run(protNormFiguresActions(sources, omicNormPlotAestheticsGetter(settings)(), publish), failed = failed)
+  }
+  runner$run(list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
+    function(result) held$result <- result)), done = figures, failed = failed)
   invisible(TRUE)
 }
 
@@ -471,13 +577,16 @@ dispatchProtNormCorrelation <- function(runner, workflowData, normData, experime
   group <- grouping()
   entry <- proteomicsDiaBinding$norm$correlation
   held <- new.env(parent = emptyenv())
+  # KIT-122: after the selection the worker saves the PCA product of its checkpoint, which the publication half draws.
+  figures <- function() runner$run(list(protNormFiguresAction(held$final, aesthetics(), "final_pca", function(result) {
+    run <- list(pairs = held$pairs$reference, final = held$final)
+    final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
+      threshold, FALSE, omicType, experimentLabel, aesthetics))
+    finish(final)
+  })), failed = failed)
   select <- function() runner$run(list(protNormManagedAction(entry$selection,
-    list(pairs = held$pairs$reference$entity_id, threshold = threshold), held$source, "correlation_filtered", function(result) {
-      run <- list(pairs = held$pairs$reference, final = result$value)
-      final <- withDIAStateScope(manager, function() entry$publish(manager, run, workflowData, normData, experimentPaths,
-        threshold, FALSE, omicType, experimentLabel, aesthetics))
-      finish(final)
-    })), failed = failed)
+    list(pairs = held$pairs$reference$entity_id, threshold = threshold), held$source, "correlation_filtered",
+    function(result) held$final <- result$value)), done = figures, failed = failed)
   # GUI audit A111-01: the gate and the source are read when the pairs start, so a click that waited behind a
   # normalisation re-run runs on that re-run's final, as in process. The step's observer does not depend on the reads.
   runner$run(function() shiny::isolate({
