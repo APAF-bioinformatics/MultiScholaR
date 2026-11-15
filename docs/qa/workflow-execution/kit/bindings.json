@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "owner": "KIT-001; extended by later KIT tickets",
-  "created": "2026-11-15",
+  "created": "2026-11-16",
   "repository": {
     "head": "9df060f00a5d8e59b712d05c86d31c0165980035",
     "tracked_tree_clean": true
@@ -870,6 +870,15 @@
       "exact_sum": "7200141572e8e7e882453d12e06558227500f1dc7d7aa842f22dc46a9d326d56",
       "install_member": "browser-smoke.zpnOMI",
       "source_commit": "587f92b5b6f077672d335df83e0df6c40d3bc5df",
+      "runtime_patch_bytes": 0
+    },
+    "kit_938": {
+      "ticket": "KIT-938",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.h1yISj/library",
+      "build": "c2f032a3aefa8e7fcc7b0a24d20be1d73df84eba44f37b29b794c194334952e1",
+      "exact_sum": "46b5d8fa698618540af472f18481ef714f2ba81574cc9931d30deee27917c136",
+      "install_member": "browser-smoke.h1yISj",
+      "source_commit": "522ad32c264e92620af8d1917e303496fffe0127",
       "runtime_patch_bytes": 0
     }
   },
@@ -42473,7 +42482,7 @@
       "decision": "baseline_recorded",
       "oracle_canonical_form": {
         "recomputed_from": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey/control-1/project/dia_baseline_smoke/scripts/proteomics/.dia-native-3005b1dbfcdb7/.workflow-entities",
-        "date": "2026-11-15",
+        "date": "2026-11-16",
         "harness": "tools/profiling/workflow_kit.R (kitFingerprintStore)",
         "note": "KIT-012 pre-step: state fingerprints recomputed from control-1's store under the current canonical form (KIT-011 correction 1, KIT-008 correction 2) and overlaid on the in-run record; the in-run per-step assets are kept",
         "changed": {
@@ -46560,6 +46569,26 @@
         "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }
+    },
+    "938l": {
+      "kind": "single_journey",
+      "build": "kit_938",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122 correction pass: tab-entry figures decline while the application is held (recorded, uncounted)"
+    },
+    "938t": {
+      "kind": "single_journey",
+      "build": "kit_938",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-122 correction pass: tab-entry figures decline while the application is held (recorded, uncounted)"
     },
     "106x": {
       "kind": "single_journey",
