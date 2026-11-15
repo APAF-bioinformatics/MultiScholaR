@@ -1,0 +1,36 @@
+== s1_classic.R started 2026-11-16 06:53:00 AEDT ==
+commit: 944f090e93d2cfbaae4d0500e884a3ccc13ca737; uncommitted changes in the work tree: FALSE
+script md5: 0098f5aef833874dba821ca1025eaac6
+command: /usr/lib64/R/bin/exec/R --no-echo --no-restore --file=docs/qa/workflow-execution/kit/kit-124/sim/s1_classic.R --args docs/qa/workflow-execution/kit/kit-124/s1-pilot 20 20 4 all 9001
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR/.claude/worktrees/agent-ab5086ee9b4ebdc33
+R_LIBS: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library
+.libPaths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+threads: OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1; worker processes: 4; BLAS: /usr/lib/libblas.so.3.12.0
+R version 4.6.1 (2026-06-24); x86_64-pc-linux-gnu
+MultiScholaR (pkgload::load_all of the work tree): 0.5.0
+seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); arm a under set.seed(seed * 100 + a); E under stream 0; runs 9001 onward
+cells: C0,C1,C2,C3,C4,C5,C6,C7,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14; runs per core cell 20, per stress cell 20
+cell C0: 20 runs, wall 201 s, mean seconds per run 40.1 (all arms, data and E included), refused rows 0, crashed rows 0
+cell C1: 20 runs, wall 213 s, mean seconds per run 42.2 (all arms, data and E included), refused rows 6, crashed rows 0
+cell C2: 20 runs, wall 222 s, mean seconds per run 44.0 (all arms, data and E included), refused rows 0, crashed rows 0
+cell C3: 20 runs, wall 210 s, mean seconds per run 41.6 (all arms, data and E included), refused rows 0, crashed rows 0
+cell C4: 20 runs, wall 221 s, mean seconds per run 44.0 (all arms, data and E included), refused rows 0, crashed rows 0
+cell C5: 20 runs, wall 194 s, mean seconds per run 38.7 (all arms, data and E included), refused rows 4, crashed rows 0
+cell C6: 20 runs, wall 264 s, mean seconds per run 52.3 (all arms, data and E included), refused rows 4, crashed rows 0
+cell C7: 20 runs, wall 171 s, mean seconds per run 34.2 (all arms, data and E included), refused rows 2, crashed rows 0
+cell S1: 20 runs, wall 161 s, mean seconds per run 31.9 (all arms, data and E included), refused rows 0, crashed rows 19
+cell S2: 20 runs, wall 172 s, mean seconds per run 34.1 (all arms, data and E included), refused rows 2, crashed rows 0
+cell S3: 20 runs, wall 174 s, mean seconds per run 34.6 (all arms, data and E included), refused rows 2, crashed rows 0
+cell S4: 20 runs, wall 174 s, mean seconds per run 34.6 (all arms, data and E included), refused rows 2, crashed rows 0
+cell S5: 20 runs, wall 193 s, mean seconds per run 38.5 (all arms, data and E included), refused rows 0, crashed rows 0
+cell S6: 20 runs, wall 125 s, mean seconds per run 24.8 (all arms, data and E included), refused rows 4, crashed rows 0
+cell S7: 20 runs, wall 169 s, mean seconds per run 33.7 (all arms, data and E included), refused rows 2, crashed rows 0
+cell S8: 20 runs, wall 172 s, mean seconds per run 34.2 (all arms, data and E included), refused rows 0, crashed rows 0
+cell S9: 20 runs, wall 170 s, mean seconds per run 33.9 (all arms, data and E included), refused rows 0, crashed rows 0
+cell S10: 20 runs, wall 141 s, mean seconds per run 28.1 (all arms, data and E included), refused rows 0, crashed rows 0
+cell S11: 20 runs, wall 97 s, mean seconds per run 19.4 (all arms, data and E included), refused rows 0, crashed rows 19
+cell S12: 20 runs, wall 98 s, mean seconds per run 19.5 (all arms, data and E included), refused rows 0, crashed rows 19
+cell S13: 20 runs, wall 95 s, mean seconds per run 18.8 (all arms, data and E included), refused rows 0, crashed rows 0
+cell S14: 20 runs, wall 78 s, mean seconds per run 15.4 (all arms, data and E included), refused rows 6, crashed rows 0
+loaded namespaces: arrow 24.0.0; assertthat 0.2.1; attempt 0.3.1; backports 1.5.1; base 4.6.1; bit 4.6.0; bit64 4.8.2; brio 1.1.5; cellranger 1.1.0; checkmate 2.3.4; chromote 0.5.1; cli 3.6.6; codetools 0.2.20; compiler 4.6.1; config 0.3.2; configr 0.3.5; crayon 1.5.3; data.table 1.18.4; datasets 4.6.1; DBI 1.3.0; desc 1.4.3; digest 0.6.39; dplyr 1.2.1; DT 0.34.0; duckdb 1.5.5; evaluate 1.0.5; farver 2.1.2; fastmap 1.2.0; filelock 1.0.3; forcats 1.0.1; fs 2.1.0; furrr 0.4.0; future 1.70.0; generics 0.1.4; ggnewscale 0.5.2; ggplot2 4.0.3; ggplotify 0.1.3; ggrepel 0.9.8; gh 1.6.0; globals 0.19.1; glue 1.8.1; golem 1.0.1; graphics 4.6.1; grDevices 4.6.1; grid 4.6.1; gridExtra 2.3.1; gridGraphics 0.5.1; gtable 0.3.6; gtools 3.9.5; here 1.0.2; hms 1.1.4; htmltools 0.5.9; htmlwidgets 1.6.4; httpuv 1.6.17; httr 1.4.8; igraph 2.3.3; ini 0.3.1; iq 2.0.1; janitor 2.2.1; jsonlite 2.0.0; knitr 1.51; later 1.4.8; lattice 0.22.9; lazyeval 0.2.3; lifecycle 1.0.5; limma 3.68.4; listenv 1.0.0; logger 0.4.2; logging 0.10.111; lubridate 1.9.5; magick 2.9.1; magrittr 2.0.5; Matrix 1.7.5; methods 4.6.1; mime 0.13; multidplyr 0.1.4; MultiScholaR 0.5.0; openxlsx 4.2.8.1; optparse 1.8.2; otel 0.2.0; pacman 0.5.1; parallel 4.6.1; parallelly 1.48.0; patchwork 1.3.2; pillar 1.11.1; pkgbuild 1.4.8; pkgconfig 2.0.3; pkgload 1.5.3; plotly 4.12.0; plyr 1.8.9; png 0.1.9; prettyunits 1.2.0; processx 3.9.0; progress 1.2.3; promises 1.5.0; ps 1.9.3; purrr 1.2.2; qvalue 2.44.0; R6 2.6.1; rappdirs 0.3.4; RColorBrewer 1.1.3; Rcpp 1.1.2; RcppTOML 0.2.3; readr 2.2.0; readxl 1.5.0; reshape2 1.4.5; rlang 1.3.0; rmarkdown 2.31; rprojroot 2.1.1; RSpectra 0.16.2; rstudioapi 0.19.0; ruv 0.9.7.1; RUVIIIC 1.0.19; rvest 1.0.5; S7 0.2.2; scales 1.4.0; shiny 1.14.0; shinydashboard 0.7.3; shinyFiles 0.9.3; shinyjqui 0.4.1; shinyjs 2.1.1; snakecase 0.11.1; splines 4.6.1; statmod 1.5.2; stats 4.6.1; stringi 1.8.7; stringr 1.6.0; testthat 3.3.2; tibble 3.3.1; tictoc 1.2.1; tidyr 1.3.2; tidyselect 1.2.1; timechange 0.4.0; tools 4.6.1; tzdb 0.5.0; utils 4.6.1; vctrs 0.7.3; viridis 0.6.5; viridisLite 0.4.3; vroom 1.7.1; websocket 1.4.4; withr 3.0.3; writexl 1.5.4; xfun 0.60; xml2 1.6.0; xtable 1.8.8; yaml 2.3.12; yulab.utils 0.2.4; zip 3.0.0
+== finished 2026-11-16 07:54:56 AEDT ==
