@@ -68,4 +68,22 @@ for (omic in c("lipid", "metab")) {
     # Every assay failed: the run stops with the message.
     expect_error(run("F"), "the fit half could not fit this assay")
   })
+
+  test_that(paste("KIT-128:", omic, "orchestrator names the root cause of an error raised inside the formatting step"), {
+    formatter <- paste0("format", if (identical(omic, "lipid")) "Lipid" else "Metab", "DaContrastTable")
+    original <- get(formatter, envir = asNamespace("MultiScholaR"))
+    run <- function(failing) {
+      failing_formatter <- function(da_tbl, contrast_name, assay_name, ...) {
+        if (assay_name %in% failing) stop("the table could not be formatted")
+        original(da_tbl, contrast_name, assay_name, ...)
+      }
+      do.call(testthat::local_mocked_bindings, c(stats::setNames(list(failing_formatter), formatter), list(.package = "MultiScholaR")))
+      kit128FailureRun(omic, omicsDaContrastsFixture(omic))
+    }
+    # The formatting step runs under purrr, which wraps the error; the record names the cause, not purrr's index.
+    expect_warning(result <- run("neg"), "neg: the table could not be formatted", class = "omics_da_assay_failed")
+    expect_identical(result$failed_assays, list(neg = "the table could not be formatted"))
+    expect_identical(names(result$per_assay_results), "pos")
+    expect_error(run(c("pos", "neg")), "pos: the table could not be formatted", class = "omics_da_all_assays_failed")
+  })
 }
