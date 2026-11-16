@@ -1025,19 +1025,21 @@ beginWorkflowGUIAction <- function(application, manager, operation, publication)
     if (!is.null(application$active)) {
         cli::cli_abort("another heavy action is active", class = "workflow_execution_busy")
     }
-    peak <- openWorkflowPeakWindow(application)
+    # KIT-131: the plain launcher measures nothing: no peak window and no accounting.
+    plain <- workflowPlainLauncher(application$config)
+    peak <- if (plain) NULL else openWorkflowPeakWindow(application)
     admission <- filelock::lock(file.path(application$config$root,
         ".heavy-action.lock"), timeout = 0)
     if (is.null(admission)) {
-        close(peak)
+        if (!plain) close(peak)
         cli::cli_abort("application already has a heavy action", class = "workflow_execution_busy")
     }
     ready <- FALSE
     on.exit(if (!ready) {
         filelock::unlock(admission)
-        close(peak)
+        if (!plain) close(peak)
     })
-    accounting <- workflowCgroupAccounting(application$cgroup)
+    accounting <- if (plain) NULL else workflowCgroupAccounting(application$cgroup)
     id <- paste0("gui-", substr(digest::digest(list(Sys.time(), tempfile(),
         application$config$stem), algo = "sha256"), 1L, 32L))
     capture <- if (inherits(manager, "DIAStateAdapter")) {
@@ -1098,7 +1100,9 @@ finishWorkflowGUIAction <- function(reservation, status, acknowledgement = NULL)
         cli::cli_abort("current browser acknowledgement required",
             class = "workflow_execution_incomplete")
     }
-    peak_closed <- FALSE
+    # KIT-131: under the plain launcher there is no peak window to close, no monitor to ask and no accounting.
+    plain <- workflowPlainLauncher(application$config)
+    peak_closed <- plain
     on.exit({
         if (!peak_closed) close(reservation$peak)
         if (!is.null(reservation$admission)) filelock::unlock(reservation$admission)
@@ -1108,7 +1112,7 @@ finishWorkflowGUIAction <- function(reservation, status, acknowledgement = NULL)
     }, add = TRUE)
     browser <- workflowBrowserMembership(application)
     monitor <- NULL
-    if (identical(application$config$mode, "gui")) {
+    if (identical(application$config$mode, "gui") && !plain) {
         snapshot_id <- sub("^gui-", "wfx-", reservation$id)
         writeWorkflowExecutionMessage(file.path(application$config$root,
             "application-monitor-snapshot-request.rds"),
@@ -1122,15 +1126,15 @@ finishWorkflowGUIAction <- function(reservation, status, acknowledgement = NULL)
     # Once finishing starts, IO/accounting failure must not strand the admission
     # lock or permit a second attempt to close the same peak descriptor.
     peak_closed <- TRUE
-    peak <- closeWorkflowPeakWindow(reservation$peak)
-    accounting <- workflowCgroupAccounting(application$cgroup)
+    peak <- if (plain) NA_real_ else closeWorkflowPeakWindow(reservation$peak)
+    accounting <- if (plain) NULL else workflowCgroupAccounting(application$cgroup)
     receipt <- list(schema = 1L, request_id = reservation$id, status = status,
         operation = reservation$operation,
         worker_request_id = reservation$worker_request_id,
         capture = reservation$capture,
         elapsed_seconds = proc.time()[["elapsed"]] - reservation$started,
         peak_bytes = peak, whole_service_peak_bytes = workflowApplicationMemory(
-            application, "memory.peak"), accounting_delta = Map(`-`, accounting,
+            application, "memory.peak"), accounting_delta = if (plain) NA_real_ else Map(`-`, accounting,
             reservation$accounting), browser_acknowledged = valid_ack,
         browser_memory_included = isTRUE(browser$valid), browser = browser,
         monitor = monitor,
@@ -1182,9 +1186,12 @@ workflowBrowserMembership <- function(application) {
 #' @return TRUE invisibly.
 #' @noRd
 checkWorkflowApplication <- function(application) {
+    plain <- inherits(application, "WorkflowExecutionApplication") && workflowPlainLauncher(application$config)
     if (!inherits(application, "WorkflowExecutionApplication") || application$closed ||
-        !identical(application$pid, Sys.getpid()) || !identical(Sys.info()[["sysname"]], "Linux"))
+        !identical(application$pid, Sys.getpid()) || !plain && !identical(Sys.info()[["sysname"]], "Linux"))
         cli::cli_abort("managed application required", class = "workflow_execution_unsupported")
+    # KIT-131: the plain launcher has no containment to check: the class, the owning process and the launcher.
+    if (plain) return(invisible(TRUE))
     config <- application$config
     actual <- workflowServiceProperties(config$controller_unit)
     monitor_ok <- TRUE
@@ -1244,6 +1251,10 @@ closeWorkflowPeakWindow <- function(con) {
 #' @noRd
 launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", test_root = NULL,
     port = 3838L, supervisor_unit = NULL) {
+    # KIT-131: without systemd the application runs here and its workers are plain child processes.
+    if (identical(workflowLauncherChoice(getOption("multischolar.workflow_launcher"), Sys.info()[["sysname"]],
+        Sys.which("systemctl")), "process"))
+        return(launchWorkflowProcessApplication(root, diagnostic, mode, port, supervisor_unit))
     if (!identical(Sys.info()[["sysname"]], "Linux") || !dir.exists(root) ||
         !mode %in% c("gui", "protocol", "resources", "adapters") || mode %in% c("protocol", "resources") && !isTRUE(diagnostic))
         cli::cli_abort("unsupported managed application launch", class = "workflow_execution_unsupported")
@@ -1347,6 +1358,40 @@ launchWorkflowApplication <- function(root, diagnostic = FALSE, mode = "gui", te
     config
 }
 
+#' The frozen configuration of a managed application under the plain launcher (KIT-131): no slice, no control group,
+#' no controller or monitor unit.
+#' @param root Existing dedicated directory for bounded launch/journal metadata.
+#' @param diagnostic Internal synthetic-lifecycle mode, never scientific qualification.
+#' @param port Loopback Shiny port for the managed GUI.
+#' @return Configuration with `launcher = "process"`.
+#' @noRd
+workflowProcessApplicationConfig <- function(root, diagnostic, port) {
+    id <- substr(digest::digest(list(Sys.time(), Sys.getpid(), tempfile()), algo = "sha256"), 1L, 16L)
+    list(schema = 1L, root = normalizePath(root, winslash = "/"), stem = paste0("multischolarwfx", id),
+        launcher = "process", policy = workflowExecutionPolicy(diagnostic), build = workflowExecutionBuildIdentity(),
+        library = dirname(system.file(package = "MultiScholaR")), mode = "gui", port = as.integer(port))
+}
+
+#' Run a managed GUI application under the plain launcher (KIT-131). The calling process is the controller: the call
+#' returns when the application stops, where the systemd launch returns once its units are started. The harness's
+#' lifecycle suites, a supervisor unit and a journey record assert control-group facts and are refused.
+#' @param root,diagnostic,mode,port,supervisor_unit As `launchWorkflowApplication`.
+#' @return The configuration, after the application has stopped.
+#' @noRd
+launchWorkflowProcessApplication <- function(root, diagnostic, mode, port, supervisor_unit) {
+    if (!is.character(root) || length(root) != 1L || !dir.exists(root) || !identical(mode, "gui") ||
+        !is.null(supervisor_unit) || file.exists(file.path(root, "gui-member.rds")))
+        cli::cli_abort("unsupported managed application launch", class = "workflow_execution_unsupported")
+    config <- workflowProcessApplicationConfig(root, isTRUE(diagnostic), port)
+    if (workflowHostAvailable() < config$policy$startup_headroom)
+        cli::cli_abort("insufficient host headroom", class = "workflow_execution_refused")
+    config_path <- file.path(config$root, "application.rds")
+    if (file.exists(config_path)) cli::cli_abort("managed application directory already used")
+    saveRDS(config, config_path, compress = FALSE, version = 3)
+    workflowManagedMain(c(config_path, digest::digest(file = config_path, algo = "sha256")))
+    config
+}
+
 #' Launch only package-defined service entry points beneath the owned application slice.
 #' @param config Frozen managed application configuration.
 #' @param unit Owned service name.
@@ -1412,7 +1457,8 @@ workflowManagedMain <- function(arguments) {
         cli::cli_abort("application policy differs from server policy")
     app <- WorkflowExecutionApplication$new()
     app$config <- config
-    app$cgroup <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
+    # KIT-131: the plain launcher has no control group.
+    if (!workflowPlainLauncher(config)) app$cgroup <- file.path("/sys/fs/cgroup", sub("^/", "", config$control_group))
     app$pid <- Sys.getpid()
     checkWorkflowApplication(app)
     on.exit(closeWorkflowManagedApplication(app))
@@ -1738,9 +1784,11 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
         !identical(app$active, reservation$id))) {
         cli::cli_abort("GUI action reservation differs", class = "workflow_execution_stale")
     }
-    peak <- if (outer) reservation$peak else openWorkflowPeakWindow(app)
+    # KIT-131: the plain launcher measures nothing: no peak window and no accounting.
+    plain <- workflowPlainLauncher(app$config)
+    peak <- if (outer) reservation$peak else if (plain) NULL else openWorkflowPeakWindow(app)
     transferred <- FALSE
-    on.exit(if (!transferred && !outer) close(peak), add = TRUE)
+    on.exit(if (!transferred && !outer && !plain) close(peak), add = TRUE)
     checkWorkflowApplication(app)
     assertDIAExportReady(owner$manager)
     if ((!outer && !is.null(app$active)) || !is.null(owner$job)) {
@@ -1767,7 +1815,7 @@ runWorkflowAction <- function(operation, input_references, parameters, resource_
     job$started <- entered
     job$peak <- peak
     job$outer_reservation <- if (outer) reservation else NULL
-    job$accounting <- workflowCgroupAccounting(app$cgroup)
+    job$accounting <- if (plain) NULL else workflowCgroupAccounting(app$cgroup)
     store <- owner$manager$.context$store
     job$existing_entities <- list.files(file.path(store$directory, "entities"))
     job$existing_pending <- list.files(file.path(store$directory, ".pending"), all.files = TRUE, no.. = TRUE)
@@ -1863,7 +1911,9 @@ pollWorkflowAction <- function(owner) {
         return(finishWorkflowExecutionJob(owner, readWorkflowGuardReason(guard)))
     }
     result_path <- file.path(job$paths$request_dir, "worker-result.rds")
-    monitor <- workflowServiceProperties(job$monitor_unit)
+    # KIT-131: the plain launcher has no monitor: none to lose, none to wait for, and no worker to register with it.
+    plain <- workflowPlainLauncher(app$config)
+    monitor <- if (plain) list(available = TRUE, SubState = "running") else workflowServiceProperties(job$monitor_unit)
     if (!isTRUE(monitor$available) || !monitor$SubState %in% c("running", "start")) {
         # The worker's result is kept; only the measurement is lost with the monitor.
         if (!file.exists(result_path)) return(finishWorkflowExecutionJob(owner, "monitor_lost"))
@@ -1872,7 +1922,7 @@ pollWorkflowAction <- function(owner) {
     if (job$stage == "admitting") {
         monitor_ready <- if (job$monitor_borrowed) file.path(app$config$root,
             "application-monitor-ready.rds") else file.path(job$paths$request_dir, "monitor-ready.rds")
-        if (!file.exists(monitor_ready)) {
+        if (!plain && !file.exists(monitor_ready)) {
             if (proc.time()[["elapsed"]] - job$started > 30) return(finishWorkflowExecutionJob(owner, "monitor_start_timeout"))
             return(list(status = "admitting"))
         }
@@ -1884,7 +1934,7 @@ pollWorkflowAction <- function(owner) {
         if (cap < 768 * 1024^2) return(finishWorkflowExecutionJob(owner, "admission_refused"))
         writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "admitted.rds"),
             list(schema = 1L, reservation = reservation, worker_cap = cap, worker_cap_source = admitted$source))
-        if (job$monitor_borrowed) {
+        if (job$monitor_borrowed && !plain) {
             writeWorkflowExecutionMessage(file.path(app$config$root,
                 "application-active-worker.rds"), list(schema = 1L,
                     request_id = job$request$token$request_id,
@@ -1909,7 +1959,7 @@ pollWorkflowAction <- function(owner) {
     }
     state <- workflowUnitState(app$config, job$worker_unit)
     if (isTRUE(state$available) && state$SubState %in% c("running", "start")) return(list(status = "running"))
-    if (!file.exists(result_path) && !any(file.exists(guards))) {
+    if (!plain && !file.exists(result_path) && !any(file.exists(guards))) {
         # A worker may become terminal between two 50 ms monitor samples.
         # Give that already-running monitor two intervals to publish its
         # durable classification before treating the stop as an unguarded
@@ -2108,7 +2158,9 @@ finishWorkflowExecutionJob <- function(owner, status) {
     if (valid_store && dir.exists(job$paths$request_dir) && !job$monitor_borrowed) {
         writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "monitor-done.rds"), list(schema = 1L))
     }
-    if (valid_store && job$monitor_borrowed) {
+    # KIT-131: the plain launcher has no monitor to ask for a snapshot, and measures nothing.
+    plain <- workflowPlainLauncher(owner$application$config)
+    if (valid_store && job$monitor_borrowed && !plain) {
         writeWorkflowExecutionMessage(file.path(owner$application$config$root,
             "application-monitor-snapshot-request.rds"), list(schema = 1L,
                 request_id = job$request$token$request_id))
@@ -2117,7 +2169,7 @@ finishWorkflowExecutionJob <- function(owner, status) {
     monitor_path <- if (job$monitor_borrowed) file.path(owner$application$config$root,
         paste0("application-monitor-snapshot-", job$request$token$request_id, ".rds")) else
         file.path(job$paths$request_dir, "monitor-result.rds")
-    while (valid_store && !file.exists(monitor_path) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
+    while (!plain && valid_store && !file.exists(monitor_path) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
     if (!job$monitor_borrowed) {
         workflowSystemd(c("stop", job$monitor_unit), required = FALSE)
     }
@@ -2141,6 +2193,8 @@ finishWorkflowExecutionJob <- function(owner, status) {
         }
         if (is.null(job$outer_reservation)) owner$application$active <- NULL
         owner$job <- NULL
+        # The unit is empty and its state is in the receipt: the handle is no longer needed.
+        if (plain) workflowProcessForget(job$worker_unit)
     })
     roles <- if (job$monitor_borrowed) "worker" else c("worker", "monitor")
     if (valid_store) for (role in roles) {
@@ -2157,9 +2211,9 @@ finishWorkflowExecutionJob <- function(owner, status) {
     files <- unique(unlist(lapply(artifact_roots, list.files,
         recursive = TRUE, full.names = TRUE, all.files = TRUE)))
     staged_bytes <- if (valid_store) sum(file.info(files)$size) else NA_real_
-    peak <- if (is.null(job$outer_reservation)) closeWorkflowPeakWindow(job$peak) else NA_real_
-    accounting <- workflowCgroupAccounting(owner$application$cgroup)
-    delta <- Map(`-`, accounting, job$accounting)
+    peak <- if (is.null(job$outer_reservation) && !plain) closeWorkflowPeakWindow(job$peak) else NA_real_
+    accounting <- if (plain) NULL else workflowCgroupAccounting(owner$application$cgroup)
+    delta <- if (plain) NA_real_ else Map(`-`, accounting, job$accounting)
     monitor <- if (valid_store && file.exists(monitor_path)) readRDS(monitor_path) else NULL
     receipt <- list(schema = 1L, request_id = job$request$token$request_id, status = status,
         token = job$request$token, error = job$error, elapsed_seconds = proc.time()[["elapsed"]] - job$started,
@@ -2178,7 +2232,7 @@ finishWorkflowExecutionJob <- function(owner, status) {
         complete_operation_measurement = is.null(job$outer_reservation),
         cleanup = list(worker_stopped = worker_empty,
             monitor_stopped = if (job$monitor_borrowed) NA else monitor_empty,
-            application_monitor_active = if (job$monitor_borrowed)
+            application_monitor_active = if (job$monitor_borrowed && !plain)
                 isTRUE(workflowServiceProperties(job$monitor_unit)$available) else NA))
     if (isTRUE(job$monitor_lost_after_result)) receipt$monitor_lost_after_result <- TRUE
     valid_store <- workflowExecutionStoreValid(owner$manager$.context$store)

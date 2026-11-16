@@ -260,3 +260,380 @@ test_that("L1.7 the option chooses the launcher; without it only a system with s
     expect_false(workflowPlainLauncher(NULL))
     expect_true(workflowPlainLauncher(list(launcher = "process")))
 })
+
+# --- Layer 2: the protocol under the plain launcher, with the diagnostic fixture ---
+
+#' From source, make every child of this test load this source tree (see the head of the file). Against the installed
+#' package nothing is replaced.
+#' @return The script a child controller sources first, or `""` against the installed package.
+processTestRuntime <- function(root, env = parent.frame()) {
+    source_root <- processTestSourceRoot()
+    if (!nzchar(source_root)) return("")
+    testthat::skip_if_not_installed("pkgload")
+    preamble <- file.path(root, "source-runtime.R")
+    worker <- file.path(root, "source-worker.R")
+    entry <- c("--vanilla", "-e", "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
+    writeLines(c(
+        sprintf("suppressMessages(pkgload::load_all(%s, quiet = TRUE, helpers = FALSE, attach_testthat = FALSE))", deparse(source_root)),
+        "utils::assignInNamespace('workflowExecutionBuildIdentity', function() strrep('f', 64), 'MultiScholaR')",
+        "local({",
+        "    start <- get('workflowProcessStart', asNamespace('MultiScholaR'))",
+        sprintf("    worker <- %s", deparse(worker)),
+        "    utils::assignInNamespace('workflowProcessStart', function(unit, command, args, ...)",
+        "        start(unit, command, c('--vanilla', worker, args[-(1:3)]), ...), 'MultiScholaR')",
+        "})"), preamble)
+    writeLines(c(sprintf("source(%s)", deparse(preamble)), entry[[3L]]), worker)
+    start <- workflowProcessStart
+    testthat::local_mocked_bindings(
+        workflowExecutionBuildIdentity = function() strrep("f", 64),
+        workflowProcessStart = function(unit, command, args, ...) {
+            stopifnot(identical(args[1:3], entry))
+            start(unit, command, c("--vanilla", worker, args[-(1:3)]), ...)
+        }, .package = "MultiScholaR", .env = env)
+    preamble
+}
+
+#' A plain managed application whose controller is this process, with the diagnostic policy the fixture needs.
+processTestManagedApplication <- function(root) {
+    directory <- tempfile("application-", tmpdir = root)
+    dir.create(directory)
+    application <- WorkflowExecutionApplication$new()
+    application$config <- workflowProcessApplicationConfig(directory, diagnostic = TRUE, port = 0L)
+    application$pid <- Sys.getpid()
+    application
+}
+
+processTestProject <- function(root, label) {
+    project <- file.path(root, label)
+    dir.create(project)
+    store <- newWorkflowEntityStore(project, label, "DIA")
+    manager <- newDIAStateAdapter(store, WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    object <- makeWorkflowCheckpointPeptide(readWorkflowCheckpointRecipe("small", testthat::test_path("..", "..")))
+    manager$saveState("protein_peptide_filtered", object, list(), "execution fixture")
+    manager
+}
+
+processTestAction <- function(owner, until_started = FALSE, seconds = 180) {
+    deadline <- proc.time()[["elapsed"]] + seconds
+    repeat {
+        if (until_started && !is.null(owner$job) &&
+            file.exists(file.path(owner$job$paths$request_dir, "worker-started.rds"))) return(list(status = "started"))
+        result <- pollWorkflowAction(owner)
+        if (!result$status %in% c("admitting", "running")) return(result)
+        if (proc.time()[["elapsed"]] > deadline) stop("bounded lifecycle wait exceeded")
+        Sys.sleep(0.05)
+    }
+}
+
+processTestFixture <- function(owner, parameters, reservation = NULL) {
+    runWorkflowAction("wfx_fixture", list(state = getDIAStateReference(owner$manager)), parameters, owner,
+        reservation = reservation)
+}
+
+test_that("L2.1 a GUI action runs on a plain worker: one commit, the result read back, a receipt without measurements", {
+    skip_on_cran()
+    root <- withr::local_tempdir()
+    processTestRuntime(root)
+    application <- processTestManagedApplication(root)
+    expect_true(checkWorkflowApplication(application))
+    manager <- processTestProject(root, "identity")
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, application)
+    withr::defer(closeWorkflowExecutionController(owner))
+    store <- manager$.context$store
+    before <- workflowExecutionHead(store)
+    states <- length(manager$getHistory())
+    reservation <- beginWorkflowGUIAction(application, manager, "wfx_fixture", list(experiment_label = "test",
+        experiment_paths = list(source_dir = root), omic_type = "proteomics"))
+    expect_null(reservation$peak)
+    id <- processTestFixture(owner, list(mode = "identity"), reservation)
+    paths <- owner$job$paths
+    unit <- owner$job$worker_unit
+    done <- processTestAction(owner)
+    expect_identical(done$status, "complete")
+    # One commit: the head moved once, by one state.
+    expect_false(identical(workflowExecutionHead(store)$entity_id, before$entity_id))
+    expect_identical(length(manager$getHistory()), states + 1L)
+    # The result was computed in another process and read back from its file.
+    started <- readRDS(file.path(paths$request_dir, "worker-started.rds"))
+    expect_false(identical(started$pid, Sys.getpid()))
+    handoff <- readRDS(file.path(paths$request_dir, "worker-result.rds"))
+    expect_identical(handoff$status, "complete")
+    expect_identical(handoff$token$request_id, id)
+    accepted <- resumeWorkflowAction(owner, id)
+    expect_identical(accepted$state_reference, getDIAStateReference(manager))
+    expect_identical(readWorkflowExecutionJournal(paths)$status, "complete")
+    # L2.7: the admitted cap is a number handed to the step; nothing enforces it.
+    admitted <- readRDS(file.path(paths$request_dir, "admitted.rds"))
+    expect_true(is.finite(admitted$worker_cap) && admitted$worker_cap > 0)
+    expect_identical(readRDS(file.path(paths$request_dir, "request.rds"))$worker_cap, admitted$worker_cap)
+    # The receipt: the worker stopped, and no measurement is claimed.
+    expect_identical(done$worker$Result, "success")
+    expect_true(done$cleanup$worker_stopped)
+    expect_true(is.na(done$cleanup$application_monitor_active))
+    expect_false(done$measurement_valid)
+    expect_true(is.na(done$peak_bytes) && is.na(done$whole_service_peak_bytes))
+    expect_true(all(is.na(done$accounting_delta)))
+    expect_null(done$monitor)
+    expect_identical(readRDS(file.path(paths$request_dir, "completion.rds"))$status, "complete")
+    expect_false(dir.exists(file.path(paths$request_dir, "worker-scratch")))
+    expect_false(workflowUnitState(application$config, unit)$available)
+    expect_null(owner$job)
+    # The GUI action closes on the browser's acknowledgement, without waiting for a monitor.
+    closing <- proc.time()[["elapsed"]]
+    receipt <- finishWorkflowGUIAction(reservation, "complete", list(request_id = reservation$id,
+        content_id = "content", plot_ready = TRUE, stable_seconds = 0.2))
+    expect_lt(proc.time()[["elapsed"]] - closing, 1.5)
+    expect_identical(receipt$status, "complete")
+    expect_identical(receipt$worker_request_id, id)
+    expect_false(receipt$measurement_valid)
+    expect_true(is.na(receipt$peak_bytes) && is.na(receipt$whole_service_peak_bytes))
+    expect_null(application$active)
+    expect_identical(store$open_resources, 0L)
+})
+
+test_that("L2.2 a failing worker and a worker that tries to commit end as worker_failed, and the head stays", {
+    skip_on_cran()
+    root <- withr::local_tempdir()
+    processTestRuntime(root)
+    application <- processTestManagedApplication(root)
+    manager <- processTestProject(root, "failure")
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, application)
+    withr::defer(closeWorkflowExecutionController(owner))
+    store <- manager$.context$store
+    before <- workflowExecutionHead(store)
+    expected <- c(fail = "intentional bounded worker failure", forbidden_commit = "workers cannot mutate workflow heads")
+    for (mode in names(expected)) {
+        processTestFixture(owner, list(mode = mode))
+        done <- processTestAction(owner)
+        expect_identical(done$status, "worker_failed", info = mode)
+        expect_match(done$error, expected[[mode]], fixed = TRUE, info = mode)
+        expect_identical(done$worker$Result, "exit-code", info = mode)
+        expect_true(done$cleanup$worker_stopped, info = mode)
+        expect_identical(workflowExecutionHead(store), before, info = mode)
+        expect_null(application$active)
+        expect_identical(store$open_resources, 0L)
+    }
+})
+
+test_that("L2.3 a cancellation stops the worker and leaves the head, the history and the action lock as they were", {
+    skip_on_cran()
+    root <- withr::local_tempdir()
+    processTestRuntime(root)
+    application <- processTestManagedApplication(root)
+    manager <- processTestProject(root, "cancel")
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, application)
+    withr::defer(closeWorkflowExecutionController(owner))
+    store <- manager$.context$store
+    before <- workflowExecutionHead(store)
+    history <- manager$getHistory()
+    processTestFixture(owner, list(mode = "sleep", seconds = 60))
+    paths <- owner$job$paths
+    token <- owner$job$request$token
+    expect_identical(processTestAction(owner, until_started = TRUE)$status, "started")
+    worker <- readRDS(file.path(paths$request_dir, "worker-started.rds"))$pid
+    expect_true(processTestAlive(worker))
+    started <- proc.time()[["elapsed"]]
+    cancelWorkflowAction(owner, "reverted")
+    expect_lt(proc.time()[["elapsed"]] - started, 4)
+    expect_true(processTestGone(worker))
+    expect_identical(workflowExecutionHead(store), before)
+    expect_identical(manager$getHistory(), history)
+    expect_gt(owner$control$generation, token$generation)
+    expect_error(acceptWorkflowActionResult(owner, list(token = token)), class = "workflow_execution_stale")
+    receipt <- readRDS(file.path(paths$request_dir, "completion.rds"))
+    expect_identical(receipt$status, "reverted")
+    expect_true(receipt$cleanup$worker_stopped)
+    expect_false(dir.exists(file.path(paths$request_dir, "worker-scratch")))
+    expect_null(owner$job)
+    expect_null(application$active)
+    lock <- filelock::lock(file.path(application$config$root, ".heavy-action.lock"), timeout = 0)
+    expect_false(is.null(lock))
+    filelock::unlock(lock)
+})
+
+test_that("L2.4 a worker past the per-step deadline ends as worker_failed", {
+    skip_on_cran()
+    root <- withr::local_tempdir()
+    processTestRuntime(root)
+    testthat::local_mocked_bindings(workflowActionWorkerDeadline = function(operation, policy) 2L, .package = "MultiScholaR")
+    application <- processTestManagedApplication(root)
+    manager <- processTestProject(root, "deadline")
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, application)
+    withr::defer(closeWorkflowExecutionController(owner))
+    before <- workflowExecutionHead(manager$.context$store)
+    processTestFixture(owner, list(mode = "sleep", seconds = 60))
+    started <- proc.time()[["elapsed"]]
+    done <- processTestAction(owner)
+    elapsed <- proc.time()[["elapsed"]] - started
+    expect_identical(done$status, "worker_failed")
+    expect_identical(done$worker$Result, "timeout")
+    expect_gte(elapsed, 2)
+    expect_lt(elapsed, 8)
+    expect_true(done$cleanup$worker_stopped)
+    expect_identical(workflowExecutionHead(manager$.context$store), before)
+    expect_null(application$active)
+})
+
+test_that("L2.5 closing the application stops a running worker and releases the project", {
+    skip_on_cran()
+    root <- withr::local_tempdir()
+    processTestRuntime(root)
+    application <- processTestManagedApplication(root)
+    manager <- processTestProject(root, "shutdown")
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, application)
+    withr::defer(closeWorkflowExecutionController(owner))
+    store <- manager$.context$store
+    before <- workflowExecutionHead(store)
+    processTestFixture(owner, list(mode = "sleep", seconds = 60))
+    paths <- owner$job$paths
+    expect_identical(processTestAction(owner, until_started = TRUE)$status, "started")
+    worker <- readRDS(file.path(paths$request_dir, "worker-started.rds"))$pid
+    closeWorkflowManagedApplication(application)
+    expect_true(processTestGone(worker))
+    expect_true(application$closed)
+    expect_true(owner$closed)
+    expect_identical(readRDS(file.path(paths$request_dir, "completion.rds"))$status, "controller_closed")
+    expect_identical(workflowExecutionHead(store), before)
+    expect_error(checkWorkflowApplication(application), class = "workflow_execution_unsupported")
+    lease <- acquireWorkflowMutationLease(store)
+    expect_false(is.null(lease))
+    filelock::unlock(lease)
+})
+
+test_that("L2.6 after a controller is killed its worker goes, and a new controller recovers the project and runs an action", {
+    skip_on_cran()
+    root <- withr::local_tempdir()
+    preamble <- processTestRuntime(root)
+    manager <- processTestProject(root, "lost")
+    store <- manager$.context$store
+    project <- dirname(store$directory)
+    before <- workflowExecutionHead(store)
+    closeDIAStateAdapter(manager)
+    lost_root <- file.path(root, "lost-application")
+    dir.create(lost_root)
+    record <- file.path(root, "lost.rds")
+    script <- file.path(root, "lost-controller.R")
+    writeLines(c(
+        "arguments <- commandArgs(TRUE)",
+        "if (nzchar(arguments[[1L]])) source(arguments[[1L]])",
+        "ns <- asNamespace('MultiScholaR')",
+        "application <- ns$WorkflowExecutionApplication$new()",
+        "application$config <- ns$workflowProcessApplicationConfig(arguments[[2L]], TRUE, 0L)",
+        "application$pid <- Sys.getpid()",
+        "store <- ns$newWorkflowEntityStore(arguments[[3L]], 'lost', 'DIA')",
+        "manager <- ns$newDIAStateAdapter(store, reopen = TRUE)",
+        "owner <- ns$newWorkflowExecutionController(manager, application)",
+        "id <- ns$runWorkflowAction('wfx_fixture', list(state = ns$getDIAStateReference(manager)), list(mode = 'sleep', seconds = 60), owner)",
+        "started <- file.path(owner$job$paths$request_dir, 'worker-started.rds')",
+        "repeat {",
+        "    ns$pollWorkflowAction(owner)",
+        "    if (file.exists(started)) break",
+        "    Sys.sleep(0.05)",
+        "}",
+        "saveRDS(list(controller = Sys.getpid(), worker = readRDS(started)$pid, request_id = id), paste0(arguments[[4L]], '.tmp'))",
+        "file.rename(paste0(arguments[[4L]], '.tmp'), arguments[[4L]])",
+        "repeat {",
+        "    ns$pollWorkflowAction(owner)",
+        "    Sys.sleep(0.05)",
+        "}"), script)
+    controller <- processx::process$new(processTestRscript(), c("--vanilla", script, preamble, lost_root, project, record),
+        env = c("current", processTestLibraries()), stdout = file.path(root, "lost-controller.log"), stderr = "2>&1", cleanup = TRUE)
+    withr::defer(controller$kill())
+    expect_true(processTestFile(record, seconds = 240))
+    pids <- readRDS(record)
+    withr::defer(if (processTestAlive(pids$worker)) ps::ps_kill(ps::ps_handle(as.integer(pids$worker))))
+    expect_true(processTestAlive(pids$worker))
+    ps::ps_kill(ps::ps_handle(as.integer(pids$controller)))
+    expect_true(processTestGone(pids$controller))
+    expect_true(processTestGone(pids$worker))
+    application <- processTestManagedApplication(root)
+    store <- newWorkflowEntityStore(project, "lost", "DIA")
+    manager <- newDIAStateAdapter(store, reopen = TRUE)
+    withr::defer(closeDIAStateAdapter(manager))
+    owner <- newWorkflowExecutionController(manager, application)
+    withr::defer(closeWorkflowExecutionController(owner))
+    expect_identical(workflowExecutionHead(store), before)
+    expect_identical(readWorkflowExecutionJournal(workflowExportPaths(store$directory, pids$request_id))$status, "controller_lost")
+    expect_null(owner$control$active_request)
+    processTestFixture(owner, list(mode = "identity"))
+    expect_identical(processTestAction(owner)$status, "complete")
+    expect_false(identical(workflowExecutionHead(store)$entity_id, before$entity_id))
+})
+
+test_that("L2.8 the plain launch is the GUI application in the calling process; suites, a supervisor and a journey record are refused", {
+    root <- withr::local_tempdir()
+    withr::local_options(multischolar.workflow_launcher = "process")
+    arguments <- NULL
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        workflowHostAvailable = function() 64 * 1024^3,
+        workflowSystemd = function(...) stop("the plain launch must not reach systemd"),
+        workflowManagedMain = function(arguments) arguments <<- arguments, .package = "MultiScholaR")
+    for (mode in c("protocol", "resources", "adapters")) expect_error(
+        launchWorkflowApplication(root, diagnostic = TRUE, mode = mode, test_root = root), class = "workflow_execution_unsupported")
+    expect_error(launchWorkflowApplication(root, supervisor_unit = "multischolar-dia003-browser-smoke.abcdef.service"),
+        class = "workflow_execution_unsupported")
+    expect_error(launchWorkflowApplication(file.path(root, "absent")), class = "workflow_execution_unsupported")
+    journey <- file.path(root, "journey")
+    dir.create(journey)
+    saveRDS(list(schema = 1L, programme = "kit-journey-v1", deadline = 600), file.path(journey, "gui-member.rds"))
+    expect_error(launchWorkflowApplication(journey), class = "workflow_execution_unsupported")
+    expect_null(arguments)
+    expect_false(file.exists(file.path(root, "application.rds")))
+    config <- launchWorkflowApplication(root, port = 4321L)
+    expect_identical(config$launcher, "process")
+    expect_identical(config$mode, "gui")
+    expect_identical(config$port, 4321L)
+    expect_identical(config$policy, workflowExecutionPolicy(FALSE))
+    expect_null(config$slice)
+    expect_identical(arguments, c(file.path(config$root, "application.rds"),
+        digest::digest(file = file.path(config$root, "application.rds"), algo = "sha256")))
+    expect_identical(readWorkflowExecutionRequest(arguments), config)
+    expect_error(launchWorkflowApplication(root), "already used")
+})
+
+test_that("L2.8 the plain controller is the calling process: no control group, checked by class, owner and launcher, closed at exit", {
+    root <- withr::local_tempdir()
+    withr::local_options(multischolar.workflow_launcher = "process")
+    served <- NULL
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        workflowHostAvailable = function() 64 * 1024^3,
+        workflowSystemd = function(...) stop("the plain launch must not reach systemd"),
+        run_app = function(...) list(...)$workflow_execution, .package = "MultiScholaR")
+    testthat::local_mocked_bindings(runApp = function(appDir, ...) {
+        served <<- list(application = appDir, checked = checkWorkflowApplication(appDir), closed = appDir$closed, options = list(...))
+        invisible(NULL)
+    }, .package = "shiny")
+    config <- launchWorkflowApplication(root, port = 4322L)
+    expect_s3_class(served$application, "WorkflowExecutionApplication")
+    expect_identical(served$application$config, config)
+    expect_null(served$application$cgroup)
+    expect_identical(served$application$pid, Sys.getpid())
+    expect_true(served$checked)
+    expect_false(served$closed)
+    expect_identical(served$options$port, 4322L)
+    expect_true(served$application$closed)
+    # Another process, or a closed application, is not a managed application.
+    other <- WorkflowExecutionApplication$new()
+    other$config <- config
+    other$pid <- Sys.getpid() + 1L
+    expect_error(checkWorkflowApplication(other), class = "workflow_execution_unsupported")
+})
+
+test_that("L2.8 without the option a system with systemctl takes the systemd launch, as before", {
+    skip_if_not(identical(Sys.info()[["sysname"]], "Linux") && nzchar(Sys.which("systemctl")))
+    root <- withr::local_tempdir()
+    reached <- function(args, ...) cli::cli_abort("the systemd launch was reached", class = "process_test_systemd")
+    testthat::local_mocked_bindings(workflowHostAvailable = function() 64 * 1024^3, workflowSystemd = reached,
+        workflowManagedMain = function(arguments) stop("the plain launch was reached"), .package = "MultiScholaR")
+    withr::with_options(list(multischolar.workflow_launcher = NULL),
+        expect_error(launchWorkflowApplication(root), class = "process_test_systemd"))
+    withr::with_options(list(multischolar.workflow_launcher = "systemd"),
+        expect_error(launchWorkflowApplication(root), class = "process_test_systemd"))
+    expect_false(file.exists(file.path(root, "application.rds")))
+})
