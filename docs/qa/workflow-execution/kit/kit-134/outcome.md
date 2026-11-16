@@ -19,9 +19,9 @@ Scope: revision 2.0 of the ticket with the user's decisions of revision 2.1 (D1 
 | 1 | [43940407142](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43940407142) | `85cbee59` | snapshot (P2 step 1) | passed: date chosen, Windows Bioconductor probe |
 | 2 | [43941357316](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43941357316) | `3cce1a83` | library (P2) | failed on both platforms at the MOFA2 pin check, after every package had installed (375 snapshot binaries and 4 source builds on each platform) |
 | 3 | [43942816664](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43942816664) | `21dafb4d` | shell (P2 correction pass, P3) | Linux: everything passed (library check, lifecycle on the 22.04 build runner and on 24.04 from `install.sh`). Windows: the library check failed on R's `library/translations` folder (not a package: no namespace); 383 packages and MultiScholaR had loaded; the P3 steps did not run |
-| 4 | [43945108934](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43945108934) | `82ae9126` | installer (P3 Windows, P4 both) | RUN4 |
-
-RUNS-EXTRA
+| 4 | [43945108934](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43945108934) | `82ae9126` | installer (P3 Windows, P4 both) | Linux: everything passed, P4 included (archive installed with `install.sh` on fresh `ubuntu-22.04` and `ubuntu-24.04`, lifecycle, uninstall). Windows: library check passed (383 of 383), NSIS installer built, path lengths within the limit; the lifecycle failed: the page was served but no Shiny session connected; the fresh install was skipped |
+| 5 | [43949090047](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43949090047) | `d156dd43` | installer, Windows only (P3's correction pass) | passed: library check, lifecycle on the build runner, NSIS installed silently per user on a fresh `windows-2025`, lifecycle from the installed application |
+| 6 | [43953990999](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/43953990999) | `a5c1282d` | container, Windows only (D5) | failed: in Server Core 382 of 383 packages load (`rgl` refuses: no OpenGL there); the application answers HTTP 200 in 2 s |
 
 ### Failures, kept
 
@@ -30,9 +30,11 @@ RUNS-EXTRA
 | 2 | install-library.R, both platforms | `requirements.txt disagrees with MOFA2's pins: mofapy2, , , ...` | Two things: the snapshot's MOFA2 (1.22.0) pins mofapy2 0.7.3, not the 0.7.5 written from KIT-130 (a real difference the check exists to catch); and the check lost the dependency names in `vapply` (a defect of the check) | build input plus instrumentation | requirements to 0.7.3; names kept (P2's correction pass) |
 | 3 | check-library.R, Windows | `FAILED translations: package 'translations' does not have a namespace` | R for Windows ships `library/translations` with a DESCRIPTION; `installed.packages()` lists it. The other 383 packages and MultiScholaR loaded, from the moved folder, network cut, every namespace from the bundle | instrumentation | the check, the version table and the notices skip folders without a NAMESPACE. This is a second fix to P2's instrumentation after the correction pass; it changes no build input and no threshold, and is recorded here for the user's judgement |
 
+Run 4, Windows lifecycle: `first-tab` reported `connected: false, rendered: false` after 120 s with the home page served (HTTP 200) and R running. Cause: `app_server` calls `shinyFiles::getVolumes()()` when a session starts; on Windows without WMIC (Server 2025; Windows 11 24H2 drops it too) shinyFiles runs `powershell`, which is not on a `PATH` of System32 and the Windows folder only, so the server function fails and the session closes. Class: a real defect of the launch environment (it would hit users), not of the test. P3's correction pass (run 5) put Windows PowerShell's folder on R's `PATH` (`main.js`, `windows-clean-run.ps1`, D5's script); the session then connected in 5.6 s. The lifecycle test now also prints the application's R and shell logs when it fails.
+
 ## P1 (laptop, read only)
 
-`installed.packages()` over the lockfile's three library paths against the lockfile, at 2026-11-17 06:2x: **414 of 414 rows the same** (409 at the locked version, the 5 never-installed Suggests still absent). The lockfile was not regenerated. The build's copy is `packaging/multischolar.lock.json`: P1's lockfile plus a `Snapshot` block (date, rule, run, Windows Bioconductor source) and a filled `Python` block; the evidence copy beside this file is unchanged. P1 step 2 (the internal clones against the pins) was not done: it concerns the token build.
+`installed.packages()` over the lockfile's three library paths against the lockfile, on 2026-11-17 before the first run: **414 of 414 rows the same** (409 at the locked version, the 5 never-installed Suggests still absent). The lockfile was not regenerated. The build's copy is `packaging/multischolar.lock.json`: P1's lockfile plus a `Snapshot` block (date, rule, run, Windows Bioconductor source) and a filled `Python` block; the evidence copy beside this file is unchanged. P1 step 2 (the internal clones against the pins) was not done: it concerns the token build.
 
 | File | sha256 (at the tip) |
 |---|---|
@@ -53,7 +55,7 @@ Order as revision 2.0: the snapshot's packages (Linux: 375 jammy binaries, nothi
 
 **One declared minimum is not met:** DESCRIPTION's Suggests has `nanoarrow (>= 0.9.0)`; the snapshot has 0.8.0-1. Its only use is the direct Arrow writer (`R/utils_workflow_saved_table_codec.R:206`, `fast_arrow` backend), which the token-free build cannot select; the snapshot rule did not look at declared minimums. Decision U4.
 
-**Load check** (`check-library.R`; every package in a child R of 10, from the moved folder, network cut): Linux, in a bare `ubuntu:22.04` at `/srv/any where/msr app`, read-only, network `none`: 383 of 383 load, every loaded namespace from the bundle, MultiScholaR attaches (111 s). Windows, from `...\re located\msr moved`, reduced environment, outbound blocked for the bundle's programs: run 3, 383 loaded and only `translations` refused; run 4: RUN4WINCHECK.
+**Load check** (`check-library.R`; every package in a child R of 10, from the moved folder, network cut): Linux, in a bare `ubuntu:22.04` at `/srv/any where/msr app`, read-only, network `none`: 383 of 383 load, every loaded namespace from the bundle, MultiScholaR attaches (111 s). Windows, from `...\re located\msr moved`, reduced environment, outbound blocked for the bundle's programs: run 3, 383 loaded and only `translations` refused; runs 4 and 5: 383 of 383 load, every namespace from the bundle, MultiScholaR attaches (109 to 129 s).
 
 Sizes (MiB): Linux bundle 2,301 (R 1,410 of which library 1,383; Python 606; system libraries 131, 117 of them; pandoc 157), 48,570 files. Windows bundle 2,172 (R 1,465, library 1,351; Python 484; pandoc 223), 50,294 files. Largest R packages: BH (headers only, 156 / 123), RUVIIIC (96 on Linux, unstripped), GO.db 68, Rhdf5lib 61, arrow, duckdb, V8, magick (67 on Windows).
 
@@ -73,17 +75,39 @@ The environment, one definition per platform: Linux `packaging/linux/Rscript` (u
 |---|---|---|---|
 | ubuntu-22.04 build runner, unpacked (run 3) | **passed**, every check | 3.5 s | 1.3 s |
 | ubuntu-24.04, installed with `install.sh`, `--no-sandbox` (restriction on) (run 3) | **passed**, every check | 5.5 s | 1.3 s |
-| RUN4P3 | | | |
+| ubuntu-22.04 build runner, unpacked (run 4) | **passed** | 5.0 s | 0.8 s |
+| fresh ubuntu-22.04, installed with `install.sh` (the runner's own R at `/usr/bin/R` not used) (run 4) | **passed** | 8.1 s | 0.8 s |
+| fresh ubuntu-24.04, installed with `install.sh`, `--no-sandbox` (run 4) | **passed** | 6.6 s | 1.0 s |
+| windows-2025 build runner, unpacked (run 4) | **failed**: no session (above) | | 0.9 s |
+| windows-2025 build runner, unpacked (run 5) | **passed** | 5.6 s | 2.1 s |
+| fresh windows-2025, installed with the NSIS installer (the runner's R 4.6.2 on the PATH not used) (run 5) | **passed** | 6.0 s | 1.8 s |
 
 Not done: the laptop's systemd run (F9; needs the package side), and the probe's trial unit and fallbacks (package side).
 
 ## P4: the installers
 
-RUN4P4
+| | Linux | Windows |
+|---|---|---|
+| Installer | `MultiScholaR-0.5.0-linux-x86_64.tar.gz`, 1,057,363,126 bytes (1,008 MiB; gzip, 102 s to pack) | `MultiScholaR-Setup-0.5.0.exe`, 803,600,389 bytes (766 MiB; NSIS one-click, per user; electron-builder 694 s) |
+| Installed | 2,577 MiB in 48,650 files under `~/.local/share/multischolar/0.5.0` | 2,530 MiB in 50,372 files under `%LOCALAPPDATA%\Programs\multischolar` |
+| Install time on a fresh runner | 22 s (ubuntu-22.04), 26 s (ubuntu-24.04), unpack and `install.sh` | 398 s, silent (`/S`) |
+| Administrator rights | none (runner's user; `install.sh` refuses root) | none (per-user NSIS) |
+| Shortcut | menu entry `~/.local/share/applications/multischolar.desktop` with the icon | Start-menu `MultiScholaR.lnk` (and a desktop shortcut, electron-builder's default) |
+| Longest path | | 143 characters under the application folder (limit 170); 200 installed with the user `runneradmin` |
+| Removal | `uninstall.sh` removed the application, the menu entry and the icon | the NSIS uninstaller (not exercised) |
+| Licences and stamp | `THIRD-PARTY-NOTICES.txt` (532 components: R, every bundled R package, 117 Ubuntu libraries, CPython and its wheels, pandoc, Electron), `sources-list.tsv`, `VERSION.json`; beside the application and in `resources/` | the same (415 components: no system libraries), in `resources/` |
+
+`VERSION.json`: release 0.5.0, the lockfile's sha256 (`df12be0e...`), the commit, the snapshot date, the build date, the runner image, R and Electron versions, and a line saying the internal packages are not included. Help, About shows it with the probe's reason. The sources archive itself (every source tarball) is not built: the notices give each component's source address and the written offer (U6).
 
 ## D5: Windows Server Core
 
-RUN4D5
+Run 6 (`d5/servercore-run6.log`): the Windows bundle (built in the same job) mounted read-only into `mcr.microsoft.com/windows/servercore:ltsc2025` (pulled in 296 s; Docker 29.7.2 is on the `windows-2025` image), `--network none`, the shell's R environment.
+
+- **The application answers HTTP 200** within about 2 s, started through `entry.R` as the shell starts it.
+- R 4.6.1, home and library inside the bundle, network off, every loaded namespace from the bundle, MultiScholaR attaches: passed.
+- **382 of 383 packages load; `rgl` fails** in `.onLoad` ("Loading failed"). Server Core has no OpenGL (`opengl32.dll`), which `rgl`'s DLL links against; `RGL_USE_NULL` does not help a DLL that cannot load. `rgl` is in the closure only through Suggests (no package code calls it). Class: environment (E), a valid result about Server Core, not a defect of the bundle on a desktop Windows, where OpenGL is part of the system; on the build runner and the fresh runner it loaded. Not corrected: nothing in the bundle should change for Server Core, and D5's second run is left unspent.
+
+What D5 shows beyond the runners: no Visual C++ runtime, no R, no Rtools and no Python were needed from the host for R, the library and the application (the container has none of them). The Electron window itself cannot be shown in Server Core (no desktop); the manual install on a Windows 11 PC remains with KIT-052 (D5, revision 2.1).
 
 ## Deviations from revision 2.0's file table
 
@@ -129,4 +153,21 @@ Nothing under `R/`, `tests/`, `DESCRIPTION`, `NAMESPACE` or `NEWS.md` was change
 
 ## Budget
 
-BUDGET
+Revision 2.0's budgets are workflow runs per platform per part, one correction pass per part. A run counts against the part of its stage; the earlier parts it rebuilds are repeats, not attempts.
+
+| Part | Linux runs (budget) | Windows runs (budget) | Correction pass |
+|---|---|---|---|
+| P2 | 3: runs 1, 2, 3 (6) | 2: runs 2, 3 (4) | used (run 3); Windows also needed the `translations` instrumentation fix after it (U9) |
+| P3 | 1: run 3 (6) | 2: runs 4, 5 (4); run 3 counted nothing here, its P3 steps did not run | Linux none; Windows used (run 5) |
+| P4 | 1: run 4 (4) | 2: runs 4, 5 (4) | none needed beyond P3's |
+| D5 | | 1: run 6 (2) | not used |
+
+Six workflow runs in all, about 3 hours of runner time across the jobs. Each push to `kit-134` also starts the repository's existing `Module CI` workflow (not part of this record). Nothing heavy ran on the laptop: the P1 table (seconds of R), and three light local checks of the new scripts (two snapshot dates, the plan resolution, the version table against R's own library; no package installed; `package-lock.json` written with `npm install --package-lock-only --ignore-scripts`, no `node_modules`).
+
+## What is left for KIT-134
+
+- The package side of P3 (above), after KIT-131; then `--expect-launcher process`, and the systemd lifecycle (laptop, and `ubuntu-24.04` if U5).
+- P5 (the lanes and the suite from the installed bundle; the B-01 measurement): `run-lanes.*`, `compare-results.R`, the e2e helper's installed surface, the test-tool library. Four lanes only (lipidomics, metabolomics, transcriptomics, TMT and LFQ) until the token: DIA, DIA_LIMPA and enrichment need `fastduckdb` (F1).
+- The token build (P2 step 4, P5 step 3): the two internal packages, no artifact, no cache; U4's source builds.
+- P6 on Windows, after KIT-131's step 6.
+- The sources archive and the release (KIT-132).
