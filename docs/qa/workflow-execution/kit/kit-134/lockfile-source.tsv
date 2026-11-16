@@ -1,0 +1,415 @@
+package	version	closure	declared	library	library_index	source	bioc_release	repository_field	priority	remote_username	remote_repo	remote_ref	remote_sha	bioc_git_last_commit	needs_compilation	has_compiled_libs	built_r	built_platform	description_remotes_entry	system_requirements	shadowed_copies
+abind	1.4-8	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ade4	1.7-24	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+aisdk	1.4.12	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+AnnotationDbi	1.74.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						c7dbd19	no	FALSE	4.6.1				
+ape	5.8-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+aplot	0.3.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+aroma.light	3.42.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						848b19c	no	FALSE	4.6.1				
+arrow	24.0.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		C++20; for AWS S3 support on Linux, libcurl and openssl (optional); cmake >= 3.26 (build-time only, and only for full source build)	
+AsioHeaders	1.30.2-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+askpass	1.2.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+assertthat	0.2.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+attempt	0.3.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+audio	0.1-12	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+backports	1.5.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+base64enc	0.1-6	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+beepr	2.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+BH	1.90.0-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+bigD	0.3.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+Biobase	2.72.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						65ae7a9	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+BiocBaseUtils	1.14.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						7b86ff9	no	FALSE	4.6.1				
+BiocFileCache	3.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						6283a0f	no	FALSE	4.6.1				
+BiocGenerics	0.58.1	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						995c7b3	no	FALSE	4.6.1				
+BiocIO	1.22.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						eabf6c7	no	FALSE	4.6.1				
+BiocManager	1.30.27	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+BiocParallel	1.46.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						a331dfd	yes	TRUE	4.6.1	x86_64-pc-linux-gnu		C++11	
+biomaRt	2.68.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						ff93209	no	FALSE	4.6.1				
+Biostrings	2.80.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						bc262d5	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+bit	4.6.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+bit64	4.8.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+bitops	1.0-9	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+blob	1.3.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+boot	1.3-32	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						no	FALSE	4.6.1				
+brew	1.0-10	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+brio	1.1.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+broom	1.0.13	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+bslib	0.11.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+cachem	1.1.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+callr	3.8.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+car	3.1-5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+carData	3.0-6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+caTools	1.18.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+cellranger	1.1.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+checkmate	2.3.4	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+chromote	0.5.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			Google Chrome or other Chromium-based browser. chromium: chromium (rpm) or chromium-browser (deb)	
+cigarillo	1.2.1	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						f6d2ae7	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+circlize	0.4.18	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+cli	3.6.6	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+clipr	0.8.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			xclip (https://github.com/astrand/xclip) or xsel (http://www.vergenet.net/~conrad/software/xsel/) for accessing the X11 clipboard, or wl-clipboard (https://github.com/bugaevc/wl-clipboard) for systems using Wayland.	
+clue	0.3-68	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+cluster	2.1.8.2	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+clusterProfiler	4.20.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						d67d9f6	no	FALSE	4.6.1				
+codetools	0.2-20	hard	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						no	FALSE	4.6.1				
+collections	0.3.12	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+colorspace	2.1-2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+commonmark	2.0.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+compiler	4.6.1	hard	indirect	/usr/lib/R/library	3	base R			base						no (field absent)	FALSE	4.6.1				
+ComplexHeatmap	2.28.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						ceecd5f	no	FALSE	4.6.1				
+config	0.3.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+configr	0.3.5	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+conflicted	1.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+corpcor	1.6.10	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+corrplot	0.95	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+covr	3.6.5	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+cowplot	1.2.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+cpp11	0.5.5	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+crayon	1.5.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+credentials	2.0.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			git (optional)	
+crosstalk	1.2.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+curl	7.1.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libcurl (>= 7.73): libcurl-devel (rpm) or libcurl4-openssl-dev (deb)	
+data.table	1.18.4	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+DBI	1.3.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+dbplyr	2.6.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+DelayedArray	0.38.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						63285a4	no	FALSE	4.6.1				
+deldir	2.0-4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+Deriv	4.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+desc	1.4.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+DESeq2	1.52.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						16aeab6	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+devtools	2.5.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+diffobj	0.3.6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+digest	0.6.39	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+doBy	4.7.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+doParallel	1.0.17	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+DOSE	4.6.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						5a273eb	no	FALSE	4.6.1				
+downlit	0.4.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+dplyr	1.2.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+DT	0.34.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+dtplyr	1.3.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+duckdb	1.5.5	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		xz (for building from source)	
+duckplyr	1.2.1	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	CRAN		CRAN							no	FALSE	4.6.1				
+dynamicTreeCut	NOT INSTALLED	suggests-only	Suggests			not installed															
+EDASeq	2.46.0	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						f809958	no	FALSE	4.6.1				
+edgeR	4.10.1	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						5a71e43	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+ellipse	0.5.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ellipsis	0.3.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+enrichit	0.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+enrichplot	1.32.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						2961756	no	FALSE	4.6.1				
+evaluate	1.0.5	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+fansi	1.0.7	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+farver	2.1.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+fastcluster	1.3.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+fastduckdb	0.2.0	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	local									yes (libs/ present; field absent)	TRUE	4.6.1	x86_64-pc-linux-gnu	APAF-bioinformatics/fast_duckdb/fastduckdb@d78511504fbdb89fbf34bc26b22b3ff1524b0555	Cargo (Rust's package manager), rustc >= 1.88.0, xz	
+fastlimpadpc	0.1.0	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	local									yes (libs/ present; field absent)	TRUE	4.6.1	x86_64-pc-linux-gnu	APAF-bioinformatics/fast_limpa_dpc@d4f9cc1dcfeb0183c15bd08872dbe5cf3c2b09a2	Cargo (Rust's package manager), rustc >= 1.65.0, xz	
+fastmap	1.2.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+filelock	1.0.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+flextable	0.10.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+fontawesome	0.5.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+fontBitstreamVera	0.1.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+fontLiberation	0.1.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+fontquiver	0.2.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+forcats	1.0.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+foreach	1.5.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+forecast	9.0.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+formatR	1.14	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+Formula	1.2-5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+fracdiff	1.5-4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+fs	2.1.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libuv: libuv-devel (rpm) or libuv1-dev (deb). Alternatively to build the vendored libuv 'cmake' is required. GNU make.	
+furrr	0.4.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+futile.logger	1.4.9	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+futile.options	1.0.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+future	1.70.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+future.apply	1.20.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gargle	1.6.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gdtools	0.5.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		cairo, freetype2, fontconfig	
+generics	0.1.4	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+GenomicAlignments	1.48.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						34a743a	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+GenomicFeatures	1.64.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						66b0a50	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+GenomicRanges	1.64.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						ac531f1	no	FALSE	4.6.1				
+gert	2.3.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libgit2 (>= 1.0): libgit2-devel (rpm) or libgit2-dev (deb)	
+GetoptLong	1.1.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			Perl, Getopt::Long	
+GGally	2.4.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			openssl	
+ggdendro	0.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggforce	0.5.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+ggfun	0.2.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggiraph	0.9.6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libpng	
+ggnewscale	0.5.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggplot2	4.0.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggplotify	0.1.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggpubr	1.0.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggraph	2.2.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+ggrepel	0.9.8	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+ggsci	5.1.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggsignif	0.6.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggstats	0.13.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggtangle	0.1.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ggtree	4.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						c23145e	no	FALSE	4.6.1				
+gh	1.6.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+git2r	0.36.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libgit2 (>= 1.0) and its dependencies libssh2 and openssl header and libraries.	
+gitcreds	0.1.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			git	
+Glimma	2.15.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	GitHub				APAF-bioinformatics	GlimmaV2	HEAD	743af0944957ce2515b17b38d329506edd06ca5a		no	FALSE	4.6.1		APAF-bioinformatics/GlimmaV2		
+GlimmaV2	NOT INSTALLED	suggests-only	Suggests			not installed													APAF-bioinformatics/GlimmaV2		
+GlobalOptions	0.1.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+globals	0.19.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+glue	1.8.1	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+GO.db	3.23.1	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23								no	FALSE	4.6.1				
+golem	1.0.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+googledrive	2.1.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+googlesheets4	1.1.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+GOSemSim	2.38.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						6979ad7	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+gplots	3.3.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gprofiler2	0.2.4	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+graphics	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+graphlayouts	1.2.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+grDevices	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+grid	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+gridExtra	2.3.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gridGraphics	0.5-1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+GSEABase	NOT INSTALLED	suggests-only	Suggests			not installed															
+gson	0.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gt	1.3.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gtable	0.3.6	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+gtools	3.9.5	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+haven	2.5.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, zlib: zlib1g-dev (deb), zlib-devel (rpm)	
+here	1.0.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+highr	0.12	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+hms	1.1.4	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+htmltools	0.5.9	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+htmlwidgets	1.6.4	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+httpuv	1.6.17	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, zlib	
+httr	1.4.8	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+httr2	1.2.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+hwriter	1.3.2.1	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	CRAN		CRAN							no	FALSE	4.6.1				
+ids	1.0.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+igraph	2.3.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libxml2 (optional), glpk (>= 4.57, optional)	
+iheatmapr	0.7.1	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ini	0.3.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+interp	1.1-6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+iq	2.0.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+IRanges	2.46.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						db589cc	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+isoband	0.3.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+iterators	1.0.14	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+janeaustenr	1.0.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+janitor	2.2.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+jpeg	0.1-11	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libjpeg	
+jquerylib	0.1.4	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+jsonlite	2.0.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+juicyjuice	0.1.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+KEGGREST	1.52.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						873423d	no	FALSE	4.6.1				
+KernSmooth	2.23-26	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+knitr	1.51	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			Package vignettes based on R Markdown v2 or reStructuredText require Pandoc (http://pandoc.org). The function rst2pdf() requires rst2pdf (https://github.com/rst2pdf/rst2pdf).	
+labeling	0.4.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+lambda.r	1.2.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+later	1.4.8	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+lattice	0.22-9	hard	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+latticeExtra	0.6-31	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+lazyeval	0.2.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+lifecycle	1.0.5	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+limma	3.68.4	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						7c11dae	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+limpa	1.4.2	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						d9ad521	no	FALSE	4.6.1				1.4.0@2
+listenv	1.0.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+litedown	0.9	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+lme4	2.0-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+lmtest	0.9-40	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+locfit	1.5-9.12	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		USE_C17	
+logger	0.4.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+logging	0.10-111	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+lubridate	1.9.5	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		A system with zoneinfo data (e.g. /usr/share/zoneinfo). On Windows the zoneinfo included with R is used.	
+magick	2.9.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		ImageMagick++: ImageMagick-c++-devel (rpm) or libmagick++-dev (deb)	
+magrittr	2.0.5	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+markdown	2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+MASS	7.3-65	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+Matrix	1.7-5	hard	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+MatrixGenerics	1.24.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						df68909	no	FALSE	4.6.1				
+MatrixModels	0.5-4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+matrixStats	1.5.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+memoise	2.0.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+methods	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+mgcv	1.9-4	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+mime	0.13	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+miniUI	0.1.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+minqa	1.2.8	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make	
+mixOmics	6.36.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						0f4d16c	no	FALSE	4.6.1				
+modelr	0.1.11	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+MOFA2	NOT INSTALLED	suggests-only	Suggests			not installed															
+multidplyr	0.1.4	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+nanoarrow	0.9.0	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libzstd (optional), liblz4 (optional)	
+nlme	3.1-169	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+nloptr	2.2.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		cmake (>= 3.2.0) which is used only on Linux or macOS systems when no system build of nlopt (>= 2.7.0) can be found.	
+NLP	0.3-2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+nnet	7.3-20	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+numDeriv	2016.8-1.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+officer	0.7.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+openssl	2.4.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		OpenSSL >= 1.0.2	
+openxlsx	4.2.8.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+optparse	1.8.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+otel	0.2.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pacman	0.5.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pak	0.10.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+parallel	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+parallelly	1.48.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+patchwork	1.3.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pbkrtest	0.5.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pillar	1.11.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pingr	2.0.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+pixmap	0.4-14	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pkgbuild	1.4.8	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pkgconfig	2.0.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+pkgdown	2.2.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			pandoc (>= 2.10.1)	
+pkgload	1.5.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+plotly	4.12.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+plyr	1.8.9	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+png	0.1-9	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libpng	
+polyclip	1.10-7	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+polynom	1.4-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+praise	1.0.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+prettyunits	1.2.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+processx	3.9.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+profvis	0.4.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+progress	1.2.3	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+promises	1.5.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ps	1.9.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+purrr	1.2.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+pwalign	1.8.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						a6c6c74	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+qs2	0.2.2	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, C++17	
+quantreg	6.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+qvalue	2.44.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						ce7605b	no	FALSE	4.6.1				
+R.methodsS3	1.8.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+R.oo	1.27.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+R.utils	2.13.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+R6	2.6.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+ragg	1.5.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		freetype2, libpng, libtiff, libjpeg, libwebp, libwebpmux	
+rappdirs	0.3.4	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rARPACK	0.11-0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rbibutils	2.4.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rcmdcheck	1.4.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+RColorBrewer	1.1-3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+Rcpp	1.1.2	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+RcppArmadillo	15.4.0-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+RcppEigen	0.3.4.0.2	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+RcppParallel	5.1.11-2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, Intel TBB, Windows: cmd.exe and cscript.exe, Solaris: g++ is required	
+RcppProgress	0.4.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+RcppTOML	0.2.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		A C++17 compiler	
+RCurl	1.98-1.19	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, libcurl	
+Rdpack	2.6.6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+reactable	0.4.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+reactR	0.6.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+readr	2.2.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+readxl	1.5.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+reformulas	0.4.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rematch	2.0.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rematch2	2.1.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+remotes	2.5.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			Subversion for install_svn, git for install_git	
+reprex	2.1.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			pandoc (>= 2.0) - https://pandoc.org/	
+reshape2	1.4.5	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+restfulr	0.0.17	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+reticulate	1.46.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		Python (>= 2.7.0)	
+rex	1.2.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rgl	1.3.36	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		OpenGL and GLU Library (Required for display in R. See "Installing OpenGL support" in README.md. Not needed if only browser displays using rglwidget() are wanted.), zlib (optional), libpng (>=1.2.9, optional), FreeType (optional), pandoc (>=1.14, needed for vignettes), LaTeX needed for optional latex3d() examples.	
+RhpcBLASctl	NOT INSTALLED	suggests-only	Suggests			not installed															
+Rhtslib	3.8.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						7adc5c8	yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libbz2 & liblzma & libcurl (with header files), GNU make	
+rjson	0.2.23	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rjsoncons	1.3.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rlang	1.3.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rmarkdown	2.31	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1			pandoc (>= 1.14) - http://pandoc.org	
+roxygen2	8.0.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rprojroot	2.1.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+Rsamtools	2.28.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						31add28	yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make	
+RSpectra	0.16-2	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+RSQLite	3.53.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+rstatix	1.0.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rstudioapi	0.19.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rtracklayer	1.72.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						3136d28	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+ruv	0.9.7.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+RUVIIIC	1.0.19	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	GitHub		CRAN		cran	RUVIIIC	HEAD	c534151f6b2265b36294ff630f4dd13c2e86a9fa		yes	TRUE	4.6.1	x86_64-pc-linux-gnu	cran/RUVIIIC	C++11	
+RUVSeq	1.46.0	suggests-only	Suggests	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						49e8906	no	FALSE	4.6.1				
+rversions	3.0.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+rvest	1.0.5	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+S4Arrays	1.12.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						b1246fd	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+S4Vectors	0.50.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						dfc837c	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+S7	0.2.2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+sass	0.4.10	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make	
+scales	1.4.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+scatterpie	0.2.6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+segmented	2.2-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+selectr	0.6-0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+Seqinfo	1.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						345dd61	no	FALSE	4.6.1				
+seqinr	4.2-44	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		zlib headers and library.	
+sessioninfo	1.2.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shape	1.4.6.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shiny	1.14.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shinydashboard	0.7.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shinyFiles	0.9.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shinyjqui	0.4.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shinyjs	2.1.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+shinytest2	0.5.1	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+ShortRead	1.70.0	suggests-only	indirect	/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library	1	Bioconductor	3.23	Bioconductor 3.23						ee5a413	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+slam	0.1-55	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+snakecase	0.11.1	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+snow	0.4-4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+SnowballC	0.7.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+sourcetools	0.1.7-2	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+sp	2.2-1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+SparseArray	1.12.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						dd96584	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+SparseM	1.84-2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+splines	4.6.1	hard	indirect	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+statmod	1.5.2	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+stats	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+stats4	4.6.1	suggests-only	indirect	/usr/lib/R/library	3	base R			base						no (field absent)	FALSE	4.6.1				
+stringfish	0.19.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, C++17	
+stringi	1.8.7	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		ICU4C (>= 61, optional)	
+stringr	1.6.0	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+SummarizedExperiment	1.42.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						38d319f	no	FALSE	4.6.1				
+survival	3.8-6	suggests-only	indirect	/usr/lib/R/library	3	CRAN		CRAN	recommended						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+svglite	2.2.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libpng	
+sys	3.4.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+systemfonts	1.3.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		fontconfig, freetype2	
+testthat	3.3.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+textshaping	1.0.5	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		freetype2, harfbuzz, fribidi	
+tibble	3.3.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+tictoc	1.2.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+tidydr	0.0.6	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+tidygraph	1.3.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+tidyr	1.3.2	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+tidyselect	1.2.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	FALSE	4.6.1				
+tidytext	0.4.3	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+tidytree	0.4.8	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+tidyverse	2.0.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+timechange	0.4.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		A system with zoneinfo data (e.g. /usr/share/zoneinfo). On Windows the zoneinfo included with R is used.	
+timeDate	4052.112	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+tinytex	0.60	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+tm	0.7-18	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+tokenizers	0.3.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+tools	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+treeio	1.36.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						098376f	no	FALSE	4.6.1				
+tweenr	2.0.3	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+tzdb	0.5.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+UniProt.ws	2.52.0	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						23a0bb3	no	FALSE	4.6.1				
+UpSetR	1.4.1	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+urca	1.3-4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+urlchecker	2.0.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+usethis	3.2.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+utf8	1.2.6	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+utils	4.6.1	hard	Imports/Depends	/usr/lib/R/library	3	base R			base						yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+uuid	1.2-2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+V8	8.2.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		On Linux you can build against libv8-dev (Debian) or v8-devel (Fedora). We also provide static libv8 binaries for most platforms, see the README for details.	
+vctrs	0.7.3	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+viridis	0.6.5	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+viridisLite	0.4.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+vroom	1.7.1	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+waldo	0.6.2	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+webshot2	0.1.2	suggests-only	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+websocket	1.4.4	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		GNU make, OpenSSL >= 1.0.2	
+whisker	0.4.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+withr	3.0.3	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+writexl	1.5.4	hard	Imports/Depends	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		zlib	
+xfun	0.60	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+XML	3.99-0.23	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libxml2 (>= 2.6.3)	
+xml2	1.6.0	hard	Suggests	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu		libxml2: libxml2-dev (deb), libxml2-devel (rpm)	
+xopen	1.0.1	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+xtable	1.8-8	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+XVector	0.52.0	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	Bioconductor	3.23	Bioconductor 3.23						fa5f5a6	yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+yaml	2.3.12	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+yulab.utils	0.2.4	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							no	FALSE	4.6.1				
+zip	3.0.0	hard	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
+zoo	1.8-15	suggests-only	indirect	/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6	2	CRAN		CRAN							yes	TRUE	4.6.1	x86_64-pc-linux-gnu			
