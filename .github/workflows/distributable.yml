@@ -1,0 +1,359 @@
+name: KIT-134 distributable
+
+# The distributable (ticket KIT-134, revision 2.0): Electron around a bundled R, library and Python,
+# for Linux and Windows. Sources under packaging/.
+#
+# No run of this workflow uses the read token: fastduckdb and fastlimpadpc (internal repositories)
+# are not in what it builds, so the DIA, DIA_LIMPA and enrichment lanes are unavailable in it. The
+# token build (revision 1.2: no artifact, no cache) is not implemented here yet.
+#
+# A push to kit-134 runs a stage only when its commit message names one:
+#   [dist:snapshot]   P2 step 1: score the snapshot dates and probe Windows' Bioconductor binaries
+#   [dist:library]    P2: the library on both platforms, moved and loaded with the network off
+#   [dist:shell]      P3: the library again, then the Electron shell and its lifecycle test
+#   [dist:installer]  P4: the shell again, then the installers, installed on fresh runners
+#   [dist:container]  D5: the Windows library again, then loaded in a Server Core container
+# [dist-linux] or [dist-windows] limits the run to one platform.
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Stage"
+        type: choice
+        default: library
+        options: [snapshot, library, shell, installer, container]
+      platform:
+        description: "Platform"
+        type: choice
+        default: both
+        options: [both, linux, windows]
+  push:
+    branches: [kit-134]
+    paths:
+      - "packaging/**"
+      - ".github/workflows/distributable.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: distributable-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  R_VERSION: "4.6.1"
+  # Bioconductor 3.23's release (bioconductor.org/config.yaml): the first snapshot date scored.
+  BIOC_RELEASE_DATE: "2026-04-29"
+  # python-build-standalone (astral-sh) release and the CPython in it; MOFA2 pins Python 3.12.
+  PBS_RELEASE: "20261110"
+  PBS_PYTHON: "3.12.16"
+  PANDOC_VERSION: "3.11"
+  NODE_VERSION: "22"
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    outputs:
+      stage: ${{ steps.plan.outputs.stage }}
+      linux: ${{ steps.plan.outputs.linux }}
+      windows: ${{ steps.plan.outputs.windows }}
+      build: ${{ steps.plan.outputs.build }}
+      shell: ${{ steps.plan.outputs.shell }}
+      installer: ${{ steps.plan.outputs.installer }}
+      container: ${{ steps.plan.outputs.container }}
+    steps:
+      - id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+          INPUT_STAGE: ${{ inputs.stage }}
+          INPUT_PLATFORM: ${{ inputs.platform }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ]; then
+            stage="$INPUT_STAGE"; platform="$INPUT_PLATFORM"
+          else
+            stage="$(printf '%s' "$MESSAGE" | grep -o '\[dist:[a-z]*\]' | head -n 1 | sed 's/^\[dist:\(.*\)\]$/\1/')"
+            stage="${stage:-none}"
+            platform=both
+            case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
+          fi
+          case "$stage" in none|snapshot|library|shell|installer|container) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          build=false; shell=false; installer=false; container=false
+          case "$stage" in
+            library) build=true ;;
+            shell) build=true; shell=true ;;
+            installer) build=true; shell=true; installer=true ;;
+            container) build=true; container=true; platform=windows ;;
+          esac
+          linux=false; windows=false
+          case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
+          {
+            echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
+            echo "build=$build"; echo "shell=$shell"; echo "installer=$installer"; echo "container=$container"
+          } | tee -a "$GITHUB_OUTPUT"
+          echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
+
+  # ------------------------------------------------------- P2 step 1: the snapshot date
+  snapshot:
+    name: "P2: snapshot date and Windows Bioconductor probe"
+    needs: plan
+    if: needs.plan.outputs.stage == 'snapshot'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: R ${{ env.R_VERSION }} (Posit r-builds) and jsonlite in a build-tool library
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-${R_VERSION}_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb"
+          mkdir -p "$RUNNER_TEMP/tools-lib"
+          "/opt/R/${R_VERSION}/bin/Rscript" --vanilla -e 'install.packages("jsonlite", lib = commandArgs(TRUE)[[1]], repos = "https://packagemanager.posit.co/cran/latest")' "$RUNNER_TEMP/tools-lib"
+      - name: Score every snapshot date from Bioconductor 3.23's release to today
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/snapshot"
+          R_LIBS="$RUNNER_TEMP/tools-lib" "/opt/R/${R_VERSION}/bin/Rscript" --vanilla packaging/r/snapshot-date.R \
+            packaging/multischolar.lock.json "$BIOC_RELEASE_DATE" "$(date -u +%F)" "$RUNNER_TEMP/snapshot" \
+            2>&1 | tee "$RUNNER_TEMP/snapshot/snapshot-date.log"
+          { echo '### Snapshot date'; echo '```'; cat "$RUNNER_TEMP/snapshot/snapshot-choice.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: snapshot-date
+          path: ${{ runner.temp }}/snapshot
+          retention-days: 14
+
+  # ------------------------------------------------------------------------- Linux
+  linux-build:
+    name: "Linux: library${{ needs.plan.outputs.shell == 'true' && ', shell and archive' || '' }}"
+    needs: plan
+    if: needs.plan.outputs.build == 'true' && needs.plan.outputs.linux == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    env:
+      R_LIBS_USER: /nonexistent-user-library
+      R_LIBS_SITE: /nonexistent-site-library
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paths
+        run: |
+          {
+            echo "BUNDLE=$RUNNER_TEMP/stage/bundle"
+            echo "MOVED=$RUNNER_TEMP/relocated/msr moved"
+            echo "TOOLS_LIB=$RUNNER_TEMP/tools-lib"
+            echo "OUT=$RUNNER_TEMP/evidence"
+            echo "RLIB=/opt/R/$R_VERSION/lib/R/library"
+          } >> "$GITHUB_ENV"
+          echo "runner's own R: $(command -v R || echo none); Python: $(command -v python3 || echo none)"
+
+      - name: R ${{ env.R_VERSION }} at its build prefix (Posit r-builds); jsonlite in a build-tool library
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-${R_VERSION}_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb"
+          sudo chown -R "$(id -u):$(id -g)" "/opt/R/${R_VERSION}"
+          mkdir -p "$TOOLS_LIB" "$OUT"
+          "/opt/R/${R_VERSION}/bin/Rscript" --vanilla -e 'install.packages("jsonlite", lib = commandArgs(TRUE)[[1]], repos = "https://packagemanager.posit.co/cran/latest")' "$TOOLS_LIB"
+
+      - name: Resolve the library (plan; nothing installed)
+        run: R_LIBS="$TOOLS_LIB" "/opt/R/${R_VERSION}/bin/Rscript" --vanilla packaging/r/install-library.R plan . "$OUT"
+
+      - name: System libraries the packages need (Posit Package Manager's requirements for jammy)
+        run: |
+          set -o pipefail
+          query() { # repository, then package names; prints the apt packages
+            local repo="$1"; shift
+            local extra=""; [ "$repo" = bioconductor ] && extra="&bioc_version=3.23"
+            local url="https://packagemanager.posit.co/__api__/repos/$repo/sysreqs?all=false&distribution=ubuntu&release=22.04$extra$(printf '&pkgname=%s' "$@")"
+            if ! curl -fsS "$url" | jq -r '.requirements[].requirements.packages[]?' 2>/dev/null; then
+              # an unknown name fails the whole query: ask one at a time and say which were skipped
+              if [ "$#" -gt 1 ]; then for p in "$@"; do query "$repo" "$p"; done
+              else echo "no system requirements known for $repo/$1" >&2; fi
+            fi
+          }
+          : > "$RUNNER_TEMP/apt.txt"
+          for pair in CRAN:cran Bioconductor:bioconductor; do
+            mapfile -t names < <(awk -F'\t' -v r="${pair%%:*}" 'NR > 1 && $2 == r { print $1 }' "$OUT/plan-packages.tsv")
+            for ((i = 0; i < ${#names[@]}; i += 60)); do query "${pair##*:}" "${names[@]:i:60}" >> "$RUNNER_TEMP/apt.txt"; done
+          done
+          sort -u "$RUNNER_TEMP/apt.txt" | tee "$OUT/apt-packages.txt"
+          sudo apt-get install -y --no-install-recommends $(sort -u "$RUNNER_TEMP/apt.txt")
+
+      - name: "Install the library: snapshot binaries, the three source builds, MultiScholaR from this commit"
+        run: |
+          set -o pipefail
+          R_LIBS="$TOOLS_LIB" "/opt/R/${R_VERSION}/bin/Rscript" --vanilla packaging/r/install-library.R install . "$OUT" \
+            2>&1 | tee "$OUT/install-library.log"
+          echo "installed as binary packages: $(grep -c 'installing \*binary\* package' "$OUT/install-library.log" || true)"
+          echo "built from source:"; grep 'installing \*source\* package' "$OUT/install-library.log" || true
+
+      - name: The version table against the laptop's lockfile
+        run: |
+          set -o pipefail
+          R_LIBS="$TOOLS_LIB" "/opt/R/${R_VERSION}/bin/Rscript" --vanilla packaging/r/version-table.R . "$RLIB" \
+            "$OUT/bundle-sources.tsv" "$OUT/install-library.log" "$OUT" 2>&1 | tee "$OUT/version-table.log"
+          cat "$OUT/version-table.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Standalone Python with mofapy2 (hashes checked)
+        run: |
+          mkdir -p "$BUNDLE"
+          curl -fsSL -o "$RUNNER_TEMP/python.tar.gz" \
+            "https://github.com/astral-sh/python-build-standalone/releases/download/${PBS_RELEASE}/cpython-${PBS_PYTHON}%2B${PBS_RELEASE}-x86_64-unknown-linux-gnu-install_only.tar.gz"
+          tar -xzf "$RUNNER_TEMP/python.tar.gz" -C "$BUNDLE"
+          PYTHONNOUSERSITE=1 "$BUNDLE/python/bin/python3" -m pip install --no-cache-dir --no-warn-script-location \
+            --require-hashes --only-binary=:all: --no-deps -r packaging/python/requirements.txt
+          "$BUNDLE/python/bin/python3" -m pip list | tee "$OUT/python-packages.txt"
+
+      - name: Pandoc ${{ env.PANDOC_VERSION }}
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/pandoc.tar.gz" \
+            "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz"
+          mkdir -p "$RUNNER_TEMP/pandoc" "$BUNDLE/pandoc"
+          tar -xzf "$RUNNER_TEMP/pandoc.tar.gz" -C "$RUNNER_TEMP/pandoc"
+          install -m 0755 "$RUNNER_TEMP/pandoc/pandoc-${PANDOC_VERSION}/bin/pandoc" "$BUNDLE/pandoc/pandoc"
+          "$BUNDLE/pandoc/pandoc" --version | head -n 1
+
+      - name: Assemble the bundle; remove R from its build prefix
+        run: |
+          bash packaging/linux/assemble.sh "/opt/R/${R_VERSION}/lib/R" "$BUNDLE" 2>&1 | tee "$OUT/assemble.log"
+          sudo rm -rf "/opt/R/${R_VERSION}"
+          {
+            echo "### Linux bundle, size (MiB)"
+            echo '```'
+            for part in "" /R /R/library /python /syslib /pandoc; do du -sm "$BUNDLE$part"; done
+            echo "files: $(find "$BUNDLE" -type f | wc -l)"
+            echo "largest R packages:"; du -sm "$BUNDLE"/R/library/* | sort -rn | sed -n 1,12p
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY" "$OUT/sizes.txt"
+
+      - name: Move the folder; fetch the bare container image
+        id: move
+        run: |
+          mkdir -p "$(dirname "$MOVED")"
+          mv "$BUNDLE" "$MOVED"
+          test ! -e "/opt/R/${R_VERSION}"
+          docker pull -q ubuntu:22.04
+
+      - name: "Check: every bundled package loads (moved, bare ubuntu:22.04, path with spaces, network off)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-library.R offline \
+            2>&1 | tee "$OUT/check-library.log"
+
+      - name: Keep the evidence (text only)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-library-evidence
+          path: |
+            ${{ runner.temp }}/evidence
+            !${{ runner.temp }}/evidence/github-sources
+          retention-days: 14
+
+  # ------------------------------------------------------------------------ Windows
+  windows-build:
+    name: "Windows: library${{ needs.plan.outputs.shell == 'true' && ', shell and installer' || '' }}${{ needs.plan.outputs.container == 'true' && ', Server Core container' || '' }}"
+    needs: plan
+    if: needs.plan.outputs.build == 'true' && needs.plan.outputs.windows == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 200
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paths
+        run: |
+          "BUNDLE=$env:RUNNER_TEMP\stage\bundle" >> $env:GITHUB_ENV
+          "MOVED=$env:RUNNER_TEMP\re located\msr moved" >> $env:GITHUB_ENV
+          "TOOLS_LIB=$env:RUNNER_TEMP\tools-lib" >> $env:GITHUB_ENV
+          "OUT=$env:RUNNER_TEMP\evidence" >> $env:GITHUB_ENV
+          "R_LIBS_USER=$env:RUNNER_TEMP\nonexistent-user-library" >> $env:GITHUB_ENV
+          "R_LIBS_SITE=$env:RUNNER_TEMP\nonexistent-site-library" >> $env:GITHUB_ENV
+          "runner's own R on the PATH: $((Get-Command Rscript.exe -ErrorAction SilentlyContinue).Source); Python: $((Get-Command python -ErrorAction SilentlyContinue).Source)"
+
+      - name: R ${{ env.R_VERSION }} into the folder (CRAN installer, silent); Rtools45 for the build
+        run: |
+          pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action r -Bundle $env:BUNDLE -RVersion $env:R_VERSION
+          New-Item -ItemType Directory -Force $env:TOOLS_LIB, $env:OUT | Out-Null
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla -e "install.packages('jsonlite', lib = commandArgs(TRUE)[[1]], repos = 'https://packagemanager.posit.co/cran/latest', type = 'binary')" $env:TOOLS_LIB
+          if ($LASTEXITCODE -ne 0) { throw "could not install jsonlite into the build-tool library" }
+
+      - name: "Install the library: snapshot binaries, the three source builds, MultiScholaR from this commit"
+        run: |
+          $env:PATH = "C:\rtools45\x86_64-w64-mingw32.static.posix\bin;C:\rtools45\usr\bin;$env:PATH"
+          $env:R_LIBS = $env:TOOLS_LIB
+          $rscript = "$env:BUNDLE\R\bin\Rscript.exe"
+          & $rscript --vanilla packaging\r\install-library.R plan . $env:OUT
+          if ($LASTEXITCODE -ne 0) { throw "plan failed" }
+          & $rscript --vanilla packaging\r\install-library.R install . $env:OUT *>&1 | Tee-Object -FilePath "$env:OUT\install-library.log"
+          if ($LASTEXITCODE -ne 0) { throw "install failed" }
+          "built from source:"; Select-String -Path "$env:OUT\install-library.log" -Pattern 'installing \*source\* package' | ForEach-Object Line
+
+      - name: The version table against the laptop's lockfile
+        run: |
+          $env:R_LIBS = $env:TOOLS_LIB
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla packaging\r\version-table.R . "$env:BUNDLE\R\library" "$env:OUT\bundle-sources.tsv" "$env:OUT\install-library.log" $env:OUT *>&1 | Tee-Object -FilePath "$env:OUT\version-table.log"
+          if ($LASTEXITCODE -ne 0) { throw "version table failed" }
+          Get-Content "$env:OUT\version-table.md" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Standalone Python with mofapy2 (hashes checked)
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\python.tar.gz" "https://github.com/astral-sh/python-build-standalone/releases/download/${env:PBS_RELEASE}/cpython-${env:PBS_PYTHON}%2B${env:PBS_RELEASE}-x86_64-pc-windows-msvc-install_only.tar.gz"
+          & "$env:SystemRoot\System32\tar.exe" -xzf "$env:RUNNER_TEMP\python.tar.gz" -C $env:BUNDLE
+          if ($LASTEXITCODE -ne 0) { throw "could not unpack Python" }
+          $env:PYTHONNOUSERSITE = '1'
+          & "$env:BUNDLE\python\python.exe" -m pip install --no-cache-dir --no-warn-script-location --require-hashes --only-binary=:all: --no-deps -r packaging\python\requirements.txt
+          if ($LASTEXITCODE -ne 0) { throw "pip install failed" }
+          & "$env:BUNDLE\python\python.exe" -m pip list | Tee-Object -FilePath "$env:OUT\python-packages.txt"
+
+      - name: Pandoc ${{ env.PANDOC_VERSION }}
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\pandoc.zip" "https://github.com/jgm/pandoc/releases/download/${env:PANDOC_VERSION}/pandoc-${env:PANDOC_VERSION}-windows-x86_64.zip"
+          Expand-Archive -LiteralPath "$env:RUNNER_TEMP\pandoc.zip" -DestinationPath "$env:RUNNER_TEMP\pandoc"
+          New-Item -ItemType Directory -Force "$env:BUNDLE\pandoc" | Out-Null
+          Copy-Item "$env:RUNNER_TEMP\pandoc\pandoc-${env:PANDOC_VERSION}\*" "$env:BUNDLE\pandoc\" -Recurse
+          & "$env:BUNDLE\pandoc\pandoc.exe" --version | Select-Object -First 1
+
+      - name: Size; move the folder to a path with spaces
+        id: move
+        run: |
+          function Get-SizeMiB($path) { [math]::Round((Get-ChildItem -LiteralPath $path -Recurse -File -Force | Measure-Object Length -Sum).Sum / 1MB) }
+          $lines = @('### Windows bundle, size (MiB)', '```')
+          foreach ($part in '.', 'R', 'R\library', 'python', 'pandoc') { $lines += "{0,6}  bundle\{1}" -f (Get-SizeMiB (Join-Path $env:BUNDLE $part)), $part }
+          $lines += "files: $((Get-ChildItem -LiteralPath $env:BUNDLE -Recurse -File -Force).Count)"
+          $lines += 'largest R packages:'
+          $lines += Get-ChildItem "$env:BUNDLE\R\library" -Directory | ForEach-Object { [pscustomobject]@{ MiB = Get-SizeMiB $_.FullName; Name = $_.Name } } | Sort-Object MiB -Descending | Select-Object -First 12 | ForEach-Object { "{0,6}  {1}" -f $_.MiB, $_.Name }
+          $lines += '```'
+          $lines | Tee-Object -FilePath "$env:OUT\sizes.txt" | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          New-Item -ItemType Directory -Force (Split-Path $env:MOVED) | Out-Null
+          Move-Item -LiteralPath $env:BUNDLE -Destination $env:MOVED
+          if (Test-Path $env:BUNDLE) { throw "the bundle is still at its build location" }
+
+      - name: "Check: every bundled package loads (moved, reduced environment, network cut for the bundle's programs)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          Set-NetFirewallProfile -All -Enabled True
+          $programs = Get-ChildItem -LiteralPath $env:MOVED -Recurse -File -Filter *.exe
+          foreach ($program in $programs) {
+            New-NetFirewallRule -DisplayName "kit-134 block $($program.FullName)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
+          }
+          "outbound traffic blocked for the bundle's $($programs.Count) programs"
+          pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-library.R -Arguments offline *>&1 | Tee-Object -FilePath "$env:OUT\check-library.log"
+          if ($LASTEXITCODE -ne 0) { throw "the library check failed" }
+
+      - name: Keep the evidence (text only)
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-library-evidence
+          path: |
+            ${{ runner.temp }}/evidence
+            !${{ runner.temp }}/evidence/github-sources
+          retention-days: 14

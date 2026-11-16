@@ -1,0 +1,16 @@
+# KIT-134 P2: development and test tools left out of the shipped library (revision 2.0, 2.0.2).
+# One package per line. The packages that only these need are left out with them; the build fails
+# if a shipped package needs one of them (packaging/r/install-library.R).
+testthat
+shinytest2
+chromote
+covr
+devtools
+roxygen2
+usethis
+pkgdown
+pak
+# webshot2 (Suggests) imports chromote and drives a Chrome the bundle does not carry. No package
+# code calls it: it appears only in loadDependencies()'s install list (R/func_general_filemgmt.R),
+# which the packaged application never calls (F12).
+webshot2
