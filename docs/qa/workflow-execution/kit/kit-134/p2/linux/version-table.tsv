@@ -1,0 +1,439 @@
+package	locked_version	locked_source	bundled_version	bundled_source	same	closure	compiled	note
+abind	1.4-8	CRAN	1.4-8	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ade4	1.7-24	CRAN	1.7-24	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+aisdk	1.4.12	CRAN	1.4.12	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+AnnotationDbi	1.74.0	Bioconductor 3.23	1.74.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+ape	5.8-1	CRAN	5.8-1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+aplot	0.3.1	CRAN	0.3.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+aroma.light	3.42.0	Bioconductor 3.23	3.42.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+arrow	24.0.0	CRAN	25.0.0	snapshot 2026-07-30 CRAN, binary	no	hard	yes	
+AsioHeaders	1.30.2-1	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+askpass	1.2.1	CRAN	1.2.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+assertthat	0.2.1	CRAN	0.2.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+attempt	0.3.1	CRAN	0.3.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+audio	0.1-12	CRAN	0.1-12	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+backports	1.5.1	CRAN	1.5.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+base			4.6.1	R 4.6.1	no	not in the lockfile	no	part of R, outside the closure
+base64enc	0.1-6	CRAN	0.1-6	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+basilisk			1.24.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	no	not in the verified library (D7: MOFA2 and what it adds)
+beepr	2.0	CRAN	2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+BH	1.90.0-1	CRAN	1.90.0-1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+bigD	0.3.1	CRAN	0.3.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+Biobase	2.72.0	Bioconductor 3.23	2.72.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+BiocBaseUtils	1.14.2	Bioconductor 3.23	1.14.2	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+BiocFileCache	3.2.0	Bioconductor 3.23	3.2.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+BiocGenerics	0.58.1	Bioconductor 3.23	0.58.1	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+BiocIO	1.22.0	Bioconductor 3.23	1.22.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+biocmake			1.4.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	no	not in the verified library (D7: MOFA2 and what it adds)
+BiocManager	1.30.27	CRAN	1.30.27	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+BiocParallel	1.46.0	Bioconductor 3.23	1.46.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+biomaRt	2.68.0	Bioconductor 3.23	2.68.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+Biostrings	2.80.1	Bioconductor 3.23	2.80.1	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+bit	4.6.0	CRAN	4.6.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+bit64	4.8.2	CRAN	4.8.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+bitops	1.0-9	CRAN	1.0-9	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+blob	1.3.0	CRAN	1.3.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+boot	1.3-32	CRAN	1.3-32	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+brew	1.0-10	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+brio	1.1.5	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+broom	1.0.13	CRAN	1.0.13	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+bslib	0.11.0	CRAN	0.11.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+cachem	1.1.0	CRAN	1.1.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+callr	3.8.0	CRAN	3.8.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+car	3.1-5	CRAN	3.1-5	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+carData	3.0-6	CRAN	3.0-6	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+caTools	1.18.3	CRAN	1.18.4	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+cellranger	1.1.0	CRAN	1.1.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+checkmate	2.3.4	CRAN	2.3.4	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+chromote	0.5.1	CRAN			no	suggests-only	no	excluded (library-exclude.txt)
+cigarillo	1.2.1	Bioconductor 3.23	1.2.1	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+circlize	0.4.18	CRAN	0.4.18	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+class			7.3-23	R installer (recommended, not reinstalled)	no	not in the lockfile	yes	part of R, outside the closure
+cli	3.6.6	CRAN	3.6.6	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+clipr	0.8.1	CRAN	0.8.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+clue	0.3-68	CRAN	0.3-68	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+cluster	2.1.8.2	CRAN	2.1.8.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+clusterProfiler	4.20.0	Bioconductor 3.23	4.20.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+codetools	0.2-20	CRAN	0.2-20	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+collections	0.3.12	CRAN	0.3.12	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+colorspace	2.1-2	CRAN	2.1-3	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+commonmark	2.0.0	CRAN	2.0.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+compiler	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	no	
+ComplexHeatmap	2.28.0	Bioconductor 3.23	2.28.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+config	0.3.2	CRAN	0.3.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+configr	0.3.5	CRAN	0.3.5	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+conflicted	1.2.0	CRAN	1.2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+corpcor	1.6.10	CRAN	1.6.10	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+corrplot	0.95	CRAN	0.95	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+covr	3.6.5	CRAN			no	suggests-only	yes	excluded (library-exclude.txt)
+cowplot	1.2.0	CRAN	1.2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+cpp11	0.5.5	CRAN	0.5.5	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+crayon	1.5.3	CRAN	1.5.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+credentials	2.0.3	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+crosstalk	1.2.2	CRAN	1.2.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+curl	7.1.0	CRAN	7.1.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+data.table	1.18.4	CRAN	1.18.4	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+datasets			4.6.1	R 4.6.1	no	not in the lockfile	no	part of R, outside the closure
+DBI	1.3.0	CRAN	1.3.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+dbplyr	2.6.0	CRAN	2.6.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+DelayedArray	0.38.2	Bioconductor 3.23	0.38.2	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+deldir	2.0-4	CRAN	2.0-4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+Deriv	4.2.0	CRAN	4.3.0	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+desc	1.4.3	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+DESeq2	1.52.0	Bioconductor 3.23	1.52.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+devtools	2.5.2	CRAN			no	suggests-only	no	excluded (library-exclude.txt)
+diffobj	0.3.6	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+digest	0.6.39	CRAN	0.6.39	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+dir.expiry			1.20.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	no	not in the verified library (D7: MOFA2 and what it adds)
+doBy	4.7.2	CRAN	4.7.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+doParallel	1.0.17	CRAN	1.0.17	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+DOSE	4.6.0	Bioconductor 3.23	4.6.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+downlit	0.4.5	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+dplyr	1.2.1	CRAN	1.2.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+dqrng			0.4.1	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+DT	0.34.0	CRAN	0.34.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+dtplyr	1.3.3	CRAN	1.3.3	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+duckdb	1.5.5	CRAN	1.5.5	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	pinned by the code to 1.5.5
+duckplyr	1.2.1	CRAN	1.2.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+dynamicTreeCut		not installed			no	suggests-only	no	never installed on the laptop; not added
+EDASeq	2.46.0	Bioconductor 3.23	2.46.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+edgeR	4.10.1	Bioconductor 3.23	4.10.1	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+ellipse	0.5.0	CRAN	0.5.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ellipsis	0.3.3	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+enrichit	0.2.0	CRAN	0.2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+enrichplot	1.32.0	Bioconductor 3.23	1.32.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+evaluate	1.0.5	CRAN	1.0.5	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+fansi	1.0.7	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+farver	2.1.2	CRAN	2.1.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+fastcluster	1.3.0	CRAN	1.3.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+fastduckdb	0.2.0	local build; Remotes pin d78511504fbdb89fbf34bc26b22b3ff1524b0555			no	suggests-only	yes	internal: needs the read token; not in this build
+fastlimpadpc	0.1.0	local build; Remotes pin d4f9cc1dcfeb0183c15bd08872dbe5cf3c2b09a2			no	suggests-only	yes	internal: needs the read token; not in this build
+fastmap	1.2.0	CRAN	1.2.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+filelock	1.0.3	CRAN	1.0.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+flextable	0.10.0	CRAN	0.10.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+FNN			1.1.4.1	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+fontawesome	0.5.3	CRAN	0.5.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+fontBitstreamVera	0.1.1	CRAN	0.1.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+fontLiberation	0.1.0	CRAN	0.1.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+fontquiver	0.2.1	CRAN	0.2.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+forcats	1.0.1	CRAN	1.0.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+foreach	1.5.2	CRAN	1.5.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+forecast	9.0.2	CRAN	9.0.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+foreign			0.8-91	R installer (recommended, not reinstalled)	no	not in the lockfile	yes	part of R, outside the closure
+formatR	1.14	CRAN	1.14	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+Formula	1.2-5	CRAN	1.2-5	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+fracdiff	1.5-4	CRAN	1.5-4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+fs	2.1.0	CRAN	2.1.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+furrr	0.4.0	CRAN	0.4.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+futile.logger	1.4.9	CRAN	1.4.9	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+futile.options	1.0.1	CRAN	1.0.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+future	1.70.0	CRAN	1.75.0	snapshot 2026-07-30 CRAN, binary	no	hard	no	
+future.apply	1.20.2	CRAN	1.20.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+gargle	1.6.1	CRAN	1.6.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+gdtools	0.5.1	CRAN	0.5.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+generics	0.1.4	CRAN	0.1.4	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+GenomicAlignments	1.48.0	Bioconductor 3.23	1.48.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+GenomicFeatures	1.64.0	Bioconductor 3.23	1.64.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+GenomicRanges	1.64.0	Bioconductor 3.23	1.64.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+gert	2.3.1	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+GetoptLong	1.1.1	CRAN	1.1.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+GGally	2.4.0	CRAN	2.4.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggdendro	0.2.0	CRAN	0.2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggforce	0.5.0	CRAN	0.5.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+ggfun	0.2.1	CRAN	0.2.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggiraph	0.9.6	CRAN	0.9.6	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+ggnewscale	0.5.2	CRAN	0.5.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+ggplot2	4.0.3	CRAN	4.0.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+ggplotify	0.1.3	CRAN	0.1.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+ggpubr	1.0.0	CRAN	1.0.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggraph	2.2.2	CRAN	2.2.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+ggrepel	0.9.8	CRAN	0.9.8	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+ggsci	5.1.0	CRAN	5.1.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggsignif	0.6.4	CRAN	0.6.4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggstats	0.13.0	CRAN	0.13.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggtangle	0.1.2	CRAN	0.1.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ggtree	4.2.0	Bioconductor 3.23	4.2.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+gh	1.6.0	CRAN	1.6.1	snapshot 2026-07-30 CRAN, binary	no	hard	no	
+git2r	0.36.2	CRAN	0.36.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+gitcreds	0.1.2	CRAN	0.1.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+Glimma	2.15.2	GitHub APAF-bioinformatics/GlimmaV2@743af094	2.15.2	GitHub APAF-bioinformatics/GlimmaV2@743af0944957ce2515b17b38d329506edd06ca5a	yes	suggests-only	no	
+GlimmaV2		not installed			no	suggests-only	no	never installed on the laptop; not added
+GlobalOptions	0.1.4	CRAN	0.1.4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+globals	0.19.1	CRAN	0.19.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+glue	1.8.1	CRAN	1.8.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+GO.db	3.23.1	Bioconductor 3.23	3.23.1	snapshot 2026-07-30 Bioconductor, built from source	yes	suggests-only	no	
+golem	1.0.1	CRAN	1.0.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+googledrive	2.1.2	CRAN	2.1.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+googlesheets4	1.1.2	CRAN	1.1.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+GOSemSim	2.38.3	Bioconductor 3.23	2.38.3	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+gplots	3.3.0	CRAN	3.3.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+gprofiler2	0.2.4	CRAN	0.2.4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+graphics	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+graphlayouts	1.2.4	CRAN	1.2.5	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+grDevices	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+grid	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+gridExtra	2.3.1	CRAN	2.3.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+gridGraphics	0.5-1	CRAN	0.5-1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+GSEABase		not installed			no	suggests-only	no	never installed on the laptop; not added
+gson	0.2.0	CRAN	0.2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+gt	1.3.0	CRAN	1.3.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+gtable	0.3.6	CRAN	0.3.6	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+gtools	3.9.5	CRAN	3.9.5	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+h5mread			1.4.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+haven	2.5.5	CRAN	2.5.5	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+HDF5Array			1.40.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	no	not in the verified library (D7: MOFA2 and what it adds)
+here	1.0.2	CRAN	1.0.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+highr	0.12	CRAN	0.12	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+hms	1.1.4	CRAN	1.1.4	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+htmltools	0.5.9	CRAN	0.5.9	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+htmlwidgets	1.6.4	CRAN	1.6.4	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+httpuv	1.6.17	CRAN	1.6.17	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+httr	1.4.8	CRAN	1.4.8	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+httr2	1.2.3	CRAN	1.3.0	snapshot 2026-07-30 CRAN, binary	no	hard	no	
+hwriter	1.3.2.1	CRAN	1.3.2.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ids	1.0.1	CRAN	1.0.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+igraph	2.3.3	CRAN	2.3.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+iheatmapr	0.7.1	CRAN	0.7.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+ini	0.3.1	CRAN	0.3.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+interp	1.1-6	CRAN	1.1-6	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+iq	2.0.1	CRAN	2.0.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+IRanges	2.46.0	Bioconductor 3.23	2.46.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+irlba			2.3.7	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+isoband	0.3.0	CRAN	0.3.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+iterators	1.0.14	CRAN	1.0.14	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+janeaustenr	1.0.0	CRAN	1.0.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+janitor	2.2.1	CRAN	2.2.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+jpeg	0.1-11	CRAN	0.1-11	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+jquerylib	0.1.4	CRAN	0.1.4	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+jsonlite	2.0.0	CRAN	2.0.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+juicyjuice	0.1.0	CRAN	0.1.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+KEGGREST	1.52.2	Bioconductor 3.23	1.52.2	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+KernSmooth	2.23-26	CRAN	2.23-26	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+knitr	1.51	CRAN	1.51	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+labeling	0.4.3	CRAN	0.4.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+lambda.r	1.2.4	CRAN	1.2.4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+later	1.4.8	CRAN	1.4.8	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+lattice	0.22-9	CRAN	0.22-9	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+latticeExtra	0.6-31	CRAN	0.6-31	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+lazyeval	0.2.3	CRAN	0.2.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+lifecycle	1.0.5	CRAN	1.0.5	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+limma	3.68.4	Bioconductor 3.23	3.68.4	snapshot 2026-07-30 Bioconductor, binary	yes	hard	yes	
+limpa	1.4.2	Bioconductor 3.23	1.4.0	snapshot 2026-07-30 Bioconductor, binary	no	suggests-only	no	
+listenv	1.0.0	CRAN	1.0.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+litedown	0.9	CRAN	0.10	snapshot 2026-07-30 CRAN, binary	no	suggests-only	no	
+lme4	2.0-1	CRAN	2.0-6	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+lmtest	0.9-40	CRAN	0.9-40	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+locfit	1.5-9.12	CRAN	1.5-9.12	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+logger	0.4.2	CRAN	0.4.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+logging	0.10-111	CRAN	0.10-111	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+lubridate	1.9.5	CRAN	1.9.5	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+magick	2.9.1	CRAN	2.9.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+magrittr	2.0.5	CRAN	2.0.5	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+markdown	2.0	CRAN	2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+MASS	7.3-65	CRAN	7.3-66	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+Matrix	1.7-5	CRAN	1.7-6	snapshot 2026-07-30 CRAN, binary	no	hard	yes	
+MatrixGenerics	1.24.0	Bioconductor 3.23	1.24.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+MatrixModels	0.5-4	CRAN	0.5-4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+matrixStats	1.5.0	CRAN	1.5.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+memoise	2.0.1	CRAN	2.0.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+methods	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+mgcv	1.9-4	CRAN	1.9-4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+mime	0.13	CRAN	0.13	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+miniUI	0.1.2	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+minqa	1.2.8	CRAN	1.2.8	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+mixOmics	6.36.0	Bioconductor 3.23	6.36.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+modelr	0.1.11	CRAN	0.1.11	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+MOFA2		not installed	1.22.0	snapshot 2026-07-30 Bioconductor, binary	no	suggests-only	yes	not in the verified library (D7)
+multidplyr	0.1.4	CRAN	0.1.4	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+MultiScholaR			0.5.0	checkout 21dafb4d2c80850096a0b7bb4e8ba6b9ef568bf0	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds); this build's source
+nanoarrow	0.9.0	CRAN	0.8.0-1	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+nlme	3.1-169	CRAN	3.1-170	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+nloptr	2.2.1	CRAN	2.2.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+NLP	0.3-2	CRAN	0.3-3	snapshot 2026-07-30 CRAN, binary	no	suggests-only	no	
+nnet	7.3-20	CRAN	7.3-20	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+numDeriv	2016.8-1.1	CRAN	2016.8-1.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+officer	0.7.5	CRAN	0.7.6	snapshot 2026-07-30 CRAN, binary	no	suggests-only	no	
+openssl	2.4.2	CRAN	2.4.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+openxlsx	4.2.8.1	CRAN	4.2.8.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+optparse	1.8.2	CRAN	1.8.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+otel	0.2.0	CRAN	0.2.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+pacman	0.5.1	CRAN	0.5.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+pak	0.10.0	CRAN			no	suggests-only	yes	excluded (library-exclude.txt)
+parallel	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+parallelly	1.48.0	CRAN	1.48.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+patchwork	1.3.2	CRAN	1.3.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+pbkrtest	0.5.5	CRAN	0.5.5	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+pheatmap			1.0.13	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	no	not in the verified library (D7: MOFA2 and what it adds)
+pillar	1.11.1	CRAN	1.11.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+pingr	2.0.5	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+pixmap	0.4-14	CRAN	0.4-14	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+pkgbuild	1.4.8	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+pkgconfig	2.0.3	CRAN	2.0.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+pkgdown	2.2.1	CRAN			no	suggests-only	no	excluded (library-exclude.txt)
+pkgload	1.5.3	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+plotly	4.12.0	CRAN	4.12.1	snapshot 2026-07-30 CRAN, binary	no	hard	no	
+plyr	1.8.9	CRAN	1.8.9	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+png	0.1-9	CRAN	0.1-9	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+polyclip	1.10-7	CRAN	1.10-7	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+polynom	1.4-1	CRAN	1.4-1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+praise	1.0.0	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+prettyunits	1.2.0	CRAN	1.2.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+processx	3.9.0	CRAN	3.9.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+profvis	0.4.0	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+progress	1.2.3	CRAN	1.2.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+promises	1.5.0	CRAN	1.5.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+ps	1.9.3	CRAN	1.9.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+purrr	1.2.2	CRAN	1.2.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+pwalign	1.8.0	Bioconductor 3.23	1.8.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+qs2	0.2.2	CRAN	0.2.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+quantreg	6.1	CRAN	6.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+qvalue	2.44.0	Bioconductor 3.23	2.44.0	snapshot 2026-07-30 Bioconductor, binary	yes	hard	no	
+R.methodsS3	1.8.2	CRAN	1.8.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+R.oo	1.27.1	CRAN	1.27.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+R.utils	2.13.0	CRAN	2.13.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+R6	2.6.1	CRAN	2.6.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+ragg	1.5.2	CRAN	1.5.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rappdirs	0.3.4	CRAN	0.3.4	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+rARPACK	0.11-0	CRAN	0.11-0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+rbibutils	2.4.1	CRAN	2.4.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rcmdcheck	1.4.0	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+RColorBrewer	1.1-3	CRAN	1.1-3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+Rcpp	1.1.2	CRAN	1.1.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+RcppAnnoy			0.0.23	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+RcppArmadillo	15.4.0-1	CRAN	15.4.2-1	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+RcppEigen	0.3.4.0.2	CRAN	0.3.4.0.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+RcppParallel	5.1.11-2	CRAN	6.1.1	snapshot 2026-07-30 CRAN, binary	no	hard	yes	
+RcppProgress	0.4.2	CRAN	0.4.2	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+RcppTOML	0.2.3	CRAN	0.2.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+RCurl	1.98-1.19	CRAN	1.98-1.19	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+Rdpack	2.6.6	CRAN	2.6.6	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+reactable	0.4.5	CRAN	0.4.5	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+reactR	0.6.1	CRAN	0.6.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+readr	2.2.0	CRAN	2.2.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+readxl	1.5.0	CRAN	1.5.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+reformulas	0.4.4	CRAN	0.4.4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+rematch	2.0.0	CRAN	2.0.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+rematch2	2.1.2	CRAN	2.1.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+remotes	2.5.0	CRAN	2.5.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+reprex	2.1.1	CRAN	2.1.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+reshape2	1.4.5	CRAN	1.4.5	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+restfulr	0.0.17	CRAN	0.0.17	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+reticulate	1.46.0	CRAN	1.46.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rex	1.2.2	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+rgl	1.3.36	CRAN	1.3.36	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rhdf5			2.56.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+rhdf5filters			1.24.1	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+Rhdf5lib			2.0.0	snapshot 2026-07-30 Bioconductor, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+RhpcBLASctl		not installed			no	suggests-only	no	never installed on the laptop; not added
+Rhtslib	3.8.0	Bioconductor 3.23	3.8.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+rjson	0.2.23	CRAN	0.2.23	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rjsoncons	1.3.3	CRAN	1.3.3	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rlang	1.3.0	CRAN	1.3.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+rmarkdown	2.31	CRAN	2.31	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+roxygen2	8.0.0	CRAN			no	suggests-only	yes	excluded (library-exclude.txt)
+rpart			4.1.27	R installer (recommended, not reinstalled)	no	not in the lockfile	yes	part of R, outside the closure
+rprojroot	2.1.1	CRAN	2.1.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+Rsamtools	2.28.0	Bioconductor 3.23	2.28.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+RSpectra	0.16-2	CRAN	0.16-2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+RSQLite	3.53.3	CRAN	3.53.3	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+rstatix	1.0.0	CRAN	1.1.0	snapshot 2026-07-30 CRAN, binary	no	suggests-only	no	
+rstudioapi	0.19.0	CRAN	0.19.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+rtracklayer	1.72.0	Bioconductor 3.23	1.72.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+Rtsne			0.17	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+ruv	0.9.7.1	CRAN	0.9.7.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+RUVIIIC	1.0.19	GitHub cran/RUVIIIC@c534151f	1.0.19	GitHub cran/RUVIIIC@c534151f6b2265b36294ff630f4dd13c2e86a9fa	yes	hard	yes	
+RUVSeq	1.46.0	Bioconductor 3.23	1.46.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+rversions	3.0.0	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+rvest	1.0.5	CRAN	1.0.5	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+S4Arrays	1.12.0	Bioconductor 3.23	1.12.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+S4Vectors	0.50.1	Bioconductor 3.23	0.50.1	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+S7	0.2.2	CRAN	0.2.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+sass	0.4.10	CRAN	0.4.10	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+scales	1.4.0	CRAN	1.4.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+scatterpie	0.2.6	CRAN	0.2.6	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+segmented	2.2-1	CRAN	2.2-1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+selectr	0.6-0	CRAN	0.6-0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+Seqinfo	1.2.0	Bioconductor 3.23	1.2.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+seqinr	4.2-44	CRAN	4.2-44	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+sessioninfo	1.2.4	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+shape	1.4.6.1	CRAN	1.4.6.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+shiny	1.14.0	CRAN	1.14.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+shinydashboard	0.7.3	CRAN	0.7.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+shinyFiles	0.9.3	CRAN	0.9.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+shinyjqui	0.4.1	CRAN	0.4.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+shinyjs	2.1.1	CRAN	2.1.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+shinytest2	0.5.1	CRAN			no	suggests-only	yes	excluded (library-exclude.txt)
+ShortRead	1.70.0	Bioconductor 3.23	1.70.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+sitmo			2.0.2	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+slam	0.1-55	CRAN	0.1-56	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+snakecase	0.11.1	CRAN	0.11.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+snow	0.4-4	CRAN	0.4-4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+SnowballC	0.7.1	CRAN	0.7.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+sourcetools	0.1.7-2	CRAN	0.1.7-2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+sp	2.2-1	CRAN	2.2-3	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+SparseArray	1.12.2	Bioconductor 3.23	1.12.2	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+SparseM	1.84-2	CRAN	1.84-2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+spatial			7.3-18	R installer (recommended, not reinstalled)	no	not in the lockfile	yes	part of R, outside the closure
+splines	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+statmod	1.5.2	CRAN	1.5.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+stats	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+stats4	4.6.1	base R	4.6.1	R 4.6.1	yes	suggests-only	no	
+stringfish	0.19.0	CRAN	0.19.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+stringi	1.8.7	CRAN	1.8.7	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+stringr	1.6.0	CRAN	1.6.0	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+SummarizedExperiment	1.42.0	Bioconductor 3.23	1.42.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+survival	3.8-6	CRAN	3.8-9	snapshot 2026-07-30 CRAN, binary	no	suggests-only	yes	
+svglite	2.2.2	CRAN	2.2.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+sys	3.4.3	CRAN	3.4.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+systemfonts	1.3.2	CRAN	1.3.2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+tcltk			4.6.1	R 4.6.1	no	not in the lockfile	yes	part of R, outside the closure
+testthat	3.3.2	CRAN			no	suggests-only	yes	excluded (library-exclude.txt)
+textshaping	1.0.5	CRAN	1.0.5	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+tibble	3.3.1	CRAN	3.3.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+tictoc	1.2.1	CRAN	1.2.1	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+tidydr	0.0.6	CRAN	0.0.6	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+tidygraph	1.3.1	CRAN	1.3.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+tidyr	1.3.2	CRAN	1.3.2	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+tidyselect	1.2.1	CRAN	1.2.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+tidytext	0.4.3	CRAN	0.4.3	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+tidytree	0.4.8	CRAN	0.4.8	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+tidyverse	2.0.0	CRAN	2.0.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+timechange	0.4.0	CRAN	0.4.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+timeDate	4052.112	CRAN	4052.112	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+tinytex	0.60	CRAN	0.60	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+tm	0.7-18	CRAN	0.7-18	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+tokenizers	0.3.0	CRAN	0.3.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+tools	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+treeio	1.36.1	Bioconductor 3.23	1.36.1	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	no	
+tweenr	2.0.3	CRAN	2.0.3	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+tzdb	0.5.0	CRAN	0.5.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+UniProt.ws	2.52.0	Bioconductor 3.23	2.52.1	snapshot 2026-07-30 Bioconductor, binary	no	suggests-only	no	
+UpSetR	1.4.1	CRAN	1.4.1	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	no	
+urca	1.3-4	CRAN	1.3-4	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+urlchecker	2.0.0	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+usethis	3.2.1	CRAN			no	suggests-only	no	excluded (library-exclude.txt)
+utf8	1.2.6	CRAN	1.2.6	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+utils	4.6.1	base R	4.6.1	R 4.6.1	yes	hard	yes	
+uuid	1.2-2	CRAN	1.2-2	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+uwot			0.2.4	snapshot 2026-07-30 CRAN, binary	no	not in the lockfile	yes	not in the verified library (D7: MOFA2 and what it adds)
+V8	8.2.0	CRAN	8.2.0	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+vctrs	0.7.3	CRAN	0.7.3	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+viridis	0.6.5	CRAN	0.6.5	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+viridisLite	0.4.3	CRAN	0.4.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+vroom	1.7.1	CRAN	1.7.1	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+waldo	0.6.2	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+webshot2	0.1.2	CRAN			no	suggests-only	no	excluded (library-exclude.txt)
+websocket	1.4.4	CRAN			no	suggests-only	yes	left out: needed only by excluded tools
+whisker	0.4.1	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+withr	3.0.3	CRAN	3.0.3	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+writexl	1.5.4	CRAN	1.5.4	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+xfun	0.60	CRAN	0.60	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+XML	3.99-0.23	CRAN	3.99-0.23	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
+xml2	1.6.0	CRAN	1.6.0	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+xopen	1.0.1	CRAN			no	suggests-only	no	left out: needed only by excluded tools
+xtable	1.8-8	CRAN	1.8-8	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+XVector	0.52.0	Bioconductor 3.23	0.52.0	snapshot 2026-07-30 Bioconductor, binary	yes	suggests-only	yes	
+yaml	2.3.12	CRAN	2.3.12	snapshot 2026-07-30 CRAN, binary	yes	hard	yes	
+yulab.utils	0.2.4	CRAN	0.2.4	snapshot 2026-07-30 CRAN, binary	yes	hard	no	
+zip	3.0.0	CRAN	3.0.1	snapshot 2026-07-30 CRAN, binary	no	hard	yes	
+zoo	1.8-15	CRAN	1.8-15	snapshot 2026-07-30 CRAN, binary	yes	suggests-only	yes	
