@@ -1,0 +1,3 @@
+"package","version","source","platform","binary","needs_compilation","ref"
+"GO.db","3.23.1","standard","source","FALSE","FALSE","GO.db"
+"RUVIIIC","1.0.19","github","source","FALSE","TRUE","cran/RUVIIIC"
