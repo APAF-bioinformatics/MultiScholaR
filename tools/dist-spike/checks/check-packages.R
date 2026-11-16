@@ -59,7 +59,8 @@ rhdf5::h5write(matrix(as.numeric(1:6), 2L), hdf5_file, "toy")
 stopifnot(identical(dim(rhdf5::h5read(hdf5_file, "toy")), c(2L, 3L)))
 
 # Every namespace these calls pulled in came from the bundle.
-namespace_paths <- vapply(loadedNamespaces(), \(ns) getNamespaceInfo(ns, "path"), character(1L))
+loaded <- setdiff(loadedNamespaces(), "base") # base has no namespace path; R home covers it (piece 1)
+namespace_paths <- vapply(loaded, \(ns) getNamespaceInfo(ns, "path"), character(1L))
 outside <- namespace_paths[!insideBundle(namespace_paths, bundle)]
 cat(sprintf("namespaces loaded: %d, outside the bundle: %d\n", length(namespace_paths), length(outside)))
 if (length(outside) > 0L) {

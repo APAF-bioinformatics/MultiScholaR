@@ -11,6 +11,11 @@ refs <- c("deps::.", "fastduckdb=?ignore", "fastlimpadpc=?ignore")
 lockfile <- paste0(out_prefix, ".lock")
 summary_file <- Sys.getenv("GITHUB_STEP_SUMMARY", unset = NA)
 platform_label <- sprintf("%s, %s", R.version.string, R.version[["platform"]])
+# setup-r leaves CRAN unset on Windows; binaries for Windows are CRAN's own.
+if (identical(unname(getOption("repos")["CRAN"]), "@CRAN@")) {
+    options(repos = c(CRAN = "https://cloud.r-project.org"))
+}
+cat(sprintf("repositories: %s\n", paste(names(getOption("repos")), getOption("repos"), sep = "=", collapse = ", ")))
 
 appendSummary <- function(lines) {
     cat(lines, sep = "\n")

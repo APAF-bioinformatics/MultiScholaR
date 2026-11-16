@@ -93,7 +93,8 @@ jobs:
           {
             echo "### Linux bundle, installed size (MiB)"
             echo '```'
-            du -sm "$BUNDLE" "$BUNDLE/R" "$BUNDLE/R/library" "$BUNDLE/python" "$BUNDLE/syslib"
+            # one du per folder: a single du reports a nested folder only once
+            for part in "" /R /R/library /python /syslib; do du -sm "$BUNDLE$part"; done
             echo "files: $(find "$BUNDLE" -type f | wc -l)"
             echo "largest R packages:"
             du -sm "$BUNDLE"/R/library/* | sort -rn | sed -n 1,12p
@@ -196,7 +197,16 @@ jobs:
             echo "APPIMAGE MODE: no FUSE 2 on the runner, --appimage-extract-and-run"
             export APPIMAGE_EXTRACT_AND_RUN=1
           fi
-          xvfb-run -a node tools/dist-spike/smoke.js "Installer (AppImage, fresh runner)" "$appimage"
+          xvfb-run -a node tools/dist-spike/smoke.js "Installer (AppImage, fresh runner)" "$appimage" > "$RUNNER_TEMP/smoke.log" 2>&1 || status=$?
+          # extract-and-run lists every file it unpacks; keep the test's own lines
+          grep -v '^/tmp/appimage_extracted_[0-9a-f]*/' "$RUNNER_TEMP/smoke.log" | tail -n 60
+          exit "${status:-0}"
+      - name: "Extra: the AppImage mounted read-only through FUSE 2 (libfuse2 added to the runner)"
+        if: ${{ !cancelled() }}
+        run: |
+          sudo apt-get install -y -qq libfuse2
+          unset APPIMAGE_EXTRACT_AND_RUN
+          xvfb-run -a node tools/dist-spike/smoke.js "AppImage mounted through FUSE 2" "$(ls "$RUNNER_TEMP"/installer/*.AppImage)"
 
   # ---------------------------------------------------------------- Windows
   windows-build:
@@ -217,7 +227,7 @@ jobs:
           "BUNDLE=$env:RUNNER_TEMP\stage\bundle" >> $env:GITHUB_ENV
           "MOVED=$env:RUNNER_TEMP\relocated\msr-moved" >> $env:GITHUB_ENV
           "MOVED_SPACES=$env:RUNNER_TEMP\re located\msr moved" >> $env:GITHUB_ENV
-          "runner's own R: $((Get-Command R -ErrorAction SilentlyContinue).Source)"
+          "runner's own R on the PATH: $((Get-Command Rscript.exe -ErrorAction SilentlyContinue).Source); installed: $((Get-ChildItem 'C:\Program Files\R' -ErrorAction SilentlyContinue).Name -join ', ')"
           "runner's own Python: $((Get-Command python -ErrorAction SilentlyContinue).Source)"
 
       - name: R ${{ env.R_VERSION }} from the CRAN installer, silently, into the folder
@@ -384,7 +394,7 @@ jobs:
         run: |
           $setup = Get-Item "$env:RUNNER_TEMP\installer\MSRSpike-Setup-*.exe"
           "installer: $($setup.Name), $($setup.Length) bytes"
-          "runner's own R: $((Get-Command R -ErrorAction SilentlyContinue).Source)"
+          "runner's own R on the PATH: $((Get-Command Rscript.exe -ErrorAction SilentlyContinue).Source); installed: $((Get-ChildItem 'C:\Program Files\R' -ErrorAction SilentlyContinue).Name -join ', ')"
           $clock = [System.Diagnostics.Stopwatch]::StartNew()
           $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait -PassThru
           "silent install: exit $($install.ExitCode) after $([math]::Round($clock.Elapsed.TotalSeconds)) s"
@@ -452,7 +462,7 @@ jobs:
         shell: bash
         run: |
           Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
-          Rscript -e 'install.packages("jsonlite")'
+          Rscript -e 'install.packages("jsonlite", repos = "https://cloud.r-project.org")'
       - name: Resolve MultiScholaR's DESCRIPTION into a lockfile
         shell: bash
         run: Rscript tools/dist-spike/build/dependency-closure.R closure-windows
@@ -482,6 +492,9 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"hard"'
+          # Without this the action's pandoc check resolves "." itself, without the ignores
+          # below, and fails on the two internal Suggests (run 1).
+          install-pandoc: false
           packages: |
             deps::.
             fastduckdb=?ignore
