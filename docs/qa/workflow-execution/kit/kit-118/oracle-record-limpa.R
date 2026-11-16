@@ -181,7 +181,8 @@ run("peptide_count", withDIAStateScope(manager, function() invisible(publish_pro
 norm_data <- new.env(parent = emptyenv())
 norm_data$qc_plot_paths <- NULL
 grouping <- function() getProtNormRuvGroupingVariable(norm$ruv$ruv_grouping_variable %||% "group")
-aesthetics <- function() getProtNormPlotAesthetics(NULL, NULL)
+# getProtNormPlotAesthetics(NULL, NULL), removed by KIT-122 (4c9a5690), returned this list.
+aesthetics <- function() list(color_var = "group", shape_var = "group")
 ruv_qc <- function(reference) {
     norm_data$qc_plot_paths <- generateProtNormRuvCorrectedQcArtifacts(ruvCorrectedS4 = reference,
         qcDir = norm_data$publication_paths$protein_qc_dir %||% paths$protein_qc_dir, aesthetics = aesthetics(), qcPlotPaths = norm_data$qc_plot_paths)
