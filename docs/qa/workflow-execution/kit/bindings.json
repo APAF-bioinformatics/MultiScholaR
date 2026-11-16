@@ -889,6 +889,15 @@
       "install_member": "browser-smoke.rYf7jA",
       "source_commit": "561eb2b1b1b1dc439155e5fd434becfda7844ffc",
       "runtime_patch_bytes": 0
+    },
+    "kit_940": {
+      "ticket": "KIT-940",
+      "library": "/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.Xm75ve/library",
+      "build": "94a7b03a654246d70ed91275dda5836583d3a24132d5b05b6ea7dccb3346be76",
+      "exact_sum": "a7528891d99218f2f7fc9f404d6c543ad9b5b1064fbf365830973ee95490568b",
+      "install_member": "browser-smoke.Xm75ve",
+      "source_commit": "b468a885c28ea7dfe228a0fdaad947825bc4839e",
+      "runtime_patch_bytes": 0
     }
   },
   "outcomes": [
@@ -46686,6 +46695,35 @@
         "ruv_mode": "covariates",
         "correlation_threshold": 0.5
       }
+    },
+    "940q": {
+      "kind": "single_journey",
+      "build": "kit_940",
+      "corpus": "full",
+      "route": "DIA",
+      "whole_journey": true,
+      "ceiling_seconds": 14400,
+      "purpose": "KIT-123: RUV k bounded and levels kept (recorded, uncounted)"
+    },
+    "940l": {
+      "kind": "single_journey",
+      "build": "kit_940",
+      "corpus": "lfq_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "lfq101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-123: RUV k bounded and levels kept (recorded, uncounted)"
+    },
+    "940t": {
+      "kind": "single_journey",
+      "build": "kit_940",
+      "corpus": "tmt_fixture",
+      "route": "protein",
+      "whole_journey": true,
+      "oracles": "tmt101_fixture",
+      "ceiling_seconds": 1800,
+      "purpose": "KIT-123: RUV k bounded and levels kept (recorded, uncounted)"
     },
     "938l": {
       "kind": "single_journey",
