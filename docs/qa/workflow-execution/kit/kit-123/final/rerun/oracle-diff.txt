@@ -1,0 +1,15 @@
+Proteomics entry oracles: committed (HEAD 5e33c65f) against a fresh freeze at 5e33c65f (MULTISCHOLAR_GUI_ENTRY_FREEZE=1 into a scratch
+oracle directory; R code identical to 652eda20). Per step, the leaves that differ.
+
+prot_dia            no step differs
+prot_tmt            no step differs
+prot_lfq            no step differs
+prot_lfq_fragpipe   no step differs
+prot_dia_limpa      every step before ruv_covariates identical; from it on:
+  ruv_covariates   states.ruv_covariates, artifacts ruv_adjusted_protein_matrix.tsv, ruv_covariates_design.tsv
+  session_export, da_load   the same three
+  da, summary_refusal, summary_save, summary_copy, summary_report, summary_export   the same three and
+                   artifacts da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv
+
+Attribution: R2 (bee0e705), the factors from controls centred on their means in computeRuvCovariates; the DA reads them.
+Only prot_dia_limpa.json is replaced.

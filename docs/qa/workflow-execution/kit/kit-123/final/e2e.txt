@@ -1,0 +1,9 @@
+# final-tree e2e lanes at 652eda20 on browser-smoke.C08ihF 2026-11-16T20:04:13+11:00
+COUNTS test-e2e-lipidomics-canonical.R pass 88 fail 0 error 0 skip 0 exit 0 wall 124s
+COUNTS test-e2e-metabolomics-lc-gc.R pass 190 fail 0 error 0 skip 0 exit 0 wall 283s
+COUNTS test-e2e-transcriptomics-screen.R pass 16 fail 0 error 0 skip 0 exit 0 wall 88s
+COUNTS test-e2e-proteomics-dia.R pass 42 fail 0 error 0 skip 0 exit 0 wall 291s
+COUNTS test-e2e-proteomics-dia-limpa.R pass 86 fail 0 error 0 skip 0 exit 0 wall 219s
+COUNTS test-e2e-proteomics-enrichment.R pass 98 fail 0 error 0 skip 0 exit 0 wall 589s
+COUNTS test-e2e-proteomics-tmt-lfq.R pass 153 fail 0 error 0 skip 0 exit 0 wall 297s
+DONE

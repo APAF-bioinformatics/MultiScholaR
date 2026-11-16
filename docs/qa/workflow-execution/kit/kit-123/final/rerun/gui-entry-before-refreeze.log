@@ -1,0 +1,4 @@
+paused 16 at 20:36:29
+RESULT test-gui-entry-proteomics.R: passed 184 failed 9 skipped 0 error 0
+FAILED test-gui-entry-proteomics.R :: KIT-101 entry lane prot_dia_limpa: DIA-NN, the DIA_LIMPA route (9) :: Expected `steps[[id]]` to be identical to `oracle$steps[[id]]`. Differences: actual$states$ruv_covariates vs expected$states$ruv_covariates - "e1d367dce2c8e55d859be1b6d22dfe025060b158ef1c0bdde602ad89ac70aa1a" + "4896fd10929d67ec528fa3f8dd59b9eebec8ea9fca97bb44
+resumed 20:58:41, paused 1332 s
