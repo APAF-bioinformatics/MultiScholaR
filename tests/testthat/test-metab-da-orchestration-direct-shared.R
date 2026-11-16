@@ -81,7 +81,8 @@ test_that("metabolomics DA orchestration preserves assay aggregation and skip br
     sample_id_col = "Run",
     treat_lfc_cutoff = NA,
     eBayes_trend = TRUE,
-    eBayes_robust = TRUE
+    eBayes_robust = TRUE,
+    ...
   ) {
     observed$sample_cols <- colnames(data)
     observed$contrast_strings <- contrast_strings

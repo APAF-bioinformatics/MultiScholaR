@@ -322,7 +322,8 @@ module_ci_metab_da_bind_orchestration_stubs <- function(case = "mixed",
              sample_id_col = "Run",
              treat_lfc_cutoff = NA,
              eBayes_trend = TRUE,
-             eBayes_robust = TRUE) {
+             eBayes_robust = TRUE,
+             ...) {
       observed$calls[[length(observed$calls) + 1L]] <- list(
         sample_cols = colnames(data),
         contrast_strings = contrast_strings,
