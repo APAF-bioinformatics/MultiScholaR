@@ -176,3 +176,19 @@ test_that("MCI-027.4 the design tab under the transcriptomics profile: the share
   expect_match(lipid, "design-show_import_modal", fixed = TRUE)
   expect_match(lipid, "Multi-Assay Workflow", fixed = TRUE)
 })
+
+test_that("KIT-128 the design tab says how many runs were summed into how many samples, and nothing without technical replicates", {
+  skip_if_not(workflowOwnerCapable())
+  notes <- function(technical) {
+    fixture <- module_ci_trx_fixture_owner()
+    module_ci_trx_import(fixture, file.path(module_ci_trx_corpus(), "counts.tsv"))
+    result <- module_ci_trx_build_design(fixture, module_ci_trx_corpus_design(), c("RPMI", "Sera"), technical = technical)
+    list(result = result, messages = vapply(module_ci_trx_commit(fixture, result)$notes, `[[`, "", "message"))
+  }
+  with_reps <- notes(TRUE)
+  runs <- nrow(with_reps$result$design_matrix)
+  units <- length(unique(with_reps$result$design_matrix$tech_rep_group))
+  expect_lt(units, runs)
+  expect_true(any(grepl(sprintf("%d runs summed into %d samples", runs, units), with_reps$messages, fixed = TRUE)))
+  expect_false(any(grepl("summed into", notes(FALSE)$messages, fixed = TRUE)))
+})
