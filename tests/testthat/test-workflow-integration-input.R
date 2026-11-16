@@ -300,3 +300,24 @@ test_that("KIT-061: DIA_LIMPA in correction mode writes the corrected state's ta
     expect_equal(input$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     expect_false(any(grepl("^W[0-9]+$", names(input$samples))))
 })
+
+test_that("KIT-061 (D2): the normalisation tab's S4 compatibility download no longer copies its RDS to integration/", {
+    root <- withr::local_tempdir()
+    paths <- list(protein_qc_dir = file.path(root, "protein_qc"), integration_dir = file.path(root, "integration"))
+    for (path in paths) dir.create(path, recursive = TRUE)
+    testthat::local_mocked_bindings(downloadHandler = function(filename, content, ...) list(filename = filename,
+        content = content), .package = "shiny")
+    testthat::local_mocked_bindings(
+        resolveProtNormCorrelationResultFilenames = function(...) list(rdsFilename = "normalised_results_cln_with_replicates.RDS"),
+        exportDIAS4Compatibility = function(manager, path) saveRDS("compatibility object", path))
+    handler <- protNormS4DownloadHandler(list(state_manager = NULL, ruv_optimization_result = NULL),
+        list(ruv_optimization_result = NULL), paths, "proteomics", "kit061")
+    # The download to the user is unchanged.
+    expect_identical(handler$filename(), "proteomics_kit061_final_s4.RDS")
+    delivered <- file.path(root, "download.RDS")
+    handler$content(delivered)
+    expect_identical(readRDS(delivered), "compatibility object")
+    expect_true(file.exists(file.path(paths$protein_qc_dir, "normalised_results_cln_with_replicates.RDS")))
+    # integration/ holds only the integration input.
+    expect_identical(list.files(paths$integration_dir, all.files = TRUE, no.. = TRUE), character())
+})
