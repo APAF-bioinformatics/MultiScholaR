@@ -239,21 +239,158 @@ jobs:
           docker pull -q ubuntu:22.04
 
       - name: "Check: every bundled package loads (moved, bare ubuntu:22.04, path with spaces, network off)"
+        id: check
         if: ${{ !cancelled() && steps.move.outcome == 'success' }}
         run: |
           set -o pipefail
           bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-library.R offline \
             2>&1 | tee "$OUT/check-library.log"
 
+      # ------------------------------------------------ P3: the shell (stage shell and later)
+      - uses: actions/setup-node@v4
+        if: needs.plan.outputs.shell == 'true' && steps.check.outcome == 'success'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Version stamp and third-party notices
+        id: stamp
+        if: needs.plan.outputs.shell == 'true' && steps.check.outcome == 'success'
+        run: |
+          set -o pipefail
+          version="$(sed -n 's/^Version: *//p' DESCRIPTION)"
+          test "$(node -p "require('./packaging/electron/package.json').version")" = "$version"
+          electron="$(node -p "require('./packaging/electron/package-lock.json').packages['node_modules/electron'].version")"
+          "$MOVED/bin/Rscript" --vanilla packaging/r/notices.R "$MOVED" . "$OUT/bundle-sources.tsv" packaging/electron/stamp "$electron" \
+            2>&1 | tee "$OUT/notices.log"
+          cp packaging/electron/stamp/VERSION.json packaging/electron/stamp/THIRD-PARTY-NOTICES.txt \
+            packaging/electron/stamp/sources-list.tsv "$OUT/"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: The Electron shell (directory target)
+        id: electron
+        if: needs.plan.outputs.shell == 'true' && steps.stamp.outcome == 'success'
+        working-directory: packaging/electron
+        run: |
+          mkdir -p build
+          cp ../../inst/shiny/www/MultiScholaR.png build/icon.png
+          mv "$MOVED" runtime
+          npm ci --no-audit --no-fund
+          npx electron-builder --linux dir --publish never
+          ls -l dist/linux-unpacked
+
+      - name: "P3 lifecycle: the unpacked application on the build runner (network closed)"
+        if: needs.plan.outputs.shell == 'true' && steps.electron.outcome == 'success'
+        run: |
+          app="$PWD/packaging/electron/dist/linux-unpacked"
+          echo "apparmor_restrict_unprivileged_userns: $(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo absent)"
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -E -u "$0" env PATH="$1" HOME="$2" \
+            xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher in-process --network-closed' \
+            "$(id -un)" "$PATH" "$HOME" "Linux, unpacked, ubuntu-22.04 build runner" "$app" 2>&1 | tee "$OUT/lifecycle-build-runner.log"
+          exit "${PIPESTATUS[0]}"
+
+      - name: The Linux archive (per-user install.sh, D2)
+        id: archive
+        if: needs.plan.outputs.shell == 'true' && steps.electron.outcome == 'success'
+        run: |
+          name="MultiScholaR-${VERSION}"
+          stage="$RUNNER_TEMP/archive/$name"
+          mkdir -p "$stage" "$RUNNER_TEMP/dist"
+          cp -a packaging/electron/dist/linux-unpacked "$stage/app"
+          install -m 0755 packaging/linux/install.sh packaging/linux/uninstall.sh "$stage/"
+          cp packaging/linux/multischolar.desktop "$stage/"
+          cp packaging/electron/build/icon.png "$stage/multischolar.png"
+          cp packaging/electron/stamp/VERSION.json packaging/electron/stamp/THIRD-PARTY-NOTICES.txt "$stage/"
+          archive="$RUNNER_TEMP/dist/$name-linux-x86_64.tar.gz"
+          start=$(date +%s)
+          tar -C "$RUNNER_TEMP/archive" -czf "$archive" "$name"
+          (cd "$RUNNER_TEMP/dist" && sha256sum "$(basename "$archive")" > "$(basename "$archive").sha256")
+          {
+            echo "### Linux archive"
+            echo '```'
+            echo "$(basename "$archive"): $(stat -c %s "$archive") bytes ($(( $(stat -c %s "$archive") / 1048576 )) MiB), packed in $(( $(date +%s) - start )) s"
+            echo "unpacked: $(du -sm "$stage" | cut -f1) MiB in $(find "$stage" -type f | wc -l) files"
+            cat "$archive.sha256"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY" "$OUT/archive.txt"
+
+      - name: Upload the Linux archive
+        if: needs.plan.outputs.shell == 'true' && steps.archive.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-archive
+          path: ${{ runner.temp }}/dist
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+
       - name: Keep the evidence (text only)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-library-evidence
+          name: linux-build-evidence
           path: |
             ${{ runner.temp }}/evidence
             !${{ runner.temp }}/evidence/github-sources
           retention-days: 14
+
+  linux-install:
+    name: "Linux: install.sh and lifecycle on ${{ matrix.runner }} (network closed)"
+    needs: [plan, linux-build]
+    if: ${{ !cancelled() && needs.plan.outputs.shell == 'true' && needs.linux-build.result == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-24.04 from stage shell (Electron's sandbox restriction, F10); a fresh ubuntu-22.04 from stage installer
+        runner: ${{ fromJSON(needs.plan.outputs.installer == 'true' && '["ubuntu-22.04", "ubuntu-24.04"]' || '["ubuntu-24.04"]') }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: packaging/electron
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-archive
+          path: ${{ runner.temp }}/download
+      - name: Install with install.sh, as the runner's user
+        id: install
+        run: |
+          command -v xvfb-run >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq xvfb; }
+          cd "$RUNNER_TEMP/download"
+          sha256sum -c ./*.sha256
+          archive="$(ls ./*.tar.gz)"
+          echo "archive: $archive, $(stat -c %s "$archive") bytes"
+          echo "runner's own R: $(command -v R || echo none); glibc $(getconf GNU_LIBC_VERSION)"
+          start=$(date +%s)
+          tar -xzf "$archive"
+          ./MultiScholaR-*/install.sh
+          version="$(sed -n 's/^ *"release": *"\([^"]*\)".*$/\1/p' MultiScholaR-*/VERSION.json | head -n 1)"
+          dest="$HOME/.local/share/multischolar/$version"
+          echo "DEST=$dest" >> "$GITHUB_ENV"
+          {
+            echo "### Linux install on ${{ matrix.runner }}"
+            echo '```'
+            echo "unpacked and installed in $(( $(date +%s) - start )) s into $dest"
+            echo "installed: $(du -sm "$dest" | cut -f1) MiB in $(find "$dest" -type f | wc -l) files"
+            echo "menu entry: $(ls "$HOME/.local/share/applications/multischolar.desktop")"
+            echo "apparmor_restrict_unprivileged_userns: $(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null || echo absent)"
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+          grep -q "Exec=\"$dest/multischolar\"" "$HOME/.local/share/applications/multischolar.desktop"
+      - name: "P3 lifecycle: the installed application (network closed)"
+        run: |
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -E -u "$0" env PATH="$1" HOME="$2" \
+            xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher in-process --network-closed' \
+            "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh, ${{ matrix.runner }}" "$DEST"
+      - name: Uninstall
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: |
+          "$DEST/uninstall.sh"
+          test ! -e "$DEST"
+          test ! -e "$HOME/.local/share/applications/multischolar.desktop"
 
   # ------------------------------------------------------------------------ Windows
   windows-build:
@@ -337,6 +474,7 @@ jobs:
           if (Test-Path $env:BUNDLE) { throw "the bundle is still at its build location" }
 
       - name: "Check: every bundled package loads (moved, reduced environment, network cut for the bundle's programs)"
+        id: check
         if: ${{ !cancelled() && steps.move.outcome == 'success' }}
         run: |
           Set-NetFirewallProfile -All -Enabled True
@@ -348,12 +486,193 @@ jobs:
           pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-library.R -Arguments offline *>&1 | Tee-Object -FilePath "$env:OUT\check-library.log"
           if ($LASTEXITCODE -ne 0) { throw "the library check failed" }
 
+      # ---------------------------------------- D5: a clean Windows (stage container)
+      - name: "D5: the bundle's R in a Windows Server Core container (network off)"
+        if: needs.plan.outputs.container == 'true' && steps.check.outcome == 'success'
+        run: |
+          docker version
+          $image = 'mcr.microsoft.com/windows/servercore:ltsc2025'
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          docker pull -q $image
+          "pulled $image in $([math]::Round($clock.Elapsed.TotalSeconds)) s"
+          $checks = Join-Path $env:RUNNER_TEMP 'container-checks'
+          New-Item -ItemType Directory -Force $checks | Out-Null
+          Copy-Item packaging\verify\check-library.R, packaging\verify\windows-clean-run.ps1, packaging\electron\entry.R $checks
+          # The application answers HTTP 200 inside the container: the shell's entry with the shell's
+          # environment for R (packaging/electron/main.js, rEnvironment); no window there.
+          @'
+          $bundle = 'C:\msr'
+          Get-ChildItem Env: | Where-Object { $_.Name -match '^(RHOME|R_.*|RTOOLS.*|RETICULATE_.*|PYTHON.*)$' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $env:R_LIBS_USER = "$bundle\R\no-user-library"; $env:R_LIBS_SITE = "$bundle\R\no-site-library"
+          $env:RTOOLS45_HOME = "$bundle\no-rtools"; $env:RETICULATE_PYTHON = "$bundle\python\python.exe"; $env:PYTHONNOUSERSITE = '1'
+          $env:RSTUDIO_PANDOC = "$bundle\pandoc"; $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'; $env:MSR_BUNDLE = $bundle
+          $run = 'C:\Users\ContainerAdministrator\msr-run'; New-Item -ItemType Directory -Force $run | Out-Null
+          $r = Start-Process -FilePath "$bundle\R\bin\Rscript.exe" -ArgumentList '--vanilla', 'C:\checks\entry.R', '8765', $run, "$PID" -PassThru -NoNewWindow -RedirectStandardOutput "$run\r.out" -RedirectStandardError "$run\r.err"
+          $status = $null
+          for ($waited = 0; $waited -lt 300 -and -not $status -and -not $r.HasExited; $waited += 2) {
+            Start-Sleep -Seconds 2
+            try { $status = (Invoke-WebRequest -UseBasicParsing -TimeoutSec 5 'http://127.0.0.1:8765/').StatusCode } catch { }
+          }
+          "HTTP status after about $waited s: $status"
+          Get-Content "$run\r.out" -ErrorAction SilentlyContinue | Select-Object -First 5
+          if ($status -ne 200) { Get-Content "$run\r.err" -ErrorAction SilentlyContinue | Select-Object -Last 40 }
+          & taskkill.exe /PID $r.Id /T /F | Out-Null
+          if ($status -eq 200) { 'KIT-134 CHECK PASSED: the application answers HTTP 200 in Server Core'; exit 0 } else { exit 1 }
+          '@ | Set-Content -Encoding UTF8 (Join-Path $checks 'serve.ps1')
+          $mounts = @('-v', "${env:MOVED}:C:\msr:ro", '-v', "${checks}:C:\checks:ro")
+          docker run --rm --network none @mounts $image powershell -NoProfile -ExecutionPolicy Bypass -File C:\checks\windows-clean-run.ps1 -Bundle C:\msr -Script C:\checks\check-library.R -Arguments offline *>&1 | Tee-Object -FilePath "$env:OUT\container-check-library.log"
+          $libraryStatus = $LASTEXITCODE
+          docker run --rm --network none @mounts $image powershell -NoProfile -ExecutionPolicy Bypass -File C:\checks\serve.ps1 *>&1 | Tee-Object -FilePath "$env:OUT\container-serve.log"
+          $serveStatus = $LASTEXITCODE
+          "library check: exit $libraryStatus; application: exit $serveStatus"
+          if ($libraryStatus -ne 0 -or $serveStatus -ne 0) { throw "the Server Core container check failed" }
+
+      # ------------------------------------------------ P3: the shell (stage shell and later)
+      - uses: actions/setup-node@v4
+        if: needs.plan.outputs.shell == 'true' && steps.check.outcome == 'success'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Version stamp and third-party notices
+        id: stamp
+        if: needs.plan.outputs.shell == 'true' && steps.check.outcome == 'success'
+        run: |
+          $version = (Select-String -Path DESCRIPTION -Pattern '^Version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+          $packageVersion = node -p "require('./packaging/electron/package.json').version"
+          if ($packageVersion -ne $version) { throw "package.json has $packageVersion, DESCRIPTION $version" }
+          $electron = node -p "require('./packaging/electron/package-lock.json').packages['node_modules/electron'].version"
+          & "$env:MOVED\R\bin\Rscript.exe" --vanilla packaging\r\notices.R $env:MOVED . "$env:OUT\bundle-sources.tsv" packaging\electron\stamp $electron *>&1 | Tee-Object -FilePath "$env:OUT\notices.log"
+          if ($LASTEXITCODE -ne 0) { throw "notices failed" }
+          Copy-Item packaging\electron\stamp\VERSION.json, packaging\electron\stamp\THIRD-PARTY-NOTICES.txt, packaging\electron\stamp\sources-list.tsv $env:OUT
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: The Electron shell, and from stage installer the NSIS per-user installer
+        id: electron
+        if: needs.plan.outputs.shell == 'true' && steps.stamp.outcome == 'success'
+        working-directory: packaging/electron
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          Copy-Item ..\..\inst\shiny\www\MultiScholaR.png build\icon.png
+          Move-Item -LiteralPath $env:MOVED -Destination runtime
+          npm ci --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw "npm ci failed" }
+          $target = if ('${{ needs.plan.outputs.installer }}' -eq 'true') { 'nsis' } else { 'dir' }
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          npx electron-builder --win $target --publish never
+          if ($LASTEXITCODE -ne 0) { throw "electron-builder failed" }
+          "electron-builder --win ${target}: $([math]::Round($clock.Elapsed.TotalSeconds)) s" | Tee-Object -FilePath "$env:OUT\electron-builder.txt"
+          Get-ChildItem dist | Format-Table Name, Length
+
+      - name: "P4: path lengths under the application folder (limit 170)"
+        if: needs.plan.outputs.shell == 'true' && steps.electron.outcome == 'success'
+        continue-on-error: ${{ needs.plan.outputs.installer != 'true' }}
+        run: |
+          pwsh -NoProfile -File packaging\windows\assemble.ps1 -Action pathlength -Folder packaging\electron\dist\win-unpacked -Limit 170 *>&1 | Tee-Object -FilePath "$env:OUT\path-lengths.txt"
+          if ($LASTEXITCODE -ne 0) { throw "a path is too long" }
+
+      - name: "P3 lifecycle: the unpacked application on the build runner (network cut for its programs)"
+        if: needs.plan.outputs.shell == 'true' && steps.electron.outcome == 'success'
+        run: |
+          $app = (Resolve-Path packaging\electron\dist\win-unpacked).Path
+          $programs = Get-ChildItem -LiteralPath $app -Recurse -File -Filter *.exe
+          foreach ($program in $programs) {
+            New-NetFirewallRule -DisplayName "kit-134 block $($program.FullName)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
+          }
+          "outbound traffic blocked for the application's $($programs.Count) programs"
+          node packaging\electron\lifecycle-test.js "Windows, unpacked, windows-2025 build runner" "$app\MultiScholaR.exe" $app --expect-launcher in-process *>&1 | Tee-Object -FilePath "$env:OUT\lifecycle-build-runner.log"
+          if ($LASTEXITCODE -ne 0) { throw "the lifecycle test failed" }
+
+      - name: The installer's size and checksum
+        id: installer
+        if: needs.plan.outputs.installer == 'true' && steps.electron.outcome == 'success'
+        run: |
+          $setup = Get-Item packaging\electron\dist\MultiScholaR-Setup-*.exe
+          $hash = (Get-FileHash -Algorithm SHA256 $setup.FullName).Hash.ToLower()
+          "$hash  $($setup.Name)" | Set-Content "$($setup.FullName).sha256"
+          $lines = @('### Windows NSIS installer', '```', "$($setup.Name): $($setup.Length) bytes ($([math]::Round($setup.Length / 1MB)) MiB)", "sha256 $hash", '```')
+          $lines | Tee-Object -FilePath "$env:OUT\installer.txt" | Out-File -Append $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload the NSIS installer
+        if: needs.plan.outputs.installer == 'true' && steps.installer.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: |
+            packaging/electron/dist/MultiScholaR-Setup-*.exe
+            packaging/electron/dist/MultiScholaR-Setup-*.exe.sha256
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+
       - name: Keep the evidence (text only)
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-library-evidence
+          name: windows-build-evidence
           path: |
             ${{ runner.temp }}/evidence
             !${{ runner.temp }}/evidence/github-sources
           retention-days: 14
+
+  windows-install:
+    name: "Windows: per-user install and lifecycle on a fresh windows-2025 (network cut)"
+    needs: [plan, windows-build]
+    if: ${{ !cancelled() && needs.plan.outputs.installer == 'true' && needs.windows-build.result == 'success' }}
+    runs-on: windows-2025
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: packaging
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: ${{ runner.temp }}\installer
+      - name: Silent per-user install
+        id: install
+        run: |
+          $setup = Get-Item "$env:RUNNER_TEMP\installer\MultiScholaR-Setup-*.exe"
+          $expected = (Get-Content "$($setup.FullName).sha256").Split(' ')[0]
+          if ((Get-FileHash -Algorithm SHA256 $setup.FullName).Hash.ToLower() -ne $expected) { throw "checksum mismatch" }
+          "installer: $($setup.Name), $($setup.Length) bytes"
+          "runner's own R on the PATH: $((Get-Command Rscript.exe -ErrorAction SilentlyContinue).Source)"
+          $clock = [Diagnostics.Stopwatch]::StartNew()
+          $process = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait -PassThru
+          $seconds = [math]::Round($clock.Elapsed.TotalSeconds)
+          $application = $null
+          for ($waited = 0; -not $application -and $waited -lt 120; $waited += 5) {
+            $application = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Depth 2 -Filter MultiScholaR.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $application) { Start-Sleep -Seconds 5 }
+          }
+          if (-not $application) { throw "MultiScholaR.exe was not installed under $env:LOCALAPPDATA\Programs" }
+          $folder = $application.Directory.FullName
+          $files = Get-ChildItem -LiteralPath $folder -Recurse -File -Force
+          $shortcut = Get-ChildItem "$env:APPDATA\Microsoft\Windows\Start Menu\Programs" -Recurse -Filter 'MultiScholaR*.lnk' -ErrorAction SilentlyContinue | Select-Object -First 1
+          $lines = @('### Windows install on a fresh windows-2025', '```',
+            "silent install: exit $($process.ExitCode) after $seconds s",
+            "installed per user at: $folder",
+            "installed size: $([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB)) MiB in $($files.Count) files",
+            "longest installed path: $(($files | ForEach-Object { $_.FullName.Length } | Measure-Object -Maximum).Maximum) characters",
+            "Start-menu shortcut: $($shortcut.FullName)", '```')
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines
+          if (-not $shortcut) { throw "no Start-menu shortcut" }
+          "APP=$($application.FullName)" >> $env:GITHUB_ENV
+          "APP_FOLDER=$folder" >> $env:GITHUB_ENV
+      - name: "P3 lifecycle: the installed application (network cut for its programs)"
+        run: |
+          Set-NetFirewallProfile -All -Enabled True
+          $programs = Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe
+          foreach ($program in $programs) {
+            New-NetFirewallRule -DisplayName "kit-134 block $($program.FullName)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
+          }
+          "outbound traffic blocked for the installed application's $($programs.Count) programs"
+          node packaging\electron\lifecycle-test.js "Windows, installed per user, fresh windows-2025" $env:APP $env:APP_FOLDER --expect-launcher in-process
+          if ($LASTEXITCODE -ne 0) { throw "the lifecycle test failed" }

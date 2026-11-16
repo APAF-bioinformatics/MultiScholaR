@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=MultiScholaR
+GenericName=Multi-omics analysis
+Comment=Interactive multi-omics analysis (MultiScholaR @VERSION@)
+Exec="@EXEC@"
+Icon=@ICON@
+Terminal=false
+Categories=Science;Biology;Education;
+StartupWMClass=MultiScholaR
