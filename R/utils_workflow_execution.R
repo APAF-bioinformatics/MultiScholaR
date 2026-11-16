@@ -358,7 +358,7 @@ cancelWorkflowAction <- function(owner, reason = "cancelled") {
     if (!is.null(owner$job)) {
         job <- owner$job
         job$cancelled <- reason
-        if (!is.null(job$worker_unit)) workflowSystemd(c("stop", job$worker_unit), required = FALSE)
+        if (!is.null(job$worker_unit)) workflowUnitStop(owner$application$config, job$worker_unit)
         result <- finishWorkflowExecutionJob(owner, reason)
         if (identical(result$status, "cleanup_failed")) cli::cli_abort(
             "worker cleanup is incomplete; controller ownership retained",
@@ -420,6 +420,35 @@ workflowServiceProperties <- function(unit) {
         vapply(fields, `[[`, character(1), 1L))
     out$available <- TRUE
     out
+}
+
+#' The launcher seam (KIT-131): the state of one unit of a managed application. The poll and the teardown read only
+#' `available`, `SubState` and `Result`.
+#' @param config Frozen managed application configuration.
+#' @param unit Owned unit name.
+#' @return The unit's properties; a unit never started gives `available = FALSE`.
+#' @noRd
+workflowUnitState <- function(config, unit) {
+    workflowServiceProperties(unit)
+}
+
+#' The launcher seam (KIT-131): stop one unit and everything it started. A unit that is not running is not an error.
+#' @param config Frozen managed application configuration.
+#' @param unit Owned unit name.
+#' @return NULL invisibly.
+#' @noRd
+workflowUnitStop <- function(config, unit) {
+    workflowSystemd(c("stop", unit), required = FALSE)
+    invisible(NULL)
+}
+
+#' The launcher seam (KIT-131): one memory counter of the application's control group.
+#' @param application Managed application owner.
+#' @param counter `memory.current` or `memory.peak`.
+#' @return Bytes.
+#' @noRd
+workflowApplicationMemory <- function(application, counter) {
+    workflowMemoryCounter(file.path(application$cgroup, counter))
 }
 
 #' Read one kernel memory counter without guessing missing values.
@@ -936,8 +965,8 @@ finishWorkflowGUIAction <- function(reservation, status, acknowledgement = NULL)
         worker_request_id = reservation$worker_request_id,
         capture = reservation$capture,
         elapsed_seconds = proc.time()[["elapsed"]] - reservation$started,
-        peak_bytes = peak, whole_service_peak_bytes = workflowMemoryCounter(file.path(
-            application$cgroup, "memory.peak")), accounting_delta = Map(`-`, accounting,
+        peak_bytes = peak, whole_service_peak_bytes = workflowApplicationMemory(
+            application, "memory.peak"), accounting_delta = Map(`-`, accounting,
             reservation$accounting), browser_acknowledged = valid_ack,
         browser_memory_included = isTRUE(browser$valid), browser = browser,
         monitor = monitor,
@@ -1683,7 +1712,7 @@ pollWorkflowAction <- function(owner) {
             return(list(status = "admitting"))
         }
         admitted <- workflowAdmissionCap(app$config$policy,
-            workflowMemoryCounter(file.path(app$cgroup, "memory.current")), workflowHostAvailable())
+            workflowApplicationMemory(app, "memory.current"), workflowHostAvailable())
         reservation <- admitted$reservation
         cap <- admitted$cap
         # This finite fixture estimate includes R/package startup and bounded reader overhead.
@@ -1713,7 +1742,7 @@ pollWorkflowAction <- function(owner) {
         if (!launched) return(finishWorkflowExecutionJob(owner, "admission_refused"))
         return(list(status = "running"))
     }
-    state <- workflowServiceProperties(job$worker_unit)
+    state <- workflowUnitState(app$config, job$worker_unit)
     if (isTRUE(state$available) && state$SubState %in% c("running", "start")) return(list(status = "running"))
     if (!file.exists(result_path) && !any(file.exists(guards))) {
         # A worker may become terminal between two 50 ms monitor samples.
@@ -1909,8 +1938,8 @@ finishWorkflowExecutionJob <- function(owner, status) {
     if (!valid_store && !job$monitor_borrowed) {
         workflowSystemd(c("stop", job$monitor_unit), required = FALSE)
     }
-    worker <- workflowServiceProperties(job$worker_unit)
-    workflowSystemd(c("stop", job$worker_unit), required = FALSE)
+    worker <- workflowUnitState(owner$application$config, job$worker_unit)
+    workflowUnitStop(owner$application$config, job$worker_unit)
     if (valid_store && dir.exists(job$paths$request_dir) && !job$monitor_borrowed) {
         writeWorkflowExecutionMessage(file.path(job$paths$request_dir, "monitor-done.rds"), list(schema = 1L))
     }
@@ -1969,7 +1998,7 @@ finishWorkflowExecutionJob <- function(owner, status) {
     monitor <- if (valid_store && file.exists(monitor_path)) readRDS(monitor_path) else NULL
     receipt <- list(schema = 1L, request_id = job$request$token$request_id, status = status,
         token = job$request$token, error = job$error, elapsed_seconds = proc.time()[["elapsed"]] - job$started,
-        peak_bytes = peak, whole_service_peak_bytes = workflowMemoryCounter(file.path(owner$application$cgroup, "memory.peak")),
+        peak_bytes = peak, whole_service_peak_bytes = workflowApplicationMemory(owner$application, "memory.peak"),
         monitor = monitor, worker = worker, threads = 8L, browser_memory_included = FALSE,
         monitor_borrowed = job$monitor_borrowed,
         accounting_delta = delta, staged_bytes_at_teardown = staged_bytes,
