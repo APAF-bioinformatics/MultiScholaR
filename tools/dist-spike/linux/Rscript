@@ -1,0 +1,21 @@
+#!/bin/sh
+# KIT-130 packaging spike: launcher for the bundled R on Linux. It finds the bundle from its own
+# location, so the folder can sit anywhere (including a read-only AppImage mount), and it gives R
+# nothing from the host but the C library.
+bundle="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd -P)"
+
+unset R_HOME R_LIBS R_ENVIRON R_ENVIRON_USER R_PROFILE R_PROFILE_USER PYTHONPATH PYTHONHOME
+
+# Rscript execs $RHOME/bin/R; without RHOME it uses the build-time prefix compiled into it.
+RHOME="$bundle/R"
+# Neither directory exists: R then keeps only its own library on the search path.
+R_LIBS_USER="$bundle/R/no-user-library"
+R_LIBS_SITE="$bundle/R/no-site-library"
+# The shared libraries R and the packages were linked against at build time.
+LD_LIBRARY_PATH="$bundle/syslib"
+RETICULATE_PYTHON="$bundle/python/bin/python3"
+PYTHONNOUSERSITE=1
+MSR_BUNDLE="$bundle"
+export RHOME R_LIBS_USER R_LIBS_SITE LD_LIBRARY_PATH RETICULATE_PYTHON PYTHONNOUSERSITE MSR_BUNDLE
+
+exec "$bundle/R/bin/Rscript" "$@"

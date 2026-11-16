@@ -1,0 +1,506 @@
+name: KIT-130 distribution spike
+
+# Packaging spike (ticket KIT-130): can R 4.6.1, limpa, RUVIIIC, MOFA2 and a standalone Python
+# with mofapy2 live in one folder that runs from anywhere, be started by an Electron shell, and
+# be shipped as an AppImage (Linux) and an NSIS per-user installer (Windows)?
+# Each proof is its own step, so one run reports every piece.
+#
+# A push runs both platforms unless its commit message says [skip-linux] or [skip-windows];
+# [skip-extras] leaves out the dependency closure and the Windows package install.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform to run"
+        type: choice
+        default: both
+        options: [both, linux, windows]
+  push:
+    branches: [kit-130-dist-spike]
+    paths:
+      - "tools/dist-spike/**"
+      - ".github/workflows/dist-spike.yml"
+
+permissions:
+  contents: read
+
+env:
+  R_VERSION: "4.6.1"
+  # python-build-standalone (astral-sh) release and the CPython in it; MOFA2 pins Python 3.12.
+  PBS_RELEASE: "20261110"
+  PBS_PYTHON: "3.12.16"
+
+jobs:
+  # ------------------------------------------------------------------ Linux
+  linux-build:
+    name: Linux, bundle and AppImage
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'windows') ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-linux]'))
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paths
+        run: |
+          {
+            echo "BUNDLE=$RUNNER_TEMP/stage/bundle"
+            echo "MOVED=$RUNNER_TEMP/relocated/msr-moved"
+          } >> "$GITHUB_ENV"
+          echo "runner's own R: $(command -v R || echo none) $(R --version 2>/dev/null | sed -n 1p)"
+          echo "runner's own Python: $(command -v python3 || echo none) $(python3 --version 2>/dev/null)"
+
+      - name: R ${{ env.R_VERSION }} at its build prefix (Posit r-builds)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-${R_VERSION}_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb"
+          sudo chown -R "$(id -u):$(id -g)" "/opt/R/${R_VERSION}"
+          "/opt/R/${R_VERSION}/bin/R" --version | sed -n 1p
+
+      - name: R packages into the R library
+        run: |
+          "/opt/R/${R_VERSION}/bin/Rscript" --vanilla tools/dist-spike/build/install-packages.R 2>&1 | tee "$RUNNER_TEMP/install-packages.log"
+          echo "installed as binary packages: $(grep -c 'installing \*binary\* package' "$RUNNER_TEMP/install-packages.log" || true)"
+          echo "installed from source:"
+          grep 'installing \*source\* package' "$RUNNER_TEMP/install-packages.log" || true
+
+      - name: Standalone Python with mofapy2
+        run: |
+          mkdir -p "$BUNDLE"
+          curl -fsSL -o "$RUNNER_TEMP/python.tar.gz" \
+            "https://github.com/astral-sh/python-build-standalone/releases/download/${PBS_RELEASE}/cpython-${PBS_PYTHON}%2B${PBS_RELEASE}-x86_64-unknown-linux-gnu-install_only.tar.gz"
+          tar -xzf "$RUNNER_TEMP/python.tar.gz" -C "$BUNDLE"
+          "/opt/R/${R_VERSION}/bin/Rscript" --vanilla tools/dist-spike/build/mofapy2-requirements.R "$RUNNER_TEMP"
+          python="$BUNDLE/python/bin/python3"
+          pip_install() { PYTHONNOUSERSITE=1 "$python" -m pip install --no-cache-dir --no-warn-script-location --only-binary=:all: -r "$1"; }
+          if pip_install "$RUNNER_TEMP/requirements-pinned.txt"; then
+            echo "PYTHON REQUIREMENTS: MOFA2's own pins"
+          else
+            echo "::warning::MOFA2's dependency pins could not be installed as wheels; installing the mofapy2 pin alone"
+            pip_install "$RUNNER_TEMP/requirements-minimal.txt"
+            echo "PYTHON REQUIREMENTS: mofapy2 pin alone"
+          fi
+          "$python" -m pip list
+
+      - name: Assemble the bundle and remove R from its build prefix
+        id: assemble
+        run: |
+          bash tools/dist-spike/build/linux-assemble.sh "/opt/R/${R_VERSION}/lib/R" "$BUNDLE"
+          sudo rm -rf "/opt/R/${R_VERSION}"
+          {
+            echo "### Linux bundle, installed size (MiB)"
+            echo '```'
+            du -sm "$BUNDLE" "$BUNDLE/R" "$BUNDLE/R/library" "$BUNDLE/python" "$BUNDLE/syslib"
+            echo "files: $(find "$BUNDLE" -type f | wc -l)"
+            echo "largest R packages:"
+            du -sm "$BUNDLE"/R/library/* | sort -rn | sed -n 1,12p
+            echo "largest Python packages:"
+            du -sm "$BUNDLE"/python/lib/python3.12/site-packages/* | sort -rn | sed -n 1,8p
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Move the folder; fetch the bare container image
+        id: move
+        run: |
+          mkdir -p "$(dirname "$MOVED")"
+          mv "$BUNDLE" "$MOVED"
+          test ! -e "/opt/R/${R_VERSION}"
+          docker pull -q ubuntu:22.04
+          echo "in the bare image: R=$(docker run --rm ubuntu:22.04 sh -c 'command -v R || echo none') python3=$(docker run --rm ubuntu:22.04 sh -c 'command -v python3 || echo none')"
+
+      - name: "Piece 1: R 4.6.1 in a folder (moved, bare container, no network)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: bash tools/dist-spike/checks/linux-in-container.sh none "$MOVED" /srv/anywhere/app check-r.R
+
+      - name: "Piece 2: limpa, RUVIIIC, MOFA2 (moved, bare container, no network)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: bash tools/dist-spike/checks/linux-in-container.sh none "$MOVED" /srv/anywhere/app check-packages.R
+
+      - name: The network probe sees the network when it is there, and its absence when cut
+        id: probe
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          bash tools/dist-spike/checks/linux-in-container.sh bridge "$MOVED" /srv/anywhere/app net-probe.R online
+          bash tools/dist-spike/checks/linux-in-container.sh none "$MOVED" /srv/anywhere/app net-probe.R offline
+
+      - name: "Piece 3: Python for MOFA2 (moved, bare container, no network)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: bash tools/dist-spike/checks/linux-in-container.sh none "$MOVED" /srv/anywhere/app check-mofa.R offline
+
+      - name: "Extra: the same three checks from a path with spaces"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          for check in check-r.R check-packages.R; do
+            bash tools/dist-spike/checks/linux-in-container.sh none "$MOVED" "/srv/any where/msr app" "$check"
+          done
+          bash tools/dist-spike/checks/linux-in-container.sh none "$MOVED" "/srv/any where/msr app" check-mofa.R offline
+
+      - name: Electron application and AppImage
+        id: electron
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        working-directory: tools/dist-spike
+        run: |
+          mv "$MOVED" runtime
+          npm install --no-audit --no-fund
+          npx electron-builder --linux AppImage --publish never
+          ls -l dist
+          {
+            echo "### Linux AppImage"
+            echo '```'
+            ls -l dist/*.AppImage
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "Piece 4: Shiny in Electron (unpacked application, build runner)"
+        if: ${{ !cancelled() && steps.electron.outcome == 'success' }}
+        working-directory: tools/dist-spike
+        run: xvfb-run -a node smoke.js "Shiny in Electron (Linux, unpacked)" "$PWD/dist/linux-unpacked/msrspike"
+
+      - name: Upload the AppImage
+        if: ${{ !cancelled() && steps.electron.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: tools/dist-spike/dist/*.AppImage
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+
+  linux-install:
+    name: Linux, AppImage on a fresh runner
+    needs: linux-build
+    if: ${{ !cancelled() && needs.linux-build.result != 'skipped' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/dist-spike
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-appimage
+          path: ${{ runner.temp }}/installer
+      - name: "Piece 5: the AppImage starts on a fresh runner"
+        run: |
+          appimage="$(ls "$RUNNER_TEMP"/installer/*.AppImage)"
+          chmod +x "$appimage"
+          ls -l "$appimage"
+          echo "runner's own R: $(command -v R || echo none) $(R --version 2>/dev/null | sed -n 1p)"
+          echo "R installations under /opt/R: $(ls /opt/R 2>/dev/null | tr '\n' ' ')"
+          if ldconfig -p | grep -q 'libfuse\.so\.2'; then
+            echo "APPIMAGE MODE: FUSE 2 present, mounted directly"
+          else
+            echo "APPIMAGE MODE: no FUSE 2 on the runner, --appimage-extract-and-run"
+            export APPIMAGE_EXTRACT_AND_RUN=1
+          fi
+          xvfb-run -a node tools/dist-spike/smoke.js "Installer (AppImage, fresh runner)" "$appimage"
+
+  # ---------------------------------------------------------------- Windows
+  windows-build:
+    name: Windows, bundle and NSIS installer
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'linux') ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-windows]'))
+    runs-on: windows-latest
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Paths
+        run: |
+          "BUNDLE=$env:RUNNER_TEMP\stage\bundle" >> $env:GITHUB_ENV
+          "MOVED=$env:RUNNER_TEMP\relocated\msr-moved" >> $env:GITHUB_ENV
+          "MOVED_SPACES=$env:RUNNER_TEMP\re located\msr moved" >> $env:GITHUB_ENV
+          "runner's own R: $((Get-Command R -ErrorAction SilentlyContinue).Source)"
+          "runner's own Python: $((Get-Command python -ErrorAction SilentlyContinue).Source)"
+
+      - name: R ${{ env.R_VERSION }} from the CRAN installer, silently, into the folder
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\R-win.exe" "https://cran.r-project.org/bin/windows/base/old/$env:R_VERSION/R-$env:R_VERSION-win.exe"
+          $installer = Start-Process -FilePath "$env:RUNNER_TEMP\R-win.exe" -Wait -PassThru -ArgumentList @(
+            '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS',
+            "/DIR=$env:BUNDLE\R",
+            '/MERGETASKS=!recordversion,!associate,!desktopicon,!quicklaunchicon'
+          )
+          if ($installer.ExitCode -ne 0) { throw "the R installer exited with $($installer.ExitCode)" }
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla -e "cat(R.version.string,R.home(),sep='\n')"
+
+      - name: Rtools45 (build time only, to compile RUVIIIC)
+        run: |
+          if (-not (Test-Path 'C:\rtools45\usr\bin\make.exe')) {
+            curl.exe -fsSL -o "$env:RUNNER_TEMP\rtools45.exe" "https://github.com/r-hub/rtools45/releases/download/latest/rtools45.exe"
+            $installer = Start-Process -FilePath "$env:RUNNER_TEMP\rtools45.exe" -Wait -PassThru -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART'
+            if ($installer.ExitCode -ne 0) { throw "the Rtools installer exited with $($installer.ExitCode)" }
+          }
+          Get-Item 'C:\rtools45\usr\bin\make.exe' | Select-Object FullName
+
+      - name: R packages into the R library
+        run: |
+          $env:PATH = "C:\rtools45\x86_64-w64-mingw32.static.posix\bin;C:\rtools45\usr\bin;$env:PATH"
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla tools\dist-spike\build\install-packages.R
+          if ($LASTEXITCODE -ne 0) { throw "package installation failed" }
+
+      - name: Standalone Python with mofapy2
+        run: |
+          curl.exe -fsSL -o "$env:RUNNER_TEMP\python.tar.gz" "https://github.com/astral-sh/python-build-standalone/releases/download/${env:PBS_RELEASE}/cpython-${env:PBS_PYTHON}%2B${env:PBS_RELEASE}-x86_64-pc-windows-msvc-install_only.tar.gz"
+          & "$env:SystemRoot\System32\tar.exe" -xzf "$env:RUNNER_TEMP\python.tar.gz" -C "$env:BUNDLE"
+          if ($LASTEXITCODE -ne 0) { throw "could not unpack Python" }
+          & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla tools\dist-spike\build\mofapy2-requirements.R "$env:RUNNER_TEMP"
+          if ($LASTEXITCODE -ne 0) { throw "could not read MOFA2's Python pins" }
+          $python = "$env:BUNDLE\python\python.exe"
+          $env:PYTHONNOUSERSITE = '1'
+          & $python -m pip install --no-cache-dir --no-warn-script-location --only-binary=:all: -r "$env:RUNNER_TEMP\requirements-pinned.txt"
+          if ($LASTEXITCODE -eq 0) {
+            "PYTHON REQUIREMENTS: MOFA2's own pins"
+          } else {
+            "::warning::MOFA2's dependency pins could not be installed as wheels; installing the mofapy2 pin alone"
+            & $python -m pip install --no-cache-dir --no-warn-script-location --only-binary=:all: -r "$env:RUNNER_TEMP\requirements-minimal.txt"
+            if ($LASTEXITCODE -ne 0) { throw "pip could not install mofapy2" }
+            "PYTHON REQUIREMENTS: mofapy2 pin alone"
+          }
+          & $python -m pip list
+
+      - name: Installed size; move the folder
+        id: move
+        run: |
+          function Get-SizeMiB($path) { [math]::Round((Get-ChildItem -LiteralPath $path -Recurse -File -Force | Measure-Object Length -Sum).Sum / 1MB) }
+          $lines = @('### Windows bundle, installed size (MiB)', '```')
+          foreach ($part in '.', 'R', 'R\library', 'python') { $lines += "{0,6}  bundle\{1}" -f (Get-SizeMiB (Join-Path $env:BUNDLE $part)), $part }
+          $lines += "files: $((Get-ChildItem -LiteralPath $env:BUNDLE -Recurse -File -Force).Count)"
+          $lines += 'largest R packages:'
+          $lines += Get-ChildItem "$env:BUNDLE\R\library" -Directory | ForEach-Object { [pscustomobject]@{ MiB = Get-SizeMiB $_.FullName; Name = $_.Name } } | Sort-Object MiB -Descending | Select-Object -First 12 | ForEach-Object { "{0,6}  {1}" -f $_.MiB, $_.Name }
+          $lines += 'largest Python packages:'
+          $lines += Get-ChildItem "$env:BUNDLE\python\Lib\site-packages" -Directory | ForEach-Object { [pscustomobject]@{ MiB = Get-SizeMiB $_.FullName; Name = $_.Name } } | Sort-Object MiB -Descending | Select-Object -First 8 | ForEach-Object { "{0,6}  {1}" -f $_.MiB, $_.Name }
+          $lines += '```'
+          $lines | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          New-Item -ItemType Directory -Force (Split-Path $env:MOVED) | Out-Null
+          Move-Item -LiteralPath $env:BUNDLE -Destination $env:MOVED
+          if (Test-Path $env:BUNDLE) { throw "the bundle is still at its build location" }
+
+      - name: "Piece 1: R 4.6.1 in a folder (moved, runner's R and Python off the PATH)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED -Check check-r.R
+
+      - name: "Piece 2: limpa, RUVIIIC, MOFA2 (moved, runner's R and Python off the PATH)"
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED -Check check-packages.R
+
+      - name: Cut the network for the bundle's programs; the probe sees it before and after
+        id: probe
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED -Check net-probe.R -CheckArguments online
+          if ($LASTEXITCODE -ne 0) { throw "the probe does not see the network while it is up" }
+          Set-NetFirewallProfile -All -Enabled True
+          $programs = Get-ChildItem -LiteralPath $env:MOVED -Recurse -File -Filter *.exe |
+            Where-Object { $_.FullName -like "$env:MOVED\R\bin\*" -or $_.FullName -like "$env:MOVED\python\python*.exe" }
+          foreach ($program in $programs) {
+            New-NetFirewallRule -DisplayName "kit-130 block $($program.Name)" -Direction Outbound -Action Block -Program $program.FullName | Out-Null
+          }
+          "outbound traffic blocked for $($programs.Count) programs: $($programs.Name -join ', ')"
+          pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED -Check net-probe.R -CheckArguments offline
+          if ($LASTEXITCODE -ne 0) { throw "the probe still reaches the network after the block" }
+
+      - name: "Piece 3: Python for MOFA2 (moved, runner's R and Python off the PATH, network cut)"
+        if: ${{ !cancelled() && steps.probe.outcome == 'success' }}
+        run: |
+          pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED -Check check-mofa.R -CheckArguments offline
+          $status = $LASTEXITCODE
+          foreach ($cache in "$env:LOCALAPPDATA\basilisk", "$env:LOCALAPPDATA\r-reticulate", "$env:LOCALAPPDATA\R\cache\R\basilisk", "$env:LOCALAPPDATA\R\cache\R\reticulate", "$env:LOCALAPPDATA\uv") {
+            "exists after the run: $(Test-Path $cache)  $cache"
+          }
+          exit $status
+
+      - name: "Extra: the same three checks from a path with spaces"
+        id: spaces
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        run: |
+          New-Item -ItemType Directory -Force (Split-Path $env:MOVED_SPACES) | Out-Null
+          Move-Item -LiteralPath $env:MOVED -Destination $env:MOVED_SPACES
+          "short (8.3) names on this volume: $(fsutil 8dot3name query (Split-Path -Qualifier $env:MOVED_SPACES))"
+          $failed = @()
+          foreach ($check in 'check-r.R', 'check-packages.R') {
+            pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED_SPACES -Check $check
+            if ($LASTEXITCODE -ne 0) { $failed += $check }
+          }
+          pwsh -NoProfile -File tools\dist-spike\checks\windows-clean-run.ps1 -Bundle $env:MOVED_SPACES -Check check-mofa.R -CheckArguments online
+          if ($LASTEXITCODE -ne 0) { $failed += 'check-mofa.R' }
+          if ($failed.Count -gt 0) { throw "failed from a path with spaces: $($failed -join ', ')" }
+
+      - name: Electron application and NSIS installer
+        id: electron
+        if: ${{ !cancelled() && steps.move.outcome == 'success' }}
+        working-directory: tools/dist-spike
+        run: |
+          $bundle = if (Test-Path $env:MOVED_SPACES) { $env:MOVED_SPACES } else { $env:MOVED }
+          Move-Item -LiteralPath $bundle -Destination runtime
+          npm install --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw "npm install failed" }
+          npx electron-builder --win nsis --publish never
+          if ($LASTEXITCODE -ne 0) { throw "electron-builder failed" }
+          Get-ChildItem dist | Format-Table Name, Length
+          $summary = @('### Windows NSIS installer', '```') + @(Get-Item dist\MSRSpike-Setup-*.exe | ForEach-Object { '{0}  {1} bytes' -f $_.Name, $_.Length }) + '```'
+          $summary >> $env:GITHUB_STEP_SUMMARY
+
+      - name: "Piece 4: Shiny in Electron (unpacked application, build runner)"
+        if: ${{ !cancelled() && steps.electron.outcome == 'success' }}
+        working-directory: tools/dist-spike
+        run: node smoke.js "Shiny in Electron (Windows, unpacked)" "$PWD\dist\win-unpacked\MSRSpike.exe"
+
+      - name: Upload the installer
+        if: ${{ !cancelled() && steps.electron.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-nsis-installer
+          path: tools/dist-spike/dist/MSRSpike-Setup-*.exe
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+
+  windows-install:
+    name: Windows, installer on a fresh runner
+    needs: windows-build
+    if: ${{ !cancelled() && needs.windows-build.result != 'skipped' }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/dist-spike
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-nsis-installer
+          path: ${{ runner.temp }}/installer
+      - name: "Piece 5: silent per-user install, then the installed application starts"
+        run: |
+          $setup = Get-Item "$env:RUNNER_TEMP\installer\MSRSpike-Setup-*.exe"
+          "installer: $($setup.Name), $($setup.Length) bytes"
+          "runner's own R: $((Get-Command R -ErrorAction SilentlyContinue).Source)"
+          $clock = [System.Diagnostics.Stopwatch]::StartNew()
+          $install = Start-Process -FilePath $setup.FullName -ArgumentList '/S' -Wait -PassThru
+          "silent install: exit $($install.ExitCode) after $([math]::Round($clock.Elapsed.TotalSeconds)) s"
+          $application = $null
+          for ($waited = 0; -not $application -and $waited -lt 120; $waited += 5) {
+            $application = Get-ChildItem "$env:LOCALAPPDATA\Programs" -Recurse -Depth 2 -Filter MSRSpike.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $application) { Start-Sleep -Seconds 5 }
+          }
+          if (-not $application) { throw "MSRSpike.exe was not installed under $env:LOCALAPPDATA\Programs" }
+          $installDir = $application.Directory.FullName
+          $files = Get-ChildItem -LiteralPath $installDir -Recurse -File -Force
+          "installed per user at: $installDir"
+          "installed size: $([math]::Round(($files | Measure-Object Length -Sum).Sum / 1MB)) MiB in $($files.Count) files"
+          "longest installed path: $(($files | ForEach-Object { $_.FullName.Length } | Measure-Object -Maximum).Maximum) characters"
+          node tools\dist-spike\smoke.js "Installer (NSIS per-user, fresh runner)" $application.FullName
+          exit $LASTEXITCODE
+
+  # ------------------------------------------- Dependency closure (rev 1.1)
+  closure-linux:
+    name: Linux, dependency closure (resolve only)
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'windows') ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-linux]')
+        && !contains(github.event.head_commit.message, '[skip-extras]'))
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+          use-public-rspm: true
+      - name: pak and jsonlite (the resolver and a JSON reader; nothing else is installed)
+        run: |
+          Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
+          Rscript -e 'install.packages("jsonlite")'
+      - name: Resolve MultiScholaR's DESCRIPTION into a lockfile
+        run: Rscript tools/dist-spike/build/dependency-closure.R closure-linux
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: closure-linux
+          path: closure-linux*
+          retention-days: 14
+
+  closure-windows:
+    name: Windows, dependency closure (resolve only)
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'linux') ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-windows]')
+        && !contains(github.event.head_commit.message, '[skip-extras]'))
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+          rtools-version: none
+      - name: pak and jsonlite (the resolver and a JSON reader; nothing else is installed)
+        shell: bash
+        run: |
+          Rscript -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
+          Rscript -e 'install.packages("jsonlite")'
+      - name: Resolve MultiScholaR's DESCRIPTION into a lockfile
+        shell: bash
+        run: Rscript tools/dist-spike/build/dependency-closure.R closure-windows
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: closure-windows
+          path: closure-windows*
+          retention-days: 14
+
+  # ------------------ Does MultiScholaR's compiled code build on Windows? (report only)
+  windows-package-install:
+    name: Windows, R CMD INSTALL of MultiScholaR (report only)
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.platform != 'linux') ||
+      (github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip-windows]')
+        && !contains(github.event.head_commit.message, '[skip-extras]'))
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          packages: |
+            deps::.
+            fastduckdb=?ignore
+            fastlimpadpc=?ignore
+      - name: R CMD INSTALL into a scratch library
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/msr-lib"
+          set +e
+          R CMD INSTALL --library="$RUNNER_TEMP/msr-lib" . > msr-install.log 2>&1
+          status=$?
+          cat msr-install.log
+          echo "R CMD INSTALL exit status: $status"
+          echo "--- first lines that look like an error"
+          grep -n -i -m 8 -E 'error|not found|no such file|cannot' msr-install.log
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: windows-package-install-log
+          path: msr-install.log
+          retention-days: 14

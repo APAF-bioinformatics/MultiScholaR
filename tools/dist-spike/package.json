@@ -1,0 +1,46 @@
+{
+  "name": "msr-dist-spike",
+  "productName": "MSRSpike",
+  "version": "0.0.1",
+  "description": "KIT-130 packaging spike: an Electron shell around a bundled R, library and Python",
+  "private": true,
+  "main": "main.js",
+  "author": "APAF bioinformatics",
+  "devDependencies": {
+    "electron": "33.2.0",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "au.apaf.multischolar.distspike",
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime",
+        "to": "runtime"
+      },
+      {
+        "from": "app",
+        "to": "app"
+      }
+    ],
+    "linux": {
+      "target": "AppImage",
+      "category": "Science",
+      "executableName": "msrspike",
+      "artifactName": "MSRSpike-${version}-x86_64.AppImage"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": false,
+      "differentialPackage": false,
+      "artifactName": "MSRSpike-Setup-${version}.exe"
+    }
+  }
+}
