@@ -723,7 +723,7 @@ transcriptomicsDeclarationBinding <- list(
     da_design = trxDaDesign,
     da_preflight = trxDaPreflight,
     da_assay_input = trxDaAssayInput,
-    da_fit = function(data, design, formula_string, sample_id) trxDaFit(data, design, formula_string),
+    da_fit = function(data, design, formula_string, sample_id, ...) trxDaFit(data, design, formula_string),
     da_apply = function(fit, contrast, ...) trxDaApply(fit, contrast),
     da_format = trxDaFormat,
     da_count = trxDaCount,
