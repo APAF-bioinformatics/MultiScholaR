@@ -128,7 +128,7 @@ jobs:
 
   # ------------------------------------------------------------------------- Linux
   linux-build:
-    name: "Linux: library${{ needs.plan.outputs.shell == 'true' && ', shell and archive' || '' }}"
+    name: "Linux: build (library; shell and archive from stage shell)"
     needs: plan
     if: needs.plan.outputs.build == 'true' && needs.plan.outputs.linux == 'true'
     runs-on: ubuntu-22.04
@@ -257,7 +257,7 @@ jobs:
 
   # ------------------------------------------------------------------------ Windows
   windows-build:
-    name: "Windows: library${{ needs.plan.outputs.shell == 'true' && ', shell and installer' || '' }}${{ needs.plan.outputs.container == 'true' && ', Server Core container' || '' }}"
+    name: "Windows: build (library; shell from stage shell, installer from stage installer, D5 container)"
     needs: plan
     if: needs.plan.outputs.build == 'true' && needs.plan.outputs.windows == 'true'
     runs-on: windows-2025

@@ -44,10 +44,22 @@ find "$bundle/R" -type f \( -name '*.so' -o -name '*.so.*' -o -path '*/bin/exec/
     LD_LIBRARY_PATH="$bundle/R/lib" xargs -0 -n 40 ldd >"$ldd_out" 2>/dev/null || true
 echo "== unresolved at build time"
 grep 'not found' "$ldd_out" | sort -u || true
+# Each library's Ubuntu package, for the third-party notices (packaging/r/notices.R).
+printf 'file\tpackage\tversion\tsource_package\n' >"$bundle/syslib/PACKAGES.tsv"
 awk '/=> \//{print $3}' "$ldd_out" | sort -u | while read -r lib; do
     case "$lib" in "$bundle"/*) continue ;; esac
     if basename "$lib" | grep -Eq "$glibc"; then continue; fi
     cp -L "$lib" "$bundle/syslib/"
+    real="$(readlink -f "$lib")"
+    owner="$(dpkg-query -S "$real" 2>/dev/null || dpkg-query -S "${real#/usr}" 2>/dev/null || true)"
+    package="$(printf '%s' "$owner" | head -n 1 | cut -d: -f1)"
+    if [ -n "$package" ]; then
+        printf '%s\t%s\t%s\t%s\n' "$(basename "$lib")" "$package" \
+            "$(dpkg-query -W -f='${Version}' "$package" 2>/dev/null)" \
+            "$(dpkg-query -W -f='${source:Package}' "$package" 2>/dev/null)" >>"$bundle/syslib/PACKAGES.tsv"
+    else
+        printf '%s\tunknown\t\t\n' "$(basename "$lib")" >>"$bundle/syslib/PACKAGES.tsv"
+    fi
 done
 echo "== bundled shared libraries: $(find "$bundle/syslib" -type f | wc -l)"
 ls "$bundle/syslib"

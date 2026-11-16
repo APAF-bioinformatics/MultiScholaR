@@ -39,11 +39,11 @@
     "BiocManager": "1.30.27"
   },
   "Snapshot": {
-    "Date": null,
+    "Date": "2026-07-30",
     "Repository": "https://packagemanager.posit.co (cran/<Date>, bioconductor/<Date>/packages/3.23)",
     "Rule": "KIT-134 revision 2.0, 2.0.3: duckdb 1.5.5; then the most hard-closure packages at their locked version; then the most packages at their locked version; then the latest date",
-    "ChosenBy": "packaging/r/snapshot-date.R",
-    "BioconductorWindows": null
+    "ChosenBy": "packaging/r/snapshot-date.R, run 43940407142 (2026-04-29 to 2026-11-16 scored; duckdb 1.5.5 from 2026-07-27 to 2026-09-29; 152 of 160 hard-closure and 365 of 394 repository packages at the lock)",
+    "BioconductorWindows": "snapshot"
   },
   "Packages": {
     "abind": {
