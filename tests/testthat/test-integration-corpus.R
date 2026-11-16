@@ -66,7 +66,7 @@ test_that("the corpus has the declared design", {
 
     expect_setequal(unique(scores$group), c("WT", "KO"))
     expect_gte(nrow(scores), 16L)
-    expect_identical(scores$Z1, as.numeric(scores$group == "KO"))
+    expect_identical(as.numeric(scores$Z1), as.numeric(scores$group == "KO"))
 
     samples <- lapply(omics, \(o) utils::read.delim(file.path(dir, o, "samples.tsv"), stringsAsFactors = FALSE))
     names(samples) <- omics
