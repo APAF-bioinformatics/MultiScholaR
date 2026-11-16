@@ -1,0 +1,200 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-118/exit/journeys",
+  "stage": "audit-kit-journey-940l",
+  "date": "2026-11-16",
+  "dispatches": {
+    "da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "DA-contrast-output": {
+      "requests": 1,
+      "complete": 1
+    },
+    "normalization-qc-figures": {
+      "requests": 3,
+      "complete": 3
+    },
+    "normalization-ruv": {
+      "requests": 1,
+      "complete": 1
+    },
+    "pearson-pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "pearson-selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_accession_cleanup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_duplicate_removal": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_intensity_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_replicate_filter": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 754966528,
+    "phase_peak_anon_bytes": {
+      "import": 567365632,
+      "design": 580968448,
+      "accession": 675454976,
+      "protein_intensity": 682758144,
+      "duplicates": 681627648,
+      "protein_replicate": 689766400,
+      "normalisation_ruv": 625106944,
+      "correlation": 682168320,
+      "session_export": 630996992,
+      "da": 628805632,
+      "report": 702525440
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "measurement_valid",
+    "steps": ["import", "design", "accession", "protein_intensity", "duplicates", "protein_replicate", "normalisation_ruv", "correlation", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "protein",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "lfq_fixture",
+    "build": "94a7b03a654246d70ed91275dda5836583d3a24132d5b05b6ea7dccb3346be76",
+    "status": "complete",
+    "exact": false,
+    "elapsed_seconds": 246.130000000005,
+    "peak_bytes": 2006093824,
+    "peak_anon_bytes": 1944580096,
+    "resident_end_bytes": 1089515520,
+    "phase_seconds": {
+      "import": 7.77999999996973,
+      "design": 18.679999999993,
+      "accession": 13.8300000000163,
+      "protein_intensity": 13.75,
+      "duplicates": 11.4699999999721,
+      "protein_replicate": 12.4699999999721,
+      "normalisation_ruv": 58.6999999999534,
+      "correlation": 24.2200000000303,
+      "session_export": 4.0800000000163,
+      "da": 25.3300000000163,
+      "report": 4.62999999994645
+    },
+    "phase_peak_anon_bytes": {
+      "import": 934559744,
+      "design": 948367360,
+      "accession": 1321361408,
+      "protein_intensity": 1328263168,
+      "duplicates": 1323876352,
+      "protein_replicate": 1330860032,
+      "normalisation_ruv": 1944580096,
+      "correlation": 1352634368,
+      "session_export": 1002524672,
+      "da": 1745678336,
+      "report": 1074053120
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "accession": "complete",
+      "protein_intensity": "complete",
+      "duplicates": "complete",
+      "protein_replicate": "complete",
+      "normalisation_ruv": "complete",
+      "correlation": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 1.27000000001863,
+    "gaps_above_250ms": 3,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process lfq101_fixture_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "b170ee0b170b68844d8bb0c0ae56565b3b553fbfb38eaa46afcc015318c66346",
+        "rows": null
+      },
+      "design": {
+        "state": "protein_s4_initial",
+        "entity_id": "40efaec1f50c7544366a26ef7eb09b446d5069e99ed0646781d80f7671851695",
+        "rows": 5
+      },
+      "accession": {
+        "state": "protein_accession_cleaned",
+        "entity_id": "24a665911565cec04ec2b3c48d76a301545301be454dd883b4a23e6ee5b50e48",
+        "rows": 5
+      },
+      "protein_intensity": {
+        "state": "protein_intensity_filtered",
+        "entity_id": "3c43860a7f6407def5655ad98e342fe004d1752830be75bff331842c04f666e9",
+        "rows": 4
+      },
+      "duplicates": {
+        "state": "duplicates_removed",
+        "entity_id": "521c222f403829317976c1bf20aa799499f33f8c1c26a43071a7f480f18d08e9",
+        "rows": 4
+      },
+      "protein_replicate": {
+        "state": "protein_replicate_filtered",
+        "entity_id": "affbc364e6b7e5990ab73e1076a24d58cc6b3fa39614d30463b14456d5836793",
+        "rows": 4
+      },
+      "normalisation_ruv": {
+        "state": "normalized",
+        "entity_id": "96d7591bbd5855beb9c4cf330b4e30c7c279c04e3b9566e8f00bc8503254c962",
+        "rows": 4
+      },
+      "correlation": {
+        "state": "correlation_filtered",
+        "entity_id": "0d42aaa33e9a2fbf20bff96c423383042052650ac11e9fccca3e2ba12de9423e",
+        "rows": 4
+      },
+      "session_export": {
+        "state": "correlation_filtered",
+        "entity_id": "0d42aaa33e9a2fbf20bff96c423383042052650ac11e9fccca3e2ba12de9423e",
+        "rows": 4
+      },
+      "da": {
+        "state": "correlation_filtered",
+        "entity_id": "aae56a0d50331355ec8a8493a3787154edec81d8c752f32000da556eed494d6f",
+        "rows": 4
+      },
+      "report": {
+        "state": "correlation_filtered",
+        "entity_id": "aae56a0d50331355ec8a8493a3787154edec81d8c752f32000da556eed494d6f",
+        "rows": 4
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 255,
+    "failure": null
+  }
+}

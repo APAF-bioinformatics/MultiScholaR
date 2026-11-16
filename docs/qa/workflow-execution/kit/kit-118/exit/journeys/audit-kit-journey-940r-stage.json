@@ -1,0 +1,239 @@
+{
+  "schema": "kit.stage_summary.v1",
+  "ticket": "KIT-118/exit/journeys",
+  "stage": "audit-kit-journey-940r",
+  "date": "2026-11-16",
+  "dispatches": {
+    "da_publication": {
+      "requests": 1,
+      "complete": 1
+    },
+    "DA-contrast-output": {
+      "requests": 1,
+      "complete": 1
+    },
+    "normalization-qc-figures": {
+      "requests": 3,
+      "complete": 3
+    },
+    "pearson-pairs": {
+      "requests": 1,
+      "complete": 1
+    },
+    "pearson-selection": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_accession_cleanup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_log2_matrix": {
+      "requests": 1,
+      "complete": 1
+    },
+    "peptide_qvalue_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "precursor_rollup": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_between_sample_normalisation": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_dpc_quant": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_peptide_count_filter": {
+      "requests": 1,
+      "complete": 1
+    },
+    "protein_ruv_covariates": {
+      "requests": 1,
+      "complete": 1
+    }
+  },
+  "controller": {
+    "peak_anon_bytes": 946167808,
+    "phase_peak_anon_bytes": {
+      "import": 761421824,
+      "design": 875716608,
+      "qvalue": 888279040,
+      "rollup": 847101952,
+      "peptide_log2": 938733568,
+      "peptide_accession": 931962880,
+      "dpc_quant": 928571392,
+      "protein_normalisation_limpa": 863453184,
+      "peptide_count": 864489472,
+      "correlation": 867184640,
+      "ruv_covariates": 888872960,
+      "session_export": 897802240,
+      "da": 938553344,
+      "report": 946167808
+    }
+  },
+  "decision": {
+    "status": "invalid",
+    "rule": "exactness_and_completion",
+    "failing_rule": "measurement_valid",
+    "steps": ["import", "design", "qvalue", "rollup", "peptide_log2", "peptide_accession", "dpc_quant", "protein_normalisation_limpa", "peptide_count", "correlation", "ruv_covariates", "session_export", "da", "report"],
+    "stop_after": null,
+    "promotion_authorized": false,
+    "expect_failure": null,
+    "route": "DIA_LIMPA",
+    "in_memory": null,
+    "head_rule": null
+  },
+  "member": {
+    "id": "candidate-1",
+    "corpus": "screen",
+    "build": "94a7b03a654246d70ed91275dda5836583d3a24132d5b05b6ea7dccb3346be76",
+    "status": "complete",
+    "exact": false,
+    "elapsed_seconds": 444.359999999986,
+    "peak_bytes": 2205614080,
+    "peak_anon_bytes": 2035146752,
+    "resident_end_bytes": 1257222144,
+    "phase_seconds": {
+      "import": 13.3800000000047,
+      "design": 17.8399999999674,
+      "qvalue": 31.0899999999674,
+      "rollup": 25.4500000000116,
+      "peptide_log2": 32.3800000000047,
+      "peptide_accession": 70.0999999999767,
+      "dpc_quant": 25.1999999999534,
+      "protein_normalisation_limpa": 13.7800000000279,
+      "peptide_count": 13.2399999999907,
+      "correlation": 39.1000000000349,
+      "ruv_covariates": 93.6499999999651,
+      "session_export": 7.40999999997439,
+      "da": 33.8700000000536,
+      "report": 6.4199999999837
+    },
+    "phase_peak_anon_bytes": {
+      "import": 1128615936,
+      "design": 1244061696,
+      "qvalue": 1860423680,
+      "rollup": 1899339776,
+      "peptide_log2": 1835458560,
+      "peptide_accession": 1933799424,
+      "dpc_quant": 1699876864,
+      "protein_normalisation_limpa": 1539379200,
+      "peptide_count": 1542275072,
+      "correlation": 1677312000,
+      "ruv_covariates": 1838276608,
+      "session_export": 1270812672,
+      "da": 2035146752,
+      "report": 1322065920
+    },
+    "phase_status": {
+      "import": "complete",
+      "design": "complete",
+      "qvalue": "complete",
+      "rollup": "complete",
+      "peptide_log2": "complete",
+      "peptide_accession": "complete",
+      "dpc_quant": "complete",
+      "protein_normalisation_limpa": "complete",
+      "peptide_count": "complete",
+      "correlation": "complete",
+      "ruv_covariates": "complete",
+      "session_export": "complete",
+      "da": "complete",
+      "report": "complete"
+    },
+    "max_sample_interval": 1.05999999999767,
+    "gaps_above_250ms": 1,
+    "swap_bytes": 0,
+    "slice_stopped": true,
+    "populations_complete": true,
+    "guard": null,
+    "failed_step": "complete",
+    "error": null
+  },
+  "verification": {
+    "accepted": true,
+    "status": "complete",
+    "oracle": "in-process limpa123c_screen_<step> fingerprints (protocol v1.5)",
+    "populations": {
+      "import": {
+        "state": "initial",
+        "entity_id": "5ba4bbc9af4700118d1ee8c94831385b967e5a44797344ed1ef9ed8b8ed2a308",
+        "rows": null
+      },
+      "design": {
+        "state": "raw_data_s4",
+        "entity_id": "66e2992997166c10114f49aa35ca992418aeb993ddadd3e802b07f456e16de84",
+        "rows": 320872
+      },
+      "qvalue": {
+        "state": "qvalue_filtered",
+        "entity_id": "fb82c24715d9879d0c89d586464c41ba3687d6f0cb19ba1df9899b94afdefa87",
+        "rows": 320872
+      },
+      "rollup": {
+        "state": "precursor_rollup",
+        "entity_id": "a08853397c674069dd8de93fd25b0153679f67e31173cc58fbd1a1d4a3444713",
+        "rows": 303000
+      },
+      "peptide_log2": {
+        "state": "log2_matrix",
+        "entity_id": "617fa1b14057660cbaddba54a811595baffb846b4945f39dd1b8b1e23b0013d1",
+        "rows": 303000
+      },
+      "peptide_accession": {
+        "state": "peptide_accession_cleaned",
+        "entity_id": "2152eb58e3713d684a15d1ce23478f989fa0c4e7eb54b062d022e8d233e39f0c",
+        "rows": 303000
+      },
+      "dpc_quant": {
+        "state": "protein_dpc_quant",
+        "entity_id": "2de111303f38eb79335db86fad16f313671e8998d77f2509590601d4fb1fd2ff",
+        "rows": 2500
+      },
+      "protein_normalisation_limpa": {
+        "state": "protein_normalised",
+        "entity_id": "397bf4e089ac32dc3ff5203dad14b3f5fb0b28c707e80a4a55adf5f16f26e5df",
+        "rows": 2500
+      },
+      "peptide_count": {
+        "state": "peptide_count_filtered",
+        "entity_id": "0c835450a8a417af4403f3799c51bf1bcb2c3022e551f71046d09e2e83e1ca91",
+        "rows": 2500
+      },
+      "correlation": {
+        "state": "correlation_filtered",
+        "entity_id": "24478fa5758fc61eb9fec31b68bb97069181e39c20d227519297ada3687648f5",
+        "rows": 2500
+      },
+      "ruv_covariates": {
+        "state": "ruv_corrected",
+        "entity_id": "3407310524c0a65ebc3219bd8164ef77bdc46f6354d25912e1786867c6f4ef77",
+        "rows": 2500
+      },
+      "session_export": {
+        "state": "ruv_corrected",
+        "entity_id": "3407310524c0a65ebc3219bd8164ef77bdc46f6354d25912e1786867c6f4ef77",
+        "rows": 2500
+      },
+      "da": {
+        "state": "ruv_corrected",
+        "entity_id": "63ba955a71eb0c193ed0bc196ee97d7508b0b0cd95c3c74764261188ac9469f6",
+        "rows": 2500
+      },
+      "report": {
+        "state": "ruv_corrected",
+        "entity_id": "63ba955a71eb0c193ed0bc196ee97d7508b0b0cd95c3c74764261188ac9469f6",
+        "rows": 2500
+      }
+    },
+    "oracle_mismatches": [],
+    "canonical_form_differences": [],
+    "files": 327,
+    "failure": null
+  }
+}

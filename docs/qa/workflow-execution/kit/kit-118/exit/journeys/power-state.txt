@@ -71,3 +71,13 @@ kit-journey-939m start 08:40:25 at 953c44c6: AC 1, profile low-power, battery 87
 kit-journey-939m refused at launch 08:40:25: exit 76, no member ran
 kit-journey-939m start 11:39:56 at 72b07b26: AC 1, profile low-power, battery 87%, load 2.15, available 40 GiB
 kit-journey-939m end 11:44:56: AC 1, profile low-power, battery 87%, load 2.26, available 40 GiB
+kit-journey-940m start 15:50:00 at 652eda20: AC 1, profile balanced, battery 82%, load 6.65, available 26 GiB
+kit-journey-940m end 15:57:40: AC 1, profile low-power, battery 86%, load 2.76, available 26 GiB
+kit-journey-940r start 15:58:00 at 652eda20: AC 1, profile low-power, battery 86%, load 2.54, available 26 GiB
+kit-journey-940r end 16:06:40: AC 1, profile low-power, battery 87%, load 3.02, available 26 GiB
+kit-journey-940l start 16:07:00 at 652eda20: AC 1, profile low-power, battery 87%, load 2.52, available 26 GiB
+kit-journey-940l end 16:12:20: AC 1, profile low-power, battery 87%, load 3.61, available 27 GiB
+kit-journey-940t start 16:12:30 at 652eda20: AC 1, profile low-power, battery 87%, load 3.59, available 27 GiB
+kit-journey-940t end 16:20:30: AC 1, profile low-power, battery 87%, load 18.37, available 26 GiB
+kit-journey-940q start 16:21:01 at 652eda20: AC 1, profile low-power, battery 87%, load 17.96, available 26 GiB
+kit-journey-940q end 18:01:03: AC 1, profile low-power, battery 87%, load 2.17, available 26 GiB

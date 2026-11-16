@@ -39,3 +39,13 @@ In gzfile(file, "rb") :
 Execution halted
 kit-journey-939q rejected failing oracle_mismatch failed_step none error none 
 kit-journey-939m accepted failing none failed_step none error none 
+kit-journey-940m accepted failing none failed_step none error none 
+kit-journey-940r invalid failing measurement_valid failed_step none error none 
+kit-journey-940l invalid failing measurement_valid failed_step none error none 
+kit-journey-940t invalid failing measurement_valid failed_step none error none 
+Error in gzfile(file, "rb") : cannot open the connection
+Calls: readRDS -> gzfile
+In addition: Warning message:
+In gzfile(file, "rb") :
+  cannot open compressed file '/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/runtime/kit-journey-940q/decision.rds', probable reason 'No such file or directory'
+Execution halted
