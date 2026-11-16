@@ -23,35 +23,148 @@
 # files are deleted by W4): the final state, the four-template status, the route's template resolver family and the
 # session-state payload. F104-01 (D5): the native export's metadata (`collectDIANativeSessionMetadata`) and the
 # summary's archive refresh (`refreshDIANativeSummaryArchive`) name the template `resolveProtSummaryReportTemplate`
-# resolves, as the report step does.
+# resolves, as the report step does. KIT-061: the integration file is the integration input's folder
+# (utils_workflow_integration_input.R), written from the route's final matrix; the native archive and the S4 RDS are no
+# longer written to the integration folder (KIT-060 D2).
 
 #' The copy's gate: the session's owner has no export pending (today's `assertDIAExportReady(getDIAActiveManager())`).
 #' @noRd
 protSummaryCopyGate <- function() assertDIAExportReady(getDIAActiveManager())
 
-#' The integration file's name: the native archive on a native session, else the final object's RDS.
+#' The integration input's manifest (KIT-061, D1 and D2): `<omic>/integration_input.json` under the project's
+#' integration folder, a fixed name with no label.
 #' @noRd
 protSummaryIntegrationFilename <- function(workflowData, omicType, label) {
-  native <- identical(omicType, "proteomics") && isDIANativeSession(workflowData$state_manager)
-  if (native) sprintf("%s_%s_final.msdia.tar", omicType, label) else sprintf("%s_%s_final_s4.RDS", omicType, label)
+  file.path(omicType, INTEGRATION_INPUT_MANIFEST)
 }
 
-#' The integration file, written in process: on a native session the summary's archive is refreshed and copied (no
-#' assay or S4 object is read); else the final object (a state reference) is saved as an RDS.
-#' @param object The final object (`final_state$context`'s).
-#' @param sourceDir The project's source directory (the native archive's).
-#' @return The notice the save shows.
+#' The integration input, written in process (KIT-061): the contract's folder (`writeIntegrationInput`) from the
+#' route's final matrix (`protIntegrationInputSource`). On a native session the summary's archive in the source
+#' directory is still refreshed (the session export, which the publication copy carries), but no longer copied to the
+#' integration folder (D2); no S4 object is written.
+#' @param path The manifest's path (`protSummaryIntegrationFilename`'s); its folder is the omic's input.
+#' @param object,saveRDSFn Unused: the route writer's arguments in the core's call.
+#' @param sourceDir The project's source directory (the native archive's and the UniProt annotation's).
+#' @return The notice the save shows, or FALSE when the owner holds no final matrix.
 #' @noRd
 protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourceDir = NULL, saveRDSFn = saveRDS) {
-  # The archive's name is `protSummaryIntegrationFilename`'s choice on a native session.
-  native <- endsWith(path, ".msdia.tar")
-  if (native) {
-    refreshDIANativeSummaryArchive(workflowData, sourceDir)
-    copyDIANativeSessionArtifact(sourceDir, path)
-  } else {
-    saveRDSFn(object, path)
+  manager <- workflowData$state_manager
+  if (!inherits(manager, "DIAStateAdapter")) return(FALSE)
+  if (isDIANativeSession(manager)) refreshDIANativeSummaryArchive(workflowData, sourceDir)
+  annotation <- workflowData$uniprot_dat_cln
+  annotationFile <- if (!is.null(sourceDir)) file.path(sourceDir, "uniprot_dat_cln.RDS") else ""
+  if (is.null(annotation) && file.exists(annotationFile)) annotation <- readRDS(annotationFile)
+  written <- withDIAStateScope(manager, function() {
+    source <- protIntegrationInputSource(manager)
+    if (is.null(source)) return(FALSE)
+    writeIntegrationInput(dirname(path), source$manifest, source$samples,
+      matrices = list(proteomics = source$matrix),
+      features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation)))
+    TRUE
+  })
+  if (isTRUE(written)) "Saved Integration input" else FALSE
+}
+
+#' The proteomics integration input's matrix and manifest fields (KIT-061; KIT-060 audit 4.3, D14): the last of the
+#' route's final states in the active history (`normalized` or `ruv_corrected`, then `correlation_filtered` on DIA, LFQ
+#' and TMT; `correlation_filtered`, then `ruv_covariates` or `ruv_corrected` on DIA_LIMPA). Its matrix is the state's
+#' protein table, except on `ruv_covariates`, whose table is uncorrected: there the RUV-adjusted product. The role is
+#' `corrected` when an RUV state is in the lineage, else `normalised`.
+#' @param manager The session's owner, inside its state scope.
+#' @return `list(manifest, samples, matrix)` (the matrix's first column `feature_id`, its samples in the design's
+#'   order), or NULL when no final state exists.
+#' @noRd
+protIntegrationInputSource <- function(manager) {
+  history <- diaStateHistory(manager)
+  final <- utils::tail(history[history %in% c("normalized", "ruv_corrected", "correlation_filtered", "ruv_covariates")], 1L)
+  if (!length(final)) return(NULL)
+  reference <- getDIAStateReference(manager, final)
+  record <- readDIAStateMetadata(manager, reference)$data
+  slots <- record$slots
+  matrixSource <- reference
+  product <- NULL
+  if (identical(final, "ruv_covariates")) {
+    science <- hydrateSavedWorkflowEntity(manager$.context$store, record$products$ruv_covariates_science)$value
+    matrixSource <- science$adjusted
+    product <- list(type = "ruv-adjusted-science", entity_id = matrixSource$entity_id,
+      sha256 = matrixSource$payload$sha256)
   }
-  if (native) "Saved Integration artifact" else "Saved Integration S4 Object"
+  table <- readDIAStateMetadata(manager, matrixSource)$data$components$protein_quant_table
+  # The class's validity needs the design beside the table.
+  matrix <- readDIAExecutionComponents(manager, matrixSource,
+    fields = c("protein_quant_table", "design_matrix"))@protein_quant_table
+  design <- readDIAExecutionComponents(manager, reference, fields = "design_matrix")@design_matrix
+  samples <- setdiff(names(matrix), slots$protein_id_column)
+  design <- design[match(samples, as.character(design[[slots$sample_id]])), , drop = FALSE]
+  rownames(design) <- NULL
+  matrix <- data.frame(feature_id = as.character(matrix[[slots$protein_id_column]]), matrix[samples],
+    check.names = FALSE, stringsAsFactors = FALSE)
+  ruvState <- utils::tail(history[history %in% c("ruv_corrected", "ruv_covariates")], 1L)
+  manifest <- list(omic_type = "proteomics",
+    workflow = manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_,
+    matrix_role = if (length(ruvState)) "corrected" else "normalised", scale = "log2",
+    correction = if (length(ruvState)) protIntegrationInputCorrection(manager, ruvState, design) else NULL,
+    source_state = list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256,
+      protein_id_column = slots$protein_id_column,
+      matrix = list(entity_id = table$entity_id, sha256 = table$payload$sha256), product = product),
+    sample_id_column = slots$sample_id, group_column = slots$group_id,
+    technical_replicate_column = slots$technical_replicate_id %||% NA_character_)
+  list(manifest = manifest, samples = design, matrix = matrix)
+}
+
+#' The RUV design that produced a corrected proteomics matrix: the classic route's RUV-III-C (KIT-060 audit row C1:
+#' the normalisation's commit and product), or DIA_LIMPA's RUV-III fit (row C2: the covariates step's commit, in either
+#' mode).
+#' @param state The RUV state's name.
+#' @param design The samples' design (for the grouping variable's levels).
+#' @return A list for the manifest's `correction`.
+#' @noRd
+protIntegrationInputCorrection <- function(manager, state, design) {
+  record <- readDIAStateMetadata(manager, getDIAStateReference(manager, state))
+  config <- record$config
+  products <- record$data$products
+  science <- function(product) {
+    # As the record reads it: a product hydrates as an entity whose `value` is the kernel's result; a plain saved value
+    # is the list itself.
+    hydrated <- hydrateSavedWorkflowEntity(manager$.context$store, product)
+    if (is.list(hydrated$value)) hydrated$value else hydrated
+  }
+  correction <- if (!is.null(products$ruv_covariates_science)) {
+    list(id = "C2", method = "RUVIII", ruv_mode = config$ruv_mode, k = config$ruv_k,
+      percentage_as_neg_ctrl = config$percentage_as_neg_ctrl, control_count = config$control_count,
+      replicate_structure = config$replicate_structure, grouping_variable = config$ruv_grouping_variable)
+  } else {
+    value <- if (!is.null(products$normalization_science)) science(products$normalization_science) else list()
+    list(id = "C1", method = "RUVIII_C_Varying", ruv_mode = config$ruv_mode, k = config$ruv_k,
+      percentage_as_neg_ctrl = config$percentage_as_neg_ctrl,
+      control_count = if (is.logical(value$controls)) sum(value$controls, na.rm = TRUE) else NA_integer_,
+      replicate_structure = record$data$slots$args$ruvIII_C_Varying$ruv_replicate_structure,
+      grouping_variable = value$parameters$grouping)
+  }
+  correction <- lapply(correction, function(value) if (is.null(value)) NA else value)
+  grouping <- correction$grouping_variable
+  correction$grouping_levels <- I(if (is.character(grouping) && grouping %in% names(design))
+    unique(as.character(design[[grouping]])) else character())
+  c(list(state = state), correction)
+}
+
+#' The proteomics feature annotation (D11: the omic's own): the UniProt accession as the DA exports take it (the id
+#' before the first hyphen) and its `gene_names`; the display name is the first gene name, else the feature id.
+#' @param ids The matrix's feature ids.
+#' @param annotation The UniProt table (`uniprot_dat_cln`, keyed by `Entry`), or NULL.
+#' @return `data.frame(feature_id, display_name, uniprot_accession, gene_names)`.
+#' @noRd
+protIntegrationInputFeatures <- function(ids, annotation) {
+  accession <- vapply(strsplit(ids, "-", fixed = TRUE), function(parts) if (length(parts)) parts[[1L]] else "", "")
+  genes <- rep(NA_character_, length(ids))
+  if (is.data.frame(annotation) && all(c("Entry", "gene_names") %in% names(annotation))) {
+    genes <- as.character(annotation$gene_names)[match(accession, as.character(annotation$Entry))]
+  }
+  first <- vapply(strsplit(ifelse(is.na(genes), "", genes), " |:"), function(parts) {
+    if (length(parts)) parts[[1L]] else ""
+  }, "")
+  data.frame(feature_id = ids, display_name = ifelse(nzchar(first), first, ids), uniprot_accession = accession,
+    gene_names = genes, stringsAsFactors = FALSE)
 }
 
 #' The session-state payload in the core's shape (`session_state`): today's `prepareProtSummarySessionStateExport`'s
