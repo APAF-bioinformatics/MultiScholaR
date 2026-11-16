@@ -1,0 +1,123 @@
+name: KIT-131 launcher
+
+# KIT-131 (the managed worker without systemd), steps 0, 5 and the Windows half of 6. Branch kit-131 only.
+# Gating: the lifecycle tests of the plain launcher (tests/testthat/test-workflow-execution-process.R) against the
+# installed package, on ubuntu and on windows. Report only (step 0, Windows discovery): the state owner's unit tests and
+# one entry lane (lipidomics; no DIA lane runs on Windows, KIT-134 D4) in process. Budget: at most 8 runs per platform,
+# one correction pass (docs/qa/workflow-execution/kit/kit-131/outcome.md).
+
+on:
+  push:
+    branches:
+      - kit-131
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NOT_CRAN: "true"
+  R_VERSION: "4.6.1"
+
+jobs:
+  launcher:
+    name: launcher (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ env.R_VERSION }}
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests.
+          # Without install-pandoc: false the action's pandoc check resolves "." without these ignores (KIT-130 run 1).
+          install-pandoc: false
+          packages: |
+            deps::.
+            any::sessioninfo
+            fastduckdb=?ignore
+            fastlimpadpc=?ignore
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: R CMD INSTALL into a scratch library
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/msr-lib"
+          set +e
+          R CMD INSTALL --library="$RUNNER_TEMP/msr-lib" . > msr-install.log 2>&1
+          status=$?
+          cat msr-install.log
+          echo "R CMD INSTALL exit status: $status"
+          exit "$status"
+      - name: Lifecycle tests of the plain launcher, against the installed package
+        timeout-minutes: 45
+        env:
+          # The bundle carries none of the GNU tools; a runner's Git or Rtools would otherwise select the GNU pipelines.
+          MULTISCHOLAR_DISABLE_TOOLS: ${{ runner.os == 'Windows' && 'bash,dd,sha256sum,sync,tar,cp' || '' }}
+          KIT131_LIBRARY: ${{ runner.temp }}/msr-lib
+        shell: Rscript {0}
+        run: |
+          .libPaths(c(Sys.getenv("KIT131_LIBRARY"), .libPaths()))
+          # Workers and child controllers find the same libraries.
+          Sys.setenv(R_LIBS = paste(.libPaths(), collapse = .Platform$path.sep))
+          ns <- asNamespace("MultiScholaR")
+          cat("MultiScholaR from", getNamespaceInfo(ns, "path"), "\n")
+          stopifnot(nzchar(system.file("R", "MultiScholaR.rdb", package = "MultiScholaR")))
+          env <- new.env(parent = ns)
+          sys.source("tests/testthat/helper-workflow-checkpoint-fixtures.R", env)
+          results <- testthat::test_file("tests/testthat/test-workflow-execution-process.R", env = env,
+              load_helpers = FALSE, reporter = "summary", stop_on_failure = FALSE)
+          table <- as.data.frame(results)
+          dir.create("kit131-artifacts", showWarnings = FALSE)
+          utils::write.csv(table[, c("test", "nb", "passed", "failed", "skipped", "error", "real")],
+              file.path("kit131-artifacts", paste0("lifecycle-", .Platform$OS.type, ".csv")), row.names = FALSE)
+          cat(sprintf("KIT-131 LIFECYCLE %s: passed %d failed %d skipped %d error %d\n", Sys.info()[["sysname"]],
+              sum(table$passed), sum(table$failed), sum(table$skipped), sum(table$error)))
+          if (any(table$failed > 0 | table$error)) quit(status = 1L)
+      - name: Discovery (report only), the state owner's unit tests and the lipidomics entry lane in process
+        if: ${{ !cancelled() && runner.os == 'Windows' }}
+        continue-on-error: true
+        timeout-minutes: 75
+        env:
+          MULTISCHOLAR_DISABLE_TOOLS: bash,dd,sha256sum,sync,tar,cp
+        shell: bash
+        run: |
+          mkdir -p kit131-artifacts
+          status=0
+          for file in test-workflow-saved-identity.R test-workflow-saved-resources.R test-workflow-saved-recovery.R \
+              test-workflow-saved-exports.R test-gui-entry-lipidomics.R; do
+            echo "::group::$file"
+            Rscript -e 'a <- commandArgs(TRUE); suppressMessages(pkgload::load_all(".", quiet = TRUE));
+              r <- testthat::test_file(file.path("tests/testthat", a[[1]]), reporter = "summary", stop_on_failure = FALSE);
+              d <- as.data.frame(r);
+              cat(sprintf("KIT-131 DISCOVERY %s: passed %d failed %d skipped %d error %d\n", a[[1]], sum(d$passed),
+                sum(d$failed), sum(d$skipped), sum(d$error)));
+              for (t in r) { bad <- Filter(function(x) inherits(x, c("expectation_failure", "expectation_error")), t$results);
+                if (length(bad)) cat(sprintf("KIT-131 FAILED %s :: %s :: %s\n", a[[1]], t$test,
+                  gsub("\\s+", " ", substr(conditionMessage(bad[[1]]), 1, 400)))) }
+              if (any(d$failed > 0 | d$error)) quit(status = 1L)' "$file" 2>&1 | tee "kit131-artifacts/discovery-$file.log"
+            [ "${PIPESTATUS[0]}" -eq 0 ] || status=1
+            echo "::endgroup::"
+          done
+          grep -h "^KIT-131 " kit131-artifacts/discovery-*.log || true
+          exit "$status"
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: kit131-${{ matrix.os }}
+          retention-days: 14
+          path: |
+            msr-install.log
+            kit131-artifacts/**
