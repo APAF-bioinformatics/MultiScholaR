@@ -591,7 +591,9 @@ jobs:
           $hash = (Get-FileHash -Algorithm SHA256 $setup.FullName).Hash.ToLower()
           "$hash  $($setup.Name)" | Set-Content "$($setup.FullName).sha256"
           $lines = @('### Windows NSIS installer', '```', "$($setup.Name): $($setup.Length) bytes ($([math]::Round($setup.Length / 1MB)) MiB)", "sha256 $hash", '```')
-          $lines | Tee-Object -FilePath "$env:OUT\installer.txt" | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines | Set-Content "$env:OUT\installer.txt"
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          $lines
 
       - name: Upload the NSIS installer
         if: needs.plan.outputs.installer == 'true' && steps.installer.outcome == 'success'
