@@ -72,14 +72,17 @@ protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourc
 #' `corrected` when an RUV state is in the lineage, else `normalised`.
 #' @param manager The session's owner, inside its state scope.
 #' @return `list(manifest, samples, matrix)` (the matrix's first column `feature_id`, its samples in the design's
-#'   order), or NULL when no final state exists.
+#'   order), or NULL when no final state exists or it is stored as a whole legacy object.
 #' @noRd
 protIntegrationInputSource <- function(manager) {
   history <- diaStateHistory(manager)
   final <- utils::tail(history[history %in% c("normalized", "ruv_corrected", "correlation_filtered", "ruv_covariates")], 1L)
   if (!length(final)) return(NULL)
   reference <- getDIAStateReference(manager, final)
-  record <- readDIAStateMetadata(manager, reference)$data
+  # A state stored as a whole legacy object has no component record; it is not hydrated here (as the analysis
+  # record leaves it), so no input is written for it.
+  record <- tryCatch(readDIAStateMetadata(manager, reference)$data, saved_entity_unsupported = function(error) NULL)
+  if (is.null(record)) return(NULL)
   slots <- record$slots
   matrixSource <- reference
   product <- NULL
