@@ -1097,6 +1097,12 @@ savedDaW1Frozen <- function() list(
         error = NA_character_,
         calls = c(runSavedOperation = 1L, commitDIAReferenceState = 0L, saveDIAStateValue = 8L, publishDIAActionOutputs = 1L
             )),
+    # KIT-123 (R2), re-frozen 2026-11-16 from two byte-identical dumps: the RUV covariates W are computed from the
+    # controls centred on their means, so the `ruv_covariates` state (its design's W columns), its product, the DA that
+    # fits them (the contrast's product, the manifest, its dependencies and the published tables) and the display's
+    # digests of these moved. Identical to the start commit's: the four states before the RUV step, the Pearson
+    # products and the PCA, the entities, the provenance, the record, `fdr` and the calls. With R1 alone (9e8db5a7)
+    # every value is the start commit's.
     limpa_one_contrast = list(
         current = "ruv_covariates",
         history = c("initial", "protein_dpc_quant", "protein_normalised", "peptide_count_filtered", "correlation_filtered", 
@@ -1106,11 +1112,11 @@ savedDaW1Frozen <- function() list(
             "ruv_covariates"),
         states = c(protein_dpc_quant = "22f553887dc4edb1623ab2d0b556c048cd7f216ba22d1f250abd9d86eb5db726", protein_normalised = "8f9c8ef12ddf5740a442f8b23bf258aeb7a02793932943a0f1901d84a9e9867b", 
             peptide_count_filtered = "32b145aaa12d358ffff2ff6d857c643e9305792be84d2aeec59c0bb9c9fab661", correlation_filtered = "69b20b13edbf2f85ae088f8fa1e296b1412d2a1d7ea8021a85307b983e4b45fb", 
-            ruv_covariates = "7ba49b7725df7e803f6e4587bda299c59c8002911538d7f6e7e0674640b641fa"),
+            ruv_covariates = "a247ca82c2b0e461cf6080fb13ea283025e128ec264034be9b93ccd16a6ee10d"),
         outputs = list(protein_dpc_quant = NULL, protein_normalised = NULL, peptide_count_filtered = NULL, correlation_filtered = c(correlation = TRUE), 
                 ruv_covariates = c(da = TRUE)),
-        products = c("dia-contrast-references:97aa6e4c96980b17", "dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:cb46f62c60963c21", 
-            "dia-ruv-covariates:0055cc0a9db60428", "dia_normalization_pca:d9b5720af8d8a298", "rendered_asset"),
+        products = c("dia-contrast-references:f4e904e8f0028b60", "dia-pearson-pairs:9eaece3602f93d46", "dia-pearson-selection:cb46f62c60963c21", 
+            "dia-ruv-covariates:ae5c2029f83e23a8", "dia_normalization_pca:d9b5720af8d8a298", "rendered_asset"),
         entities = c("checkpoint:correlation_filtered" = 1L, "checkpoint:da-result-references" = 1L, "checkpoint:initial" = 1L, 
             "checkpoint:owned_args:limpa_dpc_quant_results" = 2L, "checkpoint:owner:pearson-filtered-science" = 1L, 
             "checkpoint:owner:ruv-adjusted-science" = 1L, "checkpoint:owner:ruv-covariates-science" = 1L, "checkpoint:peptide_count_filtered" = 1L, 
@@ -1118,19 +1124,19 @@ savedDaW1Frozen <- function() list(
             rendered_asset = 1L, result_table = 14L, scientific_product = 10L, "scientific_product:contrast_references" = 1L
             ),
         fits = character(0),
-        manifest = "dd86ce37c0f1928eb0946caa82b8643f6344f5959d774f844b4dd68f762885cd",
+        manifest = "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f",
         model_unset = c("group_id", "technical_replicate_id", "consensus_correlation"),
-        head_manifest = "dd86ce37c0f1928eb0946caa82b8643f6344f5959d774f844b4dd68f762885cd",
+        head_manifest = "e110155297408588615cc4228500932db820b236588b5b02aab5a803a41d055f",
         head_model_unset = c("group_id", "technical_replicate_id", "consensus_correlation"),
-        dependencies = c("dia-contrast-references:97aa6e4c96980b17 <- 52bb3bd82853a6b0", "manifest <- 52bb3bd82853a6b0"),
+        dependencies = c("dia-contrast-references:f4e904e8f0028b60 <- b9ef2b33ea1cdddf", "manifest <- b9ef2b33ea1cdddf"),
         provenance = "b277eb8197ce4789839d312cf291fed25eae7f1c6b5450795b7b6706b9c33067",
         pending = "71557d1c8bac9bbe3cbec8d00bb223a2f372279827064095447e569fbf5a760a",
         record = "e2c78f55bc3748ad827e2ac8cb66d8414304e4c035940dcc2bb41f98a548ebe8",
         fdr = c(treated.vs.control = "BH"),
-        files = "c983c2965d1b14c7ab12169b6d2a50dad95db689680af6bc3a5d439e1562f0b1",
+        files = "2ce30818ad600eddb0e918a66e8e8341a74a4311b1e99352de92d87c611b94c3",
         publication = TRUE,
-        display = c(da_results_list = "dd86ce37c0f1928e", analysis_complete = "TRUE", current_s4_object = "5d94fbb7979cd1eb", 
-            da_analysis_results_list = "dd86ce37c0f1928e", tab_status = "2bce5494a485e1c6", da_ui_params = "7fba41c2c7de2596"
+        display = c(da_results_list = "e110155297408588", analysis_complete = "TRUE", current_s4_object = "92ab8e0a6f5ff71f", 
+            da_analysis_results_list = "e110155297408588", tab_status = "2bce5494a485e1c6", da_ui_params = "7fba41c2c7de2596"
             ),
         error = NA_character_,
         calls = c(runSavedOperation = 1L, commitDIAReferenceState = 1L, saveDIAStateValue = 9L, publishDIAActionOutputs = 1L
