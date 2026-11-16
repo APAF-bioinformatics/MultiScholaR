@@ -429,6 +429,7 @@ workflowServiceProperties <- function(unit) {
 #' @return The unit's properties; a unit never started gives `available = FALSE`.
 #' @noRd
 workflowUnitState <- function(config, unit) {
+    if (workflowPlainLauncher(config)) return(workflowProcessState(unit))
     workflowServiceProperties(unit)
 }
 
@@ -438,17 +439,173 @@ workflowUnitState <- function(config, unit) {
 #' @return NULL invisibly.
 #' @noRd
 workflowUnitStop <- function(config, unit) {
+    if (workflowPlainLauncher(config)) return(workflowProcessStop(unit))
     workflowSystemd(c("stop", unit), required = FALSE)
     invisible(NULL)
 }
 
-#' The launcher seam (KIT-131): one memory counter of the application's control group.
+#' The launcher seam (KIT-131): one memory counter of the application's control group. The plain launcher has no
+#' control group: what is in use is the controller's own resident memory, and no peak is measured.
 #' @param application Managed application owner.
 #' @param counter `memory.current` or `memory.peak`.
-#' @return Bytes.
+#' @return Bytes; `NA` for the peak under the plain launcher.
 #' @noRd
 workflowApplicationMemory <- function(application, counter) {
+    if (workflowPlainLauncher(application$config)) {
+        if (!identical(counter, "memory.current")) return(NA_real_)
+        return(as.numeric(ps::ps_memory_info()[["rss"]]))
+    }
     workflowMemoryCounter(file.path(application$cgroup, counter))
+}
+
+#' Whether a managed application runs under the plain launcher (KIT-131). The launcher is a value in the frozen
+#' configuration: absent for systemd, so every stored configuration and request file is what it was, and `"process"`
+#' for the plain `processx` launcher.
+#' @param config Frozen managed application configuration, or NULL.
+#' @return TRUE for the plain launcher.
+#' @noRd
+workflowPlainLauncher <- function(config) {
+    identical(config$launcher, "process")
+}
+
+#' Choose the launcher once, at launch (KIT-131). The option `multischolar.workflow_launcher` wins; without it only a
+#' Linux system with a `systemctl` binary gets systemd, exactly as before, including the refusal when its user manager
+#' does not answer.
+#' @param option Value of the option `multischolar.workflow_launcher`, or NULL.
+#' @param sysname `Sys.info()[["sysname"]]`.
+#' @param systemctl `Sys.which("systemctl")`.
+#' @return `"systemd"` or `"process"`.
+#' @noRd
+workflowLauncherChoice <- function(option, sysname, systemctl) {
+    if (!is.null(option)) {
+        if (!is.character(option) || length(option) != 1L || !option %in% c("systemd", "process"))
+            cli::cli_abort("option multischolar.workflow_launcher must be \"systemd\" or \"process\"",
+                class = "workflow_execution_invalid")
+        return(option)
+    }
+    if (identical(sysname, "Linux") && nzchar(systemctl)) "systemd" else "process"
+}
+
+#' The plain launcher's units (KIT-131): one record per started unit, keyed by its name, holding the `processx` handle.
+#' They mean something only in the process that started them, which is the controller.
+#' @noRd
+.workflowProcessUnits <- new.env(parent = emptyenv())
+
+#' Start one command as a unit of the plain launcher (KIT-131): a child of this process, in its own process group
+#' (a Job Object on Windows), ended with this process, and marked so that everything it starts can be found.
+#' @param unit Unit name; one name is one unit.
+#' @param command,args The executable and its argument vector; no shell is involved.
+#' @param environment Named values added to this process's environment for the unit.
+#' @param directory The unit's working directory.
+#' @param log File that receives the unit's standard output and standard error.
+#' @param deadline Seconds the unit may run; enforced by `workflowProcessState`.
+#' @return NULL invisibly once the command has been started; `workflow_execution_unsupported` when it cannot start.
+#' @noRd
+workflowProcessStart <- function(unit, command, args, environment, directory, log, deadline) {
+    if (!is.null(.workflowProcessUnits[[unit]]))
+        cli::cli_abort("managed unit {unit} was already started", class = "workflow_execution_invalid")
+    # The marker is an environment variable the unit and all its descendants inherit. `ps` names it with a random
+    # draw and sets it here: the controller's random stream is restored, and the variable is removed again so that no
+    # later child carries another unit's marker.
+    marker <- withr::with_preserve_seed(ps::ps_mark_tree())
+    on.exit(Sys.unsetenv(marker), add = TRUE)
+    linux <- identical(Sys.info()[["sysname"]], "Linux")
+    handle <- tryCatch(processx::process$new(command, args, env = c("current", environment), wd = directory,
+        stdout = log, stderr = "2>&1", cleanup = TRUE, cleanup_tree = TRUE, windows_hide_window = TRUE,
+        # A crash of the controller runs no exit handler: the kernel ends the unit's first process (Linux).
+        linux_pdeathsig = if (linux) ps::signals()$SIGKILL else FALSE),
+        error = function(error) cli::cli_abort("managed unit could not start: {conditionMessage(error)}",
+            class = "workflow_execution_unsupported"))
+    record <- new.env(parent = emptyenv())
+    record$process <- handle
+    record$marker <- marker
+    record$started <- proc.time()[["elapsed"]]
+    record$deadline <- deadline
+    record$timed_out <- FALSE
+    assign(unit, record, envir = .workflowProcessUnits)
+    invisible(NULL)
+}
+
+#' The state of a plain unit in the terms the poll reads from systemd (KIT-131). A unit past its deadline is stopped
+#' here: the deadline holds while the controller is alive and polling.
+#' @param unit Unit name.
+#' @return `available`, `SubState` (`running`, `exited`, `failed`), `Result` (`success`, `exit-code`, `signal`,
+#'   `timeout`), `MainPID` and `ExitStatus`. An exit status the handle could not collect is not a success.
+#' @noRd
+workflowProcessState <- function(unit) {
+    record <- .workflowProcessUnits[[unit]]
+    if (is.null(record)) return(list(available = FALSE))
+    handle <- record$process
+    pid <- handle$get_pid()
+    if (handle$is_alive()) {
+        if (proc.time()[["elapsed"]] - record$started < record$deadline)
+            return(list(available = TRUE, SubState = "running", Result = "success", MainPID = pid))
+        record$timed_out <- TRUE
+        workflowProcessStop(unit)
+    }
+    status <- handle$get_exit_status() %||% NA_integer_
+    result <- if (record$timed_out) "timeout" else if (identical(status, 0L)) "success" else
+        if (!is.na(status) && status < 0L) "signal" else "exit-code"
+    list(available = TRUE, SubState = if (identical(result, "success")) "exited" else "failed", Result = result,
+        MainPID = pid, ExitStatus = status)
+}
+
+#' Stop a plain unit and everything it started (KIT-131), then wait a bounded time for the processes to go.
+#' @param unit Unit name; a unit never started or already gone is not an error.
+#' @return NULL invisibly.
+#' @noRd
+workflowProcessStop <- function(unit) {
+    record <- .workflowProcessUnits[[unit]]
+    if (is.null(record)) return(invisible(NULL))
+    # The marked tree first, so that a descendant outside the unit's process group goes too.
+    tryCatch(ps::ps_kill_tree(record$marker), error = function(error) NULL)
+    tryCatch(record$process$kill(), error = function(error) NULL)
+    deadline <- proc.time()[["elapsed"]] + 2
+    while (!workflowProcessEmpty(unit) && proc.time()[["elapsed"]] < deadline) Sys.sleep(0.02)
+    invisible(NULL)
+}
+
+#' Whether nothing of a plain unit is left (KIT-131).
+#' @param unit Unit name.
+#' @return TRUE when its first process has ended and no process carries its marker.
+#' @noRd
+workflowProcessEmpty <- function(unit) {
+    record <- .workflowProcessUnits[[unit]]
+    if (is.null(record)) return(TRUE)
+    !record$process$is_alive() && !length(ps::ps_find_tree(record$marker))
+}
+
+#' Drop a finished plain unit's record (KIT-131); its exit status goes with it.
+#' @param unit Unit name.
+#' @return NULL invisibly.
+#' @noRd
+workflowProcessForget <- function(unit) {
+    if (!is.null(.workflowProcessUnits[[unit]])) rm(list = unit, envir = .workflowProcessUnits)
+    invisible(NULL)
+}
+
+#' Start a worker for the plain launcher (KIT-131): the same entry point, request file and environment values as the
+#' systemd unit, as a child of the controller. The memory cap and the bindings are not enforced.
+#' @param config Frozen managed application configuration.
+#' @param unit Owned unit name.
+#' @param role Entry role; the plain launcher starts workers only.
+#' @param expression The role's package entry point.
+#' @param path,hash Bounded request file and expected hash.
+#' @param deadline Seconds the worker may run.
+#' @return NULL invisibly after the start.
+#' @noRd
+workflowLaunchProcess <- function(config, unit, role, expression, path, hash, deadline) {
+    if (!identical(role, "worker")) cli::cli_abort("the plain launcher starts workers only",
+        class = "workflow_execution_unsupported")
+    scratch <- file.path(dirname(path), paste0(role, "-scratch"))
+    dir.create(scratch, showWarnings = FALSE)
+    environment <- c(R_LIBS = paste(unique(c(config$library, .libPaths())), collapse = .Platform$path.sep),
+        OMP_NUM_THREADS = "1", OPENBLAS_NUM_THREADS = "1", MKL_NUM_THREADS = "1",
+        DUCKPLYR_FALLBACK_AUTOUPLOAD = "0", DUCKPLYR_FALLBACK_COLLECT = "0", TMPDIR = scratch,
+        MULTISCHOLAR_WORKFLOW_WORKER = "1")
+    rscript <- file.path(R.home("bin"), if (identical(.Platform$OS.type, "windows")) "Rscript.exe" else "Rscript")
+    workflowProcessStart(unit, rscript, c("--vanilla", "-e", expression, path, hash), environment, scratch,
+        file.path(config$root, paste0(role, "-", unit, ".log")), deadline)
 }
 
 #' Read one kernel memory counter without guessing missing values.
@@ -480,6 +637,13 @@ workflowWorkerMemory <- function(path) {
 #' @return Available bytes; unsupported/missing counters fail closed.
 #' @noRd
 workflowHostAvailable <- function() {
+    if (!identical(Sys.info()[["sysname"]], "Linux")) {
+        # KIT-131: no /proc/meminfo outside Linux; `ps` reports what the system can hand out.
+        value <- tryCatch(as.numeric(ps::ps_system_memory()[["avail"]]), error = function(error) NA_real_)
+        if (length(value) != 1L || !is.finite(value) || value < 0) cli::cli_abort(
+            "host memory unavailable: the system reports no available memory", class = "workflow_execution_unsupported")
+        return(value)
+    }
     line <- grep("^MemAvailable:", readLines("/proc/meminfo", warn = FALSE), value = TRUE)
     fields <- if (length(line) == 1L) strsplit(trimws(line), "[[:space:]]+")[[1L]] else character()
     value <- if (length(fields) >= 2L) suppressWarnings(as.numeric(fields[[2L]])) * 1024 else NA_real_
@@ -1199,6 +1363,7 @@ workflowLaunchService <- function(config, unit, role, path, hash, cap = NULL, bi
         application = "MultiScholaR:::workflowManagedMain(commandArgs(TRUE))",
         monitor = "MultiScholaR:::workflowMonitorMain(commandArgs(TRUE))",
         worker = "MultiScholaR:::workflowWorkerMain(commandArgs(TRUE))")
+    if (workflowPlainLauncher(config)) return(workflowLaunchProcess(config, unit, role, expression, path, hash, deadline))
     args <- c("--unit", unit, "--slice", config$slice,
         "--property=Type=exec", "--property=KillMode=control-group", "--property=TimeoutStopSec=1",
         "--property=MemoryAccounting=yes", "--property=CPUAccounting=yes", "--property=IOAccounting=yes",
@@ -2069,6 +2234,7 @@ workflowCgroupAccounting <- function(group) {
 #' @return Whether the kernel subtree is gone or empty.
 #' @noRd
 workflowServiceEmpty <- function(application, unit) {
+    if (workflowPlainLauncher(application$config)) return(workflowProcessEmpty(unit))
     path <- file.path(application$cgroup, unit)
     if (!dir.exists(path)) return(TRUE)
     files <- c(file.path(path, "cgroup.procs"), list.files(path, "^cgroup[.]procs$",
@@ -2084,7 +2250,10 @@ workflowExecutionProcess <- function(pid = Sys.getpid()) {
     if (!is.numeric(pid) || length(pid) != 1L || !is.finite(pid) ||
         pid < 1 || pid != floor(pid)) stop("invalid process identity")
     if (!identical(Sys.info()[["sysname"]], "Linux")) {
-        return(list(pid = as.integer(pid), platform = Sys.info()[["sysname"]]))
+        # KIT-131: the start time tells a controller from a later process that was given its pid (Windows reuses
+        # pids quickly).
+        return(list(pid = as.integer(pid), platform = Sys.info()[["sysname"]],
+            start = format(as.numeric(ps::ps_create_time(ps::ps_handle(as.integer(pid)))), digits = 17)))
     }
     path <- file.path("/proc", as.character(as.integer(pid)), "stat")
     stat <- strsplit(sub("^.*[)] ", "", readLines(path, warn = FALSE)), " ",
