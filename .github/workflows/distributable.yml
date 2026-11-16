@@ -503,7 +503,7 @@ jobs:
           @'
           $bundle = 'C:\msr'
           Get-ChildItem Env: | Where-Object { $_.Name -match '^(RHOME|R_.*|RTOOLS.*|RETICULATE_.*|PYTHON.*)$' } | ForEach-Object { Remove-Item "Env:$($_.Name)" }
-          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+          $env:PATH = "$env:SystemRoot\System32;$env:SystemRoot;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
           $env:R_LIBS_USER = "$bundle\R\no-user-library"; $env:R_LIBS_SITE = "$bundle\R\no-site-library"
           $env:RTOOLS45_HOME = "$bundle\no-rtools"; $env:RETICULATE_PYTHON = "$bundle\python\python.exe"; $env:PYTHONNOUSERSITE = '1'
           $env:RSTUDIO_PANDOC = "$bundle\pandoc"; $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'; $env:MSR_BUNDLE = $bundle

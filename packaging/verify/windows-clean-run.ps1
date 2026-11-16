@@ -14,7 +14,7 @@ param(
 Get-ChildItem Env: |
     Where-Object { $_.Name -match '^(PATH|RHOME|R_.*|RTOOLS.*|RETICULATE_.*|PYTHON.*|CONDA.*|VIRTUAL_ENV|BASILISK_.*|LD_LIBRARY_PATH)$' } |
     ForEach-Object { Remove-Item "Env:$($_.Name)" }
-$env:PATH = "$env:SystemRoot\System32;$env:SystemRoot"
+$env:PATH = "$env:SystemRoot\System32;$env:SystemRoot;$env:SystemRoot\System32\WindowsPowerShell\v1.0"
 $env:R_LIBS_USER = Join-Path $Bundle 'R\no-user-library'
 $env:R_LIBS_SITE = Join-Path $Bundle 'R\no-site-library'
 # R for Windows puts Rtools' folders at the front of its own PATH; this one does not exist.

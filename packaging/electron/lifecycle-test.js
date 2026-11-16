@@ -183,6 +183,15 @@ async function main() {
 
   console.log('--- shell events (first start)');
   for (const event of log1.events()) console.log(JSON.stringify(event));
+  if (failures.length > 0 && startUp.logs) {
+    // The application's own logs of the first start, for the diagnosis.
+    for (const name of [`r-${startUp.startedAt}.log`, `shell-${startUp.startedAt}.log`]) {
+      const file = path.join(startUp.logs, name);
+      const lines = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').split(/\r?\n/) : ['(missing)'];
+      console.log(`--- ${name}, last 60 lines`);
+      console.log(lines.slice(-60).join('\n'));
+    }
+  }
   if (failures.length > 0) {
     console.log(`KIT-134 CHECK FAILED: ${label}: ${failures.join('; ')}`);
     process.exit(1);

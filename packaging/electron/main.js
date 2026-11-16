@@ -117,7 +117,9 @@ function rEnvironment(probe, runFolder) {
   env.MSR_RUN_FOLDER = runFolder;
   if (isWindows) {
     const systemRoot = process.env.SystemRoot || 'C:\\Windows';
-    env.PATH = `${systemRoot}\\System32;${systemRoot}`;
+    // Windows PowerShell's folder too: shinyFiles lists the drives with powershell where WMIC is
+    // gone (Windows Server 2025, Windows 11 24H2), and the session fails without it (run 43945108934).
+    env.PATH = `${systemRoot}\\System32;${systemRoot};${systemRoot}\\System32\\WindowsPowerShell\\v1.0`;
     // Neither folder exists: R keeps only its own library on the search path.
     env.R_LIBS_USER = path.join(runtime, 'R', 'no-user-library');
     env.R_LIBS_SITE = path.join(runtime, 'R', 'no-site-library');
@@ -390,6 +392,7 @@ if (!app.requestSingleInstanceLock()) {
     record('start', {
       release: stamp.release, resources, runtime, packaged: app.isPackaged, platform: process.platform,
       electron: process.versions.electron, pid: process.pid, noSandbox: app.commandLine.hasSwitch('no-sandbox'),
+      logs: app.getPath('logs'), startedAt,
     });
     buildMenu();
     try {
