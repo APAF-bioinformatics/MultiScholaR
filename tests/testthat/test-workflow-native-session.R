@@ -401,9 +401,10 @@ test_that("native GUI export and owned DA load do not materialize historical sta
         createWorkflowArgsFn = function(...) file.path(paths$source_dir, "study_parameters.txt"),
         saveRDSFn = function(...) stop("automatic Summary S4 export is forbidden"),
         catFn = function(...) NULL))
-    expect_identical(digest::digest(file = file.path(integration,
-        "proteomics_native_fixture_final.msdia.tar"), algo = "sha256"),
-        digest::digest(file = portable, algo = "sha256"))
+    # KIT-061 (D2): the session archive is no longer copied to integration/. This fixture's final state is stored as a
+    # whole legacy object, which the integration input's writer does not hydrate: nothing is written there.
+    expect_identical(list.files(integration, all.files = TRUE, no.. = TRUE), character())
+    expect_false(file.exists(file.path(integration, "proteomics_native_fixture_final.msdia.tar")))
     expect_false(file.exists(file.path(integration, "proteomics_native_fixture_final_s4.RDS")))
     expect_identical(restoreDIANativeGuiFiles(imported, fresh_paths), character())
     writeLines("conflict", file.path(fresh_paths$protein_qc_dir, "normalised_results_cln_with_replicates.tsv"))
