@@ -217,9 +217,10 @@ requirements <- readLines(file.path(checkout, "packaging", "python", "requiremen
 pins <- regmatches(requirements, regexpr("^[A-Za-z0-9_.-]+==[^ \\\\]+", requirements))
 pins <- stats::setNames(sub("^.*==", "", pins), tolower(sub("==.*$", "", pins)))
 mofa <- asNamespace("MOFA2")
-mofa_pins <- c(mofapy2 = get(".mofapy2_version", envir = mofa),
-    vapply(strsplit(as.character(get0(".mofapy2_dependencies", envir = mofa, inherits = FALSE)), "=+"),
-        function(x) stats::setNames(x[[2L]], tolower(x[[1L]])), character(1)))
+dependency_pins <- strsplit(as.character(get0(".mofapy2_dependencies", envir = mofa, inherits = FALSE)), "=+")
+mofa_pins <- c(mofapy2 = as.character(get(".mofapy2_version", envir = mofa)),
+    stats::setNames(vapply(dependency_pins, function(x) x[[2L]], character(1)),
+        tolower(vapply(dependency_pins, function(x) x[[1L]], character(1)))))
 mofa_pins <- mofa_pins[names(mofa_pins) != "python"]
 disagree <- names(mofa_pins)[is.na(pins[names(mofa_pins)]) | pins[names(mofa_pins)] != mofa_pins]
 cat(sprintf("MOFA2 %s pins: %s\n", utils::packageVersion("MOFA2"),

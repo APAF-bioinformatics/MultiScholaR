@@ -1,6 +1,8 @@
-# KIT-134 P1/P2: the bundled Python's packages (revision 2.0, 2.0.2). mofapy2 and the pins MOFA2
-# 1.22.1 carries for its own basilisk environment (KIT-130), plus their dependencies at the
-# versions KIT-130's build resolved (run 43925336690). Installed with
+# KIT-134 P1/P2: the bundled Python's packages (revision 2.0, 2.0.2). mofapy2 and the pins that the
+# bundled MOFA2 (1.22.0 at the snapshot of 2026-07-30) carries for its own basilisk environment
+# (mofapy2 0.7.3, numpy 1.26.4, scipy 1.12.0, pandas 2.2.1, h5py 3.10.0, scikit-learn 1.4.0,
+# dtw-python 1.3.1; packaging/r/install-library.R fails the build if they differ), plus their
+# dependencies at the versions KIT-130's build resolved (run 43925336690). Installed with
 #   python -m pip install --require-hashes --only-binary=:all: --no-deps -r requirements.txt
 # The hashes are PyPI's sha256 for the CPython 3.12 wheels for Linux x86_64 (manylinux) and
 # Windows x86_64, or the pure-Python wheel. CPython itself is the python-build-standalone release
@@ -15,8 +17,8 @@ h5py==3.10.0 \
     --hash=sha256:2c8e4fda19eb769e9a678592e67eaec3a2f069f7570c82d2da909c077aa94339
 joblib==1.6.0 \
     --hash=sha256:3dbbf9f6e4b592a2357b854608e980fe6390d131d7a82f011a377ef2ebef7aba
-mofapy2==0.7.5 \
-    --hash=sha256:aa76ef9352c11801d5eb2c009625449099b112bc08e3e329194cf2cfb79d1e6a
+mofapy2==0.7.3 \
+    --hash=sha256:2b17804b044d67e91d991654086634dbe84866c535038460dc704ba50f8b0d82
 numpy==1.26.4 \
     --hash=sha256:675d61ffbfa78604709862923189bad94014bef562cc35cf61d3a07bba02a7ed \
     --hash=sha256:08beddf13648eb95f8d867350f6a018a4be2e5ad54c8d8caed89ebca558b2818
