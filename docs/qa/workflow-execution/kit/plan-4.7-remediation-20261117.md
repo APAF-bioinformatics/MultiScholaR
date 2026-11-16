@@ -37,3 +37,30 @@ The independent read (`plan-4.7-independent-review-20261117.md`) had not reporte
 | B-07 | **The shipped application would not use the worker at all.** Nothing in `R/` calls `launchWorkflowApplication`; `run_app()` runs every heavy step in process, on Linux too. The memory figures of the series are measured through the harness's launcher. | `grep launchWorkflowApplication R/`: its definition only. | repaired in text: KIT-134 revision 1.1, P3 launches through it. Closes at KIT-134's lifecycle test. |
 | M-12 | The on-disk state owner compares `normalizePath()` output with `/`-joined paths: 39 calls, 9 containment checks. On Windows the worker's store would be refused. | `R/utils_workflow_saved_entities.R:266-267`, `:742-745` (W0 design, section 5). | repaired in text: KIT-131 revision 1.2, D4, bounded. |
 | B-05 (sharpened) | `fastduckdb` is required by the DIA routes, not only preferred. CI and the bundle pipeline cannot verify a DIA lane without it. | as B-06. | **open, with the user**: the token or the public repositories are needed when KIT-134's P2 starts. |
+
+## Added by the independent read (`plan-4.7-independent-review-20261117.md`; it judged the text at 04:45, after plan 4.8)
+
+| ID | Finding, in one line | State |
+|---|---|---|
+| IR-B1 | No DIA route on Windows, no owner (= B-06). | **open, with the user** |
+| IR-B2 | Two dates for the token; a bundle built with it would publish the internal packages as an artifact. | repaired in text: KIT-134 revision 1.2 (no artifact, no cache while internal; one date) |
+| IR-B3 | Managed execution needs Linux 6.12 or later, user systemd, cgroup v2 (checked: `R/utils_workflow_execution.R:1019-1020`); the bundle targets older hosts and would refuse at the first heavy step. | repaired in text: KIT-134 revision 1.2 (start-up probe, fallback order); KIT-131 off the cut list |
+| IR-B4 | KIT-125 had no definition of a contradiction. | repaired: KIT-125 revision 1.2 |
+| IR-B5 | Integration cannot be authored today; KIT-060 held behind KIT-124; KIT-133 behind KIT-063. | part: KIT-060 can start (revision 1.3); KIT-133 decoupled (revision 1.2); KIT-061 to 063 wait for the workbook: **open, with the user** |
+| IR-M1 | P1's proof was a rebuild on the laptop. | repaired: KIT-134 revision 1.2 |
+| IR-M2 | The tolerance was to be written after the differences were seen. | repaired: KIT-134 revision 1.2 (two parts fixed now) |
+| IR-M3 | The workflow does not pin R; KIT-129's exit asked for an Actions suite before a rule exists. | part: KIT-129 revision 1.2; pinning R in `module-ci.yml` is open (with B-01) |
+| IR-M4 | W from complete proteins fails at high missingness (KIT-118); the 50% cell is a stress cell. | repaired in text: KIT-126 revision 1.2 (shown at the gate, or a stated limit) |
+| IR-M5 | Consumers missing from KIT-126's list. | repaired: KIT-126 revision 1.2 |
+| IR-M6 | The likely winning arms take k from `sva::num.sv` (checked: `kit-124/sim/s1_*.R:90`); `sva` is not a dependency. | repaired in text: KIT-129 revision 1.2; the choice is **with the user at the gate** |
+| IR-M7 | KIT-126, 127, 129 fixed the design before the gate. | repaired: KIT-126 revision 1.2 (re-read against the gate) |
+| IR-M8 | No block in `glmQLFit`; no limit; needless dependency. | repaired: KIT-128 revision 1.1 |
+| IR-M9, IR-M10 | MOFA2 input: no claim limit, four meanings of "corrected", hash identity with a Python model. | repaired in text: KIT-060 revision 1.3 |
+| IR-M11 | KIT-133 had no consequence for a bad result. | repaired: KIT-133 revision 1.2 |
+| IR-M12 | KIT-131's exit named a lane that cannot run on Windows. | repaired: KIT-131 revision 1.3 |
+| IR-M13 | The spike did not install MultiScholaR on Windows. | repaired: the running spike was told (KIT-130 revision 1.1, piece 2) |
+| IR-M14 | The laptop's gate between KIT-126 and the re-record. | repaired: KIT-126 revision 1.2 |
+| IR-M15 | No ticket holds the laptop's calendar; the confirming studies run under load with a wall ceiling. | **open**: the measurement windows are dated at KIT-088's authoring; the paused time is given back to the simulators' ceiling (recorded in `scripts-k124/paused-seconds.txt`) |
+| IR-M16 | Estimates known to be wrong; KIT-050's release case needs a corpus nothing provides. | **open**: re-estimated as each stub is authored; KIT-050's case is decided at the final gate |
+
+The review's nine minors are in its own file and are not repaired here.
