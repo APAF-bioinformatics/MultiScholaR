@@ -387,6 +387,8 @@ omicsDaOperation <- function(binding) {
             accepted$products$da_results <- store$product(result, "da_results", paste0(binding$prefix, "-da-results"))
             accepted$rows <- if (is.data.frame(result[[long_table]])) nrow(result[[long_table]]) else 0L
             accepted$columns <- names(result[[long_table]])
+            # KIT-128: the assays the kernel could not compute, as it names them.
+            if (length(result$failed_assays)) accepted$failed_assays <- result$failed_assays
             accepted$model <- c(list(model = "limma", formula_used = parameters$formula, eBayes_trend = TRUE,
                 eBayes_robust = TRUE, treat_applied = isTRUE(parameters$lfc > 0)),
                 omicsDaBlockRecord(list(list(
@@ -429,11 +431,12 @@ newWorkflowOmicsDaFitIdentity <- function(data, design, formula_string, assay, s
 }
 
 #' One assay's fit for the contrast operations (KIT-076): the saved `da_fit` when the identity has one, else the fit half
-#' of the omic's kernel, saved once. A fit failure drops the assay (the orchestrator's silent drop, kept for the
-#' fit half only and recorded in the KIT-076 outcome); ids the store's envelope refuses keep the fit unsaved.
+#' of the omic's kernel, saved once. A fit failure is returned as its message (KIT-128; before, the assay was dropped
+#' silently) and the caller records it under the contrast's `errors`; ids the store's envelope refuses keep the fit
+#' unsaved.
 #' @param group_id,technical_replicate_id The object's declared columns (KIT-128), handed to the fit half; the default
 #'   NULL keeps the fit and its identity as they were.
-#' @return `list(fit, reference)`, or NULL when the fit failed.
+#' @return `list(fit, reference)`, or `list(error)` when the fit failed.
 #' @noRd
 omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample_id, assay, group_id = NULL,
                             technical_replicate_id = NULL) {
@@ -449,13 +452,15 @@ omicsDaAssayFit <- function(binding, store, data, design, formula_string, sample
     factors <- list(route = binding$prefix, layer = "base_fit")
     hit <- resolveSavedWorkflowEntity(manager$.context$store, "da_fit", identity, factors = factors)
     if (identical(hit$status, "hit")) return(list(fit = hit$value$fit, reference = hit$reference))
+    failure <- NULL
     fit <- tryCatch(binding$da_fit(data, design, formula_string, sample_id, group_id = group_id,
         technical_replicate_id = technical_replicate_id), error = function(e) {
         cat(sprintf("[ERROR] Processing assay %s: %s\n", assay, e$message))
         logger::log_error(sprintf("   ERROR processing assay %s: %s", assay, e$message))
+        failure <<- conditionMessage(e)
         NULL
     })
-    if (is.null(fit)) return(NULL)
+    if (!is.null(failure)) return(list(error = failure))
     features <- rownames(fit$coefficients)
     if (anyDuplicated(features) || anyNA(features) || !all(nzchar(features))) return(list(fit = fit, reference = NULL))
     reference <- saveWorkflowConsumerEntity(manager$.context$store,
@@ -501,7 +506,11 @@ omicsDaContrastOperation <- function(binding) {
                 if (is.null(input)) next
                 fit <- omicsDaAssayFit(binding, store, input$expr_matrix, design, parameters$formula, object@sample_id, assay,
                     group_id = object@group_id, technical_replicate_id = object@technical_replicate_id)
-                if (is.null(fit)) next
+                # KIT-128: a failed fit is named in the errors channel the contrast half uses; the other assays go on.
+                if (!is.null(fit$error)) {
+                    accepted$errors[[assay]] <- fit$error
+                    next
+                }
                 # KIT-128: which model the assay's fit is (the fit half records it; a trx fit carries none).
                 if (!is.null(fit$fit$block_reason)) {
                     accepted$model$block_reason[[assay]] <- fit$fit$block_reason
