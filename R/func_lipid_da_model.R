@@ -390,6 +390,9 @@ countLipidDaSignificant <- function(df) {
 #'   - per_assay_results: List of per-assay result tables
 #'   - significant_counts: Summary of significant lipids per assay
 #'   - qvalue_warnings: Any qvalue computation warnings
+#'   - failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
+#'     other assays are kept and a warning (class `omics_da_assay_failed`) names the failed ones; when every
+#'     assay failed the function stops (class `omics_da_all_assays_failed`).
 #'
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr mutate bind_rows select left_join
@@ -478,6 +481,8 @@ runLipidsDA <- function(
     per_assay_results <- list()
     contrasts_results <- list()
     all_qvalue_warnings <- list()
+    # KIT-128: the assays whose kernel stopped, with the message.
+    failed_assays <- list()
 
     # Process each assay
     for (assay_name in assay_names) {
@@ -541,8 +546,20 @@ runLipidsDA <- function(
                 cat(sprintf("[ERROR] Processing assay %s: %s\n", assay_name, e$message))
                 logger::log_error(sprintf("   ERROR processing assay %s: %s", assay_name, e$message))
                 per_assay_results[[assay_name]] <<- NULL
+                failed_assays[[assay_name]] <<- conditionMessage(e)
             }
         )
+    }
+
+    # KIT-128 (parked row 24 b): a failed assay is named and warned about and the others are kept; the run stops only
+    # when every assay failed (before: printed, logged and dropped, down to an empty table).
+    if (length(failed_assays) > 0) {
+        failures <- stats::setNames(sprintf("%s: %s", names(failed_assays), unlist(failed_assays)), rep("x", length(failed_assays)))
+        if (length(per_assay_results) == 0) {
+            rlang::abort(c("differential abundance failed for every assay", failures), class = "omics_da_all_assays_failed")
+        }
+        rlang::warn(c("differential abundance failed for some assays; the other assays are kept", failures),
+            class = "omics_da_assay_failed")
     }
 
     # Combine all assay results
@@ -554,7 +571,7 @@ runLipidsDA <- function(
 
     logger::log_info("=== Completed runLipidsDA ===")
 
-    return(list(
+    result <- list(
         theObject = theObject,
         contrasts_results = contrasts_results,
         da_lipids_long = da_lipids_long,
@@ -563,5 +580,7 @@ runLipidsDA <- function(
         qvalue_warnings = all_qvalue_warnings,
         da_q_val_thresh = da_q_val_thresh,
         treat_lfc_cutoff = treat_lfc_cutoff
-    ))
+    )
+    if (length(failed_assays) > 0) result$failed_assays <- failed_assays
+    return(result)
 }

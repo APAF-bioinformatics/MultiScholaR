@@ -39,6 +39,9 @@ A list containing:
 \item per_assay_results: List of per-assay result tables
 \item significant_counts: Summary of significant lipids per assay
 \item qvalue_warnings: Any qvalue computation warnings
+\item failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
+other assays are kept and a warning (class \code{omics_da_assay_failed}) names the failed ones; when every
+assay failed the function stops (class \code{omics_da_all_assays_failed}).
 }
 }
 \description{

@@ -42,13 +42,15 @@ for (omic in c("lipid", "metab")) {
   test_that(paste("KIT-128:", omic, "per-contrast path records a failed fit under the assay's errors and keeps the others"), {
     halves <- paste0("fit", if (identical(omic, "lipid")) "Lipid" else "Metab", "DaAssayModel")
     original <- get(halves, envir = asNamespace("MultiScholaR"))
+    test_env <- environment()
     run <- function(failing_prefix) {
       failing <- function(data, ...) {
         if (any(startsWith(rownames(data), failing_prefix))) stop("the fit half could not fit this assay")
         original(data, ...)
       }
       do.call(testthat::local_mocked_bindings, c(stats::setNames(list(failing), halves), list(.package = "MultiScholaR")))
-      workflow <- omicsTestOwner(omicsDaContrastsFixture(omic), "da_input")
+      # The owner stays open until the test ends (the record is read after the run).
+      workflow <- omicsTestOwner(omicsDaContrastsFixture(omic), "da_input", env = test_env)
       manager <- workflow$state_manager
       wrapper <- if (identical(omic, "lipid")) runLipidReferenceDaAnalysis else runMetabReferenceDaAnalysis
       suppressWarnings(suppressMessages(utils::capture.output(out <- wrapper(manager, getWorkflowStateReference(manager),
