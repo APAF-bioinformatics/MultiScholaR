@@ -58,7 +58,11 @@ check(sprintf("the network is %s", arguments[[2L]]), reached == identical(argume
     sprintf("a connection to cran.r-project.org %s", if (reached) "opened" else "failed"))
 
 packages <- utils::installed.packages(lib.loc = .libPaths())
-packages <- sort(rownames(packages)[!packages[, "Priority"] %in% "base"])
+# R for Windows keeps its message translations in library/translations, a folder with a DESCRIPTION
+# but no namespace: not a package (KIT-134 run 43942816664).
+packages <- packages[!packages[, "Priority"] %in% "base" &
+    file.exists(file.path(packages[, "LibPath"], rownames(packages), "NAMESPACE")), , drop = FALSE]
+packages <- sort(rownames(packages))
 rscript <- file.path(R.home("bin"), if (is_windows) "Rscript.exe" else "Rscript")
 self <- normalizePath(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[[1L]]), mustWork = TRUE)
 quote <- function(x) shQuote(x, type = if (is_windows) "cmd" else "sh")

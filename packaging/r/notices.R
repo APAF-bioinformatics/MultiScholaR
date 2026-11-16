@@ -44,6 +44,8 @@ component("R", "R", r_version, "GPL-2 | GPL-3",
     sprintf("https://cran.r-project.org/src/base/R-%s/R-%s.tar.gz", substr(r_version, 1L, 1L), r_version))
 
 installed <- utils::installed.packages(lib.loc = .Library, fields = c("License", "RemoteSha", "RemoteUsername", "RemoteRepo"))
+# Not packages: R for Windows' library/translations (part of R) has a DESCRIPTION but no namespace.
+installed <- installed[file.exists(file.path(installed[, "LibPath"], rownames(installed), "NAMESPACE")), , drop = FALSE]
 for (package in sort(rownames(installed))) {
     version <- unname(installed[package, "Version"])
     licence <- unname(installed[package, "License"])

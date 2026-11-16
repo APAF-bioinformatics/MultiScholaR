@@ -42,7 +42,9 @@ locked <- do.call(rbind, lapply(lockfile$Packages, function(p) {
 
 installed <- utils::installed.packages(lib.loc = library_path,
     fields = c("RemoteSha", "RemoteUsername", "RemoteRepo", "NeedsCompilation"))
-bundled <- data.frame(package = rownames(installed), bundled_version = unname(installed[, "Version"]),
+# Not packages: R for Windows' library/translations has a DESCRIPTION but no namespace.
+installed <- installed[file.exists(file.path(installed[, "LibPath"], rownames(installed), "NAMESPACE")), , drop = FALSE]
+bundled <-data.frame(package = rownames(installed), bundled_version = unname(installed[, "Version"]),
     priority = unname(installed[, "Priority"]), bundled_sha = unname(installed[, "RemoteSha"]),
     bundled_compiled = unname(installed[, "NeedsCompilation"]) %in% "yes", stringsAsFactors = FALSE)
 
