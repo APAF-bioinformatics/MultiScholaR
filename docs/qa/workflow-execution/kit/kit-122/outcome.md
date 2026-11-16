@@ -59,3 +59,29 @@ Full suite in both modes, `R CMD check` and seven e2e lanes at `ed99a0a8`: no re
 ## Acceptance
 
 Met: F2, F5 to F8, F10, the dead code, figures byte-identical, journeys exact, no numeric result changed. Not met: E1's memory aim on the DIA full journey.
+
+## Revision 1.1 (2026-11-16): the composite figure is built by the worker
+
+E1's memory aim was missed because the app still built the composite QC figure (0.37 to 1.29 GiB alone). Revision 1.1 moves it into the figures operation (`figures = "composite"`: `saveWorkflowDiaCompositeFigure`, `R/utils_workflow_dia_products.R`); the app reads the saved image. Commits `134af313`, `23148110`, `4e5320ae`, `296367e8`, the test patch after them, `561eb2b1` (kit_939 = `rYf7jA`).
+
+**App memory in `normalisation_ruv`, one run each:**
+
+| Journey | Before revision 1.1 | After |
+|---|---|---|
+| DIA full | 0.91 to 1.84 GiB (937q) | 0.90 to 0.94 GiB (939q) |
+| LFQ screen | 0.57 to 1.02 GiB (938l) | 0.58 to 0.58 GiB (939l) |
+
+The exit of revision 1.1 (a rise under 0.3 GiB on the DIA full journey) is met.
+
+**Journeys (kit_939):** 939l (LFQ), 939t (TMT) and 939m (DIA_LIMPA) accepted, exact. 939q (DIA full) ends `oracle_mismatch` as that route always does and is judged store against store with 935q: 104 of 105 fields identical ([compare-935q-939q.tsv](compare-935q-939q.tsv)); the one difference is the head's rendered page count, which is the composite's three assets (PNG, PDF, RDS) now saved by the worker. No numeric result differs.
+
+- 939m's first attempt was `invalid` (`measurement_valid`: a sampling gap while simulator pilots loaded the machine to 18). It is kept (`runtime-keep/kit-journey-939m-invalid-under-load`); the rerun on a quiet machine is the one counted.
+- 939q's decision file was written after the member script's 4,000 s wait ended; its records were written from the finished stage afterwards.
+
+**Store growth:** each managed normalisation now roots three more rendered assets per composite identity (keyed on the product entity and the sha256 of the RUV mode and stage images).
+
+**Tests:** the worker-figures drives are in `test-prot-norm-worker-figures.R` (63 passed); `test-prot-norm-core.R` 1,854 passed alone and is off the suite's time ceiling in check mode.
+
+**Final tree:** full suite in both modes, `R CMD check` and seven e2e lanes at `ea236689`: no regression ([final2/suite.md](final2/suite.md)).
+
+**Acceptance, revised:** every criterion met, E1's memory aim included. Parked row 17 is closed.

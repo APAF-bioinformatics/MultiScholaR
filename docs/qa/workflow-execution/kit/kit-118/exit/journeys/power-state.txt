@@ -69,3 +69,5 @@ kit-journey-939q end 08:13:58: AC 1, profile low-power, battery 87%, load 2.90, 
 kit-journey-939m (first attempt) invalid measurement_valid: sampling gap under machine load (simulator pilots ran alongside, load 18); verification passed; rerun once on a quiet machine
 kit-journey-939m start 08:40:25 at 953c44c6: AC 1, profile low-power, battery 87%, load 2.02, available 40 GiB
 kit-journey-939m refused at launch 08:40:25: exit 76, no member ran
+kit-journey-939m start 11:39:56 at 72b07b26: AC 1, profile low-power, battery 87%, load 2.15, available 40 GiB
+kit-journey-939m end 11:44:56: AC 1, profile low-power, battery 87%, load 2.26, available 40 GiB
