@@ -44,7 +44,7 @@ diaRollupNativeInfo <- function() {
         kernel = native$kernel_sha256, query = native$query_manifest_sha256,
         query_binary = native$query_binary_sha256,
         writer = writer$binary_sha256), algo = "sha256")
-    list(path = normalizePath(provider), manifest = list(binary_sha256 = binding),
+    list(path = normalizePath(provider, winslash = "/"), manifest = list(binary_sha256 = binding),
         kernel_sha256 = native$kernel_sha256, runtime_release_status = native$runtime_release_status)
 }
 

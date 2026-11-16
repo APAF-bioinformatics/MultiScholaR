@@ -483,7 +483,7 @@ workflowTableFileIdentity <- function(path) {
         is.na(info$size) || isTRUE(info$isdir)) {
         cli::cli_abort("saved table changed during read", class = "saved_entity_corrupt")
     }
-    list(path = normalizePath(path, mustWork = TRUE), size = info$size,
+    list(path = normalizePath(path, winslash = "/", mustWork = TRUE), size = info$size,
         mtime = info$mtime, ctime = info$ctime, mode = info$mode)
 }
 

@@ -765,9 +765,9 @@ writeWorkflowAnalysisRecordWorkbook <- function(record, path) {
 renderWorkflowAnalysisRecord <- function(record_path, output_dir, format = c("docx", "html")) {
     format <- match.arg(format)
     # `rmarkdown::render` changes directory before it reads its arguments, so both paths are made absolute here.
-    record_path <- normalizePath(record_path, mustWork = TRUE)
+    record_path <- normalizePath(record_path, winslash = "/", mustWork = TRUE)
     if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
-    output_dir <- normalizePath(output_dir, mustWork = TRUE)
+    output_dir <- normalizePath(output_dir, winslash = "/", mustWork = TRUE)
     template <- system.file("reports", "shared", "analysis_record_SI.rmd", package = "MultiScholaR")
     if (!nzchar(template)) cli::cli_abort("the analysis record template is not installed")
     work <- tempfile("analysis-record-render-")

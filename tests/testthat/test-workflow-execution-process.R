@@ -15,9 +15,10 @@ processTestRscript <- function() {
 
 processTestLibraries <- function() c(R_LIBS = paste(.libPaths(), collapse = .Platform$path.sep))
 
-#' The source tree when the package is loaded from source, `""` when it is installed.
+#' The source tree when the package is loaded from source, `"-"` when it is installed (an empty argument does not
+#' survive every command line).
 processTestSourceRoot <- function() {
-    if (nzchar(system.file("R", "MultiScholaR.rdb", package = "MultiScholaR"))) return("")
+    if (nzchar(system.file("R", "MultiScholaR.rdb", package = "MultiScholaR"))) return("-")
     normalizePath(testthat::test_path("..", ".."), winslash = "/")
 }
 
@@ -162,7 +163,7 @@ test_that("L1.4 a unit does not outlive a controller that is killed", {
     script <- file.path(root, "controller.R")
     writeLines(c(
         "arguments <- commandArgs(TRUE)",
-        "if (nzchar(arguments[[1L]])) suppressMessages(pkgload::load_all(arguments[[1L]], quiet = TRUE, helpers = FALSE, attach_testthat = FALSE))",
+        "if (!identical(arguments[[1L]], '-')) suppressMessages(pkgload::load_all(arguments[[1L]], quiet = TRUE, helpers = FALSE, attach_testthat = FALSE))",
         "ns <- asNamespace('MultiScholaR')",
         "rscript <- file.path(R.home('bin'), if (identical(.Platform$OS.type, 'windows')) 'Rscript.exe' else 'Rscript')",
         "ns$workflowProcessStart('lifetime.service', rscript, c('--vanilla', arguments[[3L]]), character(), arguments[[2L]],",
@@ -261,14 +262,40 @@ test_that("L1.7 the option chooses the launcher; without it only a system with s
     expect_true(workflowPlainLauncher(list(launcher = "process")))
 })
 
+# --- D4: the state owner's paths where normalizePath() answers with backslashes (Windows) ---
+
+test_that("D4 the state owner's containment checks hold where normalizePath() defaults to backslashes", {
+    root <- withr::local_tempdir()
+    real <- normalizePath
+    # Windows' normalizePath() joins with "\\" unless asked for "/"; the store's checks compare with "/"-joined paths.
+    windows <- function(path, winslash = "\\", mustWork = NA) gsub("/", winslash, real(path, "/", mustWork), fixed = TRUE)
+    store <- testthat::with_mocked_bindings(newWorkflowEntityStore(root, "d4", "DIA"), normalizePath = windows,
+        .package = "base")
+    withr::defer(closeWorkflowEntityStore(store))
+    payload <- file.path(store$directory, "entities", "d4", "payload.rds")
+    dir.create(dirname(payload), recursive = TRUE)
+    saveRDS(1L, payload)
+    testthat::with_mocked_bindings({
+        expect_true(checkWorkflowEntityStore(store))
+        expect_identical(checkSavedEntityPath(store, "entities/d4/payload.rds"), "entities/d4/payload.rds")
+        expect_true(syncSavedWorkflowPaths(store, c(payload, store$directory)))
+        expect_error(syncSavedWorkflowPaths(store, root), NA)
+        expect_error(syncSavedWorkflowPaths(store, tempdir()), class = "saved_entity_path")
+        expect_identical(hashWorkflowOwnedFile(store, payload), digest::digest(file = payload, algo = "sha256"))
+        paths <- workflowExportPaths(root, "d4-request")
+        expect_true(startsWith(paths$request_dir, paste0(paths$root, "/")))
+        expect_true(syncWorkflowExportPaths(paths$request_dir, paths$root))
+    }, normalizePath = windows, .package = "base")
+})
+
 # --- Layer 2: the protocol under the plain launcher, with the diagnostic fixture ---
 
 #' From source, make every child of this test load this source tree (see the head of the file). Against the installed
 #' package nothing is replaced.
-#' @return The script a child controller sources first, or `""` against the installed package.
+#' @return The script a child controller sources first, or `"-"` against the installed package.
 processTestRuntime <- function(root, env = parent.frame()) {
     source_root <- processTestSourceRoot()
-    if (!nzchar(source_root)) return("")
+    if (identical(source_root, "-")) return("-")
     testthat::skip_if_not_installed("pkgload")
     preamble <- file.path(root, "source-runtime.R")
     worker <- file.path(root, "source-worker.R")
@@ -521,7 +548,7 @@ test_that("L2.6 after a controller is killed its worker goes, and a new controll
     script <- file.path(root, "lost-controller.R")
     writeLines(c(
         "arguments <- commandArgs(TRUE)",
-        "if (nzchar(arguments[[1L]])) source(arguments[[1L]])",
+        "if (!identical(arguments[[1L]], '-')) source(arguments[[1L]])",
         "ns <- asNamespace('MultiScholaR')",
         "application <- ns$WorkflowExecutionApplication$new()",
         "application$config <- ns$workflowProcessApplicationConfig(arguments[[2L]], TRUE, 0L)",

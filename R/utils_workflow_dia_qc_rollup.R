@@ -1637,7 +1637,7 @@ computeDIAReferenceProteinReplicateFilter <- function(manager, reference, parame
     description <- "Applied protein replicate filter (removed single-replicate proteins)"
     # The state configuration records the output path as the GUI does (an absolute path under the project's
     # protein QC directory); a worker without experiment paths records one under its working directory.
-    output_file <- file.path(context$experiment_paths$protein_qc_dir %||% file.path(normalizePath(getwd()), "protein_qc"),
+    output_file <- file.path(context$experiment_paths$protein_qc_dir %||% file.path(normalizePath(getwd(), winslash = "/"), "protein_qc"),
         "remove_proteins_with_only_one_rep.tsv")
     # The GUI calls the kernel through its injectable alias, and the kernel records its arguments under the
     # calling name as well (KIT-004 lesson): the same alias keeps the recorded arguments identical.
