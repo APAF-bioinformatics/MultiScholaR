@@ -249,7 +249,10 @@ runMetabolitesDA <- function(
                     sample_id_col = sample_id_col,
                     treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
                     eBayes_trend = eBayes_trend,
-                    eBayes_robust = eBayes_robust
+                    eBayes_robust = eBayes_robust,
+                    # KIT-128: the declared technical replicates, for the block.
+                    group_id = group_col,
+                    technical_replicate_id = theObject@technical_replicate_id
                 )
 
                 # Store fit object for Glimma

@@ -1,9 +1,15 @@
 # KIT-076: the fit half of `runTestsContrastsLipidDA`, moved unchanged: the model matrix on every sample, the samples the data
 # shares with it, and `lmFit`. It depends on no contrast, so one saved fit serves every contrast of an assay.
 #' @param data,design_matrix,formula_string,sample_id_col As `runTestsContrastsLipidDA`.
-#' @return The uncontrasted `MArrayLM`; its `design` is the model matrix on the shared samples.
+#' @param group_id,technical_replicate_id The object's declared columns (KIT-128). Without `technical_replicate_id` the
+#'   fit is the unblocked `lmFit`, as before. With it the proteomics rule (`resolveProtTechnicalReplicateBlock`) reads the
+#'   design rows of the fitted samples: declared technical replicates are fitted with the biological unit as block
+#'   (`duplicateCorrelation`, then `lmFit(block, correlation)`; limma User's Guide 11.3 and 9.7), any other design as before.
+#' @return The uncontrasted `MArrayLM`; its `design` is the model matrix on the shared samples. With
+#'   `technical_replicate_id` it also carries `block_reason`, `uses_duplicate_correlation` and `consensus_correlation`.
 #' @noRd
-fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_col = "Run") {
+fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_col = "Run", group_id = NULL,
+                                 technical_replicate_id = NULL) {
     # Prepare design matrix with sample IDs as rownames
     dm <- design_matrix
     if (sample_id_col %in% colnames(dm)) {
@@ -32,7 +38,22 @@ fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
     logger::log_info(sprintf("   data_subset dims = %d x %d", nrow(data_subset), ncol(data_subset)))
 
     logger::log_info("   Running lmFit...")
-    limma::lmFit(data_subset, design = design_m)
+    if (is.null(technical_replicate_id)) return(limma::lmFit(data_subset, design = design_m))
+    # KIT-128: the rule proteomics uses, on the design rows of the fitted samples.
+    replicate <- resolveProtTechnicalReplicateBlock(as.data.frame(dm)[common_samples, , drop = FALSE], group_id, technical_replicate_id)
+    correlation <- NA_real_
+    if (isTRUE(replicate$technical)) {
+        correlation <- limma::duplicateCorrelation(data_subset, design = design_m, block = replicate$block)$consensus.correlation
+        logger::log_info(sprintf("   Technical replicates: %d blocks for %d samples, consensus correlation %.4f",
+            replicate$blocks, length(common_samples), correlation))
+        fit <- limma::lmFit(data_subset, design = design_m, block = replicate$block, correlation = correlation)
+    } else {
+        fit <- limma::lmFit(data_subset, design = design_m)
+    }
+    fit$block_reason <- replicate$reason
+    fit$uses_duplicate_correlation <- isTRUE(replicate$technical)
+    fit$consensus_correlation <- correlation
+    fit
 }
 
 # KIT-076: the contrast half of `runTestsContrastsLipidDA`, moved unchanged: the terms checked against the model, then
@@ -204,6 +225,10 @@ applyLipidDaContrasts <- function(fit, contrast_strings, treat_lfc_cutoff = NA, 
 #'   Set to NA for standard analysis.
 #' @param eBayes_trend Logical, whether to use trend in eBayes.
 #' @param eBayes_robust Logical, whether to use robust eBayes.
+#' @param group_id,technical_replicate_id Optional names of the design's group column and of the column that names
+#'   the biological unit of each run. When given and the design has technical replicates (several runs of one unit,
+#'   not spanned by the group), the model is fitted with the unit as block (`limma::duplicateCorrelation`, then
+#'   `limma::lmFit(block, correlation)`). `NULL` (the default) fits every run as an independent sample.
 #'
 #' @return A list containing:
 #'   - results: Named list of DE result tables (one per contrast)
@@ -225,7 +250,9 @@ runTestsContrastsLipidDA <- function(
   sample_id_col = "Run",
   treat_lfc_cutoff = NA,
   eBayes_trend = TRUE,
-  eBayes_robust = TRUE
+  eBayes_robust = TRUE,
+  group_id = NULL,
+  technical_replicate_id = NULL
 ) {
     logger::log_info("--- Entering runTestsContrastsLipidDA ---")
     logger::log_info(sprintf(
@@ -235,7 +262,7 @@ runTestsContrastsLipidDA <- function(
     logger::log_info(sprintf("   contrasts = %s", paste(contrast_strings, collapse = ", ")))
 
     # KIT-076: the two halves, in the order they ran.
-    fit <- fitLipidDaAssayModel(data, design_matrix, formula_string, sample_id_col)
+    fit <- fitLipidDaAssayModel(data, design_matrix, formula_string, sample_id_col, group_id, technical_replicate_id)
     results <- applyLipidDaContrasts(fit, contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust)
     logger::log_info("--- Exiting runTestsContrastsLipidDA ---")
 
@@ -475,7 +502,10 @@ runLipidsDA <- function(
                     sample_id_col = sample_id_col,
                     treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
                     eBayes_trend = eBayes_trend,
-                    eBayes_robust = eBayes_robust
+                    eBayes_robust = eBayes_robust,
+                    # KIT-128: the declared technical replicates, for the block.
+                    group_id = group_col,
+                    technical_replicate_id = theObject@technical_replicate_id
                 )
 
                 # Store fit object for Glimma

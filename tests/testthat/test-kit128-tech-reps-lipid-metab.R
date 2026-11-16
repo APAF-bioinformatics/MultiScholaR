@@ -55,6 +55,16 @@ kit128Run <- function(omic, object) {
   result
 }
 
+#' The GUI's path: one declaration per contrast on the saved fit, on a session owner (as test-workflow-omics-da-contrasts.R).
+kit128ContrastRun <- function(omic, object, env = parent.frame()) {
+  workflow <- omicsTestOwner(object, "da_input", env = env)
+  manager <- workflow$state_manager
+  wrapper <- if (identical(omic, "lipid")) runLipidReferenceDaAnalysis else runMetabReferenceDaAnalysis
+  run <- suppressWarnings(suppressMessages(wrapper(manager, getWorkflowStateReference(manager),
+    list(formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0), kit128Contrast())))
+  list(manager = manager, run = run)
+}
+
 #' The route's unblocked test on one assay table (the kernel before KIT-128): lmFit, contrasts.fit, eBayes(trend, robust).
 kit128UnblockedP <- function(table, design) {
   values <- as.matrix(table[, design$Run])
@@ -85,7 +95,7 @@ for (omic in c("lipid", "metab")) {
     expect_identical(fit$block_reason, "technical_replicates")
     expect_true(fit$uses_duplicate_correlation)
     expect_gt(fit$consensus_correlation, 0.5)
-    out <- omicsDaContrastsRun(omic, object, contrasts = kit128Contrast())
+    out <- kit128ContrastRun(omic, object)
     expect_identical(out$run$results[[long_table]], direct[[long_table]])
     expect_identical(out$run$manifest$model$block_reason, "technical_replicates")
     expect_true(out$run$manifest$model$uses_duplicate_correlation)
@@ -106,7 +116,7 @@ for (omic in c("lipid", "metab")) {
         expect_identical(result$contrasts_results[[assay]]$fit.eb$block_reason, case[[2L]])
         expect_false(result$contrasts_results[[assay]]$fit.eb$uses_duplicate_correlation)
       }
-      manifest <- omicsDaContrastsRun(omic, object, contrasts = kit128Contrast())$run$manifest
+      manifest <- kit128ContrastRun(omic, object)$run$manifest
       expect_identical(manifest$model$block_reason, case[[2L]])
       expect_false(manifest$model$uses_duplicate_correlation)
     }
@@ -127,7 +137,8 @@ for (omic in c("lipid", "metab")) {
     expect_identical(fit, plain)
     blocked <- suppressMessages(fit_half(values, object@design_matrix, "~ 0 + group", "Run", group_id = "group",
       technical_replicate_id = "tech_rep_group"))
-    expect_identical(blocked$coefficients, plain$coefficients)
+    # Balanced and complete: the block changes the standard errors, not the group means.
+    expect_equal(blocked$coefficients, plain$coefficients, tolerance = 1e-12)
     expect_true(all(blocked$stdev.unscaled > plain$stdev.unscaled))
   })
 
