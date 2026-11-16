@@ -122,9 +122,8 @@ test_that("L1.2 stopping a unit ends everything it started, and the unit is then
     launched <- workflowUnitState(application$config, unit)$MainPID
     expect_true(processTestAlive(pids$unit) && processTestAlive(pids$child))
     expect_false(workflowServiceEmpty(application, unit))
-    # `Rscript.exe` is a front end on Windows: the R session is its child, so a stop must reach the tree.
-    if (identical(.Platform$OS.type, "windows")) expect_false(identical(pids$unit, launched)) else
-        expect_identical(pids$unit, launched)
+    # Whether the R session is the launched process or its child is the platform's business (on windows-latest with
+    # R 4.6.1, run 1, it was the launched `Rscript.exe` itself): the stop below must end both either way.
     started <- proc.time()[["elapsed"]]
     workflowUnitStop(application$config, unit)
     expect_lt(proc.time()[["elapsed"]] - started, 3)
@@ -286,6 +285,26 @@ test_that("D4 the state owner's containment checks hold where normalizePath() de
         expect_true(startsWith(paths$request_dir, paste0(paths$root, "/")))
         expect_true(syncWorkflowExportPaths(paths$request_dir, paths$root))
     }, normalizePath = windows, .package = "base")
+})
+
+test_that("D4 reading a staged table's metadata leaves no handle or mapping on the file (Windows cannot rename around one)", {
+    # Windows refuses to rename a directory while a file inside it is open or mapped: the staged table's commit
+    # (run 1 on windows-latest: "cannot rename file ... reason 'Access is denied'"). Linux shows the same leak in /proc.
+    skip_if_not(dir.exists("/proc/self/fd") && file.exists("/proc/self/maps"))
+    root <- withr::local_tempdir()
+    path <- file.path(root, "payload.parquet")
+    writeSavedWorkflowParquet(data.frame(a = 1:3, b = c("x", "y", "z")), ".rownames", path, metadata_version = 3L)
+    target <- normalizePath(path)
+    held <- function() {
+        descriptors <- list.files("/proc/self/fd", full.names = TRUE)
+        # A descriptor can close between the listing and its read (the listing's own): its link reads as NA.
+        any(grepl(target, readLines("/proc/self/maps", warn = FALSE), fixed = TRUE)) ||
+            target %in% vapply(descriptors, Sys.readlink, character(1))
+    }
+    invisible(gc())
+    expect_false(held())
+    expect_identical(readSavedWorkflowTableMetadata(path)$rows, 3L)
+    expect_false(held())
 })
 
 # --- Layer 2: the protocol under the plain launcher, with the diagnostic fixture ---

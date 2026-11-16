@@ -95,19 +95,26 @@ jobs:
         shell: bash
         run: |
           mkdir -p kit131-artifacts
+          # Run 1: on Windows a multi-line `Rscript -e` is cut at its first newline, so the step printed nothing.
+          cat > "$RUNNER_TEMP/kit131-discovery.R" <<'EOF'
+          a <- commandArgs(TRUE)
+          suppressMessages(pkgload::load_all(".", quiet = TRUE))
+          r <- testthat::test_file(file.path("tests/testthat", a[[1]]), reporter = "summary", stop_on_failure = FALSE)
+          d <- as.data.frame(r)
+          cat(sprintf("KIT-131 DISCOVERY %s: passed %d failed %d skipped %d error %d\n", a[[1]], sum(d$passed),
+            sum(d$failed), sum(d$skipped), sum(d$error)))
+          for (t in r) {
+            bad <- Filter(function(x) inherits(x, c("expectation_failure", "expectation_error")), t$results)
+            if (length(bad)) cat(sprintf("KIT-131 FAILED %s :: %s :: %s\n", a[[1]], t$test,
+              gsub("\\s+", " ", substr(conditionMessage(bad[[1]]), 1, 400))))
+          }
+          if (any(d$failed > 0 | d$error)) quit(status = 1L)
+          EOF
           status=0
           for file in test-workflow-saved-identity.R test-workflow-saved-resources.R test-workflow-saved-recovery.R \
               test-workflow-saved-exports.R test-gui-entry-lipidomics.R; do
             echo "::group::$file"
-            Rscript -e 'a <- commandArgs(TRUE); suppressMessages(pkgload::load_all(".", quiet = TRUE));
-              r <- testthat::test_file(file.path("tests/testthat", a[[1]]), reporter = "summary", stop_on_failure = FALSE);
-              d <- as.data.frame(r);
-              cat(sprintf("KIT-131 DISCOVERY %s: passed %d failed %d skipped %d error %d\n", a[[1]], sum(d$passed),
-                sum(d$failed), sum(d$skipped), sum(d$error)));
-              for (t in r) { bad <- Filter(function(x) inherits(x, c("expectation_failure", "expectation_error")), t$results);
-                if (length(bad)) cat(sprintf("KIT-131 FAILED %s :: %s :: %s\n", a[[1]], t$test,
-                  gsub("\\s+", " ", substr(conditionMessage(bad[[1]]), 1, 400)))) }
-              if (any(d$failed > 0 | d$error)) quit(status = 1L)' "$file" 2>&1 | tee "kit131-artifacts/discovery-$file.log"
+            Rscript "$RUNNER_TEMP/kit131-discovery.R" "$file" 2>&1 | tee "kit131-artifacts/discovery-$file.log"
             [ "${PIPESTATUS[0]}" -eq 0 ] || status=1
             echo "::endgroup::"
           done
