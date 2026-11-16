@@ -22,6 +22,18 @@
    lists the supported names. Before, the name was matched as a substring and the first hit taken
    ("saccharomyces" picked one of two yeasts), and an unmatched name fell back to *Homo sapiens* without
    notice. Results change only where the name given was not a species' full name.
+ * Proteomics RUV-III correction (`ruvIII_C_Varying()` for protein data, and the adjusted matrix of the
+   DIA_LIMPA route): each protein keeps its mean abundance. Before, the corrected values of a protein were
+   shifted by a constant that depended on its loadings (a median of 27 log2 on one synthetic DIA dataset).
+   Differences between samples within a protein are the same as before in the classic correction. On the
+   DIA_LIMPA route the factors are now computed from controls centred on their means, so the factors, the
+   adjusted matrix and the results that use them change. Abundance-dependent steps after RUV can change:
+   the low-intensity filter that follows the classic correction may now remove a different protein.
+   Lipidomics, metabolomics and the peptide method are not changed.
+ * Proteomics automatic RUV parameters (`findBestNegCtrlPercentage()`): the number of factors k is now chosen
+   among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
+   the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
+   pointed above the limit.
 
 ## Version 0.5.0 (Release Candidate)
 
