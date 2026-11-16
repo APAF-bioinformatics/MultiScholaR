@@ -861,7 +861,8 @@ limpa_oracle_dirs <- c(`limpa` = "kit-053", `limpa57` = "kit-057", `limpa_corr` 
     `limpa48` = "kit-048", # KIT-048: the covariates-mode screen record on the kit_048 build (KIT-057's predates KIT-056's ruv_mode fields)
     `limpa65` = "kit-065", # KIT-065: the screen record with the report step on the KIT-065 build
     # KIT-118 M1 (DIA-NN zeros as missing): the covariates and the correction records on kit_935
-    `limpa118` = "kit-118/m1", `limpa118c` = "kit-118/m1c")
+    `limpa118` = "kit-118/m1", `limpa118c` = "kit-118/m1c",
+    `limpa123` = "kit-123/m", `limpa123c` = "kit-123/mc")
 for (ticket_dir in limpa_oracle_dirs) for (key in c("screen", "full")) {
     prefix <- names(which(limpa_oracle_dirs == ticket_dir))
     if (is.null(b$corpora[[key]])) next
@@ -1537,6 +1538,23 @@ if (!is.null(b$builds$kit_939)) {
         if (!is.null(from)) b$tickets[[paste0("939", suffix)]] <- utils::modifyList(from, kit_939)
     }
     if (!is.null(b$tickets[["935m"]])) b$tickets[["939m"]] <- utils::modifyList(b$tickets[["935m"]], kit_939)
+}
+# kit_940: KIT-123 (R1, the classic sweep's k bounded; R2, an RUV-III correction keeps each protein's level). 940m and
+# 940r: DIA_LIMPA covariates and correction against the records made on kit_940 (limpa123_screen, limpa123c_screen; bound
+# once those files exist). 940q, 940l, 940t: the classic routes, whose corrected values move by R2; each is judged
+# store against store with its kit_939 member (their oracles are re-recorded once, after the KIT-124 gate).
+if (!is.null(b$builds$kit_940)) {
+    kit_940 <- list(build = "kit_940", purpose = "KIT-123: RUV k bounded and levels kept (recorded, uncounted)")
+    for (suffix in c("q", "l", "t")) {
+        from <- b$tickets[[paste0("112", suffix)]]
+        if (!is.null(from)) b$tickets[[paste0("940", suffix)]] <- utils::modifyList(from, kit_940)
+    }
+    if (any(startsWith(names(b$oracles), "limpa123_screen_"))) {
+        b$tickets[["940m"]] <- utils::modifyList(b$tickets[["112m"]], c(kit_940, list(oracles = "limpa123_screen")))
+    }
+    if (any(startsWith(names(b$oracles), "limpa123c_screen_"))) {
+        b$tickets[["940r"]] <- utils::modifyList(b$tickets[["056"]], c(kit_940, list(oracles = "limpa123c_screen")))
+    }
 }
 # kit_938: KIT-122's one correction pass (937l and 937t were refused at tab entry while the last QC step's action was
 # still active; the figures dispatch now declines and the tab draws in process). 938l and 938t once.
