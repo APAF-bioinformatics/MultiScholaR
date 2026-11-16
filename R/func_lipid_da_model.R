@@ -546,7 +546,10 @@ runLipidsDA <- function(
                 cat(sprintf("[ERROR] Processing assay %s: %s\n", assay_name, e$message))
                 logger::log_error(sprintf("   ERROR processing assay %s: %s", assay_name, e$message))
                 per_assay_results[[assay_name]] <<- NULL
-                failed_assays[[assay_name]] <<- conditionMessage(e)
+                # KIT-128: the root cause; an error of the formatting step arrives wrapped by purrr (its message is the index).
+                cause <- e
+                while (inherits(cause$parent, "condition")) cause <- cause$parent
+                failed_assays[[assay_name]] <<- conditionMessage(cause)
             }
         )
     }
