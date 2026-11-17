@@ -11,6 +11,7 @@ Scope: revision 2.0 of the ticket with the user's decisions of revision 2.1 (D1 
 - **Electron 45.3.3, electron-builder 26.18.0**, pinned with `package-lock.json` (33.2.0 with 25.1.8 stays the fallback; not needed).
 - **The R entry is `packaging/electron/entry.R`**: it calls `MultiScholaR:::runPackagedApplication` when the installed package has it, and until then starts the application in process with a watchdog on the shell, saying so on the `MSR-LAUNCHER` line. Every lifecycle run therefore reports `in-process` today; the expectation becomes `process` (runners) and `systemd` (laptop) with the package side.
 - **The start-up probe is in the shell** (`main.js`, `probeLauncher`); the package takes its result from `MSR_LAUNCHER_PROBE` (decision U1 below).
+- **W1 (2026-11-18): no browser is bundled; the item stopped before its build, for the user.** Only a Chromium snapshot build is clearly redistributable (BSD plus third-party notices); Chrome for Testing's `chrome-headless-shell` is not clearly so. And the Summary report starts no browser: its templates attach `webshot2` but print no interactive plot. Section "W1" below.
 
 ## Runs
 
@@ -138,7 +139,7 @@ Bounded item: the token part of P2 and its verification. Stage `[dist:internal]`
 
 **Classification under revision 1.2's rule** (relative 1e-6, absolute 1e-9; discrete exact): every step of both lanes is **identical** to its laptop-frozen oracle (heads, histories, tab statuses, notifications, refusal checks, outputs, artifact digests and state digests), so every compared value is in class **Agree**, with nothing to classify. The state digests are of values rounded to 10 significant digits, so identity there is agreement to 10 significant digits, stricter than the rule; no digest differs, so **no laptop values are needed** for these two lanes. The rule was not changed. Expected differences from `-march=native` did not appear at this precision on these fixtures.
 
-**The report step and Chrome.** Both lanes rendered the summary report (`DIANN_report_proteomics_prot_dia.docx`, `DIANN_limpa_report_proteomics_prot_dia_limpa.docx`) with `webshot2` from the bundle, and `webshot2` drove **the runner's preinstalled Chrome**. This does not show that a machine without Chrome or Edge renders the report: W1 stays with the user.
+**The report step and Chrome.** Both lanes rendered the summary report (`DIANN_report_proteomics_prot_dia.docx`, `DIANN_limpa_report_proteomics_prot_dia_limpa.docx`) with `webshot2` from the bundle. *Corrected 2026-11-18:* this paragraph said that `webshot2` "drove the runner's preinstalled Chrome". That was an inference, not an observation: each report rendered within one second and no log line names a browser; the templates attach `webshot2` and print no interactive plot (section "W1").
 
 **What the token run uploaded.** Two artifacts only: `linux-internal-summary` (22,516 bytes) and `windows-internal-summary` (16,201 bytes); neither holds `install-library.log`; scanned: no compiler output (`Compiling`, `.rs:`, `warning:`) and no token text (`ghp_`, `github_pat_`, `Bearer`). Caches on `kit-134`: Module CI's R 4.6.2 keys only, none from this run.
 
@@ -155,7 +156,7 @@ The user's T1 (2026-11-17): `fast_duckdb` main fast-forwarded to `2694b972` (0.2
 
 | Lane | Steps in the oracle | Pass | Error | Where it stopped | Cause | Class |
 |---|---|---|---|---|---|---|
-| prot_dia | 29 | 1 (the enrichment record check) | 1 | `summary_report` (after import, QC, rollup, normalisation, DA, enrichment, summary save and copy ran) | `Failed to render R Markdown report: there is no package called 'webshot2'`; no `.docx`, so the step's check `rendered[[1L]]` is out of bounds | **D, a defect of the bundle**: `packaging/r/library-exclude.txt` excluded `webshot2` (and `chromote`) as development tools, but knitr needs `webshot2` to render the report's htmlwidgets to `.docx` (pandoc was found: the launcher sets `RSTUDIO_PANDOC`). Repaired after the run: both now ship; unverified until the next run; Chrome remains W1 |
+| prot_dia | 29 | 1 (the enrichment record check) | 1 | `summary_report` (after import, QC, rollup, normalisation, DA, enrichment, summary save and copy ran) | `Failed to render R Markdown report: there is no package called 'webshot2'`; no `.docx`, so the step's check `rendered[[1L]]` is out of bounds | **D, a defect of the bundle**: `packaging/r/library-exclude.txt` excluded `webshot2` (and `chromote`) as development tools, but the report templates attach `webshot2` (`library(webshot2)`; corrected 2026-11-18: not "knitr needs it to render the report's htmlwidgets", the templates print none, section "W1") (pandoc was found: the launcher sets `RSTUDIO_PANDOC`). Repaired after the run: both now ship; verified by run 10 |
 | prot_dia_limpa | 24 | 0 | 1 | `summary_report` | the same | the same |
 
 Because the GUI-entry helper writes a lane's record only when the lane ends, a lane that stops writes none: **no step of either lane was compared with its oracle**, so revision 1.2's rule (relative 1e-6, absolute 1e-9; discrete exact) has still been applied to nothing, and nothing is classified beyond the defect above. The rule is unchanged. When the steps are compared, each `digest` difference (`lane-differences.tsv`) needs the laptop's values for the same lane, step and key before it can be classed: the oracles hold sha256 digests of values rounded to 10 significant digits.
@@ -195,6 +196,65 @@ Recorded for the package side of P3 and for P5 (nothing under `R/` is changed he
 - **F3.** systemd workers started from the bundle get neither `RHOME` nor `LD_LIBRARY_PATH` (F3 of revision 2.0, still open: the `MSR_BUNDLE` change to `workflowLaunchService` is part of the package side), and the package's launcher choice does not read `MSR_LAUNCHER_PROBE`, the probe the shell already hands it (U1).
 - **F6.** Downloads in the workflow are not all pinned or checksummed: Rtools45, the Rust toolchain (`rustup ... stable`), R's installers, python-build-standalone and pandoc are fetched by version or channel without a recorded sha256 check; DESCRIPTION's Remotes give `cran/RUVIIIC` and `APAF-bioinformatics/GlimmaV2` no commit (the build pins them in `install-library.R`; D3's Remotes fix is still the recorded separate change). For P5 and the release build.
 - **F9.** The in-process watchdog (`later` every 2 s) cannot run while a long step blocks R's event loop, so R can outlive a killed shell for the length of that step. For the package side (the plain launcher moves heavy steps out of the application process, which bounds this).
+
+## W1: a browser for the Summary report (2026-11-18)
+
+Bounded item (the user's W1, 2026-11-18: "ship headless chrome ... edge is very unsafe"; one browser for both platforms): bundle one open-source Chromium headless build in both installers and hand it to chromote in the packaged launcher; the licence first, before any build. **The item stopped before its build, on the two findings below. No workflow run was started, nothing was downloaded into a build and nothing is bundled.** The decision is the user's (end of this section).
+
+### 1. The licence finding
+
+Read on 2026-11-18 from the archives themselves (listed over HTTP range requests; the one licence file saved and read), the projects' own pages and the maintainers' statements. Not legal advice.
+
+| Candidate | What it is | Licence evidence | May it go into the installers? |
+|---|---|---|---|
+| `chrome-headless-shell` from Chrome for Testing, 157.0.8103.78 (the stable channel on 2026-11-17) | Google's build of Chromium's old headless mode, one per Chrome release. Linux zip 127,965,683 bytes (276 MiB unpacked), Windows zip 126,047,001 bytes (282 MiB) | For: the archive's only licence file is `LICENSE.headless_shell` (2.3 MB): Chromium's BSD 3-clause licence, then 313 third-party notices (FFmpeg under the LGPL among them); no EULA and no terms file. Against: the only maintainer statement on Chrome for Testing binaries (GoogleChromeLabs/chrome-for-testing, issue 21, June 2023, a Google maintainer): "Chrome for Testing is a flavor of Google Chrome, so https://www.google.com/chrome/terms/ applies." Those terms bring in the Google Terms of Service, whose software licence is "personal" and "non-assignable" and says "You may not copy, modify, distribute, sell, or lease any part of our services or software" (an open-source licence overrides where it says so). Whether the statement covers the headless shell, which joined Chrome for Testing with Chrome 120, after it, is asked in the open issue 226 and has no answer from Google | **Not clearly.** Two readings, not settled by Google |
+| A Chromium snapshot build (the Chromium project's continuous builds, bucket `chromium-browser-snapshots`) | The whole Chromium browser, built from the open-source tree at one commit. Linux also has a `headless-shell.zip`, Windows has none, so one browser for both platforms means the full `chrome` | The source licence at the commit (`LICENSE`, read from chromium.googlesource.com): BSD 3-clause, "Redistribution and use in source and binary forms, with or without modification, are permitted" on reproducing the notice; the third-party parts under their own open-source licences. chromium.org's download page attaches no terms to the builds. The archives hold **no** licence or notice file: whoever passes them on adds Chromium's `LICENSE` and the third-party notices of that build (its `chrome://credits` page) and names the source commit (FFmpeg and other LGPL parts are linked in) | **Yes**, under BSD plus the third-party notices, which we would have to produce and ship |
+
+By the item's rule, only Chromium proper is clearly redistributable. Its pins, should it be bundled: one commit on both platforms, `109167ec53e2daebc8ad3df8cd499571c44b9c29` (`refs/heads/main@{#1717304}`, built 2026-10-13, 45 commits before Chrome 157's branch point 1717349). The sha256 was computed here by streaming each archive; the md5 of the same stream equals the bucket's.
+
+| Platform | URL | Bytes | sha256 | Unpacked |
+|---|---|---|---|---|
+| Linux | `https://commondatastorage.googleapis.com/chromium-browser-snapshots/Linux_x64/1717304/chrome-linux.zip` | 251,185,343 (240 MiB) | `a15d33424d043c42f6dd27455b1d2e639d383838138e71ae1a9b5060a8aa33a5` | 677 MiB in 483 files (`chrome` alone 508 MiB) |
+| Windows | `https://commondatastorage.googleapis.com/chromium-browser-snapshots/Win_x64/1717304/chrome-win.zip` | 362,399,196 (346 MiB) | `04632b0d01fc20fc2d28a8403c1415b15d73c50777b5df87deba55abfba35106` | 820 MiB in 258 files (352 MiB of it `interactive_ui_tests.exe`, a test program that would be left out) |
+
+For the record, the Chrome for Testing archives' sha256: Linux `f90329720fb61e5a76da9b6b509b6ad12a484c9c5df0359403e935177c6d153a`, Windows `2138c1583d25d6f3abec5269943b2f430207d87a539895aa9e90cc4697ec0e1f`.
+
+What the snapshot would cost. The "+150 to 200 MB each" given to the user was an estimate made before the archives were read. Estimated from the archives, nothing built: the Linux archive grows by about 240 MiB (1,008 to about 1,250 MiB; installed +677 MiB); the Windows installer by roughly 200 MiB once the test program is dropped (766 to about 970 MiB; installed about +470 MiB). And three things beyond size:
+
+- A snapshot is the development trunk at one commit: "built from arbitrary revisions that don't necessarily map to user-facing Chrome releases", "do not auto-update" (chromium.org). It never receives the stable channel's security fixes, so the bundle would carry a browser that is unpatched from the day it ships.
+- On Ubuntu 23.10 and later a per-user install cannot give Chromium its sandbox (AppArmor restricts unprivileged user namespaces and the setuid helper needs root: F10's restriction, for a second program). It would run with `--no-sandbox` there, from a wrapper script, because chromote adds that flag by itself only in CI, in a container or for a user without an account entry (`chromote::default_chrome_args()`).
+- Its notices have to be generated from the pinned build and added to `THIRD-PARTY-NOTICES.txt` and the sources list; a systemd unit needs `CHROMOTE_CHROME` passed to it (one name in `workflowLaunchService`'s `MSR_BUNDLE` list, with its test).
+
+### 2. The premise: the Summary report starts no browser
+
+The item rests on "the Summary report renders its interactive plots into the Word file through webshot2 and chromote". Read against the code and the runs, it does not.
+
+- **The templates.** All eight report templates under `inst/reports/` (lipidomics, metabolomics, the four proteomics ones, transcriptomics, the shared analysis record) were parsed and every function they call was listed, chunks and inline code: 125 distinct functions. Figures enter as PNG files through `knitr::include_graphics`, tables through `knitr::kable`, the rest is text. No call creates or prints an htmlwidget and none takes a screenshot. `flextable`, `gt`, `plotly` and `webshot2` appear only in the `library()` lines of six templates (the only called names that plotly exports are the dplyr verbs it re-exports). Nothing under `R/` or `inst/` calls `webshot2`, `chromote`, `gtsave` or an image export of a widget; `htmlwidgets::saveWidget` writes HTML and needs no browser.
+- **knitr.** knitr 1.51 calls `webshot2::webshot` from `html_screenshot` only, which runs when an htmlwidget, a Shiny application or an embedded URL is printed into a document that is not HTML. Attaching `webshot2` starts nothing.
+- **Run 9 (44041155687)** failed one second into the render with "there is no package called 'webshot2'": the templates' `library(webshot2)`, not a screenshot.
+- **Run 10 (44044598918)** rendered `DIANN_report_proteomics_prot_dia.docx` in one second (08:29:40 to 08:29:41) and the DIA_LIMPA report within one second (08:33:15); a browser does not start and take screenshots in that time, and no log line names one. The sentences in this record that said `webshot2` "drove the runner's preinstalled Chrome" were an inference; they are corrected where they stand.
+- **A probe on the laptop** (2026-11-18; R 4.6.1, knitr 1.51, rmarkdown 2.31, webshot2 0.1.2, chromote 0.5.1, pandoc 3.11; `CHROMOTE_CHROME` set to a path that does not exist). A document that does what the templates do (the four `library()` lines, `include_graphics`, `kable`, text) renders to `.docx`. The same document with one printed plotly widget fails: "Functions that produce HTML output found in document targeting docx output". So the probe sees a browser need where there is one, and the templates have none.
+
+What the report needs is the **package** `webshot2` (and `chromote`, which it imports), because six templates attach it; both ship since run 10. The comment in `packaging/r/library-exclude.txt` said otherwise and is corrected.
+
+Not shown: a complete Summary report rendered from the installed application with every browser hidden, on both platforms. That needs a lane that reaches its report in a token-free build (the DIA lanes need `fastduckdb`) and, on Windows, a lane runner that P6 has not built. It is the check to put into the next installer run, whatever the decision.
+
+### 3. The decision, for the user
+
+| Option | What it means |
+|---|---|
+| **1. Bundle no browser (recommended).** | The application as it is needs none; nothing is added to either installer, no unpatched browser ships, no `--no-sandbox` second program on Ubuntu 24.04. The install notes need no browser requirement. If a later report prints an interactive plot into Word, the question returns then, and the Electron shell already carries a Chromium (with its `LICENSES.chromium.html`) that could take the picture without a second browser. |
+| 2. Bundle the pinned Chromium snapshot anyway. | For a future interactive figure in the Word report. The costs above: +240 MiB and about +200 MiB of installer, a browser without security updates, `--no-sandbox` on Ubuntu 23.10 and later, the notices to generate. One installer run plus its correction pass, as budgeted. |
+| 3. Ask Google about `chrome-headless-shell` first. | Half the size (122 and 120 MiB) and a stable-channel build with its licence file inside; usable only if Google says the BSD file is the whole of its terms (issue 226). |
+
+Separate and small, package code outside this item: the six templates could drop their unused `library(flextable)`, `library(gt)`, `library(plotly)` and `library(webshot2)` lines; `webshot2` and `chromote` could then leave the bundle. Not done.
+
+### 4. The two follow-ups: made, not yet run
+
+Both wait for the next installer run (none was started for this item):
+
+- **The probe asks the user D-Bus** (`packaging/electron/main.js`, `probeLauncher`): after every other requirement holds, `busctl --user call org.freedesktop.systemd1 /org/freedesktop/systemd1 org.freedesktop.DBus.Peer Ping` must answer, else the plain launcher with the reason "the user D-Bus does not answer". `busctl` being installed is no longer enough. Checked on the laptop by running the function's text under plain Node: `systemd` in this login session (58 ms for the whole probe); `process` with that reason when the user manager answers and the bus address leads nowhere, which is the hosted runner's state.
+- **ubuntu-24.04 expects the plain launcher with the bus reason** (`distributable.yml`, `lifecycle-test.js --expect-reason`): both Linux install legs run with the network closed again and expect `process`; the 24.04 leg also expects the reason to name "D-Bus". The `dbus-user-session` attempt of run 44059705566 is removed. The systemd worker from the bundle is tested on the laptop, in a real login session, after the KIT-124 studies.
 
 ## Deviations from revision 2.0's file table
 
@@ -250,14 +310,17 @@ Revision 2.0's budgets are workflow runs per platform per part, one correction p
 | D5 | | 1: run 6 (2) | not used |
 | Token build (P2 step 4, P5 step 3) | 1: run 7 (1 plus a correction pass) | 2: runs 7, 8 | Windows used (run 8, the build path); Linux not used: its failure is the Remotes pin, which needs a decision, not a correction |
 | Token build after T1 (fresh budget) | 2: runs 9, 10 | 2: runs 9, 10 | used (run 10: the audit repairs, K1, `webshot2` and `chromote`); passed |
+| P3 package side (2026-11-17) | 2: runs 44055833237, 44059705566 | 2: the same runs | used (44059705566: `dbus-user-session` on ubuntu-24.04, no user bus all the same) |
+| W1 and the two follow-ups (2026-11-18; one installer run plus a correction pass) | 0 | 0 | not used: stopped before the build (section "W1") |
 
 Six workflow runs in all, about 3 hours of runner time across the jobs. Each push to `kit-134` also starts the repository's existing `Module CI` workflow (not part of this record). Nothing heavy ran on the laptop: the P1 table (seconds of R), and three light local checks of the new scripts (two snapshot dates, the plan resolution, the version table against R's own library; no package installed; `package-lock.json` written with `npm install --package-lock-only --ignore-scripts`, no `node_modules`).
 
 ## What is left for KIT-134
 
-- The package side of P3 (above), after KIT-131; then `--expect-launcher process`, and the systemd lifecycle (laptop, and `ubuntu-24.04` if U5).
+- **W1, the user's decision (section "W1"), then one installer run** (its budget is unspent): it verifies the probe's user-bus check and the ubuntu-24.04 expectation, which are made and not yet run, and carries either the bundled browser or the check that a Summary report renders with every browser hidden.
+- The package side of P3: done (`f154988b`, `1f228360`; runs 44055833237 and 44059705566). Left of it: the systemd lifecycle of the bundle on the laptop, in a real login session (hosted runners have no user D-Bus).
 - P5 (the lanes and the suite from the installed bundle; the B-01 measurement): `run-lanes.*`, `compare-results.R`, the e2e helper's installed surface, the test-tool library. Four lanes only (lipidomics, metabolomics, transcriptomics, TMT and LFQ) until the token: DIA, DIA_LIMPA and enrichment need `fastduckdb` (F1).
-- The token build: done (run 10). Both internal packages build and load on both platforms; on Linux the DIA and DIA_LIMPA GUI-entry lanes pass against the bundle, identical to the laptop's oracles. Open: W1 (Chrome for the report on users' machines), the `fastlimpadpc` `target-cpu=native` build flag (its repository), the enrichment e2e lane and the suite (P5).
+- The token build: done (run 10). Both internal packages build and load on both platforms; on Linux the DIA and DIA_LIMPA GUI-entry lanes pass against the bundle, identical to the laptop's oracles. Open: W1 (section "W1": the report needs no browser as it stands; the user's decision), the `fastlimpadpc` `target-cpu=native` build flag (its repository), the enrichment e2e lane and the suite (P5).
 
 ### Decisions needed (token build)
 
@@ -265,6 +328,6 @@ Six workflow runs in all, about 3 hours of runner time across the jobs. Each pus
 |---|---|---|---|
 | T1 | Which `fastduckdb` the bundle names | Decided by the user (2026-11-17): 0.2.0 on `fast_duckdb` main; `performance-v2` DESCRIPTION at `3ec13e95` | done |
 | K1 | `kit-134`'s DESCRIPTION | Decided (the coordinator, engineering): `performance-v2` merged into `kit-134` (`e5b23654`) | done; run 10 |
-| W1 | Chrome for the report | Repaired on the packaging side (the coordinator's instruction): `webshot2` and `chromote` are no longer excluded, so they ship (`library-exclude.txt`; knitr calls `webshot2` for the report's htmlwidgets). `webshot2` still needs a Chrome: the runner has one; a user's machine may not, and then the report fails | (a) rely on an installed Chrome or Edge and say so in the install notes; (b) bundle a headless Chrome (size, licence notices); (c) a report that needs no screenshots (package code, outside KIT-134) |
+| W1 | Chrome for the report | Repaired on the packaging side (the coordinator's instruction): `webshot2` and `chromote` are no longer excluded, so they ship (`library-exclude.txt`). The user chose (b) on 2026-11-18 ("ship headless chrome ... edge is very unsafe"). *Corrected 2026-11-18:* this row said that `webshot2` "still needs a Chrome" and that the report fails without one; the templates take no screenshot, so (c) is already the case (section "W1") | Back with the user, section "W1": (1) bundle nothing (recommended); (2) bundle the pinned Chromium snapshot anyway; (3) ask Google about `chrome-headless-shell` first |
 - P6 on Windows, after KIT-131's step 6.
 - The sources archive and the release (KIT-132).
