@@ -14,7 +14,9 @@ name: KIT-124 simulators
 # Runs are numbered from 1, as on the laptop. Two optional entries: `chunk` (per simulator, runs per job: a cell is
 # then split into run ranges, one job each, through the simulators' first-run argument; the seed is
 # 100000 + 10000 x cell index + run, so a range's rows are the whole cell's) and `assoc` (true: K129_ASSOC=1, the
-# KIT-129 association mode, whose table is s<i>-assoc.tsv; `arms` must then be empty).
+# KIT-129 association mode, whose table is s<i>-assoc.tsv; `arms` must then be empty). A third, `blas`: absent or
+# "default" is the runner's BLAS and LAPACK (OpenBLAS); "reference" selects the distribution's reference libblas3 and
+# liblapack3 (the laptop runs on reference BLAS), and the job stops if R does not then report them.
 #
 # Each job: R 4.6.1 and the library of performance-v2's CI (the KIT-134 snapshot, at tools_ref) with the two
 # internal packages, plus sva from the same snapshot; the library checked against the laptop's versions
@@ -56,6 +58,7 @@ jobs:
       matrix: ${{ steps.plan.outputs.matrix }}
       label: ${{ steps.plan.outputs.label }}
       assoc: ${{ steps.plan.outputs.assoc }}
+      blas: ${{ steps.plan.outputs.blas }}
       cores: ${{ steps.plan.outputs.cores }}
       timeout_minutes: ${{ steps.plan.outputs.timeout_minutes }}
       job_timeout: ${{ steps.plan.outputs.job_timeout }}
@@ -82,6 +85,7 @@ jobs:
             (. as $p | [.cells[] | split(",")[]] | all(if startswith("C") then $p.runs_core >= 1 else $p.runs_stress >= 1 end)) and
             ((.chunk // {}) | type == "object" and
               (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "number" and . == floor and . >= 1)))) and
+            ((.blas // "default") | . == "default" or . == "reference") and
             ((.assoc // false) | type == "boolean") and ((.assoc // false) == false or (.arms | length) == 0)
           ' "$p" > /dev/null; then
             echo "::error::params.json is not valid (label; package_commit and tools_ref as 40-digit commits; runs_core, runs_stress; cores 2 to 4; timeout_minutes 1 to 300; arms and cells per s1..s4; no cell of a class with 0 runs; chunk per s1..s4; assoc true only without arms)"
@@ -97,6 +101,7 @@ jobs:
                  runs_core: (if $chunk < $n then $runs else $p.runs_core end),
                  runs_stress: (if $chunk < $n then $runs else $p.runs_stress end)}]}' "$p")"
             echo "assoc=$(jq -r '.assoc // false' "$p")"
+            echo "blas=$(jq -r '.blas // "default"' "$p")"
             for key in label package_commit tools_ref cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
             # the library takes about 15 minutes; the job's own limit stays under the runner's 6 hours
             echo "job_timeout=$(jq -r '[.timeout_minutes + 45, 355] | min' "$p")"
@@ -132,6 +137,7 @@ jobs:
       RUNS_CORE: ${{ matrix.runs_core }}
       RUNS_STRESS: ${{ matrix.runs_stress }}
       ASSOC: ${{ needs.plan.outputs.assoc }}
+      BLAS: ${{ needs.plan.outputs.blas }}
       CORES: ${{ needs.plan.outputs.cores }}
       TIMEOUT_MINUTES: ${{ needs.plan.outputs.timeout_minutes }}
       PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
@@ -169,6 +175,14 @@ jobs:
           utils::remove.packages("MultiScholaR", lib = .Library)
           EOF
           R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla "$RUNNER_TEMP/sva.R"
+      - name: BLAS and LAPACK (params blas; reference = the distribution's libblas3 and liblapack3)
+        run: |
+          if [ "$BLAS" = "reference" ]; then
+            sudo apt-get install -y --no-install-recommends libblas3 liblapack3 > /dev/null
+            sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/blas/libblas.so.3
+            sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3
+          fi
+          Rscript --vanilla -e 'b <- extSoftVersion()[["BLAS"]]; cat("BLAS:", b, "->", normalizePath(b), "\nLAPACK:", La_library(), "->", normalizePath(La_library()), "; version", La_version(), "\n"); print(sessionInfo()); open <- grepl("openblas", normalizePath(c(b, La_library()))); if (identical(Sys.getenv("BLAS"), "reference") && any(open)) { cat("::error::reference BLAS was asked for, R still reports OpenBLAS\n"); quit(status = 1L) }'
       - name: The simulators and the package tree (this push)
         uses: actions/checkout@v4
         with:
@@ -222,8 +236,8 @@ jobs:
           mkdir "$OUT/runner"
           cp "$RUNNER_TEMP/library.tsv" "$OUT/runner/$TAG.library.tsv"
           cp "$RUNNER_TEMP/sim.out" "$OUT/runner/$TAG.out"
-          printf 'run\t%s\nattempt\t%s\ncommit\t%s\npackage_commit\t%s\ntools_ref\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nassoc\t%s\nfirst_run\t%s\nruns\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
-            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$PACKAGE_COMMIT" "$TOOLS_REF" "$LABEL" "$SIM" "$CELL" "$ARMS" "$ASSOC" "$FIRST" "$RUNS" "$CORES" "$SECONDS" \
+          printf 'run\t%s\nattempt\t%s\ncommit\t%s\npackage_commit\t%s\ntools_ref\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nassoc\t%s\nblas\t%s\nfirst_run\t%s\nruns\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$PACKAGE_COMMIT" "$TOOLS_REF" "$LABEL" "$SIM" "$CELL" "$ARMS" "$ASSOC" "$BLAS" "$FIRST" "$RUNS" "$CORES" "$SECONDS" \
             > "$OUT/runner/$TAG.job.tsv"
       - name: The out dir is complete and holds no build output
         working-directory: simtree
