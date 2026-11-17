@@ -80,6 +80,31 @@ The corrected matrix is still computed and used for PCA, plots, export and integ
 
 Open for the stress cells still running: conditions of use for classic proteomics and DIA_LIMPA; whether k is estimated (`sva::num.sv`, not a dependency today) or user-chosen.
 
+## 5. Choosing k: two rules, offered where each is defined (user's direction, 2026-11-18)
+
+| | Estimated count (`sva::num.sv`, method "be") | Separation rule (today's `findBestK`, `trxFindBestK`) |
+|---|---|---|
+| What it reads | Residuals after the design is removed: components whose share of variance exceeds that of 20 row-wise permutations (p <= 0.10) | The canonical-correlation plot: the k with the largest gap between the all-feature curve and the control-feature curve, bounded (2 below 15 samples in proteomics, 3 in transcriptomics) |
+| Needs | No control set; no missing values (run on the features complete in every sample) | A control set narrower than all features |
+| Defined for | Every RUV option | Options with a separate control set (supplied list, first-pass nulls, Legacy); undefined with all features as controls (the two curves coincide) |
+| Measured (KIT-124) | Mean 1.00 where the truth is 1; 3.00 where it is 3; 1.94 where it is 2; 0 in most no-factor data sets (S1, S2, S4), 1.35 in transcriptomics | 2.9 where the truth is 1; 1.55 where it is 3 (transcriptomics power 0.16 against 0.76) |
+| Arms it ran in | 7, 8, 9, 10, 15, 16 | 3, 4, 5, 6 |
+| For | Counts the factors; no control set needed; seeded and reproducible; the rule behind the recommended design's figures | The package's established diagnostic; ties k to the chosen controls; no new dependency; the rule behind Legacy's and first-pass nulls' figures |
+| Against | Borrowed from surrogate variable analysis, not from an RUV paper; the design is removed first, so a factor that follows the groups can be under-counted; 20 permutations and a 0.10 threshold are coarse at 3 per group; optional dependency (`sva`) | Over-estimates at one factor, under-estimates at three; measures how well the controls avoid the biology, not how many factors there are; undefined for the recommended design |
+
+Not yet measured, and needed before both rules can be selectable with a figure beside each: supplied controls with the separation rule's k (arm 8's design), and first-pass nulls with the estimated count (arm 5's design).
+
+Provenance for the k rules:
+
+| Claim | Source | Checked how |
+|---|---|---|
+| The permutation estimate is Buja and Eyuboglu's (1992), with Leek's (2011, Biometrics) asymptotic alternative | `sva::num.sv` help page and source, sva 3.60.0 | Read in the simulation library, 2026-11-18 |
+| k is hard to estimate for RUV; `getK` (RUV-4 only) "will not be the best choice in all cases" and is "often a poor choice of K for use with RUV2" | `ruv::getK` help page, citing Gagnon-Bartsch and Speed 2012 (Biostatistics 13:539) and Gagnon-Bartsch, Jacob, Speed 2013 (Berkeley technical report 820) | Help page read 2026-11-18; the two papers themselves not read |
+| RUVSeq's worked example uses k = 1 without a rule | RUVSeq vignette (section 1 above) | Read |
+| RUV-III: no clear rule for k | Molania et al. 2019 (section 1 above) | Read |
+| The canonical-correlation plot | `ruv::ruv_cancorplot`; the separation rule on it is MultiScholaR's own | Code read; no paper found that proposes the rule |
+| To verify before citing: Leek and Storey 2007 (PLoS Genet) and Leek et al. 2012 (Bioinformatics) for sva; Buja and Eyuboglu 1992, "Remarks on parallel analysis" (Multivariate Behavioral Research 27:509); Wang, Zhao, Hastie, Owen 2017 (Ann. Statist.) for RUV-4 and SVA in one framework with an estimated factor count | Recalled, not read this session | Not checked |
+
 ## Sources
 
 - RUVSeq vignette (Risso): https://rdrr.io/github/drisso/RUVSeq/f/vignettes/RUVSeq.Rmd
