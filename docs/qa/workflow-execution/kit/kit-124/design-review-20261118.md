@@ -39,7 +39,7 @@ Mean false discovery proportion, worst core cell (and in C5, factor tied to grou
 | No RUV | 0.052; power 0.49 | 0.191; 0.56 | 0.044; 0.005 | 0.059; 0.003 |
 | True factor known (ceiling) | 0.052; 0.91 | 0.055; 0.91 | 0.055; 0.77 | 0.061; 0.50 |
 | Today's design (arm 3) | 0.385; 0.92 | 0.466; 0.91 | 0.299; 0.73 | 0.556; 0.42 |
-| Today's controls, W in the model (arm 4) | 0.322; 0.90 | 0.435; 0.90 | (arm 3) | 0.162; 0.17 |
+| Today's controls, W in the model (arm 4) | 0.322; 0.89 | 0.435; 0.90 | (arm 3) | 0.162; 0.17 |
 | First-pass nulls: drop the most significant 25%, W in the model (arm 5) | 0.078; 0.91 | 0.149; 0.92 | 0.064; 0.60 | 0.239; 0.50 |
 | All features, groups as replicates, W in the model (arm 7) | 0.066; 0.91 | 0.055; 0.91 | 0.055; 0.77 | 0.072; 0.43 |
 | Known true nulls, W in the model (arm 8) | 0.053; 0.91 | 0.056; 0.91 | 0.056; 0.76 | 0.068; 0.37 (standards) |
