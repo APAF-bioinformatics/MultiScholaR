@@ -40,7 +40,7 @@ omicsRuvAssayValues <- function(assay, id_column, design_samples, assay_name) {
 }
 
 #' The number of factors per assay: one whole number of 0 or more for every assay, or one per assay by name. `NA` is a
-#' k that could not be estimated; the assay is then refused, not guessed.
+#' k that could not be estimated; the assay is then refused, not guessed. An infinite k or `NaN` is a wrong argument.
 #' @noRd
 resolveOmicsRuvFactorsK <- function(ruv_number_k, assay_names) {
     per_assay <- if (is.list(ruv_number_k)) ruv_number_k else stats::setNames(rep(list(ruv_number_k), length(assay_names)), assay_names)
@@ -48,8 +48,8 @@ resolveOmicsRuvFactorsK <- function(ruv_number_k, assay_names) {
         abortOmicsRuvFactors(sprintf("ruv_number_k names no value for assay(s): %s", paste(setdiff(assay_names, names(per_assay)), collapse = ", ")))
     }
     lapply(per_assay[assay_names], function(k) {
-        if (length(k) == 1L && is.na(k)) return(NA_integer_)
-        if (!is.numeric(k) || length(k) != 1L || k < 0 || k != round(k)) {
+        if (length(k) == 1L && is.na(k) && !(is.numeric(k) && is.nan(k))) return(NA_integer_)
+        if (!is.numeric(k) || length(k) != 1L || !is.finite(k) || k < 0 || k != round(k)) {
             abortOmicsRuvFactors("ruv_number_k must be a whole number of 0 or more (one for every assay, or one per assay by name)")
         }
         as.integer(k)
@@ -138,7 +138,7 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' @param ruv_grouping_variable The design column whose levels are the replicate sets; the object's group column
 #'   when NULL.
 #' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays; `factors` per
-#'   assay `list(status, reason, W, k, k_requested, k_source, control_ids, control_count, complete_features,
+#'   assay `list(assay, status, reason, W, k, k_requested, k_source, control_ids, control_count, complete_features,
 #'   not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL; `parameters` the arguments.
 #' @noRd
 runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source, ruv_control_ids = NULL,
@@ -158,6 +158,9 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
     grouping <- ruv_grouping_variable %||% theObject@group_id
     if (!is.character(grouping) || length(grouping) != 1L || !grouping %in% colnames(design)) {
         abortOmicsRuvFactors("ruv_grouping_variable must name a column of the design")
+    }
+    if (anyNA(design[[grouping]])) {
+        abortOmicsRuvFactors(sprintf("the design column '%s' has missing values: every sample needs a replicate set", grouping))
     }
     if (!length(assays) || is.null(names(assays)) || !all(nzchar(names(assays)))) abortOmicsRuvFactors("the object needs named assays")
     supplied <- identical(ruv_design, "factors_supplied_controls")
@@ -183,7 +186,7 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
         replicate_matrix <- getRuvIIIReplicateMatrixHelper(assay_design, !!rlang::sym(sample_id), !!rlang::sym(grouping))
         record <- computeOmicsRuvAssayFactors(values[[assay_name]], replicate_matrix[samples, , drop = FALSE],
             k_requested[[assay_name]], control_ids)
-        factors[[assay_name]] <- list(status = record$status, reason = record$reason, W = record$W, k = record$k,
+        factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason, W = record$W, k = record$k,
             k_requested = k_requested[[assay_name]], k_source = ruv_k_source, control_ids = record$control_ids,
             control_count = length(record$control_ids), complete_features = record$complete_features,
             not_tested = if (supplied) control_ids else character(), ruv_design = ruv_design, ruv_grouping_variable = grouping)
@@ -231,13 +234,16 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
 #' @param expr_matrix Feature-by-sample matrix of uncorrected values.
 #' @param design_matrix,formula_string,sample_id_col As the DA kernel reads them.
 #' @param assay_factors The assay's entry of `runOmicsRuvFactors()$factors`.
-#' @param assay_name The assay's name, for messages.
+#' @param assay_name The assay's name; the factors of another assay are refused.
 #' @return `list(expr_matrix, design_matrix, formula_string, not_estimable)`.
 #' @noRd
 applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_string, sample_id_col, assay_factors,
-                                          assay_name = "") {
-    if (!is.list(assay_factors) || !all(c("status", "W", "not_tested") %in% names(assay_factors))) {
+                                          assay_name) {
+    if (!is.list(assay_factors) || !all(c("assay", "status", "W", "not_tested") %in% names(assay_factors))) {
         abortOmicsRuvFactors(sprintf("ruv_factors holds no RUV factors for assay '%s'", assay_name))
+    }
+    if (!identical(assay_factors$assay, assay_name)) {
+        abortOmicsRuvFactors(sprintf("the RUV factors of assay '%s' were given for assay '%s'", assay_factors$assay, assay_name))
     }
     expr_matrix <- expr_matrix[!rownames(expr_matrix) %in% assay_factors$not_tested, , drop = FALSE]
     w <- assay_factors$W
