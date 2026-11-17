@@ -1,0 +1,35 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R
+script sha256: c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
+commit: 624153a470a75696e4ca281e7763d3cfb21ab92e
+script differs from commit: FALSE
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/k124-agg/s2-core S2=/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+run at: 2026-11-18 03:24:18 AEDT
+inputs (sha256, bytes, path):
+  d708ec4e6719d649e737ef2504b9fe502a045bc4f162337e630bcdb8101682d7 413185 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C0.rds
+  349c1b5feb3a92e59554aef17792ed8c58c7893f84b7144d13f2279c995bbb55 396846 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C1.rds
+  5ff1786a0ca085d890db21ae4865d64b2bd8f38a4985d3924d6ebadaaab4533a 407567 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C2.rds
+  3fad22949a9d9bb6955b4f1e79a32497cac5d94e910edc43e5710e5bdfa47d82 301726 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C3.rds
+  c932e3e5d8f600898be0378698d4610543408fc40a14d6f8d5d039fa73db49f5 145852 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C4.rds
+  2a0d376fc155b2a96af836cede596635adeb41fd35538713ac1329ebfef46845 426054 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C5.rds
+  e53c9e6ee2f64f148acb1ba578817b18c2d5a764fcd40ee00ea3eab8dfabf76e 458653 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C6.rds
+  d6b71b84bd57dd4960a0dda6098c410a4d1e4c4c76fbf15a2e4f1577c2647364 409928 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/cells/C7.rds
+  3f08ab80e33a37ed4d03977d7087ae41255c6c05370594f415cd3e8b11064d86 1775 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm/s2-runs.meta.txt
+simulator S2 meta (/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s2-confirm):
+  commit: 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22
+  script: docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R
+  script md5: fc2b475726cd488af19d61726d21aca1
+  script differs from commit: FALSE
+  command: Rscript docs/qa/workflow-execution/kit/kit-124/sim/s2_limpa.R docs/qa/workflow-execution/kit/kit-124/s2-confirm 1000 500 6 C0,C1,C2,C3,C4,C5,C6,C7
+  R: R version 4.6.1 (2026-06-24)
+  packages: MultiScholaR 0.5.0; limpa 1.4.2; fastlimpadpc 0.1.0; limma 3.68.4; ruv 0.9.7.1; sva 3.60.0; qvalue 2.44.0; statmod 1.5.2; pkgload 1.5.3
+  DPC engine: fastlimpadpc (RAYON_NUM_THREADS set to 1 by the package inside the method)
+  runs per core cell: 1000 ; runs per stress cell: 500
+  seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 11..24);
+  cells completed in this invocation: C0,C1,C2,C3,C4,C5,C6,C7
+  started: 2026-11-17 06:15:39 AEDT
+  finished: 2026-11-18 02:57:03 AEDT
