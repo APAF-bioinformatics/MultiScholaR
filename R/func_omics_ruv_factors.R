@@ -135,12 +135,15 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #'   0 is no RUV; `NA` (a k that could not be estimated) refuses the assay.
 #' @param ruv_k_source Where k comes from, recorded with it: `"user"` or `"sweep_bounded"` (`boundOmicsRuvSweepK`).
 #'   `"sweep_bounded"` is refused with `"factors_all_features"`: that k was not measured with all features as controls.
-#' @param ruv_control_ids For `"factors_supplied_controls"`: the control feature ids per assay, by assay name.
+#' @param ruv_control_ids For `"factors_supplied_controls"`: the control feature ids per assay, by assay name. A
+#'   supplied control with a missing value is used neither for W nor for the correction; it is named in a warning of
+#'   class `omics_ruv_controls_incomplete` and in `controls_left_out`, and is still not tested.
 #' @param ruv_grouping_variable The design column whose levels are the replicate sets; the object's group column
 #'   when NULL.
 #' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays; `factors` per
-#'   assay `list(assay, status, reason, W, k, k_requested, k_source, control_ids, control_count, complete_features,
-#'   not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL; `parameters` the arguments.
+#'   assay `list(assay, status, reason, W, k, k_requested, k_source, control_ids, control_count, controls_left_out,
+#'   complete_features, not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL;
+#'   `parameters` the arguments.
 #' @noRd
 runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source, ruv_control_ids = NULL,
                                ruv_grouping_variable = NULL) {
@@ -193,8 +196,16 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
             k_requested[[assay_name]], control_ids)
         factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason, W = record$W, k = record$k,
             k_requested = k_requested[[assay_name]], k_source = ruv_k_source, control_ids = record$control_ids,
-            control_count = length(record$control_ids), complete_features = record$complete_features,
+            control_count = length(record$control_ids), controls_left_out = setdiff(control_ids, record$control_ids),
+            complete_features = record$complete_features,
             not_tested = if (supplied) control_ids else character(), ruv_design = ruv_design, ruv_grouping_variable = grouping)
+    }
+    # Audit F9: a supplied control with a missing value is no control, for W and for the correction alike.
+    left_out <- Filter(length, lapply(factors, `[[`, "controls_left_out"))
+    if (length(left_out)) {
+        rlang::warn(c("supplied controls with missing values are not used as controls (they are still not tested)",
+            stats::setNames(sprintf("%s: %s", names(left_out), vapply(left_out, paste, "", collapse = ", ")), rep("x", length(left_out)))),
+            class = "omics_ruv_controls_incomplete")
     }
     refused <- Filter(function(record) identical(record$status, "refused"), factors)
     if (length(refused)) {
@@ -209,10 +220,11 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
     if (length(to_correct)) {
         subset_object <- theObject
         methods::slot(subset_object, slots$data) <- assays[to_correct]
+        correction_controls <- lapply(stats::setNames(to_correct, to_correct), function(assay_name) {
+            if (supplied) factors[[assay_name]]$control_ids else rownames(values[[assay_name]])
+        })
         result <- ruvIII_C_Varying(subset_object, ruv_grouping_variable = grouping, ruv_number_k = lapply(factors[to_correct], `[[`, "k"),
-            ctrl = lapply(stats::setNames(to_correct, to_correct), function(assay_name) {
-                if (supplied) as.character(ruv_control_ids[[assay_name]]) else rownames(values[[assay_name]])
-            }))
+            ctrl = correction_controls)
         result_assays <- methods::slot(result, slots$data)
         for (assay_name in to_correct) {
             corrected_assay <- result_assays[[assay_name]]
