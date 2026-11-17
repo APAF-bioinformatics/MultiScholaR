@@ -495,6 +495,12 @@ jobs:
             # The probe chooses the systemd worker here (kernel 6.12 or later, user manager, cgroup v2, memory
             # delegated). Its units run in the user manager's network namespace, so the shell cannot be closed into
             # a namespace of its own with them: this branch runs with the network open (recorded in outcome.md).
+            # The hosted runner's user manager has no user D-Bus, which busctl needs and a desktop session provides
+            # (run 44055833237: "Failed to connect to bus", the entry fell back to the plain launcher): start one.
+            sudo apt-get install -y -qq dbus-user-session > /dev/null
+            systemctl --user daemon-reload
+            systemctl --user start dbus.socket
+            busctl --user status > /dev/null && echo "the user D-Bus answers"
             xvfb-run -a node packaging/electron/lifecycle-test.js "Linux, installed with install.sh, ubuntu-24.04" \
               "$DEST/multischolar" "$DEST" --expect-launcher systemd
           else
