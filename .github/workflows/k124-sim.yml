@@ -1,0 +1,187 @@
+name: KIT-124 simulators
+
+# The four KIT-124 simulators on hosted runners (4 cores, 16 GB, 6 h per job), one job per simulator and cell.
+#
+# A run starts when a push to sim-k124 changes .github/k124-sim/params.json, and only then: a push that leaves the
+# file alone (a merge, a script change) starts nothing. The file names the run (label), the arms (K124_ARMS; "" =
+# unset, the arms as before), the runs per core and per stress cell, the cores, the simulator's time limit in
+# minutes and, per simulator, the cells. Runs are numbered from 1, as on the laptop.
+#
+# Each job: R 4.6.1 and the library of performance-v2's CI (the KIT-134 snapshot, TOOLS_REF below) with the two
+# internal packages, plus sva from the same snapshot; the library checked against the laptop's versions
+# (.github/k124-sim/laptop-versions.tsv); the simulator under `timeout`, from this push's tree, whose package part
+# must be commit 0b6fcb6d's (the plan job checks it); the out dir checked and uploaded.
+#
+# Restart: a simulator keeps finished cells, and a job is one cell, so a failed or timed-out job is rerun alone
+# (`gh run rerun <run> --failed`) and recomputes that cell only. A job that fails uploads nothing.
+#
+# The internal packages (read token): nothing built with the token is cached or uploaded. The library is rebuilt in
+# every job, their build output stays under RUNNER_TEMP (the action), and the artifact is the simulator's out dir
+# only, scanned for build output before the upload (.github/k124-sim/check-output.R).
+
+on:
+  push:
+    branches:
+      - sim-k124
+    paths:
+      - .github/k124-sim/params.json
+
+permissions:
+  contents: read
+
+env:
+  # performance-v2: .github/actions/snapshot-library, packaging/r/install-library.R, packaging/multischolar.lock.json
+  TOOLS_REF: ebd5378b9f44ed54503011a175b1ea8e852cf5e1
+  NOT_CRAN: "true"
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      label: ${{ steps.plan.outputs.label }}
+      arms: ${{ steps.plan.outputs.arms }}
+      runs_core: ${{ steps.plan.outputs.runs_core }}
+      runs_stress: ${{ steps.plan.outputs.runs_stress }}
+      cores: ${{ steps.plan.outputs.cores }}
+      timeout_minutes: ${{ steps.plan.outputs.timeout_minutes }}
+      job_timeout: ${{ steps.plan.outputs.job_timeout }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: The package tree is commit 0b6fcb6d's (everything but docs/ and .github/)
+        run: |
+          git ls-tree HEAD | grep -vP '\t(\.github|docs)$' > "$RUNNER_TEMP/tree.txt"
+          if ! diff "$RUNNER_TEMP/tree.txt" .github/k124-sim/tree-0b6fcb6d.txt; then
+            echo "::error::the package tree of this push is not commit 0b6fcb6d's"
+            exit 1
+          fi
+          echo "package tree: 0b6fcb6d's ($(wc -l < "$RUNNER_TEMP/tree.txt") top-level entries identical)"
+      - name: Read .github/k124-sim/params.json
+        id: plan
+        run: |
+          p=.github/k124-sim/params.json
+          if ! jq -e '
+            (.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
+            (.arms | type == "string" and test("^$|^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$")) and
+            ([.runs_core, .runs_stress, .cores, .timeout_minutes] | all(type == "number" and . == floor and . >= 1)) and
+            (.runs_core <= 9999) and (.runs_stress <= 9999) and (.cores <= 4) and (.timeout_minutes <= 300) and
+            (.cells | type == "object" and length > 0 and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[CS][0-9]{1,2}(,[CS][0-9]{1,2})*$")))))
+          ' "$p" > /dev/null; then
+            echo "::error::params.json is not valid (label, arms, runs_core, runs_stress, cores <= 4, timeout_minutes <= 300, cells per s1..s4)"
+            exit 1
+          fi
+          {
+            echo "matrix=$(jq -c '{include: [.cells | to_entries[] | .key as $sim | .value | split(",")[] | {sim: $sim, cell: .}]}' "$p")"
+            for key in label arms runs_core runs_stress cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
+            # the library takes about 15 minutes; the job's own limit stays under the runner's 6 hours
+            echo "job_timeout=$(jq -r '[.timeout_minutes + 45, 355] | min' "$p")"
+          } >> "$GITHUB_OUTPUT"
+          { echo '```json'; cat "$p"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+  sim:
+    name: ${{ matrix.sim }} ${{ matrix.cell }}
+    needs: plan
+    runs-on: ubuntu-22.04
+    timeout-minutes: ${{ fromJSON(needs.plan.outputs.job_timeout) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      SIM: ${{ matrix.sim }}
+      CELL: ${{ matrix.cell }}
+      LABEL: ${{ needs.plan.outputs.label }}
+      ARMS: ${{ needs.plan.outputs.arms }}
+      RUNS_CORE: ${{ needs.plan.outputs.runs_core }}
+      RUNS_STRESS: ${{ needs.plan.outputs.runs_stress }}
+      CORES: ${{ needs.plan.outputs.cores }}
+      TIMEOUT_MINUTES: ${{ needs.plan.outputs.timeout_minutes }}
+      OUT: docs/qa/workflow-execution/kit/kit-124/${{ matrix.sim }}-gha
+    steps:
+      - name: The library's tools (performance-v2 at TOOLS_REF)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TOOLS_REF }}
+          persist-credentials: false
+      - name: R 4.6.1 and the library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: any::pkgload
+      - name: sva from the same snapshot (the laptop's scratch-k124-lib); the installed MultiScholaR removed
+        run: |
+          cat > "$RUNNER_TEMP/sva.R" <<'EOF'
+          snapshot <- jsonlite::fromJSON("packaging/multischolar.lock.json")$Snapshot$Date
+          options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
+              paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))
+          ppm <- "https://packagemanager.posit.co"
+          bioc <- sprintf("%s/bioconductor/__linux__/jammy/%s/packages/3.23", ppm, snapshot)
+          repos <- c(CRAN = sprintf("%s/cran/__linux__/jammy/%s", ppm, snapshot), BioCsoft = paste0(bioc, "/bioc"),
+              BioCann = paste0(bioc, "/data/annotation"))
+          available <- utils::available.packages(repos = repos)
+          wanted <- unique(c("sva", unlist(tools::package_dependencies("sva", db = available,
+              which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
+          needed <- setdiff(wanted, rownames(utils::installed.packages(lib.loc = .Library)))
+          cat("for sva, not in the library:", paste(needed, collapse = ", "), "\n")
+          utils::install.packages(needed, lib = .Library, repos = repos, dependencies = FALSE)
+          # The simulators load the package from the tree (pkgload::load_all). The copy the action installed is
+          # performance-v2's: removed, so that nothing can load it in the tree's place.
+          utils::remove.packages("MultiScholaR", lib = .Library)
+          EOF
+          R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla "$RUNNER_TEMP/sva.R"
+      - name: The simulators and the package tree (this push)
+        uses: actions/checkout@v4
+        with:
+          path: simtree
+          persist-credentials: false
+      - name: The library against the laptop's versions
+        run: >
+          Rscript --vanilla simtree/.github/k124-sim/check-library.R
+          simtree/.github/k124-sim/laptop-versions.tsv "$RUNNER_TEMP/library.tsv"
+      - name: Compile the tree's native code (pkgload::load_all once, outside the simulator's time and output)
+        working-directory: simtree
+        run: >
+          Rscript -e 'suppressMessages(pkgload::load_all(".", quiet = TRUE));
+          cat("MultiScholaR", as.character(utils::packageVersion("MultiScholaR")), "loads from the tree\n")'
+      - name: Run the simulator
+        working-directory: simtree
+        run: |
+          case "$SIM" in
+            s1) script=s1_classic.R ;;
+            s2) script=s2_limpa.R ;;
+            s3) script=s3_trx.R ;;
+            s4) script=s4_lipid_metab.R ;;
+          esac
+          if [ -n "$ARMS" ]; then export K124_ARMS="$ARMS"; fi
+          nproc; free -g | sed -n 2p
+          status=0
+          timeout "${TIMEOUT_MINUTES}m" Rscript "docs/qa/workflow-execution/kit/kit-124/sim/$script" \
+            "$OUT" "$RUNS_CORE" "$RUNS_STRESS" "$CORES" "$CELL" > "$RUNNER_TEMP/sim.out" 2>&1 || status=$?
+          tail -n 40 "$RUNNER_TEMP/sim.out"
+          echo "simulator: exit $status after $SECONDS s"
+          if [ "$status" -eq 124 ]; then echo "::error::$SIM $CELL: the simulator reached its limit of $TIMEOUT_MINUTES minutes"; fi
+          if [ "$status" -ne 0 ]; then echo "::error::$SIM $CELL: the simulator failed (exit $status); nothing is uploaded"; exit "$status"; fi
+          mkdir "$OUT/runner"
+          cp "$RUNNER_TEMP/library.tsv" "$OUT/runner/$CELL.library.tsv"
+          cp "$RUNNER_TEMP/sim.out" "$OUT/runner/$CELL.out"
+          printf 'run\t%s\nattempt\t%s\ncommit\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nruns_core\t%s\nruns_stress\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$LABEL" "$SIM" "$CELL" "$ARMS" "$RUNS_CORE" "$RUNS_STRESS" "$CORES" "$SECONDS" \
+            > "$OUT/runner/$CELL.job.tsv"
+      - name: The out dir is complete and holds no build output
+        working-directory: simtree
+        run: |
+          case "$CELL" in C*) runs="$RUNS_CORE" ;; *) runs="$RUNS_STRESS" ;; esac
+          Rscript --vanilla .github/k124-sim/check-output.R "$SIM" "$OUT" "$CELL" "$runs"
+      - name: Upload the out dir
+        uses: actions/upload-artifact@v4
+        with:
+          name: k124-${{ needs.plan.outputs.label }}-${{ matrix.sim }}-${{ matrix.cell }}
+          path: simtree/${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30

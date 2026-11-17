@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "**"
+      - "!sim-k124"
     tags:
       - "v*"
   pull_request:
