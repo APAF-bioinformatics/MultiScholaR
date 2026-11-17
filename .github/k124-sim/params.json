@@ -1,27 +1,21 @@
 {
-  "label": "ranges",
+  "label": "newarms",
   "package_commit": "0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22",
   "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
-  "runs_core": 20,
+  "runs_core": 1000,
   "runs_stress": 0,
   "cores": 4,
-  "timeout_minutes": 30,
+  "timeout_minutes": 180,
   "arms": {
-    "s1": "1,2,7,8",
-    "s2": "1,2,7,8",
-    "s3": "1,2,7,8",
-    "s4": "1,2,7,8"
-  },
-  "chunk": {
-    "s1": 10,
-    "s2": 10,
-    "s3": 10,
-    "s4": 10
+    "s1": "1,2,22,23,24",
+    "s2": "1,2,22,23,24",
+    "s3": "1,2,22,23,24",
+    "s4": "1,2,22,23"
   },
   "cells": {
-    "s1": "C0",
-    "s2": "C0",
-    "s3": "C0",
-    "s4": "C0"
+    "s1": "C0,C1,C2,C3,C4,C5,C6,C7",
+    "s2": "C0,C1,C2,C3,C4,C5,C6,C7",
+    "s3": "C0,C1,C2,C3,C4,C5,C6,C7",
+    "s4": "C0,C1,C2,C3,C4,C5,C6,C7"
   }
 }
