@@ -421,6 +421,25 @@ test_that("through the operations: the RUV state carries the factors and the DA 
     expect_true(all(outcome$chosen$value$controls))
     expect_identical(outcome$chosen$value$ruv_model[c("ruv_design", "k", "k_source", "ruv_controls", "replicate_structure")],
         list(ruv_design = "factors_in_model", k = 2L, k_source = "user", ruv_controls = "all", replicate_structure = "group"))
+    # the result the readers take names what was used; the control selection's own values are a diagnostic (audit F-05)
+    used <- outcome$chosen$value$ruv_result
+    expect_identical(outcome$chosen$value$percentage, 100)
+    expect_identical(used[c("best_percentage", "best_k", "ruv_design")],
+        list(best_percentage = 100, best_k = 2L, ruv_design = "factors_in_model"))
+    expect_identical(used$best_control_genes_index, outcome$chosen$value$controls)
+    expect_identical(sum(used$best_control_genes_index), nrow(object@protein_quant_table))
+    expect_identical(used$sweep_diagnostic$best_percentage, 50)
+    expect_identical(used$sweep_diagnostic$best_k, 2L)
+    expect_lt(sum(used$sweep_diagnostic$best_control_genes_index), nrow(object@protein_quant_table))
+    panel <- buildProtNormRuvOptimizationSummary(used, "manual", "group")
+    expect_match(panel, "Selected percentage: 100.0%", fixed = TRUE)
+    expect_match(panel, sprintf("Control genes: %d", nrow(object@protein_quant_table)), fixed = TRUE)
+    study <- ruvModelQuietly(buildWorkflowRuvOptimizationLines(used, list()))
+    expect_true(all(c("* Best percentage: 100.0%", "* Best k value: 2",
+        sprintf("* Control genes: %d", nrow(object@protein_quant_table))) %in% study))
+    expect_identical(outcome$legacy$value$ruv_result$best_percentage, 50)
+    expect_null(outcome$legacy$value$ruv_result$sweep_diagnostic)
+    expect_null(outcome$legacy$value$ruv_result$ruv_design)
     expect_true(isSavedWorkflowReference(outcome$chosen_record$slots$args$ruv_uncorrected_quant))
     samples <- as.character(object@design_matrix$Run)
     normalised <- as.matrix(tibble::column_to_rownames(outcome$normalised@protein_quant_table, "Protein.Group"))
@@ -499,4 +518,104 @@ test_that("the DA refuses a model with no residual degree of freedom at test tim
     two <- ruvModelPackageState(fixture, 2L)$state
     two@design_matrix$batch <- rep(c("b1", "b2", "b1"), 2L)
     expect_identical(resolveProtRuvModelInput(two, "~ 0 + group + batch")$w_terms, c("W1", "W2"))
+})
+
+test_that("the kernel's input validation refuses with a classed condition (audit F-08)", {
+    fixture <- ruvModelFixture(proteins = 120L)
+    object <- ruvModelObject(fixture$x, fixture$design)
+    refused <- function(expr, pattern = NULL) expect_error(expr, pattern, class = "prot_ruv_model_input")
+    # k: one whole number of at least 1; a fractional or missing k is refused, not truncated or replaced
+    for (k in list(1.5, NA, NA_integer_, NA_real_, 0L, -1, Inf, "2", c(1L, 2L), NULL)) {
+        refused(computeProtRuvModelFactors(object, k = k, k_source = "user"), "whole number")
+    }
+    refused(computeProtRuvModelFactors(object, k = 1L, k_source = "num.sv"), "k_source")
+    refused(computeProtRuvModelFactors(object, k = 1L, ruv_grouping_variable = "nope"), "absent")
+    refused(computeProtRuvModelFactors(object, k = 1L, controls = TRUE), "controls")
+    refused(computeProtRuvModelFactors(fixture$x, k = 1L), "ProteinQuantitativeData")
+    # a sample without a group is not a group of its own
+    no_group <- object
+    no_group@design_matrix$group[[1L]] <- NA
+    refused(computeProtRuvModelFactors(no_group, k = 1L), "missing values")
+    # a design column named like a factor is refused, not overwritten and not read as a factor
+    for (column in c("W1", "W7")) {
+        named <- object
+        named@design_matrix[[column]] <- "a user covariate"
+        refused(computeProtRuvModelFactors(named, k = 1L), column)
+    }
+    package <- ruvModelPackageState(fixture, 1L)
+    taken <- package$corrected
+    taken@design_matrix$W1 <- "a user covariate"
+    refused(attachProtRuvModelFactors(taken, object, package$factors), "W1")
+    uncovered <- package$factors
+    uncovered$W <- uncovered$W[-1L, , drop = FALSE]
+    refused(attachProtRuvModelFactors(package$corrected, object, uncovered), "do not cover")
+    # today's validator, on today's path, is as it was
+    expect_identical(validateProtNormRuvK(1.5, "k"), 1L)
+})
+
+test_that("through the operations: automatic and skip under the new design, a refused k, today's declaration handed the design", {
+    object <- makeWorkflowCheckpointProtein(readWorkflowCheckpointRecipe("small"))
+    proteins <- nrow(object@protein_quant_table)
+    design <- function(parameters) c(parameters, list(ruv_design = "factors_in_model"))
+    caught <- function(expr) tryCatch(expr, error = function(e) e)
+    manager <- ruvModelStore(object)
+    source <- getDIAStateReference(manager)
+    outcome <- ruvModelQuietly(withDIAStateScope(manager, function() {
+        chosen <- function(parameters) runSavedOperation(manager, diaNormalizationOperation("factors_in_model"), source, design(parameters))
+        # today's declaration handed the design, with nothing of today's design in the store yet (audit F-06)
+        handed <- caught(runSavedOperation(manager, diaNormalizationOperation(), source, design(ruvModelParameters())))
+        fractional <- caught(chosen(ruvModelParameters(ruv_k = 1.5)))
+        absent <- caught(chosen(ruvModelParameters(ruv_k = NA)))
+        automatic <- chosen(ruvModelParameters("automatic"))
+        skip <- chosen(ruvModelParameters("skip"))
+        today_skip <- runSavedOperation(manager, diaNormalizationOperation(), source, ruvModelParameters("skip"))
+        list(handed = handed, fractional = fractional, absent = absent, automatic = automatic, skip = skip, today_skip = today_skip,
+            automatic_state = readDIAExecutionComponents(manager, automatic$value$final),
+            skip_state = readDIAExecutionComponents(manager, skip$value$final))
+    }))
+    expect_s3_class(outcome$handed, "workflow_execution_invalid")
+    # a manual k under the new design is refused when fractional or missing (today's path truncates it or takes 3)
+    expect_s3_class(outcome$fractional, "prot_ruv_model_input")
+    expect_s3_class(outcome$absent, "prot_ruv_model_input")
+    # automatic: the sweep gives k only; the result names every protein as a control and the sweep's values as a diagnostic
+    value <- outcome$automatic$value
+    expect_identical(value$ruv_model$k_source, "sweep")
+    expect_identical(value$ruv_model$k_estimated, value$ruv_result$sweep_diagnostic$best_k)
+    expect_identical(value$best_k, value$ruv_model$k)
+    expect_identical(value$percentage, 100)
+    expect_identical(value$ruv_result[c("best_percentage", "best_k", "ruv_design")],
+        list(best_percentage = 100, best_k = value$ruv_model$k, ruv_design = "factors_in_model"))
+    expect_identical(sum(value$ruv_result$best_control_genes_index), proteins)
+    expect_true(value$ruv_result$sweep_diagnostic$best_percentage >= 5 && value$ruv_result$sweep_diagnostic$best_percentage <= 30)
+    expect_lt(sum(value$ruv_result$sweep_diagnostic$best_control_genes_index, na.rm = TRUE), proteins)
+    expect_identical(outcome$automatic_state@args$ruvCovariates[c("ruv_design", "k", "k_source")],
+        list(ruv_design = "factors_in_model", k = value$ruv_model$k, k_source = "sweep"))
+    expect_identical(sum(grepl("^W[0-9]+$", names(outcome$automatic_state@design_matrix))), value$ruv_model$k)
+    # skip: no RUV ran, so no design is recorded on the product or the state (audit F-08)
+    skipped <- outcome$skip$value
+    expect_identical(names(skipped), names(outcome$today_skip$value))
+    expect_identical(skipped$parameters, outcome$today_skip$value$parameters)
+    expect_null(skipped$parameters$ruv_design)
+    expect_null(skipped$ruv_model)
+    expect_true(isTRUE(skipped$ruv_result$ruv_skipped))
+    expect_identical(skipped$final, skipped$normalized)
+    expect_null(outcome$skip_state@args$ruvCovariates)
+    expect_null(outcome$skip_state@args$ruv_uncorrected_quant)
+    expect_false(any(grepl("^W[0-9]+$", names(outcome$skip_state@design_matrix))))
+
+    # a design that already has a column named like a factor: refused in automatic mode too; skip does not touch it
+    named <- object
+    named@design_matrix$W1 <- "a user covariate"
+    named_manager <- ruvModelStore(named)
+    named_source <- getDIAStateReference(named_manager)
+    named_outcome <- ruvModelQuietly(withDIAStateScope(named_manager, function() {
+        chosen <- function(parameters) runSavedOperation(named_manager, diaNormalizationOperation("factors_in_model"), named_source, design(parameters))
+        skip <- chosen(ruvModelParameters("skip"))
+        list(automatic = caught(chosen(ruvModelParameters("automatic"))), manual = caught(chosen(ruvModelParameters())),
+            skip_state = readDIAExecutionComponents(named_manager, skip$value$final))
+    }))
+    expect_s3_class(named_outcome$automatic, "prot_ruv_model_input")
+    expect_s3_class(named_outcome$manual, "prot_ruv_model_input")
+    expect_identical(named_outcome$skip_state@design_matrix$W1, rep("a user covariate", nrow(object@design_matrix)))
+    expect_null(named_outcome$skip_state@args$ruvCovariates)
 })

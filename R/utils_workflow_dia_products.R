@@ -352,6 +352,13 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
             # The kernels record their arguments under the calling name; the legacy path calls them through
             # these aliases, so the aliases keep the recorded args (and every checkpoint hash) identical.
             normaliseBetweenSamplesFn <- normaliseBetweenSamples
+            # KIT-126 audit F-06: today's declaration does not know the design; handed it, it refuses rather than
+            # run today's design under a record that names the other.
+            if (!factors_in_model && identical(parameters$ruv_design, "factors_in_model"))
+                cli::cli_abort(c("the normalisation declaration of today's design was handed ruv_design = \"factors_in_model\"",
+                    i = "declare it with diaNormalizationOperation(\"factors_in_model\")"), class = "workflow_execution_invalid")
+            # Audit F-08: under the new design a manual k is one whole number, refused otherwise (not truncated, no default).
+            if (factors_in_model && identical(parameters$ruv_mode, "manual")) validateProtRuvModelK(parameters$ruv_k)
             normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
             normalized_reference <- store$checkpoint(normalized, "normalized-science")
             object <- NULL
@@ -381,6 +388,16 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
                     resolved$k <- ruv_model$k
                     resolved$controls <- ruv_model$controls
                     resolved$percentage <- 100
+                    # Audit F-05: the result every reader takes (the panel text, the study parameters, the optimisation
+                    # RDS, the reports) names what was used: every protein a control, the k of the factors. The
+                    # control selection's own values (the sweep's, or the manual percentage's) stay as a diagnostic;
+                    # the canonical-correlation plot and the optimisation table are that selection's too.
+                    if (!is.null(ruv_result)) ruv_result$sweep_diagnostic <-
+                        ruv_result[c("best_percentage", "best_k", "best_control_genes_index")]
+                    ruv_result$best_percentage <- 100
+                    ruv_result$best_k <- ruv_model$k
+                    ruv_result$best_control_genes_index <- ruv_model$controls
+                    ruv_result$ruv_design <- "factors_in_model"
                     corrected <- ruvIII_C_VaryingFn(protRuvGroupReplicateObject(normalized),
                         ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
                     corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
@@ -402,10 +419,10 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "factors_in_model
                 best_k = best_k, controls = controls, percentage = best_percentage,
                 parameters = parameters[c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
                     "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping")])
-            if (factors_in_model) {
+            # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product.
+            if (factors_in_model && parameters$ruv_mode != "skip") {
                 value$parameters$ruv_design <- parameters$ruv_design
-                value$ruv_model <- if (parameters$ruv_mode == "skip") NULL else
-                    c(list(ruv_design = "factors_in_model"), ruv_model)
+                value$ruv_model <- c(list(ruv_design = "factors_in_model"), ruv_model)
             }
             value
         })

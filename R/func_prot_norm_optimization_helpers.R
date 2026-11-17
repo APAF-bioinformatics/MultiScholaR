@@ -1207,6 +1207,40 @@ computeRuvCovariates <- function(theObject, k, controls, ruv_grouping_variable =
 # ----------------------------------------------------------------------------
 # RUV with the factors in the model, classic proteomics (KIT-126)
 # ----------------------------------------------------------------------------
+#' Refusal of an input the factors-in-the-model kernel cannot take (KIT-126 audit F-08), as a classed condition.
+#' @param reason What is wrong, in plain words.
+#' @noRd
+abortProtRuvModelInput <- function(reason) {
+  cli::cli_abort("the RUV factors-in-the-model input is invalid: {reason}", class = "prot_ruv_model_input")
+}
+
+#' The number of factors of the factors-in-the-model design (KIT-126 audit F-08): one whole number of at least 1.
+#' A fractional or missing k is refused, not truncated or replaced (today's `validateProtNormRuvK` and its callers
+#' are unchanged).
+#' @param k The value given.
+#' @return `k` as an integer.
+#' @noRd
+validateProtRuvModelK <- function(k) {
+  if (!is.numeric(k) || length(k) != 1L || !is.finite(k) || k < 1 || k != round(k)) {
+    abortProtRuvModelInput(sprintf("k must be one whole number of at least 1, not %s", paste(format(k), collapse = ", ")))
+  }
+  as.integer(k)
+}
+
+#' Refusal of a design that already has columns named like the factors (KIT-126 audit F-08): the factors are stored
+#' as the design columns `W1..Wk` and the DA reads every column of that form as a factor, so a user's column of the
+#' same form would be overwritten or enter the model as one.
+#' @param design_matrix The design.
+#' @noRd
+refuseProtRuvModelFactorColumns <- function(design_matrix) {
+  taken <- grep("^W[0-9]+$", names(design_matrix), value = TRUE)
+  if (length(taken)) {
+    abortProtRuvModelInput(sprintf("the design already has the column(s) %s; the factors are stored as W1..Wk: rename the column(s)",
+      paste(taken, collapse = ", ")))
+  }
+  invisible(design_matrix)
+}
+
 #' The protein object with the groups as RUV-III's replicate sets (KIT-126): the technical replicate declaration is
 #' withdrawn for the RUV step only, so `resolveProtRuvReplicateBlocks` takes the RUV grouping variable. The DA keeps
 #' the true declaration (`attachProtRuvModelFactors` restores it on the corrected object).
@@ -1224,7 +1258,10 @@ protRuvGroupReplicateObject <- function(theObject) {
 #' the full matrix with W as covariates). k is a parameter and its source is recorded. It cannot exceed
 #' `k_max = min(samples - groups - 1, complete controls - 1)`: a residual degree of freedom for the group model and
 #' fewer factors than controls. The sweep's estimate is reduced to that bound and the reduction recorded; a user's k
-#' above it is refused. When no factor can be computed the function refuses with the reason.
+#' above it is refused. When no factor can be computed the function refuses with the reason
+#' (`prot_ruv_factors_unavailable`). An input it cannot take is refused with `prot_ruv_model_input` (audit F-08): a k
+#' that is not one whole number of at least 1, a grouping variable that is absent or has missing values, a design
+#' that already has a column named `W<n>`, controls of the wrong shape.
 #' @param theObject The normalised `ProteinQuantitativeData` object (missing values allowed).
 #' @param k Number of factors asked for (a positive whole number).
 #' @param k_source `"user"` (a chosen k) or `"sweep"` (the estimate of `findBestNegCtrlPercentage`).
@@ -1236,20 +1273,29 @@ protRuvGroupReplicateObject <- function(theObject) {
 #' @noRd
 computeProtRuvModelFactors <- function(theObject, k, k_source = c("user", "sweep"), controls = NULL,
                                        ruv_grouping_variable = "group") {
-  if (!inherits(theObject, "ProteinQuantitativeData")) stop("theObject must be a ProteinQuantitativeData object")
-  k_source <- match.arg(k_source)
-  k_estimated <- validateProtNormRuvK(k, "k")
-  design_matrix <- theObject@design_matrix
-  if (!ruv_grouping_variable %in% names(design_matrix)) {
-    stop(sprintf("RUV grouping variable `%s` is absent from the design matrix", ruv_grouping_variable), call. = FALSE)
+  if (!inherits(theObject, "ProteinQuantitativeData")) abortProtRuvModelInput("theObject must be a ProteinQuantitativeData object")
+  if (!is.character(k_source) || !length(k_source) || !k_source[[1L]] %in% c("user", "sweep")) {
+    abortProtRuvModelInput("k_source must be \"user\" or \"sweep\"")
   }
+  k_source <- k_source[[1L]]
+  k_estimated <- validateProtRuvModelK(k)
+  design_matrix <- theObject@design_matrix
+  if (!is.character(ruv_grouping_variable) || length(ruv_grouping_variable) != 1L ||
+      !ruv_grouping_variable %in% names(design_matrix)) {
+    abortProtRuvModelInput(sprintf("the RUV grouping variable `%s` is absent from the design matrix",
+      paste(format(ruv_grouping_variable), collapse = ", ")))
+  }
+  if (anyNA(design_matrix[[ruv_grouping_variable]])) {
+    abortProtRuvModelInput(sprintf("the RUV grouping variable `%s` has missing values: every sample needs a group", ruv_grouping_variable))
+  }
+  refuseProtRuvModelFactorColumns(design_matrix)
   sample_ids <- as.character(design_matrix[[theObject@sample_id]])
   ids <- as.character(theObject@protein_quant_table[[theObject@protein_id_column]])
-  if (!all(sample_ids %in% names(theObject@protein_quant_table))) stop("the design names samples absent from the protein table")
+  if (!all(sample_ids %in% names(theObject@protein_quant_table))) abortProtRuvModelInput("the design names samples absent from the protein table")
   values <- as.matrix(theObject@protein_quant_table[, sample_ids, drop = FALSE])
   ruv_controls <- if (is.null(controls)) "all" else "supplied"
   if (is.null(controls)) controls <- rep(TRUE, length(ids))
-  if (!is.logical(controls) || length(controls) != length(ids)) stop("controls must be a logical vector over the protein rows")
+  if (!is.logical(controls) || length(controls) != length(ids)) abortProtRuvModelInput("controls must be a logical vector over the protein rows")
   controls <- stats::setNames(!is.na(controls) & unname(controls), ids)
   complete <- rowSums(!is.finite(values)) == 0
   control_count <- sum(controls & complete)
@@ -1286,7 +1332,8 @@ computeProtRuvModelFactors <- function(theObject, k, k_source = c("user", "sweep
 #' @noRd
 attachProtRuvModelFactors <- function(corrected, normalised, factors) {
   samples <- as.character(corrected@design_matrix[[corrected@sample_id]])
-  if (!all(samples %in% rownames(factors$W))) stop("the corrected object names samples the factors do not cover")
+  if (!all(samples %in% rownames(factors$W))) abortProtRuvModelInput("the corrected object names samples the factors do not cover")
+  refuseProtRuvModelFactorColumns(corrected@design_matrix)
   for (i in seq_len(factors$k)) corrected@design_matrix[[paste0("W", i)]] <- unname(factors$W[samples, i])
   corrected@technical_replicate_id <- normalised@technical_replicate_id
   normalised_samples <- as.character(normalised@design_matrix[[normalised@sample_id]])
