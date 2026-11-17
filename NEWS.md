@@ -42,6 +42,16 @@
    reduced. The estimate has its own diagnostic plot (observed share of residual variance per component
    against the permutation null, the count marked). Today's rule on the canonical-correlation plot is
    unchanged and stays the rule of today's designs; it is not defined when all features are the controls.
+ * DIA_LIMPA RUV covariates (KIT-129): the control rule and the rule for k are now parameters of the step
+   (the kernel only; no screen offers them yet and no default changes). Besides today's sweep (the limpa
+   script's rule: the least significant proteins as controls, k from the canonical-correlation plot), the
+   step can take all proteins as controls, a supplied list of control proteins, or the proteins outside the
+   25% most significant of a first test of the groups (`limpa::dpcDE` without RUV, the F test of the
+   differences between the groups); k is the estimated count, today's estimate where a separate control set
+   exists, or a given number. These designs depart from the limpa script; they run in the covariates mode
+   only, the quantified matrix is unchanged and the factors enter the `dpcDE` model as today. Declared
+   technical replicates stay RUV-III's replicate sets. When the estimated count is 0, or the data cannot
+   give a k, the run has no RUV and says why. With the defaults every result is as before.
  * Proteomics automatic RUV parameters (`findBestNegCtrlPercentage()`): the number of factors k is now chosen
    among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
