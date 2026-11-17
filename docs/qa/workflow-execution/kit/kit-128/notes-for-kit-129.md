@@ -34,3 +34,7 @@ technical replicates. Trx fits (`DGEGLM`) and proteomics records do not gain the
 
 - `test-module-ci-trx-design.R`, MCI-027.2 (the journey setup on library counts).
 - `test-workflow-omics-declarations.R`, the KIT-073 frozen dump (its lipid/metab DA tables, 6 units by 2 injections).
+- `test-omic-summary-module.R` (12 expectations, `createWorkflowArgsFromConfig` arguments) and `test-omic-da-module.R`
+  (14, the hashed DA-step field of every lipid and metab case): frozen GUI oracles that hash the DA module fixture's
+  object. That fixture declared one technical-replicate pair per group, which K128-1 refuses; it now declares no
+  technical replicates (design table unchanged), so these hashes move whatever fixture is chosen.
