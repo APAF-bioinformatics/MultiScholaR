@@ -60,6 +60,8 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::jsonlite
       - name: Resolve changed-file impact
         id: impact
         env:
@@ -112,6 +114,10 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
       - name: Run impacted module-CI matrix
         run: >
           Rscript tools/ci/run-module-ci.R
@@ -160,6 +166,12 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
       - name: Run impacted module/browser smoke
         env:
           # Absolute: testthat::test_dir() runs in tests/testthat, where a relative path would land outside the upload.
@@ -199,6 +211,12 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
       - name: Run impacted E2E lane
         run: >
           Rscript tools/ci/run-e2e-ci.R
@@ -232,6 +250,12 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
       - name: Run impacted cross-omic coexistence checks
         env:
           MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/tests/testthat/_e2e_artifacts/impact/cross-omic
@@ -265,6 +289,12 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
       - name: Run impacted report/export checks
         env:
           MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/tests/testthat/_e2e_artifacts/impact/report-export
@@ -363,6 +393,12 @@ jobs:
           # internal packages (their tests skip). While the repositories are internal, nothing that holds them
           # may go into an Actions cache or an artifact; the action uses no cache.
           token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+            any::shinytest2
+            any::chromote
       - name: Run all unit-contract module scenarios
         if: matrix.kind == 'module-ci'
         run: >

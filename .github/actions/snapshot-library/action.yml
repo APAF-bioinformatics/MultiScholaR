@@ -11,6 +11,12 @@ inputs:
     description: Read token for the two internal repositories. Empty (fork and Dependabot pull requests) installs without them.
     required: false
     default: ''
+  extra-packages:
+    description: >-
+      The job's test tools (pak-style `any::name`, whitespace-separated), installed from the same snapshot when the
+      library lacks them; sessioninfo is always added.
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
@@ -75,8 +81,10 @@ runs:
           2>&1 | tee "$MSR_LIBRARY_OUT/install-library.log"
         grep '^INTERNAL ' "$MSR_LIBRARY_OUT/install-library.log" || true
 
-    - name: Test tools the library lacks, from the same snapshot (jammy binaries)
+    - name: The job's test tools the library lacks, from the same snapshot (jammy binaries)
       shell: bash
+      env:
+        MSR_EXTRA_PACKAGES: ${{ inputs.extra-packages }}
       run: |
         cat > "$RUNNER_TEMP/test-tools.R" <<'EOF'
         snapshot <- jsonlite::fromJSON("packaging/multischolar.lock.json")$Snapshot$Date
@@ -84,7 +92,8 @@ runs:
             paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))
         repos <- sprintf("https://packagemanager.posit.co/cran/__linux__/jammy/%s", snapshot)
         available <- utils::available.packages(repos = repos)
-        tools <- c("pkgload", "testthat", "jsonlite", "sessioninfo", "shinytest2", "chromote")
+        extra <- strsplit(trimws(Sys.getenv("MSR_EXTRA_PACKAGES")), "[[:space:],]+")[[1L]]
+        tools <- unique(c("sessioninfo", sub("^any::", "", extra[nzchar(extra)])))
         wanted <- unique(c(tools, unlist(tools::package_dependencies(tools, db = available,
             which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
         needed <- setdiff(wanted, rownames(utils::installed.packages(lib.loc = .Library)))
