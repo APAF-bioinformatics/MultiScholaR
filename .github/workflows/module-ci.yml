@@ -37,7 +37,7 @@ jobs:
       github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' &&
         (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       impact_level: ${{ steps.impact.outputs.impact_level }}
       module_count: ${{ steps.impact.outputs.module_count }}
@@ -53,16 +53,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::jsonlite
       - name: Resolve changed-file impact
@@ -104,22 +101,19 @@ jobs:
     if: >-
       needs.detect-impact.result == 'success' &&
       fromJSON(needs.detect-impact.outputs.module_count) > 0
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-impact.outputs.module_matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -159,22 +153,19 @@ jobs:
     if: >-
       needs.detect-impact.result == 'success' &&
       fromJSON(needs.detect-impact.outputs.browser_count) > 0
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-impact.outputs.browser_matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -183,8 +174,9 @@ jobs:
             any::chromote
       - name: Run impacted module/browser smoke
         env:
-          MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/impact/browser/${{ matrix.name }}
+          # Absolute: testthat::test_dir() runs in tests/testthat, where a relative path would land outside the upload.
+          MULTISCHOLAR_MODULE_CI_ARTIFACT_DIR: ${{ github.workspace }}/${{ matrix.artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/tests/testthat/_e2e_artifacts/impact/browser/${{ matrix.name }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -206,22 +198,19 @@ jobs:
     if: >-
       needs.detect-impact.result == 'success' &&
       fromJSON(needs.detect-impact.outputs.e2e_count) > 0
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-impact.outputs.e2e_matrix) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -251,19 +240,16 @@ jobs:
     if: >-
       needs.detect-impact.result == 'success' &&
       needs.detect-impact.outputs.run_cross_omic == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -272,7 +258,7 @@ jobs:
             any::chromote
       - name: Run impacted cross-omic coexistence checks
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/impact/cross-omic
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/tests/testthat/_e2e_artifacts/impact/cross-omic
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -293,19 +279,16 @@ jobs:
     if: >-
       needs.detect-impact.result == 'success' &&
       needs.detect-impact.outputs.run_report_export == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -314,7 +297,7 @@ jobs:
             any::chromote
       - name: Run impacted report/export checks
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: tests/testthat/_e2e_artifacts/impact/report-export
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/tests/testthat/_e2e_artifacts/impact/report-export
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -343,7 +326,7 @@ jobs:
         github.event_name == 'pull_request' ||
         (github.event_name == 'workflow_dispatch' &&
           (github.event.inputs.gate == 'push' || github.event.inputs.gate == 'all')))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Evaluate impacted CI result
         run: |
@@ -381,7 +364,7 @@ jobs:
         (github.event.inputs.gate == 'nightly' ||
           github.event.inputs.gate == 'release' ||
           github.event.inputs.gate == 'all'))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -403,16 +386,13 @@ jobs:
             artifact_dir: tests/testthat/_e2e_artifacts/full/cross-omic
     steps:
       - uses: actions/checkout@v4
-      - uses: r-lib/actions/setup-r@v2
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: The bundle's R and library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
         with:
-          # fast_duckdb and fast_limpa_dpc are internal repositories the workflow token cannot read; both are Suggests
-          # (optional engines), so CI resolves without them and their tests skip. Remove when the repositories are public.
-          packages: |
-            deps::.
-            any::sessioninfo
-            fastduckdb=?ignore
-            fastlimpadpc=?ignore
+          # Fork and Dependabot pull requests get no secret: the library is then installed without the two
+          # internal packages (their tests skip). While the repositories are internal, nothing that holds them
+          # may go into an Actions cache or an artifact; the action uses no cache.
+          token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -429,7 +409,7 @@ jobs:
       - name: Run all current E2E workflows
         if: matrix.kind == 'e2e'
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/${{ matrix.artifact_dir }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -437,7 +417,7 @@ jobs:
       - name: Run alternate launch/browser smoke
         if: matrix.kind == 'browser'
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/${{ matrix.artifact_dir }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -445,7 +425,7 @@ jobs:
       - name: Run report/export fidelity smoke
         if: matrix.kind == 'report'
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/${{ matrix.artifact_dir }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -453,7 +433,7 @@ jobs:
       - name: Run cross-omic coexistence gate
         if: matrix.kind == 'cross-omic'
         env:
-          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ matrix.artifact_dir }}
+          MULTISCHOLAR_E2E_ARTIFACT_DIR: ${{ github.workspace }}/${{ matrix.artifact_dir }}
         run: >
           Rscript -e 'Sys.setenv(NOT_CRAN = "true");
           pkgload::load_all(export_all = TRUE, helpers = FALSE, attach_testthat = FALSE);
@@ -469,6 +449,9 @@ jobs:
           if [ -f "${{ matrix.artifact_dir }}/module-ci-scorecard.md" ]; then
             cat "${{ matrix.artifact_dir }}/module-ci-scorecard.md" >> "$GITHUB_STEP_SUMMARY"
           fi
+      - name: "KIT-134 B-01: the runner's transcriptomics values behind the digest oracles (package outputs only)"
+        if: always() && matrix.kind == 'module-ci'
+        run: Rscript --vanilla .github/scripts/save-trx-products.R "${{ matrix.artifact_dir }}/trx-products"
       - name: Upload full-gate artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -490,7 +473,7 @@ jobs:
         startsWith(github.ref, 'refs/heads/release/') ||
         (github.event_name == 'workflow_dispatch' &&
           (github.event.inputs.gate == 'release' || github.event.inputs.gate == 'all')))
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Evaluate release gate
         run: |

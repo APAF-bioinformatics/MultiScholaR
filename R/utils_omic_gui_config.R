@@ -1288,7 +1288,7 @@ omicGuiProteomicsSummary <- function() {
     list(module_id = "session_summary", testid = "prot", placeholder = "e.g., my_proteomics_analysis",
         description = "Full protein analysis workflow with config parameters",
         # KIT-108 W4: the route's plugins (utils_workflow_dia_summary.R); the integration writer returns its notice
-        # ("Saved Integration artifact" on a native session, else "Saved Integration S4 Object").
+        # (KIT-061: "Saved Integration input", the contract's folder `integration/proteomics/`).
         final_state = list(context = resolveProtSummaryFinalS4State),
         record_class = "DIAStateAdapter",
         copy = list(gate = protSummaryCopyGate, required = NULL, inherits = FALSE),
@@ -1299,7 +1299,9 @@ omicGuiProteomicsSummary <- function() {
             record_after_success = TRUE),
         session_state = protSummarySessionState,
         export_steps = list(),
-        texts = c(progress_detect = "Detecting workflow type..."))
+        # KIT-061: the integration input is not written while the owner holds no final matrix.
+        texts = c(progress_detect = "Detecting workflow type...",
+            integration_not_written = "not written (no final proteomics matrix yet)"))
 }
 
 #' The proteomics enrichment tab at 8e7294b6 (mod_prot_enrich*.R; KIT-107 D1): the tab, its status key and value

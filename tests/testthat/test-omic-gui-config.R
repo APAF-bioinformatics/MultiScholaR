@@ -1696,7 +1696,9 @@ test_that("KIT-108 W1 (D1, D4): the summary group holds each omic's Summary & Ex
     expect_identical(summaries$transcriptomics$session_state, trxSummarySessionState)
     # The texts that differ per omic.
     # KIT-108 W4: proteomics' integration notice is its writer's (the native archive's or the S4 RDS's).
-    expect_identical(summaries$proteomics$texts, c(progress_detect = "Detecting workflow type..."))
+    # KIT-061: the integration input's "not written" text (the save names no manifest it did not write).
+    expect_identical(summaries$proteomics$texts, c(progress_detect = "Detecting workflow type...",
+        integration_not_written = "not written (no final proteomics matrix yet)"))
     expect_identical(summaries$lipidomics$texts, character())
     expect_identical(summaries$metabolomics$texts, character())
     expect_identical(summaries$transcriptomics$texts, c(integration_not_written = "not written (no integration export yet)"))

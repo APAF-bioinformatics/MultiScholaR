@@ -3420,10 +3420,9 @@ omicSummaryW1Frozen[["prot_route_dia"]] <- list(
         outputs = c("report_ready", "session_summary", "template_status"),
         values = c(
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: not written (no final proteomics matrix yet) \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report templates will be downloaded when generating report"),
-        notes = c(
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+        notes = "[message 5 -] Study parameters saved successfully",
         updates = character(0),
         progress = character(0),
         reactive_values = c(
@@ -3431,11 +3430,12 @@ omicSummaryW1Frozen[["prot_route_dia"]] <- list(
             workflow_args_saved = "TRUE"),
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
-        files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
+        # KIT-061 (D2): the integration input's folder replaces the S4 RDS; only the integration fields moved.
+        files = "<unchanged>",
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
         study_parameters = "53 lines e784ac050188e7bb",
-        integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
+        integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)),
     copy = list(
@@ -3574,10 +3574,9 @@ omicSummaryW1Frozen[["prot_route_dia_limpa"]] <- list(
         outputs = c("report_ready", "session_summary", "template_status"),
         values = c(
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: not written (no final proteomics matrix yet) \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report templates will be downloaded when generating report"),
-        notes = c(
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+        notes = "[message 5 -] Study parameters saved successfully",
         updates = character(0),
         progress = character(0),
         reactive_values = c(
@@ -3585,11 +3584,12 @@ omicSummaryW1Frozen[["prot_route_dia_limpa"]] <- list(
             workflow_args_saved = "TRUE"),
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
-        files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
+        # KIT-061 (D2): the integration input's folder replaces the S4 RDS; only the integration fields moved.
+        files = "<unchanged>",
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
         study_parameters = "53 lines af0725c98c8784d4",
-        integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
+        integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)),
     copy = list(
@@ -3728,10 +3728,9 @@ omicSummaryW1Frozen[["prot_route_tmt"]] <- list(
         outputs = c("report_ready", "session_summary", "template_status"),
         values = c(
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: not written (no final proteomics matrix yet) \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report templates will be downloaded when generating report"),
-        notes = c(
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+        notes = "[message 5 -] Study parameters saved successfully",
         updates = character(0),
         progress = character(0),
         reactive_values = c(
@@ -3739,11 +3738,12 @@ omicSummaryW1Frozen[["prot_route_tmt"]] <- list(
             workflow_args_saved = "TRUE"),
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
-        files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
+        # KIT-061 (D2): the integration input's folder replaces the S4 RDS; only the integration fields moved.
+        files = "<unchanged>",
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
         study_parameters = "53 lines cba0c0582a2307ba",
-        integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
+        integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)),
     copy = list(
@@ -3882,10 +3882,9 @@ omicSummaryW1Frozen[["prot_route_lfq"]] <- list(
         outputs = c("report_ready", "session_summary", "template_status"),
         values = c(
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: not written (no final proteomics matrix yet) \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report templates will be downloaded when generating report"),
-        notes = c(
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+        notes = "[message 5 -] Study parameters saved successfully",
         updates = character(0),
         progress = character(0),
         reactive_values = c(
@@ -3893,11 +3892,12 @@ omicSummaryW1Frozen[["prot_route_lfq"]] <- list(
             workflow_args_saved = "TRUE"),
         calls = "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<NULL>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
         global = c(before = "absent", after = "absent"),
-        files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
+        # KIT-061 (D2): the integration input's folder replaces the S4 RDS; only the integration fields moved.
+        files = "<unchanged>",
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
         study_parameters = "53 lines 1b538d9f8d17648f",
-        integration = c(proteomics_kit108_final_s4.RDS = "<RDS> NULL"),
+        integration = "<unchanged>",
         session_state = "<unchanged>",
         errors = character(0)),
     copy = list(
@@ -4155,10 +4155,10 @@ omicSummaryW1Frozen[["prot_owner"]] <- list(
         outputs = c("report_ready", "session_summary", "template_status"),
         values = c(
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics/integration_input.json \nStatus: Parameters saved [OK]",
             template_status = "Templates: DIA-NN [OK], DIA-NN limpa [OK], TMT [OK], LFQ [OK]"),
         notes = c(
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+            "[message 5 -] Saved Integration input", "[message 5 -] Study parameters saved successfully"),
         updates = character(0),
         progress = character(0),
         reactive_values = c(
@@ -4168,13 +4168,17 @@ omicSummaryW1Frozen[["prot_owner"]] <- list(
             "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<ref>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
             "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"),
         global = c(before = "the session's", after = "the session's"),
+        # KIT-061 (D2): the integration input's folder replaces the S4 RDS; only the integration fields moved.
         files = c(
-            `integration/proteomics_kit108_final_s4.RDS` = "<present>",
+            `integration/proteomics/features_proteomics.tsv` = "75883219d0f8250f36ff395f55a6146908caccfe715822f0bc2b085398d60c36",
+            `integration/proteomics/integration_input.json` = "<present>",
+            `integration/proteomics/matrix_proteomics.tsv` = "23ab83b3baceaaedefb9a2ba793321cc2e9b638b17f9d0d8a6c8f0d6663c5bc8",
+            `integration/proteomics/samples.tsv` = "8812863972c9c16304791cc9cf303a962eaef1b1cb0a8fd193b98acfd414303d",
             `source/analysis_record.json` = "<present>"),
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
         study_parameters = "95 lines 0d7f7ba1f81361e1",
-        integration = c(proteomics_kit108_final_s4.RDS = "<RDS> <reference>"),
+        integration = c(proteomics = "<present>"),
         session_state = "<unchanged>",
         errors = character(0)),
     copy = list(
@@ -4363,11 +4367,11 @@ omicSummaryW1Frozen[["prot_owner_variants"]] <- list(
         outputs = c("report_ready", "session_summary", "template_status"),
         values = c(
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics/integration_input.json \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report templates will be downloaded when generating report"),
         notes = c(
             "[warning NULL -] The analysis record (analysis_record.json) was not written: kit108 record double fails",
-            "[message 5 -] Saved Integration S4 Object", "[message 5 -] Study parameters saved successfully"),
+            "[message 5 -] Saved Integration input", "[message 5 -] Study parameters saved successfully"),
         updates = character(0),
         progress = character(0),
         reactive_values = c(
@@ -4377,11 +4381,16 @@ omicSummaryW1Frozen[["prot_owner_variants"]] <- list(
             "createWorkflowArgsFromConfig(workflow_name=kit108, description=Full protein analysis workflow with config parameters, organism_name=<NULL>, taxon_id=<NULL>, source_dir_path=<ROOT>/source, final_s4_object=<ref>, contrasts_tbl=<table 1x3 950ddbb7d830df8c>, workflow_data=<environment>)",
             "writeWorkflowAnalysisRecord(manager=<WorkflowStateOwner>, path=<ROOT>/source/analysis_record.json)"),
         global = c(before = "the session's", after = "the session's"),
-        files = c(`integration/proteomics_kit108_final_s4.RDS` = "<present>"),
+        # KIT-061 (D2): the integration input's folder replaces the S4 RDS; only the integration fields moved.
+        files = c(
+            `integration/proteomics/features_proteomics.tsv` = "75883219d0f8250f36ff395f55a6146908caccfe715822f0bc2b085398d60c36",
+            `integration/proteomics/integration_input.json` = "<present>",
+            `integration/proteomics/matrix_proteomics.tsv` = "23ab83b3baceaaedefb9a2ba793321cc2e9b638b17f9d0d8a6c8f0d6663c5bc8",
+            `integration/proteomics/samples.tsv` = "8812863972c9c16304791cc9cf303a962eaef1b1cb0a8fd193b98acfd414303d"),
         # GUI audit R5, item 7 (A108-06; F108-04), re-frozen once: the Version Information block is masked in the capture
         # (its 8 lines read as one), so the value no longer depends on the checkout. Only this field moved.
         study_parameters = "95 lines 0d7f7ba1f81361e1",
-        integration = c(proteomics_kit108_final_s4.RDS = "<RDS> <reference>"),
+        integration = c(proteomics = "<present>"),
         session_state = "<unchanged>",
         errors = character(0)),
     copy_gate_refuses = list(
@@ -4389,7 +4398,7 @@ omicSummaryW1Frozen[["prot_owner_variants"]] <- list(
         values = c(
             copy_status = "Error: session outputs are pending; retry export before dependent actions",
             report_ready = "<error> unused arguments (self, name)",
-            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_kit108_final_s4.RDS \nStatus: Parameters saved [OK]",
+            session_summary = "Study parameters created for: kit108 \nDescription: Full protein analysis workflow with config parameters \nTimestamp: <TIME> \nFile: <ROOT>/source/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics/integration_input.json \nStatus: Parameters saved [OK]",
             template_status = "[WARNING] Report templates will be downloaded when generating report"),
         notes = "[error 10 -] Copy error: session outputs are pending; retry export before dependent actions",
         updates = character(0),

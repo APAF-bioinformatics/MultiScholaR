@@ -4,7 +4,7 @@ The register is [plan-4.7-audit-20261117.md](plan-4.7-audit-20261117.md) and is 
 
 | Finding | State | Where | Closure evidence |
 |---|---|---|---|
-| B-01 | **open** | KIT-134 "The comparison across machines"; plan 4.8 working rule | The laptop's exact comparison is the gate again. Closes when one full run on a Linux runner has been read and the comparison rule is written. |
+| B-01 | **closed 2026-11-17** (run 44054974678, `kit-134/b01-ci-run.md`) | KIT-134 "The comparison across machines"; plan 4.8 working rule | The laptop's exact comparison is the gate again. Closes when one full run on a Linux runner has been read and the comparison rule is written. |
 | B-02 | repaired in text | KIT-134 P1, P5 | Lockfile from the verified library; verification from the installed artifact; the paper's numbers on the bundle. Closes at KIT-134's acceptance. |
 | B-03 | repaired | KIT-134 new; KIT-050 revision 1.4; KIT-052 revision; KIT-132, KIT-133 revisions; index | KIT-132 and KIT-133 depend on KIT-134; KIT-050 and KIT-052 are the final qualification. Inventory: no cycle, no missing dependency, 132 tickets. |
 | B-04 | **open, with the user** | KIT-060 revision 1.2 | Form decided (a GUI like the other omics, importing processed data from the project's folders). The authority is the workbook the user will source and verify; asked again at the 7 December checkpoint. The test corpus is specified in KIT-060 and built in KIT-062. |
