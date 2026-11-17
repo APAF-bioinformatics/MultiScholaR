@@ -63,9 +63,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::jsonlite
       - name: Resolve changed-file impact
@@ -123,9 +126,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -181,9 +187,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -231,9 +240,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -276,9 +288,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -321,9 +336,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::pkgload
             any::testthat
@@ -431,9 +449,12 @@ jobs:
         with:
           # While the two repositories are internal, no library that holds them may go into an Actions cache or an artifact.
           cache: false
+          # Fork and Dependabot pull requests get no secret: then resolve without the two optional engines (their tests skip).
           packages: |
             deps::.
             any::sessioninfo
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastduckdb=?ignore' || '' }}
+            ${{ secrets.DEPS_READ_TOKEN == '' && 'fastlimpadpc=?ignore' || '' }}
           extra-packages: |
             any::pkgload
             any::testthat
