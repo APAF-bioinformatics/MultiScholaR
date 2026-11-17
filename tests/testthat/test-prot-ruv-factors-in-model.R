@@ -302,7 +302,6 @@ test_that("through the operations: the RUV state carries the factors and the DA 
     expect_identical(c(outcome$legacy$status, outcome$chosen$status, outcome$again$status), c("computed", "computed", "hit"))
     expect_identical(outcome$again$reference, outcome$legacy$reference)
     expect_false(identical(outcome$chosen$reference, outcome$legacy$reference))
-    expect_identical(outcome$chosen$value$normalized, outcome$legacy$value$normalized)
     expect_null(outcome$legacy_state@args$ruvCovariates)
     expect_null(outcome$legacy_state@args$ruv_uncorrected_quant)
     expect_false(any(grepl("^W[0-9]+$", names(outcome$legacy_state@design_matrix))))

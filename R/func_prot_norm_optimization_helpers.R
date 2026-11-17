@@ -1203,3 +1203,131 @@ computeRuvCovariates <- function(theObject, k, controls, ruv_grouping_variable =
   list(W = W, adjusted = adjusted, alpha = alpha, k = k, controls = controls,
        replicate_structure = replicate_blocks$structure, block_reason = block$reason, blocks = replicate_blocks$blocks)
 }
+
+# ----------------------------------------------------------------------------
+# RUV with the factors in the model, classic proteomics (KIT-126)
+# ----------------------------------------------------------------------------
+#' The protein object with the groups as RUV-III's replicate sets (KIT-126): the technical replicate declaration is
+#' withdrawn for the RUV step only, so `resolveProtRuvReplicateBlocks` takes the RUV grouping variable. The DA keeps
+#' the true declaration (`attachProtRuvModelFactors` restores it on the corrected object).
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @return `theObject` with no technical replicate column declared.
+#' @noRd
+protRuvGroupReplicateObject <- function(theObject) {
+  theObject@technical_replicate_id <- NA_character_
+  theObject
+}
+
+#' RUV-III factors for the DA model of the classic proteomics route (KIT-126; KIT-124's gate, arm 7 of the simulator
+#' S1): the groups as replicate sets, every protein a negative control unless a set is given, W computed by
+#' `computeRuvCovariates` on the proteins observed in every sample (RUV-III takes no missing values; the DA then reads
+#' the full matrix with W as covariates). k is a parameter and its source is recorded. It cannot exceed
+#' `k_max = min(samples - groups - 1, complete controls - 1)`: a residual degree of freedom for the group model and
+#' fewer factors than controls. The sweep's estimate is reduced to that bound and the reduction recorded; a user's k
+#' above it is refused. When no factor can be computed the function refuses with the reason.
+#' @param theObject The normalised `ProteinQuantitativeData` object (missing values allowed).
+#' @param k Number of factors asked for (a positive whole number).
+#' @param k_source `"user"` (a chosen k) or `"sweep"` (the estimate of `findBestNegCtrlPercentage`).
+#' @param controls NULL for every protein, or a logical vector over the protein rows.
+#' @param ruv_grouping_variable Design column whose levels are the replicate sets.
+#' @return `list(W, k, k_source, k_estimated, k_bounded, k_max, controls, ruv_controls, control_count, protein_count,
+#'   replicate_structure, ruv_grouping_variable)`: `W` a sample-by-k matrix in the design's sample order, `controls`
+#'   the named logical control vector over all proteins, `control_count` the controls observed in every sample.
+#' @noRd
+computeProtRuvModelFactors <- function(theObject, k, k_source = c("user", "sweep"), controls = NULL,
+                                       ruv_grouping_variable = "group") {
+  if (!inherits(theObject, "ProteinQuantitativeData")) stop("theObject must be a ProteinQuantitativeData object")
+  k_source <- match.arg(k_source)
+  k_estimated <- validateProtNormRuvK(k, "k")
+  design_matrix <- theObject@design_matrix
+  if (!ruv_grouping_variable %in% names(design_matrix)) {
+    stop(sprintf("RUV grouping variable `%s` is absent from the design matrix", ruv_grouping_variable), call. = FALSE)
+  }
+  sample_ids <- as.character(design_matrix[[theObject@sample_id]])
+  ids <- as.character(theObject@protein_quant_table[[theObject@protein_id_column]])
+  if (!all(sample_ids %in% names(theObject@protein_quant_table))) stop("the design names samples absent from the protein table")
+  values <- as.matrix(theObject@protein_quant_table[, sample_ids, drop = FALSE])
+  ruv_controls <- if (is.null(controls)) "all" else "supplied"
+  if (is.null(controls)) controls <- rep(TRUE, length(ids))
+  if (!is.logical(controls) || length(controls) != length(ids)) stop("controls must be a logical vector over the protein rows")
+  controls <- stats::setNames(!is.na(controls) & unname(controls), ids)
+  complete <- rowSums(!is.finite(values)) == 0
+  control_count <- sum(controls & complete)
+  group_count <- length(unique(as.character(design_matrix[[ruv_grouping_variable]])))
+  k_max <- as.integer(min(length(sample_ids) - group_count - 1L, control_count - 1L))
+  refuse <- function(reason) cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
+    i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}"),
+    class = "prot_ruv_factors_unavailable")
+  if (k_max < 1L) refuse(if (control_count < 2L) "fewer than 2 control proteins are observed in every sample" else
+    "the samples leave no residual degree of freedom for a factor beside the groups")
+  if (k_estimated > k_max && identical(k_source, "user")) {
+    refuse(sprintf("k = %d was asked for and at most %d can be estimated", k_estimated, k_max))
+  }
+  k <- min(k_estimated, k_max)
+  complete_object <- protRuvGroupReplicateObject(theObject)
+  complete_object@protein_quant_table <- theObject@protein_quant_table[complete, , drop = FALSE]
+  rownames(complete_object@protein_quant_table) <- NULL # `computeRuvCovariates` moves the id column to the row names
+  factors <- computeRuvCovariates(complete_object, k = k, controls = unname(controls[complete]),
+    ruv_grouping_variable = ruv_grouping_variable)
+  list(W = factors$W, k = k, k_source = k_source, k_estimated = k_estimated, k_bounded = k < k_estimated, k_max = k_max,
+       controls = controls, ruv_controls = ruv_controls, control_count = control_count, protein_count = length(ids),
+       replicate_structure = factors$replicate_structure, ruv_grouping_variable = ruv_grouping_variable)
+}
+
+#' The RUV state of the factors-in-the-model design (KIT-126): the corrected object (its protein table stays the
+#' corrected matrix, for figures, export and integration) gains the factors as design columns `W1..Wk`, the
+#' declaration `args$ruvCovariates` (`ruv_mode = "covariates"`, k and its source, the controls, the replicate
+#' structure) and the normalised matrix the DA reads, `args$ruv_uncorrected_quant` (stored out of line by the
+#' checkpoint, see `workflowClassDeclarations`).
+#' @param corrected The RUV-III-C corrected object (`ruvIII_C_Varying` with the factors' controls and k).
+#' @param normalised The normalised object the factors were computed on.
+#' @param factors The value of `computeProtRuvModelFactors`.
+#' @return `corrected`, carrying the factors and the normalised matrix.
+#' @noRd
+attachProtRuvModelFactors <- function(corrected, normalised, factors) {
+  samples <- as.character(corrected@design_matrix[[corrected@sample_id]])
+  if (!all(samples %in% rownames(factors$W))) stop("the corrected object names samples the factors do not cover")
+  for (i in seq_len(factors$k)) corrected@design_matrix[[paste0("W", i)]] <- unname(factors$W[samples, i])
+  corrected@technical_replicate_id <- normalised@technical_replicate_id
+  normalised_samples <- as.character(normalised@design_matrix[[normalised@sample_id]])
+  uncorrected <- as.matrix(normalised@protein_quant_table[, normalised_samples, drop = FALSE])
+  rownames(uncorrected) <- as.character(normalised@protein_quant_table[[normalised@protein_id_column]])
+  corrected@args$ruv_uncorrected_quant <- uncorrected
+  corrected@args$ruvCovariates <- c(list(ruv_mode = "covariates", ruv_design = "factors_in_model"),
+    factors[c("k", "k_source", "k_estimated", "k_bounded", "k_max", "ruv_controls", "control_count", "protein_count",
+      "replicate_structure", "ruv_grouping_variable")], list(tested_matrix = "uncorrected"))
+  corrected
+}
+
+#' What the limma DA reads from a protein object (KIT-126). An object of the factors-in-the-model design carries the
+#' normalised matrix (`args$ruv_uncorrected_quant`): the test reads its rows and samples that are in the object's
+#' protein table, with the design's W columns added to the formula. Every other object returns NULL and is tested on
+#' its own table with the formula as given. An object whose stored matrix, W columns and declaration do not agree is
+#' refused.
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @param formula_string The DA formula.
+#' @return NULL, or `list(matrix, formula_used, w_terms, declaration)`.
+#' @noRd
+resolveProtRuvModelInput <- function(theObject, formula_string) {
+  uncorrected <- theObject@args$ruv_uncorrected_quant
+  if (is.null(uncorrected)) return(NULL)
+  refuse <- function(reason) cli::cli_abort("the object declares RUV factors in the model but {reason}; the test is refused",
+    class = "prot_ruv_model_invalid")
+  declaration <- theObject@args$ruvCovariates
+  if (!is.list(declaration) || !identical(declaration$ruv_mode, "covariates")) refuse("its RUV declaration does not say so")
+  w_terms <- grep("^W[0-9]+$", names(theObject@design_matrix), value = TRUE)
+  if (!length(w_terms) || !isTRUE(length(w_terms) == declaration$k)) {
+    refuse(sprintf("its design carries %d W column(s) for a declared k of %s", length(w_terms), format(declaration$k %||% NA)))
+  }
+  if (!all(vapply(theObject@design_matrix[w_terms], function(w) is.numeric(w) && all(is.finite(w)), logical(1)))) {
+    refuse("a W column has missing or non-numeric values")
+  }
+  ids <- as.character(theObject@protein_quant_table[[theObject@protein_id_column]])
+  samples <- setdiff(names(theObject@protein_quant_table), theObject@protein_id_column)
+  if (!is.matrix(uncorrected) || !is.numeric(uncorrected) || !all(ids %in% rownames(uncorrected)) ||
+      !all(samples %in% colnames(uncorrected))) {
+    refuse("the stored normalised matrix does not cover its protein table")
+  }
+  list(matrix = uncorrected[ids, samples, drop = FALSE],
+       formula_used = paste(c(formula_string, w_terms), collapse = " + "), w_terms = w_terms, declaration = declaration)
+}

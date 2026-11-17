@@ -34,6 +34,15 @@
    among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
    pointed above the limit.
+ * Classic proteomics (DIA with IQ, LFQ, TMT) can account for RUV in the test itself (KIT-126): the
+   differential-abundance model reads the normalised, uncorrected matrix with the RUV-III factors as
+   covariates, the groups as replicate sets and every protein as a negative control. The factors are
+   computed on the proteins observed in every sample (validated to 25% missing values); the RUV-III-C
+   corrected matrix is still produced for figures, export and integration. The number of factors k is the
+   automatic sweep's estimate, reduced to what the samples and complete proteins can carry, or the value
+   given; its source is recorded with the result. The design is available to the normalisation step
+   (`ruv_design = "factors_in_model"`) and is not selected by default or from the application yet: every
+   result is unchanged until it is chosen. Today's design (the corrected matrix tested) stays as it is.
 
 ### Other changes
 

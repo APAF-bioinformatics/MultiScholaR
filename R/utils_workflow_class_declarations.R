@@ -33,7 +33,8 @@ workflowClassDeclarations <- function() {
         ProteinQuantitativeData = declare("ProteinQuantitativeData", "assay", "protein_quant_table", "wide", "design_matrix",
             tables = c("protein_quant_table", "design_matrix", "protein_id_table"),
             roles = c("protein_id_column", "sample_id", "group_id", "technical_replicate_id"),
-            describe = describeDIAProteinState, args_as_owned = "limpa_dpc_quant_results"),
+            # KIT-126: the normalised matrix of the classic route's factors-in-the-model RUV state, read by the DA.
+            describe = describeDIAProteinState, args_as_owned = c("limpa_dpc_quant_results", "ruv_uncorrected_quant")),
         LipidomicsAssayData = declare("LipidomicsAssayData", "assay", "lipid_data", "wide", "design_matrix",
             tables = "design_matrix", lists = "lipid_data",
             roles = c("lipid_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id")),
