@@ -321,6 +321,10 @@ test_that("affected saved-entity regressions preserve existing boundaries", {
             normalizePath(file.path(library, "MultiScholaR"))))
         env <- new.env(parent = ns)
         sys.source(file.path(root, "tests/testthat/helper-workflow-checkpoint-fixtures.R"), env)
+        # The saved-recovery file's installed-runtime tests (KIT-034) need their helper; this process runs the
+        # installed package, so they run rather than skip.
+        sys.source(file.path(root, "tests/testthat/helper-installed-runtime.R"), env)
+        Sys.setenv(MULTISCHOLAR_INSTALLED_RUNTIME = "1")
         names <- paste0("test-workflow-saved-", c("resources", "recovery", "identity", "projection", "exports"), ".R")
         results <- lapply(names, function(name) {
             results <- testthat::test_file(file.path(root, "tests/testthat", name), env = env,
