@@ -13,3 +13,5 @@ Rule: `packaging/verify/compare-results.R` (relative 1e-6, absolute floor 1e-9, 
 Declaration of the new-arms run (launched 2026-11-18 after this proof): arms 1, 2, 22, 23, 24 (S4: 1, 2, 22, 23), cells C0 to C7, 1,000 runs, package tree 0b6fcb6d, simulators at 35e5a25a, one job per simulator and cell, 180 minutes per job, one attempt (a failed job may be rerun once as the same command: seeds are per run). Purpose: a measured figure for each selectable combination of control set and k rule. Read: arms 1 and 2 must equal the laptop's rows under the rule before arms 22 to 24 are scored. Arm 3 is not in this run.
 
 Extra-hard cells on the runners wait for the user's decision on arm 3.
+
+Extra-hard cells on the runners (user, 2026-11-18: "A AND B in parallel"): A, arm 3's platform dependence is accepted and stated, and the cells not finished on the laptop were launched (label `hard`: S1 S9 to S14, S2 S1 to S14, S3 S14; 500 runs, all arms, one job per cell, 300 minutes, one attempt). B, in parallel, one bounded test of the cause: the differing cells rerun on the runner with reference BLAS (one run, one correction pass).
