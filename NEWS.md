@@ -35,6 +35,17 @@
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
    pointed above the limit.
 
+### Other changes
+
+ * The managed worker no longer needs systemd (KIT-131). A managed application (the internal launcher a desktop
+   shell starts R through) runs each heavy step as a child process of the application where systemd is absent (Windows, or Linux without `systemctl`), or when the
+   option `multischolar.workflow_launcher = "process"` is set. The worker keeps the per-step deadline, stops with the
+   application and with its whole process tree, and returns its result the same way. Without systemd there is no
+   memory limit on the worker and no memory measurement. Linux with systemd is unchanged. `processx (>= 3.9.0)` and `ps`
+   are now declared imports (both were already installed through `callr`).
+ * The on-disk state owner compares paths with forward slashes on every platform, so its containment checks no longer
+   refuse valid project paths on Windows. Nothing changes on Linux or macOS.
+
 ## Version 0.5.0 (Release Candidate)
 
 This release candidate captures the large janitor-branch stabilization campaign:

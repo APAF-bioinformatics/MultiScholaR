@@ -1,0 +1,19 @@
+"test","nb","passed","failed","skipped","error","real"
+"L1.1 a plain unit reports its exit status, and a command that cannot start is refused",10,10,0,FALSE,FALSE,1.077
+"L1.2 stopping a unit ends everything it started, and the unit is then empty",9,9,0,FALSE,FALSE,0.726
+"L1.3 a unit that outlives its deadline is stopped by the state read and reported as a timeout",8,8,0,FALSE,FALSE,2.312
+"L1.4 a unit does not outlive a controller that is killed",4,4,0,FALSE,FALSE,5.872
+"L1.5 a worker unit gets the contract's environment, its scratch directory as working directory, and its own log",17,17,0,FALSE,FALSE,0.541
+"L1.6 a unit that was never started is unavailable, empty, and silent to stop",3,3,0,FALSE,FALSE,0.0219999999999985
+"L1.7 the option chooses the launcher; without it only a system with systemctl gets systemd",13,13,0,FALSE,FALSE,0.143000000000001
+"D4 the state owner's containment checks hold where normalizePath() defaults to backslashes",8,8,0,FALSE,FALSE,0.122
+"D4 reading a staged table's metadata leaves no handle or mapping on the file (Windows cannot rename around one)",3,3,0,FALSE,FALSE,1.207
+"L2.1 a GUI action runs on a plain worker: one commit, the result read back, a receipt without measurements",30,30,0,FALSE,FALSE,9.332
+"L2.2 a failing worker and a worker that tries to commit end as worker_failed, and the head stays",14,14,0,FALSE,FALSE,15.184
+"L2.3 a cancellation stops the worker and leaves the head, the history and the action lock as they were",14,14,0,FALSE,FALSE,7.964
+"L2.4 a worker past the per-step deadline ends as worker_failed",7,7,0,FALSE,FALSE,4.27
+"L2.5 closing the application stops a running worker and releases the project",8,8,0,FALSE,FALSE,8.07
+"L2.6 after a controller is killed its worker goes, and a new controller recovers the project and runs an action",9,9,0,FALSE,FALSE,20.601
+"L2.8 the plain launch is the GUI application in the calling process; suites, a supervisor and a journey record are refused",16,16,0,FALSE,FALSE,0.234999999999999
+"L2.8 the plain controller is the calling process: no control group, checked by class, owner and launcher, closed at exit",9,9,0,FALSE,FALSE,0.0699999999999932
+"L2.8 without the option a system with systemctl takes the systemd launch, as before",3,3,0,FALSE,FALSE,0.0560000000000116

@@ -400,10 +400,14 @@ abortWorkflowTableWriter <- function(writer) {
 #' @return Restoration metadata without collecting table rows.
 #' @noRd
 readSavedWorkflowTableMetadata <- function(path) {
-    reader <- tryCatch(arrow::ParquetFileReader$create(path),
-        error = function(error) cli::cli_abort("Parquet schema cannot be read",
-            class = "saved_entity_corrupt", parent = error))
-    on.exit(try(reader$.unsafe_delete(), silent = TRUE), add = TRUE)
+    unreadable <- function(error) cli::cli_abort("Parquet schema cannot be read",
+        class = "saved_entity_corrupt", parent = error)
+    # KIT-131: a plain stream closed on exit. Arrow's default memory map outlived the reader until garbage collection,
+    # and Windows refuses to rename a directory around a mapped file (the staged table's commit).
+    stream <- tryCatch(arrow::ReadableFile$create(path), error = unreadable)
+    on.exit(try(stream$close(), silent = TRUE), add = TRUE)
+    reader <- tryCatch(arrow::ParquetFileReader$create(stream), error = unreadable)
+    on.exit(try(reader$.unsafe_delete(), silent = TRUE), add = TRUE, after = FALSE)
     schema <- reader$GetSchema()
     encoded <- schema$metadata$multischolar_table
     if (!is.character(encoded) || length(encoded) != 1L || is.na(encoded) ||
@@ -483,7 +487,7 @@ workflowTableFileIdentity <- function(path) {
         is.na(info$size) || isTRUE(info$isdir)) {
         cli::cli_abort("saved table changed during read", class = "saved_entity_corrupt")
     }
-    list(path = normalizePath(path, mustWork = TRUE), size = info$size,
+    list(path = normalizePath(path, winslash = "/", mustWork = TRUE), size = info$size,
         mtime = info$mtime, ctime = info$ctime, mode = info$mode)
 }
 
