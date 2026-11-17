@@ -24,33 +24,33 @@ readSpec <- function(text) {
 }
 
 # One row per design, in the order of every figure. `colour`: Okabe-Ito hue for the designs of the option set
-# (lighter tint of the same hue for a variant), grey for the rest. `short`: the direct label in the error-against-
-# power figure; a design with a short label is highlighted there.
+# (lighter tint of the same hue for a variant), grey for the rest. `highlight`: "panel" gives the design
+# its own column of panels in the error-against-power figure; "ring" also marks it in every panel (the ceiling).
 designs <- readSpec("
-arm | design                                                | short                 | tier                    | colour
-1   | No RUV                                                | No RUV                | Reference               | #7F7F7F
-2   | True factor known (ceiling)                           | Ceiling               | Reference               | #000000
-7   | All features as controls, factors in model            | All features          | Recommended             | #009E73
-16  | Technical replicates, factors in model                |                       | Valid with conditions   | #56B4E9
-15  | Technical replicates, corrected data tested           |                       | Valid with conditions   | #A6D8F3
-8   | Known null controls, factors in model                 | Known nulls           | Valid with conditions   | #0072B2
-5   | First-pass nulls (top 25% dropped), factors in model  | First-pass nulls      | Valid with conditions   | #E69F00
-3   | Legacy design                                         | Legacy                | Legacy                  | #D55E00
-4   | Legacy controls and k, factors in model               |                       | Other RUV designs       | #E9A27A
-6   | First-pass nulls (q > 0.5), factors in model          |                       | Other RUV designs       | #F2CD80
-9   | Control list with 20% true effects, factors in model  |                       | Other RUV designs       | #9A9A9A
-10  | Known null controls, corrected data tested            |                       | Other RUV designs       | #7FB3D9
-11  | All features as controls, k = 1, factors in model     |                       | Other RUV designs       | #7FCEB6
-R   | RUVr (residuals)                                      |                       | Other RUV designs       | #9A9A9A
-Qs  | Pooled QC as replicates, corrected data tested        |                       | Other RUV designs       | #9A9A9A
-Qm  | Pooled QC as replicates, factors in model             |                       | Other RUV designs       | #9A9A9A
-12  | RUV-4, known null controls                            |                       | Other methods           | #CC79A7
-13  | RUVinv, known null controls                           |                       | Other methods           | #CC79A7
-14  | Surrogate variable analysis                           |                       | Other methods           | #CC79A7
-14E | Surrogate variable analysis, k as for RUV             |                       | Other methods           | #CC79A7
-I   | Internal-standard normalisation only                  |                       | Other methods           | #CC79A7
-L   | QC-based LOESS drift correction                       |                       | Other methods           | #CC79A7
-17  | Known batch in the model                              |                       | Other methods           | #CC79A7
+arm | design                                                | highlight | tier                    | colour
+1   | No RUV                                                | panel     | Reference               | #7F7F7F
+2   | True factor known (ceiling)                           | ring      | Reference               | #000000
+7   | All features as controls, factors in model            | panel     | Recommended             | #009E73
+16  | Technical replicates, factors in model                |           | Valid with conditions   | #56B4E9
+15  | Technical replicates, corrected data tested           |           | Valid with conditions   | #A6D8F3
+8   | Known null controls, factors in model                 | panel     | Valid with conditions   | #0072B2
+5   | First-pass nulls (top 25% dropped), factors in model  | panel     | Valid with conditions   | #E69F00
+3   | Legacy design                                         | panel     | Legacy                  | #D55E00
+4   | Legacy controls and k, factors in model               |           | Other RUV designs       | #E9A27A
+6   | First-pass nulls (q > 0.5), factors in model          |           | Other RUV designs       | #F2CD80
+9   | Control list with 20% true effects, factors in model  |           | Other RUV designs       | #9A9A9A
+10  | Known null controls, corrected data tested            |           | Other RUV designs       | #7FB3D9
+11  | All features as controls, k = 1, factors in model     |           | Other RUV designs       | #7FCEB6
+R   | RUVr (residuals)                                      |           | Other RUV designs       | #9A9A9A
+Qs  | Pooled QC as replicates, corrected data tested        |           | Other RUV designs       | #9A9A9A
+Qm  | Pooled QC as replicates, factors in model             |           | Other RUV designs       | #9A9A9A
+12  | RUV-4, known null controls                            |           | Other methods           | #CC79A7
+13  | RUVinv, known null controls                           |           | Other methods           | #CC79A7
+14  | Surrogate variable analysis                           |           | Other methods           | #CC79A7
+14E | Surrogate variable analysis, k as for RUV             |           | Other methods           | #CC79A7
+I   | Internal-standard normalisation only                  |           | Other methods           | #CC79A7
+L   | QC-based LOESS drift correction                       |           | Other methods           | #CC79A7
+17  | Known batch in the model                              |           | Other methods           | #CC79A7
 ")
 
 omics <- readSpec("
@@ -106,8 +106,9 @@ NULL_RATE_LIMIT <- 0.075
 FDP_LIMIT <- 0.075
 Z <- stats::qnorm(0.975)
 
-SINGLE_COLUMN <- 3.33
 DOUBLE_COLUMN <- 7
+HEAT_ROW_IN <- 0.15
+HEAT_MAX_IN <- 9.2
 BASE_PT <- 7
 PNG_DPI <- 600
 
@@ -245,7 +246,7 @@ noLeadingZero <- function(v, digits) {
     ifelse(is.na(v), "", sub("^0\\.", ".", formatC(v, format = "f", digits = digits)))
 }
 
-tickLabel <- function(v) sub("^0\\.", ".", formatC(v, format = "fg", digits = 3))
+tickLabel <- function(v) sub("^0\\.", ".", trimws(formatC(v, format = "fg", digits = 3)))
 
 sqrtAxis <- function(axis, limit, breaks, name) {
     scale <- if (axis == "x") scale_x_continuous else scale_y_continuous
@@ -276,75 +277,98 @@ fdpFill <- function() {
 
 powerFill <- function() {
     scale_fill_gradientn("Power", colours = viridisLite::viridis(64, direction = -1), limits = c(0, 1),
-        breaks = c(0, 0.5, 1))
+        breaks = c(0, 0.5, 1), labels = tickLabel)
 }
 
-# One omic's heatmap: designs in rows, scenarios in columns, the value written in each cell. A dagger over a
-# column marks a scenario the scoring did not use to judge designs (`void`).
-heatPanel <- function(x, rows, measure, show_designs, show_scenarios) {
+# One omic's heatmap: the designs that have a value in this omic in rows, scenarios in columns, the value written
+# in each cell. A dagger over a column marks a scenario the scoring did not use to judge designs (`void`).
+# `n_columns` reserves the same number of columns in every panel of a file, so cells have one size.
+heatPanel <- function(x, measure, n_columns, show_scenarios) {
+    rows <- designRows(x)
     cells <- stats::aggregate(void ~ cell_index + cell + scenario, data = x, FUN = any)
     cells <- cells[order(cells$cell_index), ]
     cells$x <- seq_len(nrow(cells))
     x$x <- cells$x[match(x$cell, cells$cell)]
     x$y <- rows$y[match(x$arm, rows$arm)]
     if (measure == "fdp") {
-        x$fill <- log2(x$mean_fdp / NOMINAL)
-        x$label <- noLeadingZero(x$mean_fdp, 3)
+        x$fill <- log2(x$value / NOMINAL)
+        x$label <- noLeadingZero(x$value, 3)
         x$dark <- x$fill > 2.2 | x$fill < -1.5
     } else {
-        x$fill <- x$power
-        x$label <- noLeadingZero(x$power, 2)
-        x$dark <- !is.na(x$power) & x$power > 0.45
+        x$fill <- x$value
+        x$label <- noLeadingZero(x$value, 2)
+        x$dark <- x$value > 0.45
     }
-    top <- max(rows$y) + 1
     ggplot(x, aes(x, y)) +
         geom_tile(aes(fill = fill), colour = "white", linewidth = 0.3) +
-        geom_text(aes(label = label, colour = I(ifelse(dark, "white", "black"))), size = pt(BASE_PT - 1),
+        geom_text(aes(label = label, colour = I(ifelse(dark, "white", "black"))), size = pt(BASE_PT),
             family = font_family) +
-        geom_point(aes(x = 0.2, y = y, colour = I(colour)), data = rows, shape = 15, size = 1.5) +
-        geom_text(aes(x = x, y = top - 0.15), data = cells[cells$void, ], label = "†", size = pt(BASE_PT),
-            family = font_family) +
+        geom_point(aes(x = 0.3, y = y, colour = I(colour)), data = rows, shape = 15, size = 1.6) +
+        geom_text(aes(x = x, y = max(rows$y) + 0.9), data = cells[cells$void, ], label = "†",
+            size = pt(BASE_PT), family = font_family) +
         (if (measure == "fdp") fdpFill() else powerFill()) +
-        scale_x_continuous(NULL, breaks = cells$x, labels = cells$scenario, expand = expansion(add = c(0.25, 0.05)),
-            limits = c(0.05, nrow(cells) + 0.5)) +
+        scale_x_continuous(NULL, breaks = cells$x, labels = cells$scenario, limits = c(0.15, n_columns + 0.5),
+            expand = expansion(0)) +
         scale_y_continuous(NULL, breaks = rows$y, labels = as.character(rows$design),
-            limits = c(min(rows$y) - 0.5, top + 0.2), expand = expansion(0)) +
+            limits = heatRowLimits(rows), expand = expansion(0)) +
         labs(title = as.character(x$omic[1])) +
         themeJpr() +
         theme(
             panel.border = element_blank(), axis.ticks = element_blank(),
             axis.text.x = if (show_scenarios) element_text(angle = 40, hjust = 1, vjust = 1) else element_blank(),
-            axis.text.y = if (show_designs) element_text() else element_blank(),
-            plot.title = element_text(size = BASE_PT + 1, face = "bold", margin = margin(0, 0, 1, 0)),
+            plot.title = element_text(size = BASE_PT + 1, face = "bold", margin = margin(0, 0, 0, 0)),
             legend.position = "bottom", legend.title.position = "top",
             legend.key.width = grid::unit(34, "pt"), legend.key.height = grid::unit(6, "pt")
         )
 }
 
+# Room for the designs' rows, half a row below and a line for the daggers above.
+heatRowLimits <- function(rows) c(min(rows$y) - 0.5, max(rows$y) + 1.2)
+
 primaryRows <- function(x) x[x$primary, ]
 
-# Heatmaps of every omic in `x`, two per row, on shared design rows; scenario names under each panel when the
-# omics do not share their scenarios, else under the last row only.
-heatGrid <- function(x, measure, own_scenarios, watermark = NULL) {
-    rows <- designRows(x)
-    present <- levels(droplevels(x$omic))
-    panels <- lapply(seq_along(present), \(i) {
-        heatPanel(x[x$omic == present[i], ], rows, measure, show_designs = i %% 2 == 1,
-            show_scenarios = own_scenarios || i > length(present) - 2) + watermark
-    })
-    n_rows <- ceiling(length(present) / 2)
-    n_cells <- vapply(present, \(o) length(unique(x$cell[x$omic == o])), integer(1))
-    widths <- c(max(n_cells[c(TRUE, FALSE)]), max(n_cells[c(FALSE, TRUE)], 1L))
-    list(
-        plot = wrap_plots(panels, ncol = 2, guides = "collect", widths = widths) &
-            theme(legend.position = "bottom"),
-        height = 0.55 + n_rows * (0.3 + 0.15 * nrow(rows)) + (if (own_scenarios) n_rows else 1) * 1.25
-    )
+# Heatmap files: the omics of `x` stacked, each with the designs it has, panel heights in proportion to their rows
+# and the same cell size everywhere. Omics go to one file while it stays under HEAT_MAX_IN, then to the next
+# ("-part<i>"). Scenario names go under the last panel of a file when all omics share their scenarios, else under
+# each panel. `banner`: a line set above the figure (the "partial" mark).
+heatFiles <- function(x, measure, stem, banner = NULL) {
+    x$value <- if (measure == "fdp") x$mean_fdp else x$power
+    x <- x[!is.na(x$value), ]
+    parts <- lapply(levels(droplevels(x$omic)), \(o) x[x$omic == o, ])
+    scenario_sets <- lapply(parts, \(part) unique(part$scenario[order(part$cell_index)]))
+    shared <- length(unique(scenario_sets)) == 1
+    n_columns <- max(lengths(scenario_sets))
+    rows <- vapply(parts, \(part) diff(heatRowLimits(designRows(part))), numeric(1))
+    # Height of a block of scenario names set at 40 degrees, from the longest name.
+    names_in <- vapply(scenario_sets, \(set) 0.15 + max(nchar(set)) * 0.031, numeric(1))
+    panel_in <- rows * HEAT_ROW_IN + 0.3 + if (shared) 0 else names_in
+    fixed_in <- 0.6 + (if (shared) names_in[1] else 0) + 0.25 * !is.null(banner)
+
+    file <- integer(length(parts))
+    used <- Inf
+    for (i in seq_along(parts)) {
+        new_file <- used + panel_in[i] > HEAT_MAX_IN - fixed_in
+        used <- panel_in[i] + if (new_file) 0 else used
+        file[i] <- max(file) + new_file
+    }
+    for (f in unique(file)) {
+        members <- which(file == f)
+        panels <- lapply(members, \(i) {
+            heatPanel(parts[[i]], measure, n_columns, show_scenarios = !shared || i == max(members))
+        })
+        banner_theme <- theme(
+            legend.position = "bottom",
+            plot.title = element_text(size = BASE_PT + 2, face = "bold", colour = "#D55E00", hjust = 0)
+        )
+        plot <- wrap_plots(panels, ncol = 1, heights = rows[members], guides = "collect") +
+            plot_annotation(title = banner, theme = themeJpr() + banner_theme)
+        name <- if (max(file) > 1) sprintf("%s-part%d", stem, f) else stem
+        savePair(plot, name, DOUBLE_COLUMN, sum(panel_in[members]) + fixed_in)
+    }
 }
 
 figCalibrationHeatmap <- function() {
-    grid <- heatGrid(primaryRows(core), "fdp", own_scenarios = FALSE)
-    savePair(grid$plot, "figS2-calibration-heatmap", DOUBLE_COLUMN, grid$height)
+    heatFiles(primaryRows(core), "fdp", "figS2-calibration-heatmap")
 }
 
 figStress <- function() {
@@ -353,23 +377,14 @@ figStress <- function() {
         return(invisible())
     }
     x <- primaryRows(stress)
-    watermark <- caption <- NULL
-    if (stress_partial) {
-        watermark <- annotation_custom(grid::textGrob("PARTIAL", rot = 30, gp = grid::gpar(
-            col = grDevices::adjustcolor("black", 0.13), fontsize = 40, fontface = "bold", fontfamily = font_family
-        )))
-        caption <- sprintf(
-            "PARTIAL: extra-hard scenarios scored for %d of %d omics (input: %s).",
+    banner <- if (stress_partial) {
+        sprintf(
+            "PARTIAL: extra-hard scenarios scored for %d of %d omics (input: %s)",
             length(unique(x$omic)), nrow(omics), paste(stress_folders, collapse = ", ")
         )
     }
-    names <- c(fdp = "figS8a-extra-hard-fdp", power = "figS8b-extra-hard-power")
-    for (measure in names(names)) {
-        grid <- heatGrid(x, measure, own_scenarios = TRUE, watermark = watermark)
-        plot <- grid$plot +
-            plot_annotation(caption = caption, theme = themeJpr() + theme(legend.position = "bottom"))
-        savePair(plot, names[[measure]], DOUBLE_COLUMN, grid$height + 0.15)
-    }
+    heatFiles(x, "fdp", "figS8a-extra-hard-fdp", banner)
+    heatFiles(x, "power", "figS8b-extra-hard-power", banner)
 }
 
 # ---- Forest plot of the type I error (S3) ----------------------------------------------------------------------
@@ -396,7 +411,7 @@ figTypeOneForest <- function() {
         geom_point(aes(shape = kind, colour = I(colour), size = kind), stroke = 0.35, fill = "white") +
         scale_shape_manual(NULL, values = c(16, 17, 21, 4), drop = FALSE) +
         scale_size_manual(NULL, values = c(1.3, 1.3, 0.9, 0.9), drop = FALSE) +
-        sqrtAxis("x", max(x$null05_upper) * 1.08, c(0.01, 0.05, 0.1, 0.2, 0.3),
+        sqrtAxis("x", max(x$null05_upper) * 1.12, c(0.01, 0.05, 0.1, 0.2, 0.3),
             "Type I error rate: share of true null features with p < 0.05 (square-root axis)") +
         scale_y_continuous(NULL, breaks = rows$y, labels = as.character(rows$design),
             limits = c(min(rows$y) - 0.5, max(rows$y) + 0.5), expand = expansion(0)) +
@@ -414,45 +429,79 @@ figErrorPower <- function() {
     x <- primaryRows(core)
     x <- x[!x$void & !is.na(x$power), ]
     centre <- x[x$mark == "centre", ]
-    centre$short <- designs$short[match(centre$arm, designs$arm)]
-    centre$key <- nzchar(centre$short)
-    centre$colour <- ifelse(centre$key, designs$colour[match(centre$arm, designs$arm)], "grey70")
-    worst <- stats::aggregate(mean_fdp ~ omic + arm, data = x, FUN = max)
-    centre$worst_fdp <- worst$mean_fdp[match(paste(centre$omic, centre$arm), paste(worst$omic, worst$arm))]
-    centre <- centre[order(centre$key), ]
-    key <- centre[centre$key, ]
-    # Labels keep clear of every drawn point: unlabelled designs and the worst-scenario markers repel them too.
-    # The line from each centre point to its worst-scenario marker counts as three more points.
-    along <- lapply(c(1 / 3, 2 / 3, 1), \(f) {
-        transform(key, mean_fdp = (sqrt(mean_fdp) + f * (sqrt(worst_fdp) - sqrt(mean_fdp)))^2, short = "")
-    })
-    obstacles <- do.call(rbind, c(list(key, transform(centre[!centre$key, ], short = "")), along))
-    lines <- data.frame(
-        omic = factor(omics$omic[1], levels = omics$omic), y = c(NOMINAL, FDP_LIMIT),
-        label = c("nominal", "limit")
+    # Each design's judged main scenario with the highest mean false discovery proportion, set at the power of
+    # the centre scenario.
+    worst <- x[order(-x$mean_fdp), ]
+    worst <- worst[!duplicated(worst[c("omic", "arm")]), ]
+    at <- match(paste(worst$omic, worst$arm), paste(centre$omic, centre$arm))
+    worst[c("power", "power_lower", "power_upper")] <- centre[at, c("power", "power_lower", "power_upper")]
+    worst <- worst[!is.na(at), ]
+
+    # One column of panels per highlighted design: that design in its colour, the ceiling as a ring, the rest grey.
+    shown <- designs[nzchar(designs$highlight), ]
+    roles <- c(
+        "Design named above the panel, centre scenario",
+        "The same design in the main scenario where its false discovery proportion is highest (joined)",
+        "True factor known (ceiling), centre scenario",
+        "All other designs and methods, centre scenario"
     )
-    plot <- ggplot(centre, aes(power, mean_fdp)) +
+    ring <- centre[centre$arm %in% shown$arm[shown$highlight == "ring"], ]
+    columns <- do.call(rbind, lapply(seq_len(nrow(shown)), \(i) {
+        own <- centre$arm == shown$arm[i]
+        column <- rbind(
+            transform(centre[own, ], role = roles[1], colour = shown$colour[i]),
+            transform(worst[worst$arm == shown$arm[i], ], role = roles[2], colour = shown$colour[i]),
+            transform(ring, role = roles[3], colour = "black"),
+            transform(centre[!own, ], role = roles[4], colour = "grey70")
+        )
+        column$panel <- factor(shown$design[i], levels = shown$design)
+        column
+    }))
+    columns$role <- factor(columns$role, levels = roles)
+    # Drawn in this order: the other designs, the ring, the highest value, the design itself on top.
+    columns <- columns[order(match(columns$role, roles[c(4, 3, 2, 1)])), ]
+    joins <- merge(
+        columns[columns$role == roles[1], c("omic", "panel", "colour", "power", "mean_fdp")],
+        columns[columns$role == roles[2], c("omic", "panel", "mean_fdp")],
+        by = c("omic", "panel"), suffixes = c("", "_worst")
+    )
+    lines <- data.frame(
+        y = c(NOMINAL, FDP_LIMIT),
+        line = c(sprintf("Nominal level, %s", NOMINAL), sprintf("Limit of the decision rule, %s", FDP_LIMIT))
+    )
+    lines$line <- factor(lines$line, levels = lines$line)
+
+    plot <- ggplot(columns, aes(power, mean_fdp)) +
         annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = FDP_LIMIT, fill = "#009E73", alpha = 0.1) +
-        geom_hline(yintercept = NOMINAL, linewidth = 0.3) +
-        geom_hline(yintercept = FDP_LIMIT, linewidth = 0.3, linetype = "22") +
-        geom_text(aes(x = 0.01, y = y, label = label), data = lines, hjust = 0, vjust = -0.35, size = pt(BASE_PT),
-            family = font_family) +
-        geom_segment(aes(xend = power, yend = worst_fdp, colour = I(colour)), data = key, linewidth = 0.3) +
-        geom_point(aes(y = worst_fdp, colour = I(colour)), data = key, shape = 21, fill = "white", size = 1.3,
-            stroke = 0.4) +
-        geom_linerange(aes(xmin = power_lower, xmax = power_upper, colour = I(colour)), linewidth = 0.3) +
-        geom_linerange(aes(ymin = mean_fdp_lower, ymax = mean_fdp_upper, colour = I(colour)), linewidth = 0.3) +
-        geom_point(aes(colour = I(colour), size = I(ifelse(key, 1.5, 0.9)))) +
-        ggrepel::geom_text_repel(aes(label = short, colour = I(colour)), data = obstacles, size = pt(BASE_PT),
-            family = font_family, segment.size = 0.2, min.segment.length = 0, box.padding = 0.6,
-            point.padding = 0.35, force = 8, force_pull = 0.1, max.overlaps = Inf, max.iter = 20000, seed = 7) +
-        sqrtAxis("y", max(centre$worst_fdp, centre$mean_fdp_upper) * 1.06, c(0, 0.01, 0.05, 0.1, 0.2, 0.4, 0.6),
+        geom_hline(aes(yintercept = y, linetype = line), data = lines, linewidth = 0.3) +
+        geom_segment(aes(xend = power, yend = mean_fdp_worst, colour = I(colour)), data = joins,
+            linewidth = 0.35) +
+        geom_linerange(aes(xmin = power_lower, xmax = power_upper, colour = I(colour)),
+            data = columns[columns$role %in% roles[c(1, 4)], ], linewidth = 0.3) +
+        geom_linerange(aes(ymin = mean_fdp_lower, ymax = mean_fdp_upper, colour = I(colour)),
+            data = columns[columns$role != roles[3], ], linewidth = 0.3) +
+        geom_point(aes(shape = role, size = role, colour = I(colour)), stroke = 0.45, fill = "white") +
+        scale_shape_manual(NULL, values = stats::setNames(c(16, 21, 1, 16), roles)) +
+        scale_size_manual(NULL, values = stats::setNames(c(1.5, 1.2, 3.2, 0.7), roles)) +
+        scale_linetype_manual(NULL, values = stats::setNames(c("solid", "22"), levels(lines$line))) +
+        sqrtAxis("y", max(columns$mean_fdp_upper) * 1.06, c(0, 0.01, 0.05, 0.1, 0.2, 0.4, 0.6),
             "Mean false discovery proportion (square-root axis)") +
-        scale_x_continuous("Power in the centre scenario", limits = c(0, 1), breaks = seq(0, 1, 0.25),
-            labels = c("0", "0.25", "0.5", "0.75", "1"), expand = expansion(mult = 0.03)) +
-        facet_wrap(~omic, ncol = 2) +
-        themeJpr()
-    savePair(plot, "figS4-error-against-power", DOUBLE_COLUMN, 5.6)
+        scale_x_continuous("Power in the centre scenario", limits = c(0, 1), breaks = c(0, 0.5, 1),
+            labels = tickLabel, expand = expansion(mult = 0.06)) +
+        facet_grid(omic ~ panel, labeller = labeller(panel = label_wrap_gen(17), omic = label_wrap_gen(16))) +
+        guides(
+            shape = guide_legend(order = 1, ncol = 1,
+                override.aes = list(colour = c("grey25", "grey25", "black", "grey70"))),
+            size = guide_legend(order = 1, ncol = 1),
+            linetype = guide_legend(order = 2, ncol = 1, theme = theme(legend.key.width = grid::unit(18, "pt")))
+        ) +
+        themeJpr() +
+        theme(legend.position = "bottom", legend.box = "horizontal", legend.box.just = "top",
+            legend.spacing.x = grid::unit(14, "pt"), legend.key.height = grid::unit(10, "pt"),
+            legend.key.spacing.y = grid::unit(0, "pt"),
+            strip.text.x = element_text(size = BASE_PT, vjust = 0), strip.text.y = element_text(size = BASE_PT),
+            panel.spacing = grid::unit(5, "pt"))
+    savePair(plot, "figS4-error-against-power", DOUBLE_COLUMN, 6.6)
 }
 
 # ---- One choice changed at a time (S5) -------------------------------------------------------------------------
@@ -467,10 +516,15 @@ choicePanel <- function(pair, show_scenarios) {
     cells <- unique(core[order(core$cell_index), c("cell", "scenario")])
     x$y <- -match(x$cell, cells$cell) + ifelse(x$arm == pair$reference, 0.16, -0.16)
     colours <- stats::setNames(designs$colour[match(c(pair$reference, pair$changed), designs$arm)], roles)
+    # A line joins the two designs of a scenario where the omic has both.
+    link_columns <- c("omic", "cell", "void", "mean_fdp", "y")
+    links <- merge(x[x$arm == pair$reference, link_columns], x[x$arm != pair$reference, link_columns],
+        by = c("omic", "cell", "void"), suffixes = c("", "_changed"))
     ggplot(x, aes(mean_fdp, y, colour = role, alpha = I(ifelse(void, 0.35, 1)))) +
         geom_vline(xintercept = NOMINAL, linewidth = 0.3) +
         geom_vline(xintercept = FDP_LIMIT, linewidth = 0.3, linetype = "22") +
-        geom_line(aes(group = cell), colour = "grey60", linewidth = 0.3) +
+        geom_segment(aes(mean_fdp, y, xend = mean_fdp_changed, yend = y_changed, alpha = I(ifelse(void, 0.35, 1))),
+            data = links, inherit.aes = FALSE, colour = "grey60", linewidth = 0.3) +
         geom_linerange(aes(xmin = mean_fdp_lower, xmax = mean_fdp_upper), linewidth = 0.4) +
         geom_point(aes(shape = role), size = 1.3, stroke = 0.5, fill = "white") +
         scale_colour_manual(pair$choice, values = colours) +
@@ -520,6 +574,8 @@ writeResults <- function() {
 # ---- Run -------------------------------------------------------------------------------------------------------
 
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+# Outputs of an earlier run under other file names (a figure split differently) do not stay behind.
+unlink(list.files(out_dir, pattern = "^(fig|table)S.*[.](pdf|png|csv)$", full.names = TRUE))
 writeResults()
 figCalibrationHeatmap()
 figTypeOneForest()
