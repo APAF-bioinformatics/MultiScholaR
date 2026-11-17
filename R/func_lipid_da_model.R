@@ -45,6 +45,11 @@ fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
     correlation <- NA_real_
     if (isTRUE(replicate$technical)) {
         correlation <- limma::duplicateCorrelation(data_subset, design = design_m, block = replicate$block)$consensus.correlation
+        if (length(correlation) != 1L || !is.finite(correlation)) {
+            rlang::abort(sprintf(paste("the correlation between technical replicates of one biological unit could not be",
+                "estimated (limma's duplicateCorrelation gave %s), so the model with technical replicates cannot be fitted"),
+                paste(format(correlation), collapse = ", ")), class = "omics_da_block_correlation_failed")
+        }
         logger::log_info(sprintf("   Technical replicates: %d blocks for %d samples, consensus correlation %.4f",
             replicate$blocks, length(common_samples), correlation))
         fit <- limma::lmFit(data_subset, design = design_m, block = replicate$block, correlation = correlation)
