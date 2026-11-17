@@ -1,0 +1,71 @@
+== step qc_intensity : worker 24 entries, oracle 24 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 30 vs 31
+
+== step qc_duplicates : worker 32 entries, oracle 32 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 48 vs 50
+
+== step qc_itsd_refusal : worker 32 entries, oracle 32 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 48 vs 50
+
+== step norm_refusal : worker 47 entries, oracle 47 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 69 vs 82
+
+== step norm : worker 61 entries, oracle 61 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 89 vs 116
+
+== step correlation : worker 63 entries, oracle 63 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 95 vs 122
+
+== step session_export : worker 67 entries, oracle 67 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 98 vs 123
+
+== step da_load : worker 67 entries, oracle 67 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 98 vs 123
+
+== step da : worker 85 entries, oracle 85 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 106 vs 144
+
+== step summary_refusal : worker 85 entries, oracle 85 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 106 vs 144
+
+== step summary_save : worker 88 entries, oracle 88 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 107 vs 144
+
+== step summary_copy : worker 121 entries, oracle 121 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 107 vs 144
+
+== step summary_report : worker 127 entries, oracle 127 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 107 vs 144
+
+== step summary_export : worker 128 entries, oracle 128 
+  changed:
+    <store entries>.scripts/lipidomics/.dia-native-<ID>/.workflow-entities/entities/dia-state-<ID> : 107 vs 144
+
+KIT-131 LANE DIFF lipid_canonical step qc_intensity fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step qc_duplicates fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step qc_itsd_refusal fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step norm_refusal fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step norm fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step correlation fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step session_export fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step da_load fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step da fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step summary_refusal fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step summary_save fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step summary_copy fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step summary_report fields: artifacts 
+KIT-131 LANE DIFF lipid_canonical step summary_export fields: artifacts 
+KIT-131 LANE lipid_canonical: steps 20 (oracle 20, order TRUE); identical 5 raw, 6 without the working notification (19 removed); managed waits 9, 289.5 s waiting; 39 files under the application root; lane 394.1 s

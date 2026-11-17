@@ -1,6 +1,8 @@
 # KIT-131 outcome: the managed worker without systemd (record of 2026-11-17)
 
-Status: **the launcher passes its lifecycle tests on Linux and on Windows (run 2); steps 7 and 8 open.** Branch `kit-131` from `performance-v2` at `a98c8a6b`,
+Status: **the launcher passes its lifecycle tests on Linux and on Windows (run 2). Step 8 has run on the laptop with
+no KIT-131 defect found (see "Step 8 and step 7 on Linux"). Two results wait for the user's call: the `resources` suite
+fails because of an old harness gap, and the worker lane differs from its oracle only in an internal store count.** Branch `kit-131` from `performance-v2` at `a98c8a6b`,
 not merged. Design: `w0-design.md` in this folder. Decisions D1 to D4 as in the ticket's revision 1.2; the user's answers
 of 2026-11-17 (through the coordinator) are recorded under "Decisions".
 
@@ -175,6 +177,79 @@ it guards is shown by L2.1 to L2.6 now passing), and the systemd launch test nee
 No discovery finding is a defect of the launcher or of the D4 repair. The one product defect found on Windows, the
 memory-mapped metadata read, was corrected in run 2 and is shown by L2.1 to L2.6.
 
+## Step 8 and step 7 on Linux (laptop, 2026-11-17, tree `ee888419`, R 4.6.1)
+
+These checks are evidence of correctness only. They make no memory claim. Everything ran under `nice -n 19`, one R
+process at a time, with thread variables set to 1. Tctl stayed between 64 and 66 °C. The evidence files are in
+[step8/](step8/).
+
+**`R CMD build`, then `R CMD check --no-manual --no-tests --no-build-vignettes`** (`_R_CHECK_FORCE_SUGGESTS_=false`,
+proof library on `R_LIBS`): 3 WARNINGs and 3 NOTEs. These are the six baseline findings, and the log is line for line
+the same as `kit-123/final/check.log` apart from the log path ([step8/check.log](step8/check.log)). No new finding.
+
+**Install:** the checked tarball installed into a scratch library with exit status 0.
+
+**Installed suites:**
+
+| Suite | Launcher | Passed | Failed | Skipped | Error |
+|---|---|---|---|---|---|
+| `protocol` (`run_workflow_checkpoint_proof.sh --workflow-lifecycle`) | systemd (the frozen configuration has a slice and no `launcher`) | 223 | 0 | 7 | 0 |
+| `resources` (same entry) | systemd | 296 | **1** | 1 | 0 |
+| `test-workflow-execution-process.R`, installed mode, no option | systemd chosen (`workflowLauncherChoice` → `systemd`) | 185 | 0 | 0 | 0 |
+| `test-workflow-execution-process.R`, installed mode, `multischolar.workflow_launcher = "process"` | plain | 185 | 0 | 0 | 0 |
+| `protocol` and `resources` with the option `"process"` | plain | refused, `workflow_execution_unsupported` (by design, L2.8) | | | |
+
+The `resources` failure is a gap in the harness. It is not a product defect, and KIT-131 did not cause it.
+- **What failed.** The suite's last test, `affected saved-entity regressions preserve existing boundaries`, runs the
+  five `test-workflow-saved-*.R` files against the installed package. It sources only
+  `helper-workflow-checkpoint-fixtures.R`.
+- **Why.** Two tests in `test-workflow-saved-recovery.R` call `skipIfNoInstalledRuntime()` (from
+  `helper-installed-runtime.R`, added at KIT-034, `5250c88c`). Without that helper they stop with
+  `could not find function "skipIfNoInstalledRuntime"`. The two tests are "SIGKILL at storage boundaries" and
+  "concurrent writers".
+- **The four other files** passed inside the suite: resources 304/0, identity 73/0, projection 406/0, exports 276/0
+  with 4 skips.
+- **The same file run properly.** Against the same installed build, with `helper-installed-runtime.R` sourced and
+  `MULTISCHOLAR_INSTALLED_RUNTIME=1`, the file passes 108/0/0/0, both tests included.
+- **Why this is not KIT-131's.** KIT-131 changes neither `test-workflow-execution.R` nor that helper
+  (`git diff a98c8a6b` is empty for both). The suite fails this way on any tree since KIT-034.
+- **What would fix it.** Source the helper in that test, a one-line change to a test file. That is not this step's to
+  make: tests are not edited here.
+
+**Dependents of the correction `2e870a4c`:** the test files that name `readSavedWorkflowTableMetadata` or one of
+its five direct callers, minus those already passed after the correction. Run from source, one file per process:
+15 files, **0 failures, 0 errors** ([step8/dependents.log](step8/dependents.log)).
+- With tests run: perf-103-audit-repairs 122, perf-103 85, perf-105-audit-repairs 19, perf-105 62, perf-106 193,
+  perf106-repair-v2 75, bulk-relational 45 (3 skipped), checkpoint-dia-state 174 (4 skipped), kit-harness 735,
+  native-session 733 (2 skipped), partitions 438 (2 skipped), saved-qc-rollup 59 (1 skipped).
+- All tests skipped, because they need the installed package: execution-adapters (6), memory-mechanism-member (13),
+  rollup-qualification (7).
+- The saved-entity files ran installed, inside the `resources` suite, as listed above.
+
+**Step 7: the lipidomics entry lane with every managed step on a plain worker** (`lipid_canonical`, installed
+package, option `"process"`).
+- **The driver.** [step8/lane_worker.R](step8/lane_worker.R) is a scratch driver; no test file was edited. It reuses
+  `helper-gui-entry.R` unchanged and gives the module's session a plain application, built as `workflowManagedMain`
+  builds it. After each input it waits until the omic's runner is idle, as a user waits before the next click.
+- **Attempts.** Attempt 1 stopped in the driver's own setup before the lane began (an invalid assignment target), an
+  instrumentation failure. Attempt 2 completed.
+  - 20 steps in the oracle's order.
+  - 9 managed waits, 290 s on workers; lane 394 s.
+- **Identical to the frozen oracle at all 20 steps:** head, history, state content digests, `tab_status`, every
+  output, every published file and table hash, and every notification. The managed step's own "Applying lipidomics
+  step ..." notice (19 of them) was set aside first; the in-process path has none.
+- **The one difference.** The oracle counts the store's committed entities per masked path (KIT-101 F-13). The count
+  of `dia-state-*` entities differs from `qc_intensity` on: 30 against 31 there, 107 against 144 at the end. Every
+  other entity count is equal ([step8/lane-lipid-canonical-diff.txt](step8/lane-lipid-canonical-diff.txt)).
+- **Reading, not tested.** This is how the managed path commits compared with the in-process one: one commit per
+  action. It is not the launcher's doing, because the launcher only starts and stops processes. A systemd worker on
+  this lane would settle it, but the lane runs under `testServer`, which gives no control group, so that comparison
+  was not run.
+- **Verdict.** The science is identical. Strict identity with the oracle is **not** met, on store internals only.
+- **Not run.** Step 7 on Windows. The CI budget is spent, so it stays open.
+
+Not run in this step: the four screen GUI journeys (design §6.3). This step's list did not include them.
+
 ## Claim limits (accepted by the user, 2026-11-17)
 
 1. **No memory figure from the plain launcher.** It has no control group: no enforced worker limit (an exhausted
@@ -202,9 +277,11 @@ memory-mapped metadata read, was corrected in run 2 and is shown by L2.1 to L2.6
 1. **Steps 0, 5 and the Windows half of 6: done.** The lifecycle tests pass on Windows (run 2), within the declared
    budget of two runs. Step 0's discovery is partial: the lipidomics lane did not run (instrumentation), and the
    state owner's resource and recovery files are gated to Linux. These are findings for KIT-052 and KIT-134.
-2. **Step 7** (a lane with the worker, Linux then lipidomics or metabolomics on Windows): not started.
-3. **Step 8** (R CMD check, install, the installed `protocol` and `resources` suites, the screen journeys): waits for the
-   laptop (KIT-124 simulations hold 12 cores until about Wednesday).
+2. **Step 7.** Linux is done with a scratch driver: identical except the store's `dia-state` entity count (above). The
+   user decides whether that difference is accepted. Windows is not run.
+3. **Step 8.** Done on the laptop, with no new check finding and no launcher failure under either launcher. The
+   `resources` suite stays red until its test sources `helper-installed-runtime.R`. That gap is old (since KIT-034), and
+   fixing it is a test edit the user decides on. The screen journeys were not run.
 4. Still untested on Windows:
    - the state owner's resource and recovery contracts (gated to Linux);
    - the failed-replacement guarantee on the R fallback copy;
