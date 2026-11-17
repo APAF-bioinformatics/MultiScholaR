@@ -1,0 +1,19 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1 S2$simulator	character	200			0	agree	
+S1 S2$cell	character	200			0	agree	
+S1 S2$cell_class	character	200			0	agree	
+S1 S2$run	integer	200			0	agree	
+S1 S2$arm	character	200			0	agree	
+S1 S2$subset	character	200			0	agree	
+S1 S2$status	character	200			0	agree	
+S1 S2$seed	integer	200			0	agree	
+S1 S2$k	integer	200			0	agree	
+S1 S2$n_features	integer	200			0	agree	
+S1 S2$n_true	integer	200			0	agree	
+S1 S2$n_calls	integer	200			0	agree	
+S1 S2$null_p05	double	200	0	0	0	agree	
+S1 S2$null_p01	double	200	0	0	0	agree	
+S1 S2$fdp	double	200	0	0	0	agree	
+S1 S2$power	double	200	0	0	0	agree	
+S1 S2$bias	double	200	3.11932148001811e-12	1.83898035688301e-14	0	agree	
+S1 S2$rmse	double	200	3.49296131421778e-12	5.50004486399303e-13	0	agree	

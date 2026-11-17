@@ -1,0 +1,13 @@
+             path    kind   n    max_rel  max_abs outside verdict note
+          S4 S2$k  double 192 0.00000000 0.000000       0   agree     
+ S4 S2$n_features integer 264         NA       NA       1  differ     
+    S4 S2$n_calls integer 264         NA       NA       1  differ     
+   S4 S2$null_p05  double 264 0.05645256 0.011580       1 outside     
+   S4 S2$null_p01  double 264 0.05274653 0.005748       1 outside     
+        S4 S2$fdp  double 264 0.09302109 0.031007       1 outside     
+      S4 S2$power  double 264 0.00000000 0.000000       0   agree     
+       S4 S2$bias  double 264 0.36540012 0.066163       1 outside     
+       S4 S2$rmse  double 264 0.01929071 0.025190       1 outside     
+
+18 leaves compared: 11 agree, 5 outside the rule, 2 differ (discrete or structure)
+largest relative difference over the doubles: 0.365 (S4 S2$bias)
