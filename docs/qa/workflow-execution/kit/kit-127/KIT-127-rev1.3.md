@@ -143,6 +143,27 @@ Targeted file first, then the lipid and metab DA and RUV files that call the edi
 
 R 4.6.1; the pinned libraries are not installed into. No edits to `tests/testthat/helper-workflow-checkpoint-fixtures.R`, stored oracles or `tools/profiling/`. No `roxygen2::document()`. Branch `kit-127` from `performance-v2`; commit locally, never push, no attribution lines.
 
-## Status
+## Status (2026-11-18): implemented on branch `kit-127`, kernel only; held for KIT-129's wiring
 
-(filled at close)
+Commits on `kit-127` (from `performance-v2` ab9480e8): 9996a81e (this ticket), f0a09a30 (failing-first tests), abf30703 (the kernel, `ruv_factors` in both DA entry points, Collate, two man pages), 68227c7a (NEWS).
+
+**Tests.** `test-kit127-omics-ruv-factors.R`: on the `performance-v2` sources 0 passed, 8 errors (the functions and the argument do not exist); on the branch 147 passed and 17 failed at the first run, both causes in the test's own expectations (the entry point's table has its own row order; one of the two assays of the fixture has no feature the model cannot estimate), corrected once; then 163 passed, 0 failed. The kernel was not changed by the correction.
+
+Affected files on the branch, one at a time, all 0 failed: lipid-02-da-core-helpers 16, metab-da-orchestration-direct-shared 34, metab-02h-da-orchestration-characterization 26, module-ci-lipid-da 140, module-ci-metab-da 138, workflow-omics-da-contrasts 138, workflow-lipid-declarations 259, workflow-metab-declarations 259, lipid-12c-ruv-s4-characterization 59, metab-03a-ruviii-c-varying-characterization 32, general-filemgmt-duplicate-resolution-contracts 88 (it reads Collate). Not run: the full suite, `R CMD check`, an install, any journey (KIT-129's checkpoint).
+
+**Today's path unchanged.** `git diff performance-v2` is empty for the two legacy method files, the declarations, the registry, `NAMESPACE`, `tools/profiling`, `tests/testdata` and the fixtures helper. On a seeded data set the sweep, the corrected tables, the object's arguments and design, the DA tables, fits and counts of both classes give the same 18 sha256 digests on the `performance-v2` sources and on the branch (scratch `k127/legacy_digest.R`, `digest.log`).
+
+**(b) and the stored references.** Probe: `restoreRuvFeatureLevels` added to both legacy methods in a scratch copy, candidate files one at a time.
+
+| Would move if (b) were applied to today's path | Evidence |
+|---|---|
+| `test-lipid-12c-ruv-s4-characterization.R` and `test-metab-03a-ruviii-c-varying-characterization.R`: the KIT-124 W1 reference test ("returns `RUVIIIC::RUVIII_C_Varying`'s values exactly", 8 expectations each) and the forwarding test with a mocked kernel (2 each) | probe: 10 failures per file |
+| The kit journeys `lipid_screen` and `metab_screen` (RUV automatic by default in `workflow_kit_driver.R`): every recorded state and product from the RUV step on | by reading; no journey was run |
+
+Not moved under the probe (0 failed): lipid-09-s4-normalization-methods 39, workflow-lipid-declarations 259, workflow-metab-declarations 259, module-ci-lipid-norm 156, module-ci-metab-norm 156, workflow-omics-ruv-complete-controls 28, workflow-omics-worker 289, omics-norm-core 62, omic-norm-module 639, omic-summary-module 1703, workflow-integration-input 130, workflow-native-session 734. By reading: the GUI-entry oracles of lipid and metab and the e2e lanes set RUV to skip. Not probed (stopped at the time limit): workflow-omics-application-reads, workflow-omics-sessions, workflow-omics-figures, workflow-omics-residency, workflow-kit-harness.
+
+So (b) stays behind the new path and nothing stored moves in this ticket.
+
+**KIT-128.** `git merge-tree kit-127 kit-128` is clean (no textual conflict). The merged tree was not built or tested.
+
+**For the user.** D2 (supplied controls not tested, kept in the corrected matrix), D3 (technical replicates as replicate sets left out), D4 (k: a user's k and the bounded sweep's k are not arms of S4 with all features as controls; arm 7 used `sva`'s estimate), D5 (the corrected matrix is RUV-III-C's own correction). The kernel functions are internal; whether `runOmicsRuvFactors` is exported for workbook users is open. The acceptance boxes above are left for the reviewer to tick.
