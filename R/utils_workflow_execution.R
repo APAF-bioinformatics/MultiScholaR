@@ -1427,6 +1427,15 @@ workflowLaunchService <- function(config, unit, role, path, hash, cap = NULL, bi
     dir.create(scratch, showWarnings = FALSE)
     args <- c(args, paste0("--setenv=TMPDIR=", scratch))
     if (role == "worker") args <- c(args, "--setenv=MULTISCHOLAR_WORKFLOW_WORKER=1")
+    # KIT-134 (F3, U3): inside the packaged bundle (`MSR_BUNDLE` set by its launcher) the bundled R/bin/Rscript needs
+    # the bundle's R home and shared libraries, and a unit gets the bundle's library, Python, pandoc, PATH and locale
+    # rather than the user manager's. Without `MSR_BUNDLE` the arguments are unchanged.
+    if (nzchar(Sys.getenv("MSR_BUNDLE"))) {
+        variables <- c("RHOME", "LD_LIBRARY_PATH", "R_LIBS_USER", "R_LIBS_SITE", "RETICULATE_PYTHON", "PYTHONNOUSERSITE",
+            "RSTUDIO_PANDOC", "MSR_BUNDLE", "PATH", "LANG", "LC_CTYPE", "LC_ALL")
+        values <- unname(Sys.getenv(variables))
+        args <- c(args, paste0("--setenv=", variables, "=", values)[nzchar(values)])
+    }
     args <- c(args, file.path(R.home("bin"), "Rscript"), "--vanilla", "-e", expression, path, hash)
     workflowSystemd(args, command = "systemd-run")
     invisible(NULL)

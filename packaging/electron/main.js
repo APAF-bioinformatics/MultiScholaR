@@ -188,7 +188,13 @@ function startR(port, runFolder, probe) {
 
 // Stops the R process tree: Linux, the process group, then SIGKILL after 5 s; Windows,
 // taskkill /T /F (Rscript.exe runs Rterm.exe as a child; ending the parent alone leaves R running).
+// Under the systemd worker the application runs in units of the user manager, outside R's process
+// group: their slice (named on the MSR-LAUNCHER line) is stopped first.
 function stopR() {
+  if (launcher.launcher === 'systemd' && /^multischolarwfx[a-f0-9]{16}\.slice$/.test(launcher.slice || '')) {
+    const stopped = spawnSync('/usr/bin/systemctl', ['--user', 'stop', launcher.slice], { timeout: 15000, stdio: 'ignore' });
+    record('slice-stopped', { slice: launcher.slice, status: stopped.status });
+  }
   return new Promise((resolve) => {
     if (!rProcess || rExited) {
       resolve();

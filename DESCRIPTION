@@ -472,6 +472,7 @@ Imports:
     janitor,
     jsonlite,
     knitr,
+    later,
     lazyeval,
     limma,
     logger,
