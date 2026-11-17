@@ -233,6 +233,7 @@ fitProtDaBaseModel <- function(data_subset, design_m, design_matrix,
   # design is standard lmFit with the reason recorded, never duplicateCorrelation with a zeroed correlation.
   design_subset <- design_matrix[samples_in_model, , drop = FALSE]
   replicate <- resolveProtTechnicalReplicateBlock(design_subset, group_id, technical_replicate_id)
+  refuseNoBiologicalReplication(replicate, design_subset[[group_id]]) # KIT-128 K128-1
   block <- replicate$block
   duplicate_correlation <- NULL
   uses_duplicate_correlation <- isTRUE(replicate$technical)

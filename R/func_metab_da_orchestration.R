@@ -230,6 +230,9 @@ runMetabolitesDA <- function(
     all_qvalue_warnings <- list()
     # KIT-128: the assays whose kernel stopped, with the message.
     failed_assays <- list()
+    # KIT-128 K128-1: a design without biological replication is refused before any assay.
+    refuseNoBiologicalReplication(resolveProtTechnicalReplicateBlock(as.data.frame(design_matrix), group_col,
+        theObject@technical_replicate_id), design_matrix[[group_col]])
 
     # Process each assay
     for (assay_name in assay_names) {

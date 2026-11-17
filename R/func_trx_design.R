@@ -74,10 +74,12 @@ trxDesignCheck <- function(results, columnMapping) {
     tryCatch({
         levels <- results$group_levels %||% trxDesignGroupLevels(results$design_matrix, character())
         checked <- validateTrxDesign(runs, results$design_matrix, levels)
-        # KIT-128: technical replicates are summed per biological unit at the design step (`trxSumTechnicalReplicates`),
-        # so a group's samples are its units.
+        # KIT-128: a group's samples are its biological units whenever the declared column repeats a unit: technical
+        # replicates are summed per unit at the design step (`trxSumTechnicalReplicates`), and a design whose every group
+        # is one unit (`spanned_by_design`) has one sample per group, which is refused below.
         replicate <- resolveProtTechnicalReplicateBlock(as.data.frame(checked$design), "group", "tech_rep_group")
-        sizes <- table(if (isTRUE(replicate$technical)) checked$group[!duplicated(replicate$block)] else checked$group)
+        units <- replicate$reason %in% c("technical_replicates", "spanned_by_design")
+        sizes <- table(if (units) checked$group[!duplicated(replicate$block)] else checked$group)
         small <- names(sizes)[sizes < 2L]
         if (length(small)) {
             trxAbort(sprintf("group(s) with fewer than two samples: %s", paste(small, collapse = ", ")),

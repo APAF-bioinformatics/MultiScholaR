@@ -41,6 +41,7 @@ fitLipidDaAssayModel <- function(data, design_matrix, formula_string, sample_id_
     if (is.null(technical_replicate_id)) return(limma::lmFit(data_subset, design = design_m))
     # KIT-128: the rule proteomics uses, on the design rows of the fitted samples.
     replicate <- resolveProtTechnicalReplicateBlock(as.data.frame(dm)[common_samples, , drop = FALSE], group_id, technical_replicate_id)
+    refuseNoBiologicalReplication(replicate, as.data.frame(dm)[common_samples, group_id])
     correlation <- NA_real_
     if (isTRUE(replicate$technical)) {
         correlation <- limma::duplicateCorrelation(data_subset, design = design_m, block = replicate$block)$consensus.correlation
@@ -483,6 +484,9 @@ runLipidsDA <- function(
     all_qvalue_warnings <- list()
     # KIT-128: the assays whose kernel stopped, with the message.
     failed_assays <- list()
+    # KIT-128 K128-1: a design without biological replication is refused before any assay.
+    refuseNoBiologicalReplication(resolveProtTechnicalReplicateBlock(as.data.frame(design_matrix), group_col,
+        theObject@technical_replicate_id), design_matrix[[group_col]])
 
     # Process each assay
     for (assay_name in assay_names) {

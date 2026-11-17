@@ -19,6 +19,10 @@
    the samples are now the units (named by `tech_rep_group`), the summed runs are recorded with the design
    state, results no longer equal the notebook on library counts, and the RUVIII export no longer offers a
    technical-replicate M. Designs without technical replicates are unchanged.
+ * A design whose every group is one biological unit measured more than once is refused in every omic: no
+   biological replication. Proteomics, lipidomics and metabolomics stop the differential analysis with an error
+   (class `omics_da_no_biological_replication`) naming the groups; before, the runs were tested as independent
+   samples. Import, design saving and normalisation are unchanged.
  * Transcriptomics design check: a group needs two biological units, as in every omic. A group of one unit
    sequenced twice (two libraries, one `tech_rep_group`) is now refused at save; before, it passed as two samples.
  * Lipidomics and metabolomics differential abundance: an error on one assay is no longer dropped silently.
