@@ -1,0 +1,6 @@
+Loading required namespace: edgeR
+Loading required namespace: RUVSeq
+Loading required namespace: sva
+10:25:34 trx random split 9001 done (12.4 s)
+10:25:41 trx random split 9002 done (6.8 s)
+10:25:49 trx random split 9003 done (8.5 s)

@@ -66,7 +66,8 @@ prepared_file <- file.path(args$data_dir, "prepared", "ub_precursors.rds")
 if (!file.exists(prepared_file)) {
     dir.create(dirname(prepared_file), showWarnings = FALSE)
     extracted <- file.path(args$data_dir, "extracted")
-    if (!file.exists(file.path(extracted, MEMBER))) utils::unzip(input, files = MEMBER, exdir = extracted, junkpaths = TRUE, unzip = "unzip")
+    if (!file.exists(file.path(extracted, MEMBER))) utils::unzip(input, files = file.path("DIANN1.8_SingleCells_CellCycle", MEMBER),
+        exdir = extracted, junkpaths = TRUE, unzip = "unzip")
     header <- names(data.table::fread(file.path(extracted, MEMBER), nrows = 0L))
     q_columns <- intersect(c("Q.Value", "PG.Q.Value", "Global.Q.Value", "Global.PG.Q.Value"), header)
     report <- data.table::fread(file.path(extracted, MEMBER), select = c("Run", "Protein.Group", "Stripped.Sequence", "Precursor.Id",

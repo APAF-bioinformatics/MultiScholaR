@@ -1,0 +1,3 @@
+omic	split_type	split	arm	status	message
+metab	random	9002	7	crashed	K125_FAIL_AT: the deliberate failure of the lifecycle test
+metab	batch	9002	7	crashed	K125_FAIL_AT: the deliberate failure of the lifecycle test

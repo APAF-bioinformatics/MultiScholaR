@@ -1,0 +1,7 @@
+omic	split_type	split	seed	group_A	group_B
+metab	random	9001	5409001	HU_neg_187_b2,HU_neg_084_b2,HU_neg_112_b2,HU_neg_050,HU_neg_119_b2,HU_neg_029_b2	HU_neg_149,HU_neg_077,HU_neg_073_b2,HU_neg_061,HU_neg_150,HU_neg_092_b2
+metab	random	9002	5409002	HU_neg_026_b2,HU_neg_198_b2,HU_neg_204,HU_neg_033_b2,HU_neg_067_b2,HU_neg_147_b2	HU_neg_135_b2,HU_neg_170,HU_neg_083,HU_neg_130,HU_neg_119_b2,HU_neg_058_b2
+metab	random	9003	5409003	HU_neg_175,HU_neg_150,HU_neg_073_b2,HU_neg_105,HU_neg_108,HU_neg_119_b2	HU_neg_055,HU_neg_062_b2,HU_neg_042_b2,HU_neg_015_b2,HU_neg_090,HU_neg_044
+metab	batch	9001	5419001	HU_neg_131,HU_neg_138,HU_neg_186,HU_neg_020,HU_neg_194_b2,HU_neg_057_b2	HU_neg_174,HU_neg_041,HU_neg_039_b2,HU_neg_033_b2,HU_neg_087_b2,HU_neg_062_b2
+metab	batch	9002	5419002	HU_neg_043,HU_neg_109,HU_neg_148,HU_neg_078,HU_neg_073_b2,HU_neg_199_b2	HU_neg_068,HU_neg_093,HU_neg_197_b2,HU_neg_057_b2,HU_neg_014_b2,HU_neg_129_b2
+metab	batch	9003	5419003	HU_neg_065,HU_neg_027,HU_neg_028,HU_neg_175,HU_neg_023_b2,HU_neg_033_b2	HU_neg_044,HU_neg_086,HU_neg_139_b2,HU_neg_030_b2,HU_neg_137_b2,HU_neg_117_b2
