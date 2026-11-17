@@ -258,31 +258,59 @@ refuseOmicsRuvCorrectedObject <- function(theObject) {
         "uncorrected object"), class = c("omics_ruv_object_already_corrected", "omics_ruv_factors_invalid"), call = NULL)
 }
 
+#' The tested features with no value in one whole group, by feature and group (audit F5).
+#' @return A data frame with the columns `feature` and `group`, in the matrix's row order; no row when none.
+#' @noRd
+findOmicsRuvUnobservedGroups <- function(expr_matrix, design_matrix, sample_id_col, group_col) {
+    samples <- as.character(design_matrix[[sample_id_col]])
+    common <- intersect(colnames(expr_matrix), samples)
+    groups <- if (is.null(group_col)) character() else as.character(design_matrix[[group_col]])[match(common, samples)]
+    levels <- unique(groups[!is.na(groups)])
+    if (!nrow(expr_matrix) || !length(levels)) return(data.frame(feature = character(), group = character(), stringsAsFactors = FALSE))
+    seen <- is.finite(expr_matrix[, common, drop = FALSE])
+    at <- which(do.call(cbind, lapply(levels, function(level) rowSums(seen[, groups %in% level, drop = FALSE]) == 0L)), arr.ind = TRUE)
+    at <- at[order(at[, 1L], at[, 2L]), , drop = FALSE]
+    data.frame(feature = rownames(expr_matrix)[at[, 1L]], group = levels[at[, 2L]], stringsAsFactors = FALSE)
+}
+
 #' One assay's DA input with the RUV factors in the model (KIT-124 S4, `testWithW` and `daKernel`)
 #'
-#' The supplied controls are left out of the test; the W columns are added to the design and to the formula; a
-#' feature whose observed samples cannot estimate every coefficient of that model is left out (it would stop the
-#' fit of the whole assay) and named in a warning of class `omics_ruv_features_not_tested`. An assay without
-#' factors (k = 0 or refused) keeps the design and the formula.
+#' The supplied controls are left out of the test; the W columns are added to the design and to the formula. A
+#' feature is left out only when its observed samples cannot estimate a W coefficient (the fit would then compare
+#' its groups without the adjustment); those features are counted in a warning of class
+#' `omics_ruv_features_not_tested` and named in `not_tested`. A feature with no value in one whole group is kept:
+#' limma leaves that group's coefficient missing for it and tests it in the comparisons between the groups where it
+#' is observed, and it is listed in `not_observed` (the user's decision of 2026-11-18 on audit F5; KIT-124 design
+#' review, M9). This departs from the kernel of KIT-124's simulator, which left out every feature that could not
+#' estimate all coefficients of the model; the two rules agree where every feature is observed in every group, which
+#' is the data the simulator's arms 7 and 8 were scored on. limma forms a contrast's standard error from the
+#' full design's correlations, so with missing values and W in the model it is approximate (for any feature with
+#' missing values, not only these); the estimate, the residual variance and its degrees of freedom are exact. An
+#' assay without factors (k = 0 or refused) keeps the design and the formula. A model that leaves no residual degree
+#' of freedom on the assay's samples stops with class `omics_ruv_no_residual_df`.
 #' @param expr_matrix Feature-by-sample matrix of uncorrected values.
 #' @param design_matrix,formula_string,sample_id_col As the DA kernel reads them.
+#' @param group_col The design's group column, for `not_observed`; NULL lists nothing.
 #' @param assay_factors The assay's entry of `runOmicsRuvFactors()$factors`.
 #' @param assay_name The assay's name; the factors of another assay are refused.
-#' @return `list(expr_matrix, design_matrix, formula_string, not_estimable)`.
+#' @return `list(expr_matrix, design_matrix, formula_string, not_estimable, not_tested, not_observed)`: `not_tested`
+#'   is `list(supplied_controls, not_estimable)`, feature ids; `not_observed` a data frame of `feature` and `group`.
 #' @noRd
 applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_string, sample_id_col, assay_factors,
-                                          assay_name) {
+                                          assay_name, group_col = NULL) {
     if (!is.list(assay_factors) || !all(c("assay", "status", "W", "not_tested") %in% names(assay_factors))) {
         abortOmicsRuvFactors(sprintf("ruv_factors holds no RUV factors for assay '%s'", assay_name))
     }
     if (!identical(assay_factors$assay, assay_name)) {
         abortOmicsRuvFactors(sprintf("the RUV factors of assay '%s' were given for assay '%s'", assay_factors$assay, assay_name))
     }
+    supplied_controls <- intersect(rownames(expr_matrix), assay_factors$not_tested)
     expr_matrix <- expr_matrix[!rownames(expr_matrix) %in% assay_factors$not_tested, , drop = FALSE]
     w <- assay_factors$W
     if (is.null(w)) {
         return(list(expr_matrix = expr_matrix, design_matrix = design_matrix, formula_string = formula_string,
-            not_estimable = character()))
+            not_estimable = character(), not_tested = list(supplied_controls = supplied_controls, not_estimable = character()),
+            not_observed = findOmicsRuvUnobservedGroups(expr_matrix, design_matrix, sample_id_col, group_col)))
     }
     samples <- as.character(design_matrix[[sample_id_col]])
     absent <- setdiff(intersect(colnames(expr_matrix), samples), rownames(w))
@@ -312,16 +340,22 @@ applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_st
     if (anyNA(expr_matrix)) {
         seen <- is.finite(expr_matrix[, common, drop = FALSE])
         pattern <- apply(seen, 1L, function(row) paste(which(row), collapse = ","))
+        # A W coefficient is estimable when its column is not in the span of the model's other columns on the
+        # feature's observed samples (audit F5: a group without values does not leave the feature out).
         estimable <- vapply(split(seq_len(nrow(seen)), pattern), function(rows) {
-            qr(x[seen[rows[[1L]], ], , drop = FALSE])$rank == ncol(x)
+            x_seen <- x[seen[rows[[1L]], ], , drop = FALSE]
+            rank_all <- qr(x_seen)$rank
+            all(vapply(colnames(w), function(name) qr(x_seen[, colnames(x_seen) != name, drop = FALSE])$rank < rank_all, logical(1L)))
         }, logical(1L))
         keep <- unname(estimable[pattern])
         not_estimable <- rownames(expr_matrix)[!keep]
         expr_matrix <- expr_matrix[keep, , drop = FALSE]
         if (length(not_estimable)) {
-            rlang::warn(sprintf(paste("assay '%s': %d feature(s) have too few values to estimate the model with the RUV factors",
+            rlang::warn(sprintf(paste("assay '%s': %d feature(s) have too few values to estimate the RUV factors' coefficients",
                 "and are not tested"), assay_name, length(not_estimable)), class = "omics_ruv_features_not_tested")
         }
     }
-    list(expr_matrix = expr_matrix, design_matrix = design_matrix, formula_string = formula_string, not_estimable = not_estimable)
+    list(expr_matrix = expr_matrix, design_matrix = design_matrix, formula_string = formula_string, not_estimable = not_estimable,
+        not_tested = list(supplied_controls = supplied_controls, not_estimable = not_estimable),
+        not_observed = findOmicsRuvUnobservedGroups(expr_matrix, design_matrix, sample_id_col, group_col))
 }

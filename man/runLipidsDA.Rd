@@ -33,8 +33,11 @@ named "contrasts" or "contrast_string" containing the contrast formulas.}
 
 \item{ruv_factors}{NULL (the default): the test reads the object's values with \code{formula_string}, as before.
 Or the per-assay RUV-III factors of the factors-in-the-model design (KIT-127): \code{theObject} is then the
-uncorrected object, and per assay the factors W are added to the design and to the model, the supplied
-controls are not tested, and a feature with too few values to estimate that model is not tested.}
+uncorrected object (the corrected object is refused), and per assay the factors W are added to the design and
+to the model and the supplied controls are not tested. A feature is left out only when its observed samples
+cannot estimate a W coefficient. A feature with no value in one whole group is tested in the comparisons
+between the groups where it is observed (limma's handling of missing values) and listed as not observed in
+that group. A model that leaves no residual degree of freedom stops.}
 }
 \value{
 A list containing:
@@ -45,6 +48,9 @@ A list containing:
 \item per_assay_results: List of per-assay result tables
 \item significant_counts: Summary of significant lipids per assay
 \item qvalue_warnings: Any qvalue computation warnings
+\item ruv_features_not_tested, ruv_features_not_observed: with \code{ruv_factors} only. Per assay, the ids not tested
+(\code{supplied_controls}, \code{not_estimable}), and a table (\code{feature}, \code{group}) of the tested features with no
+value in one whole group
 }
 }
 \description{

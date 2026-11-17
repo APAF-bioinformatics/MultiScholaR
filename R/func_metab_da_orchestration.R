@@ -140,8 +140,11 @@ countMetabDaSignificant <- function(df) {
 #' @param eBayes_robust Logical, use robust eBayes (default TRUE).
 #' @param ruv_factors NULL (the default): the test reads the object's values with `formula_string`, as before.
 #'   Or the per-assay RUV-III factors of the factors-in-the-model design (KIT-127): `theObject` is then the
-#'   uncorrected object, and per assay the factors W are added to the design and to the model, the supplied
-#'   controls are not tested, and a feature with too few values to estimate that model is not tested.
+#'   uncorrected object (the corrected object is refused), and per assay the factors W are added to the design and
+#'   to the model and the supplied controls are not tested. A feature is left out only when its observed samples
+#'   cannot estimate a W coefficient. A feature with no value in one whole group is tested in the comparisons
+#'   between the groups where it is observed (limma's handling of missing values) and listed as not observed in
+#'   that group. A model that leaves no residual degree of freedom stops.
 #'
 #' @return A list containing:
 #'   - theObject: The input S4 object (unchanged)
@@ -150,6 +153,9 @@ countMetabDaSignificant <- function(df) {
 #'   - per_assay_results: List of per-assay result tables
 #'   - significant_counts: Summary of significant metabolites per assay
 #'   - qvalue_warnings: Any qvalue computation warnings
+#'   - ruv_features_not_tested, ruv_features_not_observed: with `ruv_factors` only. Per assay, the ids not tested
+#'     (`supplied_controls`, `not_estimable`), and a table (`feature`, `group`) of the tested features with no
+#'     value in one whole group
 #'
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr mutate bind_rows select left_join
@@ -228,6 +234,8 @@ runMetabolitesDA <- function(
 
     # KIT-127: an object the factors kernel has corrected is not tested with the factors as well.
     if (!is.null(ruv_factors)) refuseOmicsRuvCorrectedObject(theObject)
+    ruv_not_tested <- list()
+    ruv_not_observed <- list()
 
     # Initialize results storage
     per_assay_results <- list()
@@ -250,7 +258,9 @@ runMetabolitesDA <- function(
         da_formula <- formula_string
         if (!is.null(ruv_factors)) {
             da_input <- applyOmicsRuvFactorsToDaInput(expr_matrix, design_matrix, formula_string, sample_id_col,
-                ruv_factors[[assay_name]], assay_name)
+                ruv_factors[[assay_name]], assay_name, group_col)
+            ruv_not_tested[[assay_name]] <- da_input$not_tested
+            ruv_not_observed[[assay_name]] <- da_input$not_observed
             expr_matrix <- da_input$expr_matrix
             da_design <- da_input$design_matrix
             da_formula <- da_input$formula_string
@@ -319,7 +329,7 @@ runMetabolitesDA <- function(
 
     logger::log_info("=== Completed runMetabolitesDA ===")
 
-    return(list(
+    result <- list(
         theObject = theObject,
         contrasts_results = contrasts_results,
         da_metabolites_long = da_metabolites_long,
@@ -328,5 +338,11 @@ runMetabolitesDA <- function(
         qvalue_warnings = all_qvalue_warnings,
         da_q_val_thresh = da_q_val_thresh,
         treat_lfc_cutoff = treat_lfc_cutoff
-    ))
+    )
+    # KIT-127: with RUV factors, what was not tested and what was not observed in a whole group, by assay.
+    if (!is.null(ruv_factors)) {
+        result$ruv_features_not_tested <- ruv_not_tested
+        result$ruv_features_not_observed <- ruv_not_observed
+    }
+    return(result)
 }
