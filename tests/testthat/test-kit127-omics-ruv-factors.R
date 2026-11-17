@@ -296,8 +296,9 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
     expect_match(few$factors$pos$reason, "controls observed in every sample")
 
     # a k that could not be estimated is a refusal, not a guess
-    expect_warning(unknown <- suppressMessages(runOmicsRuvFactors(object, "factors_all_features", list(pos = NA_integer_, neg = 1L),
-        "sweep_bounded")), class = "omics_ruv_factors_refused")
+    expect_warning(unknown <- suppressMessages(runOmicsRuvFactors(with_standards, "factors_supplied_controls",
+        list(pos = NA_integer_, neg = 1L), "sweep_bounded", ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))),
+        class = "omics_ruv_factors_refused")
     expect_identical(unknown$factors$pos$status, "refused")
     expect_identical(unknown$factors$neg$k_source, "sweep_bounded")
 })
@@ -349,7 +350,10 @@ test_that("today's estimate of k is available and bounded by the sample-size lim
     real <- boundOmicsRuvSweepK(object, kit127Quiet(runLipidPerAssayRuvOptimization(object, "automatic", params)))
     known <- !is.na(unlist(real$k))
     expect_true(all(unlist(real$k)[known] <= 2L))
-    run <- kit127Quiet(runOmicsRuvFactors(object, "factors_all_features", real$k, real$source))
+    # the bounded sweep's k goes with supplied controls only (audit F1)
+    with_standards <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
+    run <- kit127Quiet(runOmicsRuvFactors(with_standards, "factors_supplied_controls", real$k, real$source,
+        ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is))))
     expect_identical(unname(vapply(run$factors, `[[`, "", "k_source")), c("sweep_bounded", "sweep_bounded"))
     expect_true(all(vapply(run$factors, `[[`, "", "status") %in% c("ok", "refused")))
 })

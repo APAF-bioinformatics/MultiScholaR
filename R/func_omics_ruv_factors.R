@@ -134,6 +134,7 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' @param ruv_number_k The number of factors: a whole number of 0 or more, or one per assay by name. No default.
 #'   0 is no RUV; `NA` (a k that could not be estimated) refuses the assay.
 #' @param ruv_k_source Where k comes from, recorded with it: `"user"` or `"sweep_bounded"` (`boundOmicsRuvSweepK`).
+#'   `"sweep_bounded"` is refused with `"factors_all_features"`: that k was not measured with all features as controls.
 #' @param ruv_control_ids For `"factors_supplied_controls"`: the control feature ids per assay, by assay name.
 #' @param ruv_grouping_variable The design column whose levels are the replicate sets; the object's group column
 #'   when NULL.
@@ -167,6 +168,10 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
     if (!supplied && !is.null(ruv_control_ids)) abortOmicsRuvFactors("ruv_control_ids is for ruv_design = \"factors_supplied_controls\" only")
     if (supplied && !(is.list(ruv_control_ids) && all(names(assays) %in% names(ruv_control_ids)))) {
         abortOmicsRuvFactors("ruv_design = \"factors_supplied_controls\" needs ruv_control_ids for every assay, by assay name")
+    }
+    # Audit F1: the bounded sweep's k was never measured with all features as controls (KIT-129 brings the estimate).
+    if (!supplied && identical(ruv_k_source, "sweep_bounded")) {
+        abortOmicsRuvFactors("ruv_k_source = \"sweep_bounded\" is refused with ruv_design = \"factors_all_features\": that k was not validated for it")
     }
     k_requested <- resolveOmicsRuvFactorsK(ruv_number_k, names(assays))
     design_samples <- as.character(design[[sample_id]])
