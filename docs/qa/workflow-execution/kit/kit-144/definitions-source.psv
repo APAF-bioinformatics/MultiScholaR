@@ -1,0 +1,248 @@
+table | key | simulator | field | value | source
+scenario | * | * | groups | 2 | simulator headers, cell tables
+scenario | * | * | units_per_group | 6 | simulator headers, cell tables
+scenario | * | * | effects_share | 0.20 | simulator headers, cell tables
+scenario | * | * | effects_up_share | 0.5 | simulator headers, cell tables
+scenario | * | * | unwanted_factors | 1 | simulator headers, cell tables
+scenario | * | S4 | unwanted_factors | 2 | sim/s4_lipid_metab.R header (drift along injection order and one sample-wise factor)
+scenario | * | * | factor_group_correlation | 0 | simulator headers, cell tables
+scenario | * | * | missing_share | 0.25 | simulator headers, cell tables
+scenario | * | S3 | missing_share | not applicable (counts) | sim/s3_trx.R header
+scenario | * | * | technical_replicates | none | simulator headers, cell tables
+scenario | * | * | noise | normal | simulator headers
+scenario | * | S3 | noise | negative binomial | sim/s3_trx.R header
+scenario | C1 | * | units_per_group | 12 | simulator headers, cell tables
+scenario | C2 | * | effects_share | 0.10 | simulator headers, cell tables
+scenario | C3 | * | unwanted_factors | 0 | simulator headers, cell tables
+scenario | C3 | * | factor_group_correlation | not applicable | simulator headers, cell tables
+scenario | C4 | * | effects_share | 0 | simulator headers, cell tables
+scenario | C4 | * | effects_up_share | not applicable | simulator headers, cell tables
+scenario | C5 | * | factor_group_correlation | 0.3 | simulator headers, cell tables
+scenario | C5 | S2 | note | correlation 0.3 in expectation; the realised value varies from data set to data set | sim/s2_limpa.R header
+scenario | C5 | S4 | note | the sample-wise factor at exactly 0.3; the injection order is the one of 2,000 random orders whose drift is nearest 0.3 | sim/s4_lipid_metab.R header
+scenario | C6 | * | units_per_group | 4 | simulator headers, cell tables
+scenario | C6 | * | technical_replicates | 2 injections per unit (16 samples) | simulator headers, cell tables
+scenario | C6 | S3 | technical_replicates | 2 libraries per unit (16 libraries) | sim/s3_trx.R header
+scenario | C6 | S1 | note | residual variance 75% biological (shared by a unit's injections) and 25% technical; the factor is per injection | sim/s1_classic.R header
+scenario | C6 | S2 | note | a per-protein unit term N(0, 0.3^2) shared by a unit's injections; precursor noise and the factor per injection | sim/s2_limpa.R header
+scenario | C6 | S3 | note | unit level: Gamma multiplier with the gene's dispersion; library level: negative binomial with dispersion 0.01; depth and the factor per library | sim/s3_trx.R header
+scenario | C6 | S4 | note | biological term shared by an extract's injections; technical noise, drift and the factor per injection; the test treats the 16 injections as independent samples | sim/s4_lipid_metab.R header
+scenario | C7 | * | groups | 3 | simulator headers, cell tables
+scenario | C7 | S1 | note | 20% of proteins changed, half in the treated group and half in the third group; treated against control is scored (10% of proteins are its true effects) | sim/s1_classic.R header
+scenario | C7 | S2 | note | effects in groups A and B only, the third group untouched; B against A is scored | sim/s2_limpa.R header
+scenario | C7 | S3 | note | 20% of genes changed in group B and an independent 20% in group C; B against A is scored | sim/s3_trx.R header
+scenario | C7 | S4 | note | for each changed feature one group, drawn at random, is shifted; all three pairwise contrasts are scored together | sim/s4_lipid_metab.R header
+scenario | S1 | * | units_per_group | 3 | simulator headers, cell tables
+scenario | S2 | * | effects_share | 0.40 | simulator headers, cell tables
+scenario | S3 | * | factor_group_correlation | 0.6 | simulator headers, cell tables
+scenario | S4 | * | unwanted_factors | 3 | simulator headers, cell tables
+scenario | S4 | S1 | note | three mutually orthogonal factors, each of strength 3 | sim/s1_classic.R header
+scenario | S4 | S2 | note | three independent factors of strength 1 each | sim/s2_limpa.R header
+scenario | S4 | S3 | note | three mutually orthogonal factors of strength 3, 1.5 and 0.75 | sim/s3_trx.R header
+scenario | S4 | S4 | note | drift, a batch step along the run and the sample-wise factor, 0.25 of unwanted variance each | sim/s4_lipid_metab.R header
+scenario | S5 | * | missing_share | 0 | simulator headers, cell tables
+scenario | S5 | S3 | missing_share | not applicable (counts) | sim/s3_trx.R header
+scenario | S5 | S3 | note | low counts instead: library size divided by 10 | sim/s3_trx.R header
+scenario | S6 | * | missing_share | 0.50 | simulator headers, cell tables
+scenario | S6 | S3 | missing_share | not applicable (counts) | sim/s3_trx.R header
+scenario | S6 | S3 | not_run | 50% missing has no counterpart for counts | sim/s3_trx.R header
+scenario | S7 | * | noise | t with 3 degrees of freedom, scaled to variance 1 | sim/s1_classic.R, sim/s4_lipid_metab.R headers
+scenario | S7 | S2 | noise | precursor noise t with 3 degrees of freedom, scaled to standard deviation 0.6 | sim/s2_limpa.R header
+scenario | S7 | S3 | noise | negative binomial with outliers: each count multiplied by Uniform(1.5, 10) with probability 0.05 | sim/s3_trx.R header
+scenario | S8 | * | unwanted_factors | 2 | simulator headers, cell tables
+scenario | S8 | S3 | unwanted_factors | 1 | sim/s3_trx.R header
+scenario | S8 | S3 | factor_group_correlation | 1/3 | sim/s3_trx.R header
+scenario | S8 | S1 | note | a batch step (batch 1: 4 control and 2 treated; batch 2: 2 and 4; strength 3) beside the centre's factor | sim/s1_classic.R header
+scenario | S8 | S2 | note | a batch step (batch 1: 4 of A and 2 of B; batch 2: 2 and 4; strength 3) beside the centre's factor | sim/s2_limpa.R header
+scenario | S8 | S3 | note | the unwanted factor is the batch step (batch 1: 4 of A and 2 of B; batch 2: 2 and 4; strength 3) | sim/s3_trx.R header
+scenario | S8 | S4 | note | drift and a batch step (batch 1: 4 of A and 2 of B; batch 2 the reverse), no sample-wise factor | sim/s4_lipid_metab.R header
+scenario | S9 | * | effects_up_share | 0.8 | simulator headers, cell tables
+scenario | S10 | * | note | loadings correlated 0.7 with the feature's abundance | simulator headers
+scenario | S11 | * | units_per_group | 3 | simulator headers, cell tables
+scenario | S11 | * | factor_group_correlation | 0.3 | simulator headers, cell tables
+scenario | S12 | * | units_per_group | 3 | simulator headers, cell tables
+scenario | S12 | * | unwanted_factors | 3 | simulator headers, cell tables
+scenario | S13 | * | units_per_group | 3 | simulator headers, cell tables
+scenario | S13 | * | unwanted_factors | 0 | simulator headers, cell tables
+scenario | S13 | * | factor_group_correlation | not applicable | simulator headers, cell tables
+scenario | S14 | * | unwanted_factors | 0 | simulator headers, cell tables
+scenario | S14 | * | factor_group_correlation | not applicable | simulator headers, cell tables
+scenario | S14 | * | missing_share | 0.50 | simulator headers, cell tables
+scenario | S14 | S3 | missing_share | not applicable (counts) | sim/s3_trx.R header
+scenario | S14 | S3 | note | low counts instead: library size divided by 10 | sim/s3_trx.R header
+design | 1 | * | controls | none | simulator headers, arms
+design | 1 | * | replicate_sets | none | simulator headers, arms
+design | 1 | * | number_of_factors | none | simulator headers, arms
+design | 1 | * | test_on | uncorrected data, group model | simulator headers, arms
+design | 2 | * | controls | none | simulator headers, arms
+design | 2 | * | replicate_sets | none | simulator headers, arms
+design | 2 | * | number_of_factors | the true number | simulator headers, arms
+design | 2 | * | test_on | uncorrected data, the true factor scores in the model (the group model where there is no factor) | simulator headers, arms
+design | 2 | S4 | test_on | the true drift (and batch step) subtracted, the true sample-wise factor in the model | sim/s4_lipid_metab.R header
+design | 3 | * | controls | the least significant features of a first test; their share chosen by the separation sweep | simulator headers, arms
+design | 3 | S1 | controls | the least significant 1 to 20% of proteins of a first test; the share chosen by the separation sweep (findBestNegCtrlPercentage) | sim/s1_classic.R header
+design | 3 | S2 | controls | the least significant 1 to 30% of proteins of a first test; the share chosen by the separation sweep (findBestNegCtrlPercentageCapped) | sim/s2_limpa.R header
+design | 3 | S3 | controls | the least significant 5 to 30% of genes (steps of 5) of a first test; the share chosen by the separation grid (trxRuvGrid) | sim/s3_trx.R header
+design | 3 | S4 | controls | the least significant 1 to 20% of features of a first test, per assay; the share chosen by the separation sweep (runLipidPerAssayRuvOptimization) | sim/s4_lipid_metab.R header
+design | 3 | * | replicate_sets | groups (technical replicates where the design declares them) | simulator headers, arms
+design | 3 | S3 | replicate_sets | groups | sim/s3_trx.R header
+design | 3 | S4 | replicate_sets | groups | sim/s4_lipid_metab.R header
+design | 3 | * | number_of_factors | separation rule | simulator headers, arms
+design | 3 | S1 | test_on | corrected data (ruvIII_C_Varying, then the limma kernel) | sim/s1_classic.R header
+design | 3 | S2 | test_on | corrected data (the route's correction mode) | sim/s2_limpa.R header
+design | 3 | S3 | test_on | original counts, factors in the model (RUVSeq::RUVs, then the edgeR test) | sim/s3_trx.R header
+design | 3 | S4 | test_on | corrected data (ruvIII_C_Varying, then runLipidsDA) | sim/s4_lipid_metab.R header
+design | 4 | * | controls | as the legacy design | simulator headers, arms
+design | 4 | * | replicate_sets | as the legacy design | simulator headers, arms
+design | 4 | * | number_of_factors | separation rule (the legacy design's k) | simulator headers, arms
+design | 4 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 4 | S2 | test_on | uncorrected data, factors in the model (the route's covariates mode) | sim/s2_limpa.R header
+design | 5 | * | controls | all features outside the 25% most significant of a first test | simulator headers, arms
+design | 5 | * | replicate_sets | groups (technical replicates where the design declares them) | simulator headers, arms
+design | 5 | S3 | replicate_sets | none (RUVSeq::RUVg uses controls only) | sim/s3_trx.R header
+design | 5 | S4 | replicate_sets | groups | sim/s4_lipid_metab.R header
+design | 5 | * | number_of_factors | separation rule (the legacy design's k) | simulator headers, arms
+design | 5 | S4 | number_of_factors | separation rule applied to these controls (ruvCancor, then findBestKElbow) | sim/s4_lipid_metab.R header
+design | 5 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 6 | * | controls | features with first-test q above 0.5 | simulator headers, arms
+design | 6 | * | replicate_sets | groups (technical replicates where the design declares them) | simulator headers, arms
+design | 6 | S3 | replicate_sets | none (RUVSeq::RUVg uses controls only) | sim/s3_trx.R header
+design | 6 | S4 | replicate_sets | groups | sim/s4_lipid_metab.R header
+design | 6 | * | number_of_factors | separation rule (the legacy design's k) | simulator headers, arms
+design | 6 | S4 | number_of_factors | separation rule applied to these controls (ruvCancor, then findBestKElbow) | sim/s4_lipid_metab.R header
+design | 6 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 7 | * | controls | all features | simulator headers, arms
+design | 7 | * | replicate_sets | groups | simulator headers, arms
+design | 7 | S2 | replicate_sets | groups (the declared technical replicates in the technical-duplicate scenario) | sim/s2_limpa.R header
+design | 7 | * | number_of_factors | estimated count | simulator headers, arms
+design | 7 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 7 | S3 | test_on | original counts, factors in the model (RUVSeq::RUVs) | sim/s3_trx.R header
+design | 8 | * | controls | 50 features with no effect in any group (known nulls) | sim/s1_classic.R, sim/s2_limpa.R headers
+design | 8 | S3 | controls | 50 genes with no effect in any group (known nulls) | sim/s3_trx.R header
+design | 8 | S4 | controls | the 10 internal standards (5 per assay) | sim/s4_lipid_metab.R header
+design | 8 | * | replicate_sets | groups | simulator headers, arms
+design | 8 | S2 | replicate_sets | groups (the declared technical replicates in the technical-duplicate scenario) | sim/s2_limpa.R header
+design | 8 | S3 | replicate_sets | none (RUVSeq::RUVg uses controls only) | sim/s3_trx.R header
+design | 8 | * | number_of_factors | estimated count | simulator headers, arms
+design | 8 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 9 | * | controls | 40 known nulls and 10 features with a true effect | sim/s1_classic.R, sim/s2_limpa.R headers
+design | 9 | S3 | controls | 40 known null genes and 10 genes with a true effect (50 nulls under the global null) | sim/s3_trx.R header
+design | 9 | S4 | controls | the 10 internal standards, the first of each assay with a true effect of 1 log2 (2 of 10) | sim/s4_lipid_metab.R header
+design | 9 | * | replicate_sets | groups | simulator headers, arms
+design | 9 | S2 | replicate_sets | groups (the declared technical replicates in the technical-duplicate scenario) | sim/s2_limpa.R header
+design | 9 | S3 | replicate_sets | none (RUVSeq::RUVg uses controls only) | sim/s3_trx.R header
+design | 9 | * | number_of_factors | estimated count | simulator headers, arms
+design | 9 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 10 | * | controls | as known null controls, factors in model | simulator headers, arms
+design | 10 | * | replicate_sets | as known null controls, factors in model | simulator headers, arms
+design | 10 | * | number_of_factors | estimated count | simulator headers, arms
+design | 10 | * | test_on | corrected data, group model | simulator headers, arms
+design | 11 | * | controls | all features | simulator headers, arms
+design | 11 | * | replicate_sets | as all features as controls, factors in model | simulator headers, arms
+design | 11 | * | number_of_factors | fixed at 1 | simulator headers, arms
+design | 11 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 12 | * | controls | the known null controls | simulator headers, arms
+design | 12 | * | replicate_sets | none | simulator headers, arms
+design | 12 | * | number_of_factors | estimated count | simulator headers, arms
+design | 12 | * | test_on | ruv::RUV4, p-values of ruv::variance_adjust (p.ebayes) | simulator headers, arms
+design | 13 | * | controls | the known null controls | simulator headers, arms
+design | 13 | * | replicate_sets | none | simulator headers, arms
+design | 13 | * | number_of_factors | not a parameter | simulator headers, arms
+design | 13 | * | test_on | ruv::RUVinv, p-values of ruv::variance_adjust (p.ebayes) | simulator headers, arms
+design | 14 | * | controls | none | simulator headers, arms
+design | 14 | * | replicate_sets | none | simulator headers, arms
+design | 14 | * | number_of_factors | estimated count | simulator headers, arms
+design | 14 | S3 | number_of_factors | svaseq's own estimate | sim/s3_trx.R header
+design | 14 | * | test_on | uncorrected data, surrogate variables of sva::sva in the model | simulator headers, arms
+design | 14 | S3 | test_on | original counts, surrogate variables of sva::svaseq in the model | sim/s3_trx.R header
+design | 14E | S3 | controls | none | sim/s3_trx.R header
+design | 14E | S3 | replicate_sets | none | sim/s3_trx.R header
+design | 14E | S3 | number_of_factors | estimated count | sim/s3_trx.R header
+design | 14E | S3 | test_on | original counts, surrogate variables of sva::svaseq in the model | sim/s3_trx.R header
+design | 15 | * | controls | all features | simulator headers, arms
+design | 15 | * | replicate_sets | technical replicates | simulator headers, arms
+design | 15 | * | number_of_factors | estimated count | simulator headers, arms
+design | 15 | * | test_on | corrected data, group model | simulator headers, arms
+design | 16 | * | controls | all features | simulator headers, arms
+design | 16 | * | replicate_sets | technical replicates | simulator headers, arms
+design | 16 | * | number_of_factors | estimated count | simulator headers, arms
+design | 16 | * | test_on | uncorrected data, factors in the model | simulator headers, arms
+design | 17 | * | controls | none | simulator headers, arms
+design | 17 | * | replicate_sets | none | simulator headers, arms
+design | 17 | * | number_of_factors | none | simulator headers, arms
+design | 17 | * | test_on | uncorrected data, the known batch in the model | simulator headers, arms
+design | R | S3 | controls | all genes | sim/s3_trx.R header
+design | R | S3 | replicate_sets | none (RUVSeq::RUVr uses the deviance residuals of a first fit of the group model) | sim/s3_trx.R header
+design | R | S3 | number_of_factors | estimated count | sim/s3_trx.R header
+design | R | S3 | test_on | original counts, factors in the model | sim/s3_trx.R header
+design | I | S4 | controls | the internal standards (median per sample and assay as the normalising factor) | sim/s4_lipid_metab.R header
+design | I | S4 | replicate_sets | none | sim/s4_lipid_metab.R header
+design | I | S4 | number_of_factors | none | sim/s4_lipid_metab.R header
+design | I | S4 | test_on | internal-standard normalised, log2 data, group model | sim/s4_lipid_metab.R header
+design | Qs | S4 | controls | all features | sim/s4_lipid_metab.R header
+design | Qs | S4 | replicate_sets | the pooled QC injections as one replicate set | sim/s4_lipid_metab.R header
+design | Qs | S4 | number_of_factors | estimated count | sim/s4_lipid_metab.R header
+design | Qs | S4 | test_on | corrected data, group model | sim/s4_lipid_metab.R header
+design | Qm | S4 | controls | all features | sim/s4_lipid_metab.R header
+design | Qm | S4 | replicate_sets | the pooled QC injections as one replicate set | sim/s4_lipid_metab.R header
+design | Qm | S4 | number_of_factors | estimated count | sim/s4_lipid_metab.R header
+design | Qm | S4 | test_on | uncorrected data, factors in the model | sim/s4_lipid_metab.R header
+design | L | S4 | controls | none | sim/s4_lipid_metab.R header
+design | L | S4 | replicate_sets | the pooled QC injections (a LOESS curve per feature along injection order) | sim/s4_lipid_metab.R header
+design | L | S4 | number_of_factors | none | sim/s4_lipid_metab.R header
+design | L | S4 | test_on | drift-corrected data, group model | sim/s4_lipid_metab.R header
+simulator | features | S1 | value | 1,000 proteins before the missing-value filter | sim/s1_classic.R header
+simulator | features | S2 | value | 1,000 proteins of 4 precursors each (limpa::simProteinDataSet) | sim/s2_limpa.R header
+simulator | features | S3 | value | 5,000 genes before the expression filter | sim/s3_trx.R header
+simulator | features | S4 | value | 300 features in two assays of 150, and 10 internal standards (5 per assay) | sim/s4_lipid_metab.R header
+simulator | abundance | S1 | value | log2 abundance N(22, 2^2) | sim/s1_classic.R header
+simulator | abundance | S2 | value | precursor means spread evenly over 2 to 10 (log2, the function's scale) | sim/s2_limpa.R header
+simulator | abundance | S3 | value | log2 of the expected count N(6.5, 2^2); library depth log-normal (sd 0.25 on the log scale, mean 1) | sim/s3_trx.R header
+simulator | abundance | S4 | value | log2 level N(20, 2^2); internal standards at 22 | sim/s4_lipid_metab.R header
+simulator | residual_variance | S1 | value | scaled inverse chi-square, 4 degrees of freedom, scale 0.25^2 (median 0.0745) | sim/s1_classic.R header
+simulator | residual_variance | S2 | value | precursor standard deviation 0.6 (0.09 for a protein with its 4 precursors complete) | sim/s2_limpa.R header
+simulator | residual_variance | S3 | value | dispersion (0.2 + 1 / sqrt(expected count))^2 x 40 / chi-square(40) | sim/s3_trx.R header
+simulator | residual_variance | S4 | value | 0.25 x scaled inverse chi-square with 10 degrees of freedom (median residual standard deviation 0.5 log2); 25% of it technical | sim/s4_lipid_metab.R header
+simulator | true_effect | S1 | value | 1 log2 in the treated group, half of the effects up | sim/s1_classic.R header
+simulator | true_effect | S2 | value | 1 log2 between groups B and A (0.5 in each, opposite signs), half of the effects up | sim/s2_limpa.R header
+simulator | true_effect | S3 | value | 1 log2 in group B, half of the effects up | sim/s3_trx.R header
+simulator | true_effect | S4 | value | 1 log2 in group B on the scenario's share of each assay, half of the effects up | sim/s4_lipid_metab.R header
+simulator | unwanted_factor | S1 | value | sample scores with mean 0 and variance 1; normal loadings; variance of the loadings 3 x the median residual variance | sim/s1_classic.R header
+simulator | unwanted_factor | S2 | value | normal sample scores; normal loadings with variance 3 x 0.09, added to the complete precursor matrix before missing values are drawn | sim/s2_limpa.R header
+simulator | unwanted_factor | S3 | value | sample scores with mean 0 and variance 1; normal loadings on the log2 mean; variance of the loadings 3 x the median residual variance of log2 counts | sim/s3_trx.R header
+simulator | unwanted_factor | S4 | value | two components, drift exp(-2u) along injection order and a sample-wise factor, with normal loadings; their variance together 3 x the median residual variance (0.75), split equally | sim/s4_lipid_metab.R header
+simulator | factor_group_correlation | S1 | value | exact by construction | sim/s1_classic.R header
+simulator | factor_group_correlation | S2 | value | in expectation; the realised value varies from data set to data set | sim/s2_limpa.R header
+simulator | factor_group_correlation | S3 | value | exact by construction | sim/s3_trx.R header
+simulator | factor_group_correlation | S4 | value | sample-wise factor exact; drift: the injection order nearest the target among 2,000 random orders | sim/s4_lipid_metab.R header
+simulator | missing_values | S1 | value | intensity dependent, P(missing) = plogis(limit - value), the limit solved per data set for the scenario's share; a protein is kept when at least half of each group's samples are observed | sim/s1_classic.R header
+simulator | missing_values | S2 | value | detection probability curve of the function, P(missing) = plogis(intercept + 0.7 y, lower.tail = FALSE), drawn after the effects and the factor are added | sim/s2_limpa.R header
+simulator | missing_values | S3 | value | none (counts); genes pass edgeR::filterByExpr | sim/s3_trx.R header
+simulator | missing_values | S4 | value | one detection limit per assay at the scenario's share of all candidate values; a feature is kept when observed at least once in every group, so the share among kept features is lower | sim/s4_lipid_metab.R header
+simulator | pooled_qc | S4 | value | a pooled QC injection first, after every 5 study injections and after the last | sim/s4_lipid_metab.R header
+simulator | test | S1 | value | limma through the package's kernel: ~ 0 + group, treat with a cutoff of 0, eBayes with trend and robust; duplicateCorrelation on the unit where technical replicates are declared | sim/s1_classic.R header
+simulator | test | S2 | value | DPC quantification (engine fastlimpadpc), then limpa::dpcDE with ~ 0 + group, the technical-replicate block where declared, eBayes with trend and robust | sim/s2_limpa.R header
+simulator | test | S3 | value | edgeR quasi-likelihood: TMM, estimateDisp(robust), glmQLFit(robust), glmQLFTest | sim/s3_trx.R header
+simulator | test | S4 | value | limma per assay and contrast: lmFit, contrasts.fit, eBayes with trend and robust; no replicate block | sim/s4_lipid_metab.R header
+simulator | call | S1 | value | q below 0.05 (qvalue::qvalue; Benjamini-Hochberg where it fails) | sim/s1_classic.R header
+simulator | call | S2 | value | q below 0.05 (qvalue::qvalue; Benjamini-Hochberg where it cannot run) | sim/s2_limpa.R header
+simulator | call | S3 | value | Benjamini-Hochberg FDR below 0.05 | sim/s3_trx.R header
+simulator | call | S4 | value | q below 0.05 per assay and contrast (qvalue::qvalue; Benjamini-Hochberg where it fails) | sim/s4_lipid_metab.R header
+simulator | scoring_unit | S1 | value | one false discovery proportion per data set, over the proteins of the scored contrast | sim/s1_classic.R header
+simulator | scoring_unit | S2 | value | one false discovery proportion per data set, over the quantified proteins | sim/s2_limpa.R header
+simulator | scoring_unit | S3 | value | one false discovery proportion per data set, over the genes that pass the expression filter | sim/s3_trx.R header
+simulator | scoring_unit | S4 | value | one false discovery proportion per data set, over the tests of both assays and all contrasts | sim/s4_lipid_metab.R header
+simulator | estimated_count | S1 | value | sva::num.sv(method = "be", B = 20) with the group model, on the proteins observed in every sample | sim/s1_classic.R header
+simulator | estimated_count | S2 | value | sva::num.sv(method = "be", B = 20) with the group model, on the quantified protein matrix | sim/s2_limpa.R header
+simulator | estimated_count | S3 | value | sva::num.sv(method = "be", B = 20) with the group model, on the TMM log counts per million | sim/s3_trx.R header
+simulator | estimated_count | S4 | value | sva::num.sv(method = "be", B = 20) with the group model, per assay on the features complete in every injection; the mean over the two assays is reported | sim/s4_lipid_metab.R header
+simulator | separation_rule | S1 | value | findBestNegCtrlPercentage: 1 to 20% of proteins, metric max_difference, k penalty 0.5 (adaptive) | sim/s1_classic.R header
+simulator | separation_rule | S2 | value | findBestNegCtrlPercentageCapped: 1 to 30% of proteins, metric max_difference, k penalty 0.5 (adaptive) | sim/s2_limpa.R header
+simulator | separation_rule | S3 | value | trxRuvGrid: 5 to 30% of genes in steps of 5, k penalty 0.05 | sim/s3_trx.R header
+simulator | separation_rule | S4 | value | runLipidPerAssayRuvOptimization: 1 to 20% of features per assay, metric max_difference, k penalty 0.5 (adaptive) | sim/s4_lipid_metab.R header
+simulator | refused_data_sets | * | value | a design that refuses a data set is scored with that data set's no-RUV result | simulator headers; kit-124/aggregate.R
+simulator | seed | * | value | 100000 + 10000 x scenario index + data set number; the data drawn once per data set and shared by all designs | simulator headers
+simulator | classes_simulated | S4 | value | lipidomics; the metabolomics code path gave identical output on one data set at start-up, so one class is simulated | sim/s4_lipid_metab.R header
+simulator | estimate_of_zero | * | value | an estimated count of 0 makes the design the no-RUV analysis of that data set | simulator headers
+simulator | data_sets_main | * | value | 1,000 per main scenario and design | simulator sidecars (runs per core cell)
+simulator | data_sets_extra_hard | * | value | 500 per extra-hard scenario and design | simulator sidecars (runs per stress cell)
