@@ -111,6 +111,57 @@ Estimated count  | 7
 Separation rule  | 3
 ")
 
+# Figure S1 (study design). The settings of a scenario, in the order of the scenario grid, with the name drawn.
+schematic_fields <- readSpec("
+field                    | label
+groups                   | Groups
+units_per_group          | Biological units per group
+technical_replicates     | Technical replicates
+effects_share            | Share of features changed
+effects_up_share         | Share of effects upwards
+unwanted_factors         | Unwanted factors
+factor_group_correlation | Correlation of factor with groups
+missing_share            | Share of values missing
+noise                    | Noise
+note                     | Other change (scenario table)
+")
+
+# Figure S1: the four choices of an RUV design and the options of each, in the order drawn. A design's option is
+# the one whose `pattern` matches its definition (kit-144/definitions-source.psv); exactly one must match.
+design_choices <- readSpec("
+choice                | field             | option                              | pattern
+Negative controls     | controls          | All features                        | ^all features$
+Negative controls     | controls          | Known nulls (supplied list)         | known nulls[)]$
+Negative controls     | controls          | Known nulls (supplied list)         | ^the 10 internal standards [(]
+Negative controls     | controls          | List with true effects in it        | with a true effect
+Negative controls     | controls          | First-pass nulls, top 25% dropped   | 25% most significant
+Negative controls     | controls          | First-pass nulls, q > 0.5           | q above 0.5
+Negative controls     | controls          | Least significant, share by sweep   | ^the least significant
+Replicate sets        | replicate_sets    | Groups                              | ^groups
+Replicate sets        | replicate_sets    | Technical replicates                | ^technical replicates$
+Replicate sets        | replicate_sets    | None                                | ^none
+Number of factors, k  | number_of_factors | Estimated count                     | ^estimated count$
+Number of factors, k  | number_of_factors | Separation rule                     | ^separation rule
+Number of factors, k  | number_of_factors | Fixed at 1                          | ^fixed at 1$
+Test reads            | test_on           | Uncorrected data, factors in model  | factors in the model
+Test reads            | test_on           | Corrected data                      | ^corrected data
+")
+
+# Figure S1: the decision rules are drawn as declared (KIT-124 revision 1.2, W3), with the declaration's working
+# terms replaced by the terms of the figures, in this order.
+figure_terms <- readSpec("
+declared              | shown
+Null rate             | Type I error rate
+the true-factor arm   | the ceiling design
+Global null (C4)      | Global null scenario
+Stress cells          | Extra-hard scenarios
+core cell             | main scenario
+A cell                | A scenario
+cells                 | scenarios
+runs                  | data sets
+a factor              | an unwanted factor
+")
+
 # KIT-124 W3 decision rule: the nominal level and the limits of rules 1 and 2 (upper bounds at most 0.075); rule 3
 # counts the data sets with a false discovery proportion above 0.10.
 NOMINAL <- 0.05
@@ -124,6 +175,7 @@ QUANTILES <- c(0.01, 0.05, 0.25, 0.5, 0.75, 0.95, 0.99)
 K_TOP <- 5
 
 DOUBLE_COLUMN <- 7
+LINE_IN <- 0.122
 HEAT_ROW_IN <- 0.15
 HEAT_MAX_IN <- 9.2
 BASE_PT <- 7
@@ -912,6 +964,405 @@ writeDefinitions <- function() {
         "tableS-simulator-parameters.csv")
 }
 
+# ---- Study design (S1a, S1b) -----------------------------------------------------------------------------------
+
+# The schematic is drawn on a canvas measured in inches from the top left corner, 7 in wide, from four kinds of
+# pieces (text, rectangles, segments, points), so that boxes and columns align exactly. Every word and number on
+# it comes from the tables at the top of this script or from kit-144/definitions-source.psv.
+canvasText <- function(x, y, label, size = BASE_PT, face = "plain", colour = "black", hjust = 0, vjust = 1,
+                       angle = 0) {
+    list(text = data.frame(x, y, label, size, face, colour, hjust, vjust, angle))
+}
+
+canvasRect <- function(xmin, xmax, ymin, ymax, fill = NA_character_, colour = NA_character_, linewidth = 0.3) {
+    list(rect = data.frame(xmin, xmax, ymin, ymax, fill, colour, linewidth))
+}
+
+canvasSegment <- function(x, y, xend, yend, colour = "grey30", linewidth = 0.3) {
+    list(segment = data.frame(x, y, xend, yend, colour, linewidth))
+}
+
+canvasPoint <- function(x, y, shape = 16, colour = "black", fill = "white", size = 1.8) {
+    list(point = data.frame(x, y, shape, colour, fill, size))
+}
+
+joinPieces <- function(pieces) {
+    kinds <- c("rect", "segment", "point", "text")
+    stats::setNames(lapply(kinds, \(kind) do.call(rbind, lapply(pieces, `[[`, kind))), kinds)
+}
+
+drawCanvas <- function(pieces, height, name) {
+    p <- joinPieces(pieces)
+    layers <- list(
+        rect = geom_rect(aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = I(fill), colour = I(colour),
+            linewidth = I(linewidth)), data = p$rect),
+        segment = geom_segment(aes(x, y, xend = xend, yend = yend, colour = I(colour), linewidth = I(linewidth)),
+            data = p$segment),
+        point = geom_point(aes(x, y, shape = I(shape), colour = I(colour), fill = I(fill), size = I(size)),
+            stroke = 0.6, data = p$point),
+        text = geom_text(aes(x, y, label = label, size = I(pt(size)), fontface = I(face), colour = I(colour),
+            hjust = I(hjust), vjust = I(vjust), angle = I(angle)), family = font_family, data = p$text)
+    )
+    plot <- ggplot() +
+        layers[!vapply(p, is.null, logical(1))] +
+        scale_x_continuous(limits = c(0, DOUBLE_COLUMN), expand = expansion(0)) +
+        scale_y_reverse(limits = c(height, 0), expand = expansion(0)) +
+        theme_void() +
+        theme(plot.background = element_rect(fill = "white", colour = NA), plot.margin = margin(0, 0, 0, 0))
+    savePair(plot, name, DOUBLE_COLUMN, height)
+}
+
+textWidthIn <- function(text, size = BASE_PT, bold = FALSE) {
+    weight <- if (bold) "bold" else "normal"
+    systemfonts::string_width(text, family = font_family, weight = weight, size = size, res = 72) / 72
+}
+
+# `text` broken at spaces into lines no wider than `width` inches.
+wrapLines <- function(text, width, size = BASE_PT, bold = FALSE) {
+    words <- strsplit(text, " ", fixed = TRUE)[[1]]
+    lines <- character()
+    line <- words[1]
+    for (word in words[-1]) {
+        longer <- paste(line, word)
+        if (textWidthIn(longer, size, bold) <= width) {
+            line <- longer
+        } else {
+            lines <- c(lines, line)
+            line <- word
+        }
+    }
+    c(lines, line)
+}
+
+# Lines of text set from `y` downwards; `lead` (bold) opens the first line.
+canvasParagraph <- function(x, y, text, width, lead = NULL, colour = "black") {
+    indent <- if (is.null(lead)) 0 else textWidthIn(lead, bold = TRUE) + 0.045
+    first <- wrapLines(text, width - indent)[1]
+    rest <- trimws(substring(text, nchar(first) + 1L))
+    lines <- c(first, if (nzchar(rest)) wrapLines(rest, width))
+    at <- y + (seq_along(lines) - 1) * LINE_IN
+    pieces <- list(canvasText(x + c(indent, rep(0, length(lines) - 1)), at, lines, colour = colour))
+    if (!is.null(lead)) {
+        pieces <- c(pieces, list(canvasText(x, y, lead, face = "bold")))
+    }
+    list(pieces = pieces, height = length(lines) * LINE_IN)
+}
+
+canvasHeading <- function(y, text) canvasText(0.04, y, text, size = BASE_PT + 1, face = "bold")
+
+schematicNumber <- function(v) sub("^0\\.", ".", v)
+
+# One scenario's value of each of `fields` in one simulator ("*": the value common to the simulators).
+scenarioSettings <- function(cell, simulator, fields) {
+    vapply(fields, \(field) definitionValue("scenario", cell, simulator, field), character(1))
+}
+
+# One card per simulator: what it generates, the analysis route it runs, and the settings of its own centre
+# scenario that differ from the common centre.
+simulatorCards <- function(y) {
+    left <- 0.04
+    gap <- 0.09
+    pad <- 0.07
+    width <- (DOUBLE_COLUMN - 2 * left - gap * (nrow(omics) - 1)) / nrow(omics)
+    fields <- schematic_fields[schematic_fields$field != "note", ]
+    cards <- lapply(seq_len(nrow(omics)), \(i) {
+        sim <- omics$simulator[i]
+        own <- scenarioSettings("C0", sim, fields$field)
+        common <- scenarioSettings("C0", "*", fields$field)
+        differs <- own != common
+        sections <- list(
+            Generates = paste0(
+                definitionValue("schematic", "data", sim, "value"), "; ",
+                definitionValue("simulator", "features", sim, "value")
+            ),
+            `Analysed with` = definitionValue("schematic", "route", sim, "value"),
+            `Own centre settings` = if (any(differs)) {
+                paste(sprintf("%s: %s", tolower(fields$label[differs]), own[differs]), collapse = "; ")
+            }
+        )
+        sections <- sections[!vapply(sections, is.null, logical(1))]
+        if (anyNA(unlist(sections))) {
+            cli::cli_abort("simulator {sim} lacks a definition the schematic draws", class = "kit144_inconsistent")
+        }
+        lines <- data.frame(label = omics$omic[i], face = "bold", colour = "black", skip = 0)
+        for (section in names(sections)) {
+            body <- wrapLines(sections[[section]], width - 2 * pad)
+            lines <- rbind(
+                lines, data.frame(label = section, face = "plain", colour = "grey45", skip = 0.05),
+                data.frame(label = body, face = "plain", colour = "black", skip = 0)
+            )
+        }
+        lines$y <- cumsum(lines$skip) + (seq_len(nrow(lines)) - 1) * LINE_IN
+        lines$x <- left + (i - 1) * (width + gap)
+        lines
+    })
+    height <- max(vapply(cards, \(card) max(card$y), numeric(1))) + LINE_IN + 2 * pad
+    pieces <- lapply(cards, \(card) {
+        list(
+            canvasRect(card$x[1], card$x[1] + width, y, y + height, fill = "white", colour = "grey45"),
+            canvasText(card$x + pad, y + pad + card$y, card$label, face = card$face, colour = card$colour)
+        )
+    })
+    list(pieces = unlist(pieces, recursive = FALSE), height = height)
+}
+
+# The scenarios as a grid: settings in rows, scenarios in columns. The centre column gives every setting; the
+# column of another scenario is filled only where the scenario departs from the centre, with the new value where
+# it is short and a dot where the scenario table has to be read. Main scenarios dark, extra-hard scenarios light.
+scenarioGrid <- function(y) {
+    cells <- scenarios[scenarios$simulator == "*", c("cell", "scenario")]
+    cells$main <- startsWith(cells$cell, "C")
+    fields <- schematic_fields
+    value <- vapply(cells$cell, scenarioSettings, character(nrow(fields)), simulator = "*", fields = fields$field)
+    centre <- value[, 1]
+    changed <- !is.na(value) & value != "not applicable" & (is.na(centre) | value != centre)
+    changed[, 1] <- FALSE
+    if (anyNA(centre[fields$field != "note"]) || !all(colSums(changed)[-1] > 0)) {
+        cli::cli_abort("a scenario has no definition that sets it apart from the centre",
+            class = "kit144_inconsistent")
+    }
+
+    labels_right <- 1.86
+    centre_in <- 0.52
+    tier_gap <- 0.14
+    column_in <- (DOUBLE_COLUMN - 0.04 - labels_right - centre_in - tier_gap) / (nrow(cells) - 1)
+    row_in <- 0.165
+    cells$left <- labels_right + c(0, centre_in + (seq_len(nrow(cells) - 1) - 1) * column_in) +
+        ifelse(cells$main, 0, tier_gap)
+    cells$right <- cells$left + c(centre_in, rep(column_in, nrow(cells) - 1))
+    tiers <- data.frame(
+        main = c(TRUE, FALSE), name = c("Main scenarios", "Extra-hard scenarios"),
+        runs = definitionValue("simulator", c("data_sets_main", "data_sets_extra_hard"), "*", "value"),
+        fill = c("#4D4D4D", "#C4C4C4"), ink = c("white", "black")
+    )
+    pieces <- list()
+    head_in <- 0
+    for (i in seq_len(nrow(tiers))) {
+        span <- range(c(cells$left[cells$main == tiers$main[i]], cells$right[cells$main == tiers$main[i]]))
+        note <- wrapLines(sub(" per ", " simulated data sets per ", tiers$runs[i], fixed = TRUE), diff(span))
+        pieces <- c(pieces, list(
+            canvasText(span[1], y, tiers$name[i], face = "bold"),
+            canvasText(span[1], y + seq_along(note) * LINE_IN, note, colour = "grey30")
+        ))
+        head_in <- max(head_in, (length(note) + 1) * LINE_IN + 0.05)
+        tiers$from[i] <- span[1]
+        tiers$to[i] <- span[2]
+    }
+    top <- y + head_in
+    pieces <- c(pieces, list(canvasSegment(tiers$from, top - 0.03, tiers$to, top - 0.03)))
+    bottom <- top + nrow(fields) * row_in
+
+    grid <- expand.grid(row = seq_len(nrow(fields)), column = seq_len(nrow(cells)))
+    grid$value <- value[cbind(grid$row, grid$column)]
+    grid$changed <- changed[cbind(grid$row, grid$column)]
+    grid$centre <- grid$column == 1
+    tier <- match(cells$main[grid$column], tiers$main)
+    grid$fill <- ifelse(grid$centre, "#E2E2E2", ifelse(grid$changed, tiers$fill[tier], "#F5F5F5"))
+    grid$ink <- ifelse(grid$changed, tiers$ink[tier], "black")
+    shown <- schematicNumber(grid$value)
+    too_long <- textWidthIn(ifelse(is.na(shown), "", shown)) > ifelse(grid$centre, centre_in, column_in) - 0.03
+    grid$label <- ifelse(
+        grid$centre, ifelse(is.na(shown), "", shown), ifelse(grid$changed, ifelse(too_long, "●", shown), "")
+    )
+    if (any(grid$centre & too_long)) {
+        cli::cli_abort("a centre setting is too long for its cell of the schematic", class = "kit144_inconsistent")
+    }
+    grid$top <- top + (grid$row - 1) * row_in
+    pieces <- c(pieces, list(
+        canvasRect(cells$left[grid$column] + 0.008, cells$right[grid$column] - 0.008, grid$top + 0.008,
+            grid$top + row_in - 0.008, fill = grid$fill),
+        canvasText((cells$left[grid$column] + cells$right[grid$column]) / 2, grid$top + row_in / 2, grid$label,
+            colour = grid$ink, hjust = 0.5, vjust = 0.5),
+        canvasText(labels_right - 0.08, top + (seq_len(nrow(fields)) - 0.5) * row_in, fields$label, hjust = 1,
+            vjust = 0.5),
+        canvasText((cells$left + cells$right) / 2 + 0.04, bottom + 0.05, cells$scenario, hjust = 1, angle = 40)
+    ))
+    names_in <- max(textWidthIn(cells$scenario)) * sin(40 * pi / 180) + 0.16
+    list(pieces = pieces, height = bottom + names_in - y)
+}
+
+figDesignScenarios <- function() {
+    y <- 0.04
+    pieces <- list(canvasHeading(y, "Four simulators, one per analysis route"))
+    y <- y + 0.19
+    cards <- simulatorCards(y)
+    y <- y + cards$height + 0.22
+    heading <- "Scenarios: a centre, seven that change one setting, and a second tier of extra-hard scenarios"
+    pieces <- c(pieces, cards$pieces, list(canvasHeading(y, heading)))
+    y <- y + 0.23
+    grid <- scenarioGrid(y)
+    drawCanvas(c(pieces, grid$pieces), y + grid$height + 0.02, "figS1a-study-design-scenarios")
+}
+
+# The option of `choice_field` a design takes in one simulator. "as <design>" in a definition stands for the
+# value of the design of that name.
+designOption <- function(arm, simulator, choice_field) {
+    value <- definitionValue("design", arm, simulator, choice_field)
+    while (!is.na(value) && startsWith(value, "as ")) {
+        named <- match(tolower(sub("^as (the )?", "", value)), tolower(designs$design))
+        value <- if (is.na(named)) NA else definitionValue("design", designs$arm[named], simulator, choice_field)
+    }
+    rows <- design_choices[design_choices$field == choice_field, ]
+    option <- unique(rows$option[vapply(rows$pattern, grepl, logical(1), x = value)])
+    if (is.na(value) || length(option) != 1L) {
+        cli::cli_abort(
+            "design {.val {arm}} in {simulator}: {choice_field} has no single option in {.code design_choices}",
+            class = "kit144_inconsistent"
+        )
+    }
+    option
+}
+
+# The designs as a grid of the choices they vary: one row per RUV design that is not specific to one omic, one
+# column per option. A filled point: the design takes the option in every omic that ran it; a ring: in some.
+designGrid <- function(y) {
+    scored <- unique(rbind(core, stress)[c("simulator", "arm")])
+    generic <- unique(definitions$key[definitions$table == "design" & definitions$simulator == "*"])
+    rows <- designs[designs$arm %in% scored$arm & !designs$tier %in% c("Reference", "Other methods"), ]
+    rows$in_grid <- rows$arm %in% generic
+    others <- designs[designs$arm %in% scored$arm & !designs$arm %in% rows$arm[rows$in_grid], ]
+    rows <- rows[rows$in_grid, ]
+
+    options <- unique(design_choices[c("choice", "field", "option")])
+    takes <- do.call(rbind, lapply(seq_len(nrow(rows)), \(i) {
+        simulators <- scored$simulator[scored$arm == rows$arm[i]]
+        do.call(rbind, lapply(unique(options$field), \(choice_field) {
+            taken <- vapply(simulators, \(sim) designOption(rows$arm[i], sim, choice_field), character(1))
+            share <- table(taken) / length(simulators)
+            data.frame(row = i, option = names(share), every = as.numeric(share) == 1)
+        }))
+    }))
+
+    labels_right <- 2.98
+    column_in <- 0.25
+    group_gap <- 0.14
+    row_in <- 0.165
+    group <- match(options$choice, unique(options$choice))
+    options$x <- labels_right + (seq_len(nrow(options)) - 0.5) * column_in + (group - 1) * group_gap
+    spans <- do.call(rbind, lapply(unique(options$choice), \(choice) {
+        x <- options$x[options$choice == choice]
+        data.frame(choice, from = min(x) - column_in / 2, to = max(x) + column_in / 2)
+    }))
+    heads <- lapply(seq_len(nrow(spans)), \(i) wrapLines(spans$choice[i], spans$to[i] - spans$from[i], bold = TRUE))
+    head_in <- max(lengths(heads)) * LINE_IN + 0.05
+    top <- y + head_in
+    pieces <- lapply(seq_len(nrow(spans)), \(i) {
+        canvasText(spans$from[i], top - 0.05 - (length(heads[[i]]):1) * LINE_IN, heads[[i]], face = "bold")
+    })
+    pieces <- c(pieces, list(canvasSegment(spans$from, top - 0.03, spans$to, top - 0.03)))
+
+    tier_first <- !duplicated(rows$tier)
+    rows$top <- top + (seq_len(nrow(rows)) - 1) * row_in + cumsum(tier_first) * (LINE_IN + 0.11)
+    bottom <- max(rows$top) + row_in
+    middle <- rows$top + row_in / 2
+    bands <- merge(data.frame(row = seq_len(nrow(rows)), top = rows$top), spans)
+    pieces <- c(pieces, list(
+        canvasText(0.04, rows$top[tier_first] - LINE_IN - 0.015, rows$tier[tier_first], colour = "grey35"),
+        canvasRect(bands$from, bands$to, bands$top + 0.008, bands$top + row_in - 0.008, fill = "#F5F5F5"),
+        canvasPoint(0.1, middle, shape = 15, colour = rows$colour, size = 1.9),
+        canvasText(0.19, middle, rows$design, vjust = 0.5),
+        canvasPoint(options$x[match(takes$option, options$option)], middle[takes$row],
+            shape = ifelse(takes$every, 16, 21), colour = rows$colour[takes$row], size = 2.1),
+        canvasText(options$x + 0.04, bottom + 0.05, options$option, hjust = 1, angle = 40)
+    ))
+    names_in <- max(textWidthIn(options$option)) * sin(40 * pi / 180) + 0.16
+    key_y <- bottom + names_in - 2 * LINE_IN - 0.06
+    pieces <- c(pieces, list(
+        canvasPoint(0.1, key_y + c(0, LINE_IN) + 0.05, shape = c(16, 21), colour = "grey25", size = 2.1),
+        canvasText(0.19, key_y + c(0, LINE_IN) + 0.05,
+            c("in every omic that ran the design", "in some of the omics that ran it"), vjust = 0.5)
+    ))
+    y_next <- bottom + names_in + 0.08
+
+    # The designs and methods that are not rows of the grid, named by tier.
+    others$group <- ifelse(others$tier == "Reference", "Reference designs:",
+        ifelse(others$tier == "Other methods", "Also run, other methods:", "Also run, RUV designs of one omic:"))
+    lists <- vapply(split(others$design, factor(others$group, levels = unique(others$group))),
+        paste, character(1), collapse = "; ")
+    for (i in seq_along(lists)) {
+        paragraph <- canvasParagraph(0.04, y_next, lists[[i]], DOUBLE_COLUMN - 0.08, lead = names(lists)[i])
+        pieces <- c(pieces, paragraph$pieces)
+        y_next <- y_next + paragraph$height + 0.03
+    }
+    list(pieces = pieces, height = y_next - y)
+}
+
+ruleValue <- function(key, field) {
+    value <- definitionValue("rule", key, rep("*", length(key)), field)
+    if (anyNA(value)) {
+        cli::cli_abort("decision rule {.val {key[is.na(value)]}} has no {field} in {.path {definitions_path}}",
+            class = "kit144_inconsistent")
+    }
+    value
+}
+
+# A declared rule in the terms of the figures.
+figureTerms <- function(text) {
+    text <- gsub("^\"|\"$", "", text)
+    for (i in seq_len(nrow(figure_terms))) {
+        text <- gsub(figure_terms$declared[i], figure_terms$shown[i], text, fixed = TRUE)
+    }
+    text
+}
+
+# The measures and their limits as a table, then the rules for bounds, void scenarios and the verdict.
+ruleBlock <- function(y) {
+    numbers <- grep("^[0-9]+$", unique(definitions$key[definitions$table == "rule"]), value = TRUE)
+    columns <- c(0.04, 0.42, 3.05)
+    widths <- c(diff(columns), DOUBLE_COLUMN - 0.04 - columns[3]) - 0.1
+    pieces <- list(
+        canvasText(columns, y, c("Rule", "Measure", "Limit"), colour = "grey35"),
+        canvasSegment(0.04, y + LINE_IN + 0.02, DOUBLE_COLUMN - 0.04, y + LINE_IN + 0.02)
+    )
+    y <- y + LINE_IN + 0.06
+    for (number in numbers) {
+        measure <- wrapLines(figureTerms(ruleValue(number, "declared")), widths[2])
+        limit <- wrapLines(figureTerms(ruleValue(number, "limit")), widths[3])
+        pieces <- c(pieces, list(
+            canvasText(columns[1], y, number),
+            canvasText(columns[2], y + (seq_along(measure) - 1) * LINE_IN, measure),
+            canvasText(columns[3], y + (seq_along(limit) - 1) * LINE_IN, limit)
+        ))
+        y <- y + max(length(measure), length(limit)) * LINE_IN + 0.045
+        pieces <- c(pieces, list(canvasSegment(0.04, y - 0.02, DOUBLE_COLUMN - 0.04, y - 0.02, colour = "grey85")))
+    }
+    y <- y + 0.05
+    for (key in c("bounds", "void", "verdict")) {
+        paragraph <- canvasParagraph(0.04, y, figureTerms(ruleValue(key, "limit")), DOUBLE_COLUMN - 0.08,
+            lead = paste0(ruleValue(key, "declared"), ":"))
+        pieces <- c(pieces, paragraph$pieces)
+        y <- y + paragraph$height + 0.03
+    }
+    list(pieces = pieces, bottom = y)
+}
+
+figDesignChoices <- function() {
+    y <- 0.04
+    pieces <- list(canvasHeading(y, "RUV designs: the choices each one makes"))
+    y <- y + 0.21
+    grid <- designGrid(y)
+    y <- y + grid$height + 0.16
+    pieces <- c(pieces, grid$pieces, list(canvasHeading(y, sprintf("Measures and decision limits (nominal level %s)", NOMINAL))))
+    rules <- ruleBlock(y + 0.21)
+    drawCanvas(c(pieces, rules$pieces), rules$bottom, "figS1b-study-design-designs-and-rules")
+}
+
+# The decision rules as declared, one row per rule, from the definitions.
+writeRules <- function() {
+    keys <- unique(definitions$key[definitions$table == "rule"])
+    fields <- c("declared", "limit", "measure", "applies_in", "stated_source", "reading")
+    x <- data.frame(rule = keys)
+    for (field in fields) {
+        x[[field]] <- ruleValue(keys, field)
+    }
+    rows <- definitions[definitions$table == "rule" & definitions$field == "limit", ]
+    x$declared_in <- rows$source[match(keys, rows$key)]
+    names(x) <- c("rule", "rule_as_declared", "limit_as_declared", "measure_as_declared", "applies_in",
+        "stated_source", "reading_and_amendments", "declared_in")
+    utils::write.csv(x, file.path(out_dir, "tableS-decision-rules.csv"), row.names = FALSE, na = "")
+    cli::cli_inform("written: tableS-decision-rules.csv ({nrow(x)} rows)")
+}
+
 # ---- Run -------------------------------------------------------------------------------------------------------
 
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
@@ -925,4 +1376,7 @@ figOneChoice()
 figStress()
 figFdpDistribution()
 figFactorCount()
+figDesignScenarios()
+figDesignChoices()
 writeDefinitions()
+writeRules()

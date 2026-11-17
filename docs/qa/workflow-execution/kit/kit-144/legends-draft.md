@@ -1,6 +1,6 @@
-# KIT-144: draft legends for the supplementary figures and tables (revised 2026-11-18; S6, S7 and the definition tables added)
+# KIT-144: draft legends for the supplementary figures and tables (revised 2026-11-18; S1 and the decision-rule table added)
 
-Drafts, plain and factual, for the author to rewrite. Every figure is written by `figures.R` from `kit-124/scored/`; Figures S6 and S7 also read `data/k124-main-runs.tsv.xz`, the per-data-set results of the main scenarios (written by `extract-runs.R`, which checks them against the scored tables). Numbers quoted below are read from `out/tableS-per-scenario-results.csv` or, for S6 and S7, from that per-data-set table. Figures S1 and S9 are not drawn yet (see the ticket).
+Drafts, plain and factual, for the author to rewrite. Every figure is written by `figures.R` from `kit-124/scored/`; Figures S6 and S7 also read `data/k124-main-runs.tsv.xz`, the per-data-set results of the main scenarios (written by `extract-runs.R`, which checks them against the scored tables). Numbers quoted below are read from `out/tableS-per-scenario-results.csv` or, for S6 and S7, from that per-data-set table. Figure S1 (two parts) is drawn from `definitions-source.psv` and holds no result. Figure S9 is not drawn yet (see the ticket). Draft text for the Methods and Results is in `methods-draft.md`.
 
 ## Shared definitions (once, in the first legend or the Methods)
 
@@ -13,6 +13,14 @@ Drafts, plain and factual, for the author to rewrite. Every figure is written by
 - **Not judged (dagger, cross or faded).** Scenarios in which the ceiling design itself failed rule 1 or 2, so that no design was judged there: technical duplicates in transcriptomics and in lipidomics/metabolomics (the package fits technical replicates as independent samples in these omics), and the global null in lipidomics/metabolomics (an effect of scoring both assays as one family).
 - **Numbers on axes and in cells** are written without the leading zero (.05 = 0.05).
 - **Subset.** Each design is shown on its primary feature set: all features, or the features complete in every sample for RUV-4, RUVinv and surrogate variable analysis in classic proteomics and lipidomics/metabolomics.
+
+## Figure S1. Design of the simulation study (two parts)
+
+Files: `figS1a-study-design-scenarios` and `figS1b-study-design-designs-and-rules`. One page could not hold the four blocks legibly at 7 in wide (together they are 13.4 in high), so the schematic is split: (a) what was simulated, (b) what was compared and how it was judged.
+
+**(a) Simulators and scenarios.** Top: the four simulators, one per analysis route of the package: what each generates, the analysis it runs, and the settings of its own centre scenario that differ from the common centre. Bottom: the scenarios as a grid, settings in rows and scenarios in columns. The first column gives every setting of the centre scenario. Each other column is filled only where that scenario departs from the centre, with the new value where it is short and a dot where the scenario table has to be read (technical duplicates: 2 injections or libraries per unit; heavy-tailed noise; loadings tied to abundance). Dark cells: the seven main scenarios, each changing one setting (the technical-duplicate scenario also has 4 units per group, so that it has 16 samples); 1,000 simulated data sets per scenario and design. Light cells: the 14 extra-hard scenarios, a second tier that states conditions of use and never fails a design; 500 data sets each. Shares and correlations are written without the leading zero. Transcriptomics has no missing values: its "no missing values" scenario is a low-count scenario and "50% missing" was not run there (scenario table).
+
+**(b) Designs and decision rules.** Top: the RUV designs as a grid of the four choices they vary: negative controls, replicate sets, the rule for the number of unwanted factors (k) and what the test reads. One row per design that is not specific to one omic, in the order and colour of every other figure, under its tier of the option set; a filled point marks the option the design takes in every omic that ran it, a ring an option it takes in some omics only (known-null and first-pass-null designs use no replicate sets in transcriptomics, where they are RUVg; the legacy design tests the corrected data except in transcriptomics, where the factors are in the model). Below the grid: the two reference designs and the designs and methods that are not rows of the grid. Bottom: the seven decision rules with their limits, the rule for bounds, for void scenarios and for the verdict, as declared before the confirming runs, with the declaration's working terms replaced by the terms of the figures (the declared wording is in the decision-rule table).
 
 ## Figure S2. Calibration of every design in every main scenario (two parts)
 
@@ -70,4 +78,8 @@ One row per omic and scenario (8 main, 14 extra-hard): number of groups, biologi
 
 One row per omic and parameter of its simulator (features, abundance and variance model, size of the true effects, the unwanted factor and its strength, missing values, the test and the calling rule, the unit of the false discovery proportion, the two rules for the number of factors, seeds, numbers of data sets), with the file that states it, and the software versions each simulator recorded.
 
-All three are written by `figures.R` from `definitions-source.psv` (one row per definition, with its source; the figures' true number of factors is read from the same file) and, for versions and the scenarios scored, from `kit-124/scored/`.
+## Table S (decision rules), `tableS-decision-rules.csv`
+
+One row per decision rule (1 to 7) and one each for the bounds, void scenarios and the verdict of a design. Columns: the rule and its limit as declared before the confirming runs (quoted; "arm" is the declaration's word for a design, "cell" for a scenario, "run" for a simulated data set, "core" and "stress" for main and extra-hard); the measure as declared; the scenarios and designs it applies to; the source the declaration states for it, or that it states none; the readings taken and the amendments made when the rules were applied, each with its label in the scoring script (A1 to A14); and where the declaration is written.
+
+All four are written by `figures.R` from `definitions-source.psv` (one row per definition, with its source; the figures' true number of factors is read from the same file) and, for versions and the scenarios scored, from `kit-124/scored/`.

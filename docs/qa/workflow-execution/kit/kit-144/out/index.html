@@ -57,7 +57,7 @@
 <p class="lede">MultiScholaR removes unwanted variation (batch, run order, sample handling) with RUV before testing for differences between groups. We tested every way the package could do this on simulated data where the truth is known. One design holds its false discovery rate in every omic at almost no cost in power. The design the package uses today does not: at a nominal 5% it returned 30% to 56% false discoveries in its worst main scenario.</p>
 
 <nav>
-  <a href="#headline">Headline numbers</a><a href="#why">Why</a><a href="#what">What was run</a><a href="#read">How to read</a>
+  <a href="#headline">Headline numbers</a><a href="#why">Why</a><a href="#what">What was run</a><a href="#s1">Fig. S1</a><a href="#rules">Decision rules</a><a href="#read">How to read</a>
   <a href="#s4">Fig. S4</a><a href="#s5">Fig. S5</a><a href="#s2">Fig. S2</a><a href="#s3">Fig. S3</a><a href="#s6">Fig. S6</a><a href="#s7">Fig. S7</a><a href="#s8">Fig. S8</a>
   <a href="#decision">Decision</a><a href="#limits">Limits</a><a href="#source">Sources</a>
 </nav>
@@ -112,6 +112,47 @@
     <tr><th>Extra-hard scenarios</th><td>Eleven per simulator at 500 data sets each (3 per group, 40% changed, strong confounding, three unwanted factors, 50% missing values, heavy-tailed noise and others). They state where a design stops holding and were not used to choose between designs. Two of four simulators have finished these.</td></tr>
   </tbody>
 </table>
+
+<h2 id="s1">Figure S1. The study at a glance</h2>
+<p class="take">Four simulators, one per analysis route. One centre scenario, seven that each change a single setting, and a second tier of harder scenarios. Every RUV design is one combination of four choices, and all were judged by limits written down before the confirming runs.</p>
+<p>The picture is in two parts because one page could not hold it legibly. Nothing in it is a result: it shows what was simulated, what was compared and how it was judged.</p>
+<h3>Part a: what was simulated</h3>
+<figure>
+  <a href="figS1a-study-design-scenarios.png"><img src="figS1a-study-design-scenarios.png" alt="Four boxes describing the simulators, above a grid with the settings of the study in rows and the scenarios in columns; each scenario's column is filled only where it differs from the centre" loading="lazy"></a>
+  <figcaption><b>Legend.</b> Top: the four simulators: what each generates, the analysis it runs, and the settings of its own centre scenario that differ from the common centre. Bottom: settings in rows, scenarios in columns. The first column gives every setting of the centre scenario; each other column is filled only where that scenario departs from the centre, with the new value where it is short and a dot where the scenario table has to be read (technical duplicates: 2 injections or libraries per unit; heavy-tailed noise; loadings tied to abundance). Dark cells: the seven main scenarios, 1,000 simulated data sets per scenario and design; the technical-duplicate scenario also has 4 units per group, so that it has 16 samples. Light cells: the extra-hard scenarios, 500 data sets each, which state conditions of use and never fail a design. Shares and correlations are written without the leading zero. Transcriptomics has no missing values: its "no missing values" scenario is a low-count scenario and "50% missing" was not run there.</figcaption>
+  <div class="files">Full resolution: <a href="figS1a-study-design-scenarios.png">PNG</a> · <a href="figS1a-study-design-scenarios.pdf">PDF</a></div>
+</figure>
+<h3>Part b: what was compared, and the limits</h3>
+<figure>
+  <a href="figS1b-study-design-designs-and-rules.png"><img src="figS1b-study-design-designs-and-rules.png" alt="A grid with one row per RUV design and one column per option of four choices (negative controls, replicate sets, number of factors, what the test reads), with a point where a design takes an option; below it a table of the seven decision rules and their limits" loading="lazy"></a>
+  <figcaption><b>Legend.</b> Top: the RUV designs as a grid of the four choices they vary: negative controls, replicate sets, the rule for the number of unwanted factors (k) and what the test reads. One row per design, in the order and colour of every other figure, under its tier of the option set. A filled point marks the option a design takes in every omic that ran it; a ring marks an option it takes in some omics only (the known-null and first-pass-null designs use no replicate sets in transcriptomics; the legacy design tests the corrected data except in transcriptomics). Below the grid: the two reference designs, and the designs and methods that are not rows of the grid. Bottom: the seven decision rules with their limits and the rules for bounds, void scenarios and the verdict, as written down before the confirming runs, in the terms of the figures.</figcaption>
+  <div class="files">Full resolution: <a href="figS1b-study-design-designs-and-rules.png">PNG</a> · <a href="figS1b-study-design-designs-and-rules.pdf">PDF</a></div>
+</figure>
+
+<h2 id="rules">The decision rules</h2>
+<p class="take">Seven rules, fixed and independently reviewed before the confirming runs. A design passes only if every rule holds in every main scenario; the limits allow for the uncertainty of 1,000 simulated data sets.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th style="width:5%">Rule</th><th style="width:33%">What it asks</th><th style="width:27%">Limit</th><th>Where the limit comes from</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Among features with no real difference, how many get p &lt; 0.05 (and p &lt; 0.01)?</td><td>At most 0.075 (and 0.015)</td><td>A robustness band from the statistics literature (Bradley 1978), taken from secondary sources and used on its upper side only</td></tr>
+    <tr><td>2</td><td>On average, what share of the reported differences is false?</td><td>At most 0.075</td><td>The independent review; no literature source is stated</td></tr>
+    <tr><td>3</td><td>How often does a single data set have more than 10% false discoveries?</td><td>At most the best possible analysis's share plus 0.05</td><td>The independent review: an average can hide a tail</td></tr>
+    <tr><td>4</td><td>When unwanted variation exists, does the design gain over no RUV (more power, or fewer data sets above 10%)?</td><td>A gain above 0</td><td>The independent review</td></tr>
+    <tr><td>5</td><td>When there is nothing to remove, does the design cost power?</td><td>A loss of at most 0.02</td><td>A stated judgement: the cost of fitting two factors that are not needed</td></tr>
+    <tr><td>6</td><td>How often does the analysis crash?</td><td>At most 0.01</td><td>The independent review</td></tr>
+    <tr><td>7</td><td>When no feature truly differs, how often is anything reported?</td><td>At most 0.075</td><td>The independent review</td></tr>
+  </tbody>
+</table>
+</div>
+<ul>
+  <li><b>Limits apply to bounds, not to the measured values:</b> one-sided 97.5% bounds, so a design passes only if it is inside the limit with that confidence. A design fails only if it is outside with the same confidence; in between it is "inconclusive".</li>
+  <li><b>Void scenarios.</b> A scenario where even the best possible analysis misses rule 1 or 2 judges no design. This happened in the technical-duplicate scenario in transcriptomics and lipidomics/metabolomics, and in the "no true differences" scenario in lipidomics/metabolomics.</li>
+  <li><b>Extra-hard scenarios never fail a design.</b> They give its conditions of use.</li>
+  <li><b>One rule could not be met as written.</b> Rule 4 asks for a gain, and in the scenario with no true differences there is nothing to gain, so every design fails it there, the best possible analysis included. Results are given both as written and with that scenario judged without rule 4.</li>
+  <li><b>Designs with technical replicates were run in one scenario,</b> so their "pass" rests on that scenario alone.</li>
+</ul>
+<p class="note">The rules exactly as declared, with their stated sources and every reading taken when they were applied, are in <a href="tableS-decision-rules.csv">tableS-decision-rules.csv</a>.</p>
 
 <h2 id="read">How to read the figures</h2>
 <ul>
@@ -220,13 +261,13 @@
   <li><b>Three further designs are being simulated</b> so that every selectable combination of control set and k rule has its own measured figure. They add rows to these figures; they do not change the ones shown.</li>
   <li><b>An on-target average is not an on-target data set in lipidomics/metabolomics.</b> With 300 features and low power, 15% to 28% of single data sets exceed 10% false discoveries under the recommended design, and 8% to 26% under the best possible analysis (Figure S6).</li>
   <li><b>The automatic estimate of the number of factors over-counts in transcriptomics when there is nothing to remove</b> (zero returned in 36% of such data sets, Figure S7). The error rate stayed on target there and power fell by less than one point (Figure S2 and the results table).</li>
-  <li><b>Two planned supplementary figures are not drawn yet:</b> the study design schematic and the real-data check.</li>
+  <li><b>One planned supplementary figure is not drawn yet:</b> the real-data check.</li>
 </ul>
 
 <h2 id="source">Sources and reproducibility</h2>
 <ul>
   <li>Every figure is drawn by one script, <code>figures.R</code>, from the committed scoring tables; no number in a figure is typed by hand. The numbers in the headline table are the same values, read from <a href="tableS-per-scenario-results.csv">tableS-per-scenario-results.csv</a> (one row per omic, scenario and design, with standard errors and the status of each decision rule). Figures S6 and S7 read the result of every simulated data set from one committed table, which is checked against the scoring tables before it is used.</li>
-  <li>Definitions as tables: <a href="tableS-design-definitions.csv">designs</a> (controls, replicate sets, rule for the number of factors, what the test reads, per omic), <a href="tableS-scenario-definitions.csv">scenarios</a> (every setting of every scenario, per omic) and <a href="tableS-simulator-parameters.csv">simulator parameters</a> (data model, test, software versions). They are written from one source file, which the figures also read.</li>
+  <li>Definitions as tables: <a href="tableS-design-definitions.csv">designs</a> (controls, replicate sets, rule for the number of factors, what the test reads, per omic), <a href="tableS-scenario-definitions.csv">scenarios</a> (every setting of every scenario, per omic) and <a href="tableS-simulator-parameters.csv">simulator parameters</a> (data model, test, software versions), and the <a href="tableS-decision-rules.csv">decision rules</a> as declared. They are written from one source file, which the figures also read.</li>
   <li>The simulators, the pre-specified decision rules, the independent review and the scoring script are in the repository under <code>docs/qa/workflow-execution/kit/kit-124/</code>; the scored tables under <code>kit-124/scored/</code>. R 4.6.1; seeds fixed per simulated data set.</li>
   <li>Method papers consulted: Risso et al. 2014 (RUVSeq) and its vignette; Gagnon-Bartsch and Speed 2012 (RUV-2); Molania et al. 2019 and 2023 (RUV-III, pseudo-replicates); Jacob et al. 2016; Poulos et al. 2020 (RUV-III-C, proteomics); Salim et al. 2022 (RUV-III-NB); Kim et al. 2021 (hRUV, metabolomics); Nygaard et al. 2016 (testing after batch correction); Leek and Storey 2007 (estimating the number of factors). Quotes and DOIs are in <code>kit-124/design-review-20261118.md</code>.</li>
 </ul>
