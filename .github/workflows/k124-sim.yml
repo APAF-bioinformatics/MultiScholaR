@@ -157,6 +157,17 @@ jobs:
         with:
           path: simtree
           persist-credentials: false
+      - name: No LFS filter in the tree (the laptop has no git-lfs)
+        working-directory: simtree
+        run: |
+          # .gitattributes sends *.rds through the LFS filter. With the runner's git-lfs, `git status` reports
+          # tracked .rds files (under docs/ and tests/; the simulators read none) as modified, and the simulators'
+          # meta lines on the state of the work tree come out wrong.
+          git config filter.lfs.clean cat
+          git config filter.lfs.smudge cat
+          git config filter.lfs.process ""
+          git config filter.lfs.required false
+          echo "tracked files reported as modified: $(git status --porcelain --untracked-files=no | wc -l)"
       - name: The library against the laptop's versions
         run: >
           Rscript --vanilla simtree/.github/k124-sim/check-library.R
