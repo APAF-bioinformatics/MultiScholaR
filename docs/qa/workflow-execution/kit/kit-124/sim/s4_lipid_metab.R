@@ -136,8 +136,15 @@
 #     effects in the subset (tested or not); n_calls; null_p05, null_p01 = share of tested nulls under 0.05, 0.01;
 #     fdp (0 with no calls); power = true calls / n_true; bias = mean of sign(truth) x (estimate - truth) and rmse
 #     over tested true effects. `seconds` includes the shared steps the arm uses (E, the sweep, the first pass).
-# Not as the package would behave in C6: nothing. The lipid and metab test has no replicate block, so the 16
-#     injections of C6 are tested as 16 independent samples in every arm, the ceiling included.
+# Technical replicates (KIT-129 R0, on the `kit-128` tree; this file needs that tree): the design declares the extract
+#     as the technical replicate of each injection, as the design step declares `tech_rep_group`. The objects carry it
+#     (`technical_replicate_id = "extract"`, read by runLipidsDA and runMetabolitesDA) and the kernel is called with
+#     `group_id = "group", technical_replicate_id = "extract"`, in every cell. In C6 (4 extracts per group, 2 injections
+#     each) every arm's test, the ceiling included, is therefore fitted with the extract as block
+#     (limma::duplicateCorrelation, then lmFit(block, correlation); KIT-128). In every other cell each extract is one
+#     injection, the package's rule finds no duplicates and the fit is the unblocked one, as before. Before KIT-128
+#     the 16 injections of C6 were tested as 16 independent samples (the KIT-124 confirm rows of C6: void).
+#     The RUV step does not read the declaration (the group, or the arm's own replicate matrix, as before).
 
 if (!identical(Sys.getenv("OMP_NUM_THREADS"), "1")) stop("run with OMP_NUM_THREADS=1 (RUVIIIC is threaded)")
 args <- commandArgs(trailingOnly = TRUE)
@@ -368,13 +375,13 @@ assayTable <- function(m) {
 }
 lipidObject <- function(mats, design) {
     methods::new("LipidomicsAssayData", lipid_data = lapply(mats, assayTable), lipid_id_column = ID_COL,
-        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group")], sample_id = "Sample_ID",
-        group_id = "group", args = list())
+        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group", "extract")], sample_id = "Sample_ID",
+        group_id = "group", technical_replicate_id = "extract", args = list())
 }
 metabObject <- function(mats, design) {
     methods::new("MetaboliteAssayData", metabolite_data = lapply(mats, assayTable), metabolite_id_column = ID_COL,
-        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group")], sample_id = "Sample_ID",
-        group_id = "group", args = list())
+        annotation_id_column = "name", design_matrix = design[, c("Sample_ID", "group", "extract")], sample_id = "Sample_ID",
+        group_id = "group", technical_replicate_id = "extract", args = list())
 }
 assayMatrix <- function(table, samples) {
     m <- as.matrix(as.data.frame(table[, samples], check.names = FALSE))
@@ -401,7 +408,7 @@ daKernel <- function(m, design, formula, contrasts) {
     }
     longTable(quiet(runTestsContrastsLipidDA(data = m, contrast_strings = contrasts, design_matrix = design,
         formula_string = formula, sample_id_col = "Sample_ID", treat_lfc_cutoff = NA, eBayes_trend = TRUE,
-        eBayes_robust = TRUE))$results)
+        eBayes_robust = TRUE, group_id = "group", technical_replicate_id = "extract"))$results)
 }
 contrastsTable <- function(contrasts) data.frame(contrasts = contrasts, friendly_names = contrasts, stringsAsFactors = FALSE)
 
@@ -432,7 +439,8 @@ checkSharedKernels <- function() {
     for (assay in ASSAYS) {
         m <- assayMatrix(ruv_l@lipid_data[[assay]], samples)
         k_l <- daKernel(m, data$design, "~ 0 + group", data$contrasts)
-        k_m <- longTable(quiet(runTestsContrastsMetabDA(m, data$contrasts, data$design, "~ 0 + group", "Sample_ID", NA, TRUE, TRUE))$results)
+        k_m <- longTable(quiet(runTestsContrastsMetabDA(m, data$contrasts, data$design, "~ 0 + group", "Sample_ID", NA, TRUE, TRUE,
+            group_id = "group", technical_replicate_id = "extract"))$results)
         kernels_equal <- kernels_equal && identical(k_l, k_m)
         o <- da_l[da_l$assay == assay, ]
         at <- match(o$lipid_id, k_l$feature)
@@ -885,7 +893,7 @@ main <- function() {
     writeTsv(gather("%s.timing.tsv"), file.path(out_dir, "s4-timing.tsv"))
     git <- function(...) tryCatch(system2("git", c(...), stdout = TRUE, stderr = FALSE), error = function(e) NA_character_)
     versions <- vapply(c("limma", "qvalue", "ruv", "RUVIIIC", "sva", "statmod", "pkgload"), function(p) as.character(utils::packageVersion(p)), "")
-    writeLines(c("simulator: S4 (lipidomics and metabolomics), KIT-124 revision 1.2",
+    writeLines(c("simulator: S4 (lipidomics and metabolomics), KIT-124 revision 1.2; KIT-129 R0: the extract declared as technical replicate (kit-128 tree)",
         paste("commit:", git("rev-parse", "HEAD")),
         paste("script committed state:", if (length(git("status", "--porcelain", "--", "docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R"))) "modified or untracked at run time" else "clean"),
         paste("command:", paste(c("OMP_NUM_THREADS=1 Rscript", sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), args), collapse = " ")),

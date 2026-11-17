@@ -47,7 +47,13 @@
 #   Counts: y_gj ~ NB(mean = L_j * lambda_g * 2^(beta_g,group(j) + sum_f alpha_gf W_jf), dispersion phi_g).
 #   Technical duplicates (C6): 4 biological units per group, 2 libraries each. Unit level: a Gamma(shape 1/phi_g, mean 1)
 #     multiplier (biological dispersion phi_g, BCV about 0.3); library level: NB with technical dispersion 0.01 (BCV 0.1,
-#     library preparation replicates). Depth and the unwanted factor vary per library. The default path sees 16 runs.
+#     library preparation replicates). Depth and the unwanted factor vary per library.
+#     KIT-129 R0, on the `kit-128` tree (this file needs that tree): the design declares the unit as the technical
+#     replicate of each library, and the package's design step sums the libraries of a unit
+#     (trxSumTechnicalReplicates, as trxDesignObject calls it: edgeR::sumTechReps), so the filter, E, every RUV step and
+#     every test see 8 samples, 4 per group. Before KIT-128 the default path saw 16 runs (the KIT-124 confirm rows of
+#     C6: void). The true factor of a summed sample is the mean of its two libraries' scores (arm 2): an approximate
+#     ceiling there, because the sum of two libraries with different scores is not log-linear in their mean.
 #   Heavy tails (S7): every count independently with probability 0.05 multiplied by Uniform(1.5, 10) and rounded: the
 #     "random outliers" of Soneson and Delorenzi 2013 (BMC Bioinformatics 14:91). The negative binomial is already
 #     heavy-tailed on the log scale; a t-distributed log mean would only change the dispersion distribution, whereas
@@ -98,6 +104,8 @@
 #   14  sva::svaseq, its own number of factors; 14E [19] svaseq with n.sv = E. Surrogate variables as W in the model.
 #   15  C6 only: RUVs with the technical-duplicate sets, all genes as controls, k = E, test on normalizedCounts.
 #   16  C6 only: the same RUVs fit with W in the model.
+#       KIT-129 R0: arms 15 and 16 cannot be formed on the `kit-128` tree and are not run: after the design step's
+#       summing no replicate set is left (every sample is its own unit).
 #   17  S8 only: ~ 0 + group + batch.
 #   22  on request (K124_ARMS): arm 8 (RUVg, the same 50 oracle genes: drawn again from arm 8's stream) with k from
 #       today's separation rule on those genes: trxCancor(t(log_cpm_tmm), the group columns, the controls), then
@@ -231,6 +239,23 @@ generate <- function(cl, seed) {
         null_all = stats::setNames(rowSums(beta != 0) == 0, rownames(counts)))
 }
 
+# KIT-129 R0 (kit-128 tree): the design step on a design with technical replicates. The libraries of a unit are summed
+# by the package (trxSumTechnicalReplicates, with the unit declared as `tech_rep_group`); one sample per unit is left.
+sumTechnicalReplicates <- function(d) {
+    table <- data.frame(gene_id = rownames(d$counts), d$counts, check.names = FALSE, stringsAsFactors = FALSE)
+    summed <- trxSumTechnicalReplicates(list(counts = table), data.frame(d$design, tech_rep_group = sprintf("%s_u%02d", d$design$group, d$unit),
+        stringsAsFactors = FALSE), "tech_rep_group")
+    stopifnot(!is.null(summed$summed), all(lengths(summed$summed) == 2L))
+    units <- as.character(summed$design$Run)
+    counts <- as.matrix(summed$count_data$counts[, units])
+    rownames(counts) <- rownames(d$counts)
+    d$counts <- counts
+    d$W <- rowsum(d$W, d$unit, reorder = FALSE) / 2
+    d$design <- data.frame(Run = units, group = summed$design$group, stringsAsFactors = FALSE)
+    d$unit <- seq_along(units)
+    d
+}
+
 refuse <- function(message) rlang::abort(message, class = "s3_refusal")
 
 # The package's fit and test halves with an arm's covariates; the table in the order of the counts' rows.
@@ -304,6 +329,7 @@ oneRun <- function(cl, run) {
     truth <- NULL
     prep <- tryCatch(suppressWarnings(suppressMessages({
         d <- generate(cl, seed)
+        if (cl$tech) d <- sumTechnicalReplicates(d)
         f <- trxExpressionFilter(d$counts, d$design$group)
         y <- f$filtered_counts
         n <- trxTmmLogCpm(y, d$design$group)
@@ -436,7 +462,7 @@ oneRun <- function(cl, run) {
 }
 
 armsOf <- function(cl) {
-    arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$tech) c("15", "16"), if (cl$batch) "17")
+    arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$batch) "17")   # 15, 16: see the header
     if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23", "24"), arms_wanted)
 }
 
@@ -490,7 +516,7 @@ writeTable(do.call(rbind, lapply(stored, `[[`, "timing")), "s3-timing.tsv")
 
 versions <- vapply(c("edgeR", "limma", "RUVSeq", "EDASeq", "sva", "ruv", "pkgload"), function(p) as.character(utils::packageVersion(p)), "")
 writeLines(c(
-    "simulator: S3 (transcriptomics), KIT-124 revision 1.2",
+    "simulator: S3 (transcriptomics), KIT-124 revision 1.2; KIT-129 R0: technical replicates summed by the design step (kit-128 tree)",
     sprintf("commit: %s%s", system("git rev-parse HEAD", intern = TRUE),
         if (length(system("git status --porcelain -- R docs/qa/workflow-execution/kit/kit-124/sim", intern = TRUE))) " (R/ or sim/ differ from the commit)" else ""),
     sprintf("script sha256: %s", digest::digest(file = sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), algo = "sha256")),
