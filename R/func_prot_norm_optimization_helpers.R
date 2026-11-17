@@ -1299,22 +1299,53 @@ attachProtRuvModelFactors <- function(corrected, normalised, factors) {
   corrected
 }
 
-#' What the limma DA reads from a protein object (KIT-126). An object of the factors-in-the-model design carries the
-#' normalised matrix (`args$ruv_uncorrected_quant`): the test reads its rows and samples that are in the object's
-#' protein table, with the design's W columns added to the formula. Every other object returns NULL and is tested on
-#' its own table with the formula as given. An object whose stored matrix, W columns and declaration do not agree is
-#' refused.
+#' Whether a protein object declares the factors-in-the-model design (KIT-126 audit F-01): the declaration
+#' `args$ruvCovariates$ruv_design`, written by `attachProtRuvModelFactors`. A DIA_LIMPA state's declaration
+#' (`ruv_mode = "covariates"` with no `ruv_design`) is not one.
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @return TRUE or FALSE.
+#' @noRd
+protRuvModelDeclared <- function(theObject) {
+  declaration <- theObject@args$ruvCovariates
+  is.list(declaration) && identical(declaration$ruv_design, "factors_in_model")
+}
+
+#' Refusal of the DA entry points that test an object's own table (KIT-126 audit F-02): `daAnalysisWrapperFunction`,
+#' `protein_deAnalysisWrapperFunction` and the legacy helper would test the corrected matrix of a
+#' factors-in-the-model object without the factors. Any other object passes untouched.
+#' @param theObject The object handed to the entry point.
+#' @param caller The entry point's name, for the message.
+#' @return `theObject`, invisibly.
+#' @noRd
+refuseProtRuvModelObject <- function(theObject, caller) {
+  if (!inherits(theObject, "ProteinQuantitativeData")) return(invisible(theObject))
+  if (protRuvModelDeclared(theObject) || !is.null(theObject@args$ruv_uncorrected_quant)) {
+    cli::cli_abort(c("{caller} cannot test an object of the RUV factors-in-the-model design: it would test the corrected matrix without the factors",
+      i = "use differentialAbundanceAnalysis(), which reads the normalised matrix with the factors in the model"),
+      class = "prot_ruv_model_unsupported")
+  }
+  invisible(theObject)
+}
+
+#' What the limma DA reads from a protein object (KIT-126). An object that declares the factors-in-the-model design
+#' (`args$ruvCovariates$ruv_design`) or carries the normalised matrix (`args$ruv_uncorrected_quant`) is tested on that
+#' matrix, the samples that are in the object's protein table, with the design's W columns added to the formula. Every
+#' other object returns NULL and is tested on its own table with the formula as given. An object whose declaration,
+#' stored matrix and W columns do not agree is refused: a declared object whose matrix is absent is never tested the
+#' legacy way (audit F-01).
 #' @param theObject A `ProteinQuantitativeData` object.
 #' @param formula_string The DA formula.
 #' @return NULL, or `list(matrix, formula_used, w_terms, declaration)`.
 #' @noRd
 resolveProtRuvModelInput <- function(theObject, formula_string) {
   uncorrected <- theObject@args$ruv_uncorrected_quant
-  if (is.null(uncorrected)) return(NULL)
+  declared <- protRuvModelDeclared(theObject)
+  if (!declared && is.null(uncorrected)) return(NULL)
   refuse <- function(reason) cli::cli_abort("the object declares RUV factors in the model but {reason}; the test is refused",
     class = "prot_ruv_model_invalid")
   declaration <- theObject@args$ruvCovariates
-  if (!is.list(declaration) || !identical(declaration$ruv_mode, "covariates")) refuse("its RUV declaration does not say so")
+  if (!declared || !identical(declaration$ruv_mode, "covariates")) refuse("its RUV declaration does not say so")
+  if (is.null(uncorrected)) refuse("its stored normalised matrix is absent")
   w_terms <- grep("^W[0-9]+$", names(theObject@design_matrix), value = TRUE)
   if (!length(w_terms) || !isTRUE(length(w_terms) == declaration$k)) {
     refuse(sprintf("its design carries %d W column(s) for a declared k of %s", length(w_terms), format(declaration$k %||% NA)))

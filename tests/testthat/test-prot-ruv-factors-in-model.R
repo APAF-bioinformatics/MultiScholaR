@@ -210,13 +210,52 @@ test_that("an object without the declaration is tested exactly as today", {
     expect_identical(result$contrasts_results, today)
     expect_identical(result$da_model, list(model = "limma", formula_used = "~ 0 + group", w_terms = character(), k = 0L,
         ruv_mode = "none", treat_applied = FALSE, treat_lfc_cutoff_requested = 0))
-    # W columns alone select nothing: only the stored normalised matrix does (a DIA_LIMPA state on the limma path)
+    # no declaration of the design: W columns and a DIA_LIMPA state's declaration (`ruv_mode` with no `ruv_design`)
+    # select nothing, and the object is tested as today
     with_w <- legacy
     with_w@design_matrix$W1 <- seq_len(nrow(with_w@design_matrix))
     with_w@args$ruvCovariates <- list(k = 1L, ruv_mode = "covariates")
+    expect_null(resolveProtRuvModelInput(with_w, "~ 0 + group"))
     w_result <- ruvModelDa(with_w)
     expect_identical(w_result$contrasts_results, today)
     expect_identical(w_result$da_model$formula_used, "~ 0 + group")
+})
+
+test_that("a declared design whose stored normalised matrix is absent is refused, never tested the legacy way (audit F-01)", {
+    fixture <- ruvModelFixture(proteins = 120L)
+    lost <- ruvModelPackageState(fixture, 1L)$state
+    lost@args$ruv_uncorrected_quant <- NULL
+    expect_identical(lost@args$ruvCovariates$ruv_design, "factors_in_model")
+    expect_error(resolveProtRuvModelInput(lost, "~ 0 + group"), "normalised matrix is absent", class = "prot_ruv_model_invalid")
+    expect_error(ruvModelDa(lost), class = "prot_ruv_model_invalid")
+    # the declaration alone decides: also without the W columns
+    bare <- lost
+    bare@design_matrix$W1 <- NULL
+    expect_error(ruvModelDa(bare), class = "prot_ruv_model_invalid")
+})
+
+test_that("the DA entry points that test the object's own table refuse a factors-in-the-model object (audit F-02)", {
+    fixture <- ruvModelFixture(proteins = 120L)
+    state <- ruvModelPackageState(fixture, 1L)$state
+    lost <- state
+    lost@args$ruv_uncorrected_quant <- NULL
+    contrasts_tbl <- data.frame(contrasts = ruvModelContrast, stringsAsFactors = FALSE)
+    refused <- function(entry, object, ...) {
+        condition <- NULL
+        utils::capture.output(condition <- tryCatch(suppressWarnings(suppressMessages(entry(object, contrasts_tbl = contrasts_tbl,
+            formula_string = "~ 0 + group", treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE,
+            args_row_id = "Protein.Group", ...))), error = function(e) e))
+        expect_s3_class(condition, "prot_ruv_model_unsupported")
+    }
+    for (object in list(state, lost)) {
+        refused(daAnalysisWrapperFunction, object, da_q_val_thresh = 0.05)
+        refused(protein_deAnalysisWrapperFunction, object, de_q_val_thresh = 0.05)
+        refused(.differentialAbundanceAnalysisHelperProteomicsLegacy, object, da_q_val_thresh = 0.05)
+    }
+    # an object that declares nothing passes the gate untouched
+    plain <- ruvModelObject(fixture$x, fixture$design)
+    expect_identical(refuseProtRuvModelObject(plain, "daAnalysisWrapperFunction"), plain)
+    expect_identical(refuseProtRuvModelObject(list(), "daAnalysisWrapperFunction"), list())
 })
 
 test_that("an inconsistent factors-in-the-model object is refused, not tested", {
