@@ -99,6 +99,17 @@
 #   15  C6 only: RUVs with the technical-duplicate sets, all genes as controls, k = E, test on normalizedCounts.
 #   16  C6 only: the same RUVs fit with W in the model.
 #   17  S8 only: ~ 0 + group + batch.
+#   22  on request (K124_ARMS): arm 8 (RUVg, the same 50 oracle genes: drawn again from arm 8's stream) with k from
+#       today's separation rule on those genes: trxCancor(t(log_cpm_tmm), the group columns, the controls), then
+#       trxFindBestK up to the grid's limit (3 under 15 runs, else 4), as a grid member computes it.
+#   23  on request (K124_ARMS): arm 5 (RUVg, all genes but the most significant quarter of the first pass) with k = E.
+#   Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross the
+#   two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is never 0; arm 23
+#   with E = 0 is no RUV, as arms 7 to 10.
+#   K124_ARMS (environment; unset = the arms above, 22 and 23 not run): a comma list of the arm labels to run, of those
+#   the cell has and 22, 23. Arm 1 must be in it (refusals and E = 0 carry its result). An arm that reads another arm's
+#   fit (5 and 6 the grid of 3; 10 the fit of 8; 16 of 15) is refused when that arm is left out. The data, E and every
+#   stream are as without it, so an arm's rows are the same whichever other arms run.
 #   Arms 5 to 11, R, 14, 15 and 16 estimate on upper-quartile normalised counts (EDASeq::betweenLaneNormalization(which =
 #   "upper"), as the RUVSeq vignette does) and, 10 and 15 apart, test on the original filtered counts with W in the
 #   model. Arm 3 passes the filtered counts as the package does. The first pass of arms 5 and 6 is the package's own
@@ -125,6 +136,9 @@ runs_stress <- as.integer(args[[3L]])
 cores <- as.integer(args[[4L]])
 cells_arg <- if (length(args) >= 5L) args[[5L]] else "all"
 first_run <- if (length(args) >= 6L) as.integer(args[[6L]]) else 1L
+arms_wanted <- Sys.getenv("K124_ARMS", "")
+arms_wanted <- if (nzchar(arms_wanted)) strsplit(arms_wanted, ",", fixed = TRUE)[[1L]]
+stopifnot(is.null(arms_wanted) || "1" %in% arms_wanted)
 started <- Sys.time()
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
@@ -151,7 +165,7 @@ TECH_DISPERSION <- 0.01
 RATIOS <- list(`1` = 3, `3` = c(3, 1.5, 0.75))
 ENTRY <- "B_vs_A=groupB-groupA"
 ARM_STREAM <- c(`1` = 1L, `2` = 2L, `3` = 3L, `5` = 5L, `6` = 6L, `7` = 7L, `8` = 8L, `9` = 9L, `10` = 10L, `11` = 11L, R = 18L,
-    `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L)
+    `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L)
 COLUMNS <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", "n_features", "n_true", "n_calls",
     "null_p05", "null_p01", "fdp", "power", "bias", "rmse", "seconds")
 
@@ -261,6 +275,7 @@ oneRun <- function(cl, run) {
     }
     # an arm: its own stream; a designed refusal is scored as the no-RUV result, any other error is a crash
     arm <- function(label, body) {
+        if (!label %in% armsOf(cl)) return(NULL)
         t0 <- proc.time()[["elapsed"]]
         set.seed(seed * 100L + ARM_STREAM[[label]])
         result <- tryCatch(suppressWarnings(suppressMessages(body())), error = function(e) e)
@@ -391,12 +406,29 @@ oneRun <- function(cl, run) {
         result$k <- 1L
         result
     })
+    arm("22", function() {
+        nulls <- genes[all_null]
+        if (length(nulls) < 50L) refuse("fewer than 50 null genes pass the filter")
+        set.seed(seed * 100L + ARM_STREAM[["8"]])
+        controls <- sample(nulls, 50L)
+        set.seed(seed * 100L + ARM_STREAM[["22"]])
+        cancor_p <- trxCancor(Y = t(n$log_cpm_tmm), X = prep$model[, -1, drop = FALSE], ctl = rownames(n$log_cpm_tmm) %in% controls)
+        withW(RUVSeq::RUVg(uq, controls, trxFindBestK(cancor_p, max_k = if (ncol(y) < 15) 3L else 4L))$W)
+    })
+    arm("23", function() {
+        if (E == 0L) return(noRuv())
+        controls <- genes[order(prep$first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
+        withW(RUVSeq::RUVg(uq, controls, E)$W)
+    })
     total <- proc.time()[["elapsed"]] - t_start
     list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
         timing = data.frame(cell = cl$id, run = run, prep_seconds = prep_seconds, total_seconds = total, E = E))
 }
 
-armsOf <- function(cl) c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$tech) c("15", "16"), if (cl$batch) "17")
+armsOf <- function(cl) {
+    arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$tech) c("15", "16"), if (cl$batch) "17")
+    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23"), arms_wanted)
+}
 
 # A run whose worker died (or failed outside every arm) is a crash of each of its arms.
 crashedRun <- function(cl, run, message) {
@@ -455,6 +487,7 @@ writeLines(c(
     sprintf("command: Rscript %s", paste(c(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), args), collapse = " ")),
     sprintf("cells run by this command: %s; cells in the tables: %s", paste(selected, collapse = ","), paste(done, collapse = ",")),
     sprintf("runs: core %d, stress %d, first run %d; cores %d", runs_core, runs_stress, first_run, cores),
+    sprintf("K124_ARMS: %s", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
     "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)",
     sprintf("library paths: %s", paste(.libPaths(), collapse = ":")),
     sprintf("R: %s; BLAS %s", R.version.string, extSoftVersion()[["BLAS"]]),

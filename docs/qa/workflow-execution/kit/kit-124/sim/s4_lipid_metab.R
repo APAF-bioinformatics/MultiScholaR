@@ -104,6 +104,15 @@
 # 14  sva::sva(dat, mod = ~ group, mod0 = ~ 1, n.sv = E), the surrogate variables in the model.
 # 15  (C6) duplicates as replicates, all features as controls, k = E, subtract.     16  (C6) the same, W in the model.
 # 17  (S8) the known batch in the model: "~ 0 + group + batch".
+# 22  on request (K124_ARMS): arm 8 (the standards as controls, W in the model) with k by today's rule on the
+#     standards (ruvCancor, then findBestKElbow, as arm 5 on its controls). The standards are not rows of the sweep's
+#     object, so the rule reads an object of the features and the standards, prepared as the sweep's.
+# 23  on request (K124_ARMS): arm 5's controls with k = E, W in the model.
+#     Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another)
+#     cross the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only.
+#     K124_ARMS (environment; unset = the arms of this list but 22 and 23): a comma list of the arm labels to run,
+#     of those the cell has and 22, 23. Arm 1 must be in it. The data, E and every stream are as without it, so an
+#     arm's rows are the same whichever other arms run.
 #  I  the package's ITSD normalisation and log2 alone, then the test.
 #  Qs pooled QC injections as the one replicate set (M over study and QC injections), all features as controls,
 #     k = E, subtract; the study injections are tested.            Qm  the same, W in the model.
@@ -137,6 +146,9 @@ runs_stress <- as.integer(args[[3L]])
 cores <- as.integer(args[[4L]])
 cells_arg <- if (length(args) >= 5L) args[[5L]] else "all"
 first_run <- if (length(args) >= 6L) as.integer(args[[6L]]) else 1L
+arms_wanted <- Sys.getenv("K124_ARMS", "")
+arms_wanted <- if (nzchar(arms_wanted)) strsplit(arms_wanted, ",", fixed = TRUE)[[1L]]
+stopifnot(is.null(arms_wanted) || "1" %in% arms_wanted)
 
 suppressPackageStartupMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -156,7 +168,7 @@ ID_COL <- "database_identifier"
 RUV_PARAMS <- list(ruv_grouping_variable = "group", percentage_min = 1, percentage_max = 20,
     separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, manual_k = 2,
     manual_percentage = 5)
-ARM_NUMBER <- c(stats::setNames(1:17, 1:17), I = 18L, Qs = 19L, Qm = 20L, L = 21L)
+ARM_NUMBER <- c(stats::setNames(1:17, 1:17), I = 18L, Qs = 19L, Qm = 20L, L = 21L, "22" = 22L, "23" = 23L)
 COMPLETE_ONLY <- c("12", "13", "14")
 
 cellTable <- function() {
@@ -182,6 +194,7 @@ armsOfCell <- function(cell) {
     arms <- c(as.character(1:14), "I", "Qs", "Qm", "L")
     if (cell$duplicates) arms <- c(arms, "15", "16")
     if (identical(cell$unwanted, "batch")) arms <- c(arms, "17")
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, "22", "23"), arms_wanted)
     arms[order(ARM_NUMBER[arms])]
 }
 
@@ -496,9 +509,9 @@ controlIds <- function(index, features) {
     if (length(index) != length(features)) stop("the sweep's control vector cannot be aligned with the assay")
     features[which(index)]
 }
-elbowK <- function(view, controls) {
+elbowK <- function(view, controls, object = view$cancor_object()) {
     # today's rule for k on a given control set: ruvCancor on the sweep's prepared object, then the elbow
-    plots <- quiet(ruvCancor(view$cancor_object(), ctrl = controls, ruv_grouping_variable = "group"))
+    plots <- quiet(ruvCancor(object, ctrl = controls, ruv_grouping_variable = "group"))
     lapply(stats::setNames(ASSAYS, ASSAYS), function(assay) {
         plot <- if (is.list(plots) && assay %in% names(plots)) plots[[assay]] else plots
         as.integer(findBestKElbow(plot))
@@ -604,6 +617,23 @@ armFunctions <- list(
     "16" = function(view) modelArm(view, allComplete, kE,
         m_of = function(view, a) replicateMatrix(stats::setNames(view$design$extract, view$design$Sample_ID))),
     "17" = function(view) perAssay(view, function(a, assay) list(table = daKernel(a$y, view$design, "~ 0 + group + batch", view$contrasts), k = NA)),
+    "22" = function(view) {
+        with_standards <- lipidObject(lapply(view$assays, function(a) rbind(a$y, a$is)), view$design)
+        k <- elbowK(view, lapply(view$assays, function(a) rownames(a$is)),
+            quiet(prepareOmicsRuvCancorObject(with_standards, "lipid_data", "lipid_id_column")))
+        modelArm(view, function(a, assay, columns) {
+            if (is.na(k[[assay]])) return(refusal("findBestKElbow returned NA"))
+            standardsOnly(a, assay, columns)
+        }, function(a, assay) if (is.na(k[[assay]])) 0L else k[[assay]], standards = "is")
+    },
+    "23" = function(view) {
+        controls <- lapply(view$first_pass(), function(fp) fp$feature[rank(fp$p, na.last = "keep", ties.method = "first") > 0.25 * sum(is.finite(fp$p)) & is.finite(fp$p)])
+        usable <- all(vapply(controls, length, integer(1L)) > 0L)
+        modelArm(view, function(a, assay, columns) {
+            if (!usable) return(refusal("an assay has no first-pass controls"))
+            columns %in% controls[[assay]]
+        }, kE)
+    },
     "I" = function(view) {
         raw <- lapply(view$assays, function(a) 2^rbind(a$y, a$is))
         object <- quiet(logTransformAssays(normaliseUntransformedData(lipidObject(raw, view$design), method = "ITSD",
@@ -778,7 +808,7 @@ runOne <- function(cell, run) {
         own <- function(arm) rows$seconds[at(arm)]
         if (any(at("3"))) rows$seconds[at("4")] <- own("4") + s[["sweep"]]
         if (any(at("5"))) rows$seconds[at("6")] <- own("6") + s[["cancor"]]
-        for (arm in setdiff(unique(rows$arm), c("1", "2", "3", "4", "5", "6", "11", "13", "17", "I", "L"))) {
+        for (arm in setdiff(unique(rows$arm), c("1", "2", "3", "4", "5", "6", "11", "13", "17", "22", "I", "L"))) {
             rows$seconds[at(arm)] <- own(arm) + seconds_E
         }
     }
@@ -858,6 +888,7 @@ main <- function() {
         paste("script committed state:", if (length(git("status", "--porcelain", "--", "docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R"))) "modified or untracked at run time" else "clean"),
         paste("command:", paste(c("OMP_NUM_THREADS=1 Rscript", sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), args), collapse = " ")),
         paste("cells:", paste(names(cells), collapse = ",")),
+        paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (the arms of the header's list but 22 and 23)" else paste(arms_wanted, collapse = ",")),
         paste("runs:", sprintf("core %d, stress %d, numbered from %d", runs_core, runs_stress, first_run)),
         paste("cores:", cores, "(OMP_NUM_THREADS=1)"),
         "seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99",
