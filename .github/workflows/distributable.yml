@@ -452,11 +452,11 @@ jobs:
         # ubuntu-24.04 from stage shell (Electron's sandbox restriction, F10); a fresh ubuntu-22.04 from stage installer
         runner: ${{ fromJSON(needs.plan.outputs.installer == 'true' && '["ubuntu-22.04", "ubuntu-24.04"]' || '["ubuntu-24.04"]') }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
+      # The whole tree: the report check below runs GUI-entry lanes from tests/ (their helpers read other
+      # folders of the source tree); the package they test is the installed application's.
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: packaging/electron
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -501,6 +501,45 @@ jobs:
             xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher process \
             --network-closed ${5:+--expect-reason "$5"}' \
             "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh, ${{ matrix.runner }}" "$DEST" "$reason"
+      # W1 (outcome.md): the Summary report from the installed application with no browser to be found.
+      - name: "Report check: test tools from the snapshot, in a separate library (installed application's R)"
+        id: testtools
+        if: ${{ !cancelled() && matrix.runner == 'ubuntu-22.04' && steps.install.outcome == 'success' }}
+        run: |
+          echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
+          "$DEST/app/resources/runtime/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
+            "$(jq -r .Snapshot.Date packaging/multischolar.lock.json)"
+      - name: "Report check: a Summary report renders to .docx with every Chrome-type browser hidden (lipidomics and metabolomics entry lanes, network closed)"
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
+        timeout-minutes: 30
+        run: |
+          # The bundle's R runs with PATH=/usr/bin:/bin (packaging/linux/Rscript): the runner's browsers are taken
+          # out of those folders, and chromote is pointed at a path that does not exist.
+          for name in google-chrome google-chrome-stable chrome chromium chromium-browser chrome-headless-shell \
+            microsoft-edge microsoft-edge-stable msedge; do
+            for dir in /usr/bin /bin /usr/local/bin /snap/bin; do
+              if [ -e "$dir/$name" ] || [ -L "$dir/$name" ]; then
+                echo "hiding $dir/$name ($(readlink -f "$dir/$name" || true))"
+                sudo rm -f "$dir/$name"
+              fi
+            done
+          done
+          sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
+          out="$RUNNER_TEMP/report-lanes"
+          mkdir -p "$out"
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -u "$0" env HOME="$1" LANG=en_GB.UTF-8 \
+            LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
+            LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
+            CHROMOTE_CHROME=/nonexistent/no-browser/chrome MSR_REPORT_CHECK=1 \
+            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-lanes.R" "$3" "$4" "$5" lipid_canonical metab_lc' \
+            "$(id -un)" "$HOME" "$DEST/app/resources/runtime" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$out" 2>&1 | tee "$out/report-lanes.log"
+          status="${PIPESTATUS[0]}"
+          {
+            echo '### Report check, Linux (installed application, no browser to be found)'; echo '```'
+            grep -E '^(BROWSERS|RENDER|REPORT|LANE|network|KIT-134)[ :]' "$out/report-lanes.log" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
       - name: Uninstall
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
@@ -781,14 +820,14 @@ jobs:
     needs: [plan, windows-build]
     if: ${{ !cancelled() && needs.plan.outputs.installer == 'true' && needs.windows-build.result == 'success' }}
     runs-on: windows-2025
-    timeout-minutes: 60
+    timeout-minutes: 90
     defaults:
       run:
         shell: pwsh
     steps:
+      # The whole tree: the report check below runs GUI-entry lanes from tests/ (their helpers read other
+      # folders of the source tree); the package they test is the installed application's.
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: packaging
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -827,7 +866,17 @@ jobs:
           if (-not $shortcut) { throw "no Start-menu shortcut" }
           "APP=$($application.FullName)" >> $env:GITHUB_ENV
           "APP_FOLDER=$folder" >> $env:GITHUB_ENV
+      # W1 (outcome.md): the Summary report from the installed application with no browser to be found.
+      # The test tools are fetched before the lifecycle step cuts the network for the application's programs.
+      - name: "Report check: test tools from the snapshot, in a separate library (installed application's R)"
+        id: testtools
+        run: |
+          "TEST_TOOLS=$env:RUNNER_TEMP\test-tools" >> $env:GITHUB_ENV
+          $date = (Get-Content packaging\multischolar.lock.json -Raw | ConvertFrom-Json).Snapshot.Date
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script packaging\verify\test-tools.R -NoBundleArgument -Arguments "$env:RUNNER_TEMP\test-tools", $date
+          if ($LASTEXITCODE -ne 0) { throw "the test tools were not installed" }
       - name: "P3 lifecycle: the installed application (network cut for its programs)"
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
           Set-NetFirewallProfile -All -Enabled True
           $programs = Get-ChildItem -LiteralPath $env:APP_FOLDER -Recurse -File -Filter *.exe
@@ -837,3 +886,27 @@ jobs:
           "outbound traffic blocked for the installed application's $($programs.Count) programs"
           node packaging\electron\lifecycle-test.js "Windows, installed per user, fresh windows-2025" $env:APP $env:APP_FOLDER --expect-launcher process
           if ($LASTEXITCODE -ne 0) { throw "the lifecycle test failed" }
+      - name: "Report check: a Summary report renders to .docx with every Chrome-type browser hidden (lipidomics and metabolomics entry lanes, network cut)"
+        if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
+        timeout-minutes: 40
+        run: |
+          # R runs in the shell's environment (windows-clean-run.ps1: PATH is System32, the Windows folder and
+          # Windows PowerShell's), so no browser is on its PATH; chromote, which would otherwise find Chrome or
+          # Edge through the registry, is pointed at a path that does not exist.
+          foreach ($name in 'chrome.exe', 'msedge.exe', 'chromium.exe') {
+            "on the runner's PATH, ${name}: $((Get-Command $name -ErrorAction SilentlyContinue).Source)"
+          }
+          foreach ($path in "$env:ProgramFiles\Google\Chrome\Application\chrome.exe", "${env:ProgramFiles(x86)}\Microsoft\Edge\Application\msedge.exe") {
+            "installed on the runner, ${path}: $(Test-Path -LiteralPath $path)"
+          }
+          $env:CHROMOTE_CHROME = 'C:\no-browser\chrome.exe'
+          $env:MSR_REPORT_CHECK = '1'
+          $out = "$env:RUNNER_TEMP\report-lanes"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          & packaging\verify\windows-clean-run.ps1 -Bundle "$env:APP_FOLDER\resources\runtime" -Script packaging\verify\run-lanes.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, $env:TEST_TOOLS, $out, lipid_canonical, metab_lc *>&1 | Tee-Object -FilePath "$out\report-lanes.log"
+          $status = $LASTEXITCODE
+          $lines = @('### Report check, Windows (installed application, no browser to be found)', '```')
+          $lines += Select-String -Path "$out\report-lanes.log" -Pattern '^(BROWSERS|RENDER|REPORT|LANE|network|KIT-134)[ :]' | ForEach-Object Line
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          if ($status -ne 0) { throw "the report check failed (exit $status)" }

@@ -1,4 +1,4 @@
-# KIT-134 P5 step 3 (the token build): GUI-entry lanes of tests/testthat/test-gui-entry-proteomics.R,
+# KIT-134 P5 step 3 (the token build): GUI-entry lanes of tests/testthat/test-gui-entry-<omic>.R,
 # in process, against the bundle's installed MultiScholaR and library, with the test tools in a
 # separate library after the bundle's. Build-time verification, not package code.
 #
@@ -16,6 +16,15 @@
 #             absolute 1e-9) cannot be applied to a digest; the values are needed on both machines.
 # Writes lane-summary.tsv, lane-differences.tsv and lane-failures.tsv (text only). Exits 1 when a
 # lane does not pass, after writing them; 2 when the lanes could not be run.
+#
+# With MSR_REPORT_CHECK=1 (the installer stage; W1 in outcome.md) the question is another one: does a
+# Summary report render to .docx with every Chrome-type browser hidden? The caller hides them
+# (none on the PATH, CHROMOTE_CHROME at a path that does not exist); this script refuses to start
+# (2) if one can still be found, prints every rmarkdown render with its output's size, and reads
+# each lane's record at the step summary_report: the report's .docx among the artifacts and the
+# application's own "Report generated successfully!". It then exits 0 when at least one lane
+# rendered its report and 1 when none did; the lanes' comparison with their oracles is still
+# written and printed, and does not decide the exit status in this mode (that is P5's).
 
 arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) < 4L) stop("usage: Rscript --vanilla run-lanes.R <checkout> <test-tool library> <output directory> <lane id>...")
@@ -49,9 +58,43 @@ reached <- tryCatch({
 cat(sprintf("network: %s\n", if (reached) "OPEN (cran.r-project.org reached)" else "closed (cran.r-project.org not reached)"))
 cat(sprintf("DPC engine resolved by default: %s\n", tryCatch(MultiScholaR:::resolveLimpaDpcEngine(), error = conditionMessage)))
 
-test_file <- file.path(checkout, "tests", "testthat", "test-gui-entry-proteomics.R")
-blocks <- regmatches(readLines(test_file), regexpr("test_that\\(\"KIT-101 entry lane [^\"]+\"", readLines(test_file)))
-blocks <- gsub("^test_that\\(\"|\"$", "", blocks)
+report_check <- identical(Sys.getenv("MSR_REPORT_CHECK"), "1")
+if (report_check) {
+    browsers <- c("google-chrome", "google-chrome-stable", "chrome", "chromium", "chromium-browser", "chrome-headless-shell",
+        "microsoft-edge", "microsoft-edge-stable", "msedge")
+    on_path <- Sys.which(browsers)
+    chromote_chrome <- Sys.getenv("CHROMOTE_CHROME")
+    found <- tryCatch(as.character(chromote::find_chrome()), error = function(e) paste("error:", conditionMessage(e)))
+    cat(sprintf("BROWSERS PATH: %s\n", Sys.getenv("PATH")))
+    cat(sprintf("BROWSERS on the PATH: %s\n", if (any(nzchar(on_path))) paste(on_path[nzchar(on_path)], collapse = ", ") else "none"))
+    cat(sprintf("BROWSERS CHROMOTE_CHROME: '%s' (exists: %s); chromote::find_chrome(): '%s'\n", chromote_chrome,
+        file.exists(chromote_chrome), paste(found, collapse = " ")))
+    if (any(nzchar(on_path)) || !nzchar(chromote_chrome) || file.exists(chromote_chrome) || !identical(found, chromote_chrome)) {
+        cat("a browser can still be found: the report check does not start\n")
+        quit(save = "no", status = 2L)
+    }
+    # Every rmarkdown render of the lanes, with what it wrote (the lane's folder is removed when the lane ends).
+    traced <- tryCatch({
+        suppressMessages(trace("render", where = asNamespace("rmarkdown"), print = FALSE, exit = quote(try({
+            written <- returnValue()
+            if (is.character(written) && length(written) == 1L && file.exists(written)) {
+                cat(sprintf("RENDER %s: %.0f bytes, zip container %s, %s\n", basename(written), file.size(written),
+                    identical(readBin(written, "raw", 2L), charToRaw("PK")), format(Sys.time(), "%H:%M:%S")), file = stderr())
+            } else cat("RENDER returned no file\n", file = stderr())
+        }, silent = TRUE))))
+        TRUE
+    }, error = function(e) {
+        cat("rmarkdown::render is not traced:", conditionMessage(e), "\n")
+        FALSE
+    })
+    cat(sprintf("rmarkdown::render traced: %s\n", traced))
+}
+
+test_files <- list.files(file.path(checkout, "tests", "testthat"), pattern = "^test-gui-entry-.*\\.R$", full.names = TRUE)
+blocks <- unlist(lapply(test_files, function(file) {
+    found <- regmatches(readLines(file), regexpr("test_that\\(\"KIT-101 entry lane [^\"]+\"", readLines(file)))
+    stats::setNames(gsub("^test_that\\(\"|\"$", "", found), rep(file, length(found)))
+}))
 Sys.setenv(MULTISCHOLAR_GUI_ENTRY_RECORD_DIR = file.path(out_dir, "records"), NOT_CRAN = "true")
 truncate <- function(x, n = 160L) {
     x <- gsub("[\t\r\n]+", " ", paste(as.character(unlist(x)), collapse = " "))
@@ -92,6 +135,7 @@ compareLane <- function(lane, recorded, frozen) {
 }
 
 summaries <- list()
+reports <- list()
 failures <- list()
 differences <- list()
 for (lane in lanes) {
@@ -100,6 +144,9 @@ for (lane in lanes) {
         cat("no single test_that block for lane", lane, "\n")
         quit(save = "no", status = 2L)
     }
+    test_file <- names(block)
+    block <- unname(block)
+    if (report_check) reports[[lane]] <- FALSE
     unlink(file.path(out_dir, "records", paste0(lane, ".json")))
     started <- Sys.time()
     reporter <- testthat::ListReporter$new()
@@ -117,6 +164,14 @@ for (lane in lanes) {
     record_path <- file.path(out_dir, "records", paste0(lane, ".json"))
     oracle <- jsonlite::read_json(file.path(checkout, "tests", "testdata", "gui-entry", paste0(lane, ".json")), simplifyVector = FALSE)
     lane_differences <- NULL
+    if (file.exists(record_path) && report_check) {
+        step <- jsonlite::read_json(record_path, simplifyVector = FALSE)$steps$summary_report
+        documents <- grep("_report_[^/]*\\.docx$", names(step$artifacts), value = TRUE)
+        notes <- vapply(step$notifications, function(note) paste0(note$type, ": ", note$message), character(1))
+        reports[[lane]] <- length(documents) > 0L && any(grepl("Report generated successfully", notes, fixed = TRUE))
+        cat(sprintf("REPORT %s: %s; .docx: %s; notifications: %s\n", lane, if (reports[[lane]]) "rendered" else "NOT rendered",
+            if (length(documents)) paste(documents, collapse = ", ") else "none", truncate(paste(notes, collapse = " | "), 600L)))
+    }
     if (file.exists(record_path)) {
         lane_differences <- tryCatch(compareLane(lane, jsonlite::read_json(record_path, simplifyVector = FALSE)$steps, oracle$steps),
             error = function(e) data.frame(lane = lane, step = "<comparison failed>", field = "", key = "", kind = "discrete",
@@ -153,4 +208,10 @@ for (row in seq_len(nrow(summary))) if (summary$failed[[row]] + summary$errors[[
 }
 passed <- all(summary$failed == 0L & summary$errors == 0L & summary$passed > 0L)
 cat(if (passed) "KIT-134 LANES PASSED" else "KIT-134 LANES FAILED", "\n")
+if (report_check) {
+    rendered <- names(reports)[vapply(reports, isTRUE, logical(1))]
+    cat(if (length(rendered)) sprintf("KIT-134 REPORT CHECK PASSED: rendered to .docx with no browser to be found (%s)\n",
+        paste(rendered, collapse = ", ")) else "KIT-134 REPORT CHECK FAILED: no lane rendered its report\n")
+    quit(save = "no", status = if (length(rendered)) 0L else 1L)
+}
 quit(save = "no", status = if (passed) 0L else 1L)

@@ -8,7 +8,9 @@
 param(
     [Parameter(Mandatory)][string]$Bundle,
     [Parameter(Mandatory)][string]$Script,
-    [string[]]$Arguments = @()
+    [string[]]$Arguments = @(),
+    # The script takes only the arguments (run-lanes.R, test-tools.R), not the bundle directory first.
+    [switch]$NoBundleArgument
 )
 
 Get-ChildItem Env: |
@@ -26,5 +28,9 @@ $env:RSTUDIO_PANDOC = Join-Path $Bundle 'pandoc'
 $env:MULTISCHOLAR_DISABLE_TOOLS = 'bash,dd,sha256sum,sync,tar,cp'
 $env:MSR_BUNDLE = $Bundle
 
-& (Join-Path $Bundle 'R\bin\Rscript.exe') --vanilla $Script $Bundle @Arguments
+if ($NoBundleArgument) {
+    & (Join-Path $Bundle 'R\bin\Rscript.exe') --vanilla $Script @Arguments
+} else {
+    & (Join-Path $Bundle 'R\bin\Rscript.exe') --vanilla $Script $Bundle @Arguments
+}
 exit $LASTEXITCODE
