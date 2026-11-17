@@ -140,7 +140,9 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #'   class `omics_ruv_controls_incomplete` and in `controls_left_out`, and is still not tested.
 #' @param ruv_grouping_variable The design column whose levels are the replicate sets; the object's group column
 #'   when NULL.
-#' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays; `factors` per
+#' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays, its `args`
+#'   stamped with `ruv_design`, `ruv_grouping_variable`, `ruv_number_k` and `ctrl` when an assay was corrected (the DA
+#'   refuses a stamped object together with factors, class `omics_ruv_object_already_corrected`); `factors` per
 #'   assay `list(assay, status, reason, W, k, k_requested, k_source, control_ids, control_count, controls_left_out,
 #'   complete_features, not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL;
 #'   `parameters` the arguments.
@@ -236,10 +238,24 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
             assays[[assay_name]] <- restoreOmicsRuvAssayLevels(corrected_assay, values[[assay_name]], id_column)
         }
         methods::slot(corrected, slots$data) <- assays
+        # Audit F3: the corrected object records its correction, under the keys `ruvIII_C_Varying` writes, and the design.
+        corrected@args$ruv_design <- ruv_design
+        corrected@args$ruv_grouping_variable <- grouping
+        corrected@args$ruv_number_k <- lapply(factors, `[[`, "k")
+        corrected@args$ctrl <- correction_controls
     }
     list(corrected = corrected, factors = factors,
         parameters = list(ruv_design = ruv_design, ruv_number_k = k_requested, ruv_k_source = ruv_k_source,
             ruv_control_ids = ruv_control_ids, ruv_grouping_variable = grouping))
+}
+
+#' Stop when an object this kernel has corrected is given to the DA together with factors: W in the model of
+#' corrected values removes the unwanted variation twice (audit F3).
+#' @noRd
+refuseOmicsRuvCorrectedObject <- function(theObject) {
+    if (is.null(theObject@args$ruv_design)) return(invisible(NULL))
+    rlang::abort(paste("theObject is the corrected object of runOmicsRuvFactors(); with ruv_factors the DA reads the",
+        "uncorrected object"), class = c("omics_ruv_object_already_corrected", "omics_ruv_factors_invalid"), call = NULL)
 }
 
 #' One assay's DA input with the RUV factors in the model (KIT-124 S4, `testWithW` and `daKernel`)

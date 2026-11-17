@@ -452,6 +452,9 @@ runLipidsDA <- function(
     ))
     logger::log_info(sprintf("   Contrasts: %s", paste(contrast_strings, collapse = ", ")))
 
+    # KIT-127: an object the factors kernel has corrected is not tested with the factors as well.
+    if (!is.null(ruv_factors)) refuseOmicsRuvCorrectedObject(theObject)
+
     # Initialize results storage
     per_assay_results <- list()
     contrasts_results <- list()
