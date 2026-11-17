@@ -51,10 +51,10 @@ ruvModelPackageState <- function(fixture, k, k_source = "user", technical = "tec
     list(state = attachProtRuvModelFactors(corrected, normalised, factors), factors = factors, corrected = corrected)
 }
 
-ruvModelDa <- function(object) {
+ruvModelDa <- function(object, formula = "~ 0 + group") {
     result <- NULL
     utils::capture.output(result <- suppressWarnings(suppressMessages(differentialAbundanceAnalysis(object,
-        contrasts_tbl = data.frame(contrasts = ruvModelContrast, stringsAsFactors = FALSE), formula_string = "~ 0 + group",
+        contrasts_tbl = data.frame(contrasts = ruvModelContrast, stringsAsFactors = FALSE), formula_string = formula,
         da_q_val_thresh = 0.05, treat_lfc_cutoff = 0, eBayes_trend = TRUE, eBayes_robust = TRUE,
         args_row_id = "Protein.Group", qvalue_column = "fdr_qvalue", raw_pvalue_column = "raw_pvalue"))))
     result
@@ -87,17 +87,80 @@ ruvModelArm7 <- function(fixture, k, rows = rownames(fixture$x)) {
     list(W = value$W, test = ruvModelKernel(x[rows, , drop = FALSE], fixture$design, value$W))
 }
 
+# The same test with limma called directly, in the order today's kernel calls it (lmFit, contrasts.fit, eBayes with
+# trend and robust, then treat at the cutoff 0): no code of the package between the matrix and the table.
+ruvModelDirectLimma <- function(x, design, W) {
+    design <- cbind(design, as.data.frame(W[design$Run, , drop = FALSE]))
+    rownames(design) <- design$Run
+    model <- stats::model.matrix(stats::as.formula(paste("~ 0 + group +", paste(colnames(W), collapse = " + "))), design)
+    fit <- suppressWarnings(limma::lmFit(x[, rownames(model), drop = FALSE], model))
+    contrast <- limma::makeContrasts(contrasts = "grouptreated-groupcontrol", levels = colnames(model))
+    tested <- limma::treat(limma::eBayes(limma::contrasts.fit(fit, contrast), trend = TRUE, robust = TRUE), lfc = 0)
+    p <- tested$p.value[, 1L]
+    q <- rep(NA_real_, length(p))
+    q[is.finite(p)] <- qvalue::qvalue(p[is.finite(p)])$q
+    data.frame(logFC = tested$coefficients[, 1L], raw_pvalue = p, fdr_qvalue = q, df_residual = fit$df.residual,
+        row.names = rownames(x))
+}
+
+# One in-process store holding `object` as the normalisation's source; closed with the calling frame.
+ruvModelStore <- function(object, frame = parent.frame()) {
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(withr::local_tempdir(.local_envir = frame), "kit-126", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    withr::defer(closeDIAStateAdapter(manager), envir = frame)
+    manager$.context$reference_states <- TRUE
+    manager$saveState("protein_replicate_filtered", object, list(), "source")
+    manager
+}
+
+ruvModelParameters <- function(ruv_mode = "manual", ruv_k = 2) {
+    parameters <- list(norm_method = "quantile", ruv_mode = ruv_mode, auto_percentage_min = NULL, auto_percentage_max = NULL,
+        separation_metric = NULL, k_penalty_weight = NULL, adaptive_k_penalty = NULL, ruv_percentage = 50, ruv_k = ruv_k,
+        grouping = "group")
+    if (identical(ruv_mode, "automatic")) {
+        parameters[c("auto_percentage_min", "auto_percentage_max", "separation_metric", "k_penalty_weight",
+            "adaptive_k_penalty")] <- list(5, 30, "max_difference", 0.5, TRUE)
+    }
+    parameters
+}
+
+ruvModelQuietly <- function(expr) {
+    value <- NULL
+    utils::capture.output(value <- suppressWarnings(suppressMessages(expr)))
+    value
+}
+
+# The declared operations on a seeded fixture: the normalisation with the new design, then the contrast on its final
+# state; the states and the contrast's tables as plain values.
+ruvModelThroughOperations <- function(fixture, k) {
+    manager <- ruvModelStore(ruvModelObject(fixture$x, fixture$design))
+    source <- getDIAStateReference(manager)
+    contrasts <- normaliseProtDaContrastsTable(data.frame(contrasts = "grouptreated-groupcontrol"))
+    ruvModelQuietly(withDIAStateScope(manager, function() {
+        chosen <- runSavedOperation(manager, diaNormalizationOperation("factors_in_model"), source,
+            c(ruvModelParameters(ruv_k = k), list(ruv_design = "factors_in_model")))
+        spec <- readDIAStateMetadata(manager, chosen$value$final)$data
+        contrast <- runSavedOperation(manager, diaContrastOperation(), chosen$value$final, list(formula = "~ 0 + group",
+            qvalue = 0.05, lfc = 0, weights = NA, contrast = contrasts$full_format[[1L]],
+            annotations = spec$components$protein_id_table$entity_id, name = contrasts$contrasts[[1L]],
+            comparison = contrasts$friendly_names[[1L]]))
+        list(value = chosen$value, state = readDIAExecutionComponents(manager, chosen$value$final),
+            normalised = readDIAExecutionComponents(manager, chosen$value$normalized), model = contrast$value$model,
+            tables = lapply(contrast$value$tables, function(reference) as.data.frame(materializeDIATable(manager$.context, reference))))
+    }))
+}
+
 test_that("the factors-in-the-model path reproduces the simulator's arm 7 on a fixture with missing values", {
     fixture <- ruvModelFixture()
     expect_gt(mean(!is.finite(fixture$x)), 0.1)
     for (k in 1:2) {
         package <- ruvModelPackageState(fixture, k)
         state <- package$state
-        ids <- state@protein_quant_table$Protein.Group
-        # every protein of the normalised matrix is in the corrected state here, so the test is arm 7's own
-        expect_identical(ids, rownames(fixture$x))
         result <- ruvModelDa(state)
-        reference <- ruvModelArm7(fixture, k, rows = ids)
+        # the reference population is the fixture's own (every protein of the normalised matrix), not the state's table
+        reference <- ruvModelArm7(fixture, k)
+        expect_setequal(rownames(result$contrasts_results$results[[1L]]), rownames(fixture$x))
+        expect_identical(result$da_model$tested_proteins, nrow(fixture$x))
         expect_equal(unname(package$factors$W), unname(reference$W), tolerance = 1e-12)
         table <- result$contrasts_results$results[[1L]]
         expected <- reference$test$results[[1L]]
@@ -265,7 +328,13 @@ test_that("an inconsistent factors-in-the-model object is refused, not tested", 
     expect_null(resolveProtRuvModelInput(ruvModelObject(fixture$x, fixture$design), "~ 0 + group"))
     accepted <- resolveProtRuvModelInput(state, "~ 0 + group")
     expect_identical(accepted$formula_used, "~ 0 + group + W1 + W2")
-    expect_identical(accepted$matrix, fixture$x[state@protein_quant_table$Protein.Group, fixture$design$Run])
+    # every protein of the stored normalised matrix, whatever the corrected table holds (audit F-03)
+    expect_identical(accepted$matrix, fixture$x[, fixture$design$Run])
+    expect_identical(accepted$no_corrected_intensity, character())
+    partial <- state
+    partial@protein_quant_table <- partial@protein_quant_table[-(1:3), ]
+    expect_identical(resolveProtRuvModelInput(partial, "~ 0 + group")$matrix, fixture$x[, fixture$design$Run])
+    expect_identical(resolveProtRuvModelInput(partial, "~ 0 + group")$no_corrected_intensity, rownames(fixture$x)[1:3])
     no_w <- state; no_w@design_matrix$W2 <- NULL
     refused(no_w)
     other_k <- state; other_k@args$ruvCovariates$k <- 3L
@@ -366,4 +435,68 @@ test_that("through the operations: the RUV state carries the factors and the DA 
             k_source = "user", ruv_controls = "all", tested_matrix = "uncorrected"))
     expect_identical(outcome$chosen_contrast$status, "computed")
     expect_gt(outcome$chosen_contrast$value$rows, 0L)
+})
+
+test_that("through the operations the DA table is arm 7 on every protein of the normalised matrix (audit F-03, F-07; M14)", {
+    # the centre fixture, and the audit's case: 3 per group with k = 3, where RUV-III-C cannot correct every protein
+    cases <- list(list(fixture = ruvModelFixture(), k = 2L, zero_df = 0L),
+        list(fixture = ruvModelFixture(per_group = 3L), k = 3L, zero_df = 95L))
+    for (case in cases) {
+        fixture <- case$fixture
+        outcome <- ruvModelThroughOperations(fixture, case$k)
+        samples <- fixture$design$Run
+        normalised <- as.matrix(tibble::column_to_rownames(outcome$normalised@protein_quant_table, "Protein.Group"))[, samples]
+        corrected_ids <- outcome$state@protein_quant_table$Protein.Group
+        uncorrected_only <- setdiff(rownames(normalised), corrected_ids)
+        # the corrected matrix keeps its own cleanup; the test does not follow it
+        expect_gt(length(uncorrected_only), 0L)
+        table <- outcome$tables$contrasts_results_table
+        rownames(table) <- table$Protein.Group
+        expect_setequal(table$Protein.Group, rownames(normalised))
+        expect_identical(outcome$model$tested_proteins, nrow(normalised))
+        expect_setequal(outcome$model$no_corrected_intensity, uncorrected_only)
+        # arm 7 computed outside the code under test, on the full population of the store's normalised matrix:
+        # the simulator's arm (its W, its `da`), and limma called directly with the same W
+        reference <- ruvModelArm7(list(x = normalised, design = fixture$design), case$k)
+        simulator <- reference$test$results[[1L]]
+        direct <- ruvModelDirectLimma(normalised, fixture$design, reference$W)
+        expect_identical(nrow(simulator), nrow(normalised))
+        ids <- rownames(normalised)
+        for (column in c("logFC", "raw_pvalue", "fdr_qvalue")) {
+            expect_true(all(is.finite(table[ids, column])), info = column)
+            expect_lt(max(abs(table[ids, column] - simulator[ids, column])), 1e-12)
+            expect_lt(max(abs(table[ids, column] - direct[ids, column])), 1e-10)
+        }
+        # features with no residual degree of freedom of their own are tested as the simulator tested them
+        expect_identical(sum(direct$df_residual == 0), case$zero_df)
+        # a protein tested without a corrected value: in the DA tables, without intensities; not in the corrected table
+        expect_setequal(outcome$tables$norm_counts$Protein.Group, corrected_ids)
+        long <- outcome$tables$da_proteins_long
+        expect_setequal(long$Protein.Group, rownames(normalised))
+        intensities <- grep("^log2norm[.]", names(long), value = TRUE)
+        expect_gt(length(intensities), 0L)
+        expect_true(all(is.na(long[long$Protein.Group %in% uncorrected_only, intensities])))
+        expect_true(any(is.finite(as.matrix(long[!long$Protein.Group %in% uncorrected_only, intensities]))))
+    }
+})
+
+test_that("the DA refuses a model with no residual degree of freedom at test time (audit F-04)", {
+    fixture <- ruvModelFixture(proteins = 120L, per_group = 3L)
+    state <- ruvModelPackageState(fixture, 3L)$state # k_max = 6 - 2 - 1: one residual degree of freedom, groups only
+    expect_identical(resolveProtRuvModelInput(state, "~ 0 + group")$formula_used, "~ 0 + group + W1 + W2 + W3")
+    # a sample removed after the RUV step (the correlation filter)
+    fewer <- state
+    fewer@design_matrix <- fewer@design_matrix[-1L, ]
+    fewer@protein_quant_table$run_001 <- NULL
+    expect_error(resolveProtRuvModelInput(fewer, "~ 0 + group"), "no residual degree of freedom", class = "prot_ruv_model_no_residual_df")
+    expect_error(ruvModelDa(fewer), class = "prot_ruv_model_no_residual_df")
+    # a covariate in the formula
+    with_batch <- state
+    with_batch@design_matrix$batch <- rep(c("b1", "b2", "b1"), 2L)
+    expect_error(resolveProtRuvModelInput(with_batch, "~ 0 + group + batch"), class = "prot_ruv_model_no_residual_df")
+    expect_error(ruvModelDa(with_batch, "~ 0 + group + batch"), class = "prot_ruv_model_no_residual_df")
+    # the same covariate with a factor fewer leaves one: accepted
+    two <- ruvModelPackageState(fixture, 2L)$state
+    two@design_matrix$batch <- rep(c("b1", "b2", "b1"), 2L)
+    expect_identical(resolveProtRuvModelInput(two, "~ 0 + group + batch")$w_terms, c("W1", "W2"))
 })

@@ -405,9 +405,10 @@ setMethod(
         block_reason = replicate$reason, uses_duplicate_correlation = isTRUE(replicate$technical),
         treat_applied = FALSE, treat_lfc_cutoff_requested = as.double(treat_lfc_cutoff))
     } else {
-    # KIT-126: the classic route's factors-in-the-model design. An object that carries the normalised matrix
-    # (`args$ruv_uncorrected_quant`, set by `attachProtRuvModelFactors`) is tested on it with the design's W columns
-    # in the model; the object's own table (the corrected matrix) is not tested. Every other object: as before.
+    # KIT-126: the classic route's factors-in-the-model design. An object that declares it (`attachProtRuvModelFactors`)
+    # is tested on its stored normalised matrix (`args$ruv_uncorrected_quant`), every protein of it, with the design's
+    # W columns in the model; the object's own table (the corrected matrix) is not tested and keeps its own cleanup:
+    # `no_corrected_intensity` names the proteins tested without a corrected value. Every other object: as before.
     ruv_model <- resolveProtRuvModelInput(theObject, formula_string)
     if (!is.null(ruv_model)) {
       message("   differentialAbundanceAnalysisHelper: RUV factors in the model; testing the normalised matrix (KIT-126)")
@@ -415,7 +416,8 @@ setMethod(
       formula_string <- ruv_model$formula_used
       da_model <- utils::modifyList(da_model, list(formula_used = ruv_model$formula_used, w_terms = ruv_model$w_terms,
         k = length(ruv_model$w_terms), ruv_mode = "covariates", k_source = ruv_model$declaration$k_source,
-        ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = "uncorrected"))
+        ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = "uncorrected",
+        tested_proteins = nrow(ruv_model$matrix), no_corrected_intensity = ruv_model$no_corrected_intensity))
     }
     contrasts_results <- runTestsContrasts(protein_quant_matrix,
       contrast_strings = contrast_strings_to_use,

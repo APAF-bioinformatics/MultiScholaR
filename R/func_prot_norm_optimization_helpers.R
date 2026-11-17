@@ -1335,7 +1335,13 @@ refuseProtRuvModelObject <- function(theObject, caller) {
 #' legacy way (audit F-01).
 #' @param theObject A `ProteinQuantitativeData` object.
 #' @param formula_string The DA formula.
-#' @return NULL, or `list(matrix, formula_used, w_terms, declaration)`.
+#'
+#' The matrix returned holds every protein of the stored normalised matrix (audit F-03, decision M14), not only the
+#' proteins that RUV-III-C and the missing-value cleanup left in the corrected table: limma's own handling of missing
+#' values applies and no filter is added. `no_corrected_intensity` names the proteins tested without a corrected row.
+#' The test is refused (`prot_ruv_model_no_residual_df`) when the samples left at DA time minus the rank of the model
+#' matrix (groups, covariates of the formula, W) is below 1 (audit F-04).
+#' @return NULL, or `list(matrix, formula_used, w_terms, declaration, no_corrected_intensity)`.
 #' @noRd
 resolveProtRuvModelInput <- function(theObject, formula_string) {
   uncorrected <- theObject@args$ruv_uncorrected_quant
@@ -1359,6 +1365,18 @@ resolveProtRuvModelInput <- function(theObject, formula_string) {
       !all(samples %in% colnames(uncorrected))) {
     refuse("the stored normalised matrix does not cover its protein table")
   }
-  list(matrix = uncorrected[ids, samples, drop = FALSE],
-       formula_used = paste(c(formula_string, w_terms), collapse = " + "), w_terms = w_terms, declaration = declaration)
+  formula_used <- paste(c(formula_string, w_terms), collapse = " + ")
+  # Audit F-04: the residual degrees of freedom of the model that will be fitted (groups, any covariates of the
+  # formula, W) on the samples left at DA time. The RUV step checked the groups-only model on its own samples.
+  model <- stats::model.matrix(stats::as.formula(formula_used), theObject@design_matrix)
+  residual_df <- nrow(model) - qr(model)$rank
+  if (residual_df < 1L) {
+    cli::cli_abort(c("the model {formula_used} leaves no residual degree of freedom on {nrow(model)} sample{?s}; the test is refused",
+      i = "the model has {qr(model)$rank} independent term{?s}: fewer factors (k), fewer covariates or more samples are needed"),
+      class = "prot_ruv_model_no_residual_df")
+  }
+  # Audit F-03 (decision M14): every protein of the stored normalised matrix is tested, the population the
+  # simulation's arm 7 tested; the proteins that have no row in the corrected table are named, not dropped.
+  list(matrix = uncorrected[, samples, drop = FALSE], formula_used = formula_used, w_terms = w_terms,
+       declaration = declaration, no_corrected_intensity = setdiff(rownames(uncorrected), ids))
 }
