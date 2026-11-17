@@ -1,0 +1,318 @@
+{
+  "corpus": "KIT-137 tier 1",
+  "synthetic": true,
+  "seed": 20261117,
+  "biological_samples": ["WT_01", "WT_02", "WT_03", "WT_04", "WT_05", "WT_06", "WT_07", "WT_08", "WT_09", "WT_10", "KO_01", "KO_02", "KO_03", "KO_04", "KO_05", "KO_06", "KO_07", "KO_08", "KO_09", "KO_10"],
+  "views": {
+    "proteomics": "proteomics",
+    "transcriptomics": "transcriptomics",
+    "lipidomics": ["LCMS_Pos", "LCMS_Neg"],
+    "metabolomics": ["LCMS_Pos", "GCMS"]
+  },
+  "factors": {
+    "Z1": {
+      "active": ["proteomics", "transcriptomics", "lipidomics", "metabolomics"],
+      "share": 0.15,
+      "abs_loading": [0.8, 1.6],
+      "scores": "group indicator, KO = 1"
+    },
+    "Z2": {
+      "active": ["proteomics", "transcriptomics", "lipidomics", "metabolomics"],
+      "share": 0.1,
+      "abs_loading": [0.5, 1],
+      "scores": "N(0, 1), orthogonal in the sample to Z1"
+    },
+    "Z3": {
+      "active": ["proteomics", "transcriptomics"],
+      "share": 0.1,
+      "abs_loading": [0.5, 1],
+      "scores": "N(0, 1), orthogonal in the sample to Z1, Z2"
+    }
+  },
+  "batches": {
+    "proteomics": {
+      "WT_01": "B2",
+      "WT_02": "B2",
+      "WT_03": "B1",
+      "WT_04": "B1",
+      "WT_05": "B2",
+      "WT_06": "B1",
+      "WT_07": "B2",
+      "WT_08": "B2",
+      "WT_09": "B1",
+      "WT_10": "B1",
+      "KO_01": "B2",
+      "KO_02": "B2",
+      "KO_03": "B2",
+      "KO_04": "B1",
+      "KO_05": "B1",
+      "KO_06": "B1",
+      "KO_07": "B1",
+      "KO_08": "B2",
+      "KO_09": "B2",
+      "KO_10": "B1"
+    },
+    "transcriptomics": {
+      "WT_01": "B3",
+      "WT_02": "B3",
+      "WT_03": "B1",
+      "WT_04": "B2",
+      "WT_05": "B3",
+      "WT_06": "B2",
+      "WT_07": "B1",
+      "WT_08": "B1",
+      "WT_09": "B2",
+      "WT_10": "B1",
+      "KO_01": "B1",
+      "KO_02": "B1",
+      "KO_03": "B3",
+      "KO_04": "B3",
+      "KO_05": "B3",
+      "KO_06": "B1",
+      "KO_07": "B1",
+      "KO_08": "B2",
+      "KO_09": "B2",
+      "KO_10": "B2"
+    },
+    "lipidomics": {
+      "WT_01": "B1",
+      "WT_02": "B2",
+      "WT_03": "B2",
+      "WT_04": "B3",
+      "WT_05": "B3",
+      "WT_06": "B1",
+      "WT_07": "B1",
+      "WT_08": "B2",
+      "WT_09": "B3",
+      "WT_10": "B1",
+      "KO_01": "B1",
+      "KO_02": "B2",
+      "KO_03": "B3",
+      "KO_04": "B2",
+      "KO_05": "B3",
+      "KO_06": "B2",
+      "KO_07": "B1",
+      "KO_08": "B1",
+      "KO_09": "B3",
+      "KO_10": "B1"
+    },
+    "metabolomics": {
+      "WT_01": "B2",
+      "WT_02": "B1",
+      "WT_03": "B1",
+      "WT_04": "B2",
+      "WT_05": "B1",
+      "WT_06": "B2",
+      "WT_07": "B2",
+      "WT_08": "B1",
+      "WT_09": "B2",
+      "WT_10": "B1",
+      "KO_01": "B2",
+      "KO_02": "B2",
+      "KO_03": "B2",
+      "KO_04": "B1",
+      "KO_05": "B1",
+      "KO_06": "B2",
+      "KO_07": "B1",
+      "KO_08": "B1",
+      "KO_09": "B1",
+      "KO_10": "B2"
+    }
+  },
+  "dropped": {
+    "omic": "metabolomics",
+    "biological_sample": "KO_07"
+  },
+  "runs": {
+    "proteomics": 20,
+    "transcriptomics": 40,
+    "lipidomics": 40,
+    "metabolomics": 38
+  },
+  "features": {
+    "proteomics": {
+      "proteomics": 400
+    },
+    "transcriptomics": {
+      "transcriptomics": 400
+    },
+    "lipidomics": {
+      "LCMS_Pos": 150,
+      "LCMS_Neg": 150
+    },
+    "metabolomics": {
+      "LCMS_Pos": 150,
+      "GCMS": 150
+    }
+  },
+  "missing_cells": {
+    "proteomics": {
+      "proteomics": 641
+    },
+    "transcriptomics": {
+      "transcriptomics": 0
+    },
+    "lipidomics": {
+      "LCMS_Pos": 180,
+      "LCMS_Neg": 180
+    },
+    "metabolomics": {
+      "LCMS_Pos": 172,
+      "GCMS": 171
+    }
+  },
+  "generators": {
+    "proteomics": {
+      "kind": "lfq",
+      "synthetic": true,
+      "seed": 20271117,
+      "samples": 20,
+      "proteins": 400,
+      "groups": ["WT", "KO"],
+      "differential_fraction": 0,
+      "missing_fraction": 0.08,
+      "flagged_rows": 50,
+      "channels": ["126", "127N", "127C", "128N", "128C", "129N", "129C", "130N", "130C", "131"],
+      "missingness": "mnar",
+      "mnar_slope": 1
+    },
+    "transcriptomics": {
+      "kind": "trx_screen",
+      "synthetic": true,
+      "seed": 20301117,
+      "biological_per_group": 10,
+      "technical_replicates": 2,
+      "groups": ["RPMI", "Sera"],
+      "batches": ["B1", "B2", "B3"],
+      "features_per_assay": 400,
+      "assays": "counts",
+      "base_mean_meanlog": 4,
+      "base_mean_sdlog": 1.5,
+      "low_mean_fraction": 0,
+      "low_mean_range": [0.05, 1],
+      "batch_fraction": 0,
+      "batch_log2_sd": 0.5,
+      "differential_fraction": 0,
+      "differential_abs_log2fc": [1, 2],
+      "dispersion_scale": 0.05,
+      "dispersion_sdlog": 0.5,
+      "library_factor_range": [0.5, 2],
+      "zero_genes": 0,
+      "constant_genes": 0,
+      "constant_count": 100,
+      "gene_name_na_fraction": 0.01,
+      "gene_name_empty_fraction": 0.01,
+      "gene_name_duplicate_fraction": 0.01,
+      "contrast": "Sera_vs_RPMI=groupSera-groupRPMI"
+    },
+    "lipidomics": {
+      "kind": "lipid_screen",
+      "synthetic": true,
+      "seed": 20281117,
+      "biological_per_group": 10,
+      "technical_replicates": 2,
+      "groups": ["WT", "KO"],
+      "batches": ["B1", "B2", "B3"],
+      "features_per_assay": 150,
+      "standards_per_assay": 0,
+      "duplicate_fraction": 0.05,
+      "differential_fraction": 0,
+      "batch_effect_sd": 0,
+      "sample_scale_sd": 0.3,
+      "technical_noise_sd": 0.12,
+      "residual_sd": 0.3,
+      "assays": ["LCMS_Pos", "LCMS_Neg"],
+      "missing_features": 0.2,
+      "missing_samples": 0.15
+    },
+    "metabolomics": {
+      "kind": "metab_screen",
+      "synthetic": true,
+      "seed": 20291117,
+      "biological_per_group": 10,
+      "technical_replicates": 2,
+      "groups": ["WT", "KO"],
+      "batches": ["B1", "B2", "B3"],
+      "features_per_assay": 150,
+      "standards_per_assay": 0,
+      "duplicate_fraction": 0,
+      "differential_fraction": 0,
+      "batch_effect_sd": 0,
+      "sample_scale_sd": 0.3,
+      "technical_noise_sd": 0.12,
+      "residual_sd": 0.3,
+      "assays": ["LCMS_Pos", "GCMS"],
+      "missing_features": 0.2,
+      "missing_samples": 0.15
+    }
+  },
+  "recipe": {
+    "corpus": "KIT-137 tier 1",
+    "synthetic": true,
+    "seed": 20261117,
+    "biological_per_group": 10,
+    "groups": ["WT", "KO"],
+    "effect_group": "KO",
+    "omics": {
+      "proteomics": {
+        "generator": "lfq",
+        "features": 400,
+        "seed_offset": 10000,
+        "batches": ["B1", "B2"]
+      },
+      "transcriptomics": {
+        "generator": "trx_screen",
+        "features": 400,
+        "seed_offset": 40000,
+        "run_prefix": "trx_",
+        "batches": ["B1", "B2", "B3"]
+      },
+      "lipidomics": {
+        "generator": "lipid_screen",
+        "features": 150,
+        "seed_offset": 20000,
+        "run_prefix": "lip_",
+        "feature_prefix": "lipid",
+        "base_mean": 16,
+        "missing_features": 0.2,
+        "batches": ["B1", "B2", "B3"]
+      },
+      "metabolomics": {
+        "generator": "metab_screen",
+        "features": 150,
+        "seed_offset": 30000,
+        "run_prefix": "met_",
+        "feature_prefix": "metab",
+        "base_mean": 15,
+        "missing_features": 0.2,
+        "batches": ["B1", "B2"]
+      }
+    },
+    "factors": {
+      "Z1": {
+        "active": ["proteomics", "transcriptomics", "lipidomics", "metabolomics"],
+        "share": 0.15,
+        "abs_loading": [0.8, 1.6]
+      },
+      "Z2": {
+        "active": ["proteomics", "transcriptomics", "lipidomics", "metabolomics"],
+        "share": 0.1,
+        "abs_loading": [0.5, 1]
+      },
+      "Z3": {
+        "active": ["proteomics", "transcriptomics"],
+        "share": 0.1,
+        "abs_loading": [0.5, 1]
+      }
+    },
+    "batch": {
+      "share": 0.3,
+      "sd": 0.5
+    },
+    "dropped": {
+      "omic": "metabolomics",
+      "biological_sample": "KO_07"
+    },
+    "digits": 4
+  }
+}
