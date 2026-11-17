@@ -347,6 +347,7 @@ integrationLimpaRuv <- function(root, ruv_mode) {
     manager$.context$experiment_paths <- paths
     workflow <- list2env(list(state_manager = manager, qc_params = list(protein_qc = list()), config_list = list()))
     norm_data <- new.env(parent = emptyenv())
+    correlation <- NULL
     withDIAStateScope(manager, function() {
         v1 <- computeDIAReferenceProteinNormalisation(manager, getDIAStateReference(manager), list(norm_method = "none"))
         setDIAStepProvenance(manager, "protein_between_sample_normalisation", "whole", "norm_method", NULL,
@@ -365,12 +366,14 @@ integrationLimpaRuv <- function(root, ruv_mode) {
         commitDIAReferenceState(manager, "correlation_filtered", readDIAStateMetadata(manager, selection$value)$data,
             list(min_pearson_correlation_threshold = 0.5), "correlation")
         norm_data$correlation_filtered_obj <- getDIAStateReference(manager)
+        correlation <<- norm_data$correlation_filtered_obj
         # K061-1: several modes in turn are the tab's mode switches.
         for (mode in ruv_mode) suppressMessages(suppressWarnings(runDIAReferenceRuvCovariates(list(ruv_mode = mode,
             color_variable = NULL, shape_variable = NULL), workflow, norm_data, paths, "proteomics", "fixture",
             function(reference) NULL, function() "group")))
     })
-    list(manager = manager, adjusted = file.path(paths$protein_qc_dir, "ruv_adjusted_protein_matrix.tsv"))
+    list(manager = manager, adjusted = file.path(paths$protein_qc_dir, "ruv_adjusted_protein_matrix.tsv"),
+        correlation = correlation)
 }
 
 integrationLimpaExpected <- function(path) {
@@ -455,6 +458,39 @@ test_that("KIT-061 (K061-1): DIA_LIMPA switched covariates -> correction -> cova
     expect_identical(manifest$correction$ruv_mode, "covariates")
     expect_equal(input$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
     expect_true(all(paste0("W", seq_len(manifest$correction$k)) %in% names(input$samples)))
+})
+
+test_that("KIT-061 (K061-7): DIA_LIMPA correlation -> covariates writes the corrected product; a correlation re-apply then writes the unadjusted table, normalised", {
+    skip_if_not_installed("limpa")
+    skip_if_not_installed("mixOmics")
+    root <- withr::local_tempdir()
+    fixture <- integrationLimpaRuv(root, "covariates")
+    manager <- fixture$manager
+    withr::defer(closeDIAStateAdapter(manager))
+    corrected <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    expect_identical(corrected$manifest$source_state$name, "ruv_covariates")
+    expect_identical(corrected$manifest$matrix_role, "corrected")
+    expect_identical(corrected$manifest$correction$id, "C2")
+    expect_equal(corrected$views$proteomics$matrix, integrationLimpaExpected(fixture$adjusted), tolerance = 1e-12)
+    # The correlation re-applied from its pre-RUV source (`diaCorrelationSource` on DIA_LIMPA), committed on the
+    # covariates head as the tab commits it: its record's previous state is ruv_covariates.
+    withDIAStateScope(manager, function() {
+        commit <- diaCorrelationCommit(manager, fixture$correlation, 0.5, FALSE)
+        commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
+    })
+    expect_identical(manager$current_state, "correlation_filtered")
+    expect_identical(readDIAStateMetadata(manager)$previous_state, "ruv_covariates")
+    input <- readIntegrationInput(integrationSummarySave(manager, root)$dir)
+    manifest <- input$manifest
+    expect_identical(manifest$source_state$name, "correlation_filtered")
+    expect_identical(manifest$matrix_role, "normalised")
+    expect_null(manifest$correction)
+    expect_null(manifest$source_state$product)
+    state <- integrationStateTable(manager)
+    names(state)[[1]] <- "feature_id"
+    expect_identical(input$views$proteomics$matrix, state)
+    expect_false(isTRUE(all.equal(unname(as.matrix(input$views$proteomics$matrix[-1])),
+        unname(as.matrix(corrected$views$proteomics$matrix[-1])))))
 })
 
 test_that("KIT-061 (D2): the normalisation tab's S4 compatibility download no longer copies its RDS to integration/", {

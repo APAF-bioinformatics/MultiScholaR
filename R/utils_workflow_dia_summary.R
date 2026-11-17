@@ -97,7 +97,8 @@ protIntegrationInputLineage <- function(manager, until) {
 #' `ruv_corrected`, then `correlation_filtered` on DIA, LFQ and TMT; `correlation_filtered`, then `ruv_covariates` or
 #' `ruv_corrected` on DIA_LIMPA), never a name kept in the history from an earlier run. Its matrix is the state's
 #' protein table, except on `ruv_covariates`, whose table is uncorrected: there the RUV-adjusted product. The role is
-#' `corrected` when the lineage's normalisation or RUV state is an RUV state with RUV applied, else `normalised`.
+#' `corrected` when the lineage's normalisation or RUV state is an RUV state with RUV applied, else `normalised`; on
+#' DIA_LIMPA a `correlation_filtered` final is always `normalised` (its input is the pre-RUV matrix).
 #' @param manager The session's owner, inside its state scope.
 #' @return `list(manifest, samples, matrix)` (the matrix's first column `feature_id`, its samples in the design's
 #'   order), or NULL when the lineage has no final state or it is stored as a whole legacy object.
@@ -113,8 +114,14 @@ protIntegrationInputSource <- function(manager) {
   # record leaves it), so no input is written for it.
   record <- lineage[[final]]$data
   if (is.null(record)) return(NULL)
+  workflow <- manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_
   decider <- utils::tail(names(lineage), 1L)
   ruvState <- if (decider %in% ruvStates && !identical(lineage[[decider]]$config$ruv_applied, FALSE)) decider else character()
+  # A record's previous state is the head at its commit, not its input, and no checkpoint records its source. On
+  # DIA_LIMPA the correlation filter always reads the pre-RUV input (`diaCorrelationSource`), and the route corrects
+  # only in ruv_covariates' adjusted product or ruv_corrected, so its correlation_filtered table is normalised. The
+  # classic routes' correlation reads the RUV output, so there it stays corrected after RUV.
+  if (identical(workflow, "DIA_LIMPA") && identical(final, "correlation_filtered")) ruvState <- character()
   slots <- record$slots
   matrixSource <- reference
   product <- NULL
@@ -134,8 +141,7 @@ protIntegrationInputSource <- function(manager) {
   rownames(design) <- NULL
   matrix <- data.frame(feature_id = as.character(matrix[[slots$protein_id_column]]), matrix[samples],
     check.names = FALSE, stringsAsFactors = FALSE)
-  manifest <- list(omic_type = "proteomics",
-    workflow = manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_,
+  manifest <- list(omic_type = "proteomics", workflow = workflow,
     matrix_role = if (length(ruvState)) "corrected" else "normalised", scale = "log2",
     correction = if (length(ruvState)) protIntegrationInputCorrection(manager, ruvState, design) else NULL,
     source_state = list(name = final, entity_id = reference$entity_id, sha256 = reference$payload$sha256,

@@ -66,6 +66,9 @@ row moved (no fixture id carries `;` or a hyphen), so no re-freeze was needed. T
 process on the final code: integration input 118/0, summary core 701/0 (2 skipped), summary module 1703/0, native
 session 734/0 (2 skipped), gui config 1906/0, norm module 639/0, gui-entry proteomics 193/0.
 
+Follow-up (DIA_LIMPA `correlation_filtered` after the covariates is always `normalised`): integration input 130/0,
+gui-entry proteomics 193/0 (2478 s) against the same oracles; no movement.
+
 ## Notes
 
 - Freeze run: 76 passed, 1 failed, 2888 s. The failure is the lane wall-time ceiling (`record$seconds < 900`) on
