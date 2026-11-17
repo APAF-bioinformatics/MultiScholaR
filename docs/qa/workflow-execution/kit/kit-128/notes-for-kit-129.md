@@ -29,6 +29,11 @@ technical replicates. Trx fits (`DGEGLM`) and proteomics records do not gain the
   of 2026-11-17). No kit corpus is such a design; no stored reference is expected to move for it.
 - The shared design builder refuses replicate numbers shared inside a group unless the runs were marked by
   'Assign Technical Replicates'. The kit driver marks them that way, so its journeys are not refused.
+- K128-2's limit (recorded, not repaired): two separate technical-replicate actions in one group given the same manual
+  replicate number both mark their runs (`tech_reps`), so the save accepts them and they merge into one biological
+  unit. The builder cannot tell the actions apart from what it records.
+- RUV stays allowed on a design whose every group is one unit (RUV-III with technical replicates of one unit is
+  valid); only the differential analysis is refused (the coordinator's decision, 2026-11-17).
 
 ## Tests left failing for the re-record
 
