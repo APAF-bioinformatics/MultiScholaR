@@ -103,7 +103,7 @@ test_that("the diagnostic plot shows the observed shares against the permutation
     plot <- plotRuvFactorCount(estimate)
     expect_s3_class(plot, "ggplot")
     built <- ggplot2::ggplot_build(plot)
-    layers <- vapply(plot$layers, function(layer) class(layer$geom)[[1L]], character(1))
+    layers <- unname(vapply(plot$layers, function(layer) class(layer$geom)[[1L]], character(1)))
     expect_identical(layers, c("GeomLine", "GeomLine", "GeomPoint", "GeomVline"))
     shown <- nrow(estimate$components)
     # the permutation null: one line per permutation over the components shown

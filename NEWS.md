@@ -30,6 +30,18 @@
    adjusted matrix and the results that use them change. Abundance-dependent steps after RUV can change:
    the low-intensity filter that follows the classic correction may now remove a different protein.
    Lipidomics, metabolomics and the peptide method are not changed.
+ * RUV, the number of unwanted factors k (KIT-129): an estimated count is available to the RUV step of every
+   omic (the kernel only; no screen offers it yet and no default changes). It is `sva::num.sv()` (method "be",
+   20 permutations, a fixed and recorded seed) on the features observed in every sample: the groups are
+   removed, and a component of the residuals is counted while at most 10% of the permutations reach its share
+   of the residual variance. `sva` is a suggested package; without it the estimate is refused with the reason
+   and k has to be given, never replaced by another rule. The estimate is also refused when fewer than 20
+   features are observed in every sample or the samples leave fewer than two residual components; a count
+   of 0 means no RUV for the run, with a notice. A k above what the design can carry (samples minus replicate
+   sets, a residual degree of freedom beside the groups, fewer factors than controls) is refused, not
+   reduced. The estimate has its own diagnostic plot (observed share of residual variance per component
+   against the permutation null, the count marked). Today's rule on the canonical-correlation plot is
+   unchanged and stays the rule of today's designs; it is not defined when all features are the controls.
  * Proteomics automatic RUV parameters (`findBestNegCtrlPercentage()`): the number of factors k is now chosen
    among the values up to the sample-size limit (`max_acceptable_k`). Before, the limit was applied only to
    the penalty, and a larger k could be returned. Results change only where the canonical-correlation curve
