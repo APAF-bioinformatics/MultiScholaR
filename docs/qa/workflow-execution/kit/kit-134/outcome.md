@@ -121,6 +121,27 @@ Bounded item: the token part of P2 and its verification. Stage `[dist:internal]`
 | 8 | [44017206786](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44017206786) | `f9e52d67` | Windows (correction pass) | passed: both internal packages built and load |
 | 9 | [44041155687](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44041155687) | `e9b7f8f4` | both (after T1: `fastduckdb` 0.2.0 at `2694b972`, `fastlimpadpc` at `87a90b89`) | Windows passed (both build and load). Linux: library, internal packages, DIA manifest, rollup and writer all pass; both lanes **failed at their last-but-one step**: the summary report cannot render (`webshot2` excluded from the bundle) |
 
+| 10 | [44044598918](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44044598918) | `e5b23654` (`performance-v2` 9f7e371d merged, K1; the audit repairs and `webshot2`, `chromote` shipped) | both (dispatch; this item's correction pass) | **passed**: both platforms build and load both internal packages; Linux: the DIA and DIA_LIMPA lanes pass and every step is identical to the laptop's oracle |
+
+### The correction pass (run 10): the result
+
+- **K1.** `performance-v2` (`9f7e371d`, DESCRIPTION at `3ec13e95`) merged into `kit-134` (`e5b23654`, a merge commit, no conflict; nothing under `packaging/` or `.github/` changed by it). The Remotes check passed: DESCRIPTION and `install-library.R` both name `fastduckdb@e724f90b` and `fastlimpadpc@87a90b89`.
+- **Install.** Linux: `fastduckdb` 0.2.0 (193 s), `fastlimpadpc` 0.1.0 (22 s). Windows: 0.2.0 (406 s), 0.1.0 (43 s). Only the `INTERNAL` result lines were printed (F1).
+- **Versions.** 378 packages in both lockfile and bundle, 354 same, 24 different (`webshot2` 0.1.2 and `chromote` 0.5.1 now bundled at the lock). Declared minimums: 6 met, none unmet, `testthat` not bundled. Both platforms.
+- **Load, moved library, network closed.** Linux bare container and Windows reduced environment: **389 of 389** packages load, every namespace from the bundle, MultiScholaR attaches; both internal packages load at their commits; the reader round trip is identical. Linux: DIA manifest `supported`, `native_query` present, the writer recorded; the rollup and the direct writer admit the build; DIA_LIMPA resolves `fastlimpadpc`.
+- **The lanes** (Linux, in process against the moved bundle, network closed (checked), the laptop's locale, `fastlimpadpc` the engine, `testthat` 3.3.2 in a separate library shadowing nothing):
+
+| Lane | Oracle steps | Pass | Fail | Error | Steps differing from the oracle | Discrete | Digest | Seconds |
+|---|---|---|---|---|---|---|---|---|
+| prot_dia | 29 | 44 | 0 | 0 | 0 | 0 | 0 | 302 |
+| prot_dia_limpa | 24 | 38 | 0 | 0 | 0 | 0 | 0 | 211 |
+
+**Classification under revision 1.2's rule** (relative 1e-6, absolute 1e-9; discrete exact): every step of both lanes is **identical** to its laptop-frozen oracle (heads, histories, tab statuses, notifications, refusal checks, outputs, artifact digests and state digests), so every compared value is in class **Agree**, with nothing to classify. The state digests are of values rounded to 10 significant digits, so identity there is agreement to 10 significant digits, stricter than the rule; no digest differs, so **no laptop values are needed** for these two lanes. The rule was not changed. Expected differences from `-march=native` did not appear at this precision on these fixtures.
+
+**The report step and Chrome.** Both lanes rendered the summary report (`DIANN_report_proteomics_prot_dia.docx`, `DIANN_limpa_report_proteomics_prot_dia_limpa.docx`) with `webshot2` from the bundle, and `webshot2` drove **the runner's preinstalled Chrome**. This does not show that a machine without Chrome or Edge renders the report: W1 stays with the user.
+
+**What the token run uploaded.** Two artifacts only: `linux-internal-summary` (22,516 bytes) and `windows-internal-summary` (16,201 bytes); neither holds `install-library.log`; scanned: no compiler output (`Compiling`, `.rs:`, `warning:`) and no token text (`ghp_`, `github_pat_`, `Bearer`). Caches on `kit-134`: Module CI's R 4.6.2 keys only, none from this run.
+
 ### After T1 (run 9)
 
 The user's T1 (2026-11-17): `fast_duckdb` main fast-forwarded to `2694b972` (0.2.0), `fast_limpa_dpc` main `87a90b89` (declares Imports `limpa`, `methods`); `performance-v2` repins DESCRIPTION (`daf1e341`, then `3ec13e95` with `fastduckdb` at `e724f90b`, the same package code with Cargo online when nothing is vendored). Run 9 built `2694b972` with the crates fetched first into the package's own Cargo home, as its installer at that commit does (removed again for `e724f90b`, which needs no fetch).
@@ -228,7 +249,7 @@ Revision 2.0's budgets are workflow runs per platform per part, one correction p
 | P4 | 1: run 4 (4) | 2: runs 4, 5 (4) | none needed beyond P3's |
 | D5 | | 1: run 6 (2) | not used |
 | Token build (P2 step 4, P5 step 3) | 1: run 7 (1 plus a correction pass) | 2: runs 7, 8 | Windows used (run 8, the build path); Linux not used: its failure is the Remotes pin, which needs a decision, not a correction |
-| Token build after T1 (fresh budget) | 1: run 9 | 1: run 9 | not used; the next stage-internal run is this item's correction pass (the audit repairs, and K1 and W1 first) |
+| Token build after T1 (fresh budget) | 2: runs 9, 10 | 2: runs 9, 10 | used (run 10: the audit repairs, K1, `webshot2` and `chromote`); passed |
 
 Six workflow runs in all, about 3 hours of runner time across the jobs. Each push to `kit-134` also starts the repository's existing `Module CI` workflow (not part of this record). Nothing heavy ran on the laptop: the P1 table (seconds of R), and three light local checks of the new scripts (two snapshot dates, the plan resolution, the version table against R's own library; no package installed; `package-lock.json` written with `npm install --package-lock-only --ignore-scripts`, no `node_modules`).
 
@@ -236,14 +257,14 @@ Six workflow runs in all, about 3 hours of runner time across the jobs. Each pus
 
 - The package side of P3 (above), after KIT-131; then `--expect-launcher process`, and the systemd lifecycle (laptop, and `ubuntu-24.04` if U5).
 - P5 (the lanes and the suite from the installed bundle; the B-01 measurement): `run-lanes.*`, `compare-results.R`, the e2e helper's installed surface, the test-tool library. Four lanes only (lipidomics, metabolomics, transcriptomics, TMT and LFQ) until the token: DIA, DIA_LIMPA and enrichment need `fastduckdb` (F1).
-- The token build: the internal packages build and load on both platforms and the DIA rollup admits the Linux bundle (run 9). The audit repairs (F1, F4, F5, F8) and the report repair (`webshot2`, `chromote` shipped) are on the branch, unverified; the correction pass of this item (one stage-internal run) waits only for K1 below.
+- The token build: done (run 10). Both internal packages build and load on both platforms; on Linux the DIA and DIA_LIMPA GUI-entry lanes pass against the bundle, identical to the laptop's oracles. Open: W1 (Chrome for the report on users' machines), the `fastlimpadpc` `target-cpu=native` build flag (its repository), the enrichment e2e lane and the suite (P5).
 
 ### Decisions needed (token build)
 
 | # | Decision | What the runs show | Options |
 |---|---|---|---|
 | T1 | Which `fastduckdb` the bundle names | Decided by the user (2026-11-17): 0.2.0 on `fast_duckdb` main; `performance-v2` DESCRIPTION at `3ec13e95` | done |
-| K1 | `kit-134`'s DESCRIPTION | Since the audit's F5, a token build stops when the checkout's Remotes and `install-library.R` name different commits. `kit-134` still has the old Remotes; `install-library.R` names `3ec13e95`'s | Bring `performance-v2`'s DESCRIPTION onto `kit-134` (merge or rebase; this branch does not edit DESCRIPTION by its own scope), then run stage internal |
+| K1 | `kit-134`'s DESCRIPTION | Decided (the coordinator, engineering): `performance-v2` merged into `kit-134` (`e5b23654`) | done; run 10 |
 | W1 | Chrome for the report | Repaired on the packaging side (the coordinator's instruction): `webshot2` and `chromote` are no longer excluded, so they ship (`library-exclude.txt`; knitr calls `webshot2` for the report's htmlwidgets). `webshot2` still needs a Chrome: the runner has one; a user's machine may not, and then the report fails | (a) rely on an installed Chrome or Edge and say so in the install notes; (b) bundle a headless Chrome (size, licence notices); (c) a report that needs no screenshots (package code, outside KIT-134) |
 - P6 on Windows, after KIT-131's step 6.
 - The sources archive and the release (KIT-132).
