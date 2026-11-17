@@ -1,0 +1,15 @@
+# KIT-134 P2: development and test tools left out of the shipped library (revision 2.0, 2.0.2).
+# One package per line. The packages that only these need are left out with them; the build fails
+# if a shipped package needs one of them (packaging/r/install-library.R).
+testthat
+shinytest2
+covr
+devtools
+roxygen2
+usethis
+pkgdown
+pak
+# webshot2 and chromote, which it imports, are shipped (no longer excluded): knitr calls webshot2 to
+# screenshot an htmlwidget when it renders the summary report to .docx, and without it the report
+# fails ("there is no package called 'webshot2'", run 44041155687, both DIA lanes). webshot2 drives a
+# Chrome found on the user's machine; the bundle carries none (decision W1 in outcome.md).

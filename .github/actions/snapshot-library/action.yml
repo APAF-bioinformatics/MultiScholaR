@@ -1,0 +1,105 @@
+name: KIT-134 snapshot library
+description: >-
+  R 4.6.1 (Posit r-builds) and the R library the bundle ships, installed by packaging/r/install-library.R from the
+  KIT-134 snapshot (packaging/multischolar.lock.json), with the two internal packages when a read token is given and
+  MultiScholaR from the checkout (its configure writes inst/duckdb/linux_amd64, the DIA rollup manifest); then the
+  test tools the library lacks, from the same snapshot. Ubuntu 22.04 (jammy binaries). No cache of any kind: while
+  fast_duckdb and fast_limpa_dpc are internal, nothing that holds them may be cached or uploaded, and every file this
+  action writes outside the library stays under RUNNER_TEMP.
+inputs:
+  token:
+    description: Read token for the two internal repositories. Empty (fork and Dependabot pull requests) installs without them.
+    required: false
+    default: ''
+runs:
+  using: composite
+  steps:
+    - name: R 4.6.1 (Posit r-builds) on the PATH; jsonlite in a build-tool library
+      shell: bash
+      run: |
+        curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-4.6.1_1_amd64.deb"
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb"
+        sudo chown -R "$(id -u):$(id -g)" /opt/R/4.6.1
+        echo "/opt/R/4.6.1/bin" >> "$GITHUB_PATH"
+        {
+          echo "MSR_LIBRARY_OUT=$RUNNER_TEMP/library-evidence"
+          echo "MSR_TOOLS_LIB=$RUNNER_TEMP/tools-lib"
+          echo "R_LIBS_USER=/nonexistent-user-library"
+          echo "R_LIBS_SITE=/nonexistent-site-library"
+        } >> "$GITHUB_ENV"
+        mkdir -p "$RUNNER_TEMP/tools-lib" "$RUNNER_TEMP/library-evidence"
+        /opt/R/4.6.1/bin/Rscript --vanilla -e 'install.packages("jsonlite", lib = commandArgs(TRUE)[[1]], repos = "https://packagemanager.posit.co/cran/latest")' "$RUNNER_TEMP/tools-lib"
+
+    - name: Resolve the library (plan; nothing installed)
+      shell: bash
+      run: R_LIBS="$MSR_TOOLS_LIB" /opt/R/4.6.1/bin/Rscript --vanilla packaging/r/install-library.R plan . "$MSR_LIBRARY_OUT"
+
+    - name: System libraries the packages need (Posit Package Manager's requirements for jammy)
+      shell: bash
+      run: |
+        set -o pipefail
+        query() { # repository, then package names; prints the apt packages
+          local repo="$1"; shift
+          local extra=""; [ "$repo" = bioconductor ] && extra="&bioc_version=3.23"
+          local url="https://packagemanager.posit.co/__api__/repos/$repo/sysreqs?all=false&distribution=ubuntu&release=22.04$extra$(printf '&pkgname=%s' "$@")"
+          if ! curl -fsS "$url" | jq -r '.requirements[].requirements.packages[]?' 2>/dev/null; then
+            if [ "$#" -gt 1 ]; then for p in "$@"; do query "$repo" "$p"; done
+            else echo "no system requirements known for $repo/$1" >&2; fi
+          fi
+        }
+        : > "$RUNNER_TEMP/apt.txt"
+        for pair in CRAN:cran Bioconductor:bioconductor; do
+          mapfile -t names < <(awk -F'\t' -v r="${pair%%:*}" 'NR > 1 && $2 == r { print $1 }' "$MSR_LIBRARY_OUT/plan-packages.tsv")
+          for ((i = 0; i < ${#names[@]}; i += 60)); do query "${pair##*:}" "${names[@]:i:60}" >> "$RUNNER_TEMP/apt.txt"; done
+        done
+        sort -u "$RUNNER_TEMP/apt.txt"
+        sudo apt-get install -y --no-install-recommends $(sort -u "$RUNNER_TEMP/apt.txt")
+
+    - name: Rust for the internal packages (token run)
+      if: inputs.token != ''
+      shell: bash
+      run: |
+        rustup toolchain install stable --profile minimal --no-self-update
+        rustup default stable
+        rustc --version; cargo --version
+
+    - name: "Install the library: snapshot binaries, the source builds, the internal packages (token run), MultiScholaR from this checkout"
+      shell: bash
+      env:
+        GITHUB_PAT: ${{ inputs.token }}
+        MSR_INTERNAL: ${{ inputs.token != '' && 'required' || '' }}
+      run: |
+        set -o pipefail
+        R_LIBS="$MSR_TOOLS_LIB" /opt/R/4.6.1/bin/Rscript --vanilla packaging/r/install-library.R install . "$MSR_LIBRARY_OUT" \
+          2>&1 | tee "$MSR_LIBRARY_OUT/install-library.log"
+        grep '^INTERNAL ' "$MSR_LIBRARY_OUT/install-library.log" || true
+
+    - name: Test tools the library lacks, from the same snapshot (jammy binaries)
+      shell: bash
+      run: |
+        cat > "$RUNNER_TEMP/test-tools.R" <<'EOF'
+        snapshot <- jsonlite::fromJSON("packaging/multischolar.lock.json")$Snapshot$Date
+        options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
+            paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))
+        repos <- sprintf("https://packagemanager.posit.co/cran/__linux__/jammy/%s", snapshot)
+        available <- utils::available.packages(repos = repos)
+        tools <- c("pkgload", "testthat", "jsonlite", "sessioninfo", "shinytest2", "chromote")
+        wanted <- unique(c(tools, unlist(tools::package_dependencies(tools, db = available,
+            which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
+        needed <- setdiff(wanted, rownames(utils::installed.packages(lib.loc = .Library)))
+        cat("test tools not in the library:", if (length(needed)) paste(needed, collapse = ", ") else "none", "\n")
+        if (length(needed)) utils::install.packages(needed, lib = .Library, repos = repos, dependencies = FALSE)
+        for (p in tools) cat(p, as.character(utils::packageVersion(p, lib.loc = .Library)), "\n")
+        EOF
+        R_LIBS="$MSR_TOOLS_LIB" /opt/R/4.6.1/bin/Rscript --vanilla "$RUNNER_TEMP/test-tools.R"
+
+    - name: The DIA rollup manifest in the checkout (configure's output; load_all reads it from inst/)
+      shell: bash
+      run: |
+        if [ ! -f inst/duckdb/linux_amd64/manifest.rds ]; then
+          echo "configure left no manifest in the checkout: running src/build_dia_rsum.R"
+          /opt/R/4.6.1/bin/Rscript --vanilla src/build_dia_rsum.R
+        fi
+        /opt/R/4.6.1/bin/Rscript --vanilla -e 'm <- readRDS("inst/duckdb/linux_amd64/manifest.rds"); cat("DIA manifest: supported", isTRUE(m$supported), "; native query", !is.null(m$native_query), "; duckdb", as.character(utils::packageVersion("duckdb")), "\n")'
+        /opt/R/4.6.1/bin/Rscript --vanilla -e 'sessionInfo()'
