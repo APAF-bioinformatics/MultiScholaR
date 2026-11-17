@@ -296,13 +296,20 @@ applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_st
     for (name in colnames(w)) design_matrix[[name]] <- unname(w[match(samples, rownames(w)), name])
     formula_string <- paste(formula_string, "+", paste(colnames(w), collapse = " + "))
     not_estimable <- character()
+    model_design <- as.data.frame(design_matrix)
+    rownames(model_design) <- samples
+    model_formula <- stats::as.formula(formula_string)
+    x <- stats::model.matrix(model_formula, stats::model.frame(model_formula, model_design))
+    common <- intersect(colnames(expr_matrix), rownames(x))
+    x <- x[common, , drop = FALSE]
+    # Audit F2: the kernel's bound on k counts the replicate sets; the fitted model can hold more (covariates).
+    residual_df <- nrow(x) - qr(x)$rank
+    if (residual_df < 1L) {
+        rlang::abort(sprintf(paste("assay '%s': the model '%s' with the RUV factors leaves no residual degree of freedom",
+            "(%d samples, rank %d); use fewer factors or a smaller model"), assay_name, formula_string, nrow(x), nrow(x) - residual_df),
+            class = "omics_ruv_no_residual_df", call = NULL)
+    }
     if (anyNA(expr_matrix)) {
-        model_design <- as.data.frame(design_matrix)
-        rownames(model_design) <- samples
-        model_formula <- stats::as.formula(formula_string)
-        x <- stats::model.matrix(model_formula, stats::model.frame(model_formula, model_design))
-        common <- intersect(colnames(expr_matrix), rownames(x))
-        x <- x[common, , drop = FALSE]
         seen <- is.finite(expr_matrix[, common, drop = FALSE])
         pattern <- apply(seen, 1L, function(row) paste(which(row), collapse = ","))
         estimable <- vapply(split(seq_len(nrow(seen)), pattern), function(rows) {
