@@ -4,7 +4,9 @@
 
 ## The binding question before any per-omic row: rule 4 in the global-null cell (A12)
 
-Rule 4 ("gain over no RUV in cells with a factor") cannot be met literally in C4, where nothing is differentially abundant: there is no power to gain, and the rule-3 reduction has nothing to reduce. Read literally, **every design fails C4, including the true-factor arm**. Revision 1.4 puts both readings to the user:
+Rule 4 ("gain over no RUV in cells with a factor") cannot be met literally in C4, where nothing is differentially abundant: there is no power to gain, and the rule-3 reduction has nothing to reduce. Read literally, **every design fails C4 in S1 and S3, including the true-factor arm** (in S4, C4 is void; see below). Revision 1.4 puts both readings to the user.
+
+Under the second reading, "inconclusive" means "as good as the true-factor arm": every inconclusive verdict in S1 and S3 comes only from C4, rules 2 and 7, where the true-factor arm itself sits at the limit (S1 arm 2 any-call 0.061, upper bound 0.078; S3 arm 2 0.075 with edgeR's quasi-likelihood test). In S3 no design can reach "pass" in C4 however many runs are made. S1's global-null excess sits in proteins with missing values (full 0.061 against complete 0.022), not in RUV.
 
 | Reading | Effect |
 |---|---|
@@ -25,11 +27,13 @@ Rule 4 ("gain over no RUV in cells with a factor") cannot be met literally in C4
 | 7 | all proteins as controls, k = E, W in the model | fail | fail | C1(3) | 0.051 | 0.91 |
 | 11 | arm 7 with k = 1 | fail | fail | C1(3) | 0.052 | 0.91 |
 | 8 | oracle null controls, W in the model (diagnostic) | fail | inconclusive | C4(4) | 0.035 | 0.91 |
-| 14 | `sva` (complete proteins) | fail | inconclusive | C4(4) | 0.113 | 0.95 |
-| 15 | technical replicates as RUV structure, subtract (C6 only) | pass | pass | none | 0.012 | n/a |
-| 16 | the same, W in the model (C6 only) | pass | pass | none | 0.032 | n/a |
+| 14 | `sva` (complete proteins only; compare with arm 7 on the complete subset: power 0.95) | fail | inconclusive | C4(4) | 0.113 | 0.95 |
+| 15 | technical replicates as RUV structure, subtract (run in C6 only) | pass (C6 only) | pass (C6 only) | none | 0.012 | n/a |
+| 16 | the same, W in the model (run in C6 only) | pass (C6 only) | pass (C6 only) | none | 0.032 | n/a |
 
-Plain reading: today's design is confirmed miscalibrated. All proteins as controls with the factors in the model misses one bound in one cell (C1, 12 per group with 10% effects: the share of runs above 10% FDP is 0.115 against a limit of 0.057; its mean FDP, 0.066, is within rule 2). No RUV is calibrated but loses about 40% of the power. Where technical replicates exist, arms 15/16 pass.
+The "failing core cells" column lists the cells named by the aggregation for the primary subset; C4(4) applies to every arm under the literal reading (some rows omit it).
+
+Plain reading: today's design is confirmed miscalibrated. All proteins as controls with the factors in the model (arm 7) misses one bound in one cell (C1, 12 per group: the share of runs above 10% FDP is 0.115 against a limit of 0.057; its mean FDP, 0.066, is within rule 2; it is genuinely liberal there, null rate 0.058). No RUV is conservative (null rate 0.010 to 0.016 in cells with a factor) and loses 42 percentage points of power (0.91 to 0.49). **Arms 15/16 "pass" only because they were run in one cell (C6):** in C6 arm 7 does as well (mean FDP 0.054, power 0.896; arm 16 0.054, 0.896; arm 15 0.047, 0.871). Arm 7 fails only because it was also judged in C1 and C4. Reading "every core cell" as "every core cell where the arm runs" is aggregation note A14 (new; to the user): whether a design untested in C1, C4 and C5 can be eligible is the user's call. The order "15 > 16" is arm-number order; the ticket gives no order inside that tier.
 
 ### S3, transcriptomics (complete; 7 core cells judged, C6 reported)
 
@@ -44,11 +48,11 @@ Plain reading: today's design is confirmed miscalibrated. All proteins as contro
 | 14, 14E | `svaseq` | fail | fail | C3(5) | 0.011 | 0.77 |
 | 5, 6, 8, 9, 10 | other control sets | fail | fail | see `k124-arms.tsv` | | |
 
-Plain reading: RUVs with all genes as controls and the groups as replicate sets matches the true-factor ceiling in every core cell; under the second reading of rule 4 it is the only practical design not failing anything (arm 11 needs no k estimate). Today's design and RUVr fail when the factor is tied to the groups (C5: FDP 0.30 and 0.52). No RUV is calibrated but finds almost nothing when the unwanted factor is strong. C6 (library replicates) is reported only: every RUV arm has a mean FDP of 0.27 there, the package's replicate handling (parked row 23, repaired by KIT-128, not in this tree).
+Plain reading: RUVs with all genes as controls and the groups as replicate sets matches the true-factor ceiling in every core cell; under the second reading of rule 4 it is the only practical design not failing anything (arm 11 needs no k estimate). Today's design and RUVr fail when the factor is tied to the groups (C5: FDP 0.30 and 0.52). No RUV is conservative but finds almost nothing when the unwanted factor is strong. C6 (library replicates) is reported only: every RUV arm has a mean FDP of 0.27 to 0.35 there, the package's replicate handling (parked row 23, repaired by KIT-128, not in this tree).
 
-### S4, lipidomics and metabolomics (complete; C4 void)
+### S4, lipidomics and metabolomics (complete; C4 void by the scoring unit)
 
-C4 is void: the true-factor arm calls something in 13% of global-null runs (limit 0.075), so the cell judges no design (rule as written).
+C4 is void by rule 2: the true-factor arm's mean FDP in the global null is 0.130 (lower bound 0.109, limit 0.075), while its per-test null rate is 0.047. **This is an artefact of the scoring unit, not of the ceiling arm:** S4 scores one FDP per run over both assays (and all contrasts in C7), while each assay controls its FDR on its own; under the global null a run's FDP is 1 when either assay calls anything, about 1 - (1 - a)^2. The implied per-assay any-call rate (0.067) matches the single-family arms of S1 (0.061) and S3 (0.075). S4 has therefore no global-null check; a per-assay score needs per-assay rows the outputs do not hold (a new run, outside the budget). The pooling may also shape rule 3's tail in low-power S4 cells; its limit is pooled the same way.
 
 | Arm | Design | Verdict | Failing core cells | Share FDP > 0.10 | Power C0 |
 |---|---|---|---|---|---|
@@ -61,7 +65,8 @@ C4 is void: the true-factor arm calls something in 13% of global-null runs (limi
 | Qs | pooled QC as the replicate set, subtract | fail (inconclusive on complete features) | C1(3), C5(3) | 0.140 | 0.26 |
 | Qm | the same, W in the model | fail | C0, C1, C5, C7 (3) | 0.217 | 0.42 |
 | I, L | ITSD normalisation alone; QC-RLSC | fail | C3(5) | 0.066, 0.071 | 0.002, 0.030 |
-| 14 | `sva` | fail | C2, C5, C7 | 0.310 | 0.70 |
+| 14 | `sva` (complete features only; arm 7 on the complete subset: share 0.291, power 0.69) | fail | C2, C5, C7 | 0.310 | 0.70 |
+| 13 | `RUVinv` with the standards | not applicable | refused in 1,000 of 1,000 runs in every core cell (scored as arm 1 by the refusal rule; counted among failures by the aggregation) | | |
 
 Plain reading: no design passes. Today's design is the worst measured (more than 90% of runs above 10% FDP). The closest are all features or the standards as controls with the factor in the model, and pooled QC as the replicate set: each misses rule 3 (the FDP tail) in two cells. No correction is calibrated but has almost no power under drift.
 
@@ -73,7 +78,7 @@ Pending (core cells 4 of 8 at 16:00 on 2026-11-17). Engine `fastlimpadpc`; the c
 
 | Omic | Literal branch | With rule 4 undecidable in C4 |
 |---|---|---|
-| Classic proteomics | Eligible only with technical replicates (15 > 16); otherwise no design passes, and arm 1 fails rule 4: "reported as such" | Same (arm 7 still fails C1 rule 3) |
+| Classic proteomics | Without technical replicates: RUV off by default (no RUV design passes; arm 1 passes rules 1, 2, 6, 7). With them: arms 15/16 eligible only under A14 (see S1) | Same (arm 7 still fails C1 rule 3) |
 | Transcriptomics | RUV off by default | Arms 7/11 inconclusive (no failure): selectable with a note under KIT-129's verdict-to-option rule |
 | Lipidomics, metabolomics | RUV off by default | Same (C4 is void anyway) |
 | DIA_LIMPA | pending | pending |
@@ -85,3 +90,7 @@ Pending (core cells 4 of 8 at 16:00 on 2026-11-17). Engine `fastlimpadpc`; the c
 - Read literally, that rule leaves most omics with no RUV option at all, and "RUV off by default" means accepting the power losses above (transcriptomics and lipid/metab near zero under strong unwanted variation). This is the user's call; the measures are here to overrule the rule's literal reading if the user chooses to.
 - The `sva` choice (k from `sva::num.sv` in the arms that take k = E; `sva` is not a dependency; IR-M6).
 - Stress cells: conditions of use (minimum group size, high missingness), added when scored.
+
+## Independent audit of the scoring and this draft (2026-11-17, read-only)
+
+`aggregate.R` at `0bb67eb2` (byte-identical to the script that scored the core phases) implements the W3 rules faithfully; every figure recomputed from the raw outputs matched (S1 C0, C1, C4, C5, C6; S3 C4, C5; S4 C4), and no per-omic verdict changes. Applied to this draft: S4's C4 void explained by the scoring unit (F1); arms 15/16 "pass" in the one cell they run, A14 (F2); S1's literal branch is RUV off by default (F3); "inconclusive" = as good as the true-factor arm (F4); arm 14 against complete-subset values (F5); C1 described correctly (F6); the void named by rule 2 (F7); the failing-cells column's omissions noted (F8); arm 13 in S4 is not applicable (F10); wording (F13). Recorded, not changed: rule 1 uses run-level normal bounds rather than a pooled binomial (A1; chosen because features within a run are dependent), and rule 4's FDP-tail reduction uses normal bounds on paired 0/1 differences (anti-conservative with few discordant pairs; no RUV design's rule-4 pass depends on it) (F9); shares carry exact bounds but no MCSE column (F11); refused rows with no measures would drop silently (latent, not in any core cell) (F12). Limit: FDP was not recomputed from truth tables (the simulators write per-run results only).
