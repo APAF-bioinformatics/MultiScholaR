@@ -3,8 +3,8 @@
 #
 # Usage: Rscript --vanilla compare-laptop.R <sim: s1..s4> <laptop out dir> <runner out dir> <arms> <a.rds> <b.rds>
 #
-# Reads s<i>-runs.tsv of both. The rows compared are the runner's cells and runs, of the arms given (a comma list),
-# keyed by cell, run, arm and subset. <a.rds> (laptop) and <b.rds> (runner) each hold one data frame per cell
+# Reads s<i>-runs.tsv of both. The rows compared are the runner's cells and runs, of the arms given (a comma list,
+# or `all` for every arm of the runner's table), keyed by cell, run, arm and subset. <a.rds> (laptop) and <b.rds> (runner) each hold one data frame per cell
 # ("S1 C0"), rows in key order, with the key, the status and every measure column; `seconds` (timing) is left out.
 # Columns whose values are whole numbers in both tables are stored as integers, so the rule compares them exactly;
 # the others as doubles. A key present on one side only stops the script.
@@ -24,7 +24,7 @@ laptop <- readRuns(arguments[[2L]])
 runner <- readRuns(arguments[[3L]])
 stopifnot(identical(names(laptop), names(runner)), all(c(DISCRETE, MEASURES, "seconds") %in% names(runner)))
 key <- function(x) paste(x$cell, x$run, x$arm, x$subset, sep = "\t")
-runner <- runner[runner$arm %in% arms, ]
+if (!identical(arms, "all")) runner <- runner[runner$arm %in% arms, ]
 laptop <- laptop[key(laptop) %in% key(runner), ]
 if (!setequal(key(laptop), key(runner)) || anyDuplicated(key(laptop)) || anyDuplicated(key(runner))) {
     stop(sprintf("the keys differ: laptop %d rows, runner %d rows, %d of the runner's not on the laptop", nrow(laptop),

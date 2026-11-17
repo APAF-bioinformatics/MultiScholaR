@@ -2,15 +2,25 @@ name: KIT-124 simulators
 
 # The four KIT-124 simulators on hosted runners (4 cores, 16 GB, 6 h per job), one job per simulator and cell.
 #
-# A run starts when a push to sim-k124 changes .github/k124-sim/params.json, and only then: a push that leaves the
-# file alone (a merge, a script change) starts nothing. The file names the run (label), the arms (K124_ARMS; "" =
-# unset, the arms as before), the runs per core and per stress cell, the cores, the simulator's time limit in
-# minutes and, per simulator, the cells. Runs are numbered from 1, as on the laptop.
+# A run starts when a push to a sim-k* branch changes .github/k124-sim/params.json, and only then: a push that
+# leaves the file alone (a merge, a script change) starts nothing. The simulators (docs/.../kit-124/sim/*.R) and the
+# package tree they load are the pushed commit's. The file names the run (label), the commit whose package tree the
+# push must carry (package_commit: everything but docs/ and .github/ is compared; a difference stops the run), the
+# commit the library's tools are read from (tools_ref: .github/actions/snapshot-library, packaging/r/install-library.R
+# and packaging/multischolar.lock.json, as on performance-v2), the runs per core and per
+# stress cell (0 = none of that class; its cells may then not be listed), the cores (2 to 4: at one core mclapply is
+# a plain lapply and an error in S2 aborts the script), the simulator's time limit in minutes and, per simulator,
+# the cells and the arms (K124_ARMS; a simulator without an `arms` entry runs with it unset, the arms as before).
+# Runs are numbered from 1, as on the laptop.
 #
-# Each job: R 4.6.1 and the library of performance-v2's CI (the KIT-134 snapshot, TOOLS_REF below) with the two
+# Each job: R 4.6.1 and the library of performance-v2's CI (the KIT-134 snapshot, at tools_ref) with the two
 # internal packages, plus sva from the same snapshot; the library checked against the laptop's versions
-# (.github/k124-sim/laptop-versions.tsv); the simulator under `timeout`, from this push's tree, whose package part
-# must be commit 0b6fcb6d's (the plan job checks it); the out dir checked and uploaded.
+# (.github/k124-sim/laptop-versions.tsv); the simulator under `timeout`, from this push's tree; the out dir checked
+# and uploaded.
+#
+# Another package tree (another sim branch): cut the branch from that tree, bring this file and .github/k124-sim/
+# over (git checkout sim-k124 -- .github/workflows/k124-sim.yml .github/k124-sim), keep the tree's own workflows
+# from running on the branch, set package_commit (and tools_ref, if the tree's dependencies differ) and push.
 #
 # Restart: a simulator keeps finished cells, and a job is one cell, so a failed or timed-out job is rerun alone
 # (`gh run rerun <run> --failed`) and recomputes that cell only. A job that fails uploads nothing.
@@ -22,7 +32,7 @@ name: KIT-124 simulators
 on:
   push:
     branches:
-      - sim-k124
+      - "sim-k*"
     paths:
       - .github/k124-sim/params.json
 
@@ -30,8 +40,6 @@ permissions:
   contents: read
 
 env:
-  # performance-v2: .github/actions/snapshot-library, packaging/r/install-library.R, packaging/multischolar.lock.json
-  TOOLS_REF: ebd5378b9f44ed54503011a175b1ea8e852cf5e1
   NOT_CRAN: "true"
   OMP_NUM_THREADS: "1"
   OPENBLAS_NUM_THREADS: "1"
@@ -44,46 +52,53 @@ jobs:
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       label: ${{ steps.plan.outputs.label }}
-      arms: ${{ steps.plan.outputs.arms }}
       runs_core: ${{ steps.plan.outputs.runs_core }}
       runs_stress: ${{ steps.plan.outputs.runs_stress }}
       cores: ${{ steps.plan.outputs.cores }}
       timeout_minutes: ${{ steps.plan.outputs.timeout_minutes }}
       job_timeout: ${{ steps.plan.outputs.job_timeout }}
+      package_commit: ${{ steps.plan.outputs.package_commit }}
+      tools_ref: ${{ steps.plan.outputs.tools_ref }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: The package tree is commit 0b6fcb6d's (everything but docs/ and .github/)
-        run: |
-          git ls-tree HEAD | grep -vP '\t(\.github|docs)$' > "$RUNNER_TEMP/tree.txt"
-          if ! diff "$RUNNER_TEMP/tree.txt" .github/k124-sim/tree-0b6fcb6d.txt; then
-            echo "::error::the package tree of this push is not commit 0b6fcb6d's"
-            exit 1
-          fi
-          echo "package tree: 0b6fcb6d's ($(wc -l < "$RUNNER_TEMP/tree.txt") top-level entries identical)"
       - name: Read .github/k124-sim/params.json
         id: plan
         run: |
           p=.github/k124-sim/params.json
           if ! jq -e '
             (.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
-            (.arms | type == "string" and test("^$|^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$")) and
-            ([.runs_core, .runs_stress, .cores, .timeout_minutes] | all(type == "number" and . == floor and . >= 1)) and
-            (.runs_core <= 9999) and (.runs_stress <= 9999) and (.cores <= 4) and (.timeout_minutes <= 300) and
+            ([.package_commit, .tools_ref] | all(type == "string" and test("^[0-9a-f]{40}$"))) and
+            ([.runs_core, .runs_stress, .cores, .timeout_minutes] | all(type == "number" and . == floor and . >= 0)) and
+            (.runs_core <= 9999) and (.runs_stress <= 9999) and (.cores >= 2) and (.cores <= 4) and
+            (.timeout_minutes >= 1) and (.timeout_minutes <= 300) and
+            (.arms | type == "object" and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$"))))) and
             (.cells | type == "object" and length > 0 and
-              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[CS][0-9]{1,2}(,[CS][0-9]{1,2})*$")))))
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[CS][0-9]{1,2}(,[CS][0-9]{1,2})*$"))))) and
+            (. as $p | [.cells[] | split(",")[]] | all(if startswith("C") then $p.runs_core >= 1 else $p.runs_stress >= 1 end))
           ' "$p" > /dev/null; then
-            echo "::error::params.json is not valid (label, arms, runs_core, runs_stress, cores <= 4, timeout_minutes <= 300, cells per s1..s4)"
+            echo "::error::params.json is not valid (label; package_commit and tools_ref as 40-digit commits; runs_core, runs_stress; cores 2 to 4; timeout_minutes 1 to 300; arms and cells per s1..s4; no cell of a class with 0 runs)"
             exit 1
           fi
           {
-            echo "matrix=$(jq -c '{include: [.cells | to_entries[] | .key as $sim | .value | split(",")[] | {sim: $sim, cell: .}]}' "$p")"
-            for key in label arms runs_core runs_stress cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
+            echo "matrix=$(jq -c '. as $p | {include: [.cells | to_entries[] | .key as $sim | .value | split(",")[] | {sim: $sim, cell: ., arms: ($p.arms[$sim] // "")}]}' "$p")"
+            for key in label package_commit tools_ref runs_core runs_stress cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
             # the library takes about 15 minutes; the job's own limit stays under the runner's 6 hours
             echo "job_timeout=$(jq -r '[.timeout_minutes + 45, 355] | min' "$p")"
           } >> "$GITHUB_OUTPUT"
           { echo '```json'; cat "$p"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: The package tree of this push is package_commit's (everything but docs/ and .github/)
+        env:
+          PACKAGE_COMMIT: ${{ steps.plan.outputs.package_commit }}
+        run: |
+          git fetch --quiet --no-tags --depth 1 origin "$PACKAGE_COMMIT"
+          if ! git diff --stat --exit-code "$PACKAGE_COMMIT" HEAD -- . ':(exclude)docs' ':(exclude).github'; then
+            echo "::error::the package tree of this push is not commit $PACKAGE_COMMIT's"
+            exit 1
+          fi
+          echo "package tree: identical to $PACKAGE_COMMIT outside docs/ and .github/"
 
   sim:
     name: ${{ matrix.sim }} ${{ matrix.cell }}
@@ -97,17 +112,19 @@ jobs:
       SIM: ${{ matrix.sim }}
       CELL: ${{ matrix.cell }}
       LABEL: ${{ needs.plan.outputs.label }}
-      ARMS: ${{ needs.plan.outputs.arms }}
+      ARMS: ${{ matrix.arms }}
       RUNS_CORE: ${{ needs.plan.outputs.runs_core }}
       RUNS_STRESS: ${{ needs.plan.outputs.runs_stress }}
       CORES: ${{ needs.plan.outputs.cores }}
       TIMEOUT_MINUTES: ${{ needs.plan.outputs.timeout_minutes }}
+      PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
+      TOOLS_REF: ${{ needs.plan.outputs.tools_ref }}
       OUT: docs/qa/workflow-execution/kit/kit-124/${{ matrix.sim }}-gha
     steps:
-      - name: The library's tools (performance-v2 at TOOLS_REF)
+      - name: The library's tools (tools_ref)
         uses: actions/checkout@v4
         with:
-          ref: ${{ env.TOOLS_REF }}
+          ref: ${{ needs.plan.outputs.tools_ref }}
           persist-credentials: false
       - name: R 4.6.1 and the library (KIT-134 snapshot; internal packages with the read token; no cache)
         uses: ./.github/actions/snapshot-library
@@ -165,13 +182,14 @@ jobs:
             "$OUT" "$RUNS_CORE" "$RUNS_STRESS" "$CORES" "$CELL" > "$RUNNER_TEMP/sim.out" 2>&1 || status=$?
           tail -n 40 "$RUNNER_TEMP/sim.out"
           echo "simulator: exit $status after $SECONDS s"
+          echo "work tree after the run (git status --short; the out dir is untracked):"; git status --short | head -n 20
           if [ "$status" -eq 124 ]; then echo "::error::$SIM $CELL: the simulator reached its limit of $TIMEOUT_MINUTES minutes"; fi
           if [ "$status" -ne 0 ]; then echo "::error::$SIM $CELL: the simulator failed (exit $status); nothing is uploaded"; exit "$status"; fi
           mkdir "$OUT/runner"
           cp "$RUNNER_TEMP/library.tsv" "$OUT/runner/$CELL.library.tsv"
           cp "$RUNNER_TEMP/sim.out" "$OUT/runner/$CELL.out"
-          printf 'run\t%s\nattempt\t%s\ncommit\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nruns_core\t%s\nruns_stress\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
-            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$LABEL" "$SIM" "$CELL" "$ARMS" "$RUNS_CORE" "$RUNS_STRESS" "$CORES" "$SECONDS" \
+          printf 'run\t%s\nattempt\t%s\ncommit\t%s\npackage_commit\t%s\ntools_ref\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nruns_core\t%s\nruns_stress\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$PACKAGE_COMMIT" "$TOOLS_REF" "$LABEL" "$SIM" "$CELL" "$ARMS" "$RUNS_CORE" "$RUNS_STRESS" "$CORES" "$SECONDS" \
             > "$OUT/runner/$CELL.job.tsv"
       - name: The out dir is complete and holds no build output
         working-directory: simtree
