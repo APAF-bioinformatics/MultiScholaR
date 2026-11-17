@@ -136,6 +136,14 @@
 #     effects in the subset (tested or not); n_calls; null_p05, null_p01 = share of tested nulls under 0.05, 0.01;
 #     fdp (0 with no calls); power = true calls / n_true; bias = mean of sign(truth) x (estimate - truth) and rmse
 #     over tested true effects. `seconds` includes the shared steps the arm uses (E, the sweep, the first pass).
+# K129_ASSOC (environment, KIT-129 R0 part B; unset = everything above): the association mode. K124_ARMS must be
+#     unset. The data, E and each arm's RUV step run as above on the same streams for the arms of
+#     docs/qa/workflow-execution/kit/kit-129/r0/association.R (here 4, 5, 7, 8; 4 stands for "3 or 4": the sweep's
+#     controls and k), on the `full` subset only, and no arm is tested: an arm stops at its W and the row holds the
+#     statistic of the factor-tied-to-groups warning (one row per cell, run, arm and assay; columns in association.R).
+#     The sweep is computed on arm 3's stream before arm 4 starts its own, and the no-RUV kernel test that arm 5's
+#     controls are read from on arm 1's stream before arm 5 starts its own, as when arms 3 and 1 ran first. Written
+#     to s4-assoc.tsv; notes, timing and the sidecar as above.
 # Not as the package would behave in C6: nothing. The lipid and metab test has no replicate block, so the 16
 #     injections of C6 are tested as 16 independent samples in every arm, the ceiling included.
 
@@ -151,6 +159,12 @@ first_run <- if (length(args) >= 6L) as.integer(args[[6L]]) else 1L
 arms_wanted <- Sys.getenv("K124_ARMS", "")
 arms_wanted <- if (nzchar(arms_wanted)) strsplit(arms_wanted, ",", fixed = TRUE)[[1L]]
 stopifnot(is.null(arms_wanted) || "1" %in% arms_wanted)
+assoc_mode <- nzchar(Sys.getenv("K129_ASSOC", ""))
+if (assoc_mode) {
+    stopifnot(is.null(arms_wanted))
+    source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
+    arms_wanted <- ASSOC_ARMS$S4
+}
 
 suppressPackageStartupMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -494,6 +508,7 @@ ruvSubtract <- function(y, m, controls, to_correct, k, keep = rownames(y)) {
 }
 testWithW <- function(view, assay, w, y = view$assays[[assay]]$y) {
     if (isRefusal(w)) return(w)
+    if (assoc_mode) return(structure(list(W = w), class = "s4_assoc"))
     if (is.null(w)) return(daKernel(y, view$design, "~ 0 + group", view$contrasts))
     design <- cbind(view$design, as.data.frame(w[view$design$Sample_ID, , drop = FALSE]))
     daKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), view$contrasts)
@@ -785,6 +800,34 @@ runOne <- function(cell, run) {
                 next
             }
             view <- views[[subset]]
+            if (assoc_mode) {
+                if (subset == "complete") next
+                t0 <- proc.time()[["elapsed"]]
+                shared <- c("4" = "3", "5" = "1")[arm]    # the shared step the arm reads, on the stream of the arm that ran it
+                if (!is.na(shared)) {
+                    set.seed(seed * 100L + ARM_NUMBER[[shared]])
+                    try(if (arm == "4") view$sweep() else view$base(), silent = TRUE)
+                }
+                set.seed(seed * 100L + ARM_NUMBER[[arm]])
+                result <- tryCatch(armFunctions[[arm]](view), error = function(e) e)
+                seconds <- proc.time()[["elapsed"]] - t0
+                drift <- if (!identical(cell$unwanted, "none")) exp(-2 * (view$design$pos - 1) / (max(view$pos_q) - 1))
+                for (assay in ASSAYS) {
+                    table <- if (inherits(result, "error")) result else result$tables[[assay]]
+                    status <- if (inherits(table, "error")) "crashed" else if (isRefusal(table)) "refused" else
+                        if (is.null(table$W)) "no_factor" else "ok"
+                    rows[[paste(key, assay)]] <- assocRow("S4", cell$id, cell$class, run, seed, arm, status,
+                        W = if (status == "ok") table$W[view$design$Sample_ID, , drop = FALSE], group = view$design$group,
+                        true_rho = if (view$has_factor) cell$rho else NA_real_, true_factor = if (view$has_factor) view$f,
+                        drift = drift, seconds = seconds, assay = assay)
+                    if (status %in% c("refused", "crashed")) {
+                        notes[[paste(key, assay)]] <- data.frame(cell = cell$id, run = run, arm = arm, subset = subset, status = status,
+                            assay = assay, reason = gsub("[\t\n]+", " ", if (status == "crashed") conditionMessage(table) else table$reason),
+                            stringsAsFactors = FALSE)
+                    }
+                }
+                next
+            }
             set.seed(seed * 100L + ARM_NUMBER[[arm]])
             t0 <- proc.time()[["elapsed"]]
             scored <- tryCatch(scoreArm(armFunctions[[arm]](view), view), error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
@@ -801,6 +844,14 @@ runOne <- function(cell, run) {
         }
     }
     rows <- do.call(rbind, rows)
+    if (assoc_mode) {
+        rownames(rows) <- NULL
+        return(list(rows = rows, notes = if (length(notes)) do.call(rbind, notes),
+            timing = data.frame(cell = cell$id, run = run, seconds_total = round(proc.time()[["elapsed"]] - started, 3),
+                seconds_E = round(seconds_E, 3),
+                missing_share = round(mean(vapply(data$assays, function(a) mean(is.na(a$y)), numeric(1L))), 4),
+                complete_features = sum(unlist(keep)), stringsAsFactors = FALSE)))
+    }
     # the shared steps an arm uses are part of its cost: they ran inside the first arm that asked for them
     for (subset in names(views)) {
         view <- views[[subset]]
@@ -860,6 +911,8 @@ main <- function() {
         }
         rows <- do.call(rbind, c(lapply(results[!failed], `[[`, "rows"), lapply(runs[failed], function(run) {
             arms <- armsOfCell(cell)
+            if (assoc_mode) return(do.call(rbind, lapply(arms, function(arm) do.call(rbind, lapply(ASSAYS, function(assay)
+                assocRow("S4", cell$id, cell$class, run, 100000L + 10000L * cell$index + run, arm, "crashed", assay = assay))))))
             grid <- rbind(expand.grid(arm = setdiff(arms, COMPLETE_ONLY), subset = "full", stringsAsFactors = FALSE),
                 expand.grid(arm = arms, subset = "complete", stringsAsFactors = FALSE))
             empty <- as.list(stats::setNames(rep(NA_real_, 11L), COLUMNS[9:19]))
@@ -878,7 +931,7 @@ main <- function() {
         files <- file.path(out_dir, "cells", sprintf(pattern, names(cellTable())))
         do.call(rbind, lapply(files[file.exists(files)], readTsv))
     }
-    writeTsv(gather("%s.tsv"), file.path(out_dir, "s4-runs.tsv"))
+    writeTsv(gather("%s.tsv"), file.path(out_dir, if (assoc_mode) "s4-assoc.tsv" else "s4-runs.tsv"))
     notes <- gather("%s.notes.tsv")
     writeTsv(if (is.null(notes)) data.frame(cell = character(), run = character(), arm = character(), subset = character(),
         status = character(), assay = character(), reason = character()) else notes, file.path(out_dir, "s4-notes.tsv"))
@@ -890,7 +943,8 @@ main <- function() {
         paste("script committed state:", if (length(git("status", "--porcelain", "--", "docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R"))) "modified or untracked at run time" else "clean"),
         paste("command:", paste(c("OMP_NUM_THREADS=1 Rscript", sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), args), collapse = " ")),
         paste("cells:", paste(names(cells), collapse = ",")),
-        paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (the arms of the header's list but 22 and 23)" else paste(arms_wanted, collapse = ",")),
+        paste("K124_ARMS:", if (assoc_mode) "unset" else if (is.null(arms_wanted)) "unset (the arms of the header's list but 22 and 23)" else paste(arms_wanted, collapse = ",")),
+        if (assoc_mode) paste("K129_ASSOC: the association mode (KIT-129 R0 part B), arms", paste(arms_wanted, collapse = ","), "the RUV step only, no arm tested"),
         paste("runs:", sprintf("core %d, stress %d, numbered from %d", runs_core, runs_stress, first_run)),
         paste("cores:", cores, "(OMP_NUM_THREADS=1)"),
         "seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99",

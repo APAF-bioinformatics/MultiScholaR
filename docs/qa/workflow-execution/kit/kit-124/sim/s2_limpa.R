@@ -166,6 +166,15 @@
 # power: called true effects / true effects among the quantified proteins. bias: mean over true effects of
 # sign(truth) * (estimate - truth), negative when estimates are shrunk towards 0. rmse: of estimate - truth over
 # true effects. seconds: the arm alone (the shared steps are in s2-data.tsv).
+#
+# K129_ASSOC (environment, KIT-129 R0 part B; unset = everything above): the association mode. K124_ARMS must be
+# unset. Generation, quantification, E, the sweep (arm 3's stream) and each arm's computeRuvCovariates run as above
+# for the arms of docs/qa/workflow-execution/kit/kit-129/r0/association.R (here 4, 5, 7, 8; 4 stands for "3 or 4":
+# both modes take the sweep's controls and k through the same computeRuvCovariates call), and no arm is tested: an
+# arm stops at its W and the row holds the statistic of the factor-tied-to-groups warning (one row per cell, run and
+# arm; columns in association.R). Arm 5's controls come from arm 1's result, so the route's no-RUV test is run once
+# for it, on arm 1's stream, inside arm 5's seconds. Written to s2-assoc.tsv; s2-data.tsv, s2-errors.tsv and the
+# sidecar as above.
 
 args <- commandArgs(TRUE)
 if (length(args) < 4L) {
@@ -182,6 +191,12 @@ arms_wanted <- if (nzchar(arms_wanted)) as.integer(strsplit(arms_wanted, ",", fi
 stopifnot(is.null(arms_wanted) || (!anyNA(arms_wanted) && 1L %in% arms_wanted))
 stopifnot(runs_core >= 0L, runs_stress >= 0L, cores >= 1L, first_run >= 1L,
     first_run + max(runs_core, runs_stress) - 1L < 10000L)
+assoc_mode <- nzchar(Sys.getenv("K129_ASSOC", ""))
+if (assoc_mode) {
+    stopifnot(is.null(arms_wanted))
+    source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
+    arms_wanted <- as.integer(ASSOC_ARMS$S2)
+}
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -407,7 +422,8 @@ errorRow <- function(cell, run, arm, status, condition) {
 
 crashedRun <- function(cell, run, seed, condition, data_row = NULL) {
     arms <- armsFor(cell)
-    list(runs = do.call(rbind, lapply(arms, \(arm) runRow(cell, run, seed, arm, "crashed", NA, NULL, NA_real_))),
+    list(runs = do.call(rbind, lapply(arms, \(arm) if (assoc_mode) assocRow("S2", cell$cell, cell$class, run, seed, arm, "crashed") else
+            runRow(cell, run, seed, arm, "crashed", NA, NULL, NA_real_))),
         data = data_row %||% dataRow(cell, run, seed, list(status = "crashed")),
         errors = errorRow(cell, run, 0L, "crashed", condition))
 }
@@ -506,6 +522,7 @@ runOne <- function(cell, run) {
     }
     inModel <- \(k, controls) {
         factors <- factorsOf(k, controls)
+        if (assoc_mode) return(list(k = factors$k, W = factors$W))
         list(k = factors$k, table = routeTest(elist, design, factors$W))
     }
     subtracted <- \(k, controls) {
@@ -580,8 +597,27 @@ runOne <- function(cell, run) {
         arm <- arms[[i]]
         set.seed(100L * seed + arm)
         mark <- clock()
-        outcome <- tryCatch(arm_functions[[as.character(arm)]](), error = \(e) e)
+        outcome <- tryCatch({
+            if (assoc_mode && arm == 5L) {                # arm 1's result, on arm 1's stream, for arm 5's controls
+                set.seed(100L * seed + 1L)
+                first <- routeTest(elist, design)
+                stopifnot(identical(first$id, ids))
+                set.seed(100L * seed + arm)
+            }
+            arm_functions[[as.character(arm)]]()
+        }, error = \(e) e)
         seconds <- clock() - mark
+        if (assoc_mode) {
+            failed <- inherits(outcome, "condition")
+            status <- if (!failed) { if (is.null(outcome$W)) "no_factor" else "ok" } else
+                if (grepl(REFUSALS, conditionMessage(outcome))) "refused" else "crashed"
+            if (failed) errors[[length(errors) + 1L]] <- errorRow(cell, run, arm, status, outcome)
+            rows[[i]] <- assocRow("S2", cell$cell, cell$class, run, seed, arm, status,
+                W = if (status == "ok") outcome$W[design$Run, , drop = FALSE], group = design$group,
+                true_rho = if (cell$factors > 0L) cell$rho else NA_real_,
+                true_factor = if (cell$factors > 0L) sim$scores[design$Run, 1L], seconds = seconds)
+            next
+        }
         if (inherits(outcome, "condition")) {
             refused <- arm != 1L && !is.null(first_measures) && grepl(REFUSALS, conditionMessage(outcome))
             status <- if (refused) "refused" else "crashed"
@@ -627,7 +663,8 @@ writeMeta <- function(path, started, finished = NULL, cells_run = character()) {
         paste("changes under R/, tests/, tools/:", nzchar(git("status", "--porcelain", "--", "R", "tests", "tools"))),
         paste("command: Rscript", paste(c(script, commandArgs(TRUE)), collapse = " ")),
         paste("K124_FIRST_RUN:", first_run),
-        paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
+        paste("K124_ARMS:", if (assoc_mode) "unset" else if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
+        if (assoc_mode) paste("K129_ASSOC: the association mode (KIT-129 R0 part B), arms", paste(arms_wanted, collapse = ","), "the RUV step only, no arm tested"),
         paste("working directory:", getwd()),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),
         paste("library paths:", paste(.libPaths(), collapse = ":")),
@@ -690,7 +727,7 @@ for (cell in cells) {
 
 done <- intersect(names(cellTable()), sub("\\.rds$", "", list.files(cell_dir, pattern = "\\.rds$")))
 parts <- lapply(file.path(cell_dir, paste0(done, ".rds")), readRDS)
-writeTsv(do.call(rbind, lapply(parts, `[[`, "runs")), file.path(out_dir, "s2-runs.tsv"))
+writeTsv(do.call(rbind, lapply(parts, `[[`, "runs")), file.path(out_dir, if (assoc_mode) "s2-assoc.tsv" else "s2-runs.tsv"))
 writeTsv(do.call(rbind, lapply(parts, `[[`, "data")), file.path(out_dir, "s2-data.tsv"))
 errors <- do.call(rbind, lapply(parts, `[[`, "errors"))
 if (is.null(errors)) {

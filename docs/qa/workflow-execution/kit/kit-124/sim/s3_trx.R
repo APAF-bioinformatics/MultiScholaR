@@ -130,6 +130,13 @@
 #   preparation is in s3-timing.tsv). status: ok; refused (a condition of class trx_error or s3_refusal: a designed
 #   refusal, scored as the run's no-RUV result, R-07); crashed (any other error; measures NA).
 #   Seed rule: seed = 100000 + 10000 * cell index + run; data from set.seed(seed); arm a from set.seed(seed * 100 + a).
+#
+# K129_ASSOC (environment, KIT-129 R0 part B; unset = everything above): the association mode. K124_ARMS must be unset.
+#   The data, the shared preparation (filter, TMM, the first pass, upper-quartile counts, E) and each arm's RUV step run
+#   as above on the same streams for the arms of docs/qa/workflow-execution/kit/kit-129/r0/association.R (here 3, 5, 7,
+#   8; S3 has no arm 4), and no arm is tested: an arm stops at its W and the row holds the statistic of the
+#   factor-tied-to-groups warning (one row per cell, run and arm; columns in association.R). Written to s3-assoc.tsv;
+#   events, timing and the sidecar as above.
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 4L) stop("usage: Rscript s3_trx.R <out dir> <runs per core cell> <runs per stress cell> <cores> [cells = all] [first run = 1]")
@@ -142,6 +149,12 @@ first_run <- if (length(args) >= 6L) as.integer(args[[6L]]) else 1L
 arms_wanted <- Sys.getenv("K124_ARMS", "")
 arms_wanted <- if (nzchar(arms_wanted)) strsplit(arms_wanted, ",", fixed = TRUE)[[1L]]
 stopifnot(is.null(arms_wanted) || "1" %in% arms_wanted)
+assoc_mode <- nzchar(Sys.getenv("K129_ASSOC", ""))
+if (assoc_mode) {
+    stopifnot(is.null(arms_wanted))
+    source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
+    arms_wanted <- ASSOC_ARMS$S3
+}
 started <- Sys.time()
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
@@ -268,7 +281,13 @@ oneRun <- function(cl, run) {
     events <- list()
     rows <- list()
     no_ruv <- NULL
+    assocRecord <- function(arm, status, W = NULL, seconds = NA_real_) {
+        rows[[length(rows) + 1L]] <<- assocRow("S3", cl$id, cl$class, run, seed, arm, status, W = W,
+            group = if (is.null(prep$d)) NULL else prep$d$design$group, true_rho = if (cl$nf > 0L) cl$rho else NA_real_,
+            true_factor = if (cl$nf > 0L && !is.null(prep$d)) prep$d$W[, 1L], seconds = seconds)
+    }
     record <- function(arm, status, m, seconds) {
+        if (assoc_mode) return(assocRecord(arm, status, seconds = seconds))
         rows[[length(rows) + 1L]] <<- cbind(data.frame(simulator = "S3", cell = cl$id, cell_class = cl$class, run = run, seed = seed,
             arm = arm, subset = "full", status = status, stringsAsFactors = FALSE), m, data.frame(seconds = seconds))[, COLUMNS]
     }
@@ -283,6 +302,10 @@ oneRun <- function(cl, run) {
         set.seed(seed * 100L + ARM_STREAM[[label]])
         result <- tryCatch(suppressWarnings(suppressMessages(body())), error = function(e) e)
         seconds <- proc.time()[["elapsed"]] - t0
+        if (assoc_mode && !inherits(result, "error")) {
+            assocRecord(label, if (is.null(result$W)) "no_factor" else "ok", result$W, seconds)
+            return(result)
+        }
         if (inherits(result, "error")) {
             designed <- inherits(result, "trx_error") || inherits(result, "s3_refusal")
             event(label, if (designed) "refused" else "crashed", result)
@@ -328,7 +351,7 @@ oneRun <- function(cl, run) {
     genes <- rownames(y)
     truth <- d$truth[genes]
     all_null <- d$null_all[genes]
-    withW <- function(W) if (is.null(W) || !ncol(W)) noRuv() else daTest(y, design, W)
+    withW <- function(W) if (is.null(W) || !ncol(W)) noRuv() else if (assoc_mode) list(W = W) else daTest(y, design, W)
 
     no_ruv <- arm("1", function() daTest(y, design))
     arm("2", function() withW(d$W))
@@ -336,6 +359,7 @@ oneRun <- function(cl, run) {
     arm("3", function() {
         grid <<- trxRuvGrid(y, n$log_cpm_tmm, design)
         s <- trxRuvs(y, n$log_cpm_tmm, design, grid$control_genes, grid$best$best_k)
+        if (assoc_mode) return(list(W = s$W))
         table <- trxDaContrast(s$ruvs_counts, s$pdata, ENTRY)$top_table
         list(table = table[genes, c("logFC", "PValue", "FDR")], k = ncol(s$W))
     })
@@ -444,7 +468,8 @@ armsOf <- function(cl) {
 crashedRun <- function(cl, run, message) {
     seed <- 100000L + 10000L * cl$idx + run
     labels <- armsOf(cl)
-    list(rows = cbind(data.frame(simulator = "S3", cell = cl$id, cell_class = cl$class, run = run, seed = seed, arm = labels,
+    list(rows = if (assoc_mode) do.call(rbind, lapply(labels, function(label) assocRow("S3", cl$id, cl$class, run, seed, label, "crashed"))) else
+            cbind(data.frame(simulator = "S3", cell = cl$id, cell_class = cl$class, run = run, seed = seed, arm = labels,
             subset = "full", status = "crashed", stringsAsFactors = FALSE), NA_MEASURES[rep(1L, length(labels)), ], seconds = NA_real_)[, COLUMNS],
         events = data.frame(cell = cl$id, run = run, arm = labels, status = "crashed", condition_class = "worker_failure",
             message = gsub("[\t\n]+", " ", message), stringsAsFactors = FALSE),
@@ -481,7 +506,7 @@ for (id in selected) {
 done <- Filter(function(id) file.exists(file.path(out_dir, "cells", sprintf("s3-%s.rds", id))), names(CELLS))
 stored <- lapply(done, function(id) readRDS(file.path(out_dir, "cells", sprintf("s3-%s.rds", id))))
 writeTable <- function(x, file) utils::write.table(x, file.path(out_dir, file), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
-writeTable(do.call(rbind, lapply(stored, `[[`, "rows")), "s3-runs.tsv")
+writeTable(do.call(rbind, lapply(stored, `[[`, "rows")), if (assoc_mode) "s3-assoc.tsv" else "s3-runs.tsv")
 events <- do.call(rbind, lapply(stored, `[[`, "events"))
 if (is.null(events)) events <- data.frame(cell = character(), run = integer(), arm = character(), status = character(),
     condition_class = character(), message = character())
@@ -497,7 +522,8 @@ writeLines(c(
     sprintf("command: Rscript %s", paste(c(sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)), args), collapse = " ")),
     sprintf("cells run by this command: %s; cells in the tables: %s", paste(selected, collapse = ","), paste(done, collapse = ",")),
     sprintf("runs: core %d, stress %d, first run %d; cores %d", runs_core, runs_stress, first_run, cores),
-    sprintf("K124_ARMS: %s", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
+    sprintf("K124_ARMS: %s", if (assoc_mode) "unset" else if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
+    if (assoc_mode) sprintf("K129_ASSOC: the association mode (KIT-129 R0 part B), arms %s, the RUV step only, no arm tested", paste(arms_wanted, collapse = ",")),
     "seed rule: seed = 100000 + 10000 * cell index + run; data set.seed(seed); arm a set.seed(seed * 100 + a) (R = 18, 14E = 19)",
     sprintf("library paths: %s", paste(.libPaths(), collapse = ":")),
     sprintf("R: %s; BLAS %s", R.version.string, extSoftVersion()[["BLAS"]]),

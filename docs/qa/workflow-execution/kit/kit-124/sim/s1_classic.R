@@ -153,6 +153,13 @@
 # run) under set.seed(seed) and shared by all arms. Each arm runs under set.seed(seed * 100 + arm number); E is
 # stream 0. The sweep is computed once under stream 3 (inside arm 3, or by the first of arms 4 to 6 if arm 3 is
 # dropped) and reused by arms 4 to 6.
+#
+# K129_ASSOC (environment, KIT-129 R0 part B; unset = everything above): the association mode. K124_ARMS must be unset.
+# The data, E, the sweep and each arm's RUV step run as above on the same streams for the arms of
+# docs/qa/workflow-execution/kit/kit-129/r0/association.R (here 4, 5, 7, 8; 4 stands for "3 or 4": the sweep's
+# controls and k), and no test: an arm stops at its W and the row holds the statistic of the factor-tied-to-groups
+# warning (one row per cell, run and arm; columns in association.R). The sweep is computed on its own stream (3)
+# before arm 4 starts its stream, as when arm 3 ran first. Written to s1-assoc.tsv, s1-assoc.meta.txt, s1-assoc.log.
 # ---------------------------------------------------------------------------------------------------------------
 
 args <- commandArgs(TRUE)
@@ -165,6 +172,12 @@ arms_wanted <- Sys.getenv("K124_ARMS", "")
 arms_wanted <- if (nzchar(arms_wanted)) as.integer(strsplit(arms_wanted, ",", fixed = TRUE)[[1L]])
 stopifnot(is.null(arms_wanted) || (!anyNA(arms_wanted) && 1L %in% arms_wanted))
 stopifnot(first_run >= 1L, first_run + max(runs_core, runs_stress) - 1L < 10000L)
+assoc_mode <- nzchar(Sys.getenv("K129_ASSOC", ""))
+if (assoc_mode) {
+    stopifnot(is.null(arms_wanted))
+    source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
+    arms_wanted <- as.integer(ASSOC_ARMS$S1)
+}
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -450,6 +463,7 @@ one <- function(cell, run) {
         if (k > n_samples - blocks) refuse(sprintf("k = %d exceeds samples minus replicate sets (%d)", k, n_samples - blocks))
         value <- NULL
         quietly(value <- computeRuvCovariates(object_complete(technical), k = k, controls = usable, ruv_grouping_variable = "group"))
+        if (assoc_mode) return(list(W = value$W, k = k))
         list(tab = da(x, design, value$W), k = k)
     }
     corrected <- function(controls, k, technical) {       # RUV-III-C correction, then the test
@@ -515,9 +529,21 @@ one <- function(cell, run) {
     rows <- list(); log <- character()
     reference <- NULL                                     # arm 1's table, the no-RUV result
     for (arm in arms_of(cell)) {
+        t_sweep <- proc.time()[[3L]]
+        if (assoc_mode && arm == 4L) try(sweep(), silent = TRUE)   # on stream 3, before arm 4's stream starts
         set.seed(stream(arm)); t0 <- proc.time()[[3L]]
         result <- tryCatch(arm_functions[[as.character(arm)]](), error = function(e) e)
         seconds <- proc.time()[[3L]] - t0
+        if (assoc_mode) {
+            status <- if (!inherits(result, "error")) { if (is.null(result$W)) "no_factor" else "ok" } else
+                if (is_refusal(result)) "refused" else "crashed"
+            if (inherits(result, "error")) log <- c(log, paste(cell, run, arm, status, gsub("[\r\n\t]+", " ", conditionMessage(result)), sep = "\t"))
+            rows[[length(rows) + 1L]] <- assocRow("S1", cell, cell_class(cell), run, seed, arm, status,
+                W = if (status == "ok") result$W[rownames(design), , drop = FALSE], group = design$group,
+                true_rho = if (p$factors > 0L) p$rho else NA_real_, true_factor = if (!is.null(sim$scores)) sim$scores[, 1L],
+                seconds = proc.time()[[3L]] - t_sweep)
+            next
+        }
         status <- "ok"; k <- NA_integer_; tab <- NULL
         if (inherits(result, "error")) {
             status <- if (is_refusal(result)) "refused" else "crashed"
@@ -544,6 +570,9 @@ one <- function(cell, run) {
     list(rows = do.call(rbind, rows), log = log, total = proc.time()[[3L]] - started)
 }
 crashed_run <- function(cell, run, message) {
+    if (assoc_mode) return(list(rows = do.call(rbind, lapply(arms_of(cell), function(arm) assocRow("S1", cell, cell_class(cell), run,
+            100000L + 10000L * cell_index(cell) + run, arm, "crashed"))),
+        log = paste(cell, run, "all", "crashed", gsub("[\r\n\t]+", " ", message), sep = "\t"), total = NA_real_))
     grid <- do.call(rbind, lapply(arms_of(cell), function(arm) data.frame(arm = arm, subset = subsets_of(arm), stringsAsFactors = FALSE)))
     blank <- as.data.frame(as.list(stats::setNames(rep(NA_real_, length(measures)), measures)))
     list(rows = data.frame(simulator = "S1", cell = cell, cell_class = cell_class(cell), run = run,
@@ -553,15 +582,16 @@ crashed_run <- function(cell, run, message) {
 }
 
 # ---- the study ---------------------------------------------------------------------------------------------------
-columns <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", measures, "seconds")
+columns <- if (assoc_mode) ASSOC_COLUMNS else c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", measures, "seconds")
 cells <- if (identical(cells_wanted, "all")) cell_names else strsplit(cells_wanted, ",", fixed = TRUE)[[1L]]
 stopifnot(all(cells %in% cell_names), cores >= 1L)
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-runs_file <- file.path(out_dir, "s1-runs.tsv"); meta_file <- file.path(out_dir, "s1-runs.meta.txt")
-log_file <- file.path(out_dir, "s1-runs.log")
+stem <- if (assoc_mode) "s1-assoc" else "s1-runs"
+runs_file <- file.path(out_dir, paste0(stem, ".tsv")); meta_file <- file.path(out_dir, paste0(stem, ".meta.txt"))
+log_file <- file.path(out_dir, paste0(stem, ".log"))
 runs_of <- function(cell) first_run - 1L + seq_len(if (cell_class(cell) == "core") runs_core else runs_stress)
 done <- if (file.exists(runs_file)) utils::read.delim(runs_file, stringsAsFactors = FALSE) else NULL
-rows_per_run <- function(cell) sum(lengths(lapply(arms_of(cell), subsets_of)))
+rows_per_run <- function(cell) if (assoc_mode) length(arms_of(cell)) else sum(lengths(lapply(arms_of(cell), subsets_of)))
 is_complete <- function(cell) {
     if (is.null(done)) return(FALSE)
     have <- table(factor(done$run[done$cell == cell], levels = runs_of(cell)))
@@ -582,7 +612,8 @@ meta(R.version.string, "; ", R.version$platform)
 meta("MultiScholaR (pkgload::load_all of the work tree): ", as.character(utils::packageVersion("MultiScholaR")))
 meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); ",
     "arm a under set.seed(seed * 100 + a); E under stream 0; runs ", first_run, " onward")
-meta("K124_ARMS: ", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ","))
+meta("K124_ARMS: ", if (assoc_mode) "unset" else if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ","))
+if (assoc_mode) meta("K129_ASSOC: the association mode (KIT-129 R0 part B), arms ", paste(arms_wanted, collapse = ","), ", the RUV step only, no test")
 meta("cells: ", paste(cells, collapse = ","), "; runs per core cell ", runs_core, ", per stress cell ", runs_stress)
 for (cell in cells) {
     if (is_complete(cell)) { meta("cell ", cell, ": complete already, skipped"); next }
