@@ -3,9 +3,13 @@ name: KIT-134 distributable
 # The distributable (ticket KIT-134, revision 2.0): Electron around a bundled R, library and Python,
 # for Linux and Windows. Sources under packaging/.
 #
-# No run of this workflow uses the read token: fastduckdb and fastlimpadpc (internal repositories)
-# are not in what it builds, so the DIA, DIA_LIMPA and enrichment lanes are unavailable in it. The
-# token build (revision 1.2: no artifact, no cache) is not implemented here yet.
+# Only stage internal uses the read token (secret DEPS_READ_TOKEN, given as GITHUB_PAT to the one step
+# that installs the library): it adds fastduckdb and fastlimpadpc (internal repositories) at
+# DESCRIPTION's Remotes commits. Revision 1.2 (IR-B2) while the repositories are internal: a token
+# run builds no shell and no installer, uploads no library and no installer, and uploads only a
+# summary folder of small text files, checked to be text before the upload; it verifies in the job.
+# No job of this workflow uses actions/cache or a setup action's cache (the plan job fails if the
+# file names one); Cargo's home is the package's own temporary folder, pip runs with --no-cache-dir.
 #
 # A push to kit-134 runs a stage only when its commit message names one:
 #   [dist:snapshot]   P2 step 1: score the snapshot dates and probe Windows' Bioconductor binaries
@@ -13,6 +17,9 @@ name: KIT-134 distributable
 #   [dist:shell]      P3: the library again, then the Electron shell and its lifecycle test
 #   [dist:installer]  P4: the shell again, then the installers, installed on fresh runners
 #   [dist:container]  D5: the Windows library again, then loaded in a Server Core container
+#   [dist:internal]   P2 step 4 and P5 step 3, with the token: the library with the internal packages
+#                     (Linux required; Windows attempted, D4), checked from the moved folder with the
+#                     network off; on Linux the GUI-entry DIA and DIA_LIMPA lanes against it
 # [dist-linux] or [dist-windows] limits the run to one platform.
 
 on:
@@ -22,7 +29,7 @@ on:
         description: "Stage"
         type: choice
         default: library
-        options: [snapshot, library, shell, installer, container]
+        options: [snapshot, library, shell, installer, container, internal]
       platform:
         description: "Platform"
         type: choice
@@ -63,7 +70,17 @@ jobs:
       shell: ${{ steps.plan.outputs.shell }}
       installer: ${{ steps.plan.outputs.installer }}
       container: ${{ steps.plan.outputs.container }}
+      internal: ${{ steps.plan.outputs.internal }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/workflows
+      - name: No cache in this workflow (revision 1.2, IR-B2)
+        run: |
+          if grep -nE 'uses: *actions/cache|^ *cache(-dependency-path)?:' .github/workflows/distributable.yml; then
+            echo "::error::the distributable workflow must not use a cache"; exit 1
+          fi
+          echo "no actions/cache step and no setup cache input"
       - id: plan
         env:
           EVENT: ${{ github.event_name }}
@@ -79,19 +96,22 @@ jobs:
             platform=both
             case "$MESSAGE" in *'[dist-linux]'*) platform=linux ;; *'[dist-windows]'*) platform=windows ;; esac
           fi
-          case "$stage" in none|snapshot|library|shell|installer|container) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
-          build=false; shell=false; installer=false; container=false
+          case "$stage" in none|snapshot|library|shell|installer|container|internal) ;; *) echo "::error::unknown stage $stage"; exit 1 ;; esac
+          build=false; shell=false; installer=false; container=false; internal=false
           case "$stage" in
             library) build=true ;;
             shell) build=true; shell=true ;;
             installer) build=true; shell=true; installer=true ;;
             container) build=true; container=true; platform=windows ;;
+            # never with shell, installer or container: nothing built with the token is packed or uploaded
+            internal) build=true; internal=true ;;
           esac
           linux=false; windows=false
           case "$platform" in both) linux=true; windows=true ;; linux) linux=true ;; windows) windows=true ;; esac
           {
             echo "stage=$stage"; echo "linux=$linux"; echo "windows=$windows"
             echo "build=$build"; echo "shell=$shell"; echo "installer=$installer"; echo "container=$container"
+            echo "internal=$internal"
           } | tee -a "$GITHUB_OUTPUT"
           echo "stage **$stage**, platform **$platform**" >> "$GITHUB_STEP_SUMMARY"
 
@@ -183,11 +203,22 @@ jobs:
           sort -u "$RUNNER_TEMP/apt.txt" | tee "$OUT/apt-packages.txt"
           sudo apt-get install -y --no-install-recommends $(sort -u "$RUNNER_TEMP/apt.txt")
 
-      - name: "Install the library: snapshot binaries, the three source builds, MultiScholaR from this commit"
+      - name: "Rust for the internal packages (token run; rustc 1.88 or later)"
+        if: needs.plan.outputs.internal == 'true'
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update
+          rustup default stable
+          rustc --version; cargo --version
+
+      - name: "Install the library: snapshot binaries, the source builds, the internal packages (token run), MultiScholaR from this commit"
+        env:
+          MSR_INTERNAL: ${{ needs.plan.outputs.internal == 'true' && 'required' || '' }}
+          GITHUB_PAT: ${{ needs.plan.outputs.internal == 'true' && secrets.DEPS_READ_TOKEN || '' }}
         run: |
           set -o pipefail
           R_LIBS="$TOOLS_LIB" "/opt/R/${R_VERSION}/bin/Rscript" --vanilla packaging/r/install-library.R install . "$OUT" \
             2>&1 | tee "$OUT/install-library.log"
+          grep '^INTERNAL ' "$OUT/install-library.log" || true
           echo "installed as binary packages: $(grep -c 'installing \*binary\* package' "$OUT/install-library.log" || true)"
           echo "built from source:"; grep 'installing \*source\* package' "$OUT/install-library.log" || true
 
@@ -245,6 +276,81 @@ jobs:
           set -o pipefail
           bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-library.R offline \
             2>&1 | tee "$OUT/check-library.log"
+
+      # ------------------------------------- token run (stage internal): verified in this job
+      - name: "Check: the internal packages, the DIA manifest and the engines (moved, bare ubuntu:22.04, network off)"
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.move.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-internal.R required \
+            2>&1 | tee "$OUT/check-internal.log"
+
+      - name: "Test tools: testthat and what the bundle lacks for it, from the snapshot, in a separate library"
+        id: testtools
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.check.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
+          cat > "$RUNNER_TEMP/test-tools.R" <<'EOF'
+          arguments <- commandArgs(TRUE)
+          lib <- arguments[[1L]]
+          dir.create(lib, showWarnings = FALSE)
+          options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
+              paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))
+          repos <- sprintf("https://packagemanager.posit.co/cran/__linux__/jammy/%s", arguments[[2L]])
+          available <- utils::available.packages(repos = repos)
+          wanted <- unique(c("testthat", unlist(tools::package_dependencies("testthat", db = available,
+              which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
+          have <- rownames(utils::installed.packages(lib.loc = .libPaths()))
+          needed <- setdiff(wanted, have)
+          cat("testthat needs, not in the bundle:", paste(needed, collapse = ", "), "\n")
+          utils::install.packages(needed, lib = lib, repos = repos, dependencies = FALSE)
+          .libPaths(c(.libPaths(), lib))
+          library(testthat)
+          cat("testthat", as.character(utils::packageVersion("testthat")), "from", find.package("testthat"), "\n")
+          EOF
+          "$MOVED/bin/Rscript" --vanilla "$RUNNER_TEMP/test-tools.R" "$RUNNER_TEMP/test-tools" "$(jq -r .Snapshot.Date packaging/multischolar.lock.json)" \
+            2>&1 | tee "$OUT/test-tools.log"
+
+      - name: "Lanes: GUI-entry DIA and DIA_LIMPA in process against the bundle (moved, network closed, the laptop's locale)"
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.testtools.outcome == 'success' }}
+        run: |
+          sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
+          mkdir -p "$OUT/lanes"
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -u "$0" env HOME="$1" LANG=en_GB.UTF-8 \
+            LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
+            LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
+            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-lanes.R" "$3" "$4" "$5" prot_dia prot_dia_limpa' \
+            "$(id -un)" "$HOME" "$MOVED" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/lanes" 2>&1 | tee "$OUT/lanes.log"
+          status="${PIPESTATUS[0]}"
+          { echo '### GUI-entry lanes against the bundle (token run)'; echo '```'; cat "$OUT/lanes/lane-summary.tsv" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - name: "Summary for upload: small text files only (token run)"
+        id: summary
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' }}
+        run: |
+          summary="$RUNNER_TEMP/summary"
+          mkdir -p "$summary"
+          for f in plan-packages.tsv apt-packages.txt install-library.log internal-packages.tsv bundle-sources.tsv \
+            version-table.tsv version-table.md version-table.log python-packages.txt sizes.txt check-library.log \
+            check-internal.log test-tools.log lanes.log lanes/lane-summary.tsv lanes/lane-differences.tsv lanes/lane-failures.tsv; do
+            if [ -f "$OUT/$f" ]; then cp "$OUT/$f" "$summary/"; fi
+          done
+          for f in "$summary"/*; do
+            if [ "$(stat -c %s "$f")" -gt 20971520 ] || { [ -s "$f" ] && ! grep -qI . "$f"; }; then
+              echo "::error::$f is not a small text file; nothing is uploaded"; exit 1
+            fi
+          done
+          ls -l "$summary"
+
+      - name: Upload the summary (text only; token run)
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.summary.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-internal-summary
+          path: ${{ runner.temp }}/summary
+          retention-days: 14
 
       # ------------------------------------------------ P3: the shell (stage shell and later)
       - uses: actions/setup-node@v4
@@ -314,7 +420,7 @@ jobs:
           } | tee -a "$GITHUB_STEP_SUMMARY" "$OUT/archive.txt"
 
       - name: Upload the Linux archive
-        if: needs.plan.outputs.shell == 'true' && steps.archive.outcome == 'success'
+        if: needs.plan.outputs.shell == 'true' && needs.plan.outputs.internal != 'true' && steps.archive.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: linux-archive
@@ -323,8 +429,8 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-      - name: Keep the evidence (text only)
-        if: ${{ !cancelled() }}
+      - name: Keep the evidence (text only; not in a token run, which uploads its summary instead)
+        if: ${{ !cancelled() && needs.plan.outputs.internal != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-build-evidence
@@ -422,7 +528,16 @@ jobs:
           & "$env:BUNDLE\R\bin\Rscript.exe" --vanilla -e "install.packages('jsonlite', lib = commandArgs(TRUE)[[1]], repos = 'https://packagemanager.posit.co/cran/latest', type = 'binary')" $env:TOOLS_LIB
           if ($LASTEXITCODE -ne 0) { throw "could not install jsonlite into the build-tool library" }
 
-      - name: "Install the library: snapshot binaries, the three source builds, MultiScholaR from this commit"
+      - name: "Rust for the internal packages (token run): the GNU target R links against"
+        if: needs.plan.outputs.internal == 'true'
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+          rustc --version; cargo --version; rustup show
+
+      - name: "Install the library: snapshot binaries, the source builds, the internal packages attempted (token run), MultiScholaR from this commit"
+        env:
+          MSR_INTERNAL: ${{ needs.plan.outputs.internal == 'true' && 'attempt' || '' }}
+          GITHUB_PAT: ${{ needs.plan.outputs.internal == 'true' && secrets.DEPS_READ_TOKEN || '' }}
         run: |
           $env:PATH = "C:\rtools45\x86_64-w64-mingw32.static.posix\bin;C:\rtools45\usr\bin;$env:PATH"
           $env:R_LIBS = $env:TOOLS_LIB
@@ -432,6 +547,7 @@ jobs:
           & $rscript --vanilla packaging\r\install-library.R install . $env:OUT *>&1 | Tee-Object -FilePath "$env:OUT\install-library.log"
           if ($LASTEXITCODE -ne 0) { throw "install failed" }
           "built from source:"; Select-String -Path "$env:OUT\install-library.log" -Pattern 'installing \*source\* package' | ForEach-Object Line
+          Select-String -Path "$env:OUT\install-library.log" -Pattern '^INTERNAL ' | ForEach-Object Line
 
       - name: The version table against the laptop's lockfile
         run: |
@@ -485,6 +601,38 @@ jobs:
           "outbound traffic blocked for the bundle's $($programs.Count) programs"
           pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-library.R -Arguments offline *>&1 | Tee-Object -FilePath "$env:OUT\check-library.log"
           if ($LASTEXITCODE -ne 0) { throw "the library check failed" }
+
+      # ------------------------------------- token run (stage internal): verified in this job
+      - name: "Check: the internal packages that built, from the moved folder (reduced environment, network cut)"
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.move.outcome == 'success' }}
+        run: |
+          pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-internal.R -Arguments attempt *>&1 | Tee-Object -FilePath "$env:OUT\check-internal.log"
+          if ($LASTEXITCODE -ne 0) { throw "the internal-package check failed" }
+
+      - name: "Summary for upload: small text files only (token run)"
+        id: summary
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' }}
+        run: |
+          $summary = Join-Path $env:RUNNER_TEMP 'summary'
+          New-Item -ItemType Directory -Force $summary | Out-Null
+          foreach ($name in 'plan-packages.tsv', 'install-library.log', 'internal-packages.tsv', 'bundle-sources.tsv', 'version-table.tsv',
+              'version-table.md', 'version-table.log', 'python-packages.txt', 'sizes.txt', 'check-library.log', 'check-internal.log') {
+            $file = Join-Path $env:OUT $name
+            if (Test-Path -LiteralPath $file) { Copy-Item -LiteralPath $file $summary }
+          }
+          foreach ($file in Get-ChildItem -LiteralPath $summary -File) {
+            $bytes = [IO.File]::ReadAllBytes($file.FullName)
+            if ($file.Length -gt 20MB -or [Array]::IndexOf($bytes, [byte]0) -ge 0) { throw "$($file.Name) is not a small text file; nothing is uploaded" }
+          }
+          Get-ChildItem -LiteralPath $summary | Format-Table Name, Length
+
+      - name: Upload the summary (text only; token run)
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.summary.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-internal-summary
+          path: ${{ runner.temp }}/summary
+          retention-days: 14
 
       # ---------------------------------------- D5: a clean Windows (stage container)
       - name: "D5: the bundle's R in a Windows Server Core container (network off)"
@@ -596,7 +744,7 @@ jobs:
           $lines
 
       - name: Upload the NSIS installer
-        if: needs.plan.outputs.installer == 'true' && steps.installer.outcome == 'success'
+        if: needs.plan.outputs.installer == 'true' && needs.plan.outputs.internal != 'true' && steps.installer.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
@@ -607,8 +755,8 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-      - name: Keep the evidence (text only)
-        if: ${{ !cancelled() }}
+      - name: Keep the evidence (text only; not in a token run, which uploads its summary instead)
+        if: ${{ !cancelled() && needs.plan.outputs.internal != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-build-evidence

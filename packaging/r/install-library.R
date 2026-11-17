@@ -15,9 +15,11 @@
 #         installs nothing.
 # install installs, in this order: (1) the snapshot's packages, as binaries where the snapshot
 #         serves them; (2) the three source builds (GO.db from the snapshot, RUVIIIC and the Glimma
-#         fork from GitHub by commit); (3) MultiScholaR from the checkout. The two internal packages
-#         (fastduckdb, fastlimpadpc) need the read token and are not installed by this script.
-#         Writes bundle-sources.tsv (where each package came from).
+#         fork from GitHub by commit) and nanoarrow and limpa at the lockfile's versions (U4);
+#         (2b) with MSR_INTERNAL set, the two internal packages (fastduckdb, fastlimpadpc) at
+#         DESCRIPTION's Remotes commits, with the read token in GITHUB_PAT; (3) MultiScholaR from the
+#         checkout. Writes bundle-sources.tsv (where each package came from) and, with MSR_INTERNAL,
+#         internal-packages.tsv (each internal package: installed, or the failure).
 #
 # The closure: DESCRIPTION's Depends, Imports, LinkingTo and Suggests, less the internal packages,
 # less the Suggests that were never installed on the laptop (the lockfile's NotInstalled), plus MOFA2
@@ -32,6 +34,28 @@ FROM_GITHUB <- list(
     Glimma = list(user = "APAF-bioinformatics", repo = "GlimmaV2", sha = "743af0944957ce2515b17b38d329506edd06ca5a")
 )
 FROM_SOURCE <- "GO.db" # annotation data: source only; nothing to compile
+# U4 (KIT-134 status 2026-11-17): the snapshot has nanoarrow 0.8.0-1 (DESCRIPTION declares >= 0.9.0)
+# and limpa 1.4.0 (the lockfile has 1.4.2); both are built from source at the lockfile's version, on
+# both platforms. The current file first, then the repository's archive.
+AT_LOCK <- list(
+    nanoarrow = list(version = "0.9.0", urls = c("https://cran.r-project.org/src/contrib/nanoarrow_0.9.0.tar.gz",
+        "https://cran.r-project.org/src/contrib/Archive/nanoarrow/nanoarrow_0.9.0.tar.gz")),
+    limpa = list(version = "1.4.2", urls = c("https://bioconductor.org/packages/3.23/bioc/src/contrib/limpa_1.4.2.tar.gz",
+        "https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/limpa/limpa_1.4.2.tar.gz"))
+)
+# The internal packages, named explicitly (a GitHub reference names its repository, not the package
+# inside it) at DESCRIPTION's Remotes commits; checked against Remotes below. Installed only when
+# MSR_INTERNAL is "required" (a failure stops the build) or "attempt" (a failure is recorded and the
+# build goes on: Windows, D4), with the read token in GITHUB_PAT. The sources are unpacked in R's
+# session folder, never in the output directory.
+INTERNAL_REMOTES <- list(
+    fastduckdb = list(user = "APAF-bioinformatics", repo = "fast_duckdb", subdir = "fastduckdb",
+        sha = "d78511504fbdb89fbf34bc26b22b3ff1524b0555"),
+    fastlimpadpc = list(user = "APAF-bioinformatics", repo = "fast_limpa_dpc", subdir = "",
+        sha = "d4f9cc1dcfeb0183c15bd08872dbe5cf3c2b09a2")
+)
+internal_mode <- Sys.getenv("MSR_INTERNAL", "")
+if (!internal_mode %in% c("", "required", "attempt")) stop("MSR_INTERNAL must be empty, required or attempt")
 
 arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) != 3L || !arguments[[1L]] %in% c("plan", "install")) {
@@ -130,7 +154,13 @@ for (entry in github) {
 }
 
 description <- read.dcf(file.path(checkout, "DESCRIPTION"))
-declared <- dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo", "Suggests"),
+remotes <- trimws(unlist(strsplit(gsub("\n", " ", description[1L, "Remotes"]), ",")))
+for (package in names(INTERNAL_REMOTES)) {
+    spec <- INTERNAL_REMOTES[[package]]
+    reference <- sprintf("%s/%s%s@%s", spec$user, spec$repo, if (nzchar(spec$subdir)) paste0("/", spec$subdir) else "", spec$sha)
+    if (!reference %in% remotes) stop(sprintf("%s: %s is not in DESCRIPTION's Remotes", package, reference))
+}
+declared <-dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo", "Suggests"),
     colnames(description))])
 never_installed <- setdiff(unlist(lockfile$Lockfile$NotInstalled), ADDED)
 roots <- setdiff(unique(c(declared, ADDED)), c(INTERNAL, never_installed, excluded))
@@ -203,6 +233,74 @@ for (entry in github) {
     rInstall(entry$dir)
     requested[entry$package] <- "source"
 }
+at_lock_origin <- character()
+for (package in names(AT_LOCK)) {
+    spec <- AT_LOCK[[package]]
+    tarball <- file.path(tempdir(), sprintf("%s_%s.tar.gz", package, spec$version))
+    for (url in spec$urls) {
+        fetched <- tryCatch(utils::download.file(url, tarball, mode = "wb", quiet = TRUE) == 0L, error = function(e) FALSE,
+            warning = function(w) FALSE)
+        if (fetched) break
+    }
+    if (!fetched) stop(sprintf("%s %s: no source at %s", package, spec$version, paste(spec$urls, collapse = " or ")))
+    cat(sprintf("%s %s from %s, sha256 %s\n", package, spec$version, url, digest::digest(file = tarball, algo = "sha256")))
+    rInstall(tarball)
+    if (!identical(as.character(utils::packageVersion(package, lib.loc = lib)), spec$version)) {
+        stop(sprintf("%s: %s installed, %s expected", package, utils::packageVersion(package, lib.loc = lib), spec$version))
+    }
+    requested[package] <- "source"
+    at_lock_origin[package] <- sprintf("source %s (lockfile version, U4)", url)
+}
+
+# (2b) The internal packages, after duckdb and before MultiScholaR, whose configure records fastduckdb.
+internalSource <- function(package, spec) {
+    token <- Sys.getenv("GITHUB_PAT")
+    if (!nzchar(token)) stop("GITHUB_PAT is empty: the internal packages need the read token")
+    dir <- file.path(tempdir(), "internal", package)
+    unlink(dir, recursive = TRUE)
+    dir.create(dir, recursive = TRUE)
+    tarball <- file.path(dir, "source.tar.gz")
+    utils::download.file(sprintf("https://api.github.com/repos/%s/%s/tarball/%s", spec$user, spec$repo, spec$sha),
+        tarball, mode = "wb", quiet = TRUE, method = "libcurl",
+        headers = c(Authorization = paste("Bearer", token), Accept = "application/vnd.github+json"))
+    utils::untar(tarball, exdir = file.path(dir, "unpacked"))
+    unlink(tarball)
+    top <- list.dirs(file.path(dir, "unpacked"), recursive = FALSE)
+    stopifnot(length(top) == 1L)
+    root <- if (nzchar(spec$subdir)) file.path(top, spec$subdir) else top
+    package_description <- read.dcf(file.path(root, "DESCRIPTION"))
+    if (!identical(unname(package_description[1L, "Package"]), package)) {
+        stop(sprintf("%s/%s@%s holds package %s, not %s", spec$user, spec$repo, spec$sha,
+            package_description[1L, "Package"], package))
+    }
+    provenance <- c(RemoteType = "github", RemoteHost = "api.github.com", RemoteUsername = spec$user,
+        RemoteRepo = spec$repo, RemoteSubdir = spec$subdir, RemoteSha = spec$sha, RemoteRef = spec$sha)
+    provenance <- provenance[nzchar(provenance)]
+    keep <- setdiff(colnames(package_description), names(provenance))
+    write.dcf(cbind(package_description[, keep, drop = FALSE], t(provenance)), file.path(root, "DESCRIPTION"))
+    root
+}
+internal_rows <- list()
+if (nzchar(internal_mode)) {
+    for (package in names(INTERNAL_REMOTES)) {
+        spec <- INTERNAL_REMOTES[[package]]
+        started <- Sys.time()
+        result <- tryCatch({
+            rInstall(internalSource(package, spec))
+            "installed"
+        }, error = function(e) paste("FAILED:", gsub("[\t\n]+", " ", conditionMessage(e))))
+        version <- if (identical(result, "installed")) as.character(utils::packageVersion(package, lib.loc = lib)) else ""
+        cat(sprintf("INTERNAL %s %s@%s: %s %s (%.0f s)\n", package, spec$repo, substr(spec$sha, 1L, 8L), result, version,
+            as.numeric(difftime(Sys.time(), started, units = "secs"))))
+        internal_rows[[package]] <- data.frame(package = package, commit = spec$sha, result = result, version = version,
+            seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs"))), stringsAsFactors = FALSE)
+        if (identical(result, "installed")) requested[package] <- "source"
+        else if (identical(internal_mode, "required")) stop(sprintf("internal package %s: %s", package, result))
+    }
+    utils::write.table(do.call(rbind, internal_rows), file.path(out_dir, "internal-packages.tsv"), sep = "\t",
+        quote = FALSE, row.names = FALSE)
+    unlink(file.path(tempdir(), "internal"), recursive = TRUE)
+}
 
 # (3) MultiScholaR from the checkout.
 rInstall(checkout)
@@ -233,6 +331,12 @@ origin <- vapply(names(requested), function(package) {
         spec <- FROM_GITHUB[[package]]
         return(sprintf("GitHub %s/%s@%s", spec$user, spec$repo, spec$sha))
     }
+    if (package %in% names(INTERNAL_REMOTES)) {
+        spec <- INTERNAL_REMOTES[[package]]
+        return(sprintf("GitHub %s/%s%s@%s (internal, read token)", spec$user, spec$repo,
+            if (nzchar(spec$subdir)) paste0("/", spec$subdir) else "", spec$sha))
+    }
+    if (package %in% names(at_lock_origin)) return(at_lock_origin[[package]])
     repository <- db[package, "Repository"]
     if (startsWith(repository, source_repos[["CRAN"]])) "CRAN" else if (is_windows && !identical(windows_bioc, "snapshot"))
         "bioconductor.org" else "Bioconductor"

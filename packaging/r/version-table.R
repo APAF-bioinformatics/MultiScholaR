@@ -57,7 +57,7 @@ from <- match(table$package, sources$package)
 table$bundled_source <- ifelse(is.na(table$bundled_version), "",
     ifelse(!is.na(table$priority) & table$priority == "base", sprintf("R %s", getRversion()),
         ifelse(is.na(from), "R installer (recommended, not reinstalled)",
-            ifelse(grepl("^(GitHub|checkout)", sources$origin[from]), sources$origin[from],
+            ifelse(grepl("^(GitHub|checkout|source )", sources$origin[from]), sources$origin[from],
                 sprintf("snapshot %s %s, %s", sources$snapshot[from], sources$origin[from],
                     ifelse(table$package %in% built, "built from source", "binary"))))))
 table$same <- !is.na(table$locked_version) & !is.na(table$bundled_version) &

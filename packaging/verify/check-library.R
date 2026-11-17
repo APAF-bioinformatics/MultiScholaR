@@ -7,7 +7,8 @@
 # Checks: R 4.6.1 with its home and every library path inside the bundle; the network as stated;
 # every package in the bundle's library loads (loadNamespace, in child R processes of 10 packages
 # each so the DLL limit is never reached) and every namespace loaded on the way comes from the
-# bundle; MultiScholaR attaches and has run_app. Prints "KIT-134 CHECK PASSED: <name>" lines.
+# bundle; MultiScholaR attaches and has run_app; every version MultiScholaR's DESCRIPTION declares is
+# met by the bundled package (U4). Prints "KIT-134 CHECK PASSED: <name>" lines.
 
 arguments <- commandArgs(trailingOnly = TRUE)
 is_windows <- .Platform$OS.type == "windows"
@@ -91,6 +92,32 @@ check("MultiScholaR attaches from the bundle and has run_app",
     length(attach_line) == 1L && grepl(" TRUE ", attach_line) &&
         insideBundle(trimws(sub("^.* TRUE ", "", attach_line)), bundle),
     paste(utils::tail(attach_output, 3L), collapse = " | "))
+
+# U4: every version DESCRIPTION declares (Depends, Imports, LinkingTo, Suggests) is met by the bundle.
+# A declared package that is not bundled (never-installed Suggests; the internal packages in a build
+# without the token) is listed, not failed: the version table accounts for it.
+fields <- utils::packageDescription("MultiScholaR", lib.loc = .libPaths())[c("Depends", "Imports", "LinkingTo", "Suggests")]
+entries <- trimws(unlist(strsplit(gsub("\n", " ", unlist(fields[!vapply(fields, is.null, logical(1))])), ",")))
+parts <- regmatches(entries, regexec("^([A-Za-z0-9.]+)\\s*\\(\\s*(>=|>|==|<=|<)\\s*([^) ]+)\\s*\\)$", entries))
+parts <- do.call(rbind, parts[lengths(parts) == 4L])
+minimums <- data.frame(package = parts[, 2L], operator = parts[, 3L], declared = parts[, 4L], stringsAsFactors = FALSE)
+minimums$bundled <- vapply(minimums$package, function(package) {
+    if (identical(package, "R")) return(as.character(getRversion()))
+    path <- find.package(package, lib.loc = .libPaths(), quiet = TRUE)
+    if (length(path)) as.character(utils::packageVersion(package, lib.loc = .libPaths())) else NA_character_
+}, character(1))
+minimums$met <- vapply(seq_len(nrow(minimums)), function(i) {
+    if (is.na(minimums$bundled[[i]])) return(NA)
+    do.call(minimums$operator[[i]], list(package_version(minimums$bundled[[i]]), package_version(minimums$declared[[i]])))
+}, logical(1))
+cat(sprintf("MINIMUM %s %s %s: bundled %s, %s\n", minimums$package, minimums$operator, minimums$declared,
+    ifelse(is.na(minimums$bundled), "none", minimums$bundled),
+    ifelse(is.na(minimums$met), "not bundled", ifelse(minimums$met, "met", "NOT MET"))), sep = "")
+check(sprintf("every bundled package meets DESCRIPTION's declared version (%d declared)", nrow(minimums)),
+    !any(minimums$met %in% FALSE),
+    sprintf("%d met, %d not met (%s), %d not bundled (%s)", sum(minimums$met %in% TRUE), sum(minimums$met %in% FALSE),
+        paste(minimums$package[minimums$met %in% FALSE], collapse = ", "), sum(is.na(minimums$met)),
+        paste(minimums$package[is.na(minimums$met)], collapse = ", ")))
 
 if (length(failures)) {
     cat(sprintf("KIT-134 CHECK FAILED: %s\n", paste(failures, collapse = "; ")))
