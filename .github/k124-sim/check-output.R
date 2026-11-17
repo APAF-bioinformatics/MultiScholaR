@@ -1,10 +1,10 @@
 # KIT-124 on hosted runners: a simulator's out dir, checked before it is uploaded.
 #
-# Usage: Rscript --vanilla check-output.R <sim: s1..s4> <out dir> <cell> <runs>
+# Usage: Rscript --vanilla check-output.R <sim: s1..s4> <out dir> <cell> <first run> <runs> <table: runs | assoc>
 #
 # Two checks; either failing gives exit status 1, so the job fails and uploads nothing.
-#   Complete: s<i>-runs.tsv holds the cell only, with runs 1..<runs>, every run with the same number of rows, and not
-#   every row crashed (a table of nothing but crashes is a broken environment, not a result).
+#   Complete: s<i>-<table>.tsv (runs; assoc in the KIT-129 association mode) holds the cell only, with <runs> runs
+#   from <first run>, every run with the same number of rows, and not every row crashed (a table of nothing but crashes is a broken environment, not a result).
 #   Clean: no file of the out dir (text read by line, .rds by its character values) holds compiler or build output,
 #   a source location of the internal packages, or anything shaped like a token. A hit is reported by file and
 #   pattern, never by its text.
@@ -19,19 +19,20 @@ FORBIDDEN <- c(
 )
 
 arguments <- commandArgs(trailingOnly = TRUE)
-if (length(arguments) != 4L) stop("usage: Rscript --vanilla check-output.R <sim> <out dir> <cell> <runs>")
-sim <- arguments[[1L]]; out_dir <- arguments[[2L]]; cell <- arguments[[3L]]; runs_wanted <- as.integer(arguments[[4L]])
+if (length(arguments) != 6L) stop("usage: Rscript --vanilla check-output.R <sim> <out dir> <cell> <first run> <runs> <table>")
+sim <- arguments[[1L]]; out_dir <- arguments[[2L]]; cell <- arguments[[3L]]
+runs_wanted <- as.integer(arguments[[4L]]) - 1L + seq_len(as.integer(arguments[[5L]]))
 problems <- character()
 
-runs_path <- file.path(out_dir, sprintf("%s-runs.tsv", sim))
+runs_path <- file.path(out_dir, sprintf("%s-%s.tsv", sim, arguments[[6L]]))
 if (!file.exists(runs_path)) {
     problems <- c(problems, sprintf("%s was not written", basename(runs_path)))
 } else {
     rows <- utils::read.delim(runs_path, colClasses = "character", quote = "")
     if (!nrow(rows) || !all(rows$cell == cell)) problems <- c(problems, sprintf("the table does not hold cell %s alone", cell))
     per_run <- table(as.integer(rows$run))
-    if (!identical(sort(as.integer(names(per_run))), seq_len(runs_wanted))) {
-        problems <- c(problems, sprintf("the table's runs are not 1 to %d", runs_wanted))
+    if (!identical(sort(as.integer(names(per_run))), runs_wanted)) {
+        problems <- c(problems, sprintf("the table's runs are not %d to %d", min(runs_wanted), max(runs_wanted)))
     }
     if (length(unique(per_run)) > 1L) problems <- c(problems, "runs differ in their number of rows")
     if (nrow(rows) && all(rows$status == "crashed")) problems <- c(problems, "every row crashed")

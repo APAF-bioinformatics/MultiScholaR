@@ -8,6 +8,9 @@
 #   the top-level tables (s<i>-runs.tsv and the others), the cells' tables one after another under one header;
 #   s<i>-runs.meta.txt and s1-runs.log, the cells' files one after another;
 #   cells/     the per-cell restart files (S2 <cell>.rds, S3 s3-<cell>.rds, S4 <cell>.tsv, .notes.tsv, .timing.tsv);
+#              for a cell run in ranges (artifact <cell>-r<first run>) they go to ranges/<cell>-r<first run>/ instead,
+#              and there is no cells/ entry for it: aggregate.R reads a simulator's cells/ only when it has files,
+#              so a simulator with split cells must have every cell split (then the top-level tables are read);
 #   runner/    per cell: the library check, the simulator's output, the job's facts.
 # aggregate.R reads cells/ where it exists (S2, S3, S4) and the top-level table and log for S1:
 #   Rscript docs/qa/workflow-execution/kit/kit-124/aggregate.R <scored dir> S1=<out root>/s1-<label> S2=...
@@ -27,7 +30,11 @@ for sim in s1 s2 s3 s4; do
     mkdir -p "$out/runner"
     for part in "${parts[@]}"; do
         cp "$part"/runner/* "$out/runner/"
-        if [ -d "$part/cells" ]; then mkdir -p "$out/cells"; cp -n "$part"/cells/* "$out/cells/"; fi
+        tag="${part#"$tmp/k124-$label-$sim-"}"
+        if [ -d "$part/cells" ]; then
+            case "$tag" in *-r*) to="$out/ranges/$tag" ;; *) to="$out/cells" ;; esac
+            mkdir -p "$to"; cp -n "$part"/cells/* "$to/"
+        fi
         for file in "$part"/*; do
             [ -f "$file" ] || continue
             name="$(basename "$file")"
@@ -37,5 +44,5 @@ for sim in s1 s2 s3 s4; do
             esac
         done
     done
-    echo "$out: ${#parts[@]} cells ($(for part in "${parts[@]}"; do printf '%s ' "${part##*-}"; done))"
+    echo "$out: ${#parts[@]} artifacts ($(for part in "${parts[@]}"; do printf '%s ' "${part#"$tmp/k124-$label-$sim-"}"; done))"
 done

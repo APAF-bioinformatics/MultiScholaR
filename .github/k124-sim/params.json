@@ -1,16 +1,27 @@
 {
-  "label": "allarms",
+  "label": "ranges",
   "package_commit": "0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22",
   "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
   "runs_core": 20,
   "runs_stress": 0,
   "cores": 4,
-  "timeout_minutes": 45,
-  "arms": {},
+  "timeout_minutes": 30,
+  "arms": {
+    "s1": "1,2,7,8",
+    "s2": "1,2,7,8",
+    "s3": "1,2,7,8",
+    "s4": "1,2,7,8"
+  },
+  "chunk": {
+    "s1": 10,
+    "s2": 10,
+    "s3": 10,
+    "s4": 10
+  },
   "cells": {
-    "s1": "C0,C5,C6",
-    "s2": "C0,C5",
-    "s3": "C0,C5",
-    "s4": "C0,C5"
+    "s1": "C0",
+    "s2": "C0",
+    "s3": "C0",
+    "s4": "C0"
   }
 }
