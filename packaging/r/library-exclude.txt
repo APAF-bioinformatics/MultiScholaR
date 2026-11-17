@@ -3,14 +3,13 @@
 # if a shipped package needs one of them (packaging/r/install-library.R).
 testthat
 shinytest2
-chromote
 covr
 devtools
 roxygen2
 usethis
 pkgdown
 pak
-# webshot2 (Suggests) imports chromote and drives a Chrome the bundle does not carry. No package
-# code calls it: it appears only in loadDependencies()'s install list (R/func_general_filemgmt.R),
-# which the packaged application never calls (F12).
-webshot2
+# webshot2 and chromote, which it imports, are shipped (no longer excluded): knitr calls webshot2 to
+# screenshot an htmlwidget when it renders the summary report to .docx, and without it the report
+# fails ("there is no package called 'webshot2'", run 44041155687, both DIA lanes). webshot2 drives a
+# Chrome found on the user's machine; the bundle carries none (decision W1 in outcome.md).

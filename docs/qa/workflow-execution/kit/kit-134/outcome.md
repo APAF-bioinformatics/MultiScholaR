@@ -119,6 +119,27 @@ Bounded item: the token part of P2 and its verification. Stage `[dist:internal]`
 |---|---|---|---|---|
 | 7 | [44015367782](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44015367782) | `55d2863a` | both | Linux: library and internal packages installed, library check passed, internal check **failed** (DIA manifest, rollup), lanes **failed** (rollup refused). Windows: `fastlimpadpc` installed and loads; `fastduckdb` failed to build (LNK1104, path of 260 characters: instrumentation); library check passed |
 | 8 | [44017206786](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44017206786) | `f9e52d67` | Windows (correction pass) | passed: both internal packages built and load |
+| 9 | [44041155687](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44041155687) | `e9b7f8f4` | both (after T1: `fastduckdb` 0.2.0 at `2694b972`, `fastlimpadpc` at `87a90b89`) | Windows passed (both build and load). Linux: library, internal packages, DIA manifest, rollup and writer all pass; both lanes **failed at their last-but-one step**: the summary report cannot render (`webshot2` excluded from the bundle) |
+
+### After T1 (run 9)
+
+The user's T1 (2026-11-17): `fast_duckdb` main fast-forwarded to `2694b972` (0.2.0), `fast_limpa_dpc` main `87a90b89` (declares Imports `limpa`, `methods`); `performance-v2` repins DESCRIPTION (`daf1e341`, then `3ec13e95` with `fastduckdb` at `e724f90b`, the same package code with Cargo online when nothing is vendored). Run 9 built `2694b972` with the crates fetched first into the package's own Cargo home, as its installer at that commit does (removed again for `e724f90b`, which needs no fetch).
+
+- **Install and versions, both platforms.** `fastduckdb` 0.2.0 (Linux 192 s, Windows 293 s), `fastlimpadpc` 0.1.0 (21 s, 41 s). Version table: 374 in both, 350 same, **24 different** (`fastduckdb` now at the lock). Declared minimums: 6 met, none unmet, `testthat` not bundled.
+- **Load, moved library, network closed.** Linux bare container: 385 of 385 load from the bundle; both internal packages load at their commits; the reader round trip is identical. Windows, reduced environment: the same (385 of 385; both load; round trip identical).
+- **Linux, the DIA side** (`check-internal.R`): manifest `supported`, `native_query` present (`duckdb-c-scope-v1`), the `fastduckdb` writer recorded; **the precursor rollup and the direct writer admit the build**; DIA_LIMPA resolves `fastlimpadpc`. P2 step 4's acceptance (the manifest with `native_query`) is met.
+- **Windows answer.** `fastduckdb` 0.2.0 builds under Rtools45 with Rust's GNU target and loads; its reader works, which is what the lipidomics and metabolomics steps need for tables wider than 64 columns. Its `Makevars.win.in` builds no `fastduckdb_query` library and its configure marks only Linux supported, so the DIA query runtime does not exist on Windows (D4 stands).
+
+**The lanes** (Linux; network closed, the laptop's locale, `fastlimpadpc` the engine):
+
+| Lane | Steps in the oracle | Pass | Error | Where it stopped | Cause | Class |
+|---|---|---|---|---|---|---|
+| prot_dia | 29 | 1 (the enrichment record check) | 1 | `summary_report` (after import, QC, rollup, normalisation, DA, enrichment, summary save and copy ran) | `Failed to render R Markdown report: there is no package called 'webshot2'`; no `.docx`, so the step's check `rendered[[1L]]` is out of bounds | **D, a defect of the bundle**: `packaging/r/library-exclude.txt` excluded `webshot2` (and `chromote`) as development tools, but knitr needs `webshot2` to render the report's htmlwidgets to `.docx` (pandoc was found: the launcher sets `RSTUDIO_PANDOC`). Repaired after the run: both now ship; unverified until the next run; Chrome remains W1 |
+| prot_dia_limpa | 24 | 0 | 1 | `summary_report` | the same | the same |
+
+Because the GUI-entry helper writes a lane's record only when the lane ends, a lane that stops writes none: **no step of either lane was compared with its oracle**, so revision 1.2's rule (relative 1e-6, absolute 1e-9; discrete exact) has still been applied to nothing, and nothing is classified beyond the defect above. The rule is unchanged. When the steps are compared, each `digest` difference (`lane-differences.tsv`) needs the laptop's values for the same lane, step and key before it can be classed: the oracles hold sha256 digests of values rounded to 10 significant digits.
+
+Also seen: `fastlimpadpc`'s Linux `Makevars.in` at `87a90b89` compiles with `-C target-cpu=native`: a library built on a runner may use instructions an older user CPU lacks ("illegal instruction"). For `fast_limpa_dpc`, before release. Artifacts: the summary artifacts of runs 7 and 8 and run 9's Windows summary are no longer listed (removed outside this work); run 9's `linux-internal-summary` remains (it holds `install-library.log`, F1 below). Caches on `kit-134`: Module CI's R 4.6.2 keys only.
 
 **Install and version check.** Linux: `fastduckdb` 0.1.0 (172 s) and `fastlimpadpc` 0.1.0 (19 s), rustc 1.100.0. Windows (run 8): `fastduckdb` 0.1.0 (327 s) and `fastlimpadpc` 0.1.0 (34 s), rustc 1.99.1 with the `x86_64-pc-windows-gnu` target and Rtools45. `fastlimpadpc` declares no Imports although its NAMESPACE imports `limpa` and `methods` (a defect of the internal package, reported by the CI lane); this build installs `limpa` before it, so it was not hit here. Version table: 374 packages in both, 349 same, **25 different** (was 26: `nanoarrow` and `limpa` now at the lock; **`fastduckdb` is new: locked 0.2.0, bundled 0.1.0**). Declared minimums: 7 declared; on both platforms 6 met, 0 not met, `testthat` not bundled (excluded tool). The "compiled no" for packages installed from a folder (the internal packages, the Glimma fork) is the table reading `NeedsCompilation`, which only `R CMD build` writes; not a result.
 
@@ -136,6 +157,23 @@ Bounded item: the token part of P2 and its verification. Stage `[dist:internal]`
 No step reached the comparison, so revision 1.2's rule (relative 1e-6, absolute 1e-9; discrete exact) was applied to nothing: there is no numeric or discrete difference to classify. The rule was not changed. For when the lanes run: the GUI-entry oracles hold sha256 digests of values rounded to 10 significant digits, not values; `run-lanes.R` lists every differing key as `discrete` (compared exactly) or `digest` (the tolerance cannot be applied to a digest; such a difference needs the values from both machines before it can be classed).
 
 **Windows: does `fastduckdb` build, and do the lipidomics and metabolomics steps need it?** At the pin, yes: 0.1.0 builds under Rtools45 with Rust's GNU target, loads, and its reader works (run 8; run 7's failure was this script's 260-character build path, fixed by unpacking in short folders, no input changed). Whether 0.2.0 (the query runtime the DIA routes need) builds on Windows is not known: not built here (D4). The lipidomics and metabolomics partitioned steps, the defaults since KIT-089 (`R/utils_workflow_lipid_declarations.R:37`, `R/utils_workflow_metab_declarations.R:37`), stream rows through `streamWorkflowTableRows` (`R/utils_workflow_omics_declarations.R:95`, `:770`, `:788`, `:843`), which for more than 64 columns opens a `fastduckdb` read scope unconditionally (`R/utils_workflow_saved_table_codec.R:2093-2101`). So on every platform, a lipidomics or metabolomics table wider than 64 columns (about 60 or more samples) fails at the intensity filter with "optional fastduckdb reader is unavailable" unless `fastduckdb` is installed; the reader 0.1.0 has (`read_parquet_fast`) is all those steps use. The GUI-entry and e2e fixtures are narrower, which is why the token-free lanes passed. Not worked around.
+
+### Independent audit of the token build (2026-11-17)
+
+Repaired on the branch (packaging only; takes effect from the next stage-internal run, which counts as this item's correction pass):
+
+| # | Finding | Repair |
+|---|---|---|
+| F1 (high) | The token summaries uploaded `install-library.log`, and the job logs printed it: it carried compiler messages quoting `fast_limpa_dpc` source lines and `fast_duckdb`'s crate layout. The text check guarded the type, not the content. Affected: the summary artifacts and job logs of runs 44015367782, 44017206786 and 44041155687 (not deleted: the user's decision) | The internal packages' `R CMD INSTALL` output goes to `$RUNNER_TEMP/internal-build-logs/<package>.log`, never uploaded or printed; only the `INTERNAL` result line is printed. `install-library.log` is no longer in either token summary. The copies under `token/` hold no build output (checked) |
+| F4 | `GITHUB_PAT` stayed in the environment of every configure script, Makevars and crate build script the install started | `install-library.R` reads it once into a variable and unsets it before anything else runs; the variable is used only in the internal downloads' headers |
+| F5 | The script's pins could differ from DESCRIPTION's Remotes and only print `DIFFERENT` | `fastduckdb` pinned to `e724f90b` (DESCRIPTION on `performance-v2` since `3ec13e95`; 0.2.0's package code, Cargo offline only with vendored crates, so the crate prefetch is removed); any difference from the checkout's Remotes stops a token build. **`kit-134`'s DESCRIPTION still names the old commits, so the next token run on this branch stops at that check until the branch carries `performance-v2`'s DESCRIPTION** (this branch does not edit DESCRIPTION) |
+| F8 | The Linux text check (`grep -qI`) passes a file whose NUL bytes come after its first block | Every byte is scanned (the byte count with NULs removed must equal the size), as the Windows check does |
+
+Recorded for the package side of P3 and for P5 (nothing under `R/` is changed here):
+
+- **F3.** systemd workers started from the bundle get neither `RHOME` nor `LD_LIBRARY_PATH` (F3 of revision 2.0, still open: the `MSR_BUNDLE` change to `workflowLaunchService` is part of the package side), and the package's launcher choice does not read `MSR_LAUNCHER_PROBE`, the probe the shell already hands it (U1).
+- **F6.** Downloads in the workflow are not all pinned or checksummed: Rtools45, the Rust toolchain (`rustup ... stable`), R's installers, python-build-standalone and pandoc are fetched by version or channel without a recorded sha256 check; DESCRIPTION's Remotes give `cran/RUVIIIC` and `APAF-bioinformatics/GlimmaV2` no commit (the build pins them in `install-library.R`; D3's Remotes fix is still the recorded separate change). For P5 and the release build.
+- **F9.** The in-process watchdog (`later` every 2 s) cannot run while a long step blocks R's event loop, so R can outlive a killed shell for the length of that step. For the package side (the plain launcher moves heavy steps out of the application process, which bounds this).
 
 ## Deviations from revision 2.0's file table
 
@@ -190,6 +228,7 @@ Revision 2.0's budgets are workflow runs per platform per part, one correction p
 | P4 | 1: run 4 (4) | 2: runs 4, 5 (4) | none needed beyond P3's |
 | D5 | | 1: run 6 (2) | not used |
 | Token build (P2 step 4, P5 step 3) | 1: run 7 (1 plus a correction pass) | 2: runs 7, 8 | Windows used (run 8, the build path); Linux not used: its failure is the Remotes pin, which needs a decision, not a correction |
+| Token build after T1 (fresh budget) | 1: run 9 | 1: run 9 | not used; the next stage-internal run is this item's correction pass (the audit repairs, and K1 and W1 first) |
 
 Six workflow runs in all, about 3 hours of runner time across the jobs. Each push to `kit-134` also starts the repository's existing `Module CI` workflow (not part of this record). Nothing heavy ran on the laptop: the P1 table (seconds of R), and three light local checks of the new scripts (two snapshot dates, the plan resolution, the version table against R's own library; no package installed; `package-lock.json` written with `npm install --package-lock-only --ignore-scripts`, no `node_modules`).
 
@@ -197,12 +236,14 @@ Six workflow runs in all, about 3 hours of runner time across the jobs. Each pus
 
 - The package side of P3 (above), after KIT-131; then `--expect-launcher process`, and the systemd lifecycle (laptop, and `ubuntu-24.04` if U5).
 - P5 (the lanes and the suite from the installed bundle; the B-01 measurement): `run-lanes.*`, `compare-results.R`, the e2e helper's installed surface, the test-tool library. Four lanes only (lipidomics, metabolomics, transcriptomics, TMT and LFQ) until the token: DIA, DIA_LIMPA and enrichment need `fastduckdb` (F1).
-- The token build: done at the Remotes pins (above). Its DIA and DIA_LIMPA lanes wait for the decision on the `fastduckdb` commit (T1 below); then one Linux run of stage internal.
+- The token build: the internal packages build and load on both platforms and the DIA rollup admits the Linux bundle (run 9). The audit repairs (F1, F4, F5, F8) and the report repair (`webshot2`, `chromote` shipped) are on the branch, unverified; the correction pass of this item (one stage-internal run) waits only for K1 below.
 
-### Decision needed (token build)
+### Decisions needed (token build)
 
 | # | Decision | What the runs show | Options |
 |---|---|---|---|
-| T1 | Which `fastduckdb` the bundle (and DESCRIPTION's Remotes) names | The Remotes pin `d7851150` is 0.1.0 and cannot run the DIA routes (rollup and direct writer refuse); the laptop's verified 0.2.0 matches `feat/scoped-native-query@2694b972`, which is not on `fast_duckdb`'s `main` | (a) pin `2694b972` (or a merge of it to `main`) in DESCRIPTION's Remotes and in `install-library.R`, then re-run stage internal on Linux; (b) keep the pin and accept no DIA routes in the bundle. Either way, `fastlimpadpc`'s missing Imports is fixed in its own repository |
+| T1 | Which `fastduckdb` the bundle names | Decided by the user (2026-11-17): 0.2.0 on `fast_duckdb` main; `performance-v2` DESCRIPTION at `3ec13e95` | done |
+| K1 | `kit-134`'s DESCRIPTION | Since the audit's F5, a token build stops when the checkout's Remotes and `install-library.R` name different commits. `kit-134` still has the old Remotes; `install-library.R` names `3ec13e95`'s | Bring `performance-v2`'s DESCRIPTION onto `kit-134` (merge or rebase; this branch does not edit DESCRIPTION by its own scope), then run stage internal |
+| W1 | Chrome for the report | Repaired on the packaging side (the coordinator's instruction): `webshot2` and `chromote` are no longer excluded, so they ship (`library-exclude.txt`; knitr calls `webshot2` for the report's htmlwidgets). `webshot2` still needs a Chrome: the runner has one; a user's machine may not, and then the report fails | (a) rely on an installed Chrome or Edge and say so in the install notes; (b) bundle a headless Chrome (size, licence notices); (c) a report that needs no screenshots (package code, outside KIT-134) |
 - P6 on Windows, after KIT-131's step 6.
 - The sources archive and the release (KIT-132).

@@ -332,13 +332,16 @@ jobs:
         run: |
           summary="$RUNNER_TEMP/summary"
           mkdir -p "$summary"
-          for f in plan-packages.tsv apt-packages.txt install-library.log internal-packages.tsv bundle-sources.tsv \
+          # install-library.log is not uploaded from a token run (the internal packages' build output is
+          # also kept out of it, under the runner's temporary folder, never printed).
+          for f in plan-packages.tsv apt-packages.txt internal-packages.tsv bundle-sources.tsv \
             version-table.tsv version-table.md version-table.log python-packages.txt sizes.txt check-library.log \
             check-internal.log test-tools.log lanes.log lanes/lane-summary.tsv lanes/lane-differences.tsv lanes/lane-failures.tsv; do
             if [ -f "$OUT/$f" ]; then cp "$OUT/$f" "$summary/"; fi
           done
           for f in "$summary"/*; do
-            if [ "$(stat -c %s "$f")" -gt 20971520 ] || { [ -s "$f" ] && ! grep -qI . "$f"; }; then
+            # every byte: a NUL anywhere, or more than 20 MiB, and nothing is uploaded
+            if [ "$(stat -c %s "$f")" -gt 20971520 ] || [ "$(tr -d '\000' < "$f" | wc -c)" != "$(stat -c %s "$f")" ]; then
               echo "::error::$f is not a small text file; nothing is uploaded"; exit 1
             fi
           done
@@ -615,7 +618,8 @@ jobs:
         run: |
           $summary = Join-Path $env:RUNNER_TEMP 'summary'
           New-Item -ItemType Directory -Force $summary | Out-Null
-          foreach ($name in 'plan-packages.tsv', 'install-library.log', 'internal-packages.tsv', 'bundle-sources.tsv', 'version-table.tsv',
+          # install-library.log is not uploaded from a token run.
+          foreach ($name in 'plan-packages.tsv', 'internal-packages.tsv', 'bundle-sources.tsv', 'version-table.tsv',
               'version-table.md', 'version-table.log', 'python-packages.txt', 'sizes.txt', 'check-library.log', 'check-internal.log') {
             $file = Join-Path $env:OUT $name
             if (Test-Path -LiteralPath $file) { Copy-Item -LiteralPath $file $summary }

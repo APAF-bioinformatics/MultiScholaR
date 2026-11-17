@@ -44,23 +44,26 @@ AT_LOCK <- list(
         "https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/limpa/limpa_1.4.2.tar.gz"))
 )
 # The internal packages, named explicitly (a GitHub reference names its repository, not the package
-# inside it) at the commits DESCRIPTION's Remotes pin since performance-v2 daf1e341 (T1, the user,
-# 2026-11-17: fastduckdb 0.2.0 at fast_duckdb main 2694b972; fastlimpadpc at fast_limpa_dpc main
-# 87a90b89, which declares Imports limpa and methods); compared with this checkout's Remotes below.
-# Installed only when MSR_INTERNAL is "required" (a failure stops the build) or "attempt" (a failure
-# is recorded and the build goes on: Windows, D4), with the read token in GITHUB_PAT. The sources are
-# unpacked under the runner's temporary folder, never in the output directory.
-# prefetch: fastduckdb 0.2.0 builds Cargo with --locked --offline into its package-local Cargo home
-# (src/.cargo) and ships no vendored crates; as its own installer does
-# (scripts/install-fastduckdb-0.2.0.sh at that commit), the locked crates are fetched there first.
+# inside it) at the commits DESCRIPTION's Remotes pin on performance-v2 since 3ec13e95: fastduckdb 0.2.0
+# at fast_duckdb e724f90b (the package code of 2694b972; Cargo goes offline only with vendored crates)
+# and fastlimpadpc at fast_limpa_dpc 87a90b89 (declares Imports limpa and methods). The checkout's
+# Remotes must name the same commits, or the build stops. Installed only when MSR_INTERNAL is
+# "required" (a failure stops the build) or "attempt" (a failure is recorded and the build goes on:
+# Windows, D4), with the read token in GITHUB_PAT. While the repositories are internal their sources,
+# and their R CMD INSTALL output (compiler messages quote source lines), stay under the runner's
+# temporary folder: never in the output directory, never printed; only the INTERNAL result line is.
 INTERNAL_REMOTES <- list(
     fastduckdb = list(user = "APAF-bioinformatics", repo = "fast_duckdb", subdir = "fastduckdb",
-        sha = "2694b972393013b12479c49a2deb2d7514960744", prefetch = TRUE),
+        sha = "e724f90bdbdf1073635b7112c80f8dd406f2c79b"),
     fastlimpadpc = list(user = "APAF-bioinformatics", repo = "fast_limpa_dpc", subdir = "",
-        sha = "87a90b894b2057744fc9c315a4fb7d7db3ce3af7", prefetch = FALSE)
+        sha = "87a90b894b2057744fc9c315a4fb7d7db3ce3af7")
 )
 internal_mode <- Sys.getenv("MSR_INTERNAL", "")
 if (!internal_mode %in% c("", "required", "attempt")) stop("MSR_INTERNAL must be empty, required or attempt")
+# The token is read once and removed from the environment, so no configure script, Makevars or crate
+# build script this process starts can see it; it is used only in the internal downloads' headers.
+internal_token <- Sys.getenv("GITHUB_PAT")
+Sys.unsetenv("GITHUB_PAT")
 
 arguments <- commandArgs(trailingOnly = TRUE)
 if (length(arguments) != 3L || !arguments[[1L]] %in% c("plan", "install")) {
@@ -159,19 +162,20 @@ for (entry in github) {
 }
 
 description <- read.dcf(file.path(checkout, "DESCRIPTION"))
-# Remotes in either form: "user/repo[/subdir]@sha" or "package=github::user/repo[/subdir]@sha". The
-# repository and subfolder must be the ones DESCRIPTION names; a different commit is reported (this
-# branch's DESCRIPTION may not carry performance-v2's repin yet), not silently taken.
+# Remotes in either form: "user/repo[/subdir]@sha" or "package=github::user/repo[/subdir]@sha". When the
+# internal packages are installed, the repository, subfolder and commit must be the ones DESCRIPTION
+# names; any difference stops the build.
 remotes <- trimws(unlist(strsplit(gsub("\n", " ", description[1L, "Remotes"]), ",")))
 remote_paths <- sub("@.*$", "", sub("^[A-Za-z0-9.]+=(github::)?", "", remotes))
 remote_shas <- ifelse(grepl("@", remotes), sub("^.*@", "", remotes), "")
-for (package in names(INTERNAL_REMOTES)) {
+for (package in if (nzchar(internal_mode)) names(INTERNAL_REMOTES) else character()) {
     spec <- INTERNAL_REMOTES[[package]]
     path <- sprintf("%s/%s%s", spec$user, spec$repo, if (nzchar(spec$subdir)) paste0("/", spec$subdir) else "")
     if (!path %in% remote_paths) stop(sprintf("%s: %s is not in DESCRIPTION's Remotes", package, path))
     named <- remote_shas[match(path, remote_paths)]
-    cat(sprintf("REMOTES %s: DESCRIPTION pins %s@%s; this build installs %s (%s)\n", package, path, named, spec$sha,
-        if (identical(named, spec$sha)) "the same" else "DIFFERENT: the commit of performance-v2 daf1e341's Remotes"))
+    if (!identical(named, spec$sha)) {
+        stop(sprintf("%s: DESCRIPTION's Remotes pin %s@%s, this script %s; they must agree", package, path, named, spec$sha))
+    }
 }
 declared <-dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo", "Suggests"),
     colnames(description))])
@@ -236,10 +240,11 @@ if (is_windows) {
 install(FROM_SOURCE, "source", repos = install_repos[["BioCann"]])
 requested[FROM_SOURCE] <- "source"
 r_command <- file.path(R.home("bin"), if (is_windows) "R.exe" else "R")
-rInstall <- function(dir) {
-    cat(sprintf("\n== R CMD INSTALL %s\n", dir))
+rInstall <- function(dir, log = "") {
+    if (!nzchar(log)) cat(sprintf("\n== R CMD INSTALL %s\n", dir))
     quote <- function(x) shQuote(x, type = if (is_windows) "cmd" else "sh")
-    status <- system2(r_command, c("CMD", "INSTALL", "--no-test-load", paste0("--library=", quote(lib)), quote(dir)))
+    status <- system2(r_command, c("CMD", "INSTALL", "--no-test-load", paste0("--library=", quote(lib)), quote(dir)),
+        stdout = log, stderr = log)
     if (status != 0L) stop("R CMD INSTALL failed for ", dir)
 }
 for (entry in github) {
@@ -267,8 +272,7 @@ for (package in names(AT_LOCK)) {
 
 # (2b) The internal packages, after duckdb and before MultiScholaR, whose configure records fastduckdb.
 internalSource <- function(package, spec) {
-    token <- Sys.getenv("GITHUB_PAT")
-    if (!nzchar(token)) stop("GITHUB_PAT is empty: the internal packages need the read token")
+    if (!nzchar(internal_token)) stop("GITHUB_PAT is empty: the internal packages need the read token")
     # A short folder: Cargo's build-script paths under R's session folder and the tarball's
     # <owner>-<repo>-<sha> folder reached Windows' 260-character limit (run 44015367782, LNK1104).
     dir <- file.path(internal_root, package)
@@ -277,7 +281,7 @@ internalSource <- function(package, spec) {
     tarball <- file.path(dir, "source.tar.gz")
     utils::download.file(sprintf("https://api.github.com/repos/%s/%s/tarball/%s", spec$user, spec$repo, spec$sha),
         tarball, mode = "wb", quiet = TRUE, method = "libcurl",
-        headers = c(Authorization = paste("Bearer", token), Accept = "application/vnd.github+json"))
+        headers = c(Authorization = paste("Bearer", internal_token), Accept = "application/vnd.github+json"))
     utils::untar(tarball, exdir = file.path(dir, "u"))
     unlink(tarball)
     top <- list.dirs(file.path(dir, "u"), recursive = FALSE)
@@ -294,28 +298,19 @@ internalSource <- function(package, spec) {
     provenance <- provenance[nzchar(provenance)]
     keep <- setdiff(colnames(package_description), names(provenance))
     write.dcf(cbind(package_description[, keep, drop = FALSE], t(provenance)), file.path(root, "DESCRIPTION"))
-    if (isTRUE(spec$prefetch)) {
-        lock <- file.path(root, "src", "rust", "Cargo.lock")
-        before <- unname(tools::md5sum(lock))
-        old <- Sys.getenv("CARGO_HOME", unset = NA)
-        Sys.setenv(CARGO_HOME = file.path(root, "src", ".cargo"))
-        status <- system2("cargo", c("fetch", "--locked", "--manifest-path", shQuote(file.path(root, "src", "rust", "Cargo.toml"))))
-        if (is.na(old)) Sys.unsetenv("CARGO_HOME") else Sys.setenv(CARGO_HOME = old)
-        if (status != 0L) stop(package, ": cargo fetch --locked failed")
-        if (!identical(unname(tools::md5sum(lock)), before)) stop(package, ": Cargo.lock changed during the fetch")
-        cat(sprintf("%s: locked crates fetched into its package-local Cargo home\n", package))
-    }
     root
 }
 internal_rows <- list()
 # Outside the output directory (uploaded): the runner's temporary folder, or R's session folder.
 internal_root <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "i")
+internal_logs <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "internal-build-logs")
 if (nzchar(internal_mode)) {
+    dir.create(internal_logs, showWarnings = FALSE)
     for (package in names(INTERNAL_REMOTES)) {
         spec <- INTERNAL_REMOTES[[package]]
         started <- Sys.time()
         result <- tryCatch({
-            rInstall(internalSource(package, spec))
+            rInstall(internalSource(package, spec), log = file.path(internal_logs, paste0(package, ".log")))
             "installed"
         }, error = function(e) paste("FAILED:", gsub("[\t\n]+", " ", conditionMessage(e))))
         version <- if (identical(result, "installed")) as.character(utils::packageVersion(package, lib.loc = lib)) else ""
