@@ -2,7 +2,7 @@
 
 Scope: revision 2.0 of the ticket with the user's decisions of revision 2.1 (D1 to D7), the parts that need neither the read token nor KIT-131: P2 without `fastduckdb` and `fastlimpadpc`, P3's packaging side, P4, and D5. Branch `kit-134`, cut from `performance-v2` at `f7feeae8`; the spike's pieces were brought in as new files under `packaging/` (the spike branch was not merged). Workflow `.github/workflows/distributable.yml`, triggered by pushes to `kit-134` whose commit message names a stage (`[dist:snapshot]`, `[dist:library]`, `[dist:shell]`, `[dist:installer]`, `[dist:container]`). Nothing under `R/`, `tests/`, `DESCRIPTION`, `NAMESPACE` or `NEWS.md` changed; `tools/profiling/` untouched; `.Rbuildignore` gained `^packaging$`.
 
-**What the builds do not contain.** No run used the token, so neither internal package is in any bundle. The DIA, DIA_LIMPA and enrichment lanes cannot run on what these runs produced (F1); nothing here works around that. Every artifact of these runs is token-free, so artifacts were uploaded (revision 1.2's rule binds token builds only).
+**What the builds do not contain.** (Runs 1 to 6; runs 7 and 8 used the token: see "Token build".) No run used the token, so neither internal package is in any bundle. The DIA, DIA_LIMPA and enrichment lanes cannot run on what these runs produced (F1); nothing here works around that. Every artifact of these runs is token-free, so artifacts were uploaded (revision 1.2's rule binds token builds only).
 
 ## Decision record (current)
 
@@ -109,6 +109,34 @@ Run 6 (`d5/servercore-run6.log`): the Windows bundle (built in the same job) mou
 
 What D5 shows beyond the runners: no Visual C++ runtime, no R, no Rtools and no Python were needed from the host for R, the library and the application (the container has none of them). The Electron window itself cannot be shown in Server Core (no desktop); the manual install on a Windows 11 PC remains with KIT-052 (D5, revision 2.1).
 
+## Token build (2026-11-17; P2 step 4, P5 step 3, U4)
+
+Bounded item: the token part of P2 and its verification. Stage `[dist:internal]` (`distributable.yml`): the library as before plus `fastduckdb` and `fastlimpadpc` at DESCRIPTION's Remotes commits, downloaded with the secret `DEPS_READ_TOKEN` (as `GITHUB_PAT`, in the install step's `env` only), named explicitly (package to repository, subfolder and commit; the downloaded DESCRIPTION's `Package` is checked; the pins are checked against DESCRIPTION's Remotes), installed after `duckdb` and before MultiScholaR. Linux: required. Windows: attempted (D4), a failure recorded and the build continued. U4 (both platforms, every build): `nanoarrow` 0.9.0 and `limpa` 1.4.2 from source (CRAN and Bioconductor 3.23, sha256 in the log), and `check-library.R` checks every version MultiScholaR's DESCRIPTION declares. New: `packaging/verify/check-internal.R`, `packaging/verify/run-lanes.R`.
+
+**No artifact, no cache.** Stage internal never builds the shell, archive or installer; every library, archive, installer and evidence upload also requires `internal != true`; the only upload is a summary folder of named text files checked before upload (under 20 MiB, no NUL byte; no lane records). The internal sources are unpacked under the runner's temporary folder, never in the output folder. The plan job fails if the workflow names `actions/cache` or a cache input. Read after the runs: run 44015367782 uploaded `linux-internal-summary` (433,045 bytes) and `windows-internal-summary` (634,353); run 44017206786 `windows-internal-summary` (634,605); nothing else. The repository's caches on `kit-134` are all `Ubuntu 26.04.1 LTS-R version 4.6.2` keys written by Module CI (`setup-r-dependencies`; `module-ci.yml` uses no secret), none by these runs. Text evidence: `token/`.
+
+| # | Run | Commit | Platforms | Result |
+|---|---|---|---|---|
+| 7 | [44015367782](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44015367782) | `55d2863a` | both | Linux: library and internal packages installed, library check passed, internal check **failed** (DIA manifest, rollup), lanes **failed** (rollup refused). Windows: `fastlimpadpc` installed and loads; `fastduckdb` failed to build (LNK1104, path of 260 characters: instrumentation); library check passed |
+| 8 | [44017206786](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44017206786) | `f9e52d67` | Windows (correction pass) | passed: both internal packages built and load |
+
+**Install and version check.** Linux: `fastduckdb` 0.1.0 (172 s) and `fastlimpadpc` 0.1.0 (19 s), rustc 1.100.0. Windows (run 8): `fastduckdb` 0.1.0 (327 s) and `fastlimpadpc` 0.1.0 (34 s), rustc 1.99.1 with the `x86_64-pc-windows-gnu` target and Rtools45. `fastlimpadpc` declares no Imports although its NAMESPACE imports `limpa` and `methods` (a defect of the internal package, reported by the CI lane); this build installs `limpa` before it, so it was not hit here. Version table: 374 packages in both, 349 same, **25 different** (was 26: `nanoarrow` and `limpa` now at the lock; **`fastduckdb` is new: locked 0.2.0, bundled 0.1.0**). Declared minimums: 7 declared; on both platforms 6 met, 0 not met, `testthat` not bundled (excluded tool). The "compiled no" for packages installed from a folder (the internal packages, the Glimma fork) is the table reading `NeedsCompilation`, which only `R CMD build` writes; not a result.
+
+**Load from the moved library, network closed.** Linux, bare `ubuntu:22.04`, `--network none`, `/srv/any where/msr app`: 385 of 385 packages load, all from the bundle; MultiScholaR attaches; both internal packages load from the bundle at their commits; `fastduckdb`'s reader reads back a 100-column Parquet file written by duckdb identically. Windows (run 8), reduced environment, outbound blocked: 385 of 385 load; both internal packages load; the reader round trip is identical.
+
+**Why the DIA lanes cannot pass at the Remotes pin (P1 step 2, closed by this).** DESCRIPTION's Remotes pins `fast_duckdb/fastduckdb@d7851150`, the tip of `main` (2026-09-16), which is `fastduckdb` **0.1.0**: it exports only the Parquet reader and writer (`read_parquet_fast`, `write_parquet_fast`, ...). The laptop's verified library (the lockfile, the oracles, the simulations) has **0.2.0**, installed from a local tree on 2026-10-06; its NAMESPACE is byte-identical to `feat/scoped-native-query@2694b972` ("Document and bootstrap clean installation of fastduckdb 0.2.0", unmerged). The package code needs 0.2.0: the DIA rollup (`R/utils_workflow_dia_relational_rollup.R:6-49`) requires `open_query_fast` and the other query exports, `query-manifest.rds` and `fastduckdb_query`; the direct writer (`R/utils_workflow_saved_table_codec.R:161-189`) requires `parquet_writer_capabilities`. On the runner, `check-internal.R` read: manifest `supported` TRUE, `native_query` absent, the `fastduckdb` writer absent, the rollup refused ("direct writer requires the qualified incremental fastduckdb build"); the DIA_LIMPA route resolves `fastlimpadpc`. `fastlimpadpc`'s pin `d4f9cc1d` is the tip of its `main` and matches the laptop's 0.1.0 (built 2026-10-21).
+
+**The lanes** (`run-lanes.R`: `test_file(desc = <lane>, load_package = "installed")` with the bundle's `Rscript`, `testthat` 3.3.2 and the 7 packages it adds in a separate library after the bundle's, shadowing nothing; network namespace with loopback only, checked closed; locale `en_GB.UTF-8` with `en_AU.UTF-8` numeric, time, monetary, paper and measurement, as the laptop; default DPC engine `fastlimpadpc`):
+
+| Lane | Pass | Fail | Error | Record | Cause | Class |
+|---|---|---|---|---|---|---|
+| prot_dia | 1 | 0 | 1 | none (the lane stopped) | the precursor rollup refused (`fastduckdb` 0.1.0), then every later step had no state; the lane ended at `file(con, "r")`: cannot open the connection | build input (the Remotes pin), not a result difference |
+| prot_dia_limpa | 0 | 0 | 1 | none | the same | the same |
+
+No step reached the comparison, so revision 1.2's rule (relative 1e-6, absolute 1e-9; discrete exact) was applied to nothing: there is no numeric or discrete difference to classify. The rule was not changed. For when the lanes run: the GUI-entry oracles hold sha256 digests of values rounded to 10 significant digits, not values; `run-lanes.R` lists every differing key as `discrete` (compared exactly) or `digest` (the tolerance cannot be applied to a digest; such a difference needs the values from both machines before it can be classed).
+
+**Windows: does `fastduckdb` build, and do the lipidomics and metabolomics steps need it?** At the pin, yes: 0.1.0 builds under Rtools45 with Rust's GNU target, loads, and its reader works (run 8; run 7's failure was this script's 260-character build path, fixed by unpacking in short folders, no input changed). Whether 0.2.0 (the query runtime the DIA routes need) builds on Windows is not known: not built here (D4). The lipidomics and metabolomics partitioned steps, the defaults since KIT-089 (`R/utils_workflow_lipid_declarations.R:37`, `R/utils_workflow_metab_declarations.R:37`), stream rows through `streamWorkflowTableRows` (`R/utils_workflow_omics_declarations.R:95`, `:770`, `:788`, `:843`), which for more than 64 columns opens a `fastduckdb` read scope unconditionally (`R/utils_workflow_saved_table_codec.R:2093-2101`). So on every platform, a lipidomics or metabolomics table wider than 64 columns (about 60 or more samples) fails at the intensity filter with "optional fastduckdb reader is unavailable" unless `fastduckdb` is installed; the reader 0.1.0 has (`read_parquet_fast`) is all those steps use. The GUI-entry and e2e fixtures are narrower, which is why the token-free lanes passed. Not worked around.
+
 ## Deviations from revision 2.0's file table
 
 - `packaging/electron/entry.R` (new): the R entry; replaces the `-e` expression so the shell works before and after the package side exists.
@@ -116,7 +144,7 @@ What D5 shows beyond the runners: no Visual C++ runtime, no R, no Rtools and no 
 - `packaging/electron/build/icon.png` is not committed: the workflow copies `inst/shiny/www/MultiScholaR.png` at build time.
 - `packaging/r/notices.R` also writes `VERSION.json`.
 - The Linux archive's launcher script is written by `install.sh` (no separate file).
-- Not written (P5 and the token build): `packaging/verify/compare-results.R`, `run-lanes.sh`, `run-lanes.ps1`; the e2e helper change.
+- Not written (P5): `packaging/verify/compare-results.R`, `run-lanes.ps1`; the e2e helper change. The token build added `packaging/verify/run-lanes.R` (an R script, in place of `run-lanes.sh`) and `packaging/verify/check-internal.R`; the secret is `DEPS_READ_TOKEN`, not revision 2.0's `MSR_INTERNAL_READ_TOKEN`.
 
 ## The package side of P3, to make on top of KIT-131 (not made here)
 
@@ -161,6 +189,7 @@ Revision 2.0's budgets are workflow runs per platform per part, one correction p
 | P3 | 1: run 3 (6) | 2: runs 4, 5 (4); run 3 counted nothing here, its P3 steps did not run | Linux none; Windows used (run 5) |
 | P4 | 1: run 4 (4) | 2: runs 4, 5 (4) | none needed beyond P3's |
 | D5 | | 1: run 6 (2) | not used |
+| Token build (P2 step 4, P5 step 3) | 1: run 7 (1 plus a correction pass) | 2: runs 7, 8 | Windows used (run 8, the build path); Linux not used: its failure is the Remotes pin, which needs a decision, not a correction |
 
 Six workflow runs in all, about 3 hours of runner time across the jobs. Each push to `kit-134` also starts the repository's existing `Module CI` workflow (not part of this record). Nothing heavy ran on the laptop: the P1 table (seconds of R), and three light local checks of the new scripts (two snapshot dates, the plan resolution, the version table against R's own library; no package installed; `package-lock.json` written with `npm install --package-lock-only --ignore-scripts`, no `node_modules`).
 
@@ -168,6 +197,12 @@ Six workflow runs in all, about 3 hours of runner time across the jobs. Each pus
 
 - The package side of P3 (above), after KIT-131; then `--expect-launcher process`, and the systemd lifecycle (laptop, and `ubuntu-24.04` if U5).
 - P5 (the lanes and the suite from the installed bundle; the B-01 measurement): `run-lanes.*`, `compare-results.R`, the e2e helper's installed surface, the test-tool library. Four lanes only (lipidomics, metabolomics, transcriptomics, TMT and LFQ) until the token: DIA, DIA_LIMPA and enrichment need `fastduckdb` (F1).
-- The token build (P2 step 4, P5 step 3): the two internal packages, no artifact, no cache; U4's source builds.
+- The token build: done at the Remotes pins (above). Its DIA and DIA_LIMPA lanes wait for the decision on the `fastduckdb` commit (T1 below); then one Linux run of stage internal.
+
+### Decision needed (token build)
+
+| # | Decision | What the runs show | Options |
+|---|---|---|---|
+| T1 | Which `fastduckdb` the bundle (and DESCRIPTION's Remotes) names | The Remotes pin `d7851150` is 0.1.0 and cannot run the DIA routes (rollup and direct writer refuse); the laptop's verified 0.2.0 matches `feat/scoped-native-query@2694b972`, which is not on `fast_duckdb`'s `main` | (a) pin `2694b972` (or a merge of it to `main`) in DESCRIPTION's Remotes and in `install-library.R`, then re-run stage internal on Linux; (b) keep the pin and accept no DIA routes in the bundle. Either way, `fastlimpadpc`'s missing Imports is fixed in its own repository |
 - P6 on Windows, after KIT-131's step 6.
 - The sources archive and the release (KIT-132).
