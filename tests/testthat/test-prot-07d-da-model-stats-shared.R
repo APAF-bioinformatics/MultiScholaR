@@ -653,12 +653,10 @@ test_that("the DA base model takes its block from the declared technical replica
   index <- base; index$tech_rep_group <- c(1, 1, 2, 2, 1, 1, 2, 2)
   expect_identical(run(index)$block, c("A_1", "A_1", "A_2", "A_2", "B_1", "B_1", "B_2", "B_2"))
   expect_identical(calls$dc, 2L) # two blocks per group: technical replicates, duplicateCorrelation ran again
-  # A block equal to the group is spanned by the design: standard lmFit, the reason recorded, no duplicateCorrelation.
+  # A block equal to the group is spanned by the design: no biological replication, refused before any fit
+  # (KIT-128 K128-1, the user's rule of 2026-11-17).
   spanned <- base; spanned$tech_rep_group <- c("A_1", "A_1", "A_1", "A_1", "B_1", "B_1", "B_1", "B_1")
-  fit <- run(spanned)
-  expect_false(fit$uses_duplicate_correlation)
-  expect_identical(fit$block_reason, "spanned_by_design")
-  expect_null(fit$fit$block)
+  expect_error(run(spanned), "groups A, B", class = "omics_da_no_biological_replication")
   expect_identical(calls$dc, 2L)
   # No duplicates, no declaration, missing values.
   unique <- base; unique$tech_rep_group <- paste0("r", 1:8)

@@ -101,6 +101,11 @@ test_that("KIT-128: the design check counts a group's biological units, not its 
   # Two units per group pass, as two libraries per group without technical replicates do.
   design <- kit128TrxDesign()[c(1L, 2L, 3L, 4L, 9L, 10L, 11L, 12L), ]
   expect_true(trxDesignCheck(list(design_matrix = design, group_levels = c("A", "B")), list(sample_columns = design$Run))$valid)
+  # K128-1: every group is one unit sequenced twice (the rule's `spanned_by_design`): one unit per group, refused.
+  one_each <- kit128TrxDesign()[c(1L, 2L, 9L, 10L), ]
+  check <- trxDesignCheck(list(design_matrix = one_each, group_levels = c("A", "B")), list(sample_columns = one_each$Run))
+  expect_false(check$valid)
+  expect_match(check$errors, "trx_design_group_singleton", fixed = TRUE)
   unique_runs <- kit128TrxDesign("unique")[c(1L, 2L, 9L, 10L), ]
   expect_true(trxDesignCheck(list(design_matrix = unique_runs, group_levels = c("A", "B")), list(sample_columns = unique_runs$Run))$valid)
 })

@@ -84,6 +84,8 @@ for (omic in c("lipid", "metab")) {
     expect_warning(result <- run("neg"), "neg: the table could not be formatted", class = "omics_da_assay_failed")
     expect_identical(result$failed_assays, list(neg = "the table could not be formatted"))
     expect_identical(names(result$per_assay_results), "pos")
+    # K128-5: a failed assay leaves no fit in the result either.
+    expect_identical(names(result$contrasts_results), "pos")
     expect_error(run(c("pos", "neg")), "pos: the table could not be formatted", class = "omics_da_all_assays_failed")
   })
 }

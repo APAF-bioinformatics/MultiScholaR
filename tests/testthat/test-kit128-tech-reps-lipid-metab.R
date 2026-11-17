@@ -55,6 +55,13 @@ kit128Run <- function(omic, object) {
   result
 }
 
+#' The orchestrator with its warnings let through (messages and printed diagnostics silenced).
+kit128RunLoud <- function(omic, object) {
+  suppressMessages(utils::capture.output(result <- omicsDaKernel(omic)(theObject = object,
+    contrasts_tbl = kit128Contrast(), formula_string = "~ 0 + group", da_q_val_thresh = 0.05, treat_lfc_cutoff = 0)))
+  result
+}
+
 #' The GUI's path: one declaration per contrast on the saved fit, on a session owner (as test-workflow-omics-da-contrasts.R).
 kit128ContrastRun <- function(omic, object, env = parent.frame()) {
   workflow <- omicsTestOwner(object, "da_input", env = env)
@@ -105,7 +112,8 @@ for (omic in c("lipid", "metab")) {
   })
 
   test_that(paste("KIT-128:", omic, "a design without technical replicates is fitted as before, with the reason recorded"), {
-    for (case in list(c("unique", "no_duplicates"), c("spanned", "spanned_by_design"))) {
+    # K128-1: a design whose every group is one unit (`spanned_by_design`) is refused (its own test below).
+    for (case in list(c("unique", "no_duplicates"))) {
       object <- kit128Object(omic, 1L, replicates = case[[1L]])
       result <- kit128Run(omic, object)
       for (assay in c("pos", "neg")) {
@@ -154,5 +162,29 @@ for (omic in c("lipid", "metab")) {
     expect_false(identical(without, with_block))
     # A design the rule does not call technical keeps the identity it had.
     expect_identical(newWorkflowOmicsDaFitIdentity(values, object@design_matrix, "~ 0 + group", "pos", software, block = NULL), without)
+  })
+
+  test_that(paste("KIT-128 K128-1:", omic, "every group one biological unit: refused, naming the groups, on both paths"), {
+    object <- kit128Object(omic, 1L, replicates = "spanned")
+    expect_error(kit128RunLoud(omic, object), "groups A, B", class = "omics_da_no_biological_replication")
+    # The fit half refuses too, so the per-contrast path stops with the same words.
+    table <- methods::slot(object, data_slot)$pos
+    values <- as.matrix(table[, object@design_matrix$Run])
+    rownames(values) <- table[[id_column]]
+    expect_error(suppressMessages(fit_half(values, object@design_matrix, "~ 0 + group", "Run", group_id = "group",
+      technical_replicate_id = "tech_rep_group")), "groups A, B", class = "omics_da_no_biological_replication")
+    expect_error(kit128ContrastRun(omic, object), "no biological replication")
+    # Technical replicates with biological replication: fitted.
+    expect_identical(names(kit128RunLoud(omic, kit128Object(omic, 1L))$per_assay_results), c("pos", "neg"))
+  })
+
+  test_that(paste("KIT-128 K128-3:", omic, "a block correlation that cannot be estimated stops before the fit, in plain words"), {
+    object <- kit128Object(omic, 1L)
+    table <- methods::slot(object, data_slot)$pos
+    values <- as.matrix(table[, object@design_matrix$Run])
+    rownames(values) <- table[[id_column]]
+    testthat::local_mocked_bindings(duplicateCorrelation = function(...) list(consensus.correlation = NA_real_), .package = "limma")
+    expect_error(suppressMessages(fit_half(values, object@design_matrix, "~ 0 + group", "Run", group_id = "group",
+      technical_replicate_id = "tech_rep_group")), "technical replicates", class = "omics_da_block_correlation_failed")
   })
 }
