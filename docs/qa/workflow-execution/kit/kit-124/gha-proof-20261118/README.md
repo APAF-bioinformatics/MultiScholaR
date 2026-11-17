@@ -15,3 +15,15 @@ Declaration of the new-arms run (launched 2026-11-18 after this proof): arms 1, 
 Extra-hard cells on the runners wait for the user's decision on arm 3.
 
 Extra-hard cells on the runners (user, 2026-11-18: "A AND B in parallel"): A, arm 3's platform dependence is accepted and stated, and the cells not finished on the laptop were launched (label `hard`: S1 S9 to S14, S2 S1 to S14, S3 S14; 500 runs, all arms, one job per cell, 300 minutes, one attempt). B, in parallel, one bounded test of the cause: the differing cells rerun on the runner with reference BLAS (one run, one correction pass).
+
+## The bounded BLAS test (run 44201424399, 2026-11-18)
+
+The cells where arm 3 differed, rerun on the runner with reference BLAS and LAPACK 3.10.0 (the laptop has reference 3.12.0), runs 1 to 20, all arms, against the laptop's rows under the fixed rule. Outputs in `refblas-compare/`.
+
+| Cell | Arm 3 runs differing, OpenBLAS | Arm 3 runs differing, reference BLAS | Other arms outside the rule |
+|---|---|---|---|
+| S1 C6 | 6 | 6 (the same runs) | none |
+| S4 C0 | 5 | 4 | none |
+| S4 C5 | 3 | 6 | none |
+
+In the differing runs the reference-BLAS values match neither the laptop's nor the OpenBLAS runner's (S1 C6 run 13, rmse: laptop 1.31, OpenBLAS runner 16.8, reference-BLAS runner 209). Reading: arm 3's corrected values in these runs are sensitive to rounding-level differences, so each platform gives its own values; BLAS is one input and not the sole cause; compiler flags and the BLAS version difference were not tested (one bounded test, as declared). No other arm moves under either BLAS.

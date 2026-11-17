@@ -1,0 +1,11 @@
+           path    kind   n    max_rel      max_abs outside verdict note
+  S1 C6$n_calls integer 580         NA           NA       7  differ     
+ S1 C6$null_p05  double 580 0.25000000 5.067568e-03       5 outside     
+ S1 C6$null_p01  double 580 0.66666667 3.378378e-03       6 outside     
+      S1 C6$fdp  double 580 1.00000000 3.562259e-02       6 outside     
+    S1 C6$power  double 580 0.03846154 2.127660e-02       5 outside     
+     S1 C6$bias  double 580 1.41123555 1.706618e+01       6 outside     
+     S1 C6$rmse  double 580 0.99373436 2.080163e+02       6 outside     
+
+18 leaves compared: 11 agree, 6 outside the rule, 1 differ (discrete or structure)
+largest relative difference over the doubles: 1.41 (S1 C6$bias)
