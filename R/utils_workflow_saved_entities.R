@@ -69,10 +69,10 @@ newWorkflowEntityStore <- function(root, project_id, workflow_id,
         !is.finite(max_cache_bytes) || max_cache_bytes < 0 || max_cache_bytes > 67108864) {
         cli::cli_abort("invalid saved-entity store limits or root", class = "saved_entity_invalid")
     }
-    root <- normalizePath(root, mustWork = TRUE)
+    root <- normalizePath(root, winslash = "/", mustWork = TRUE)
     directory <- file.path(root, ".workflow-entities")
     created <- dir.create(directory, showWarnings = FALSE)
-    if (!dir.exists(directory) || !startsWith(normalizePath(directory), paste0(root, "/"))) {
+    if (!dir.exists(directory) || !startsWith(normalizePath(directory, winslash = "/"), paste0(root, "/"))) {
         cli::cli_abort("saved-entity directory escapes project", class = "saved_entity_path")
     }
     marker <- file.path(directory, "store.json")
@@ -87,7 +87,7 @@ newWorkflowEntityStore <- function(root, project_id, workflow_id,
         cli::cli_abort("saved-entity store ownership differs", class = "saved_entity_scope")
     }
     store <- WorkflowEntityStore$new()
-    store$directory <- normalizePath(directory)
+    store$directory <- normalizePath(directory, winslash = "/")
     store$identity <- identity
     store$records <- new.env(hash = TRUE, parent = emptyenv())
     store$count <- 0L
@@ -117,7 +117,7 @@ checkWorkflowEntityStore <- function(store) {
         cli::cli_abort("saved-entity handle is closed", class = "saved_entity_scope")
     }
     marker <- file.path(store$directory, "store.json")
-    if (!dir.exists(store$directory) || !identical(normalizePath(store$directory), store$directory) ||
+    if (!dir.exists(store$directory) || !identical(normalizePath(store$directory, winslash = "/"), store$directory) ||
         !file.exists(marker)) {
         cli::cli_abort("saved-entity project incarnation changed", class = "saved_entity_scope")
     }
@@ -263,7 +263,7 @@ checkSavedEntityPath <- function(store, relative_path) {
     }
     parent <- path
     while (!file.exists(parent) && !dir.exists(parent)) parent <- dirname(parent)
-    resolved <- normalizePath(parent, mustWork = TRUE)
+    resolved <- normalizePath(parent, winslash = "/", mustWork = TRUE)
     if (!identical(resolved, store$directory) && !startsWith(resolved, paste0(store$directory, "/"))) {
         cli::cli_abort("payload path escapes store", class = "saved_entity_path")
     }
@@ -739,7 +739,7 @@ syncSavedWorkflowPaths <- function(store, paths) {
         !all(file.exists(paths) | dir.exists(paths))) {
         cli::cli_abort("invalid flush targets", class = "saved_entity_path")
     }
-    paths <- unique(normalizePath(paths, mustWork = TRUE))
+    paths <- unique(normalizePath(paths, winslash = "/", mustWork = TRUE))
     allowed <- paths == store$directory | paths == dirname(store$directory) |
         startsWith(paths, paste0(store$directory, "/"))
     if (!all(allowed)) cli::cli_abort("flush target escapes project", class = "saved_entity_path")
@@ -965,7 +965,7 @@ releaseWorkflowStoreFilePages <- function(store, paths) {
     paths <- unique(paths[file.exists(paths)])
     if (!length(paths)) return(invisible(NULL))
     for (path in paths) {
-        if (!startsWith(normalizePath(path), paste0(store$directory, "/"))) {
+        if (!startsWith(normalizePath(path, winslash = "/"), paste0(store$directory, "/"))) {
             cli::cli_abort("cache-release file escapes store", class = "saved_entity_path")
         }
     }
@@ -1090,8 +1090,8 @@ readCommittedWorkflowRequest <- function(store, request_id, payload = TRUE) {
 #' @noRd
 discardRedundantWorkflowStage <- function(store, staging, record) {
     checkWorkflowEntityStore(store)
-    pending <- normalizePath(file.path(store$directory, ".pending"), mustWork = TRUE)
-    target <- normalizePath(staging, mustWork = TRUE)
+    pending <- normalizePath(file.path(store$directory, ".pending"), winslash = "/", mustWork = TRUE)
+    target <- normalizePath(staging, winslash = "/", mustWork = TRUE)
     files <- list.files(target, all.files = TRUE, no.. = TRUE)
     request_id <- basename(dirname(record$payload$relative_path))
     payload_name <- basename(record$payload$relative_path)
@@ -1506,7 +1506,7 @@ releaseWorkflowWrittenPrefix <- function(owner, final = FALSE) {
 #' @noRd
 hashWorkflowOwnedFile <- function(store, path) {
     checkWorkflowEntityStore(store)
-    if (!startsWith(normalizePath(path, mustWork = TRUE), paste0(store$directory, "/")))
+    if (!startsWith(normalizePath(path, winslash = "/", mustWork = TRUE), paste0(store$directory, "/")))
         cli::cli_abort("payload hash escaped store ownership", class = "saved_entity_path")
     hashWorkflowFile(path, log_path = file.path(store$directory, "checkpoint-io.log"))
 }

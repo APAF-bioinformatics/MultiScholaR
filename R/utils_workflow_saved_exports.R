@@ -11,7 +11,7 @@
 runWorkflowOwnedSessionExport <- function(manager, workflowData, normData, input, sourceDir,
     collectFn, saveFn, serializeFn = saveRDS, prefix = "") {
     context <- manager$.context
-    root <- normalizePath(sourceDir, mustWork = TRUE)
+    root <- normalizePath(sourceDir, winslash = "/", mustWork = TRUE)
     request <- context$export_pending
     if (is.null(request) || !identical(request$generation, context$head$entity_id) ||
         !identical(request$root, root)) {
@@ -77,7 +77,7 @@ workflowExportMetadata <- function(session_data) {
 #' @noRd
 startWorkflowManagedSessionExport <- function(manager, runner, workflowData, normData, input, sourceDir, collectFn, prefix, publish, failed) {
     context <- manager$.context
-    root <- normalizePath(sourceDir, mustWork = TRUE)
+    root <- normalizePath(sourceDir, winslash = "/", mustWork = TRUE)
     pending <- context$export_pending
     if (!is.null(pending) && identical(pending$generation, context$head$entity_id) && identical(pending$root, root) && !is.null(pending$metadata_reference) &&
         file.exists(file.path(workflowExportPaths(root, pending$request_id)$request_dir, "journal.json"))) return(publish())
@@ -449,7 +449,7 @@ resolveDIAOwnedExport <- function(manager, path) {
     if (is.null(request) || !file.exists(path) ||
         !identical(request$identity, context$store$identity) ||
         !identical(request$generation, context$head$entity_id) ||
-        !identical(normalizePath(path), normalizePath(request$path)) ||
+        !identical(normalizePath(path, winslash = "/"), normalizePath(request$path, winslash = "/")) ||
         !identical(as.numeric(file.size(path)), as.numeric(request$bytes)) ||
         !file.exists(request$completion)) return(NULL)
     completion <- jsonlite::read_json(request$completion)
@@ -592,7 +592,7 @@ workflowExportPaths <- function(output_dir, request_id) {
         !grepl("^[A-Za-z0-9_-]{1,80}$", request_id)) {
         cli::cli_abort("invalid export publication request", class = "saved_entity_invalid")
     }
-    root <- normalizePath(output_dir, mustWork = TRUE)
+    root <- normalizePath(output_dir, winslash = "/", mustWork = TRUE)
     staging_root <- file.path(root, ".workflow-export")
     if (!dir.exists(staging_root) && !dir.create(staging_root)) {
         cli::cli_abort("cannot create export staging root", class = "saved_entity_write")
@@ -601,8 +601,8 @@ workflowExportPaths <- function(output_dir, request_id) {
     if (!dir.exists(request_dir) && !dir.create(request_dir)) {
         cli::cli_abort("cannot create export request directory", class = "saved_entity_write")
     }
-    list(root = root, staging_root = normalizePath(staging_root),
-        request_dir = normalizePath(request_dir))
+    list(root = root, staging_root = normalizePath(staging_root, winslash = "/"),
+        request_dir = normalizePath(request_dir, winslash = "/"))
 }
 
 #' Flush explicit export-owned files and directories.
@@ -614,8 +614,8 @@ syncWorkflowExportPaths <- function(paths, root) {
     if (!length(paths) || any(!file.exists(paths) & !dir.exists(paths))) {
         cli::cli_abort("durable export sync is unavailable", class = "saved_entity_unsupported")
     }
-    root <- normalizePath(root, mustWork = TRUE)
-    paths <- unique(normalizePath(paths, mustWork = TRUE))
+    root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+    paths <- unique(normalizePath(paths, winslash = "/", mustWork = TRUE))
     if (!all(paths == root | startsWith(paths, paste0(root, "/")))) {
         cli::cli_abort("export sync path escapes destination", class = "saved_entity_path")
     }

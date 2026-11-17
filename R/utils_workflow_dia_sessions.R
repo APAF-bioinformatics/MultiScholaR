@@ -578,7 +578,7 @@ runDIANativeSessionExport <- function(manager, metadata, output_dir,
     assertDIAExportReady(manager, allow_action = "session-export")
     context <- manager$.context
     checkWorkflowEntityStore(context$store)
-    root <- normalizePath(output_dir, mustWork = TRUE)
+    root <- normalizePath(output_dir, winslash = "/", mustWork = TRUE)
     request <- context$export_pending
     if (is.null(request)) request <- findDIANativePendingExport(manager, root)
     if (!is.null(request) && (!identical(request$schema, "multischolar.dia_native_export.v1") ||
@@ -668,8 +668,8 @@ convertDIANativeLegacyCheckpoints <- function(manager) {
 #' @return New manager, metadata and dependency map; previous session is untouched.
 #' @noRd
 openDIANativeSession <- function(path, project_root) {
-    path <- normalizePath(path, mustWork = TRUE)
-    project_root <- normalizePath(project_root, mustWork = TRUE)
+    path <- normalizePath(path, winslash = "/", mustWork = TRUE)
+    project_root <- normalizePath(project_root, winslash = "/", mustWork = TRUE)
     directory <- tempfile(".dia-native-import-", tmpdir = project_root)
     if (!dir.create(directory, mode = "0700")) {
         cli::cli_abort("cannot stage native import", class = "saved_entity_write")
@@ -880,7 +880,7 @@ createWorkflowSessionOwner <- function(workflow_data, experiment_paths, session,
     if (!workflowOwnerCapable()) {
         cli::cli_abort("{omic_type} needs the qs2, DuckDB and Arrow packages for its state owner", class = "saved_entity_unsupported")
     }
-    root <- normalizePath(experiment_paths$source_dir, mustWork = TRUE)
+    root <- normalizePath(experiment_paths$source_dir, winslash = "/", mustWork = TRUE)
     state_root <- tempfile(".dia-native-", tmpdir = root)
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
@@ -943,7 +943,7 @@ bindDIASessionOwnerType <- function(manager, format, workflow_type, workflow_dat
     if (!identical(manager$current_state, "initial") || length(manager$getHistory()) != 1L) {
         cli::cli_abort("reset the project before activating an on-disk session", class = "saved_entity_scope")
     }
-    root <- normalizePath(paths$source_dir, mustWork = TRUE)
+    root <- normalizePath(paths$source_dir, winslash = "/", mustWork = TRUE)
     state_root <- tempfile(".dia-native-", tmpdir = root)
     if (!dir.create(state_root, mode = "0700")) {
         cli::cli_abort("cannot create native DIA storage", class = "saved_entity_write")
@@ -1008,7 +1008,7 @@ initializeDIANativeImport <- function(workflow_data, paths, session, format, met
         !requireNamespace("arrow", quietly = TRUE)) {
         cli::cli_abort("native DIA requires qs2, DuckDB and Arrow before import", class = "saved_entity_unsupported")
     }
-    root <- normalizePath(paths$source_dir, mustWork = TRUE)
+    root <- normalizePath(paths$source_dir, winslash = "/", mustWork = TRUE)
     # KIT-044: the GNU preflight runs where the tools are present; otherwise the fallbacks' contracts apply
     # (`workflowCapabilityContracts()`, recorded on the owner's context), and nothing is required of the host.
     if (workflowToolsAvailable(c("bash", "dd", "sha256sum", "tar"))) {
@@ -1447,7 +1447,7 @@ ingestWorkflowOmicsLegacySession <- function(value, workflow_data, source_dir, o
         cli::cli_abort("the adopted owner needs the module's session to attach to", class = "saved_entity_scope")
     }
     workflow_type <- toupper(omic_type)
-    root <- normalizePath(source_dir, mustWork = TRUE)
+    root <- normalizePath(source_dir, winslash = "/", mustWork = TRUE)
     state_root <- tempfile(".dia-native-legacy-", tmpdir = root)
     if (!dir.create(state_root, mode = "0700")) cli::cli_abort("cannot stage legacy import", class = "saved_entity_write")
     store <- newWorkflowEntityStore(state_root, workflowNativeStoreLabel(value$data_format, workflow_type), workflow_type,
@@ -1751,13 +1751,13 @@ restoreDIANativeGuiFiles <- function(imported, paths) {
     for (dependency in imported$dependencies) {
         parts <- strsplit(dependency$destination, "/", fixed = TRUE)[[1L]]
         if (!parts[[1L]] %in% names(roots)) next
-        root <- normalizePath(roots[[parts[[1L]]]], mustWork = TRUE)
+        root <- normalizePath(roots[[parts[[1L]]]], winslash = "/", mustWork = TRUE)
         relative <- paste(parts[-1L], collapse = "/")
         checkSavedEntityPath(imported$manager$.context$store, relative)
         target <- file.path(root, relative)
         parent <- dirname(target)
         while (!dir.exists(parent)) parent <- dirname(parent)
-        canonical <- normalizePath(parent, mustWork = TRUE)
+        canonical <- normalizePath(parent, winslash = "/", mustWork = TRUE)
         if (!identical(canonical, root) && !startsWith(canonical, paste0(root, "/"))) {
             cli::cli_abort("native artifact destination escapes project", class = "saved_entity_path")
         }
@@ -1809,9 +1809,9 @@ removeDIAReplacedSessionFolder <- function(root, keep, paths) {
         !is.list(paths) || !is.character(paths$source_dir) || !dir.exists(paths$source_dir)) {
         return(invisible(FALSE))
     }
-    root <- normalizePath(root, mustWork = TRUE)
-    source <- normalizePath(paths$source_dir, mustWork = TRUE)
-    kept <- if (is.character(keep) && length(keep) == 1L && dir.exists(keep)) normalizePath(keep) else ""
+    root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+    source <- normalizePath(paths$source_dir, winslash = "/", mustWork = TRUE)
+    kept <- if (is.character(keep) && length(keep) == 1L && dir.exists(keep)) normalizePath(keep, winslash = "/") else ""
     if (identical(root, kept) || !identical(dirname(root), source) ||
         !grepl("^[.]dia-(native|native-import|gui-adoption)-", basename(root))) {
         return(invisible(FALSE))
@@ -1912,7 +1912,7 @@ resolveDIANativeOwnedExport <- function(manager, pointer_path) {
         !identical(request$identity, context$store$identity) ||
         !identical(request$generation, context$head$entity_id) ||
         !file.exists(pointer_path) || file.size(pointer_path) > 8192 ||
-        !identical(normalizePath(pointer_path), request$latest_path)) return(NULL)
+        !identical(normalizePath(pointer_path, winslash = "/"), request$latest_path)) return(NULL)
     pointer <- jsonlite::read_json(pointer_path)
     if (!identical(pointer$status, "complete") || !identical(pointer$request_id, request$request_id) ||
         !identical(pointer$generation, request$generation) ||
@@ -1966,7 +1966,7 @@ copyDIANativeSessionArtifact <- function(source_dir, destination) {
     }
     artifact <- readDIANativeLatestArtifact(file.path(source_dir, "filtered_session_latest.json"))
     source <- artifact$path
-    root <- normalizePath(dirname(destination), mustWork = TRUE)
+    root <- normalizePath(dirname(destination), winslash = "/", mustWork = TRUE)
     temporary <- tempfile(".native-copy-", tmpdir = root)
     log_path <- tempfile(".native-copy-log-", tmpdir = root)
     on.exit(unlink(c(temporary, log_path)), add = TRUE)

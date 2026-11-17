@@ -485,6 +485,8 @@ Imports:
     patchwork,
     plotly,
     png,
+    processx (>= 3.9.0),
+    ps,
     purrr,
     qvalue,
     R6,
