@@ -219,11 +219,7 @@ protNormS4DownloadHandler <- function(workflowData, normData, experimentPaths, o
       canonical <- file.path(experimentPaths$protein_qc_dir, names$rdsFilename)
       exportDIAS4Compatibility(workflowData$state_manager, canonical)
       if (!file.copy(canonical, file, overwrite = TRUE)) stop("Could not deliver compatibility export")
-      if (!is.null(experimentPaths$integration_dir)) {
-        destination <- file.path(experimentPaths$integration_dir,
-          paste0(omicType, "_", experimentLabel, "_final_s4.RDS"))
-        if (!file.copy(canonical, destination, overwrite = TRUE)) stop("Could not publish compatibility Integration file")
-      }
+      # KIT-061 (D2): no copy to the integration folder, which holds only the integration input.
     }
   )
 }

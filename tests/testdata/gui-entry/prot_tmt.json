@@ -1,9 +1,9 @@
 {
   "lane": "prot_tmt",
-  "source_sha": "dc2a05b22464b76e33f46eac3da8720ebefaf81a",
+  "source_sha": "5d38127250d0122ebbe09d52b0477295c870112c",
   "load_mode": "load_all",
   "r_version": "R version 4.6.1 (2026-06-24)",
-  "frozen": "2026-11-12",
+  "frozen": "2026-11-17",
   "steps": {
     "import_refusal": {
       "step": "import_refusal",
@@ -3114,7 +3114,7 @@
         "proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_plot": "<plot> alt=Protein replicate filtering summary",
         "proteomics_workflow-quality_control-protein_qc-replicate_filter-protein_replicate_filter_results": "Protein Replicate Filter Applied Successfully\n ============================================\n Proteins remaining: 400\n Grouping variable: group\n Parallel cores used: 1\n Output file: remove_proteins_with_only_one_rep.tsv\n State saved as: 'protein_replicate_filtered'\n \nProtein filtering pipeline complete!",
         "proteomics_workflow-session_summary-report_ready": "<error> unused arguments (self, name)",
-        "proteomics_workflow-session_summary-session_summary": "Study parameters created for: prot_tmt \nDescription: KIT-101 entry-point lane \nTimestamp: <TIME> \nFile: <ROOT>/project/prot_tmt/scripts/proteomics/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics_prot_tmt_final.msdia.tar \nStatus: Parameters saved [OK]",
+        "proteomics_workflow-session_summary-session_summary": "Study parameters created for: prot_tmt \nDescription: KIT-101 entry-point lane \nTimestamp: <TIME> \nFile: <ROOT>/project/prot_tmt/scripts/proteomics/study_parameters.txt \nSource: Final S4 object @args + config_list \nIntegration Object: proteomics/integration_input.json \nStatus: Parameters saved [OK]",
         "proteomics_workflow-session_summary-template_status": "[WARNING] Report templates will be downloaded when generating report",
         "proteomics_workflow-setup_import-data_summary": "<ui> 85a6945c41ec45caf2a425c414c42069f832f0a582e894748321672e5dbf11b6",
         "proteomics_workflow-setup_import-format_detection": "<ui> 2b41a447e2e899036e9cd2bbbeef96e64c367df865adb2d37da94a91e577b0dc",
@@ -3142,7 +3142,10 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics_prot_tmt_final.msdia.tar": "<present>",
+        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/integration_input.json": "<present>",
+        "integration/proteomics/matrix_proteomics.tsv": "78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc",
+        "integration/proteomics/samples.tsv": "45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "fc30c510f28a81169a1df610ce4bcf7d410ba1a25b483ec7e7d16f8f72351132",
@@ -3251,7 +3254,7 @@
       "notifications": [
         {
           "type": "message",
-          "message": "Saved Integration artifact"
+          "message": "Saved Integration input"
         },
         {
           "type": "message",
@@ -3392,7 +3395,10 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics_prot_tmt_final.msdia.tar": "<present>",
+        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/integration_input.json": "<present>",
+        "integration/proteomics/matrix_proteomics.tsv": "78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc",
+        "integration/proteomics/samples.tsv": "45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "fc30c510f28a81169a1df610ce4bcf7d410ba1a25b483ec7e7d16f8f72351132",
@@ -3658,7 +3664,10 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics_prot_tmt_final.msdia.tar": "<present>",
+        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/integration_input.json": "<present>",
+        "integration/proteomics/matrix_proteomics.tsv": "78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc",
+        "integration/proteomics/samples.tsv": "45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "fc30c510f28a81169a1df610ce4bcf7d410ba1a25b483ec7e7d16f8f72351132",
@@ -3933,7 +3942,10 @@
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-pairs-<ID>": 1,
           "scripts/proteomics/.dia-native-<ID>/.workflow-entities/entities/pearson-selection-<ID>": 1
         },
-        "integration/proteomics_prot_tmt_final.msdia.tar": "<present>",
+        "integration/proteomics/features_proteomics.tsv": "d6a9a4485aef16ed1d58966ef3d98e4921535fd269319061544ffab8b45c32b4",
+        "integration/proteomics/integration_input.json": "<present>",
+        "integration/proteomics/matrix_proteomics.tsv": "78e411e29fe245ea6ee6f5f9a8812e061ab175fe3b4e55ee57b902267f533fcc",
+        "integration/proteomics/samples.tsv": "45cdd5579bac6b970f7911d1ff2d48a08c1c1fc0831adcb7482d09aaf20f2c60",
         "results/proteomics/cache/aa_seq_tbl.RDS": "<present>",
         "results/proteomics/cache/uniprot_annotations/uniprot_annotations.RDS": "<present>",
         "results/proteomics/da_proteins/da_proteins_groupKO-groupWT_long_annot.tsv": "fc30c510f28a81169a1df610ce4bcf7d410ba1a25b483ec7e7d16f8f72351132",
