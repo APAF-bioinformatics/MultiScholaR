@@ -256,17 +256,20 @@ for (package in names(AT_LOCK)) {
 internalSource <- function(package, spec) {
     token <- Sys.getenv("GITHUB_PAT")
     if (!nzchar(token)) stop("GITHUB_PAT is empty: the internal packages need the read token")
-    dir <- file.path(tempdir(), "internal", package)
+    # A short folder: Cargo's build-script paths under R's session folder and the tarball's
+    # <owner>-<repo>-<sha> folder reached Windows' 260-character limit (run 44015367782, LNK1104).
+    dir <- file.path(internal_root, package)
     unlink(dir, recursive = TRUE)
     dir.create(dir, recursive = TRUE)
     tarball <- file.path(dir, "source.tar.gz")
     utils::download.file(sprintf("https://api.github.com/repos/%s/%s/tarball/%s", spec$user, spec$repo, spec$sha),
         tarball, mode = "wb", quiet = TRUE, method = "libcurl",
         headers = c(Authorization = paste("Bearer", token), Accept = "application/vnd.github+json"))
-    utils::untar(tarball, exdir = file.path(dir, "unpacked"))
+    utils::untar(tarball, exdir = file.path(dir, "u"))
     unlink(tarball)
-    top <- list.dirs(file.path(dir, "unpacked"), recursive = FALSE)
-    stopifnot(length(top) == 1L)
+    top <- list.dirs(file.path(dir, "u"), recursive = FALSE)
+    stopifnot(length(top) == 1L, file.rename(top, file.path(dir, "s")))
+    top <- file.path(dir, "s")
     root <- if (nzchar(spec$subdir)) file.path(top, spec$subdir) else top
     package_description <- read.dcf(file.path(root, "DESCRIPTION"))
     if (!identical(unname(package_description[1L, "Package"]), package)) {
@@ -281,6 +284,8 @@ internalSource <- function(package, spec) {
     root
 }
 internal_rows <- list()
+# Outside the output directory (uploaded): the runner's temporary folder, or R's session folder.
+internal_root <- file.path(Sys.getenv("RUNNER_TEMP", tempdir()), "i")
 if (nzchar(internal_mode)) {
     for (package in names(INTERNAL_REMOTES)) {
         spec <- INTERNAL_REMOTES[[package]]
@@ -299,7 +304,7 @@ if (nzchar(internal_mode)) {
     }
     utils::write.table(do.call(rbind, internal_rows), file.path(out_dir, "internal-packages.tsv"), sep = "\t",
         quote = FALSE, row.names = FALSE)
-    unlink(file.path(tempdir(), "internal"), recursive = TRUE)
+    unlink(internal_root, recursive = TRUE)
 }
 
 # (3) MultiScholaR from the checkout.
