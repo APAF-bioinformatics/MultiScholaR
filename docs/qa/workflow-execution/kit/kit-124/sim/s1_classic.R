@@ -113,13 +113,17 @@
 #   17  the known batch in the model                                        S8
 #   22  arm 8 with k from today's separation rule on the oracle controls    on request (K124_ARMS)
 #   23  arm 5 with k = E                                                    on request (K124_ARMS)
+#   24  arm 5 with k from today's separation rule on arm 5's own controls   on request (K124_ARMS)
 # Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross
 # the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is the sweep's
 # rule for one control set (its steps 3 and 4): the canonical-correlation curve of the oracle controls against all
 # proteins (prepareRuvCancorInput with 5 components, ruvCancorFromInput), read up to calculateAdaptiveMaxK(samples),
 # then findBestKElbow; an NA is a refusal. Arm 23 does not read the sweep, so a sweep refusal does not refuse it.
-# K124_ARMS (environment; unset = the arms above, 22 and 23 not run): a comma list of the arms to run, of those the
-# cell has and 22, 23. Arm 1 must be in it (refusals carry its result). The data, E and every stream are as without
+# Arm 24 (user, 2026-11-18): arm 5 takes the sweep's k, which the sweep computed on its own winning control set; arm
+# 24 applies arm 22's rule to arm 5's controls (all proteins outside the 25% most significant of the first pass), so
+# it differs from arm 5 in k only, and does not read the sweep either.
+# K124_ARMS (environment; unset = the arms above, 22 to 24 not run): a comma list of the arms to run, of those the
+# cell has and 22, 23, 24. Arm 1 must be in it (refusals carry its result). The data, E and every stream are as without
 # it, so an arm's rows are the same whichever other arms run.
 # First pass (arms 5, 6): limma lmFit(~ group) + eBayes, the F test over the group coefficients; q = BH.
 # Replicate structure of RUV-III: arms 3 to 6 take what the package resolves from the design (the group; the unit in
@@ -203,7 +207,7 @@ arms_of <- function(cell) {
     if (p$share == 0) arms <- setdiff(arms, 9L)
     if (p$duplicates) arms <- c(arms, 15L, 16L)
     if (p$batch) arms <- c(arms, 17L)
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L), arms_wanted)
     arms
 }
 subsets_of <- function(arm) if (arm %in% 12:14) "complete" else c("full", "complete")
@@ -427,6 +431,12 @@ one <- function(cell, run) {
         if (is.na(k)) refuse("findBestKElbow returned NA for the control set")
         k
     }
+    wide_controls <- function() {                         # arm 5's controls
+        first <- first_pass()
+        wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+        wide[is.na(wide)] <- FALSE
+        stats::setNames(wide, rownames(x))
+    }
     no_ruv <- list(same_as_no_ruv = TRUE, k = 0L)
     room <- function(k) if (n_samples - n_groups - k < 1L)
         refuse(sprintf("no residual degree of freedom for %d covariates with %d samples and %d groups", k, n_samples, n_groups))
@@ -500,12 +510,8 @@ one <- function(cell, run) {
         `16` = function() in_model(all_controls, E(), "tech_rep_group"),
         `17` = function() list(tab = da(x, design, NULL, "batch"), k = 0L),
         `22` = function() in_model(sim$oracle, separation_k(sim$oracle), "no_tech"),
-        `23` = function() {
-            first <- first_pass()
-            wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
-            wide[is.na(wide)] <- FALSE
-            in_model(stats::setNames(wide, rownames(x)), E(), "tech_rep_group")
-        })
+        `23` = function() in_model(wide_controls(), E(), "tech_rep_group"),
+        `24` = function() in_model(wide_controls(), separation_k(wide_controls()), "tech_rep_group"))
     rows <- list(); log <- character()
     reference <- NULL                                     # arm 1's table, the no-RUV result
     for (arm in arms_of(cell)) {
