@@ -111,6 +111,16 @@
 #   15  technical replicates as the replicate structure, all proteins as controls, k = E, corrected   C6
 #   16  as 15, W in the model                                               C6
 #   17  the known batch in the model                                        S8
+#   22  arm 8 with k from today's separation rule on the oracle controls    on request (K124_ARMS)
+#   23  arm 5 with k = E                                                    on request (K124_ARMS)
+# Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross
+# the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is the sweep's
+# rule for one control set (its steps 3 and 4): the canonical-correlation curve of the oracle controls against all
+# proteins (prepareRuvCancorInput with 5 components, ruvCancorFromInput), read up to calculateAdaptiveMaxK(samples),
+# then findBestKElbow; an NA is a refusal. Arm 23 does not read the sweep, so a sweep refusal does not refuse it.
+# K124_ARMS (environment; unset = the arms above, 22 and 23 not run): a comma list of the arms to run, of those the
+# cell has and 22, 23. Arm 1 must be in it (refusals carry its result). The data, E and every stream are as without
+# it, so an arm's rows are the same whichever other arms run.
 # First pass (arms 5, 6): limma lmFit(~ group) + eBayes, the F test over the group coefficients; q = BH.
 # Replicate structure of RUV-III: arms 3 to 6 take what the package resolves from the design (the group; the unit in
 # C6); arms 7 to 11 take the group in every cell (in C6 the object is declared without technical replicates for the
@@ -147,6 +157,9 @@ out_dir <- args[[1L]]
 runs_core <- as.integer(args[[2L]]); runs_stress <- as.integer(args[[3L]]); cores <- as.integer(args[[4L]])
 cells_wanted <- if (length(args) > 4L) args[[5L]] else "all"
 first_run <- if (length(args) > 5L) as.integer(args[[6L]]) else 1L
+arms_wanted <- Sys.getenv("K124_ARMS", "")
+arms_wanted <- if (nzchar(arms_wanted)) as.integer(strsplit(arms_wanted, ",", fixed = TRUE)[[1L]])
+stopifnot(is.null(arms_wanted) || (!anyNA(arms_wanted) && 1L %in% arms_wanted))
 stopifnot(first_run >= 1L, first_run + max(runs_core, runs_stress) - 1L < 10000L)
 
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
@@ -190,6 +203,7 @@ arms_of <- function(cell) {
     if (p$share == 0) arms <- setdiff(arms, 9L)
     if (p$duplicates) arms <- c(arms, 15L, 16L)
     if (p$batch) arms <- c(arms, 17L)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L), arms_wanted)
     arms
 }
 subsets_of <- function(arm) if (arm %in% 12:14) "complete" else c("full", "complete")
@@ -405,6 +419,14 @@ one <- function(cell, run) {
         }
         cache$first
     }
+    separation_k <- function(controls) {                  # today's rule for k, on a given control set
+        plot <- NULL
+        quietly(plot <- ruvCancorFromInput(prepareRuvCancorInput(object("no_tech"), 5), object("no_tech"), unname(controls), "group"))
+        plot$data <- plot$data[plot$data$K <= calculateAdaptiveMaxK(n_samples), , drop = FALSE]
+        k <- findBestKElbow(plot)
+        if (is.na(k)) refuse("findBestKElbow returned NA for the control set")
+        k
+    }
     no_ruv <- list(same_as_no_ruv = TRUE, k = 0L)
     room <- function(k) if (n_samples - n_groups - k < 1L)
         refuse(sprintf("no residual degree of freedom for %d covariates with %d samples and %d groups", k, n_samples, n_groups))
@@ -476,7 +498,14 @@ one <- function(cell, run) {
         },
         `15` = function() corrected(all_controls, E(), "tech_rep_group"),
         `16` = function() in_model(all_controls, E(), "tech_rep_group"),
-        `17` = function() list(tab = da(x, design, NULL, "batch"), k = 0L))
+        `17` = function() list(tab = da(x, design, NULL, "batch"), k = 0L),
+        `22` = function() in_model(sim$oracle, separation_k(sim$oracle), "no_tech"),
+        `23` = function() {
+            first <- first_pass()
+            wide <- rank(first, ties.method = "first", na.last = "keep") > 0.25 * sum(is.finite(first))
+            wide[is.na(wide)] <- FALSE
+            in_model(stats::setNames(wide, rownames(x)), E(), "tech_rep_group")
+        })
     rows <- list(); log <- character()
     reference <- NULL                                     # arm 1's table, the no-RUV result
     for (arm in arms_of(cell)) {
@@ -547,6 +576,7 @@ meta(R.version.string, "; ", R.version$platform)
 meta("MultiScholaR (pkgload::load_all of the work tree): ", as.character(utils::packageVersion("MultiScholaR")))
 meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); ",
     "arm a under set.seed(seed * 100 + a); E under stream 0; runs ", first_run, " onward")
+meta("K124_ARMS: ", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ","))
 meta("cells: ", paste(cells, collapse = ","), "; runs per core cell ", runs_core, ", per stress cell ", runs_stress)
 for (cell in cells) {
     if (is_complete(cell)) { meta("cell ", cell, ": complete already, skipped"); next }

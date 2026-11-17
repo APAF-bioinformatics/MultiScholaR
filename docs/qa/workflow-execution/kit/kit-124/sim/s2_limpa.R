@@ -131,6 +131,17 @@
 #   16  C6 only: arm 15 with the factors in the model. On this route computeRuvCovariates already takes the
 #       declared technical replicates, so arm 16 repeats arm 7's computation in C6.
 #   17  S8 only: the known batch in the model, no RUV.
+#   22  on request (K124_ARMS): arm 8 with k from the route's separation rule on the oracle controls.
+#   23  on request (K124_ARMS): arm 5 with k = E.
+# Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross
+# the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is
+# findBestNegCtrlPercentageCapped's rule for one control set: the canonical-correlation curve of the oracle controls
+# against all proteins (prepareRuvCancorInput, ruvCancorFromInput), capped at min(calculateAdaptiveMaxK(samples),
+# controls - 1), k at the largest all-minus-control difference. Arm 23 with E = 0 is no RUV, as arms 7 to 10.
+# K124_ARMS (environment; unset = the arms above, 22 and 23 not run): a comma list of the arms to run, of those the
+# cell has and 22, 23. Arm 1 must be in it (arms 5, 6, 23 and every refusal read its result). Without any of arms
+# 3 to 6 the route's sweep is not run (sweep_status "not run" in s2-data.tsv). The data, the control sets, E and every
+# stream are as without it, so an arm's rows are the same whichever other arms run.
 # Arms 5 to 11, 15 and 16 use computeRuvCovariates and the route's test. Arms 12 to 14 run on the quantified
 # matrix (complete on this route), ignore the technical-replicate block and the DPC standard errors, and their
 # q-values come from the package's rule applied to their p-values (adjustProtDaResultTable). X is the group B
@@ -162,6 +173,9 @@ runs_stress <- as.integer(args[[3L]])
 cores <- as.integer(args[[4L]])
 cells_wanted <- if (length(args) > 4L && args[[5L]] != "all") strsplit(args[[5L]], ",")[[1L]] else NULL
 first_run <- as.integer(Sys.getenv("K124_FIRST_RUN", "1"))
+arms_wanted <- Sys.getenv("K124_ARMS", "")
+arms_wanted <- if (nzchar(arms_wanted)) as.integer(strsplit(arms_wanted, ",", fixed = TRUE)[[1L]])
+stopifnot(is.null(arms_wanted) || (!anyNA(arms_wanted) && 1L %in% arms_wanted))
 stopifnot(runs_core >= 0L, runs_stress >= 0L, cores >= 1L, first_run >= 1L,
     first_run + max(runs_core, runs_stress) - 1L < 10000L)
 
@@ -238,6 +252,7 @@ armsFor <- function(cell) {
     if (cell$effects == 0) arms <- setdiff(arms, 9L)
     if (cell$units > 0L) arms <- c(arms, 15L, 16L)
     if (cell$batch) arms <- c(arms, 17L)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L), arms_wanted)
     arms
 }
 
@@ -455,9 +470,10 @@ runOne <- function(cell, run) {
     }
 
     # The route's sweep, once per run on arm 3's stream; arms 3 to 6 take its controls or its k.
+    sweeping <- any(3:6 %in% armsFor(cell))
     set.seed(100L * seed + 3L)
     mark <- clock()
-    sweep <- tryCatch({
+    sweep <- if (!sweeping) simpleError("the sweep was not run (K124_ARMS)") else tryCatch({
         value <- NULL
         quietly(value <- findBestNegCtrlPercentageCapped(quantified,
             percentage_range = seq(RUV_PARAMETERS$percentage_min, RUV_PARAMETERS$percentage_max, by = 1),
@@ -471,7 +487,7 @@ runOne <- function(cell, run) {
     }, error = \(e) e)
     shared$sweep_seconds <- clock() - mark
     swept <- !inherits(sweep, "condition")
-    shared$sweep_status <- if (swept) "ok" else if (grepl(REFUSALS, conditionMessage(sweep))) "refused" else "crashed"
+    shared$sweep_status <- if (!sweeping) "not run" else if (swept) "ok" else if (grepl(REFUSALS, conditionMessage(sweep))) "refused" else "crashed"
     if (swept) {
         shared <- c(shared, list(sweep_k = sweep$best_k, sweep_percentage = sweep$best_percentage,
             sweep_controls = sum(sweep$best_control_genes_index, na.rm = TRUE)))
@@ -493,6 +509,15 @@ runOne <- function(cell, run) {
         corrected <- elist
         corrected$E <- factors$adjusted[rownames(elist$E), colnames(elist$E), drop = FALSE]
         list(k = factors$k, table = routeTest(corrected, design))
+    }
+    separationK <- function(controls) {
+        plot <- NULL
+        quietly(plot <- ruvCancorFromInput(prepareRuvCancorInput(quantified, RUV_PARAMETERS$num_components_to_impute),
+            quantified, controls, RUV_PARAMETERS$ruv_grouping_variable))
+        curve <- plot$data[plot$data$K <= min(calculateAdaptiveMaxK(ncol(elist$E)), sum(controls) - 1), , drop = FALSE]
+        of_controls <- curve$featureset == "Control"
+        difference <- curve$cc[curve$featureset == "All"] - curve$cc[of_controls]
+        as.integer(curve$K[of_controls][[which(difference == max(difference, na.rm = TRUE))[[1L]]]])
     }
     first <- NULL
     noRuv <- \() list(k = 0L, table = first)
@@ -534,7 +559,9 @@ runOne <- function(cell, run) {
         },
         `15` = \() if (k_e > 0L) subtracted(k_e, all_controls) else noRuv(),
         `16` = \() if (k_e > 0L) inModel(k_e, all_controls) else noRuv(),
-        `17` = \() list(k = 0L, table = routeTest(elist, design, design["batch"]))
+        `17` = \() list(k = 0L, table = routeTest(elist, design, design["batch"])),
+        `22` = \() inModel(separationK(oracle), oracle),
+        `23` = \() if (k_e > 0L) inModel(k_e, rank(first$p, ties.method = "first") > 0.25 * nrow(first)) else noRuv()
     )
 
     arms <- armsFor(cell)
@@ -592,6 +619,7 @@ writeMeta <- function(path, started, finished = NULL, cells_run = character()) {
         paste("changes under R/, tests/, tools/:", nzchar(git("status", "--porcelain", "--", "R", "tests", "tools"))),
         paste("command: Rscript", paste(c(script, commandArgs(TRUE)), collapse = " ")),
         paste("K124_FIRST_RUN:", first_run),
+        paste("K124_ARMS:", if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ",")),
         paste("working directory:", getwd()),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),
         paste("library paths:", paste(.libPaths(), collapse = ":")),
