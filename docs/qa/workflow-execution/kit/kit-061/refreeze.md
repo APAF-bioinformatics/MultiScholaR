@@ -57,6 +57,15 @@ One file per process, in order, `nice -n 19`, threads 1, proof library (fastduck
 | `test-omic-norm-module.R` | 639 | 0 | 0 | 547 |
 | `test-gui-entry-proteomics.R` | 193 | 0 | 0 | 2309 |
 
+## Audit fixes K061-1..6 (2026-11-18): no oracle movement
+
+After the independent audit's fixes (the final state and the role from the head's own lineage, the backup-rename-restore
+publish, the removal of a stale input, the accession's first member without its isoform suffix, the reader's checks),
+`test-gui-entry-proteomics.R` passes against the oracles above unchanged (193/0, 2519 s): no `features_proteomics.tsv`
+row moved (no fixture id carries `;` or a hyphen), so no re-freeze was needed. The seven files above, rerun one per
+process on the final code: integration input 118/0, summary core 701/0 (2 skipped), summary module 1703/0, native
+session 734/0 (2 skipped), gui config 1906/0, norm module 639/0, gui-entry proteomics 193/0.
+
 ## Notes
 
 - Freeze run: 76 passed, 1 failed, 2888 s. The failure is the lane wall-time ceiling (`record$seconds < 900`) on

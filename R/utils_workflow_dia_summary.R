@@ -45,44 +45,76 @@ protSummaryIntegrationFilename <- function(workflowData, omicType, label) {
 #' @param path The manifest's path (`protSummaryIntegrationFilename`'s); its folder is the omic's input.
 #' @param object,saveRDSFn Unused: the route writer's arguments in the core's call.
 #' @param sourceDir The project's source directory (the native archive's and the UniProt annotation's).
-#' @return The notice the save shows, or FALSE when the owner holds no final matrix.
+#' @return The notice the save shows, or FALSE when the owner holds no final matrix (K061-3: an earlier save's input
+#'   is then removed).
 #' @noRd
 protSummaryIntegrationWrite <- function(workflowData, path, object = NULL, sourceDir = NULL, saveRDSFn = saveRDS) {
   manager <- workflowData$state_manager
-  if (!inherits(manager, "DIAStateAdapter")) return(FALSE)
-  if (isDIANativeSession(manager)) refreshDIANativeSummaryArchive(workflowData, sourceDir)
-  annotation <- workflowData$uniprot_dat_cln
-  annotationFile <- if (!is.null(sourceDir)) file.path(sourceDir, "uniprot_dat_cln.RDS") else ""
-  if (is.null(annotation) && file.exists(annotationFile)) annotation <- readRDS(annotationFile)
-  written <- withDIAStateScope(manager, function() {
-    source <- protIntegrationInputSource(manager)
-    if (is.null(source)) return(FALSE)
-    writeIntegrationInput(dirname(path), source$manifest, source$samples,
-      matrices = list(proteomics = source$matrix),
-      features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation)))
-    TRUE
-  })
-  if (isTRUE(written)) "Saved Integration input" else FALSE
+  written <- FALSE
+  if (inherits(manager, "DIAStateAdapter")) {
+    if (isDIANativeSession(manager)) refreshDIANativeSummaryArchive(workflowData, sourceDir)
+    annotation <- workflowData$uniprot_dat_cln
+    annotationFile <- if (!is.null(sourceDir)) file.path(sourceDir, "uniprot_dat_cln.RDS") else ""
+    if (is.null(annotation) && file.exists(annotationFile)) annotation <- readRDS(annotationFile)
+    written <- withDIAStateScope(manager, function() {
+      source <- protIntegrationInputSource(manager)
+      if (is.null(source)) return(FALSE)
+      writeIntegrationInput(dirname(path), source$manifest, source$samples,
+        matrices = list(proteomics = source$matrix),
+        features = list(proteomics = protIntegrationInputFeatures(source$matrix$feature_id, annotation)))
+      TRUE
+    })
+  }
+  if (isTRUE(written)) return("Saved Integration input")
+  removeIntegrationInput(dirname(path))
+  FALSE
 }
 
-#' The proteomics integration input's matrix and manifest fields (KIT-061; KIT-060 audit 4.3, D14): the last of the
-#' route's final states in the active history (`normalized` or `ruv_corrected`, then `correlation_filtered` on DIA, LFQ
-#' and TMT; `correlation_filtered`, then `ruv_covariates` or `ruv_corrected` on DIA_LIMPA). Its matrix is the state's
+#' The head's lineage (K061-1): the current state, then each record's `previous_state`, until a state without a
+#' reference, a repeated name, a state stored as a whole legacy object (its record NULL) or one of `until`.
+#' @param manager The session's owner, inside its state scope.
+#' @param until The state names that end the walk (included).
+#' @return Named list of the states' records, head first.
+#' @noRd
+protIntegrationInputLineage <- function(manager, until) {
+  lineage <- list()
+  state <- manager$current_state
+  while (is.character(state) && length(state) == 1L && !is.na(state) && !state %in% names(lineage)) {
+    reference <- getDIAStateReference(manager, state)
+    if (is.null(reference)) break
+    # Every declared class, as the analysis record reads the lineage (KIT-101 F-15): a result-class head (the
+    # proteomics `enrichment_completed`) is walked through.
+    record <- tryCatch(readComponentMetadata(manager, reference), saved_entity_unsupported = function(error) NULL)
+    lineage[state] <- list(record)
+    if (is.null(record) || state %in% until) break
+    state <- record$previous_state
+  }
+  lineage
+}
+
+#' The proteomics integration input's matrix and manifest fields (KIT-061; KIT-060 audit 4.3, D14): the route's final
+#' state nearest the head in the head's own lineage (K061-1: the current state when it is one; `normalized` or
+#' `ruv_corrected`, then `correlation_filtered` on DIA, LFQ and TMT; `correlation_filtered`, then `ruv_covariates` or
+#' `ruv_corrected` on DIA_LIMPA), never a name kept in the history from an earlier run. Its matrix is the state's
 #' protein table, except on `ruv_covariates`, whose table is uncorrected: there the RUV-adjusted product. The role is
-#' `corrected` when an RUV state is in the lineage, else `normalised`.
+#' `corrected` when the lineage's normalisation or RUV state is an RUV state with RUV applied, else `normalised`.
 #' @param manager The session's owner, inside its state scope.
 #' @return `list(manifest, samples, matrix)` (the matrix's first column `feature_id`, its samples in the design's
-#'   order), or NULL when no final state exists or it is stored as a whole legacy object.
+#'   order), or NULL when the lineage has no final state or it is stored as a whole legacy object.
 #' @noRd
 protIntegrationInputSource <- function(manager) {
-  history <- diaStateHistory(manager)
-  final <- utils::tail(history[history %in% c("normalized", "ruv_corrected", "correlation_filtered", "ruv_covariates")], 1L)
+  ruvStates <- c("ruv_corrected", "ruv_covariates")
+  # The walk ends at the first normalisation or RUV state: it decides the role.
+  lineage <- protIntegrationInputLineage(manager, until = c("normalized", ruvStates))
+  final <- utils::head(intersect(names(lineage), c("normalized", "ruv_corrected", "correlation_filtered", "ruv_covariates")), 1L)
   if (!length(final)) return(NULL)
   reference <- getDIAStateReference(manager, final)
   # A state stored as a whole legacy object has no component record; it is not hydrated here (as the analysis
   # record leaves it), so no input is written for it.
-  record <- tryCatch(readDIAStateMetadata(manager, reference)$data, saved_entity_unsupported = function(error) NULL)
+  record <- lineage[[final]]$data
   if (is.null(record)) return(NULL)
+  decider <- utils::tail(names(lineage), 1L)
+  ruvState <- if (decider %in% ruvStates && !identical(lineage[[decider]]$config$ruv_applied, FALSE)) decider else character()
   slots <- record$slots
   matrixSource <- reference
   product <- NULL
@@ -102,7 +134,6 @@ protIntegrationInputSource <- function(manager) {
   rownames(design) <- NULL
   matrix <- data.frame(feature_id = as.character(matrix[[slots$protein_id_column]]), matrix[samples],
     check.names = FALSE, stringsAsFactors = FALSE)
-  ruvState <- utils::tail(history[history %in% c("ruv_corrected", "ruv_covariates")], 1L)
   manifest <- list(omic_type = "proteomics",
     workflow = manager$workflow_type %||% manager$.context$snapshot$workflow_type %||% NA_character_,
     matrix_role = if (length(ruvState)) "corrected" else "normalised", scale = "log2",
@@ -151,14 +182,15 @@ protIntegrationInputCorrection <- function(manager, state, design) {
   c(list(state = state), correction)
 }
 
-#' The proteomics feature annotation (D11: the omic's own): the UniProt accession as the DA exports take it (the id
-#' before the first hyphen) and its `gene_names`; the display name is the first gene name, else the feature id.
+#' The proteomics feature annotation (D11: the omic's own): the UniProt accession (K061-4: the group's first member,
+#' without a trailing isoform suffix `-<digits>`) and its `gene_names`; the display name is the first gene name, else
+#' the feature id, which stays the key.
 #' @param ids The matrix's feature ids.
 #' @param annotation The UniProt table (`uniprot_dat_cln`, keyed by `Entry`), or NULL.
 #' @return `data.frame(feature_id, display_name, uniprot_accession, gene_names)`.
 #' @noRd
 protIntegrationInputFeatures <- function(ids, annotation) {
-  accession <- vapply(strsplit(ids, "-", fixed = TRUE), function(parts) if (length(parts)) parts[[1L]] else "", "")
+  accession <- sub("-[0-9]+$", "", sub(";.*$", "", ids))
   genes <- rep(NA_character_, length(ids))
   if (is.data.frame(annotation) && all(c("Entry", "gene_names") %in% names(annotation))) {
     genes <- as.character(annotation$gene_names)[match(accession, as.character(annotation$Entry))]

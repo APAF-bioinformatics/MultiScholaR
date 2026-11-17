@@ -107,9 +107,10 @@ validateIntegrationInputTables <- function(manifest, samples, matrices, features
 #' @param matrices Named list by view of features x samples tables whose first column is `feature_id`.
 #' @param features Named list by view of feature tables (`feature_id`, `display_name`, annotation columns).
 #' @param now The time of writing.
+#' @param renameFn The folder rename (`file.rename`; a test injects a failure).
 #' @return The manifest's path, invisibly.
 #' @noRd
-writeIntegrationInput <- function(dir, manifest, samples, matrices, features, now = Sys.time()) {
+writeIntegrationInput <- function(dir, manifest, samples, matrices, features, now = Sys.time(), renameFn = file.rename) {
     views <- names(matrices)
     if (!length(views) || any(!grepl("^[A-Za-z0-9_-]+$", views))) {
         abortIntegrationInput("view names must be letters, digits, underscores or hyphens")
@@ -130,7 +131,7 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
     parent <- dirname(dir)
     dir.create(parent, recursive = TRUE, showWarnings = FALSE)
     staging <- tempfile(paste0(".", basename(dir), "-"), tmpdir = parent)
-    dir.create(staging)
+    if (!dir.create(staging)) abortIntegrationInput(sprintf("the staging folder %s could not be created", staging))
     on.exit(unlink(staging, recursive = TRUE), add = TRUE)
     write <- function(table, name) {
         vroom::vroom_write(table, file.path(staging, name), delim = "\t", na = "NA", progress = FALSE)
@@ -151,9 +152,37 @@ writeIntegrationInput <- function(dir, manifest, samples, matrices, features, no
     manifest$written_at <- format(now, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
     jsonlite::write_json(manifest, file.path(staging, INTEGRATION_INPUT_MANIFEST), auto_unbox = TRUE, pretty = TRUE,
         digits = NA, null = "null", na = "null")
-    unlink(dir, recursive = TRUE)
-    if (!file.rename(staging, dir)) abortIntegrationInput(sprintf("the integration input could not be published at %s", dir))
+    # K061-2: the previous input is moved aside, then the staging folder renamed into place; on a failed publish the
+    # previous input is renamed back. Only a published input removes the one it replaced.
+    previous <- NULL
+    if (file.exists(dir)) {
+        previous <- tempfile(paste0(".", basename(dir), "-previous-"), tmpdir = parent)
+        if (!isTRUE(renameFn(dir, previous))) {
+            abortIntegrationInput(sprintf("the previous integration input at %s could not be moved aside; it is kept", dir))
+        }
+    }
+    if (!isTRUE(renameFn(staging, dir))) {
+        if (!is.null(previous) && !isTRUE(renameFn(previous, dir))) {
+            abortIntegrationInput(sprintf("the integration input could not be published at %s, and the previous input could not be restored from %s",
+                dir, previous))
+        }
+        abortIntegrationInput(sprintf("the integration input could not be published at %s; the previous input is kept", dir))
+    }
+    if (!is.null(previous) && (unlink(previous, recursive = TRUE) != 0L || file.exists(previous))) {
+        cli::cli_warn(sprintf("the replaced integration input could not be removed from %s", previous))
+    }
     invisible(file.path(dir, INTEGRATION_INPUT_MANIFEST))
+}
+
+#' Remove an omic's integration input (K061-3): when a save writes none, an earlier save's folder must not validate.
+#' @param dir The omic's folder, `<project>/integration/<omic>/`.
+#' @return TRUE invisibly, or an `integration_input_invalid` error when the folder cannot be removed.
+#' @noRd
+removeIntegrationInput <- function(dir) {
+    if (file.exists(dir) && (unlink(dir, recursive = TRUE) != 0L || file.exists(dir))) {
+        abortIntegrationInput(sprintf("the earlier integration input at %s could not be removed", dir))
+    }
+    invisible(TRUE)
 }
 
 #' Read and validate one omic's integration input (KIT-061): the manifest, then every file it lists against its
@@ -175,6 +204,24 @@ readIntegrationInput <- function(dir) {
         "feature_id_column", "display_name_column", "views", "samples_file", "files", "software", "written_at")
     missing <- setdiff(required, names(manifest))
     if (length(missing)) abortIntegrationInput(sprintf("the manifest lacks %s", paste(missing, collapse = ", ")))
+    # K061-6: the omic is its folder's; the views are named once each, as the writer names them, and their files are
+    # the view's fixed names.
+    if (!identical(manifest$omic_type, basename(dir))) {
+        abortIntegrationInput(sprintf("the manifest's omic must be its folder's, %s", basename(dir)))
+    }
+    view_names <- vapply(if (is.list(manifest$views)) manifest$views else list(), function(view) {
+        if (is.character(view$name) && length(view$name) == 1L && !is.na(view$name)) view$name else NA_character_
+    }, character(1))
+    if (!length(view_names) || anyNA(view_names) || any(!grepl("^[A-Za-z0-9_-]+$", view_names))) {
+        abortIntegrationInput("view names must be letters, digits, underscores or hyphens")
+    }
+    if (anyDuplicated(view_names)) abortIntegrationInput("the view names must be unique")
+    for (view in manifest$views) {
+        fixed <- integrationInputViewFiles(view$name)
+        if (!identical(view$matrix_file, fixed$matrix) || !identical(view$features_file, fixed$features)) {
+            abortIntegrationInput(sprintf("the files of view %s must be %s and %s", view$name, fixed$matrix, fixed$features))
+        }
+    }
     if (!isTRUE(manifest$matrix_role %in% INTEGRATION_INPUT_ROLES)) {
         abortIntegrationInput("the matrix role must be corrected or normalised")
     }
@@ -182,7 +229,8 @@ readIntegrationInput <- function(dir) {
         abortIntegrationInput("a corrected matrix needs the correction that produced it")
     }
     files <- manifest$files
-    if (!is.list(files) || !length(files) || any(!grepl("^[A-Za-z0-9_.-]+$", names(files)))) {
+    if (!is.list(files) || !length(files) || any(!grepl("^[A-Za-z0-9_.-]+$", names(files))) ||
+        any(names(files) %in% c(".", ".."))) {
         abortIntegrationInput("the manifest's files must be plain file names with their sha256")
     }
     for (name in names(files)) {
@@ -209,8 +257,8 @@ readIntegrationInput <- function(dir) {
         if (!identical(nrow(matrix), as.integer(view$rows)) || !identical(ncol(matrix) - 1L, as.integer(view$columns))) {
             abortIntegrationInput(sprintf("the matrix of view %s is not %s x %s", view$name, view$rows, view$columns))
         }
-        # Numbers are parsed by R's own conversion, which reads back the written digits exactly (readr's parser can
-        # differ in the last bit).
+        # Numbers are parsed by R's own conversion (readr's parser can differ in the last bit). The written digits read
+        # back exactly in the omics range; values below about 1e-148 may differ in the last bit through as.numeric.
         for (column in seq_along(matrix)[-1L]) {
             values <- suppressWarnings(as.numeric(matrix[[column]]))
             if (any(is.na(values) & !is.nan(values) & !is.na(matrix[[column]]))) {
