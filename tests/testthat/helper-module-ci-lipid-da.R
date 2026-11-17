@@ -8,8 +8,7 @@ module_ci_lipid_da_design <- function(samples = module_ci_lipid_da_samples()) {
     group = rep(c("WT", "KO", "RES"), each = 2, length.out = length(samples)),
     batch = rep(c("B1", "B2"), length.out = length(samples)),
     replicates = rep(c("R1", "R2"), length.out = length(samples)),
-    # KIT-128 K128-1: each run its own biological unit (one pair per group is no biological replication, refused).
-    tech_rep_group = paste0("Unit", seq_along(samples)),
+    tech_rep_group = rep(c("Pair1", "Pair1", "Pair2", "Pair2", "Pair3", "Pair3"), length.out = length(samples)),
     stringsAsFactors = FALSE
   )
 }
@@ -80,7 +79,9 @@ module_ci_lipid_da_object <- function(layout = c("pos_gcms", "pos_neg", "single_
     design_matrix = module_ci_lipid_da_design(),
     sample_id = "Run",
     group_id = "group",
-    technical_replicate_id = "tech_rep_group",
+    # KIT-128 K128-1: no technical replicates declared. The table's one pair per group would be no biological
+    # replication, now refused; these tests are about the DA tables, and their frozen oracles hash this design table.
+    technical_replicate_id = NA_character_,
     args = list(
       daAnalysisParameters = list(formula_string = formula_string),
       module_ci_fixture = "MCI-022"
