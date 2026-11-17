@@ -126,7 +126,8 @@ test_that("each design offers the k rules defined for it, with the rule its figu
         for (option in tables[[name]]$options) {
             expected <- ruvDesignKRules[[option$id]]
             expect_identical(option$k_rules, expected$rules, info = paste(name, option$id))
-            expect_identical(option$k_rule, expected$default, info = paste(name, option$id))
+            # (`[[`: `$k_rule` would partially match `k_rules`)
+            expect_identical(option[["k_rule"]], expected$default, info = paste(name, option$id))
             expect_identical(option$k_rules_pending, expected$pending, info = paste(name, option$id))
         }
     }
@@ -136,10 +137,10 @@ test_that("the texts shown name no internal arm, cell, ticket or question", {
     internal <- "\\b(arm|arms|KIT-[0-9]+|C[0-9]|S[0-9]{1,2}|U[0-9]{1,2}|W[0-9]{1,2}|R0|B[0-9])\\b"
     for (omic in ruvDesignOmics) {
         design <- omicGuiConfig(omic)$norm$ruv_design
-        shown <- c(design$tiers, unlist(design$k_rules), unlist(lapply(design$tables, \(table) c(table$conditions,
+        shown <- c(design$tiers, design$conditions, unlist(design$k_rules), unlist(lapply(design$tables, \(table) c(
             unlist(lapply(table$options, \(option) option[c("label", "tooltip", "note", "fdp_where", "power_where",
                 "unavailable")]))))))
-        expect_identical(grep(internal, shown, value = TRUE), character(), info = omic)
+        expect_identical(grep(internal, unname(shown), value = TRUE), character(), info = omic)
     }
 })
 
@@ -177,9 +178,14 @@ test_that("the schema refuses an incomplete or inconsistent preset table by clas
         d$tables$classic <- edit(d$tables$classic)
         d
     })
-    expectRuvDesignRefused(table(\(t) utils::modifyList(t, list(options = t$options[-2L]))), paste0(table_path, "$options"))
-    expectRuvDesignRefused(table(\(t) utils::modifyList(t, list(options = c(t$options, t$options[1L])))),
-        paste0(table_path, "$options"))
+    expectRuvDesignRefused(table(\(t) {
+        t$options <- t$options[-2L]
+        t
+    }), paste0(table_path, "$options"))
+    expectRuvDesignRefused(table(\(t) {
+        t$options <- c(t$options, t$options[1L])
+        t
+    }), paste0(table_path, "$options"))
     expectRuvDesignRefused(table(\(t) utils::modifyList(t, list(selected = "automatic"))), paste0(table_path, "$selected"))
     expectRuvDesignRefused(table(\(t) utils::modifyList(t, list(recommended = "legacy"))), paste0(table_path, "$recommended"))
     expectRuvDesignRefused(table(\(t) t[setdiff(names(t), "selected")]), paste0(table_path, "$selected"))

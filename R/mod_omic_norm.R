@@ -82,6 +82,8 @@ runOmicNormServer <- function(input, output, session, id, workflowData, experime
             getPlotAesthetics, config), ignoreInit = FALSE)
     }
     if (any(c("aesthetics", "ruv_iii") %in% panels)) shiny::observe(omicNormDesignChoices(session, workflowData))
+    # KIT-129 W2: the RUV design section's observers, for every omic; none while its gate is off.
+    registerOmicNormRuvDesign(input, session, workflowData, norm$ruv_design)
     # KIT-120: an omic with its own server (`norm$server`, a module function's name; proteomics) registers its actions and its other outputs
     # itself, on the frame's state. The frame keeps the design's choices above and the stage grid.
     if (!is.null(norm$server)) {
