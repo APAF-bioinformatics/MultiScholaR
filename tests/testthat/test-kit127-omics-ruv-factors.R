@@ -482,11 +482,11 @@ test_that("F5: a feature unobserved in one whole group is tested between the gro
     expect_equal(unname(eb$df.residual[rows]), unname(reference[, "df"]))
     # approximate: limma's contrast step forms the contrast's standard error from the full design's correlations
     # (`limma::contrasts.fit`, "approximate" with missing values in a non-orthogonal design). Measured on this
-    # fixture: within 2 per cent for the features complete in A and B.
+    # fixture for the features complete in A and B: 0.15 per cent on the standard error, 0.007 on log10 p.
     ratio <- unname(eb$stdev.unscaled[rows, "groupB-groupA"] / reference[, "unscaled"])
     complete_ab <- no_c %in% fx$no_c
-    expect_lt(max(abs(ratio[complete_ab] - 1)), 0.02)
-    expect_lt(max(abs(log10(long$P.Value[at("groupB-groupA")]) - log10(reference[, "p"]))[complete_ab]), 0.05)
+    expect_lt(max(abs(ratio[complete_ab] - 1)), 0.005)
+    expect_lt(max(abs(log10(long$P.Value[at("groupB-groupA")]) - log10(reference[, "p"]))[complete_ab]), 0.01)
     expect_true(all(is.finite(ratio)))
 })
 

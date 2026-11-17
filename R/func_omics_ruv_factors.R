@@ -125,7 +125,12 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' Per assay: the RUV-III factors W from the features observed in every sample, with the levels of
 #' `ruv_grouping_variable` as replicate sets and the design's controls (KIT-124 S4, arms 7 and 8); and the corrected
 #' matrix, `ruvIII_C_Varying` with the same replicate sets, k and controls, each feature's level restored. The
-#' differential test reads the input object, not the corrected one, with `factors` (`runLipidsDA`, `runMetabolitesDA`).
+#' differential test reads the input object, not the corrected one, with `factors` (`runLipidsDA`, `runMetabolitesDA`):
+#' fold changes and p-values come from the uncorrected values with W in the model, and the corrected matrix is for
+#' display and export (intensities, heatmaps, PCA, the integration input; KIT-124 design review, M10). The two are
+#' different corrections of the same unwanted variation, RUV-III-C's own against the model's fit of W per feature, so
+#' a group difference read from the corrected matrix need not equal the model's fold change (up to 0.18 log2 on the
+#' audit's data for the features observed in every sample).
 #' An assay whose factors cannot be computed gets no RUV and a warning of class `omics_ruv_factors_refused`.
 #'
 #' @param theObject A `LipidomicsAssayData` or `MetaboliteAssayData` object (log2 values, missing values kept).

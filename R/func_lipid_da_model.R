@@ -361,7 +361,9 @@ countLipidDaSignificant <- function(df) {
 #'   to the model and the supplied controls are not tested. A feature is left out only when its observed samples
 #'   cannot estimate a W coefficient. A feature with no value in one whole group is tested in the comparisons
 #'   between the groups where it is observed (limma's handling of missing values) and listed as not observed in
-#'   that group. A model that leaves no residual degree of freedom stops.
+#'   that group. A model that leaves no residual degree of freedom stops. Fold changes and p-values come from the
+#'   uncorrected values with W in the model; the RUV-corrected matrix is for display and export and need not
+#'   reproduce them exactly.
 #'
 #' @return A list containing:
 #'   - theObject: The input S4 object (unchanged)
