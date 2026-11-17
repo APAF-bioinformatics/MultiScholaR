@@ -263,9 +263,6 @@ runMetabolitesDA <- function(
                     technical_replicate_id = theObject@technical_replicate_id
                 )
 
-                # Store fit object for Glimma
-                contrasts_results[[assay_name]] <- limma_results
-
                 # Collect qvalue warnings
                 if (length(limma_results$qvalue_warnings) > 0) {
                     all_qvalue_warnings[[assay_name]] <- limma_results$qvalue_warnings
@@ -289,6 +286,8 @@ runMetabolitesDA <- function(
                 # Combine all contrasts for this assay
                 assay_combined <- dplyr::bind_rows(assay_results_list)
                 per_assay_results[[assay_name]] <- assay_combined
+                # Store fit object for Glimma (KIT-128 K128-5: only once the assay's tables are formatted).
+                contrasts_results[[assay_name]] <- limma_results
 
                 logger::log_info(sprintf(
                     "   Completed assay %s: %d total results",
