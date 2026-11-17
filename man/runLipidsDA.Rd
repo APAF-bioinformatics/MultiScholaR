@@ -11,7 +11,8 @@ runLipidsDA(
   da_q_val_thresh = 0.05,
   treat_lfc_cutoff = 0,
   eBayes_trend = TRUE,
-  eBayes_robust = TRUE
+  eBayes_robust = TRUE,
+  ruv_factors = NULL
 )
 }
 \arguments{
@@ -29,6 +30,11 @@ named "contrasts" or "contrast_string" containing the contrast formulas.}
 \item{eBayes_trend}{Logical, use trend in eBayes (default TRUE).}
 
 \item{eBayes_robust}{Logical, use robust eBayes (default TRUE).}
+
+\item{ruv_factors}{NULL (the default): the test reads the object's values with \code{formula_string}, as before.
+Or the per-assay RUV-III factors of the factors-in-the-model design (KIT-127): \code{theObject} is then the
+uncorrected object, and per assay the factors W are added to the design and to the model, the supplied
+controls are not tested, and a feature with too few values to estimate that model is not tested.}
 }
 \value{
 A list containing:

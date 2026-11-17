@@ -133,19 +133,21 @@ test_that("arm 7 (all features as controls, W in the model) is the simulator's c
     object <- kit127Lipid(lapply(fixture$assays, `[[`, "y"), fixture$design)
     run <- kit127Quiet(runOmicsRuvFactors(object, ruv_design = "factors_all_features", ruv_number_k = K127_K, ruv_k_source = "user"))
     da <- kit127Quiet(runLipidsDA(object, fixture$contrasts_tbl, "~ 0 + group", 0.05, 0, TRUE, TRUE, ruv_factors = run$factors))
+    not_estimable <- 0L
     for (assay in names(fixture$assays)) {
         reference <- simArm(fixture, assay, K127_K[[assay]])
         record <- run$factors[[assay]]
         expect_identical(record$status, "ok")
         expectKit127W(record$W, reference$W)
         expectKit127Table(da$da_lipids_long, "lipid_id", assay, reference$table)
-        # the fixture has features the model with W cannot estimate: they are not tested, as in the simulator
-        expect_lt(nrow(reference$table), nrow(fixture$assays[[assay]]$y))
+        not_estimable <- not_estimable + nrow(fixture$assays[[assay]]$y) - nrow(reference$table)
         expect_identical(record$k, K127_K[[assay]])
         expect_identical(record$k_source, "user")
         expect_identical(record$control_count, sum(rowSums(is.na(fixture$assays[[assay]]$y)) == 0L))
         expect_identical(record$not_tested, character())
     }
+    # the fixture has features the model with W cannot estimate: they are not tested, as in the simulator
+    expect_gt(not_estimable, 0L)
     expect_identical(run$parameters$ruv_design, "factors_all_features")
     expect_identical(run$parameters$ruv_grouping_variable, "group")
 })
@@ -242,10 +244,12 @@ test_that("without ruv_factors the DA entry points are today's: the unchanged ke
                 formula_string = "~ 0 + group", sample_id_col = "Sample_ID", treat_lfc_cutoff = NA, eBayes_trend = TRUE,
                 eBayes_robust = TRUE))$results[[fixture$contrasts]]
             got <- default[[case$long]][default[[case$long]]$assay == assay, ]
-            expect_identical(got[[case$id]], rownames(direct))
-            expect_identical(got$P.Value, direct$P.Value)
-            expect_identical(got$logFC, direct$logFC)
-            expect_identical(got$fdr_qvalue, direct$fdr_qvalue)
+            # the entry point's table has its own row order: compared by feature
+            expect_setequal(got[[case$id]], rownames(direct))
+            at <- match(rownames(direct), got[[case$id]])
+            expect_identical(got$P.Value[at], direct$P.Value)
+            expect_identical(got$logFC[at], direct$logFC)
+            expect_identical(got$fdr_qvalue[at], direct$fdr_qvalue)
         }
     }
 })

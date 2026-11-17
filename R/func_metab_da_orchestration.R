@@ -138,6 +138,10 @@ countMetabDaSignificant <- function(df) {
 #' @param treat_lfc_cutoff Log fold-change cutoff for TREAT (default 0, standard analysis).
 #' @param eBayes_trend Logical, use trend in eBayes (default TRUE).
 #' @param eBayes_robust Logical, use robust eBayes (default TRUE).
+#' @param ruv_factors NULL (the default): the test reads the object's values with `formula_string`, as before.
+#'   Or the per-assay RUV-III factors of the factors-in-the-model design (KIT-127): `theObject` is then the
+#'   uncorrected object, and per assay the factors W are added to the design and to the model, the supplied
+#'   controls are not tested, and a feature with too few values to estimate that model is not tested.
 #'
 #' @return A list containing:
 #'   - theObject: The input S4 object (unchanged)
@@ -159,7 +163,8 @@ runMetabolitesDA <- function(
   da_q_val_thresh = 0.05,
   treat_lfc_cutoff = 0,
   eBayes_trend = TRUE,
-  eBayes_robust = TRUE
+  eBayes_robust = TRUE,
+  ruv_factors = NULL
 ) {
     # [D66:START] -------------------------
     d66_log <- function(...) message(sprintf("[D66] %s", paste0(...)))
@@ -237,6 +242,16 @@ runMetabolitesDA <- function(
         if (is.null(assay_input)) next
         expr_matrix <- assay_input$expr_matrix
         annotation_info <- assay_input$annotation_info
+        # KIT-127: with RUV factors the test reads these (uncorrected) values with W in the model.
+        da_design <- design_matrix
+        da_formula <- formula_string
+        if (!is.null(ruv_factors)) {
+            da_input <- applyOmicsRuvFactorsToDaInput(expr_matrix, design_matrix, formula_string, sample_id_col,
+                ruv_factors[[assay_name]], assay_name)
+            expr_matrix <- da_input$expr_matrix
+            da_design <- da_input$design_matrix
+            da_formula <- da_input$formula_string
+        }
 
         # Run limma DA
         tryCatch(
@@ -244,8 +259,8 @@ runMetabolitesDA <- function(
                 limma_results <- runTestsContrastsMetabDA(
                     data = expr_matrix,
                     contrast_strings = contrast_strings,
-                    design_matrix = design_matrix,
-                    formula_string = formula_string,
+                    design_matrix = da_design,
+                    formula_string = da_formula,
                     sample_id_col = sample_id_col,
                     treat_lfc_cutoff = if (treat_lfc_cutoff > 0) treat_lfc_cutoff else NA,
                     eBayes_trend = eBayes_trend,
