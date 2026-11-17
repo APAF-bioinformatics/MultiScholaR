@@ -1,0 +1,253 @@
+name: KIT-124 simulators
+
+# The four KIT-124 simulators on hosted runners (4 cores, 16 GB, 6 h per job), one job per simulator and cell.
+#
+# A run starts when a push to a sim-k* branch changes .github/k124-sim/params.json, and only then: a push that
+# leaves the file alone (a merge, a script change) starts nothing. The simulators (docs/.../kit-124/sim/*.R) and the
+# package tree they load are the pushed commit's. The file names the run (label), the commit whose package tree the
+# push must carry (package_commit: everything but docs/ and .github/ is compared; a difference stops the run), the
+# commit the library's tools are read from (tools_ref: .github/actions/snapshot-library, packaging/r/install-library.R
+# and packaging/multischolar.lock.json, as on performance-v2), the runs per core and per
+# stress cell (0 = none of that class; its cells may then not be listed), the cores (2 to 4: at one core mclapply is
+# a plain lapply and an error in S2 aborts the script), the simulator's time limit in minutes and, per simulator,
+# the cells and the arms (K124_ARMS; a simulator without an `arms` entry runs with it unset, the arms as before).
+# Runs are numbered from 1, as on the laptop. Two optional entries: `chunk` (per simulator, runs per job: a cell is
+# then split into run ranges, one job each, through the simulators' first-run argument; the seed is
+# 100000 + 10000 x cell index + run, so a range's rows are the whole cell's) and `assoc` (true: K129_ASSOC=1, the
+# KIT-129 association mode, whose table is s<i>-assoc.tsv; `arms` must then be empty). A third, `blas`: absent or
+# "default" is the runner's BLAS and LAPACK (OpenBLAS); "reference" selects the distribution's reference libblas3 and
+# liblapack3 (the laptop runs on reference BLAS), and the job stops if R does not then report them.
+#
+# Each job: R 4.6.1 and the library of performance-v2's CI (the KIT-134 snapshot, at tools_ref) with the two
+# internal packages, plus sva from the same snapshot; the library checked against the laptop's versions
+# (.github/k124-sim/laptop-versions.tsv); the simulator under `timeout`, from this push's tree; the out dir checked
+# and uploaded.
+#
+# Another package tree (another sim branch): cut the branch from that tree, bring this file and .github/k124-sim/
+# over (git checkout sim-k124 -- .github/workflows/k124-sim.yml .github/k124-sim), keep the tree's own workflows
+# from running on the branch, set package_commit (and tools_ref, if the tree's dependencies differ) and push.
+#
+# Restart: a simulator keeps finished cells, and a job is one cell, so a failed or timed-out job is rerun alone
+# (`gh run rerun <run> --failed`) and recomputes that cell only. A job that fails uploads nothing.
+#
+# The internal packages (read token): nothing built with the token is cached or uploaded. The library is rebuilt in
+# every job, their build output stays under RUNNER_TEMP (the action), and the artifact is the simulator's out dir
+# only, scanned for build output before the upload (.github/k124-sim/check-output.R).
+
+on:
+  push:
+    branches:
+      - "sim-k*"
+    paths:
+      - .github/k124-sim/params.json
+
+permissions:
+  contents: read
+
+env:
+  NOT_CRAN: "true"
+  OMP_NUM_THREADS: "1"
+  OPENBLAS_NUM_THREADS: "1"
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      label: ${{ steps.plan.outputs.label }}
+      assoc: ${{ steps.plan.outputs.assoc }}
+      blas: ${{ steps.plan.outputs.blas }}
+      cores: ${{ steps.plan.outputs.cores }}
+      timeout_minutes: ${{ steps.plan.outputs.timeout_minutes }}
+      job_timeout: ${{ steps.plan.outputs.job_timeout }}
+      package_commit: ${{ steps.plan.outputs.package_commit }}
+      tools_ref: ${{ steps.plan.outputs.tools_ref }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read .github/k124-sim/params.json
+        id: plan
+        run: |
+          p=.github/k124-sim/params.json
+          if ! jq -e '
+            (.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
+            ([.package_commit, .tools_ref] | all(type == "string" and test("^[0-9a-f]{40}$"))) and
+            ([.runs_core, .runs_stress, .cores, .timeout_minutes] | all(type == "number" and . == floor and . >= 0)) and
+            (.runs_core <= 9999) and (.runs_stress <= 9999) and (.cores >= 2) and (.cores <= 4) and
+            (.timeout_minutes >= 1) and (.timeout_minutes <= 300) and
+            (.arms | type == "object" and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$"))))) and
+            (.cells | type == "object" and length > 0 and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[CS][0-9]{1,2}(,[CS][0-9]{1,2})*$"))))) and
+            (. as $p | [.cells[] | split(",")[]] | all(if startswith("C") then $p.runs_core >= 1 else $p.runs_stress >= 1 end)) and
+            ((.chunk // {}) | type == "object" and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "number" and . == floor and . >= 1)))) and
+            ((.blas // "default") | . == "default" or . == "reference") and
+            ((.assoc // false) | type == "boolean") and ((.assoc // false) == false or (.arms | length) == 0)
+          ' "$p" > /dev/null; then
+            echo "::error::params.json is not valid (label; package_commit and tools_ref as 40-digit commits; runs_core, runs_stress; cores 2 to 4; timeout_minutes 1 to 300; arms and cells per s1..s4; no cell of a class with 0 runs; chunk per s1..s4; assoc true only without arms)"
+            exit 1
+          fi
+          {
+            # one job per simulator, cell and run range; a cell that is not split keeps the laptop's arguments
+            echo "matrix=$(jq -c '. as $p | {include: [.cells | to_entries[] | .key as $sim | .value | split(",")[] | . as $cell
+              | (if startswith("C") then $p.runs_core else $p.runs_stress end) as $n | (($p.chunk // {})[$sim] // $n) as $chunk
+              | range(0; $n; $chunk) | . as $done | ([$chunk, $n - $done] | min) as $runs
+              | {sim: $sim, cell: $cell, arms: ($p.arms[$sim] // ""), first: ($done + 1), runs: $runs,
+                 tag: (if $chunk < $n then "\($cell)-r\($done + 1)" else $cell end),
+                 runs_core: (if $chunk < $n then $runs else $p.runs_core end),
+                 runs_stress: (if $chunk < $n then $runs else $p.runs_stress end)}]}' "$p")"
+            echo "assoc=$(jq -r '.assoc // false' "$p")"
+            echo "blas=$(jq -r '.blas // "default"' "$p")"
+            for key in label package_commit tools_ref cores timeout_minutes; do echo "$key=$(jq -r ".$key" "$p")"; done
+            # the library takes about 15 minutes; the job's own limit stays under the runner's 6 hours
+            echo "job_timeout=$(jq -r '[.timeout_minutes + 45, 355] | min' "$p")"
+          } >> "$GITHUB_OUTPUT"
+          { echo '```json'; cat "$p"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: The package tree of this push is package_commit's (everything but docs/ and .github/)
+        env:
+          PACKAGE_COMMIT: ${{ steps.plan.outputs.package_commit }}
+        run: |
+          git fetch --quiet --no-tags --depth 1 origin "$PACKAGE_COMMIT"
+          if ! git diff --stat --exit-code "$PACKAGE_COMMIT" HEAD -- . ':(exclude)docs' ':(exclude).github'; then
+            echo "::error::the package tree of this push is not commit $PACKAGE_COMMIT's"
+            exit 1
+          fi
+          echo "package tree: identical to $PACKAGE_COMMIT outside docs/ and .github/"
+
+  sim:
+    name: ${{ matrix.sim }} ${{ matrix.tag }}
+    needs: plan
+    runs-on: ubuntu-22.04
+    timeout-minutes: ${{ fromJSON(needs.plan.outputs.job_timeout) }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      SIM: ${{ matrix.sim }}
+      CELL: ${{ matrix.cell }}
+      LABEL: ${{ needs.plan.outputs.label }}
+      ARMS: ${{ matrix.arms }}
+      TAG: ${{ matrix.tag }}
+      FIRST: ${{ matrix.first }}
+      RUNS: ${{ matrix.runs }}
+      RUNS_CORE: ${{ matrix.runs_core }}
+      RUNS_STRESS: ${{ matrix.runs_stress }}
+      ASSOC: ${{ needs.plan.outputs.assoc }}
+      BLAS: ${{ needs.plan.outputs.blas }}
+      CORES: ${{ needs.plan.outputs.cores }}
+      TIMEOUT_MINUTES: ${{ needs.plan.outputs.timeout_minutes }}
+      PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
+      TOOLS_REF: ${{ needs.plan.outputs.tools_ref }}
+      OUT: docs/qa/workflow-execution/kit/kit-124/${{ matrix.sim }}-gha
+    steps:
+      - name: The library's tools (tools_ref)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.tools_ref }}
+          persist-credentials: false
+      - name: R 4.6.1 and the library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: any::pkgload
+      - name: sva from the same snapshot (the laptop's scratch-k124-lib); the installed MultiScholaR removed
+        run: |
+          cat > "$RUNNER_TEMP/sva.R" <<'EOF'
+          snapshot <- jsonlite::fromJSON("packaging/multischolar.lock.json")$Snapshot$Date
+          options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
+              paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))
+          ppm <- "https://packagemanager.posit.co"
+          bioc <- sprintf("%s/bioconductor/__linux__/jammy/%s/packages/3.23", ppm, snapshot)
+          repos <- c(CRAN = sprintf("%s/cran/__linux__/jammy/%s", ppm, snapshot), BioCsoft = paste0(bioc, "/bioc"),
+              BioCann = paste0(bioc, "/data/annotation"))
+          available <- utils::available.packages(repos = repos)
+          wanted <- unique(c("sva", unlist(tools::package_dependencies("sva", db = available,
+              which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
+          needed <- setdiff(wanted, rownames(utils::installed.packages(lib.loc = .Library)))
+          cat("for sva, not in the library:", paste(needed, collapse = ", "), "\n")
+          utils::install.packages(needed, lib = .Library, repos = repos, dependencies = FALSE)
+          # The simulators load the package from the tree (pkgload::load_all). The copy the action installed is
+          # performance-v2's: removed, so that nothing can load it in the tree's place.
+          utils::remove.packages("MultiScholaR", lib = .Library)
+          EOF
+          R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla "$RUNNER_TEMP/sva.R"
+      - name: BLAS and LAPACK (params blas; reference = the distribution's libblas3 and liblapack3)
+        run: |
+          if [ "$BLAS" = "reference" ]; then
+            sudo apt-get install -y --no-install-recommends libblas3 liblapack3 > /dev/null
+            sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/blas/libblas.so.3
+            sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3
+          fi
+          Rscript --vanilla -e 'b <- extSoftVersion()[["BLAS"]]; cat("BLAS:", b, "->", normalizePath(b), "\nLAPACK:", La_library(), "->", normalizePath(La_library()), "; version", La_version(), "\n"); print(sessionInfo()); open <- grepl("openblas", normalizePath(c(b, La_library()))); if (identical(Sys.getenv("BLAS"), "reference") && any(open)) { cat("::error::reference BLAS was asked for, R still reports OpenBLAS\n"); quit(status = 1L) }'
+      - name: The simulators and the package tree (this push)
+        uses: actions/checkout@v4
+        with:
+          path: simtree
+          persist-credentials: false
+      - name: No LFS filter in the tree (the laptop has no git-lfs)
+        working-directory: simtree
+        run: |
+          # .gitattributes sends *.rds through the LFS filter. With the runner's git-lfs, `git status` reports
+          # tracked .rds files (under docs/ and tests/; the simulators read none) as modified, and the simulators'
+          # meta lines on the state of the work tree come out wrong.
+          git config filter.lfs.clean cat
+          git config filter.lfs.smudge cat
+          git config filter.lfs.process ""
+          git config filter.lfs.required false
+          echo "tracked files reported as modified: $(git status --porcelain --untracked-files=no | wc -l)"
+      - name: The library against the laptop's versions
+        run: >
+          Rscript --vanilla simtree/.github/k124-sim/check-library.R
+          simtree/.github/k124-sim/laptop-versions.tsv "$RUNNER_TEMP/library.tsv"
+      - name: Compile the tree's native code (pkgload::load_all once, outside the simulator's time and output)
+        working-directory: simtree
+        run: >
+          Rscript -e 'suppressMessages(pkgload::load_all(".", quiet = TRUE));
+          cat("MultiScholaR", as.character(utils::packageVersion("MultiScholaR")), "loads from the tree\n")'
+      - name: Run the simulator
+        working-directory: simtree
+        run: |
+          case "$SIM" in
+            s1) script=s1_classic.R ;;
+            s2) script=s2_limpa.R ;;
+            s3) script=s3_trx.R ;;
+            s4) script=s4_lipid_metab.R ;;
+          esac
+          if [ -n "$ARMS" ]; then export K124_ARMS="$ARMS"; fi
+          if [ "$ASSOC" = "true" ]; then export K129_ASSOC=1; fi
+          # a later run range: the first run is the sixth argument of S1, S3 and S4 and K124_FIRST_RUN for S2
+          first=()
+          if [ "$FIRST" -gt 1 ]; then
+            if [ "$SIM" = "s2" ]; then export K124_FIRST_RUN="$FIRST"; else first=("$FIRST"); fi
+          fi
+          nproc; free -g | sed -n 2p
+          status=0
+          timeout "${TIMEOUT_MINUTES}m" Rscript "docs/qa/workflow-execution/kit/kit-124/sim/$script" \
+            "$OUT" "$RUNS_CORE" "$RUNS_STRESS" "$CORES" "$CELL" "${first[@]}" > "$RUNNER_TEMP/sim.out" 2>&1 || status=$?
+          tail -n 40 "$RUNNER_TEMP/sim.out"
+          echo "simulator: exit $status after $SECONDS s"
+          echo "work tree after the run (git status --short; the out dir is untracked):"; git status --short | head -n 20
+          if [ "$status" -eq 124 ]; then echo "::error::$SIM $TAG: the simulator reached its limit of $TIMEOUT_MINUTES minutes"; fi
+          if [ "$status" -ne 0 ]; then echo "::error::$SIM $TAG: the simulator failed (exit $status); nothing is uploaded"; exit "$status"; fi
+          mkdir "$OUT/runner"
+          cp "$RUNNER_TEMP/library.tsv" "$OUT/runner/$TAG.library.tsv"
+          cp "$RUNNER_TEMP/sim.out" "$OUT/runner/$TAG.out"
+          printf 'run\t%s\nattempt\t%s\ncommit\t%s\npackage_commit\t%s\ntools_ref\t%s\nlabel\t%s\nsim\t%s\ncell\t%s\narms\t%s\nassoc\t%s\nblas\t%s\nfirst_run\t%s\nruns\t%s\ncores\t%s\nsimulator_seconds\t%s\n' \
+            "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$PACKAGE_COMMIT" "$TOOLS_REF" "$LABEL" "$SIM" "$CELL" "$ARMS" "$ASSOC" "$BLAS" "$FIRST" "$RUNS" "$CORES" "$SECONDS" \
+            > "$OUT/runner/$TAG.job.tsv"
+      - name: The out dir is complete and holds no build output
+        working-directory: simtree
+        run: |
+          if [ "$ASSOC" = "true" ]; then table=assoc; else table=runs; fi
+          Rscript --vanilla .github/k124-sim/check-output.R "$SIM" "$OUT" "$CELL" "$FIRST" "$RUNS" "$table"
+      - name: Upload the out dir
+        uses: actions/upload-artifact@v4
+        with:
+          name: k124-${{ needs.plan.outputs.label }}-${{ matrix.sim }}-${{ matrix.tag }}
+          path: simtree/${{ env.OUT }}
+          if-no-files-found: error
+          retention-days: 30

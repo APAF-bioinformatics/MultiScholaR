@@ -1,0 +1,11 @@
+{
+  "label": "r0a-life",
+  "package_commit": "ace1f4de68edfea857b1f51fff4d7d519e4d522e",
+  "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
+  "runs_core": 8,
+  "runs_stress": 0,
+  "cores": 4,
+  "timeout_minutes": 30,
+  "arms": {"s3": "1,2,7", "s4": "1,2,7,15,16"},
+  "cells": {"s3": "C6", "s4": "C6"}
+}
