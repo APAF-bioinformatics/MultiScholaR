@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RUV design validation</title>
+<style>
+  :root {
+    --ink: #16202a; --muted: #5b6770; --rule: #d9dee3; --paper: #ffffff; --wash: #f5f7f8;
+    --good: #0b7a5c; --bad: #b5421a; --mid: #8a6a00; --accent: #1f5f8b;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--paper); }
+  body {
+    margin: 0 auto; padding: 40px 24px 80px; max-width: 1080px; background: var(--paper); color: var(--ink);
+    font: 16px/1.55 "Helvetica Neue", Helvetica, Arial, "Liberation Sans", sans-serif;
+  }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+  h2 { font-size: 21px; margin: 56px 0 12px; padding-top: 18px; border-top: 2px solid var(--ink); }
+  h3 { font-size: 17px; margin: 36px 0 6px; }
+  p { margin: 0 0 12px; max-width: 78ch; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  .lede { font-size: 18px; line-height: 1.5; max-width: 74ch; }
+  ul { margin: 0 0 12px; padding-left: 20px; max-width: 78ch; }
+  li { margin-bottom: 6px; }
+  nav { font-size: 14px; margin: 18px 0 0; color: var(--muted); }
+  nav a { color: var(--accent); text-decoration: none; margin-right: 14px; white-space: nowrap; }
+  nav a:hover { text-decoration: underline; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 8px; font-size: 14.5px; }
+  th, td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th { border-bottom: 2px solid var(--ink); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  .ok { color: var(--good); font-weight: 600; }
+  .no { color: var(--bad); font-weight: 600; }
+  .cond { color: var(--mid); font-weight: 600; }
+  .note { color: var(--muted); font-size: 13.5px; max-width: 86ch; }
+  figure { margin: 18px 0 0; }
+  figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); background: #fff; }
+  figure a { display: block; }
+  .take { font-size: 16.5px; font-weight: 600; margin: 4px 0 10px; max-width: 80ch; }
+  figcaption { font-size: 14px; color: #2c3740; margin-top: 12px; max-width: 92ch; }
+  figcaption b { color: var(--ink); }
+  .files { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .files a { color: var(--accent); }
+  .flag { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--bad);
+          border: 1px solid var(--bad); padding: 1px 7px; margin-left: 8px; vertical-align: 2px; }
+  code { font: 13px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: var(--wash); padding: 1px 4px; }
+  @media print { body { max-width: none; padding: 0; } h2 { break-after: avoid; } figure { break-inside: avoid; } nav { display: none; } }
+</style>
+</head>
+<body>
+
+<h1>Which RUV designs can MultiScholaR offer, and which one should be the default?</h1>
+<div class="sub">Simulation study of unwanted-variation removal across four omics · results as scored on 18 November 2026 · main scenarios final, extra-hard scenarios partial</div>
+
+<p class="lede">MultiScholaR removes unwanted variation (batch, run order, sample handling) with RUV before testing for differences between groups. We tested every way the package could do this on simulated data where the truth is known. One design holds its false discovery rate in every omic at almost no cost in power. The design the package uses today does not: at a nominal 5% it returned 30% to 56% false discoveries in its worst main scenario.</p>
+
+<nav>
+  <a href="#headline">Headline numbers</a><a href="#why">Why</a><a href="#what">What was run</a><a href="#read">How to read</a>
+  <a href="#s4">Fig. S4</a><a href="#s5">Fig. S5</a><a href="#s2">Fig. S2</a><a href="#s3">Fig. S3</a><a href="#s8">Fig. S8</a>
+  <a href="#decision">Decision</a><a href="#limits">Limits</a><a href="#source">Sources</a>
+</nav>
+
+<h2 id="headline">Headline numbers</h2>
+<p>False discoveries are the share of reported differences that are not real. The target is 5%; the study's pre-set limit is 7.5%. The first number in each cell is the worst main scenario that has true differences; the second is the power (share of real differences found) in the centre scenario.</p>
+<div class="scroll">
+<table>
+  <thead><tr>
+    <th>Design</th><th class="num">Proteomics, classic</th><th class="num">Proteomics, DIA (limpa)</th><th class="num">Transcriptomics</th><th class="num">Lipidomics / metabolomics</th>
+  </tr></thead>
+  <tbody>
+    <tr><td><b>Recommended:</b> all features as controls, groups as replicates, unwanted factors in the model</td>
+        <td class="num"><span class="ok">6.6%</span> · 91%</td><td class="num"><span class="ok">5.5%</span> · 91%</td><td class="num"><span class="ok">5.5%</span> · 77%</td><td class="num"><span class="ok">7.2%</span> · 43%</td></tr>
+    <tr><td><b>Today's design</b> (kept as "Legacy")</td>
+        <td class="num"><span class="no">38.5%</span> · 92%</td><td class="num"><span class="no">46.6%</span> · 91%</td><td class="num"><span class="no">29.9%</span> · 73%</td><td class="num"><span class="no">55.6%</span> · 42%</td></tr>
+    <tr><td><b>No RUV</b></td>
+        <td class="num">5.2% · 49%</td><td class="num"><span class="no">19.1%</span> · 56%</td><td class="num">4.4% · 0.5%</td><td class="num">5.9% · 0.3%</td></tr>
+    <tr><td><b>Best possible:</b> the true unwanted factor is known (not available in practice)</td>
+        <td class="num">5.2% · 91%</td><td class="num">5.5% · 91%</td><td class="num">5.5% · 77%</td><td class="num">6.1% · 50%</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note">Mean false discovery proportion at a nominal 5% (Benjamini-Hochberg), 1,000 simulated data sets per scenario. "Worst main scenario" leaves out the scenario with no true differences, and the technical-duplicate scenario in transcriptomics and lipidomics/metabolomics, where no design was judged (see Limits).</p>
+<ul>
+  <li><b>The recommended design matches the best possible result</b> in three of four omics, and stays inside the limit in the fourth.</li>
+  <li><b>Today's design finds the same number of real differences but reports many false ones.</b> It is worst when the unwanted factor partly follows the groups, and in DIA and lipidomics/metabolomics it is liberal in nearly every scenario.</li>
+  <li><b>Not correcting is not a safe fallback.</b> It keeps the error rate in three omics only by finding almost nothing (power under 1% in transcriptomics and lipidomics/metabolomics when unwanted variation is present).</li>
+</ul>
+
+<h2 id="why">Why this was run</h2>
+<p>A review of the package found that its RUV step, although each computation matches the published software exactly, is <em>used</em> differently from the method papers in three ways. Each could plausibly inflate false discoveries, and code inspection cannot say by how much.</p>
+<table>
+  <thead><tr><th>Choice</th><th>Today's design</th><th>Method papers</th></tr></thead>
+  <tbody>
+    <tr><td>Negative-control features</td><td>The least significant 5 to 30% of features from a first test, picked by a grid search</td><td>Replicate-based RUV: all features "works well in practice" (RUVSeq). Control-only RUV: keep most features, drop only the clearly changed ones</td></tr>
+    <tr><td>Number of unwanted factors (k)</td><td>Chosen by the same grid search</td><td>No fixed rule; judgment with diagnostics. RUVSeq's example uses 1</td></tr>
+    <tr><td>What the test reads</td><td>Classic proteomics, lipidomics, metabolomics: the corrected data</td><td>RNA-seq and limma convention: uncorrected data with the unwanted factors in the model; corrected data "only for exploration"</td></tr>
+  </tbody>
+</table>
+<p>The package will be described in a methods paper and shipped to users who will not check these choices themselves. The study was run to put a measured error rate beside every option the software offers, and to choose the default on evidence.</p>
+
+<h2 id="what">What was run</h2>
+<table>
+  <tbody>
+    <tr><th style="width:22%">Simulators</th><td>Four, one per analysis route: classic proteomics; DIA proteomics with limpa; transcriptomics (counts); lipidomics and metabolomics (two assays, internal standards, pooled QC injections). Each generates data with known true differences and a known unwanted factor, then runs the package's own code path.</td></tr>
+    <tr><th>Main scenarios</th><td>Eight per simulator. A centre scenario (6 samples per group, 20% of features changed, one unwanted factor unrelated to the groups), and seven that each change one setting: 12 per group; 10% changed; no unwanted factor; no true differences at all; unwanted factor partly following the groups (correlation 0.3); technical duplicates; three groups.</td></tr>
+    <tr><th>Size</th><td>1,000 simulated data sets per scenario: 32,000 data sets in the main scenarios, each analysed by every design.</td></tr>
+    <tr><th>Designs compared</th><td>No RUV; the true factor given to the model (the ceiling); today's design; and designs that change one choice at a time: the control set (all features, known true nulls, first-pass nulls, a contaminated list), the test form (factors in the model, or corrected data tested), the replicate structure (groups or technical replicates), and k (estimated or fixed at 1). Other published methods (RUV-4, RUVinv, surrogate variable analysis) were run for comparison.</td></tr>
+    <tr><th>Measures</th><td>Type I error rate (true nulls with p &lt; 0.05); mean false discovery proportion among features called at q &lt; 0.05; share of data sets with more than 10% false discoveries; power.</td></tr>
+    <tr><th>Decision rules</th><td>Written down and independently reviewed before the confirming runs. A design passes when its type I error rate and mean false discovery proportion stay at or below 0.075 against a nominal 0.05 in every judged main scenario, and its power is not materially below the ceiling.</td></tr>
+    <tr><th>Extra-hard scenarios</th><td>Eleven per simulator at 500 data sets each (3 per group, 40% changed, strong confounding, three unwanted factors, 50% missing values, heavy-tailed noise and others). They state where a design stops holding and were not used to choose between designs. Two of four simulators have finished these.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="read">How to read the figures</h2>
+<ul>
+  <li><b>Solid line</b>: the nominal level, 0.05. <b>Dashed line</b>: the limit of the decision rule, 0.075. Below the dashed line is calibrated.</li>
+  <li><b>Ceiling</b>: the analysis with the true unwanted factor handed to the model. No real method can do better, so a design that matches it has nothing left to gain.</li>
+  <li><b>One colour per design in every figure</b>: green recommended (all features as controls), vermillion legacy, orange first-pass nulls, blue known null controls, grey no RUV, black ceiling.</li>
+  <li><b>Axes</b> for false discoveries use a square-root scale so that values near 0.05 are not squashed. Numbers are written without the leading zero (.05 = 0.05).</li>
+  <li><b>Faded points and daggers</b> mark scenarios where even the ceiling failed, so no design was judged there.</li>
+</ul>
+
+<h2 id="s4">Figure S4. False discoveries against power</h2>
+<p class="take">The recommended design sits inside the ceiling's ring in both proteomics routes and in transcriptomics. Legacy has the same power but leaves the calibrated band in its worst scenario in every omic.</p>
+<figure>
+  <a href="figS4-error-against-power.png"><img src="figS4-error-against-power.png" alt="Grid of panels, one row per omic and one column per design, plotting mean false discovery proportion against power" loading="lazy"></a>
+  <figcaption><b>Legend.</b> Mean false discovery proportion against power, one row of panels per omic and one column per design of the option set and the two references. In each panel the design named above it is the filled, coloured point (centre scenario; mean ± 1.96 Monte Carlo standard errors in both directions, 1,000 data sets, mostly narrower than the point). The open point of the same colour joined to it is the same design in the judged main scenario with true effects where its mean false discovery proportion is highest, set at the centre scenario's power. The black ring is the ceiling (true factor known) in the centre scenario: a design inside the ring matches the ceiling. Small grey points: every other design and method in the centre scenario (identified in the results table). Shaded: the calibrated region, mean false discovery proportion at most 0.075 (dashed line); solid line: nominal 0.05. Designs with technical replicates are not shown (they were run in the technical-duplicate scenario only; Figures S2 and S3). Square-root vertical axis; the same axes in every panel.</figcaption>
+  <div class="files">Full resolution: <a href="figS4-error-against-power.png">PNG</a> · <a href="figS4-error-against-power.pdf">PDF</a></div>
+</figure>
+
+<h2 id="s5">Figure S5. One choice changed at a time</h2>
+<p class="take">Both of today's departures cost calibration on their own. Testing corrected data inflates false discoveries in three omics; the small legacy control set fails in every DIA scenario, and elsewhere when the unwanted factor follows the groups.</p>
+<figure>
+  <a href="figS5-one-choice-changed.png"><img src="figS5-one-choice-changed.png" alt="Paired points per scenario and omic comparing two test forms and two control sets" loading="lazy"></a>
+  <figcaption><b>Legend.</b> Mean false discovery proportion (± 1.96 Monte Carlo standard errors; 1,000 data sets) in each main scenario for two pairs of designs that differ in one choice. Top, the test form: known null controls and the same k, with the factors in the model (filled) or with the test run on the corrected data (open). Bottom, the control set: factors in the model in both, with all features as controls (filled) or with the legacy control set, the least significant 5 to 30% of features (open); the two also differ in how k is chosen (estimated count against the separation rule), which goes with the control set. In transcriptomics the legacy design already has the factors in the model, so the legacy design itself is drawn as the open marker. Faded: scenarios not judged. Solid line: nominal 0.05; dashed line: the limit, 0.075. Square-root axis, the same in every panel.</figcaption>
+  <div class="files">Full resolution: <a href="figS5-one-choice-changed.png">PNG</a> · <a href="figS5-one-choice-changed.pdf">PDF</a></div>
+</figure>
+
+<h2 id="s2">Figure S2. Every design in every main scenario</h2>
+<p class="take">The complete record. White cells are on target, red cells report too many false discoveries, blue cells are conservative. The recommended row is white or near-white throughout; the legacy row is red in most columns.</p>
+<h3>Part 1: proteomics, classic and DIA</h3>
+<figure>
+  <a href="figS2-calibration-heatmap-part1.png"><img src="figS2-calibration-heatmap-part1.png" alt="Heatmap of mean false discovery proportion by design and scenario for the two proteomics routes" loading="lazy"></a>
+  <div class="files">Full resolution: <a href="figS2-calibration-heatmap-part1.png">PNG</a> · <a href="figS2-calibration-heatmap-part1.pdf">PDF</a></div>
+</figure>
+<h3>Part 2: transcriptomics, lipidomics and metabolomics</h3>
+<figure>
+  <a href="figS2-calibration-heatmap-part2.png"><img src="figS2-calibration-heatmap-part2.png" alt="Heatmap of mean false discovery proportion by design and scenario for transcriptomics and lipidomics/metabolomics" loading="lazy"></a>
+  <figcaption><b>Legend (both parts).</b> Mean false discovery proportion among the features called at q &lt; 0.05 (nominal 0.05), for each design (rows) in each main scenario (columns), one panel per omic; 1,000 simulated data sets per cell. The value is written in each cell. Each panel lists the designs that were run in that omic, in the same order everywhere; the coloured square beside a design is its colour in the other figures. Colour of the cells is the ratio to the nominal level on a log scale: white at 0.05, blue below (conservative), red above (liberal), clipped at 0.0125 and 0.8. Empty cells: the design was not run in that scenario (designs with technical replicates were run in the technical-duplicate scenario only; the contaminated control list was not run under the global null in the two proteomics simulators). † scenario not judged. In the global-null scenario the false discovery proportion of a data set is 1 if any feature is called, so the mean equals the share of data sets with any call.</figcaption>
+  <div class="files">Full resolution: <a href="figS2-calibration-heatmap-part2.png">PNG</a> · <a href="figS2-calibration-heatmap-part2.pdf">PDF</a></div>
+</figure>
+
+<h2 id="s3">Figure S3. Type I error rate</h2>
+<p class="take">The same picture on raw p-values, before any multiple-testing adjustment: the designs that fail in Figure S2 already fail here, so the problem is in the test itself and not in the adjustment.</p>
+<figure>
+  <a href="figS3-type-one-error-forest.png"><img src="figS3-type-one-error-forest.png" alt="Forest plot of the type I error rate per design, scenario and omic" loading="lazy"></a>
+  <figcaption><b>Legend.</b> Share of true null features with p &lt; 0.05 for each design (rows) and omic (panels); one point per main scenario, in the order of Figure S2 from top to bottom within a row, with mean ± 1.96 Monte Carlo standard errors over 1,000 data sets (most intervals are narrower than the point). Filled circle: centre scenario; triangle: unwanted factor tied to the groups (correlation 0.3); open circles: the other main scenarios; crosses: scenarios not judged. Solid line: nominal 0.05; dashed line: the limit, 0.075. Square-root axis.</figcaption>
+  <div class="files">Full resolution: <a href="figS3-type-one-error-forest.png">PNG</a> · <a href="figS3-type-one-error-forest.pdf">PDF</a></div>
+</figure>
+
+<h2 id="s8">Figure S8. Extra-hard scenarios <span class="flag">PARTIAL</span></h2>
+<p class="take">Preliminary, two of four omics. The recommended design held where it was expected to be weakest in transcriptomics; in lipidomics/metabolomics it becomes liberal under strong confounding (13.0% against a ceiling of 7.2%) and at 3 samples per group, where the ceiling is liberal too.</p>
+<p>These scenarios set the conditions of use that will be printed beside each option. They are not final: the two proteomics simulators are still running, and the figures will be redrawn from the final scoring.</p>
+<h3>S8a, false discoveries: transcriptomics</h3>
+<figure><a href="figS8a-extra-hard-fdp-part1.png"><img src="figS8a-extra-hard-fdp-part1.png" alt="Heatmap of mean false discovery proportion in extra-hard scenarios, transcriptomics" loading="lazy"></a>
+  <div class="files">Full resolution: <a href="figS8a-extra-hard-fdp-part1.png">PNG</a> · <a href="figS8a-extra-hard-fdp-part1.pdf">PDF</a></div></figure>
+<h3>S8a, false discoveries: lipidomics and metabolomics</h3>
+<figure><a href="figS8a-extra-hard-fdp-part2.png"><img src="figS8a-extra-hard-fdp-part2.png" alt="Heatmap of mean false discovery proportion in extra-hard scenarios, lipidomics and metabolomics" loading="lazy"></a>
+  <div class="files">Full resolution: <a href="figS8a-extra-hard-fdp-part2.png">PNG</a> · <a href="figS8a-extra-hard-fdp-part2.pdf">PDF</a></div></figure>
+<h3>S8b, power: transcriptomics</h3>
+<figure><a href="figS8b-extra-hard-power-part1.png"><img src="figS8b-extra-hard-power-part1.png" alt="Heatmap of power in extra-hard scenarios, transcriptomics" loading="lazy"></a>
+  <div class="files">Full resolution: <a href="figS8b-extra-hard-power-part1.png">PNG</a> · <a href="figS8b-extra-hard-power-part1.pdf">PDF</a></div></figure>
+<h3>S8b, power: lipidomics and metabolomics</h3>
+<figure><a href="figS8b-extra-hard-power-part2.png"><img src="figS8b-extra-hard-power-part2.png" alt="Heatmap of power in extra-hard scenarios, lipidomics and metabolomics" loading="lazy"></a>
+  <figcaption><b>Legend (all four panels).</b> (a) Mean false discovery proportion and (b) power of each design (rows) in each extra-hard scenario (columns); 500 simulated data sets per cell; rows and colour in (a) as in Figure S2. Scenarios: 3 per group; 40% of features changed; factor strongly tied to the groups (correlation 0.6); three unwanted factors; no missing values (transcriptomics: low counts, library size divided by 10); 50% missing; heavy-tailed noise (t, 4 degrees of freedom); a known, unbalanced batch; 80% of effects in one direction; loadings tied to abundance; 3 per group with the factor tied to the groups. † scenario in which the ceiling design was itself miscalibrated. Extra-hard scenarios were not used to judge designs; they state where a design stops holding.</figcaption>
+  <div class="files">Full resolution: <a href="figS8b-extra-hard-power-part2.png">PNG</a> · <a href="figS8b-extra-hard-power-part2.pdf">PDF</a></div></figure>
+
+<h2 id="decision">What was decided from this</h2>
+<p>Every design stays available in every omic, because users have legitimate reasons to prefer one (existing results to reproduce, a trusted control list, technical replicates). Each option carries its measured error rate and its conditions of use in the interface, the saved record and the report's methods text. The recommended design is pre-selected.</p>
+<table>
+  <thead><tr><th style="width:17%">Tier</th><th>Option</th><th>Note shown to the user</th></tr></thead>
+  <tbody>
+    <tr><td><span class="ok">Recommended</span></td><td>Groups as replicate sets, all features as controls, unwanted factors in the model</td><td>Pre-selected in all four omics</td></tr>
+    <tr><td><span class="cond">Valid with conditions</span></td><td>Technical replicates as the replicate structure</td><td>When technical replicates are declared</td></tr>
+    <tr><td><span class="cond">Valid with conditions</span></td><td>A supplied control list (housekeeping features, internal standards), factors in the model</td><td>A list that contains changing features inflates false discoveries</td></tr>
+    <tr><td><span class="cond">Valid with conditions</span></td><td>First-pass null controls (drop the most significant 25%), factors in the model</td><td>Not when the unwanted factor follows the groups; weaker in DIA and lipidomics/metabolomics</td></tr>
+    <tr><td><span class="no">Legacy, warned</span></td><td>Today's design, unchanged</td><td>Reproduces earlier results; measured false discoveries 30% to 56% at a nominal 5%</td></tr>
+    <tr><td>None</td><td>No RUV</td><td>Loses most power when unwanted variation is present; not calibrated in DIA</td></tr>
+  </tbody>
+</table>
+<p>The corrected data are still computed under every option and used for PCA, plots, export and multi-omics integration. "Factors in the model" changes only what the statistical test reads.</p>
+<p>The number of unwanted factors is estimated automatically by a permutation method (the one used in surrogate variable analysis), which returned the true number in the simulations (mean 1.00 where the truth was 1, 3.00 where it was 3). The package's existing rule, which reads a diagnostic plot, stays selectable wherever a separate control set exists, and the user can always set the number directly. Both rules come with a diagnostic plot.</p>
+
+<h2 id="limits">Limits, and what is still to come</h2>
+<ul>
+  <li><b>Simulation only.</b> The data follow the models we wrote. A check on public real data, splitting samples from one group into two false groups so that no true difference exists, is planned and will be added as a further figure.</li>
+  <li><b>Technical replicates rest on thin evidence.</b> That option was judged in one scenario in each proteomics route. In transcriptomics and lipidomics/metabolomics the technical-duplicate scenario was void: the package treated duplicates as independent samples there, so even the ceiling failed (27%). That defect has since been repaired and the scenario will be re-measured.</li>
+  <li><b>Lipidomics/metabolomics has no valid "no true differences" check.</b> Both assays were scored as one family in that scenario, which voids it.</li>
+  <li><b>DIA was measured on one of the two quantification engines</b> (the fast reimplementation). The result is expected, not measured, to carry over to the reference limpa engine.</li>
+  <li><b>Extra-hard scenarios are partial</b> (Figure S8).</li>
+  <li><b>Three further designs are being simulated</b> so that every selectable combination of control set and k rule has its own measured figure. They add rows to these figures; they do not change the ones shown.</li>
+  <li><b>Four planned supplementary figures are not drawn yet:</b> the study design schematic, per-data-set distributions, estimated against true number of factors, and the real-data check.</li>
+</ul>
+
+<h2 id="source">Sources and reproducibility</h2>
+<ul>
+  <li>Every figure is drawn by one script, <code>figures.R</code>, from the committed scoring tables; no number in a figure is typed by hand. The numbers in the headline table are the same values, read from <a href="tableS-per-scenario-results.csv">tableS-per-scenario-results.csv</a> (one row per omic, scenario and design, with standard errors and the status of each decision rule).</li>
+  <li>The simulators, the pre-specified decision rules, the independent review and the scoring script are in the repository under <code>docs/qa/workflow-execution/kit/kit-124/</code>; the scored tables under <code>kit-124/scored/</code>. R 4.6.1; seeds fixed per simulated data set.</li>
+  <li>Method papers consulted: Risso et al. 2014 (RUVSeq) and its vignette; Gagnon-Bartsch and Speed 2012 (RUV-2); Molania et al. 2019 and 2023 (RUV-III, pseudo-replicates); Jacob et al. 2016; Poulos et al. 2020 (RUV-III-C, proteomics); Salim et al. 2022 (RUV-III-NB); Kim et al. 2021 (hRUV, metabolomics); Nygaard et al. 2016 (testing after batch correction); Leek and Storey 2007 (estimating the number of factors). Quotes and DOIs are in <code>kit-124/design-review-20261118.md</code>.</li>
+</ul>
+<p class="note">This page reads the figure files beside it. Keep it in the same folder as the PNG and PDF files when sharing.</p>
+
+</body>
+</html>
