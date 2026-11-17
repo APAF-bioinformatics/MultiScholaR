@@ -5,7 +5,7 @@ name: KIT-134 distributable
 #
 # Only stage internal uses the read token (secret DEPS_READ_TOKEN, given as GITHUB_PAT to the one step
 # that installs the library): it adds fastduckdb and fastlimpadpc (internal repositories) at
-# DESCRIPTION's Remotes commits. Revision 1.2 (IR-B2) while the repositories are internal: a token
+# the commits packaging/r/install-library.R names (performance-v2's Remotes since daf1e341). Revision 1.2 (IR-B2) while the repositories are internal: a token
 # run builds no shell and no installer, uploads no library and no installer, and uploads only a
 # summary folder of small text files, checked to be text before the upload; it verifies in the job.
 # No job of this workflow uses actions/cache or a setup action's cache (the plan job fails if the
