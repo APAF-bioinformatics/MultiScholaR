@@ -479,6 +479,11 @@ registerOmicsDesignBuilderObservers <- function(input, output, session, dataTbl,
             shiny::showNotification(builderTexts[["no_assignment"]], type = "warning")
             return(NULL)
         }
+        # KIT-128 (audit K128-2): the shared save refuses replicate numbers shared without the technical-replicate action.
+        if (is.character(finalResult)) {
+            shiny::showNotification(finalResult, type = "error", duration = NULL)
+            return(NULL)
+        }
         setResult(finalResult)
         shiny::showNotification(builderTexts[["save_success"]], type = "message", duration = 5)
     }))
