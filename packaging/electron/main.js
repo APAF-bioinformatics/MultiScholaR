@@ -74,9 +74,9 @@ function newRunFolder() {
 // The host facts that decide whether the package's systemd worker can run here (revision 2.0,
 // 2.0.5, step 1): Linux; systemctl, systemd-run and busctl; a user manager that answers; the
 // unified cgroup v2 hierarchy; the memory controller delegated to the user manager; kernel 6.12 or
-// later (R/utils_workflow_execution.R, openWorkflowPeakWindow). Otherwise the plain launcher. The
-// package's entry takes the result (MSR_LAUNCHER_PROBE) and owns the rest of the order: the trial
-// unit, and the in-process fallback.
+// later (R/utils_workflow_execution.R, openWorkflowPeakWindow); and a user D-Bus on which systemd
+// answers. Otherwise the plain launcher. The package's entry takes the result (MSR_LAUNCHER_PROBE)
+// and owns the rest of the order: the trial unit, and the in-process fallback.
 function probeLauncher() {
   const started = Date.now();
   const facts = { platform: process.platform, kernel: os.release() };
@@ -100,6 +100,14 @@ function probeLauncher() {
   if (!controllers.split(/\s+/).includes('memory')) return verdict('process', 'the memory controller is not delegated to the user manager');
   const [major, minor] = os.release().split(/[.-]/).map((part) => Number.parseInt(part, 10));
   if (!(major > 6 || (major === 6 && minor >= 12))) return verdict('process', `kernel ${major}.${minor} is older than 6.12`);
+  // Last, the user D-Bus itself, not only busctl: the package creates the application's slice with
+  // busctl --user (createWorkflowApplicationSlice). systemctl reaches the user manager over its
+  // private socket, so it answers on a host without a user bus (GitHub's ubuntu-24.04 runner, runs
+  // 44055833237 and 44059705566), where the slice call then fails with "Failed to connect to bus".
+  const bus = spawnSync('/usr/bin/busctl', ['--user', 'call', 'org.freedesktop.systemd1', '/org/freedesktop/systemd1',
+    'org.freedesktop.DBus.Peer', 'Ping'], { timeout: 1500, stdio: 'ignore' });
+  facts.userBus = bus.status === 0;
+  if (!facts.userBus) return verdict('process', 'the user D-Bus does not answer');
   return verdict('systemd', 'systemd worker: every host requirement holds');
 }
 

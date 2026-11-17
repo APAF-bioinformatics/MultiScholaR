@@ -4,12 +4,13 @@
 // uses nothing from the runner).
 //
 // Usage: node lifecycle-test.js <label> <application executable> <application folder>
-//            --expect-launcher <in-process|process|systemd> [--network-closed]
+//            --expect-launcher <in-process|process|systemd> [--expect-reason <text>] [--network-closed]
 //
 // <application folder> is the installed or unpacked application; every process whose executable
 // lies under it counts as "from the bundle", and those under its resources/runtime as R.
 // The test: (1) start; the window loads the application and a live Shiny session renders the first
-// tab; the launcher line says what was expected; the port answers 200. (2) A second start joins
+// tab; the launcher line says what was expected (and, with --expect-reason, its reason contains
+// that text); the port answers 200. (2) A second start joins
 // the first: it exits, the first window gets the event, and no second R starts. (3) The window is
 // closed: the application exits 0, then no process from the bundle is left and the port refuses.
 // (4) Started again and the shell killed hard: R is gone within 10 s. With --network-closed it
@@ -27,8 +28,9 @@ const flag = (name) => argv.includes(name);
 const option = (name) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
 const [label, executable, folder] = argv;
 const expectLauncher = option('--expect-launcher');
+const expectReason = option('--expect-reason');
 if (!label || !executable || !folder || !expectLauncher) {
-  console.error('usage: node lifecycle-test.js <label> <executable> <application folder> --expect-launcher <launcher> [--network-closed]');
+  console.error('usage: node lifecycle-test.js <label> <executable> <application folder> --expect-launcher <launcher> [--expect-reason <text>] [--network-closed]');
   process.exit(2);
 }
 const isWindows = process.platform === 'win32';
@@ -142,6 +144,9 @@ async function main() {
     Boolean(firstTab && firstTab.connected && firstTab.home && firstTab.rendered),
     `${JSON.stringify(firstTab || log1.find('error') || { exit: app1.exit })}; ${((Date.now() - started) / 1000).toFixed(1)} s after launch`);
   check(`the launcher is ${expectLauncher}`, launcher.launcher === expectLauncher, JSON.stringify(launcher));
+  if (expectReason) {
+    check(`the launcher's reason names "${expectReason}"`, String(launcher.reason || '').includes(expectReason), JSON.stringify(launcher.reason));
+  }
   const url = `http://127.0.0.1:${answered.port}/`;
   const page = await fetchPage(url);
   check('the port serves the application', page.status === 200 && /MultiScholaR/.test(page.body || ''), `${url} -> ${page.status}`);

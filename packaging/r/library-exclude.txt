@@ -9,7 +9,8 @@ roxygen2
 usethis
 pkgdown
 pak
-# webshot2 and chromote, which it imports, are shipped (no longer excluded): knitr calls webshot2 to
-# screenshot an htmlwidget when it renders the summary report to .docx, and without it the report
-# fails ("there is no package called 'webshot2'", run 44041155687, both DIA lanes). webshot2 drives a
-# Chrome found on the user's machine; the bundle carries none (decision W1 in outcome.md).
+# webshot2 and chromote, which it imports, are shipped (no longer excluded): six summary report
+# templates attach webshot2 (library(webshot2) in their set-up chunk), and without the package the
+# report fails ("there is no package called 'webshot2'", run 44041155687, both DIA lanes). No
+# template prints an htmlwidget, so knitr takes no screenshot and no browser is started; the bundle
+# carries none (W1 in outcome.md, 2026-11-18).

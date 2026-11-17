@@ -489,25 +489,18 @@ jobs:
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
           grep -q "Exec=\"$dest/multischolar\"" "$HOME/.local/share/applications/multischolar.desktop"
-      - name: "P3 lifecycle: the installed application (22.04: plain launcher, network closed; 24.04: systemd worker)"
+      - name: "P3 lifecycle: the installed application (plain launcher, network closed; on 24.04 because no user D-Bus answers)"
         run: |
-          if [ "${{ matrix.runner }}" = ubuntu-24.04 ]; then
-            # The probe chooses the systemd worker here (kernel 6.12 or later, user manager, cgroup v2, memory
-            # delegated). Its units run in the user manager's network namespace, so the shell cannot be closed into
-            # a namespace of its own with them: this branch runs with the network open (recorded in outcome.md).
-            # The hosted runner's user manager has no user D-Bus, which busctl needs and a desktop session provides
-            # (run 44055833237: "Failed to connect to bus", the entry fell back to the plain launcher): start one.
-            sudo apt-get install -y -qq dbus-user-session > /dev/null
-            systemctl --user daemon-reload
-            systemctl --user start dbus.socket
-            busctl --user status > /dev/null && echo "the user D-Bus answers"
-            xvfb-run -a node packaging/electron/lifecycle-test.js "Linux, installed with install.sh, ubuntu-24.04" \
-              "$DEST/multischolar" "$DEST" --expect-launcher systemd
-          else
-            sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -E -u "$0" env PATH="$1" HOME="$2" \
-              xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher process --network-closed' \
-              "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh, ${{ matrix.runner }}" "$DEST"
-          fi
+          # ubuntu-22.04: the kernel is older than 6.12. ubuntu-24.04: every host requirement holds except a user
+          # D-Bus, which a desktop session has and the hosted runner lacks, also after dbus-user-session (runs
+          # 44055833237 and 44059705566); the shell's probe then gives the plain launcher with that reason. The
+          # systemd worker from the bundle is tested on the laptop (a real login session), not on a hosted runner.
+          reason=""
+          if [ "${{ matrix.runner }}" = ubuntu-24.04 ]; then reason="D-Bus"; fi
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -E -u "$0" env PATH="$1" HOME="$2" \
+            xvfb-run -a node packaging/electron/lifecycle-test.js "$3" "$4/multischolar" "$4" --expect-launcher process \
+            --network-closed ${5:+--expect-reason "$5"}' \
+            "$(id -un)" "$PATH" "$HOME" "Linux, installed with install.sh, ${{ matrix.runner }}" "$DEST" "$reason"
       - name: Uninstall
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: |
