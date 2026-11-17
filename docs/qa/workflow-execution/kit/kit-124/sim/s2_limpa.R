@@ -133,13 +133,17 @@
 #   17  S8 only: the known batch in the model, no RUV.
 #   22  on request (K124_ARMS): arm 8 with k from the route's separation rule on the oracle controls.
 #   23  on request (K124_ARMS): arm 5 with k = E.
+#   24  on request (K124_ARMS): arm 5 with k from the route's separation rule on arm 5's own controls.
 # Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross
 # the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is
 # findBestNegCtrlPercentageCapped's rule for one control set: the canonical-correlation curve of the oracle controls
 # against all proteins (prepareRuvCancorInput, ruvCancorFromInput), capped at min(calculateAdaptiveMaxK(samples),
 # controls - 1), k at the largest all-minus-control difference. Arm 23 with E = 0 is no RUV, as arms 7 to 10.
-# K124_ARMS (environment; unset = the arms above, 22 and 23 not run): a comma list of the arms to run, of those the
-# cell has and 22, 23. Arm 1 must be in it (arms 5, 6, 23 and every refusal read its result). Without any of arms
+# Arm 24 (user, 2026-11-18): arm 5 takes the sweep's k, which the sweep computed on its own winning control set; arm
+# 24 applies arm 22's rule to arm 5's controls (all proteins outside the 25% most significant of arm 1), so it
+# differs from arm 5 in k only, and does not read the sweep.
+# K124_ARMS (environment; unset = the arms above, 22 to 24 not run): a comma list of the arms to run, of those the
+# cell has and 22, 23, 24. Arm 1 must be in it (arms 5, 6, 23, 24 and every refusal read its result). Without any of arms
 # 3 to 6 the route's sweep is not run (sweep_status "not run" in s2-data.tsv). The data, the control sets, E and every
 # stream are as without it, so an arm's rows are the same whichever other arms run.
 # Arms 5 to 11, 15 and 16 use computeRuvCovariates and the route's test. Arms 12 to 14 run on the quantified
@@ -252,7 +256,7 @@ armsFor <- function(cell) {
     if (cell$effects == 0) arms <- setdiff(arms, 9L)
     if (cell$units > 0L) arms <- c(arms, 15L, 16L)
     if (cell$batch) arms <- c(arms, 17L)
-    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L), arms_wanted)
+    if (!is.null(arms_wanted)) arms <- intersect(c(arms, 22L, 23L, 24L), arms_wanted)
     arms
 }
 
@@ -561,7 +565,11 @@ runOne <- function(cell, run) {
         `16` = \() if (k_e > 0L) inModel(k_e, all_controls) else noRuv(),
         `17` = \() list(k = 0L, table = routeTest(elist, design, design["batch"])),
         `22` = \() inModel(separationK(oracle), oracle),
-        `23` = \() if (k_e > 0L) inModel(k_e, rank(first$p, ties.method = "first") > 0.25 * nrow(first)) else noRuv()
+        `23` = \() if (k_e > 0L) inModel(k_e, rank(first$p, ties.method = "first") > 0.25 * nrow(first)) else noRuv(),
+        `24` = \() {
+            wide <- rank(first$p, ties.method = "first") > 0.25 * nrow(first)
+            inModel(separationK(wide), wide)
+        }
     )
 
     arms <- armsFor(cell)

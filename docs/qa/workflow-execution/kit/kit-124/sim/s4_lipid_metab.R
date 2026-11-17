@@ -110,6 +110,8 @@
 # 23  on request (K124_ARMS): arm 5's controls with k = E, W in the model.
 #     Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another)
 #     cross the two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only.
+#     There is no arm 24 here (S1 to S3: arm 5 with today's rule on arm 5's own controls): arm 5 already is that
+#     design in this simulator. A 24 in K124_ARMS is ignored.
 #     K124_ARMS (environment; unset = the arms of this list but 22 and 23): a comma list of the arm labels to run,
 #     of those the cell has and 22, 23. Arm 1 must be in it. The data, E and every stream are as without it, so an
 #     arm's rows are the same whichever other arms run.
