@@ -6,7 +6,7 @@
 # Writes into <output directory>:
 #   THIRD-PARTY-NOTICES.txt  every component shipped (R, every R package, the bundled shared
 #                            libraries on Linux, Python and its packages, pandoc, Electron): version,
-#                            licence and where its source is; and the written offer of the sources
+#                            licence and where its source is; and where the release's sources archive is (U6)
 #   sources-list.tsv         the same components, one row each, for the sources archive
 #   VERSION.json             release, lockfile sha256, commit, snapshot date, build date, runner image
 
@@ -117,11 +117,8 @@ component("Electron", "Electron", electron,
 notices <- do.call(rbind, rows)
 utils::write.table(notices, file.path(out_dir, "sources-list.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
 
-maintainer <- tryCatch({
-    people <- eval(parse(text = description[1L, "Authors@R"]))
-    cre <- Filter(function(p) "cre" %in% p$role, people)
-    if (length(cre)) format(cre[[1L]], include = c("given", "family", "email")) else ""
-}, error = function(e) "")
+# U6 (the user, 2026-11-17): no written offer and no named contact; each release publishes one sources
+# archive beside its installers.
 text <- c(
     sprintf("MultiScholaR %s: third-party notices", release),
     "",
@@ -130,10 +127,10 @@ text <- c(
     "components are distributed together; none of them is modified, except that R's front-end script",
     "is changed at build time so that R finds its own folder.",
     "",
-    "Source code. Each component's source, at the version listed, is at the address beside it. For three",
-    "years from the date of this release, the complete corresponding source of every component in this",
-    "distribution is also available on request, as one archive: open an issue at",
-    sprintf("%s/issues or write to the maintainer%s.", repository, if (nzchar(maintainer)) paste0(", ", maintainer) else ""),
+    "Source code. Each component's source, at the version listed, is at the address beside it. The",
+    "complete corresponding source of every component in this distribution is also published as one",
+    sprintf("archive beside the installers of this release, at %s/releases. Questions:", repository),
+    sprintf("%s/issues.", repository),
     "",
     sprintf("Built from commit %s with packages from the Posit Package Manager snapshot of %s.", commit, snapshot),
     "",
@@ -152,7 +149,8 @@ stamp <- list(
     platform = if (is_windows) "windows-x86_64" else "linux-x86_64",
     r = r_version,
     electron = electron,
-    internal_packages = "not included (fastduckdb, fastlimpadpc): the DIA, DIA_LIMPA and enrichment routes are unavailable"
+    internal_packages = paste(vapply(c("fastduckdb", "fastlimpadpc"), function(package) if (package %in% rownames(installed))
+        sprintf("%s %s", package, installed[package, "Version"]) else paste(package, "not included"), character(1)), collapse = "; ")
 )
 writeLines(jsonlite::toJSON(stamp, auto_unbox = TRUE, pretty = TRUE), file.path(out_dir, "VERSION.json"))
 cat(sprintf("notices: %d components; VERSION.json: release %s, commit %s, snapshot %s\n", nrow(notices), release,

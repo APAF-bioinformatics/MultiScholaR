@@ -1,0 +1,19 @@
+library paths: /home/runner/work/_temp/relocated/msr moved/R/library | /home/runner/work/_temp/test-tools
+MultiScholaR 0.5.0 (/home/runner/work/_temp/relocated/msr moved/R/library) 
+testthat 3.3.2 (/home/runner/work/_temp/test-tools) 
+shinytest2 0.5.1 (/home/runner/work/_temp/test-tools) 
+chromote 0.5.1 (/home/runner/work/_temp/relocated/msr moved/R/library) 
+fastduckdb 0.2.0 (/home/runner/work/_temp/relocated/msr moved/R/library) 
+fastlimpadpc 0.1.0 (/home/runner/work/_temp/relocated/msr moved/R/library) 
+duckdb 1.5.5 (/home/runner/work/_temp/relocated/msr moved/R/library) 
+browser: /usr/bin/google-chrome
+locale: LC_CTYPE=en_GB.UTF-8;LC_NUMERIC=C;LC_TIME=en_AU.UTF-8;LC_COLLATE=en_GB.UTF-8;LC_MONETARY=en_AU.UTF-8;LC_MESSAGES=en_GB.UTF-8;LC_PAPER=en_AU.UTF-8;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=en_AU.UTF-8;LC_IDENTIFICATION=C
+network: closed (cran.r-project.org not reached)
+E2E lipidomics-canonical: pass 88 fail 0 error 0 skip 0; the laptop's recorded pass count 88; 71 s
+E2E metabolomics-lc-gc: pass 190 fail 0 error 0 skip 0; the laptop's recorded pass count 190; 161 s
+E2E transcriptomics-screen: pass 16 fail 0 error 0 skip 0; the laptop's recorded pass count 16; 50 s
+E2E proteomics-dia: pass 42 fail 0 error 0 skip 0; the laptop's recorded pass count 42; 159 s
+E2E proteomics-dia-limpa: pass 86 fail 0 error 0 skip 0; the laptop's recorded pass count 86; 115 s
+E2E proteomics-enrichment: pass 98 fail 0 error 0 skip 0; the laptop's recorded pass count 98; 342 s
+E2E proteomics-tmt-lfq: pass 153 fail 0 error 0 skip 0; the laptop's recorded pass count 153; 161 s
+KIT-134 E2E PASSED 

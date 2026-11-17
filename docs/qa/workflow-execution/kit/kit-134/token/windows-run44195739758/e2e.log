@@ -1,0 +1,18 @@
+library paths: D:/a/_temp/re located/msr moved/R/library | D:/a/_temp/test-tools
+MultiScholaR 0.5.0 (D:/a/_temp/re located/msr moved/R/library) 
+testthat 3.3.2 (D:/a/_temp/test-tools) 
+shinytest2 0.5.1 (D:/a/_temp/test-tools) 
+chromote 0.5.1 (D:/a/_temp/re located/msr moved/R/library) 
+fastduckdb 0.2.0 (D:/a/_temp/re located/msr moved/R/library) 
+fastlimpadpc 0.1.0 (D:/a/_temp/re located/msr moved/R/library) 
+duckdb 1.5.5 (D:/a/_temp/re located/msr moved/R/library) 
+browser: C:\Program Files\Google\Chrome\Application\chrome.exe
+locale: LC_COLLATE=English_United States.utf8;LC_CTYPE=English_United States.utf8;LC_MONETARY=English_United States.utf8;LC_NUMERIC=C;LC_TIME=English_United States.utf8
+network: closed (cran.r-project.org not reached)
+E2E lipidomics-canonical: pass 88 fail 0 error 0 skip 0; the laptop's recorded pass count 88; 118 s
+E2E metabolomics-lc-gc: pass 190 fail 0 error 0 skip 0; the laptop's recorded pass count 190; 269 s
+E2E transcriptomics-screen: pass 16 fail 0 error 0 skip 0; the laptop's recorded pass count 16; 78 s
+E2E proteomics-tmt-lfq: pass 136 fail 0 error 1 skip 0; the laptop's recorded pass count 153; 260 s
+   proteomics-tmt-lfq expectation_error : Error in `app_download(self, private, output = output, name = name, save_dir = save_dir, use_counter = FALSE)`: Download from '#proteomics_workflow-session_summary-download_report' failed 
+pass counts that differ from the laptop's recorded ones: proteomics-tmt-lfq 
+KIT-134 E2E FAILED 

@@ -1,0 +1,26 @@
+testthat, shinytest2 need, not in the bundle: testthat, shinytest2, brio, desc, pkgload, praise, waldo, pkgbuild, diffobj, pingr 
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/testthat_3.3.2.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/shinytest2_0.5.1.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/brio_1.1.5.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/desc_1.4.3.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/pkgload_1.5.3.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/praise_1.0.0.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/waldo_0.6.2.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/pkgbuild_1.4.8.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/diffobj_0.3.8.zip'
+trying URL 'https://packagemanager.posit.co/cran/2026-07-30/bin/windows/contrib/4.6/pingr_2.0.5.zip'
+package 'testthat' successfully unpacked and MD5 sums checked
+package 'shinytest2' successfully unpacked and MD5 sums checked
+package 'brio' successfully unpacked and MD5 sums checked
+package 'desc' successfully unpacked and MD5 sums checked
+package 'pkgload' successfully unpacked and MD5 sums checked
+package 'praise' successfully unpacked and MD5 sums checked
+package 'waldo' successfully unpacked and MD5 sums checked
+package 'pkgbuild' successfully unpacked and MD5 sums checked
+package 'diffobj' successfully unpacked and MD5 sums checked
+package 'pingr' successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+	C:\Users\runneradmin\AppData\Local\Temp\RtmpSEG4KK\downloaded_packages
+testthat 3.3.2 from D:/a/_temp/test-tools/testthat 
+shinytest2 0.5.1 from D:/a/_temp/test-tools/shinytest2 

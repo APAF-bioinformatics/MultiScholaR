@@ -15,6 +15,11 @@ Scope: revision 2.0 of the ticket with the user's decisions of revision 2.1 (D1 
 - **The shell's probe asks the user D-Bus** before it chooses the systemd worker; on GitHub's `ubuntu-24.04` runner it gives the plain launcher with "the user D-Bus does not answer" (run 44146578653; W1, part 4).
 - **Without `fastduckdb` the lipidomics and metabolomics intensity filter is refused** ("optional fastduckdb reader is unavailable"), on the narrow GUI-entry fixtures too, on both platforms (run 44146578653; W1, part 4). A token-free bundle therefore cannot pass those lanes.
 
+- **`fastduckdb` is a declared import (the user, 2026-11-18: "fastduckdb has to be included. all the architecture depends on it.").** DESCRIPTION moves it from Suggests to Imports (`fac2bd06`); a lane run without it is an invalid configuration, not a finding. Every build now needs the read token; under revision 1.2's rule a token build makes no shell, archive or installer, so **no installer can be built by the workflow until the two repositories are public or the user changes that rule** (section "2026-11-18").
+- **Linux lanes on the bundle: the seven browser e2e lanes pass with the laptop's counts** against the bundle's installed package (run 44195739758). The metabolomics GUI-entry lanes differ from the laptop's oracles from the normalisation step on, identically on the Linux and the Windows runner: not classified yet.
+- **The Linux bundle does not start on the laptop** (CachyOS): its `LD_LIBRARY_PATH` puts Ubuntu 22.04's `libreadline.so.8` in front of the host's, and the host's `/bin/bash` (which R's front-end script runs under) then fails. A defect of the bundle on every distribution whose `bash` links readline dynamically.
+- **Windows: the proteomics protein route (TMT, LFQ) fails at QC** ("required Q-value figures are incomplete"); the lipidomics, metabolomics and transcriptomics e2e lanes pass with the laptop's counts.
+
 ## Runs
 
 | # | Run | Commit | Stage | Result |
@@ -369,3 +374,97 @@ Six workflow runs in all, about 3 hours of runner time across the jobs. Each pus
 | W1 | Chrome for the report | Repaired on the packaging side (the coordinator's instruction): `webshot2` and `chromote` are no longer excluded, so they ship (`library-exclude.txt`). The user chose (b) on 2026-11-18 ("ship headless chrome ... edge is very unsafe"). *Corrected 2026-11-18:* this row said that `webshot2` "still needs a Chrome" and that the report fails without one; the templates take no screenshot, so (c) is already the case (section "W1") | **Closed** (the user, 2026-11-18: "no extra browser we gud"): nothing is bundled; shown by run 44146578653 |
 - P6 on Windows, after KIT-131's step 6: the GUI-entry lanes now run there with the installed R (`run-lanes.R`, run 44146578653); the lanes themselves need `fastduckdb` in the Windows bundle (above); the e2e lanes and the suite are not started.
 - The sources archive and the release (KIT-132).
+
+## 2026-11-18: `fastduckdb` in Imports; the lanes on the bundle (P5, P6); the laptop's systemd lifecycle; Module CI; the notices
+
+Five bounded items, each with one run and one correction pass where a run was needed. What was run: one workflow run (44195739758, stage internal, both platforms), one laptop test file, and the lifecycle test on the laptop (one invalid start, one valid). Everything else below was read.
+
+### 1. Module CI on `kit-134` (read from the logs; nothing changed)
+
+Every failing Module CI run of `kit-134` since the `ci-token` merge fails in one job, `module-ci impacted (transcriptomics)`, and the summary job that follows it. Run 44146578640 (`d958b479`): eight expectations, `test-module-ci-trx-da.R:7`, `:28`, `test-module-ci-trx-norm.R:13`, `:30`, `test-module-ci-trx-qc.R:64`, `test-module-ci-trx-summary.R:40`, `:52`, `:65`. These are the transcriptomics digest expectations of `b01-ci-run.md` (rows 3 to 10; row 11, the e2e journey, was not in this run's impact set): the values agree with the laptop under the 1e-6 rule and the stored digests are of the laptop's `-march=native` build. `performance-v2` fails the same job with the same first expectation whenever it is impacted (run 44111160249 at `624153a4`); its three latest runs are green only because documentation commits impact no job. They stay red until KIT-129's harness revision; no test was changed. Run 44195739804 (`fac2bd06`) additionally lost its metabolomics job to a download ("limpa 1.4.2: no source at bioconductor.org", the U4 source build; the other jobs of the same run fetched it): transient, and audit F6 (unpinned downloads without a mirror) again.
+
+### 2. `fastduckdb` from Suggests to Imports (`fac2bd06`)
+
+- `DESCRIPTION`: `fastduckdb (>= 0.2.0)` is under Imports; the floor and the Remotes pin (`e724f90b`) are unchanged. `NAMESPACE` is unchanged and needs no change: every use is `fastduckdb::`. `NEWS.md` has the entry. `roxygen2::document()` was not run.
+- `packaging/r/install-library.R` stops an install without the read token before anything is installed ("DESCRIPTION requires fastduckdb (an internal repository)"), instead of failing at MultiScholaR's own install after 380 packages. The lockfile is not edited: its `Declared: Suggests` and `Closure: suggests-only` for `fastduckdb` describe the library as exported on 2026-11-17 and are now stale in those two fields (as its `DescriptionRemotes` already was).
+- **Shown by run 44195739758:** with the import declared, MultiScholaR installs and loads from the moved bundle on Linux and on Windows (389 of 389 packages, network off, every namespace from the bundle; `fastduckdb` 0.2.0 at `e724f90b` and `fastlimpadpc` 0.1.0 at `87a90b89` on both; declared minimums met; Linux: DIA manifest, rollup and writer admit the build).
+- **Jobs that change.** `distributable.yml`: stages library, shell, installer and container now stop at the library install without the token; only stage internal builds. `module-ci.yml` (through `.github/actions/snapshot-library`): unchanged with the secret; a fork or Dependabot pull request (no secret) now stops at the library install instead of running without the internal packages (audit F2's path is gone). `kit-131-launcher.yml` (branch `kit-131` only): its `fastduckdb=?ignore` can no longer work. None of the three files was edited for this.
+- **On the laptop** `pkgload::load_all()` from the default library now stops ("dependency 'fastduckdb' is not available"): `fastduckdb` lives in the proof library, which has to be on `R_LIBS`. `test-e2e-browser-harness.R` with it: 123 passed, 0 failed, 1 skipped (no browser on the laptop).
+- **Guards left in `R/`** (not removed; for a later cleanup): `R/utils_workflow_dia_da.R:153` (falls back to `duckdb`), `R/utils_workflow_saved_table_codec.R:165` (the direct writer's admission) and `:509` ("optional fastduckdb reader is unavailable"), and the reader argument check at `R/utils_workflow_saved_entities.R:654-657`. The tests' `skip_if_not_installed("fastduckdb")` (12 files) and DESCRIPTION's SystemRequirements sentence ("Cargo and rustc ... only for the optional fastlimpadpc engine"; `fastduckdb` needs them too) are in the same list.
+- **Release consequence (the user's call; not worked around).** While `fast_duckdb` is internal, an installer contains it and so may not be uploaded as an artifact (revision 1.2, IR-B2), and stage internal builds no shell or installer at all. Either the repository goes public, or the user changes the rule, before any installer can be built again, the release candidate included.
+
+### 3. P5 and P6: the lanes on the bundle (run 44195739758, `fac2bd06`, stage internal)
+
+[44195739758](https://github.com/APAF-bioinformatics/MultiScholaR/actions/runs/44195739758), 2026-11-17 23:02 to 23:46 UTC. Budget: one run and one correction pass; **the correction pass is not used**, because nothing that failed is a fault of the run (below). New in the job: `packaging/verify/run-e2e.R` (the browser lanes with `MULTISCHOLAR_E2E_INSTALLED=1`, so the application the browser drives is `library(MultiScholaR)` from the bundle: F2, `tests/testthat/helper-e2e-browser.R`), `shinytest2` 0.5.1 in the separate test-tool library (shadowing nothing), the runner's Chrome. Uploaded: `linux-internal-summary` (38,141 bytes) and `windows-internal-summary` (33,166 bytes), text only, scanned (no compiler output, no token text); no cache written. Evidence: `token/linux-run44195739758/`, `token/windows-run44195739758/`.
+
+**The seven browser e2e lanes, Linux** (moved bundle, network closed, the laptop's locale; laptop counts of KIT-118's exit, `e94b92b1`):
+
+| Lane | Passed | Failed | Errors | Laptop | Seconds |
+|---|---|---|---|---|---|
+| lipidomics canonical | 88 | 0 | 0 | 88 | 71 |
+| metabolomics LC and GC | 190 | 0 | 0 | 190 | 161 |
+| transcriptomics screen | 16 | 0 | 0 | 16 | 50 |
+| proteomics DIA | 42 | 0 | 0 | 42 | 159 |
+| proteomics DIA_LIMPA (`fastlimpadpc`) | 86 | 0 | 0 | 86 | 115 |
+| proteomics enrichment | 98 | 0 | 0 | 98 | 342 |
+| proteomics TMT and LFQ | 153 | 0 | 0 | 153 | 161 |
+
+What this rests on: the bundle's R, library and installed MultiScholaR in the job that built them (F8: a token build cannot go to a fresh runner), not the installed archive and not the Electron window; the laptop's counts are of an earlier tree (no laptop e2e run was started).
+
+**The four e2e lanes without DIA, Windows** (moved bundle, the shell's reduced environment, network cut):
+
+| Lane | Passed | Failed | Errors | Laptop |
+|---|---|---|---|---|
+| lipidomics canonical | 88 | 0 | 0 | 88 |
+| metabolomics LC and GC | 190 | 0 | 0 | 190 |
+| transcriptomics screen | 16 | 0 | 0 | 16 |
+| proteomics TMT and LFQ | 136 | 0 | 1 | 153 |
+
+The TMT and LFQ lane stops at `Download from '#proteomics_workflow-session_summary-download_report' failed`.
+
+**The GUI-entry lanes against their oracles** (the stricter comparison: every step's states as digests of values rounded to 10 significant digits):
+
+| Lane | Linux | Windows |
+|---|---|---|
+| prot_dia | 44 passed, identical (29 steps) | not run (D4) |
+| prot_dia_limpa | 38 passed, identical (24 steps) | not run (D4) |
+| prot_tmt, prot_lfq, prot_lfq_fragpipe | 37 passed each, identical (21 steps each) | error each: QC refused, "required Q-value figures are incomplete" |
+| lipid_canonical | 35 passed, identical (20 steps) | 27 passed, 8 failed: every state and artifact identical; one output, the normalisation log text, is recorded as a digest where the oracle holds the text |
+| metab_lc, metab_gc, metab_combined | 25 passed, 10 failed each: `metab_normalized` differs from the `norm` step on | the same 10 steps, **the same state digests as the Linux runner**, plus the log-text difference |
+| trx_screen | 22 passed, 7 failed: one artifact, `top_de_genes.tsv`, in 7 steps | error after 3 s: "module session has been destroyed" at the design save |
+
+**Classification under 2.0.4, and what is not classified.**
+
+| Difference | Class | Evidence |
+|---|---|---|
+| Six Linux lanes identical | Agree | no digest and no discrete difference |
+| trx_screen, `top_de_genes.tsv` (Linux) | not classified here; expected Agree | the table is edgeR's `topTags` written as text; `b01-ci-run.md` row 4 measured that table on the same library within 5.1e-9 relative with identical order and calls, on another fixture. The values of this lane were not compared |
+| metabolomics, `metab_normalized` and what follows (both runners) | **open, not explained** | the two runners agree with each other to 10 significant digits and differ from the laptop. GC assay: mean sample correlation 1.000 on the runners, 0.972 in the laptop's oracle, which is far outside the rule. The fixtures keep 3 metabolites by 6 samples after filtering and normalise by cyclic loess; the lipidomics lane (8 and 9 lipids) is identical. A loess over 3 points is the likely ill-conditioned step, and the laptop (R built with `-march=native`) is the one machine of three that differs; that is a reading, not a measurement. To classify: the normalised matrix of one metabolomics lane from the laptop and from a runner, compared with `compare-results.R` |
+| lipid_canonical and metabolomics, normalisation log text (Windows) | not classified; likely L or E | every state identical; the recorder stores a long text as its digest, so the Windows text is longer or differs (a path, a line ending). The text itself was not read |
+| Windows protein route: QC refused | **D, a defect on Windows** | `R/utils_workflow_saved_exports.R:1045`: after the Q-value figure renderer ran, the twelve expected `.png` and `.pdf` files are not all in the staged folder. First at "protein accession cleanup" in all three protein lanes; the e2e TMT and LFQ lane fails at the report for want of those outputs. Package code; not changed |
+| Windows trx_screen entry lane | not classified | the browser lane of the same fixture passes 16 of 16 on Windows; the entry lane's design save loses its module session under `testServer` there. Not traced |
+
+So: **Linux meets the lane half of 2.0.9's Linux criterion in the form a token build allows; Windows does not meet P6** (TMT and LFQ fail; D). The suite half is not run: 2.0.4 compares it with a laptop check-mode table of a tree with the same `R/`, `src/` and `tests/`, the last such table is of KIT-123's tree (before KIT-131, KIT-061 and this ticket's package side), and P5 may not start a laptop suite. It needs the next checkpoint suite on the laptop, then one sharded run.
+
+### 4. The systemd lifecycle on the laptop (P3 step 4, F9): failed, with its cause
+
+The Linux archive of run 44146578653 (token-free, `d958b479`; sha256 checked) was downloaded into the session's scratch folder and installed there with `install.sh` under `XDG_DATA_HOME` (nothing under the home folder), with Electron's and the run folders under scratch `XDG_CONFIG_HOME` and `XDG_STATE_HOME`; `lifecycle-test.js --expect-launcher systemd`; removed afterwards with `uninstall.sh`. Kernel 7.3.3, cgroup v2, a login session.
+
+- First start: invalid. The session's own environment carried `ELECTRON_RUN_AS_NODE=1` (the editor's), so the shell ran as plain Node and exited in 0.5 s; the test observed nothing (`p3/laptop-systemd-lifecycle-laptop-invalid-run-as-node.log`). An instrumentation failure, kept.
+- The run, with those variables removed (`p3/laptop-systemd-lifecycle-laptop.log`): the shell started (Electron 45.3.3, sandbox on); **the probe chose `systemd`** ("every host requirement holds": kernel 7.3.3, the three tools, the user manager, cgroup v2, controllers `cpuset cpu io memory pids`, the user bus answers; 21 ms); R was started and **exited with status 127 after 18 ms**: `/bin/bash: symbol lookup error: /bin/bash: undefined symbol: rl_trim_arg_from_keyseq`. No unit and no slice was started; nothing was left behind.
+- Cause, confirmed by one command outside the test: with `LD_LIBRARY_PATH` at the bundle's `syslib`, the host's `/bin/bash` and `/bin/sh` fail with that message. The bundle's launcher (`packaging/linux/Rscript`) exports `LD_LIBRARY_PATH=<bundle>/syslib` for R and everything R starts; `syslib` holds Ubuntu 22.04's `libreadline.so.8`; R's front-end (`R/bin/R`) is a `#!/bin/bash` script, and this host's `bash` links readline dynamically and needs a newer one. `systemctl`, `busctl`, `systemd-run` and `ps` still run under that path. On Ubuntu and Debian `bash` carries its own readline, which is why every runner passed.
+- **Class D: the Linux bundle cannot start on a distribution whose `bash` links the system readline (Arch and its derivatives at least; others not checked), whatever the launcher.** D1's "glibc 2.35 or later" is not a sufficient description of the supported hosts. The same path also shadows the host's `libstdc++`, `libssl`, `libcurl` and `libz` for any host program R starts.
+- Not corrected: the repair is a change to how the bundle finds its libraries (for example a run path inside the bundle's own binaries in place of the exported variable, so that host programs see the host's libraries), it needs a new archive, and no archive can be built until the repository question of item 2 is answered. The lifecycle's remaining checks on the laptop (the slice while running, gone after close) are therefore not shown.
+
+### 5. The notices (U6), made and not run
+
+`packaging/r/notices.R`: the three-year written offer and the maintainer's name and address are gone; the notices say that the complete corresponding source of every component is published as one archive beside the installers of the release (`<repository>/releases`) and point to the Issues page. `VERSION.json`'s `internal_packages` line now reports what the bundle holds instead of a fixed "not included". Parsed only: the script runs in the shell stage, which cannot run now (item 2). The sources archive itself is KIT-132's and is not built.
+
+### Budget, 2026-11-18
+
+| Item | Runs | Correction pass |
+|---|---|---|
+| Module CI diagnosis | none (logs read) | |
+| `fastduckdb` in Imports; P5 Linux lanes; P6 Windows lanes | 1 run for both platforms: 44195739758 | not used |
+| Laptop systemd lifecycle | 1 (after one invalid start that observed nothing) | not used: the repair needs a new archive |
+| Notices | none | |
