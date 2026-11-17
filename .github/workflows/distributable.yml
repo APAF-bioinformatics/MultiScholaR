@@ -17,9 +17,13 @@ name: KIT-134 distributable
 #   [dist:shell]      P3: the library again, then the Electron shell and its lifecycle test
 #   [dist:installer]  P4: the shell again, then the installers, installed on fresh runners
 #   [dist:container]  D5: the Windows library again, then loaded in a Server Core container
-#   [dist:internal]   P2 step 4 and P5 step 3, with the token: the library with the internal packages
+#   [dist:internal]   P2 step 4, P5 and P6, with the token: the library with the internal packages
 #                     (Linux required; Windows attempted, D4), checked from the moved folder with the
-#                     network off; on Linux the GUI-entry DIA and DIA_LIMPA lanes against it
+#                     network off; then, in the same job, the GUI-entry lanes and the browser e2e lanes
+#                     against it (Linux: all; Windows: the lanes without DIA)
+# fastduckdb is in DESCRIPTION's Imports since 2026-11-18 (the user's decision), so MultiScholaR installs
+# only where the internal packages do: every stage but internal stops at the library install until the
+# two repositories are public (or the rule of revision 1.2 is changed by the user).
 # [dist-linux] or [dist-windows] limits the run to one platform.
 
 on:
@@ -152,7 +156,7 @@ jobs:
     needs: plan
     if: needs.plan.outputs.build == 'true' && needs.plan.outputs.linux == 'true'
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 300
     env:
       R_LIBS_USER: /nonexistent-user-library
       R_LIBS_SITE: /nonexistent-site-library
@@ -285,45 +289,48 @@ jobs:
           bash packaging/verify/linux-bare-container.sh none "$MOVED" "/srv/any where/msr app" check-internal.R required \
             2>&1 | tee "$OUT/check-internal.log"
 
-      - name: "Test tools: testthat and what the bundle lacks for it, from the snapshot, in a separate library"
+      - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library"
         id: testtools
         if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.check.outcome == 'success' }}
         run: |
           set -o pipefail
           echo "TEST_TOOLS=$RUNNER_TEMP/test-tools" >> "$GITHUB_ENV"
-          cat > "$RUNNER_TEMP/test-tools.R" <<'EOF'
-          arguments <- commandArgs(TRUE)
-          lib <- arguments[[1L]]
-          dir.create(lib, showWarnings = FALSE)
-          options(HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(),
-              paste(getRversion(), R.version[["platform"]], R.version[["arch"]], R.version[["os"]])))
-          repos <- sprintf("https://packagemanager.posit.co/cran/__linux__/jammy/%s", arguments[[2L]])
-          available <- utils::available.packages(repos = repos)
-          wanted <- unique(c("testthat", unlist(tools::package_dependencies("testthat", db = available,
-              which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE))))
-          have <- rownames(utils::installed.packages(lib.loc = .libPaths()))
-          needed <- setdiff(wanted, have)
-          cat("testthat needs, not in the bundle:", paste(needed, collapse = ", "), "\n")
-          utils::install.packages(needed, lib = lib, repos = repos, dependencies = FALSE)
-          .libPaths(c(.libPaths(), lib))
-          library(testthat)
-          cat("testthat", as.character(utils::packageVersion("testthat")), "from", find.package("testthat"), "\n")
-          EOF
-          "$MOVED/bin/Rscript" --vanilla "$RUNNER_TEMP/test-tools.R" "$RUNNER_TEMP/test-tools" "$(jq -r .Snapshot.Date packaging/multischolar.lock.json)" \
-            2>&1 | tee "$OUT/test-tools.log"
+          "$MOVED/bin/Rscript" --vanilla packaging/verify/test-tools.R "$RUNNER_TEMP/test-tools" \
+            "$(jq -r .Snapshot.Date packaging/multischolar.lock.json)" shinytest2 2>&1 | tee "$OUT/test-tools.log"
 
-      - name: "Lanes: GUI-entry DIA and DIA_LIMPA in process against the bundle (moved, network closed, the laptop's locale)"
+      - name: "Lanes: every GUI-entry lane in process against the bundle (moved, network closed, the laptop's locale)"
         if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.testtools.outcome == 'success' }}
+        timeout-minutes: 90
         run: |
           sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
           mkdir -p "$OUT/lanes"
           sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -u "$0" env HOME="$1" LANG=en_GB.UTF-8 \
             LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
             LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
-            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-lanes.R" "$3" "$4" "$5" prot_dia prot_dia_limpa' \
+            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-lanes.R" "$3" "$4" "$5" prot_dia prot_dia_limpa \
+            prot_tmt prot_lfq prot_lfq_fragpipe metab_lc metab_gc metab_combined lipid_canonical trx_screen' \
             "$(id -un)" "$HOME" "$MOVED" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/lanes" 2>&1 | tee "$OUT/lanes.log"
           status="${PIPESTATUS[0]}"
           { echo '### GUI-entry lanes against the bundle (token run)'; echo '```'; cat "$OUT/lanes/lane-summary.tsv" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      # P5: the seven browser e2e lanes, the application being the bundle's installed package
+      # (MULTISCHOLAR_E2E_INSTALLED=1); Chrome is the runner's. CI=true as in Module CI's e2e jobs.
+      - name: "e2e lanes: the seven browser lanes against the bundle's installed package (moved, network closed, the laptop's locale)"
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.testtools.outcome == 'success' }}
+        timeout-minutes: 120
+        run: |
+          sudo locale-gen en_GB.UTF-8 en_AU.UTF-8 > /dev/null
+          mkdir -p "$OUT/e2e"
+          sudo unshare --net -- bash -c 'ip link set lo up && exec sudo -u "$0" env HOME="$1" CI=true LANG=en_GB.UTF-8 \
+            LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
+            LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
+            "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-e2e.R" "$3" "$4" "$5" lipidomics-canonical \
+            metabolomics-lc-gc transcriptomics-screen proteomics-dia proteomics-dia-limpa proteomics-enrichment \
+            proteomics-tmt-lfq' \
+            "$(id -un)" "$HOME" "$MOVED" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/e2e" 2>&1 | tee "$OUT/e2e.log"
+          status="${PIPESTATUS[0]}"
+          { echo '### Browser e2e lanes against the bundle (token run)'; echo '```'; cat "$OUT/e2e/e2e-summary.tsv" 2>/dev/null; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
 
       - name: "Summary for upload: small text files only (token run)"
@@ -336,7 +343,8 @@ jobs:
           # also kept out of it, under the runner's temporary folder, never printed).
           for f in plan-packages.tsv apt-packages.txt internal-packages.tsv bundle-sources.tsv \
             version-table.tsv version-table.md version-table.log python-packages.txt sizes.txt check-library.log \
-            check-internal.log test-tools.log lanes.log lanes/lane-summary.tsv lanes/lane-differences.tsv lanes/lane-failures.tsv; do
+            check-internal.log test-tools.log lanes.log lanes/lane-summary.tsv lanes/lane-differences.tsv lanes/lane-failures.tsv \
+            e2e.log e2e/e2e-summary.tsv e2e/e2e-failures.tsv; do
             if [ -f "$OUT/$f" ]; then cp "$OUT/$f" "$summary/"; fi
           done
           for f in "$summary"/*; do
@@ -553,7 +561,7 @@ jobs:
     needs: plan
     if: needs.plan.outputs.build == 'true' && needs.plan.outputs.windows == 'true'
     runs-on: windows-2025
-    timeout-minutes: 200
+    timeout-minutes: 300
     defaults:
       run:
         shell: pwsh
@@ -623,6 +631,16 @@ jobs:
           Copy-Item "$env:RUNNER_TEMP\pandoc\pandoc-${env:PANDOC_VERSION}\*" "$env:BUNDLE\pandoc\" -Recurse
           & "$env:BUNDLE\pandoc\pandoc.exe" --version | Select-Object -First 1
 
+      # Token run: the test tools are fetched before the check step cuts the network for the bundle's programs.
+      - name: "Test tools: testthat, shinytest2 and what the bundle lacks for them, from the snapshot, in a separate library (token run)"
+        id: testtools
+        if: needs.plan.outputs.internal == 'true'
+        run: |
+          "TEST_TOOLS=$env:RUNNER_TEMP\test-tools" >> $env:GITHUB_ENV
+          $date = (Get-Content packaging\multischolar.lock.json -Raw | ConvertFrom-Json).Snapshot.Date
+          & packaging\verify\windows-clean-run.ps1 -Bundle $env:BUNDLE -Script packaging\verify\test-tools.R -NoBundleArgument -Arguments "$env:RUNNER_TEMP\test-tools", $date, shinytest2 *>&1 | Tee-Object -FilePath "$env:OUT\test-tools.log"
+          if ($LASTEXITCODE -ne 0) { throw "the test tools were not installed" }
+
       - name: Size; move the folder to a path with spaces
         id: move
         run: |
@@ -658,6 +676,33 @@ jobs:
           pwsh -NoProfile -File packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\check-internal.R -Arguments attempt *>&1 | Tee-Object -FilePath "$env:OUT\check-internal.log"
           if ($LASTEXITCODE -ne 0) { throw "the internal-package check failed" }
 
+      # P6 (D4: no DIA on Windows): the lanes without DIA, in process with the bundle's R in the shell's environment.
+      - name: "Lanes: the GUI-entry lanes without DIA against the bundle (moved, reduced environment, network cut)"
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.testtools.outcome == 'success' && steps.check.outcome == 'success' }}
+        timeout-minutes: 90
+        run: |
+          New-Item -ItemType Directory -Force "$env:OUT\lanes" | Out-Null
+          & packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\run-lanes.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, $env:TEST_TOOLS, "$env:OUT\lanes", prot_tmt, prot_lfq, prot_lfq_fragpipe, metab_lc, metab_gc, metab_combined, lipid_canonical, trx_screen *>&1 | Tee-Object -FilePath "$env:OUT\lanes.log"
+          $status = $LASTEXITCODE
+          $lines = @('### GUI-entry lanes against the bundle, Windows (token run)', '```')
+          if (Test-Path "$env:OUT\lanes\lane-summary.tsv") { $lines += Get-Content "$env:OUT\lanes\lane-summary.tsv" }
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          if ($status -ne 0) { throw "the lanes did not pass (exit $status)" }
+
+      - name: "e2e lanes: the four browser lanes without DIA against the bundle's installed package (moved, reduced environment, network cut)"
+        if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' && steps.testtools.outcome == 'success' && steps.check.outcome == 'success' }}
+        timeout-minutes: 120
+        run: |
+          New-Item -ItemType Directory -Force "$env:OUT\e2e" | Out-Null
+          & packaging\verify\windows-clean-run.ps1 -Bundle $env:MOVED -Script packaging\verify\run-e2e.R -NoBundleArgument -Arguments $env:GITHUB_WORKSPACE, $env:TEST_TOOLS, "$env:OUT\e2e", lipidomics-canonical, metabolomics-lc-gc, transcriptomics-screen, proteomics-tmt-lfq *>&1 | Tee-Object -FilePath "$env:OUT\e2e.log"
+          $status = $LASTEXITCODE
+          $lines = @('### Browser e2e lanes against the bundle, Windows (token run)', '```')
+          if (Test-Path "$env:OUT\e2e\e2e-summary.tsv") { $lines += Get-Content "$env:OUT\e2e\e2e-summary.tsv" }
+          $lines += '```'
+          $lines | Out-File -Append $env:GITHUB_STEP_SUMMARY
+          if ($status -ne 0) { throw "the e2e lanes did not pass (exit $status)" }
+
       - name: "Summary for upload: small text files only (token run)"
         id: summary
         if: ${{ !cancelled() && needs.plan.outputs.internal == 'true' }}
@@ -666,7 +711,9 @@ jobs:
           New-Item -ItemType Directory -Force $summary | Out-Null
           # install-library.log is not uploaded from a token run.
           foreach ($name in 'plan-packages.tsv', 'internal-packages.tsv', 'bundle-sources.tsv', 'version-table.tsv',
-              'version-table.md', 'version-table.log', 'python-packages.txt', 'sizes.txt', 'check-library.log', 'check-internal.log') {
+              'version-table.md', 'version-table.log', 'python-packages.txt', 'sizes.txt', 'check-library.log', 'check-internal.log',
+              'test-tools.log', 'lanes.log', 'lanes\lane-summary.tsv', 'lanes\lane-differences.tsv', 'lanes\lane-failures.tsv',
+              'e2e.log', 'e2e\e2e-summary.tsv', 'e2e\e2e-failures.tsv') {
             $file = Join-Path $env:OUT $name
             if (Test-Path -LiteralPath $file) { Copy-Item -LiteralPath $file $summary }
           }

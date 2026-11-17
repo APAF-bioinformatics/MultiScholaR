@@ -69,7 +69,17 @@ e2e_launch_spec <- function(launch_surface = c("run_app", "app_dir")) {
 
   switch(
     launch_surface,
-    run_app = local({
+    # KIT-134 P5: with MULTISCHOLAR_E2E_INSTALLED=1 the lanes drive the installed package (the bundle's),
+    # not the source tree. Unset, nothing changes.
+    run_app = if (identical(Sys.getenv("MULTISCHOLAR_E2E_INSTALLED"), "1")) local({
+      app_project_dir <- project_dir
+      function() {
+        setwd(app_project_dir)
+        options(multischolar.test_mode = TRUE)
+        library(MultiScholaR)
+        run_app(test_mode = TRUE)
+      }
+    }) else local({
       app_project_dir <- project_dir
       function() {
         setwd(app_project_dir)

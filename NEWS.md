@@ -50,6 +50,9 @@
    installs or downloads anything. Under systemd, a unit started from inside the bundle now also receives the bundle's
    `RHOME`, `LD_LIBRARY_PATH`, library, Python, pandoc, `PATH` and locale; outside a bundle the unit's arguments are
    unchanged. `later` is now a declared import (it was already installed through `shiny`).
+ * `fastduckdb (>= 0.2.0)` is now a declared import (it was in Suggests). The lipidomics and metabolomics intensity
+   filter, the DIA precursor rollup and the direct table writer need it, so an installation without it could not run
+   those steps. The pinned source is unchanged (DESCRIPTION's Remotes). No function or result changes.
  * The on-disk state owner compares paths with forward slashes on every platform, so its containment checks no longer
    refuse valid project paths on Windows. Nothing changes on Linux or macOS.
 

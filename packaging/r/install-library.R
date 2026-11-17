@@ -179,6 +179,15 @@ for (package in if (nzchar(internal_mode)) names(INTERNAL_REMOTES) else characte
 }
 declared <-dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo", "Suggests"),
     colnames(description))])
+# An internal package that DESCRIPTION declares outside Suggests (fastduckdb: Imports since 2026-11-18, the
+# user's decision) must be installed before MultiScholaR. A build without the read token stops here,
+# before anything is installed, instead of at MultiScholaR's own install after every other package.
+internal_required <- intersect(INTERNAL, dependencyNames(description[1L, intersect(c("Depends", "Imports", "LinkingTo"),
+    colnames(description))]))
+if (identical(mode, "install") && length(internal_required) && !nzchar(internal_mode)) {
+    stop(sprintf("DESCRIPTION requires %s (an internal repository): this build needs MSR_INTERNAL and the read token",
+        paste(internal_required, collapse = ", ")))
+}
 never_installed <- setdiff(unlist(lockfile$Lockfile$NotInstalled), ADDED)
 roots <- setdiff(unique(c(declared, ADDED)), c(INTERNAL, never_installed, excluded))
 base_packages <- rownames(utils::installed.packages(lib.loc = .Library, priority = "base"))
