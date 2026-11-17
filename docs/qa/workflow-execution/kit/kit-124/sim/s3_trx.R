@@ -103,11 +103,14 @@
 #       today's separation rule on those genes: trxCancor(t(log_cpm_tmm), the group columns, the controls), then
 #       trxFindBestK up to the grid's limit (3 under 15 runs, else 4), as a grid member computes it.
 #   23  on request (K124_ARMS): arm 5 (RUVg, all genes but the most significant quarter of the first pass) with k = E.
+#   24  on request (K124_ARMS): arm 5 with k from today's separation rule on arm 5's own controls (arm 22's rule). Arm 5
+#       takes the grid's k, which the grid computed on its own winning control set; arm 24 (user, 2026-11-18) differs from
+#       arm 5 in k only, and does not read the grid.
 #   Arms 22 and 23 (user, 2026-11-18; 17 to 21 are taken as arm or stream numbers in one simulator or another) cross the
-#   two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is never 0; arm 23
+#   two k rules over the two control sets: 22 differs from 8, and 23 from 5, in k only. Arm 22's k is never 0 (nor 24's); arm 23
 #   with E = 0 is no RUV, as arms 7 to 10.
-#   K124_ARMS (environment; unset = the arms above, 22 and 23 not run): a comma list of the arm labels to run, of those
-#   the cell has and 22, 23. Arm 1 must be in it (refusals and E = 0 carry its result). An arm that reads another arm's
+#   K124_ARMS (environment; unset = the arms above, 22 to 24 not run): a comma list of the arm labels to run, of those
+#   the cell has and 22, 23, 24. Arm 1 must be in it (refusals and E = 0 carry its result). An arm that reads another arm's
 #   fit (5 and 6 the grid of 3; 10 the fit of 8; 16 of 15) is refused when that arm is left out. The data, E and every
 #   stream are as without it, so an arm's rows are the same whichever other arms run.
 #   Arms 5 to 11, R, 14, 15 and 16 estimate on upper-quartile normalised counts (EDASeq::betweenLaneNormalization(which =
@@ -165,7 +168,7 @@ TECH_DISPERSION <- 0.01
 RATIOS <- list(`1` = 3, `3` = c(3, 1.5, 0.75))
 ENTRY <- "B_vs_A=groupB-groupA"
 ARM_STREAM <- c(`1` = 1L, `2` = 2L, `3` = 3L, `5` = 5L, `6` = 6L, `7` = 7L, `8` = 8L, `9` = 9L, `10` = 10L, `11` = 11L, R = 18L,
-    `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L)
+    `14` = 14L, `14E` = 19L, `15` = 15L, `16` = 16L, `17` = 17L, `22` = 22L, `23` = 23L, `24` = 24L)
 COLUMNS <- c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", "n_features", "n_true", "n_calls",
     "null_p05", "null_p01", "fdp", "power", "bias", "rmse", "seconds")
 
@@ -406,19 +409,26 @@ oneRun <- function(cl, run) {
         result$k <- 1L
         result
     })
+    separationK <- function(controls) {
+        cancor_p <- trxCancor(Y = t(n$log_cpm_tmm), X = prep$model[, -1, drop = FALSE], ctl = rownames(n$log_cpm_tmm) %in% controls)
+        trxFindBestK(cancor_p, max_k = if (ncol(y) < 15) 3L else 4L)
+    }
     arm("22", function() {
         nulls <- genes[all_null]
         if (length(nulls) < 50L) refuse("fewer than 50 null genes pass the filter")
         set.seed(seed * 100L + ARM_STREAM[["8"]])
         controls <- sample(nulls, 50L)
         set.seed(seed * 100L + ARM_STREAM[["22"]])
-        cancor_p <- trxCancor(Y = t(n$log_cpm_tmm), X = prep$model[, -1, drop = FALSE], ctl = rownames(n$log_cpm_tmm) %in% controls)
-        withW(RUVSeq::RUVg(uq, controls, trxFindBestK(cancor_p, max_k = if (ncol(y) < 15) 3L else 4L))$W)
+        withW(RUVSeq::RUVg(uq, controls, separationK(controls))$W)
     })
     arm("23", function() {
         if (E == 0L) return(noRuv())
         controls <- genes[order(prep$first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
         withW(RUVSeq::RUVg(uq, controls, E)$W)
+    })
+    arm("24", function() {
+        controls <- genes[order(prep$first_p)[-seq_len(ceiling(0.25 * length(genes)))]]
+        withW(RUVSeq::RUVg(uq, controls, separationK(controls))$W)
     })
     total <- proc.time()[["elapsed"]] - t_start
     list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
@@ -427,7 +437,7 @@ oneRun <- function(cl, run) {
 
 armsOf <- function(cl) {
     arms <- c("1", "2", "3", "5", "6", "7", "8", "9", "10", "11", "R", "14", "14E", if (cl$tech) c("15", "16"), if (cl$batch) "17")
-    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23"), arms_wanted)
+    if (is.null(arms_wanted)) arms else intersect(c(arms, "22", "23", "24"), arms_wanted)
 }
 
 # A run whose worker died (or failed outside every arm) is a crash of each of its arms.
