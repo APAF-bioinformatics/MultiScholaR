@@ -13,9 +13,6 @@ setMethod(
     f = "ruvCancor",
     signature = "MetaboliteAssayData",
     definition = function(theObject, ctrl = NULL, num_components_to_impute = NULL, ruv_grouping_variable = NULL) {
-        message("+===========================================================================+")
-        message("|  DEBUG66: Entering ruvCancor (MetaboliteAssayData)                        |")
-        message("+===========================================================================+")
 
         assay_list <- methods::slot(theObject, "metabolite_data")
         metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")
@@ -23,8 +20,6 @@ setMethod(
         sample_id <- methods::slot(theObject, "sample_id")
         # group_id is not directly used here but good practice to extract if needed later
 
-        message(sprintf("   DEBUG66 [ruvCancor] Function args: ctrl is.null = %s, ruv_grouping_variable = %s", is.null(ctrl), ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable)))
-        message(sprintf("   DEBUG66 [ruvCancor] Number of assays: %d", length(assay_list)))
 
         # --- Resolve Global Parameters ---
         # Use generic keys as per handover doc
@@ -34,15 +29,6 @@ setMethod(
         # Default ruv_grouping_variable = NULL, MUST be provided
         ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = NULL)
 
-        message(sprintf(
-            "   DEBUG66 [ruvCancor] Resolved ctrl_final is.null = %s, is.list = %s, class = '%s'",
-            is.null(ctrl_final), is.list(ctrl_final), class(ctrl_final)[1]
-        ))
-        if (is.list(ctrl_final)) {
-            message(sprintf("   DEBUG66 [ruvCancor] ctrl_final names: %s", paste(names(ctrl_final), collapse = ", ")))
-        }
-        message(sprintf("   DEBUG66 [ruvCancor] Resolved ruv_grouping_variable_final = '%s'", ifelse(is.null(ruv_grouping_variable_final), "NULL", ruv_grouping_variable_final)))
-        message(sprintf("   DEBUG66 [ruvCancor] Resolved num_components_to_impute_final = %s", num_components_to_impute_final))
 
         # Update object args (using generic keys)
         theObject <- updateParamInObject(theObject, "ctrl")
@@ -57,29 +43,24 @@ setMethod(
 
         # --- Input Validation ---
         if (is.null(ctrl_final)) {
-            message("   DEBUG66 [ruvCancor] FAIL - ctrl_final is NULL, stopping!")
             log_error("Negative control features ('ctrl') must be provided either via function argument or object configuration ('args$ctrl').")
             stop("Missing required 'ctrl' parameter for ruvCancor.")
         }
         if (is.null(ruv_grouping_variable_final)) {
-            message("   DEBUG66 [ruvCancor] FAIL - ruv_grouping_variable_final is NULL, stopping!")
             log_error("RUV grouping variable ('ruv_grouping_variable') must be provided either via function argument or object configuration.")
             stop("Missing required 'ruv_grouping_variable' parameter for ruvCancor.")
         }
         if (!ruv_grouping_variable_final %in% colnames(design_matrix)) {
-            message(sprintf("   DEBUG66 [ruvCancor] FAIL - ruv_grouping_variable '%s' not in design_matrix columns!", ruv_grouping_variable_final))
             log_error("The 'ruv_grouping_variable' ('{ruv_grouping_variable_final}') is not a column in the design matrix.")
             stop(paste0("The 'ruv_grouping_variable = ", ruv_grouping_variable_final, "' is not a column in the design matrix."))
         }
         if (!is.numeric(num_components_to_impute_final) || is.na(num_components_to_impute_final) || num_components_to_impute_final < 1) {
-            message(sprintf("   DEBUG66 [ruvCancor] FAIL - invalid num_components_to_impute = %s", num_components_to_impute_final))
             log_error("Invalid 'num_components_to_impute': {num_components_to_impute_final}. Must be a positive integer.")
             stop(paste0("The num_components_to_impute = ", num_components_to_impute_final, " value is invalid."))
         }
 
 
         if (length(assay_list) == 0) {
-            message("   DEBUG66 [ruvCancor] WARNING - no assays found, returning empty list")
             log_warn("No assays found in `metabolite_data` slot. Returning empty list.")
             return(list())
         }
@@ -87,25 +68,19 @@ setMethod(
         assay_names <- names(assay_list)
         if (is.null(assay_names)) {
             assay_names <- paste0("Assay_", seq_along(assay_list))
-            message("   DEBUG66 [ruvCancor] Assay list was unnamed. Using default names.")
             log_warn("Assay list was unnamed. Using default names.")
         }
-        message(sprintf("   DEBUG66 [ruvCancor] Assay names: %s", paste(assay_names, collapse = ", ")))
 
         # --- Process Each Assay ---
         cancor_plots_list <- lapply(seq_along(assay_list), function(i) {
             assay_name <- assay_names[i]
             assay_tibble <- assay_list[[i]]
-            message(sprintf("   DEBUG66 [ruvCancor] === Processing assay: %s ===", assay_name))
             message(sprintf("-- Processing assay for RUV Cancor Plot: %s", assay_name))
 
             # --- Basic Checks ---
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': tibble rows = %d, cols = %d", assay_name, nrow(assay_tibble), ncol(assay_tibble)))
             if (!tibble::is_tibble(assay_tibble)) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Not a tibble, attempting coercion", assay_name))
                 log_warn("Assay '{assay_name}' is not a tibble. Attempting coercion.", .logr = TRUE)
                 assay_tibble <- tryCatch(tibble::as_tibble(assay_tibble), error = function(e) {
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Coercion FAILED - %s", assay_name, e$message))
                     log_warn("Failed to coerce assay '{assay_name}' to tibble: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL)
                 })
@@ -114,12 +89,10 @@ setMethod(
                 } # Skip assay
             }
             if (!metabolite_id_col_name %in% colnames(assay_tibble)) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - metabolite ID column not found", assay_name))
                 log_warn("Assay '{assay_name}': Metabolite ID column '{metabolite_id_col_name}' not found. Skipping.", .logr = TRUE)
                 return(NULL)
             }
             if (nrow(assay_tibble) == 0) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - zero rows", assay_name))
                 log_warn("Assay '{assay_name}': Contains zero rows (features). Skipping.", .logr = TRUE)
                 return(NULL)
             }
@@ -128,31 +101,25 @@ setMethod(
             design_samples <- tryCatch(as.character(design_matrix[[sample_id]]), error = function(e) {
                 character(0)
             })
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': design_samples count = %d", assay_name, length(design_samples)))
             if (length(design_samples) == 0) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - no design samples found", assay_name))
                 log_warn("Assay '{assay_name}': Could not extract valid sample IDs from design matrix column '{sample_id}'. Skipping.", .logr = TRUE)
                 return(NULL)
             }
             all_assay_cols <- colnames(assay_tibble)
             sample_cols <- intersect(all_assay_cols, design_samples)
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': sample_cols count = %d", assay_name, length(sample_cols)))
             if (length(sample_cols) < 2) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - fewer than 2 sample columns", assay_name))
                 log_warn("Assay '{assay_name}': Fewer than 2 sample columns identified matching design matrix. Skipping RUV cancor plot.", .logr = TRUE)
                 return(NULL)
             }
             # Ensure sample columns are numeric
             non_numeric_samples <- sample_cols[!purrr::map_lgl(assay_tibble[sample_cols], is.numeric)]
             if (length(non_numeric_samples) > 0) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Coercing %d non-numeric sample columns", assay_name, length(non_numeric_samples)))
                 log_warn("Assay '{assay_name}': Non-numeric sample columns found: {paste(non_numeric_samples, collapse=', ')}. Attempting coercion.", .logr = TRUE)
                 assay_tibble <- assay_tibble |>
                     dplyr::mutate(dplyr::across(dplyr::all_of(non_numeric_samples), as.numeric))
             }
 
             # --- Prepare Matrix (Features x Samples) ---
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Converting to matrix...", assay_name))
             assay_matrix <- tryCatch(
                 {
                     assay_tibble |>
@@ -161,7 +128,6 @@ setMethod(
                         as.matrix()
                 },
                 error = function(e) {
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Matrix conversion FAILED - %s", assay_name, e$message))
                     log_warn("Assay '{assay_name}': Error converting tibble to matrix: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL)
                 }
@@ -170,7 +136,6 @@ setMethod(
                 return(NULL)
             }
 
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Matrix dims = %d x %d", assay_name, nrow(assay_matrix), ncol(assay_matrix)))
             assay_matrix[!is.finite(assay_matrix)] <- NA # Handle Inf/-Inf first
 
             # --- Filter Design Matrix ---
@@ -178,22 +143,18 @@ setMethod(
             design_matrix_filtered <- design_matrix |>
                 dplyr::filter(!!rlang::sym(sample_id) %in% colnames(assay_matrix)) |>
                 as.data.frame() # Ensure it's a data.frame if needed
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Filtered design_matrix rows = %d", assay_name, nrow(design_matrix_filtered)))
 
             # --- Prepare Y (Samples x Features) ---
             Y_matrix <- t(assay_matrix[, as.character(design_matrix_filtered[[sample_id]]), drop = FALSE]) # Ensure column order matches filtered design
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Y_matrix dims = %d x %d (samples x features)", assay_name, nrow(Y_matrix), ncol(Y_matrix)))
 
             # --- Imputation (NIPALS: imputeNipalsMatrix, KIT-087) ---
             if (anyNA(Y_matrix)) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NAs detected, performing NIPALS imputation", assay_name))
                 log_info("   Assay '{assay_name}': Missing values detected. Performing NIPALS imputation with {num_components_to_impute_final} components.", .logr = TRUE)
                 Y_imputed <- tryCatch(
                     {
                         imputeNipalsMatrix(Y_matrix, ncomp = num_components_to_impute_final)
                     },
                     error = function(e) {
-                        message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': NIPALS imputation FAILED - %s", assay_name, e$message))
                         log_warn("Assay '{assay_name}': Error during NIPALS imputation: {e$message}. Skipping.", .logr = TRUE)
                         return(NULL)
                     }
@@ -203,32 +164,25 @@ setMethod(
                 }
                 Y_final <- Y_imputed
             } else {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': No NAs in Y_matrix, skipping imputation", assay_name))
                 Y_final <- Y_matrix
             }
 
             # --- Prepare X (Grouping Variable) ---
             if (!ruv_grouping_variable_final %in% colnames(design_matrix_filtered)) {
                 # This check should be redundant due to the initial check, but safe
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - grouping variable lost after filtering", assay_name))
                 log_error("Assay '{assay_name}': Grouping variable '{ruv_grouping_variable_final}' lost after filtering design matrix. This shouldn't happen.", .logr = TRUE)
                 return(NULL)
             }
             X_vector <- design_matrix_filtered[[ruv_grouping_variable_final]]
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': X_vector length = %d, unique values = %d", assay_name, length(X_vector), length(unique(X_vector))))
 
             # --- Prepare ctl (Control Features Indices/Logical) ---
             # Resolve control features specific to this assay
             ctrl_assay <- NULL
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Resolving ctrl_assay, ctrl_final is.list = %s", assay_name, is.list(ctrl_final)))
             if (is.list(ctrl_final)) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Checking if '%s' in names(ctrl_final) = %s", assay_name, assay_name, assay_name %in% names(ctrl_final)))
                 if (assay_name %in% names(ctrl_final)) {
                     ctrl_assay <- ctrl_final[[assay_name]]
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Found assay-specific controls, class = '%s'", assay_name, class(ctrl_assay)[1]))
                     log_info("   Assay '{assay_name}': Found assay-specific controls in 'ctrl' list.", .logr = TRUE)
                 } else {
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - assay not in ctrl_final names", assay_name))
                     log_warn("Assay '{assay_name}': 'ctrl' is a list, but does not contain an element named '{assay_name}'. Skipping.", .logr = TRUE)
                     return(NULL)
                 }
@@ -236,13 +190,11 @@ setMethod(
                 # If ctrl_final is not a list, assume it's a global vector (numeric, logical, character)
                 # This maintains backwards compatibility if a global ctrl vector is provided
                 ctrl_assay <- ctrl_final
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Using globally provided ctrl, class = '%s'", assay_name, class(ctrl_assay)[1]))
                 log_info("   Assay '{assay_name}': Using the globally provided 'ctrl' vector.", .logr = TRUE)
             }
 
             if (is.null(ctrl_assay)) {
                 # This case should ideally be caught by the list check above, but as a safeguard:
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - ctrl_assay is NULL", assay_name))
                 log_warn("Assay '{assay_name}': Failed to resolve control features for this assay. Skipping.", .logr = TRUE)
                 return(NULL)
             }
@@ -299,14 +251,11 @@ setMethod(
             # Final check on number of controls (use sum for logical, length for numeric)
             # Need to ensure control_indices_assay is not NULL before checking
             if (is.null(control_indices_assay)) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - control_indices_assay is NULL", assay_name))
                 log_warn("Assay '{assay_name}': Control indices could not be determined. Skipping.", .logr = TRUE)
                 return(NULL)
             }
             num_controls_found <- if (is.logical(control_indices_assay)) sum(control_indices_assay, na.rm = TRUE) else length(control_indices_assay)
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': num_controls_found = %d", assay_name, num_controls_found))
             if (num_controls_found < 5) {
-                message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': FAIL - fewer than 5 controls (%d)", assay_name, num_controls_found))
                 log_warn("Assay '{assay_name}': Fewer than 5 negative control features found/specified for this assay ({num_controls_found}). RUV results may be unreliable. Skipping cancor plot.", .logr = TRUE)
                 # Proceeding might still work but is discouraged by the original protein code's check
                 return(NULL) # Skip plot generation as per original check
@@ -314,7 +263,6 @@ setMethod(
             log_info("   Assay '{assay_name}': Using {num_controls_found} control features for cancor plot.", .logr = TRUE)
 
             # --- Call ruv_cancorplot ---
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': Calling ruv_cancorplot...", assay_name))
             cancor_plot_assay <- tryCatch(
                 {
                     # Ensure ruv_cancorplot is loaded/available in the environment
@@ -328,13 +276,11 @@ setMethod(
                     )
                 },
                 error = function(e) {
-                    message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': ruv_cancorplot FAILED - %s", assay_name, e$message))
                     log_warn("Assay '{assay_name}': Error calling ruv_cancorplot: {e$message}. Check if the function exists and is loaded correctly. Skipping.", .logr = TRUE)
                     return(NULL) # Return NULL for this assay on error
                 }
             )
 
-            message(sprintf("   DEBUG66 [ruvCancor] Assay '%s': SUCCESS - cancor_plot created", assay_name))
             return(cancor_plot_assay)
         })
 
@@ -344,10 +290,6 @@ setMethod(
         # Remove NULL elements (skipped assays)
         final_plots_list <- cancor_plots_list[!sapply(cancor_plots_list, is.null)]
 
-        message(sprintf("   DEBUG66 [ruvCancor] Finished. Returning %d assay plots.", length(final_plots_list)))
-        message("+===========================================================================+")
-        message("|  DEBUG66: Exiting ruvCancor                                               |")
-        message("+===========================================================================+")
         log_info("Finished RUV Canonical Correlation plot generation for {length(final_plots_list)} assay(s).")
         return(final_plots_list)
     }
@@ -401,9 +343,6 @@ setMethod(
                           ruv_grouping_variable = NULL,
                           ruv_number_k = NULL,
                           ctrl = NULL) {
-        message("+===========================================================================+")
-        message("|  DEBUG66: Entering ruvIII_C_Varying (MetaboliteAssayData)                 |")
-        message("+===========================================================================+")
 
         assay_list <- methods::slot(theObject, "metabolite_data")
         metabolite_id_col_name <- methods::slot(theObject, "metabolite_id_column")
@@ -412,70 +351,42 @@ setMethod(
         group_id <- methods::slot(theObject, "group_id") # Extract for context, though not directly used below
         technical_replicate_id <- methods::slot(theObject, "technical_replicate_id") # Extract for context
 
-        message(sprintf(
-            "   DEBUG66 [ruvIII_C_Varying] Function args: ruv_grouping_variable = %s, ruv_number_k is.null = %s, ctrl is.null = %s",
-            ifelse(is.null(ruv_grouping_variable), "NULL", ruv_grouping_variable), is.null(ruv_number_k), is.null(ctrl)
-        ))
-        message(sprintf("   DEBUG66 [ruvIII_C_Varying] Number of assays: %d", length(assay_list)))
 
         # --- Resolve Parameters (Prioritize function args, then object args) ---
 
         # 1. RUV Grouping Variable
         if (!is.null(ruv_grouping_variable)) {
             ruv_grouping_variable_final <- ruv_grouping_variable
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_grouping_variable from function arg: '%s'", ruv_grouping_variable_final))
             log_info("Using 'ruv_grouping_variable' from function argument: {ruv_grouping_variable_final}")
         } else {
             ruv_grouping_variable_final <- checkParamsObjectFunctionSimplify(theObject, "ruv_grouping_variable", default_value = NULL)
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_grouping_variable from object/default: '%s'", ifelse(is.null(ruv_grouping_variable_final), "NULL", ruv_grouping_variable_final)))
             log_info("Using 'ruv_grouping_variable' from object args or default: {ruv_grouping_variable_final}")
         }
 
         # 2. RUV Number K (k)
         if (!is.null(ruv_number_k)) {
             ruv_number_k_resolved <- ruv_number_k
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ruv_number_k from function arg, class = '%s'", class(ruv_number_k_resolved)[1]))
             log_info("Using 'ruv_number_k' from function argument.")
         } else {
             ruv_number_k_resolved <- checkParamsObjectFunctionSimplify(theObject, "ruv_number_k", default_value = NULL)
-            message(sprintf(
-                "   DEBUG66 [ruvIII_C_Varying] Using ruv_number_k from object/default: is.null = %s, class = '%s'",
-                is.null(ruv_number_k_resolved), class(ruv_number_k_resolved)[1]
-            ))
             log_info("Using 'ruv_number_k' from object args or default.")
         }
 
         # 3. Control Features (ctrl)
         if (!is.null(ctrl)) {
             ctrl_resolved <- ctrl
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Using ctrl from function arg, class = '%s', is.list = %s", class(ctrl_resolved)[1], is.list(ctrl_resolved)))
             log_info("Using 'ctrl' from function argument.")
         } else {
             ctrl_resolved <- checkParamsObjectFunctionSimplify(theObject, "ctrl", default_value = NULL)
-            message(sprintf(
-                "   DEBUG66 [ruvIII_C_Varying] Using ctrl from object/default: is.null = %s, class = '%s', is.list = %s",
-                is.null(ctrl_resolved), class(ctrl_resolved)[1], is.list(ctrl_resolved)
-            ))
             log_info("Using 'ctrl' from object args or default.")
         }
 
         # Debug detailed ctrl info
         if (is.list(ctrl_resolved) && !is.null(ctrl_resolved)) {
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] ctrl_resolved is a list with names: %s", paste(names(ctrl_resolved), collapse = ", ")))
             for (nm in names(ctrl_resolved)) {
                 ctrl_item <- ctrl_resolved[[nm]]
                 num_ctrl <- if (is.logical(ctrl_item)) sum(ctrl_item, na.rm = TRUE) else length(ctrl_item)
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ctrl_resolved[['%s']]: class = '%s', num_ctrl = %d", nm, class(ctrl_item)[1], num_ctrl))
             }
-        }
-        # Debug detailed k info
-        if (is.list(ruv_number_k_resolved) && !is.null(ruv_number_k_resolved)) {
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved is a list with names: %s", paste(names(ruv_number_k_resolved), collapse = ", ")))
-            for (nm in names(ruv_number_k_resolved)) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved[['%s']] = %s", nm, ruv_number_k_resolved[[nm]]))
-            }
-        } else if (!is.null(ruv_number_k_resolved)) {
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] ruv_number_k_resolved = %s (single value)", ruv_number_k_resolved))
         }
 
         # --- Update Object Args (Store the resolved values) ---
@@ -487,22 +398,18 @@ setMethod(
 
         # --- Validation (Using the final resolved values) ---
         if (is.null(ruv_grouping_variable_final)) {
-            message("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_grouping_variable_final is NULL!")
             log_error("Missing required parameter 'ruv_grouping_variable'. Must be provided in function call or object args.")
             stop("Missing required 'ruv_grouping_variable'")
         }
         if (!ruv_grouping_variable_final %in% colnames(design_matrix)) {
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_grouping_variable '%s' not in design_matrix!", ruv_grouping_variable_final))
             log_error("Resolved 'ruv_grouping_variable' ('{ruv_grouping_variable_final}') not found as a column in the design matrix.", .logr = TRUE)
             stop("'ruv_grouping_variable' not in design matrix")
         }
         if (is.null(ruv_number_k_resolved)) {
-            message("   DEBUG66 [ruvIII_C_Varying] FAIL - ruv_number_k_resolved is NULL!")
             log_error("Missing required parameter 'ruv_number_k' (K value). Must be provided in function call or object args.")
             stop("Missing required 'ruv_number_k'")
         }
         if (is.null(ctrl_resolved)) {
-            message("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl_resolved is NULL!")
             log_error("Missing required parameter 'ctrl' (control features). Must be provided in function call or object args.")
             stop("Missing required 'ctrl'")
         }
@@ -518,7 +425,6 @@ setMethod(
         }
 
         if (length(assay_list) == 0) {
-            message("   DEBUG66 [ruvIII_C_Varying] WARNING - no assays found, returning object unchanged")
             log_warn("No assays found in `metabolite_data` slot. Returning object unchanged.")
             return(theObject)
         }
@@ -529,40 +435,33 @@ setMethod(
             new_names <- paste0("Assay_", seq_along(assay_list))
             assay_names[needs_name] <- new_names[needs_name]
             names(assay_list) <- assay_names
-            message("   DEBUG66 [ruvIII_C_Varying] Assay list had unnamed elements, using defaults")
             log_warn("Assay list contained unnamed or empty elements. Using default names (Assay_...).", immediate. = TRUE)
         }
-        message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay names: %s", paste(assay_names, collapse = ", ")))
 
         # --- Validate structure of k and ctrl if they are lists ---
         is_k_list <- is.list(ruv_number_k_resolved)
         # Check if ctrl is a list, but NOT a data.frame (which could be passed accidentally)
         is_ctrl_list <- is.list(ctrl_resolved) && !is.data.frame(ctrl_resolved)
-        message(sprintf("   DEBUG66 [ruvIII_C_Varying] is_k_list = %s, is_ctrl_list = %s", is_k_list, is_ctrl_list))
 
         # Validate names if k is a list
         if (is_k_list && !all(assay_names %in% names(ruv_number_k_resolved))) {
             missing_k <- setdiff(assay_names, names(ruv_number_k_resolved))
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - k list missing assays: %s", paste(missing_k, collapse = ", ")))
             log_error("If 'ruv_number_k' is a list, its names must match assay names. Missing K for: {paste(missing_k, collapse=', ')}", .logr = TRUE)
             stop("Names in 'ruv_number_k' list do not match assay names.")
         }
         # Validate names if ctrl is a list
         if (is_ctrl_list && !all(assay_names %in% names(ctrl_resolved))) {
             missing_ctrl <- setdiff(assay_names, names(ctrl_resolved))
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl list missing assays: %s", paste(missing_ctrl, collapse = ", ")))
             log_error("If 'ctrl' is a list, its names must match assay names. Missing ctrl for: {paste(missing_ctrl, collapse=', ')}", .logr = TRUE)
             stop("Names in 'ctrl' list do not match assay names.")
         }
         # Validate type if k is NOT a list (must be single numeric for multiple assays)
         if (!is_k_list && length(assay_list) > 1 && !(is.numeric(ruv_number_k_resolved) && length(ruv_number_k_resolved) == 1 && !is.na(ruv_number_k_resolved))) {
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - k not a list but multiple assays, invalid format"))
             log_error("If multiple assays exist, 'ruv_number_k' must be a single non-NA numeric value or a named list.", .logr = TRUE)
             stop("Invalid format for 'ruv_number_k' for multiple assays.")
         }
         # Validate type if ctrl is NOT a list (must be vector for multiple assays)
         if (!is_ctrl_list && length(assay_list) > 1 && !(is.logical(ctrl_resolved) || is.numeric(ctrl_resolved) || is.character(ctrl_resolved))) {
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] FAIL - ctrl not a list but multiple assays, invalid format"))
             log_error("If multiple assays exist and 'ctrl' is not a list, it must be a logical, numeric, or character vector (applied globally).", .logr = TRUE)
             stop("Invalid format for 'ctrl' for multiple assays.")
         }
@@ -572,20 +471,14 @@ setMethod(
         corrected_assay_list <- lapply(seq_along(assay_list), function(i) {
             assay_name <- assay_names[i]
             assay_tibble <- assay_list[[i]]
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] === Processing assay: %s ===", assay_name))
             message(sprintf("-- Processing assay for RUVIII: %s", assay_name))
 
             # --- Get Assay-Specific k and ctrl ---
             k_assay <- if (is_k_list) ruv_number_k_resolved[[assay_name]] else ruv_number_k_resolved
             ctrl_assay_input <- if (is_ctrl_list) ctrl_resolved[[assay_name]] else ctrl_resolved
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': k_assay = %s, ctrl_assay_input class = '%s'", assay_name, k_assay, class(ctrl_assay_input)[1]))
-            if (is.logical(ctrl_assay_input)) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': ctrl_assay_input sum(TRUE) = %d", assay_name, sum(ctrl_assay_input, na.rm = TRUE)))
-            }
 
             # Validate k_assay
             if (!is.numeric(k_assay) || length(k_assay) != 1 || is.na(k_assay) || k_assay < 0) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - Invalid k_assay = %s", assay_name, k_assay))
                 log_warn("Assay '{assay_name}': Invalid K value resolved ({k_assay}). Must be a non-negative integer. Skipping.", .logr = TRUE)
                 return(NULL)
             }
@@ -770,9 +663,7 @@ setMethod(
                 return(NULL)
             }
             num_controls_found <- sum(ctrl_logical_assay, na.rm = TRUE)
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': num_controls_found = %d", assay_name, num_controls_found))
             if (num_controls_found < 1) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - no control features", assay_name))
                 log_warn("Assay '{assay_name}': No control features identified after resolution. Skipping.", .logr = TRUE)
                 return(NULL)
             }
@@ -780,7 +671,6 @@ setMethod(
 
             # Get the names of the control features
             potential_controls_names <- feature_names_in_assay[ctrl_logical_assay]
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': potential_controls_names count = %d", assay_name, length(potential_controls_names)))
 
 
             # RUV-III cannot estimate more factors than it has controls observed in every sample; with fewer it
@@ -792,15 +682,10 @@ setMethod(
             }
 
             # --- Call RUVIII_C_Varying ---
-            message(sprintf(
-                "   DEBUG66 [ruvIII_C_Varying] Assay '%s': Calling RUVIII_C_Varying with k = %d, Y dims = %dx%d, M dims = %dx%d",
-                assay_name, k_assay, nrow(Y_final), ncol(Y_final), nrow(M), ncol(M)
-            ))
             cln_mat <- tryCatch(
                 {
                     # Check if RUVIII_C_Varying exists
                     if (!exists("RUVIII_C_Varying", mode = "function")) {
-                        message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - RUVIII_C_Varying function not found!", assay_name))
                         stop("Function 'RUVIII_C_Varying' not found. Ensure it is loaded from its package or source file.")
                     }
                     RUVIII_C_Varying(
@@ -812,17 +697,14 @@ setMethod(
                     )
                 },
                 error = function(e) {
-                    message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUVIII_C_Varying FAILED - %s", assay_name, e$message))
                     log_warn("Assay '{assay_name}': Error calling RUVIII_C_Varying: {e$message}. Skipping.", .logr = TRUE)
                     return(NULL)
                 }
             )
             if (is.null(cln_mat) || !is.matrix(cln_mat)) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': FAIL - RUVIII_C_Varying returned NULL or non-matrix", assay_name))
                 log_warn("Assay '{assay_name}': RUVIII_C_Varying did not return a valid matrix. Skipping.", .logr = TRUE)
                 return(NULL) # Skip assay if RUV fails
             }
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUVIII_C_Varying SUCCESS - returned matrix dims = %dx%d", assay_name, nrow(cln_mat), ncol(cln_mat)))
 
             # --- Clean Corrected Matrix ---
             # Transpose result back to Features x Samples for cleaning
@@ -893,7 +775,6 @@ setMethod(
                 }
             )
 
-            message(sprintf("   DEBUG66 [ruvIII_C_Varying] Assay '%s': RUV-III correction complete.", assay_name))
             message(sprintf("   Assay '%s' RUV-III correction complete.", assay_name))
             return(reconstructed_tibble)
         })
@@ -901,10 +782,8 @@ setMethod(
         # Set names and remove NULLs
         names(corrected_assay_list) <- assay_names
         final_corrected_list <- corrected_assay_list[!sapply(corrected_assay_list, is.null)]
-        message(sprintf("   DEBUG66 [ruvIII_C_Varying] final_corrected_list length = %d", length(final_corrected_list)))
 
         if (length(final_corrected_list) == 0) {
-            message("   DEBUG66 [ruvIII_C_Varying] WARNING - no assays successfully processed, returning original object")
             log_warn("No assays were successfully processed by RUV-III. Returning original object.")
             return(theObject)
         }
@@ -919,16 +798,11 @@ setMethod(
                 cleanDesignMatrix(theObject)
             },
             error = function(e) {
-                message(sprintf("   DEBUG66 [ruvIII_C_Varying] cleanDesignMatrix FAILED - %s", e$message))
                 log_warn("Error running cleanDesignMatrix after RUV correction: {e$message}. Design matrix might not be fully synchronized.", .logr = TRUE)
                 return(theObject)
             }
         )
 
-        message(sprintf("   DEBUG66 [ruvIII_C_Varying] RUV-III correction finished for %d assay(s).", length(final_corrected_list)))
-        message("+===========================================================================+")
-        message("|  DEBUG66: Exiting ruvIII_C_Varying                                        |")
-        message("+===========================================================================+")
         log_info("RUV-III correction process finished for {length(final_corrected_list)} assay(s).")
         return(theObject)
     }
