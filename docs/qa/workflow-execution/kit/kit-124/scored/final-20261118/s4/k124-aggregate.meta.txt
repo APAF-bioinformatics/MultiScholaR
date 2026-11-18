@@ -1,0 +1,89 @@
+KIT-124 aggregation (ticket revision 1.2 rules with the revision 1.3 additions)
+script: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-final/docs/qa/workflow-execution/kit/kit-124/aggregate.R
+script sha256: c5c6275f099166ab59bb479b4557ca598c96004f71494de785883bdbe5f4d200
+commit: 19409bb6997225e8434a732768853e6843577f46
+script differs from commit: FALSE
+command: Rscript /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-final/docs/qa/workflow-execution/kit/kit-124/aggregate.R /tmp/claude-1000/-home-doktersmol-Projects-APAF-MultiScholaR/ac7ce448-4a42-4199-afd0-482f49325501/scratchpad/score-hard-20261118/scored/s4 S4=/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm
+working directory: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-scored-final
+R: R version 4.6.1 (2026-06-24) ; x86_64-pc-linux-gnu
+packages: base 4.6.1; stats 4.6.1; utils 4.6.1; tools 4.6.1
+library paths: /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/scratch-k124-lib:/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/core/browser-smoke.y5ordS/library:/home/doktersmol/R/x86_64-pc-linux-gnu-library/4.6:/usr/lib/R/library
+run at: 2026-11-18 13:41:52 AEDT
+inputs (sha256, bytes, path):
+  333c7d08fc88c938477368685d32eb3215fbe482e27327dd238e284a7ea6ea9f 3343114 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C0.tsv
+  278cfabb658e13414aad0e08f0fc4993ec0f9ea6b935a507fbeccc3152491d47 3390877 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C1.tsv
+  c6370952bc28ec548bda6e34bba2aa65b9486c11dba85082992e999da0743888 3277077 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C2.tsv
+  6fc3e2d7b1f4588d04406492f2c022fc9bab65a60e06f26cf977000f91316325 3541369 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C3.tsv
+  cdd41b4fc1a945b9839059ff40d79fae0179a38cb7198aa31d30f3286194201c 2596253 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C4.tsv
+  ccfc1719499bf25108fb551de999242764b45bec8a4fe27d57ac270ab1b13874 3406407 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C5.tsv
+  2a626d444a112a88db3506906f75e1e6afdfdf76b6d0a85dc0cfe3885f214abf 3895980 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C6.tsv
+  1f44eeb78bef3ed0cb658325122aa69f69d1cebb7dacce7776e5d37518191e9b 3502953 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C7.tsv
+  fb81b2b418e25ebe85530b70780547695f8640eaf51e11c0d2d5bc5b1dc11542 1606563 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S1.tsv
+  c36a4d055b12526324efff5f755c2bab1c7f06f7abb161af362a275939a7dfcb 1722020 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S10.tsv
+  49dfa4bd1ed37ce25f1195a5985fe8bb363ab05c3117972ee5529de161f268fb 1648692 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S11.tsv
+  e49c53b953c033dfbdb7efdf7caed4e936c9b2ec2003b02c09e273a3f1c560f9 1597802 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S12.tsv
+  1d8eb45801a211b34e865a78ea7e7a68f024f78c8295704b352d64693900adee 1762504 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S13.tsv
+  24d85e9d524e6c12d753f61a2e8886648cb27bc1994f5fa6f5ad36d2a5c0c14f 1799427 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S14.tsv
+  2ee24130096b67f2bf21363f1c1cabe4aea938f6531c3a5a44ee9a3f151a42df 1733486 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S2.tsv
+  786013c920493dfe7759961bae451f1685e94125c35af867db2f1383c729540a 1761450 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S3.tsv
+  094361af01dea73e13ac0179cfcf15c9ada178ac0300c5c939149bd4016e02cf 1678909 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S4.tsv
+  67a6ca3f4bede4bd284d321c5499b38c684abe610b2bdc737b830216455ca536 1666277 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S5.tsv
+  65f95a6937592db307a28c6d35c830f2e15041a50a1cac56a96585de84ddff6e 1666246 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S6.tsv
+  1fd45dce88f8d66f23fc5b36f053eea1c5da78043aa46c161d82b1009784d5f0 1696792 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S7.tsv
+  1db379514e2fde06be2d73d007b86a178de6e467c71af7c65a91a62824d09757 1882402 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S8.tsv
+  e2a782574e11521ca644d97ad7d20dae1bb9bdcc3ac0a9750a8483c441f1f14c 1703048 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S9.tsv
+  fc103fdf6094d34d7d4674fbb527aee2a7dda0bbcab77cda727541b3911b786f 219821 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C0.notes.tsv
+  0ce13b5657c2b1d5f03a61cd3931e1a8f1ff9c993d3085400642e432ec6d16c3 219236 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C1.notes.tsv
+  f136ce9ba1c35c45e88de1fd68835fe41c93094991e8ac9a6c4df378250e9d5b 222564 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C2.notes.tsv
+  1478fc41a0391ccfb20b0580f5f5e6c0c8341f4b289f41484546b8bfd7cf2374 215826 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C3.notes.tsv
+  91ca3ce353cead0c6ec67d18cb6f064c7019073f589463f46341cf3760a87bb3 281128 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C4.notes.tsv
+  238e28939fe02e8ac9404feae810778cacfd16386a915ab040eca00c9ac6f369 217910 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C5.notes.tsv
+  aa10d82e21371853ced0c4b0f84ee56f8a30eba7e3723d775c8850cb90e098a5 218607 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C6.notes.tsv
+  25711d1fb2ad2208ad88c32753b4564d0ec7b164b95c82ffe9a970b294c17a63 217796 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C7.notes.tsv
+  59fe4cc5ce283f637a8538c31e48dff487a58d1854e9fe33a515800c3fbda915 244750 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S1.notes.tsv
+  2eadbab6e5990610102ab1f67bf391b04229b96fe530be188f5d59446a1ad0c4 110012 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S10.notes.tsv
+  5ee0bd4067649dda0813b570cc43bb0964459c1af90eed0c157f5ec0dadb8fbd 227074 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S11.notes.tsv
+  404432e4428bba29a4f38805d8b2bf438ee595e4b3fc8f765369c9eae010ee57 249353 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S12.notes.tsv
+  d5b48cf0519e46c7baf26e1fa005a8e2303ddeb1a18847c53f4c3e927d589b35 138702 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S13.notes.tsv
+  601dbec37d4a0919e60758a1b06b065edf9dbe9ac959fa7f91c9104d41d3e1c3 108881 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S14.notes.tsv
+  46c68b4dd1ebd9d32d5313a2841c6d470003aa5e7796591493d20fb6e016d8f7 109213 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S2.notes.tsv
+  fe177c584e9197c4893ecb03cfc7e6638f8c90501b77f2ca56aea894a5846801 108345 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S3.notes.tsv
+  56a4be9afd3dda1129153c48dd92bae6dc5b4aee02b7629fd257a0f99d3a4074 108807 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S4.notes.tsv
+  45e5e63225d8ba2096a6860bc57d4b2b6343c6a8aad70fb2e33390d841d5151e 103824 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S5.notes.tsv
+  ac85f49e031fd00b6a3c28154aeb2b537d5be5d726c197a5705873da5ca51052 117412 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S6.notes.tsv
+  e4c555018b025ed115e59465e5036b5e20983766dea9846b89f7e5c5b50058ce 109863 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S7.notes.tsv
+  9e150a7e1885f34ab9eada72dddf293ba7349f3544fb9b4f2410816e286dfdf1 108400 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S8.notes.tsv
+  e1461390c0663d3be9419995cf0d4ca4dc49a7ca856b35d677f8b468641cd75f 108761 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S9.notes.tsv
+  9292fb2786a5b9afe15857eacd7893094214e55bd3579058a7010966681ac788 30656 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C0.timing.tsv
+  6e0edf480d25422eb1d6b183992ef1c35c22cb51b26d89135600b472e29bd520 30653 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C1.timing.tsv
+  5cdcffb0fe5578ab3ad1182eb4a495f790be8afd42cb8d2693028e2ab084cd26 30655 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C2.timing.tsv
+  148840196a9f58ccdb2f35861f3eb4edb1dfed3e9105a4277a982ba5dcfc20a5 30657 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C3.timing.tsv
+  50140937894d4212e6cfc6e938d7a3ad7a810dc97ceca2cf23da56892fab1528 30677 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C4.timing.tsv
+  0718414188370f9d4d1470898cf21908417647e4c8c438520014f6a0155b1710 30648 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C5.timing.tsv
+  d276e056f91f8fd88c84f21c3d6b5681d1b7c5b38e850c15e848218c82ac91a3 30596 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C6.timing.tsv
+  4d27154b0bf52d0dde458021e5fc5871e38b0cc7fff4bc714f3d5457d52572ce 30596 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/C7.timing.tsv
+  55409a53412cae7931d0cd8271ae9ff34d566a6632efa74d81c609d54de27661 15274 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S1.timing.tsv
+  8499ebd442dede94adda27f05ec652d1213d3fccf6d314620e36ed3c382a28f9 15824 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S10.timing.tsv
+  267ff994aaea49984199b98bf116d13200137382b4b52a0bdefe97cd7a703521 15756 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S11.timing.tsv
+  d87f3f8259f953280662690d4c14e68788ee3274eb42109af96622fd9882e549 15750 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S12.timing.tsv
+  5c7c6c7c6a2a59664330a1e3e7c25fc56c9abf5386709ef137442bcf095fbcb4 15739 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S13.timing.tsv
+  f50b74a4b66fd75953bc519d4897c704a4f706cde61ef3956ccd511cfdf7af04 15823 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S14.timing.tsv
+  f8785aa3ebf822f17ffeb9441c9397f2a3753c0be0668582140b1f3211a21a34 15300 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S2.timing.tsv
+  bef016cad829d6b4f503b0b39c22b23786c630e674480ac8dbf1c3f6ffb0ce30 15336 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S3.timing.tsv
+  8125b6e6361d3fc9d9b7655812e8111d6626635938b0a2381f6dde7dc6e02f07 15339 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S4.timing.tsv
+  16e992e0a798b1935f0962d8a361f94e5089092e753838b18c9885b59b530375 12859 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S5.timing.tsv
+  91e126142969c16f561bdda8ae8674d860885f531999ad1420af07dc6cb9cc89 14897 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S6.timing.tsv
+  9f1f8b48ca815492b110725f300c9a5496f949570126e216e2f668d69975088a 15318 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S7.timing.tsv
+  f7cd3a1002189ab80de9332a0c9026bfd04b145bf118b03ed5148cca3cea0394 15313 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S8.timing.tsv
+  8b1c1347b798fff9d0eb61ee9db1b4482638efe7c257ec494466e096f1e8bcaa 15328 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/cells/S9.timing.tsv
+  f6acfd5e08cc1f900c465b7322f0168ad9ab37ec439850b7c65f3bc560111f1e 1603 /home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm/s4-runs.meta.txt
+simulator S4 meta (/home/doktersmol/Projects/APAF/MultiScholaR-dia-proof-20260911-VhC1n5/kit/wt-k124-sim/docs/qa/workflow-execution/kit/kit-124/s4-confirm):
+  commit: 0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22
+  script committed state: clean
+  command: OMP_NUM_THREADS=1 Rscript docs/qa/workflow-execution/kit/kit-124/sim/s4_lipid_metab.R docs/qa/workflow-execution/kit/kit-124/s4-confirm 1000 500 6 all
+  cells: C0,C1,C2,C3,C4,C5,C6,C7,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14
+  runs: core 1000, stress 500, numbered from 1
+  seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99
+  R: R version 4.6.1 (2026-06-24)
+  packages: limma 3.68.4, qvalue 2.44.0, ruv 0.9.7.1, RUVIIIC 1.0.19, sva 3.60.0, statmod 1.5.2, pkgload 1.5.3
+  started: 2026-11-18 04:04:09 finished: 2026-11-18 06:16:31

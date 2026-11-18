@@ -1,0 +1,20 @@
+           path    kind   n    max_rel   max_abs outside verdict note
+        S4 C0$k  double 480 0.00000000 0.0000000       0   agree     
+  S4 C0$n_calls integer 660         NA        NA       1  differ     
+ S4 C0$null_p05  double 660 0.06666747 0.0044445       1 outside     
+ S4 C0$null_p01  double 660 0.19999820 0.0047170       3 outside     
+      S4 C0$fdp  double 660 0.02934914 0.0124890       1 outside     
+    S4 C0$power  double 660 0.00000000 0.0000000       0   agree     
+     S4 C0$bias  double 660 0.09556114 0.0170890       2 outside     
+     S4 C0$rmse  double 660 0.06406144 0.1124400       2 outside     
+        S4 C5$k  double 480 0.00000000 0.0000000       0   agree     
+  S4 C5$n_calls integer 660         NA        NA       2  differ     
+ S4 C5$null_p05  double 660 0.00000000 0.0000000       0   agree     
+ S4 C5$null_p01  double 660 0.00000000 0.0000000       0   agree     
+      S4 C5$fdp  double 660 0.05263196 0.0146200       2 outside     
+    S4 C5$power  double 660 0.07142582 0.0166670       2 outside     
+     S4 C5$bias  double 660 1.80694141 0.4350230       3 outside     
+     S4 C5$rmse  double 660 0.73715972 2.2882300       3 outside     
+
+36 leaves compared: 25 agree, 9 outside the rule, 2 differ (discrete or structure)
+largest relative difference over the doubles: 1.81 (S4 C5$bias)

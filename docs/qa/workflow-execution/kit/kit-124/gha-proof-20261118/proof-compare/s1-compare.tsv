@@ -1,0 +1,55 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S1 C0$simulator	character	160			0	agree	
+S1 C0$cell	character	160			0	agree	
+S1 C0$cell_class	character	160			0	agree	
+S1 C0$run	integer	160			0	agree	
+S1 C0$arm	character	160			0	agree	
+S1 C0$subset	character	160			0	agree	
+S1 C0$status	character	160			0	agree	
+S1 C0$seed	integer	160			0	agree	
+S1 C0$k	integer	160			0	agree	
+S1 C0$n_features	integer	160			0	agree	
+S1 C0$n_true	integer	160			0	agree	
+S1 C0$n_calls	integer	160			0	agree	
+S1 C0$null_p05	double	160	0	0	0	agree	
+S1 C0$null_p01	double	160	0	0	0	agree	
+S1 C0$fdp	double	160	0	0	0	agree	
+S1 C0$power	double	160	0	0	0	agree	
+S1 C0$bias	double	160	1.03373498270169e-12	6.03683769639929e-16	0	agree	
+S1 C0$rmse	double	160	6.01710712578311e-15	1.02695629777827e-15	0	agree	
+S1 C5$simulator	character	160			0	agree	
+S1 C5$cell	character	160			0	agree	
+S1 C5$cell_class	character	160			0	agree	
+S1 C5$run	integer	160			0	agree	
+S1 C5$arm	character	160			0	agree	
+S1 C5$subset	character	160			0	agree	
+S1 C5$status	character	160			0	agree	
+S1 C5$seed	integer	160			0	agree	
+S1 C5$k	integer	160			0	agree	
+S1 C5$n_features	integer	160			0	agree	
+S1 C5$n_true	integer	160			0	agree	
+S1 C5$n_calls	integer	160			0	agree	
+S1 C5$null_p05	double	160	0	0	0	agree	
+S1 C5$null_p01	double	160	0	0	0	agree	
+S1 C5$fdp	double	160	0	0	0	agree	
+S1 C5$power	double	160	0	0	0	agree	
+S1 C5$bias	double	160	1.57714983811748e-12	1.40165656858926e-15	0	agree	
+S1 C5$rmse	double	160	1.38561511484112e-14	1.99840144432528e-15	0	agree	
+S1 C6$simulator	character	160			0	agree	
+S1 C6$cell	character	160			0	agree	
+S1 C6$cell_class	character	160			0	agree	
+S1 C6$run	integer	160			0	agree	
+S1 C6$arm	character	160			0	agree	
+S1 C6$subset	character	160			0	agree	
+S1 C6$status	character	160			0	agree	
+S1 C6$seed	integer	160			0	agree	
+S1 C6$k	integer	160			0	agree	
+S1 C6$n_features	integer	160			0	agree	
+S1 C6$n_true	integer	160			0	agree	
+S1 C6$n_calls	integer	160			0	agree	
+S1 C6$null_p05	double	160	0	0	0	agree	
+S1 C6$null_p01	double	160	0	0	0	agree	
+S1 C6$fdp	double	160	0	0	0	agree	
+S1 C6$power	double	160	0	0	0	agree	
+S1 C6$bias	double	160	5.19313933393206e-13	2.85882428840978e-15	0	agree	
+S1 C6$rmse	double	160	1.36951925386139e-14	2.99760216648792e-15	0	agree	

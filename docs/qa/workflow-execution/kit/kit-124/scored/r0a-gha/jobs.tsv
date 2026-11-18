@@ -1,0 +1,4 @@
+run	job_id	job	conclusion	attempt	started_utc	completed_utc	runner_image	package_commit	arms	runs	simulator_seconds	artifact	artifact_bytes	artifact_digest
+44203261310	134462543479	plan	success	1	2026-11-17T23:53:34Z	2026-11-17T23:53:40Z	ubuntu-22.04							
+44203261310	134462604559	s3 C6	success	1	2026-11-17T23:53:42Z	2026-11-18T00:25:04Z	ubuntu-22.04	ace1f4de68edfea857b1f51fff4d7d519e4d522e	1,2,7	1000	1480	k124-r0a-s3-C6	315044	sha256:ce6ddf7bb6fb56aa15636fedecfd07ef9da94d56c8a05205c512844740b0bdaf
+44203261310	134462604523	s4 C6	success	1	2026-11-17T23:53:42Z	2026-11-18T00:27:02Z	ubuntu-22.04	ace1f4de68edfea857b1f51fff4d7d519e4d522e	1,2,7,15,16	1000	1484	k124-r0a-s4-C6	503701	sha256:4aad785c7a9a67d2e915b227d05a534151998cb2ea7605aedd1cd15ec26e4f13

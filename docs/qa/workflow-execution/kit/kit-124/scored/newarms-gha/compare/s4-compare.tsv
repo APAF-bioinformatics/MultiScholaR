@@ -1,0 +1,145 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S4 C0$simulator	character	4000			0	agree	
+S4 C0$cell	character	4000			0	agree	
+S4 C0$cell_class	character	4000			0	agree	
+S4 C0$run	integer	4000			0	agree	
+S4 C0$arm	character	4000			0	agree	
+S4 C0$subset	character	4000			0	agree	
+S4 C0$status	character	4000			0	agree	
+S4 C0$seed	integer	4000			0	agree	
+S4 C0$k	integer	4000			0	agree	
+S4 C0$n_features	integer	4000			0	agree	
+S4 C0$n_true	integer	4000			0	agree	
+S4 C0$n_calls	integer	4000			0	agree	
+S4 C0$null_p05	double	4000	0	0	0	agree	
+S4 C0$null_p01	double	4000	0	0	0	agree	
+S4 C0$fdp	double	4000	0	0	0	agree	
+S4 C0$power	double	4000	0	0	0	agree	
+S4 C0$bias	double	4000	0	0	0	agree	
+S4 C0$rmse	double	4000	0	0	0	agree	
+S4 C1$simulator	character	4000			0	agree	
+S4 C1$cell	character	4000			0	agree	
+S4 C1$cell_class	character	4000			0	agree	
+S4 C1$run	integer	4000			0	agree	
+S4 C1$arm	character	4000			0	agree	
+S4 C1$subset	character	4000			0	agree	
+S4 C1$status	character	4000			0	agree	
+S4 C1$seed	integer	4000			0	agree	
+S4 C1$k	integer	4000			0	agree	
+S4 C1$n_features	integer	4000			0	agree	
+S4 C1$n_true	integer	4000			0	agree	
+S4 C1$n_calls	integer	4000			0	agree	
+S4 C1$null_p05	double	4000	0	0	0	agree	
+S4 C1$null_p01	double	4000	0	0	0	agree	
+S4 C1$fdp	double	4000	0	0	0	agree	
+S4 C1$power	double	4000	0	0	0	agree	
+S4 C1$bias	double	4000	0	0	0	agree	
+S4 C1$rmse	double	4000	0	0	0	agree	
+S4 C2$simulator	character	4000			0	agree	
+S4 C2$cell	character	4000			0	agree	
+S4 C2$cell_class	character	4000			0	agree	
+S4 C2$run	integer	4000			0	agree	
+S4 C2$arm	character	4000			0	agree	
+S4 C2$subset	character	4000			0	agree	
+S4 C2$status	character	4000			0	agree	
+S4 C2$seed	integer	4000			0	agree	
+S4 C2$k	integer	4000			0	agree	
+S4 C2$n_features	integer	4000			0	agree	
+S4 C2$n_true	integer	4000			0	agree	
+S4 C2$n_calls	integer	4000			0	agree	
+S4 C2$null_p05	double	4000	0	0	0	agree	
+S4 C2$null_p01	double	4000	0	0	0	agree	
+S4 C2$fdp	double	4000	0	0	0	agree	
+S4 C2$power	double	4000	0	0	0	agree	
+S4 C2$bias	double	4000	0	0	0	agree	
+S4 C2$rmse	double	4000	0	0	0	agree	
+S4 C3$simulator	character	4000			0	agree	
+S4 C3$cell	character	4000			0	agree	
+S4 C3$cell_class	character	4000			0	agree	
+S4 C3$run	integer	4000			0	agree	
+S4 C3$arm	character	4000			0	agree	
+S4 C3$subset	character	4000			0	agree	
+S4 C3$status	character	4000			0	agree	
+S4 C3$seed	integer	4000			0	agree	
+S4 C3$k	integer	4000			0	agree	
+S4 C3$n_features	integer	4000			0	agree	
+S4 C3$n_true	integer	4000			0	agree	
+S4 C3$n_calls	integer	4000			0	agree	
+S4 C3$null_p05	double	4000	0	0	0	agree	
+S4 C3$null_p01	double	4000	0	0	0	agree	
+S4 C3$fdp	double	4000	0	0	0	agree	
+S4 C3$power	double	4000	0	0	0	agree	
+S4 C3$bias	double	4000	0	0	0	agree	
+S4 C3$rmse	double	4000	0	0	0	agree	
+S4 C4$simulator	character	4000			0	agree	
+S4 C4$cell	character	4000			0	agree	
+S4 C4$cell_class	character	4000			0	agree	
+S4 C4$run	integer	4000			0	agree	
+S4 C4$arm	character	4000			0	agree	
+S4 C4$subset	character	4000			0	agree	
+S4 C4$status	character	4000			0	agree	
+S4 C4$seed	integer	4000			0	agree	
+S4 C4$k	integer	4000			0	agree	
+S4 C4$n_features	integer	4000			0	agree	
+S4 C4$n_true	integer	4000			0	agree	
+S4 C4$n_calls	integer	4000			0	agree	
+S4 C4$null_p05	double	4000	0	0	0	agree	
+S4 C4$null_p01	double	4000	0	0	0	agree	
+S4 C4$fdp	double	4000	0	0	0	agree	
+S4 C4$power	double	0	0	0	0	agree	
+S4 C4$bias	double	0	0	0	0	agree	
+S4 C4$rmse	double	0	0	0	0	agree	
+S4 C5$simulator	character	4000			0	agree	
+S4 C5$cell	character	4000			0	agree	
+S4 C5$cell_class	character	4000			0	agree	
+S4 C5$run	integer	4000			0	agree	
+S4 C5$arm	character	4000			0	agree	
+S4 C5$subset	character	4000			0	agree	
+S4 C5$status	character	4000			0	agree	
+S4 C5$seed	integer	4000			0	agree	
+S4 C5$k	integer	4000			0	agree	
+S4 C5$n_features	integer	4000			0	agree	
+S4 C5$n_true	integer	4000			0	agree	
+S4 C5$n_calls	integer	4000			0	agree	
+S4 C5$null_p05	double	4000	0	0	0	agree	
+S4 C5$null_p01	double	4000	0	0	0	agree	
+S4 C5$fdp	double	4000	0	0	0	agree	
+S4 C5$power	double	4000	0	0	0	agree	
+S4 C5$bias	double	4000	0	0	0	agree	
+S4 C5$rmse	double	4000	0	0	0	agree	
+S4 C6$simulator	character	4000			0	agree	
+S4 C6$cell	character	4000			0	agree	
+S4 C6$cell_class	character	4000			0	agree	
+S4 C6$run	integer	4000			0	agree	
+S4 C6$arm	character	4000			0	agree	
+S4 C6$subset	character	4000			0	agree	
+S4 C6$status	character	4000			0	agree	
+S4 C6$seed	integer	4000			0	agree	
+S4 C6$k	integer	4000			0	agree	
+S4 C6$n_features	integer	4000			0	agree	
+S4 C6$n_true	integer	4000			0	agree	
+S4 C6$n_calls	integer	4000			0	agree	
+S4 C6$null_p05	double	4000	0	0	0	agree	
+S4 C6$null_p01	double	4000	0	0	0	agree	
+S4 C6$fdp	double	4000	0	0	0	agree	
+S4 C6$power	double	4000	0	0	0	agree	
+S4 C6$bias	double	4000	0	0	0	agree	
+S4 C6$rmse	double	4000	0	0	0	agree	
+S4 C7$simulator	character	4000			0	agree	
+S4 C7$cell	character	4000			0	agree	
+S4 C7$cell_class	character	4000			0	agree	
+S4 C7$run	integer	4000			0	agree	
+S4 C7$arm	character	4000			0	agree	
+S4 C7$subset	character	4000			0	agree	
+S4 C7$status	character	4000			0	agree	
+S4 C7$seed	integer	4000			0	agree	
+S4 C7$k	integer	4000			0	agree	
+S4 C7$n_features	integer	4000			0	agree	
+S4 C7$n_true	integer	4000			0	agree	
+S4 C7$n_calls	integer	4000			0	agree	
+S4 C7$null_p05	double	4000	0	0	0	agree	
+S4 C7$null_p01	double	4000	0	0	0	agree	
+S4 C7$fdp	double	4000	0	0	0	agree	
+S4 C7$power	double	4000	0	0	0	agree	
+S4 C7$bias	double	4000	0	0	0	agree	
+S4 C7$rmse	double	4000	0	0	0	agree	

@@ -1,0 +1,16 @@
+           path   kind   n max_rel max_abs outside verdict note
+ S4 C0$null_p05 double 160       0       0       0   agree     
+ S4 C0$null_p01 double 160       0       0       0   agree     
+      S4 C0$fdp double 160       0       0       0   agree     
+    S4 C0$power double 160       0       0       0   agree     
+     S4 C0$bias double 160       0       0       0   agree     
+     S4 C0$rmse double 160       0       0       0   agree     
+ S4 C5$null_p05 double 160       0       0       0   agree     
+ S4 C5$null_p01 double 160       0       0       0   agree     
+      S4 C5$fdp double 160       0       0       0   agree     
+    S4 C5$power double 160       0       0       0   agree     
+     S4 C5$bias double 160       0       0       0   agree     
+     S4 C5$rmse double 160       0       0       0   agree     
+
+36 leaves compared: 36 agree, 0 outside the rule, 0 differ (discrete or structure)
+largest relative difference over the doubles: 0 (S4 C0$null_p05)

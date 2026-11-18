@@ -1,0 +1,37 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S3 C0$simulator	character	80			0	agree	
+S3 C0$cell	character	80			0	agree	
+S3 C0$cell_class	character	80			0	agree	
+S3 C0$run	integer	80			0	agree	
+S3 C0$arm	character	80			0	agree	
+S3 C0$subset	character	80			0	agree	
+S3 C0$status	character	80			0	agree	
+S3 C0$seed	integer	80			0	agree	
+S3 C0$k	integer	80			0	agree	
+S3 C0$n_features	integer	80			0	agree	
+S3 C0$n_true	integer	80			0	agree	
+S3 C0$n_calls	integer	80			0	agree	
+S3 C0$null_p05	double	80	0	0	0	agree	
+S3 C0$null_p01	double	80	0	0	0	agree	
+S3 C0$fdp	double	80	0	0	0	agree	
+S3 C0$power	double	80	0	0	0	agree	
+S3 C0$bias	double	80	5.60201728625575e-08	2.37583008821929e-11	0	agree	
+S3 C0$rmse	double	80	1.77015897270084e-10	5.7474969228366e-11	0	agree	
+S3 C5$simulator	character	80			0	agree	
+S3 C5$cell	character	80			0	agree	
+S3 C5$cell_class	character	80			0	agree	
+S3 C5$run	integer	80			0	agree	
+S3 C5$arm	character	80			0	agree	
+S3 C5$subset	character	80			0	agree	
+S3 C5$status	character	80			0	agree	
+S3 C5$seed	integer	80			0	agree	
+S3 C5$k	integer	80			0	agree	
+S3 C5$n_features	integer	80			0	agree	
+S3 C5$n_true	integer	80			0	agree	
+S3 C5$n_calls	integer	80			0	agree	
+S3 C5$null_p05	double	80	0	0	0	agree	
+S3 C5$null_p01	double	80	0	0	0	agree	
+S3 C5$fdp	double	80	0	0	0	agree	
+S3 C5$power	double	80	0	0	0	agree	
+S3 C5$bias	double	80	7.12929613744468e-09	1.0257300217531e-11	0	agree	
+S3 C5$rmse	double	80	1.22506709743294e-10	3.9602043866438e-11	0	agree	

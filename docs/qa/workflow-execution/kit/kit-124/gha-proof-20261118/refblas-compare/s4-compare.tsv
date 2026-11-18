@@ -1,0 +1,37 @@
+path	kind	n	max_rel	max_abs	outside	verdict	note
+S4 C0$simulator	character	660			0	agree	
+S4 C0$cell	character	660			0	agree	
+S4 C0$cell_class	character	660			0	agree	
+S4 C0$run	integer	660			0	agree	
+S4 C0$arm	character	660			0	agree	
+S4 C0$subset	character	660			0	agree	
+S4 C0$status	character	660			0	agree	
+S4 C0$seed	integer	660			0	agree	
+S4 C0$k	double	480	0	0	0	agree	
+S4 C0$n_features	integer	660			0	agree	
+S4 C0$n_true	integer	660			0	agree	
+S4 C0$n_calls	integer	660			2	differ	
+S4 C0$null_p05	double	660	0.0666674666662666	0.004717	3	outside	
+S4 C0$null_p01	double	660	0.1999981999982	0.004717	3	outside	
+S4 C0$fdp	double	660	0.294119411761177	0.04902	2	outside	
+S4 C0$power	double	660	0	0	0	agree	
+S4 C0$bias	double	660	0.305102375438093	0.11909	2	outside	
+S4 C0$rmse	double	660	0.406206735453142	0.71297	2	outside	
+S4 C5$simulator	character	660			0	agree	
+S4 C5$cell	character	660			0	agree	
+S4 C5$cell_class	character	660			0	agree	
+S4 C5$run	integer	660			0	agree	
+S4 C5$arm	character	660			0	agree	
+S4 C5$subset	character	660			0	agree	
+S4 C5$status	character	660			0	agree	
+S4 C5$seed	integer	660			0	agree	
+S4 C5$k	double	480	0	0	0	agree	
+S4 C5$n_features	integer	660			0	agree	
+S4 C5$n_true	integer	660			0	agree	
+S4 C5$n_calls	integer	660			3	differ	
+S4 C5$null_p05	double	660	0.0263159473681053	0.00476199999999999	2	outside	
+S4 C5$null_p01	double	660	0.0666662577778322	0.004651	2	outside	
+S4 C5$fdp	double	660	0.0270270270270271	0.012012	3	outside	
+S4 C5$power	double	660	0.04762	0.016667	1	outside	
+S4 C5$bias	double	660	1.9566310758109	1.347988	3	outside	
+S4 C5$rmse	double	660	0.878875882846841	8.8973	3	outside	
