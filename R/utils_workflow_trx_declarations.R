@@ -63,6 +63,20 @@ trxCanonicalRuvDesignParameters <- function(parameters) {
         ruv_k_rule = parameters$ruv_k_rule %||% NA_character_, ruv_control_ids = trxCanonicalControlIds(parameters$ruv_control_ids))
 }
 
+#' Refuse today's grid when its request carries a declared design's parameter (KIT-129 audit F-02). The declared
+#' choice shares the operation's name, so a request with both parameter sets would otherwise run today's grid and drop
+#' the declared design without a word. `ruv_k_seed` is the seed parameter of the shared k rule (KIT-129 W6).
+#' The guard is the kernel's: a request whose today's product is already saved on the source is a hit of
+#' `runSavedOperation` (the identity reads the declared names alone) and is returned without reaching it. Refusing
+#' that too is the registration's parameter validation (the later wiring's).
+#' @noRd
+trxRefuseDeclaredRuvParameters <- function(parameters) {
+    declared <- intersect(c(trxRuvDesignParameterNames, "ruv_k_seed"), names(parameters))
+    if (!length(declared)) return(invisible(NULL))
+    trxAbort(sprintf("today's RUV grid was asked with the declared-design parameter(s) %s: it runs no declared design and does not ignore one",
+        paste(declared, collapse = ", ")), c("trx_ruv_grid_declared_parameters", "trx_error"))
+}
+
 # ---------------------------------------------------------------------------------------------------------------
 # Tables, products and the template.
 # ---------------------------------------------------------------------------------------------------------------
@@ -262,6 +276,7 @@ trxRuvGridOperation <- function(binding, ruv_design = c("legacy", "declared")) {
         fixed = list(max_k = "3 below 15 samples, else 4 (the kernel's rule)",
             controls = "inferred: the least significant genes of the preliminary ~ group QL GLM, coefficient 2"),
         kernel = function(object, parameters, store) {
+            trxRefuseDeclaredRuvParameters(parameters)
             x <- trxAssayInputs(object)
             trxChooseRuv(x, trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm), parameters)
         })

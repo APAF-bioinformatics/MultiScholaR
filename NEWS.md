@@ -34,7 +34,8 @@
    is refused, never reduced (RUVSeq itself returns fewer factors without notice). A supplied list is taken
    once per id and in the matrix's gene order, as are the first test's controls; an id that is NA or empty is
    refused, every id not found among the filtered genes is warned of, a list with fewer than two genes found
-   is refused, and the sha256 of the sorted list is recorded (`ruv_control_list_sha256`). Today's design (the grid's
+   is refused, and the sha256 of the sorted list is recorded (`ruv_control_list_sha256`). Today's grid, when it is computed, refuses a request that also carries a
+   parameter of these designs (`trx_ruv_grid_declared_parameters`) instead of dropping it. Today's design (the grid's
    controls and k, RUVs on the filtered counts) is the default and every result is as before.
  * Proteomics RUV-III correction (`ruvIII_C_Varying()` for protein data, and the adjusted matrix of the
    DIA_LIMPA route): each protein keeps its mean abundance. Before, the corrected values of a protein were

@@ -617,3 +617,38 @@ test_that("(KIT-129 audit F-07) on a session owner, one declared design is one p
     expect_s3_class(runs$fractional, c("trx_ruv_design_invalid", "trx_error"), exact = FALSE)
 })
 
+test_that("(KIT-129 audit F-02) today's grid refuses a request that carries a declared design's parameter, in process and on the worker", {
+    fixture <- trxDesignTestOwner()
+    owner <- fixture$owner
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) {
+            owner$job <- NULL
+            list(status = status)
+        }, .package = "MultiScholaR")
+    declared <- trxRuvDesignParameters("groups_all_features", 2L, "user")
+    # the worker harness, as the auditor ran it: the frozen request through the worker's entry point
+    controller <- omicsWorkerController(fixture)
+    logcpm <- suppressWarnings(suppressMessages(omicsWorkerAction(fixture, controller, "trx_tmm_logcpm")))
+    expect_identical(logcpm$acceptance, "complete")
+    both <- c(list(logcpm = logcpm$reference$entity_id), trxRuvGridParameters(), declared)
+    refused <- omicsWorkerRun(fixture, "trx_ruv_grid", both)
+    expect_false(identical(refused$status, "complete"))
+    expect_match(paste(refused$error, collapse = " "), "declared-design parameter(s) ruv_design, ruv_k, ruv_k_rule, ruv_control_ids", fixed = TRUE)
+    # in process, through runSavedOperation: the condition's class, for each declared parameter alone and for the seed
+    in_process <- function(extra) suppressWarnings(suppressMessages(withWorkflowStateScope(owner, function() {
+        source <- getWorkflowStateReference(owner)
+        trxRunProduct(owner, "trx_ruv_grid", source, c(list(logcpm = logcpm$reference$entity_id), trxRuvGridParameters(), extra),
+            list(owner$.context$snapshot$products[[logcpm$reference$entity_id]]))
+    })))
+    for (name in c(trxRuvDesignParameterNames, "ruv_k_seed")) {
+        extra <- if (identical(name, "ruv_k_seed")) list(ruv_k_seed = 20261118L) else declared[name]
+        condition <- tryCatch(in_process(extra), error = function(e) e)
+        expect_s3_class(condition, c("trx_ruv_grid_declared_parameters", "trx_error"), exact = FALSE)
+        expect_match(conditionMessage(condition), name, fixed = TRUE)
+    }
+    # today's request, without one, runs today's grid as before
+    todays <- in_process(list())
+    expect_identical(todays$status, "computed")
+    expect_identical(todays$value$mode, "automatic")
+    expect_null(todays$value[["ruv_design", exact = TRUE]])
+})
