@@ -1,25 +1,59 @@
 {
-  "label": "KIT-137 corpus manifests, run 1: 87132bd1 against 74bdf127, test-integration-corpus.R failing-first, composer generates the corpus (artifact)",
-  "package_commit": "87132bd142875bf6d6f508f7d0b007dfe57d9d6c",
-  "base_commit": "74bdf127fe2718182709072ea82697b60a73d825",
+  "label": "KIT-129 sixth pass items 1-3 (early): fbca59e1 against a9d6b240 with sva; failing-first; prove-arms diaseparation",
+  "package_commit": "fbca59e108e2e3fd2ae50aabf7418edb6cbb667f",
+  "base_commit": "a9d6b24086e572b2bb2b76e503d6299a0eb1cc88",
   "tools_ref": "",
   "tests": [
-    "test-integration-corpus.R"
+    "test-kit129-run-path.R",
+    "test-omic-norm-ruv-design.R",
+    "test-dia-limpa-ruv-rules.R"
   ],
-  "shards": 1,
-  "file_timeout_minutes": 30,
+  "shards": 3,
+  "file_timeout_minutes": 45,
   "file_timeouts": {},
-  "extra_packages": [],
-  "env": {},
+  "extra_packages": [
+    "sva"
+  ],
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
   "check": false,
   "blas": "reference",
-  "fetch_refs": [],
+  "fetch_refs": [
+    "sim-k124-exact",
+    "sim-k129-exact"
+  ],
   "scripts": [
     {
-      "path": "tests/testdata/integration/compose_integration_corpus.R",
-      "args": ["kit137-out/corpus"],
-      "out": "kit137-out",
-      "timeout_minutes": 30
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "a9d6b24086e572b2bb2b76e503d6299a0eb1cc88",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass-failing-first-a",
+        "test-kit129-run-path.R",
+        "test-omic-norm-ruv-design.R",
+        "test-dia-limpa-ruv-rules.R"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass-failing-first-a",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 120
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
+      "args": [
+        "diaseparation",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-sixth-pass",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 150
     }
   ]
 }
