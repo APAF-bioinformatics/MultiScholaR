@@ -11,6 +11,7 @@ name: KIT-124 simulators
 # stress cell (0 = none of that class; its cells may then not be listed), the cores (2 to 4: at one core mclapply is
 # a plain lapply and an error in S2 aborts the script), the simulator's time limit in minutes and, per simulator,
 # the cells and the arms (K124_ARMS; a simulator without an `arms` entry runs with it unset, the arms as before).
+# A cell name may end in R (C0R, C4R, S1R of S1, S3 and S4: the factor allocated at random, KIT-129 decision M37).
 # Runs are numbered from 1, as on the laptop, or from the optional `first_run` (default 1: the first run of every
 # cell, through the same first-run argument as `chunk`). Two more optional entries: `chunk` (per simulator, runs per job: a cell is
 # then split into run ranges, one job each, through the simulators' first-run argument; the seed is
@@ -82,7 +83,7 @@ jobs:
             (.arms | type == "object" and
               (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[A-Za-z0-9]+(,[A-Za-z0-9]+)*$"))))) and
             (.cells | type == "object" and length > 0 and
-              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[CS][0-9]{1,2}(,[CS][0-9]{1,2})*$"))))) and
+              (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "string" and test("^[CS][0-9]{1,2}R?(,[CS][0-9]{1,2}R?)*$"))))) and
             (. as $p | [.cells[] | split(",")[]] | all(if startswith("C") then $p.runs_core >= 1 else $p.runs_stress >= 1 end)) and
             ((.chunk // {}) | type == "object" and
               (to_entries | all((.key | test("^s[1-4]$")) and (.value | type == "number" and . == floor and . >= 1)))) and

@@ -77,6 +77,12 @@
 # missing; S6 13 50% missing; S7 14 heavy tails; S8 15 known unbalanced batch; S9 16 80% up; S10 17 loadings tied to
 # abundance; S11 18 3 per group, correlation 0.3; S12 19 3 per group, 3 factors; S13 20 no unwanted variation, 3 per
 # group; S14 21 no unwanted variation, 50% missing.
+# Random-allocation cells (KIT-129 R0 part B supplement, decision M37; never part of "all"; run only when named): C0R
+# 22 = C0, C4R 23 = C4, S1R 24 = S1, each with the sample-wise factor f allocated at random: e is the same normal draw,
+# standardised but NOT residualised on the group, so f's correlation with group is 0 in expectation only (as S2 does
+# it). The drift's order is chosen as in every cell (balanced). In the study mode (K129_ASSOC unset) such a cell also
+# writes s4-assoc.tsv: one row per run, arm run and assay (subset full), the factor-tied-to-groups statistic of the W
+# the arm tested with (columns of kit-129/r0/association.R). Every other cell writes no such table and is as before.
 # Seed = 100000 + 10000 x cell index + run: the data of a (cell, run), made once and shared by every arm. Each arm
 # starts its own stream at set.seed(seed * 100 + arm number) (I = 18, Qs = 19, Qm = 20, L = 21); E uses seed * 100 + 99.
 #
@@ -189,9 +195,9 @@ COMPLETE_ONLY <- c("12", "13", "14")
 
 cellTable <- function() {
     cell <- function(id, class, n = 6L, groups = 2L, effects = 0.2, rho = 0, unwanted = "two", missing = 0.25,
-                     tails = FALSE, up = 0.5, abundance = FALSE, duplicates = FALSE) {
+                     tails = FALSE, up = 0.5, abundance = FALSE, duplicates = FALSE, random = FALSE) {
         list(id = id, class = class, n = n, groups = groups, effects = effects, rho = rho, unwanted = unwanted,
-            missing = missing, tails = tails, up = up, abundance = abundance, duplicates = duplicates)
+            missing = missing, tails = tails, up = up, abundance = abundance, duplicates = duplicates, random = random)
     }
     cells <- list(cell("C0", "core"), cell("C1", "core", n = 12L), cell("C2", "core", effects = 0.1),
         cell("C3", "core", unwanted = "none"), cell("C4", "core", effects = 0), cell("C5", "core", rho = 0.3),
@@ -201,7 +207,9 @@ cellTable <- function() {
         cell("S7", "stress", tails = TRUE), cell("S8", "stress", unwanted = "batch"), cell("S9", "stress", up = 0.8),
         cell("S10", "stress", abundance = TRUE), cell("S11", "stress", n = 3L, rho = 0.3),
         cell("S12", "stress", n = 3L, unwanted = "three"), cell("S13", "stress", n = 3L, unwanted = "none"),
-        cell("S14", "stress", unwanted = "none", missing = 0.5))
+        cell("S14", "stress", unwanted = "none", missing = 0.5),
+        cell("C0R", "core", random = TRUE), cell("C4R", "core", effects = 0, random = TRUE),
+        cell("S1R", "stress", n = 3L, random = TRUE))
     for (i in seq_along(cells)) cells[[i]]$index <- i - 1L
     stats::setNames(cells, vapply(cells, `[[`, "", "id"))
 }
@@ -285,7 +293,7 @@ generateData <- function(cell, seed) {
         batch = paste0("b", batch_s), pos = pos_s, stringsAsFactors = FALSE)
     qc_ids <- sprintf("QC%02d", seq_along(pos_q))
     # the sample-wise factor: exact correlation with the group score, orthogonal to the group otherwise
-    e <- stats::residuals(stats::lm(stats::rnorm(n) ~ factor(design$group)))
+    e <- if (cell$random) stats::rnorm(n) else stats::residuals(stats::lm(stats::rnorm(n) ~ factor(design$group)))
     f_s <- cell$rho * z + sqrt(1 - cell$rho^2) * popStandardise(e)
     f_q <- stats::rnorm(length(pos_q))
     components <- switch(cell$unwanted, two = c("drift", "factor"), three = c("drift", "step", "factor"),
@@ -511,6 +519,11 @@ testWithW <- function(view, assay, w, y = view$assays[[assay]]$y) {
     if (assoc_mode) return(structure(list(W = w), class = "s4_assoc"))
     if (is.null(w)) return(daKernel(y, view$design, "~ 0 + group", view$contrasts))
     design <- cbind(view$design, as.data.frame(w[view$design$Sample_ID, , drop = FALSE]))
+    if (view$cell$random) {                               # the W tested with, kept for the statistic
+        table <- daKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), view$contrasts)
+        attr(table, "ruv_W") <- w
+        return(table)
+    }
     daKernel(y, design, paste("~ 0 + group +", paste(colnames(w), collapse = " + ")), view$contrasts)
 }
 residualDf <- function(view) nrow(view$design) - length(unique(view$design$group))
@@ -790,6 +803,7 @@ runOne <- function(cell, run) {
     views <- list(full = makeView(data, estimates), complete = if (!same) makeView(restrictData(data, keep), estimates))
     rows <- list()
     notes <- list()
+    side <- list()
     for (subset in c("full", "complete")) {
         for (arm in armsOfCell(cell)) {
             if (subset == "full" && arm %in% COMPLETE_ONLY && !same) next
@@ -830,8 +844,25 @@ runOne <- function(cell, run) {
             }
             set.seed(seed * 100L + ARM_NUMBER[[arm]])
             t0 <- proc.time()[["elapsed"]]
-            scored <- tryCatch(scoreArm(armFunctions[[arm]](view), view), error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
+            if (!cell$random) {
+                scored <- tryCatch(scoreArm(armFunctions[[arm]](view), view), error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
+            } else {
+                result <- NULL
+                scored <- tryCatch(scoreArm(result <- armFunctions[[arm]](view), view), error = function(e) list(status = "crashed", reasons = conditionMessage(e)))
+            }
             seconds <- proc.time()[["elapsed"]] - t0
+            if (cell$random && subset == "full") {        # the statistic of the W this arm tested with, per assay
+                for (assay in ASSAYS) {
+                    table <- if (is.null(result)) NULL else result$tables[[assay]]
+                    status <- if (is.null(table)) "crashed" else if (isRefusal(table)) "refused" else
+                        if (is.null(attr(table, "ruv_W"))) "no_factor" else "ok"
+                    side[[paste(key, assay)]] <- assocRow("S4", cell$id, cell$class, run, seed, arm, status,
+                        W = if (status == "ok") attr(table, "ruv_W")[view$design$Sample_ID, , drop = FALSE], group = view$design$group,
+                        true_rho = if (view$has_factor) cell$rho else NA_real_, true_factor = if (view$has_factor) view$f,
+                        drift = if (!identical(cell$unwanted, "none")) exp(-2 * (view$design$pos - 1) / (max(view$pos_q) - 1)),
+                        seconds = seconds, assay = assay)
+                }
+            }
             measures <- c("k", "n_features", "n_true", "n_calls", "null_p05", "null_p01", "fdp", "power", "bias", "rmse")
             values <- lapply(stats::setNames(measures, measures), function(m) if (is.null(scored[[m]])) NA_real_ else signif(scored[[m]], 6L))
             rows[[key]] <- data.frame(simulator = "S4", cell = cell$id, cell_class = cell$class, run = run, seed = seed, arm = arm,
@@ -873,11 +904,12 @@ runOne <- function(cell, run) {
     }
     rownames(rows) <- NULL
     rows$seconds <- round(rows$seconds, 3)
-    list(rows = rows[COLUMNS], notes = if (length(notes)) do.call(rbind, notes),
+    c(list(rows = rows[COLUMNS], notes = if (length(notes)) do.call(rbind, notes),
         timing = data.frame(cell = cell$id, run = run, seconds_total = round(proc.time()[["elapsed"]] - started, 3),
             seconds_E = round(seconds_E, 3),
             missing_share = round(mean(vapply(data$assays, function(a) mean(is.na(a$y)), numeric(1L))), 4),
-            complete_features = sum(unlist(keep)), stringsAsFactors = FALSE))
+            complete_features = sum(unlist(keep)), stringsAsFactors = FALSE)),
+        if (length(side)) list(assoc = `rownames<-`(do.call(rbind, side), NULL)))
 }
 
 # ---- driver ----------------------------------------------------------------------------------------------------
@@ -890,7 +922,9 @@ readTsv <- function(path) utils::read.delim(path, stringsAsFactors = FALSE, colC
 
 main <- function() {
     cells <- cellTable()
-    if (!identical(cells_arg, "all")) cells <- cells[strsplit(cells_arg, ",")[[1L]]]
+    if (!identical(cells_arg, "all")) cells <- cells[strsplit(cells_arg, ",")[[1L]]] else
+        cells <- cells[!vapply(cells, `[[`, TRUE, "random")]
+    if (!assoc_mode && any(vapply(cells, `[[`, TRUE, "random"))) source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
     dir.create(file.path(out_dir, "cells"), recursive = TRUE, showWarnings = FALSE)
     started <- Sys.time()
     checks <- checkSharedKernels()
@@ -923,6 +957,8 @@ main <- function() {
         timing <- do.call(rbind, lapply(results[!failed], `[[`, "timing"))
         if (!is.null(notes)) writeTsv(notes, file.path(out_dir, "cells", paste0(cell$id, ".notes.tsv")))
         if (!is.null(timing)) writeTsv(timing, file.path(out_dir, "cells", paste0(cell$id, ".timing.tsv")))
+        side <- if (!assoc_mode) do.call(rbind, lapply(results[!failed], `[[`, "assoc"))
+        if (!is.null(side)) writeTsv(side, file.path(out_dir, "cells", paste0(cell$id, ".assoc.tsv")))
         writeTsv(rows, path)
         cat(sprintf("%s %s: %d runs, %.0f s wall, %d refused, %d crashed rows\n", format(Sys.time(), "%H:%M:%S"), cell$id,
             length(runs), proc.time()[["elapsed"]] - t0, sum(rows$status == "refused"), sum(rows$status == "crashed")))
@@ -932,6 +968,8 @@ main <- function() {
         do.call(rbind, lapply(files[file.exists(files)], readTsv))
     }
     writeTsv(gather("%s.tsv"), file.path(out_dir, if (assoc_mode) "s4-assoc.tsv" else "s4-runs.tsv"))
+    side <- if (!assoc_mode) gather("%s.assoc.tsv")      # the random-allocation cells' statistic
+    if (!is.null(side)) writeTsv(side, file.path(out_dir, "s4-assoc.tsv"))
     notes <- gather("%s.notes.tsv")
     writeTsv(if (is.null(notes)) data.frame(cell = character(), run = character(), arm = character(), subset = character(),
         status = character(), assay = character(), reason = character()) else notes, file.path(out_dir, "s4-notes.tsv"))
@@ -947,7 +985,7 @@ main <- function() {
         if (assoc_mode) paste("K129_ASSOC: the association mode (KIT-129 R0 part B), arms", paste(arms_wanted, collapse = ","), "the RUV step only, no arm tested"),
         paste("runs:", sprintf("core %d, stress %d, numbered from %d", runs_core, runs_stress, first_run)),
         paste("cores:", cores, "(OMP_NUM_THREADS=1)"),
-        "seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99",
+        "seed rule: data seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C0R, C4R, S1R = 22, 23, 24); arm stream = set.seed(seed * 100 + arm number), I = 18, Qs = 19, Qm = 20, L = 21; E = seed * 100 + 99",
         paste("R:", R.version.string),
         paste("library paths:", paste(.libPaths(), collapse = ":")),
         paste("R_LIBS:", Sys.getenv("R_LIBS")),

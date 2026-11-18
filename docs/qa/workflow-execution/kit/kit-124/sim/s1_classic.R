@@ -72,6 +72,15 @@
 #   19  S12  stress  3 per group, 3 factors
 #   20  S13  stress  3 per group, no factor
 #   21  S14  stress  no factor, 50% missing
+# Random-allocation cells (KIT-129 R0 part B supplement, decision M37; never part of "all"; run only when named):
+#   22  C0R  core    C0 with the factor allocated at random: e is the same normal draw, scaled to sample mean 0 and
+#                    variance 1 but NOT made orthogonal to the group model, so its correlation with group is 0 in
+#                    expectation only (as S2 does it)
+#   23  C4R  core    C4 (no true effects), factor allocated at random as C0R
+#   24  S1R  stress  S1 (3 per group), factor allocated at random as C0R
+#   In the study mode (K129_ASSOC unset) a random-allocation cell also writes s1-assoc.tsv: one row per run and arm run,
+#   the factor-tied-to-groups statistic of the W the arm tested with (columns of kit-129/r0/association.R; true_association
+#   is the realised association of the true factor). Every other cell writes no such table and is computed as before.
 #
 # The test (every arm that tests with the package's kernel): the proteomics default path's call, as
 # differentialAbundanceAnalysisHelper makes it with inst/config/config.ini [deAnalysisParameters] untouched:
@@ -209,8 +218,10 @@ cell_table <- list(
     S1 = list(n = 3L), S2 = list(share = 0.40), S3 = list(rho = 0.6), S4 = list(factors = 3L), S5 = list(missing = 0),
     S6 = list(missing = 0.50), S7 = list(tails = "t3"), S8 = list(batch = TRUE), S9 = list(up = 0.8),
     S10 = list(abundance_tie = 0.7), S11 = list(n = 3L, rho = 0.3), S12 = list(n = 3L, factors = 3L),
-    S13 = list(n = 3L, factors = 0L), S14 = list(factors = 0L, missing = 0.50))
+    S13 = list(n = 3L, factors = 0L), S14 = list(factors = 0L, missing = 0.50),
+    C0R = list(random = TRUE), C4R = list(share = 0, random = TRUE), S1R = list(n = 3L, random = TRUE))
 cell_names <- names(cell_table)
+random_cells <- c("C0R", "C4R", "S1R")
 cell_setting <- function(cell) utils::modifyList(centre, cell_table[[cell]])
 cell_index <- function(cell) match(cell, cell_names) - 1L
 cell_class <- function(cell) if (startsWith(cell, "C")) "core" else "stress"
@@ -272,7 +283,7 @@ simulate <- function(p, seed) {
     scores <- NULL
     for (f in seq_len(p$factors)) {
         e <- stats::rnorm(n_samples)
-        e <- scale1(stats::lm.fit(basis, e)$residuals)
+        e <- if (isTRUE(p$random)) scale1(e) else scale1(stats::lm.fit(basis, e)$residuals)
         basis <- cbind(basis, e)
         w <- if (f == 1L) p$rho * g + sqrt(1 - p$rho^2) * e else e
         a <- if (f == 1L && p$abundance_tie > 0) {
@@ -464,6 +475,7 @@ one <- function(cell, run) {
         value <- NULL
         quietly(value <- computeRuvCovariates(object_complete(technical), k = k, controls = usable, ruv_grouping_variable = "group"))
         if (assoc_mode) return(list(W = value$W, k = k))
+        if (isTRUE(p$random)) return(list(tab = da(x, design, value$W), k = k, W = value$W))
         list(tab = da(x, design, value$W), k = k)
     }
     corrected <- function(controls, k, technical) {       # RUV-III-C correction, then the test
@@ -526,7 +538,7 @@ one <- function(cell, run) {
         `22` = function() in_model(sim$oracle, separation_k(sim$oracle), "no_tech"),
         `23` = function() in_model(wide_controls(), E(), "tech_rep_group"),
         `24` = function() in_model(wide_controls(), separation_k(wide_controls()), "tech_rep_group"))
-    rows <- list(); log <- character()
+    rows <- list(); log <- character(); side <- list()
     reference <- NULL                                     # arm 1's table, the no-RUV result
     for (arm in arms_of(cell)) {
         t_sweep <- proc.time()[[3L]]
@@ -543,6 +555,14 @@ one <- function(cell, run) {
                 true_rho = if (p$factors > 0L) p$rho else NA_real_, true_factor = if (!is.null(sim$scores)) sim$scores[, 1L],
                 seconds = proc.time()[[3L]] - t_sweep)
             next
+        }
+        if (isTRUE(p$random)) {                           # the statistic of the W this arm tests with
+            side_status <- if (inherits(result, "error")) { if (is_refusal(result)) "refused" else "crashed" } else
+                if (is.null(result$W)) "no_factor" else "ok"
+            side[[length(side) + 1L]] <- assocRow("S1", cell, cell_class(cell), run, seed, arm, side_status,
+                W = if (side_status == "ok") result$W[rownames(design), , drop = FALSE], group = design$group,
+                true_rho = if (p$factors > 0L) p$rho else NA_real_, true_factor = if (!is.null(sim$scores)) sim$scores[, 1L],
+                seconds = seconds)
         }
         status <- "ok"; k <- NA_integer_; tab <- NULL
         if (inherits(result, "error")) {
@@ -567,7 +587,8 @@ one <- function(cell, run) {
                 stringsAsFactors = FALSE)
         }
     }
-    list(rows = do.call(rbind, rows), log = log, total = proc.time()[[3L]] - started)
+    c(list(rows = do.call(rbind, rows), log = log, total = proc.time()[[3L]] - started),
+        if (length(side)) list(assoc = do.call(rbind, side)))
 }
 crashed_run <- function(cell, run, message) {
     if (assoc_mode) return(list(rows = do.call(rbind, lapply(arms_of(cell), function(arm) assocRow("S1", cell, cell_class(cell), run,
@@ -583,8 +604,10 @@ crashed_run <- function(cell, run, message) {
 
 # ---- the study ---------------------------------------------------------------------------------------------------
 columns <- if (assoc_mode) ASSOC_COLUMNS else c("simulator", "cell", "cell_class", "run", "seed", "arm", "subset", "status", "k", measures, "seconds")
-cells <- if (identical(cells_wanted, "all")) cell_names else strsplit(cells_wanted, ",", fixed = TRUE)[[1L]]
+cells <- if (identical(cells_wanted, "all")) setdiff(cell_names, random_cells) else strsplit(cells_wanted, ",", fixed = TRUE)[[1L]]
 stopifnot(all(cells %in% cell_names), cores >= 1L)
+if (!assoc_mode && any(cells %in% random_cells)) source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
+side_file <- file.path(out_dir, "s1-assoc.tsv")           # the random-allocation cells' statistic in the study mode
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 stem <- if (assoc_mode) "s1-assoc" else "s1-runs"
 runs_file <- file.path(out_dir, paste0(stem, ".tsv")); meta_file <- file.path(out_dir, paste0(stem, ".meta.txt"))
@@ -610,7 +633,7 @@ meta("threads: OMP_NUM_THREADS=", Sys.getenv("OMP_NUM_THREADS"), " OPENBLAS_NUM_
     "; worker processes: ", cores, "; BLAS: ", extSoftVersion()[["BLAS"]])
 meta(R.version.string, "; ", R.version$platform)
 meta("MultiScholaR (pkgload::load_all of the work tree): ", as.character(utils::packageVersion("MultiScholaR")))
-meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21); data under set.seed(seed); ",
+meta("seed rule: seed = 100000 + 10000 * cell index + run (C0..C7 = 0..7, S1..S14 = 8..21, C0R, C4R, S1R = 22, 23, 24); data under set.seed(seed); ",
     "arm a under set.seed(seed * 100 + a); E under stream 0; runs ", first_run, " onward")
 meta("K124_ARMS: ", if (assoc_mode) "unset" else if (is.null(arms_wanted)) "unset (arms 1 to 17 as the cell has them)" else paste(arms_wanted, collapse = ","))
 if (assoc_mode) meta("K129_ASSOC: the association mode (KIT-129 R0 part B), arms ", paste(arms_wanted, collapse = ","), ", the RUV step only, no test")
@@ -630,6 +653,9 @@ for (cell in cells) {
     rows <- do.call(rbind, lapply(results, `[[`, "rows"))[, columns]
     new_file <- !file.exists(runs_file)
     utils::write.table(rows, runs_file, sep = "\t", quote = FALSE, row.names = FALSE, col.names = new_file, append = !new_file)
+    side <- if (!assoc_mode) do.call(rbind, lapply(results, `[[`, "assoc"))
+    if (!is.null(side)) utils::write.table(side[, ASSOC_COLUMNS], side_file, sep = "\t", quote = FALSE, row.names = FALSE,
+        col.names = !file.exists(side_file), append = file.exists(side_file))
     messages <- unlist(lapply(results, `[[`, "log"))
     if (length(messages)) cat(messages, sep = "\n", file = log_file, append = TRUE)
     done <- rbind(if (!is.null(done)) done[, columns], rows)

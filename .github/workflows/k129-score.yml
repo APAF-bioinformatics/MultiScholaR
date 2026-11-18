@@ -1,0 +1,75 @@
+name: KIT-129 random-allocation scoring
+
+# KIT-129 R0 part B supplement (decision M37): scores a finished k124-sim run of the random-allocation cells with
+# docs/qa/workflow-execution/kit/kit-129/r0/random-allocation.R, on a hosted runner (no compute on the laptop).
+# Starts only when a push to sim-k129-r0b changes .github/k129-score/params.json: {"purpose": "lifecycle" | "score",
+# "run": <k124-sim run id>, "label": <that run's label>, "cells": "C0R,...", "first_run": n, "runs": n}.
+# Base R 4.6.1 (Posit r-builds) only; no token, no package library. The artifact holds the aggregate tables, the
+# script's meta and the sha256 of every raw table read (the raw tables are not uploaded again).
+
+on:
+  push:
+    branches:
+      - sim-k129-r0b
+    paths:
+      - .github/k129-score/params.json
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  score:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read .github/k129-score/params.json
+        id: p
+        run: |
+          p=.github/k129-score/params.json
+          jq -e '(.purpose == "lifecycle" or .purpose == "score") and (.run | type == "number") and
+            (.label | type == "string" and test("^[A-Za-z0-9][A-Za-z0-9-]{0,30}$")) and
+            (.cells | type == "string" and test("^[CS][0-9]{1,2}R?(,[CS][0-9]{1,2}R?)*$")) and
+            ([.first_run, .runs] | all(type == "number" and . == floor and . >= 1))' "$p" > /dev/null
+          for key in purpose run label cells first_run runs; do echo "$key=$(jq -r ".$key" "$p")" >> "$GITHUB_OUTPUT"; done
+          { echo '```json'; cat "$p"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: R 4.6.1 (Posit r-builds)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-4.6.1_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb"
+      - name: The run's simulator artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ steps.p.outputs.run }}
+          LABEL: ${{ steps.p.outputs.label }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/in" "$RUNNER_TEMP/hash"
+          gh run download "$RUN" -R "$GITHUB_REPOSITORY" -D "$RUNNER_TEMP/in" -p "k124-$LABEL-*"
+          ls "$RUNNER_TEMP/in"
+          (cd "$RUNNER_TEMP/in" && find . -name 's[0-9]-runs.tsv' -o -name 's[0-9]-assoc.tsv' | sort | xargs sha256sum) > "$RUNNER_TEMP/hash/inputs.sha256"
+          cat "$RUNNER_TEMP/hash/inputs.sha256"
+      - name: Score
+        env:
+          PURPOSE: ${{ steps.p.outputs.purpose }}
+          LABEL: ${{ steps.p.outputs.label }}
+          CELLS: ${{ steps.p.outputs.cells }}
+          FIRST: ${{ steps.p.outputs.first_run }}
+          RUNS: ${{ steps.p.outputs.runs }}
+        run: |
+          script=docs/qa/workflow-execution/kit/kit-129/r0/random-allocation.R
+          sha256sum "$script"
+          /opt/R/4.6.1/bin/Rscript --vanilla "$script" "$PURPOSE" "$RUNNER_TEMP/in" "$LABEL" "$CELLS" "$FIRST" "$RUNS" "$RUNNER_TEMP/out"
+          cp "$RUNNER_TEMP/hash/inputs.sha256" "$RUNNER_TEMP/out/random-allocation-inputs.sha256"
+          sha256sum "$script" > "$RUNNER_TEMP/out/random-allocation-script.sha256"
+          echo "run_id $GITHUB_RUN_ID; commit $GITHUB_SHA; scored run ${{ steps.p.outputs.run }}" >> "$RUNNER_TEMP/out/random-allocation.meta.txt"
+      - name: Upload the aggregates
+        uses: actions/upload-artifact@v4
+        with:
+          name: k129-score-${{ steps.p.outputs.purpose }}-${{ steps.p.outputs.run }}
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 30

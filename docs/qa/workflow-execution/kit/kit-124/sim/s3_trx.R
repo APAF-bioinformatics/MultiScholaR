@@ -82,6 +82,15 @@
 #   19  S12 stress 3   2      0.2  0   3
 #   20  S13 stress 3   2      0.2  0   0
 #   21  S14 stress 6   2      0.2  0   0   no factor, low counts: lib_div = 10 (replaces "no factor with 50% missing")
+#   Random-allocation cells (KIT-129 R0 part B supplement, decision M37; never part of "all"; run only when named):
+#   22  C0R core   6   2      0.2  0   1   C0 with the factor allocated at random: z is the same normal draw, standardised
+#                                          (sample mean 0, variance 1) but NOT residualised on the group model, so its
+#                                          correlation with group is 0 in expectation only (as S2 does it)
+#   23  C4R core   6   2      0    0   1   C4, factor allocated at random as C0R
+#   24  S1R stress 3   2      0.2  0   1   S1, factor allocated at random as C0R
+#   In the study mode (K129_ASSOC unset) a random-allocation cell also writes s3-assoc.tsv: one row per run and arm run,
+#   the factor-tied-to-groups statistic of the W the arm tested with (columns of kit-129/r0/association.R; true_association
+#   is the realised association of the true factor). Every other cell writes no such table and is computed as before.
 #
 # ARMS (label; random stream number in brackets where it differs)
 #   1   no RUV: ~ 0 + group.
@@ -161,9 +170,9 @@ suppressMessages(pkgload::load_all(".", quiet = TRUE))
 for (package in c("edgeR", "RUVSeq", "EDASeq", "sva")) requireNamespace(package)
 
 cell <- function(idx, id, class, n = 6L, groups = 2L, pi = 0.2, rho = 0, nf = 1L, tech = FALSE, lib_div = 1, outliers = FALSE,
-                 batch = FALSE, up = 0.5, abund = 0) {
+                 batch = FALSE, up = 0.5, abund = 0, random = FALSE) {
     list(idx = idx, id = id, class = class, n = n, groups = groups, pi = pi, rho = rho, nf = nf, tech = tech, lib_div = lib_div,
-        outliers = outliers, batch = batch, up = up, abund = abund)
+        outliers = outliers, batch = batch, up = up, abund = abund, random = random)
 }
 CELLS <- list(
     cell(0L, "C0", "core"), cell(1L, "C1", "core", n = 12L), cell(2L, "C2", "core", pi = 0.1), cell(3L, "C3", "core", nf = 0L),
@@ -173,7 +182,9 @@ CELLS <- list(
     cell(11L, "S4", "stress", nf = 3L), cell(12L, "S5", "stress", lib_div = 10), cell(14L, "S7", "stress", outliers = TRUE),
     cell(15L, "S8", "stress", batch = TRUE), cell(16L, "S9", "stress", up = 0.8), cell(17L, "S10", "stress", abund = 0.7),
     cell(18L, "S11", "stress", n = 3L, rho = 0.3), cell(19L, "S12", "stress", n = 3L, nf = 3L),
-    cell(20L, "S13", "stress", n = 3L, nf = 0L), cell(21L, "S14", "stress", nf = 0L, lib_div = 10))
+    cell(20L, "S13", "stress", n = 3L, nf = 0L), cell(21L, "S14", "stress", nf = 0L, lib_div = 10),
+    cell(22L, "C0R", "core", random = TRUE), cell(23L, "C4R", "core", pi = 0, random = TRUE),
+    cell(24L, "S1R", "stress", n = 3L, random = TRUE))
 names(CELLS) <- vapply(CELLS, `[[`, "", "id")
 
 G <- 5000L
@@ -209,6 +220,9 @@ generate <- function(cl, seed) {
     W <- matrix(0, n, nf)
     if (cl$batch) {
         W[, 1L] <- standardise(as.numeric(batch == "2"))
+    } else if (nf > 0L && cl$random) {
+        W <- apply(matrix(stats::rnorm(n * nf), n, nf), 2L, standardise)
+        W[, 1L] <- cl$rho * standardise((group == "B") - (group == "A")) + sqrt(1 - cl$rho^2) * W[, 1L]
     } else if (nf > 0L) {
         z <- qr.resid(qr(stats::model.matrix(~ group)), matrix(stats::rnorm(n * nf), n, nf))
         z <- qr.Q(qr(z)) * sqrt(n - 1)
@@ -280,6 +294,7 @@ oneRun <- function(cl, run) {
     seed <- 100000L + 10000L * cl$idx + run
     events <- list()
     rows <- list()
+    side <- list()
     no_ruv <- NULL
     assocRecord <- function(arm, status, W = NULL, seconds = NA_real_) {
         rows[[length(rows) + 1L]] <<- assocRow("S3", cl$id, cl$class, run, seed, arm, status, W = W,
@@ -302,6 +317,14 @@ oneRun <- function(cl, run) {
         set.seed(seed * 100L + ARM_STREAM[[label]])
         result <- tryCatch(suppressWarnings(suppressMessages(body())), error = function(e) e)
         seconds <- proc.time()[["elapsed"]] - t0
+        if (!assoc_mode && cl$random) {                 # the statistic of the W this arm tests with
+            side_status <- if (inherits(result, "error")) {
+                if (inherits(result, "trx_error") || inherits(result, "s3_refusal")) "refused" else "crashed"
+            } else if (is.null(result$W)) "no_factor" else "ok"
+            side[[length(side) + 1L]] <<- assocRow("S3", cl$id, cl$class, run, seed, label, side_status,
+                W = if (side_status == "ok") result$W, group = prep$d$design$group,
+                true_rho = if (cl$nf > 0L) cl$rho else NA_real_, true_factor = if (cl$nf > 0L) prep$d$W[, 1L], seconds = seconds)
+        }
         if (assoc_mode && !inherits(result, "error")) {
             assocRecord(label, if (is.null(result$W)) "no_factor" else "ok", result$W, seconds)
             return(result)
@@ -351,7 +374,8 @@ oneRun <- function(cl, run) {
     genes <- rownames(y)
     truth <- d$truth[genes]
     all_null <- d$null_all[genes]
-    withW <- function(W) if (is.null(W) || !ncol(W)) noRuv() else if (assoc_mode) list(W = W) else daTest(y, design, W)
+    withW <- function(W) if (is.null(W) || !ncol(W)) noRuv() else if (assoc_mode) list(W = W) else
+        if (cl$random) c(daTest(y, design, W), list(W = W)) else daTest(y, design, W)
 
     no_ruv <- arm("1", function() daTest(y, design))
     arm("2", function() withW(d$W))
@@ -455,8 +479,9 @@ oneRun <- function(cl, run) {
         withW(RUVSeq::RUVg(uq, controls, separationK(controls))$W)
     })
     total <- proc.time()[["elapsed"]] - t_start
-    list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
-        timing = data.frame(cell = cl$id, run = run, prep_seconds = prep_seconds, total_seconds = total, E = E))
+    c(list(rows = do.call(rbind, rows), events = if (length(events)) do.call(rbind, events),
+        timing = data.frame(cell = cl$id, run = run, prep_seconds = prep_seconds, total_seconds = total, E = E)),
+        if (length(side)) list(assoc = do.call(rbind, side)))
 }
 
 armsOf <- function(cl) {
@@ -476,8 +501,10 @@ crashedRun <- function(cl, run, message) {
         timing = data.frame(cell = cl$id, run = run, prep_seconds = NA_real_, total_seconds = NA_real_, E = NA_integer_))
 }
 
-selected <- if (identical(cells_arg, "all")) names(CELLS) else strsplit(cells_arg, ",")[[1L]]
+random_cells <- names(CELLS)[vapply(CELLS, `[[`, TRUE, "random")]
+selected <- if (identical(cells_arg, "all")) setdiff(names(CELLS), random_cells) else strsplit(cells_arg, ",")[[1L]]
 if (!all(selected %in% names(CELLS))) stop("unknown cell(s): ", paste(setdiff(selected, names(CELLS)), collapse = ", "))
+if (!assoc_mode && any(selected %in% random_cells)) source("docs/qa/workflow-execution/kit/kit-129/r0/association.R")
 dir.create(file.path(out_dir, "cells"), recursive = TRUE, showWarnings = FALSE)
 
 for (id in selected) {
@@ -497,6 +524,7 @@ for (id in selected) {
     part <- function(name) do.call(rbind, lapply(results, `[[`, name))
     cell_result <- list(runs = runs, rows = part("rows"), events = part("events"), timing = part("timing"),
         wall_seconds = proc.time()[["elapsed"]] - t0, cores = cores)
+    if (!is.null(side <- part("assoc"))) cell_result$assoc <- side
     saveRDS(cell_result, paste0(path, ".tmp"))
     file.rename(paste0(path, ".tmp"), path)
     message(sprintf("%s: %d runs in %.0f s on %d cores", id, length(runs), cell_result$wall_seconds, cores))
@@ -507,6 +535,8 @@ done <- Filter(function(id) file.exists(file.path(out_dir, "cells", sprintf("s3-
 stored <- lapply(done, function(id) readRDS(file.path(out_dir, "cells", sprintf("s3-%s.rds", id))))
 writeTable <- function(x, file) utils::write.table(x, file.path(out_dir, file), sep = "\t", quote = FALSE, row.names = FALSE, na = "NA")
 writeTable(do.call(rbind, lapply(stored, `[[`, "rows")), if (assoc_mode) "s3-assoc.tsv" else "s3-runs.tsv")
+side <- if (!assoc_mode) do.call(rbind, lapply(stored, `[[`, "assoc"))   # the random-allocation cells' statistic
+if (!is.null(side)) writeTable(side, "s3-assoc.tsv")
 events <- do.call(rbind, lapply(stored, `[[`, "events"))
 if (is.null(events)) events <- data.frame(cell = character(), run = integer(), arm = character(), status = character(),
     condition_class = character(), message = character())
