@@ -11,7 +11,8 @@ runMetabolitesDA(
   da_q_val_thresh = 0.05,
   treat_lfc_cutoff = 0,
   eBayes_trend = TRUE,
-  eBayes_robust = TRUE
+  eBayes_robust = TRUE,
+  ruv_factors = NULL
 )
 }
 \arguments{
@@ -29,6 +30,16 @@ named "contrasts" or "contrast_string" containing the contrast formulas.}
 \item{eBayes_trend}{Logical, use trend in eBayes (default TRUE).}
 
 \item{eBayes_robust}{Logical, use robust eBayes (default TRUE).}
+
+\item{ruv_factors}{NULL (the default): the test reads the object's values with \code{formula_string}, as before.
+Or the per-assay RUV-III factors of the factors-in-the-model design (KIT-127): \code{theObject} is then the
+uncorrected object (the corrected object is refused), and per assay the factors W are added to the design and
+to the model and the supplied controls are not tested. A feature is left out only when its observed samples
+cannot estimate a W coefficient. A feature with no value in one whole group is tested in the comparisons
+between the groups where it is observed (limma's handling of missing values) and listed as not observed in
+that group. A model that leaves no residual degree of freedom stops. Fold changes and p-values come from the
+uncorrected values with W in the model; the RUV-corrected matrix is for display and export and need not
+reproduce them exactly.}
 }
 \value{
 A list containing:
@@ -42,6 +53,9 @@ A list containing:
 \item failed_assays: Present only when an assay's analysis stopped: the message per failed assay. The
 other assays are kept and a warning (class \code{omics_da_assay_failed}) names the failed ones; when every
 assay failed the function stops (class \code{omics_da_all_assays_failed}).
+\item ruv_features_not_tested, ruv_features_not_observed: with \code{ruv_factors} only. Per assay, the ids not tested
+(\code{supplied_controls}, \code{not_estimable}), and a table (\code{feature}, \code{group}) of the tested features with no
+value in one whole group
 }
 }
 \description{

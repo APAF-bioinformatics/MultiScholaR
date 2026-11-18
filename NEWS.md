@@ -69,6 +69,21 @@
    given; its source is recorded with the result. The design is available to the normalisation step
    (`ruv_design = "factors_in_model"`) and is not selected by default or from the application yet: every
    result is unchanged until it is chosen. Today's design (the corrected matrix tested) stays as it is.
+ * Lipidomics and metabolomics RUV: a second design is available to `runLipidsDA()` and `runMetabolitesDA()`
+   through the new argument `ruv_factors` (the kernel only; no screen offers it yet and no default changes).
+   The RUV-III factors are computed per assay from the features observed in every sample, with the groups as
+   replicate sets and either all those features or a supplied list (internal standards) as controls, and the
+   differential test reads the uncorrected values with the factors in the limma model instead of testing the
+   corrected matrix. Supplied controls are not tested; a feature with too few values to estimate the
+   factors' coefficients is not tested and is named in the result; a feature with no value in one whole group
+   is tested between the groups where it is observed and listed as not observed in that group. The number of
+   factors has no default: it is given, or (with supplied controls only) taken from the automatic sweep and
+   limited by the sample-size limit, and is recorded with its source. An assay whose factors cannot be
+   computed is analysed without RUV, with a warning; a model left without a residual degree of freedom, or the
+   corrected object given together with the factors, stops. The corrected matrix of this design
+   (for figures, export and integration) keeps each feature's mean abundance. Without `ruv_factors` every
+   result is as before: `ruvIII_C_Varying()` for lipid and metabolite data is not changed and still shifts
+   each feature by a constant.
 
 ### Other changes
 

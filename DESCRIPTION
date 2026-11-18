@@ -112,6 +112,7 @@ Collate:
     'func_general_parameter_helpers.R'
     'func_prot_accession_helpers.R'
     'func_omics_qc_shared.R'
+    'func_omics_ruv_factors.R'
     'func_general_plotting_pca_rle_helpers.R'
     'func_general_plotting_qc_support_helpers.R'
     'func_general_plotting_heatmap_support_helpers.R'
