@@ -713,10 +713,12 @@ validateOmicGuiRuvTable <- function(table, path, schema) {
     }
     statuses <- vapply(table$options, `[[`, character(1), "status")
     selectable <- ids[statuses != "unavailable"]
-    # KIT-129 fourth pass item 2: a precondition's reason is one of the table's texts; a rule left out is a k rule.
+    # KIT-129 fourth pass item 2: a precondition's reason is one of the table's texts (the reason when it is not met,
+    # `omicNormRuvUnavailableReason`); a rule left out is a k rule.
+    reasons <- c(technical_replicates = "no_technical_replicates", no_technical_replicates = "technical_replicates_declared")
     for (i in seq_along(table$options)) {
         needs <- table$options[[i]]$needs
-        if (!is.null(needs) && !needs %in% names(table$texts)) {
+        if (!is.null(needs) && !reasons[[needs]] %in% names(table$texts)) {
             omicGuiConfigAbort(sprintf("%s$options[[%d]]$needs", path, i), "must name one of the table's texts")
         }
     }
