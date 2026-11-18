@@ -668,8 +668,17 @@ test_that("through the operations: automatic and skip under the new design, a re
             list(ruv_design = "groups_all_features", k = value$ruv_model$k, ruv_k_rule = "num_sv_be"))
         expect_identical(sum(grepl("^W[0-9]+$", names(outcome$automatic_state@design_matrix))), value$ruv_model$k)
     } else {
-        # a count of 0 applies no RUV: the final state is the normalised one, with the reason
-        expect_identical(value$final, value$normalized)
+        # a count of 0 applies no RUV and declares the design without factors (KIT-129 integration item 2, decision
+        # M30): its own state, whose assay values are the normalised state's, tested as the option set's None
+        expect_false(identical(value$final, value$normalized))
+        expect_true(protRuvNoFactorsDeclared(outcome$automatic_state))
+        expect_identical(workflowRuvDaMethodOfArgs(outcome$automatic_state@args), "ruv_none_trend_robust")
+        expect_identical(outcome$automatic_state@args$ruvCovariates[c("ruv_mode", "ruv_design", "k", "ruv_k_rule", "ruv_k_estimate",
+            "ruv_applied", "tested_matrix")], list(ruv_mode = "none", ruv_design = "groups_all_features", k = 0L, ruv_k_rule = "num_sv_be",
+            ruv_k_estimate = 0L, ruv_applied = FALSE, tested_matrix = "normalised"))
+        expect_match(outcome$automatic_state@args$ruvCovariates$ruv_not_applied_reason, "no unwanted factor")
+        expect_equal(outcome$automatic_state@protein_quant_table, normalised@protein_quant_table, tolerance = 0)
+        expect_identical(outcome$automatic_state@design_matrix, normalised@design_matrix)
         expect_match(value$ruv_result$ruv_not_applied_reason, "no unwanted factor")
     }
     # skip: no RUV ran, so no design is recorded on the product or the state (audit F-08)
