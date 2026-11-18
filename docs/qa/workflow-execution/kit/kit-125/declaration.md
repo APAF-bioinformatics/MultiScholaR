@@ -71,3 +71,34 @@ Foreseen before the run and written here so that it is not an explanation after 
 - Attempts: one per omic. A run that fails for an instrument reason (a script error, the timeout, a crash share that leaves fewer than 100 scored splits) is recorded and that omic stops; no retry, no change of preparation, seeds or limits after the run.
 - No memory figure is taken.
 
+
+## Bounded check of the unwanted variation's strength (added 2026-11-18, after the DIA_LIMPA result and before any of the figures below was computed)
+
+**Why.** DIA_LIMPA's no RUV was scored "failed" in simulation (cell C5, null rate 0.116) and is within both limits on PXD024043, also on the batch-aligned splits: a contradiction by the rule above, recorded and accepted by the user as not bearing on the default (decision M21, `kit-124/design-review-20261118.md` section 6). M21 asks for one bounded check of one reading: **the labelled unwanted variation of this data set (the two culture batches) is weaker than the unwanted factor S2 generates.** This section fixes how that is measured. It changes no rule, verdict or figure above.
+
+**Matrices.** Twelve samples each, quantified as the null splits and the simulations were (the route's DPC quantification, engine `fastlimpadpc`, on the pinned tree `0b6fcb6d`, the libraries above).
+
+- Real: the batch-aligned splits 1 to 10 of the run above (their units redrawn under their seeds and checked against `runs/dia_limpa/splits.tsv`), with `k125_dia_limpa.R`'s own preparation, filter and `quantify`. Each holds 6 cells of each culture batch. The factor is the batch indicator.
+- Simulated: S2's own `simulateData` and `quantify`, read from `kit-124/sim/s2_limpa.R` at the pinned tree and not edited, cells C0 and C5, runs 1 to 10 under the simulator's seeds (the first ten runs KIT-124 scored). The factor is the true score vector the generator returns. Only the 800 proteins without a group effect are measured, since the real false groups have none.
+
+**Measures, per matrix.**
+
+1. Per protein, the share of the variance of its 12 quantified values explained by the factor (R-squared of the regression on the factor): median, quartiles, and the shares of proteins above 0.10 and above 0.30.
+2. Pooled: the factor's share of the total protein-centred sum of squares of the matrix.
+3. The floor of 1 and 2 with 12 samples: the same two measures with the factor's values permuted over the samples once (seed 100 x the matrix's seed + 98).
+4. Principal components of the protein-centred matrix: the share of variance of each of the first five, and each one's R-squared with the factor.
+5. Confounding: the correlation of the factor with the B-against-A indicator (real: 1/3 by layout; C5: the realised value; C0: 0 in expectation).
+
+Reported side by side as the median over the ten matrices with the range.
+
+**Reading, fixed here.** Decided on measure 1's median and on measure 2:
+
+- **supported** (the real batch is weaker): on both measures every real matrix is below every simulated run of C5, and of C0;
+- **refuted** (the real batch is not weaker): on either measure the median over the real matrices is at or above the median over C5's runs. This is stated prominently;
+- **undetermined**: anything else (the ranges overlap).
+
+Measures 3 to 5 are shown for the reader and decide nothing.
+
+**Limits, stated before the result.** One data set. Batch is the only unwanted factor of the real data that is labelled; unlabelled unwanted variation is not measured, so "weaker" can only ever mean "the labelled batch is weaker". The real factor is a balanced two-level indicator and the simulated one a continuous score. Twelve samples per matrix, so a factor with no effect still explains about 0.09 of a protein's variance on average (measure 3 gives the floor). The check measures strength; it does not show that strength is what moves no RUV's null rate.
+
+**Budget.** Laptop, one R process, `nice -n 19`, `timeout` 1,800 s, one attempt (`k125_strength.R`, output under `runs/strength/`). A script error before the table is written is an instrument failure: one correction of the script, recorded, with no change to this section.
