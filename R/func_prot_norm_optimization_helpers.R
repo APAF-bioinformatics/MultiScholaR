@@ -1322,15 +1322,16 @@ computeProtRuvModelFactors <- function(theObject, ruv_k, ruv_k_rule = c("user", 
   # units' limit beside it when there are technical replicates.
   limit <- ruvFactorCountLimit(length(sample_ids), group_count, group_count, control_count, units = unit_count)
   k_max <- limit$k_max
-  refuse <- function(reason) cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
+  refuse <- function(reason, class = "prot_ruv_factors_unavailable") cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
     i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}",
     i = if (!is.null(unit_count)) paste0("the design has technical replicates: ", unit_count, " biological units carry the ",
       "test, which leaves at most ", limit$k_max_units, " factor(s) (", limit$binding, ")")),
-    class = "prot_ruv_factors_unavailable")
+    class = class)
   if (k_max < 1L) refuse(if (control_count < 2L) "fewer than 2 control proteins are observed in every sample" else
     "the samples leave no residual degree of freedom for a factor beside the groups")
   if (k_estimated > k_max && identical(ruv_k_rule, "user")) {
-    refuse(sprintf("k = %d was asked for and at most %d can be estimated", k_estimated, k_max))
+    # KIT-129 item 2: a k above the limit is refused with the class every omic's new design uses.
+    refuse(sprintf("k = %d was asked for and at most %d can be estimated", k_estimated, k_max), c("ruv_k_above_limit", "ruv_k_refused"))
   }
   k <- min(k_estimated, k_max)
   complete_object <- protRuvGroupReplicateObject(theObject)

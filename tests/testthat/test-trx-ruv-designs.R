@@ -253,6 +253,10 @@ test_that("(KIT-129 W4) what a design cannot compute is refused by class, never 
     factors <- function(controls, k, method) suppressWarnings(suppressMessages(trxRuvFactors(d$y, d$log_cpm_tmm, d$design, controls, k, method)))
     # 12 samples in 2 groups: at most 9 factors leave a residual degree of freedom beside the groups
     expect_error(factors(genes, samples - 2L, "RUVs"), class = "trx_ruv_k_unavailable")
+    # KIT-129 item 2: a k above the limit carries the class of every omic's new design, after trx's own
+    above <- tryCatch(factors(genes, samples - 2L, "RUVs"), error = function(e) e)
+    expect_identical(class(above)[1:4], c("trx_ruv_k_unavailable", "trx_error", "ruv_k_above_limit", "ruv_k_refused"))
+    expect_s3_class(tryCatch(factors(genes[1:3], 3L, "RUVg"), error = function(e) e), "ruv_k_above_limit")
     expect_identical(ncol(factors(genes, samples - 3L, "RUVs")$W), samples - 3L)
     # fewer factors than controls
     expect_error(factors(genes[1:3], 3L, "RUVg"), class = "trx_ruv_k_unavailable")
@@ -265,6 +269,7 @@ test_that("(KIT-129 W4) what a design cannot compute is refused by class, never 
     expect_identical(ncol(RUVSeq::RUVg(trxDesignTestUq(deficient), genes[1:5], 2L)$W), 1L)
     fewer <- tryCatch(suppressWarnings(suppressMessages(trxRuvFactors(deficient, d$log_cpm_tmm, d$design, genes[1:5], 2L, "RUVg"))), error = function(e) e)
     expect_s3_class(fewer, c("trx_ruv_k_unavailable", "trx_error"), exact = FALSE)
+    expect_false(inherits(fewer, "ruv_k_above_limit"))
     expect_match(conditionMessage(fewer), "RUVSeq::RUVg returned 1 factor", fixed = TRUE)
     # audit F-09: a run whose upper quartile is 0 cannot be upper-quartile normalised
     sparse <- d$y

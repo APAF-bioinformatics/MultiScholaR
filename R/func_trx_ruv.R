@@ -330,7 +330,8 @@ trxUpperQuartileCounts <- function(filtered_counts) {
 #'   `trx_ruv_inputs_misaligned` (`trxRuvCheckAlignment`), `trx_ruv_k_invalid` (k is not one whole number of 0 or
 #'   more), `trx_ruv_controls_invalid` (a control that is not a gene of the matrix) and `trx_ruv_k_unavailable` (k
 #'   leaves no residual degree of freedom beside the groups, is not below the number of controls, the runs of every
-#'   group are identical under RUVs, or RUVSeq returned fewer factors: k is never reduced).
+#'   group are identical under RUVs, or RUVSeq returned fewer factors: k is never reduced). The first two are a k
+#'   above the limit and also carry `ruv_k_above_limit` and `ruv_k_refused` (KIT-129 item 2).
 #' @noRd
 trxRuvFactors <- function(filtered_counts, log_cpm_tmm, design, control_genes, k, method = c("RUVs", "RUVg")) {
     validateTrxCounts(filtered_counts)
@@ -346,7 +347,8 @@ trxRuvFactors <- function(filtered_counts, log_cpm_tmm, design, control_genes, k
     }
     method <- match.arg(method)
     requireOptionalPackage("RUVSeq", "the transcriptomics RUV factors")
-    refuse_k <- function(why) trxAbort(sprintf("k = %d cannot be estimated: %s", k, why), c("trx_ruv_k_unavailable", "trx_error"))
+    refuse_k <- function(why, above_limit = FALSE) trxAbort(sprintf("k = %d cannot be estimated: %s", k, why),
+        c("trx_ruv_k_unavailable", "trx_error", if (above_limit) c("ruv_k_above_limit", "ruv_k_refused")))
     if (!all(control_genes %in% rownames(filtered_counts))) {
         trxAbort(sprintf("%d control gene(s) are not in the filtered counts", sum(!control_genes %in% rownames(filtered_counts))),
             c("trx_ruv_controls_invalid", "trx_error"))
@@ -354,9 +356,11 @@ trxRuvFactors <- function(filtered_counts, log_cpm_tmm, design, control_genes, k
     residual_limit <- ncol(filtered_counts) - length(unique(as.character(design$group))) - 1L
     if (k > residual_limit) {
         refuse_k(sprintf("%d runs in %d groups leave a residual degree of freedom for at most %d factor(s)", ncol(filtered_counts),
-            length(unique(as.character(design$group))), max(residual_limit, 0L)))
+            length(unique(as.character(design$group))), max(residual_limit, 0L)), above_limit = TRUE)
     }
-    if (k >= length(control_genes)) refuse_k(sprintf("there are %d control gene(s) and k must be below their number", length(control_genes)))
+    if (k >= length(control_genes)) {
+        refuse_k(sprintf("there are %d control gene(s) and k must be below their number", length(control_genes)), above_limit = TRUE)
+    }
     uq <- trxUpperQuartileCounts(filtered_counts)
     # RUVs estimates the factors from the differences of the runs within a group; when there is none it fails on an
     # empty index (KIT-129 audit F-08).

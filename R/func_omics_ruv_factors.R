@@ -82,16 +82,19 @@ boundOmicsRuvSweepK <- function(theObject, ruv_results) {
 #' @param replicate_matrix Sample-by-replicate-set matrix M, rows in the order of `values`' columns.
 #' @param k Number of factors, or `NA` when it could not be estimated.
 #' @param control_ids The supplied controls, or NULL for every feature observed in every sample.
-#' @return `list(status, reason, W, k, control_ids, complete_features)`; `status` is `ok`, `none` (k = 0) or `refused`.
+#' @return `list(status, reason, reason_class, W, k, control_ids, complete_features)`; `status` is `ok`, `none` (k = 0)
+#'   or `refused`; `reason_class` names a refusal by the class the other omics raise for it (KIT-129 item 2):
+#'   `ruv_k_above_limit` or `ruv_k_not_estimated`.
 #' @noRd
 computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids = NULL, units = NULL) {
     complete <- rowSums(is.na(values)) == 0L
     y <- t(values[complete, , drop = FALSE])
     ctl <- if (is.null(control_ids)) rep(TRUE, ncol(y)) else colnames(y) %in% control_ids
-    result <- function(status, reason = NA_character_, w = NULL, k_used = 0L) {
-        list(status = status, reason = reason, W = w, k = k_used, control_ids = colnames(y)[ctl], complete_features = ncol(y))
+    result <- function(status, reason = NA_character_, w = NULL, k_used = 0L, reason_class = if (identical(status, "refused")) "ruv_k_above_limit" else NA_character_) {
+        list(status = status, reason = reason, reason_class = reason_class, W = w, k = k_used, control_ids = colnames(y)[ctl],
+            complete_features = ncol(y))
     }
-    if (is.na(k)) return(result("refused", "k could not be estimated"))
+    if (is.na(k)) return(result("refused", "k could not be estimated", reason_class = "ruv_k_not_estimated"))
     if (k == 0L) return(result("none"))
     if (k > sum(ctl)) {
         return(result("refused", sprintf("k = %d is above the %d controls observed in every sample", k, sum(ctl))))
@@ -140,7 +143,9 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' different corrections of the same unwanted variation, RUV-III-C's own against the model's fit of W per feature, so
 #' a group difference read from the corrected matrix need not equal the model's fold change (up to 0.18 log2 on the
 #' audit's data for the features observed in every sample).
-#' An assay whose factors cannot be computed gets no RUV and a warning of class `omics_ruv_factors_refused`.
+#' An assay whose factors cannot be computed gets no RUV and a warning of class `omics_ruv_factors_refused` (today's
+#' behaviour, kept: the other omics' new designs stop instead); its record's `reason_class` and the warning name the
+#' refusal by the class the other omics raise (`ruv_k_above_limit`, `ruv_k_not_estimated`; KIT-129 item 2).
 #'
 #' @param theObject A `LipidomicsAssayData` or `MetaboliteAssayData` object (log2 values, missing values kept).
 #' @param ruv_design `"groups_all_features"`: every feature observed in every sample is a control.
@@ -158,7 +163,7 @@ restoreOmicsRuvAssayLevels <- function(corrected_assay, original_values, id_colu
 #' @return `list(corrected, factors, parameters)`: `corrected` the object with the corrected assays, its `args`
 #'   stamped with `ruv_design`, `ruv_grouping_variable`, `ruv_number_k` (the key `ruvIII_C_Varying` writes) and `ctrl` when an assay was corrected (the DA
 #'   refuses a stamped object together with factors, class `omics_ruv_object_already_corrected`); `factors` per
-#'   assay `list(assay, status, reason, W, k, k_requested, ruv_k_rule, control_ids, control_count, controls_left_out,
+#'   assay `list(assay, status, reason, reason_class, W, k, k_requested, ruv_k_rule, control_ids, control_count, controls_left_out,
 #'   complete_features, not_tested, ruv_design, ruv_grouping_variable)`, `W` a sample-by-k matrix or NULL;
 #'   `parameters` the arguments.
 #' @noRd
@@ -212,7 +217,8 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
         technical <- resolveProtTechnicalReplicateBlock(assay_design, theObject@group_id, theObject@technical_replicate_id)
         record <- computeOmicsRuvAssayFactors(values[[assay_name]], replicate_matrix[samples, , drop = FALSE],
             k_requested[[assay_name]], control_ids, units = if (isTRUE(technical$technical)) technical$block)
-        factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason, W = record$W, k = record$k,
+        factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason,
+            reason_class = record$reason_class, W = record$W, k = record$k,
             k_requested = k_requested[[assay_name]], ruv_k_rule = ruv_k_rule, control_ids = record$control_ids,
             control_count = length(record$control_ids), controls_left_out = setdiff(control_ids, record$control_ids),
             complete_features = record$complete_features,
@@ -228,7 +234,8 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_k, ruv_k_rule, ruv_con
     refused <- Filter(function(record) identical(record$status, "refused"), factors)
     if (length(refused)) {
         rlang::warn(c("RUV factors could not be computed for some assays; they are analysed without RUV",
-            stats::setNames(sprintf("%s: %s", names(refused), vapply(refused, `[[`, "", "reason")), rep("x", length(refused)))),
+            stats::setNames(sprintf("%s: %s (%s)", names(refused), vapply(refused, `[[`, "", "reason"),
+                vapply(refused, `[[`, "", "reason_class")), rep("x", length(refused)))),
             class = "omics_ruv_factors_refused")
     }
 

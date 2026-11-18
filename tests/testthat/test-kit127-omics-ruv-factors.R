@@ -290,6 +290,12 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
         class = "omics_ruv_factors_refused")
     expect_identical(refused$factors$pos$status, "refused")
     expect_match(refused$factors$pos$reason, "residual")
+    # KIT-129 item 2: the refused assay (today's behaviour) names its refusal by the class the other omics raise
+    expect_identical(refused$factors$pos$reason_class, "ruv_k_above_limit")
+    expect_identical(refused$factors$neg$reason_class, NA_character_)
+    warned <- tryCatch(suppressMessages(runOmicsRuvFactors(object, "groups_all_features", list(pos = 10L, neg = 1L), "user")),
+        omics_ruv_factors_refused = function(w) w)
+    expect_match(conditionMessage(warned), "(ruv_k_above_limit)", fixed = TRUE)
     expect_identical(refused$factors$pos$k, 0L)
     expect_identical(refused$factors$pos$k_requested, 10L)
     expect_null(refused$factors$pos$W)
@@ -307,12 +313,14 @@ test_that("k has no default, 0 is no RUV, and an assay whose factors cannot be c
         ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))), class = "omics_ruv_factors_refused")
     expect_identical(unname(vapply(few$factors, `[[`, "", "status")), c("refused", "refused"))
     expect_match(few$factors$pos$reason, "controls observed in every sample")
+    expect_identical(few$factors$pos$reason_class, "ruv_k_above_limit")
 
     # a k that could not be estimated is a refusal, not a guess
     expect_warning(unknown <- suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls",
         list(pos = NA_integer_, neg = 1L), "sweep_bounded", ruv_control_ids = lapply(fixture$assays, function(a) rownames(a$is)))),
         class = "omics_ruv_factors_refused")
     expect_identical(unknown$factors$pos$status, "refused")
+    expect_identical(unknown$factors$pos$reason_class, "ruv_k_not_estimated")
     expect_identical(unknown$factors$neg$ruv_k_rule, "sweep_bounded")
 })
 
@@ -703,6 +711,7 @@ test_that("with technical replicates the biological units limit k, in the kernel
         for (assay in c("pos", "neg")) {
             expect_identical(refused$factors[[assay]][c("status", "k")], list(status = "refused", k = 0L), info = omic)
             expect_match(refused$factors[[assay]]$reason, "limit of 5: the design has technical replicates", fixed = TRUE, info = omic)
+            expect_identical(refused$factors[[assay]]$reason_class, "ruv_k_above_limit", info = omic)
         }
         within <- kernel(5L)
         expect_identical(vapply(within$factors, `[[`, "", "status"), c(pos = "ok", neg = "ok"), info = omic)

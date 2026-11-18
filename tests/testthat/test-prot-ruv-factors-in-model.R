@@ -286,7 +286,8 @@ test_that("k is a parameter: the sweep's estimate is bounded and recorded, a use
     kept <- computeProtRuvModelFactors(object, ruv_k = 3L, ruv_k_rule = "sweep_bounded")
     expect_identical(kept[c("k", "k_estimated", "k_bounded")], list(k = 3L, k_estimated = 3L, k_bounded = FALSE))
     expect_identical(ncol(kept$W), 3L)
-    expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "user"), class = "prot_ruv_factors_unavailable")
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "user"), class = "ruv_k_above_limit")
+    expect_error(computeProtRuvModelFactors(object, ruv_k = 40L, ruv_k_rule = "user"), class = "ruv_k_refused")
     expect_error(computeProtRuvModelFactors(object, ruv_k = 0L, ruv_k_rule = "user"), "invalid")
     expect_error(computeProtRuvModelFactors(object, ruv_k = 1L, ruv_k_rule = "num.sv"))
     # the bound follows the complete proteins when they are the scarce side
@@ -743,9 +744,9 @@ test_that("with technical replicates the biological units limit k, in the kernel
     normalised <- ruvModelObject(fixture$x, fixture$design)
     # 8 units in 2 groups: at most 8 - 2 - 1 = 5 factors (the injections' bound was 13)
     refused <- tryCatch(computeProtRuvModelFactors(normalised, ruv_k = 6L, ruv_k_rule = "user"), error = function(e) e)
-    expect_s3_class(refused, "prot_ruv_factors_unavailable")
+    expect_s3_class(refused, "ruv_k_above_limit")
     expect_match(conditionMessage(refused), "technical replicates", fixed = TRUE)
-    expect_error(computeProtRuvModelFactors(normalised, ruv_k = 12L, ruv_k_rule = "user"), class = "prot_ruv_factors_unavailable")
+    expect_error(computeProtRuvModelFactors(normalised, ruv_k = 12L, ruv_k_rule = "user"), class = "ruv_k_above_limit")
     within <- computeProtRuvModelFactors(normalised, ruv_k = 5L, ruv_k_rule = "user")
     expect_identical(c(within$k, within$k_max), c(5L, 5L))
     # the sweep's k is bounded by the units, the bound recorded as before
