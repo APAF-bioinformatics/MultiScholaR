@@ -214,6 +214,8 @@ fingerprintTables <- function(lane, oracle) {
 
 summaries <- list()
 reports <- list()
+# A lane named more than once (the trx_screen repeats of KIT-134's correction pass) is labelled <lane>_r<n> from its second run.
+runs <- integer()
 failures <- list()
 differences <- list()
 for (lane in lanes) {
@@ -224,9 +226,11 @@ for (lane in lanes) {
     }
     test_file <- names(block)
     block <- unname(block)
+    runs[[lane]] <- if (is.na(runs[lane])) 1L else runs[[lane]] + 1L
+    label <- if (runs[[lane]] == 1L) lane else sprintf("%s_r%d", lane, runs[[lane]])
     if (report_check) reports[[lane]] <- FALSE
     unlink(file.path(out_dir, "records", paste0(lane, ".json")))
-    capture$lane <- lane
+    capture$lane <- label
     capture$n <- 0L
     started <- Sys.time()
     reporter <- testthat::ListReporter$new()
@@ -238,7 +242,7 @@ for (lane in lanes) {
     expectations <- unlist(lapply(reporter$get_results(), function(test) test$results), recursive = FALSE)
     classes <- vapply(expectations, function(x) class(x)[[1L]], character(1))
     for (x in expectations[!classes %in% "expectation_success"]) {
-        failures[[length(failures) + 1L]] <- data.frame(lane = lane, class = class(x)[[1L]],
+        failures[[length(failures) + 1L]] <- data.frame(lane = label, class = class(x)[[1L]],
             message = truncate(conditionMessage(x), 2000L), stringsAsFactors = FALSE)
     }
     record_path <- file.path(out_dir, "records", paste0(lane, ".json"))
@@ -253,14 +257,14 @@ for (lane in lanes) {
             if (length(documents)) paste(documents, collapse = ", ") else "none", truncate(paste(notes, collapse = " | "), 600L)))
     }
     if (file.exists(record_path)) {
-        lane_differences <- tryCatch(compareLane(lane, jsonlite::read_json(record_path, simplifyVector = FALSE)$steps, oracle$steps),
-            error = function(e) data.frame(lane = lane, step = "<comparison failed>", field = "", key = "", kind = "discrete",
+        lane_differences <- tryCatch(compareLane(label, jsonlite::read_json(record_path, simplifyVector = FALSE)$steps, oracle$steps),
+            error = function(e) data.frame(lane = label, step = "<comparison failed>", field = "", key = "", kind = "discrete",
                 runner = truncate(conditionMessage(e)), oracle = "", stringsAsFactors = FALSE))
     }
-    tryCatch(fingerprintTables(lane, oracle), error = function(e) cat(sprintf("FPRINT %s failed: %s\n", lane, conditionMessage(e))))
+    tryCatch(fingerprintTables(label, oracle), error = function(e) cat(sprintf("FPRINT %s failed: %s\n", label, conditionMessage(e))))
     differences <- c(differences, list(lane_differences))
     kinds <- if (is.null(lane_differences)) character() else lane_differences$kind
-    summaries[[lane]] <- data.frame(lane = lane,
+    summaries[[label]] <- data.frame(lane = label,
         passed = sum(classes == "expectation_success"), failed = sum(classes == "expectation_failure"),
         errors = sum(classes == "expectation_error"), skipped = sum(classes == "expectation_skip"),
         record = file.exists(record_path), oracle_steps = length(oracle$steps),
@@ -269,9 +273,9 @@ for (lane in lanes) {
         seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1),
         run_error = truncate(outcome, 300L), stringsAsFactors = FALSE)
     cat(sprintf("LANE %s: pass %d fail %d error %d skip %d; record %s; differing steps %d (discrete %d, digest %d); %.0f s\n",
-        lane, summaries[[lane]]$passed, summaries[[lane]]$failed, summaries[[lane]]$errors, summaries[[lane]]$skipped,
-        summaries[[lane]]$record, summaries[[lane]]$steps_differing, summaries[[lane]]$discrete_differences,
-        summaries[[lane]]$digest_differences, summaries[[lane]]$seconds))
+        label, summaries[[label]]$passed, summaries[[label]]$failed, summaries[[label]]$errors, summaries[[label]]$skipped,
+        summaries[[label]]$record, summaries[[label]]$steps_differing, summaries[[label]]$discrete_differences,
+        summaries[[label]]$digest_differences, summaries[[label]]$seconds))
 }
 
 summary <- do.call(rbind, summaries)

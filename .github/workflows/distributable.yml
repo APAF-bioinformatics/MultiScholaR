@@ -414,6 +414,8 @@ jobs:
 
       # On both runners since M26 (ubuntu-24.04: the host's libraries no longer taken by R; the lanes show whether
       # the results still agree with the laptop's oracles there).
+      # trx_screen runs eight times (KIT-134 correction pass of run 44368107499): its top_de_genes.tsv differed from the
+      # oracle on ubuntu-22.04 in run 44275615462 only; the repeats are labelled trx_screen_r2 .. _r8.
       - name: "Lanes: every GUI-entry lane in process with the installed application's R (network closed, the laptop's locale)"
         id: lanes
         if: ${{ !cancelled() && steps.testtools.outcome == 'success' }}
@@ -426,7 +428,8 @@ jobs:
             LC_CTYPE=en_GB.UTF-8 LC_COLLATE=en_GB.UTF-8 LC_MESSAGES=en_GB.UTF-8 LC_NUMERIC=en_AU.UTF-8 LC_TIME=en_AU.UTF-8 \
             LC_MONETARY=en_AU.UTF-8 LC_PAPER=en_AU.UTF-8 LC_MEASUREMENT=en_AU.UTF-8 \
             "$2/bin/Rscript" --vanilla "$3/packaging/verify/run-lanes.R" "$3" "$4" "$5" prot_dia prot_dia_limpa \
-            prot_tmt prot_lfq prot_lfq_fragpipe metab_lc metab_gc metab_combined lipid_canonical trx_screen' \
+            prot_tmt prot_lfq prot_lfq_fragpipe metab_lc metab_gc metab_combined lipid_canonical trx_screen \
+            trx_screen trx_screen trx_screen trx_screen trx_screen trx_screen trx_screen' \
             "$(id -un)" "$HOME" "$DEST/app/resources/runtime" "$GITHUB_WORKSPACE" "$TEST_TOOLS" "$OUT/lanes" > "$OUT/lanes.log" 2>&1 || status=$?
           {
             echo '### GUI-entry lanes, installed application (${{ matrix.runner }})'; echo '```'
@@ -535,8 +538,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "could not install jsonlite into the build-tool library" }
 
       - name: "Rust for the internal packages: the GNU target R links against"
+        # Pinned to the toolchain that built fast_duckdb@e724f90b and fast_limpa_dpc@87a90b89 on Windows in run
+        # 44275615462 (stable moved to 1.100.0 with image 20261116 and both failed to build in run 44368107499).
         run: |
-          rustup target add x86_64-pc-windows-gnu
+          rustup toolchain install 1.99.1 --profile minimal --target x86_64-pc-windows-gnu
+          "RUSTUP_TOOLCHAIN=1.99.1" >> $env:GITHUB_ENV
+          $env:RUSTUP_TOOLCHAIN = '1.99.1'
           rustc --version; cargo --version; rustup show
 
       - name: "Install the library: snapshot binaries, the source builds, the internal packages attempted (read token), MultiScholaR from this commit"
