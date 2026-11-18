@@ -16,6 +16,16 @@
 #         DIA with limpa the declared kernel (S2), transcriptomics `trxChooseRuvDesign` with the count (S3, run 1 of C0
 #         and C6), lipidomics and metabolomics `runOmicsRuvFactors(ruv_k_rule = "num_sv_be")` (S4, on the view of the
 #         features complete in study and pooled-QC injections, the features S4's E is computed on)
+#   trx   KIT-129 integration item 4 (decision M29 in transcriptomics): the package's test of a comparison with W in the
+#         model (`trxDaApply`: `edgeR::glmQLFTest(fit, contrast = )`) against the same test with the comparison fitted
+#         as the first coefficient of the reparameterised model (`limma::contrastAsCoef`, arm 25's construction in S1,
+#         S2, S4), on S3's data (run 1 of C0 and C6) with arm 31's W (RUVs, all genes, E with B = 200). S3 ran no arm
+#         25 (the exactness round's declaration: nothing is approximate in this route), so the reference is the
+#         reparameterised fit, not an arm's table
+#   runpath KIT-129 integration item 5: the run path (the compute halves the tab and the managed worker call, in a
+#         reference store) against arm 32: classic proteomics `computeDIAReferenceNormalization` with the new design
+#         (the estimated count) then `computeDIAReferenceDaContrast` (S1); DIA with limpa `computeDIAReferenceRuvCovariates`
+#         with all proteins as controls (its own count) then `computeDIAReferenceDaContrast` on the limpa route (S2)
 # Writes <out dir>/<stage>-simulator.rds and <stage>-package.rds (named lists: per data set, arm and omic, the table
 # keyed by feature and contrast, and k), compares them with packaging/verify/compare-results.R (relative 1e-6,
 # absolute floor 1e-9, discrete values exact) into <stage>-compare.tsv, and writes <stage>-summary.tsv (one row per
@@ -39,7 +49,7 @@
 
 stage <- commandArgs(TRUE)[[1L]]
 out_dir <- commandArgs(TRUE)[[2L]]
-stopifnot(stage %in% c("m29", "m30a", "m30b", "count"))
+stopifnot(stage %in% c("m29", "m30a", "m30b", "count", "trx", "runpath"))
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 logger::log_threshold(logger::FATAL)
@@ -72,6 +82,25 @@ keyed <- function(feature, contrast, estimate, p, q) {
     t <- t[order(t$key), , drop = FALSE]
     rownames(t) <- NULL
     t
+}
+
+# The run path's store (item 5): an in-process state owner holding `object` as the step's source; the compute halves of
+# the tab and the managed worker run on it (`computeDIAReference*`), exactly as in the application.
+runpath_store <- function(object) {
+    manager <- newDIAStateAdapter(newWorkflowEntityStore(tempfile("runpath-"), "kit-129-runpath", "DIA"),
+        WorkflowState$new(audit_enabled = FALSE))
+    manager$.context$reference_states <- TRUE
+    manager$saveState("protein_replicate_filtered", object, list(), "source")
+    manager
+}
+# One contrast's DA through the compute half on `state`, its contrasts table keyed.
+runpath_da <- function(manager, state, contrast, route, id_column) {
+    spec <- readDIAStateMetadata(manager, state)$data
+    step <- list(formula = "~ 0 + group", qvalue = 0.05, lfc = 0, weights = NA, contrast = contrast,
+        annotations = spec$components$protein_id_table$entity_id, name = sub("=.*$", "", contrast), comparison = sub("=.*$", "", contrast))
+    run <- computeDIAReferenceDaContrast(manager, state, step, route)$run
+    tab <- as.data.frame(materializeDIATable(manager$.context, run$value$tables$contrasts_results_table))
+    list(table = keyed(tab[[id_column]], "contrast", tab$logFC, tab$raw_pvalue, tab$fdr_qvalue), model = run$value$model)
 }
 
 sim_side <- list()
@@ -164,6 +193,20 @@ for (cell in cells) {
         add(sprintf("S1/%s/arm32/k", cell), E32, k32, "arm 32's E against the package's count")
         if (k32 > 0L) add_tables(sprintf("S1/%s/arm32/classic", cell), arm_table(E32, TRUE, TRUE), entry(k32))
     }
+    if (stage == "runpath") {
+        E32 <- count(200L, p$duplicates)
+        manager <- runpath_store(normalised)
+        parameters <- list(norm_method = "none", ruv_mode = "automatic", auto_percentage_min = 5, auto_percentage_max = 30,
+            separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 50,
+            ruv_k = NULL, grouping = "group", ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = seed * 100L)
+        package <- silently(withDIAStateScope(manager, function() {
+            run <- computeDIAReferenceNormalization(manager, getDIAStateReference(manager), parameters)
+            c(list(k = run$value$best_k), runpath_da(manager, run$value$final, s1_contrast, "iq", "Protein.Group"))
+        }))
+        closeDIAStateAdapter(manager)
+        add(sprintf("S1/%s/arm32/runpath_k", cell), E32, as.integer(package$k), "arm 32's E against the run path's own count")
+        if (E32 > 0L) add_tables(sprintf("S1/%s/arm32/runpath", cell), arm_table(E32, TRUE, TRUE), package$table)
+    }
     if (stage == "count") {
         own <- silently(computeProtRuvModelFactors(normalised, ruv_k_rule = "num_sv_be", ruv_grouping_variable = "group",
             ruv_k_seed = seed * 100L))
@@ -173,7 +216,7 @@ for (cell in cells) {
 }
 
 # ---- S2, DIA with limpa ------------------------------------------------------------------------------------------------
-if (stage %in% c("m29", "m30a", "m30b", "count")) {
+if (stage %in% c("m29", "m30a", "m30b", "count", "runpath")) {
     s2 <- simulator("s2_limpa.R", "2ba5cf87", "^if \\(!is.null\\(cells_wanted\\)\\)")
     table_s2 <- s2$cellTable()
     for (cell_name in cells) {
@@ -236,6 +279,19 @@ if (stage %in% c("m29", "m30a", "m30b", "count")) {
             package <- kernel()
             add(sprintf("S2/%s/arm%s/kernel_k", cell_name, if (units) "32" else "31"), count(200L, units), package$value$best_k,
                 "arm 31's E (C0) or arm 32's E (C6, the units removed) against the declared kernel's own k")
+        }
+        if (stage == "runpath") {
+            E32 <- count(200L, units)
+            manager <- runpath_store(quantified)
+            manager$setWorkflowType("DIA_LIMPA")
+            parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features", ruv_k_seed = 100L * seed + 99L)
+            package <- silently(withDIAStateScope(manager, function() {
+                run <- computeDIAReferenceRuvCovariates(manager, getDIAStateReference(manager), parameters)
+                c(list(k = run$value$best_k), runpath_da(manager, run$value$final, "B_vs_A=groupB-groupA", "limpa", "Protein.Ids"))
+            }))
+            closeDIAStateAdapter(manager)
+            add(sprintf("S2/%s/arm32/runpath_k", cell_name), E32, as.integer(package$k), "arm 32's E against the run path's own count")
+            if (E32 > 0L) add_tables(sprintf("S2/%s/arm32/runpath", cell_name), arm_table(E32), package$table)
         }
         if (stage == "m30b") {
             E32 <- count(200L, units)
@@ -325,6 +381,46 @@ if (stage == "count") {
     }
 }
 
+# ---- S3, transcriptomics (stage trx: item 4) -------------------------------------------------------------------------
+if (stage == "trx") {
+    s3 <- simulator("s3_trx.R", "2ba5cf87", "^selected <- if")
+    # edgeR's own account: the QL F-test of a contrast reformulates the design so that the contrast is a coefficient
+    # (`glmLRT`, which `glmQLFTest` calls for the deviance, uses `contrastAsCoef`), then refits without it per gene.
+    notes[["S3/edgeR_contrast_reformulation"]] <- sprintf("glmLRT calls contrastAsCoef: %s; glmQLFTest calls glmLRT: %s",
+        any(grepl("contrastAsCoef", deparse(edgeR::glmLRT))), any(grepl("glmLRT", deparse(edgeR::glmQLFTest))))
+    for (cell_name in cells) {
+        cl <- s3$CELLS[[cell_name]]
+        seed <- 100000L + 10000L * cl$idx + 1L
+        prep <- silently({
+            d <- s3$generate(cl, seed)
+            y <- trxExpressionFilter(d$counts, d$design$group)$filtered_counts
+            n <- trxTmmLogCpm(y, d$design$group)
+            list(d = d, y = y, n = n)
+        })
+        E200 <- as.integer(silently(sva::num.sv(prep$n$log_cpm_tmm, stats::model.matrix(~ group, data = prep$d$design), method = "be",
+            B = 200, seed = seed)))
+        stopifnot(E200 > 0L)
+        # arm 31's W (s3_trx.R line 449: arm 7 with E from 200 permutations): RUVs on upper-quartile counts, all genes
+        s <- silently(trxRuvFactors(prep$y, prep$n$log_cpm_tmm, prep$d$design, rownames(prep$y), E200, "RUVs"))
+        formula <- trxDaFormula(s$pdata)
+        # the package's route: the contrast tested by glmQLFTest(contrast = )
+        route <- silently(trxDaApply(trxDaFit(s$ruvs_counts, s$pdata, formula), s3$ENTRY))$results[[1L]]$top_table
+        # the reparameterised fit: the comparison as the first coefficient, tested as a coefficient
+        model <- trxDaModelMatrix(s$pdata, formula)
+        contrast <- trxContrastMatrix(trxParseContrastEntry(s3$ENTRY), model)[, 1L]
+        q <- limma::contrastAsCoef(model, contrast, first = TRUE)$design
+        exact <- silently({
+            dge <- edgeR::calcNormFactors(edgeR::DGEList(counts = s$ruvs_counts, group = s$pdata$group), method = "TMM")
+            dge <- edgeR::estimateDisp(dge, q, robust = TRUE)
+            edgeR::topTags(edgeR::glmQLFTest(edgeR::glmQLFit(dge, q, robust = TRUE), coef = 1L), n = Inf, sort.by = "PValue")$table
+        })
+        add(sprintf("S3/%s/arm31/k", cell_name), E200, as.integer(ncol(s$W)), "arm 31's E, the W the route was given")
+        add_tables(sprintf("S3/%s/arm31/contrast_vs_reparameterised", cell_name),
+            keyed(rownames(exact), "contrast", exact$logFC, exact$PValue, exact$FDR),
+            keyed(rownames(route), "contrast", route$logFC, route$PValue, route$FDR))
+    }
+}
+
 # ---- S4, lipidomics and metabolomics (stage count) -------------------------------------------------------------------
 if (stage == "count") {
     s4 <- simulator("s4_lipid_metab.R", "2d03b103", "^# ---- driver")
@@ -366,7 +462,7 @@ summary <- do.call(rbind, lapply(names(sim_side), function(name) {
     data.frame(entry = name, leaves = nrow(mine), max_rel = if (any(is.finite(mine$max_rel))) max(mine$max_rel, na.rm = TRUE) else NA_real_,
         verdict = if (all(mine$verdict == "agree")) "pass" else "fail", note = notes[[name]], stringsAsFactors = FALSE)
 }))
-w_notes <- notes[grepl("W_package_vs_simulator$", names(notes))]
+w_notes <- notes[grepl("W_package_vs_simulator$|edgeR_contrast_reformulation$", names(notes))]
 if (length(w_notes)) summary <- rbind(summary, data.frame(entry = names(w_notes), leaves = NA_integer_, max_rel = NA_real_,
     verdict = "info", note = unlist(w_notes), stringsAsFactors = FALSE))
 utils::write.table(summary, file.path(out_dir, paste0(stage, "-summary.tsv")), sep = "\t", quote = FALSE, row.names = FALSE)

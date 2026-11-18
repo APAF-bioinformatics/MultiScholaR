@@ -200,6 +200,27 @@ plotRuvFactorCount <- function(estimate, max_components = 15L) {
         ggplot2::theme(legend.position = "bottom")
 }
 
+#' The estimated count recorded beside a k the user chose (KIT-129 integration item 3; section 1e's `ruv_k_estimate`,
+#' "what the estimator returned when the user chose"). The run path calls it once per RUV step under the k rule
+#' `user`; it never changes k. An error of the estimate (no `sva`, too few complete features or samples) is kept as
+#' its reason.
+#' @param values Feature-by-sample matrix the count is computed on (the step's own: the normalised matrix, the TMM
+#'   logCPM, the assay's values).
+#' @param groups The groups, one per column of `values`.
+#' @param seed The count's seed (recorded with it).
+#' @param units The biological units on a design with declared technical replicates (decision M28), else NULL.
+#' @return `list(k_estimate, k_estimate_reason, estimate, seed)`: the count or `NA` with the reason, its record for
+#'   `plotRuvFactorCount` (NULL on an error) and the seed.
+#' @noRd
+recordRuvFactorCountBesideUserK <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED, units = NULL) {
+    estimate <- tryCatch(estimateRuvFactorCount(values, groups, seed = seed, technical_replicates = !is.null(units), units = units),
+        error = \(e) e)
+    if (inherits(estimate, "condition")) {
+        return(list(k_estimate = NA_integer_, k_estimate_reason = conditionMessage(estimate), estimate = NULL, seed = as.integer(seed)))
+    }
+    list(k_estimate = as.integer(estimate$k), k_estimate_reason = NA_character_, estimate = estimate, seed = as.integer(seed))
+}
+
 #' The largest k a design can carry (KIT-129 section 2, "Details"): k cannot exceed the samples minus the replicate
 #' sets (the rank RUV-III's replicates leave), must leave a residual degree of freedom in a model of the groups and
 #' the factors, and must be below the number of controls observed in every sample.

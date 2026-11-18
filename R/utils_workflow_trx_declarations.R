@@ -312,11 +312,27 @@ trxRuvDesignOperation <- function(binding) {
         kernel = function(object, parameters, store) {
             trxProductReference(store$manager, parameters$logcpm)
             # KIT-129 item 3: the estimated count (`ruv_k_rule = "num_sv_be"` with no `ruv_k`) is computed here, by the
-            # shared resolver, on the TMM logCPM (as simulator S3 computes E); a k given is taken as resolved.
+            # shared resolver, on the TMM logCPM (as simulator S3 computes E). KIT-129 integration item 3: this is the run
+            # path's one resolution of k, so a request that gives a k under the count is refused (the kernel would take
+            # it as resolved); under the user's k the count is recorded beside it.
             canonical <- trxCanonicalRuvDesignParameters(parameters)
-            estimated <- !identical(canonical$ruv_design, "none") && is.na(canonical$ruv_k) && identical(canonical$ruv_k_rule, "num_sv_be")
-            log_cpm <- if (estimated) trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm)
-            trxChooseRuvDesign(trxAssayInputs(object), parameters, log_cpm = log_cpm)
+            none <- identical(canonical$ruv_design, "none")
+            if (!none && !is.na(canonical$ruv_k) && identical(canonical$ruv_k_rule, "num_sv_be")) {
+                trxAbort("a k is not given with ruv_k_rule num_sv_be: the estimated count gives k on the run path",
+                    c("trx_ruv_design_invalid", "trx_error"))
+            }
+            estimated <- !none && is.na(canonical$ruv_k) && identical(canonical$ruv_k_rule, "num_sv_be")
+            user <- !none && identical(canonical$ruv_k_rule, "user")
+            x <- trxAssayInputs(object)
+            log_cpm <- if (estimated || user) trxSavedMatrix(store$manager, trxProductValue(store$manager, parameters$logcpm)$log_cpm)
+            choice <- trxChooseRuvDesign(x, parameters, log_cpm = if (estimated) log_cpm)
+            if (user) {
+                beside <- recordRuvFactorCountBesideUserK(log_cpm, as.character(x$design$group))
+                choice$k_record[c("k_estimate", "k_estimate_reason")] <- beside[c("k_estimate", "k_estimate_reason")]
+                choice$k_record$k_seed <- beside$seed
+                choice$k_estimate <- beside$estimate
+            }
+            choice
         })
 }
 
@@ -442,7 +458,10 @@ trxRuvDesignOutcomes <- function(choice) {
     list(ruv_design = d$id, ruv_method = d$method, ruv_replicate_structure = if (identical(d$method, "RUVs")) "group" else NA_character_,
         ruv_control_rule = d$control_rule, ruv_control_count = choice$chosen$n_controls, ruv_control_list_sha256 = d$list_sha256, ruv_control_list_unmatched = d$unmatched,
         ruv_k = d$k, ruv_k_rule = d$k_rule, ruv_test_form = d$test_form, ruv_applied = d$applied, ruv_not_applied_reason = d$reason,
-        k = d$k, negative_control_percentage = choice$chosen$percentage, negative_control_count = choice$chosen$n_controls)
+        k = d$k, negative_control_percentage = choice$chosen$percentage, negative_control_count = choice$chosen$n_controls,
+        # KIT-129 integration item 3: the estimate (the count's k, or the count beside the user's k) and its seed.
+        ruv_k_estimate = choice$k_record$k_estimate %||% NA_integer_,
+        ruv_k_seed = choice$k_record$k_seed %||% (if (identical(d$k_rule, "num_sv_be")) choice$settings$ruv_k_seed) %||% NA_integer_)
 }
 
 #' RUVs (rmd:406-426): the state keeps the counts and gains W_1..W_k in its design (the notebook's `ruvs_pdata`); the

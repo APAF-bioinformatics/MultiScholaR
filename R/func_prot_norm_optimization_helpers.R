@@ -1402,6 +1402,30 @@ attachProtRuvModelFactors <- function(corrected, normalised, factors) {
   corrected
 }
 
+#' Declare a new design without factors on the normalised object (KIT-129 integration item 2): the option set's None
+#' (`ruv_design = "none"`) or a design whose k rule gave no factor (a count of 0). The object's table is the normalised
+#' matrix and is what the DA tests (`resolveProtRuvModelInput`), with the test settings of the new designs (decision
+#' M30); there is no W and no stored second matrix.
+#' @param normalised The normalised object.
+#' @param record `ruv_design`, and the k rule's `ruv_k_rule`, `ruv_k_estimate` and `reason` where a rule ran.
+#' @return `normalised`, its `args$ruvCovariates` the declaration (`ruv_mode = "none"`, `k = 0`).
+#' @noRd
+declareProtRuvNoFactors <- function(normalised, record) {
+  normalised@args$ruvCovariates <- list(ruv_mode = "none", ruv_design = record$ruv_design, k = 0L,
+    ruv_k_rule = record$ruv_k_rule %||% NA_character_, ruv_k_estimate = record$ruv_k_estimate %||% NA_integer_,
+    ruv_applied = FALSE, ruv_not_applied_reason = record$reason %||% NA_character_, tested_matrix = "normalised")
+  normalised
+}
+
+#' Whether a protein object declares a new design without factors (`declareProtRuvNoFactors`).
+#' @param theObject A `ProteinQuantitativeData` object.
+#' @return TRUE or FALSE.
+#' @noRd
+protRuvNoFactorsDeclared <- function(theObject) {
+  declaration <- theObject@args$ruvCovariates
+  is.list(declaration) && identical(declaration$ruv_mode, "none") && isTRUE(declaration$ruv_design %in% c(PROT_RUV_MODEL_DESIGNS, "none"))
+}
+
 #' Whether a protein object declares the factors-in-the-model design (KIT-126 audit F-01): the declaration
 #' `args$ruvCovariates$ruv_design`, written by `attachProtRuvModelFactors`. A DIA_LIMPA state's declaration
 #' (`ruv_mode = "covariates"` with no `ruv_design`) is not one.
@@ -1410,7 +1434,7 @@ attachProtRuvModelFactors <- function(corrected, normalised, factors) {
 #' @noRd
 protRuvModelDeclared <- function(theObject) {
   declaration <- theObject@args$ruvCovariates
-  is.list(declaration) && isTRUE(declaration$ruv_design %in% PROT_RUV_MODEL_DESIGNS)
+  is.list(declaration) && isTRUE(declaration$ruv_design %in% PROT_RUV_MODEL_DESIGNS) && !protRuvNoFactorsDeclared(theObject)
 }
 
 #' Refusal of the DA entry points that test an object's own table (KIT-126 audit F-02): `daAnalysisWrapperFunction`,
@@ -1444,9 +1468,20 @@ refuseProtRuvModelObject <- function(theObject, caller) {
 #' values applies and no filter is added. `no_corrected_intensity` names the proteins tested without a corrected row.
 #' The test is refused (`omics_ruv_no_residual_df`) when the samples left at DA time minus the rank of the model
 #' matrix (groups, covariates of the formula, W) is below 1 (audit F-04).
-#' @return NULL, or `list(matrix, formula_used, w_terms, declaration, no_corrected_intensity)`.
+#' @return NULL, or `list(matrix, formula_used, w_terms, declaration, no_corrected_intensity)` (`matrix` NULL and `exact`
+#'   FALSE for a new design without factors: the object's own table is tested).
 #' @noRd
 resolveProtRuvModelInput <- function(theObject, formula_string) {
+  # KIT-129 integration item 2: a new design without factors tests its own (normalised) table with the formula as given,
+  # by the new designs' test (`exact = FALSE`: no W in the model, decision M29; the TREAT settings, M30).
+  if (protRuvNoFactorsDeclared(theObject)) {
+    if (!is.null(theObject@args$ruv_uncorrected_quant) || length(grep("^W[0-9]+$", names(theObject@design_matrix)))) {
+      cli::cli_abort("the object declares a RUV design without factors but carries factors or a second matrix; the test is refused",
+        class = "prot_ruv_model_invalid")
+    }
+    return(list(matrix = NULL, formula_used = formula_string, w_terms = character(), declaration = theObject@args$ruvCovariates,
+      no_corrected_intensity = character(), exact = FALSE))
+  }
   uncorrected <- theObject@args$ruv_uncorrected_quant
   declared <- protRuvModelDeclared(theObject)
   if (!declared && is.null(uncorrected)) return(NULL)

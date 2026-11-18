@@ -443,12 +443,15 @@ setMethod(
     ruv_model <- resolveProtRuvModelInput(theObject, formula_string)
     if (!is.null(ruv_model)) {
       message("   differentialAbundanceAnalysisHelper: RUV factors in the model; testing the normalised matrix (KIT-126)")
-      protein_quant_matrix <- ruv_model$matrix
+      # KIT-129 integration item 2: a new design without factors tests its own table (the normalised matrix).
+      protein_quant_matrix <- ruv_model$matrix %||% protein_quant_matrix
       formula_string <- ruv_model$formula_used
+      factors <- length(ruv_model$w_terms) > 0L
       da_model <- utils::modifyList(da_model, list(formula_used = ruv_model$formula_used, w_terms = ruv_model$w_terms,
-        k = length(ruv_model$w_terms), ruv_mode = "covariates", ruv_k_rule = ruv_model$declaration$ruv_k_rule,
-        ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = "uncorrected",
-        tested_proteins = nrow(ruv_model$matrix), no_corrected_intensity = ruv_model$no_corrected_intensity))
+        k = length(ruv_model$w_terms), ruv_mode = if (factors) "covariates" else "none", ruv_k_rule = ruv_model$declaration$ruv_k_rule,
+        ruv_controls = ruv_model$declaration$ruv_controls, tested_matrix = if (factors) "uncorrected" else "normalised",
+        tested_proteins = nrow(protein_quant_matrix), no_corrected_intensity = ruv_model$no_corrected_intensity,
+        ruv_design = ruv_model$declaration$ruv_design, exact_standard_errors = !isFALSE(ruv_model$exact)))
     }
     # Decision M29: the factors-in-the-model design forms each comparison's standard error exactly per protein; the
     # legacy design keeps runTestsContrasts unchanged.
@@ -456,7 +459,7 @@ setMethod(
       runProtRuvModelContrasts(protein_quant_matrix, contrast_strings_to_use, theObject@design_matrix, formula_string,
         treat_lfc_cutoff = as.double(treat_lfc_cutoff), eBayes_trend = as.logical(eBayes_trend),
         eBayes_robust = as.logical(eBayes_robust), group_id = theObject@group_id,
-        technical_replicate_id = theObject@technical_replicate_id)
+        technical_replicate_id = theObject@technical_replicate_id, exact = !isFALSE(ruv_model$exact))
     } else {
       runTestsContrasts(protein_quant_matrix,
         contrast_strings = contrast_strings_to_use,

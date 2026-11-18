@@ -363,12 +363,19 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
             # Audit F-08: under the new design a manual k is one whole number, refused otherwise (not truncated, no default).
             if (factors_in_model && identical(parameters$ruv_mode, "manual")) validateProtRuvModelK(parameters$ruv_k)
             if (factors_in_model) assertProtRuvModelKRule(parameters)
+            # KIT-129 integration item 2: the option set's None is the design `none`, with the step's skip mode only.
+            none <- factors_in_model && identical(parameters$ruv_design, "none")
+            if (none && !identical(parameters$ruv_mode, "skip"))
+                cli::cli_abort("the design none runs with the skip mode only", class = "workflow_execution_invalid")
             normalized <- normaliseBetweenSamplesFn(object, normalisation_method = parameters$norm_method)
             normalized_reference <- store$checkpoint(normalized, "normalized-science")
             object <- NULL
             if (parameters$ruv_mode == "skip") {
                 ruv_result <- buildProtNormSkippedRuvResult()
                 final_reference <- normalized_reference
+                # The new option set's None declares itself, so that its DA is the new design's (decision M30).
+                if (none) final_reference <- store$checkpoint(declareProtRuvNoFactors(normalized, list(ruv_design = "none",
+                    reason = "the design none: no correction for unwanted variation")), "ruv-none-science", from = normalized_reference)
                 best_k <- NA
                 controls <- NA
                 best_percentage <- NA
@@ -410,6 +417,20 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     ruv_result$k_estimate <- ruv_model$k_estimate
                     ruv_result$ruv_applied <- applied
                     ruv_result$ruv_not_applied_reason <- ruv_model$reason
+                    # KIT-129 integration item 3: the count beside a k the user chose (section 1e), once, here; and the
+                    # seed the count was (or would be) made with.
+                    ruv_result$ruv_k_seed <- as.integer(parameters$ruv_k_seed %||% RUV_FACTOR_COUNT_SEED)
+                    if (identical(parameters$ruv_k_rule, "user")) {
+                        samples <- as.character(normalized@design_matrix[[normalized@sample_id]])
+                        technical <- resolveProtTechnicalReplicateBlock(normalized@design_matrix, normalized@group_id,
+                            normalized@technical_replicate_id)
+                        beside <- recordRuvFactorCountBesideUserK(as.matrix(normalized@protein_quant_table[, samples, drop = FALSE]),
+                            normalized@design_matrix[[parameters$grouping]], ruv_result$ruv_k_seed,
+                            units = if (isTRUE(technical$technical)) technical$block)
+                        ruv_result$ruv_k_estimate <- beside$k_estimate
+                        ruv_result$ruv_k_estimate_reason <- beside$k_estimate_reason
+                        ruv_result$k_estimate <- beside$estimate
+                    }
                     if (applied) {
                         corrected <- ruvIII_C_VaryingFn(protRuvGroupReplicateObject(normalized),
                             ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
@@ -422,9 +443,12 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                     ruv_grouping_variable = parameters$grouping, ruv_number_k = resolved$k, ctrl = resolved$controls)
                 corrected <- removeRowsWithMissingValuesPercentFn(theObject = corrected)
                 }
-                # A count of 0 under the new design applies no RUV: the final state is the normalised one.
-                final_reference <- if (factors_in_model && !applied) normalized_reference else
-                    store$checkpoint(corrected, "ruv-science", from = normalized_reference)
+                # A count of 0 under the new design applies no RUV: the final state is the normalised one, declaring
+                # the design without factors (KIT-129 integration item 2), so that its DA is the new design's.
+                final_reference <- if (factors_in_model && !applied) {
+                    store$checkpoint(declareProtRuvNoFactors(normalized, c(list(ruv_design = parameters$ruv_design),
+                        ruv_model[c("ruv_k_rule", "ruv_k_estimate", "reason")])), "ruv-none-science", from = normalized_reference)
+                } else store$checkpoint(corrected, "ruv-science", from = normalized_reference)
                 corrected <- NULL
                 best_k <- resolved$k
                 controls <- resolved$controls
@@ -435,7 +459,9 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared")) {
                 best_k = best_k, controls = controls, percentage = best_percentage,
                 parameters = parameters[c("norm_method", "ruv_mode", "auto_percentage_min", "auto_percentage_max",
                     "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k", "grouping")])
-            # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product.
+            # Audit F-08: a skipped RUV step applied no design, so none is recorded on its product; the design none is
+            # recorded as itself (KIT-129 integration item 2).
+            if (none) value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
             if (factors_in_model && parameters$ruv_mode != "skip") {
                 value$parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")] <- parameters[c("ruv_design", "ruv_k_rule", "ruv_k_seed")]
                 value$ruv_model <- c(list(ruv_design = protRuvModelDesign(ruv_model)), ruv_model)
@@ -1379,7 +1405,9 @@ diaRuvCovariatesCommit <- function(manager, parameters, run) {
         config <- c(config, saved[c("ruv_control_rule", "ruv_k_rule", "ruv_k_estimate", "ruv_not_applied_reason", "ruv_controls_selected")])
         config$outcomes <- c(config$outcomes, list(ruv_applied = applied, control_rule = saved$ruv_control_rule,
             k_rule = saved$ruv_k_rule, k_estimate = saved$ruv_k_estimate, not_applied_reason = saved$ruv_not_applied_reason,
-            controls_selected = saved$ruv_controls_selected))
+            controls_selected = saved$ruv_controls_selected,
+            # KIT-129 integration item 3: the count's seed, with the rule and the estimate.
+            k_seed = saved$parameters$ruv_k_seed %||% parameters$ruv_k_seed))
         description <- if (applied) {
             sprintf("RUV-III factors appended to the design as covariates (W1..W%d; controls by the rule %s, %d proteins; k by the rule %s); the quantified matrix unchanged",
                 saved$best_k, saved$ruv_control_rule, saved$control_count, saved$ruv_k_rule)

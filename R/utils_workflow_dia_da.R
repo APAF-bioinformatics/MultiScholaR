@@ -72,7 +72,7 @@ invalidateDIAVisibleResults <- function(da_data, workflow) {
 #' @return Existing base-fit artifact, never a replacement numerical implementation.
 #' @noRd
 fitDIAExecutionBaseModel <- function(data, design_m, design, samples, formula, weights,
-    group_id = "group", technical_replicate_id = "replicates") {
+    group_id = "group", technical_replicate_id = "replicates", ruv = "accepted-ruv-component") {
     manager <- getDIAActiveManager()
     if (!usesDIAReferenceStates(manager) || !isTRUE(manager$.context$da_reference_execution)) {
         return(fitProtDaBaseModel(data, design_m, design, samples, group_id = group_id,
@@ -84,8 +84,10 @@ fitDIAExecutionBaseModel <- function(data, design_m, design, samples, formula, w
     replicate <- resolveProtTechnicalReplicateBlock(selected_design, group_id, technical_replicate_id)
     refuseNoBiologicalReplication(replicate, selected_design[[group_id]]) # KIT-128 K128-1
     block <- replicate$block
+    # KIT-129 integration item 2: `ruv` names the RUV design of the fitted data (today's constant by default, so the
+    # base-fit identity of an existing store is unchanged).
     identity <- newWorkflowDiaBaseFitIdentity(data, selected_design, formula, block, weights,
-        "accepted-normalized-component", "accepted-ruv-component", manager$.context$software)
+        "accepted-normalized-component", ruv, manager$.context$software)
     found <- findSavedWorkflowEntities(manager$.context$store, list(kind = "da_fit", identity = identity), max_matches = 2L)
     if (identical(found$status, "multiple")) cli::cli_abort("ambiguous DA base-fit identity")
     hit <- if (identical(found$status, "hit")) resolveSavedWorkflowEntity(manager$.context$store,

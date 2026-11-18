@@ -430,7 +430,8 @@ buildProtDaResultTables <- function(contrast_artifact, contrast_strings,
 #' @param data,contrast_strings,design_matrix,formula_string,treat_lfc_cutoff,eBayes_trend,eBayes_robust,group_id,technical_replicate_id
 #'   As `runTestsContrasts`.
 #' @param exact FALSE forms the comparisons with `limma::contrasts.fit`, as `runTestsContrasts` does (kept so that the
-#'   exactness round's arms can be reproduced one change at a time).
+#'   exactness round's arms can be reproduced one change at a time; the test of the new option set's "No RUV", which
+#'   has no W in its model, M29).
 #' @return `list(results, fit.eb, qvalue_warnings)` as `runTestsContrasts`, with the result tables' extra fields.
 #' @noRd
 runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, formula_string, treat_lfc_cutoff = NA,
@@ -441,8 +442,27 @@ runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, form
   data_subset <- data[, rownames(design_m), drop = FALSE]
   contrast_matrix <- limma::makeContrasts(contrasts = contrast_strings, levels = colnames(design_m))
   silent <- \(...) invisible(NULL)
-  base <- fitProtDaBaseModel(data_subset, design_m, design_matrix, rownames(design_m), messageFn = silent,
-    group_id = group_id, technical_replicate_id = technical_replicate_id)
+  # KIT-129 integration item 2: inside the DA declaration the base fit and the result are saved in the reference store
+  # under identities that name this test (the RUV design of the fitted data, the exact or approximate contrast step and
+  # the TREAT step's settings), so neither is ever served for today's `runTestsContrasts` or the other way round.
+  manager <- getDIAActiveManager()
+  stored <- usesDIAReferenceStates(manager) && isTRUE(manager$.context$da_reference_execution)
+  method <- paste("ruv-model-test-v1", if (exact) "contrastAsCoef-exact-se" else "contrasts-fit",
+    sprintf("treat-trend-%s-robust-%s", eBayes_trend, eBayes_robust), sep = ":")
+  base <- if (stored) {
+    fitDIAExecutionBaseModel(data_subset, design_m, design_matrix, rownames(design_m), formula_string, NA,
+      group_id = group_id, technical_replicate_id = technical_replicate_id, ruv = method)
+  } else {
+    fitProtDaBaseModel(data_subset, design_m, design_matrix, rownames(design_m), messageFn = silent,
+      group_id = group_id, technical_replicate_id = technical_replicate_id)
+  }
+  identity <- if (stored) newWorkflowDiaResultIdentity(manager$.context$da_base_fit_reference, contrast_strings,
+    treat_lfc_cutoff, eBayes_trend, eBayes_robust, paste("full-population-qvalue-BH-v1", method, sep = ":"),
+    manager$.context$software)
+  if (!is.null(identity)) {
+    saved <- resolveWorkflowDiaResult(manager$.context$store, identity)
+    if (identical(saved$status, "hit")) return(saved$value$value$public_result)
+  }
   refit <- function(design) {
     if (!isTRUE(base$uses_duplicate_correlation)) return(limma::lmFit(data_subset, design = design))
     limma::lmFit(data_subset, design = design, block = base$block, correlation = base$consensus_correlation)
@@ -455,7 +475,13 @@ runProtRuvModelContrasts <- function(data, contrast_strings, design_matrix, form
   model <- applyProtDaContrastModel(base, contrast_matrix, treat_lfc_cutoff = treat_lfc_cutoff,
     eBayes_trend = eBayes_trend, eBayes_robust = eBayes_robust, contrastsFitFn = contrastsFitFn,
     treatFn = \(fit, lfc) limma::treat(fit, lfc = lfc, trend = eBayes_trend, robust = eBayes_robust), messageFn = silent)
-  buildProtDaResultTables(model, contrast_strings, messageFn = silent)
+  result <- buildProtDaResultTables(model, contrast_strings, messageFn = silent)
+  if (!is.null(identity)) {
+    reference <- saveWorkflowDiaResult(manager$.context$store, list(schema = "prot_da_result_tables_v1",
+      results = result$results, public_result = result), basename(tempfile("dia-ruv-model-result-")), identity)
+    rootDIAProduct(manager, reference, list(manager$.context$da_base_fit_reference))
+  }
+  result
 }
 
 #' @param p_value_column The name of the raw p-value column (tidyverse style).

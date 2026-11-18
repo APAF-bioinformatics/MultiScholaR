@@ -136,6 +136,17 @@ workflowRecordStepOutcomes <- function(context, state, operation, record, sizes)
         outcomes$k <- if (applied) config$ruv_k %||% NA_real_ else NA_real_
         outcomes$negative_control_percentage <- if (applied) config$percentage_as_neg_ctrl %||% NA_real_ else NA_real_
         outcomes$negative_control_count <- if (applied) count else NA_integer_
+        # KIT-129 integration item 3: a new design's product records its design and its k: the rule, the estimate and
+        # the seed (today's product names none, and its outcomes are as before).
+        saved <- if (isSavedWorkflowReference(product)) tryCatch(hydrateSavedWorkflowEntity(context$store, product)$value,
+            error = function(error) NULL)
+        if (!is.null(saved$parameters$ruv_design)) {
+            outcomes[c("ruv_design", "ruv_k_rule", "ruv_k_estimate", "ruv_k_seed", "ruv_applied", "ruv_not_applied_reason")] <- list(
+                saved$parameters$ruv_design, saved$ruv_result$ruv_k_rule %||% NA_character_,
+                saved$ruv_result$ruv_k_estimate %||% NA_integer_, saved$ruv_result$ruv_k_seed %||% NA_integer_,
+                isTRUE(saved$ruv_result$ruv_applied), saved$ruv_result$ruv_not_applied_reason %||% NA_character_)
+            if (isTRUE(saved$ruv_result$ruv_applied)) outcomes$k <- saved$best_k
+        }
     }
     # KIT-031/032 (KIT-094: the binding's hook): an omics step's own outcomes, from the binding whose prefix it carries.
     for (binding in omicsDeclarationBindings()) {
