@@ -23,8 +23,6 @@ chooseBestProteinAccessionHelper <- function(input_tbl
                                              , delim= ":") {
   
   cat("\n\n+===========================================================================+\n")
-  cat("|      ENTERING chooseBestProteinAccessionHelper (DEBUG66)              |\n")
-  cat("+===========================================================================+\n\n")
   
   cat(">>> HELPER STEP 1: INPUTS <<<\n")
   cat(sprintf("   Input 'delim' parameter: '%s'\n", delim))
@@ -151,9 +149,6 @@ chooseBestProteinAccessionHelper <- function(input_tbl
     cat(sprintf("   First 5 recombined accessions: %s\n", paste(head(group_gene_names_and_uniprot_accs[[row_id_column]], 5), collapse = ", ")))
   }
   cat("\n")
-  cat("+===========================================================================+\n")
-  cat("|      EXITING chooseBestProteinAccessionHelper (DEBUG66)               |\n")
-  cat("+===========================================================================+\n\n")
 
   return(group_gene_names_and_uniprot_accs)
 
@@ -184,8 +179,6 @@ rankProteinAccessionHelper <- function(input_tbl
                                        , delim= ";") {
   
   cat("\n\n+===========================================================================+\n")
-  cat("|      ENTERING rankProteinAccessionHelper (DEBUG66)                    |\n")
-  cat("+===========================================================================+\n\n")
   
   cat(">>> RANK HELPER STEP 1: INPUTS <<<\n")
   cat(sprintf("   Input 'delim' parameter: '%s'\n", delim))
@@ -295,9 +288,6 @@ rankProteinAccessionHelper <- function(input_tbl
     cat(sprintf("   First 5 recombined accessions: %s\n", paste(head(group_gene_names_and_uniprot_accs[[row_id_column]], 5), collapse = ", ")))
   }
   cat("\n")
-  cat("+===========================================================================+\n")
-  cat("|      EXITING rankProteinAccessionHelper (DEBUG66)                     |\n")
-  cat("+===========================================================================+\n\n")
 
   return(group_gene_names_and_uniprot_accs)
 

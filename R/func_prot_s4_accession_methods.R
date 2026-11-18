@@ -17,8 +17,6 @@ setMethod(
     aggregation_method = NULL
   ) {
     cat("\n\n+===========================================================================+\n")
-    cat("|           ENTERING chooseBestProteinAccession (DEBUG66)               |\n")
-    cat("+===========================================================================+\n\n")
 
     protein_quant_table <- theObject@protein_quant_table
     protein_id_column <- theObject@protein_id_column
@@ -63,7 +61,6 @@ setMethod(
 
     # --- Robustly handle list input for seqinr_obj ---
     if (is.list(seqinr_obj) && !is.data.frame(seqinr_obj) && "aa_seq_tbl_final" %in% names(seqinr_obj)) {
-      cat("   [DEBUG66] Extracting data frame from seqinr_obj list...\n")
       seqinr_obj <- seqinr_obj$aa_seq_tbl_final
     }
 
@@ -244,9 +241,6 @@ setMethod(
     cat(sprintf("   Final protein_id_table dimensions: %d rows x %d cols\n", nrow(theObject@protein_id_table), ncol(theObject@protein_id_table)))
     cat(sprintf("   First 5 final Protein IDs: %s\n", paste(head(theObject@protein_quant_table[[protein_id_column]], 5), collapse = ", ")))
     cat("\n")
-    cat("+===========================================================================+\n")
-    cat("|           EXITING chooseBestProteinAccession (DEBUG66)                |\n")
-    cat("+===========================================================================+\n\n")
 
     return(theObject)
   }

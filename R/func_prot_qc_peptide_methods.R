@@ -176,7 +176,6 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
                                   , max_groups_percentage_cutoff = NULL
                                   , peptides_intensity_cutoff_percentile = NULL) {
              
-             message("--- Entering removePeptidesWithMissingValuesPercent S4 Method ---")
              
              peptide_data <- theObject@peptide_data
              protein_id_column <- theObject@protein_id_column
@@ -231,7 +230,6 @@ setMethod( f = "removePeptidesWithMissingValuesPercent"
              message("   removePeptidesWithMissingValuesPercent: Cleaning design matrix...")
              theObject <- cleanDesignMatrixPeptide(theObject)
 
-             message("--- Exiting removePeptidesWithMissingValuesPercent S4 Method ---")
              return(theObject)
 
            })

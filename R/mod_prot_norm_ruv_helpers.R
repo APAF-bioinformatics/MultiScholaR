@@ -89,13 +89,6 @@ resolveProtNormRuvParameters <- function(
       value = 0.5,
       expr = {
         messageFn("=== AUTOMATIC RUV OPTIMIZATION DEBUG ===")
-        messageFn(sprintf("*** DEBUG: percentage_range = %s ***", paste(percentage_range, collapse = ", ")))
-        messageFn(sprintf("*** DEBUG: separation_metric = %s ***", input$separation_metric))
-        messageFn(sprintf("*** DEBUG: k_penalty_weight = %.2f ***", input$k_penalty_weight))
-        messageFn(sprintf("*** DEBUG: adaptive_k_penalty = %s ***", input$adaptive_k_penalty))
-        messageFn(sprintf("*** DEBUG: ruv_grouping_variable = %s ***", getRuvGroupingVariableFn()))
-        messageFn(sprintf("*** DEBUG: normalized_s4 class = %s ***", class(normalizedS4)))
-        messageFn(sprintf("*** DEBUG: normalized_s4 dims = %d x %d ***", nrow(normalizedS4@protein_quant_table), ncol(normalizedS4@protein_quant_table)))
 
         optimization_result <- findBestNegCtrlPercentageFn(
           normalised_protein_matrix_obj = normalizedS4,
@@ -107,39 +100,14 @@ resolveProtNormRuvParameters <- function(
           verbose = TRUE
         )
 
-        messageFn("*** DEBUG: Optimization completed ***")
-        messageFn(sprintf("*** DEBUG: optimization_result class = %s ***", class(optimization_result)))
-        messageFn(sprintf("*** DEBUG: best_percentage = %.1f ***", optimization_result$best_percentage))
-        messageFn(sprintf("*** DEBUG: best_k = %d ***", optimization_result$best_k))
-        messageFn(sprintf("*** DEBUG: best_composite_score = %.6f ***", optimization_result$best_composite_score))
-        messageFn(sprintf("*** DEBUG: best_separation_score = %.6f ***", optimization_result$best_separation_score))
         if (!is.null(optimization_result$optimization_results)) {
-          messageFn("*** DEBUG: First few optimization results: ***")
           print(head(optimization_result$optimization_results, 3))
-        } else {
-          messageFn("*** DEBUG: optimization_results is NULL! ***")
         }
 
-        messageFn("*** DEBUG: Checking optimization_results structure ***")
-        messageFn(sprintf("*** DEBUG: optimization_results class = %s ***", class(optimization_result$optimization_results)))
         if (is.data.frame(optimization_result$optimization_results)) {
-          messageFn(sprintf(
-            "*** DEBUG: optimization_results dims = %d x %d ***",
-            nrow(optimization_result$optimization_results),
-            ncol(optimization_result$optimization_results)
-          ))
-          messageFn(sprintf(
-            "*** DEBUG: optimization_results columns = %s ***",
-            paste(colnames(optimization_result$optimization_results), collapse = ", ")
-          ))
-          messageFn("*** DEBUG: FULL optimization_results table: ***")
           print(optimization_result$optimization_results)
-        } else {
-          messageFn("*** DEBUG: optimization_results is not a data.frame ***")
         }
 
-        messageFn("*** DEBUG: Testing verbose logging override ***")
-        messageFn("*** DEBUG: This should help us see if the function is running at all ***")
 
         optimization_result
       }

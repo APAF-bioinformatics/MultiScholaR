@@ -71,7 +71,6 @@ setMethod(
     ruv_fdr_method = NULL,
     exclude_pool_samples = TRUE
   ) {
-    message("--- DEBUG66: Entering getNegCtrlProtAnova (S4) ---")
 
     protein_quant_table <- theObject@protein_quant_table
     protein_id_column <- theObject@protein_id_column
@@ -94,10 +93,6 @@ setMethod(
     ruv_fdr_method <- checkParamsObjectFunctionSimplify(theObject, "ruv_fdr_method", "BH")
     exclude_pool_samples <- checkParamsObjectFunctionSimplify(theObject, "exclude_pool_samples", TRUE)
 
-    message(sprintf("   DEBUG66 S4 Param: ruv_grouping_variable = %s", ruv_grouping_variable))
-    message(sprintf("   DEBUG66 S4 Param: percentage_as_neg_ctrl = %s", percentage_as_neg_ctrl))
-    message(sprintf("   DEBUG66 S4 Param: num_neg_ctrl = %s", num_neg_ctrl))
-    message(sprintf("   DEBUG66 S4 Param: exclude_pool_samples = %s", exclude_pool_samples))
 
     theObject <- updateParamInObject(theObject, "ruv_grouping_variable")
     theObject <- updateParamInObject(theObject, "percentage_as_neg_ctrl")
@@ -112,7 +107,6 @@ setMethod(
       column_to_rownames(sample_id) |>
       dplyr::select(!!sym(ruv_grouping_variable))
 
-    message("   DEBUG66 S4: Calling getNegCtrlProtAnovaHelper...")
     control_genes_index <- getNegCtrlProtAnovaHelper(normalised_frozen_protein_matrix_filt[, design_matrix |> dplyr::pull(!!sym(sample_id))],
       design_matrix = design_matrix_for_anova,
       grouping_variable = ruv_grouping_variable,
@@ -123,7 +117,6 @@ setMethod(
       exclude_pool_samples = exclude_pool_samples
     )
 
-    message(sprintf("   DEBUG66 S4: Helper returned %d control genes", sum(control_genes_index)))
     return(control_genes_index)
   }
 )

@@ -136,7 +136,6 @@ resolveProtNormCorrelationInputObject <- function(
     stop(missingObjectMessage)
   }
 
-  messageFn(sprintf("--- DEBUG66 [mod_prot_norm]: %s ---", startMessage))
   messageFn(sprintf(
     "   [mod_prot_norm] Input Object (ruv_s4) Dimensions: %d proteins x %d samples",
     nrow(ruvNormalizedObj@protein_quant_table),

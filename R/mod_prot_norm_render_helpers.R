@@ -109,7 +109,6 @@ renderProtNormFinalQcPlot <- function(
   messageFn = message
 ) {
   renderPlotFn({
-    messageFn("--- DEBUG66 [final_qc_plot]: Rendering ---")
 
     final_qc_state <- resolveFinalQcRenderStateFn(
       finalQcPlot = normData$final_qc_plot,

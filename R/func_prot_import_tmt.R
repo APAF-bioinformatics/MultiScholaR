@@ -25,16 +25,12 @@
 #' @importFrom stringr str_extract
 #' @export
 importProteomeDiscovererTMTData <- function(filepath) {
-  message("========================================")
-  message("=== Entering importProteomeDiscovererTMTData ===")
-  message("========================================")
   message(sprintf("   Arg: filepath = %s", filepath))
   message(sprintf("   Arg: filepath class = %s", paste(class(filepath), collapse = ", ")))
   message(sprintf("   Arg: filepath exists = %s", file.exists(filepath)))
   log_info(paste("Starting Proteome Discoverer TMT import from:", filepath))
   
   process_single_file <- function(file_path, batch_name = NULL) {
-    message(sprintf("   --- Entering process_single_file ---"))
     message(sprintf("      Arg: file_path = %s", file_path))
     message(sprintf("      Arg: batch_name = %s", ifelse(is.null(batch_name), "NULL", batch_name)))
     log_info(sprintf("Reading file: %s", basename(file_path)))
@@ -185,7 +181,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
       message(sprintf("      Step: Added Batch column with value '%s'", batch_name))
     }
     
-    message(sprintf("   --- Exiting process_single_file. Returning %d rows ---", nrow(long_data)))
     return(long_data)
   }
   
@@ -287,9 +282,6 @@ importProteomeDiscovererTMTData <- function(filepath) {
     )
   )
   
-  message("========================================")
-  message("=== Exiting importProteomeDiscovererTMTData ===")
-  message("========================================")
   
   return(result)
 }
