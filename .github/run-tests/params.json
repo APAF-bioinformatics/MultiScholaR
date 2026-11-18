@@ -1,53 +1,36 @@
 {
-  "label": "KIT-052 Summary session archive staging; 767ad7d6 against 4b6770fd; failing-first; check on both",
-  "package_commit": "767ad7d6eaf3bd37c66e64730a1afbf5e0b051a6",
-  "base_commit": "4b6770fdb2d20d9943f0868d0ca8183cfb9c11a3",
+  "label": "KIT-129 fifth pass item 2: trx new-design tests with MULTISCHOLAR_TRX_MANIFEST_NOTE=1; 121e526d against 18ea2a30; corpus digest table",
+  "package_commit": "121e526d30c9da0f25a11f1efe32ad817360d7d5",
+  "base_commit": "18ea2a301e87dd3711d768a9fdc03083dc8c53b4",
   "tools_ref": "",
   "tests": [
-    "test-workflow-figure-paths.R",
-    "test-omic-summary-module.R",
-    "test-omics-summary-core.R",
-    "test-gui-entry-proteomics.R",
-    "test-gui-entry-lipidomics.R",
-    "test-gui-entry-metabolomics.R",
-    "test-gui-entry-transcriptomics.R",
-    "test-workflow-native-session.R",
-    "test-workflow-saved-exports.R",
-    "test-workflow-execution.R",
-    "test-workflow-integration-input.R",
-    "test-prot-norm-core.R",
-    "test-workflow-analysis-record.R",
-    "test-workflow-gui-memory-lifetimes.R",
-    "test-workflow-omics-application-reads.R",
-    "test-workflow-memory-mechanism-member.R",
-    "test-module-ci-prot-summary.R",
-    "test-module-ci-lipid-summary.R",
-    "test-module-ci-metab-summary.R",
-    "test-module-ci-trx-summary.R",
-    "test-prot-12-summary-module-contracts.R",
-    "test-prot-12a-summary-module-characterization.R",
-    "test-lipid-14a-summary-module-characterization.R",
-    "test-lipid-15-summary-module-seams.R",
-    "test-metab-05-summary-module-characterization.R",
-    "test-prot-summary-report-templates.R",
-    "test-perf-103.R",
-    "test-perf107-audit.R"
+    "test-kit129-run-path.R",
+    "test-trx-ruv-designs.R",
+    "test-workflow-trx-declarations.R",
+    "test-module-ci-trx-norm.R",
+    "test-module-ci-trx-da.R"
   ],
-  "shards": 14,
+  "shards": 5,
   "file_timeout_minutes": 45,
-  "file_timeouts": {
-    "test-gui-entry-proteomics.R": 120,
-    "test-gui-entry-transcriptomics.R": 120,
-    "test-gui-entry-lipidomics.R": 120,
-    "test-gui-entry-metabolomics.R": 120,
-    "test-prot-norm-core.R": 120
-  },
+  "file_timeouts": {},
   "extra_packages": [
     "sva"
   ],
-  "env": {},
-  "check": true,
+  "env": {
+    "MULTISCHOLAR_TRX_MANIFEST_NOTE": "1"
+  },
+  "check": false,
   "blas": "reference",
   "fetch_refs": [],
-  "scripts": []
+  "scripts": [
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/trx-corpus-digests.R",
+      "args": [
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-trx-corpus"
+      ],
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-trx-corpus",
+      "out_pattern": "\\.(tsv|txt)$",
+      "timeout_minutes": 30
+    }
+  ]
 }
