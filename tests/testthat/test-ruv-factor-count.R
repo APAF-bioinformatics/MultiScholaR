@@ -283,3 +283,44 @@ test_that("the plot's legend: the permutation null is a line only, the counted m
     expect_identical(shape$override.aes$colour, "#0072B2")
     expect_identical(shape$override.aes$linetype, 0)
 })
+
+# Decision M28: 2 groups of 4 biological units injected twice, no unwanted factor (the exactness round's cell C8).
+ruvCountTechnicalDuplicates <- function(seed, features = 300L) {
+    set.seed(seed)
+    unit <- rep(seq_len(8L), each = 2L)
+    group <- rep(c("A", "B"), each = 8L)
+    x <- stats::rnorm(features, 20, 2) + matrix(stats::rnorm(features * 8L, 0, sqrt(0.75)), features)[, unit] +
+        matrix(stats::rnorm(features * 16L, 0, sqrt(0.25)), features)
+    list(x = x, group = group, unit = paste0("u", unit))
+}
+
+test_that("on a technical-duplicate design without a factor the count removes the biological units and finds about none (M28)", {
+    skip_if_not_installed("sva")
+    for (seed in 1:3) {
+        fixture <- ruvCountTechnicalDuplicates(seed)
+        groups_only <- estimateRuvFactorCount(fixture$x, fixture$group, technical_replicates = TRUE)
+        units <- estimateRuvFactorCount(fixture$x, fixture$group, technical_replicates = TRUE, units = fixture$unit)
+        # removing the groups only counts the units' own variation (units minus groups)
+        expect_gte(groups_only$k, 4L)
+        expect_lte(units$k, 1L)
+        expect_identical(units[c("removed", "technical_replicates_ignored")],
+            list(removed = "biological units", technical_replicates_ignored = FALSE))
+        # the simulation's arm 29, as the simulator calls it
+        expect_identical(units$k, as.integer(sva::num.sv(fixture$x, stats::model.matrix(~ unit, data.frame(unit = fixture$unit)),
+            method = "be", B = 20L, seed = RUV_FACTOR_COUNT_SEED)))
+    }
+})
+
+test_that("without technical replicates the limit is as before; with them the biological units limit k (M28)", {
+    expect_identical(ruvFactorCountLimit(12L, 2L, 2L, 300L)[c("k_max", "binding", "samples", "replicate_sets", "groups", "controls")],
+        list(k_max = 9L, binding = "a residual degree of freedom beside the groups", samples = 12L, replicate_sets = 2L,
+            groups = 2L, controls = 300L))
+    expect_true(is.na(ruvFactorCountLimit(12L, 2L, 2L, 300L)$k_max_units))
+    # 16 injections of 8 units in 2 groups: 8 - 2 - 1 = 5, not 13
+    limit <- ruvFactorCountLimit(16L, 2L, 2L, 300L, units = 8L)
+    expect_identical(limit[c("k_max", "k_max_units", "units")], list(k_max = 5L, k_max_units = 5L, units = 8L))
+    expect_match(limit$binding, "technical replicates", fixed = TRUE)
+    expect_identical(ruvFactorCountLimit(16L, 2L, 2L, 300L, units = 8L, between_unit_rank = 3L)$k_max, 4L)
+    expect_error(resolveRuvFactorCount("user", "all_features", limit, k_user = 6L), "technical replicates", class = "ruv_k_above_limit")
+    expect_identical(suppressMessages(resolveRuvFactorCount("user", "all_features", limit, k_user = 5L))$k, 5L)
+})

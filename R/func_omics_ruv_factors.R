@@ -84,7 +84,7 @@ boundOmicsRuvSweepK <- function(theObject, ruv_results) {
 #' @param control_ids The supplied controls, or NULL for every feature observed in every sample.
 #' @return `list(status, reason, W, k, control_ids, complete_features)`; `status` is `ok`, `none` (k = 0) or `refused`.
 #' @noRd
-computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids = NULL) {
+computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids = NULL, units = NULL) {
     complete <- rowSums(is.na(values)) == 0L
     y <- t(values[complete, , drop = FALSE])
     ctl <- if (is.null(control_ids)) rep(TRUE, ncol(y)) else colnames(y) %in% control_ids
@@ -99,6 +99,15 @@ computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids
     if (k > nrow(y) - ncol(replicate_matrix) - 1L) {
         return(result("refused", sprintf("k = %d leaves no residual degree of freedom (%d samples in %d replicate sets)",
             k, nrow(y), ncol(replicate_matrix))))
+    }
+    # Decision M28: with declared technical replicates the biological units, not the injections, limit k.
+    if (!is.null(units)) {
+        limit <- ruvFactorCountLimit(nrow(y), ncol(replicate_matrix), ncol(replicate_matrix), sum(ctl), units = length(unique(units)))
+        if (k > limit$k_max_units) {
+            return(result("refused", sprintf(paste("k = %d is above the limit of %d: the design has technical replicates, so its",
+                "%d biological units, not its %d injections, carry the test and need a residual degree of freedom beside the",
+                "%d groups"), k, limit$k_max_units, limit$units, nrow(y), ncol(replicate_matrix))))
+        }
     }
     # W as `computeRuvCovariates` forms it (KIT-123 R2): the controls centred on their means, times ac' (ac ac')^-1.
     ac <- ruv::RUVIII(Y = y, M = replicate_matrix, ctl = ctl, k = k, return.info = TRUE)$fullalpha[seq_len(k), ctl, drop = FALSE]
@@ -199,8 +208,9 @@ runOmicsRuvFactors <- function(theObject, ruv_design, ruv_number_k, ruv_k_source
         samples <- colnames(values[[assay_name]])
         assay_design <- design[match(samples, design_samples), , drop = FALSE]
         replicate_matrix <- getRuvIIIReplicateMatrixHelper(assay_design, !!rlang::sym(sample_id), !!rlang::sym(grouping))
+        technical <- resolveProtTechnicalReplicateBlock(assay_design, theObject@group_id, theObject@technical_replicate_id)
         record <- computeOmicsRuvAssayFactors(values[[assay_name]], replicate_matrix[samples, , drop = FALSE],
-            k_requested[[assay_name]], control_ids)
+            k_requested[[assay_name]], control_ids, units = if (isTRUE(technical$technical)) technical$block)
         factors[[assay_name]] <- list(assay = assay_name, status = record$status, reason = record$reason, W = record$W, k = record$k,
             k_requested = k_requested[[assay_name]], k_source = ruv_k_source, control_ids = record$control_ids,
             control_count = length(record$control_ids), controls_left_out = setdiff(control_ids, record$control_ids),
@@ -302,7 +312,7 @@ findOmicsRuvUnobservedGroups <- function(expr_matrix, design_matrix, sample_id_c
 #'   is `list(supplied_controls, not_estimable)`, feature ids; `not_observed` a data frame of `feature` and `group`.
 #' @noRd
 applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_string, sample_id_col, assay_factors,
-                                          assay_name, group_col = NULL) {
+                                          assay_name, group_col = NULL, technical_replicate_id = NULL) {
     if (!is.list(assay_factors) || !all(c("assay", "status", "W", "not_tested") %in% names(assay_factors))) {
         abortOmicsRuvFactors(sprintf("ruv_factors holds no RUV factors for assay '%s'", assay_name))
     }
@@ -340,6 +350,18 @@ applyOmicsRuvFactorsToDaInput <- function(expr_matrix, design_matrix, formula_st
     if (residual_df < 1L) {
         rlang::abort(sprintf(paste("assay '%s': the model '%s' with the RUV factors leaves no residual degree of freedom",
             "(%d samples, rank %d); use fewer factors or a smaller model"), assay_name, formula_string, nrow(x), nrow(x) - residual_df),
+            class = "omics_ruv_no_residual_df", call = NULL)
+    }
+    # Decision M28: with declared technical replicates the biological units carry the test (the block), so the model needs
+    # a residual degree of freedom between the units too.
+    technical <- if (!is.null(group_col) && !is.null(technical_replicate_id))
+        resolveProtTechnicalReplicateBlock(model_design[common, , drop = FALSE], group_col, technical_replicate_id)
+    unit_df <- if (isTRUE(technical$technical)) ruvUnitResidualDf(x, technical$block) else NA_integer_
+    if (!is.na(unit_df) && unit_df < 1L) {
+        rlang::abort(sprintf(paste("assay '%s': the model '%s' with the RUV factors leaves no residual degree of freedom between",
+            "the biological units: the design has technical replicates, so its %d units, not its %d injections, carry the test;",
+            "use fewer factors (at most %d with this formula) or a smaller model"), assay_name, formula_string,
+            length(unique(technical$block)), nrow(x), ncol(w) + unit_df - 1L),
             class = "omics_ruv_no_residual_df", call = NULL)
     }
     if (anyNA(expr_matrix)) {

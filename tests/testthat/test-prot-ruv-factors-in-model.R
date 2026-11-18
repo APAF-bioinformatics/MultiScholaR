@@ -673,18 +673,53 @@ ruvModelTechRepFixture <- function(seed = 31L, proteins = 300L, units_per_group 
     dimnames(x) <- list(sprintf("PG_%05d", seq_len(proteins)), sprintf("run_%03d", seq_len(n)))
     keep <- rowSums(is.finite(x[, groups == "control"])) >= n / 4 & rowSums(is.finite(x[, groups == "treated"])) >= n / 4
     design <- data.frame(Run = colnames(x), group = groups, replicates = unit, tech_rep_group = unit_id,
-        stringsAsFactors = FALSE)
+        batch = rep(c("b1", "b2"), each = injections, length.out = n), stringsAsFactors = FALSE)
     list(x = x[keep, , drop = FALSE], design = design)
 }
 
-test_that("with technical replicates, a k whose block correlation cannot be estimated is refused with a class (KIT-129 B1)", {
+test_that("with technical replicates, a non-finite block correlation is refused with a class (KIT-129 B1)", {
+    # The rehearsal reached it at k = 12 of the injection bound (13); since M28 the kernel refuses that k (below), so the
+    # guard is shown on the fit itself with the correlation limma returned there.
     fixture <- ruvModelTechRepFixture()
-    # within the kernel's bound (13 on 16 injections), but the units' correlation is no longer estimable
-    refused <- tryCatch(ruvModelDa(ruvModelPackageState(fixture, 12L)$state), error = function(e) e)
+    design <- fixture$design
+    rownames(design) <- design$Run
+    model <- stats::model.matrix(~ 0 + group, design)
+    data <- fixture$x[, design$Run]
+    refused <- tryCatch(fitProtDaBaseModel(data, model, design, design$Run,
+        duplicateCorrelationFn = function(...) list(consensus.correlation = NaN), messageFn = function(...) NULL,
+        group_id = "group", technical_replicate_id = "tech_rep_group"), error = function(e) e)
     expect_s3_class(refused, "omics_da_block_correlation_failed")
     expect_match(conditionMessage(refused), "could not be estimated", fixed = TRUE)
     # a k the block can carry still fits with the units as the block
     fitted <- ruvModelDa(ruvModelPackageState(fixture, 1L)$state)
     expect_identical(fitted$da_model$formula_used, "~ 0 + group + W1")
     expect_gt(nrow(fitted$contrasts_results$results[[1L]]), 0L)
+})
+
+test_that("with technical replicates the biological units limit k, in the kernel and at the test (M28)", {
+    fixture <- ruvModelTechRepFixture()
+    normalised <- ruvModelObject(fixture$x, fixture$design)
+    # 8 units in 2 groups: at most 8 - 2 - 1 = 5 factors (the injections' bound was 13)
+    refused <- tryCatch(computeProtRuvModelFactors(normalised, k = 6L, k_source = "user"), error = function(e) e)
+    expect_s3_class(refused, "prot_ruv_factors_unavailable")
+    expect_match(conditionMessage(refused), "technical replicates", fixed = TRUE)
+    expect_error(computeProtRuvModelFactors(normalised, k = 12L, k_source = "user"), class = "prot_ruv_factors_unavailable")
+    within <- computeProtRuvModelFactors(normalised, k = 5L, k_source = "user")
+    expect_identical(c(within$k, within$k_max), c(5L, 5L))
+    # the sweep's k is bounded by the units, the bound recorded as before
+    swept <- computeProtRuvModelFactors(normalised, k = 9L, k_source = "sweep")
+    expect_identical(swept$k, 5L)
+    expect_true(swept$k_bounded)
+    # at the test: k = 5 fits beside the groups; a covariate between units leaves no unit-level degree of freedom
+    state <- ruvModelPackageState(fixture, 5L)$state
+    expect_gt(nrow(ruvModelDa(state)$contrasts_results$results[[1L]]), 0L)
+    covariate <- tryCatch(ruvModelDa(state, "~ 0 + group + batch"), error = function(e) e)
+    expect_s3_class(covariate, "prot_ruv_model_no_residual_df")
+    expect_match(conditionMessage(covariate), "biological units", fixed = TRUE)
+    # without the declaration the injections' limit is as before
+    undeclared <- ruvModelObject(fixture$x, fixture$design, technical = NA_character_)
+    expect_identical(computeProtRuvModelFactors(undeclared, k = 12L, k_source = "user")$k_max, 13L)
+    plain <- ruvModelFixture()
+    expect_identical(computeProtRuvModelFactors(ruvModelObject(plain$x, plain$design), k = 2L, k_source = "user")$k_max,
+        as.integer(min(nrow(plain$design) - 3L, sum(rowSums(is.na(plain$x)) == 0L) - 1L)))
 })

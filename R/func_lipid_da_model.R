@@ -527,7 +527,7 @@ runLipidsDA <- function(
         da_formula <- formula_string
         if (!is.null(ruv_factors)) {
             da_input <- applyOmicsRuvFactorsToDaInput(expr_matrix, design_matrix, formula_string, sample_id_col,
-                ruv_factors[[assay_name]], assay_name, group_col)
+                ruv_factors[[assay_name]], assay_name, group_col, theObject@technical_replicate_id)
             ruv_not_tested[[assay_name]] <- da_input$not_tested
             ruv_not_observed[[assay_name]] <- da_input$not_observed
             expr_matrix <- da_input$expr_matrix

@@ -1109,7 +1109,11 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
     # --- k ---
     replicates <- resolveProtRuvReplicateBlocks(design, object@sample_id, object@group_id, object@technical_replicate_id, grouping)
     block <- resolveProtTechnicalReplicateBlock(design, object@group_id, object@technical_replicate_id)
-    limit <- ruvFactorCountLimit(length(samples), replicates$blocks, length(unique(as.character(design[[grouping]]))), sum(controls))
+    # Decision M28: on a design with declared technical replicates the biological units carry the test, so k is limited
+    # by them and the count removes them.
+    units <- if (isTRUE(block$technical)) block$block
+    limit <- ruvFactorCountLimit(length(samples), replicates$blocks, length(unique(as.character(design[[grouping]]))), sum(controls),
+        units = if (!is.null(units)) length(unique(units)))
     # Today's sweep runs only where the resolver reads it: the separation rule, which it refuses with all proteins
     # as controls before asking for a k.
     sweep <- if (identical(k_rule, "sweep_bounded") && !identical(control_rule, "all_features")) {
@@ -1123,9 +1127,9 @@ computeDiaRuvCovariatesByRule <- function(object, parameters) {
     }
     resolveK <- function() {
         resolveRuvFactorCount(k_rule, control_rule, limit, k_user = parameters$ruv_k,
-            # The count removes the groups; declared technical replicates are flagged in its record (audit F1).
+            # The count removes the groups, or the biological units on a design with technical replicates (M28).
             estimate_count = \() estimateRuvFactorCount(as.matrix(object@protein_quant_table[, samples, drop = FALSE]),
-                design[[grouping]], seed = parameters$ruv_k_seed, technical_replicates = isTRUE(block$technical)),
+                design[[grouping]], seed = parameters$ruv_k_seed, technical_replicates = isTRUE(block$technical), units = units),
             separation_rule = \() sweep$best_k)
     }
     keep <- \(condition) condition

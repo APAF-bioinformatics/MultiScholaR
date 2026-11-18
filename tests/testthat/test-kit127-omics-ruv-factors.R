@@ -663,27 +663,54 @@ techRepRuvObject <- function(omic, seed = 11L, features = 250L) {
     }
 }
 
-test_that("with technical replicates, a k whose block correlation cannot be estimated is named in the failure (KIT-129 B1)", {
+test_that("with RUV factors, a block correlation that cannot be estimated is named with k in the failure (KIT-129 B1)", {
+    # The rehearsal reached it at k = 12 of the injection bound; since M28 such a k is refused before the fit (below), so
+    # the wrapper is shown on the condition itself.
+    factors <- list(W = matrix(0, 16L, 3L))
+    refused <- tryCatch(withOmicsRuvKOnBlockFailure(rlang::abort("the correlation could not be estimated",
+        class = "omics_da_block_correlation_failed"), factors), error = function(e) e)
+    expect_s3_class(refused, c("omics_ruv_k_block_correlation_failed", "omics_da_block_correlation_failed"))
+    expect_match(conditionMessage(refused), "with k = 3 RUV factors in the model, the correlation could not be estimated", fixed = TRUE)
+    # without factors, and for any other failure, the condition passes unchanged
+    plain <- tryCatch(withOmicsRuvKOnBlockFailure(rlang::abort("x", class = "omics_da_block_correlation_failed"), NULL), error = function(e) e)
+    expect_identical(conditionMessage(plain), "x")
+    other <- tryCatch(withOmicsRuvKOnBlockFailure(stop("y"), factors), error = function(e) e)
+    expect_identical(conditionMessage(other), "y")
+    expect_identical(withOmicsRuvKOnBlockFailure(1 + 1, factors), 2)
+})
+
+test_that("with technical replicates the biological units limit k, in the kernel and at the test (M28)", {
     contrasts <- data.frame(contrasts = "groupB-groupA", friendly_names = "B_vs_A", stringsAsFactors = FALSE)
     for (omic in c("lipid", "metab")) {
         run <- if (identical(omic, "lipid")) runLipidsDA else runMetabolitesDA
         object <- techRepRuvObject(omic)
-        da <- function(k) {
-            factors <- suppressWarnings(suppressMessages(runOmicsRuvFactors(object, "factors_all_features", k, "user")))$factors
-            utils::capture.output(out <- tryCatch(suppressWarnings(suppressMessages(run(object, contrasts, "~ 0 + group", 0.05, 0,
+        kernel <- function(k, obj = object) suppressMessages(runOmicsRuvFactors(obj, "factors_all_features", k, "user"))
+        # 8 units in 2 groups: at most 5 factors (the injections' bound was 13); k = 6 is refused per assay, never reduced
+        refused <- NULL
+        expect_warning(refused <- kernel(6L), class = "omics_ruv_factors_refused")
+        for (assay in c("pos", "neg")) {
+            expect_identical(refused$factors[[assay]][c("status", "k")], list(status = "refused", k = 0L), info = omic)
+            expect_match(refused$factors[[assay]]$reason, "limit of 5: the design has technical replicates", fixed = TRUE, info = omic)
+        }
+        within <- kernel(5L)
+        expect_identical(vapply(within$factors, `[[`, "", "status"), c(pos = "ok", neg = "ok"), info = omic)
+        da <- function(factors, formula = "~ 0 + group") {
+            utils::capture.output(out <- tryCatch(suppressWarnings(suppressMessages(run(object, contrasts, formula, 0.05, 0,
                 TRUE, TRUE, ruv_factors = factors))), error = function(e) e))
             out
         }
-        # within the kernel's bound (16 injections minus 2 sets), the units' correlation is no longer estimable in either
-        # assay: kit-128's handler still stops the run, and the reason names k
-        refused <- da(12L)
-        expect_s3_class(refused, "omics_da_all_assays_failed")
-        expect_match(conditionMessage(refused), "k = 12 RUV factors", fixed = TRUE, info = omic)
-        expect_match(conditionMessage(refused), "could not be estimated", fixed = TRUE, info = omic)
-        # a k the block can carry runs with the block
-        fitted <- da(1L)
+        fitted <- da(within$factors)
         expect_false(inherits(fitted, "error"), info = omic)
         expect_true(isTRUE(fitted$contrasts_results$pos$fit.eb$uses_duplicate_correlation), info = omic)
-        expect_null(fitted$failed_assays)
+        # at the test: factors made without the declaration (the injections' bound) are refused between the units
+        undeclared <- object
+        undeclared@technical_replicate_id <- NA_character_
+        many <- kernel(12L, undeclared)
+        expect_identical(vapply(many$factors, `[[`, 0L, "k"), c(pos = 12L, neg = 12L), info = omic)
+        stopped <- da(many$factors)
+        expect_s3_class(stopped, "omics_ruv_no_residual_df")
+        expect_match(conditionMessage(stopped), "between the biological units", fixed = TRUE, info = omic)
+        # without the declaration the limit is the injections' one, as before
+        expect_identical(vapply(kernel(12L, undeclared)$factors, `[[`, "", "status"), c(pos = "ok", neg = "ok"), info = omic)
     }
 })

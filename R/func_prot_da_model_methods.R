@@ -400,6 +400,17 @@ setMethod(
           i = "use fewer RUV factors or fewer terms in the formula"),
           class = "dia_da_no_residual_df", call = NULL)
       }
+      # Decision M28: on a design with declared technical replicates the biological units carry the test; a state of the
+      # declared RUV rules (KIT-129 W3) needs a residual degree of freedom between the units. Today's sweep is not checked.
+      unit_df <- ruvUnitResidualDf(design_for_dpcde, block)
+      if (length(w_terms) && !is.null(theObject@args$ruvCovariates$ruv_k_rule) && !is.na(unit_df) && unit_df < 1L) {
+        cli::cli_abort(c(paste0("the DA model leaves no residual degree of freedom between the biological units with k = ",
+          "{length(w_terms)} RUV factor{?s}: the design has technical replicates, so the {length(unique(block))} units, not the ",
+          "{nrow(design_for_dpcde)} injections, carry the test, and at most {length(w_terms) + unit_df - 1L} factor{?s} fit beside ",
+          "the formula {.val {formula_string}}"),
+          i = "use fewer RUV factors or fewer terms in the formula"),
+          class = "dia_da_no_residual_df", call = NULL)
+      }
       dpcDEFn <- limpa::dpcDE
       dpc_fit <- dpcDEFn(elist, design_for_dpcde, plot = FALSE, block = block)
       contrasts_results <- convertDpcDAToStandardFormat(dpc_fit = dpc_fit, contrast_strings = contrast_strings_to_use,

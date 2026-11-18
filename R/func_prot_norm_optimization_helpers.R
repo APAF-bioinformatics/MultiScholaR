@@ -1314,9 +1314,17 @@ computeProtRuvModelFactors <- function(theObject, k, k_source = c("user", "sweep
   complete <- rowSums(!is.finite(values)) == 0
   control_count <- sum(controls & complete)
   group_count <- length(unique(as.character(design_matrix[[ruv_grouping_variable]])))
-  k_max <- as.integer(min(length(sample_ids) - group_count - 1L, control_count - 1L))
+  # Decision M28: on a design with declared technical replicates the biological units, not the injections, limit k.
+  technical <- resolveProtTechnicalReplicateBlock(design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  unit_count <- if (isTRUE(technical$technical)) length(unique(technical$block))
+  # The groups are the replicate sets here, so the limit is min(samples - groups - 1, controls - 1) as before, and the
+  # units' limit beside it when there are technical replicates.
+  limit <- ruvFactorCountLimit(length(sample_ids), group_count, group_count, control_count, units = unit_count)
+  k_max <- limit$k_max
   refuse <- function(reason) cli::cli_abort(c("the RUV factors for the model cannot be computed: {reason}",
-    i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}"),
+    i = "{control_count} control protein{?s} observed in every sample, {length(sample_ids)} sample{?s}, {group_count} group{?s}",
+    i = if (!is.null(unit_count)) paste0("the design has technical replicates: ", unit_count, " biological units carry the ",
+      "test, which leaves at most ", limit$k_max_units, " factor(s) (", limit$binding, ")")),
     class = "prot_ruv_factors_unavailable")
   if (k_max < 1L) refuse(if (control_count < 2L) "fewer than 2 control proteins are observed in every sample" else
     "the samples leave no residual degree of freedom for a factor beside the groups")
@@ -1434,6 +1442,19 @@ resolveProtRuvModelInput <- function(theObject, formula_string) {
   if (residual_df < 1L) {
     cli::cli_abort(c("the model {formula_used} leaves no residual degree of freedom on {nrow(model)} sample{?s}; the test is refused",
       i = "the model has {qr(model)$rank} independent term{?s}: fewer factors (k), fewer covariates or more samples are needed"),
+      class = "prot_ruv_model_no_residual_df")
+  }
+  # Decision M28: with declared technical replicates the biological units carry the test (the block), so the model needs
+  # a residual degree of freedom between the units too.
+  technical <- resolveProtTechnicalReplicateBlock(theObject@design_matrix, theObject@group_id, theObject@technical_replicate_id)
+  unit_df <- if (isTRUE(technical$technical)) ruvUnitResidualDf(model, technical$block) else NA_integer_
+  if (!is.na(unit_df) && unit_df < 1L) {
+    units <- length(unique(technical$block))
+    cli::cli_abort(c(paste0("the model {formula_used} leaves no residual degree of freedom between the biological units; ",
+      "the test is refused"),
+      i = paste0("the design has technical replicates: {units} biological units, not {nrow(model)} injections, carry the test, ",
+        "and with this formula at most {length(w_terms) + unit_df - 1L} factor{?s} (k) fit"),
+      i = "fewer factors (k) or fewer covariates are needed"),
       class = "prot_ruv_model_no_residual_df")
   }
   # Audit F-03 (decision M14): every protein of the stored normalised matrix is tested, the population the

@@ -246,12 +246,14 @@ test_that("all proteins as controls with the estimated count reproduces the simu
     }
 })
 
-test_that("declared technical replicates stay RUV-III's replicate sets on this route (arm 16)", {
+test_that("declared technical replicates stay RUV-III's replicate sets on this route (arm 16; the count as arm 29, M28)", {
     skip_if_not_installed("sva")
     skip_if_not_installed("limpa")
     engine <- utils::tail(limpaRuvEngines(), 1L)
     case <- limpaRuvCase(engine, seed = 105L, per_group = 8L, units = 4L)
-    E <- limpaRuvSimulatorE(case, 4242L)
+    # Decision M28: on this design the count removes the biological units (the exactness round's arm 29), not the groups
+    E <- as.integer(sva::num.sv(case$elist$E, stats::model.matrix(~ tech_rep_group, case$design), method = "be", B = 20,
+        seed = 4242L))
     expect_gt(E, 0L)
     reference <- limpaRuvInModel(case, E, rep(TRUE, length(case$ids)))
     expect_identical(reference$replicate_structure, "technical_replicates")
@@ -263,9 +265,14 @@ test_that("declared technical replicates stay RUV-III's replicate sets on this r
     result <- limpaRuvDa(package$state)
     expectLimpaRuvTable(result, reference$table, engine)
     expect_true(result$da_model$uses_duplicate_correlation)
-    # 16 samples in 8 replicate sets carry at most 8 factors
-    expect_error(computeDiaRuvCovariatesByRule(case$quantified, resolveDIARuvCovariatesParameters(list(), "group",
-        ruv_control_rule = "all_features", ruv_k_rule = "user", ruv_k = 9)), class = "ruv_k_above_limit")
+    # 16 injections of 8 units in 2 groups: the units carry at most 8 - 2 - 1 = 5 factors (M28; 8 by the injections)
+    for (k in c(6, 9)) {
+        expect_error(computeDiaRuvCovariatesByRule(case$quantified, resolveDIARuvCovariatesParameters(list(), "group",
+            ruv_control_rule = "all_features", ruv_k_rule = "user", ruv_k = k)), "technical replicates", class = "ruv_k_above_limit")
+    }
+    within <- limpaRuvKernel(case$quantified, resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features",
+        ruv_k_rule = "user", ruv_k = 5, ruv_k_seed = 4242L))
+    expect_identical(within$value$best_k, 5L)
 })
 
 test_that("an estimated count of 0 is a run without RUV, with a notice and the reason on the state", {
@@ -678,15 +685,19 @@ test_that("an error of the estimate does not stop a run whose k the user gave (a
     expect_match(chosen$value$ruv_result$ruv_k_estimate_reason, "a plain error", fixed = TRUE)
 })
 
-test_that("the count's record says when declared technical replicates were not removed before counting (audit F1, flag only)", {
+test_that("the count's record says what it removed: the biological units with technical replicates, else the groups (audit F1; M28)", {
     skip_if_not_installed("sva")
     skip_if_not_installed("limpa")
     engine <- utils::tail(limpaRuvEngines(), 1L)
     parameters <- resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features", ruv_k_seed = 4242L)
     technical <- limpaRuvCase(engine, seed = 105L, per_group = 8L, units = 4L)
-    expect_true(limpaRuvKernel(technical$quantified, parameters)$value$ruv_result$k_estimate$technical_replicates_ignored)
+    estimate <- limpaRuvKernel(technical$quantified, parameters)$value$ruv_result$k_estimate
+    expect_identical(estimate[c("removed", "technical_replicates_ignored")], list(removed = "biological units", technical_replicates_ignored = FALSE))
     plain <- limpaRuvCase(engine, seed = 101L)
-    expect_false(limpaRuvKernel(plain$quantified, parameters)$value$ruv_result$k_estimate$technical_replicates_ignored)
+    estimate <- limpaRuvKernel(plain$quantified, parameters)$value$ruv_result$k_estimate
+    expect_identical(estimate[c("removed", "technical_replicates_ignored")], list(removed = "groups", technical_replicates_ignored = FALSE))
+    # without technical replicates the count is the simulator's E on the groups, as before
+    expect_identical(estimate$k, limpaRuvSimulatorE(plain, 4242L))
 })
 
 test_that("the shared runner refuses today's declaration the rule parameters before a saved product is returned (KIT-129 B1)", {
@@ -719,4 +730,18 @@ test_that("the shared runner refuses today's declaration the rule parameters bef
     })
     expect_null(workflowLegacyDesignRefusal(diaRuvCovariatesOperation("declared")))
     expect_identical(workflowLegacyDesignRefusal(diaRuvCovariatesOperation()), assertDiaRuvSweepParameters)
+})
+
+test_that("with technical replicates a declared state needs a residual degree of freedom between the units at the DA (M28)", {
+    skip_if_not_installed("limpa")
+    engine <- utils::tail(limpaRuvEngines(), 1L)
+    case <- limpaRuvCase(engine, seed = 105L, per_group = 8L, units = 4L)
+    state <- limpaRuvKernel(case$quantified, resolveDIARuvCovariatesParameters(list(), "group", ruv_control_rule = "all_features",
+        ruv_k_rule = "user", ruv_k = 5))$state
+    expect_gt(nrow(limpaRuvDa(state)$contrasts_results$results[[1L]]), 0L)
+    # a covariate between the units (one per unit) leaves the 8 units no degree of freedom beside 2 groups and 5 factors
+    state@design_matrix$site <- c("s1", "s2")[(match(state@design_matrix$tech_rep_group, unique(state@design_matrix$tech_rep_group)) %% 2L) + 1L]
+    refused <- tryCatch(limpaRuvDaWithFormula(state, "~ 0 + group + site"), error = function(e) e)
+    expect_s3_class(refused, "dia_da_no_residual_df")
+    expect_match(conditionMessage(refused), "between the biological units", fixed = TRUE)
 })

@@ -74,23 +74,27 @@ permuteRuvResidualShares <- function(dat, mod, permutations, seed) {
 #' @param seed Whole number; recorded in the result.
 #' @param permutations Number of permutations (`num.sv`'s `B`; 20 in the simulations).
 #' @param min_features The fewest complete features the estimate is made on (20, the rule of simulator S4).
-#' @param technical_replicates Whether the design declares technical replicates. The count removes the groups
-#'   whatever its value (audit F1 of 2026-11-18, the user's decision pending); it is recorded as
-#'   `technical_replicates_ignored` so that a caller can warn.
+#' @param technical_replicates Whether the design declares technical replicates. Without `units` the count removes
+#'   the groups whatever its value, and it is recorded as `technical_replicates_ignored` so that a caller can warn.
+#' @param units The biological unit of each column (the declared technical-replicate id) on a design with technical
+#'   replicates, or NULL. Given, the count removes the units, not only the groups (decision M28; the exactness
+#'   round's arm 29: `sva::num.sv(dat, model.matrix(~ unit), method = "be", B, seed)`), and `removed` says so.
 #' @return `list(k, rule = "num_sv_be", seed, permutations, p_threshold, features_used, features_total, samples,
 #'   groups, components, null_shares, sva_version, rng_kind, rng_normal_kind, rng_sample_kind, removed,
 #'   technical_replicates_ignored)`: `components` has one row per residual component (`component`,
 #'   `observed_share`, `null_mean`, `p_value`, `p_value_monotone`, `counted`); `null_shares` is the
-#'   permutation-by-component matrix of shares; `removed` names what the count removed before counting (`"groups"`).
+#'   permutation-by-component matrix of shares; `removed` names what the count removed before counting (`"groups"`,
+#'   or `"biological units"`).
 #' @noRd
 estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED, permutations = 20L,
-                                   min_features = 20L, technical_replicates = FALSE) {
+                                   min_features = 20L, technical_replicates = FALSE, units = NULL) {
     checkmate::assert_matrix(values, mode = "numeric", min.cols = 2L)
     checkmate::assert_atomic_vector(groups, len = ncol(values))
     seed <- checkmate::assert_int(seed, coerce = TRUE)
     permutations <- checkmate::assert_count(permutations, positive = TRUE, coerce = TRUE)
     checkmate::assert_count(min_features, positive = TRUE)
     checkmate::assert_flag(technical_replicates)
+    if (!is.null(units)) checkmate::assert_atomic_vector(units, len = ncol(values), any.missing = FALSE)
     refuse <- function(reason, class) {
         cli::cli_abort("the number of unwanted factors cannot be estimated: {reason}",
             class = c(class, "ruv_factor_count_unavailable"), call = NULL)
@@ -113,11 +117,13 @@ estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED,
         refuse(sprintf("%d of %d features are observed in every sample; at least %d are needed", nrow(dat), nrow(values),
             min_features), "ruv_factor_count_too_few_features")
     }
-    if (min(dim(dat)) - n_groups < 2L) {
-        refuse(sprintf("%d samples in %d groups leave fewer than two residual components to compare", ncol(dat), n_groups),
-            "ruv_factor_count_too_few_samples")
+    removed_columns <- if (is.null(units)) n_groups else length(unique(as.character(units)))
+    if (min(dim(dat)) - removed_columns < 2L) {
+        refuse(sprintf("%d samples in %d %s leave fewer than two residual components to compare", ncol(dat), removed_columns,
+            if (is.null(units)) "groups" else "biological units"), "ruv_factor_count_too_few_samples")
     }
-    mod <- stats::model.matrix(~ group, data.frame(group = group))
+    mod <- if (is.null(units)) stats::model.matrix(~ group, data.frame(group = group)) else
+        stats::model.matrix(~ unit, data.frame(unit = as.character(units)))
     # Both calls seed themselves with `seed`; the kind they draw under is fixed here, and withr restores the
     # caller's kind and stream.
     counted <- withr::with_seed(seed, list(
@@ -141,8 +147,8 @@ estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED,
         features_used = nrow(dat), features_total = nrow(values), samples = ncol(dat), groups = n_groups,
         components = components, null_shares = null, sva_version = as.character(utils::packageVersion("sva")),
         rng_kind = RUV_FACTOR_COUNT_RNG[["kind"]], rng_normal_kind = RUV_FACTOR_COUNT_RNG[["normal_kind"]],
-        rng_sample_kind = RUV_FACTOR_COUNT_RNG[["sample_kind"]], removed = "groups",
-        technical_replicates_ignored = technical_replicates)
+        rng_sample_kind = RUV_FACTOR_COUNT_RNG[["sample_kind"]], removed = if (is.null(units)) "groups" else "biological units",
+        technical_replicates_ignored = technical_replicates && is.null(units))
 }
 
 #' The diagnostic plot of the estimated count (KIT-129 W6; user requirement of 2026-11-18)
@@ -197,16 +203,43 @@ plotRuvFactorCount <- function(estimate, max_components = 15L) {
 #' The largest k a design can carry (KIT-129 section 2, "Details"): k cannot exceed the samples minus the replicate
 #' sets (the rank RUV-III's replicates leave), must leave a residual degree of freedom in a model of the groups and
 #' the factors, and must be below the number of controls observed in every sample.
+#' On a design with declared technical replicates (decision M28) the units, not the injections, carry the test: k must
+#' also leave a residual degree of freedom at the level of the biological units, `units - between_unit_rank - k >= 1`.
 #' @param samples,replicate_sets,groups,controls Counts.
-#' @return `list(k_max, binding, samples, replicate_sets, groups, controls)`; `binding` names the limit that binds.
+#' @param units The number of biological units when the design declares technical replicates; NULL otherwise (the
+#'   limit is then as before).
+#' @param between_unit_rank The rank of the design between units (the groups and any covariate between units).
+#' @return `list(k_max, binding, samples, replicate_sets, groups, controls, units, between_unit_rank, k_max_units)`;
+#'   `binding` names the limit that binds; `k_max_units` the units' limit alone (NA without technical replicates).
 #' @noRd
-ruvFactorCountLimit <- function(samples, replicate_sets, groups, controls) {
+ruvFactorCountLimit <- function(samples, replicate_sets, groups, controls, units = NULL, between_unit_rank = groups) {
     limits <- c(`samples minus replicate sets` = samples - replicate_sets,
         `a residual degree of freedom beside the groups` = samples - groups - 1L,
         `fewer factors than controls observed in every sample` = controls - 1L)
+    k_max_units <- NA_integer_
+    if (!is.null(units)) {
+        k_max_units <- as.integer(max(units - between_unit_rank - 1L, 0L))
+        limits <- c(limits, `a residual degree of freedom between the biological units (the design has technical replicates)` =
+            units - between_unit_rank - 1L)
+    }
     list(k_max = as.integer(max(min(limits), 0L)), binding = names(limits)[[which.min(limits)]],
         samples = as.integer(samples), replicate_sets = as.integer(replicate_sets), groups = as.integer(groups),
-        controls = as.integer(controls))
+        controls = as.integer(controls), units = if (is.null(units)) NA_integer_ else as.integer(units),
+        between_unit_rank = as.integer(between_unit_rank), k_max_units = k_max_units)
+}
+
+#' The residual degrees of freedom left between biological units by a model (decision M28): the units minus the rank
+#' of the model's unit means. NA when the design declares no technical replicates.
+#' @param model A model matrix over the samples (rows), the formula's terms and any W columns.
+#' @param units The biological unit of each row, or NULL.
+#' @return An integer, or NA.
+#' @noRd
+ruvUnitResidualDf <- function(model, units) {
+    if (is.null(units)) return(NA_integer_)
+    units <- as.character(units)
+    totals <- rowsum(model, units)
+    unit_means <- totals / as.vector(table(units)[rownames(totals)])
+    as.integer(nrow(unit_means) - qr(unit_means)$rank)
 }
 
 #' The number of unwanted factors and its recorded source (KIT-129 W6)
