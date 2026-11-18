@@ -1,15 +1,21 @@
 {
-  "label": "refblas",
+  "label": "exact-lc",
   "package_commit": "0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22",
   "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
-  "runs_core": 20,
+  "runs_core": 12,
   "runs_stress": 0,
   "cores": 4,
-  "timeout_minutes": 45,
-  "blas": "reference",
-  "arms": {},
+  "timeout_minutes": 60,
+  "arms": {
+    "s1": "1,2,3,7,16,25,26,27,28,29,30,31,32,33",
+    "s2": "1,2,7,25,29,31,32",
+    "s3": "1,2,7,31",
+    "s4": "1,2,7,25,31,32"
+  },
   "cells": {
-    "s1": "C6",
-    "s4": "C0,C5"
+    "s1": "C0,C6,C9",
+    "s2": "C0,C8",
+    "s3": "C0,C3",
+    "s4": "C0,C7"
   }
 }
