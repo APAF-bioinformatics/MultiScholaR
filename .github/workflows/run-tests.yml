@@ -52,6 +52,7 @@ jobs:
       file_timeout: ${{ steps.plan.outputs.file_timeout }}
       base_commit: ${{ steps.plan.outputs.base_commit }}
       sides: ${{ steps.plan.outputs.sides }}
+      blas: ${{ steps.plan.outputs.blas }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -82,9 +83,10 @@ jobs:
               ((.args // []) | type == "array" and all(str)) and ((.out // "") | . == "" or relpath) and ((.out_pattern // "") | str) and
               ((.timeout_minutes // 120) | type == "number" and . == floor and . >= 1 and . <= 280) and
               ((.env // {}) | type == "object" and (to_entries | all((.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and (.value | str)))))) and
+            ((.blas // "reference") | . == "reference" or . == "openblas") and
             ((.os // "ubuntu-22.04") == "ubuntu-22.04")
           ' "$p" > /dev/null; then
-            echo "::error::params.json is not valid; see .github/run-tests/README.md (label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; base_commit empty or a 40-digit commit; fetch_refs branch names; file_timeouts {file: minutes}; extra_packages names; env names and one-line values; check true or false; scripts {path, args, env, out, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
+            echo "::error::params.json is not valid; see .github/run-tests/README.md (label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; base_commit empty or a 40-digit commit; fetch_refs branch names; file_timeouts {file: minutes}; extra_packages names; env names and one-line values; check true or false; blas reference or openblas; scripts {path, args, env, out, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
             exit 1
           fi
           commit="$(jq -r .package_commit "$p")"
@@ -139,6 +141,7 @@ jobs:
             echo "nscripts=$(jq -r '(.scripts // []) | length' "$p")"
             echo "file_timeout=$(jq -r '.file_timeout_minutes // 45' "$p")"
             echo "base_commit=$base"
+            echo "blas=$(jq -r '.blas // "reference"' "$p")"
             echo "sides=$(jq -c '{include: .}' <<< "$sides")"
           } >> "$GITHUB_OUTPUT"
           {
@@ -175,6 +178,18 @@ jobs:
         with:
           token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: any::pkgload any::testthat
+      - name: BLAS and LAPACK (params blas; reference = the distribution's libblas3 and liblapack3, as on the laptop and the same on every CPU model); the CPU
+        env:
+          BLAS: ${{ needs.plan.outputs.blas }}
+        run: |
+          if [ "$BLAS" = "reference" ]; then
+            sudo apt-get install -y --no-install-recommends libblas3 liblapack3 > /dev/null
+            sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/blas/libblas.so.3
+            sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3
+          fi
+          mkdir -p "$RUNNER_TEMP/out"
+          Rscript --vanilla -e 'b <- normalizePath(extSoftVersion()[["BLAS"]]); l <- normalizePath(La_library()); cat("BLAS", b, "LAPACK", l, La_version(), "\n"); if (identical(Sys.getenv("BLAS"), "reference") && any(grepl("openblas", c(b, l)))) { cat("::error::reference BLAS was asked for, R still reports OpenBLAS\n"); quit(status = 1L) }' | tee "$RUNNER_TEMP/out/blas.txt"
+          { lscpu | sed -n 's/^Model name: *//p'; nproc; } | paste -sd ' ' | sed 's/^/cpu /' | tee "$RUNNER_TEMP/out/cpu.txt"
       - name: The request's scripts (this push)
         uses: actions/checkout@v4
         with:
@@ -240,6 +255,18 @@ jobs:
         uses: ./.github/actions/snapshot-library
         with:
           token: ${{ secrets.DEPS_READ_TOKEN }}
+      - name: BLAS and LAPACK (params blas; reference = the distribution's libblas3 and liblapack3, as on the laptop and the same on every CPU model); the CPU
+        env:
+          BLAS: ${{ needs.plan.outputs.blas }}
+        run: |
+          if [ "$BLAS" = "reference" ]; then
+            sudo apt-get install -y --no-install-recommends libblas3 liblapack3 > /dev/null
+            sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/blas/libblas.so.3
+            sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3
+          fi
+          mkdir -p "$RUNNER_TEMP/check-out"
+          Rscript --vanilla -e 'b <- normalizePath(extSoftVersion()[["BLAS"]]); l <- normalizePath(La_library()); cat("BLAS", b, "LAPACK", l, La_version(), "\n"); if (identical(Sys.getenv("BLAS"), "reference") && any(grepl("openblas", c(b, l)))) { cat("::error::reference BLAS was asked for, R still reports OpenBLAS\n"); quit(status = 1L) }' | tee "$RUNNER_TEMP/check-out/blas.txt"
+          { lscpu | sed -n 's/^Model name: *//p'; nproc; } | paste -sd ' ' | sed 's/^/cpu /' | tee "$RUNNER_TEMP/check-out/cpu.txt"
       - name: The request's scripts (this push)
         uses: actions/checkout@v4
         with:
@@ -298,6 +325,18 @@ jobs:
         with:
           token: ${{ secrets.DEPS_READ_TOKEN }}
           extra-packages: any::pkgload any::testthat
+      - name: BLAS and LAPACK (params blas; reference = the distribution's libblas3 and liblapack3, as on the laptop and the same on every CPU model); the CPU
+        env:
+          BLAS: ${{ needs.plan.outputs.blas }}
+        run: |
+          if [ "$BLAS" = "reference" ]; then
+            sudo apt-get install -y --no-install-recommends libblas3 liblapack3 > /dev/null
+            sudo update-alternatives --set libblas.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/blas/libblas.so.3
+            sudo update-alternatives --set liblapack.so.3-x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3
+          fi
+          mkdir -p "$RUNNER_TEMP/scripts-out"
+          Rscript --vanilla -e 'b <- normalizePath(extSoftVersion()[["BLAS"]]); l <- normalizePath(La_library()); cat("BLAS", b, "LAPACK", l, La_version(), "\n"); if (identical(Sys.getenv("BLAS"), "reference") && any(grepl("openblas", c(b, l)))) { cat("::error::reference BLAS was asked for, R still reports OpenBLAS\n"); quit(status = 1L) }' | tee "$RUNNER_TEMP/scripts-out/blas.txt"
+          { lscpu | sed -n 's/^Model name: *//p'; nproc; } | paste -sd ' ' | sed 's/^/cpu /' | tee "$RUNNER_TEMP/scripts-out/cpu.txt"
       - name: The request's scripts (this push)
         uses: actions/checkout@v4
         with:
@@ -389,7 +428,11 @@ jobs:
               "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$(jq -r .label .github/run-tests/params.json)" "$PACKAGE_COMMIT" "${BASE_COMMIT:-none}" "$TOOLS_REF"
             printf 'runner\tubuntu-22.04 (GitHub-hosted)\nR\t%s\n' "$(cat "$first/r-version.txt" 2>/dev/null || echo unknown)"
             printf 'jobs\ttests %s; check %s; scripts %s\n' "$TESTS_RESULT" "$CHECK_RESULT" "$SCRIPTS_RESULT"
-            for s in "$dl"/shard-*; do [ -f "$s/setup-seconds.txt" ] && printf '%s\t%s\n' "$(basename "$s")" "$(cat "$s/setup-seconds.txt")"; done
+            for s in "$dl"/shard-* "$dl"/check-* "$dl"/scripts; do
+              [ -d "$s" ] || continue
+              printf '%s\t%s; %s; %s\n' "$(basename "$s")" "$(cat "$s/setup-seconds.txt" 2>/dev/null || echo "setup not recorded")" \
+                "$(cat "$s/cpu.txt" 2>/dev/null || echo "cpu not recorded")" "$(head -n 1 "$s/blas.txt" 2>/dev/null || echo "blas not recorded")"
+            done
             printf 'env\t%s\n' "$(jq -c '.env // {}' .github/run-tests/params.json)"
             echo; echo "library (package, version, library):"
             cat "$first/library.tsv" 2>/dev/null || echo "no library table"

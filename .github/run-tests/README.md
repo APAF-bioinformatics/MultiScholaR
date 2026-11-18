@@ -42,6 +42,7 @@ current params. `gh run rerun <id> --failed` reruns failed shards only (the `res
 | `check` | `false` | a separate job: `R CMD build --no-manual`, then `R CMD check --no-manual --no-tests` with `_R_CHECK_FORCE_SUGGESTS_=false` (the tests are the test jobs' work) |
 | `scripts` | `[]` | `{ "path": ..., "args": [...], "env": {...}, "out": <dir>, "timeout_minutes": 120 }`: `Rscript <path> <args>` from the package root after `package_commit` is installed (`R CMD INSTALL`, full git history present); `out` (relative to the package root) is uploaded; `out_pattern` (extended regex on the path under `out`) keeps only matching files, e.g. `"\\.(tsv|txt)$"` |
 | `fetch_refs` | `[]` | branches the scripts read with `git show` (fetched as `origin/<name>` and as local branches), e.g. `["sim-k124-exact"]` |
+| `blas` | `reference` | `reference`: the distribution's reference libblas3/liblapack3 in every job (as the laptop; the same results on every runner CPU model). `openblas`: the runner's default. Under OpenBLAS two jobs on different CPU models differ in the last digits (run 44356604347: KIT-073 correlations from the 12th digit), so base-versus-head comparisons need `reference` |
 | `os` | `ubuntu-22.04` | Linux only. Windows is refused: the kit-134 workflows install on Windows only inside the distributable bundle build (`packaging/windows/assemble.ps1`), not through a reusable library action |
 
 Example (the KIT-129 RUV files with sva):
