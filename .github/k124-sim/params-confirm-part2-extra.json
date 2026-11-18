@@ -1,0 +1,18 @@
+{
+  "label": "confirm-p2x",
+  "package": "installed",
+  "package_commit": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
+  "tools_ref": "2bbb1f6d29e4f4a1767ebb461c08858883370680",
+  "runs_core": 0,
+  "runs_stress": 500,
+  "cores": 4,
+  "timeout_minutes": 300,
+  "arms": {
+    "s3": "1,2,3,34",
+    "s4": "1,2,34"
+  },
+  "cells": {
+    "s3": "S3",
+    "s4": "S1,S3,S8"
+  }
+}

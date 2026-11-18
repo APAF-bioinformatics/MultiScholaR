@@ -1,118 +1,167 @@
-# KIT-124 confirmation round: declaration (2026-11-19, written before any job of the round; the lifecycle run below is the instrument check only)
+# KIT-124 confirmation round: declaration, two parts (decision M34; rewritten 2026-11-19 before any job of the round)
 
-Authority: the user's decision M29 of 2026-11-18 (`design-review-20261118.md` section 6 on `performance-v2` b35d8089): "Every option's figure is re-measured on the shipped code in a final confirmation round, since only the recommended design was measured under the exact method". With M28 (k limited by biological units; the count removes them), M30 (200 permutations; the classic test applies its trend and robust settings under the new designs and No RUV), M31 to M33 (typed k above the limit stops lipid/metab; k below the number of controls everywhere; the count recorded beside a typed k). Simulations run on GitHub-hosted runners (M13), with the equivalence read on the values the rules use (M19). Nothing under `R/`, `tests/`, `DESCRIPTION` or `tools/` changes on this branch; the package is installed in each job from the bound commit.
+Authority: decisions M29 ("every option's figure is re-measured on the shipped code in a final confirmation round") and M34 (user, 2026-11-19: "(1) for every option, the shipped package code is shown to give the same numbers as the simulator arm it replaces on the same seeds, on a modest number of runs per cell, under the fixed equivalence rule read on the rule-bearing values (M19); where that holds, the earlier measurements stand for the shipped code; (2) options that are not identical are re-measured in full on the shipped code: lipid/metab, the technical-replicate designs once their kernel is repaired, and classic proteomics 'No RUV' under the new test (M30)"), with M28, M30 to M33 (`design-review-20261118.md` section 6 on `performance-v2`). Simulations run on GitHub-hosted runners (M13); no compute on the laptop. Nothing under `R/`, `tests/`, `DESCRIPTION` or `tools/` changes on this branch; the package is installed in each job from the bound commit.
 
-Every choice below that is not carried over from an earlier declaration (`exact-round-declaration.md`, the confirming study, `final-20261118`) is marked **[for the user to approve]**.
+Every choice below that is not carried over from an earlier declaration (`exact-round-declaration.md`, the confirming study, `final-20261118`, the first version of this file) is marked **[for the user to approve]**. The first version of this file (cf572809, one round of every option at full size) is replaced by this one; its lifecycle run 44341242746 stays on record (section 8).
 
-## Purpose
+## 1. Package under test
 
-To give, for every RUV option the app will offer in each omic, the figures measured on the code that ships (the installed package's new-design kernels and its DA entry points), by the ticket's rules 1 to 7 unchanged, and to show for each option that has one whether the shipped code reproduces the simulator arm its earlier figure came from. The figures shown beside the options (`omicGuiRuvTable*` in `R/utils_omic_gui_config.R`) are replaced by this round's where the user accepts them.
+**BINDING LINE (the one line the final commit changes): `package_commit = tools_ref = 2bbb1f6d29e4f4a1767ebb461c08858883370680` (`kit-129-integration`, 2026-11-19, fifth pass item 5).** [for the user to approve: this commit, or the `kit-129-integration` tip at launch; another commit is merged here with the `ours` strategy (the tree of this branch does not change), the hash replaced in this line and in the three launch files, and section 7's lifecycle repeated on it]
 
-## Package under test
+It carries M28 to M33, the technical-replicate design and first-pass nulls in every omic, the run-path wiring, classic "No RUV" and a count of 0 as the declared state without factors with M30's test, supplied lists on the classic and lipid/metab run paths, and the separation rule on the run path where it is defined. Made reachable on this branch by 1880f7df (merge, `ours`). Installed as before: params `package: "installed"`, the library action installs MultiScholaR from that checkout with the two internal packages built in the job from `DEPS_READ_TOKEN` (never printed, cached or uploaded); the job checks the checkout is the bound commit and that the namespace holds every entry point the arms call.
 
-**BOUND COMMIT (filled at launch): `kit-129-integration` @ `________________________________________` [for the user to approve: the commit that carries the wiring and M31 to M33].**
+## 2. The shipped arms (34 to 41) and how each calls the package
 
-- The lifecycle run used `33cfc99b` (`kit-129-integration`, 2026-11-19: M28 to M30 and the vocabulary pass; M31 to M33 and the wiring not yet in it).
-- How it is installed (as module-ci and KIT-134 do, no new mechanism): params `package: "installed"`, `package_commit` = `tools_ref` = the bound commit; the job checks out that commit, `.github/actions/snapshot-library` installs R 4.6.1, the KIT-134 snapshot library, the two internal packages built in the job from the read token `DEPS_READ_TOKEN` (never printed, cached or uploaded), and MultiScholaR from that checkout; the copy is kept and the simulators load it (`K124_PACKAGE=installed`). The job checks that the checkout is the bound commit and that the installed namespace holds the new-design kernels.
-- The bound commit must be reachable on `origin`: on this run-only branch it is merged with the `ours` strategy (the branch's tree does not change). The lifecycle commit `33cfc99b` was made reachable that way (9c8e6e76).
+Each calls the installed package as the run path does (the compute halves the tab and the managed worker call), not the work tree; each runs on its own random stream; the count's seed is each simulator's E seed. Arms 1 to 33 are unchanged.
 
-## Simulators, cells, designs
-
-| Simulator | File | Data generation, seeds, scoring |
-|---|---|---|
-| S1 classic proteomics | `s1_classic.R` of `sim-k124-exact` 2ba5cf87, with this branch's additions | unchanged |
-| S2 DIA with limpa (`fastlimpadpc` engine) | `s2_limpa.R` of `sim-k124-exact` 2ba5cf87, with additions | unchanged |
-| S3 transcriptomics | `s3_trx.R` of `sim-k129-exact` 2d03b103 (technical replicates summed at the design step, as the shipped package does), with additions **[for the user to approve: the request named `sim-k124-exact`; the two files differ in C6 and C8 only, and only the `sim-k129-exact` file matches the shipped design step]** | unchanged |
-| S4 lipidomics and metabolomics | `s4_lipid_metab.R` of `sim-k129-exact` 2d03b103 (the extract declared as technical replicate), with additions | unchanged |
-
-The additions: the arms 34 to 40 below, the switch `K124_PACKAGE=installed`, and `K124_FAULT` (a deliberate crash, lifecycle only). The existing arms are not edited; under `K124_PACKAGE=installed` they run on the installed package's functions instead of the work tree's.
-
-Cells (carried over): core C0 to C7 (C6 technical duplicates: 4 units per group, 2 injections or libraries each) and C8 (C6 with no unwanted factor; reported, judges no design). Designs with 3 per group exist only among the extra-hard cells (S1 3 per group; S11 with the factor tied to groups at 0.3; S12 with three factors; S13 with no factor). The extra-hard cells S1 to S14 (S3: no S6) are included because the notes shown beside the options quote them (for example lipid/metab "13% at a correlation of 0.6" from S3, "10% at 3 per group" from S1, "14% with an unbalanced batch" from S8) **[for the user to approve: all extra-hard cells, or only those the notes quote: S1, S3, S8, S11, S12, S13]**.
-
-## Options measured, per omic
-
-Arm numbers 34 to 40 are new (17 to 33 were taken). Each new arm calls the installed package's kernels as `kit-129/final-method/prove-arms.R` calls them; each runs on its own random stream; the count's seed is each simulator's E seed, so the shipped count equals the simulators' E at 200 permutations (proven for run 1 of C0 and C6 by `prove-arms.R count`).
-
-| Option (app id) | Classic proteomics (S1) | DIA with limpa (S2) | Transcriptomics (S3) | Lipid/metab (S4) |
+| Arm | S1 classic proteomics | S2 DIA with limpa | S3 transcriptomics | S4 lipid/metab |
 |---|---|---|---|---|
-| Recommended, `groups_all_features`, estimated count | 34 (beside 32) | 34 (beside 32; in C6/C8 also the technical-replicate design) | 34 (beside 31) | 34 (beside 32) |
-| Technical replicates, estimated count (C6, C8) | 38 (beside 33): the kernel handed the unit as replicate set; the kernel documents the groups as its only structure **[gap: no shipped kernel for this option; see "Before the launch"]** | = 34 (one computation on this route) | unavailable (summed at the design step) | 38 (beside 33): `ruv_grouping_variable = "extract"` |
-| Supplied controls, estimated count | 35 (oracle list; arm 8's) | 35 | 35 | 35 (the internal standards) |
-| Supplied controls, contaminated list | 36 (arm 9's set; not C4) | 36 (not C4) | 36 | 36 (2 of 10 standards changing) |
-| Supplied controls, separation rule | existing arm 22 on the installed package **[the kernel takes this k from the wiring: no shipped computation to call]** | (not in the request; the kernel computes it as for 40) | existing arm 22, as classic | existing arm 22, as classic |
-| First-pass nulls, estimated count | **gap: no shipped kernel** (existing arm 23 on the installed package reported) | 39 | 39 (beside 23, which has B = 20) | **gap: no shipped kernel** (existing arm 23 reported) |
-| First-pass nulls, separation rule | gap (existing arm 5 reported) | 40 (the kernel's default for this rule: today's sweep k) | existing arm 5 / 24 (the kernel takes the k from the wiring) | gap (existing arm 5 reported) |
-| Legacy | existing arm 3 on the installed package (today's sweep, `ruvIII_C_Varying`, `runTestsContrasts`: the package's own legacy functions) **[for the user to approve: legacy measured by the simulator's composition of the legacy functions, not through a new entry point]** | existing arms 4 (covariates) and 3 (correction) | existing arm 3 | existing arm 3 |
-| None | 37 (beside 1; the final method, M30, would be arm 27: reported beside it) | 37 (beside 1) | 37 (beside 1) | 37 (beside 1) |
-| User's k | not simulated (no rule to simulate); the option's figure is the estimated count's, as KIT-129 section 1a states **[for the user to approve]** | as classic | as classic | as classic |
+| 34 recommended (groups, all features, estimated count) | `computeProtRuvModelFactors` with the run path's replicate sets (`protRuvModelReplicateSets`); count 0 = `declareProtRuvNoFactors`; `differentialAbundanceAnalysis` | `diaRuvCovariatesOperation("declared")` kernel, all proteins; in C6/C8 this is also the technical-replicate option (one computation on this route) | `trxChooseRuvDesign` + `trxRuvFactors` + `trxDaFit`/`trxDaApply` | `runOmicsRuvFactors` + `runLipidsDA`, same through the metab classes (must agree) |
+| 35 supplied list, estimated count | arm 8's oracle set | as S1 | arm 8's 50 genes | the standards |
+| 36 contaminated list, estimated count | arm 9's set (not C4) | as S1 (not C4) | arm 9's set | 2 of 10 standards changing |
+| 37 No RUV | `declareProtRuvNoFactors(ruv_design = "none")`: M30's test | DA on the quantified object | design `none` | no factors (k reported NA, as arm 1) |
+| 38 technical replicates (C6, C8) | units as replicate sets (`technical_replicates`) | (= 34) | unavailable (summed at the design step) | `ruv_grouping_variable = "extract"` |
+| 39 first-pass nulls, estimated count | kernel's own first pass; units on C6/C8 | kernel's own (dpcDE F test) | kernel's own | kernel's own |
+| 40 first-pass nulls, separation rule | the sweep's k by `resolveProtRuvParameters` (tab defaults 1-20 %, on arm 3's stream) | kernel's rule (the sweep's k) | `trxSeparationRuleK` | `omicsRuvSeparationRuleK` |
+| 41 supplied list, separation rule | `protRuvSeparationRuleK` on the list | kernel's rule (the sweep's k, whatever the list) | `trxSeparationRuleK` on arm 8's genes | `omicsRuvSeparationRuleK` on the standards |
 
-Each run of every cell also runs arms 1 and 2 (the rules read them: rule 3's limit, rule 4's pairing, the void test) and the simulator arms named "beside".
+Legacy designs are the simulators' existing arms 3 (S1, S3, S4) and 3, 4 (S2), which call the package's own legacy functions; they run on the installed package. A user's typed k is not simulated (no rule to simulate); its figure is the estimated count's (KIT-129 section 1a). **[for the user to approve]**
 
-k rules per option, as the bound code defines them: the estimated count (`num_sv_be`, 200 permutations, the groups removed; on technical-replicate designs the biological units removed, M28) wherever defined, pre-selected (M15); the separation rule only where a separate control set exists (refused with all features as controls); a user's k. A count of 0 is no RUV (status ok, k = 0, the shipped no-RUV table). A k above the limit (M28, M31, M32) is a refusal: a classed refusal of the package (`ruv_k_refused`, `ruv_factor_count_unavailable`, `prot_ruv_factors_unavailable`, `omics_ruv_no_residual_df`, the block-correlation and no-replication classes; in S3 also `trx_error`; in S2 a run the kernel leaves without RUV for another reason than a count of 0; in S4 an assay the kernel refuses) is `refused` and scored as arm 1 (R-07, carried over). Any other error is `crashed` and counts in rule 6.
+Refusals (carried over, R-07): a classed refusal of the package (`ruv_k_refused`, `ruv_factor_count_unavailable`, `prot_ruv_factors_unavailable`, `omics_ruv_no_residual_df`, the block-correlation and no-replication classes; S3 `trx_error`; S2 a run the kernel leaves without RUV other than by a count of 0; S4 an assay the kernel refuses) is `refused` and scored as arm 1. Any other error is `crashed`, counts in rule 6, and fails the job after its upload (`check-arms.R`).
 
-## Runs and seeds (carried over)
+## 3. Options per omic: shipped arm, the simulator arm it replaces, identity expected?
 
-1,000 runs per core cell (runs 1 to 1,000), 500 per extra-hard cell (runs 1 to 500); seed = 100000 + 10000 x cell index + run; the data under `set.seed(seed)`; arm a under `set.seed(seed * 100 + a)` (S2: `100 * seed + a`), arms 34 to 40 on their own number; E's seed as each simulator has it. The rows of an arm are the same whichever other arms run.
+"Identity" = agreement under `packaging/verify/compare-results.R` of the bound commit (relative 1e-6, absolute floor 1e-9, discrete values exact) on the M19 rule-bearing values (status, k, n_features, n_true, n_calls, null_p05, null_p01, fdp, power), per cell, run and subset. The counterpart is the arm the option's figure in `omicGuiRuvTable*` came from, or, where the final method was measured, its exact-round variant.
 
-## Pass rules (carried over unchanged)
+| Omic | Option (app id) | Shipped ~ simulator | Identity expected? | Why (not) | Part |
+|---|---|---|---|---|---|
+| Classic | `groups_all_features` | 34 ~ 32 | yes | arm 32 is the final method; run path proven (KIT-129 `runpath`) | 1 |
+| Classic | `technical_replicates` | 38 ~ 33 | yes | arm 33 is the final method on the units; proven (`techrep`, `runpath`) | 1, and 2 (M34 names it) |
+| Classic | `supplied_controls` | 35 ~ 8 | no | arm 8: E with 20 permutations, `contrasts.fit` standard error, treat without trend/robust | 2 |
+| Classic | supplied, contaminated | 36 ~ 9 | no | as 35 | 2 |
+| Classic | supplied, separation rule | 41 ~ 22 | k yes, values no | same rule on the same list; arm 22 has the earlier test | 2 |
+| Classic | `first_pass_nulls` | 39 ~ 23 | no | arm 23: 20 permutations, earlier test, groups not units on C6/C8 | 2 |
+| Classic | first-pass, separation rule | 40 ~ 5 | k yes, values no | same sweep, same stream; arm 5 has the earlier test | 2 |
+| Classic | `legacy` | 3 (installed) ~ 3 (`exact-gha` rows) | yes | legacy code unchanged (M3); compared with the earlier runner rows (section 5) | 1 |
+| Classic | `none` | 37 ~ 27 | yes | arm 27 is arm 1 under M30's test | 1, and 2 (M34 names it) |
+| DIA | `groups_all_features` / `technical_replicates` | 34 ~ 32 | yes | proven (`runpath`, `m30b`) | 1 |
+| DIA | `supplied_controls` | 35 ~ 8 | no | 20 permutations, `contrasts.fit` standard error | 2 |
+| DIA | supplied, contaminated | 36 ~ 9 | no | as 35 | 2 |
+| DIA | supplied, separation rule | 41 ~ 22 | no | **the kernel's rule is today's sweep's k, not arm 22's rule on the list** (see 9.4) | 2 |
+| DIA | `first_pass_nulls` | 39 ~ 23 | no | 20 permutations, standard error; with 3 groups (C7) the first pass is an F test, arm 23's a B-A test | 2 |
+| DIA | first-pass, separation rule | 40 ~ 5 | k yes, values no | standard error | 2 |
+| DIA | `legacy` (factors in test), `legacy_correction` | 4, 3 (installed) ~ earlier rows | yes | code unchanged; the earlier rows are laptop rows only (section 5) | 2 |
+| DIA | `none` | 37 ~ 1 | yes | DIA's no RUV unchanged | 1 |
+| Trx | `groups_all_features` | 34 ~ 31 | yes | arm 31 is the final method (edgeR fits each comparison exactly) | 1 |
+| Trx | `supplied_controls` | 35 ~ 8 | no (by construction) | arm 8's k is E with 20 permutations; identical only in runs where the two counts agree | 2 |
+| Trx | supplied, contaminated | 36 ~ 9 | no (by construction) | as 35 | 2 |
+| Trx | supplied, separation rule | 41 ~ 22 | yes | run path = arm 22 (`separation` proof) | 1; C6, C8 in 2 (no earlier rows on the summed tree) |
+| Trx | `first_pass_nulls` | 39 ~ 23 | no (by construction) | 20 permutations | 2 |
+| Trx | first-pass, separation rule | 40 ~ 24 | yes | run path = arm 24 | 1; C6, C8 in 2 |
+| Trx | `legacy` | 3 (installed) ~ earlier rows | yes | code unchanged; earlier rows laptop only | 2 |
+| Trx | `none` | 37 ~ 1 | yes | unchanged | 1 |
+| Lipid/metab | `groups_all_features` | 34 ~ 32 | subset `complete` yes, `full` no | see below | 2 |
+| Lipid/metab | `technical_replicates` | 38 ~ 33 | `complete` yes, `full` no | as 34 | 2 |
+| Lipid/metab | `supplied_controls`, contaminated | 35 ~ 8, 36 ~ 9 | no | 20 permutations, `contrasts.fit` standard error | 2 |
+| Lipid/metab | supplied, separation rule | 41 ~ 22 | k yes on `complete`; values no | earlier test | 2 |
+| Lipid/metab | `first_pass_nulls` | 39 ~ 23 | no | 20 permutations, earlier test | 2 |
+| Lipid/metab | first-pass, separation rule | 40 ~ 5 | k yes on `complete`; values no | earlier test | 2 |
+| Lipid/metab | `legacy` | 3 (installed) ~ earlier rows | no | the level repair (U8, KIT-123 R2) changes legacy's corrected matrix; the earlier rows predate it | 2 |
+| Lipid/metab | `none` | 37 ~ 1 | yes | unchanged | 1 (and in 2 as arm 1) |
 
-Rules 1 to 7 of `KIT-124-rev1.4-ticket-20261118.md` (W3), computed by `aggregate.R` as on `sim-k124-exact` (sha256 `089d852c...`, C8 a reported no-factor cell), with their limits unchanged: rule 1 null rate at 0.05 and 0.01 (upper bounds 0.075 and 0.015), rule 2 mean false discovery proportion (0.075), rule 3 share of runs above 0.10 against arm 2's share + 0.05, rule 4 the reduction against arm 1 in cells with a factor, rule 5 power loss against arm 1 in cells without one (0.02), rule 6 crash share (0.01), rule 7 global null C4 (0.075). Void cells (arm 2 failing rule 1 or 2), the design verdict over the judged core cells, the primary subset (`full`) and the extra-hard cells listing their failing rules without failing a design: as before. `aggregate.R`'s recommendation table (`k124-omics.tsv`) does not know arms 34 to 40 and is not read; the per-arm verdicts (`k124-arms.tsv`, `k124-cells.tsv`) are. The figure per option is read as before: mean false discovery proportion in the worst core cell with true effects, and power in C0.
+**What differs in lipid/metab, exactly.** S4 forms its own W on the features observed in every study **and pooled-QC** injection. The package's kernel forms W on the features observed in every sample **of the object it holds**, and the object holds the study injections only (as S4 builds it; the shipped kernels take the samples of the object's design, and the pooled-QC injections are not among the groups tested). On the subset `complete` (the data restricted to the features complete in study and QC injections) both rules select the same features, so the shipped arm can equal the simulator's (lifecycle: 34~32, 38~33, 40~5, 41~22 identical there). On the subset `full` they select different features: the difference is a property of **the comparison** (the simulator uses information the shipped object does not hold), not a defect of the shipped method; the shipped arm's own figure on `full` (the primary subset) is the one that ships. Giving the package the QC injections would not be "the same information": in the object they would be a further group in the replicate sets and the test. So lipid/metab is re-measured in Part 2 (as M34 says), and Part 1's identity for it is read on `complete` only.
 
-## Gate and agreement
+## 4. Part 1, identity
 
-1. **Gate (carried over, M19 reading).** Before a cell is scored, arms 1 and 2 of the round equal the earlier hosted-runner rows of the same seeds under `packaging/verify/compare-results.R` (relative 1e-6, absolute floor 1e-9, discrete values exact), read on the values the rules use (status, k, counts, null rates, false discovery proportion, power); bias and rmse are reported. References: `exact-gha` (run 44233215700) for S1, S2 C0 to C8 and S3, S4 C0 to C5, C7; `exact-k128-gha` (44233219582) for S3, S4 C6, C8; the runner rows of `final-20261118` (44201244793) and the laptop rows of `s*-core` for the extra-hard cells where they ran. A cell that does not meet the gate is not scored and is reported.
-2. **Agreement of the shipped code with the arm it replaces.** Per pair (shipped arm beside simulator arm, same cell, run and subset), the same rule, read the same way: S1 34~32, 38~33, 37~1; S2 34~32, 37~1; S3 34~31, 37~1; S4 34~32, 38~33, 37~1. Computed in the workflow's compare job (`.github/k124-sim/compare-arms.R` then the bound commit's `compare-results.R`). Declared now, before any row exists: S4 34~32 and 38~33 are **not expected** to agree (S4 forms W on the features complete in study and pooled-QC injections; the package holds the study injections only); S1 37~27 is reported and **not expected** to agree (M30's No RUV is not wired on the bound commit; its DA is `runTestsContrasts`). **[for the user to approve]** What follows from the reading: where a pair agrees, the earlier figure of the simulator arm is confirmed on the shipped code; where it does not, the shipped arm's own figure is the one reported (it is what ships) and the difference is stated with its cause before any figure goes into the app. Options without a counterpart (35, 36, 39, 40) have no agreement check: their figures are the shipped code's.
+- **Cells and runs [for the user to approve].** Runs 1 to 50 of every core cell C0 to C8 (S3 C6 and C8 on the summed tree) and of the extra-hard cells the option notes quote: S3 for transcriptomics (recommended 5.2 % and legacy 72 % "at a correlation of 0.6"), S1, S3 and S8 for lipid/metab ("10 % at 3 per group", "13 % at 0.6", "14 % with an unbalanced batch"); classic and DIA notes quote none. Why 50: the identity claim is per run and exact, so one disagreeing run decides; 50 runs per cell, 450 to 600 per simulator and 2,000 data sets over the round, cover the spread of k and the refusal paths of each cell far better than the proofs' one run per cell, at about a twentieth of the full cost. A pair that holds in all of them is taken as identical by construction, which the proofs on runs 1 of C0 and C6 already argue.
+- **Arms**: arms 1 and 2, every shipped arm, every counterpart, and the legacy arms (`.github/k124-sim/params-confirm-part1.json`).
+- **Reading**: the workflow's compare job (`compare-arms.R`, then the bound commit's `compare-results.R`), each subset apart. A pair whose identity is expected and holds in every run of every cell: the earlier rows of its simulator arm stand for the shipped code (`exact-gha` 44233215700, `exact-k128-gha` 44233219582, `newarms-gha` 44200924581). A pair "not expected" is reported (its differences are the stated cause or not) and is in Part 2 regardless of what the 50 runs show (agreement there is per-run coincidence, e.g. two counts that happen to agree).
+- **Rule written now for an unexpected failure**: any pair declared "identity expected" that fails on any rule-bearing value in any run of any cell, or whose shipped arm crashes, is added to Part 2 with every cell of its simulator at 1,000 runs (and the quoted extra-hard cells at 500), with no other change; the failing rows and the cause found are reported before Part 2 launches. **[for the user to approve]**
+- **Legacy against earlier rows.** S1 arm 3 (installed) against the `exact-gha` runner rows of the same seeds under the same rule, as the arms 1 and 2 gate (section 6). S2, S3 and S4 legacy rows exist on the laptop only, so they go to Part 2 (cheap: their sweep or grid is shared or under 4 s per run). **[for the user to approve]**
 
-## Runner budget and attempts
+## 5. Part 2, full re-measurement on the shipped code
 
-One job per simulator and cell (S1 cells split in run ranges where one job would not finish in 300 minutes, the `chunk` entry; the rows are the same). Per-job limit 300 minutes for the simulator (the job's own limit 345). One attempt per job; one bounded correction: a job that fails for an infrastructure reason may be rerun once as the same command (`gh run rerun <run> --failed`, the same rows). A job that reaches its limit, or a crash of a shipped-kernel arm (the job fails after its upload, `check-arms.R`), is reported, not relaunched with other settings. The size is in "Sizing" below; above about 120 core-hours the round is not launched without the user's word (carried over).
+Fixed list (launch files `params-confirm-part2-core.json`, `params-confirm-part2-extra.json`); Part 1 can only add to it (rule above):
 
-## What may be uploaded
-
-The simulators' result tables (`s<i>-runs.tsv`, `s2-data.tsv`, `s2-errors.tsv`, `s3-events.tsv`, `s3-timing.tsv`, `s4-notes.tsv`, `s4-timing.tsv`, the per-cell restart files), their meta and log files, the runner's library and job tables, and the compare job's tables. No console output (in this mode the simulator's output stays in the job log), no install log, nothing built with the token; every file is scanned for build output, internal source locations and token shapes before the upload (`check-output.R`, carried over). Artifacts kept 30 days; the per-run tables are not committed (sha256 recorded), as before.
-
-## Before the launch (what must be bound or changed)
-
-| # | Item | Why |
+| Simulator | Arms (plus 1 and 2) | Cells |
 |---|---|---|
-| 1 | Bind the commit (the line above), merge it into this branch with the `ours` strategy, set `package_commit` = `tools_ref` to it in `params.json` | The package under test; it must be reachable on `origin` |
-| 2 | **Technical replicates in classic proteomics and lipid/metab: the kernels refuse the design.** Handed the unit as the replicate set, both count the 8 units as 8 groups and leave k at most 0 (lifecycle: arm 38 refused in every run; classic `prot_ruv_factors_unavailable`, lipid `ruv_k_above_limit`, "limit of 0"). The app lists the option as measured (arm 16). Needed: a kernel that takes the units as RUV-III's replicate sets while counting the groups for the limit, or the option withdrawn there **[the user's decision; wiring]** | Otherwise the round measures a refusal, not the option |
-| 3 | **First-pass nulls have no kernel in classic proteomics and lipid/metab** (the app offers them in every omic, M7). Until one exists the round can only report the simulators' arms 5 and 23 run on the installed package's functions **[the user's decision]** | The option's figure would not be the shipped code's |
-| 4 | **The separation rule is computed by the wiring, not by the kernels**, in classic proteomics, lipid/metab and transcriptomics (the kernels take that k as given); only DIA's kernel computes it (arm 40). Either the wiring's computation is callable at the bound commit, or the separation-rule figures stay those of arms 22, 5 and 24 **[the user's decision]** | As 3 |
-| 5 | **No RUV in classic proteomics is not yet M30's** at `33cfc99b`: arm 37 equals arm 1 (today's `runTestsContrasts`) and differs from arm 27 (M30) in the null rate at 0.01 (2 of 4 rows), as "found and left" (1) of the M29/M30 pass says. The bound commit should carry it | M30 |
-| 6 | M31, M32, M33 are not in `33cfc99b`. M31 and M33 concern a typed k, which the round does not simulate; M32 changes the limit in lipid/metab and so its refusals | The bound commit's limit is the one measured |
-| 7 | The sizing below is far above the carried-over limit of about 120 core-hours: the user chooses the variant **[the user's decision]** | Carried-over limit |
+| S1 classic | 35, 36, 37 (M34), 38 (M34; C6, C8), 39, 40, 41 | C0 to C8, 1,000 runs |
+| S2 DIA | 35, 36, 39, 40, 41; legacy 3, 4 | C0 to C8, 1,000 runs |
+| S3 trx | 35, 36, 39; 40, 41 (needed in C6, C8; run in every cell at about 4 s per run); legacy 3 | C0 to C8, 1,000 runs |
+| S3 trx | 34, legacy 3 | S3, 500 runs |
+| S4 lipid/metab | 34 to 41; legacy 3 | C0 to C8, 1,000 runs |
+| S4 lipid/metab | 34 | S1, S3, S8, 500 runs |
 
-## Lifecycle run (2026-11-19, the one run of this preparation)
+Pass rules 1 to 7 **unchanged** through `aggregate.R` as on `sim-k124-exact` (sha256 `089d852c...`): rule 1 null rate at 0.05 and 0.01 (upper bounds 0.075, 0.015), rule 2 mean false discovery proportion (0.075), rule 3 share above 0.10 against arm 2's share + 0.05, rule 4 the reduction against arm 1 in cells with a factor, rule 5 power loss against arm 1 without one (0.02), rule 6 crash share (0.01), rule 7 global null C4 (0.075); void cells, the primary subset (`full`), C8 reported, extra-hard cells listing failing rules without failing a design: as before. `aggregate.R`'s recommendation table does not know arms 34 to 41 and is not read; the per-arm and per-cell verdicts are. The figure per option is read as before (mean FDP in the worst core cell with true effects; power in C0).
 
-Run 44341242746 (branch `sim-k124-confirm`, commit 240c97d1, label `confirm-lc`): package installed in each job from `kit-129-integration` 33cfc99b; one cell per simulator (S1 C6, S2 C6, S3 C0, S4 C6), runs 1 and 2, 2 cores; S4 arm 37 crashed on purpose in run 1 (`K124_FAULT`).
+## 6. Gate (carried over, M19)
 
-| Check | Result |
-|---|---|
-| Install | Every job built the library with the internal packages from the read token, kept the bound commit's MultiScholaR 0.5.0, confirmed the checkout was 33cfc99b and that the kernels exist; the library check against the laptop's versions passed |
-| New arms ran to completion | S1 34 to 37, S2 34 to 37, 39, 40, S3 34 to 37, 39, S4 34 to 36: every row `ok`. S1 38 and S4 38 `refused` in every run (item 2). S4's lipid and metab tables agreed in every arm |
-| Failure is reported | S4 arm 37's deliberate crash: rows `crashed` with the message in `s4-notes.tsv`, the table uploaded, then the job failed at `check-arms.R`; the run concluded `failure`. The other three simulator jobs and the compare job succeeded |
-| Table assembles | `assemble.sh 44341242746 confirm-lc` laid out all four simulators; the compare job's artifact `k124-confirm-lc-compare` holds the pairs |
-| Agreement (fixed rule, M19 values) | S1 34~32, 37~1; S2 34~32, 37~1; S3 34~31, 37~1: identical (largest relative difference 0). S1 37~27: outside on the null rate at 0.01 only (item 5, declared). S1 and S4 38~33: refused against computed (item 2). S4 34~32: run 1 identical, run 2 different calls (the declared cause). S4 37~1: run 2 identical in every measure (k 0 against arm 1's NA, a convention); run 1 the deliberate crash |
+Before a cell of either part is scored, its arms 1 and 2 equal the earlier hosted-runner rows of the same seeds under the same rule (references as in section 4; for the extra-hard cells the runner rows of `final-20261118` 44201244793 where they exist). A cell that fails the gate is not scored and is reported. **Not yet built for this round:** the gate and the S1 legacy comparison need a runner step that downloads the reference run's artifacts by run id and runs `compare-laptop.R` and `compare-results.R` (the exact round did this on the laptop, now excluded). The `exact-gha` artifacts expire about 2026-12-18. **[for the user to approve: a `gate` job added to the workflow before Part 1]**
 
-Seconds per run inside a worker (mean of the two runs; each shipped arm runs its own count with 200 permutations, and S2's arm 40 its own sweep):
+## 7. Lifecycle run (the instrument check; 2026-11-19)
 
-| Simulator, cell | Shipped arms | Counterparts |
+Run **44419300892** (branch `sim-k124-confirm`, commit c1cae181, label `confirm-lc2`), package installed from 2bbb1f6d in every job (meta lines confirm), S1 C6, S2 C0, S3 C0, S4 C6, runs 1 and 2, 2 cores, every shipped arm beside its counterpart. All six jobs succeeded; every shipped arm `ok` in every run (no refusal, no crash: arm 38 now runs in S1 and S4); the compare job compared every declared pair. The failure path (a crashed shipped arm is uploaded, then fails the job) was shown on this instrument by 44341242746 and not repeated. Tables (not committed): sha256 `50c17531...` (s1), `b6fe491b...` (s2), `6bf4473c...` (s3), `5153fe45...` (s4); artifacts kept 30 days.
+
+Per pair (rule-bearing values; largest relative difference where not identical):
+
+| Pair | S1 C6 (full / complete) | S2 C0 | S3 C0 | S4 C6 (full / complete) |
+|---|---|---|---|---|
+| 34 ~ 32 / 31 | identical / identical | identical | identical | differ (fdp 0.12, power 0.13, null_p05 0.25) / identical |
+| 35 ~ 8 | null_p05 0.057 / identical | fdp 0.13, null_p01 0.33 (k equal) | identical | differ (k: counts differ) / differ |
+| 36 ~ 9 | fdp 0.016, n_calls / fdp 0.016 | fdp 0.14 | identical | differ / differ |
+| 37 ~ 27 / 1 | identical / identical | identical | identical | identical / identical |
+| 38 ~ 33 | identical / identical | (not formed) | (not formed) | differ (fdp 0.43) / identical |
+| 39 ~ 23 | null_p05 0.029 / identical | fdp 0.005 (k equal) | identical | differ / differ (k) |
+| 40 ~ 5 / 24 | k equal; fdp 0.008, power 0.008 / null_p05 0.18 | k equal; fdp 0.005 | identical | k equal; fdp 1, power 0.32 / identical |
+| 41 ~ 22 | k equal; fdp 0.15 / identical | **k differs**; fdp 0.18 | identical | k equal; power 0.05 / identical |
+
+Every expected identity held; every difference is of the declared kind (S3's 35, 36, 39 agreed because the two counts happened to agree in both runs). Seconds per run inside a worker, one core (all arms of the table):
+
+| Simulator, cell | Shipped arms | Counterparts and others | Whole run (job's simulator seconds x cores / runs) |
+|---|---|---|---|
+| S1 C6 | 34-36, 38, 39: 2.1-2.2; 37: 1.0; 40: 13.2 (its sweep); 41: 1.6 | 3: 13.2; 32: 1.1; others under 1 | about 48 s (other cells: the sweep is 23-27 s, about 70 s) |
+| S2 C0 | 34-36, 39: 2.9-3.7; 37: 0.4; 40, 41: 15.8 each (each runs the sweep) | 32: 1.3; others under 0.2 (shared quantification and sweep about 18 s) | about 65 s (C6: 34-36 9 s, 40 36 s, about 150 s, from 44341242746) |
+| S3 C0 | 34-36, 39: 16.3-17.9 (each its own count, 200 permutations); 37: 0.6; 40: 2.2; 41: 1.6 | 31: 8.1; 3: 2.4; others 0.6-1.5 | about 100 s |
+| S4 C6 | 34-36, 38-40: 2.2-2.7 (both classes); 37: 0.7; 41: 1.3 | 3: 3.6; others under 1 | about 60 s (both subsets) |
+
+## 8. Budget (from the lifecycle; core-hours are simulator compute; one cell measured per simulator, so a cell may differ by about half either way)
+
+| | Runs | Core-hours | Jobs (4 cores, limit 300 min) | Wall time at 20 concurrent jobs |
+|---|---|---|---|---|
+| Part 1 | S1 450, S2 450, S3 500, S4 600 | S1 6-9, S2 10-11, S3 14, S4 10: **about 40 to 45** | 40 (one per simulator and cell) | **about 1.5 h** |
+| Part 2 core | 9,000 per simulator | S1 70-105, S2 about 195 (C6, C8 at about 140 s per run), S3 about 175, S4 about 100: **about 540 to 575** | 63 (S2 in ranges of 400 runs, S3 of 500) | **about 16 to 18 h** |
+| Part 2 extra-hard | S3 500, S4 1,500 | **about 13** | 4 | about 1 h |
+
+Each job also spends about 6 to 8 minutes building the library (not counted above: about 5 job-hours in Part 1, 8 in Part 2). One attempt per job; one infrastructure rerun (`gh run rerun <run> --failed`, the same rows). A job that reaches its limit or a crash of a shipped arm is reported, not relaunched with other settings.
+
+**Part 2 is about 4.5 times the carried-over limit of about 120 core-hours [the user's decision].** Levers that keep every number identical (each checked in Part 1 by k identity), none implemented:
+
+| Lever | Saving, about | Note |
 |---|---|---|
-| S1 C6 | 34, 35, 36: 2.5 to 2.7; 37: 1.4; 38: 0.05 (refuses) | 32: 1.6; 33: 1.1; 1: 0.8; 27: 0.8 |
-| S2 C6 | 34, 35, 36: 8.6 to 9.0; 37: 2.5; 39: 10.2; 40: 36.0 | 32: 4.4; 1: 1.8 |
-| S3 C0 | 34, 35, 36, 39: 13.3 to 14.8; 37: 0.5 | 31: 7.3; 1: 0.4 |
-| S4 C6 | 34, 35, 36: 2.6 (both subsets); 37: 0.6; 38: 2.3 | 32, 33: 0.3; 1: 1.2 |
+| L1 One estimated count per data set shared by the shipped arms (the package's own `estimateRuvFactorCount` with the same seed; each kernel otherwise repeats it) | 85 (S3), 10 (others) | k identity per run already shown (prove `count`, lifecycle) |
+| L2 One DIA sweep per data set for arms 40 and 41 (the kernel's sweep call does not depend on the control rule) | 60 (S2) | |
+| L3 Part 2 reuses Part 1's runs 1 to 50 (same seeds, commit, code) | 5 % | needs a first-run entry in the workflow |
+| L4 Drop S1 37 and 38 from Part 2 if Part 1 shows identity (arms 27, 33 have 1,000-run rows) | 5 | M34 names them for Part 2; they are cheap |
 
-## Sizing (estimates from the lifecycle; not launched)
+With L1 and L2 Part 2 is about 400 to 430 core-hours.
 
-Core-hours = seconds per run x runs / 3600, at the lifecycle's per-run cost, with the earlier rounds' cost for arms not in the lifecycle (S1's sweep 23 to 27 s for arm 3; S2's sweep about 30 s for arms 3 to 5; S3's grid). One cell was measured per simulator, so a cell's cost may differ by about half either way.
+## 9. Points for the user
 
-| Variant | S1 | S2 | S3 | S4 | Core-hours, about | Jobs (300-minute limit, 4 cores) | Wall time at 20 concurrent jobs |
-|---|---|---|---|---|---|---|---|
-| A. Core C0 to C8, 1,000 runs; every option arm, arms 1 and 2, the counterparts, legacy recomputed | 105 | 250 | 210 | 35 | 600 | about 45 | about 8 h |
-| B. As A without legacy recomputed (its code is unchanged, M3) and without S2's arm 40 | 40 | 120 | 160 | 35 | 355 | about 30 | about 5 h |
-| C. B plus the extra-hard cells at 500 runs | 70 | 215 | 280 | 65 | 630 | about 55 | about 9 h |
-| D. A plus the extra-hard cells at 500 runs | 185 | 445 | 365 | 65 | 1,060 | about 80 | about 14 h |
+1. Bind 2bbb1f6d, or the tip at launch (section 1).
+2. Part 1's cells and 50 runs; the extra-hard cells quoted by the notes only (section 4).
+3. The rule adding an unexpected failure to Part 2 (section 4).
+4. **DIA, supplied list with the separation rule:** the app's figure (0.056, `omicGuiRuvTableDiaLimpa`) cites arm 22 (the separation rule on the list); the shipped kernel uses today's sweep k whatever the list (lifecycle: k differs in both runs). Part 2's arm 41 measures what ships; the figure source must change, or the kernel follow arm 22.
+5. Legacy: S1 by identity against `exact-gha`; S2, S3, S4 re-measured (section 4); lipid/metab legacy is not expected to be identical (level repair).
+6. Lipid/metab identity read on subset `complete`; `full` re-measured (section 3).
+7. A user's typed k not simulated (section 2).
+8. The gate job (section 6) must be added before Part 1.
+9. Part 2's size and the levers L1 to L4 (section 8).
 
-Every variant is above the carried-over limit of about 120 core-hours; none is launched without the user's word. No launch file is written: `params.json` keeps the lifecycle's parameters and a push that leaves it alone starts nothing.
+## 10. Launch, once approved
+
+1. If the binding changes: merge the commit with `git merge -s ours <hash>`, replace the hash in section 1 and the three launch files, and repeat the lifecycle (`params.json` as for 44419300892, new label).
+2. Add the gate job (item 8) and its own lifecycle check.
+3. Part 1: `cp .github/k124-sim/params-confirm-part1.json .github/k124-sim/params.json`, commit, push `sim-k124-confirm` (the push of `params.json` starts the run). Read the compare artifact `k124-confirm-p1-compare` and the gate; apply section 4's rule; record the outcome here.
+4. Part 2: the same with `params-confirm-part2-core.json`, then `params-confirm-part2-extra.json` (each push one run), plus any pairs Part 1 added. Assemble (`assemble.sh <run> <label>`) and score with `aggregate.R` unchanged.
+
+`params.json` holds the lifecycle's parameters; a push that leaves it alone starts nothing.
