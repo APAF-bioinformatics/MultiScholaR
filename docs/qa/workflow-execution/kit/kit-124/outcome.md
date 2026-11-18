@@ -1,4 +1,4 @@
-# KIT-124: RUV in every omic, confirming studies (core cells complete, 2026-11-18; extra-hard cells complete and scored 2026-11-18)
+# KIT-124: RUV in every omic, confirming studies (core cells complete, 2026-11-18; extra-hard cells complete and scored 2026-11-18; exactness round scored 2026-11-18, last section)
 
 **Corrected 2026-11-18 (final scoring of the extra-hard cells).** The title read "stress cells running" and the paragraph below says they "are still running": every extra-hard cell that is defined has now run and is scored in the last section, "Extra-hard scenarios, final, and conditions of use". They change no verdict. One qualifier to the per-simulator readings below, which are core-cell statements: no correction is conservative (S1, S3) or calibrated (S4) in the core cells, where the factor is tied to the groups at 0.3 at most; at 0.6 its mean false discovery proportion is 0.593 (S1), 0.450 (S3) and 0.642 (S4), and 0.533 in S2 (last section).
 
@@ -818,3 +818,277 @@ In the known-batch scenario of lipid/metab, putting the known batch in the model
 - **Known controls** behave as the recommended design does, with a little less power; in transcriptomics they lose power when there is no factor (0.569 against 0.788 with low counts). **First-pass nulls** hold in classic proteomics except under a tied factor, a known batch or no factor, and lose nearly all power there with three factors (0.071); they fail every DIA_LIMPA scenario with a factor and every lipid/metab scenario, and in transcriptomics they are calibrated on the mean but lose most of their power in most scenarios. These first-pass figures are arm 5's (the separation rule for k); the estimated-count variant (arm 23) was not run in the extra-hard cells.
 - **Legacy** is outside the limits in nearly every scenario of classic proteomics, DIA_LIMPA and lipid/metab (mean FDP 0.082 to 0.684), and in transcriptomics where the factor is tied to the groups or a batch is present (0.186 to 0.724). Runner figures marked †.
 - **Not measurable here:** 3 per group in lipid/metab (the ceiling fails in all four scenarios), 50% missing without a factor in DIA_LIMPA (the route is liberal on its own), heavy tails and one-directional effects in transcriptomics, and 3 per group with three factors in classic proteomics.
+
+## Exactness round, scored 2026-11-18
+
+Decision M16 (`design-review-20261118.md` section 6): four changes to the recommended design, each as its own arm and all together, measured before any goes into the package. The round's declaration, committed on `sim-k124-exact` and `sim-k129-exact` before either run started (last change `bbbdbc2a`, 03:25 UTC; runs started 03:50 UTC), is copied unchanged to `scored/exact-round-declaration.md` (sha256 `875ee888`) and fixes how each result is read. Scoring and reading only: no run was started, rerun or changed, and no code changed.
+
+Scored with the round's own `aggregate.R` (sha256 `089d852c`, identical on both branches; the version on `performance-v2`, `c5c6275f`, with three constants changed so that the new cell C8 is a no-factor, reported cell), one scoring per package tree: `scored/exact-gha/` (tree `0b6fcb6d`) and `scored/exact-k128-gha/` (tree `ace1f4de`, kit-128). Each folder's `aggregate-used.txt` names the script, its commit and sha256 and the difference against `performance-v2`. The variant-beside-base tables, the paired differences, the E distributions and the declaration's reading per change are in each folder's `beside/`, written by `exact-beside.R` from `k124-cells.tsv` and the per-run tables. The per-run tables are not committed (sha256 in `not-committed.sha256`; artifact digests in `jobs.tsv`).
+
+Arms (each an existing arm with one change): 25 = arm 7 with exact per-feature standard errors for comparisons (a); 26, 27, 28 = arms 7, 1, 3 with the classic proteomics test applying its trend and robust settings (b); 29, 30 = arms 7, 16 with E counted after the biological units are removed, in C6 and C8 (c); 31 = arm 7 with E from 200 permutations (d); 32, 33 = all together on arms 7 and 16 (e). C8 is the technical-duplicate cell with no unwanted factor (new; reported, rule 5).
+
+### Inventory and jobs
+
+| Run | Branch, workflow commit | Package tree | Content | Jobs | Attempts |
+|---|---|---|---|---|---|
+| 44233215700 (label `exact`) | `sim-k124-exact`, `2ba5cf87` | `0b6fcb6d` | S1, S2: C0 to C8; S3, S4: C0 to C5, C7. S1 arms 1, 2, 3, 7, 16, 25 to 33 (16, 29, 30, 33 in C6 and C8 only); S2 1, 2, 7, 25, 29 (C6, C8), 31, 32; S3 1, 2, 7, 31; S4 1, 2, 7, 25, 31, 32 | 41 simulator jobs (S1 as two ranges of 500 runs per cell) and the plan job, all succeeded | 1 for every job; no rerun |
+| 44233219582 (label `exact-k128`) | `sim-k129-exact`, `2d03b103` | `ace1f4de` | S3 and S4, C6 and C8. S3 arms 1, 2, 7, 31; S4 1, 2, 7, 16, 25, 29 to 33 | 4 simulator jobs and the plan job, all succeeded | 1; no rerun |
+
+- Every declared cell is present once per simulator; S1's two ranges per cell (runs 1 to 500, 501 to 1,000) join without overlap. 412 (tree, simulator, cell, arm, subset) groups, each with exactly 1,000 rows, runs 1 to 1,000, no duplicate key (`inventory.tsv` in each folder).
+- **Every row is `ok`** (196,000 + 56,000 + 28,000 + 84,000 rows on `0b6fcb6d`; 8,000 + 40,000 on kit-128): no refusal, no crash, so no refusal rule was needed.
+- The artifacts hold result tables, per-cell restart files, the simulators' meta files and, per job, the library check, the console output and the job's facts; no input data. The library check passed its hard items in every job (R 4.6.1, limma 3.68.4, edgeR 4.10.1, sva 3.60.0, RUVSeq 1.46.0, ruv, RUVIIIC, limpa, fastlimpadpc and the pinned commits identical to the laptop's).
+- Simulator time 172,861 s, about 192 core-hours on 4 cores; job wall time 198,350 s, about 220 core-hours (declared sizing about 210). Longest simulator job 7,739 s (S1 C8, runs 501 to 1,000), within the 300-minute limit.
+- Run r0a (44203261310) was downloaded again with `assemble.sh` for the kit-128 gate; its per-run tables have the sha256 already committed in `scored/r0a-gha/not-committed.sha256`.
+
+### The gate (declared; read as M19 decides)
+
+Rule: `packaging/verify/compare-results.R` (relative 1e-6, absolute floor 1e-9, discrete values exact), applied per row by `compare/gate-rows.R` to the files written by `.github/k124-sim/compare-laptop.R`. C8 rows were removed from the runner's tables first (the laptop has no C8). All 1,000 runs per cell.
+
+| Comparison | Rows compared | Discrete differences | Rows outside the rule | Rule-bearing values (null rates, FDP, power, k, counts) | Gate as declared | As read under M19 |
+|---|---|---|---|---|---|---|
+| S1 arms 1, 2, 7, C0 to C7, both subsets, against the laptop's `s1-confirm` | 48,000 | 0 | 0 (largest relative difference 5.9e-10) | identical | pass | pass |
+| S2 arms 1, 2, 7, C0 to C7 | 24,000 | 0 | 0 (3.1e-8, bias/rmse) | identical | pass | pass |
+| S3 arms 1, 2, 7, C0 to C5, C7 | 21,000 | 0 | 7 rows: bias in C0 (run 564, arm 2), C1 (151 and 977, arm 1), C5 (614, arm 1), C7 (218, arms 1, 2, 7; arm 1 also rmse); relative 1.0e-6 to 6.7e-5 | identical | fails in C0, C1, C5, C7 | pass, bias/rmse only (accepted, M19) |
+| S4 arms 1, 2, 7, C0 to C5, C7, both subsets | 42,000 | 0 | 0 (identical) | identical | pass | pass |
+| kit-128: S3 arms 1, 2, 7, C6, against run r0a | 3,000 | 0 | 0 (2.8e-8) | identical | pass | pass |
+| kit-128: S4 arms 1, 2, 7, 16, C6, both subsets, against r0a | 8,000 | 0 | 0 (identical) | identical | pass | pass |
+| S1 arm 3 against the laptop (reported, not gated) | 16,000 | 310 (`n_features`, `n_calls`) | 388, all in C6 (310 full, 78 complete); C0 to C5 and C7 within the rule | differ in C6 | reported | reported |
+
+S3's seven rows are the same rows as in the new-arms run (`scored/newarms-gha/compare/`), with two differences: C7 run 823 arm 2, outside there, is within the rule here (so two runner runs gave a bias differing at the 1e-6 level on the same seed), and arm 7, not compared there, adds one row (C7 run 218). C8 is new on both trees: nothing to compare it with. Arm 3 differs from the laptop only in C6 here (scored mean FDP, full set: laptop 0.0339, runner 0.0330; every other cell identical in the scored tables), consistent with the platform dependence recorded in `gha-proof-20261118/README.md`; arm 28 is therefore read against arm 3 of the same runner job. All cells meet the gate as read under M19 and all are scored.
+
+### How the tables are read
+
+Primary subset (`full`) unless stated; S1 and S4 also have `complete` (in each folder's `beside/`). "Base → variant" are the two arms from the same runner job on the same data sets. Standard errors in brackets are Monte Carlo errors over the 1,000 runs. Because the arms share data sets, the **paired** difference per run (variant minus base) is the precise comparison: its mean and standard error are in the last two columns; the two marginal errors combined overstate the uncertainty of the difference by a factor of about 3 (S4, arm 25) to 10 (S1) where the change moves many runs, and by far more where it moves few. Verdict letters: rule number, F fail, i inconclusive. "(reported)" cells judge no design; "(void)" is S4 C4 (void by the scoring unit, as before). The declaration's reading: "no worse" means that in every judged core cell no rule's result is worse than the base arm's (pass < inconclusive < fail). A rule moving to fail is "rejected"; a move from pass to inconclusive would be "between, the user's decision" (no such case occurred in a judged cell, so this reading choice decides nothing here).
+
+### (a) Exact per-feature standard errors: arm 25 against arm 7 (S1, S2, S4)
+
+Declared: adopted if no worse than arm 7; rejected if worse on a rule in a judged core cell.
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C0 | 1.00 → 1.00 | 0.0520 → 0.0525 | 0.0535 (0.0006) → 0.0543 (0.0007) | 0.025 → 0.026 | 0.914 (0.0008) → 0.916 (0.0008) | pass → pass | +0.0008 (0.0001) | +0.0015 (0.0002) |
+| S1 C1 | 1.00 → 1.00 | 0.0576 → 0.0582 | 0.0660 (0.0011) → 0.0669 (0.0011) | 0.115 → 0.122 | 0.977 (0.0004) → 0.978 (0.0004) | fail (3F) → fail (3F) | +0.0009 (0.0001) | +0.0002 (0.0001) |
+| S1 C2 | 1.00 → 1.00 | 0.0507 → 0.0510 | 0.0530 (0.0009) → 0.0537 (0.0009) | 0.059 → 0.061 | 0.871 (0.0013) → 0.873 (0.0013) | pass → pass | +0.0007 (0.0002) | +0.0021 (0.0003) |
+| S1 C3 | 0.12 → 0.12 | 0.0503 → 0.0503 | 0.0524 (0.0007) → 0.0525 (0.0007) | 0.018 → 0.017 | 0.922 (0.0008) → 0.922 (0.0008) | pass → pass | +0.0001 (0.0000) | +0.0001 (0.0000) |
+| S1 C4 | 1.00 → 1.00 | 0.0499 → 0.0503 | 0.0610 (0.0076) → 0.0610 (0.0076) | 0.061 → 0.061 | n/a (n/a) → n/a (n/a) | fail (2i,4F,7i) → fail (2i,4F,7i) | +0.0000 (0.0020) | n/a |
+| S1 C5 | 1.00 → 1.00 | 0.0527 → 0.0532 | 0.0560 (0.0007) → 0.0570 (0.0007) | 0.040 → 0.041 | 0.902 (0.0009) → 0.903 (0.0009) | pass → pass | +0.0010 (0.0002) | +0.0013 (0.0002) |
+| S1 C6 | 1.01 → 1.01 | 0.0511 → 0.0514 | 0.0538 (0.0007) → 0.0542 (0.0007) | 0.030 → 0.035 | 0.896 (0.0009) → 0.897 (0.0009) | pass → pass | +0.0004 (0.0001) | +0.0005 (0.0001) |
+| S1 C7 | 1.00 → 1.00 | 0.0513 → 0.0516 | 0.0531 (0.0009) → 0.0536 (0.0009) | 0.058 → 0.063 | 0.892 (0.0012) → 0.893 (0.0012) | pass → pass | +0.0005 (0.0002) | +0.0008 (0.0002) |
+| S1 C8 (reported) | 5.98 → 5.98 | 0.0031 → 0.0028 | 0.0026 (0.0014) → 0.0026 (0.0014) | 0.005 → 0.004 | 0.005 (0.0022) → 0.005 (0.0022) | fail (5F) → fail (5F) | -0.0000 (0.0000) | +0.0000 (0.0000) |
+| S2 C0 | 1.00 → 1.00 | 0.0501 → 0.0506 | 0.0514 (0.0006) → 0.0520 (0.0006) | 0.003 → 0.004 | 0.909 (0.0012) → 0.910 (0.0012) | pass → pass | +0.0006 (0.0001) | +0.0015 (0.0001) |
+| S2 C1 | 1.00 → 1.00 | 0.0496 → 0.0501 | 0.0499 (0.0005) → 0.0507 (0.0005) | 0.006 → 0.007 | 0.991 (0.0002) → 0.991 (0.0002) | pass → pass | +0.0009 (0.0001) | +0.0003 (0.0000) |
+| S2 C2 | 1.00 → 1.00 | 0.0497 → 0.0502 | 0.0505 (0.0008) → 0.0512 (0.0008) | 0.038 → 0.040 | 0.869 (0.0019) → 0.871 (0.0019) | pass → pass | +0.0007 (0.0002) | +0.0021 (0.0002) |
+| S2 C3 | 0.17 → 0.17 | 0.0495 → 0.0495 | 0.0491 (0.0005) → 0.0491 (0.0005) | 0.004 → 0.004 | 0.932 (0.0006) → 0.932 (0.0006) | pass → pass | +0.0000 (0.0000) | +0.0001 (0.0000) |
+| S2 C4 | 1.00 → 1.00 | 0.0494 → 0.0498 | 0.0440 (0.0065) → 0.0470 (0.0067) | 0.044 → 0.047 | n/a (n/a) → n/a (n/a) | inconclusive (4i) → inconclusive (4i) | +0.0030 (0.0017) | n/a |
+| S2 C5 | 1.00 → 1.00 | 0.0510 → 0.0514 | 0.0526 (0.0006) → 0.0534 (0.0006) | 0.017 → 0.020 | 0.881 (0.0023) → 0.883 (0.0023) | pass → pass | +0.0008 (0.0001) | +0.0016 (0.0002) |
+| S2 C6 | 1.01 → 1.01 | 0.0518 → 0.0521 | 0.0554 (0.0006) → 0.0560 (0.0006) | 0.020 → 0.024 | 0.768 (0.0015) → 0.770 (0.0015) | pass → pass | +0.0006 (0.0001) | +0.0016 (0.0001) |
+| S2 C7 | 1.00 → 1.00 | 0.0499 → 0.0502 | 0.0501 (0.0005) → 0.0506 (0.0005) | 0.010 → 0.008 | 0.922 (0.0009) → 0.923 (0.0009) | pass → pass | +0.0006 (0.0001) | +0.0007 (0.0001) |
+| S2 C8 (reported) | 6.00 → 6.00 | 0.0410 → 0.0410 | 0.0339 (0.0005) → 0.0340 (0.0005) | 0.000 → 0.000 | 0.738 (0.0013) → 0.738 (0.0013) | fail (5F) → fail (5F) | +0.0001 (0.0001) | +0.0001 (0.0001) |
+| S4 C0 | 1.95 → 1.95 | 0.0484 → 0.0538 | 0.0575 (0.0015) → 0.0714 (0.0016) | 0.164 → 0.253 | 0.434 (0.0033) → 0.468 (0.0035) | inconclusive (3i) → fail (3F) | +0.0139 (0.0008) | +0.0346 (0.0010) |
+| S4 C1 | 2.00 → 2.00 | 0.0539 → 0.0608 | 0.0647 (0.0014) → 0.0818 (0.0016) | 0.187 → 0.310 | 0.713 (0.0021) → 0.747 (0.0020) | fail (3F) → fail (2F,3F) | +0.0172 (0.0007) | +0.0338 (0.0008) |
+| S4 C2 | 1.96 → 1.96 | 0.0467 → 0.0525 | 0.0639 (0.0025) → 0.0777 (0.0027) | 0.278 → 0.345 | 0.331 (0.0041) → 0.356 (0.0042) | inconclusive (3i) → fail (2i,3F) | +0.0138 (0.0013) | +0.0255 (0.0014) |
+| S4 C3 | 0.14 → 0.14 | 0.0491 → 0.0491 | 0.0589 (0.0013) → 0.0591 (0.0013) | 0.153 → 0.157 | 0.582 (0.0026) → 0.582 (0.0026) | pass → pass | +0.0002 (0.0001) | +0.0001 (0.0002) |
+| S4 C4 (void) | 1.95 → 1.95 | 0.0442 → 0.0496 | 0.1410 (0.0110) → 0.1640 (0.0117) | 0.141 → 0.164 | n/a (n/a) → n/a (n/a) | fail (2F,4F,7F) → fail (2F,3i,4F,7F) | +0.0230 (0.0049) | n/a |
+| S4 C5 | 1.95 → 1.95 | 0.0543 → 0.0602 | 0.0724 (0.0022) → 0.0876 (0.0024) | 0.273 → 0.350 | 0.362 (0.0033) → 0.398 (0.0034) | fail (2i,3F) → fail (2F,3F) | +0.0152 (0.0010) | +0.0358 (0.0012) |
+| S4 C7 | 1.99 → 1.99 | 0.0490 → 0.0538 | 0.0652 (0.0014) → 0.0771 (0.0015) | 0.178 → 0.269 | 0.395 (0.0026) → 0.419 (0.0027) | inconclusive (3i) → fail (2i,3F) | +0.0119 (0.0006) | +0.0235 (0.0006) |
+| S4 C6 (reported), kit-128 tree | 1.99 → 1.99 | 0.0490 → 0.0532 | 0.0579 (0.0017) → 0.0685 (0.0018) | 0.202 → 0.250 | 0.354 (0.0030) → 0.382 (0.0032) | inconclusive (3i) → fail (3F) | +0.0106 (0.0008) | +0.0282 (0.0011) |
+| S4 C8 (reported), kit-128 tree | 5.88 → 5.88 | 0.0211 → 0.0209 | 0.0809 (0.0054) → 0.0772 (0.0051) | 0.213 → 0.209 | 0.078 (0.0051) → 0.079 (0.0051) | fail (2i,5F) → fail (2i,5F) | -0.0036 (0.0025) | +0.0003 (0.0001) |
+
+- **Direction: slightly more liberal wherever the change acts; nowhere materially more conservative.** Classic proteomics and DIA_LIMPA: mean FDP +0.0004 to +0.0010 (paired SE 0.0001 to 0.0002), type I at 0.05 +0.0002 to +0.0006, at 0.01 +0.00005 to +0.00016, power +0.0002 to +0.0021 (cells with a factor; C3 and C4 essentially unchanged); 223 to 767 of 1,000 data sets change their FDP in the cells with true effects. On S1's complete-feature subset 13 to 56 data sets change, by +0.0001 to +0.0004. No rule result changes in either simulator, in either subset: **no worse, adopted by the declaration** in S1 and S2.
+- **Lipid/metab: rejected by the declaration.** With missing values the exact errors give mean FDP +0.012 to +0.017 (paired SE 0.0006 to 0.0013), type I at 0.05 +0.005 to +0.007, power +0.024 to +0.036, and the share of data sets above 0.10 rises by 0.067 to 0.123 (paired SE about 0.010): C0 0.164 → 0.253, C1 0.187 → 0.310, C2 0.278 → 0.345, C5 0.273 → 0.350, C7 0.178 → 0.269. Rules moving to fail in judged core cells: rule 3 in C0, C2, C7; rule 2 in C1 (pass → fail) and C5 (inconclusive → fail). On the complete subset arm 25 equals arm 7 in every run (no missing values, nothing to correct), as it should. **The change does not reduce the lipid/metab spread; it widens it.** The approximate errors were conservative for features with missing values in this simulator, and arm 7's lipid/metab figures depend on that.
+- C1 (12 per group), where arm 7 is slightly over in classic proteomics (share above 0.10 0.115 against a limit of 0.057; mean FDP 0.066): 0.122 and 0.067 with exact errors. (a) does not repair it.
+- kit-128 S4 (reported cells): C6 the same pattern (+0.011 FDP, rule 3 inconclusive → fail); C8 no material difference (-0.004, SE 0.0025; power unchanged at 0.08 with E about 6).
+
+### (b) The classic proteomics test applies its trend and robust settings: arms 26, 27, 28 against 7, 1, 3 (S1 only)
+
+Declared: adopted if no worse than the base arm. No cell of this round has fewer than 6 per group (C0 to C5, C7: 6 or 12 per group; C6, C8: technical duplicates), so the p-value differences M16 records at 3 per group (up to 0.17) are **not measured here**.
+
+Arm 26 against arm 7:
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C0 | 1.00 → 1.00 | 0.0520 → 0.0523 | 0.0535 (0.0006) → 0.0540 (0.0006) | 0.025 → 0.026 | 0.914 (0.0008) → 0.915 (0.0008) | pass → pass | +0.0005 (0.0001) | +0.0007 (0.0001) |
+| S1 C1 | 1.00 → 1.00 | 0.0576 → 0.0578 | 0.0660 (0.0011) → 0.0661 (0.0011) | 0.115 → 0.114 | 0.977 (0.0004) → 0.977 (0.0004) | fail (3F) → fail (3F) | +0.0001 (0.0001) | +0.0000 (0.0000) |
+| S1 C2 | 1.00 → 1.00 | 0.0507 → 0.0509 | 0.0530 (0.0009) → 0.0538 (0.0009) | 0.059 → 0.062 | 0.871 (0.0013) → 0.872 (0.0013) | pass → pass | +0.0009 (0.0002) | +0.0011 (0.0002) |
+| S1 C3 | 0.12 → 0.12 | 0.0503 → 0.0506 | 0.0524 (0.0007) → 0.0528 (0.0007) | 0.018 → 0.018 | 0.922 (0.0008) → 0.923 (0.0008) | pass → pass | +0.0004 (0.0001) | +0.0005 (0.0001) |
+| S1 C4 | 1.00 → 1.00 | 0.0499 → 0.0502 | 0.0610 (0.0076) → 0.0640 (0.0077) | 0.061 → 0.064 | n/a (n/a) → n/a (n/a) | fail (2i,4F,7i) → fail (2i,4F,7i) | +0.0030 (0.0026) | n/a |
+| S1 C5 | 1.00 → 1.00 | 0.0527 → 0.0530 | 0.0560 (0.0007) → 0.0565 (0.0007) | 0.040 → 0.042 | 0.902 (0.0009) → 0.902 (0.0009) | pass → pass | +0.0004 (0.0001) | +0.0006 (0.0001) |
+| S1 C6 | 1.01 → 1.01 | 0.0511 → 0.0513 | 0.0538 (0.0007) → 0.0541 (0.0007) | 0.030 → 0.031 | 0.896 (0.0009) → 0.896 (0.0009) | pass → pass | +0.0003 (0.0001) | +0.0003 (0.0001) |
+| S1 C7 | 1.00 → 1.00 | 0.0513 → 0.0515 | 0.0531 (0.0009) → 0.0535 (0.0009) | 0.058 → 0.056 | 0.892 (0.0012) → 0.893 (0.0012) | pass → pass | +0.0004 (0.0002) | +0.0006 (0.0001) |
+| S1 C8 (reported) | 5.98 → 5.98 | 0.0031 → 0.0035 | 0.0026 (0.0014) → 0.0046 (0.0020) | 0.005 → 0.007 | 0.005 (0.0022) → 0.005 (0.0022) | fail (5F) → fail (5F) | +0.0020 (0.0020) | +0.0000 (0.0000) |
+
+Arm 28 against arm 3 (Legacy; both from the same runner job):
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C0 | 1.41 → 1.41 | 0.0725 → 0.0736 | 0.0979 (0.0012) → 0.1006 (0.0013) | 0.439 → 0.457 | 0.920 (0.0025) → 0.921 (0.0024) | fail (1F,2F,3F) → fail (1F,2F,3F) | +0.0027 (0.0002) | +0.0009 (0.0001) |
+| S1 C1 | 2.96 → 2.96 | 0.0554 → 0.0560 | 0.0650 (0.0011) → 0.0664 (0.0011) | 0.152 → 0.161 | 0.933 (0.0036) → 0.933 (0.0036) | fail (3F) → fail (3F) | +0.0014 (0.0001) | +0.0000 (0.0001) |
+| S1 C2 | 1.28 → 1.28 | 0.0728 → 0.0738 | 0.1129 (0.0022) → 0.1160 (0.0022) | 0.514 → 0.528 | 0.875 (0.0034) → 0.876 (0.0034) | fail (1F,2F,3F) → fail (1F,2F,3F) | +0.0031 (0.0004) | +0.0013 (0.0002) |
+| S1 C3 | 1.99 → 1.99 | 0.0676 → 0.0694 | 0.0886 (0.0013) → 0.0933 (0.0013) | 0.423 → 0.461 | 0.891 (0.0042) → 0.892 (0.0041) | fail (1F,2F,3F,5F) → fail (1F,2F,3F,5F) | +0.0047 (0.0004) | +0.0016 (0.0003) |
+| S1 C4 | 1.22 → 1.22 | 0.0725 → 0.0734 | 0.2060 (0.0128) → 0.2220 (0.0131) | 0.206 → 0.222 | n/a (n/a) → n/a (n/a) | fail (1F,2F,3F,4F,7F) → fail (1F,2F,3F,4F,7F) | +0.0160 (0.0044) | n/a |
+| S1 C5 | 1.57 → 1.57 | 0.1945 → 0.1963 | 0.3845 (0.0055) → 0.3890 (0.0054) | 0.896 → 0.910 | 0.839 (0.0057) → 0.841 (0.0057) | fail (1F,2F,3F) → fail (1F,2F,3F) | +0.0045 (0.0004) | +0.0018 (0.0003) |
+| S1 C6 | 2.98 → 2.98 | 0.0301 → 0.0307 | 0.0330 (0.0018) → 0.0319 (0.0013) | 0.009 → 0.007 | 0.693 (0.0065) → 0.697 (0.0065) | pass → pass | -0.0012 (0.0012) | +0.0036 (0.0003) |
+| S1 C7 | 2.92 → 2.92 | 0.0808 → 0.0820 | 0.1419 (0.0027) → 0.1475 (0.0027) | 0.691 → 0.719 | 0.836 (0.0056) → 0.838 (0.0055) | fail (1F,2F,3F) → fail (1F,2F,3F) | +0.0056 (0.0007) | +0.0017 (0.0004) |
+| S1 C8 (reported) | 2.01 → 2.01 | 0.0314 → 0.0320 | 0.0280 (0.0006) → 0.0288 (0.0006) | 0.004 → 0.002 | 0.766 (0.0055) → 0.770 (0.0054) | fail (5F) → fail (5F) | +0.0008 (0.0003) | +0.0037 (0.0003) |
+
+- **Arm 26 against 7: no material difference.** Mean FDP +0.0001 to +0.0009 (paired SE 0.0001 to 0.0002; C4 +0.003, SE 0.003), power +0.0000 to +0.0011, type I at 0.05 +0.0001 to +0.0003; on the complete subset the FDP moves the other way, by -0.0002 to -0.0005. At 12 per group (C1) mean FDP 0.0660 → 0.0661 (+0.0001, SE 0.0001) and the share above 0.10 0.115 → 0.114: rule 3 fails there with or without the change. No rule changes: **no worse, adopted by the declaration.**
+- **Arm 27 against 1 (no RUV): no material difference.** Mean FDP within -0.0003 to +0.0005 of arm 1 in every cell but C4 (-0.0010, SE 0.0010); power -0.0018 (SE 0.0002) in C6 and -0.0007 (0.0001) in C1, otherwise within 0.0005. Rule 4 reads "inconclusive" for arm 27 where arm 1 reads "fail": an artefact of rule 4 for no-RUV arms (arm 1 measured against itself always fails it; aggregation note A3), not an improvement. No rule worse: **no worse.**
+- **Arm 28 against 3 (Legacy): calibration slightly worse, rules unchanged.** Mean FDP +0.0014 to +0.0056 in the core cells with a factor except C6 (paired SE 0.0001 to 0.0007; C6 -0.0012, SE 0.0012), +0.0047 in C3 and +0.016 (0.004) in C4; power +0.000 to +0.004. Legacy already fails rules 1 to 3 in C0, C2 to C5, C7 and rule 3 in C1; no rule moves (one moves the better way, rule 3 in C1 on the complete subset): **no worse by the declaration's rule.** Its worst core-cell figure moves from 0.385 to 0.389 (C5).
+- Whether (b) should be applied to Legacy at all is not a question the declaration answers: M3 keeps Legacy unchanged so that it reproduces earlier releases.
+
+### (c) The count with the biological units removed: arms 29, 30 against 7, 16 (C6 and C8)
+
+Declared: adopted if, in C8, the mean E and the share of data sets with E above 0 are lower than the base arm's; in C6 no worse than the base (judged in S1, S2); in C8 rule 5 no worse than the base. S3 has no arm (on kit-128 a unit's libraries are summed before anything, so E already sees one sample per unit); S2 has no arm 30 (arm 16 repeats arm 7 on the DIA route). In S4, E is the mean of the two assays' counts.
+
+E's distribution (count of data sets per value of E, 1,000 data sets):
+
+| Simulator, cell | Arm 7 (and 16): mean E; P(E > 0); distribution | Arm 29 (and 30): mean E; P(E > 0); distribution | Paired change in P(E > 0) (SE) |
+|---|---|---|---|
+| S1 C8 (no factor) | 5.98; 0.999; 6: 994, 5: 2, 1: 3, 0: 1 | 0.075; 0.070; 0: 930, 1: 65, 2: 5 | -0.929 (0.008) |
+| S2 C8 | 6.00; 1.000; 6: 1,000 | 0.103; 0.088; 0: 912, 1: 78, 2: 5, 3: 5 | -0.912 (0.009) |
+| S4 C8, kit-128 | 5.88; 1.000; 6: 791, 5.5: 187, 5: 19, 4.5: 3 | 0.092; 0.154; 0: 846, 0.5: 129, 1: 20, 1.5: 5 | -0.846 (0.011) |
+| S1 C6 (one factor) | 1.006; 1.000; 1: 994, 2: 6 | 1.000; 1.000; 1: 1,000 | 0 (6 data sets go from 2 to 1) |
+| S2 C6 | 1.011; 1.000; 1: 996, 2: 2, 5: 1, 6: 1 | 1.000; 1.000; 1: 1,000 | 0 (4 data sets go to 1) |
+| S4 C6, kit-128 | 1.99; 1.000; 2: 986, 1.5: 10, 1: 4 | 1.83; 1.000; 2: 782, 1.5: 102, 1: 116 | 0 (213 data sets lower) |
+
+The defect is confirmed and removed: where there is no unwanted factor, today's count returns about 6 in nearly every data set (the units-minus-groups count M16 describes), and arm 7 then makes almost no calls in classic proteomics and lipid/metab (power 0.005 and 0.078 against 0.904 and 0.473 without correction) and loses 0.063 power in DIA_LIMPA; the technical-replicate design (arm 16) loses 0.128 (S1) and 0.142 (S4). With the units removed E is 0 in 85% to 93% of data sets.
+
+Arm 29 against arm 7:
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C6 | 1.01 → 1.00 | 0.0511 → 0.0511 | 0.0538 (0.0007) → 0.0538 (0.0007) | 0.030 → 0.030 | 0.896 (0.0009) → 0.896 (0.0009) | pass → pass | -0.0000 (0.0000) | +0.0001 (0.0001) |
+| S1 C8 (reported) | 5.98 → 0.07 | 0.0031 → 0.0502 | 0.0026 (0.0014) → 0.0520 (0.0006) | 0.005 → 0.010 | 0.005 (0.0022) → 0.904 (0.0008) | fail (5F) → pass | +0.0494 (0.0016) | +0.8983 (0.0023) |
+| S2 C6 | 1.01 → 1.00 | 0.0518 → 0.0519 | 0.0554 (0.0006) → 0.0555 (0.0006) | 0.020 → 0.021 | 0.768 (0.0015) → 0.768 (0.0015) | pass → pass | +0.0001 (0.0001) | +0.0002 (0.0001) |
+| S2 C8 (reported) | 6.00 → 0.10 | 0.0410 → 0.0530 | 0.0339 (0.0005) → 0.0569 (0.0006) | 0.000 → 0.022 | 0.738 (0.0013) → 0.800 (0.0011) | fail (5F) → pass | +0.0231 (0.0005) | +0.0625 (0.0009) |
+| S4 C6 (reported), kit-128 tree | 1.99 → 1.83 | 0.0490 → 0.0450 | 0.0579 (0.0017) → 0.0520 (0.0018) | 0.202 → 0.186 | 0.354 (0.0030) → 0.311 (0.0041) | inconclusive (3i) → pass | -0.0060 (0.0009) | -0.0428 (0.0030) |
+| S4 C8 (reported), kit-128 tree | 5.88 → 0.09 | 0.0211 → 0.0518 | 0.0809 (0.0054) → 0.0671 (0.0016) | 0.213 → 0.232 | 0.078 (0.0051) → 0.475 (0.0030) | fail (2i,5F) → inconclusive (3i) | -0.0138 (0.0055) | +0.3968 (0.0058) |
+
+Arm 30 against arm 16 (technical replicates as the replicate structure):
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C6 | 1.01 → 1.00 | 0.0514 → 0.0514 | 0.0540 (0.0007) → 0.0541 (0.0007) | 0.032 → 0.032 | 0.896 (0.0009) → 0.896 (0.0009) | pass → pass | +0.0000 (0.0000) | +0.0000 (0.0000) |
+| S1 C8 (reported) | 5.98 → 0.07 | 0.0494 → 0.0499 | 0.0513 (0.0007) → 0.0515 (0.0006) | 0.021 → 0.010 | 0.776 (0.0016) → 0.903 (0.0008) | fail (5F) → pass | +0.0003 (0.0008) | +0.1272 (0.0014) |
+| S4 C6 (reported), kit-128 tree | 1.99 → 1.83 | 0.0493 → 0.0450 | 0.0583 (0.0017) → 0.0519 (0.0018) | 0.187 → 0.167 | 0.356 (0.0030) → 0.312 (0.0042) | pass → pass | -0.0063 (0.0009) | -0.0442 (0.0032) |
+| S4 C8 (reported), kit-128 tree | 5.88 → 0.09 | 0.0502 → 0.0510 | 0.0684 (0.0019) → 0.0649 (0.0015) | 0.268 → 0.210 | 0.330 (0.0036) → 0.471 (0.0030) | fail (3i,5F) → pass | -0.0035 (0.0018) | +0.1410 (0.0031) |
+
+Against arms 1 and 2 (C8 has no factor, so arm 2 is the no-correction fit): in C8 arm 29 equals no correction within noise in all three simulators (power 0.904 against 0.904, 0.800 against 0.801, 0.475 against 0.473; mean FDP 0.052 against 0.052, 0.057 against 0.057, 0.067 against 0.065). The rise of arm 29's type I error and FDP over arm 7 in S1 and S2 C8 is the return from E of 6 (almost nothing called) to the no-correction level, not a loss of calibration. In C6 arms 29 and 30 sit with arm 2 in S1 and S2 (mean FDP 0.054 and 0.055 against arm 2's 0.050 and 0.055; power 0.896 and 0.768 against 0.897 and 0.767).
+
+- **S1, S2: adopted by the declaration.** C8: E lower (5.98 → 0.075; 6.00 → 0.103), P(E > 0) lower, rule 5 fail → pass. C6 (judged): no rule changes, no material difference.
+- **S4 (kit-128; C6 and C8 are reported cells): adopted by the declaration**, whose S4 conditions are C8 only (E lower; rule 5 fail → pass). Two things the declaration does not weigh: in C8 rule 3 moves from pass to inconclusive for arm 29 (share 0.232 [0.206, 0.259] against a limit of 0.258; no correction 0.208); and in the one-factor cell C6 the count is lower in 213 of 1,000 data sets (mean 1.99 → 1.83) and **power falls by 0.043 (paired SE 0.003), 0.354 → 0.311**, with mean FDP 0.058 → 0.052 (rule 3 inconclusive → pass). Arm 30 against 16: the same (power -0.044, SE 0.003).
+
+### (d) 200 permutations for the count: arm 31 against arm 7 (all four simulators)
+
+Declared: adopted if no worse than arm 7. The seed-dependence of the on/off verdict (M16: 19% of no-factor data sets at 20 permutations, 4% at 200) **cannot be measured in this round**: each data set was counted with one seed, so a flip between seeds is never observed. What is measured is the change of E on the same data set and seed.
+
+| Simulator, cell | Mean E, 7 → 31 | P(E > 0), 7 → 31 | Paired change in P(E > 0) (SE) | Data sets whose E changed | Mean FDP, 7 → 31 | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|
+| S1 C3 (no factor) | 0.123 → 0.086 | 0.111 → 0.080 | -0.031 (0.006) | 45 | 0.0524 → 0.0523 | -0.0001 (0.0001) | +0.0001 (0.0001) |
+| S2 C3 | 0.167 → 0.121 | 0.133 → 0.106 | -0.027 (0.008) | 67 | 0.0491 → 0.0489 | -0.0001 (0.0001) | -0.0000 (0.0001) |
+| S3 C3 | 1.355 → 1.249 | 0.638 → 0.615 | -0.023 (0.008) | 152 | 0.0438 → 0.0437 | -0.0000 (0.0000) | +0.0003 (0.0001) |
+| S4 C3 | 0.144 → 0.107 | 0.228 → 0.178 | -0.050 (0.009) | 107 | 0.0589 → 0.0579 | -0.0010 (0.0002) | -0.0011 (0.0004) |
+| S3 C8, kit-128 (no factor) | 0.259 → 0.180 | 0.207 → 0.153 | -0.054 (0.009) | 86 | 0.0441 → 0.0441 | -0.0000 (0.0000) | +0.0003 (0.0001) |
+| S1, S2 C8 (no factor; units not removed) | 5.98 → 5.98; 6.00 → 6.00 | 0.999 → 1.000; 1.000 → 1.000 | +0.001 (0.001); 0 | 4; 0 | unchanged | +0.0001 (0.0003); 0 | 0 |
+| S4 C8, kit-128 | 5.88 → 5.88 | 1.000 → 1.000 | 0 | 51 | 0.0809 → 0.0845 | +0.0036 (0.0025) | +0.0032 (0.0024) |
+
+In every cell with a factor E is unchanged in every data set in S1, S2 and S3; in S4 it changes in 5 to 12 data sets per cell (C0, C2, C4, C5; 2 in kit-128 C6), with paired differences within 0.0012 of zero. No rule result changes in any judged core cell of any simulator: **no worse, adopted by the declaration** in all four. More permutations remove a fifth to a quarter of the spurious factors in no-factor data in S1, S2 and S4 (P(E > 0) 0.11 → 0.08, 0.13 → 0.11, 0.23 → 0.18), with no material difference in calibration or power; in transcriptomics most of its positive counts are not permutation noise (0.64 → 0.62). They do not repair the technical-duplicate defect (C8 stays at about 6). The cost is run time (in S3 about 13 to 15 s per data set of about 4,700 genes on a runner, from the lifecycle sizing).
+
+### (e) All together: arm 32 against 7 (S1, S2, S4) and arm 33 against 16 (S1, S4; C6 and C8)
+
+Declared: adopted if no worse than the base arm. Arm 32 is (a), (b) and (d) where each applies and (c) in C6 and C8; in S2 it has no (b), in S4 no (b); in S3 it would be arm 31.
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C0 | 1.00 → 1.00 | 0.0520 → 0.0527 | 0.0535 (0.0006) → 0.0548 (0.0007) | 0.025 → 0.025 | 0.914 (0.0008) → 0.916 (0.0008) | pass → pass | +0.0013 (0.0002) | +0.0023 (0.0002) |
+| S1 C1 | 1.00 → 1.00 | 0.0576 → 0.0583 | 0.0660 (0.0011) → 0.0672 (0.0011) | 0.115 → 0.117 | 0.977 (0.0004) → 0.978 (0.0004) | fail (3F) → fail (3F) | +0.0012 (0.0001) | +0.0002 (0.0001) |
+| S1 C2 | 1.00 → 1.00 | 0.0507 → 0.0513 | 0.0530 (0.0009) → 0.0545 (0.0009) | 0.059 → 0.064 | 0.871 (0.0013) → 0.874 (0.0013) | pass → pass | +0.0015 (0.0002) | +0.0031 (0.0003) |
+| S1 C3 | 0.12 → 0.09 | 0.0503 → 0.0505 | 0.0524 (0.0007) → 0.0528 (0.0007) | 0.018 → 0.019 | 0.922 (0.0008) → 0.923 (0.0008) | pass → pass | +0.0004 (0.0002) | +0.0006 (0.0001) |
+| S1 C4 | 1.00 → 1.00 | 0.0499 → 0.0506 | 0.0610 (0.0076) → 0.0610 (0.0076) | 0.061 → 0.061 | n/a (n/a) → n/a (n/a) | fail (2i,4F,7i) → fail (2i,4F,7i) | +0.0000 (0.0028) | n/a |
+| S1 C5 | 1.00 → 1.00 | 0.0527 → 0.0535 | 0.0560 (0.0007) → 0.0576 (0.0007) | 0.040 → 0.047 | 0.902 (0.0009) → 0.904 (0.0009) | pass → pass | +0.0015 (0.0002) | +0.0020 (0.0002) |
+| S1 C6 | 1.01 → 1.00 | 0.0511 → 0.0515 | 0.0538 (0.0007) → 0.0545 (0.0007) | 0.030 → 0.034 | 0.896 (0.0009) → 0.897 (0.0009) | pass → pass | +0.0007 (0.0001) | +0.0008 (0.0001) |
+| S1 C7 | 1.00 → 1.00 | 0.0513 → 0.0517 | 0.0531 (0.0009) → 0.0541 (0.0009) | 0.058 → 0.065 | 0.892 (0.0012) → 0.893 (0.0012) | pass → pass | +0.0010 (0.0002) | +0.0013 (0.0002) |
+| S1 C8 (reported) | 5.98 → 0.04 | 0.0031 → 0.0503 | 0.0026 (0.0014) → 0.0522 (0.0006) | 0.005 → 0.011 | 0.005 (0.0022) → 0.904 (0.0008) | fail (5F) → pass | +0.0496 (0.0016) | +0.8987 (0.0023) |
+| S2 C0 | 1.00 → 1.00 | 0.0501 → 0.0506 | 0.0514 (0.0006) → 0.0520 (0.0006) | 0.003 → 0.004 | 0.909 (0.0012) → 0.910 (0.0012) | pass → pass | +0.0006 (0.0001) | +0.0015 (0.0001) |
+| S2 C1 | 1.00 → 1.00 | 0.0496 → 0.0501 | 0.0499 (0.0005) → 0.0507 (0.0005) | 0.006 → 0.007 | 0.991 (0.0002) → 0.991 (0.0002) | pass → pass | +0.0009 (0.0001) | +0.0003 (0.0000) |
+| S2 C2 | 1.00 → 1.00 | 0.0497 → 0.0502 | 0.0505 (0.0008) → 0.0512 (0.0008) | 0.038 → 0.040 | 0.869 (0.0019) → 0.871 (0.0019) | pass → pass | +0.0007 (0.0002) | +0.0021 (0.0002) |
+| S2 C3 | 0.17 → 0.12 | 0.0495 → 0.0494 | 0.0491 (0.0005) → 0.0489 (0.0005) | 0.004 → 0.003 | 0.932 (0.0006) → 0.932 (0.0006) | pass → pass | -0.0001 (0.0001) | +0.0000 (0.0001) |
+| S2 C4 | 1.00 → 1.00 | 0.0494 → 0.0498 | 0.0440 (0.0065) → 0.0470 (0.0067) | 0.044 → 0.047 | n/a (n/a) → n/a (n/a) | inconclusive (4i) → inconclusive (4i) | +0.0030 (0.0017) | n/a |
+| S2 C5 | 1.00 → 1.00 | 0.0510 → 0.0514 | 0.0526 (0.0006) → 0.0534 (0.0006) | 0.017 → 0.020 | 0.881 (0.0023) → 0.883 (0.0023) | pass → pass | +0.0008 (0.0001) | +0.0016 (0.0002) |
+| S2 C6 | 1.01 → 1.00 | 0.0518 → 0.0521 | 0.0554 (0.0006) → 0.0561 (0.0006) | 0.020 → 0.024 | 0.768 (0.0015) → 0.770 (0.0015) | pass → pass | +0.0007 (0.0001) | +0.0018 (0.0002) |
+| S2 C7 | 1.00 → 1.00 | 0.0499 → 0.0502 | 0.0501 (0.0005) → 0.0506 (0.0005) | 0.010 → 0.008 | 0.922 (0.0009) → 0.923 (0.0009) | pass → pass | +0.0006 (0.0001) | +0.0007 (0.0001) |
+| S2 C8 (reported) | 6.00 → 0.07 | 0.0410 → 0.0530 | 0.0339 (0.0005) → 0.0570 (0.0006) | 0.000 → 0.023 | 0.738 (0.0013) → 0.801 (0.0011) | fail (5F) → pass | +0.0231 (0.0005) | +0.0627 (0.0009) |
+| S4 C0 | 1.95 → 1.95 | 0.0484 → 0.0537 | 0.0575 (0.0015) → 0.0710 (0.0016) | 0.164 → 0.251 | 0.434 (0.0033) → 0.467 (0.0035) | inconclusive (3i) → fail (3F) | +0.0135 (0.0009) | +0.0333 (0.0012) |
+| S4 C1 | 2.00 → 2.00 | 0.0539 → 0.0608 | 0.0647 (0.0014) → 0.0818 (0.0016) | 0.187 → 0.310 | 0.713 (0.0021) → 0.747 (0.0020) | fail (3F) → fail (2F,3F) | +0.0172 (0.0007) | +0.0338 (0.0008) |
+| S4 C2 | 1.96 → 1.96 | 0.0467 → 0.0524 | 0.0639 (0.0025) → 0.0775 (0.0027) | 0.278 → 0.345 | 0.331 (0.0041) → 0.356 (0.0042) | inconclusive (3i) → fail (2i,3F) | +0.0135 (0.0013) | +0.0249 (0.0015) |
+| S4 C3 | 0.14 → 0.11 | 0.0491 → 0.0488 | 0.0589 (0.0013) → 0.0581 (0.0012) | 0.153 → 0.152 | 0.582 (0.0026) → 0.580 (0.0026) | pass → pass | -0.0008 (0.0003) | -0.0011 (0.0004) |
+| S4 C4 (void) | 1.95 → 1.95 | 0.0442 → 0.0495 | 0.1410 (0.0110) → 0.1630 (0.0117) | 0.141 → 0.163 | n/a (n/a) → n/a (n/a) | fail (2F,4F,7F) → fail (2F,3i,4F,7F) | +0.0220 (0.0051) | n/a |
+| S4 C5 | 1.95 → 1.95 | 0.0543 → 0.0603 | 0.0724 (0.0022) → 0.0878 (0.0024) | 0.273 → 0.350 | 0.362 (0.0033) → 0.398 (0.0034) | fail (2i,3F) → fail (2F,3F) | +0.0154 (0.0011) | +0.0360 (0.0012) |
+| S4 C7 | 1.99 → 1.99 | 0.0490 → 0.0538 | 0.0652 (0.0014) → 0.0771 (0.0015) | 0.178 → 0.269 | 0.395 (0.0026) → 0.419 (0.0027) | inconclusive (3i) → fail (2i,3F) | +0.0119 (0.0006) | +0.0235 (0.0006) |
+| S4 C6 (reported), kit-128 tree | 1.99 → 1.83 | 0.0490 → 0.0488 | 0.0579 (0.0017) → 0.0609 (0.0019) | 0.202 → 0.230 | 0.354 (0.0030) → 0.334 (0.0044) | inconclusive (3i) → inconclusive (3i) | +0.0029 (0.0012) | -0.0191 (0.0035) |
+| S4 C8 (reported), kit-128 tree | 5.88 → 0.05 | 0.0211 → 0.0514 | 0.0809 (0.0054) → 0.0659 (0.0015) | 0.213 → 0.220 | 0.078 (0.0051) → 0.475 (0.0030) | fail (2i,5F) → pass | -0.0150 (0.0055) | +0.3962 (0.0058) |
+
+Arm 33 against arm 16:
+
+| Simulator, cell | Mean k (base → variant) | Type I at 0.05 | Mean FDP (SE) | Share FDP > 0.10 | Power (SE) | Verdict, base → variant (rules not passed) | Paired ΔFDP (SE) | Paired Δpower (SE) |
+|---|---|---|---|---|---|---|---|---|
+| S1 C6 | 1.01 → 1.00 | 0.0514 → 0.0519 | 0.0540 (0.0007) → 0.0549 (0.0007) | 0.032 → 0.034 | 0.896 (0.0009) → 0.897 (0.0009) | pass → pass | +0.0009 (0.0001) | +0.0008 (0.0001) |
+| S1 C8 (reported) | 5.98 → 0.04 | 0.0494 → 0.0501 | 0.0513 (0.0007) → 0.0519 (0.0006) | 0.021 → 0.010 | 0.776 (0.0016) → 0.904 (0.0008) | fail (5F) → pass | +0.0007 (0.0008) | +0.1276 (0.0014) |
+| S4 C6 (reported), kit-128 tree | 1.99 → 1.83 | 0.0493 → 0.0487 | 0.0583 (0.0017) → 0.0621 (0.0020) | 0.187 → 0.231 | 0.356 (0.0030) → 0.335 (0.0045) | pass → inconclusive (3i) | +0.0039 (0.0013) | -0.0214 (0.0036) |
+| S4 C8 (reported), kit-128 tree | 5.88 → 0.05 | 0.0502 → 0.0509 | 0.0684 (0.0019) → 0.0649 (0.0015) | 0.268 → 0.210 | 0.330 (0.0036) → 0.472 (0.0030) | fail (3i,5F) → pass | -0.0035 (0.0018) | +0.1418 (0.0031) |
+
+**Is the combination what the parts predict?** Per data set, (arm 32 minus arm 7) minus the sum of (each part minus arm 7) (`beside/all-together-vs-parts.tsv`):
+
+| Where | Parts | Interaction, mean FDP (SE) | Interaction, power (SE) |
+|---|---|---|---|
+| S1, C0 to C7 | 25 + 26 + 31 (+ 29 in C6) | -0.0001 to +0.0002 (0.0001 to 0.0002); C4 -0.003 (0.002) | -0.0001 to +0.0001 (0.0000 to 0.0002) |
+| S1 C8 | 25 + 26 + 29 + 31 | -0.0019 (0.0020) | +0.0004 (0.0018) |
+| S2, all cells | 25 + 31 (+ 29 in C6, C8) | 0 in C0 to C2, C4, C5, C7 (exactly additive); within 0.0001 elsewhere | within 0.0002 |
+| S4, C0 to C7 | 25 + 31 | -0.0002 to +0.0002 (0.0001 to 0.0002) | -0.0001 to +0.0001 |
+| S4 C6, kit-128 | 25 + 29 + 31 | -0.0017 (0.0004) | -0.0046 (0.0008) |
+| S4 C8, kit-128 | 25 + 29 + 31 | -0.0012 (0.0035) | -0.0041 (0.0025) |
+
+- **S1: no worse, adopted by the declaration.** The combination is the sum of its parts within noise: mean FDP +0.0004 to +0.0015 (paired SE 0.0001 to 0.0002) and power +0.0002 to +0.0031 in the core cells, mostly from (a) and (b); C8 is repaired by (c) (power 0.005 → 0.904).
+- **S2: no worse, adopted.** Exactly (a) plus (d) in the core cells; (c) repairs C8 (power 0.738 → 0.801).
+- **S4: rejected by the declaration**, for the same cells and rules as (a), which it contains: rules 2 and 3 move to fail in C0, C1, C2, C5, C7. The combination that the declaration's readings would leave for lipid/metab, (c) and (d) without (a), was not run as an arm; the additivity above suggests it would be arm 7 plus the two parts, but that is an inference, not a measurement. In kit-128 C6 (reported) the parts are slightly less than additive (power -0.0046 beyond the sum), and arm 33 moves from pass to inconclusive on rule 3 there (share 0.231 against a limit of 0.223).
+
+### What the round means for the figures shown beside the options
+
+The figures of `design-review-20261118.md` section 3 (recommended design, worst core cell mean FDP; power in C0) are arm 7's. If the changes are adopted as the declaration reads them, the recommended option's figures become the variant's, measured here on the runner:
+
+| Omic | Arm 7 today: worst core cell; power C0 | With the adopted changes | Change |
+|---|---|---|---|
+| Classic proteomics | 0.066 (C1); 0.914 | arm 32: 0.067 (C1); 0.916 | +0.0012 (SE 0.0001) and +0.0023 (0.0002): the displayed figure rounds to 0.067 |
+| DIA_LIMPA | 0.055 (C6); 0.909 | arm 32: 0.056 (C6); 0.910 | +0.0007 (0.0001); +0.0015 (0.0001) |
+| Transcriptomics | 0.055; 0.774 | arm 31: unchanged (identical in every data set with a factor) | none |
+| Lipid/metab | 0.072 (C5); 0.434 | arm 31 (with (c) in C6, C8): 0.072 (C5); 0.433 | within 0.001. If (a) were adopted against the declaration: 0.088 (C5); 0.467 |
+
+- **Technical replicates as the replicate structure** (arm 16): in the no-factor technical-duplicate cell C8 its power rises from 0.776 to 0.903 (classic proteomics) and from 0.330 to 0.471 (lipid/metab, kit-128) with (c); in the one-factor cell C6 nothing changes in classic proteomics, and in lipid/metab power falls from 0.356 to 0.312 (reported cell).
+- **Legacy** (M3: unchanged, reproduces earlier releases): the runner's arm 3 equals the laptop's figures in every cell except C6 (0.0330 against 0.0339), so the legacy figure stands as measured. If (b) were applied to Legacy in classic proteomics (arm 28), its figures rise by 0.001 to 0.006 (worst core cell 0.385 → 0.389); the label's range "0.30 to 0.56" is unaffected either way.
+- **No RUV** in classic proteomics with (b) (arm 27): unchanged within noise.
+
+### Recommendation per change and omic
+
+| Change | Classic proteomics (S1) | DIA_LIMPA (S2) | Transcriptomics (S3) | Lipid/metab (S4) |
+|---|---|---|---|---|
+| (a) exact standard errors | Adopt: no worse; effect +0.0004 to +0.0010 mean FDP, no material difference to any figure | Adopt: the same | Not applicable (edgeR fits the contrast itself) | **Do not adopt**: rejected by the declaration (rules 2 and 3 to fail in five judged cells; mean FDP +0.012 to +0.017, share above 0.10 +0.07 to +0.12) |
+| (b) trend and robust settings | Adopt for the recommended design and for No RUV: no worse, no material difference at 6 and 12 per group; not measured at 3 per group. Legacy: keep unchanged (M3); the declaration finds arm 28 no worse | Not applicable | Not applicable | Not applicable |
+| (c) count without the units | Adopt: repairs C8 (E 5.98 → 0.08, power 0.005 → 0.904), C6 unchanged | Adopt: repairs C8 (power 0.738 → 0.800), C6 unchanged | Not applicable (units summed) | Adopt by the declaration (C8 repaired, power 0.078 → 0.475); the user should weigh the power loss in the one-factor technical-duplicate cell (0.354 → 0.311, SE 0.003) and rule 3 inconclusive in C8 |
+| (d) 200 permutations | Adopt: no material difference in calibration or power; fewer spurious factors without a factor | Adopt: the same | Adopt: no material difference; little change in E; costs run time | Adopt: the same |
+| (e) all together | Adopt (32 = parts) | Adopt (32 = (a) + (c) + (d)) | Equals (d) | Do not adopt as run (contains (a)); (c) with (d) not run as one arm |
+
+### Remarks on the declaration's reading (stated separately; the reading above is the declaration's)
+
+1. **(a) in lipid/metab.** The reading compares the exact computation with an approximation that turns out to be conservative for features with missing values. Rejecting (a) keeps arm 7's figures, but those figures are calibrated partly because of the approximation; the model with the factors and missing values is more liberal than the shown figure in lipid/metab. Under M16's last column ("if a change is not adopted, the behaviour it would have corrected") this is what the Methods would have to say.
+2. **(c) in lipid/metab.** The declaration's conditions for S4 look at C8 only, since C6 is a reported cell there; the 0.043 power loss in C6 and the rule-3 inconclusive in C8 do not enter the reading.
+3. **Rule 4 for arm 27** reads "inconclusive" where arm 1 reads "fail": this is the A3 artefact of rule 4 for no-RUV arms, and the reading counts it as "better". It changes no conclusion.
+4. **Category-level reading.** "No worse" is read on rule categories, so shifts that are clear by the paired errors (for example (a) in classic proteomics: +0.0008, SE 0.0001) do not count. They are small (at most 0.0015 in mean FDP in S1 and S2) and are stated as "no material difference".
+
+### Plain reading
+
+- **Gate:** every comparison meets the gate as read under M19; the values the rules use are identical in every compared row of arms 1, 2, 7 and 16 (146,000 rows against the laptop and run r0a). S3's seven bias/rmse rows are of the kind already accepted. Legacy's per-run values differ from the laptop's in one cell, as recorded before.
+- **(a)** is a negligible liberal shift in classic proteomics and DIA_LIMPA and a material one in lipid/metab, where it is rejected and where it widens rather than narrows the spread of the per-data-set false discovery proportion.
+- **(b)** changes nothing material in the cells measured (6 and 12 per group); it does not repair the 12-per-group tail of the recommended design in classic proteomics.
+- **(c)** is the change that matters: it removes a real defect, a count of about 6 where no factor exists in technical-duplicate designs, which cost nearly all power in classic proteomics and lipid/metab, and it leaves the one-factor cell unchanged except in lipid/metab, where it costs 0.043 power.
+- **(d)** reduces spurious counts without a factor by a fifth to a quarter (transcriptomics: by a twentieth) and changes no figure materially; its effect on the seed-dependence of the verdict is not measured.
+- **(e)** is the sum of its parts within noise wherever it was measured, apart from a small extra power loss in lipid/metab's technical-duplicate cell.
