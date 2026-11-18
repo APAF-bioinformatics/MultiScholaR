@@ -286,12 +286,23 @@ diaActiveRoute <- function(manager = getDIAActiveManager()) {
     if (identical(type, "DIA_LIMPA")) "limpa" else "iq"
 }
 
-diaContrastOperation <- function(route = "iq") {
+#' @param route The route factor (`diaActiveRoute`).
+#' @param ruv_da_method KIT-129 integration item 1. NULL (the default): today's declaration, unchanged. A method
+#'   (`workflowSourceRuvDaMethod`): the declaration of a new RUV design's source, which declares `ruv_da_method` (so the
+#'   product's identity names the method) and refuses a source whose declaration names another. The kernel is the same:
+#'   `differentialAbundanceAnalysis` routes the object by its declaration (KIT-126, KIT-129 W3, decisions M29, M30).
+#' @noRd
+diaContrastOperation <- function(route = "iq", ruv_da_method = NULL) {
+    declared <- !is.null(ruv_da_method)
     newWorkflowOperation("DA-contrast-output", "ProteinQuantitativeData",
         fields = c("protein_quant_table", "design_matrix", "protein_id_table"), unit = "whole_matrix",
         product_type = "dia-contrast-references", factors = list(route = route, layer = "contrast_references"),
-        parameters = c("formula", "qvalue", "lfc", "weights", "contrast", "annotations"),
+        parameters = c("formula", "qvalue", "lfc", "weights", "contrast", "annotations", if (declared) "ruv_da_method"),
         kernel = function(object, parameters, store) {
+            if (declared && !identical(diaObjectRuvDaMethod(object), parameters$ruv_da_method)) {
+                cli::cli_abort("the DA method {.val {parameters$ruv_da_method}} is not the one the source's RUV declaration names",
+                    class = "workflow_execution_invalid", call = NULL)
+            }
             single <- data.frame(contrasts = parameters$contrast, stringsAsFactors = FALSE)
             arguments <- list(contrasts_tbl = single, formula_string = parameters$formula,
                 da_q_val_thresh = parameters$qvalue, treat_lfc_cutoff = parameters$lfc,
@@ -463,9 +474,19 @@ computeDIAReferenceDaContrast <- function(manager, source, parameters, route) {
         context$da_reference_execution <- previous$execution
         context$da_source_reference <- previous$source
     }, add = TRUE)
-    run <- runSavedOperation(manager, diaContrastOperation(route), source, parameters)
+    # KIT-129 integration item 1: a source of a new RUV design runs the declaration naming its method, on both paths.
+    method <- workflowSourceRuvDaMethod(manager, source)
+    if (!is.null(method)) parameters$ruv_da_method <- method
+    run <- runSavedOperation(manager, diaContrastOperation(route, method), source, parameters)
     list(run = run, base_fit = if (identical(run$status, "computed")) context$da_base_fit_reference)
 }
+
+#' The DA method an object's RUV declaration names (KIT-129 integration item 1): `workflowSourceRuvDaMethod`'s rule on
+#' the hydrated object, for the kernel's check.
+#' @param object A `ProteinQuantitativeData` object.
+#' @return One string, or NULL.
+#' @noRd
+diaObjectRuvDaMethod <- function(object) workflowRuvDaMethodOfArgs(object@args)
 
 #' The DA accept half (KIT-112 D3), in the controller on both paths: provenance cleared, the model record, the manifest
 #' saved as the head's `da_results` with its `da_dependencies`, the head published. References only.

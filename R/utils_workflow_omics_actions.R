@@ -338,7 +338,9 @@ runWorkflowOmicsManagedNormalisation <- function(binding, runner, manager, setti
         figures("post_norm", "Post-normalization QC plots generated")))
     if (ruv) {
         actions <- c(actions, list(omicsManagedCommit(omicsRuvStep(binding, settings$ruv_parameters), config, function(result) {
-            normData$ruv_optimization_results <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
+            # A new design's product has no sweep (KIT-129 integration item 1).
+            if (!is.null(result$value$optimisation))
+                normData$ruv_optimization_results <- hydrateSavedWorkflowEntity(manager$.context$store, result$value$optimisation)$value
             addLog(paste("RUV optimization complete. Best k per assay:",
                 paste(names(result$value$best_k), "=", unlist(result$value$best_k), collapse = ", ")))
             normData$ruv_corrected_obj <- result$stateReference

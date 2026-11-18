@@ -246,7 +246,7 @@ dispatchProtNormRuvCovariates <- function(runner, settings, workflowData, normDa
     request <- withDIAStateScope(manager, function() {
       assertDIAExportReady(manager, allow_action = "ruv-covariates")
       list(source = diaRuvCovariatesSource(manager, normData),
-        parameters = resolveDIARuvCovariatesParameters(workflowData$config_list, group, settings$ruv_mode %||% "covariates"))
+        parameters = diaRuvCovariatesRequestParameters(workflowData$config_list, group, settings))
     })
     list(protNormManagedAction(entry$operation, request$parameters, request$source, state,
       function(result) held$result <- result))

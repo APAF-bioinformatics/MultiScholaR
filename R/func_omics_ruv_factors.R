@@ -456,6 +456,19 @@ withOmicsRuvKOnBlockFailure <- function(expr, assay_factors) {
 runOmicsRuvFactorsDaKernel <- function(fitFn, applyFn, data, contrast_strings, design_matrix, formula_string, sample_id_col,
                                        treat_lfc_cutoff, eBayes_trend, eBayes_robust, group_id, technical_replicate_id) {
     fit <- fitFn(data, design_matrix, formula_string, sample_id_col, group_id, technical_replicate_id)
+    applyFn(fit, contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust,
+        contrastsFitFn = omicsRuvExactContrastsFitFn(fit, data, design_matrix, sample_id_col, group_id, technical_replicate_id))
+}
+
+#' The exact contrast step of an assay fit with RUV factors in the model (decision M29): `ruvExactContrastsFit` with the
+#' refit of the fit's own model, on the fit's samples, with the fit half's technical-replicate block and consensus
+#' correlation when it used one. Shared by the kernel (`runOmicsRuvFactorsDaKernel`) and the contrast declaration of
+#' the run path (`omicsDaContrastOperation(binding, "declared")`, KIT-129 integration item 1).
+#' @param fit The fit half's fit (`fitLipidDaAssayModel` or `fitMetabDaAssayModel`).
+#' @param data,design_matrix,sample_id_col,group_id,technical_replicate_id What the fit half was given.
+#' @return `function(fit, contrasts)` for the contrast half's `contrastsFitFn`.
+#' @noRd
+omicsRuvExactContrastsFitFn <- function(fit, data, design_matrix, sample_id_col, group_id, technical_replicate_id) {
     samples <- rownames(fit$design)
     data_subset <- data[, samples, drop = FALSE]
     block <- NULL
@@ -465,10 +478,10 @@ runOmicsRuvFactorsDaKernel <- function(fitFn, applyFn, data, contrast_strings, d
         if (sample_id_col %in% colnames(rows)) rownames(rows) <- rows[[sample_id_col]]
         block <- resolveProtTechnicalReplicateBlock(as.data.frame(rows)[samples, , drop = FALSE], group_id, technical_replicate_id)$block
     }
+    correlation <- fit$consensus_correlation
     refit <- function(design) {
         if (is.null(block)) return(limma::lmFit(data_subset, design = design))
-        limma::lmFit(data_subset, design = design, block = block, correlation = fit$consensus_correlation)
+        limma::lmFit(data_subset, design = design, block = block, correlation = correlation)
     }
-    applyFn(fit, contrast_strings, treat_lfc_cutoff, eBayes_trend, eBayes_robust,
-        contrastsFitFn = \(fit, contrasts) ruvExactContrastsFit(fit, contrasts, fit$design, refit))
+    \(fit, contrasts) ruvExactContrastsFit(fit, contrasts, fit$design, refit)
 }

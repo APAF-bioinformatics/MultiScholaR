@@ -685,6 +685,10 @@ diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
         "separation_metric", "k_penalty_weight", "adaptive_k_penalty", "ruv_percentage", "ruv_k")
     parameters <- stats::setNames(lapply(fields, \(field) settings[[field]]), fields)
     parameters$grouping <- grouping
+    # KIT-129 integration item 1: with the gate on, a new design the tab names travels with its k rule and seed.
+    if (omicGuiRuvDesignEnabled() && is.character(settings$ruv_design) && !identical(settings$ruv_design, "legacy")) {
+        parameters[c("ruv_design", PROT_NORM_RUV_K_PARAMETERS)] <- list(settings$ruv_design, settings$ruv_k_rule, settings$ruv_k_seed)
+    }
     list(source = source, parameters = parameters)
 }
 
@@ -693,7 +697,9 @@ diaNormalizationRequest <- function(manager, settings, norm_data, grouping) {
 #' @return `runSavedOperation`'s run.
 #' @noRd
 computeDIAReferenceNormalization <- function(manager, source, parameters) {
-    runSavedOperation(manager, diaNormalizationOperation(), source, parameters)
+    # KIT-129 integration item 1: the new design's declaration when the request names it (`ruv_design`), on both paths.
+    chosen <- workflowRequestOperation(manager, workflowOperationEntry("normalization-ruv"), source, parameters)
+    runSavedOperation(manager, chosen$declaration, source, chosen$parameters)
 }
 
 #' The normalisation's commit description (KIT-111 D3), shared by the in-process runner and the worker's completion.
@@ -1285,7 +1291,7 @@ runDIAReferenceRuvCovariates <- function(settings, workflow, norm_data, paths, o
     withDIAStateScope(manager, function() {
         assertDIAExportReady(manager, allow_action = "ruv-covariates")
         source <- diaRuvCovariatesSource(manager, norm_data)
-        parameters <- resolveDIARuvCovariatesParameters(workflow$config_list, grouping(), settings$ruv_mode %||% "covariates")
+        parameters <- diaRuvCovariatesRequestParameters(workflow$config_list, grouping(), settings)
         run <- computeDIAReferenceRuvCovariates(manager, source, parameters)
         commit <- diaRuvCovariatesCommit(manager, parameters, run)
         if (!is.null(commit)) commitDIAReferenceState(manager, commit$state_name, commit$checkpoint, commit$config, commit$description)
@@ -1312,10 +1318,26 @@ diaRuvCovariatesSource <- function(manager, norm_data) {
 #' @return `runSavedOperation`'s run.
 #' @noRd
 computeDIAReferenceRuvCovariates <- function(manager, source, parameters) {
+    # KIT-129 integration item 1: the declared rules' declaration when the request names a control rule, on both paths.
+    chosen <- workflowRequestOperation(manager, workflowOperationEntry("protein_ruv_covariates"), source, parameters)
     # KIT-129 audit F3: before the runner, whose identity lookup would return today's saved product for a request
     # that carries rule parameters.
-    assertDiaRuvSweepParameters(parameters)
-    runSavedOperation(manager, diaRuvCovariatesOperation(), source, parameters)
+    if (identical(chosen$declaration$parameters, workflowOperationEntry("protein_ruv_covariates")$parameters)) assertDiaRuvSweepParameters(parameters)
+    runSavedOperation(manager, chosen$declaration, source, chosen$parameters)
+}
+
+#' The RUV covariates' parameters the tab sends, in process and to the worker (KIT-129 integration item 1): today's
+#' (`resolveDIARuvCovariatesParameters`), and with the gate on the rules of a declared design the settings name
+#' (`ruv_control_rule`, `ruv_k_rule`, `ruv_k`, `ruv_control_ids`, `ruv_k_seed`).
+#' @param config_list,grouping As `resolveDIARuvCovariatesParameters`.
+#' @param settings The tab's settings (`ruv_mode`, and the rules).
+#' @return The declaration's parameters.
+#' @noRd
+diaRuvCovariatesRequestParameters <- function(config_list, grouping, settings) {
+    mode <- settings$ruv_mode %||% "covariates"
+    if (!omicGuiRuvDesignEnabled() || is.null(settings$ruv_control_rule)) return(resolveDIARuvCovariatesParameters(config_list, grouping, mode))
+    resolveDIARuvCovariatesParameters(config_list, grouping, mode, ruv_control_rule = settings$ruv_control_rule,
+        ruv_k_rule = settings$ruv_k_rule, ruv_k = settings$ruv_k, ruv_control_ids = settings$ruv_control_ids, ruv_k_seed = settings$ruv_k_seed)
 }
 
 #' The RUV covariates' commit description (KIT-111 D3), shared by the in-process runner and the worker's completion.

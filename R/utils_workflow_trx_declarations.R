@@ -974,9 +974,22 @@ trxRunProduct <- function(manager, operation, source, parameters, dependencies =
     # KIT-100: a product whose default is not `whole` runs that variant in process too, as in the worker (KIT-089's rule in
     # runWorkflowOmicsReferenceStep), so the provenance names what ran.
     if (is.null(parameters$variant) && !identical(entry$default_variant %||% "whole", "whole")) parameters$variant <- entry$default_variant
-    run <- runSavedOperation(manager, entry$declaration, source, parameters, dependencies)
+    # KIT-129 integration item 1: the declared design's choice when the request names it, as on the worker.
+    chosen <- workflowRequestOperation(manager, entry, source, parameters)
+    run <- runSavedOperation(manager, chosen$declaration, source, chosen$parameters, dependencies)
     if (is.null(manager$.context$snapshot$products[[run$reference$entity_id]])) rootWorkflowProduct(manager, run$reference, c(list(source), dependencies))
     run
+}
+
+#' The RUV step's request from the tab's settings (KIT-129 integration item 1), in process and on the worker: today's
+#' grid parameters, or, with the gate on and a new design named (`ruv_design`), that design's canonical parameters.
+#' @param settings The grid's parameters (`trxNormGridParameters`), with the design's when the tab names one.
+#' @return `list(grid, design)`: the grid's parameters, or NULL; the design's, or NULL.
+#' @noRd
+trxNormRuvRequest <- function(settings) {
+    design <- settings[["ruv_design", exact = TRUE]]
+    if (!omicGuiRuvDesignEnabled() || !is.character(design) || identical(design, "legacy")) return(list(grid = settings, design = NULL))
+    list(grid = NULL, design = trxCanonicalRuvDesignParameters(settings)[trxRuvDesignParameterNames])
 }
 
 #' The choice of a declared RUV design on a source (KIT-129 W4), rooted in the head as `trxRunProduct` roots the grid.

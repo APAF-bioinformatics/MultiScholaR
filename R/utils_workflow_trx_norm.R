@@ -84,10 +84,12 @@ runTrxNormManaged <- function(binding, runner, manager, settings, normData, conf
         figures("tmm"), figures("ruvs"), omicsManagedProduct("trx_ruv_publication", list(), function(result) invisible(NULL)),
         omicsManagedProduct("trx_composite_figure", list(figure = "normalization_comparison"),
             function(result) addLog("CCA panels, grid workbook and the normalisation comparison grid saved"))), done = finish, failed = failed)
-    after_logcpm <- function() runner$run(list(omicsManagedProduct("trx_ruv_grid", c(list(logcpm = held$logcpm), settings), function(result) {
+    request <- trxNormRuvRequest(settings)
+    after_logcpm <- function() runner$run(list(omicsManagedProduct("trx_ruv_grid", c(list(logcpm = held$logcpm), request$design %||% settings), function(result) {
         held$grid <- result$reference$entity_id
         held$k <- result$value$chosen$k
-        normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(result$value))
+        # A declared design has no grid to show (KIT-129 integration item 1; its diagnostic is the panel's).
+        if (is.null(result$value[["ruv_design", exact = TRUE]])) normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(result$value))
         addLog(sprintf("RUV grid (%s): k = %d, %s%% inferred negative controls", result$value$mode, result$value$chosen$k, result$value$chosen$percentage))
     })), done = after_grid, failed = failed)
     runner$run(list(figures("raw"), omicsManagedProduct("trx_tmm_logcpm", list(), function(result) {
@@ -102,8 +104,9 @@ runTrxNormManaged <- function(binding, runner, manager, settings, normData, conf
 #' @noRd
 runTrxNormInProcess <- function(binding, manager, settings, normData, config, addLog, experimentPaths, finish, failed) {
     tryCatch({
-        run <- runTrxReferenceRuvs(manager, settings, config)
-        normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(run$grid$value))
+        request <- trxNormRuvRequest(settings)
+        run <- runTrxReferenceRuvs(manager, settings, config, design_parameters = request$design)
+        if (is.null(run$grid$value[["ruv_design", exact = TRUE]])) normData$ruv_optimization_results <- list(counts = trxNormRuvQcResult(run$grid$value))
         normData$ruv_corrected_obj <- run$reference
         addLog(sprintf("RUVs applied: W_1..W_%d added to the design (state 'trx_ruvs')", run$grid$value$chosen$k))
         runTrxNormPublicationsInProcess(manager, experimentPaths, addLog)

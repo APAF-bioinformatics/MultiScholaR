@@ -37,10 +37,13 @@ workflowClassDeclarations <- function() {
             describe = describeDIAProteinState, args_as_owned = c("limpa_dpc_quant_results", "ruv_uncorrected_quant")),
         LipidomicsAssayData = declare("LipidomicsAssayData", "assay", "lipid_data", "wide", "design_matrix",
             tables = "design_matrix", lists = "lipid_data",
-            roles = c("lipid_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id")),
+            roles = c("lipid_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id"),
+            # KIT-129 integration item 1: the uncorrected assays and the factors of a new RUV design's state, read by the DA.
+            args_as_owned = c("ruv_uncorrected_assays", "ruv_factors")),
         MetaboliteAssayData = declare("MetaboliteAssayData", "assay", "metabolite_data", "wide", "design_matrix",
             tables = "design_matrix", lists = "metabolite_data",
-            roles = c("metabolite_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id")),
+            roles = c("metabolite_id_column", "annotation_id_column", "sample_id", "group_id", "technical_replicate_id"),
+            args_as_owned = c("ruv_uncorrected_assays", "ruv_factors")),
         # KIT-093 owns this entry; KIT-095 only reads it.
         TranscriptomicsAssayData = declare("TranscriptomicsAssayData", "assay", "count_data", "wide", "design_matrix",
             tables = "design_matrix", lists = "count_data",

@@ -602,7 +602,12 @@ test_that("today's declaration refuses the rule parameters, on a computed run an
         source <- getDIAStateReference(manager)
         saved <- limpaRuvQuiet(computeDIAReferenceRuvCovariates(manager, source, todays))
         expect_identical(saved$status, "computed")
-        expect_error(computeDIAReferenceRuvCovariates(manager, source, declared), class = "workflow_execution_invalid")
+        # KIT-129 integration item 1: a request that names a control rule runs the declared rules' declaration (its own
+        # product, never today's saved one); a rule parameter without a control rule is still refused
+        chosen <- limpaRuvQuiet(computeDIAReferenceRuvCovariates(manager, source, declared))
+        expect_identical(chosen$status, "computed")
+        expect_false(identical(chosen$reference$entity_id, saved$reference$entity_id))
+        expect_identical(chosen$value$ruv_control_rule, "all_features")
         expect_error(computeDIAReferenceRuvCovariates(manager, source, c(todays, list(ruv_k_seed = 7L))),
             class = "workflow_execution_invalid")
         # today's request is still served from the saved product
