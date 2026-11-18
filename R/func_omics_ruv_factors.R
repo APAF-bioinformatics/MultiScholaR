@@ -145,8 +145,9 @@ computeOmicsRuvAssayFactors <- function(values, replicate_matrix, k, control_ids
     }
     if (is.na(k)) return(result("refused", "k could not be estimated", reason_class = "ruv_k_not_estimated"))
     if (k == 0L) return(result("none"))
-    if (k > sum(ctl)) {
-        return(result("refused", sprintf("k = %d is above the %d controls observed in every sample", k, sum(ctl))))
+    # Decision M32: k below the number of controls, as in every omic (at k equal to it the factors fit the controls exactly).
+    if (k >= sum(ctl)) {
+        return(result("refused", sprintf("k = %d is not below the %d controls observed in every sample", k, sum(ctl))))
     }
     if (k > nrow(y) - groups - 1L) {
         return(result("refused", sprintf("k = %d leaves no residual degree of freedom (%d samples in %d groups)",

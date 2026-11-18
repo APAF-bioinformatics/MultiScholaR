@@ -901,3 +901,20 @@ test_that("first-pass null controls: the features outside the 25% most significa
         if (!inherits(expected, "condition")) expect_identical(counted$factors[[assay]]$ruv_k_estimate, expected$k)
     }
 })
+
+test_that("k must be below the number of controls observed in every sample (M32)", {
+    skip_if_not_installed("ruv")
+    fixture <- kit127Fixture()
+    with_standards <- kit127Lipid(lapply(fixture$assays, function(a) rbind(a$y, a$is)), fixture$design)
+    standards <- lapply(fixture$assays, function(a) rownames(a$is))
+    run <- function(k, rule) suppressMessages(runOmicsRuvFactors(with_standards, "supplied_controls", k, rule, ruv_control_ids = standards))
+    # five standards per assay: k = 5 is not below them; typed, the run stops (M31); automatic, the assay is refused
+    typed <- tryCatch(run(5L, "user"), error = function(e) e)
+    expect_s3_class(typed, c("ruv_k_above_limit", "ruv_k_refused"))
+    expect_match(conditionMessage(typed), "k = 5 is not below the 5 controls observed in every sample", fixed = TRUE)
+    expect_warning(automatic <- run(5L, "sweep_bounded"), class = "omics_ruv_factors_refused")
+    expect_identical(unname(vapply(automatic$factors, `[[`, "", "status")), c("refused", "refused"))
+    expect_identical(unname(vapply(automatic$factors, `[[`, "", "reason_class")), c("ruv_k_above_limit", "ruv_k_above_limit"))
+    # k = 4 is computed
+    expect_identical(unname(vapply(run(4L, "user")$factors, `[[`, 0L, "k")), c(4L, 4L))
+})
