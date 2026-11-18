@@ -605,6 +605,30 @@ workflowExportPaths <- function(output_dir, request_id) {
         request_dir = normalizePath(request_dir, winslash = "/"))
 }
 
+#' Abort when an expected figure is missing or empty after rendering (KIT-052). A graphics device can
+#' fail with a warning only (the PNG device on Windows cannot write a path longer than 259 characters),
+#' so the files are checked and the condition names them and, on Windows, the over-long path.
+#' @param files Expected figure paths.
+#' @param message First line of the condition.
+#' @param class Further condition classes, after `workflow_figure_unwritten`.
+#' @param windows Whether the Windows path limit applies; an argument so the wording is testable.
+#' @return `files` invisibly when every one exists with content.
+#' @noRd
+checkWorkflowFigureFiles <- function(files, message = "required figures were not written", class = NULL,
+    windows = identical(.Platform$OS.type, "windows")) {
+    size <- file.size(files)
+    unwritten <- files[is.na(size) | size <= 0]
+    if (!length(unwritten)) return(invisible(files))
+    lengths <- nchar(enc2utf8(unwritten), type = "bytes")
+    cli::cli_abort(c(message,
+        "x" = "missing or empty: {.file {basename(unwritten)}}",
+        "i" = "in {.path {unique(dirname(unwritten))}}",
+        if (windows && any(lengths > 259L)) c("x" = paste(
+            "the longest of these paths is {max(lengths)} characters; Windows cannot write a figure",
+            "whose path is longer than 259 characters. Move the project to a folder with a shorter path."))),
+        class = c("workflow_figure_unwritten", class))
+}
+
 #' Flush explicit export-owned files and directories.
 #' @param paths Existing paths.
 #' @param root Export destination root.
@@ -1029,7 +1053,13 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         "combined_plots")), c("png", "pdf"), paste, sep = "."))
     if (is.null(journal$files)) {
         if (!dir.exists(staged)) dir.create(staged)
-        arguments$project_dirs[[key]]$time_dir <- staged
+        # KIT-052: the figures are rendered in a short scratch folder and copied into the staged one: the
+        # staged path is 73 characters longer than the project's, and the PNG device on Windows fails with
+        # a warning only on a path longer than 259 characters.
+        scratch <- tempfile("qvalue-")
+        dir.create(scratch)
+        on.exit(unlink(scratch, recursive = TRUE), add = TRUE)
+        arguments$project_dirs[[key]]$time_dir <- scratch
         # The renderer accumulates its filtering_progress on the owner the caller named (the
         # proteomics bus, or the session default); a failed render restores what the owner held.
         previous <- shiny::isolate(owner$filtering_progress)
@@ -1041,9 +1071,14 @@ publishDIAQvalueOutput <- function(manager, result, arguments, render_fn) {
         workflowExportBoundary("before_qvalue_figures")
         grid <- do.call(render_fn, arguments)
         files <- file.path(staged, expected)
-        if (is.null(grid) || any(!file.exists(files)) || any(file.size(files) <= 0)) {
+        if (is.null(grid)) {
             cli::cli_abort("required Q-value figures are incomplete", class = "saved_entity_outputs_pending")
         }
+        checkWorkflowFigureFiles(file.path(scratch, expected), "required Q-value figures are incomplete",
+            class = "saved_entity_outputs_pending")
+        file.copy(file.path(scratch, expected), files, overwrite = TRUE)
+        checkWorkflowFigureFiles(files, "required Q-value figures are incomplete",
+            class = "saved_entity_outputs_pending")
         saveRDS(list(grid = grid, progress = shiny::isolate(owner$filtering_progress)), grid_path)
         journal$files <- stats::setNames(lapply(files, \(path) list(
             sha256 = digest::digest(file = path, algo = "sha256"), bytes = file.size(path))), expected)
