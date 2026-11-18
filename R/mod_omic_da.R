@@ -77,7 +77,7 @@ omicDaRuvAssociationLines <- function(manager) {
     if (!length(steps)) return(character())
     outcomes <- steps[[length(steps)]]$outcomes
     texts <- omicGuiRuvTexts("features")
-    flagged <- function(check) if (identical(check$ruv_group_association_outcome, "flagged")) omicNormRuvAssociationText(check, texts)
+    flagged <- function(check) if (identical(check$ruv_group_association_outcome, "detectable")) omicNormRuvAssociationText(check, texts)
     single <- flagged(outcomes[ruvGroupAssociationRecordFields])
     if (!is.null(single)) return(single)
     per_assay <- outcomes$ruv_group_association_outcome_per_assay

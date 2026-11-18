@@ -525,7 +525,7 @@ trxRuvsOperation <- function(binding) {
                 outcomes = if (is.null(declared)) trxRuvOutcomes(grid) else c(trxRuvDesignOutcomes(grid),
                     # KIT-129 fourth pass item 4: the factor-tied-to-groups check on this run's W (statistic, threshold, outcome).
                     ruvGroupAssociationCheck(if (length(s$W)) s$W, as.character(x$design$group), "transcriptomics",
-                        declared$id, declared$k_rule)[ruvGroupAssociationRecordFields]))
+                        declared$id, declared$k_rule, grid$chosen$k, grid$k_record$k_estimate %||% NA_integer_)[ruvGroupAssociationRecordFields]))
         })
 }
 

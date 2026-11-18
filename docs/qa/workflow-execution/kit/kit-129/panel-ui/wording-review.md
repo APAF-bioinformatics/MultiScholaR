@@ -229,3 +229,75 @@ pre-selection of decision M15 (part C).
 12. **"With three groups it missed one acceptance criterion (7.2% false discoveries)"** (lipid and metab, controls from the data). The criterion missed is the share of simulated data sets above 10% false discoveries (22% against a limit of 16%); the note gives the mean only, to stay short.
 13. **"7.1% of unchanged genes with p below 0.05, more than the acceptance criterion allows"** (transcriptomics, controls from the data): the type I error rate in everyday words; the criterion's own limit is not stated.
 14. **Height.** Making the description visible and defining the terms in the section makes it taller (README.md has the figures). The alternative, a shorter block with undefined terms, was not taken.
+
+## Sixth pass (2026-11-19): the check worded as a detection limit (decisions M35, M36). Drafts: the user sets the final wording
+
+Keys of `omicGuiRuvTexts()`. The same words in the normalisation panel (under the approach), the RUV QC tab's table (column
+"Unwanted factors and your groups") and the DA tab's line above the run button (detectable only). `%s` slots are filled
+with the recorded numbers: the association and the limit to 3 decimals, the false discovery proportions as percentages to
+one decimal, "not measured" where the approach's own arm was not measured in that cell (never another approach's figure).
+The record's outcome values are now `detectable`, `not_detectable`, `no_limit` (were `flagged`, `not_flagged`,
+`not_calibrated`); `no_factors` and `not_computed` are unchanged.
+
+| # | Key | Old text | New text (draft) |
+|---|---|---|---|
+| 172 | `association_detectable` (was `association_flagged`) | Warning: an estimated unwanted factor follows your groups (largest association with the groups %s, above the threshold of %s validated for this approach). When unwanted variation follows the groups, false discoveries can rise above the target; see this approach's note above. | An estimated unwanted factor is associated with your groups (%s; values above %s are detectable for this approach). In simulation, this approach's false discovery proportion at a 5% target was %s with no association, %s at 0.3 and %s at 0.6. Without correction it was %s at 0.6. |
+| 173 | `association_not_detectable` (was `association_not_flagged`) | No estimated unwanted factor follows your groups beyond the threshold validated for this approach (largest association with the groups %s; threshold %s). | No association between the estimated unwanted factors and your groups was detectable (largest %s; detection limit %s). |
+| 174 | `association_no_limit` (was `association_not_calibrated`) | Largest association of an estimated unwanted factor with your groups: %s. No threshold has been validated for this approach with this rule for the number of factors, so no verdict is given. | Largest association of an estimated unwanted factor with your groups: %s. No detection limit has been established for this approach with this rule for the number of factors. |
+| 175 | `association_typed_k_equals` (new, M35) | (none) | Your number of factors equals the estimated number, so the detection limit of the estimated number applies. |
+| 176 | `association_not_measured` (new) | (none) | not measured |
+| 177 | `association_dia_limpa` (now the whole DIA with limpa sentence; %s: the association) | In DIA with limpa this value detects only strong ties to the groups: in simulation it exceeded the threshold in 86% of data sets at a correlation of 0.6 and in 37% at 0.3. | Largest association of an estimated unwanted factor with your groups: %s. In DIA with limpa no detection limit has been established: in simulation a candidate limit was exceeded in 86% of data sets at an association of 0.6 and in only 37% at 0.3, so only strong associations would be detectable. |
+| 178 | `association_legacy` | The check that an unwanted factor follows your groups is not available for the approach of earlier versions: its factors do not show this condition. | No detection limit exists for the approach of earlier versions: the association of its factors with your groups does not show this condition, so it is not checked. |
+
+Glossary change: "tied to the groups" / "follows your groups" read "associated with your groups" in the check's texts
+(M36's wording); "threshold" reads "detection limit"; "Warning" is gone. The approach notes and scenario rows above still
+say "tied to the groups": one term for both is the user's choice.
+
+**When each text appears (M35).** With the estimated number or the separation rule: against that combination's limit.
+With a typed k: against the estimated number's limit only when the typed k equals the estimated number recorded beside
+it (row 175 is added); otherwise row 174. The record's `ruv_group_association_basis` says which:
+`estimated_number`, `separation_rule`, `typed_k_equals_estimated_number`, `typed_k_differs_from_estimated_number`,
+`typed_k_without_estimated_number`.
+
+**The figures each text resolves to** (`ruvGroupAssociationConsequences()`; mean false discovery proportion at a 5% target,
+subset `full`; association 0 = C0, 0.3 = C5, 0.6 = stress S3; no correction = arm 1 at 0.6; source
+`kit-124/scored/final-20261118/s{1,2,3,4}/k124-cells.tsv`, arm 24 from `kit-124/scored/newarms-gha/k124-cells.tsv`). Only
+the rows with a detection limit (`ruvGroupAssociationThresholds()`) are ever shown in row 172; the others read row 174.
+
+| Omic | Approach (rule for k) | Arm | Limit | 0 | 0.3 | 0.6 | No correction at 0.6 | Text shown |
+|---|---|---|---|---|---|---|---|---|
+| Proteomics (DIA with IQ, LFQ, TMT) | Recommended (estimated number) | 7 | 0.058 | 5.4% | 5.6% | 6.2% | 59.3% | 172 / 173 |
+| Proteomics (DIA with IQ, LFQ, TMT) | Your own list (estimated number) | 8 | 0.070 | 5.1% | 5.3% | 5.8% | 59.3% | 172 / 173 |
+| Proteomics (DIA with IQ, LFQ, TMT) | Controls from the data (separation rule) | 5 | 0.164 | 5.2% | 7.8% | 27.3% | 59.3% | 172 / 173 |
+| Proteomics (DIA with limpa) | Recommended (estimated number) | 7 | none | 5.1% | 5.3% | 6.5% | 53.3% | 177 |
+| Proteomics (DIA with limpa) | Your own list (estimated number) | 8 | none | 5.1% | 5.4% | 7.3% | 53.3% | 177 |
+| Proteomics (DIA with limpa) | Controls from the data (separation rule) | 5 | none | 9.4% | 14.9% | 30.1% | 53.3% | 177 |
+| Transcriptomics | Recommended (estimated number) | 7 | 0.039 | 4.8% | 4.8% | 5.2% | 45.0% | 172 / 173 |
+| Transcriptomics | Your own list (estimated number) | 8 | none | 4.8% | 4.8% | 4.8% | 45.0% | 174 |
+| Transcriptomics | Controls from the data (separation rule) | 24 | none | 4.7% | 6.4% | not measured | 45.0% | 174 |
+| Lipidomics, metabolomics | Recommended (estimated number) | 7 | 0.089 | 5.7% | 7.2% | 13.0% | 64.2% | 172 / 173 |
+| Lipidomics, metabolomics | Your own list (estimated number) | 8 | 0.195 | 5.0% | 6.8% | 12.0% | 64.2% | 172 / 173 |
+| Lipidomics, metabolomics | Controls from the data (separation rule) | 5 | none | 9.7% | 23.9% | 53.7% | 64.2% | 174 |
+| any | technical replicates; first-pass nulls with the estimated number; supplied list with the separation rule; a typed k not equal to the estimated number | | none | | | | | 174 (177 in DIA with limpa) |
+
+M36's decision text quotes lipid/metab at 0.6 as 0.131; the scored table's value is 0.130459 (13.0%), which is what ships.
+
+**Open point: transcriptomics first-pass nulls note (figures to be updated to arm 24 — user wording).** The note
+(`omicGuiRuvTableTrx()$first_pass_nulls`) quotes the separation rule's figures from arm 5 (the grid's
+k); since the fifth pass the shipped separation rule is arm 24's (the rule on the first pass's own controls). Not
+rewritten here.
+
+| Figure in the note or its second line | Arm 5 (quoted today) | Arm 24 (shipped) |
+|---|---|---|
+| worst false discoveries (C5, factor tied at 0.3) | 6.4% | 6.4% |
+| power, reference scenario (C0) | 60% | 60% |
+| power, tied to the groups at 0.3 (C5) | 11% | 25% |
+| power, three groups (C7) | 2% | 5% |
+| false discoveries, three groups (C7) | 5.7% | 6.4% |
+| false discoveries, reference scenario (C0) | 4.7% | 4.7% |
+
+**Open point: lipid/metab "your own list" label.** The label reads "Estimate from a list of control lipids (metabolites)
+(by default the internal standards)" and the description "the internal standards, unless you supply another list". No
+default list is filled in: an empty list is refused ("Enter at least one control ... identifier."), and internal standards
+removed by ITSD normalisation are no longer features of the assay, so they cannot be controls (refused as "not a feature of
+this assay"). Nothing changed: the wording, or a default list, is the user's choice.

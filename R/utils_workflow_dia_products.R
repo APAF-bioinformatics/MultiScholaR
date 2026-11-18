@@ -484,7 +484,7 @@ diaNormalizationOperation <- function(ruv_design = c("legacy", "declared"), supp
                     # KIT-129 fourth pass item 4: the factor-tied-to-groups check on this run's W (decision M27).
                     ruv_result$ruv_group_association <- ruvGroupAssociationCheck(ruv_model$W, ruvFactorGroups(ruv_model$W,
                         normalized@design_matrix, normalized@sample_id, normalized@group_id), "proteomics", parameters$ruv_design,
-                        ruv_model$ruv_k_rule)
+                        ruv_model$ruv_k_rule, ruv_model$k, ruv_result$ruv_k_estimate %||% NA_integer_)
                     ruv_model$W <- ruv_model$controls <- ruv_model$k_estimate <- NULL
                 } else {
                 corrected <- ruvIII_C_VaryingFn(normalized,

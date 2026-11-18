@@ -982,18 +982,18 @@ test_that("(fourth pass item 4) the statistic is the calibration's; the check gi
     flagged <- check("lipidomics", "groups_all_features", "num_sv_be")
     expect_identical(flagged[c("ruv_group_association", "ruv_group_association_threshold", "ruv_group_association_flag",
         "ruv_group_association_outcome")], list(ruv_group_association = largest, ruv_group_association_threshold = 0.088611623,
-        ruv_group_association_flag = largest > 0.088611623, ruv_group_association_outcome = if (largest > 0.088611623) "flagged" else "not_flagged"))
+        ruv_group_association_flag = largest > 0.088611623, ruv_group_association_outcome = if (largest > 0.088611623) "detectable" else "not_detectable"))
     expect_match(flagged$ruv_group_association_source, "threshold-by-design-S4.tsv (simulator S4, arm 7; set on run 44203265622, validated on run 44227129836)",
         fixed = TRUE)
     low <- ruvGroupAssociationCheck(W * 0 + rep(c(1, -1), 6L), group, "lipidomics", "groups_all_features", "num_sv_be")
-    expect_identical(low$ruv_group_association_outcome, "not_flagged")
+    expect_identical(low$ruv_group_association_outcome, "not_detectable")
     expect_false(low$ruv_group_association_flag)
     for (args in list(list("dia_limpa", NA_character_, "num_sv_be"), list("proteomics", "groups_all_features", "user"),
         list("proteomics", "technical_replicates", "num_sv_be"), list("proteomics", "first_pass_nulls", "num_sv_be"),
         list("transcriptomics", "supplied_controls", "num_sv_be"))) {
         uncalibrated <- do.call(check, args)
         expect_identical(uncalibrated[c("ruv_group_association", "ruv_group_association_flag", "ruv_group_association_outcome")],
-            list(ruv_group_association = largest, ruv_group_association_flag = NA, ruv_group_association_outcome = "not_calibrated"),
+            list(ruv_group_association = largest, ruv_group_association_flag = NA, ruv_group_association_outcome = "no_limit"),
             info = paste(unlist(args), collapse = " "))
     }
     expect_identical(ruvGroupAssociationCheck(NULL, group, "lipidomics", "groups_all_features", "num_sv_be")$ruv_group_association_outcome,
@@ -1003,6 +1003,72 @@ test_that("(fourth pass item 4) the statistic is the calibration's; the check gi
         "lipidomics", "groups_all_features", "num_sv_be")$ruv_group_association_outcome, "not_computed")
     rownames(W) <- sprintf("s%d", 1:12)
     expect_identical(ruvFactorGroups(W, data.frame(s = sprintf("s%d", 12:1), g = rev(group)), "s", "g"), group)
+})
+
+test_that("(sixth pass M35) with a typed k the check gives a verdict only when the typed k equals the estimated number", {
+    set.seed(4)
+    group <- rep(c("A", "B"), each = 6L)
+    W <- cbind(W1 = stats::rnorm(12L) + (group == "B"))
+    largest <- max(ruvFactorGroupAssociations(W, group))
+    estimated <- ruvGroupAssociationCheck(W, group, "proteomics", "groups_all_features", "num_sv_be", 1L, 1L)
+    equal <- ruvGroupAssociationCheck(W, group, "proteomics", "groups_all_features", "user", 1L, 1L)
+    # the calibrated calculation: the estimated number's limit and figures, and the record says so
+    expect_identical(equal[setdiff(names(equal), "ruv_group_association_basis")], estimated[setdiff(names(estimated), "ruv_group_association_basis")])
+    expect_identical(equal$ruv_group_association_basis, "typed_k_equals_estimated_number")
+    expect_identical(estimated$ruv_group_association_basis, "estimated_number")
+    expect_identical(equal$ruv_group_association_outcome, if (largest > 0.058077853) "detectable" else "not_detectable")
+    for (case in list(list(k = 2L, estimate = 1L, basis = "typed_k_differs_from_estimated_number"),
+        list(k = 1L, estimate = NA_integer_, basis = "typed_k_without_estimated_number"))) {
+        other <- ruvGroupAssociationCheck(W, group, "proteomics", "groups_all_features", "user", case$k, case$estimate)
+        expect_identical(other[c("ruv_group_association", "ruv_group_association_threshold", "ruv_group_association_flag",
+            "ruv_group_association_outcome", "ruv_group_association_basis", "ruv_group_association_fdp_06")],
+            list(ruv_group_association = largest, ruv_group_association_threshold = NA_real_, ruv_group_association_flag = NA,
+                ruv_group_association_outcome = "no_limit", ruv_group_association_basis = case$basis, ruv_group_association_fdp_06 = NA_real_),
+            info = case$basis)
+    }
+    # first-pass nulls has a limit with the separation rule only: a typed k equal to the estimate has none
+    expect_identical(ruvGroupAssociationCheck(W, group, "proteomics", "first_pass_nulls", "user", 1L, 1L)$ruv_group_association_outcome,
+        "no_limit")
+})
+
+test_that("(sixth pass M36) each limit's measured consequences are its approach's own arm, read from the scored tables", {
+    consequences <- ruvGroupAssociationConsequences()
+    thresholds <- ruvGroupAssociationThresholds()
+    key <- function(x) paste(x$omic, x$ruv_design, x$ruv_k_rule)
+    # every validated limit has its approach's figures
+    expect_true(all(key(thresholds) %in% key(consequences)))
+    expect_identical(anyDuplicated(key(consequences)), 0L)
+    # the arm each shipped combination reproduces
+    expect_identical(consequences$arm[match(key(thresholds), key(consequences))], thresholds$arm)
+    root <- testthat::test_path("..", "..")
+    read <- function(path) {
+        file <- file.path(root, "docs/qa/workflow-execution/kit/kit-124/scored", path)
+        if (file.exists(file)) utils::read.delim(file, stringsAsFactors = FALSE)
+    }
+    figure <- function(table, simulator, cell, arm) {
+        hit <- table$mean_fdp[table$simulator == simulator & table$cell == cell & table$arm == arm & table$subset == "full" & !table$void]
+        if (length(hit)) hit else NA_real_
+    }
+    for (i in seq_len(nrow(consequences))) {
+        row <- consequences[i, ]
+        final <- read(sprintf("final-20261118/%s/k124-cells.tsv", tolower(row$simulator)))
+        own <- if (row$arm == 24L) read("newarms-gha/k124-cells.tsv") else final
+        if (is.null(final) || is.null(own)) next
+        expect_equal(c(row$fdp_0, row$fdp_03, row$fdp_06), c(figure(own, row$simulator, "C0", row$arm), figure(own, row$simulator, "C5", row$arm),
+            figure(own, row$simulator, "S3", row$arm)), tolerance = 1e-6, info = key(row))
+        expect_equal(row$uncorrected_06, figure(final, row$simulator, "S3", 1L), tolerance = 1e-6, info = key(row))
+    }
+    # M36's quoted figures for the recommended design
+    recommended <- consequences[consequences$ruv_design == "groups_all_features", ]
+    expect_identical(sprintf("%.3f", unlist(recommended[recommended$omic == "proteomics", c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")])),
+        c("0.054", "0.056", "0.062", "0.593"))
+    expect_identical(sprintf("%.3f", unlist(recommended[recommended$omic == "lipidomics", c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")])),
+        c("0.057", "0.072", "0.130", "0.642"))
+    # a check against a limit records its approach's figures
+    group <- rep(c("A", "B"), each = 6L)
+    check <- ruvGroupAssociationCheck(cbind(W1 = rep(c(1, -1), 6L)), group, "transcriptomics", "groups_all_features", "num_sv_be")
+    expect_identical(unlist(check[c("ruv_group_association_fdp_0", "ruv_group_association_fdp_03", "ruv_group_association_fdp_06",
+        "ruv_group_association_uncorrected_06")], use.names = FALSE), c(0.048062, 0.0480989, 0.0524544, 0.450032))
 })
 
 test_that("(fourth pass item 4) each omic's step writes the check on its W into the record; the panel shows it", {
@@ -1020,7 +1086,7 @@ test_that("(fourth pass item 4) each omic's step writes the check on its W into 
         groups <- as.character(fixture$object@design_matrix$group[match(rownames(record$W), fixture$object@design_matrix$Sample_ID)])
         expect_identical(record$ruv_group_association$ruv_group_association, max(ruvFactorGroupAssociations(record$W, groups)), info = assay)
         expect_identical(record$ruv_group_association$ruv_group_association_threshold, 0.088611623, info = assay)
-        expect_true(record$ruv_group_association$ruv_group_association_outcome %in% c("flagged", "not_flagged"), info = assay)
+        expect_true(record$ruv_group_association$ruv_group_association_outcome %in% c("detectable", "not_detectable"), info = assay)
     }
     step <- Filter(function(step) identical(step$operation, "lipid_ruv"), buildWorkflowAnalysisRecord(fixture$owner)$steps)[[1L]]
     expect_identical(step$outcomes$ruv_group_association_outcome_per_assay,
@@ -1029,7 +1095,7 @@ test_that("(fourth pass item 4) each omic's step writes the check on its W into 
         lapply(ruv$value$factors, function(record) record$ruv_group_association$ruv_group_association_threshold))
     shown <- as.character(omicNormRuvResultTags(omicsRuvDesignResult(ruv$value), omicNormRuvPresets(omicGuiConfig("lipidomics")$norm$ruv_design),
         omicNormRuvRunTable("lipidomics")$texts))
-    if (any(vapply(ruv$value$factors, function(record) !is.null(record$W), NA))) expect_match(shown, "threshold of 0.089|threshold 0.089")
+    if (any(vapply(ruv$value$factors, function(record) !is.null(record$W), NA))) expect_match(shown, "values above 0.089|detection limit 0.089")
     # classic proteomics: the user's k is not a validated combination: the value without a verdict, recorded
     manager <- kit129ProtStore()
     source <- getDIAStateReference(manager)
@@ -1040,7 +1106,7 @@ test_that("(fourth pass item 4) each omic's step writes the check on its W into 
         list(run = run, outcomes = workflowRecordStepOutcomes(manager$.context, "ruv_corrected", "normalization-ruv", record, list()))
     }))
     association <- out$run$value$ruv_result$ruv_group_association
-    expect_identical(association$ruv_group_association_outcome, "not_calibrated")
+    expect_identical(association$ruv_group_association_outcome, "no_limit")
     expect_true(is.finite(association$ruv_group_association))
     expect_identical(out$outcomes[ruvGroupAssociationRecordFields], association[ruvGroupAssociationRecordFields])
     shown <- as.character(omicNormRuvResultTags(protNormRuvDesignResult(out$run$value),
@@ -1058,12 +1124,12 @@ test_that("(fourth pass item 4) transcriptomics: the RUVs step's outcomes carry 
     owner <- fixture$owner
     run <- kit129Quiet(runTrxReferenceRuvs(owner, NULL, list(), design_parameters = trxRuvDesignParameters("groups_all_features", 2L, "user")))
     outcomes <- run$value$outcomes
-    expect_identical(outcomes$ruv_group_association_outcome, "not_calibrated")
+    expect_identical(outcomes$ruv_group_association_outcome, "no_limit")
     design <- withWorkflowStateScope(owner, function() readWorkflowOmicsMetadata(transcriptomicsDeclarationBinding, owner)$design_matrix)
     W <- design[, startsWith(names(design), "W_"), drop = FALSE]
     expect_identical(outcomes$ruv_group_association, max(ruvFactorGroupAssociations(W, as.character(design$group))))
     result <- trxRuvDesignResult(run$grid$value, outcomes)
-    expect_identical(result$assays$all$association$ruv_group_association_outcome, "not_calibrated")
+    expect_identical(result$assays$all$association$ruv_group_association_outcome, "no_limit")
 })
 
 # ---- Fourth pass item 5: the transcriptomics tab under a declared design ---------------------------------------------

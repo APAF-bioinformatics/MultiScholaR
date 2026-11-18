@@ -510,7 +510,8 @@ omicsRuvDesignOperation <- function(binding, supplied = FALSE) {
                 record$ruv_design <- design
                 record$ruv_replicate_structure <- sets$structure
                 record$ruv_group_association <- ruvGroupAssociationCheck(record$W, ruvFactorGroups(record$W, group_design$design,
-                    group_design$sample_id, group_design$group_id), omic, design, rule)
+                    group_design$sample_id, group_design$group_id), omic, design, rule, record$k %||% NA_integer_,
+                    record$ruv_k_estimate %||% NA_integer_)
                 record
             })
             k <- lapply(factors, `[[`, "k")

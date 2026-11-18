@@ -862,59 +862,73 @@ test_that("(fourth pass item 3) refusals reach the tab's error notice with the k
     expect_identical(errors, list(refusal))
 })
 
-test_that("(fourth pass item 4) the panel shows the check: a warning, its absence, the value without a verdict, not available", {
+# KIT-129 sixth pass: a recorded check of the given outcome (M35, M36 fields).
+ruvDesignCheck <- function(outcome, value = 0.21, threshold = 0.058077853) {
+    limit <- outcome %in% c("detectable", "not_detectable")
+    list(ruv_group_association = value, ruv_group_association_threshold = if (limit) threshold else NA_real_,
+        ruv_group_association_flag = if (limit) identical(outcome, "detectable") else NA,
+        ruv_group_association_outcome = outcome, ruv_group_association_source = "a source",
+        ruv_group_association_basis = if (limit) "estimated_number" else NA_character_,
+        # classic proteomics, the recommended design (arm 7) and arm 1 at 0.6 (ruvGroupAssociationConsequences)
+        ruv_group_association_fdp_0 = if (limit) 0.0535118 else NA_real_, ruv_group_association_fdp_03 = if (limit) 0.0560489 else NA_real_,
+        ruv_group_association_fdp_06 = if (limit) 0.0616284 else NA_real_, ruv_group_association_uncorrected_06 = if (limit) 0.593446 else NA_real_)
+}
+
+# the detectable text of `ruvDesignCheck("detectable")`, value 0.210
+ruvDesignDetectableText <- function(texts, limit) sprintf(texts[["association_detectable"]], "0.210", limit, "5.4%", "5.6%", "6.2%", "59.3%")
+
+test_that("(fourth pass item 4; sixth pass M36) the panel shows the check: detectable, not detectable, no limit, not available", {
     design <- omicGuiConfig("proteomics")$norm$ruv_design
     presets <- omicNormRuvPresets(design)
     texts <- design$tables[[1L]]$texts
-    check <- function(outcome, value = 0.21, threshold = 0.058077853) list(ruv_group_association = value,
-        ruv_group_association_threshold = if (outcome %in% c("flagged", "not_flagged")) threshold else NA_real_,
-        ruv_group_association_flag = if (outcome %in% c("flagged", "not_flagged")) identical(outcome, "flagged") else NA,
-        ruv_group_association_outcome = outcome)
     html <- function(association, route = NA_character_) as.character(omicNormRuvResultTags(omicNormRuvDesignResult("groups_all_features",
         "num_sv_be", 7L, "group", list(all = list(k = 1L, applied = TRUE, association = association)), route = route), presets, texts))
-    flagged <- html(check("flagged"))
-    expect_match(flagged, sprintf(texts[["association_flagged"]], "0.210", "0.058"), fixed = TRUE)
-    expect_match(flagged, 'role="alert"', fixed = TRUE)
-    expect_match(html(check("not_flagged", 0.01)), sprintf(texts[["association_not_flagged"]], "0.010", "0.058"), fixed = TRUE)
-    plain <- html(check("not_calibrated"))
-    expect_match(plain, sprintf(texts[["association_not_calibrated"]], "0.210"), fixed = TRUE)
-    expect_false(grepl("Warning", plain, fixed = TRUE))
-    expect_false(grepl(texts[["association_dia_limpa"]], plain, fixed = TRUE))
-    expect_match(html(check("not_calibrated"), "dia_limpa"), texts[["association_dia_limpa"]], fixed = TRUE)
+    detectable <- html(ruvDesignCheck("detectable"))
+    expect_match(detectable, htmltools::htmlEscape(ruvDesignDetectableText(texts, "0.058")), fixed = TRUE)
+    expect_match(detectable, 'role="alert"', fixed = TRUE)
+    expect_match(html(ruvDesignCheck("not_detectable", 0.01)), sprintf(texts[["association_not_detectable"]], "0.010", "0.058"), fixed = TRUE)
+    plain <- html(ruvDesignCheck("no_limit"))
+    expect_match(plain, sprintf(texts[["association_no_limit"]], "0.210"), fixed = TRUE)
+    expect_match(html(ruvDesignCheck("no_limit"), "dia_limpa"), sprintf(texts[["association_dia_limpa"]], "0.210"), fixed = TRUE)
+    # M36: no "Warning" and no "false discoveries can rise above the target" in any of the check's texts
+    for (key in grep("^association_", names(texts), value = TRUE)) {
+        expect_false(grepl("Warning|warning|can rise above the target", texts[[key]]), info = key)
+    }
+    # a cell not measured for the approach reads "not measured", never another figure
+    unmeasured <- html(utils::modifyList(ruvDesignCheck("detectable"), list(ruv_group_association_fdp_06 = NA_real_)))
+    expect_match(unmeasured, "5.6% at 0.3 and not measured at 0.6", fixed = TRUE)
+    # M35: a typed k equal to the estimated number says that the estimated number's limit applies
+    typed <- html(utils::modifyList(ruvDesignCheck("not_detectable", 0.01), list(ruv_group_association_basis = "typed_k_equals_estimated_number")))
+    expect_match(typed, texts[["association_typed_k_equals"]], fixed = TRUE)
     legacy <- as.character(omicNormRuvResultTags(omicNormRuvLegacyResult(), presets, texts))
     expect_match(legacy, htmltools::htmlEscape(presets$legacy$label), fixed = TRUE)
     expect_match(legacy, texts[["association_legacy"]], fixed = TRUE)
     # the texts with a number to fill take exactly that many
-    expect_identical(lengths(regmatches(texts[c("association_flagged", "association_not_flagged", "association_not_calibrated")],
-        gregexpr("%s", texts[c("association_flagged", "association_not_flagged", "association_not_calibrated")], fixed = TRUE))),
-        c(association_flagged = 2L, association_not_flagged = 2L, association_not_calibrated = 1L))
+    keys <- c("association_detectable", "association_not_detectable", "association_no_limit", "association_dia_limpa")
+    expect_identical(lengths(regmatches(texts[keys], gregexpr("%s", texts[keys], fixed = TRUE))),
+        c(association_detectable = 6L, association_not_detectable = 2L, association_no_limit = 1L, association_dia_limpa = 1L))
 })
 
 # ------------------------------------------------------------------------------------------------
 # KIT-129 fifth pass item 5: the warning's other two places (ticket section 3 (2) and (3)).
 # ------------------------------------------------------------------------------------------------
 
-ruvDesignCheck <- function(outcome, value = 0.21, threshold = 0.058077853) list(ruv_group_association = value,
-    ruv_group_association_threshold = if (outcome %in% c("flagged", "not_flagged")) threshold else NA_real_,
-    ruv_group_association_flag = if (outcome %in% c("flagged", "not_flagged")) identical(outcome, "flagged") else NA,
-    ruv_group_association_outcome = outcome, ruv_group_association_source = "a source")
-
 test_that("(fifth pass item 5) the RUV QC tab's column holds the panel's words for the recorded check", {
     texts <- omicNormRuvRunTable("lipidomics")$texts
     two <- omicNormRuvDesignResult("groups_all_features", "num_sv_be", 7L, "group", list(
-        pos = list(k = 1L, applied = TRUE, association = ruvDesignCheck("flagged")),
+        pos = list(k = 1L, applied = TRUE, association = ruvDesignCheck("detectable")),
         neg = list(k = 0L, applied = FALSE, association = ruvDesignCheck("no_factors", NA))))
     rows <- omicNormRuvAssociationRows(two, texts)
     expect_identical(names(rows), c(texts[["result_assay"]], texts[["association_column"]]))
     expect_identical(rows[[1L]], "pos")
-    expect_identical(rows[[2L]], sprintf(texts[["association_flagged"]], "0.210", "0.058"))
+    expect_identical(rows[[2L]], ruvDesignDetectableText(texts, "0.058"))
     # the panel shows the same words
     shown <- as.character(omicNormRuvResultTags(two, omicNormRuvPresets(omicGuiConfig("lipidomics")$norm$ruv_design), texts))
-    expect_match(shown, paste("Assay pos -", sprintf(texts[["association_flagged"]], "0.210", "0.058")), fixed = TRUE)
+    expect_match(shown, htmltools::htmlEscape(paste("Assay pos -", ruvDesignDetectableText(texts, "0.058"))), fixed = TRUE)
     one <- omicNormRuvAssociationRows(omicNormRuvDesignResult("groups_all_features", "user", 7L, "group",
-        list(all = list(k = 1L, applied = TRUE, association = ruvDesignCheck("not_calibrated")))), texts)
+        list(all = list(k = 1L, applied = TRUE, association = ruvDesignCheck("no_limit")))), texts)
     expect_identical(names(one), texts[["association_column"]])
-    expect_identical(one[[1L]], sprintf(texts[["association_not_calibrated"]], "0.210"))
+    expect_identical(one[[1L]], sprintf(texts[["association_no_limit"]], "0.210"))
     expect_identical(nrow(omicNormRuvAssociationRows(NULL, texts)), 0L)
     expect_identical(nrow(omicNormRuvAssociationRows(omicNormRuvLegacyResult(), texts)), 0L)
     # the slot is in the RUV QC tab with the gate on only
@@ -929,24 +943,25 @@ test_that("(fifth pass item 5) the DA tab shows the warning above the run button
         .package = "MultiScholaR")
     manager <- structure(list(), class = "DIAStateAdapter")
     single <- function(outcome) c(list(rows = 10L), ruvDesignCheck(outcome))
-    steps <- list(list(operation = "normalization-ruv", outcomes = single("flagged")))
+    steps <- list(list(operation = "normalization-ruv", outcomes = single("detectable")))
     expect_identical(omicDaRuvAssociationLines(manager), character())   # the gate off: nothing
     withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
-    expect_identical(omicDaRuvAssociationLines(manager), sprintf(texts[["association_flagged"]], "0.210", "0.058"))
+    expect_identical(omicDaRuvAssociationLines(manager), ruvDesignDetectableText(texts, "0.058"))
     # the last RUV step is the one that feeds the test
-    steps <- list(list(operation = "normalization-ruv", outcomes = single("flagged")),
-        list(operation = "normalization-ruv", outcomes = single("not_flagged")))
+    steps <- list(list(operation = "normalization-ruv", outcomes = single("detectable")),
+        list(operation = "normalization-ruv", outcomes = single("not_detectable")))
     expect_identical(omicDaRuvAssociationLines(manager), character())
-    steps <- list(list(operation = "trx_ruvs", outcomes = single("not_calibrated")))
+    steps <- list(list(operation = "trx_ruvs", outcomes = single("no_limit")))
     expect_identical(omicDaRuvAssociationLines(manager), character())
     # lipid/metab: per assay
     per <- function(field, values) stats::setNames(list(values), paste0(field, "_per_assay"))
     steps <- list(list(operation = "lipid_ruv", outcomes = c(per("ruv_group_association", list(pos = 0.21, neg = 0.01)),
         per("ruv_group_association_threshold", list(pos = 0.088611623, neg = 0.088611623)),
         per("ruv_group_association_flag", list(pos = TRUE, neg = FALSE)),
-        per("ruv_group_association_outcome", list(pos = "flagged", neg = "not_flagged")),
+        per("ruv_group_association_outcome", list(pos = "detectable", neg = "not_detectable")),
         per("ruv_group_association_source", list(pos = "s", neg = "s")))))
-    expect_identical(omicDaRuvAssociationLines(manager), paste("Assay pos -", sprintf(texts[["association_flagged"]], "0.210", "0.089")))
+    expect_identical(omicDaRuvAssociationLines(manager), paste("Assay pos -", sprintf(texts[["association_detectable"]], "0.210", "0.089",
+        "not measured", "not measured", "not measured", "not measured")))
     expect_identical(omicDaRuvAssociationLines(NULL), character())
     tags <- as.character(omicDaRuvAssociationTags(omicDaRuvAssociationLines(manager)))
     expect_match(tags, 'role="alert"', fixed = TRUE)

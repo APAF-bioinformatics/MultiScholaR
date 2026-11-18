@@ -626,14 +626,15 @@ omicNormRuvResultTags <- function(result, presets, texts) {
                 collapse = " "))
         }))
     sets <- text(paste0("result_sets_", result$replicate_structure))
-    # KIT-129 fourth pass item 4: the check that a factor follows the groups, per assay: a warning or its absence where
-    # a threshold was validated, the value without a verdict elsewhere, and under a legacy design that it is not available.
+    # KIT-129 fourth pass item 4 (sixth pass, M35, M36): the check that a factor follows the groups, per assay: detectable
+    # or not against the approach's detection limit, the value without a verdict where none applies, and under a legacy
+    # design that it is not available.
     association_lines <- lapply(names(assays), function(name) {
         a <- assays[[name]]$association
         words <- omicNormRuvAssociationText(a, texts, result$route)
         if (is.null(words)) return(NULL)
         prefix <- if (several) paste(texts[["result_assay"]], name, "-") else NULL
-        if (identical(a$ruv_group_association_outcome, "flagged")) {
+        if (identical(a$ruv_group_association_outcome, "detectable")) {
             return(shiny::tags$p(class = "ruv-design-warning", role = "alert", shiny::tags$strong(paste(c(prefix, words), collapse = " "))))
         }
         line(paste(c(prefix, words), collapse = " "))
@@ -650,21 +651,32 @@ omicNormRuvResultTags <- function(result, presets, texts) {
 }
 
 #' The check that a factor follows the groups in the panel's words (KIT-129 fourth pass item 4; fifth pass item 5: shared
-#' by the panel, the RUV QC tab's table and the DA tab's line): the warning, its absence or the value without a verdict,
-#' with the recorded value and threshold to 3 decimals; NULL without a value or for another outcome.
+#' by the panel, the RUV QC tab's table and the DA tab's line; sixth pass, M35 and M36: a detection limit with the
+#' approach's measured consequences): the recorded value and limit to 3 decimals, the false discovery proportions as
+#' percentages to one decimal ("not measured" where the cell was not measured); NULL without a value or for another
+#' outcome.
 #' @param a The recorded check (`ruvGroupAssociationRecordFields`). @param texts The table's texts.
 #' @param route The result's route (`dia_limpa` adds its sentence).
 #' @noRd
 omicNormRuvAssociationText <- function(a, texts, route = NA_character_) {
     if (is.null(a) || is.na(a$ruv_group_association %||% NA)) return(NULL)
     value <- sprintf("%.3f", a$ruv_group_association)
-    threshold <- sprintf("%.3f", a$ruv_group_association_threshold %||% NA_real_)
-    switch(a$ruv_group_association_outcome %||% "",
-        flagged = sprintf(texts[["association_flagged"]], value, threshold),
-        not_flagged = sprintf(texts[["association_not_flagged"]], value, threshold),
-        not_calibrated = paste(c(sprintf(texts[["association_not_calibrated"]], value),
-            if (identical(route, "dia_limpa")) texts[["association_dia_limpa"]]), collapse = " "),
+    limit <- sprintf("%.3f", a$ruv_group_association_threshold %||% NA_real_)
+    percent <- function(field) {
+        x <- a[[field]] %||% NA_real_
+        if (is.na(x)) texts[["association_not_measured"]] else sprintf("%.1f%%", 100 * x)
+    }
+    typed <- if (identical(a$ruv_group_association_basis, "typed_k_equals_estimated_number")) texts[["association_typed_k_equals"]]
+    words <- switch(a$ruv_group_association_outcome %||% "",
+        detectable = sprintf(texts[["association_detectable"]], value, limit, percent("ruv_group_association_fdp_0"),
+            percent("ruv_group_association_fdp_03"), percent("ruv_group_association_fdp_06"),
+            percent("ruv_group_association_uncorrected_06")),
+        not_detectable = sprintf(texts[["association_not_detectable"]], value, limit),
+        no_limit = if (identical(route, "dia_limpa")) sprintf(texts[["association_dia_limpa"]], value) else
+            sprintf(texts[["association_no_limit"]], value),
         NULL)
+    if (is.null(words)) return(NULL)
+    paste(c(words, typed), collapse = " ")
 }
 
 #' The RUV QC tab's table of the check (KIT-129 fifth pass item 5, ticket section 3 (2)): one row per assay with a

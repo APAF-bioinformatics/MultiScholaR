@@ -1523,19 +1523,29 @@ omicGuiRuvTexts <- function(features) {
         result_list = "Your list: %d identifiers, of which %d were found in your data.",
         result_controls = "Controls used (measured in every sample):",
         separation_plot_heading = "Number of factors (k): the separation rule",
-        # KIT-129 fourth pass item 4: the check that an estimated unwanted factor follows the groups (decisions M11, M27).
-        # %s: the largest association of a factor with the groups (0 to 1), then the validated threshold.
-        association_flagged = paste("Warning: an estimated unwanted factor follows your groups (largest association with the",
-            "groups %s, above the threshold of %s validated for this approach). When unwanted variation follows the groups,",
-            "false discoveries can rise above the target; see this approach's note above."),
-        association_not_flagged = paste("No estimated unwanted factor follows your groups beyond the threshold validated for",
-            "this approach (largest association with the groups %s; threshold %s)."),
-        association_not_calibrated = paste("Largest association of an estimated unwanted factor with your groups: %s. No",
-            "threshold has been validated for this approach with this rule for the number of factors, so no verdict is given."),
-        association_dia_limpa = paste("In DIA with limpa this value detects only strong ties to the groups: in simulation it",
-            "exceeded the threshold in 86% of data sets at a correlation of 0.6 and in 37% at 0.3."),
-        association_legacy = paste("The check that an unwanted factor follows your groups is not available for the approach",
-            "of earlier versions: its factors do not show this condition."),
+        # KIT-129 sixth pass (decisions M35, M36; drafts, the user sets the final wording): the check that an estimated
+        # unwanted factor is associated with the groups, as a detection limit with the approach's measured consequences.
+        # detectable: the largest association (0 to 1), the detection limit, then the approach's false discovery
+        # proportion in simulation with no association, at 0.3 and at 0.6, and without correction at 0.6.
+        association_detectable = paste("An estimated unwanted factor is associated with your groups (%s; values above %s",
+            "are detectable for this approach). In simulation, this approach's false discovery proportion at a 5%% target",
+            "was %s with no association, %s at 0.3 and %s at 0.6. Without correction it was %s at 0.6."),
+        # not detectable: the largest association, then the detection limit.
+        association_not_detectable = paste("No association between the estimated unwanted factors and your groups was",
+            "detectable (largest %s; detection limit %s)."),
+        # no limit: the largest association.
+        association_no_limit = paste("Largest association of an estimated unwanted factor with your groups: %s. No detection",
+            "limit has been established for this approach with this rule for the number of factors."),
+        # M35: a typed k equal to the estimated number is checked against the estimated number's limit.
+        association_typed_k_equals = paste("Your number of factors equals the estimated number, so the detection limit of the",
+            "estimated number applies."),
+        association_not_measured = "not measured",
+        # DIA with limpa: the largest association.
+        association_dia_limpa = paste("Largest association of an estimated unwanted factor with your groups: %s. In DIA with",
+            "limpa no detection limit has been established: in simulation a candidate limit was exceeded in 86%% of data",
+            "sets at an association of 0.6 and in only 37%% at 0.3, so only strong associations would be detectable."),
+        association_legacy = paste("No detection limit exists for the approach of earlier versions: the association of its",
+            "factors with your groups does not show this condition, so it is not checked."),
         # KIT-129 fifth pass item 5: the RUV QC tab's column heading of the check.
         association_column = "Unwanted factors and your groups")
 }

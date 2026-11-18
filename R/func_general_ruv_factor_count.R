@@ -443,20 +443,67 @@ ruvFactorGroupAssociations <- function(W, group) {
     vapply(seq_len(ncol(W)), function(j) sqrt(summary(stats::lm(W[, j] ~ group))$r.squared), numeric(1L))
 }
 
-#' The check of one run's factors (decision M27): the largest association, and against the validated threshold of the
-#' omic, design and k rule a verdict, or none where no threshold was validated. Section 1e's record fields.
+#' Each approach's measured consequences of an unwanted factor associated with the groups (decision M36): the mean
+#' false discovery proportion at a 5% target (`mean_fdp`, subset `full`) in KIT-124's cells with association 0 (C0),
+#' 0.3 (C5) and 0.6 (stress S3), the approach's own arm, and without correction (arm 1) at 0.6. One row per omic,
+#' design and k rule: the arm each shipped combination reproduces (7 recommended, 8 supplied list, with the estimated
+#' number; first-pass nulls with the separation rule: arm 5, in transcriptomics arm 24). NA where the cell was not
+#' measured for that arm (never another approach's figure).
+#' @return A data frame: `omic`, `ruv_design`, `ruv_k_rule`, `simulator`, `arm`, `fdp_0`, `fdp_03`, `fdp_06`,
+#'   `uncorrected_06`, `source`.
+#' @noRd
+ruvGroupAssociationConsequences <- function() {
+    scored <- "docs/qa/workflow-execution/kit/kit-124/scored/"
+    row <- function(omic, ruv_design, ruv_k_rule, simulator, arm, fdp_0, fdp_03, fdp_06, uncorrected_06, source) {
+        data.frame(omic = omic, ruv_design = ruv_design, ruv_k_rule = ruv_k_rule, simulator = simulator, arm = arm, fdp_0 = fdp_0,
+            fdp_03 = fdp_03, fdp_06 = fdp_06, uncorrected_06 = uncorrected_06,
+            source = paste0(scored, source, if (!identical(source, sprintf("final-20261118/%s/k124-cells.tsv", tolower(simulator))))
+                sprintf("; arm 1: %sfinal-20261118/%s/k124-cells.tsv", scored, tolower(simulator))), stringsAsFactors = FALSE)
+    }
+    final <- function(simulator) sprintf("final-20261118/%s/k124-cells.tsv", tolower(simulator))
+    lipid_metab <- function(omic) rbind(
+        row(omic, "groups_all_features", "num_sv_be", "S4", 7L, 0.0574542, 0.0723922, 0.130459, 0.641749, final("S4")),
+        row(omic, "supplied_controls", "num_sv_be", "S4", 8L, 0.0500134, 0.0676851, 0.120356, 0.641749, final("S4")),
+        row(omic, "first_pass_nulls", "sweep_bounded", "S4", 5L, 0.0974275, 0.238564, 0.537242, 0.641749, final("S4")))
+    rbind(
+        row("proteomics", "groups_all_features", "num_sv_be", "S1", 7L, 0.0535118, 0.0560489, 0.0616284, 0.593446, final("S1")),
+        row("proteomics", "supplied_controls", "num_sv_be", "S1", 8L, 0.0506339, 0.0530153, 0.0584843, 0.593446, final("S1")),
+        row("proteomics", "first_pass_nulls", "sweep_bounded", "S1", 5L, 0.0515094, 0.077624, 0.272569, 0.593446, final("S1")),
+        row("dia_limpa", "groups_all_features", "num_sv_be", "S2", 7L, 0.0514045, 0.0525753, 0.0651367, 0.532737, final("S2")),
+        row("dia_limpa", "supplied_controls", "num_sv_be", "S2", 8L, 0.0514643, 0.0542155, 0.0727574, 0.532737, final("S2")),
+        row("dia_limpa", "first_pass_nulls", "sweep_bounded", "S2", 5L, 0.0935895, 0.149448, 0.300619, 0.532737, final("S2")),
+        row("transcriptomics", "groups_all_features", "num_sv_be", "S3", 7L, 0.048062, 0.0480989, 0.0524544, 0.450032, final("S3")),
+        row("transcriptomics", "supplied_controls", "num_sv_be", "S3", 8L, 0.0484711, 0.0475697, 0.0479324, 0.450032, final("S3")),
+        # arm 24 (the separation rule on the first pass's own controls) was not run in stress S3
+        row("transcriptomics", "first_pass_nulls", "sweep_bounded", "S3", 24L, 0.0467308, 0.0643636, NA_real_, 0.450032,
+            "newarms-gha/k124-cells.tsv"),
+        lipid_metab("lipidomics"), lipid_metab("metabolomics"))
+}
+
+#' The check of one run's factors (decisions M27, M35, M36): the largest association, and against the detection limit
+#' validated for the omic, design and k rule an outcome (`detectable` above it, `not_detectable` at or below it), or
+#' `no_limit` where none was validated. With a typed k (M35) the estimated number's limit applies only when the typed k
+#' equals the estimated number recorded beside it (the calibrated calculation); otherwise there is no limit. With an
+#' outcome against a limit the approach's measured consequences (`ruvGroupAssociationConsequences`) are recorded.
+#' Section 1e's record fields.
 #' @param W The run's estimated factors (samples in rows), or NULL (no factor).
 #' @param group The group of each row of `W`.
 #' @param omic `proteomics` (classic), `dia_limpa`, `transcriptomics`, `lipidomics` or `metabolomics`.
 #' @param ruv_design,ruv_k_rule The run's design and k rule.
+#' @param k,k_estimate The k applied and, under a typed k, the estimated number recorded beside it (NA when none).
 #' @return `list(ruv_group_association, ruv_group_association_factors, ruv_group_association_threshold,
-#'   ruv_group_association_flag, ruv_group_association_outcome, ruv_group_association_source)`; the outcome is
-#'   `flagged`, `not_flagged`, `not_calibrated` (the value without a verdict; the flag NA), `no_factors`, or
-#'   `not_computed` (the factors' samples not found in the design).
+#'   ruv_group_association_flag, ruv_group_association_outcome, ruv_group_association_source,
+#'   ruv_group_association_basis, ruv_group_association_fdp_0, _fdp_03, _fdp_06, _uncorrected_06)`; the outcome is
+#'   `detectable`, `not_detectable`, `no_limit` (the value without a verdict; the flag NA), `no_factors`, or
+#'   `not_computed` (the factors' samples not found in the design). The basis names the k whose limit applied
+#'   (`estimated_number`, `separation_rule`, `typed_k_equals_estimated_number`) or, with no limit under a typed k,
+#'   `typed_k_differs_from_estimated_number` / `typed_k_without_estimated_number`.
 #' @noRd
-ruvGroupAssociationCheck <- function(W, group, omic, ruv_design, ruv_k_rule) {
+ruvGroupAssociationCheck <- function(W, group, omic, ruv_design, ruv_k_rule, k = NA_integer_, k_estimate = NA_integer_) {
     out <- list(ruv_group_association = NA_real_, ruv_group_association_factors = numeric(), ruv_group_association_threshold = NA_real_,
-        ruv_group_association_flag = NA, ruv_group_association_outcome = "no_factors", ruv_group_association_source = NA_character_)
+        ruv_group_association_flag = NA, ruv_group_association_outcome = "no_factors", ruv_group_association_source = NA_character_,
+        ruv_group_association_basis = NA_character_, ruv_group_association_fdp_0 = NA_real_, ruv_group_association_fdp_03 = NA_real_,
+        ruv_group_association_fdp_06 = NA_real_, ruv_group_association_uncorrected_06 = NA_real_)
     if (is.null(W) || !NCOL(W)) return(out)
     if (length(group) != NROW(W) || anyNA(group)) {
         out$ruv_group_association_outcome <- "not_computed"
@@ -465,18 +512,39 @@ ruvGroupAssociationCheck <- function(W, group, omic, ruv_design, ruv_k_rule) {
     values <- ruvFactorGroupAssociations(W, group)
     out$ruv_group_association <- max(values)
     out$ruv_group_association_factors <- values
+    rule <- ruv_k_rule %||% ""
+    basis <- switch(rule, num_sv_be = "estimated_number", sweep_bounded = "separation_rule", NA_character_)
+    if (identical(rule, "user")) {
+        typed <- suppressWarnings(as.numeric(k %||% NA))
+        estimated <- suppressWarnings(as.numeric(k_estimate %||% NA))
+        if (length(typed) != 1L || length(estimated) != 1L || is.na(estimated)) {
+            basis <- "typed_k_without_estimated_number"
+        } else if (!is.na(typed) && typed == estimated) {
+            rule <- "num_sv_be"
+            basis <- "typed_k_equals_estimated_number"
+        } else {
+            basis <- "typed_k_differs_from_estimated_number"
+        }
+    }
+    out$ruv_group_association_basis <- basis
     thresholds <- ruvGroupAssociationThresholds()
-    row <- thresholds[thresholds$omic == omic & thresholds$ruv_design == (ruv_design %||% "") &
-        thresholds$ruv_k_rule == (ruv_k_rule %||% ""), , drop = FALSE]
+    row <- thresholds[thresholds$omic %in% omic & thresholds$ruv_design %in% ruv_design & thresholds$ruv_k_rule %in% rule, , drop = FALSE]
     if (!nrow(row)) {
-        out$ruv_group_association_outcome <- "not_calibrated"
+        out$ruv_group_association_outcome <- "no_limit"
         return(out)
     }
     out$ruv_group_association_threshold <- row$threshold
     out$ruv_group_association_flag <- out$ruv_group_association > row$threshold
-    out$ruv_group_association_outcome <- if (out$ruv_group_association_flag) "flagged" else "not_flagged"
+    out$ruv_group_association_outcome <- if (out$ruv_group_association_flag) "detectable" else "not_detectable"
     out$ruv_group_association_source <- sprintf("%s (simulator %s, arm %d; set on run %s, validated on run %s)", row$source,
         row$simulator, row$arm, row$setting_run, row$validation_run)
+    consequences <- ruvGroupAssociationConsequences()
+    figures <- consequences[consequences$omic %in% omic & consequences$ruv_design %in% ruv_design & consequences$ruv_k_rule %in% rule, ,
+        drop = FALSE]
+    if (nrow(figures) == 1L) {
+        out[c("ruv_group_association_fdp_0", "ruv_group_association_fdp_03", "ruv_group_association_fdp_06",
+            "ruv_group_association_uncorrected_06")] <- as.list(unlist(figures[c("fdp_0", "fdp_03", "fdp_06", "uncorrected_06")]))
+    }
     out
 }
 
@@ -489,10 +557,11 @@ ruvFactorGroups <- function(W, design, sample_id, group_id) {
 }
 
 #' The fields of the check a step's record keeps (KIT-129 section 1e: `ruv_group_association`, its flag; with the
-#' threshold, the outcome and the threshold's source).
+#' detection limit (`_threshold`), the outcome and the limit's source; M35's basis and M36's measured consequences).
 #' @noRd
 ruvGroupAssociationRecordFields <- c("ruv_group_association", "ruv_group_association_threshold", "ruv_group_association_flag",
-    "ruv_group_association_outcome", "ruv_group_association_source")
+    "ruv_group_association_outcome", "ruv_group_association_source", "ruv_group_association_basis", "ruv_group_association_fdp_0",
+    "ruv_group_association_fdp_03", "ruv_group_association_fdp_06", "ruv_group_association_uncorrected_06")
 
 #' The identity parameters of a supplied control list (KIT-129 fifth pass item 3): a classic proteomics or lipid/metab
 #' request under the design `supplied_controls` is identified by its list's sha256 (`trxControlListSha256`, section 1e:
