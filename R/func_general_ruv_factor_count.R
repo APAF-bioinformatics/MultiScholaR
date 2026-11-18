@@ -1,7 +1,7 @@
 # KIT-129 W6: the number of unwanted factors (k) of an RUV step, shared by every omic's new path (the user's
 # direction of 2026-11-18: two rules, each offered where it is defined).
-#   The estimated count: `sva::num.sv(method = "be", B = 20, seed)` on the features complete in every sample, as
-#   KIT-124's simulators call it (arms 7, 8, 9, 10, 15, 16). `sva` is an optional dependency; without it the estimate
+#   The estimated count: `sva::num.sv(method = "be", B = 200, seed)` on the features complete in every sample, as
+#   KIT-124's exactness round calls it (arms 31 to 33; decision M30: 200 permutations, where arms 7 to 16 used 20). `sva` is an optional dependency; without it the estimate
 #   is refused, never replaced.
 #   The separation rule: today's estimate on the canonical-correlation plot (`findBestKElbow`, `trxFindBestK`, the
 #   sweeps' `best_k`). It is not changed here; an omic hands it to the resolver as a function.
@@ -57,7 +57,7 @@ permuteRuvResidualShares <- function(dat, mod, permutations, seed) {
 #' The estimated number of unwanted factors (KIT-129 W6)
 #'
 #' The permutation estimate of Buja and Eyuboglu (1992) as `sva::num.sv(dat, model.matrix(~ group), method = "be",
-#' B = 20, seed)` computes it, on the features observed in every sample: the groups are removed, and a component of
+#' B = 200, seed)` computes it, on the features observed in every sample: the groups are removed, and a component of
 #' the residuals is counted while at most 10% of the row-wise permutations reach its share of the residual
 #' variance. The count is `sva`'s own return value; the diagnostic's quantities are computed beside it on the same
 #' random stream and must give the same count. The draws are made under a fixed RNG kind (`RUV_FACTOR_COUNT_RNG`,
@@ -72,7 +72,7 @@ permuteRuvResidualShares <- function(dat, mod, permutations, seed) {
 #' @param values Numeric feature-by-sample matrix; missing values allowed.
 #' @param groups The group of each column of `values` (the levels removed before the count).
 #' @param seed Whole number; recorded in the result.
-#' @param permutations Number of permutations (`num.sv`'s `B`; 20 in the simulations).
+#' @param permutations Number of permutations (`num.sv`'s `B`): 200 (decision M30; the exactness round's arms 31 to 33).
 #' @param min_features The fewest complete features the estimate is made on (20, the rule of simulator S4).
 #' @param technical_replicates Whether the design declares technical replicates. Without `units` the count removes
 #'   the groups whatever its value, and it is recorded as `technical_replicates_ignored` so that a caller can warn.
@@ -86,7 +86,7 @@ permuteRuvResidualShares <- function(dat, mod, permutations, seed) {
 #'   permutation-by-component matrix of shares; `removed` names what the count removed before counting (`"groups"`,
 #'   or `"biological units"`).
 #' @noRd
-estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED, permutations = 20L,
+estimateRuvFactorCount <- function(values, groups, seed = RUV_FACTOR_COUNT_SEED, permutations = 200L,
                                    min_features = 20L, technical_replicates = FALSE, units = NULL) {
     checkmate::assert_matrix(values, mode = "numeric", min.cols = 2L)
     checkmate::assert_atomic_vector(groups, len = ncol(values))

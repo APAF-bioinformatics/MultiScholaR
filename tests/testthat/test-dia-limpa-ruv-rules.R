@@ -118,9 +118,9 @@ limpaRuvCase <- function(engine, ...) {
     list(quantified = quantified, elist = elist, design = design, ids = rownames(elist$E))
 }
 
-# E as the simulator computes it.
+# E as the exactness round computes it (arms 31 and 32: 200 permutations, decision M30).
 limpaRuvSimulatorE <- function(case, seed) {
-    as.integer(sva::num.sv(case$elist$E, stats::model.matrix(~ group, case$design), method = "be", B = 20, seed = seed))
+    as.integer(sva::num.sv(case$elist$E, stats::model.matrix(~ group, case$design), method = "be", B = 200, seed = seed))
 }
 
 # The simulator's `inModel`: the factors of `computeRuvCovariates`, then the route's test with them, with the exact
@@ -265,7 +265,7 @@ test_that("declared technical replicates stay RUV-III's replicate sets on this r
     engine <- utils::tail(limpaRuvEngines(), 1L)
     case <- limpaRuvCase(engine, seed = 105L, per_group = 8L, units = 4L)
     # Decision M28: on this design the count removes the biological units (the exactness round's arm 29), not the groups
-    E <- as.integer(sva::num.sv(case$elist$E, stats::model.matrix(~ tech_rep_group, case$design), method = "be", B = 20,
+    E <- as.integer(sva::num.sv(case$elist$E, stats::model.matrix(~ tech_rep_group, case$design), method = "be", B = 200,
         seed = 4242L))
     expect_gt(E, 0L)
     reference <- limpaRuvInModel(case, E, rep(TRUE, length(case$ids)))

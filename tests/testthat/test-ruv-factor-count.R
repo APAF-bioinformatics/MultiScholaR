@@ -1,5 +1,6 @@
-# KIT-129 W6: the number of unwanted factors (k). The estimated count is `sva::num.sv(method = "be", B = 20, seed)` on
-# the features complete in every sample, as KIT-124's simulators call it (arms 7, 8, 9, 10, 15, 16); `sva` is an
+# KIT-129 W6: the number of unwanted factors (k). The estimated count is `sva::num.sv(method = "be", B = 200, seed)` on
+# the features complete in every sample, as KIT-124's exactness round calls it (arms 31 to 33; 200 permutations,
+# decision M30; arms 7 to 16 used 20); `sva` is an
 # optional dependency. The diagnostic's quantities (observed and permuted shares of residual variance, p-values) are
 # not returned by `num.sv`, so they are computed with its algorithm on its random stream; the first test holds the
 # two together. The separation rule (`findBestKElbow`, `trxFindBestK`) is not touched.
@@ -33,13 +34,13 @@ test_that("the estimated count is sva::num.sv's on seeded data sets, with the qu
         fixture <- do.call(ruvCountFixture, cell)
         complete <- fixture$x[rowSums(!is.finite(fixture$x)) == 0, , drop = FALSE]
         expected <- sva::num.sv(complete, stats::model.matrix(~ group, data.frame(group = fixture$group)), method = "be",
-            B = 20, seed = 900L + cell$seed)
+            B = 200, seed = 900L + cell$seed)
         estimate <- estimateRuvFactorCount(fixture$x, fixture$group, seed = 900L + cell$seed)
         info <- paste("seed", cell$seed)
         expect_identical(estimate$k, as.integer(expected), info = info)
         expect_identical(estimate$rule, "num_sv_be", info = info)
         expect_identical(estimate$seed, 900L + cell$seed, info = info)
-        expect_identical(estimate$permutations, 20L, info = info)
+        expect_identical(estimate$permutations, 200L, info = info)
         expect_identical(estimate$features_used, nrow(complete), info = info)
         expect_identical(estimate$features_total, nrow(fixture$x), info = info)
         # the diagnostic: one row per residual component, the count read from the same p-values
@@ -47,8 +48,8 @@ test_that("the estimated count is sva::num.sv's on seeded data sets, with the qu
         residual <- min(nrow(complete), ncol(complete)) - length(unique(fixture$group))
         expect_identical(components$component, seq_len(residual), info = info)
         expect_equal(sum(components$observed_share), 1, tolerance = 1e-12, info = info)
-        expect_identical(dim(estimate$null_shares), c(20L, residual), info = info)
-        expect_equal(rowSums(estimate$null_shares), rep(1, 20L), tolerance = 1e-12, info = info)
+        expect_identical(dim(estimate$null_shares), c(200L, residual), info = info)
+        expect_equal(rowSums(estimate$null_shares), rep(1, 200L), tolerance = 1e-12, info = info)
         expect_equal(components$p_value, vapply(seq_len(residual), function(i) {
             mean(estimate$null_shares[, i] >= components$observed_share[[i]])
         }, numeric(1)), info = info)
@@ -107,7 +108,7 @@ test_that("the diagnostic plot shows the observed shares against the permutation
     expect_identical(layers, c("GeomLine", "GeomLine", "GeomPoint", "GeomVline"))
     shown <- nrow(estimate$components)
     # the permutation null: one line per permutation over the components shown
-    expect_identical(nrow(built$data[[1L]]), 20L * shown)
+    expect_identical(nrow(built$data[[1L]]), 200L * shown)
     expect_equal(sort(built$data[[1L]]$y), sort(as.vector(estimate$null_shares)))
     # the observed shares, and the count marked after its last component
     expect_equal(built$data[[2L]]$y, estimate$components$observed_share)
@@ -305,9 +306,9 @@ test_that("on a technical-duplicate design without a factor the count removes th
         expect_lte(units$k, 1L)
         expect_identical(units[c("removed", "technical_replicates_ignored")],
             list(removed = "biological units", technical_replicates_ignored = FALSE))
-        # the simulation's arm 29, as the simulator calls it
+        # the exactness round's arm 32 on this design (the units removed, 200 permutations; decisions M28, M30)
         expect_identical(units$k, as.integer(sva::num.sv(fixture$x, stats::model.matrix(~ unit, data.frame(unit = fixture$unit)),
-            method = "be", B = 20L, seed = RUV_FACTOR_COUNT_SEED)))
+            method = "be", B = 200L, seed = RUV_FACTOR_COUNT_SEED)))
     }
 })
 
