@@ -54,7 +54,7 @@ status <- tryCatch({
         "Matrix", "jsonlite"), function(p) as.character(utils::packageVersion(p)), character(1))
     result$r_versions <- c(R = as.character(getRversion()), as.list(r_versions))
     result$run_mofa_formals <- lapply(formals(MOFA2::run_mofa), function(x) paste(deparse(x), collapse = ""))
-    result$hdf5_r <- tryCatch(paste(utils::capture.output(print(rhdf5::h5version())), collapse = " "),
+    result$hdf5_r <- tryCatch(paste(unlist(Rhdf5lib::getHdf5Version()), collapse = "."),
         error = function(e) paste("unavailable:", conditionMessage(e)))
 
     clock <- Sys.time()
@@ -151,7 +151,8 @@ status <- tryCatch({
         factors_requested = num_factors,
         factors_in_model = ncol(factors),
         factors_active_1pct = sum(apply(r2, 1L, max) >= 1),
-        iterations = sum(!is.na(elbo)),
+        iterations = tryCatch(length(model@training_stats$time), error = function(e) NA_integer_),
+        elbo_evaluations = sum(!is.na(elbo)),
         elbo_last = utils::tail(elbo[!is.na(elbo)], 1L),
         elbo_last_hex = hex(utils::tail(elbo[!is.na(elbo)], 1L)),
         r2_percent = list(factors = rownames(r2), views = colnames(r2), values = unname(r2), values_hex = hex(r2)),
