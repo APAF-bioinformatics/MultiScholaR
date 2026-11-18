@@ -1,18 +1,14 @@
 {
-  "label": "KIT-129 RUV files on kit-129-integration 33cfc99b with sva: reproduce the laptop's 236, 273, 324, 350, 328 passed",
-  "package_commit": "33cfc99bdf38605f969a293ad2d6f991e4eb2e0d",
+  "label": "base-versus-head proof: 2 files, a559f511 against its parent 5e1a8098, check on both",
+  "package_commit": "a559f511802533e31a5c9c410015b4c7ce7cda20",
+  "base_commit": "5e1a8098a4bb3eed543ecf8a7adaf2b05001bcd4",
   "tools_ref": "",
-  "tests": [
-    "test-ruv-factor-count.R",
-    "test-prot-ruv-factors-in-model.R",
-    "test-kit127-omics-ruv-factors.R",
-    "test-trx-ruv-designs.R",
-    "test-dia-limpa-ruv-rules.R"
-  ],
-  "shards": 5,
+  "tests": ["test-dia-limpa-ruv-rules.R", "test-ci-impact-scorecard.R"],
+  "shards": 2,
   "file_timeout_minutes": 45,
+  "file_timeouts": {"test-dia-limpa-ruv-rules.R": 60},
   "extra_packages": ["sva"],
   "env": {},
-  "check": false,
+  "check": true,
   "scripts": []
 }

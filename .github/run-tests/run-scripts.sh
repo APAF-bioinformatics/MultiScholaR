@@ -4,7 +4,7 @@
 # Usage: run-scripts.sh <params.json> <package dir> <out dir>
 # Script i (from 1): `Rscript <path> <args...>` with its env, under `timeout` (timeout_minutes, default 120); its
 # console in <out dir>/<i>/console.log and its declared output directory (`out`, relative to the package root)
-# copied to <out dir>/<i>/out/. <out dir>/scripts.tsv: index, path, exit, seconds, status (ok, failed, timeout).
+# copied to <out dir>/<i>/out/ (only the files whose path under it matches `out_pattern`, an extended regex, when given). <out dir>/scripts.tsv: index, path, exit, seconds, status (ok, failed, timeout).
 set -uo pipefail
 params="$1"; pkg="$(cd "$2" && pwd)"; out="$3"
 mkdir -p "$out"; out="$(cd "$out" && pwd)"
@@ -15,6 +15,7 @@ for ((i = 0; i < n; i++)); do
     script="$(jq -r ".scripts[$i]" "$params")"
     path="$(jq -r '.path' <<< "$script")"
     dir_out="$(jq -r '.out // ""' <<< "$script")"
+    pattern="$(jq -r '.out_pattern // ""' <<< "$script")"
     minutes="$(jq -r '.timeout_minutes // 120' <<< "$script")"
     mapfile -t args < <(jq -r '.args // [] | .[]' <<< "$script")
     mapfile -t envs < <(jq -r '.env // {} | to_entries[] | "\(.key)=\(.value)"' <<< "$script")
@@ -29,6 +30,10 @@ for ((i = 0; i < n; i++)); do
     echo "script $index: exit $status after $seconds s ($verdict)"
     if [ -n "$dir_out" ] && [ -d "$pkg/$dir_out" ]; then
         cp -r "$pkg/$dir_out" "$out/$index/out"
+        if [ -n "$pattern" ]; then
+            (cd "$out/$index/out" && find . -type f | sed 's#^\./##' | grep -Ev -- "$pattern" | while IFS= read -r f; do rm -f -- "$f"; done)
+            echo "kept under out/ (out_pattern $pattern): $(find "$out/$index/out" -type f | wc -l) files"
+        fi
     elif [ -n "$dir_out" ]; then
         echo "declared output directory $dir_out was not written" > "$out/$index/out-missing.txt"
     fi

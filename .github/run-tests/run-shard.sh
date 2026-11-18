@@ -6,6 +6,8 @@
 # exist, a process that exits without a row, or one killed by the per-file timeout gets its row here (status crashed
 # or timeout). A file that would start after the job deadline is not started and is recorded as timeout. The shard's
 # table is <out dir>/tests.tsv. Exit status 0 unless the arguments are wrong: the outcome is in the table.
+# Environment: SIDE=base records a file the tree lacks as absent (head: crashed); FILE_TIMEOUTS, a JSON object
+# {file: minutes}, overrides the per-file timeout for the files it names.
 set -uo pipefail
 if [ "$#" -lt 5 ]; then echo "usage: run-shard.sh <package dir> <out dir> <timeout min> <deadline epoch> <file>..." >&2; exit 2; fi
 pkg="$(cd "$1" && pwd)"; out="$2"; per_file="$3"; deadline="$4"; shift 4
@@ -22,6 +24,11 @@ for file in "$@"; do
     stem="${file%.R}"
     path="$pkg/tests/testthat/$file"
     log="$out/logs/$stem.log"
+    if [ ! -f "$path" ] && [ "${SIDE:-head}" = base ]; then
+        echo "no such test file in the base tree: tests/testthat/$file" > "$log"
+        row "$file" absent 0
+        continue
+    fi
     if [ ! -f "$path" ]; then
         echo "no such test file in the package tree: tests/testthat/$file" > "$log"
         row "$file" crashed 0
@@ -36,7 +43,7 @@ for file in "$@"; do
         echo "::warning::$file: not started, the job's time budget is spent (recorded as timeout)"
         continue
     fi
-    limit="$per_file"; [ "$left" -lt "$limit" ] && limit="$left"
+    limit="$(jq -r --arg f "$file" --argjson d "$per_file" '.[$f] // $d' <<< "${FILE_TIMEOUTS:-{\}}")"; [ "$left" -lt "$limit" ] && limit="$left"
     start=$(date +%s)
     timeout --kill-after=60 "${limit}m" Rscript --vanilla "$here/run-file.R" "$pkg" "$path" "$out" > "$log" 2>&1
     status=$?

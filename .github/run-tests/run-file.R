@@ -27,9 +27,20 @@ results <- list_reporter$get_results()
 df <- as.data.frame(results)
 oneLine <- function(text) gsub("[\t\r\n]+", " ", text)
 blocks <- character()
+# Per test (in run order) its counts, and per failing or erroring expectation its full message: the base-versus-head
+# comparison (assemble.R) reads them from <out dir>/results/<file>.rds.
+per_test <- data.frame(test = character(), passed = integer(), failed = integer(), errors = integer(),
+    skipped = integer(), stringsAsFactors = FALSE)
+messages <- data.frame(test = character(), kind = character(), message = character(), stringsAsFactors = FALSE)
 for (test in results) {
+    name_of <- if (is.null(test$test)) "<outside test_that>" else test$test
+    kinds <- vapply(test$results, function(r) class(r)[[1L]], "")
+    per_test[nrow(per_test) + 1L, ] <- list(name_of, sum(kinds == "expectation_success"), sum(kinds == "expectation_failure"),
+        sum(kinds == "expectation_error"), sum(kinds == "expectation_skip"))
     for (result in test$results) {
         if (!inherits(result, c("expectation_failure", "expectation_error"))) next
+        messages[nrow(messages) + 1L, ] <- list(name_of, if (inherits(result, "expectation_error")) "error" else "failure",
+            conditionMessage(result))
         trace <- if (!is.null(result$trace)) tryCatch(format(result$trace), error = function(e) character()) else character()
         blocks <- c(blocks, paste(c(
             sprintf("file: %s", name),
@@ -51,6 +62,9 @@ row <- data.frame(file = name, passed = if (nrow(df)) sum(df$passed) else 0L, fa
     seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1),
     status = if (failed + errors > 0L) "failed" else "ok", stringsAsFactors = FALSE)
 stem <- sub("[.]R$", "", name)
+if (!is.null(outcome)) messages[nrow(messages) + 1L, ] <- list("<test_file itself>", "error", outcome)
+dir.create(file.path(out_dir, "results"), showWarnings = FALSE)
+saveRDS(list(tests = per_test, messages = messages), file.path(out_dir, "results", paste0(stem, ".rds")))
 if (length(blocks)) writeLines(paste0(blocks, "\n"), file.path(out_dir, "failures", paste0(stem, ".txt")))
 utils::write.table(row, file.path(out_dir, "rows", paste0(stem, ".tsv")), sep = "\t", quote = FALSE, row.names = FALSE)
 cat(sprintf("\nCOUNTS %s pass %d fail %d error %d skip %d warn %d\n", name, row$passed, row$failed, row$errors,

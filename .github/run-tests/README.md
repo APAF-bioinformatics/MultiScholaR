@@ -32,13 +32,16 @@ current params. `gh run rerun <id> --failed` reruns failed shards only (the `res
 | `label` | required | free text naming the request (ticket, purpose), one line |
 | `package_commit` | required | 40-digit commit under test; its tree is checked out (path `pkg`) and its `tests/testthat` run |
 | `tools_ref` | `""` | where the library tooling is read from (`.github/actions/snapshot-library`, `packaging/r/install-library.R`, `packaging/multischolar.lock.json`). Empty: `package_commit` when its tree has all three, else branch `kit-134`. Or a commit or branch name |
+| `base_commit` | `""` | 40-digit commit to compare against: the same files (same shards, tools, extra packages, runner image) run on it in separate jobs, and `check` runs on both; see "Base versus head" |
 | `tests` | `[]` | `test-*.R` names under `tests/testthat`, or `"all"` |
 | `shards` | 8 | matrix jobs (1 to 20; never more than the files); files dealt round-robin in the listed order |
 | `file_timeout_minutes` | 45 | per file; a file killed at the limit is `timeout` and the shard carries on |
+| `file_timeouts` | `{}` | per-file timeout overrides, `{"test-gui-entry-proteomics.R": 120}` |
 | `extra_packages` | `[]` | packages the library lacks, from the lockfile's snapshot (CRAN and Bioconductor 3.23 jammy binaries) with their hard dependencies, e.g. `["sva"]` (brings genefilter, annotate) |
 | `env` | `{}` | environment variables for the test processes (not `GITHUB_*`, `RUNNER_*`, `ACTIONS_*`, `R_LIBS*`, `PATH`); `NOT_CRAN=true` is always set |
 | `check` | `false` | a separate job: `R CMD build --no-manual`, then `R CMD check --no-manual --no-tests` with `_R_CHECK_FORCE_SUGGESTS_=false` (the tests are the test jobs' work) |
-| `scripts` | `[]` | `{ "path": ..., "args": [...], "env": {...}, "out": <dir>, "timeout_minutes": 120 }`: `Rscript <path> <args>` from the package root after `package_commit` is installed (`R CMD INSTALL`, full git history present); `out` (relative to the package root) is uploaded |
+| `scripts` | `[]` | `{ "path": ..., "args": [...], "env": {...}, "out": <dir>, "timeout_minutes": 120 }`: `Rscript <path> <args>` from the package root after `package_commit` is installed (`R CMD INSTALL`, full git history present); `out` (relative to the package root) is uploaded; `out_pattern` (extended regex on the path under `out`) keeps only matching files, e.g. `"\\.(tsv|txt)$"` |
+| `fetch_refs` | `[]` | branches the scripts read with `git show` (fetched as `origin/<name>` and as local branches), e.g. `["sim-k124-exact"]` |
 | `os` | `ubuntu-22.04` | Linux only. Windows is refused: the kit-134 workflows install on Windows only inside the distributable bundle build (`packaging/windows/assemble.ps1`), not through a reusable library action |
 
 Example (the KIT-129 RUV files with sva):
@@ -81,6 +84,19 @@ file's log) and a list reporter (the counts), as the laptop's per-file runs
 The run is red only on infrastructure failure (a job failed or was cancelled), a file that crashed or
 timed out, or a failed script. Failing expectations and check findings are results: green run, see
 `tests.tsv`.
+
+## Base versus head
+
+Stored hashes recorded on the laptop cannot be judged on a runner by pass or fail. With `base_commit`
+the rule is: a change is clean when no test that passes on base fails on head, and every expectation
+that fails on both fails with the same message (temporary and checkout paths masked). `compare.tsv`
+(file, base and head passed/failed/errors/skipped/status, verdict, tests, note) gives per file one of
+`same`, `new-failure`, `message-changed`, `fixed`, `count-changed`, `only-on-head` (the base tree
+lacks the file; base status `absent`). `compare-failures.txt` shows base and head messages side by
+side for every non-identical failure. A failure identical on both whose message names a digest or
+hash but shows no hexadecimal value is noted: its actual value cannot be compared. `check-compare.txt`
+lists check findings only on head and only on base. Head results stay in `tests.tsv`/`failures.txt`;
+base results are `tests-base.tsv`/`failures-base.txt`/`logs-base/`.
 
 ## Token rules (absolute)
 

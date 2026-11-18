@@ -27,4 +27,7 @@ out <- c(
     "")
 for (block in blocks) out <- c(out, sprintf("[%s]", block$level), block$text, "")
 writeLines(out, arguments[[2L]])
+# the findings for the base-versus-head diff (assemble.R)
+saveRDS(list(status = arguments[[3L]], levels = levels, texts = vapply(blocks, function(b) paste(b$text, collapse = "\n"), "")),
+    file.path(dirname(arguments[[2L]]), "findings.rds"))
 cat(out, sep = "\n")

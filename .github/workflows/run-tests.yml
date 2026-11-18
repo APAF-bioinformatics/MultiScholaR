@@ -50,6 +50,8 @@ jobs:
       check: ${{ steps.plan.outputs.check }}
       nscripts: ${{ steps.plan.outputs.nscripts }}
       file_timeout: ${{ steps.plan.outputs.file_timeout }}
+      base_commit: ${{ steps.plan.outputs.base_commit }}
+      sides: ${{ steps.plan.outputs.sides }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,6 +66,10 @@ jobs:
             def relpath: str and test("^[A-Za-z0-9._][A-Za-z0-9._/-]*$") and (test("(^|/)[.][.](/|$)") | not);
             (.label | str and length >= 1 and length <= 200) and
             (.package_commit | type == "string" and test("^[0-9a-f]{40}$")) and
+            ((.base_commit // "") | type == "string" and test("^([0-9a-f]{40})?$")) and
+            ((.fetch_refs // []) | type == "array" and all(type == "string" and test("^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"))) and
+            ((.file_timeouts // {}) | type == "object" and (to_entries | all((.key | test("^test-[A-Za-z0-9._-]+[.]R$")) and
+              (.value | type == "number" and . == floor and . >= 1 and . <= 280)))) and
             ((.tools_ref // "") | type == "string" and test("^([0-9a-f]{40}|[A-Za-z0-9][A-Za-z0-9._/-]{0,99})?$")) and
             ((.tests // []) | . == "all" or (type == "array" and all(type == "string" and test("^test-[A-Za-z0-9._-]+[.]R$")))) and
             ((.shards // 8) | type == "number" and . == floor and . >= 1 and . <= 20) and
@@ -73,17 +79,21 @@ jobs:
               (test("^(GITHUB_|RUNNER_|ACTIONS_|R_LIBS)") | not) and . != "PATH") and (.value | str)))) and
             ((.check // false) | type == "boolean") and
             ((.scripts // []) | type == "array" and all(type == "object" and (.path | relpath) and
-              ((.args // []) | type == "array" and all(str)) and ((.out // "") | . == "" or relpath) and
+              ((.args // []) | type == "array" and all(str)) and ((.out // "") | . == "" or relpath) and ((.out_pattern // "") | str) and
               ((.timeout_minutes // 120) | type == "number" and . == floor and . >= 1 and . <= 280) and
               ((.env // {}) | type == "object" and (to_entries | all((.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and (.value | str)))))) and
             ((.os // "ubuntu-22.04") == "ubuntu-22.04")
           ' "$p" > /dev/null; then
-            echo "::error::params.json is not valid; see .github/run-tests/README.md (label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; extra_packages names; env names and one-line values; check true or false; scripts {path, args, env, out, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
+            echo "::error::params.json is not valid; see .github/run-tests/README.md (label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; base_commit empty or a 40-digit commit; fetch_refs branch names; file_timeouts {file: minutes}; extra_packages names; env names and one-line values; check true or false; scripts {path, args, env, out, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
             exit 1
           fi
           commit="$(jq -r .package_commit "$p")"
           if ! git fetch --quiet --no-tags --depth 1 origin "$commit"; then
             echo "::error::package_commit $commit is not reachable on origin: push its branch first"; exit 1
+          fi
+          base="$(jq -r '.base_commit // ""' "$p")"
+          if [ -n "$base" ] && ! git fetch --quiet --no-tags --depth 1 origin "$base"; then
+            echo "::error::base_commit $base is not reachable on origin: push its branch first"; exit 1
           fi
           tooling=(.github/actions/snapshot-library/action.yml packaging/r/install-library.R packaging/multischolar.lock.json)
           has_tools() { local c="$1" f; for f in "${tooling[@]}"; do git cat-file -e "$c:$f" 2>/dev/null || return 1; done; }
@@ -105,11 +115,18 @@ jobs:
           fi
           n="$(jq length "$RUNNER_TEMP/files.json")"
           shards="$(jq -r --argjson n "$n" '[.shards // 8, $n] | min' "$p")"
-          if [ "$n" -gt 0 ]; then
-            matrix="$(jq -c --argjson s "$shards" '{include: [range(0; $s) as $k | {shard: ($k + 1),
-              files: [to_entries[] | select(.key % $s == $k) | .value]}]}' "$RUNNER_TEMP/files.json")"
+          # one job per side (head = package_commit; base = base_commit, when given) and shard, the same shards on both
+          if [ -n "$base" ]; then
+            sides="$(jq -nc --arg h "$commit" --arg b "$base" '[{side: "head", commit: $h}, {side: "base", commit: $b}]')"
           else
-            matrix='{"include":[{"shard":0,"files":[]}]}'
+            sides="$(jq -nc --arg h "$commit" '[{side: "head", commit: $h}]')"
+          fi
+          if [ "$n" -gt 0 ]; then
+            matrix="$(jq -c --argjson s "$shards" --argjson sides "$sides" '. as $files | {include: [$sides[] as $side |
+              range(0; $s) as $k | {side: $side.side, commit: $side.commit, shard: ($k + 1),
+              files: [$files | to_entries[] | select(.key % $s == $k) | .value]}]}' "$RUNNER_TEMP/files.json")"
+          else
+            matrix='{"include":[{"side":"head","commit":"","shard":0,"files":[]}]}'
           fi
           {
             echo "matrix=$matrix"
@@ -121,15 +138,17 @@ jobs:
             echo "check=$(jq -r '.check // false' "$p")"
             echo "nscripts=$(jq -r '(.scripts // []) | length' "$p")"
             echo "file_timeout=$(jq -r '.file_timeout_minutes // 45' "$p")"
+            echo "base_commit=$base"
+            echo "sides=$(jq -c '{include: .}' <<< "$sides")"
           } >> "$GITHUB_OUTPUT"
           {
             echo "### Request"
             echo '```json'; cat "$p"; echo '```'
-            echo "package_commit $commit; tools_ref $tools; $n test files in $shards shard(s)"
+            echo "package_commit $commit; base_commit ${base:-none}; tools_ref $tools; $n test files in $shards shard(s) per side"
           } >> "$GITHUB_STEP_SUMMARY"
 
   tests:
-    name: tests ${{ matrix.shard }}
+    name: tests ${{ matrix.side }} ${{ matrix.shard }}
     needs: plan
     if: needs.plan.outputs.ntests != '0'
     runs-on: ubuntu-22.04
@@ -140,6 +159,7 @@ jobs:
     env:
       FILES: ${{ toJSON(matrix.files) }}
       SHARD: ${{ matrix.shard }}
+      SIDE: ${{ matrix.side }}
       EXTRA: ${{ needs.plan.outputs.extra }}
       FILE_TIMEOUT: ${{ needs.plan.outputs.file_timeout }}
     steps:
@@ -166,10 +186,10 @@ jobs:
             R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla rt/.github/run-tests/extra-packages.R packaging/multischolar.lock.json $EXTRA
           fi
           Rscript --vanilla -e 'if ("MultiScholaR" %in% rownames(installed.packages(.Library))) remove.packages("MultiScholaR", lib = .Library)'
-      - name: The package under test (package_commit)
+      - name: The package tree of this side (head package_commit, base base_commit)
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.plan.outputs.package_commit }}
+          ref: ${{ matrix.commit }}
           path: pkg
           persist-credentials: false
       - name: Prepare the tree (no LFS filter, the DIA manifest, the library table, native code compiled once)
@@ -186,23 +206,28 @@ jobs:
           while IFS= read -r -d '' kv; do export "$kv"; echo "env: ${kv%%=*}"; done < <(jq -j '.env // {} | to_entries[] | "\(.key)=\(.value)\u0000"' rt/.github/run-tests/params.json)
           mapfile -t files < <(jq -r '.[]' <<< "$FILES")
           deadline=$(( JOB_START + (300 - 12) * 60 ))
+          export FILE_TIMEOUTS="$(jq -c '.file_timeouts // {}' rt/.github/run-tests/params.json)"
+          echo "side $SIDE, commit $(git -C pkg rev-parse HEAD)"
           bash rt/.github/run-tests/run-shard.sh pkg "$RUNNER_TEMP/out" "$FILE_TIMEOUT" "$deadline" "${files[@]}"
       - name: Scan before upload (a matching file is withheld)
         run: Rscript --vanilla rt/.github/run-tests/scan.R "$RUNNER_TEMP/out" strict
       - name: Upload the shard
         uses: actions/upload-artifact@v4
         with:
-          name: shard-${{ matrix.shard }}
+          name: shard-${{ matrix.side }}-${{ matrix.shard }}
           path: ${{ runner.temp }}/out
           if-no-files-found: error
           retention-days: 30
 
   check:
-    name: R CMD check
+    name: R CMD check ${{ matrix.side }}
     needs: plan
     if: needs.plan.outputs.check == 'true'
     runs-on: ubuntu-22.04
     timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.sides) }}
     env:
       EXTRA: ${{ needs.plan.outputs.extra }}
     steps:
@@ -223,10 +248,10 @@ jobs:
       - name: Extra packages (params extra_packages, same snapshot)
         if: env.EXTRA != ''
         run: R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla rt/.github/run-tests/extra-packages.R packaging/multischolar.lock.json $EXTRA
-      - name: The package under test (package_commit)
+      - name: The package tree of this side (head package_commit, base base_commit)
         uses: actions/checkout@v4
         with:
-          ref: ${{ needs.plan.outputs.package_commit }}
+          ref: ${{ matrix.commit }}
           path: pkg
           persist-credentials: false
       - name: R CMD build and R CMD check (MultiScholaR's own logs only)
@@ -249,7 +274,7 @@ jobs:
       - name: Upload the check
         uses: actions/upload-artifact@v4
         with:
-          name: check
+          name: check-${{ matrix.side }}
           path: ${{ runner.temp }}/check-out
           if-no-files-found: error
           retention-days: 30
@@ -288,6 +313,14 @@ jobs:
           path: pkg
           fetch-depth: 0
           persist-credentials: false
+      - name: The refs the scripts read (params fetch_refs; as remote-tracking and local branches)
+        working-directory: pkg
+        run: |
+          for ref in $(jq -r '(.fetch_refs // [])[]' ../rt/.github/run-tests/params.json); do
+            git fetch --quiet --no-tags origin "+refs/heads/$ref:refs/remotes/origin/$ref"
+            git branch -f "$ref" "origin/$ref" > /dev/null
+            echo "$ref = $(git rev-parse "origin/$ref")"
+          done
       - name: Install package_commit in place of the tools' MultiScholaR (output kept in the job)
         working-directory: pkg
         run: |
@@ -320,6 +353,7 @@ jobs:
     env:
       FILES: ${{ needs.plan.outputs.files }}
       PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
+      BASE_COMMIT: ${{ needs.plan.outputs.base_commit }}
       TOOLS_REF: ${{ needs.plan.outputs.tools_ref }}
       TESTS_RESULT: ${{ needs.tests.result }}
       CHECK_RESULT: ${{ needs.check.result }}
@@ -349,10 +383,10 @@ jobs:
           status=0
           Rscript --vanilla .github/run-tests/assemble.R "$dl" "$res" "$RUNNER_TEMP/requested.txt" > "$RUNNER_TEMP/assemble.out" 2>&1 || status=$?
           cat "$RUNNER_TEMP/assemble.out"
-          first="$(ls -d "$dl"/shard-* "$dl"/check "$dl"/scripts 2>/dev/null | head -n 1 || true)"
+          first="$(ls -d "$dl"/shard-head-* "$dl"/check-head "$dl"/scripts 2>/dev/null | head -n 1 || true)"
           {
-            printf 'run\t%s\nattempt\t%s\nrequest_commit\t%s\nlabel\t%s\npackage_commit\t%s\ntools_ref\t%s\n' \
-              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$(jq -r .label .github/run-tests/params.json)" "$PACKAGE_COMMIT" "$TOOLS_REF"
+            printf 'run\t%s\nattempt\t%s\nrequest_commit\t%s\nlabel\t%s\npackage_commit\t%s\nbase_commit\t%s\ntools_ref\t%s\n' \
+              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$(jq -r .label .github/run-tests/params.json)" "$PACKAGE_COMMIT" "${BASE_COMMIT:-none}" "$TOOLS_REF"
             printf 'runner\tubuntu-22.04 (GitHub-hosted)\nR\t%s\n' "$(cat "$first/r-version.txt" 2>/dev/null || echo unknown)"
             printf 'jobs\ttests %s; check %s; scripts %s\n' "$TESTS_RESULT" "$CHECK_RESULT" "$SCRIPTS_RESULT"
             for s in "$dl"/shard-*; do [ -f "$s/setup-seconds.txt" ] && printf '%s\t%s\n' "$(basename "$s")" "$(cat "$s/setup-seconds.txt")"; done
