@@ -1,0 +1,384 @@
+name: run-tests
+
+# MultiScholaR's test files, R CMD check and proof scripts on hosted runners (4 cores, 16 GB) instead of the laptop.
+# How to launch, the params and the token rules: .github/run-tests/README.md.
+#
+# A run starts when a push to the branch run-tests changes .github/run-tests/params.json (or by workflow_dispatch,
+# with the branch's params). The package under test is the commit package_commit (checked out on its own, path pkg);
+# the library's tools (.github/actions/snapshot-library, packaging/r/install-library.R, packaging/multischolar.lock.json)
+# are read from tools_ref: package_commit itself when its tree has them, otherwise the named ref (default kit-134).
+#
+# Jobs: plan (params checked, files listed and sharded); tests (one job per shard: R 4.6.1 and the snapshot library
+# with the two internal packages, built in the job from the read token; the tools' MultiScholaR removed; each file in
+# its own R process with pkgload::load_all of package_commit's tree, as the laptop's per-file runs); check (R CMD build
+# and R CMD check --no-manual --no-tests, _R_CHECK_FORCE_SUGGESTS_=false); scripts (package_commit installed, the
+# scripts run from its root); results (one artifact `results`, the summary on this page).
+#
+# Outcome: the run fails only on an infrastructure failure (a job failed or was cancelled) or when a file crashed or
+# timed out or a script failed. Failing expectations and check findings are results, reported in the tables.
+#
+# The internal packages (read token DEPS_READ_TOKEN): no cache of any kind; their build output stays under
+# RUNNER_TEMP (the action) and is never uploaded; every artifact is scanned before upload (.github/run-tests/scan.R),
+# a file that matches is withheld; the assembled artifact is scanned again and a match fails the run.
+
+on:
+  push:
+    branches:
+      - run-tests
+    paths:
+      - .github/run-tests/params.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NOT_CRAN: "true"
+
+jobs:
+  plan:
+    name: plan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      files: ${{ steps.plan.outputs.files }}
+      ntests: ${{ steps.plan.outputs.ntests }}
+      package_commit: ${{ steps.plan.outputs.package_commit }}
+      tools_ref: ${{ steps.plan.outputs.tools_ref }}
+      extra: ${{ steps.plan.outputs.extra }}
+      check: ${{ steps.plan.outputs.check }}
+      nscripts: ${{ steps.plan.outputs.nscripts }}
+      file_timeout: ${{ steps.plan.outputs.file_timeout }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read .github/run-tests/params.json
+        id: plan
+        run: |
+          set -euo pipefail
+          p=.github/run-tests/params.json
+          if ! jq -e '
+            def str: type == "string" and (test("[\n\r]") | not);
+            def relpath: str and test("^[A-Za-z0-9._][A-Za-z0-9._/-]*$") and (test("(^|/)[.][.](/|$)") | not);
+            (.label | str and length >= 1 and length <= 200) and
+            (.package_commit | type == "string" and test("^[0-9a-f]{40}$")) and
+            ((.tools_ref // "") | type == "string" and test("^([0-9a-f]{40}|[A-Za-z0-9][A-Za-z0-9._/-]{0,99})?$")) and
+            ((.tests // []) | . == "all" or (type == "array" and all(type == "string" and test("^test-[A-Za-z0-9._-]+[.]R$")))) and
+            ((.shards // 8) | type == "number" and . == floor and . >= 1 and . <= 20) and
+            ((.file_timeout_minutes // 45) | type == "number" and . == floor and . >= 1 and . <= 280) and
+            ((.extra_packages // []) | type == "array" and all(type == "string" and test("^[A-Za-z][A-Za-z0-9.]*$"))) and
+            ((.env // {}) | type == "object" and (to_entries | all((.key | test("^[A-Za-z_][A-Za-z0-9_]*$") and
+              (test("^(GITHUB_|RUNNER_|ACTIONS_|R_LIBS)") | not) and . != "PATH") and (.value | str)))) and
+            ((.check // false) | type == "boolean") and
+            ((.scripts // []) | type == "array" and all(type == "object" and (.path | relpath) and
+              ((.args // []) | type == "array" and all(str)) and ((.out // "") | . == "" or relpath) and
+              ((.timeout_minutes // 120) | type == "number" and . == floor and . >= 1 and . <= 280) and
+              ((.env // {}) | type == "object" and (to_entries | all((.key | test("^[A-Za-z_][A-Za-z0-9_]*$")) and (.value | str)))))) and
+            ((.os // "ubuntu-22.04") == "ubuntu-22.04")
+          ' "$p" > /dev/null; then
+            echo "::error::params.json is not valid; see .github/run-tests/README.md (label; package_commit as a 40-digit commit; tools_ref empty, a commit or a branch; tests \"all\" or test-*.R names; shards 1 to 20; file_timeout_minutes 1 to 280; extra_packages names; env names and one-line values; check true or false; scripts {path, args, env, out, timeout_minutes}; os ubuntu-22.04 only: no Windows here)"
+            exit 1
+          fi
+          commit="$(jq -r .package_commit "$p")"
+          if ! git fetch --quiet --no-tags --depth 1 origin "$commit"; then
+            echo "::error::package_commit $commit is not reachable on origin: push its branch first"; exit 1
+          fi
+          tooling=(.github/actions/snapshot-library/action.yml packaging/r/install-library.R packaging/multischolar.lock.json)
+          has_tools() { local c="$1" f; for f in "${tooling[@]}"; do git cat-file -e "$c:$f" 2>/dev/null || return 1; done; }
+          tools="$(jq -r '.tools_ref // ""' "$p")"
+          if [ -z "$tools" ]; then
+            if has_tools "$commit"; then tools="$commit"; else tools=kit-134; fi
+          fi
+          if ! [[ "$tools" =~ ^[0-9a-f]{40}$ ]]; then
+            sha="$(git ls-remote origin "refs/heads/$tools" | cut -f1)"
+            if [ -z "$sha" ]; then echo "::error::tools_ref $tools is not a branch on origin"; exit 1; fi
+            echo "tools_ref $tools = $sha"; tools="$sha"
+          fi
+          git fetch --quiet --no-tags --depth 1 origin "$tools"
+          if ! has_tools "$tools"; then echo "::error::tools_ref $tools lacks ${tooling[*]}"; exit 1; fi
+          if [ "$(jq -r '.tests | type' "$p")" = "string" ]; then
+            git ls-tree --name-only "$commit" tests/testthat/ | sed -n 's#^tests/testthat/\(test-.*\.R\)$#\1#p' | jq -R . | jq -sc . > "$RUNNER_TEMP/files.json"
+          else
+            jq -c '[.tests // [] | .[]] | reduce .[] as $f ([]; if index([$f]) then . else . + [$f] end)' "$p" > "$RUNNER_TEMP/files.json"
+          fi
+          n="$(jq length "$RUNNER_TEMP/files.json")"
+          shards="$(jq -r --argjson n "$n" '[.shards // 8, $n] | min' "$p")"
+          if [ "$n" -gt 0 ]; then
+            matrix="$(jq -c --argjson s "$shards" '{include: [range(0; $s) as $k | {shard: ($k + 1),
+              files: [to_entries[] | select(.key % $s == $k) | .value]}]}' "$RUNNER_TEMP/files.json")"
+          else
+            matrix='{"include":[{"shard":0,"files":[]}]}'
+          fi
+          {
+            echo "matrix=$matrix"
+            echo "files=$(cat "$RUNNER_TEMP/files.json")"
+            echo "ntests=$n"
+            echo "package_commit=$commit"
+            echo "tools_ref=$tools"
+            echo "extra=$(jq -r '(.extra_packages // []) | join(" ")' "$p")"
+            echo "check=$(jq -r '.check // false' "$p")"
+            echo "nscripts=$(jq -r '(.scripts // []) | length' "$p")"
+            echo "file_timeout=$(jq -r '.file_timeout_minutes // 45' "$p")"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### Request"
+            echo '```json'; cat "$p"; echo '```'
+            echo "package_commit $commit; tools_ref $tools; $n test files in $shards shard(s)"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  tests:
+    name: tests ${{ matrix.shard }}
+    needs: plan
+    if: needs.plan.outputs.ntests != '0'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      FILES: ${{ toJSON(matrix.files) }}
+      SHARD: ${{ matrix.shard }}
+      EXTRA: ${{ needs.plan.outputs.extra }}
+      FILE_TIMEOUT: ${{ needs.plan.outputs.file_timeout }}
+    steps:
+      - name: Job start
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+      - name: The library's tools (tools_ref)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.tools_ref }}
+          persist-credentials: false
+      - name: R 4.6.1 and the library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: any::pkgload any::testthat
+      - name: The request's scripts (this push)
+        uses: actions/checkout@v4
+        with:
+          path: rt
+          persist-credentials: false
+      - name: Extra packages (params extra_packages, same snapshot); the tools' MultiScholaR removed
+        run: |
+          if [ -n "$EXTRA" ]; then
+            R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla rt/.github/run-tests/extra-packages.R packaging/multischolar.lock.json $EXTRA
+          fi
+          Rscript --vanilla -e 'if ("MultiScholaR" %in% rownames(installed.packages(.Library))) remove.packages("MultiScholaR", lib = .Library)'
+      - name: The package under test (package_commit)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.package_commit }}
+          path: pkg
+          persist-credentials: false
+      - name: Prepare the tree (no LFS filter, the DIA manifest, the library table, native code compiled once)
+        working-directory: pkg
+        run: |
+          git config filter.lfs.clean cat; git config filter.lfs.smudge cat; git config filter.lfs.process ""; git config filter.lfs.required false
+          if [ -f src/build_dia_rsum.R ] && [ ! -f inst/duckdb/linux_amd64/manifest.rds ]; then Rscript --vanilla src/build_dia_rsum.R > "$RUNNER_TEMP/dia.log" 2>&1 || { tail -n 5 "$RUNNER_TEMP/dia.log"; exit 1; }; fi
+          mkdir -p "$RUNNER_TEMP/out"
+          Rscript --vanilla ../rt/.github/run-tests/prepare.R "$RUNNER_TEMP/out/library.tsv" load
+          Rscript --vanilla -e 'cat(R.version.string, "\n")' > "$RUNNER_TEMP/out/r-version.txt"
+          echo "library install: $(( $(date +%s) - JOB_START )) s since job start" | tee "$RUNNER_TEMP/out/setup-seconds.txt"
+      - name: Run the shard's files, one R process each
+        run: |
+          while IFS= read -r -d '' kv; do export "$kv"; echo "env: ${kv%%=*}"; done < <(jq -j '.env // {} | to_entries[] | "\(.key)=\(.value)\u0000"' rt/.github/run-tests/params.json)
+          mapfile -t files < <(jq -r '.[]' <<< "$FILES")
+          deadline=$(( JOB_START + (300 - 12) * 60 ))
+          bash rt/.github/run-tests/run-shard.sh pkg "$RUNNER_TEMP/out" "$FILE_TIMEOUT" "$deadline" "${files[@]}"
+      - name: Scan before upload (a matching file is withheld)
+        run: Rscript --vanilla rt/.github/run-tests/scan.R "$RUNNER_TEMP/out" strict
+      - name: Upload the shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: shard-${{ matrix.shard }}
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 30
+
+  check:
+    name: R CMD check
+    needs: plan
+    if: needs.plan.outputs.check == 'true'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 150
+    env:
+      EXTRA: ${{ needs.plan.outputs.extra }}
+    steps:
+      - name: The library's tools (tools_ref)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.tools_ref }}
+          persist-credentials: false
+      - name: R 4.6.1 and the library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+      - name: The request's scripts (this push)
+        uses: actions/checkout@v4
+        with:
+          path: rt
+          persist-credentials: false
+      - name: Extra packages (params extra_packages, same snapshot)
+        if: env.EXTRA != ''
+        run: R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla rt/.github/run-tests/extra-packages.R packaging/multischolar.lock.json $EXTRA
+      - name: The package under test (package_commit)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.package_commit }}
+          path: pkg
+          persist-credentials: false
+      - name: R CMD build and R CMD check (MultiScholaR's own logs only)
+        run: |
+          out="$RUNNER_TEMP/check-out"; work="$RUNNER_TEMP/check-work"; mkdir -p "$out" "$work"
+          Rscript --vanilla -e 'cat(R.version.string, "\n")' > "$out/r-version.txt"
+          (cd pkg && Rscript --vanilla ../rt/.github/run-tests/prepare.R "$out/library.tsv")
+          cd "$work"
+          build=0; R CMD build --no-manual "$GITHUB_WORKSPACE/pkg" > "$out/build.log" 2>&1 || build=$?
+          tail -n 5 "$out/build.log"
+          status=0
+          if [ "$build" -eq 0 ]; then
+            _R_CHECK_FORCE_SUGGESTS_=false R CMD check --no-manual --no-tests MultiScholaR_*.tar.gz > "$out/check-console.log" 2>&1 || status=$?
+            tail -n 5 "$out/check-console.log"
+            cp MultiScholaR.Rcheck/00check.log MultiScholaR.Rcheck/00install.out "$out/" 2>/dev/null || true
+          else status=skipped; fi
+          Rscript --vanilla "$GITHUB_WORKSPACE/rt/.github/run-tests/check-summary.R" "$out/00check.log" "$out/check-summary.txt" "$status" "$build"
+      - name: Scan before upload (MultiScholaR's compiler lines allowed; a matching file is withheld)
+        run: Rscript --vanilla rt/.github/run-tests/scan.R "$RUNNER_TEMP/check-out" check
+      - name: Upload the check
+        uses: actions/upload-artifact@v4
+        with:
+          name: check
+          path: ${{ runner.temp }}/check-out
+          if-no-files-found: error
+          retention-days: 30
+
+  scripts:
+    name: scripts
+    needs: plan
+    if: needs.plan.outputs.nscripts != '0'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+    env:
+      EXTRA: ${{ needs.plan.outputs.extra }}
+    steps:
+      - name: The library's tools (tools_ref)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.tools_ref }}
+          persist-credentials: false
+      - name: R 4.6.1 and the library (KIT-134 snapshot; internal packages with the read token; no cache)
+        uses: ./.github/actions/snapshot-library
+        with:
+          token: ${{ secrets.DEPS_READ_TOKEN }}
+          extra-packages: any::pkgload any::testthat
+      - name: The request's scripts (this push)
+        uses: actions/checkout@v4
+        with:
+          path: rt
+          persist-credentials: false
+      - name: Extra packages (params extra_packages, same snapshot)
+        if: env.EXTRA != ''
+        run: R_LIBS="$MSR_TOOLS_LIB" Rscript --vanilla rt/.github/run-tests/extra-packages.R packaging/multischolar.lock.json $EXTRA
+      - name: The package under test (package_commit, full history for scripts that read other commits)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.package_commit }}
+          path: pkg
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install package_commit in place of the tools' MultiScholaR (output kept in the job)
+        working-directory: pkg
+        run: |
+          git config filter.lfs.clean cat; git config filter.lfs.smudge cat; git config filter.lfs.process ""; git config filter.lfs.required false
+          if [ -f src/build_dia_rsum.R ] && [ ! -f inst/duckdb/linux_amd64/manifest.rds ]; then Rscript --vanilla src/build_dia_rsum.R > "$RUNNER_TEMP/dia.log" 2>&1 || { tail -n 5 "$RUNNER_TEMP/dia.log"; exit 1; }; fi
+          mkdir -p "$RUNNER_TEMP/scripts-out"
+          Rscript --vanilla ../rt/.github/run-tests/prepare.R "$RUNNER_TEMP/scripts-out/library.tsv"
+          Rscript --vanilla -e 'cat(R.version.string, "\n")' > "$RUNNER_TEMP/scripts-out/r-version.txt"
+          R CMD INSTALL --no-docs --no-multiarch . > "$RUNNER_TEMP/install.log" 2>&1 || { tail -n 20 "$RUNNER_TEMP/install.log"; exit 1; }
+          tail -n 2 "$RUNNER_TEMP/install.log"
+          git status --short | head -n 5
+      - name: Run the scripts
+        run: bash rt/.github/run-tests/run-scripts.sh rt/.github/run-tests/params.json pkg "$RUNNER_TEMP/scripts-out"
+      - name: Scan before upload (a matching file is withheld)
+        run: Rscript --vanilla rt/.github/run-tests/scan.R "$RUNNER_TEMP/scripts-out" strict
+      - name: Upload the scripts' outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: scripts
+          path: ${{ runner.temp }}/scripts-out
+          if-no-files-found: error
+          retention-days: 30
+
+  results:
+    name: results
+    needs: [plan, tests, check, scripts]
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    env:
+      FILES: ${{ needs.plan.outputs.files }}
+      PACKAGE_COMMIT: ${{ needs.plan.outputs.package_commit }}
+      TOOLS_REF: ${{ needs.plan.outputs.tools_ref }}
+      TESTS_RESULT: ${{ needs.tests.result }}
+      CHECK_RESULT: ${{ needs.check.result }}
+      SCRIPTS_RESULT: ${{ needs.scripts.result }}
+    steps:
+      - name: The request's scripts (this push)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: R 4.6.1 (Posit r-builds; base R only)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/r.deb" "https://cdn.posit.co/r/ubuntu-2204/pkgs/r-4.6.1_1_amd64.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends "$RUNNER_TEMP/r.deb" > /dev/null
+          echo "/opt/R/4.6.1/bin" >> "$GITHUB_PATH"
+      - name: The jobs' artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          path: ${{ runner.temp }}/dl
+      - name: Assemble
+        id: assemble
+        run: |
+          set -uo pipefail
+          res="$RUNNER_TEMP/results"; dl="$RUNNER_TEMP/dl"; mkdir -p "$res"
+          jq -r '.[]' <<< "$FILES" > "$RUNNER_TEMP/requested.txt"
+          status=0
+          Rscript --vanilla .github/run-tests/assemble.R "$dl" "$res" "$RUNNER_TEMP/requested.txt" > "$RUNNER_TEMP/assemble.out" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/assemble.out"
+          first="$(ls -d "$dl"/shard-* "$dl"/check "$dl"/scripts 2>/dev/null | head -n 1 || true)"
+          {
+            printf 'run\t%s\nattempt\t%s\nrequest_commit\t%s\nlabel\t%s\npackage_commit\t%s\ntools_ref\t%s\n' \
+              "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$(jq -r .label .github/run-tests/params.json)" "$PACKAGE_COMMIT" "$TOOLS_REF"
+            printf 'runner\tubuntu-22.04 (GitHub-hosted)\nR\t%s\n' "$(cat "$first/r-version.txt" 2>/dev/null || echo unknown)"
+            printf 'jobs\ttests %s; check %s; scripts %s\n' "$TESTS_RESULT" "$CHECK_RESULT" "$SCRIPTS_RESULT"
+            for s in "$dl"/shard-*; do [ -f "$s/setup-seconds.txt" ] && printf '%s\t%s\n' "$(basename "$s")" "$(cat "$s/setup-seconds.txt")"; done
+            printf 'env\t%s\n' "$(jq -c '.env // {}' .github/run-tests/params.json)"
+            echo; echo "library (package, version, library):"
+            cat "$first/library.tsv" 2>/dev/null || echo "no library table"
+          } > "$res/meta.txt"
+          [ -n "$first" ] && cp "$first/library.tsv" "$res/library.tsv" 2>/dev/null || true
+          cat "$res/summary.md" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "no summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+      - name: Scan the assembled artifact (a match fails the run; nothing is uploaded)
+        run: Rscript --vanilla .github/run-tests/scan.R "$RUNNER_TEMP/results" final
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: ${{ runner.temp }}/results
+          if-no-files-found: error
+          retention-days: 30
+      - name: Outcome (infrastructure, a crashed or timed-out file, a failed script)
+        env:
+          STATUS: ${{ steps.assemble.outputs.status }}
+        run: |
+          bad=0
+          for r in "$TESTS_RESULT" "$CHECK_RESULT" "$SCRIPTS_RESULT"; do
+            case "$r" in success|skipped) ;; *) echo "::error::a job ended $r (infrastructure)"; bad=1 ;; esac
+          done
+          if [ "$STATUS" != "0" ]; then echo "::error::a test file crashed or timed out, or a script failed (see tests.tsv)"; bad=1; fi
+          exit "$bad"

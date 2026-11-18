@@ -1,0 +1,17 @@
+{
+  "label": "lifecycle: 3 quick files and one that does not exist, performance-v2 tip",
+  "package_commit": "3eb9e565afe16dcc715f937cac4a596d003a09ca",
+  "tools_ref": "",
+  "tests": [
+    "test-ci-impact-scorecard.R",
+    "test-workflow-sleep-guard.R",
+    "test-prot-05a-log2-transformation-characterization.R",
+    "test-does-not-exist.R"
+  ],
+  "shards": 2,
+  "file_timeout_minutes": 45,
+  "extra_packages": [],
+  "env": {},
+  "check": false,
+  "scripts": []
+}
