@@ -1,16 +1,17 @@
 {
-  "label": "lifecycle: 3 quick files and one that does not exist, performance-v2 tip",
-  "package_commit": "3eb9e565afe16dcc715f937cac4a596d003a09ca",
+  "label": "KIT-129 RUV files on kit-129-integration 33cfc99b with sva: reproduce the laptop's 236, 273, 324, 350, 328 passed",
+  "package_commit": "33cfc99bdf38605f969a293ad2d6f991e4eb2e0d",
   "tools_ref": "",
   "tests": [
-    "test-ci-impact-scorecard.R",
-    "test-workflow-sleep-guard.R",
-    "test-prot-05a-log2-transformation-characterization.R",
-    "test-does-not-exist.R"
+    "test-ruv-factor-count.R",
+    "test-prot-ruv-factors-in-model.R",
+    "test-kit127-omics-ruv-factors.R",
+    "test-trx-ruv-designs.R",
+    "test-dia-limpa-ruv-rules.R"
   ],
-  "shards": 2,
+  "shards": 5,
   "file_timeout_minutes": 45,
-  "extra_packages": [],
+  "extra_packages": ["sva"],
   "env": {},
   "check": false,
   "scripts": []
