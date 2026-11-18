@@ -1,22 +1,19 @@
 {
-  "label": "exact",
-  "package_commit": "0b6fcb6d1dfb52a1444adf4a0efd50bc817fca22",
-  "tools_ref": "ebd5378b9f44ed54503011a175b1ea8e852cf5e1",
-  "runs_core": 1000,
+  "label": "confirm-lc",
+  "package": "installed",
+  "package_commit": "33cfc99bdf38605f969a293ad2d6f991e4eb2e0d",
+  "tools_ref": "33cfc99bdf38605f969a293ad2d6f991e4eb2e0d",
+  "runs_core": 2,
   "runs_stress": 0,
-  "cores": 4,
-  "timeout_minutes": 300,
-  "chunk": {"s1": 500},
+  "cores": 2,
+  "timeout_minutes": 60,
   "arms": {
-    "s1": "1,2,3,7,16,25,26,27,28,29,30,31,32,33",
-    "s2": "1,2,7,25,29,31,32",
-    "s3": "1,2,7,31",
-    "s4": "1,2,7,25,31,32"
+    "s1": "1,27,32,33,34,35,36,37,38",
+    "s2": "1,32,34,35,36,37,39,40",
+    "s3": "1,31,34,35,36,37,39",
+    "s4": "1,32,33,34,35,36,37,38"
   },
-  "cells": {
-    "s1": "C0,C1,C2,C3,C4,C5,C6,C7,C8",
-    "s2": "C0,C1,C2,C3,C4,C5,C6,C7,C8",
-    "s3": "C0,C1,C2,C3,C4,C5,C7",
-    "s4": "C0,C1,C2,C3,C4,C5,C7"
-  }
+  "cells": {"s1": "C6", "s2": "C6", "s3": "C0", "s4": "C6"},
+  "fault": {"s4": "37"},
+  "pairs": {"s1": "34:32,37:1,37:27,38:33", "s2": "34:32,37:1", "s3": "34:31,37:1", "s4": "34:32,37:1,38:33"}
 }
