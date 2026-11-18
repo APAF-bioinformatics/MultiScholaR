@@ -1,63 +1,38 @@
 {
-  "label": "KIT-129 run-path wiring: kit-129-integration a559f511 against 33cfc99b with sva (list reconstructed from the ticket: the note was not written), prove-arms trx and runpath, check on both",
-  "package_commit": "a559f511802533e31a5c9c410015b4c7ce7cda20",
-  "base_commit": "33cfc99bdf38605f969a293ad2d6f991e4eb2e0d",
+  "label": "KIT-129 second pass items 1 to 5 (technical-replicate design, first-pass nulls, M31, M32, the all-missing feature): kit-129-integration 45fa1e81 against a559f511 with sva; prove-arms techrep and firstpass; failing-first; check on both",
+  "package_commit": "45fa1e81832b1318b24e33a7b5a79d474c7aa5be",
+  "base_commit": "a559f511802533e31a5c9c410015b4c7ce7cda20",
   "tools_ref": "",
   "tests": [
-    "test-kit129-run-path.R",
-    "test-workflow-operation-registry.R",
-    "test-dia-limpa-ruv-rules.R",
     "test-prot-ruv-factors-in-model.R",
     "test-kit127-omics-ruv-factors.R",
-    "test-trx-ruv-designs.R",
+    "test-kit128-tech-reps-lipid-metab.R",
+    "test-kit128-da-assay-failure.R",
     "test-ruv-factor-count.R",
-    "test-workflow-operations.R",
-    "test-workflow-prot-declarations.R",
-    "test-workflow-trx-declarations.R",
+    "test-trx-ruv-designs.R",
+    "test-dia-limpa-ruv-rules.R",
+    "test-kit129-run-path.R",
+    "test-omics-da-core.R",
     "test-workflow-omics-declarations.R",
-    "test-workflow-analysis-record.R",
-    "test-workflow-class-declarations.R",
+    "test-workflow-prot-declarations.R",
     "test-workflow-lipid-declarations.R",
     "test-workflow-metab-declarations.R",
-    "test-workflow-omics-worker.R",
-    "test-workflow-omics-binding-steps.R",
-    "test-workflow-omics-da-contrasts.R",
-    "test-kit128-da-assay-failure.R",
-    "test-kit128-design-replicates.R",
-    "test-kit128-no-biological-replication-prot.R",
-    "test-kit128-tech-reps-lipid-metab.R",
-    "test-kit128-tech-reps-trx.R",
-    "test-omics-da-core.R",
-    "test-workflow-saved-da.R",
-    "test-trx-design.R",
-    "test-trx-norm-core.R",
-    "test-omic-gui-config.R",
-    "test-workflow-kit-harness.R",
-    "test-omic-da-head-fallback.R",
+    "test-workflow-operations.R",
+    "test-workflow-operation-registry.R",
+    "test-lipid-02-da-core-helpers.R",
+    "test-metab-02h-da-orchestration-characterization.R",
+    "test-metab-da-orchestration-direct-shared.R",
     "test-module-ci-lipid-da.R",
     "test-module-ci-metab-da.R",
-    "test-omic-enrich-module.R",
-    "test-workflow-omics-application-reads.R",
+    "test-workflow-omics-da-contrasts.R",
+    "test-workflow-omics-worker.R",
     "test-omic-da-module.R",
-    "test-omic-summary-module.R",
-    "test-omics-summary-core.R",
-    "test-module-ci-trx-design.R",
-    "test-module-ci-trx-qc.R",
-    "test-gui-entry-proteomics.R",
-    "test-gui-entry-lipidomics.R",
-    "test-gui-entry-metabolomics.R",
-    "test-gui-entry-transcriptomics.R",
     "test-prot-norm-core.R"
   ],
   "shards": 12,
   "file_timeout_minutes": 45,
   "file_timeouts": {
-    "test-gui-entry-proteomics.R": 120,
-    "test-prot-norm-core.R": 120,
-    "test-omic-da-module.R": 120,
-    "test-omic-gui-config.R": 120,
-    "test-omic-enrich-module.R": 120,
-    "test-workflow-kit-harness.R": 120
+    "test-prot-norm-core.R": 120
   },
   "extra_packages": [
     "sva"
@@ -67,36 +42,52 @@
   "blas": "reference",
   "fetch_refs": [
     "sim-k124-exact",
-    "sim-k129-exact"
+    "sim-k129-exact",
+    "sim-k124-confirm"
   ],
   "scripts": [
     {
       "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
       "args": [
-        "trx",
-        "docs/qa/workflow-execution/kit/kit-129/final-method/gha-trx"
+        "techrep",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass"
       ],
       "env": {
         "OMP_NUM_THREADS": "1",
         "OPENBLAS_NUM_THREADS": "1"
       },
-      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/gha-trx",
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass",
       "out_pattern": "\\.(tsv|txt)$",
-      "timeout_minutes": 140
+      "timeout_minutes": 120
     },
     {
       "path": "docs/qa/workflow-execution/kit/kit-129/final-method/prove-arms.R",
       "args": [
-        "runpath",
-        "docs/qa/workflow-execution/kit/kit-129/final-method/gha-runpath"
+        "firstpass",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass"
       ],
       "env": {
         "OMP_NUM_THREADS": "1",
         "OPENBLAS_NUM_THREADS": "1"
       },
-      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/gha-runpath",
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-second-pass",
       "out_pattern": "\\.(tsv|txt)$",
-      "timeout_minutes": 140
+      "timeout_minutes": 150
+    },
+    {
+      "path": "docs/qa/workflow-execution/kit/kit-129/final-method/failing-first.R",
+      "args": [
+        "a559f511802533e31a5c9c410015b4c7ce7cda20",
+        "docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first",
+        "test-prot-ruv-factors-in-model.R",
+        "test-kit127-omics-ruv-factors.R"
+      ],
+      "env": {
+        "OMP_NUM_THREADS": "1"
+      },
+      "out": "docs/qa/workflow-execution/kit/kit-129/final-method/out-failing-first",
+      "out_pattern": "\\.(tsv|txt|log)$",
+      "timeout_minutes": 120
     }
   ]
 }
