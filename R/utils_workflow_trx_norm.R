@@ -26,11 +26,18 @@
 #' @noRd
 trxNormGridParameters <- function(input) {
     number <- function(value, default) if (is.null(value) || !length(value) || is.na(value)) default else as.numeric(value)
-    if (identical(input$ruv_mode, "manual")) {
-        return(trxRuvGridParameters("manual", manual_k = as.integer(number(input$ruv_k, NA)), manual_percentage = number(input$ruv_percentage, NA)))
+    grid <- if (identical(input$ruv_mode, "manual")) {
+        trxRuvGridParameters("manual", manual_k = as.integer(number(input$ruv_k, NA)), manual_percentage = number(input$ruv_percentage, NA))
+    } else {
+        trxRuvGridParameters("automatic", number(input$auto_percentage_min, 5), number(input$auto_percentage_max, 30),
+            number(input$auto_percentage_step, 5), number(input$k_penalty_weight, 0.05))
     }
-    trxRuvGridParameters("automatic", number(input$auto_percentage_min, 5), number(input$auto_percentage_max, 30),
-        number(input$auto_percentage_step, 5), number(input$k_penalty_weight, 0.05))
+    # KIT-129 fourth pass item 2: with the gate on, the RUV design section's choice travels with the grid's parameters,
+    # and `trxNormRuvRequest` takes the design's alone; the seed only where the kernel estimates k (its canonical form).
+    choice <- omicNormRuvDesignChoice(input, omicNormRuvRunTable("transcriptomics"))
+    if (is.null(choice) || isTRUE(choice$legacy)) return(grid)
+    c(grid, list(ruv_design = choice$ruv_design, ruv_k = choice$ruv_k, ruv_k_rule = choice$ruv_k_rule,
+        ruv_control_ids = choice$ruv_control_ids, ruv_k_seed = if (identical(choice$ruv_k_rule, "num_sv_be")) choice$ruv_k_seed))
 }
 
 #' What the lipid RUV QC renderers show for the one count table, from the grid product: the CCA panels, k, percentage,

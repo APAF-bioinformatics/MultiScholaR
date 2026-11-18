@@ -86,8 +86,9 @@ test_that("every omic carries the preset table: every design once, in four tiers
         tiers <- vapply(options, `[[`, "", "tier")
         expect_identical(unname(tiers[ruvDesignIds]), c("recommended", "valid_with_conditions", "valid_with_conditions",
             "valid_with_conditions", "legacy", "none"), info = name)
-        # Until the switch commit today's design is the selected one; the recommended one is recorded for it.
-        expect_identical(tables[[name]]$selected, "legacy", info = name)
+        # KIT-129 fourth pass item 2 (decision M2): the recommended design is the selected one (the section is shown only
+        # with its gate on).
+        expect_identical(tables[[name]]$selected, "groups_all_features", info = name)
         expect_identical(tables[[name]]$recommended, "groups_all_features", info = name)
         expect_identical(tables[[name]]$selected_with_technical_replicates,
             if (startsWith(name, "transcriptomics")) NULL else "technical_replicates", info = name)
@@ -303,7 +304,8 @@ test_that("with the gate on each omic's tab shows every design with its figure a
     today$lipidomics <- today$metabolomics <- today$proteomics
     for (omic in ruvDesignOmics) {
         design <- omicGuiConfig(omic)$norm$ruv_design
-        table <- design$tables[[1L]]
+        # (fourth pass item 2) as the tab opens: no technical replicates read yet
+        table <- omicNormRuvMarkTable(design$tables[[1L]], technical = FALSE)
         html <- ruvDesignHtml(omic, TRUE)
         off <- ruvDesignHtml(omic, FALSE)
         # One radio group under a static id, one input per design in the table's order, today's design checked.
@@ -312,7 +314,7 @@ test_that("with the gate on each omic's tab shows every design with its figure a
         expect_identical(sub('.*value="([^"]*)".*', "\\1", grep("checked", radios, value = TRUE)), table$selected, info = omic)
         expect_true(grepl(sprintf('data-testid="%s"', design$testid), html, fixed = TRUE), info = omic)
         # A design that is not available is shown disabled, with its reason; no other is disabled.
-        unavailable <- vapply(table$options, \(option) identical(option$status, "unavailable"), NA)
+        unavailable <- vapply(table$options, \(option) identical(option$status, "unavailable") || !is.null(option$unavailable_now), NA)
         expect_identical(grepl("disabled", radios), unavailable, info = omic)
         for (option in table$options) {
             where <- paste(omic, option$id)
@@ -334,7 +336,8 @@ test_that("with the gate on each omic's tab shows every design with its figure a
         expect_match(legacy, "legacy", fixed = TRUE)
         expect_false(grepl("groups_all_features|none", legacy), info = omic)
         # The k rule, the number and the static slots (the summary under the option; one diagnostic per assay row).
-        expect_true(all(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_design_summary") %in% ids), info = omic)
+        expect_true(all(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_k_seed", "ruv_control_list", "ruv_design_summary") %in% ids),
+            info = omic)
         slots <- sprintf("ruv_k_estimate_assay%d", seq_len(omicGuiConfig(omic)$norm$assay_slots))
         expect_identical(sort(grep("^ruv_k_estimate", ids, value = TRUE)), slots, info = omic)
         for (rule in design$k_rules) {
@@ -346,7 +349,7 @@ test_that("with the gate on each omic's tab shows every design with its figure a
         off_ids <- sub('^id="norm-', "", sub('"$', "", regmatches(off, gregexpr('id="norm-[A-Za-z0-9_]+"', off))[[1L]]))
         expect_identical(setdiff(off_ids, ids), character(), info = omic)
         expect_identical(sort(setdiff(grep("-label$", ids, invert = TRUE, value = TRUE), off_ids)),
-            sort(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_design_summary", slots)), info = omic)
+            sort(c("ruv_design", "ruv_k_rule", "ruv_k_user", "ruv_k_seed", "ruv_control_list", "ruv_design_summary", slots)), info = omic)
     }
 })
 
@@ -364,7 +367,7 @@ test_that("with the gate on the section is a block above the options column, its
         header <- regexpr('<div class="ruv-design-header" aria-hidden="true">', html, fixed = TRUE)
         expect_true(header > regexpr("How unwanted variation is removed:", html, fixed = TRUE) &&
             header < regexpr('class="shiny-options-group"', html, fixed = TRUE), info = omic)
-        for (option in design$tables[[1L]]$options) {
+        for (option in omicNormRuvMarkTable(design$tables[[1L]], technical = FALSE)$options) {
             row <- as.character(omicNormRuvOptionTag(option, design$tiers))
             expect_true(grepl(row, html, fixed = TRUE), info = paste(omic, option$id))
             # A measured figure in two cells for the eye and as its sentence for a screen reader; else its status.
@@ -477,4 +480,231 @@ test_that("the k rule's choices follow the selected design, and the route's tabl
         expect_true(grepl(htmltools::htmlEscape(limpa$options[[i]]$note), shown[[i]], fixed = TRUE), info = limpa$options[[i]]$id)
         expect_true(grepl(htmltools::htmlEscape(omicNormRuvFigureText(limpa$options[[i]])), shown[[i]], fixed = TRUE))
     }
+})
+
+# ------------------------------------------------------------------------------------------------
+# KIT-129 fourth pass item 2: the panel's choices build the run path's request.
+# ------------------------------------------------------------------------------------------------
+
+# The options a session cannot choose, by table and by whether its design declares technical replicates, with the
+# text of the table that says why (written from the ticket's answers: M6, U2, U3; and the run path as it stands).
+ruvDesignClosed <- list(
+    proteomics.classic = list(no = c(technical_replicates = "no_technical_replicates", supplied_controls = "list_not_connected"),
+        yes = c(supplied_controls = "list_not_connected")),
+    proteomics.dia_limpa = list(no = c(technical_replicates = "no_technical_replicates"),
+        yes = c(groups_all_features = "technical_replicates_declared")),
+    transcriptomics.genes = list(no = character(), yes = character()),
+    lipidomics.features = list(no = c(technical_replicates = "no_technical_replicates", supplied_controls = "list_not_connected"),
+        yes = c(groups_all_features = "technical_replicates_declared", supplied_controls = "list_not_connected")))
+ruvDesignClosed$metabolomics.features <- ruvDesignClosed$lipidomics.features
+
+test_that("(fourth pass item 2) only the options a route's run path takes can be chosen; the others say why; the defaults are M2 and M6", {
+    tables <- ruvDesignTables()
+    for (name in names(tables)) {
+        for (technical in c(FALSE, TRUE)) {
+            marked <- omicNormRuvMarkTable(tables[[name]], technical)
+            closed <- Filter(Negate(is.null), stats::setNames(lapply(marked$options, `[[`, "unavailable_now"),
+                vapply(marked$options, `[[`, "", "id")))
+            expected <- ruvDesignClosed[[name]][[if (technical) "yes" else "no"]]
+            expect_identical(names(closed), names(expected), info = paste(name, technical))
+            expect_identical(unname(unlist(closed)), unname(marked$texts[expected]), info = paste(name, technical))
+            # the recommended design, or the technical-replicate design where the design declares them (not trx)
+            expect_identical(marked$selected, if (technical && !startsWith(name, "transcriptomics")) "technical_replicates" else
+                "groups_all_features", info = paste(name, technical))
+        }
+    }
+    # transcriptomics: technical replicates disabled with the table's reason (M6, U3); the separation rule not on the run path
+    trx <- tables[["transcriptomics.genes"]]
+    expect_identical(names(trx$k_rules_not_offered), "sweep_bounded")
+    expect_identical(unname(trx$k_rules_not_offered), unname(trx$texts[["separation_not_connected"]]))
+    for (name in setdiff(names(tables), "transcriptomics.genes")) expect_null(tables[[name]]$k_rules_not_offered, info = name)
+    # every new text is plain words: no internal names
+    internal <- "\\b(arm|arms|KIT-[0-9]+|C[0-9]|S[0-9]{1,2}|U[0-9]{1,2}|W[0-9]{1,2}|R0|B[0-9]|num_sv_be|sweep_bounded)\\b"
+    for (name in names(tables)) expect_identical(grep(internal, unname(tables[[name]]$texts), value = TRUE), character(), info = name)
+    # as rendered: a closed option is disabled and its row says why, and keeps its figure
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    html <- ruvDesignHtml("proteomics", TRUE)
+    radio <- regmatches(html, regexpr('<input type="radio" name="norm-ruv_design" value="supplied_controls"[^>]*>', html))
+    expect_match(radio, "disabled", fixed = TRUE)
+    expect_match(html, htmltools::htmlEscape(paste("Not available:", tables[["proteomics.classic"]]$texts[["list_not_connected"]])),
+        fixed = TRUE)
+    expect_match(html, '<span class="ruv-design-fdp" aria-hidden="true">\\s*<strong>5.3%</strong>')
+})
+
+ruvDesignInput <- function(...) {
+    utils::modifyList(list(ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_user = NA, ruv_k_seed = 7,
+        ruv_control_list = "", norm_method = "quantile", ruv_mode = "automatic", auto_percentage_min = 1, auto_percentage_max = 20,
+        separation_metric = "max_difference", k_penalty_weight = 0.5, adaptive_k_penalty = TRUE, ruv_percentage = 5, ruv_k = 2,
+        color_variable = "group", shape_variable = "group", ruv_grouping_variable = "group", apply_itsd = FALSE,
+        itsd_aggregation = "sum", log_offset = 1, auto_percentage_step = 5), list(...))
+}
+
+test_that("(fourth pass item 2) the panel's choice reads the design, the k rule, the typed k, the seed and the list, and refuses in words", {
+    table <- omicNormRuvRunTable("proteomics", "DIA_LIMPA")
+    expect_null(omicNormRuvDesignChoice(ruvDesignInput(), table))
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(), table), list(ruv_design = "groups_all_features", legacy = FALSE,
+        ruv_k_rule = "num_sv_be", ruv_k = NULL, ruv_k_seed = 7L, ruv_control_ids = NULL))
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(ruv_k_rule = "user", ruv_k_user = 2), table)[c("ruv_k_rule", "ruv_k", "ruv_k_seed")],
+        list(ruv_k_rule = "user", ruv_k = 2L, ruv_k_seed = 7L))
+    supplied <- omicNormRuvDesignChoice(ruvDesignInput(ruv_design = "supplied_controls", ruv_k_rule = "sweep_bounded",
+        ruv_control_list = " P2, P1\nP3;P1 "), table)
+    expect_identical(supplied[c("ruv_k_rule", "ruv_k_seed", "ruv_control_ids")], list(ruv_k_rule = "sweep_bounded", ruv_k_seed = NULL,
+        ruv_control_ids = c("P2", "P1", "P3")))
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(ruv_design = "legacy_correction"), table),
+        list(ruv_design = "legacy_correction", legacy = TRUE))
+    expect_identical(omicNormRuvDesignChoice(ruvDesignInput(ruv_design = "none"), table)[c("ruv_design", "ruv_k_rule", "ruv_k")],
+        list(ruv_design = "none", ruv_k_rule = NULL, ruv_k = NULL))
+    texts <- table$texts
+    refused <- function(input, table, text) expect_error(omicNormRuvDesignChoice(input, table), text, fixed = TRUE,
+        class = "omic_norm_ruv_design_invalid")
+    refused(ruvDesignInput(ruv_k_rule = "user", ruv_k_user = NA), table, texts[["k_missing"]])
+    refused(ruvDesignInput(ruv_k_rule = "user", ruv_k_user = 1.5), table, texts[["k_missing"]])
+    refused(ruvDesignInput(ruv_k_seed = 1.5), table, texts[["seed_invalid"]])
+    refused(ruvDesignInput(ruv_design = "supplied_controls", ruv_control_list = " \n "), table, texts[["list_missing"]])
+    refused(ruvDesignInput(ruv_k_rule = "sweep_bounded"), table, texts[["k_rule_not_available"]])
+    classic <- omicNormRuvRunTable("proteomics", "LFQ")
+    refused(ruvDesignInput(ruv_design = "supplied_controls", ruv_control_list = "P1"), classic,
+        paste(texts[["not_available"]], classic$texts[["list_not_connected"]]))
+    refused(ruvDesignInput(ruv_design = "legacy_correction"), classic, texts[["not_available"]])
+    trx <- omicNormRuvRunTable("transcriptomics")
+    refused(ruvDesignInput(ruv_design = "technical_replicates"), trx, trx$options[[2L]]$unavailable)
+    refused(ruvDesignInput(ruv_design = "first_pass_nulls", ruv_k_rule = "sweep_bounded"), trx, trx$texts[["separation_not_connected"]])
+})
+
+test_that("(fourth pass item 2) each omic's tab builds the run path's request from the choice; legacy builds today's; the gate off changes nothing", {
+    today <- list()
+    withr::with_options(list(MultiScholaR.ruv_design_panel = NULL), {
+        input <- ruvDesignInput()
+        today$classic <- applyProtNormRuvDesign(resolveProtNormReferenceSettings(input),
+            omicNormRuvDesignChoice(input, omicNormRuvRunTable("proteomics", "LFQ")))
+        today$lipid <- omicNormRunSettings(input, list(color_var = "group", shape_var = "group"), list(assay_names = NULL), list(),
+            lipidomicsDeclarationBinding, ruvDesign = omicNormRuvDesignChoice(input, omicNormRuvRunTable("lipidomics")))
+        today$trx <- trxNormGridParameters(input)
+    })
+    expect_identical(today$classic, resolveProtNormReferenceSettings(ruvDesignInput()))
+    expect_identical(today$trx, trxRuvGridParameters("automatic", 1, 20, 5, 0.5))
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    norm_data <- new.env()
+    norm_data$normalization_input_reference <- list(entity_id = "source")
+    classic <- function(...) {
+        input <- ruvDesignInput(...)
+        settings <- applyProtNormRuvDesign(resolveProtNormReferenceSettings(input), omicNormRuvDesignChoice(input,
+            omicNormRuvRunTable("proteomics", "LFQ")))
+        diaNormalizationRequest(NULL, settings, norm_data, "group")$parameters
+    }
+    # classic proteomics: legacy is today's request; the new designs carry the design, rule and seed, the mode from the rule
+    expect_identical(classic(ruv_design = "legacy"), diaNormalizationRequest(NULL, today$classic, norm_data, "group")$parameters)
+    counted <- classic()
+    expect_identical(counted[c("ruv_mode", "ruv_design", "ruv_k_rule", "ruv_k_seed")], list(ruv_mode = "automatic",
+        ruv_design = "groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 7L))
+    expect_identical(workflowRequestOperation(NULL, workflowOperationEntry("normalization-ruv"), NULL, counted)$declaration$parameters,
+        diaNormalizationOperation("declared")$parameters)
+    typed <- classic(ruv_design = "technical_replicates", ruv_k_rule = "user", ruv_k_user = 3)
+    expect_identical(typed[c("ruv_mode", "ruv_k", "ruv_design", "ruv_k_rule")], list(ruv_mode = "manual", ruv_k = 3L,
+        ruv_design = "technical_replicates", ruv_k_rule = "user"))
+    none <- classic(ruv_design = "none")
+    expect_identical(none[c("ruv_mode", "ruv_design")], list(ruv_mode = "skip", ruv_design = "none"))
+    expect_null(none$ruv_k_rule)
+    # DIA with limpa: the mode and the declared rules
+    dia <- function(...) {
+        choice <- omicNormRuvDesignChoice(ruvDesignInput(...), omicNormRuvRunTable("proteomics", "DIA_LIMPA"))
+        settings <- c(list(ruv_mode = protNormDiaRuvDesignMode(choice)), protNormDiaRuvDesignRules(choice))
+        # (the skip mode records a skip on the tab and sends no request)
+        list(mode = settings$ruv_mode, parameters = if (!identical(settings$ruv_mode, "skip"))
+            diaRuvCovariatesRequestParameters(list(), "group", settings))
+    }
+    expect_identical(dia(ruv_design = "legacy"), list(mode = "covariates", parameters = resolveDIARuvCovariatesParameters(list(), "group")))
+    expect_identical(dia(ruv_design = "legacy_correction")$mode, "correction")
+    expect_identical(dia(ruv_design = "none")$mode, "skip")
+    expect_identical(dia()$parameters, resolveDIARuvCovariatesParameters(list(), "group", "covariates", ruv_control_rule = "all_features",
+        ruv_k_rule = "num_sv_be", ruv_k_seed = 7L))
+    expect_identical(dia(ruv_design = "technical_replicates")$parameters, dia()$parameters)
+    expect_identical(dia(ruv_design = "supplied_controls", ruv_k_rule = "user", ruv_k_user = 1, ruv_control_list = "P2 P1")$parameters,
+        resolveDIARuvCovariatesParameters(list(), "group", "covariates", ruv_control_rule = "supplied_list", ruv_k_rule = "user", ruv_k = 1L,
+            ruv_control_ids = c("P2", "P1"), ruv_k_seed = 7L))
+    expect_identical(dia(ruv_design = "first_pass_nulls")$parameters$ruv_control_rule, "first_pass_drop_top_25")
+    # lipidomics and metabolomics: the RUV step's request names the new design (its mode never skip); legacy is today's
+    for (binding in list(lipidomicsDeclarationBinding, metabolomicsDeclarationBinding)) {
+        omics <- function(...) {
+            input <- ruvDesignInput(...)
+            omicNormRunSettings(input, list(color_var = "group", shape_var = "group"), list(assay_names = NULL), list(), binding,
+                ruvDesign = omicNormRuvDesignChoice(input, omicNormRuvRunTable(binding$omic_type)))
+        }
+        legacy <- omics(ruv_design = "legacy")
+        expect_identical(legacy, today$lipid, info = binding$prefix)
+        new <- omics()
+        expect_identical(new$ruv_mode, "groups_all_features", info = binding$prefix)
+        step <- omicsRuvStep(binding, new$ruv_parameters)
+        expect_identical(step$parameters, list(ruv_design = "groups_all_features", ruv_grouping_variable = "group", ruv_k = NULL,
+            ruv_k_rule = "num_sv_be", ruv_k_seed = 7L, ruv_control_ids = NULL), info = binding$prefix)
+        expect_identical(workflowRequestOperation(NULL, workflowOperationEntry(step$operation), NULL, step$parameters)$declaration$parameters,
+            omicsRuvDesignParameterNames, info = binding$prefix)
+        technical <- omicsRuvStep(binding, omics(ruv_design = "technical_replicates", ruv_k_rule = "user", ruv_k_user = 1)$ruv_parameters)
+        expect_identical(technical$parameters[c("ruv_design", "ruv_grouping_variable", "ruv_k", "ruv_k_rule")],
+            list(ruv_design = "technical_replicates", ruv_grouping_variable = NULL, ruv_k = 1L, ruv_k_rule = "user"), info = binding$prefix)
+        expect_identical(omics(ruv_design = "none")$ruv_mode, "none", info = binding$prefix)
+    }
+    # transcriptomics: the declared design alone, in its canonical form; legacy is the grid's request
+    trx <- function(...) trxNormRuvRequest(trxNormGridParameters(ruvDesignInput(...)))
+    expect_identical(trx(ruv_design = "legacy"), list(grid = today$trx, design = NULL))
+    expect_identical(trx()$design, trxRuvDesignParameters("groups_all_features", ruv_k_rule = "num_sv_be", ruv_k_seed = 7L))
+    expect_identical(trx(ruv_k_rule = "user", ruv_k_user = 2)$design, trxRuvDesignParameters("groups_all_features", 2L, "user"))
+    expect_identical(trx(ruv_design = "supplied_controls", ruv_control_list = "g2,g1")$design,
+        trxRuvDesignParameters("supplied_controls", ruv_k_rule = "num_sv_be", ruv_control_ids = c("g1", "g2"), ruv_k_seed = 7L))
+    expect_identical(trx(ruv_design = "none")$design, trxRuvDesignParameters("none"))
+})
+
+test_that("(fourth pass item 2) on a design with technical replicates the panel selects that design and refuses a closed one", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    updates <- list()
+    notices <- list()
+    testthat::local_mocked_bindings(updateRadioButtons = function(session, inputId, label = NULL, choices = NULL,
+        selected = NULL, inline = FALSE, choiceNames = NULL, choiceValues = NULL) {
+        updates[[length(updates) + 1L]] <<- list(id = inputId, selected = selected, names = choiceNames)
+    }, showNotification = function(ui, ...) notices[[length(notices) + 1L]] <<- ui, .package = "shiny")
+    head <- new.env()
+    head$technical <- FALSE
+    testthat::local_mocked_bindings(omicNormRuvHeadTechnicalReplicates = function(manager) head$technical, .package = "MultiScholaR")
+    bus <- shiny::reactiveValues(state_manager = NULL, design_matrix = NULL, config_list = list(),
+        tab_status = list(normalization = "pending"), state_update_trigger = NULL)
+    table <- omicGuiConfig("lipidomics")$norm$ruv_design$tables$features
+    suppressWarnings(suppressMessages(shiny::testServer(mod_omic_norm_server, args = list(id = "norm", workflow_data = bus,
+        experiment_paths = list(), omic_type = "lipidomics", experiment_label = "kit129",
+        config = omicGuiConfig("lipidomics")$norm), {
+        session$flushReact()
+        expect_length(updates, 0L)
+        head$technical <- TRUE
+        bus$state_update_trigger <- 1
+        session$flushReact()
+        expect_identical(updates[[1L]][c("id", "selected")], list(id = "ruv_design", selected = "technical_replicates"))
+        shown <- vapply(updates[[1L]]$names, as.character, "")
+        expect_match(shown[[1L]], htmltools::htmlEscape(paste("Not available:", table$texts[["technical_replicates_declared"]])),
+            fixed = TRUE)
+        expect_false(grepl("Not available", shown[[2L]], fixed = TRUE))
+        updates <<- list()
+        session$setInputs(ruv_design = "groups_all_features")
+        expect_identical(updates[[1L]][c("id", "selected")], list(id = "ruv_design", selected = "technical_replicates"))
+        expect_identical(notices[[1L]], paste(table$texts[["not_available"]], table$texts[["technical_replicates_declared"]]))
+        # the same state again: nothing is shown again
+        updates <<- list()
+        bus$state_update_trigger <- 2
+        session$flushReact()
+        expect_length(updates, 0L)
+    })))
+})
+
+test_that("(fourth pass item 2) a refused choice is the tab's error notice and the run does not start", {
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    notices <- list()
+    lines <- character()
+    testthat::local_mocked_bindings(showNotification = function(ui, ..., type = "default") {
+        notices[[length(notices) + 1L]] <<- list(ui = ui, type = type)
+    }, .package = "shiny")
+    read <- omicNormReadRuvDesign(ruvDesignInput(ruv_k_rule = "user", ruv_k_user = NA), "lipidomics", function(line) lines <<- c(lines, line))
+    texts <- omicNormRuvRunTable("lipidomics")$texts
+    expect_identical(read, list(ok = FALSE, choice = NULL))
+    expect_identical(notices, list(list(ui = texts[["k_missing"]], type = "error")))
+    expect_identical(lines, paste("ERROR:", texts[["k_missing"]]))
+    expect_true(omicNormReadRuvDesign(ruvDesignInput(), "lipidomics", function(line) NULL)$ok)
 })

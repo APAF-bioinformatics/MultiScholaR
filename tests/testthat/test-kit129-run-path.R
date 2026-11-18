@@ -913,3 +913,27 @@ test_that("(fourth pass item 1) lipidomics and metabolomics: the declared RUV st
         expect_null(omicsRuvOperation(binding)$fixed$replicate_sets, info = binding$prefix)
     }
 })
+
+test_that("(fourth pass item 2) the panel's choice runs in process and on the worker as one product; the head's technical replicates are read", {
+    testthat::local_mocked_bindings(workflowExecutionBuildIdentity = function() strrep("f", 64),
+        finishWorkflowExecutionJob = function(owner, status) {
+            owner$job <- NULL
+            list(status = status)
+        }, .package = "MultiScholaR")
+    withr::local_options(MultiScholaR.ruv_design_panel = TRUE)
+    plain <- kit129OmicsOwner("lipidomics")
+    technical <- kit129OmicsOwner("lipidomics", technical = TRUE)
+    expect_false(omicNormRuvHeadTechnicalReplicates(plain$owner))
+    expect_true(omicNormRuvHeadTechnicalReplicates(technical$owner))
+    expect_false(omicNormRuvHeadTechnicalReplicates(NULL))
+    input <- list(ruv_design = "groups_all_features", ruv_k_rule = "user", ruv_k_user = 1, ruv_k_seed = RUV_FACTOR_COUNT_SEED,
+        ruv_control_list = "", ruv_mode = "automatic", ruv_grouping_variable = "group")
+    settings <- omicNormRunSettings(input, list(color_var = "group", shape_var = "group"), list(assay_names = NULL), list(),
+        lipidomicsDeclarationBinding, ruvDesign = omicNormRuvDesignChoice(input, omicNormRuvRunTable("lipidomics")))
+    worker <- omicsWorkerRun(plain, "lipid_ruv", omicsRuvStep(lipidomicsDeclarationBinding, settings$ruv_parameters)$parameters)
+    expect_identical(worker$status, "complete", info = worker$error)
+    ruv <- kit129Quiet(runWorkflowOmicsReferenceRuv(lipidomicsDeclarationBinding, plain$owner, settings$ruv_parameters, list()))
+    expect_identical(ruv$run$reference$identity, worker$result$reference$identity)
+    expect_identical(ruv$value$ruv_design, "groups_all_features")
+    expect_identical(unname(unlist(ruv$value$best_k)), c(1L, 1L))
+})

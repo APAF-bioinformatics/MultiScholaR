@@ -260,9 +260,11 @@ runOmicNormPreQc <- function(workflowData, experimentPaths, normData, addLog, ge
 
 #' The run's settings: the managed twin's list (`runWorkflowOmicsManagedNormalisation`).
 #' @param itsdFeatureIds The manual ITSD selection's feature ids (managed: from the candidates; in process: NULL, D8).
+#' @param ruvDesign KIT-129 fourth pass item 2: the RUV design section's choice (`omicNormRuvDesignChoice`); NULL (the
+#'   gate off) or a legacy design keeps today's settings.
 #' @noRd
-omicNormRunSettings <- function(input, aesthetics, normData, experimentPaths, binding, itsdFeatureIds = NULL) {
-    list(apply_itsd = input$apply_itsd, itsd_aggregation = input$itsd_aggregation, itsd_feature_ids = itsdFeatureIds,
+omicNormRunSettings <- function(input, aesthetics, normData, experimentPaths, binding, itsdFeatureIds = NULL, ruvDesign = NULL) {
+    settings <- list(apply_itsd = input$apply_itsd, itsd_aggregation = input$itsd_aggregation, itsd_feature_ids = itsdFeatureIds,
         log_offset = input$log_offset, norm_method = input$norm_method, ruv_mode = input$ruv_mode,
         ruv_parameters = list(ruv_mode = input$ruv_mode, percentage_min = input$auto_percentage_min,
             percentage_max = input$auto_percentage_max, ruv_grouping_variable = input$ruv_grouping_variable,
@@ -270,6 +272,38 @@ omicNormRunSettings <- function(input, aesthetics, normData, experimentPaths, bi
             adaptive_k_penalty = input$adaptive_k_penalty, manual_k = input$ruv_k, manual_percentage = input$ruv_percentage),
         grouping_variable = aesthetics$color_var, shape_variable = aesthetics$shape_var, assay_names = normData$assay_names,
         qc_dir = experimentPaths[[binding$qc_dir_role]])
+    omicNormApplyRuvDesign(settings, ruvDesign, input$ruv_grouping_variable)
+}
+
+#' The new design's RUV request of lipidomics and metabolomics (KIT-129 fourth pass item 2): the RUV step runs (its mode
+#' is the design's id, never `skip`) with the new design's parameters (`omicsRuvDesignParameterNames`). The
+#' technical-replicate design takes the declared technical replicates as its replicate sets, so it names no column.
+#' @param settings `omicNormRunSettings`' list.
+#' @param choice `omicNormRuvDesignChoice`'s value, or NULL.
+#' @param grouping Today's RUV grouping column (the tab's input).
+#' @return `settings`.
+#' @noRd
+omicNormApplyRuvDesign <- function(settings, choice, grouping) {
+    if (is.null(choice) || isTRUE(choice$legacy)) return(settings)
+    settings$ruv_mode <- choice$ruv_design
+    settings$ruv_parameters <- list(ruv_design = choice$ruv_design,
+        ruv_grouping_variable = if (!identical(choice$ruv_design, "technical_replicates")) grouping,
+        ruv_k = choice$ruv_k, ruv_k_rule = choice$ruv_k_rule, ruv_k_seed = choice$ruv_k_seed, ruv_control_ids = choice$ruv_control_ids)
+    settings
+}
+
+#' The RUV design section's choice when a run starts (KIT-129 fourth pass item 2), or NULL; a refusal is the tab's
+#' error notice and its log line, and the run does not start.
+#' @param omic The omic (`binding$omic_type`).
+#' @return `list(ok, choice)`.
+#' @noRd
+omicNormReadRuvDesign <- function(input, omic, addLog, route = NULL) {
+    tryCatch(list(ok = TRUE, choice = omicNormRuvDesignChoice(input, omicNormRuvRunTable(omic, route))),
+        omic_norm_ruv_design_invalid = function(error) {
+            addLog(paste("ERROR:", conditionMessage(error)))
+            shiny::showNotification(conditionMessage(error), type = "error", duration = 10)
+            list(ok = FALSE, choice = NULL)
+        })
 }
 
 #' The normalisation pipeline: the managed sequence with a runner (KIT-078), else the in-process twin under the progress
@@ -285,19 +319,22 @@ runOmicNormPipeline <- function(input, workflowData, experimentPaths, normData, 
     }
     binding <- config$binding$binding
     manager <- workflowData$state_manager
+    ruv_design <- omicNormReadRuvDesign(input, binding$omic_type, addLog)
+    if (!ruv_design$ok) return(invisible(FALSE))
     runner <- workflowOmicsManagedActions(binding$omic_type)
     if (!is.null(runner)) {
         aesthetics <- getPlotAesthetics()
         normData$post_filter_obj <- getWorkflowStateReference(manager)
         itsd_feature_ids <- if (isTRUE(input$apply_itsd)) omicsManualItsdFeatureIds(normData$itsd_selections, normData$itsd_candidate_ids, addLog)
-        settings <- omicNormRunSettings(input, aesthetics, normData, experimentPaths, binding, itsd_feature_ids)
+        settings <- omicNormRunSettings(input, aesthetics, normData, experimentPaths, binding, itsd_feature_ids, ruv_design$choice)
         return(config$norm$run$managed(binding, runner, manager, settings, normData, workflowData$config_list, addLog,
             finish = finish, failed = function(error) {
                 addLog(paste("ERROR:", conditionMessage(error)))
                 logger::log_error(paste("Normalization pipeline error:", conditionMessage(error)))
             }))
     }
-    settings <- c(omicNormRunSettings(input, getPlotAesthetics(), normData, experimentPaths, binding), list(experiment_paths = experimentPaths))
+    settings <- c(omicNormRunSettings(input, getPlotAesthetics(), normData, experimentPaths, binding, ruvDesign = ruv_design$choice),
+        list(experiment_paths = experimentPaths))
     shiny::withProgress(message = "Running normalization pipeline...", value = 0, {
         config$norm$run$in_process(binding, manager, settings, normData, workflowData$config_list, addLog,
             advance = function(detail) shiny::incProgress(1 / 6, detail = detail),
@@ -350,7 +387,15 @@ omicNormStatusSetter <- function(workflowData) {
 runOmicNormHandler <- function(input, workflowData, experimentPaths, normData, addLog, config) {
     shiny::req(workflowData$state_manager)
     run <- config$norm$run
-    run$handler(run, config$binding$binding, workflowData$state_manager, run$settings(input), normData, workflowData$config_list,
+    # KIT-129 fourth pass item 2: a refusal of the RUV design section's choice is the tab's error notice (trx's settings
+    # read it, `trxNormGridParameters`).
+    settings <- tryCatch(run$settings(input), omic_norm_ruv_design_invalid = function(error) {
+        addLog(paste("ERROR:", conditionMessage(error)))
+        shiny::showNotification(conditionMessage(error), type = "error", duration = 10)
+        NULL
+    })
+    if (is.null(settings)) return(invisible(FALSE))
+    run$handler(run, config$binding$binding, workflowData$state_manager, settings, normData, workflowData$config_list,
         experimentPaths, addLog, notify = function(...) shiny::showNotification(...), setStatus = omicNormStatusSetter(workflowData))
 }
 

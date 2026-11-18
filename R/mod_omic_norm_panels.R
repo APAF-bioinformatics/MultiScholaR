@@ -252,14 +252,18 @@ omicNormRuvOptionTag <- function(option, tiers) {
     } else {
         cell("status", omicNormRuvFigureText(option))
     }
+    # KIT-129 fourth pass item 2: an option the run path does not take here, or whose precondition the design does
+    # not meet, keeps its figure and says why it cannot be chosen.
+    reason <- if (identical(option$status, "measured")) option$unavailable_now
     shiny::tags$span(title = option$tooltip,
-        class = paste(c("ruv-design-option", if (!identical(option$status, "measured")) paste0("is-", option$status)),
-            collapse = " "),
+        class = paste(c("ruv-design-option", if (!identical(option$status, "measured")) paste0("is-", option$status),
+            if (!is.null(reason)) "is-unavailable"), collapse = " "),
         cell("tier", shiny::tags$strong(class = paste0("ruv-design-tier-", gsub("_", "-", option$tier, fixed = TRUE)),
             tiers[[option$tier]], shiny::tags$span(class = "sr-only", ":"))),
         cell("label", option$label, cell("description", option$description)),
         cell("figures", figure,
-            if (length(option$k_rule_figures) > 0L) cell("alt", lapply(omicNormRuvAltText(option), shiny::tags$span))),
+            if (length(option$k_rule_figures) > 0L) cell("alt", lapply(omicNormRuvAltText(option), shiny::tags$span)),
+            if (!is.null(reason)) cell("status", paste("Not available:", reason))),
         cell("note", option$note))
 }
 
@@ -303,11 +307,13 @@ omicNormRuvPresets <- function(design) {
 #' @return A tag.
 #' @noRd
 omicNormRuvDesignRadio <- function(ns, design, table) {
+    # KIT-129 fourth pass item 2: as the tab opens, before the session's design is read, no technical replicates.
+    table <- omicNormRuvMarkTable(table, technical = FALSE)
     radio <- shiny::radioButtons(ns("ruv_design"), "How unwanted variation is removed:",
         choiceNames = lapply(table$options, omicNormRuvOptionTag, tiers = design$tiers),
         choiceValues = vapply(table$options, `[[`, character(1), "id"), selected = table$selected, width = "100%")
     for (option in table$options) {
-        if (!identical(option$status, "unavailable")) next
+        if (!identical(option$status, "unavailable") && is.null(option$unavailable_now)) next
         radio <- htmltools::tagQuery(radio)$find("input")$
             filter(\(input, i) identical(htmltools::tagGetAttribute(input, "value"), option$id))$
             addAttrs(disabled = NA)$allTags()
@@ -331,7 +337,9 @@ omicNormRuvKSection <- function(ns, design) {
     # The choices rendered first are the selected design's; today's design has none, so the recommended one's.
     table <- design$tables[[1L]]
     first <- presets[[if (table$selected %in% with_k) table$selected else table$recommended]]
+    first_rules <- setdiff(first$k_rules, names(table$k_rules_not_offered))
     labels <- vapply(design$k_rules, `[[`, character(1), "label")
+    texts <- table$texts
     rule_text <- lapply(names(design$k_rules), \(rule) {
         text <- design$k_rules[[rule]]
         shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", offering(rule)), ns = ns,
@@ -350,11 +358,18 @@ omicNormRuvKSection <- function(ns, design) {
                 "and removed."),
             shiny::tags$div(class = "ruv-design-k-choice",
                 shiny::radioButtons(ns("ruv_k_rule"), "How the number of factors is chosen:",
-                    choices = stats::setNames(first$k_rules, labels[first$k_rules]), selected = first[["k_rule"]],
+                    choices = stats::setNames(first_rules, labels[first_rules]), selected = first[["k_rule"]],
                     width = "100%"),
                 shiny::conditionalPanel(condition = "input.ruv_k_rule == 'user'", ns = ns,
                     shiny::numericInput(ns("ruv_k_user"), "Number of factors (k):", value = NA, min = 1, step = 1,
+                        width = "100%")),
+                # KIT-129 fourth pass item 2: the seed of the estimated number (also counted beside your own number).
+                shiny::conditionalPanel(condition = "input.ruv_k_rule != 'sweep_bounded'", ns = ns,
+                    shiny::numericInput(ns("ruv_k_seed"), texts[["seed"]], value = RUV_FACTOR_COUNT_SEED, step = 1,
                         width = "100%"))),
+            if (length(table$k_rules_not_offered) > 0L) shiny::conditionalPanel(
+                condition = omicNormRuvJsIn("ruv_design", intersect(with_k, offering(names(table$k_rules_not_offered)))),
+                ns = ns, shiny::helpText(paste(texts[["k_rule_not_available"]], table$k_rules_not_offered[[1L]]))),
             if (length(pending) > 0L) shiny::conditionalPanel(condition = paste(pending, collapse = " || "), ns = ns,
                 shiny::helpText("No figure has been measured yet for this approach with this rule. The figure shown",
                     "for the approach in the list above was measured with its pre-selected rule.")),
@@ -400,6 +415,10 @@ omicNormRuvDesignSection <- function(ns, norm) {
             "plots, the exported tables and the multi-omics integration. The approach decides what the differential",
             "test uses: in the recommended approach and those valid with conditions, the test is run on the",
             "uncorrected values with the estimated factors included as covariates."),
+        # KIT-129 fourth pass item 2: the supplied list, read by the run under that design.
+        shiny::conditionalPanel(condition = "input.ruv_design == 'supplied_controls'", ns = ns,
+            shiny::textAreaInput(ns("ruv_control_list"), design$tables[[1L]]$texts[["control_list"]], value = "",
+                rows = 4, width = "100%")),
         shiny::uiOutput(ns("ruv_design_summary")),
         omicNormRuvKSection(ns, design),
         shiny::conditionalPanel(condition = omicNormRuvJsIn("ruv_design", legacy), ns = ns, class = "ruv-design-today",
@@ -443,6 +462,7 @@ omicNormRuvTableName <- function(design, manager) {
 #' @return NULL, invisibly.
 #' @noRd
 omicNormRuvShowTable <- function(session, design, table) {
+    # (KIT-129 fourth pass item 2: `table` is marked, `omicNormRuvMarkTable`; its selection is the default there.)
     shiny::updateRadioButtons(session, "ruv_design",
         choiceNames = lapply(table$options, omicNormRuvOptionTag, tiers = design$tiers),
         choiceValues = vapply(table$options, `[[`, character(1), "id"), selected = table$selected)
@@ -460,8 +480,10 @@ omicNormRuvShowTable <- function(session, design, table) {
 omicNormRuvShowKRules <- function(session, design, table, selected) {
     option <- Find(\(option) identical(option$id, selected), table$options)
     if (length(option$k_rules) == 0L) return(invisible(NULL))
-    labels <- vapply(design$k_rules[option$k_rules], `[[`, character(1), "label")
-    shiny::updateRadioButtons(session, "ruv_k_rule", choices = stats::setNames(option$k_rules, unname(labels)),
+    # KIT-129 fourth pass item 2: a rule the run path does not take on this route is not offered.
+    rules <- setdiff(option$k_rules, names(table$k_rules_not_offered))
+    labels <- vapply(design$k_rules[rules], `[[`, character(1), "label")
+    shiny::updateRadioButtons(session, "ruv_k_rule", choices = stats::setNames(rules, unname(labels)),
         selected = option[["k_rule"]])
     invisible(NULL)
 }
@@ -475,22 +497,159 @@ omicNormRuvShowKRules <- function(session, design, table, selected) {
 #' @noRd
 registerOmicNormRuvDesign <- function(input, session, workflowData, design) {
     if (!isTRUE(design$enabled)) return(invisible(NULL))
-    table_name <- shiny::reactive({
+    # KIT-129 fourth pass item 2: the table of the route and whether the session's design declares technical
+    # replicates, read again on each state change; the options are shown again, with their default selection, only
+    # when what is available changes.
+    shown_table <- shiny::reactive({
         # The manager's workflow type is not reactive; the bus's trigger marks a state change (proteomics' idiom).
         workflowData$state_update_trigger
-        omicNormRuvTableName(design, workflowData$state_manager)
+        name <- omicNormRuvTableName(design, workflowData$state_manager)
+        list(name = name, table = omicNormRuvMarkTable(design$tables[[name]],
+            omicNormRuvHeadTechnicalReplicates(workflowData$state_manager)))
     })
-    shown <- shiny::reactiveVal(names(design$tables)[[1L]])
+    shown <- shiny::reactiveVal(omicNormRuvAvailabilityKey(names(design$tables)[[1L]],
+        omicNormRuvMarkTable(design$tables[[1L]], technical = FALSE)))
     shiny::observe({
-        name <- table_name()
-        if (identical(name, shiny::isolate(shown()))) return(invisible(NULL))
-        omicNormRuvShowTable(session, design, design$tables[[name]])
-        shown(name)
+        current <- shown_table()
+        key <- omicNormRuvAvailabilityKey(current$name, current$table)
+        if (identical(key, shiny::isolate(shown()))) return(invisible(NULL))
+        omicNormRuvShowTable(session, design, current$table)
+        shown(key)
     })
     shiny::observeEvent(input$ruv_design, {
-        omicNormRuvShowKRules(session, design, design$tables[[table_name()]], input$ruv_design)
+        table <- shown_table()$table
+        option <- Find(\(option) identical(option$id, input$ruv_design), table$options)
+        reason <- option$unavailable_now %||% (if (identical(option$status, "unavailable")) option$unavailable)
+        if (!is.null(reason)) {
+            # Not selectable here: said, and the default of this design selected again.
+            shiny::showNotification(paste(table$texts[["not_available"]], reason), type = "warning", duration = 10)
+            shiny::updateRadioButtons(session, "ruv_design", selected = table$selected)
+            return(invisible(NULL))
+        }
+        omicNormRuvShowKRules(session, design, table, input$ruv_design)
     })
     invisible(NULL)
+}
+
+#' Why an option cannot be chosen on this session (KIT-129 fourth pass item 2): the reason the run path does not take
+#' it on this route, or its precondition on the design (technical replicates declared, or not); NULL when it can.
+#' An option the table marks unavailable carries its own reason (`unavailable`) and is disabled as rendered.
+#' @param option A preset of the table.
+#' @param table Its table (its `texts`).
+#' @param technical Whether the session's design declares technical replicates.
+#' @return One string, or NULL.
+#' @noRd
+omicNormRuvUnavailableReason <- function(option, table, technical) {
+    if (identical(option$status, "unavailable")) return(NULL)
+    if (!is.null(option$not_offered)) return(option$not_offered)
+    needs <- option$needs
+    if (identical(needs, "technical_replicates") && !isTRUE(technical)) return(table$texts[["no_technical_replicates"]])
+    if (identical(needs, "no_technical_replicates") && isTRUE(technical)) return(table$texts[["technical_replicates_declared"]])
+    NULL
+}
+
+#' A table as shown on this session (KIT-129 fourth pass item 2): each option that cannot be chosen carries its
+#' reason (`unavailable_now`), and the selection is the default of this design: the design for technical replicates
+#' when the design declares them (decision M6), else the table's (the recommended design, decision M2).
+#' @param table A preset table.
+#' @param technical Whether the session's design declares technical replicates.
+#' @return The table.
+#' @noRd
+omicNormRuvMarkTable <- function(table, technical) {
+    table$options <- lapply(table$options, function(option) {
+        option$unavailable_now <- omicNormRuvUnavailableReason(option, table, technical)
+        option
+    })
+    preferred <- if (isTRUE(technical)) table$selected_with_technical_replicates
+    open <- vapply(table$options, \(option) is.null(option$unavailable_now) && !identical(option$status, "unavailable"), NA)
+    ids <- vapply(table$options, `[[`, character(1), "id")
+    table$selected <- if (!is.null(preferred) && preferred %in% ids[open]) preferred else
+        if (table$selected %in% ids[open]) table$selected else table$recommended
+    table
+}
+
+#' What decides whether the options are shown again: the table's name, the options that cannot be chosen and the
+#' selection.
+#' @noRd
+omicNormRuvAvailabilityKey <- function(name, table) {
+    list(name = name, closed = vapply(table$options, \(option) option$unavailable_now %||% "", character(1)),
+        selected = table$selected)
+}
+
+#' Whether the head state's design declares technical replicates (the kernels' rule,
+#' `resolveProtTechnicalReplicateBlock`), from the state's metadata and its design table only; FALSE without a
+#' session state or when it cannot be read.
+#' @param manager The bus's state manager.
+#' @return One logical.
+#' @noRd
+omicNormRuvHeadTechnicalReplicates <- function(manager) {
+    if (!inherits(manager, "DIAStateAdapter")) return(FALSE)
+    tryCatch(withWorkflowStateScope(manager, function() {
+        reference <- getWorkflowStateReference(manager)
+        if (is.null(reference)) return(FALSE)
+        spec <- readWorkflowStateMetadata(manager, reference)$data
+        design <- as.data.frame(materializeWorkflowTable(manager$.context, spec$components$design_matrix))
+        isTRUE(resolveProtTechnicalReplicateBlock(design, spec$slots$group_id %||% NA_character_,
+            spec$slots$technical_replicate_id %||% NA_character_)$technical)
+    }), error = function(error) FALSE)
+}
+
+#' The panel's choice for the run (KIT-129 fourth pass item 2), read when the run starts: the design, its k rule, the
+#' typed k, the seed and the supplied list, in the run path's names. NULL with the gate off or without the section's
+#' input; `legacy` TRUE under a legacy design (the omic then builds today's request from today's controls).
+#' Refuses, with the table's words, an option the run path does not take on this route, a rule it does not take, a
+#' missing or fractional typed k, a seed that is not a whole number and an empty list; the preconditions on the data
+#' (technical replicates, k against the limit and the controls) are the kernels' refusals, with their messages.
+#' @param input The module's input (or a list with its values).
+#' @param table The route's preset table.
+#' @return NULL, or `list(ruv_design, legacy, ruv_k_rule, ruv_k, ruv_k_seed, ruv_control_ids)`.
+#' @noRd
+omicNormRuvDesignChoice <- function(input, table) {
+    design <- input[["ruv_design"]]
+    if (!omicGuiRuvDesignEnabled() || is.null(design)) return(NULL)
+    refuse <- function(message) rlang::abort(message, class = "omic_norm_ruv_design_invalid")
+    texts <- table$texts
+    option <- Find(\(option) identical(option$id, design), table$options)
+    if (is.null(option)) refuse(paste(texts[["not_available"]], design))
+    reason <- if (identical(option$status, "unavailable")) option$unavailable else option$not_offered
+    if (!is.null(reason)) refuse(paste(texts[["not_available"]], reason))
+    if (identical(option$tier, "legacy")) return(list(ruv_design = design, legacy = TRUE))
+    if (identical(design, "none")) {
+        return(list(ruv_design = "none", legacy = FALSE, ruv_k_rule = NULL, ruv_k = NULL, ruv_k_seed = NULL, ruv_control_ids = NULL))
+    }
+    rule <- input[["ruv_k_rule"]]
+    if (!checkmate::test_choice(rule, option$k_rules)) refuse(paste(texts[["k_rule_not_available"]], rule %||% ""))
+    if (rule %in% names(table$k_rules_not_offered)) refuse(paste(texts[["k_rule_not_available"]], table$k_rules_not_offered[[rule]]))
+    k <- NULL
+    if (identical(rule, "user")) {
+        k <- input[["ruv_k_user"]]
+        if (!checkmate::test_number(k) || k < 1 || k != round(k)) refuse(texts[["k_missing"]])
+        k <- as.integer(k)
+    }
+    seed <- NULL
+    if (rule %in% c("num_sv_be", "user")) {
+        seed <- input[["ruv_k_seed"]] %||% RUV_FACTOR_COUNT_SEED
+        if (!checkmate::test_number(seed) || seed != round(seed) || abs(seed) > .Machine$integer.max) refuse(texts[["seed_invalid"]])
+        seed <- as.integer(seed)
+    }
+    ids <- NULL
+    if (identical(design, "supplied_controls")) {
+        ids <- unique(strsplit(trimws(input[["ruv_control_list"]] %||% ""), "[,;[:space:]]+")[[1L]])
+        ids <- ids[nzchar(ids)]
+        if (!length(ids)) refuse(texts[["list_missing"]])
+    }
+    list(ruv_design = design, legacy = FALSE, ruv_k_rule = rule, ruv_k = k, ruv_k_seed = seed, ruv_control_ids = ids)
+}
+
+#' The route's preset table for the run (the configuration's, without building the whole configuration).
+#' @param omic `proteomics`, `lipidomics`, `metabolomics` or `transcriptomics`.
+#' @param route The proteomics workflow type (`DIA_LIMPA` takes its own table).
+#' @noRd
+omicNormRuvRunTable <- function(omic, route = NULL) {
+    switch(omic,
+        proteomics = if (identical(route, "DIA_LIMPA")) omicGuiRuvTableDiaLimpa() else omicGuiRuvTableClassic(),
+        lipidomics = omicGuiRuvTableFeature("lipids"), metabolomics = omicGuiRuvTableFeature("metabolites"),
+        transcriptomics = omicGuiRuvTableTrx())
 }
 
 #' The options column: `norm$panels`' sections in their order.
