@@ -6,7 +6,10 @@
 # Usage: assemble.sh <installed R home, e.g. /opt/R/4.6.1/lib/R> <bundle directory>
 # The bundle directory may already hold python/ and pandoc/. The result is
 #   <bundle>/R       the R home, its front-end script patched to locate itself
-#   <bundle>/syslib  every shared library R and the packages need, except the C library
+#   <bundle>/syslib  every shared library R and the packages need, except the C library; R's binary,
+#                    its modules, every package library and the libraries of syslib itself carry a
+#                    run path to it relative to their own place ($ORIGIN), so nothing exports
+#                    LD_LIBRARY_PATH to the host programs R starts (needs patchelf at build time)
 #   <bundle>/bin     the launcher (packaging/linux/Rscript)
 set -euo pipefail
 
@@ -64,5 +67,33 @@ done
 echo "== bundled shared libraries: $(find "$bundle/syslib" -type f | wc -l)"
 ls "$bundle/syslib"
 
-# 3. The launcher.
+# 3. The run path. Each object finds syslib/ from its own location, in front of whatever run path
+#    it had. DT_RUNPATH serves only the object that carries it, so every object gets one, the
+#    bundled libraries included (they need each other). The launcher then sets no LD_LIBRARY_PATH.
+patched=0
+while IFS= read -r -d '' object; do
+    old="$(patchelf --print-rpath "$object" 2>/dev/null)" || continue # not a dynamic ELF object
+    new="\$ORIGIN/$(realpath --relative-to="$(dirname "$object")" "$bundle/syslib")"
+    chmod u+w "$object"
+    patchelf --set-rpath "$new${old:+:$old}" "$object" || { echo "patchelf could not write the run path of $object" >&2; exit 1; }
+    patched=$((patched + 1))
+done < <(find "$bundle/R" "$bundle/syslib" -type f \( -name '*.so' -o -name '*.so.*' -o -path '*/bin/exec/R' \) -print0)
+echo "== run path to syslib written into $patched objects"
+echo "== what R's front-end adds to LD_LIBRARY_PATH for R and its children (etc/ldpaths, not changed)"
+grep -n 'LD_LIBRARY_PATH=' "$bundle/R/etc/ldpaths" || true
+#    Checked here as the user's machine will resolve them: with no path but R's own lib folder (what
+#    R's front-end script sets), nothing but the C library may resolve outside the bundle.
+find "$bundle/R" "$bundle/syslib" -type f \( -name '*.so' -o -name '*.so.*' -o -path '*/bin/exec/R' \) -print0 |
+    LD_LIBRARY_PATH="$bundle/R/lib" xargs -0 -n 40 ldd >"$ldd_out" 2>/dev/null || true
+outside="$(awk '/=> \//{print $1 "\t" $3}' "$ldd_out" | sort -u | BUNDLE="$bundle/" GLIBC="$glibc" awk -F'\t' \
+    'index($2, ENVIRON["BUNDLE"]) != 1 { n = split($2, parts, "/"); if (parts[n] !~ ENVIRON["GLIBC"]) print }')"
+echo "== resolved outside the bundle after patching (must be none)"
+if [ -n "$outside" ]; then
+    printf '%s\n' "$outside" >&2
+    exit 1
+fi
+echo "== unresolved after patching"
+grep 'not found' "$ldd_out" | sort -u || true
+
+# 4. The launcher.
 install -m 0755 "$here/Rscript" "$bundle/bin/Rscript"

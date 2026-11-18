@@ -6,7 +6,12 @@
 bundle="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd -P)"
 
 # Nothing from the host steers R or Python to another installation, library or profile.
-unset R_HOME R_LIBS R_ENVIRON R_ENVIRON_USER R_PROFILE R_PROFILE_USER \
+# LD_LIBRARY_PATH is removed, not set: the bundle's R, its modules and its packages find the bundled
+# shared libraries (syslib/) through the run path written into each of them at build time
+# (packaging/linux/assemble.sh), so the programs R starts (the host's sh and bash, systemctl, ps)
+# load the host's own libraries. An exported path to syslib/ put Ubuntu's libreadline in front of
+# the host's and stopped bash, and with it R, on hosts whose bash links readline (Arch family).
+unset R_HOME R_LIBS R_ENVIRON R_ENVIRON_USER R_PROFILE R_PROFILE_USER LD_LIBRARY_PATH R_LD_LIBRARY_PATH \
     PYTHONPATH PYTHONHOME RETICULATE_PYTHON_ENV CONDA_PREFIX VIRTUAL_ENV
 
 # Rscript execs $RHOME/bin/R; without RHOME it uses the build-time prefix compiled into it.
@@ -15,15 +20,13 @@ RHOME="$bundle/R"
 # has a personal or site library.
 R_LIBS_USER="$bundle/R/no-user-library"
 R_LIBS_SITE="$bundle/R/no-site-library"
-# The shared libraries R and the packages were linked against at build time.
-LD_LIBRARY_PATH="$bundle/syslib"
 RETICULATE_PYTHON="$bundle/python/bin/python3"
 PYTHONNOUSERSITE=1
 # rmarkdown finds pandoc here before it looks on the PATH.
 RSTUDIO_PANDOC="$bundle/pandoc"
 PATH=/usr/bin:/bin
 MSR_BUNDLE="$bundle"
-export RHOME R_LIBS_USER R_LIBS_SITE LD_LIBRARY_PATH RETICULATE_PYTHON PYTHONNOUSERSITE RSTUDIO_PANDOC \
+export RHOME R_LIBS_USER R_LIBS_SITE RETICULATE_PYTHON PYTHONNOUSERSITE RSTUDIO_PANDOC \
     PATH MSR_BUNDLE
 
 # R needs a UTF-8 locale for the application's text; C.UTF-8 is in every glibc from 2.35 on.
