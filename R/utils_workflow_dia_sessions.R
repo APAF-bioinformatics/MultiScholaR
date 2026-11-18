@@ -22,7 +22,10 @@ runDIANativeTarR <- function(arguments, log_path, output_path = NULL) {
             members <- vapply(parts, function(x) rawToChar(x[x != as.raw(0)]), character(1), USE.NAMES = FALSE)
             members[nzchar(members)]
         }
-        staging <- tempfile("archive-stage-", tmpdir = dirname(output_path))
+        # KIT-052 (KIT-134 run 44379470655): the members are staged under tempdir(), not beside the archive in the
+        # export's request folder (`<source>/.workflow-export/native-export-<12>/`), where a DA entity's member path was
+        # 195 characters after the project root and could not be copied on Windows with long paths disabled.
+        staging <- tempfile("archive-stage-")
         if (!dir.create(staging, mode = "0700")) cli::cli_abort("cannot stage the native archive", class = "saved_entity_write")
         on.exit(unlink(staging, recursive = TRUE), add = TRUE)
         members <- character()
@@ -150,7 +153,10 @@ snapshotWorkflowFile <- function(source, destination, log_path) {
         runDIANativeIO(list(c("cp", "--reflink=auto", "--no-clobber", "--",
             source, destination)), log_path)
     } else if (!isTRUE(file.copy(source, destination, overwrite = FALSE, copy.date = FALSE))) {
-        cli::cli_abort("snapshot copy failed", class = "saved_entity_write")
+        # KIT-052: named, with the path's length on Windows (a copy into the export's request folder fails there from 260
+        # characters with long paths disabled).
+        checkWorkflowFigureFiles(destination, "a file of the session archive could not be copied into its staging folder",
+            class = "saved_entity_write", copied = FALSE)
     }
     if (!identical(before, workflowTableFileIdentity(source))) {
         cli::cli_abort("snapshot source changed", class = "saved_entity_corrupt")
